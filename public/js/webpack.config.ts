@@ -1,7 +1,7 @@
-const path = require('path');
-const webpack = require('webpack');
+import * as path from 'path';
+import * as webpack from 'webpack';
 
-module.exports = {
+const config: webpack.Configuration = {
     // The entry file to bundle
     entry: path.join(__dirname, 'src', 'main.ts'),
 
@@ -34,13 +34,17 @@ module.exports = {
 
     // Webpack will display a warning unless we specify the mode
     // Production mode minifies the resulting JavaScript
-    mode: process.platform === 'win32' || process.platform === 'darwin' ? 'development' : 'production',
+    mode: (
+        process.platform === 'win32'
+        || process.platform === 'darwin' ? 'development' : 'production'
+    ),
 
     plugins: [
         // ProvidePlugin automatically loads modules instead of having to import them everywhere
         // https://webpack.js.org/plugins/provide-plugin/
         new webpack.ProvidePlugin({
-            $: 'jquery', // The Hanabi codebase and the Tooltipster library uses "$" to invoke jQuery
+            // The Hanabi codebase and the Tooltipster library uses "$" to invoke jQuery
+            $: 'jquery',
         }),
     ],
 
@@ -54,6 +58,9 @@ module.exports = {
     },
 
     // Enable source maps for debugging purposes
-    // (this will show the line number of the real file in the browser JavaScript console)
+    // (this will show the line number of the real file in the browser console)
+    // Note that line numbers are not exact because the source map removes all comments
     devtool: 'source-map',
 };
+
+export default config;

@@ -9,14 +9,14 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Install VS Code extensions
 code --install-extension "ms-vscode.Go" # For Golang
-code --install-extension "dbaeumer.vscode-eslint" # For JavaScript
+code --install-extension "dbaeumer.vscode-eslint" # For TypeScript
 
 # Install the Golang linter
 # (it is not recommended to install this with "go get")
 # https://github.com/golangci/golangci-lint#install
 curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.24.0
 
-# Install the JavaScript linter
+# Install the TypeScript linter
 cd "$DIR/../public/js"
 npx install-peerdeps --dev eslint-config-airbnb-base
 

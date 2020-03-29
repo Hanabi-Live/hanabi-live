@@ -228,7 +228,7 @@ const clickMorph = (order: number) => {
         return;
     }
     if (card.length !== 2) {
-        alert('You entered an invalid card.');
+        window.alert('You entered an invalid card.');
         return;
     }
     const suitLetter = card[0];
@@ -244,14 +244,14 @@ const clickMorph = (order: number) => {
             (variantSuit) => variantSuit.abbreviation.toLowerCase(),
         );
         msg += `The available acronyms are: ${abbreviations}`;
-        alert(msg);
+        window.alert(msg);
         return;
     }
     suit = suitToMsgSuit(suit, globals.variant);
 
     const rank = parseInt(card[1], 10);
     if (Number.isNaN(rank) || rank < 0 || rank > 7) {
-        alert(`The rank of "${card[1]}" is not valid.`);
+        window.alert(`The rank of "${card[1]}" is not valid.`);
         return;
     }
 

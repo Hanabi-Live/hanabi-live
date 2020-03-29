@@ -46,7 +46,7 @@ module.exports = {
             exceptAfterSingleLine: true,
         }],
 
-        // The browser JavaScript makes use of tasteful alerts
+        // The client makes use of some tasteful alerts
         'no-alert': ['off'],
 
         // We need this for debugging

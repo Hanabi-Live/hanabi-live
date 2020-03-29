@@ -37,7 +37,7 @@ if ! command -v npx > /dev/null; then
 fi
 
 cd "$DIR/public/js"
-echo "Packing the JavaScript..."
-npx webpack # Pack the JavaScript into one file
-echo "Packing the CSS..."
+echo "Packing the TypeScript using WebPack..."
+npx webpack # Pack the TypeScript into one file
+echo "Packing the CSS using Grunt..."
 npx grunt # Pack the CSS into one file

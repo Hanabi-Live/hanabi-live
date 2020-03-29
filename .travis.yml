@@ -38,7 +38,7 @@ matrix:
         # (which compiles the TypeScript to JavaScript and packs everything into one file)
         # (we want to do this before linting so that the "version.json" file is created)
         - ../../build_client.sh
-        # Run ESLint (the JavaScript linter)
+        # Run ESLint (the TypeScript linter)
         - npm run-script lint
 
 notifications:

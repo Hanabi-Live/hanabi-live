@@ -16,7 +16,7 @@ fi
 cd "$DIR/../src"
 go build # This will discard the results by defualt
 
-# Install the JavaScript dependencies
+# Install the JavaScript/TypeScript dependencies
 cd "$DIR/../public/js"
 npm install
 

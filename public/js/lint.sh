@@ -6,5 +6,5 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 cd "$DIR"
 
-# This only lints the JavaScript code
+# This only lints the TypeScript code (for the client)
 npm run-script lint

@@ -73,7 +73,7 @@ The following instructions will set up the server as well as the linters. We ass
   * If you get a popup asking to use any experimental features (e.g. gopls), ignore it and/or do not allow it to proceed.
   * Add a new line of "asdf" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
   * Add a blank line somewhere, save the file, and watch as the blank line is automatically removed (because VSCode will automatically run the "goimports" tool every time you save a file).
-* Test the JavaScript linter:
+* Test the TypeScript linter:
   * On the left pane, navigate to and open "public\js\src\main.ts".
   * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
 * See [Running the Server](#running-the-server).
@@ -136,7 +136,7 @@ The following instructions will set up the server as well as the linters. We ass
   * If you get a popup asking to use any experimental features (e.g. gopls), ignore it and/or do not allow it to proceed.
   * Add a new line of "asdf" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
   * Add a blank line somewhere, save the file, and watch as the blank line is automatically removed (because VSCode will automatically run the "goimports" tool every time you save a file).
-* Test the JavaScript linter:
+* Test the TypeScript linter:
   * On the left pane, navigate to and open "public\js\src\main.ts".
   * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
 * See [Running the Server](#running-the-server).
