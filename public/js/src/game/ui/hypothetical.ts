@@ -28,8 +28,10 @@ export const start = () => {
 
     // Adjust the UI, depending on whether or not we are the replay leader
     globals.elements.replayArea!.visible(false);
-    globals.elements.clueTargetButtonGroup!.hide();
-    globals.elements.clueTargetButtonGroup2!.show();
+    if (globals.playerNames.length !== 2) {
+        globals.elements.clueTargetButtonGroup!.hide();
+        globals.elements.clueTargetButtonGroup2!.show();
+    }
 
     if (globals.amSharedReplayLeader) {
         globals.lobby.conn.send('replayAction', {
