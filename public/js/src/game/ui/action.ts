@@ -8,7 +8,7 @@ export const handle = () => {
         return;
     }
 
-    if (globals.ourTurn) {
+    if (globals.ourTurn || globals.hypothetical) {
         // Reset and show the clue UI
         if (globals.elements.clueTargetButtonGroup!.list.length === 1) {
             // In 2-player games,
