@@ -89,7 +89,8 @@ commands.set('gameOver', () => {
     // Transform this game into a shared replay
     globals.replay = true;
     globals.sharedReplay = true;
-    globals.sharedReplayTurn = globals.replayTurn;
+    globals.sharedReplayTurn = globals.replayTurn + 1;
+    // (we add one to account for the text that the server sends at the end of a game)
 
     // Open the replay UI if we were not in an in-game replay when the game ended
     if (!globals.inReplay) {
