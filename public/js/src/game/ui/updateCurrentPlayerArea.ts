@@ -28,7 +28,7 @@ export default () => {
     // Update the text
     const { text1, text2, text3 } = currentPlayerArea;
     let specialText = '';
-    if (!globals.lobby.settings.get('realLifeMode')) {
+    if (!globals.lobby.settings.realLifeMode) {
         if (globals.clues === 0) {
             specialText = '(cannot clue; 0 clues left)';
             text3.fill('red');
@@ -36,13 +36,13 @@ export default () => {
             specialText = `(cannot discard; at ${MAX_CLUE_NUM} clues)`;
             text3.fill(LABEL_COLOR);
         } else if (
-            globals.lobby.settings.get('hyphenatedConventions')
+            globals.lobby.settings.hyphenatedConventions
             && globals.elements.playerHands[globals.currentPlayerIndex].isLocked()
         ) {
             specialText = '(locked; may not be able to discard)';
             text3.fill('red');
         } else if (
-            globals.lobby.settings.get('hyphenatedConventions')
+            globals.lobby.settings.hyphenatedConventions
             && globals.elements.noDoubleDiscardBorder!.visible()
         ) {
             specialText = '(potentially in a "Double Discard" situation)';

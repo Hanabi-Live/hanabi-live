@@ -33,10 +33,6 @@ export const init = () => {
 };
 
 export const play = (file: string) => {
-    if (globals.settings === null) {
-        throw new Error('globals.settings is null.');
-    }
-
     const path = `/public/sounds/${file}.mp3`;
     const audio = new Audio(path);
     // HTML5 audio volume is a range between 0.0 to 1.0,

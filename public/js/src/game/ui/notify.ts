@@ -86,7 +86,7 @@ notifyFunctions.set('clue', (data: ActionClue) => {
         card.hideBorders();
         card.cluedBorder!.show();
         if (
-            !globals.lobby.settings.get('realLifeMode')
+            !globals.lobby.settings.realLifeMode
             && !globals.variant.name.startsWith('Cow & Pig')
             && !globals.variant.name.startsWith('Duck')
         ) {
@@ -108,7 +108,7 @@ notifyFunctions.set('clue', (data: ActionClue) => {
         if (data.list.indexOf(order) < 0) {
             negativeList.push(order);
             if (
-                !globals.lobby.settings.get('realLifeMode')
+                !globals.lobby.settings.realLifeMode
                 && !globals.variant.name.startsWith('Cow & Pig')
                 && !globals.variant.name.startsWith('Duck')
             ) {
@@ -383,7 +383,7 @@ notifyFunctions.set('status', (data: ActionStatus) => {
     // Update the number of clues in the bottom-right hand corner of the screen
     globals.elements.cluesNumberLabel!.text(globals.clues.toString());
 
-    if (!globals.lobby.settings.get('realLifeMode')) {
+    if (!globals.lobby.settings.realLifeMode) {
         globals.elements.cluesNumberLabel!.fill(globals.clues === 0 ? 'red' : LABEL_COLOR);
         globals.elements.noClueBorder!.visible(globals.clues === 0);
 
@@ -392,7 +392,7 @@ notifyFunctions.set('status', (data: ActionStatus) => {
             // (to reinforce that the current player cannot discard)
             globals.elements.noDiscardBorder!.show();
             globals.elements.noDoubleDiscardBorder!.hide();
-        } else if (data.doubleDiscard && globals.lobby.settings.get('hyphenatedConventions')) {
+        } else if (data.doubleDiscard && globals.lobby.settings.hyphenatedConventions) {
             // Show a yellow border around the discard pile
             // (to reinforce that this is a "Double Discard" situation)
             globals.elements.noDiscardBorder!.hide();

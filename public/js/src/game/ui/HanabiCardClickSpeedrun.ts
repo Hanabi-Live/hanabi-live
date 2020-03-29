@@ -22,7 +22,7 @@ export default function HanabiCardClickSpeedrun(this: HanabiCard, event: any) {
     // (but don't use the speedrunning behavior if we are in a
     // solo replay / shared replay / spectating / clicking on the stack base)
     if (
-        (!globals.speedrun && !globals.lobby.settings.get('speedrunMode'))
+        (!globals.speedrun && !globals.lobby.settings.speedrunMode)
         || globals.replay
         || globals.spectating
         || this.rank === STACK_BASE_RANK

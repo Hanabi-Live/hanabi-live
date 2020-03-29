@@ -17,7 +17,7 @@ export default function HanabiCardClick(this: HanabiCard, event: any) {
     // (but do not use the speedrunning behavior if we are in a
     // solo replay / shared replay / spectating)
     if (
-        (globals.speedrun || globals.lobby.settings.get('speedrunMode'))
+        (globals.speedrun || globals.lobby.settings.speedrunMode)
         && !globals.replay
         && !globals.spectating
     ) {

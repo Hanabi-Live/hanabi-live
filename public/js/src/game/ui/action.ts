@@ -34,7 +34,7 @@ export const handle = () => {
     if (
         // This is unnecessary if the pre-play setting is enabled,
         // as the hand will already be draggable
-        !globals.lobby.settings.get('speedrunPreplay')
+        !globals.lobby.settings.speedrunPreplay
         // This is unnecessary if this a speedrun,
         // as clicking on cards takes priority over dragging cards
         && !globals.speedrun
@@ -71,7 +71,7 @@ export const stop = () => {
 
     // Make all of the cards in our hand not draggable
     // (but we need to keep them draggable if the pre-play setting is enabled)
-    if (!globals.lobby.settings.get('speedrunPreplay')) {
+    if (!globals.lobby.settings.speedrunPreplay) {
         const ourHand = globals.elements.playerHands[globals.playerUs];
         for (const child of ourHand.children.toArray()) {
             // This is a LayoutChild

@@ -689,7 +689,7 @@ interface SoundData {
     file: string,
 }
 commands.set('sound', (data: SoundData) => {
-    if (!globals.lobby.settings.get('soundMove')) {
+    if (!globals.lobby.settings.soundMove) {
         return;
     }
 
@@ -697,7 +697,7 @@ commands.set('sound', (data: SoundData) => {
     const audio = new Audio(path);
     // HTML5 audio volume is a range between 0.0 to 1.0,
     // but volume is stored in the settings as an integer from 0 to 100
-    let volume = globals.lobby.settings.get('volume');
+    let volume = globals.lobby.settings.volume;
     if (typeof volume !== 'number') {
         volume = 50;
     }

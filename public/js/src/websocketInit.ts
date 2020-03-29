@@ -116,9 +116,6 @@ const initCommands = () => {
 
         // Some settings are stored on the server as numbers,
         // but we need them as strings because they will exist in an input field
-        if (globals.settings === null) {
-            throw new Error('globals.settings is null.');
-        }
         const settingsToConvertToStrings = [
             'createTableBaseTimeMinutes',
             'createTableTimePerTurnSeconds',

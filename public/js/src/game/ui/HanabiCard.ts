@@ -285,7 +285,7 @@ export default class HanabiCard extends Konva.Group {
             this.bareName = 'deck-back';
         } else if (
             (
-                globals.lobby.settings.get('realLifeMode')
+                globals.lobby.settings.realLifeMode
                 || globals.variant.name.startsWith('Cow & Pig')
                 || globals.variant.name.startsWith('Duck')
             ) && (suitToShow!.name === 'Unknown' || rankToShow === 6)
@@ -298,7 +298,7 @@ export default class HanabiCard extends Konva.Group {
         // Show or hide the pips
         if (
             this.bareName === 'known-trash'
-            || globals.lobby.settings.get('realLifeMode')
+            || globals.lobby.settings.realLifeMode
             || globals.variant.name.startsWith('Cow & Pig')
             || globals.variant.name.startsWith('Duck')
         ) {
@@ -321,7 +321,7 @@ export default class HanabiCard extends Konva.Group {
     // Fade this card if it is useless, fully revealed, and still in a player's hand
     setFade() {
         if (
-            globals.lobby.settings.get('realLifeMode')
+            globals.lobby.settings.realLifeMode
             || globals.speedrun
             || globals.variant.name.startsWith('Throw It in a Hole')
         ) {

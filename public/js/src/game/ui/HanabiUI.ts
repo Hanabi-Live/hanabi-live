@@ -162,8 +162,8 @@ const loadingFinishedCallback = () => {
     // and whether or not we have the colorblind UI feature enabled)
     globals.cardImages = drawCards(
         globals.variant,
-        globals.lobby.settings.get('colorblindMode'),
-        globals.lobby.settings.get('styleNumbers'),
+        globals.lobby.settings.colorblindMode,
+        globals.lobby.settings.styleNumbers,
     );
 
     // Construct a list of all of the cards in the deck

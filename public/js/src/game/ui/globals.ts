@@ -9,6 +9,7 @@ import { Action } from './actions';
 import Elements from './Elements';
 import LearnedCard from './LearnedCard';
 import Loader from './Loader';
+import { Globals as LobbyGlobals } from '../../globals';
 import HanabiCard from './HanabiCard';
 import SpectatorNote from './SpectatorNote';
 import SimpleCard from './SimpleCard';
@@ -18,7 +19,7 @@ import { VARIANTS } from '../../constants';
 
 export class Globals {
     // Objects sent upon UI initialization
-    lobby: any = null;
+    lobby: LobbyGlobals = new LobbyGlobals();
     game: any = null;
     loading: boolean = false;
 
@@ -147,7 +148,7 @@ export class Globals {
     // We cannot just create a new instantiation of the class,
     // because then the references in the other files would point to the outdated version
     reset() {
-        this.lobby = null;
+        this.lobby = new LobbyGlobals();
         this.game = null;
         this.loading = false;
         this.playerNames = [];

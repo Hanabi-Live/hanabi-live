@@ -136,7 +136,7 @@ function setTickingDownTime(timer: TimerDisplay) {
     // Do not play it more frequently than about once per second
     if (
         globals.timed
-        && globals.lobby.settings.get('soundTimer')
+        && globals.lobby.settings.soundTimer
         && millisecondsLeft > 0 // Between 0 and 10 seconds
         && millisecondsLeft <= 10000
         && timeElapsed > 900
@@ -150,7 +150,7 @@ function setTickingDownTime(timer: TimerDisplay) {
 
 function setTickingDownTimeTooltip(i: number) {
     // This tooltip is disabled in speedrun mode
-    if (globals.lobby.settings.get('speedrunMode') || globals.speedrun) {
+    if (globals.lobby.settings.speedrunMode || globals.speedrun) {
         return;
     }
 

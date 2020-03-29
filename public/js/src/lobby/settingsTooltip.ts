@@ -7,10 +7,6 @@ import globals from '../globals';
 
 export const init = () => {
     $('#settings-volume-slider').change(function settingsVolumeSliderChange() {
-        if (globals.settings === null) {
-            throw new Error('globals.settings is null.');
-        }
-
         const element = $(this);
         if (!element) {
             throw new Error('Failed to get the "settings-volume-slider" element.');
@@ -45,10 +41,6 @@ export const init = () => {
 };
 
 export const setSettingsTooltip = () => {
-    if (globals.settings === null) {
-        throw new Error('globals.settings is null.');
-    }
-
     // The server has delivered to us a list of all of our settings
     // Check the checkboxes for the settings that we have enabled (and adjust the volume slider)
     for (const [setting, value] of Object.entries(globals.settings)) {
@@ -76,10 +68,6 @@ export const setSettingsTooltip = () => {
 };
 
 function changeSetting(this: HTMLElement) {
-    if (globals.settings === null) {
-        throw new Error('globals.settings is null.');
-    }
-
     const element = $(this);
     if (!element) {
         throw new Error('Failed to get the element in the "changeSetting()" function.');
