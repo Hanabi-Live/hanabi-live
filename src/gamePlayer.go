@@ -171,6 +171,9 @@ func (p *GamePlayer) GiveClue(d *CommandData, g *Game) {
 
 	// Do post-clue tasks
 	characterPostClue(d, g, p)
+
+	// Handle the "Card Cycling" feature
+	p.CycleHand(g)
 }
 
 func (p *GamePlayer) RemoveCard(target int, g *Game) *Card {
@@ -659,6 +662,44 @@ func (p *GamePlayer) CheckSurprise(g *Game, c *Card) {
 			return
 		}
 	}
+}
+
+func (p *GamePlayer) CycleHand(g *Game) {
+	if !g.Options.CardCycle {
+		return
+	}
+
+	// Find the chop card
+	chopIndex := p.GetChopIndex()
+
+	// We don't need to reorder anything if the chop is slot 1 (the left-most card)
+	if chopIndex == len(p.Hand)-1 {
+		return
+	}
+	chopCard := p.Hand[chopIndex]
+
+	// Remove the chop card from their hand
+	p.Hand = append(p.Hand[:chopIndex], p.Hand[chopIndex+1:]...)
+
+	// Add it to the end (the left-most position)
+	p.Hand = append(p.Hand, chopCard)
+
+	// Make an array that represents the order of the player's hand
+	handOrder := make([]int, 0)
+	for _, c := range p.Hand {
+		handOrder = append(handOrder, c.Order)
+	}
+
+	// Notify everyone about the reordering
+	g.Actions = append(g.Actions, ActionReorder{
+		Type:      "reorder",
+		Target:    p.Index,
+		HandOrder: handOrder,
+	})
+
+	t := g.Table
+	t.NotifyAction()
+	logger.Info("Reordered the cards for player:", p.Name)
 }
 
 func (p *GamePlayer) ShuffleHand(g *Game) {
