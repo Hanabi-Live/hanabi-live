@@ -1,6 +1,6 @@
 // Imports
 import Konva from 'konva';
-import { MAX_CLUE_NUM } from '../../constants';
+import { LABEL_COLOR, MAX_CLUE_NUM } from '../../constants';
 import globals from './globals';
 
 // Set the "Current Player" area up for this specific turn
@@ -34,11 +34,17 @@ export default () => {
             text3.fill('red');
         } else if (globals.clues === MAX_CLUE_NUM) {
             specialText = `(cannot discard; at ${MAX_CLUE_NUM} clues)`;
-            text3.fill('red');
-        } else if (globals.elements.playerHands[globals.currentPlayerIndex].isLocked()) {
+            text3.fill(LABEL_COLOR);
+        } else if (
+            globals.lobby.settings.get('hyphenatedConventions')
+            && globals.elements.playerHands[globals.currentPlayerIndex].isLocked()
+        ) {
             specialText = '(locked; may not be able to discard)';
-            text3.fill('yellow');
-        } else if (globals.elements.noDoubleDiscardBorder!.visible()) {
+            text3.fill('red');
+        } else if (
+            globals.lobby.settings.get('hyphenatedConventions')
+            && globals.elements.noDoubleDiscardBorder!.visible()
+        ) {
             specialText = '(potentially in a "Double Discard" situation)';
             text3.fill('yellow');
         }
