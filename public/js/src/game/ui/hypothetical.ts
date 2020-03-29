@@ -87,11 +87,18 @@ export const beginTurn = () => {
         return;
     }
 
-    // Enabled or disable the clue target buttons, depending on whose turn it is
+    // Enable or disable the individual clue target buttons, depending on whose turn it is
     const buttonGroup = globals.elements.clueTargetButtonGroup2!;
     const buttons = buttonGroup.children.toArray() as Array<PlayerButton>;
     for (const button of buttons) {
-        button.setEnabled(button.targetIndex !== globals.currentPlayerIndex);
+        const enabled = button.targetIndex !== globals.currentPlayerIndex;
+        button.setEnabled(enabled);
+
+        // In 2-player games,
+        // default the clue recipient button to the only other player available
+        if (globals.playerNames.length === 2 && enabled) {
+            button.setPressed(true);
+        }
     }
 
     // Bring up the clue UI

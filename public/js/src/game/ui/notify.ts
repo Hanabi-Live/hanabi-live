@@ -212,9 +212,23 @@ notifyFunctions.set('draw', (data: ActionDraw) => {
     // (e.g. being drawn to the current player's hand)
     // We want to convert this to just being null
     // Suit comes from the server as an integer, so we also need to convert it to a Suit object
-    const suit = data.suit === -1 ? null : msgSuitToSuit(data.suit, globals.variant);
-    const rank = data.rank === -1 ? null : data.rank;
+    let suit = data.suit === -1 ? null : msgSuitToSuit(data.suit, globals.variant);
+    let rank = data.rank === -1 ? null : data.rank;
     const holder = data.who;
+
+    // If we are in a shared replay that was converted from a game in which we were one of the
+    // players, then suit and rank will be still be null for the cards that were dealt to us
+    // Since we are in a shared replay, this is a mistake, because we should have full knowledge of
+    // what the card is (from the "deckOrder" message that is sent at the end of the game)
+    if (globals.deckOrder.length !== 0) {
+        if (suit === null) {
+            const suitNum = globals.deckOrder[order].suit;
+            suit = msgSuitToSuit(suitNum, globals.variant);
+        }
+        if (rank === null) {
+            rank = globals.deckOrder[order].rank;
+        }
+    }
 
     // Remove one card from the deck
     globals.deckSize -= 1;

@@ -255,7 +255,7 @@ const clickMorph = (order: number) => {
         return;
     }
 
-    // Tell the server that we are doing a hypothetical
+    // Tell the server that we are morphing a card
     hypothetical.sendHypoAction({
         type: 'reveal',
         order,

@@ -10,7 +10,7 @@ export const handle = () => {
 
     if (globals.ourTurn || globals.hypothetical) {
         // Reset and show the clue UI
-        if (globals.elements.clueTargetButtonGroup!.list.length === 1) {
+        if (globals.playerNames.length === 2) {
             // In 2-player games,
             // default the clue recipient button to the only other player available
             // Otherwise, leave the last player selected
