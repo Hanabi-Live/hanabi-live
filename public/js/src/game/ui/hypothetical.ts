@@ -91,6 +91,7 @@ export const beginTurn = () => {
     const buttonGroup = globals.elements.clueTargetButtonGroup2!;
     const buttons = buttonGroup.children.toArray() as Array<PlayerButton>;
     for (const button of buttons) {
+        button.setPressed(false);
         const enabled = button.targetIndex !== globals.currentPlayerIndex;
         button.setEnabled(enabled);
 
