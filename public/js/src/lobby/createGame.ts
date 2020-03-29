@@ -113,6 +113,11 @@ export const init = () => {
 const firstVariantDropdownInit = () => {
     // Initialize the 1st variant dropdown with the basic variants
     for (const variant of basicVariants) {
+        // As a sanity check, ensure that this variant actually exist in the variants JSON
+        if (!variantNames.includes(variant)) {
+            throw new Error(`The "basic" variant of "${variant}" does not exist in the "variants.json" file.`);
+        }
+
         const option = new Option(variant, variant);
         dropdown1.append(option);
     }
