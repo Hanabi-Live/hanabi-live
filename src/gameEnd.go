@@ -233,13 +233,17 @@ func (g *Game) WriteDatabase() error {
 
 		characterID := 0
 		if t.Options.CharacterAssignments {
-			if v, ok := characters[gp.Character]; !ok {
-				logger.Error("Failed to find the ID for character \"" + gp.Character + "\" " +
-					"when ending the game.")
-				return errors.New("the character of " + gp.Character +
-					" does not exist in the characters map")
+			if gp.Character == "n/a" {
+				characterID = -1
 			} else {
-				characterID = v.ID
+				if v, ok := characters[gp.Character]; !ok {
+					logger.Error("Failed to find the ID for character \"" + gp.Character + "\" " +
+						"when ending the game.")
+					return errors.New("the character of " + gp.Character +
+						" does not exist in the characters map")
+				} else {
+					characterID = v.ID
+				}
 			}
 		}
 
@@ -430,7 +434,8 @@ func (t *Table) ConvertToSharedReplay() {
 		// Skip offline players and players in the lobby;
 		// if they re-login, then they will just stay in the lobby
 		if !p.Present {
-			logger.Info("Skipped converting " + p.Name + " to a spectator since they are not present.")
+			logger.Info("Skipped converting " + p.Name +
+				" to a spectator since they are not present.")
 			if p.ID == t.Owner && p.Session.IsClosed() {
 				// We don't want to pass the replay leader away if they are still in the lobby
 				// (as opposed to being offline)

@@ -47,10 +47,10 @@ func intInSlice(a int, slice []int) bool {
 	return false
 }
 
-// From: https://stackoverflow.com/questions/38554353/how-to-check-if-a-string-only-contains-alphabetic-characters-in-go
-var isAlphanumericSpacesAndSafeSpecialCharacters = regexp.MustCompile(`^[a-zA-Z0-9 !-]+$`).MatchString
+// From: https://stackoverflow.com/questions/38554353/
+var isAlphanumericSpacesAndSafeSpecialCharacters = regexp.MustCompile(`^[a-zA-Z0-9 !-]+$`).MatchString // nolint:lll
 
-// From: https://stackoverflow.com/questions/22128282/easy-way-to-check-string-is-in-json-format-in-golang
+// From: https://stackoverflow.com/questions/22128282/
 func isJSON(s string) bool {
 	var js json.RawMessage
 	return json.Unmarshal([]byte(s), &js) == nil

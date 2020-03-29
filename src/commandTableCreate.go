@@ -132,7 +132,8 @@ func commandTableCreate(s *Session, d *CommandData) {
 			// (it has to be a turn before the game ends)
 			var numTurns int
 			if v, err := models.Games.GetNumTurns(setReplay); err != nil {
-				logger.Error("Failed to get the number of turns from the database for game "+strconv.Itoa(setReplay)+":", err)
+				logger.Error("Failed to get the number of turns from the database for game "+
+					strconv.Itoa(setReplay)+":", err)
 				s.Error(initFail)
 				return
 			} else {
@@ -145,11 +146,13 @@ func commandTableCreate(s *Session, d *CommandData) {
 
 			// Set the options of the game to be the same as the one in the database
 			if v, err := models.Games.GetOptions(setReplay); err != nil {
-				logger.Error("Failed to get the variant from the database for game "+strconv.Itoa(setReplay)+":", err)
+				logger.Error("Failed to get the variant from the database for game "+
+					strconv.Itoa(setReplay)+":", err)
 				s.Error(initFail)
 				return
 			} else {
-				// The variant is submitted to the server as a name but stored in the database as an integer
+				// The variant is submitted to the server as a name
+				// but stored in the database as an integer
 				d.Variant = variantsID[v.Variant]
 				d.Timed = v.Timed
 				d.BaseTime = v.BaseTime

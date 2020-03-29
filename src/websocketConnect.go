@@ -38,7 +38,8 @@ func websocketConnect(ms *melody.Session) {
 		}
 
 		// The connection is now closed, but the disconnect event will be fired in another goroutine
-		// Thus, we need to manually call the function now to ensure that the user is removed from existing games and so forth
+		// Thus, we need to manually call the function now to ensure that
+		// the user is removed from existing games and so forth
 		websocketDisconnect2(s2)
 	}
 
@@ -207,8 +208,10 @@ func websocketConnect(ms *melody.Session) {
 				delete(t.DisconSpectators, s.UserID())
 
 				// Add the player back to the shared replay
-				logger.Info(t.GetName() + "Automatically respectating player \"" + s.Username() + "\".")
-				commandTableSpectate(s, &CommandData{ // This function does not care what their current game and/or status is
+				logger.Info(t.GetName() + "Automatically re-spectating player " +
+					"\"" + s.Username() + "\".")
+				// This function does not care what their current game and/or status is
+				commandTableSpectate(s, &CommandData{
 					TableID: t.ID,
 				})
 

@@ -48,7 +48,14 @@ func isAdmin(s *Session, d *CommandData) bool {
 	return true
 }
 
-func chatMakeMessage(msg string, who string, discord bool, server bool, datetime time.Time, room string) *ChatMessage {
+func chatMakeMessage(
+	msg string,
+	who string,
+	discord bool,
+	server bool,
+	datetime time.Time,
+	room string,
+) *ChatMessage {
 	return &ChatMessage{
 		Msg:      msg,
 		Who:      who,

@@ -393,7 +393,16 @@ export default (winW: number, winH: number) => {
 
         // Draw the "Detrimental Character Assignments" icon and tooltip
         if (globals.characterAssignments.length > 0) {
-            const character = CHARACTERS.get(globals.characterAssignments[i]);
+            let character = CHARACTERS.get(globals.characterAssignments[i]);
+            if (globals.characterAssignments[i] === 'n/a') {
+                // A "n/a" character may be assigned when debugging
+                character = {
+                    id: -1,
+                    name: 'n/a',
+                    description: '',
+                    emoji: '',
+                };
+            }
             if (typeof character === 'undefined') {
                 throw new Error(`Failed to get the "${globals.characterAssignments[i]}" character.`);
             }

@@ -54,7 +54,8 @@ func chatRandom(s *Session, d *CommandData, t *Table) {
 	}
 
 	randNum := getRandom(min, max)
-	msg := "Random number between " + strconv.Itoa(min) + " and " + strconv.Itoa(max) + ": " + strconv.Itoa(randNum)
+	msg := "Random number between " + strconv.Itoa(min) + " and " + strconv.Itoa(max) + ": " +
+		strconv.Itoa(randNum)
 	chatServerSend(msg, d.Room)
 }
 

@@ -73,7 +73,8 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 		// The first line is a number that signifies which player will go first
 		if i == 0 {
 			if v, err := strconv.Atoi(line); err != nil {
-				logger.Error("Failed to parse the first line (that signifies which player will go first):", line)
+				logger.Error("Failed to parse the first line "+
+					"(that signifies which player will go first):", line)
 				s.Error("Failed to create the game. Please contact an administrator.")
 				return true
 			} else {
@@ -129,7 +130,8 @@ func (g *Game) SetPresetDeck(s *Session) bool {
 		} else {
 			newRank = v
 		}
-		g.Deck[i-1].Rank = newRank // The first line is the number of players, so we have to subtract one
+		g.Deck[i-1].Rank = newRank
+		// (we subtract one because the first line is the number of players)
 	}
 
 	return false

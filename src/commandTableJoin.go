@@ -70,7 +70,8 @@ func commandTableJoin(s *Session, d *CommandData) {
 	// Get the total number of non-speedrun games that this player has played
 	var numGames int
 	if v, err := models.Games.GetUserNumGames(s.UserID(), false); err != nil {
-		logger.Error("Failed to get the number of non-speedrun games for player \""+s.Username()+"\":", err)
+		logger.Error("Failed to get the number of non-speedrun games for player "+
+			"\""+s.Username()+"\":", err)
 		s.Error("Something went wrong when getting your stats. Please contact an administrator.")
 		return
 	} else {
@@ -144,6 +145,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 			}
 		}
 
-		logger.Error("Failed to find the owner of the game when attempting to automatically start it.")
+		logger.Error("Failed to find the owner of the game when attempting to " +
+			"automatically start it.")
 	}
 }

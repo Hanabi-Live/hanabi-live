@@ -63,7 +63,8 @@ func commandTableStart(s *Session, d *CommandData) {
 			return
 		} else if len(t.Players) != numPlayers {
 			s.Warning("You currently have " + strconv.Itoa(len(t.Players)) + " players but game " +
-				strconv.Itoa(t.Options.SetReplay) + " needs " + strconv.Itoa(numPlayers) + " players.")
+				strconv.Itoa(t.Options.SetReplay) + " needs " + strconv.Itoa(numPlayers) +
+				" players.")
 			return
 		}
 
@@ -94,14 +95,16 @@ func commandTableStart(s *Session, d *CommandData) {
 
 	// Handle setting the seed
 	preset := false
-	seedPrefix := "p" + strconv.Itoa(len(t.Players)) + "v" + strconv.Itoa(variants[t.Options.Variant].ID) + "s"
+	seedPrefix := "p" + strconv.Itoa(len(t.Players)) + // e.g. p2v0s
+		"v" + strconv.Itoa(variants[t.Options.Variant].ID) + "s"
 	if t.Options.SetSeed != "" {
 		// This is a game with a preset seed
 		g.Seed = seedPrefix + t.Options.SetSeed
 	} else if t.Options.SetReplay != 0 {
 		// This is a replay of an existing game
 		if v, err := models.Games.GetSeed(t.Options.SetReplay); err != nil {
-			logger.Error("Failed to get the seed for game \""+strconv.Itoa(t.Options.SetReplay)+"\":", err)
+			logger.Error("Failed to get the seed for game "+
+				"\""+strconv.Itoa(t.Options.SetReplay)+"\":", err)
 			s.Error("Failed to create the game. Please contact an administrator.")
 			return
 		} else {
@@ -155,7 +158,7 @@ func commandTableStart(s *Session, d *CommandData) {
 	rand.Seed(int64(intSeed))
 
 	// Shuffle the deck
-	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
+	// https://stackoverflow.com/questions/12264789/shuffle-array-in-go
 	if !preset {
 		for i := range g.Deck {
 			j := rand.Intn(i + 1)
@@ -171,7 +174,8 @@ func commandTableStart(s *Session, d *CommandData) {
 	// Log the deal (so that it can be distributed to others if necessary)
 	logger.Info("--------------------------------------------------")
 	logger.Info("Deal for seed: " + g.Seed + " (from top to bottom)")
-	logger.Info("(cards are dealt to a player until their hand fills up before moving on to the next one)")
+	logger.Info("(cards are dealt to a player until their hand fills up before " +
+		"moving on to the next one)")
 	for i, c := range g.Deck {
 		logger.Info(strconv.Itoa(i+1) + ") " + c.Name(g))
 	}
@@ -187,7 +191,7 @@ func commandTableStart(s *Session, d *CommandData) {
 	// Shuffle the order of the players
 	// (otherwise, the seat order would always correspond to the order that
 	// the players joined the game in)
-	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
+	// https://stackoverflow.com/questions/12264789/shuffle-array-in-go
 	for i := range t.Players {
 		j := rand.Intn(i + 1)
 		t.Players[i], t.Players[j] = t.Players[j], t.Players[i]
@@ -307,7 +311,8 @@ func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
 		// Convert it from JSON
 		var action map[string]interface{}
 		if err := json.Unmarshal([]byte(actionString), &action); err != nil {
-			logger.Error("Failed to unmarshal an action while emulating gameplay from the database:", err)
+			logger.Error("Failed to unmarshal an action while emulating gameplay "+
+				"from the database:", err)
 			s.Error(initFail)
 			return true
 		}

@@ -144,7 +144,8 @@ func commandChat(s *Session, d *CommandData) {
 	// Check for commands
 	// (unless they already successfully performed a Discord-only command)
 	if !d.DiscordCommand {
-		chatCommand(s, d, nil) // We pass nil as the third argument because there is no associated table
+		// We pass nil as the third argument here because there is no associated table
+		chatCommand(s, d, nil)
 	}
 }
 
@@ -200,7 +201,14 @@ func commandChatTable(s *Session, d *CommandData) {
 	if !t.Replay {
 		for _, p := range t.Players {
 			if p.Present {
-				p.Session.NotifyChat(d.Msg, d.Username, d.Discord, d.Server, chatMsg.Datetime, d.Room)
+				p.Session.NotifyChat(
+					d.Msg,
+					d.Username,
+					d.Discord,
+					d.Server,
+					chatMsg.Datetime,
+					d.Room,
+				)
 			}
 		}
 	}

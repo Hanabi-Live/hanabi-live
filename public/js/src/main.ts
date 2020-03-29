@@ -32,7 +32,7 @@ import 'tooltipster';
 import '../lib/tooltipster-scrollableTip.min';
 
 // Add a function to the jQuery object to detect if an element is off screen
-// From: https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen
+// https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen
 ($.expr as any).filters.offscreen = (el: any) => {
     const rect = el.getBoundingClientRect();
     return (

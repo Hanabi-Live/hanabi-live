@@ -33,5 +33,11 @@ issues:
     - "if block ends with a return statement, so drop this else and outdent its block"
 
 linters-settings:
+  lll:
+    # Match the line length used in the Airbnb style guide used in the Hanabi client TypeScript
+    line-length: 100
+    tab-width: 4
+
   whitespace:
-    multi-if: true # Enforces newlines (or comments) after every multi-line if statement
+    # Enforce newlines (or comments) after every multi-line if statement
+    multi-if: true

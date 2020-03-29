@@ -28,7 +28,11 @@ func httpHistory(c *gin.Context) {
 	var user User
 	if exists, v, err := models.Users.Get(player); err != nil {
 		logger.Error("Failed to check to see if player \""+player+"\" exists:", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else if exists {
 		user = v

@@ -12,7 +12,8 @@ func websocketDisconnect(ms *melody.Session) {
 	// Turn the Melody session into a custom session
 	s := &Session{ms}
 
-	// We have to do the work in a separate function so that we can call it manually in the "websocketConnect()" function
+	// We have to do the work in a separate function so that
+	// we can call it manually in the "websocketConnect()" function
 	websocketDisconnect2(s)
 }
 
@@ -20,10 +21,12 @@ func websocketDisconnect2(s *Session) {
 	// Check to see if the existing session is different
 	// (this occurs during a reconnect, for example)
 	if s2, ok := sessions[s.UserID()]; !ok {
-		logger.Info("User \"" + s.Username() + "\" disconnected, but their session was already deleted.")
+		logger.Info("User \"" + s.Username() + "\" disconnected, " +
+			"but their session was already deleted.")
 		return
 	} else if s2.SessionID() != s.SessionID() {
-		logger.Info("The orphaned session for user \"" + s.Username() + "\" successfully disconnected.")
+		logger.Info("The orphaned session for user \"" + s.Username() + "\" " +
+			"successfully disconnected.")
 		return
 	}
 

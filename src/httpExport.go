@@ -31,7 +31,11 @@ func httpExport(c *gin.Context) {
 	// Check to see if the game exists in the database
 	if exists, err := models.Games.Exists(gameID); err != nil {
 		logger.Error("Failed to check to see if game "+strconv.Itoa(gameID)+" exists:", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else if !exists {
 		http.Error(w, "Error: That game does not exist in the database.", http.StatusNotFound)
@@ -43,7 +47,11 @@ func httpExport(c *gin.Context) {
 	if v, err := models.GameActions.GetAll(gameID); err != nil {
 		logger.Error("Failed to get the actions from the database "+
 			"for game "+strconv.Itoa(gameID)+":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		actionStrings = v
@@ -58,7 +66,11 @@ func httpExport(c *gin.Context) {
 		var action map[string]interface{}
 		if err := json.Unmarshal([]byte(actionString), &action); err != nil {
 			logger.Error("Failed to unmarshal an action while exporting a game:", err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
 			return
 		}
 
@@ -68,7 +80,11 @@ func httpExport(c *gin.Context) {
 			var actionTurn ActionTurn
 			if err := json.Unmarshal([]byte(actionString), &actionTurn); err != nil {
 				logger.Error("Failed to unmarshal a turn action:", err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
 				return
 			}
 
@@ -78,7 +94,11 @@ func httpExport(c *gin.Context) {
 			var actionClue ActionClue
 			if err := json.Unmarshal([]byte(actionString), &actionClue); err != nil {
 				logger.Error("Failed to unmarshal a clue action:", err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
 				return
 			}
 
@@ -92,7 +112,11 @@ func httpExport(c *gin.Context) {
 			var actionPlay ActionPlay
 			if err := json.Unmarshal([]byte(actionString), &actionPlay); err != nil {
 				logger.Error("Failed to unmarshal a play action:", err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
 				return
 			}
 
@@ -105,7 +129,11 @@ func httpExport(c *gin.Context) {
 			var actionDiscard ActionDiscard
 			if err := json.Unmarshal([]byte(actionString), &actionDiscard); err != nil {
 				logger.Error("Failed to unmarshal a discard action:", err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
 				return
 			}
 
@@ -125,7 +153,11 @@ func httpExport(c *gin.Context) {
 			var actionDeckOrder ActionDeckOrder
 			if err := json.Unmarshal([]byte(actionString), &actionDeckOrder); err != nil {
 				logger.Error("Failed to unmarshal a deckOrder action:", err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
 				return
 			}
 
@@ -144,7 +176,11 @@ func httpExport(c *gin.Context) {
 	if v, err := models.Games.GetNotes(gameID); err != nil {
 		logger.Error("Failed to get the notes from the database "+
 			"for game "+strconv.Itoa(gameID)+":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		dbNotes = v
@@ -153,8 +189,13 @@ func httpExport(c *gin.Context) {
 	// Get the players from the database
 	var dbPlayers []*DBPlayer
 	if v, err := models.Games.GetPlayers(gameID); err != nil {
-		logger.Error("Failed to get the players from the database for game "+strconv.Itoa(gameID)+":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		logger.Error("Failed to get the players from the database for game "+
+			strconv.Itoa(gameID)+":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		dbPlayers = v
@@ -175,8 +216,13 @@ func httpExport(c *gin.Context) {
 	// Get the options from the database
 	var options DBOptions
 	if v, err := models.Games.GetOptions(gameID); err != nil {
-		logger.Error("Failed to get the options from the database for game "+strconv.Itoa(gameID)+":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		logger.Error("Failed to get the options from the database for game "+
+			strconv.Itoa(gameID)+":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		options = v

@@ -33,7 +33,11 @@ func httpLogin(c *gin.Context) {
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
 		logger.Error("Failed to parse the IP address in the login function:", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		ip = v
@@ -46,7 +50,11 @@ func httpLogin(c *gin.Context) {
 	// Check to see if their IP is banned
 	if userIsBanned, err := models.BannedIPs.Check(ip); err != nil {
 		logger.Error("Failed to check to see if the IP \""+ip+"\" is banned:", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else if userIsBanned {
 		logger.Info("IP \"" + ip + "\" tried to log in, but they are banned.")
@@ -63,55 +71,71 @@ func httpLogin(c *gin.Context) {
 	// (which should probably never happen since the cookie lasts 5 seconds)
 	session := gsessions.Default(c)
 	if v := session.Get("userID"); v != nil {
-		logger.Info("User from IP \"" + ip + "\" tried to get a session cookie, but they are already logged in.")
-		http.Error(w, "You are already logged in. Please wait 5 seconds, then try again.", http.StatusUnauthorized)
+		logger.Info("User from IP \"" + ip + "\" tried to get a session cookie, " +
+			"but they are already logged in.")
+		http.Error(
+			w,
+			"You are already logged in. Please wait 5 seconds, then try again.",
+			http.StatusUnauthorized,
+		)
 		return
 	}
 
 	// Validate that the user sent a username and password
 	username := c.PostForm("username")
 	if username == "" {
-		logger.Error("User from IP \"" + ip + "\" tried to log in, but they did not provide the \"username\" parameter.")
-		http.Error(w, "You must provide the \"username\" parameter to log in.", http.StatusUnauthorized)
+		logger.Error("User from IP \"" + ip + "\" tried to log in, " +
+			"but they did not provide the \"username\" parameter.")
+		http.Error(
+			w,
+			"You must provide the \"username\" parameter to log in.",
+			http.StatusUnauthorized,
+		)
 		return
 	}
 	password := c.PostForm("password")
 	if password == "" {
-		logger.Error("User from IP \"" + ip + "\" tried to log in, but they did not provide the \"password\" parameter.")
-		http.Error(w, "You must provide the \"password\" parameter to log in.", http.StatusUnauthorized)
+		logger.Error("User from IP \"" + ip + "\" tried to log in, " +
+			"but they did not provide the \"password\" parameter.")
+		http.Error(
+			w,
+			"You must provide the \"password\" parameter to log in.",
+			http.StatusUnauthorized,
+		)
 		return
 	}
 
 	// Validate that the username is not excessively short
 	if len(username) < minUsernameLength {
-		logger.Info(
-			"User from IP \"" + ip + "\" " +
-				"tried to log in with a username of \"" + username + "\", " +
-				"but it is shorter than " + strconv.Itoa(minUsernameLength) + " characters.",
+		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+			"\"" + username + "\", but it is shorter than " + strconv.Itoa(minUsernameLength) +
+			" characters.")
+		http.Error(
+			w,
+			"Usernames must be "+strconv.Itoa(minUsernameLength)+" characters or more.",
+			http.StatusUnauthorized,
 		)
-		http.Error(w, "Usernames must be "+strconv.Itoa(minUsernameLength)+" characters or more.", http.StatusUnauthorized)
 		return
 	}
 
 	// Validate that the username is not excessively long
 	if len(username) > maxUsernameLength {
-		logger.Info(
-			"User from IP \"" + ip + "\" " +
-				"tried to log in with a username of \"" + username + "\", " +
-				"but it is longer than " + strconv.Itoa(maxUsernameLength) + " characters.",
+		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+			"\"" + username + "\", but it is longer than " + strconv.Itoa(maxUsernameLength) +
+			" characters.")
+		http.Error(
+			w,
+			"Usernames must be "+strconv.Itoa(maxUsernameLength)+" characters or less.",
+			http.StatusUnauthorized,
 		)
-		http.Error(w, "Usernames must be "+strconv.Itoa(maxUsernameLength)+" characters or less.", http.StatusUnauthorized)
 		return
 	}
 
 	// Validate that the username does not have any special characters in it
 	// (other than underscores, hyphens, and periods)
 	if strings.ContainsAny(username, "`~!@#$%^&*()=+[{]}\\|;:'\",<>/?") {
-		logger.Info(
-			"User from IP \"" + ip + "\" tried to log in with " +
-				"a username of \"" + username + "\", " +
-				"but it has illegal special characters in it.",
-		)
+		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+			"\"" + username + "\", but it has illegal special characters in it.")
 		http.Error(
 			w,
 			"Usernames must not contain any special characters other than "+
@@ -130,7 +154,11 @@ func httpLogin(c *gin.Context) {
 	var user User
 	if v1, v2, err := models.Users.Get(username); err != nil {
 		logger.Error("Failed to get user \""+username+"\":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		exists = v1
@@ -146,7 +174,11 @@ func httpLogin(c *gin.Context) {
 		// Create the new user in the database
 		if v, err := models.Users.Insert(username, password); err != nil {
 			logger.Error("Failed to insert user \""+username+"\":", err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
 			return
 		} else {
 			user = v
@@ -156,7 +188,11 @@ func httpLogin(c *gin.Context) {
 	// Update the database with "datetime_last_login" and "last_ip"
 	if err := models.Users.Update(user.ID, ip); err != nil {
 		logger.Error("Failed to set the login values for user \""+strconv.Itoa(user.ID)+"\":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -167,7 +203,11 @@ func httpLogin(c *gin.Context) {
 	session.Set("firstTimeUser", !exists)
 	if err := session.Save(); err != nil {
 		logger.Error("Failed to write to the login cookie for user \""+user.Username+"\":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 

@@ -138,7 +138,8 @@ func chatFindVariant(s *Session, d *CommandData, t *Table) {
 	}
 
 	if len(userIDs) < 2 || len(userIDs) > 6 {
-		chatServerSend("You can only perform this command if the game or shared replay has between 2 and 6 players.", d.Room)
+		chatServerSend("You can only perform this command if the game or shared replay has "+
+			"between 2 and 6 players.", d.Room)
 		return
 	}
 
@@ -146,7 +147,8 @@ func chatFindVariant(s *Session, d *CommandData, t *Table) {
 	statsMaps := make([]map[int]UserStatsRow, 0)
 	for _, userID := range userIDs {
 		if v, err := models.UserStats.GetAll(userID); err != nil {
-			logger.Error("Failed to get all of the variant-specific stats for player ID "+strconv.Itoa(userID)+":", err)
+			logger.Error("Failed to get all of the variant-specific stats for player ID "+
+				strconv.Itoa(userID)+":", err)
 			chatServerSend("Something went wrong. Please contact an administrator.", d.Room)
 			return
 		} else {
@@ -208,7 +210,8 @@ func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
 		commandTableStart(s, nil)
 	} else {
 		t.AutomaticStart = numPlayers
-		chatServerSend("The game will start as soon as "+strconv.Itoa(numPlayers)+" players have joined.", d.Room)
+		chatServerSend("The game will start as soon as "+strconv.Itoa(numPlayers)+
+			" players have joined.", d.Room)
 	}
 }
 

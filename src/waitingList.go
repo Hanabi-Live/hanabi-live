@@ -145,7 +145,8 @@ func waitingListAlert(t *Table, creator string) {
 func waitingListRemoveSub(i int) {
 	// Remove them from the the database
 	if err := models.DiscordWaiters.Delete(waitingList[i].Username); err != nil {
-		msg := "Failed to delete \"" + waitingList[i].Username + "\" from the database: " + err.Error()
+		msg := "Failed to delete \"" + waitingList[i].Username + "\" from the database: " +
+			err.Error()
 		logger.Error(msg)
 		chatServerSend(msg, "lobby")
 		return
@@ -160,7 +161,8 @@ func waitingListPurgeOld() {
 		waiter := waitingList[i]
 		if time.Now().After(waiter.DatetimeExpired) {
 			waitingListRemoveSub(i)
-			logger.Info("User \"" + waiter.Username + "\" was purged from the waiting list (due to expiry).")
+			logger.Info("User \"" + waiter.Username + "\" was purged from the waiting list " +
+				"(due to expiry).")
 		}
 	}
 }

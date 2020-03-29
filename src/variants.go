@@ -107,8 +107,8 @@ func suitsInit() {
 		} else if len(suit.ClueColors) > 1 {
 			for _, colorName := range suit.ClueColors {
 				if _, ok := colors[colorName]; !ok {
-					logger.Fatal("The suit of \"" + name + "\" has a clue color of \"" + colorName + "\", " +
-						"but that color does not exist.")
+					logger.Fatal("The suit of \"" + name + "\" has a clue color of " +
+						"\"" + colorName + "\", but that color does not exist.")
 				}
 			}
 		} else {
@@ -282,7 +282,8 @@ func variantsInit() {
 			ClueRanks:              *clueRanks,
 			ColorCluesTouchNothing: variant.ColorCluesTouchNothing,
 			RankCluesTouchNothing:  variant.RankCluesTouchNothing,
-			MaxScore:               len(variantSuits) * 5, // Assuming that there are 5 points per stack
+			MaxScore:               len(variantSuits) * 5,
+			// (we assume that there are 5 points per stack)
 		}
 
 		// Create a reverse mapping of ID to name

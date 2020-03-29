@@ -318,7 +318,8 @@ func (p *GamePlayer) PlayCard(g *Game, c *Card) bool {
 
 	// Handle custom variants that do not play in order from 1 to 5
 	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-		extraClue = (c.Rank == 5 || c.Rank == 1) && g.StackDirections[c.Suit] == stackDirectionFinished
+		extraClue = (c.Rank == 5 || c.Rank == 1) &&
+			g.StackDirections[c.Suit] == stackDirectionFinished
 	}
 
 	if extraClue {

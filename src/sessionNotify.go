@@ -132,7 +132,14 @@ func (s *Session) NotifyTableGone(t *Table) {
 	})
 }
 
-func (s *Session) NotifyChat(msg string, who string, discord bool, server bool, datetime time.Time, room string) {
+func (s *Session) NotifyChat(
+	msg string,
+	who string,
+	discord bool,
+	server bool,
+	datetime time.Time,
+	room string,
+) {
 	s.Emit("chat", chatMakeMessage(msg, who, discord, server, datetime, room))
 }
 
@@ -334,7 +341,8 @@ func (s *Session) NotifyReplayLeader(t *Table, playAnimation bool) {
 	}
 
 	if name == "" {
-		// The leader is not currently present, so try getting their username from the players object
+		// The leader is not currently present,
+		// so try getting their username from the players object
 		for _, p := range t.Players {
 			if p.ID == t.Owner {
 				name = p.Name

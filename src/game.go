@@ -185,8 +185,8 @@ func (g *Game) CheckEnd() bool {
 
 	// Check to see if there are any cards remaining that can be played on the stacks
 	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-		// Searching for the next card is much more complicated if we are playing a "Up or Down" variant,
-		// so the logic for this is stored in a separate file
+		// Searching for the next card is much more complicated if we are playing an "Up or Down"
+		// variant, so the logic for this is stored in a separate file
 		if !variantUpOrDownCheckAllDead(g) {
 			return false
 		}

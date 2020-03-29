@@ -10,8 +10,8 @@ module.exports = {
         jquery: true,
     },
 
-    // We need to specify some additional settings in order to make the linter work with TypeScript
-    // From: https://medium.com/@myylow/how-to-keep-the-airbnb-eslint-config-when-moving-to-typescript-1abb26adb5c6
+    // We need to specify some additional settings in order to make the linter work with TypeScript:
+    // https://medium.com/@myylow/how-to-keep-the-airbnb-eslint-config-when-moving-to-typescript-1abb26adb5c6
     parser: '@typescript-eslint/parser',
     parserOptions: {
         project: './tsconfig.json',

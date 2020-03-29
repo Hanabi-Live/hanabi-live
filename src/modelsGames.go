@@ -12,10 +12,11 @@ type Games struct{}
 // GameRow mirrors the "games" table row
 // (it contains a subset of the information in the Game struct)
 type GameRow struct {
-	Name                 string
-	NumPlayers           int
-	Owner                int
-	Variant              int // This corresponds to the numerial ID of the variant listed in the "variants.go" file
+	Name       string
+	NumPlayers int
+	Owner      int
+	// This corresponds to the numerial ID of the variant listed in the "variants.go" file
+	Variant              int
 	Timed                bool
 	TimeBase             int
 	TimePerTurn          int

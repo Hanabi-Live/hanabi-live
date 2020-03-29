@@ -39,7 +39,8 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 
 	// Check to see if there is a command handler for this command
 	if _, ok := commandMap[command]; !ok {
-		logger.Error("User \"" + s.Username() + "\" sent an invalid command of \"" + command + "\".")
+		logger.Error("User \"" + s.Username() + "\" sent an invalid command of " +
+			"\"" + command + "\".")
 		return
 	}
 

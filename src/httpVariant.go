@@ -61,8 +61,13 @@ func httpVariant(c *gin.Context) {
 	// Get the stats for this variant
 	var variantStats VariantStatsRow
 	if v, err := models.VariantStats.Get(variantID); err != nil {
-		logger.Error("Failed to get the variant stats for variant "+strconv.Itoa(variantID)+":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		logger.Error("Failed to get the variant stats for variant "+
+			strconv.Itoa(variantID)+":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		variantStats = v
@@ -91,23 +96,37 @@ func httpVariant(c *gin.Context) {
 	var stats Stats
 	if v, err := models.Games.GetVariantStats(variantID); err != nil {
 		logger.Error("Failed to get the stats for variant "+strconv.Itoa(variantID)+":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		stats = v
 	}
 	var timePlayed string
 	if v, err := getGametimeString(stats.TimePlayed); err != nil {
-		logger.Error("Failed to parse the playtime string for variant "+strconv.Itoa(variantID)+":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		logger.Error("Failed to parse the playtime string for variant "+
+			strconv.Itoa(variantID)+":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		timePlayed = v
 	}
 	var timePlayedSpeedrun string
 	if v, err := getGametimeString(stats.TimePlayedSpeedrun); err != nil {
-		logger.Error("Failed to parse the speedrun playtime string for variant "+strconv.Itoa(variantID)+":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		logger.Error("Failed to parse the speedrun playtime string for variant "+
+			strconv.Itoa(variantID)+":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		timePlayedSpeedrun = v
@@ -117,7 +136,11 @@ func httpVariant(c *gin.Context) {
 	var recentGames []*GameHistory
 	if v, err := models.Games.GetVariantHistory(variantID, 50); err != nil {
 		logger.Error("Failed to get recent games for variant "+strconv.Itoa(variantID)+":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		recentGames = v

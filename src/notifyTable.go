@@ -103,7 +103,8 @@ func (t *Table) NotifyPlayerChange() {
 // This is never called in replays
 func (t *Table) NotifyConnected() {
 	if !t.Running {
-		logger.Error("The \"NotifyConnected()\" function was called on a game that has not started yet.")
+		logger.Error("The \"NotifyConnected()\" function was called on a game that " +
+			"has not started yet.")
 		return
 	}
 

@@ -39,7 +39,8 @@ func commandPause(s *Session, d *CommandData) {
 	// Validate that they are in the game
 	i := t.GetPlayerIndexFromID(s.UserID())
 	if i == -1 {
-		s.Warning("You are not at table " + strconv.Itoa(tableID) + ", so you cannot pause / unpause.")
+		s.Warning("You are not at table " + strconv.Itoa(tableID) + ", " +
+			"so you cannot pause / unpause.")
 		return
 	}
 	p := g.Players[i]

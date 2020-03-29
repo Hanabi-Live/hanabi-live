@@ -30,9 +30,15 @@ func NewCard(g *Game, suitInt int, rank int) *Card {
 		Suit: suitInt,
 		Rank: rank,
 		// We can't set the order here because the deck will be shuffled later
-		Clues:         make([]*CardClue, 0),
-		PossibleSuits: append(variants[g.Options.Variant].Suits[:0:0], variants[g.Options.Variant].Suits...),
-		PossibleRanks: append(variants[g.Options.Variant].Ranks[:0:0], variants[g.Options.Variant].Ranks...),
+		Clues: make([]*CardClue, 0),
+		PossibleSuits: append(
+			variants[g.Options.Variant].Suits[:0:0],
+			variants[g.Options.Variant].Suits...,
+		),
+		PossibleRanks: append(
+			variants[g.Options.Variant].Ranks[:0:0],
+			variants[g.Options.Variant].Ranks...,
+		),
 		PossibleCards: make(map[string]int),
 	}
 

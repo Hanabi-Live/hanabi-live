@@ -48,7 +48,8 @@ func httpInit() {
 	}
 	sessionSecret := os.Getenv("SESSION_SECRET")
 	if len(sessionSecret) == 0 {
-		logger.Info("The \"SESSION_SECRET\" environment variable is blank; aborting HTTP initialization.")
+		logger.Info("The \"SESSION_SECRET\" environment variable is blank; " +
+			"aborting HTTP initialization.")
 		return
 	}
 	portString := os.Getenv("PORT")
@@ -140,10 +141,21 @@ func httpInit() {
 		// so we need to create a new fresh one for the HTTP handler
 		HTTPServeMux := http.NewServeMux()
 		letsEncryptPath := path.Join(projectPath, "letsencrypt")
-		HTTPServeMux.Handle("/.well-known/acme-challenge/", http.FileServer(http.FileSystem(http.Dir(letsEncryptPath))))
-		HTTPServeMux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			http.Redirect(w, req, "https://"+req.Host+req.URL.String(), http.StatusMovedPermanently)
-		}))
+		HTTPServeMux.Handle(
+			"/.well-known/acme-challenge/",
+			http.FileServer(http.FileSystem(http.Dir(letsEncryptPath))),
+		)
+		HTTPServeMux.Handle(
+			"/",
+			http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				http.Redirect(
+					w,
+					req,
+					"https://"+req.Host+req.URL.String(),
+					http.StatusMovedPermanently,
+				)
+			}),
+		)
 
 		// ListenAndServe is blocking, so start listening on a new goroutine
 		go func() {
@@ -196,7 +208,11 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 	// Ensure that the layout file exists
 	if _, err := os.Stat(layoutPath); os.IsNotExist(err) {
 		logger.Error("The layout template does not exist.")
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -216,7 +232,11 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 	tmpl, err := template.ParseFiles(templateName...)
 	if err != nil {
 		logger.Error("Failed to create the template:", err.Error())
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -234,6 +254,10 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 		} else {
 			logger.Error("Failed to execute the template: " + err.Error())
 		}
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 	}
 }

@@ -132,12 +132,13 @@ func (*UserSettings) Set(userID int, name string, value string) error {
 	}
 
 	var stmt *sql.Stmt
-	/*
-		#nosec - Disable the nosec linter warning
-		We cannot use "?" to put variables for column names, so we must build the query string dynamically
-		Validation has already occurred in the "commandSetting()" function, so this should be safe
-		https://www.reddit.com/r/golang/comments/5l5k4e/gosql_does_not_replace_placeholders_in_my_sql/
-	*/
+	// Disable the gosec linter for this next code block
+	// We cannot use "?" to put variables for column names,
+	// so we must build the query string dynamically
+	// Validation has already occurred in the "commandSetting()" function,
+	// so this should be safe
+	// https://www.reddit.com/r/golang/comments/5l5k4e/
+	// nolint: gosec
 	if v, err := db.Prepare(`
 		UPDATE user_settings
 		SET ` + name + ` = ?

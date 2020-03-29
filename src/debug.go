@@ -48,7 +48,7 @@ func debug() {
 		logger.Debug("\n")
 
 		// Print out all of the fields
-		// From: https://stackoverflow.com/questions/24512112/how-to-print-struct-variables-in-console
+		// https://stackoverflow.com/questions/24512112/how-to-print-struct-variables-in-console
 		logger.Debug("    All fields:")
 		fieldsToIgnore := []string{
 			"Players",

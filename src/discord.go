@@ -28,23 +28,27 @@ func discordInit() {
 	// (they were loaded from the .env file in main.go)
 	discordToken = os.Getenv("DISCORD_TOKEN")
 	if len(discordToken) == 0 {
-		logger.Info("The \"DISCORD_TOKEN\" environment variable is blank; aborting Discord initialization.")
+		logger.Info("The \"DISCORD_TOKEN\" environment variable is blank; " +
+			"aborting Discord initialization.")
 		return
 	}
 	discordListenChannelsString := os.Getenv("DISCORD_LISTEN_CHANNEL_IDS")
 	if len(discordListenChannelsString) == 0 {
-		logger.Info("The \"DISCORD_LISTEN_CHANNEL_IDS\" environment variable is blank; aborting Discord initialization.")
+		logger.Info("The \"DISCORD_LISTEN_CHANNEL_IDS\" environment variable is blank; " +
+			"aborting Discord initialization.")
 		return
 	}
 	discordListenChannels = strings.Split(discordListenChannelsString, ",")
 	discordLobbyChannel = os.Getenv("DISCORD_LOBBY_CHANNEL_ID")
 	if len(discordLobbyChannel) == 0 {
-		logger.Info("The \"DISCORD_LOBBY_CHANNEL_ID\" environment variable is blank; aborting Discord initialization.")
+		logger.Info("The \"DISCORD_LOBBY_CHANNEL_ID\" environment variable is blank; " +
+			"aborting Discord initialization.")
 		return
 	}
 	discordBotChannel = os.Getenv("DISCORD_BOT_CHANNEL_ID")
 	if len(discordBotChannel) == 0 {
-		logger.Info("The \"DISCORD_BOT_CHANNEL_ID\" environment variable is blank; aborting Discord initialization.")
+		logger.Info("The \"DISCORD_BOT_CHANNEL_ID\" environment variable is blank; " +
+			"aborting Discord initialization.")
 		return
 	}
 
@@ -149,7 +153,8 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Log the message
-	logger.Info("[D#" + channel.Name + "] <" + m.Author.Username + "#" + m.Author.Discriminator + "> " + m.Content)
+	logger.Info("[D#" + channel.Name + "] " +
+		"<" + m.Author.Username + "#" + m.Author.Discriminator + "> " + m.Content)
 
 	// Send everyone the notification
 	commandMutex.Lock()
@@ -288,7 +293,11 @@ func discordCheckCommand(m *discordgo.MessageCreate) bool {
 
 	if command == "link" || command == "game" || command == "replay" {
 		if len(args) == 0 {
-			discordSend(m.ChannelID, "", "The format of the /link command is: /link [game ID] [turn number]")
+			discordSend(
+				m.ChannelID,
+				"",
+				"The format of the /link command is: /link [game ID] [turn number]",
+			)
 			return true
 		}
 

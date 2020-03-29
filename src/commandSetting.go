@@ -51,7 +51,8 @@ func commandSetting(s *Session, d *CommandData) {
 		} else if d.Value == "false" {
 			d.Value = "0"
 		} else {
-			s.Warning("The setting of \"" + d.Name + "\" must have a value of \"true\" or \"false\".")
+			s.Warning("The setting of \"" + d.Name + "\" " +
+				"must have a value of \"true\" or \"false\".")
 			return
 		}
 	} else if fieldType == "int" {

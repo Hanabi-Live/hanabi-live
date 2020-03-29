@@ -59,7 +59,8 @@ func commandAction(s *Session, d *CommandData) {
 	// Validate that they are in the game
 	i := t.GetPlayerIndexFromID(s.UserID())
 	if i == -1 {
-		s.Warning("You are not playing at table " + strconv.Itoa(tableID) + ", so you cannot send an action.")
+		s.Warning("You are not playing at table " + strconv.Itoa(tableID) + ", " +
+			"so you cannot send an action.")
 		return
 	}
 
@@ -231,7 +232,8 @@ func commandAction(s *Session, d *CommandData) {
 			clueLimit *= 2
 		}
 		if g.ClueTokens == clueLimit {
-			s.Warning("You cannot discard while the team has " + strconv.Itoa(maxClueNum) + " clues.")
+			s.Warning("You cannot discard while the team has " + strconv.Itoa(maxClueNum) +
+				" clues.")
 			return
 		}
 
@@ -243,6 +245,7 @@ func commandAction(s *Session, d *CommandData) {
 		g.ClueTokens++
 		c := p.RemoveCard(d.Target, g)
 		doubleDiscard = p.DiscardCard(g, c)
+		cardCycle(g, p)
 		characterShuffle(g, p)
 		p.DrawCard(g)
 
@@ -276,7 +279,8 @@ func commandAction(s *Session, d *CommandData) {
 		})
 		t.NotifyAction()
 	} else if d.Type == actionTypeIdleLimitReached {
-		// This is a special action type sent by the server to itself when the game has been idle for too long
+		// This is a special action type sent by the server to itself when
+		// the game has been idle for too long
 		g.Strikes = 3
 		g.EndCondition = actionTypeIdleLimitReached
 		g.Actions = append(g.Actions, ActionText{
@@ -301,7 +305,8 @@ func commandAction(s *Session, d *CommandData) {
 	// "checkTimer" function)
 	if d.Type != actionTypeTimeLimitReached {
 		p.Time -= time.Since(g.DatetimeTurnBegin)
-		// (in non-timed games, "Time" will decrement into negative numbers to show how much time they are taking)
+		// (in non-timed games,
+		// "Time" will decrement into negative numbers to show how much time they are taking)
 
 		// In timed games, a player gains additional time after performing an action
 		if t.Options.Timed {
@@ -321,11 +326,12 @@ func commandAction(s *Session, d *CommandData) {
 
 	// Increment the turn
 	// (but don't increment it if we are on a characters that takes two turns in a row)
-	if !characterTakingSecondTurn(d, g, p) {
+	if !characterNeedsToTakeSecondTurn(d, g, p) {
 		g.Turn++
 		if g.TurnsInverted {
 			// In Golang, "%" will give the remainder and not the modulus,
-			// so we need to ensure that the result is not negative or we will get a "index out of range" error
+			// so we need to ensure that the result is not negative or we will get a
+			// "index out of range" error
 			g.ActivePlayer += len(g.Players)
 			g.ActivePlayer = (g.ActivePlayer - 1) % len(g.Players)
 		} else {
@@ -401,5 +407,43 @@ func commandAction(s *Session, d *CommandData) {
 				Value: "pause",
 			})
 		}
+	}
+}
+
+func cardCycle(g *Game, p *GamePlayer) {
+	if !g.Options.CardCycle {
+		return
+	}
+
+	// Find the chop card
+	chopIndex := p.GetChopIndex()
+
+	// We don't need to reorder anything if the chop is slot 1
+	// (the left-most card)
+	if chopIndex != len(p.Hand)-1 {
+		chopCard := p.Hand[chopIndex]
+
+		// Remove the chop card from their hand
+		p.Hand = append(p.Hand[:chopIndex], p.Hand[chopIndex+1:]...)
+
+		// Add it to the end (the left-most position)
+		p.Hand = append(p.Hand, chopCard)
+
+		// Make an array that represents the order of the player's hand
+		handOrder := make([]int, 0)
+		for _, c := range p.Hand {
+			handOrder = append(handOrder, c.Order)
+		}
+
+		// Notify everyone about the reordering
+		g.Actions = append(g.Actions, ActionReorder{
+			Type:      "reorder",
+			Target:    p.Index,
+			HandOrder: handOrder,
+		})
+
+		t := g.Table
+		t.NotifyAction()
+		logger.Info("Reordered the cards for player:", p.Name)
 	}
 }

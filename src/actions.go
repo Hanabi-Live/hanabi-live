@@ -38,7 +38,8 @@ type ActionClue struct {
 	Giver  int    `json:"giver"`
 	List   []int  `json:"list"` // The list of cards that the clue "touches"
 	Target int    `json:"target"`
-	Turn   int    `json:"turn"` // The client records the turn that each clue is given (for the clue log)
+	// The client records the turn that each clue is given (for the clue log)
+	Turn int `json:"turn"`
 }
 type ActionPlay struct {
 	Type  string `json:"type"`

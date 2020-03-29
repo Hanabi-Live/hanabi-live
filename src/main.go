@@ -47,7 +47,7 @@ func main() {
 	logger.Info("+-----------------------+")
 
 	// Get the project path
-	// https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file
+	// https://stackoverflow.com/questions/18537257/
 	if v, err := os.Executable(); err != nil {
 		logger.Fatal("Failed to get the path of the currently running executable:", err)
 	} else {

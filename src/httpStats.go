@@ -45,7 +45,11 @@ func httpStats(c *gin.Context) {
 	var globalStats Stats
 	if v, err := models.Games.GetGlobalStats(); err != nil {
 		logger.Error("Failed to get the global stats:", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		globalStats = v
@@ -53,7 +57,11 @@ func httpStats(c *gin.Context) {
 	var timePlayed string
 	if v, err := getGametimeString(globalStats.TimePlayed); err != nil {
 		logger.Error("Failed to parse the playtime string:", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		timePlayed = v
@@ -61,7 +69,11 @@ func httpStats(c *gin.Context) {
 	var timePlayedSpeedrun string
 	if v, err := getGametimeString(globalStats.TimePlayedSpeedrun); err != nil {
 		logger.Error("Failed to parse the speedrun playtime string:", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		timePlayedSpeedrun = v
@@ -71,7 +83,11 @@ func httpStats(c *gin.Context) {
 	var statsMap map[int]VariantStatsRow
 	if v, err := models.VariantStats.GetAll(variantsID); err != nil {
 		logger.Error("Failed to get the stats for all the variants:", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		statsMap = v

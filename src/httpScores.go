@@ -52,7 +52,11 @@ func httpScores(c *gin.Context) {
 	var user User
 	if exists, v, err := models.Users.Get(player); err != nil {
 		logger.Error("Failed to check to see if player \""+player+"\" exists:", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else if exists {
 		user = v
@@ -65,7 +69,11 @@ func httpScores(c *gin.Context) {
 	var profileStats Stats
 	if v, err := models.Games.GetProfileStats(user.ID); err != nil {
 		logger.Error("Failed to get the profile stats player "+"\""+user.Username+"\":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		profileStats = v
@@ -73,15 +81,24 @@ func httpScores(c *gin.Context) {
 	var timePlayed string
 	if v, err := getGametimeString(profileStats.TimePlayed); err != nil {
 		logger.Error("Failed to parse the playtime string for player \""+user.Username+"\":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		timePlayed = v
 	}
 	var timePlayedSpeedrun string
 	if v, err := getGametimeString(profileStats.TimePlayedSpeedrun); err != nil {
-		logger.Error("Failed to parse the speedrun playtime string for player \""+user.Username+"\":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		logger.Error("Failed to parse the speedrun playtime string for player "+
+			"\""+user.Username+"\":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		timePlayedSpeedrun = v
@@ -90,8 +107,13 @@ func httpScores(c *gin.Context) {
 	// Get all of the variant-specific stats for this player
 	var statsMap map[int]UserStatsRow
 	if v, err := models.UserStats.GetAll(user.ID); err != nil {
-		logger.Error("Failed to get all of the variant-specific stats for player \""+user.Username+"\":", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		logger.Error("Failed to get all of the variant-specific stats for player "+
+			"\""+user.Username+"\":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		statsMap = v

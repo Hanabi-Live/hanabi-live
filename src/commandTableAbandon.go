@@ -28,7 +28,8 @@ func commandTableAbandon(s *Session, d *CommandData) {
 	// Validate that they are in the game
 	i := t.GetPlayerIndexFromID(s.UserID())
 	if i == -1 {
-		s.Warning("You are not playing at table " + strconv.Itoa(tableID) + ", so you cannot abandon it.")
+		s.Warning("You are not playing at table " + strconv.Itoa(tableID) + ", " +
+			"so you cannot abandon it.")
 		return
 	}
 

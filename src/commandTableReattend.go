@@ -45,7 +45,8 @@ func commandTableReattend(s *Session, d *CommandData) {
 		// Make the client switch screens to show the game UI
 		s.NotifyTableStart()
 	} else {
-		// Set their "present" variable back to true, which will remove the "AWAY" if the game has not started yet
+		// Set their "present" variable back to true,
+		// which will remove the "AWAY" if the game has not started yet
 		// (if the game is running, this is handled in the "commandReady()" function)
 		p := t.Players[i]
 		p.Present = true
