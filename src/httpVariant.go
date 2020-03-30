@@ -105,31 +105,39 @@ func httpVariant(c *gin.Context) {
 	} else {
 		stats = v
 	}
-	var timePlayed string
-	if v, err := getGametimeString(stats.TimePlayed); err != nil {
-		logger.Error("Failed to parse the playtime string for variant "+
-			strconv.Itoa(variantID)+":", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	} else {
-		timePlayed = v
+
+	// It will only be valid if someone has played a non-speedrun game in this variant
+	timePlayed := ""
+	if stats.TimePlayed.Valid {
+		if v, err := secondsToDurationString(stats.TimePlayed.String); err != nil {
+			logger.Error("Failed to parse the duration of "+
+				"\""+stats.TimePlayed.String+"s\" for the variant stats:", err)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		} else {
+			timePlayed = v
+		}
 	}
-	var timePlayedSpeedrun string
-	if v, err := getGametimeString(stats.TimePlayedSpeedrun); err != nil {
-		logger.Error("Failed to parse the speedrun playtime string for variant "+
-			strconv.Itoa(variantID)+":", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	} else {
-		timePlayedSpeedrun = v
+
+	// It will only be valid if someone has played a speedrun game in this variant
+	timePlayedSpeedrun := ""
+	if stats.TimePlayedSpeedrun.Valid {
+		if v, err := secondsToDurationString(stats.TimePlayedSpeedrun.String); err != nil {
+			logger.Error("Failed to parse the duration of "+
+				"\""+stats.TimePlayedSpeedrun.String+"s\" for the variant stats:", err)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		} else {
+			timePlayedSpeedrun = v
+		}
 	}
 
 	// Get recent games played on this variant

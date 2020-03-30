@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
+	"time"
 )
 
 // /discord
@@ -59,7 +61,28 @@ func chatRandom(s *Session, d *CommandData, t *Table) {
 	chatServerSend(msg, d.Room)
 }
 
+// /uptime
+func chatUptime(s *Session, d *CommandData, t *Table) {
+	msg := "The server came online at: " + getCurrentTimestamp()
+	chatServerSend(msg, d.Room)
+
+	elapsedTime := time.Since(datetimeStarted)
+	elapsedSeconds := elapsedTime.Seconds()
+	elapsedSecondsString := fmt.Sprintf("%f", elapsedSeconds)
+	var durationString string
+	if v, err := secondsToDurationString(elapsedSecondsString); err != nil {
+		chatServerSend("Something went wrong. Please contact an administrator.", d.Room)
+		return
+	} else {
+		durationString = v
+	}
+	msg = "Uptime: " + durationString
+	chatServerSend(msg, d.Room)
+}
+
 // /debug
+// Even though "/debug" is an admin-only command,
+// we wait to be able to use it both in the lobby and in-game
 func chatDebug(s *Session, d *CommandData, t *Table) {
 	if !isAdmin(s, d) {
 		return

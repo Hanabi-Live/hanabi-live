@@ -68,7 +68,7 @@ func httpScores(c *gin.Context) {
 	// Get basic stats for this player
 	var profileStats Stats
 	if v, err := models.Games.GetProfileStats(user.ID); err != nil {
-		logger.Error("Failed to get the profile stats player "+"\""+user.Username+"\":", err)
+		logger.Error("Failed to get the profile stats for player \""+user.Username+"\":", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -78,30 +78,41 @@ func httpScores(c *gin.Context) {
 	} else {
 		profileStats = v
 	}
-	var timePlayed string
-	if v, err := getGametimeString(profileStats.TimePlayed); err != nil {
-		logger.Error("Failed to parse the playtime string for player \""+user.Username+"\":", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	} else {
-		timePlayed = v
+
+	// It will only be valid if they have played a non-speedrun game
+	timePlayed := ""
+	if profileStats.TimePlayed.Valid {
+		if v, err := secondsToDurationString(profileStats.TimePlayed.String); err != nil {
+			logger.Error("Failed to parse the duration of "+
+				"\""+profileStats.TimePlayed.String+"s\" for player "+
+				"\""+user.Username+"\":", err)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		} else {
+			timePlayed = v
+		}
 	}
-	var timePlayedSpeedrun string
-	if v, err := getGametimeString(profileStats.TimePlayedSpeedrun); err != nil {
-		logger.Error("Failed to parse the speedrun playtime string for player "+
-			"\""+user.Username+"\":", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	} else {
-		timePlayedSpeedrun = v
+
+	// It will only be valid if they have played a speedrun game
+	timePlayedSpeedrun := ""
+	if profileStats.TimePlayedSpeedrun.Valid {
+		if v, err := secondsToDurationString(profileStats.TimePlayedSpeedrun.String); err != nil {
+			logger.Error("Failed to parse the duration of "+
+				"\""+profileStats.TimePlayedSpeedrun.String+"s\" for player "+
+				"\""+user.Username+"\":", err)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		} else {
+			timePlayedSpeedrun = v
+		}
 	}
 
 	// Get all of the variant-specific stats for this player

@@ -45,6 +45,11 @@ func httpHistory(c *gin.Context) {
 	var history []*GameHistory
 	if v, err := models.Games.GetUserHistory(user.ID, 0, 0, true); err != nil {
 		logger.Error("Failed to get the history for player \""+user.Username+"\":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		history = v

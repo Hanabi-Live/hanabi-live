@@ -54,29 +54,39 @@ func httpStats(c *gin.Context) {
 	} else {
 		globalStats = v
 	}
-	var timePlayed string
-	if v, err := getGametimeString(globalStats.TimePlayed); err != nil {
-		logger.Error("Failed to parse the playtime string:", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	} else {
-		timePlayed = v
+
+	// It will only be valid if they have played a non-speedrun game
+	timePlayed := ""
+	if globalStats.TimePlayed.Valid {
+		if v, err := secondsToDurationString(globalStats.TimePlayed.String); err != nil {
+			logger.Error("Failed to parse the duration of "+
+				"\""+globalStats.TimePlayed.String+"s\" for the global stats:", err)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		} else {
+			timePlayed = v
+		}
 	}
-	var timePlayedSpeedrun string
-	if v, err := getGametimeString(globalStats.TimePlayedSpeedrun); err != nil {
-		logger.Error("Failed to parse the speedrun playtime string:", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	} else {
-		timePlayedSpeedrun = v
+
+	// It will only be valid if they have played a speedrun game
+	timePlayedSpeedrun := ""
+	if globalStats.TimePlayedSpeedrun.Valid {
+		if v, err := secondsToDurationString(globalStats.TimePlayedSpeedrun.String); err != nil {
+			logger.Error("Failed to parse the duration of "+
+				"\""+globalStats.TimePlayedSpeedrun.String+"s\" for the global stats:", err)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		} else {
+			timePlayedSpeedrun = v
+		}
 	}
 
 	// Get the stats for all variants

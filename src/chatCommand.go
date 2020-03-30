@@ -16,6 +16,7 @@ func chatCommandInit() {
 	chatCommandMap["?"] = chatHelp
 	chatCommandMap["discord"] = chatDiscord
 	chatCommandMap["random"] = chatRandom
+	chatCommandMap["uptime"] = chatUptime
 
 	// Table-only commands
 	chatCommandMap["s"] = chatS

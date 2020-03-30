@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -68,37 +67,18 @@ func max(x, y int) int {
 	return y
 }
 
-func stringInSlice(a string, slice []string) bool {
-	for _, b := range slice {
-		if b == a {
-			return true
-		}
-	}
-	return false
-}
-
-func toSnakeCase(str string) string {
-	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
-	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
-	return strings.ToLower(snake)
-}
-
-func getGametimeString(timeString sql.NullString) (string, error) {
-	if !timeString.Valid {
-		return "", nil
-	}
-
+func secondsToDurationString(str string) (string, error) {
 	// The s is for seconds
-	var playtime time.Duration
-	if v, err := time.ParseDuration(timeString.String + "s"); err != nil {
+	var duration time.Duration
+	if v, err := time.ParseDuration(str + "s"); err != nil {
 		return "", err
 	} else {
-		playtime = v
+		duration = v
 	}
 
-	// Display only seconds for users that have played less than a minute
-	if playtime.Minutes() < 1 {
-		seconds := math.Round(playtime.Seconds())
+	// Display only seconds if the duration is less than a minute
+	if duration.Minutes() < 1 {
+		seconds := math.Round(duration.Seconds())
 		msg := fmt.Sprintf("%.0f second", seconds)
 		if int(seconds) != 1 {
 			msg += "s"
@@ -106,9 +86,9 @@ func getGametimeString(timeString sql.NullString) (string, error) {
 		return msg, nil
 	}
 
-	// Display only minutes for users that played less than an hour
-	if playtime.Hours() < 1 {
-		minutes := math.Round(playtime.Minutes())
+	// Display only minutes if the duration is less than an hour
+	if duration.Hours() < 1 {
+		minutes := math.Round(duration.Minutes())
 		msg := fmt.Sprintf("%.0f minute", minutes)
 		if int(minutes) != 1 {
 			msg += "s"
@@ -117,8 +97,8 @@ func getGametimeString(timeString sql.NullString) (string, error) {
 	}
 
 	// Convert the duration into days, hours, and minutes
-	hours := int(playtime.Hours())
-	minutes := int(playtime.Minutes())
+	hours := int(duration.Hours())
+	minutes := int(duration.Minutes())
 	minutes -= hours * 60
 	days := 0
 	for hours > 24 {
@@ -141,7 +121,7 @@ func getGametimeString(timeString sql.NullString) (string, error) {
 		minutesStr += "s"
 	}
 
-	// Display days only for users that played over a day
+	// Display days only if the duration is over a day
 	var msg string
 	if days >= 1 {
 		msg = "%d %s, %d %s, and %d %s"
@@ -152,4 +132,19 @@ func getGametimeString(timeString sql.NullString) (string, error) {
 	}
 
 	return msg, nil
+}
+
+func stringInSlice(a string, slice []string) bool {
+	for _, b := range slice {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
+func toSnakeCase(str string) string {
+	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
+	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
+	return strings.ToLower(snake)
 }

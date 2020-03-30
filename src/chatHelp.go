@@ -8,8 +8,9 @@ func chatHelp(s *Session, d *CommandData, t *Table) {
 		msg += "Command               Description\n"
 		msg += "-----------------------------------------------------------------------------\n"
 		msg += "/help                 Display this message\n"
-		msg += "/discord              Get the link for the Discord server\n"
+		msg += "/discord              Get the link for the Hanabi Discord server\n"
 		msg += "/random [min] [max]   Get a random number\n"
+		msg += "/uptime               Get how long the server has been online\n"
 		msg += "```\n"
 
 		msg += "Game commands:\n"

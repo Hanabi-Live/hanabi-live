@@ -8,6 +8,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/joho/godotenv"
 	logging "github.com/op/go-logging"
@@ -18,15 +19,16 @@ var (
 	dataPath    string
 	versionPath string
 
-	logger *logging.Logger
-	models *Models
-	domain string
-	tables = make(map[int]*Table) // Defined in "table.go"
+	logger          *logging.Logger
+	models          *Models
+	domain          string
+	datetimeStarted time.Time
+	tables          = make(map[int]*Table) // Defined in "table.go"
 	// For storing all of the random words (used for random table names)
 	wordList = make([]string, 0)
 	// For storing the players who are waiting for the next game to start
 	waitingList = make([]*Waiter, 0)
-	// If true, the server will restart after all games are finished
+	// If true, the server will shutdown or restart after all games are finished
 	shuttingDown = false
 )
 
@@ -147,6 +149,9 @@ func main() {
 
 	// Load the current speedrun records
 	speedrunInit()
+
+	// Record the time that the server started
+	datetimeStarted = time.Now()
 
 	// Initialize an HTTP router that will only listen locally for maintenance-related commands
 	// (the "ListenAndServe" functions located inside here are blocking)
