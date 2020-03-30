@@ -431,7 +431,7 @@ const drawBottomLeftButtons = () => {
         x: 0.01,
         y: 0.8,
         w: 0.07,
-        h: 0.0563, // 0.06
+        h: 0.0563,
     };
 
     // The toggle in-game replay button
@@ -1379,6 +1379,11 @@ const drawClueArea = () => {
         width: clueAreaValues.w! * winW,
     });
 
+    (globals.elements.clueArea as any).moveLeft = () => {
+        const x = (playAreaValues.x - 0.055) * winW;
+        globals.elements.clueArea!.x(x);
+    };
+
     // Player buttons
     const numPlayers = globals.playerNames.length;
     const playerButtonW = 0.08;
@@ -1674,6 +1679,18 @@ const drawHypotheticalArea = () => {
         text: 'Hypothetical',
     });
     globals.elements.hypoCircle.add(text);
+
+    // The "Back 1 Turn" button
+    globals.elements.hypoBackButton = new Button({
+        x: (clueAreaValues.x + 0.32) * winW,
+        y: (clueAreaValues.y + 0.08) * winH,
+        width: 0.07 * winW,
+        height: 0.0563 * winH,
+        text: 'Back 1',
+        visible: false,
+    });
+    globals.elements.hypoBackButton.on('click tap', hypothetical.sendBackOneTurn);
+    globals.layers.UI.add(globals.elements.hypoBackButton as any);
 };
 
 const drawPauseArea = () => {

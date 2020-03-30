@@ -40,6 +40,9 @@ export const start = () => {
 // Transition the screen to show all of the hypothetical buttons and elements
 export const show = () => {
     globals.elements.replayArea!.visible(false);
+
+    // Modify the clue UI
+    (globals.elements.clueArea as any).moveLeft();
     if (globals.playerNames.length !== 2) {
         globals.elements.clueTargetButtonGroup!.hide();
         globals.elements.clueTargetButtonGroup2!.show();
@@ -48,6 +51,7 @@ export const show = () => {
     if (globals.amSharedReplayLeader) {
         globals.elements.restartButton!.visible(false);
         globals.elements.endHypotheticalButton!.visible(true);
+        globals.elements.hypoBackButton!.visible(globals.hypoActions.length > 0);
     } else {
         globals.elements.hypoCircle!.visible(true);
     }
@@ -56,7 +60,8 @@ export const show = () => {
 };
 
 export const playThroughPastActions = () => {
-    // If we are joining a hypothetical that is already in progress,
+    // If we are joining a hypothetical that is already in progress
+    // or we are going backwards in an existing hypothetical,
     // play all of the existing hypothetical actions that have taken place so far, if any
     if (globals.hypoActions.length > 0) {
         // This is a mini-version of what happens in the "replay.goto()" function
@@ -92,6 +97,7 @@ export const end = () => {
 
         globals.elements.restartButton!.show();
         globals.elements.endHypotheticalButton!.hide();
+        globals.elements.hypoBackButton!.hide();
 
         // Furthermore, disable dragging and get rid of the clue UI
         disableDragOnAllHands();
@@ -130,12 +136,11 @@ export const beginTurn = () => {
         }
     }
 
-    // Bring up the clue UI
-    action.handle();
-
-    disableDragOnAllHands();
+    action.handle(); // Bring up the clue UI
+    globals.elements.hypoBackButton!.visible(globals.hypoActions.length > 0);
 
     // Set the current player's hand to be draggable
+    disableDragOnAllHands();
     const hand = globals.elements.playerHands[globals.currentPlayerIndex];
     for (const layoutChild of hand.children.toArray() as Array<LayoutChild>) {
         layoutChild.checkSetDraggable();
@@ -291,22 +296,27 @@ export const backOneTurn = () => {
         return;
     }
 
-    // Starting from the end,
-    // remove hypothetical actions until we get to the 2nd to last "turn" action
+    // Starting from the end, remove hypothetical actions until we get to
+    // the 2nd to last "turn" action or get to the very beginning of the hypothetical
     while (true) {
         globals.hypoActions.pop();
+        if (globals.hypoActions.length === 0) {
+            break;
+        }
         const lastNotify = globals.hypoActions[globals.hypoActions.length - 1];
         if (lastNotify.type === 'turn') {
             break;
         }
     }
+    globals.elements.hypoBackButton!.visible((
+        globals.amSharedReplayLeader
+        && globals.hypoActions.length > 0
+    ));
 
     // Reset to the turn where the hypothetical started
     globals.replayTurn = globals.replayMax;
     replay.goto(globals.sharedReplayTurn, true);
 
     // Replay all of the hypothetical actions
-    for (const actionMessage of globals.hypoActions) {
-        notify(actionMessage);
-    }
+    playThroughPastActions();
 };

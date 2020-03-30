@@ -94,6 +94,7 @@ export default class Elements {
     useSharedTurnsButton: Button | null = null;
     enterHypoButton: Button | null = null;
     hypoCircle: Konva.Group | null = null;
+    hypoBackButton: Button | null = null;
 
     // The pause screen
     pauseArea: Konva.Group | null = null;
