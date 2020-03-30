@@ -448,8 +448,8 @@ export default class HanabiCard extends Konva.Group {
             // Some suits are not touched by any rank clues
             // So we may be able to remove a suit pip or a card possibility
             if (positive) {
-                // Checking for "Pink-" also checks for "Light-Pink-"
                 if (
+                    // Checking for "Pink-" also checks for "Light-Pink-"
                     !(globals.variant.name.includes('Pink-Ones') && this.possibleRanks.includes(1))
                     && !(globals.variant.name.includes('Omni-Ones') && this.possibleRanks.includes(1))
                     && !(globals.variant.name.includes('Pink-Fives') && this.possibleRanks.includes(5))

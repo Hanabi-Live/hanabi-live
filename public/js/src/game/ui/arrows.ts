@@ -94,8 +94,7 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
         // Clue arrows have a circle that shows the type of clue given
         const card: HanabiCard = element;
         if (
-            globals.variant.name.startsWith('Cow & Pig')
-            || globals.variant.name.startsWith('Duck')
+            globals.variant.name.startsWith('Duck')
             || (
                 globals.characterAssignments[giver!] === 'Quacker'
                 && card.holder === globals.playerUs
@@ -108,13 +107,23 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
             arrow.circle.show();
             if (clue.type === CLUE_TYPE.RANK) {
                 arrow.circle.fill('black');
-                arrow.text.text(clue.value.toString());
+                let text = clue.value.toString();
+                if (globals.variant.name.startsWith('Cow & Pig')) {
+                    text = '#';
+                }
+                arrow.text.text(text);
                 arrow.text.show();
             } else if (clue.type === CLUE_TYPE.COLOR) {
                 if (typeof clue.value === 'number') {
                     throw new Error('The clue value was a number for a color clue.');
                 }
-                arrow.circle.fill(clue.value.fill);
+                if (globals.variant.name.startsWith('Cow & Pig')) {
+                    arrow.circle.fill('white');
+                    arrow.circle.stroke('black');
+                } else {
+                    arrow.circle.fill(clue.value.fill);
+                    arrow.circle.stroke('white');
+                }
                 arrow.text.hide();
             }
         }
