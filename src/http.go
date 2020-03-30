@@ -9,6 +9,7 @@ import (
 	"text/template"
 	"time"
 
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -74,6 +75,11 @@ func httpInit() {
 		}
 	}
 	GATrackingID := os.Getenv("GA_TRACKING_ID")
+
+	// Attach the Sentry middleware
+	if usingSentry {
+		httpRouter.Use(sentrygin.New(sentrygin.Options{}))
+	}
 
 	// Create a session store
 	sessionStore = cookie.NewStore([]byte(sessionSecret))

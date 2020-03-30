@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/joho/godotenv"
-	logging "github.com/op/go-logging"
 )
 
 var (
@@ -19,7 +19,8 @@ var (
 	dataPath    string
 	versionPath string
 
-	logger          *logging.Logger
+	logger          *Logger
+	usingSentry     bool
 	models          *Models
 	domain          string
 	datetimeStarted time.Time
@@ -33,15 +34,8 @@ var (
 )
 
 func main() {
-	// Initialize logging
-	// http://godoc.org/github.com/op/go-logging#Formatter
-	logger = logging.MustGetLogger("hanabi-live")
-	loggingBackend := logging.NewLogBackend(os.Stdout, "", 0)
-	logFormat := logging.MustStringFormatter( // https://golang.org/pkg/time/#Time.Format
-		`%{time:Mon Jan 02 15:04:05 MST 2006} - %{level:.4s} - %{shortfile} - %{message}`,
-	)
-	loggingBackendFormatted := logging.NewBackendFormatter(loggingBackend, logFormat)
-	logging.SetBackend(loggingBackendFormatted)
+	// Initialize logging (in "logger.go")
+	logger = NewLogger()
 
 	// Welcome message
 	logger.Info("+-----------------------+")
@@ -93,7 +87,15 @@ func main() {
 		idleGameTimeout = idleGameTimeoutDev
 	}
 
-	// Initialize the database model
+	// Initialize Sentry (in "sentry.go")
+	usingSentry = sentryInit()
+	if usingSentry {
+		// Flush buffered events before the program terminates
+		// https://github.com/getsentry/sentry-go
+		defer sentry.Flush(2 * time.Second)
+	}
+
+	// Initialize the database model (in "models.go")
 	if v, err := modelsInit(); err != nil {
 		logger.Fatal("Failed to open the database:", err)
 		return
@@ -117,12 +119,12 @@ func main() {
 		return
 	}
 
-	// Initialize the variants
+	// Initialize the variants (in "variants.go")
 	colorsInit()
 	suitsInit()
 	variantsInit()
 
-	// Initialize "Detrimental Character Assignments"
+	// Initialize "Detrimental Character Assignments" (in "characters.go")
 	characterInit()
 
 	// Initialize the word list
@@ -138,22 +140,23 @@ func main() {
 	// Start the Discord bot (in "discord.go")
 	discordInit()
 
-	// Get the people on the waiting list from the database
+	// Get the people on the waiting list from the database (in "waitingList.go")
 	waitingListInit()
 
 	// Initialize a WebSocket router using the Melody framework (in "websocket.go")
 	websocketInit()
 
-	// Initialize chat commands
+	// Initialize chat commands (in "chatCommand.go")
 	chatCommandInit()
 
-	// Load the current speedrun records
+	// Load the current speedrun records (in "speedrun.go")
 	speedrunInit()
 
 	// Record the time that the server started
 	datetimeStarted = time.Now()
 
 	// Initialize an HTTP router that will only listen locally for maintenance-related commands
+	// (in "httpLocalhost.go")
 	// (the "ListenAndServe" functions located inside here are blocking)
 	go httpLocalhostInit()
 
