@@ -9,8 +9,9 @@ type CommandData struct {
 	Value string `json:"value"`
 
 	// chat
-	Msg  string `json:"msg"`
-	Room string `json:"room"`
+	Msg       string `json:"msg"`
+	Room      string `json:"room"`
+	Recipient string `json:"recipient"`
 
 	// tableCreate
 	Name                 string `json:"name"`
@@ -101,6 +102,7 @@ func commandInit() {
 	// Other lobby commands
 	commandMap["setting"] = commandSetting
 	commandMap["chat"] = commandChat
+	commandMap["chatPM"] = commandChatPM
 	commandMap["chatRead"] = commandChatRead
 	commandMap["chatTyping"] = commandChatTyping
 	commandMap["getName"] = commandGetName

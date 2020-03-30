@@ -1,5 +1,6 @@
 /*
     Users can chat in the lobby, in the pregame, and in a game
+    Logic for the game chat box is located separately in "game/chat.ts"
 */
 
 // Imports
@@ -9,6 +10,7 @@ import { FADE_TIME } from './constants';
 import emojis from './data/emojis.json';
 import emoteCategories from './data/emotes.json';
 import globals from './globals';
+import * as modals from './modals';
 
 // Variables
 const emojiMap = new Map();
@@ -41,8 +43,6 @@ export const init = () => {
 };
 
 const input = function input(this: HTMLElement, event: JQuery.Event) {
-    // Check for emoji substitution
-    // e.g. :100: --> 💯
     const element = $(this);
     if (!element) {
         throw new Error('Failed to get the element for the input function.');
@@ -51,6 +51,15 @@ const input = function input(this: HTMLElement, event: JQuery.Event) {
     if (typeof text !== 'string') {
         throw new Error('The value of the element in the input function is not a string.');
     }
+
+    // Check for a PM reply
+    if (text === '/r ' && globals.lastPM !== '') {
+        element.val(`/pm ${globals.lastPM} `);
+        return;
+    }
+
+    // Check for emoji substitution
+    // e.g. :100: --> 💯
     const matches = text.match(/:[^\s]+:/g); // "[^\s]" is a non-whitespace character
     if (matches) {
         for (const match of matches) {
@@ -84,6 +93,9 @@ const keypress = (room: string) => function keypressFunction(
     if (!msg) {
         return;
     }
+    if (typeof msg !== 'string') {
+        throw new Error('The value of the element in the keypress function is not a string.');
+    }
 
     // Clear the chat box
     element.val('');
@@ -94,6 +106,55 @@ const keypress = (room: string) => function keypressFunction(
         room = `table${globals.tableID}`;
     }
 
+    // Check for chat commands
+    const args = msg.split(' ');
+    if (
+        msg.startsWith('/pm')
+        || msg.startsWith('/w')
+        || msg.startsWith('/whisper')
+        || msg.startsWith('/msg')
+    ) {
+        // Validate that the format of the command is correct
+        if (args.length < 3) {
+            modals.warningShow('The format of a private message is: <code>/w Alice hello</code>');
+            return;
+        }
+
+        // Validate that they are not sending a private message to themselves
+        let recipient = args[1];
+        if (recipient.toLowerCase() === globals.username.toLowerCase()) {
+            modals.warningShow('You cannot send a private message to yourself.');
+            return;
+        }
+
+        // Validate that the receipient is online
+        let isOnline = false;
+        for (const user of globals.userMap.values()) {
+            if (user.name.toLowerCase() === recipient.toLowerCase()) {
+                isOnline = true;
+
+                // Overwrite the recipient in case the user capitalized the username wrong
+                recipient = user.name;
+
+                break;
+            }
+        }
+        if (!isOnline) {
+            modals.warningShow(`User "${recipient}" is not currently online.`);
+            return;
+        }
+
+        args.shift(); // Remove the "/pm"
+        args.shift(); // Remove the recipient
+        globals.conn.send('chatPM', {
+            msg: args.join(' '),
+            recipient,
+            room,
+        });
+        return;
+    }
+
+    // This is not a command, so send a the chat message to the server
     globals.conn.send('chat', {
         msg,
         room,
@@ -101,10 +162,22 @@ const keypress = (room: string) => function keypressFunction(
 };
 
 export const add = (data: ChatMessage, fast: boolean) => {
+    // Find out which chat box we should add the new chat message to
     let chat;
-    if (data.room === 'lobby') {
+    if (data.recipient === globals.username) {
+        // If this is a PM that we are recieving,
+        // we want it to always go to either the lobby chat or the game chat
+        if (globals.currentScreen === 'game') {
+            chat = $('#game-chat-text');
+        } else {
+            chat = $('#lobby-chat-text');
+        }
+
+        // Also, record who our last PM is from
+        globals.lastPM = data.who;
+    } else if (data.room === 'lobby') {
         chat = $('#lobby-chat-text');
-    } else if ($('#lobby-chat-pregame-text').is(':visible')) {
+    } else if (globals.currentScreen === 'pregame') {
         chat = $('#lobby-chat-pregame-text');
     } else {
         chat = $('#game-chat-text');
@@ -132,8 +205,16 @@ export const add = (data: ChatMessage, fast: boolean) => {
         },
     ).format(new Date(data.datetime));
 
-    let line = `<span id="chat-line-${chatLineNum}" class="${fast ? '' : 'hidden'}">[${datetime}]&nbsp; `;
-    if (data.server) {
+    let line = `<span id="chat-line-${chatLineNum}" class="${fast ? '' : 'hidden'}">`;
+    line += `[${datetime}]&nbsp; `;
+    if (data.recipient !== '') {
+        if (data.recipient === globals.username) {
+            line += `<span class="red">[PM from <strong>${data.who}</strong>]</span>&nbsp; `;
+        } else {
+            line += `<span class="red">[PM to <strong>${data.recipient}</strong>]</span>&nbsp; `;
+        }
+    }
+    if (data.server || data.recipient) {
         line += data.msg;
     } else if (data.who) {
         line += `&lt;<strong>${data.who}</strong>&gt;&nbsp; `;

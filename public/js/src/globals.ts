@@ -32,6 +32,7 @@ export class Globals {
     showMoreHistoryClicked: boolean = false;
     totalGames: number = 0; // Set upon login
     randomName: string = ''; // Set upon login
+    lastPM: string = '';
 
     game: Game | null = null; // Equal to the data from the "game" command
 

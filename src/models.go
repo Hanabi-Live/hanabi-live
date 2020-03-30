@@ -17,6 +17,7 @@ var (
 type Models struct {
 	BannedIPs
 	ChatLog
+	ChatLogPM
 	DiscordMetadata
 	DiscordWaiters
 	GameActions

@@ -157,7 +157,12 @@ func websocketConnect(ms *melody.Session) {
 	msg := "Find teammates and discuss strategy in the "
 	msg += "<a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">"
 	msg += "Hanabi Discord chat</a>."
-	s.NotifyChat(msg, "", false, true, time.Now(), "lobby")
+	s.Emit("chat", &ChatMessage{
+		Msg:      msg,
+		Server:   true,
+		Datetime: time.Now(),
+		Room:     "lobby",
+	})
 
 	// Send the user's game history
 	// (only the last 10 games to prevent wasted bandwidth)

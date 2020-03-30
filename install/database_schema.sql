@@ -166,13 +166,27 @@ CREATE TABLE chat_log (
     id             INT             NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* PRIMARY KEY automatically creates a UNIQUE constraint */
     user_id        INT             NOT NULL, /* 0 is a Discord message */
-    discord_name   NVARCHAR(150)   NULL, /* only used if it is a Discord message */
-    room           NVARCHAR(50)    NOT NULL, /* either "lobby" or "table####" */
+    discord_name   NVARCHAR(150)   NULL,     /* only used if it is a Discord message */
     message        NVARCHAR(1000)  NOT NULL,
+    room           NVARCHAR(50)    NOT NULL, /* either "lobby" or "table####" */
     datetime_sent  TIMESTAMP       NOT NULL  DEFAULT NOW()
 );
 CREATE INDEX chat_log_index_user_id ON chat_log (user_id);
+CREATE INDEX chat_log_index_room ON chat_log (room);
 CREATE INDEX chat_log_index_datetime_sent ON chat_log (datetime_sent);
+
+DROP TABLE IF EXISTS chat_log_pm;
+CREATE TABLE chat_log_pm (
+    id             INT             NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    /* PRIMARY KEY automatically creates a UNIQUE constraint */
+    user_id        INT             NOT NULL,
+    message        NVARCHAR(1000)  NOT NULL,
+    recipient_id   INT             NOT NULL,
+    datetime_sent  TIMESTAMP       NOT NULL  DEFAULT NOW()
+);
+CREATE INDEX chat_log_pm_index_user_id ON chat_log_pm (user_id);
+CREATE INDEX chat_log_pm_index_recipient_id ON chat_log_pm (recipient_id);
+CREATE INDEX chat_log_index_datetime_sent ON chat_log_pm (datetime_sent);
 
 DROP TABLE IF EXISTS banned_ips;
 CREATE TABLE banned_ips (

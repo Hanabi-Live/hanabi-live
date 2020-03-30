@@ -5,4 +5,5 @@ export default interface ChatMessage {
     server: boolean,
     datetime: number,
     room: string,
+    recipient: string,
 }

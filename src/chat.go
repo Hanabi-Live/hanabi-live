@@ -24,12 +24,13 @@ var (
 */
 
 type ChatMessage struct {
-	Msg      string    `json:"msg"`
-	Who      string    `json:"who"`
-	Discord  bool      `json:"discord"`
-	Server   bool      `json:"server"`
-	Datetime time.Time `json:"datetime"`
-	Room     string    `json:"room"`
+	Msg       string    `json:"msg"`
+	Who       string    `json:"who"`
+	Discord   bool      `json:"discord"`
+	Server    bool      `json:"server"`
+	Datetime  time.Time `json:"datetime"`
+	Room      string    `json:"room"`
+	Recipient string    `json:"recipient"`
 }
 
 func isAdmin(s *Session, d *CommandData) bool {
@@ -46,24 +47,6 @@ func isAdmin(s *Session, d *CommandData) bool {
 	}
 
 	return true
-}
-
-func chatMakeMessage(
-	msg string,
-	who string,
-	discord bool,
-	server bool,
-	datetime time.Time,
-	room string,
-) *ChatMessage {
-	return &ChatMessage{
-		Msg:      msg,
-		Who:      who,
-		Discord:  discord,
-		Server:   server,
-		Datetime: datetime,
-		Room:     room,
-	}
 }
 
 // chatServerSend is a helper function to send a message from the server
@@ -167,7 +150,14 @@ func chatSendPastFromDatabase(s *Session, room string, count int) {
 			rawMsg.Name = rawMsg.DiscordName.String
 		}
 		rawMsg.Message = chatFillMentions(rawMsg.Message)
-		msg := chatMakeMessage(rawMsg.Message, rawMsg.Name, discord, server, rawMsg.Datetime, room)
+		msg := &ChatMessage{
+			Msg:      rawMsg.Message,
+			Who:      rawMsg.Name,
+			Discord:  discord,
+			Server:   server,
+			Datetime: rawMsg.Datetime,
+			Room:     room,
+		}
 		msgs = append(msgs, msg)
 	}
 	s.Emit("chatList", &ChatListMessage{
@@ -185,7 +175,14 @@ func chatSendPastFromTable(s *Session, t *Table) {
 		// We have to convert the *GameChatMessage to a *ChatMessage
 		gcm := t.Chat[i]
 		room := "table" + strconv.Itoa(t.ID)
-		cm := chatMakeMessage(gcm.Msg, gcm.Username, false, gcm.Server, gcm.Datetime, room)
+		cm := &ChatMessage{
+			Msg:      gcm.Msg,
+			Who:      gcm.Username,
+			Discord:  false,
+			Server:   gcm.Server,
+			Datetime: gcm.Datetime,
+			Room:     room,
+		}
 		chatList = append(chatList, cm)
 	}
 	s.Emit("chatList", &ChatListMessage{
