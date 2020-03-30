@@ -144,7 +144,7 @@ function setTickingDownTime(timer: TimerDisplay) {
         && !globals.paused
         && !globals.lobby.errorOccured
     ) {
-        globals.game.sounds.play('tone');
+        globals.game!.sounds.play('tone');
     }
 }
 

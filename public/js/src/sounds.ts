@@ -3,7 +3,7 @@
 */
 
 // Imports
-import globals from '../globals';
+import globals from './globals';
 
 export const init = () => {
     // Preload some sounds

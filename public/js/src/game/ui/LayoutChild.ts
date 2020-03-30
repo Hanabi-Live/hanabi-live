@@ -6,7 +6,7 @@
 // Imports
 import Konva from 'konva';
 import { ACTION, MAX_CLUE_NUM } from '../../constants';
-import * as sounds from '../sounds';
+import * as sounds from '../../sounds';
 import CardLayout from './CardLayout';
 import globals from './globals';
 import HanabiCard from './HanabiCard';

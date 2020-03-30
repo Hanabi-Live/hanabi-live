@@ -510,7 +510,7 @@ const drawBottomLeftButtons = () => {
     });
     globals.layers.UI.add(chatButton as any);
     chatButton.on('click tap', () => {
-        globals.game.chat.toggle();
+        globals.game!.chat.toggle();
     });
     chatButton.tooltipName = 'chat';
     chatButton.tooltipContent = 'Toggle the in-game chat.';
@@ -1779,7 +1779,7 @@ const drawPauseArea = () => {
     });
     globals.elements.pauseArea.add(chatButton as any);
     chatButton.on('click tap', () => {
-        globals.game.chat.toggle();
+        globals.game!.chat.toggle();
     });
 
     const lobbyButton = new Button({

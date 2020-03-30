@@ -131,21 +131,35 @@ func commandTableJoin(s *Session, d *CommandData) {
 	// If the user previously requested it, automatically start the game
 	if t.AutomaticStart == len(t.Players) {
 		// Check to see if the owner is present
-		for _, p := range t.Players {
-			if p.ID == t.Owner {
-				if !p.Present {
+		for _, p2 := range t.Players {
+			if p2.ID == t.Owner {
+				if !p2.Present {
 					room := "table" + strconv.Itoa(t.ID)
 					chatServerSend("Aborting automatic game start since the table creator is away.",
 						room)
 					return
 				}
 
-				commandTableStart(p.Session, nil)
+				commandTableStart(p2.Session, nil)
 				return
 			}
 		}
 
 		logger.Error("Failed to find the owner of the game when attempting to " +
 			"automatically start it.")
+		return
+	}
+
+	// Play a notification sound
+	for _, p2 := range t.Players {
+		// Skip sending a message to the player that just joined
+		if p2.ID != p.ID {
+			type SoundLobbyMessage struct {
+				File string `json:"file"`
+			}
+			p2.Session.Emit("soundLobby", SoundLobbyMessage{
+				File: "someone_joined",
+			})
+		}
 	}
 }

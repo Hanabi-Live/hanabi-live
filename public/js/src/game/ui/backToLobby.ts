@@ -12,5 +12,5 @@ export default () => {
     timer.stop();
 
     globals.lobby.conn.send('tableUnattend');
-    globals.game.hide();
+    globals.game!.hide();
 };

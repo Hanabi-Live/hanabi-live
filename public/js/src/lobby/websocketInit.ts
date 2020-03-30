@@ -5,6 +5,7 @@
 // Imports
 import * as gameMain from '../game/main';
 import globals from '../globals';
+import * as sounds from '../sounds';
 import Game from './Game';
 import GameHistory from './GameHistory';
 import * as history from './history';
@@ -82,6 +83,13 @@ interface NameData {
 }
 commands.set('name', (data: NameData) => {
     globals.randomName = data.name;
+});
+
+interface SoundLobbyData {
+    file: string,
+}
+commands.set('soundLobby', (data: SoundLobbyData) => {
+    sounds.play(data.file);
 });
 
 // Received by the client when a table is created or modified

@@ -19,7 +19,6 @@ import '../lib/tooltipster-scrollableTip.min';
 import * as chat from './chat';
 import * as gameChat from './game/chat';
 import * as gameMain from './game/main';
-import * as gameSounds from './game/sounds';
 import gameTooltipsInit from './game/tooltipsInit';
 import * as lobbyCreateGame from './lobby/createGame';
 import * as lobbyHistory from './lobby/history';
@@ -30,6 +29,7 @@ import * as lobbySettingsTooltip from './lobby/settingsTooltip';
 import lobbyTutorialInit from './lobby/tutorialInit';
 import * as lobbyWatchReplay from './lobby/watchReplay';
 import * as modals from './modals';
+import * as sounds from './sounds';
 
 // Add a function to the jQuery object to detect if an element is off screen
 // https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen
@@ -52,19 +52,19 @@ $(document).ready(() => {
     // Now that the page has loaded, initialize and define the functionality of various UI elements
     // (mostly using jQuery selectors)
     chat.init();
-    gameMain.init();
     gameChat.init();
-    gameSounds.init();
+    gameMain.init();
     gameTooltipsInit();
     lobbyCreateGame.init();
     lobbyHistory.init();
-    lobbyLogin.init();
     lobbyKeyboardInit();
+    lobbyLogin.init();
     lobbyNavInit();
     lobbySettingsTooltip.init();
     lobbyTutorialInit();
     lobbyWatchReplay.init();
     modals.init();
+    sounds.init();
 
     // For debugging graphics
     /*

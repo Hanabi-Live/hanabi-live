@@ -8,6 +8,7 @@ import Konva from 'konva';
 import { VARIANTS } from '../../constants';
 import { Globals as LobbyGlobals } from '../../globals';
 import Variant from '../../Variant';
+import { GameExports } from '../main';
 import { Action } from './actions';
 import Elements from './Elements';
 import HanabiCard from './HanabiCard';
@@ -21,7 +22,7 @@ import State from './State';
 export class Globals {
     // Objects sent upon UI initialization
     lobby: LobbyGlobals = new LobbyGlobals();
-    game: any = null;
+    game: GameExports | null = null;
     loading: boolean = false;
 
     // Game settings

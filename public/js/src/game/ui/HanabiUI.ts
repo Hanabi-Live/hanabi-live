@@ -7,6 +7,8 @@
 // Imports
 import Konva from 'konva';
 import { LABEL_COLOR, STACK_BASE_RANK } from '../../constants';
+import { Globals as LobbyGlobals } from '../../globals';
+import { GameExports } from '../main';
 import * as action from './action';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
@@ -22,7 +24,7 @@ import * as timer from './timer';
 export default class HanabiUI {
     globals: Globals;
 
-    constructor(lobby: any, game: any) {
+    constructor(lobby: LobbyGlobals, game: GameExports) {
         // Since the "HanabiUI" object is being reinstantiated,
         // we need to explicitly reinitialize all globals varaibles
         // (or else they will retain their old values)

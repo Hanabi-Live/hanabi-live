@@ -41,3 +41,7 @@ linters-settings:
   whitespace:
     # Enforce newlines (or comments) after every multi-line if statement
     multi-if: true
+
+  govet:
+    shadow:
+      strict: true

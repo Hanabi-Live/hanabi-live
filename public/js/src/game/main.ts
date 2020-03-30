@@ -8,8 +8,8 @@ import globals from '../globals';
 import tablesDraw from '../lobby/tablesDraw';
 import usersDraw from '../lobby/usersDraw';
 import * as misc from '../misc';
+import * as sounds from '../sounds';
 import * as chat from './chat';
-import * as sounds from './sounds';
 import HanabiUI from './ui/HanabiUI';
 
 export const init = () => {
@@ -69,7 +69,12 @@ export const hide = () => {
 
 // These are references to some functions and submodules that need to be interacted with
 // in the UI code (e.g. hiding the UI, playing a sound)
-const gameExports = {
+export interface GameExports {
+    hide: any,
+    chat: any,
+    sounds: any,
+}
+const gameExports: GameExports = {
     hide,
     chat,
     sounds,

@@ -75,7 +75,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     if (event.key === 'Escape') {
         // Escape = If the chat is open, close it
         if ($('#game-chat-modal').is(':visible')) {
-            globals.game.chat.hide();
+            globals.game!.chat.hide();
             return;
         }
 
@@ -129,7 +129,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
         }
         if (event.key === 'z' || event.key === 'Ω') { // Alt + z
             // This is used as a sound test
-            globals.game.sounds.play('turn_us');
+            globals.game!.sounds.play('turn_us');
             return;
         }
 
