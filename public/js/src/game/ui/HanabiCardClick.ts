@@ -258,7 +258,8 @@ const clickMorph = (order: number) => {
             return;
         }
 
-        suit = globals.variant.suits[suitNumber];
+        // We want 1 to represent the first suit, etc.
+        suit = globals.variant.suits[suitNumber - 1];
     }
     suit = suitToMsgSuit(suit, globals.variant);
 
