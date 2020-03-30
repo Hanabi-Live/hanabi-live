@@ -7,6 +7,11 @@ import (
 )
 
 func sentryInit() bool {
+	// We only want to report errors in production
+	if os.Getenv("DOMAIN") == "localhost" {
+		return false
+	}
+
 	// Read some configuration values from environment variables
 	// (they were loaded from the ".env" file in "main.go")
 	sentryDSN := os.Getenv("SENTRY_DSN")

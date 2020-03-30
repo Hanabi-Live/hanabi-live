@@ -162,11 +162,9 @@ const keypress = (room: string) => function keypressFunction(
             add({
                 msg: `You are:&nbsp; <strong>${globals.username}</strong>`,
                 who: '',
-                discord: false,
                 server: true,
                 datetime: new Date().getTime(),
                 room,
-                recipient: '',
             }, false);
             return;
         }
