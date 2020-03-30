@@ -46,6 +46,7 @@ export class Globals {
     emptyClues: boolean = false;
     characterAssignments: Array<string> = [];
     characterMetadata: Array<number> = [];
+    characterRememberedCards: Array<SimpleCard> = [];
 
     // Game constants (set upon first initialization)
     deck: Array<HanabiCard> = [];
@@ -112,7 +113,7 @@ export class Globals {
     lastNote: string = ''; // Equal to the last note entered
 
     // Timer feature
-    timerID: any = null;
+    timerID: number | null = null;
     playerTimes: Array<number> = [];
     // "activeIndex" must be tracked separately from the "currentPlayerIndex" because
     // the current player may change in an in-game replay
@@ -169,6 +170,7 @@ export class Globals {
         this.emptyClues = false;
         this.characterAssignments = [];
         this.characterMetadata = [];
+        this.characterRememberedCards = [];
         this.deck = [];
         this.stackBases = [];
         this.cardsMap = new Map();

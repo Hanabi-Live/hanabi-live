@@ -28,6 +28,7 @@ import ClueEntry from './ClueEntry';
 import { msgClueToClue, msgSuitToSuit } from './convert';
 import fadeCheck from './fadeCheck';
 import globals from './globals';
+import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
 import possibilitiesCheck from './possibilitiesCheck';
 import * as stats from './stats';
@@ -215,6 +216,30 @@ notifyFunctions.set('draw', (data: ActionDraw) => {
     let suit = data.suit === -1 ? null : msgSuitToSuit(data.suit, globals.variant);
     let rank = data.rank === -1 ? null : data.rank;
     const holder = data.who;
+
+    // If we are the "Slow-Witted" character, we are not supposed to be able to see other people's
+    // cards that are in slot 1
+    if (globals.characterAssignments[globals.playerUs] === 'Slow-Witted') {
+        if (suit !== null || rank !== null) {
+            globals.characterRememberedCards[order] = {
+                suit: data.suit,
+                rank: data.rank,
+            };
+            suit = null;
+            rank = null;
+            console.log('XXXXXXXXXXX', globals.characterRememberedCards);
+        }
+
+        // Since we are drawing a card, we can potentially reveal the other cards in the hand
+        const hand = globals.elements.playerHands[holder];
+        for (const layoutChild of hand.children.toArray()) {
+            const card: HanabiCard = layoutChild.children[0];
+            const rememberedCard = globals.characterRememberedCards[card.order];
+            if (rememberedCard) {
+                card.reveal(rememberedCard.suit, rememberedCard.rank);
+            }
+        }
+    }
 
     // If we are in a shared replay that was converted from a game in which we were one of the
     // players, then suit and rank will be still be null for the cards that were dealt to us

@@ -21,7 +21,7 @@ var (
 	characterNames  []string
 	charactersID    map[int]string
 	debugCharacters = []string{
-		"Forgetful",
+		"Slow-Witted",
 		"n/a",
 		"n/a",
 		"n/a",
@@ -107,6 +107,7 @@ func characterGenerate(g *Game) {
 		p.CharacterMetadata2 = -1
 
 		if p.Name == "test" ||
+			p.Name == "test1" ||
 			p.Name == "test2" ||
 			p.Name == "test3" ||
 			p.Name == "test4" ||
@@ -535,7 +536,7 @@ func characterPostClue(d *CommandData, g *Game, p *GamePlayer) {
 	}
 }
 
-func characterPostRemove(g *Game, p *GamePlayer, c *Card) {
+func characterPostRemoveCard(g *Game, p *GamePlayer, c *Card) {
 	if !g.Options.CharacterAssignments {
 		return
 	}

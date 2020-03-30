@@ -701,9 +701,7 @@ interface SoundData {
     file: string,
 }
 commands.set('sound', (data: SoundData) => {
-    if (!globals.lobby.settings.soundMove) {
-        return;
+    if (globals.lobby.settings.soundMove) {
+        globals.game!.sounds.play(data.file);
     }
-
-    globals.game!.sounds.play(data.file);
 });

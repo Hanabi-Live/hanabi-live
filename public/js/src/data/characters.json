@@ -159,6 +159,11 @@
         "emoji": "🚂",
         "not2P": true
     },
+    "Slow-Witted": {
+        "id": 33,
+        "description": "Cannot see cards in slot 1",
+        "emoji": "🤪"
+    },
     "Forgetful": {
         "id": 32,
         "description": "Hand is shuffled after discarding (but before drawing)",

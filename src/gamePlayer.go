@@ -194,7 +194,7 @@ func (p *GamePlayer) RemoveCard(target int) *Card {
 	// Remove it from the hand
 	p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
 
-	characterPostRemove(g, p, c)
+	characterPostRemoveCard(g, p, c)
 
 	return c
 }

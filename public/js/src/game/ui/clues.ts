@@ -151,6 +151,11 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
             return false;
         }
 
+        // Some detrimental characters are not able to see other people's hands
+        if (card.suit === null) {
+            return false;
+        }
+
         return card.suit!.clueColors.includes(clue.value as Color);
     }
 
