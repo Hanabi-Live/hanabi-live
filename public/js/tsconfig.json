@@ -36,6 +36,10 @@
         // Specifying this is needed for various JavaScript libraries to work with TypeScript
         "esModuleInterop": true,
 
+        // TypeScript will not remove comments by default;
+        // we want to remove them to make the source file smaller
+        "removeComments": true,
+
         // We want the compiler to be as strict as possible to catch all the things
         // By default, these flags are false
         "strict": true,
@@ -49,9 +53,7 @@
         /*
         "sourceMap": true,
         "inlineSources": true,
-        "sourceRoot": "/src",
         */
-        "removeComments": true,
     },
 
     "include": [
