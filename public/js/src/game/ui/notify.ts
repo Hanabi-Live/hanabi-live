@@ -227,7 +227,6 @@ notifyFunctions.set('draw', (data: ActionDraw) => {
             };
             suit = null;
             rank = null;
-            console.log('XXXXXXXXXXX', globals.characterRememberedCards);
         }
 
         // Since we are drawing a card, we can potentially reveal the other cards in the hand
