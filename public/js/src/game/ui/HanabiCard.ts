@@ -107,7 +107,6 @@ export default class HanabiCard extends Konva.Group {
         HanabiCardInit.empathy.call(this);
         HanabiCardInit.click.call(this);
         HanabiCardInit.fixme.call(this);
-        HanabiCardInit.sparkles.call(this);
     }
 
     // Erase all of the data on the card to make it like it was freshly drawn
@@ -1225,7 +1224,7 @@ export default class HanabiCard extends Konva.Group {
             this.noteSuit = null;
             this.noteRank = null;
             this.setBareImage();
-            globals.layers.get('card')!.batchDraw();
+            globals.layers.card.batchDraw();
         }
     }
 }

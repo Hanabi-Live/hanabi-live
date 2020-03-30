@@ -1,53 +1,26 @@
-export default interface Settings {
-    soundMove: boolean,
-    soundTimer: boolean,
-    keldonMode: boolean,
-    colorblindMode: boolean,
-    realLifeMode: boolean,
-    reverseHands: boolean,
-    styleNumbers: boolean,
-    showTimerInUntimed: boolean,
-    volume: number,
-    speedrunPreplay: boolean,
-    speedrunMode: boolean,
-    hyphenatedConventions: boolean,
-    createTableVariant: string,
-    createTableTimed: boolean,
-    createTableBaseTimeMinutes: number,
-    createTableTimePerTurnSeconds: number,
-    createTableSpeedrun: boolean,
-    createTableCardCycle: boolean,
-    createTableDeckPlays: boolean,
-    createTableEmptyClues: boolean,
-    createTableCharacterAssignments: boolean,
-    createTableAlertWaiters: boolean,
-
-    [key: string]: boolean | number | string,
-}
-
-export class SettingsDefault implements Settings {
-    soundMove = true;
-    soundTimer = true;
-    keldonMode = false;
-    colorblindMode = false;
-    realLifeMode = false;
-    reverseHands = false;
-    styleNumbers = false;
-    showTimerInUntimed = false;
-    volume = 50;
-    speedrunPreplay = false;
-    speedrunMode = false;
-    hyphenatedConventions = false;
-    createTableVariant = 'No Variant';
-    createTableTimed = false;
-    createTableBaseTimeMinutes = 2;
-    createTableTimePerTurnSeconds = 10;
-    createTableSpeedrun = false;
-    createTableCardCycle = false;
-    createTableDeckPlays = false;
-    createTableEmptyClues = false;
-    createTableCharacterAssignments = false;
-    createTableAlertWaiters = false;
+export default class Settings {
+    soundMove: boolean = true;
+    soundTimer: boolean = true;
+    keldonMode: boolean = false;
+    colorblindMode: boolean = false;
+    realLifeMode: boolean = false;
+    reverseHands: boolean = false;
+    styleNumbers: boolean = false;
+    showTimerInUntimed: boolean = false;
+    volume: number = 50;
+    speedrunPreplay: boolean = false;
+    speedrunMode: boolean = false;
+    hyphenatedConventions: boolean = false;
+    createTableVariant: string = 'No Variant';
+    createTableTimed: boolean = false;
+    createTableBaseTimeMinutes: number = 2;
+    createTableTimePerTurnSeconds: number = 10;
+    createTableSpeedrun: boolean = false;
+    createTableCardCycle: boolean = false;
+    createTableDeckPlays: boolean = false;
+    createTableEmptyClues: boolean = false;
+    createTableCharacterAssignments: boolean = false;
+    createTableAlertWaiters: boolean = false;
 
     [key: string]: boolean | number | string;
 }

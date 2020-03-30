@@ -7,6 +7,7 @@
 import Konva from 'konva';
 import { Action } from './actions';
 import Elements from './Elements';
+import Layers from './Layers';
 import LearnedCard from './LearnedCard';
 import Loader from './Loader';
 import { Globals as LobbyGlobals } from '../../globals';
@@ -67,7 +68,7 @@ export class Globals {
     // UI elements
     ImageLoader: Loader | null = null;
     stage: Konva.Stage | null = null;
-    layers: Map<string, Konva.Layer> = new Map();
+    layers: Layers = new Layers();
     elements: Elements = new Elements();
     activeHover: any = null; // The element that the mouse cursor is currently over
     cardImages: Map<string, HTMLCanvasElement> = new Map();
@@ -184,7 +185,7 @@ export class Globals {
         this.stackDirections = [];
         this.ImageLoader = null;
         this.stage = null;
-        this.layers = new Map();
+        this.layers = new Layers();
         this.elements = new Elements();
         this.activeHover = null;
         this.cardImages = new Map();

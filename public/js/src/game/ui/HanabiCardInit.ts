@@ -297,7 +297,7 @@ export function note(this: HanabiCard) {
         if (this.noteIndicator!.rotated) {
             this.noteIndicator!.rotated = false;
             this.noteIndicator!.rotate(-15);
-            globals.layers.get('card')!.batchDraw();
+            globals.layers.card.batchDraw();
         }
 
         globals.activeHover = this;
@@ -381,7 +381,7 @@ export function empathy(this: HanabiCard) {
             card.setBareImage();
             card.setFade();
         }
-        globals.layers.get('card')!.batchDraw();
+        globals.layers.card.batchDraw();
     };
 }
 
@@ -389,11 +389,11 @@ export function click(this: HanabiCard) {
     // Define the clue log mouse handlers
     this.on('mousemove tap', () => {
         globals.elements.clueLog!.showMatches(this);
-        globals.layers.get('UI')!.batchDraw();
+        globals.layers.UI.batchDraw();
     });
     this.on('mouseout', () => {
         globals.elements.clueLog!.showMatches(null);
-        globals.layers.get('UI')!.batchDraw();
+        globals.layers.UI.batchDraw();
     });
 
     // Define the other mouse handlers
@@ -471,17 +471,6 @@ export function fixme(this: HanabiCard) {
         visible: false,
     });
     this.add(this.fixme);
-}
-
-export function sparkles(this: HanabiCard) {
-    /*
-    const spark = new Sparkle({
-        x: -50,
-        y: -50,
-        image: globals.ImageLoader.get('sparkle');
-    });
-    this.add(spark);
-    */
 }
 
 /*

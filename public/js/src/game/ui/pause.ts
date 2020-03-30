@@ -16,7 +16,7 @@ export default () => {
         const wasVisible = globals.elements.timer1Circle!.visible();
         if (wasVisible !== globals.pauseQueued) {
             globals.elements.timer1Circle!.visible(globals.pauseQueued);
-            globals.layers.get('UI')!.batchDraw();
+            globals.layers.UI.batchDraw();
         }
 
         globals.elements.stageFade!.opacity(0.8);

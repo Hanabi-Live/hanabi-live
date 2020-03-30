@@ -116,7 +116,7 @@ export default class Deck extends Konva.Group {
                 y: 0,
                 easing: Konva.Easings.EaseOut,
                 onFinish: () => {
-                    const layer = globals.layers.get('UI');
+                    const layer = globals.layers.UI;
                     if (typeof layer !== 'undefined') {
                         layer.batchDraw();
                     }

@@ -52,7 +52,7 @@ export const show = () => {
         globals.elements.hypoCircle!.visible(true);
     }
 
-    globals.layers.get('UI')!.batchDraw();
+    globals.layers.UI.batchDraw();
 };
 
 export const playThroughPastActions = () => {
@@ -68,10 +68,10 @@ export const playThroughPastActions = () => {
         globals.animateFast = false;
         globals.elements.actionLog!.refreshText();
         globals.elements.fullActionLog!.refreshText();
-        globals.layers.get('card')!.batchDraw();
-        globals.layers.get('UI')!.batchDraw();
-        globals.layers.get('arrow')!.batchDraw();
-        globals.layers.get('UI2')!.batchDraw();
+        globals.layers.card.batchDraw();
+        globals.layers.UI.batchDraw();
+        globals.layers.arrow.batchDraw();
+        globals.layers.UI2.batchDraw();
     }
 
     beginTurn();
@@ -99,7 +99,7 @@ export const end = () => {
     } else {
         globals.elements.hypoCircle!.hide();
     }
-    globals.layers.get('UI')!.batchDraw();
+    globals.layers.UI.batchDraw();
 
     globals.hypoActions = [];
 

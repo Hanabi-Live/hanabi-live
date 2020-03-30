@@ -101,7 +101,7 @@ export const checkSpecialNote = (card: HanabiCard) => {
         && !globals.spectating
     ));
 
-    globals.layers.get('card')!.batchDraw();
+    globals.layers.card.batchDraw();
 };
 
 const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => {
@@ -273,7 +273,7 @@ export const update = (card: HanabiCard) => {
     const visibleNew = note.length > 0;
     card.noteIndicator!.visible(visibleNew);
     if (visibleOld !== visibleNew) {
-        globals.layers.get('card')!.batchDraw();
+        globals.layers.card.batchDraw();
     }
 };
 
@@ -421,7 +421,7 @@ export const setCardIndicator = (order: number) => {
         card.noteIndicator!.rotated = true;
     }
 
-    globals.layers.get('card')!.batchDraw();
+    globals.layers.card.batchDraw();
 };
 
 export const shouldShowIndicator = (order: number) => {

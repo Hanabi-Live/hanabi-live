@@ -30,7 +30,7 @@ export const end = (actionObject: Action) => {
         globals.elements.premoveCancelButton!.text(text);
         globals.elements.premoveCancelButton!.show();
         globals.elements.currentPlayerArea!.hide();
-        globals.layers.get('UI')!.batchDraw();
+        globals.layers.UI.batchDraw();
     }
 };
 
@@ -45,7 +45,7 @@ export const begin = () => {
     if (globals.queuedAction !== null) {
         // Get rid of the pre-move button, since it is now our turn
         globals.elements.premoveCancelButton!.hide();
-        globals.layers.get('UI')!.batchDraw();
+        globals.layers.UI.batchDraw();
 
         if (globals.queuedAction.type === ACTION.CLUE) {
             // Prevent pre-cluing if the team is now at 0 clues

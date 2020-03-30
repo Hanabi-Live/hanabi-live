@@ -57,7 +57,7 @@ export const handle = () => {
         }
     }
 
-    globals.layers.get('UI')!.batchDraw();
+    globals.layers.UI.batchDraw();
 };
 
 export const stop = () => {

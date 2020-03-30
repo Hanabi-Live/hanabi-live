@@ -25,7 +25,6 @@ export default class Loader {
             'replay-forward-full',
             'replay-forward-full-disabled',
             'skull',
-            'sparkle',
             'trashcan',
             'trashcan2',
             'x',

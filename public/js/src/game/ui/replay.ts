@@ -49,7 +49,7 @@ export const enter = () => {
     globals.elements.replayArea!.show();
     adjustShuttles(true); // We want it to immediately snap to the end
     setVisibleButtons();
-    globals.layers.get('UI')!.batchDraw();
+    globals.layers.UI.batchDraw();
 };
 
 export const exit = () => {
@@ -74,8 +74,8 @@ export const exit = () => {
         globals.deck[i].setBareImage();
     }
 
-    globals.layers.get('UI')!.batchDraw();
-    globals.layers.get('card')!.batchDraw();
+    globals.layers.UI.batchDraw();
+    globals.layers.card.batchDraw();
 };
 
 export const goto = (target: number, fast: boolean) => {
@@ -136,10 +136,10 @@ export const goto = (target: number, fast: boolean) => {
     globals.animateFast = false;
     globals.elements.actionLog!.refreshText();
     globals.elements.fullActionLog!.refreshText();
-    globals.layers.get('card')!.batchDraw();
-    globals.layers.get('UI')!.batchDraw();
-    globals.layers.get('arrow')!.batchDraw();
-    globals.layers.get('UI2')!.batchDraw();
+    globals.layers.card.batchDraw();
+    globals.layers.UI.batchDraw();
+    globals.layers.arrow.batchDraw();
+    globals.layers.UI2.batchDraw();
 };
 
 const setVisibleButtons = () => {

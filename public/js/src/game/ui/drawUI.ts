@@ -76,7 +76,6 @@ export default () => {
     winH = globals.stage!.height();
 
     // Create the various Konva layers upon which all graphic elements reside
-    initLayers();
     drawBackground();
 
     // We can reuse some UI elements
@@ -118,38 +117,12 @@ export default () => {
         globals.elements.replayArea!.show();
     }
 
-    for (const [, layer] of globals.layers) {
-        globals.stage!.add(layer);
-    }
-};
-
-const initLayers = () => {
     // Just in case, delete all existing layers
     for (const layer of globals.stage!.getLayers().toArray()) {
         layer.remove();
     }
-
-    // Define the layers
-    // They are added to the stage later on at the end of this function
-    // We don't want to add too many layers; the Konva documentation states that 3-5 is max:
-    // https://konvajs.org/docs/performance/Layer_Management.html
-    const layers = [
-        'UI',
-        'timer', // The timer gets its own layer since it is being constantly updated
-        'card',
-        'sparkle', // Sparkles get their own layer since they are constantly animating
-        'arrow',
-        'UI2', // We need some UI elements to be on top of cards
-    ];
-    for (const layerName of layers) {
-        const layer = new Konva.Layer({
-            // Disable "listening" for every layer/element by default to increase performance
-            // https://konvajs.org/docs/performance/Listening_False.html
-            // This means that we have to explicitly set "listening: true" for every element that
-            // we want to bind events to (for clicking, dragging, hovering, etc.)
-            listening: false,
-        });
-        globals.layers.set(layerName, layer);
+    for (const layer of Object.values(globals.layers)) {
+        globals.stage!.add(layer);
     }
 };
 
@@ -162,7 +135,7 @@ const drawBackground = () => {
         height: winH,
         image: globals.ImageLoader!.get('background')!,
     });
-    globals.layers.get('UI')!.add(background);
+    globals.layers.UI.add(background);
 
     // The dark overlay that appears when you click the action log is clicked,
     // when a player's name is clicked, when the game is paused, etc.
@@ -176,7 +149,7 @@ const drawBackground = () => {
         visible: false,
         listening: true,
     });
-    globals.layers.get('UI2')!.add(globals.elements.stageFade);
+    globals.layers.UI2.add(globals.elements.stageFade);
 };
 
 const initReusableObjects = () => {
@@ -224,7 +197,7 @@ const drawActionLog = () => {
         x: actionLogValues.x * winW,
         y: actionLogValues.y * winH,
     });
-    globals.layers.get('UI')!.add(actionLogGroup);
+    globals.layers.UI.add(actionLogGroup);
 
     // The faded rectangle around the action log
     const actionLogRect = new Konva.Rect({
@@ -241,13 +214,13 @@ const drawActionLog = () => {
     actionLogRect.on('click tap', () => {
         globals.elements.fullActionLog!.show();
         globals.elements.stageFade!.show();
-        globals.layers.get('UI2')!.batchDraw();
+        globals.layers.UI2.batchDraw();
 
         globals.elements.stageFade!.on('click tap', () => {
             globals.elements.stageFade!.off('click tap');
             globals.elements.fullActionLog!.hide();
             globals.elements.stageFade!.hide();
-            globals.layers.get('UI2')!.batchDraw();
+            globals.layers.UI2.batchDraw();
         });
     });
 
@@ -277,7 +250,7 @@ const drawActionLog = () => {
 
     // The full action log (that appears when you click on the action log)
     globals.elements.fullActionLog = new FullActionLog(winW, winH);
-    globals.layers.get('UI2')!.add(globals.elements.fullActionLog as any);
+    globals.layers.UI2.add(globals.elements.fullActionLog as any);
 };
 
 const drawPlayStacks = () => {
@@ -347,7 +320,7 @@ const drawPlayStacks = () => {
             height: cardHeight * winH,
         });
         globals.elements.playStacks.set(suit, playStack);
-        globals.layers.get('card')!.add(playStack as any);
+        globals.layers.card.add(playStack as any);
 
         // Add the stack base to the play stack
         const stackBase = new HanabiCard({
@@ -390,7 +363,7 @@ const drawPlayStacks = () => {
                 text,
                 fill: LABEL_COLOR,
             });
-            globals.layers.get('UI')!.add(suitLabelText);
+            globals.layers.UI.add(suitLabelText);
             globals.elements.suitLabelTexts.push(suitLabelText);
         }
     }
@@ -406,7 +379,7 @@ const drawPlayStacks = () => {
             height: cardHeight * winH,
         });
         globals.elements.playStacks.set('hole', playStack);
-        globals.layers.get('card')!.add(playStack as any);
+        globals.layers.card.add(playStack as any);
     }
 
     // This is the invisible rectangle that players drag cards to in order to play them
@@ -449,7 +422,7 @@ const drawDiscardStacks = () => {
             listening: false,
         });
         globals.elements.discardStacks.set(suit, discardStack);
-        globals.layers.get('card')!.add(discardStack as any);
+        globals.layers.card.add(discardStack as any);
     }
 };
 
@@ -485,7 +458,7 @@ const drawBottomLeftButtons = () => {
             replay.enter();
         }
     });
-    globals.layers.get('UI')!.add(replayButton as any);
+    globals.layers.UI.add(replayButton as any);
     replayButton.setEnabled(false);
     replayButton.tooltipName = 'replay';
     replayButton.tooltipContent = 'Toggle the in-game replay, where you can rewind the game to see what happened on a specific turn.';
@@ -502,7 +475,7 @@ const drawBottomLeftButtons = () => {
         text: 'Restart',
         visible: false,
     });
-    globals.layers.get('UI')!.add(restartButton as any);
+    globals.layers.UI.add(restartButton as any);
     restartButton.on('click tap', () => {
         globals.lobby.conn.send('tableRestart');
     });
@@ -520,7 +493,7 @@ const drawBottomLeftButtons = () => {
         text: 'End Hypo',
         visible: false,
     });
-    globals.layers.get('UI')!.add(endHypotheticalButton as any);
+    globals.layers.UI.add(endHypotheticalButton as any);
     endHypotheticalButton.on('click tap', () => {
         hypothetical.end();
     });
@@ -535,7 +508,7 @@ const drawBottomLeftButtons = () => {
         text: '💬',
         visible: !globals.replay || globals.sharedReplay,
     });
-    globals.layers.get('UI')!.add(chatButton as any);
+    globals.layers.UI.add(chatButton as any);
     chatButton.on('click tap', () => {
         globals.game.chat.toggle();
     });
@@ -561,7 +534,7 @@ const drawBottomLeftButtons = () => {
         height: lobbyButtonValues.h! * winH,
         visible: !globals.replay && !globals.spectating,
     }, [globals.ImageLoader!.get('home')!]);
-    globals.layers.get('UI')!.add(lobbyButtonSmall as any);
+    globals.layers.UI.add(lobbyButtonSmall as any);
     lobbyButtonSmall.on('click tap', lobbyButtonClick);
     lobbyButtonSmall.tooltipName = 'lobby-small';
     lobbyButtonSmall.tooltipContent = 'Return to the lobby. (The game will not end and your teammates will have to wait for you to come back.)';
@@ -576,7 +549,7 @@ const drawBottomLeftButtons = () => {
         text: 'Lobby',
         visible: globals.replay || globals.spectating,
     });
-    globals.layers.get('UI')!.add(lobbyButtonBig as any);
+    globals.layers.UI.add(lobbyButtonBig as any);
     lobbyButtonBig.on('click tap', lobbyButtonClick);
     lobbyButtonBig.tooltipName = 'lobby-big';
     lobbyButtonBig.tooltipContent = 'Return to the lobby.';
@@ -591,7 +564,7 @@ const drawBottomLeftButtons = () => {
         height: bottomLeftButtonValues.h! * winH,
         visible: !globals.replay && !globals.spectating,
     }, [globals.ImageLoader!.get('skull')!]);
-    globals.layers.get('UI')!.add(killButton as any);
+    globals.layers.UI.add(killButton as any);
     killButton.on('click tap', () => {
         globals.lobby.conn.send('tableAbandon');
     });
@@ -621,7 +594,7 @@ const drawDeck = () => {
         cornerRadius: 0.006 * winW,
         listening: true,
     });
-    globals.layers.get('UI')!.add(deckRect);
+    globals.layers.UI.add(deckRect);
 
     // Near the top of the deck, draw the database ID for the respective game
     // (in an ongoing game, this will not show)
@@ -645,7 +618,7 @@ const drawDeck = () => {
     });
     // We draw the label on the arrow layer because it is on top of the card but
     // not on top of the black second layer
-    globals.layers.get('arrow')!.add(globals.elements.gameIDLabel);
+    globals.layers.arrow.add(globals.elements.gameIDLabel);
 
     globals.elements.deck = new Deck({
         x: deckValues.x * winW,
@@ -655,7 +628,7 @@ const drawDeck = () => {
         cardBack: 'deck-back',
         suits: globals.variant.suits,
     });
-    globals.layers.get('card')!.add(globals.elements.deck as any);
+    globals.layers.card.add(globals.elements.deck as any);
 
     // Also apply the card deck tooltip to the faded background rectangle
     deckRect.tooltipName = 'deck';
@@ -673,7 +646,7 @@ const drawDeck = () => {
         fontSize: fontSize * winH,
         visible: false,
     });
-    globals.layers.get('UI')!.add(globals.elements.deckTurnsRemainingLabel1!);
+    globals.layers.UI.add(globals.elements.deckTurnsRemainingLabel1!);
     globals.elements.deckTurnsRemainingLabel2 = basicTextLabel.clone({
         text: 'left: #',
         x: (deckValues.x + xOffset) * winW,
@@ -681,7 +654,7 @@ const drawDeck = () => {
         fontSize: fontSize * winH,
         visible: false,
     });
-    globals.layers.get('UI')!.add(globals.elements.deckTurnsRemainingLabel2!);
+    globals.layers.UI.add(globals.elements.deckTurnsRemainingLabel2!);
 
     // This is a yellow border around the deck that will appear when only one card is left
     // (if the "Bottom-Deck Blind-Plays" game option is enabled)
@@ -695,7 +668,7 @@ const drawDeck = () => {
         strokeWidth: 10,
         visible: false,
     });
-    globals.layers.get('UI')!.add(globals.elements.deckPlayAvailableLabel);
+    globals.layers.UI.add(globals.elements.deckPlayAvailableLabel);
 };
 
 const drawScoreArea = () => {
@@ -714,7 +687,7 @@ const drawScoreArea = () => {
         x: scoreAreaValues.x * winW,
         y: scoreAreaValues.y * winH,
     });
-    globals.layers.get('UI')!.add(globals.elements.scoreArea);
+    globals.layers.UI.add(globals.elements.scoreArea);
 
     // The red border that surrounds the score area when the team is at 0 clues
     globals.elements.noClueBorder = new Konva.Rect({
@@ -727,7 +700,7 @@ const drawScoreArea = () => {
         cornerRadius: 0.01 * winW,
         visible: false,
     });
-    globals.layers.get('UI')!.add(globals.elements.noClueBorder);
+    globals.layers.UI.add(globals.elements.noClueBorder);
 
     // The faded rectangle around the score area
     const scoreAreaRect = new Konva.Rect({
@@ -836,7 +809,7 @@ const drawScoreArea = () => {
             }
         },
     });
-    globals.elements.cluesNumberLabelPulse.anim.addLayer(globals.layers.get('UI'));
+    globals.elements.cluesNumberLabelPulse.anim.addLayer(globals.layers.UI);
 
     // Draw the 3 strike (bomb) black squares / X's
     function strikeClick(this: any) {
@@ -939,7 +912,7 @@ const drawSpectators = () => {
         visible: false,
         listening: true,
     });
-    globals.layers.get('UI')!.add(spectatorsLabel);
+    globals.layers.UI.add(spectatorsLabel);
     spectatorsLabel.tooltipName = 'spectators';
     spectatorsLabel.tooltipContent = ''; // This will be filled in later by the "spectators" command
     tooltips.init(spectatorsLabel, false, true);
@@ -964,7 +937,7 @@ const drawSpectators = () => {
         shadowOpacity: 0.9,
         visible: false,
     });
-    globals.layers.get('UI')!.add(globals.elements.spectatorsNumLabel);
+    globals.layers.UI.add(globals.elements.spectatorsNumLabel);
 };
 
 // The "crown" symbol to show that we are in a shared replay
@@ -984,7 +957,7 @@ const drawSharedReplay = () => {
         strokeWidth: 2,
         visible: false,
     });
-    globals.layers.get('UI')!.add(globals.elements.sharedReplayLeaderCircle);
+    globals.layers.UI.add(globals.elements.sharedReplayLeaderCircle);
 
     // The crown
     const size = 0.025 * winW;
@@ -1004,7 +977,7 @@ const drawSharedReplay = () => {
         visible: false,
         listening: true,
     });
-    globals.layers.get('UI')!.add(sharedReplayLeaderLabel);
+    globals.layers.UI.add(sharedReplayLeaderLabel);
     globals.elements.sharedReplayLeaderLabel = sharedReplayLeaderLabel;
 
     // Add an animation to alert everyone when shared replay leadership has been transfered
@@ -1022,7 +995,7 @@ const drawSharedReplay = () => {
             }
         },
     });
-    globals.elements.sharedReplayLeaderLabelPulse.anim.addLayer(globals.layers.get('UI'));
+    globals.elements.sharedReplayLeaderLabelPulse.anim.addLayer(globals.layers.UI);
 
     // Tooltip for the crown
     sharedReplayLeaderLabel.tooltipName = 'leader';
@@ -1091,7 +1064,7 @@ const drawClueLog = () => {
         opacity: 0.2,
         cornerRadius: 0.01 * winW,
     });
-    globals.layers.get('UI')!.add(clueLogRect);
+    globals.layers.UI.add(clueLogRect);
 
     const spacing = 0.01;
     globals.elements.clueLog = new ClueLog({
@@ -1100,7 +1073,7 @@ const drawClueLog = () => {
         width: (clueLogValues.w! - (spacing * 2)) * winW,
         height: (clueLogValues.h! - (spacing * 2)) * winH,
     });
-    globals.layers.get('UI')!.add(globals.elements.clueLog as any);
+    globals.layers.UI.add(globals.elements.clueLog as any);
 };
 
 // Statistics are shown on the right-hand side of the screen (at the bottom of the clue log)
@@ -1114,7 +1087,7 @@ const drawStatistics = () => {
         opacity: 0.2,
         cornerRadius: 0.01 * winW,
     });
-    globals.layers.get('UI')!.add(statsRect);
+    globals.layers.UI.add(statsRect);
 
     const paceTextLabel = basicTextLabel.clone({
         text: 'Pace',
@@ -1123,7 +1096,7 @@ const drawStatistics = () => {
         fontSize: 0.02 * winH,
         listening: true,
     });
-    globals.layers.get('UI')!.add(paceTextLabel);
+    globals.layers.UI.add(paceTextLabel);
     paceTextLabel.tooltipName = 'pace';
     let paceContent = 'Pace is a measure of how many discards can happen while<br />';
     paceContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -1140,7 +1113,7 @@ const drawStatistics = () => {
         fontSize: 0.02 * winH,
         listening: true,
     });
-    globals.layers.get('UI')!.add(paceNumberLabel);
+    globals.layers.UI.add(paceNumberLabel);
     globals.elements.paceNumberLabel = paceNumberLabel;
 
     paceTextLabel.on('click', (event: Konva.KonvaPointerEvent) => {
@@ -1157,7 +1130,7 @@ const drawStatistics = () => {
         fontSize: 0.02 * winH,
         listening: true,
     });
-    globals.layers.get('UI')!.add(efficiencyTextLabel);
+    globals.layers.UI.add(efficiencyTextLabel);
     efficiencyTextLabel.tooltipName = 'efficiency';
     const efficiencyContent = `
         Efficiency is calculated by: <em>(number of cards played + <br />
@@ -1179,7 +1152,7 @@ const drawStatistics = () => {
         fontSize: 0.02 * winH,
         listening: true,
     });
-    globals.layers.get('UI')!.add(efficiencyNumberLabel);
+    globals.layers.UI.add(efficiencyNumberLabel);
     globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
 
     efficiencyTextLabel.on('click', (event: Konva.KonvaPointerEvent) => {
@@ -1200,7 +1173,7 @@ const drawStatistics = () => {
         fill: minEfficiency < 1.25 ? LABEL_COLOR : '#ffb2b2',
         listening: true,
     });
-    globals.layers.get('UI')!.add(efficiencyNumberLabelMinNeeded);
+    globals.layers.UI.add(efficiencyNumberLabelMinNeeded);
     efficiencyNumberLabelMinNeeded.on('click', (event: Konva.KonvaPointerEvent) => {
         arrows.click(
             event,
@@ -1223,7 +1196,7 @@ const drawDiscardArea = () => {
         cornerRadius: 0.01 * winW,
         visible: false,
     });
-    globals.layers.get('UI')!.add(globals.elements.noDiscardBorder);
+    globals.layers.UI.add(globals.elements.noDiscardBorder);
 
     // The yellow border that surrounds the discard pile when it is a "Double Discard" situation
     globals.elements.noDoubleDiscardBorder = new Konva.Rect({
@@ -1237,7 +1210,7 @@ const drawDiscardArea = () => {
         opacity: 0.75,
         visible: false,
     });
-    globals.layers.get('UI')!.add(globals.elements.noDoubleDiscardBorder);
+    globals.layers.UI.add(globals.elements.noDoubleDiscardBorder);
 
     // The faded rectangle around the trash can
     const discardAreaRect = new Konva.Rect({
@@ -1249,7 +1222,7 @@ const drawDiscardArea = () => {
         opacity: 0.2,
         cornerRadius: 0.01 * winW,
     });
-    globals.layers.get('UI')!.add(discardAreaRect);
+    globals.layers.UI.add(discardAreaRect);
 
     // The trash can icon over the discard pile
     const trashcan = new Konva.Image({
@@ -1260,7 +1233,7 @@ const drawDiscardArea = () => {
         opacity: 0.2,
         image: globals.ImageLoader!.get('trashcan')!,
     });
-    globals.layers.get('UI')!.add(trashcan);
+    globals.layers.UI.add(trashcan);
 
     // This is the invisible rectangle that players drag cards to in order to discard them
     globals.elements.discardArea = new ClickArea({
@@ -1274,7 +1247,7 @@ const drawDiscardArea = () => {
 const drawArrows = () => {
     for (let i = 0; i < 5; i++) {
         const arrow = new Arrow(winW, winH);
-        globals.layers.get('arrow')!.add(arrow as any);
+        globals.layers.arrow.add(arrow as any);
         globals.elements.arrows.push(arrow);
     }
 };
@@ -1318,7 +1291,7 @@ const drawTimers = () => {
         strokeWidth: 2,
         visible: globals.pauseQueued,
     });
-    globals.layers.get('UI')!.add(globals.elements.timer1Circle);
+    globals.layers.UI.add(globals.elements.timer1Circle);
 
     // The timer for "You"
     globals.elements.timer1 = new TimerDisplay({
@@ -1333,7 +1306,7 @@ const drawTimers = () => {
         visible: !globals.spectating,
         listening: true,
     });
-    globals.layers.get('timer')!.add(globals.elements.timer1 as any);
+    globals.layers.timer.add(globals.elements.timer1 as any);
     globals.elements.timer1.on('click', (event) => {
         if (
             event.evt.which !== 3 // Right-click
@@ -1360,7 +1333,7 @@ const drawTimers = () => {
         const wasVisible = globals.elements.timer1Circle!.visible();
         if (wasVisible !== globals.pauseQueued) {
             globals.elements.timer1Circle!.visible(globals.pauseQueued);
-            globals.layers.get('UI')!.batchDraw();
+            globals.layers.UI.batchDraw();
         }
     });
 
@@ -1377,7 +1350,7 @@ const drawTimers = () => {
         visible: false,
         listening: true,
     });
-    globals.layers.get('timer')!.add(globals.elements.timer2 as any);
+    globals.layers.timer.add(globals.elements.timer2 as any);
     if (globals.timed) {
         globals.elements.timer2.tooltipName = 'time-taken';
         // (the content will be updated in the "setTickingDownTimeCPTooltip()" function)
@@ -1544,7 +1517,7 @@ const drawClueArea = () => {
     globals.elements.giveClueButton.on('click tap', clues.give);
 
     globals.elements.clueArea.hide();
-    globals.layers.get('UI')!.add(globals.elements.clueArea);
+    globals.layers.UI.add(globals.elements.clueArea);
 };
 
 const drawClueAreaDisabled = () => {
@@ -1609,7 +1582,7 @@ const drawClueAreaDisabled = () => {
     globals.elements.clueAreaDisabled.add(noCluesText);
 
     globals.elements.clueAreaDisabled.hide();
-    globals.layers.get('UI')!.add(globals.elements.clueAreaDisabled);
+    globals.layers.UI.add(globals.elements.clueAreaDisabled);
 };
 
 const drawCurrentPlayerArea = () => {
@@ -1626,7 +1599,7 @@ const drawCurrentPlayerArea = () => {
     if (globals.replay) {
         globals.elements.currentPlayerArea.hide();
     }
-    globals.layers.get('UI')!.add(globals.elements.currentPlayerArea as any);
+    globals.layers.UI.add(globals.elements.currentPlayerArea as any);
 };
 
 const drawPreplayArea = () => {
@@ -1642,11 +1615,11 @@ const drawPreplayArea = () => {
         text: 'Cancel Pre-Move',
         visible: false,
     });
-    globals.layers.get('UI')!.add(globals.elements.premoveCancelButton as any);
+    globals.layers.UI.add(globals.elements.premoveCancelButton as any);
     globals.elements.premoveCancelButton.on('click tap', () => {
         globals.elements.premoveCancelButton!.hide();
         globals.elements.currentPlayerArea!.show();
-        globals.layers.get('UI')!.batchDraw();
+        globals.layers.UI.batchDraw();
 
         if (globals.queuedAction === null) {
             return;
@@ -1671,7 +1644,7 @@ const drawHypotheticalArea = () => {
         y: clueAreaValues.y * winH,
         visible: false,
     });
-    globals.layers.get('UI')!.add(globals.elements.hypoCircle);
+    globals.layers.UI.add(globals.elements.hypoCircle);
 
     const circle = new Konva.Ellipse({
         x: (clueAreaValues.w! * 0.5) * winW,
@@ -1714,7 +1687,7 @@ const drawPauseArea = () => {
         y: 0.25 * winH,
         visible: false,
     });
-    globals.layers.get('UI2')!.add(globals.elements.pauseArea);
+    globals.layers.UI2.add(globals.elements.pauseArea);
 
     const pauseRect = new Konva.Rect({
         width: pauseAreaValues.w * winW,
@@ -1817,7 +1790,7 @@ const drawExtraAnimations = () => {
         image: globals.ImageLoader!.get('replay-forward')!,
         opacity: 0,
     });
-    globals.layers.get('UI2')!.add(globals.elements.sharedReplayForward);
+    globals.layers.UI2.add(globals.elements.sharedReplayForward);
     globals.elements.sharedReplayForwardTween = new Konva.Tween({
         node: globals.elements.sharedReplayForward,
         duration: 0.5,
@@ -1837,7 +1810,7 @@ const drawExtraAnimations = () => {
         image: globals.ImageLoader!.get('replay-back')!,
         opacity: 0,
     });
-    globals.layers.get('UI2')!.add(globals.elements.sharedReplayBackward);
+    globals.layers.UI2.add(globals.elements.sharedReplayBackward);
     globals.elements.sharedReplayBackwardTween = new Konva.Tween({
         node: globals.elements.sharedReplayBackward,
         duration: 0.5,

@@ -155,7 +155,7 @@ notifyFunctions.set('clue', (data: ActionClue) => {
     globals.elements.clueLog!.addClue(entry);
 
     if (!globals.animateFast) {
-        globals.layers.get('card')!.batchDraw();
+        globals.layers.card.batchDraw();
     }
 });
 
@@ -363,7 +363,7 @@ notifyFunctions.set('stackDirections', (data: ActionStackDirections) => {
             }
             globals.elements.suitLabelTexts[i].fitText(text);
             if (!globals.animateFast) {
-                globals.layers.get('UI')!.batchDraw();
+                globals.layers.UI.batchDraw();
             }
         }
     }
@@ -422,7 +422,7 @@ notifyFunctions.set('status', (data: ActionStatus) => {
     stats.updateEfficiency(0);
 
     if (!globals.animateFast) {
-        globals.layers.get('UI')!.batchDraw();
+        globals.layers.UI.batchDraw();
     }
 });
 
@@ -468,8 +468,8 @@ notifyFunctions.set('text', (data: ActionText) => {
     globals.elements.actionLog!.setMultiText(data.text);
     globals.elements.fullActionLog!.addMessage(data.text);
     if (!globals.animateFast) {
-        globals.layers.get('UI')!.batchDraw();
-        globals.layers.get('UI2')!.batchDraw();
+        globals.layers.UI.batchDraw();
+        globals.layers.UI2.batchDraw();
     }
 });
 
@@ -488,7 +488,7 @@ notifyFunctions.set('reveal', (data: RevealMessage) => {
     }
 
     card.reveal(data.suit, data.rank);
-    globals.layers.get('card')!.batchDraw();
+    globals.layers.card.batchDraw();
 });
 
 notifyFunctions.set('turn', (data: ActionTurn) => {
@@ -528,6 +528,6 @@ notifyFunctions.set('turn', (data: ActionTurn) => {
     }
 
     if (!globals.animateFast) {
-        globals.layers.get('UI')!.batchDraw();
+        globals.layers.UI.batchDraw();
     }
 });

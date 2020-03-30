@@ -282,6 +282,6 @@ export default (winW: number, winH: number) => {
 
     // Add the replay area to the UI
     globals.elements.replayArea.hide();
-    globals.layers.get('UI')!.add(globals.elements.replayArea);
+    globals.layers.UI.add(globals.elements.replayArea);
     replay.adjustShuttles(true);
 };

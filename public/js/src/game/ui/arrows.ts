@@ -26,7 +26,7 @@ export const hideAll = () => {
         }
     }
     if (!globals.animateFast && changed) {
-        globals.layers.get('arrow')!.batchDraw();
+        globals.layers.arrow.batchDraw();
     }
 };
 
@@ -124,7 +124,7 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
         animate(arrow, element, rot, giver, globals.turn);
     }
     if (!globals.animateFast) {
-        globals.layers.get('arrow')!.batchDraw();
+        globals.layers.arrow.batchDraw();
     }
 };
 
