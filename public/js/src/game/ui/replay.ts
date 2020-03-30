@@ -336,7 +336,7 @@ const positionReplayShuttle = (
         max = 1;
     }
 
-    const winH = globals.stage!.height();
+    const winH = globals.stage.height();
     const sliderW = globals.elements.replayBar!.width() - shuttle.width();
     const x = globals.elements.replayBar!.x() + (sliderW / max * turn) + (shuttle.width() / 2);
     let y = globals.elements.replayBar!.y() + (shuttle.height() * 0.55);

@@ -144,7 +144,7 @@ notifyFunctions.set('clue', (data: ActionClue) => {
 
     const entry = new ClueEntry({
         width: globals.elements.clueLog!.width(),
-        height: 0.017 * globals.stage!.height(),
+        height: 0.017 * globals.stage.height(),
         giver: globals.playerNames[data.giver],
         target: globals.playerNames[data.target],
         clueName,

@@ -6,8 +6,8 @@ import globals from './globals';
 // Set the "Current Player" area up for this specific turn
 export default () => {
     const currentPlayerArea = globals.elements.currentPlayerArea!;
-    const winW = globals.stage!.width();
-    const winH = globals.stage!.height();
+    const winW = globals.stage.width();
+    const winH = globals.stage.height();
 
     currentPlayerArea.visible(
         // Don't show it if we are in a solo/shared replay

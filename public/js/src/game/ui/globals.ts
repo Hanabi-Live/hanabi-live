@@ -67,7 +67,7 @@ export class Globals {
 
     // UI elements
     ImageLoader: Loader | null = null;
-    stage: Konva.Stage | null = null;
+    stage: Konva.Stage = new Konva.Stage({ container: 'game' });
     layers: Layers = new Layers();
     elements: Elements = new Elements();
     activeHover: any = null; // The element that the mouse cursor is currently over
@@ -184,7 +184,7 @@ export class Globals {
         this.cluesSpentPlusStrikes = 0;
         this.stackDirections = [];
         this.ImageLoader = null;
-        this.stage = null;
+        this.stage = new Konva.Stage({ container: 'game' });
         this.layers = new Layers();
         this.elements = new Elements();
         this.activeHover = null;

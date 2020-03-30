@@ -25,7 +25,7 @@ export default class ClueLog extends Konva.Group {
         for (let i = 0; i < this.children.length; i++) {
             const node = this.children[i];
             node.y(y);
-            y += node.height() + (0.001 * globals.stage!.height());
+            y += node.height() + (0.001 * globals.stage.height());
         }
     }
 

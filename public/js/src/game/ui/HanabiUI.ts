@@ -59,7 +59,7 @@ export default class HanabiUI {
     destroy() { // eslint-disable-line class-methods-use-this
         keyboard.destroy();
         timer.stop();
-        globals.stage!.destroy();
+        globals.stage.destroy();
         // window.removeEventListener('resize', resizeCanvas, false);
     }
 
@@ -70,10 +70,6 @@ export default class HanabiUI {
 
 // Initialize and size the stage depending on the window size
 const initStage = () => {
-    globals.stage = new Konva.Stage({
-        container: 'game',
-    });
-
     const ratio = 16 / 9;
 
     let ww = window.innerWidth;
@@ -110,8 +106,8 @@ const initStage = () => {
 };
 
 const showLoadingScreen = () => {
-    const winW = globals.stage!.width();
-    const winH = globals.stage!.height();
+    const winW = globals.stage.width();
+    const winH = globals.stage.height();
 
     const loadingLayer = new Konva.Layer();
 
@@ -147,7 +143,7 @@ const showLoadingScreen = () => {
     });
     loadingLayer.add(progresslabel);
 
-    globals.stage!.add(loadingLayer);
+    globals.stage.add(loadingLayer);
 
     const loadingProgressCallback = (done: number, total: number) => {
         progresslabel.text(`${done}/${total}`);

@@ -72,8 +72,8 @@ let spectatorsLabelValues: Values;
 
 export default () => {
     // Constants
-    winW = globals.stage!.width();
-    winH = globals.stage!.height();
+    winW = globals.stage.width();
+    winH = globals.stage.height();
 
     // Create the various Konva layers upon which all graphic elements reside
     drawBackground();
@@ -118,11 +118,11 @@ export default () => {
     }
 
     // Just in case, delete all existing layers
-    for (const layer of globals.stage!.getLayers().toArray()) {
+    for (const layer of globals.stage.getLayers().toArray()) {
         layer.remove();
     }
     for (const layer of Object.values(globals.layers)) {
-        globals.stage!.add(layer);
+        globals.stage.add(layer);
     }
 };
 

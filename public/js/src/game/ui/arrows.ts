@@ -135,7 +135,7 @@ const getPos = (element: any, rot: number) => {
     if (element.type === 'HanabiCard') {
         // If we set the arrow at the absolute position of a card, it will point to the exact center
         // Instead, back it off a little bit (accounting for the rotation of the hand)
-        const winH = globals.stage!.height();
+        const winH = globals.stage.height();
         const distance = -0.075 * winH;
         const rotRadians = (rot / 180) * Math.PI;
         pos.x -= Math.sin(rotRadians) * distance;
