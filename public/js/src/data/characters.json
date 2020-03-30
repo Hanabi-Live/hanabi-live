@@ -71,6 +71,11 @@
         "description": "Must continue to clue cards until one of them is played or discarded",
         "emoji": "😣"
     },
+    "Quacker": {
+        "id": 34,
+        "description": "Can only quack instead of clue",
+        "emoji": "🦆"
+    },
 
     "Vulnerable": {
         "id": 14,

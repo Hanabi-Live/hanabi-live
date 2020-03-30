@@ -134,7 +134,8 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	}
 
 	if strings.HasPrefix(g.Options.Variant, "Cow & Pig") ||
-		strings.HasPrefix(g.Options.Variant, "Duck") {
+		strings.HasPrefix(g.Options.Variant, "Duck") ||
+		p.Character == "Quacker" { // 34
 
 		// Create a list of slot numbers that correspond to the cards touched
 		slots := make([]string, 0)
@@ -154,7 +155,9 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 				text += "moos"
 				g.Sound = "moo"
 			}
-		} else if strings.HasPrefix(g.Options.Variant, "Duck") {
+		} else if strings.HasPrefix(g.Options.Variant, "Duck") ||
+			p.Character == "Quacker" { // 34
+
 			text += "quacks"
 			g.Sound = "quack"
 		}
