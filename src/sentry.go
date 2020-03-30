@@ -21,6 +21,7 @@ func sentryInit() bool {
 		Dsn: sentryDSN,
 	}); err != nil {
 		logger.Fatal("Failed to initialize Sentry:", err)
+		return false
 	}
 
 	return true
