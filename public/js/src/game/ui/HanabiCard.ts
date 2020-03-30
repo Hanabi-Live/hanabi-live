@@ -436,6 +436,7 @@ export default class HanabiCard extends Konva.Group {
                 // This section must be below the Brown-Ones section,
                 // because e.g. Brown-One Pink cards are not touched by rank
             } else {
+                // The default case (e.g. No Variant)
                 // Remove all possibilities that do not include this rank
                 ranksRemoved = filterInPlace(
                     this.possibleRanks,
@@ -447,46 +448,49 @@ export default class HanabiCard extends Konva.Group {
             // Some suits are not touched by any rank clues
             // So we may be able to remove a suit pip or a card possibility
             if (positive) {
-                suitsRemoved = filterInPlace(
-                    this.possibleSuits,
-                    (suit: Suit) => suit.clueRanks !== 'none',
-                );
-
-                // Also handle the special case where two positive rank clues
-                // should "fill in" a card of a multi-rank suit
+                // Checking for "Pink-" also checks for "Light-Pink-"
                 if (
-                    this.positiveRankClues.length >= 2
-                    // Checking for "Pink-" also checks for "Light-Pink-"
-                    && !(globals.variant.name.includes('Pink-Ones') && this.possibleRanks.includes(1))
+                    !(globals.variant.name.includes('Pink-Ones') && this.possibleRanks.includes(1))
                     && !(globals.variant.name.includes('Omni-Ones') && this.possibleRanks.includes(1))
                     && !(globals.variant.name.includes('Pink-Fives') && this.possibleRanks.includes(5))
                     && !(globals.variant.name.includes('Omni-Fives') && this.possibleRanks.includes(5))
                 ) {
                     suitsRemoved = filterInPlace(
                         this.possibleSuits,
-                        (suit: Suit) => suit.clueRanks === 'all',
+                        (suit: Suit) => suit.clueRanks !== 'none',
                     );
-                }
 
-                // Remove all the possibilities for cards that are definately not this rank
-                if (possibilitiesCheck()) {
-                    for (const suit of globals.variant.suits) {
-                        if (suit.clueRanks === 'all') {
-                            continue;
-                        }
-                        for (const rank of globals.variant.ranks) {
-                            if (rank === clueRank) {
+                    // Also handle the special case where two positive rank clues
+                    // should "fill in" a card of a multi-rank suit
+                    if (
+                        this.positiveRankClues.length >= 2
+                    ) {
+                        suitsRemoved = filterInPlace(
+                            this.possibleSuits,
+                            (suit: Suit) => suit.clueRanks === 'all',
+                        );
+                    }
+
+                    // Remove all the possibilities for cards that are definately not this rank
+                    if (possibilitiesCheck()) {
+                        for (const suit of globals.variant.suits) {
+                            if (suit.clueRanks === 'all') {
                                 continue;
                             }
-                            if (
-                                (globals.variant.name.includes('Pink-Ones') && rank === 1)
-                                || (globals.variant.name.includes('Omni-Ones') && rank === 1)
-                                || (globals.variant.name.includes('Pink-Fives') && rank === 5)
-                                || (globals.variant.name.includes('Omni-Fives') && rank === 5)
-                            ) {
-                                continue;
+                            for (const rank of globals.variant.ranks) {
+                                if (rank === clueRank) {
+                                    continue;
+                                }
+                                if (
+                                    (globals.variant.name.includes('Pink-Ones') && rank === 1)
+                                    || (globals.variant.name.includes('Omni-Ones') && rank === 1)
+                                    || (globals.variant.name.includes('Pink-Fives') && rank === 5)
+                                    || (globals.variant.name.includes('Omni-Fives') && rank === 5)
+                                ) {
+                                    continue;
+                                }
+                                this.removePossibility(suit, rank, true);
                             }
-                            this.removePossibility(suit, rank, true);
                         }
                     }
                 }
@@ -536,6 +540,7 @@ export default class HanabiCard extends Konva.Group {
                 // So if this is a negative color clue,
                 // we cannot remove any color pips from the card
             } else {
+                // The default case (e.g. No Variant)
                 // Remove all possibilities that do not include this color
                 suitsRemoved = filterInPlace(
                     this.possibleSuits,
