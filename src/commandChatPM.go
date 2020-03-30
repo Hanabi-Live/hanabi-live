@@ -107,7 +107,6 @@ func commandChatPM(s *Session, d *CommandData) {
 		return
 	}
 
-	// Echo the private message back to the person who sent it
 	chatMessage := &ChatMessage{
 		Msg:       d.Msg,
 		Who:       s.Username(),
@@ -115,6 +114,10 @@ func commandChatPM(s *Session, d *CommandData) {
 		Room:      d.Room,
 		Recipient: recipientSession.Username(),
 	}
+
+	// Echo the private message back to the person who sent it
 	s.Emit("chat", chatMessage)
+
+	// Send the private message to the recipient
 	recipientSession.Emit("chat", chatMessage)
 }

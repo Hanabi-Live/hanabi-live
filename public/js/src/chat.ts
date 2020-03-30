@@ -108,50 +108,68 @@ const keypress = (room: string) => function keypressFunction(
 
     // Check for chat commands
     const args = msg.split(' ');
-    if (
-        msg.startsWith('/pm')
-        || msg.startsWith('/w')
-        || msg.startsWith('/whisper')
-        || msg.startsWith('/msg')
-    ) {
-        // Validate that the format of the command is correct
-        if (args.length < 3) {
-            modals.warningShow('The format of a private message is: <code>/w Alice hello</code>');
-            return;
-        }
+    if (args[0].startsWith('/')) {
+        let command = args.shift();
+        command = command!.substring(1); // Remove the forward slash
 
-        // Validate that they are not sending a private message to themselves
-        let recipient = args[1];
-        if (recipient.toLowerCase() === globals.username.toLowerCase()) {
-            modals.warningShow('You cannot send a private message to yourself.');
-            return;
-        }
-
-        // Validate that the receipient is online
-        let isOnline = false;
-        for (const user of globals.userMap.values()) {
-            if (user.name.toLowerCase() === recipient.toLowerCase()) {
-                isOnline = true;
-
-                // Overwrite the recipient in case the user capitalized the username wrong
-                recipient = user.name;
-
-                break;
+        if (
+            command === 'pm'
+            || command === 'w'
+            || command === 'whisper'
+            || command === 'msg'
+        ) {
+            // Validate that the format of the command is correct
+            if (args.length < 2) {
+                modals.warningShow('The format of a private message is: <code>/w Alice hello</code>');
+                return;
             }
-        }
-        if (!isOnline) {
-            modals.warningShow(`User "${recipient}" is not currently online.`);
+
+            let recipient = args[0];
+            args.shift(); // Remove the recipient
+
+            // Validate that they are not sending a private message to themselves
+            if (recipient.toLowerCase() === globals.username.toLowerCase()) {
+                modals.warningShow('You cannot send a private message to yourself.');
+                return;
+            }
+
+            // Validate that the receipient is online
+            let isOnline = false;
+            for (const user of globals.userMap.values()) {
+                if (user.name.toLowerCase() === recipient.toLowerCase()) {
+                    isOnline = true;
+
+                    // Overwrite the recipient in case the user capitalized the username wrong
+                    recipient = user.name;
+
+                    break;
+                }
+            }
+            if (!isOnline) {
+                modals.warningShow(`User "${recipient}" is not currently online.`);
+                return;
+            }
+
+            globals.conn.send('chatPM', {
+                msg: args.join(' '),
+                recipient,
+                room,
+            });
             return;
         }
 
-        args.shift(); // Remove the "/pm"
-        args.shift(); // Remove the recipient
-        globals.conn.send('chatPM', {
-            msg: args.join(' '),
-            recipient,
-            room,
-        });
-        return;
+        if (command === 'whoami') {
+            add({
+                msg: `You are:&nbsp; <strong>${globals.username}</strong>`,
+                who: '',
+                discord: false,
+                server: true,
+                datetime: new Date().getTime(),
+                room,
+                recipient: '',
+            }, false);
+            return;
+        }
     }
 
     // This is not a command, so send a the chat message to the server
