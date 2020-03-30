@@ -146,6 +146,9 @@ commands.set('hypoAction', (data: string) => {
 
 commands.set('hypoBack', () => {
     hypothetical.backOneTurn();
+    if (!globals.amSharedReplayLeader) {
+        globals.elements.sharedReplayBackwardTween!.play();
+    }
 });
 
 commands.set('hypoEnd', () => {
