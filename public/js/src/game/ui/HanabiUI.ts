@@ -6,8 +6,8 @@
 
 // Imports
 import Konva from 'konva';
-import * as action from './action';
 import { LABEL_COLOR, STACK_BASE_RANK } from '../../constants';
+import * as action from './action';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
 import globals, { Globals } from './globals';

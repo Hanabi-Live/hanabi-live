@@ -1,5 +1,19 @@
+// import SentryWebpackPlugin from '@sentry/webpack-plugin';
+import * as fs from 'fs';
 import * as path from 'path';
 import * as webpack from 'webpack';
+
+// Constants
+const epoch = new Date().getTime();
+
+// Delete old source maps
+const files = fs.readdirSync(__dirname);
+for (const file of files) {
+    const match = file.match(/main.min.js.\d+.map/g);
+    if (match) {
+        fs.unlinkSync(path.join(__dirname, file));
+    }
+}
 
 const config: webpack.Configuration = {
     // The entry file to bundle
@@ -11,13 +25,20 @@ const config: webpack.Configuration = {
         filename: 'main.min.js',
         // Chrome caches source maps and will not update them even after a hard-refresh
         // Work around this by putting the epoch timestamp in the source map filename
-        sourceMapFilename: `main.min.js.${new Date().getTime()}.map`,
+        sourceMapFilename: `main.min.js.${epoch}.map`,
     },
 
     resolve: {
         extensions: ['.js', '.ts', '.json'],
         symlinks: false, // Performance optimization
     },
+
+    // Webpack will display a warning unless we specify the mode
+    // Production mode minifies the resulting JavaScript
+    mode: (
+        process.platform === 'win32'
+        || process.platform === 'darwin' ? 'development' : 'production'
+    ),
 
     // Loaders are transformations that are applied on the source code of a module
     // https://webpack.js.org/concepts/loaders/
@@ -32,13 +53,6 @@ const config: webpack.Configuration = {
         ],
     },
 
-    // Webpack will display a warning unless we specify the mode
-    // Production mode minifies the resulting JavaScript
-    mode: (
-        process.platform === 'win32'
-        || process.platform === 'darwin' ? 'development' : 'production'
-    ),
-
     plugins: [
         // ProvidePlugin automatically loads modules instead of having to import them everywhere
         // https://webpack.js.org/plugins/provide-plugin/
@@ -46,6 +60,21 @@ const config: webpack.Configuration = {
             // The Hanabi codebase and the Tooltipster library uses "$" to invoke jQuery
             $: 'jquery',
         }),
+
+        // Using the "@sentry/browser" package will cause the TypeScript source maps to get messed
+        // up; we use the custom Sentry Webpack plugin to fix this
+        // https://docs.sentry.io/platforms/javascript/sourcemaps/
+        /*
+        new SentryWebpackPlugin({
+            include: '.',
+            ignore: [
+                'lib',
+                'node_modules',
+                '.eslintrc.js',
+                'Gruntfile.js',
+            ],
+        }),
+        */
     ],
 
     // Ignore the warnings that recommend splitting up the codebase into separate bundles
@@ -59,8 +88,7 @@ const config: webpack.Configuration = {
 
     // Enable source maps for debugging purposes
     // (this will show the line number of the real file in the browser console)
-    // Note that line numbers are not exact because the source map removes all comments
-    devtool: 'source-map',
+    // devtool: 'source-map',
 };
 
 export default config;

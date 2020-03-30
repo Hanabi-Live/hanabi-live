@@ -1,5 +1,6 @@
 // Imports
 import Konva from 'konva';
+import Suit from '../../Suit';
 import Arrow from './Arrow';
 import Button from './Button';
 import ButtonGroup from './ButtonGroup';
@@ -18,7 +19,6 @@ import RankButton from './RankButton';
 import Shuttle from './Shuttle';
 import StrikeSquare from './StrikeSquare';
 import StrikeX from './StrikeX';
-import Suit from '../../Suit';
 import TimerDisplay from './TimerDisplay';
 
 export default class Elements {

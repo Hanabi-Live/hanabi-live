@@ -4,8 +4,8 @@
 
 // Imports
 import { LABEL_COLOR, MAX_CLUE_NUM } from '../../constants';
-import globals from './globals';
 import Variant from '../../Variant';
+import globals from './globals';
 
 export const updatePace = () => {
     const label = globals.elements.paceNumberLabel;

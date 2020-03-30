@@ -3,14 +3,14 @@
 */
 
 // Imports
+import { STACK_BASE_RANK } from '../../constants';
 import * as arrows from './arrows';
+import { suitToMsgSuit } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import * as hypothetical from './hypothetical';
 import * as notes from './notes';
 import * as replay from './replay';
-import { STACK_BASE_RANK } from '../../constants';
-import { suitToMsgSuit } from './convert';
 
 export default function HanabiCardClick(this: HanabiCard, event: any) {
     // Speedrunning overrides the normal card clicking behavior

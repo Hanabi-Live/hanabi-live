@@ -3,13 +3,13 @@
 */
 
 // Imports
-import SlimSelect from 'slim-select';
 import shajs from 'sha.js';
+import SlimSelect from 'slim-select';
+import { VARIANTS } from '../constants';
+import variantsJSON from '../data/variants.json';
 import globals from '../globals';
 import * as misc from '../misc';
 import * as modals from '../modals';
-import variantsJSON from '../data/variants.json';
-import { VARIANTS } from '../constants';
 
 // Constants
 const basicVariants = [

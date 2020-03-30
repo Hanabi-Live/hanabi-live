@@ -1,22 +1,7 @@
 /*
     The main entry point for the Hanabi client code
+    The client code is split up into multiple files and bundled together with Webpack
 */
-
-// The client code is split up into multiple files and bundled together with Webpack
-import * as chat from './chat';
-import * as gameMain from './game/main';
-import * as gameChat from './game/chat';
-import * as gameSounds from './game/sounds';
-import gameTooltipsInit from './game/tooltipsInit';
-import * as lobbyCreateGame from './lobby/createGame';
-import * as lobbyHistory from './lobby/history';
-import * as lobbyLogin from './lobby/login';
-import lobbyKeyboardInit from './lobby/keyboardInit';
-import lobbyNavInit from './lobby/navInit';
-import * as lobbySettingsTooltip from './lobby/settingsTooltip';
-import lobbyTutorialInit from './lobby/tutorialInit';
-import * as lobbyWatchReplay from './lobby/watchReplay';
-import * as modals from './modals';
 
 // Tooltipster is a jQuery library, so we import it purely for the side-effects
 // (e.g. so that it can add the ".tooltipster" property to the "$" object)
@@ -30,6 +15,31 @@ import 'tooltipster';
 // ScrollableTip is a Tooltipster library that allows for a scrolling tooltip
 // We import it for the side-effects for the same reason
 import '../lib/tooltipster-scrollableTip.min';
+
+// import * as Sentry from '@sentry/browser';
+import * as chat from './chat';
+import * as gameChat from './game/chat';
+import * as gameMain from './game/main';
+import * as gameSounds from './game/sounds';
+import gameTooltipsInit from './game/tooltipsInit';
+import * as lobbyCreateGame from './lobby/createGame';
+import * as lobbyHistory from './lobby/history';
+import lobbyKeyboardInit from './lobby/keyboardInit';
+import * as lobbyLogin from './lobby/login';
+import lobbyNavInit from './lobby/navInit';
+import * as lobbySettingsTooltip from './lobby/settingsTooltip';
+import lobbyTutorialInit from './lobby/tutorialInit';
+import * as lobbyWatchReplay from './lobby/watchReplay';
+import * as modals from './modals';
+
+// Initialize Sentry logging
+if (!window.location.pathname.includes('/dev')) {
+    /*
+    Sentry.init({
+        dsn: 'https://aeaf0703c4d8471dbad6d9a01416a8e5@sentry.io/5179828',
+    });
+    */
+}
 
 // Add a function to the jQuery object to detect if an element is off screen
 // https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen

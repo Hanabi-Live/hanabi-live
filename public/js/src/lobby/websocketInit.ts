@@ -3,10 +3,10 @@
 */
 
 // Imports
-import Game from './Game';
-import GameHistory from './GameHistory';
 import * as gameMain from '../game/main';
 import globals from '../globals';
+import Game from './Game';
+import GameHistory from './GameHistory';
 import * as history from './history';
 import * as pregame from './pregame';
 import tablesDraw from './tablesDraw';

@@ -4,11 +4,11 @@
 */
 
 // Imports
-import Clue from './Clue';
-import MsgClue from './MsgClue';
+import { CLUE_TYPE } from '../../constants';
 import Suit from '../../Suit';
 import Variant from '../../Variant';
-import { CLUE_TYPE } from '../../constants';
+import Clue from './Clue';
+import MsgClue from './MsgClue';
 
 // Convert a clue to the format used by the server
 // On the client, the color is a rich object

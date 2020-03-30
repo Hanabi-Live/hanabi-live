@@ -4,17 +4,17 @@
 */
 
 // Imports
-import { Action } from './actions';
 import { ACTION, CLUE_TYPE, REPLAY_ACTION_TYPE } from '../../constants';
-import fadeCheck from './fadeCheck';
-import { getTouchedCardsFromClue } from './clues';
-import globals from './globals';
 import * as action from './action';
+import { Action } from './actions';
+import { getTouchedCardsFromClue } from './clues';
+import { suitToMsgSuit } from './convert';
+import fadeCheck from './fadeCheck';
+import globals from './globals';
+import LayoutChild from './LayoutChild';
 import notify from './notify';
 import PlayerButton from './PlayerButton';
 import * as replay from './replay';
-import { suitToMsgSuit } from './convert';
-import LayoutChild from './LayoutChild';
 
 export const start = () => {
     if (globals.hypothetical) {

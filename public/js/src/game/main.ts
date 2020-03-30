@@ -3,14 +3,14 @@
 */
 
 // Imports
-import * as chat from './chat';
 import { FADE_TIME } from '../constants';
 import globals from '../globals';
-import HanabiUI from './ui/HanabiUI';
-import * as misc from '../misc';
-import * as sounds from './sounds';
 import tablesDraw from '../lobby/tablesDraw';
 import usersDraw from '../lobby/usersDraw';
+import * as misc from '../misc';
+import * as chat from './chat';
+import * as sounds from './sounds';
+import HanabiUI from './ui/HanabiUI';
 
 export const init = () => {
     // Disable the right-click context menu while in a game

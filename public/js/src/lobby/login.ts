@@ -5,8 +5,8 @@
 // Imports
 import shajs from 'sha.js';
 import globals from '../globals';
-import * as loginMisc from './loginMisc';
 import websocketInit from '../websocketInit';
+import * as loginMisc from './loginMisc';
 
 export const init = () => {
     $('#login-button').click(() => {

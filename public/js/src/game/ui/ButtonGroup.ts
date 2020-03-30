@@ -1,7 +1,7 @@
 // Imports
 import Konva from 'konva';
-import PlayerButton from './PlayerButton';
 import ColorButton from './ColorButton';
+import PlayerButton from './PlayerButton';
 import RankButton from './RankButton';
 
 export default class ButtonGroup extends Konva.Group {

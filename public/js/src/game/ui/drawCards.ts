@@ -3,6 +3,7 @@
 */
 
 // Imports
+import Color from '../../Color';
 import {
     CARD_H,
     CARD_W,
@@ -11,12 +12,11 @@ import {
     SUITS,
     UNKNOWN_CARD_RANK,
 } from '../../constants';
-import Color from '../../Color';
+import Suit from '../../Suit';
+import Variant from '../../Variant';
 import drawPip from './drawPip';
 import drawRank from './drawRank';
 import globals from './globals';
-import Suit from '../../Suit';
-import Variant from '../../Variant';
 
 // This function returns an object containing all of the drawn cards images (on individual canvases)
 export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean) => {

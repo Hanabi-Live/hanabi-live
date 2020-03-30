@@ -1,7 +1,7 @@
 // Imports
 import Konva from 'konva';
-import backToLobby from './backToLobby';
 import { LABEL_COLOR, REPLAY_ACTION_TYPE } from '../../constants';
+import backToLobby from './backToLobby';
 import globals from './globals';
 import * as tooltips from './tooltips';
 

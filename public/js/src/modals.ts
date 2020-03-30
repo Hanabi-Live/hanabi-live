@@ -7,8 +7,8 @@ import shajs from 'sha.js';
 import { FADE_TIME } from './constants';
 import * as gameChat from './game/chat';
 import globals from './globals';
-import * as misc from './misc';
 import * as lobbyNav from './lobby/nav';
+import * as misc from './misc';
 
 // The list of all of the modals
 const modals = [

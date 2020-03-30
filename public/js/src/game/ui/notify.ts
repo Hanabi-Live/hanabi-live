@@ -5,6 +5,13 @@
 // Imports
 import Konva from 'konva';
 import {
+    CARD_W,
+    CLUE_TYPE,
+    LABEL_COLOR,
+    MAX_CLUE_NUM,
+    STACK_DIRECTION,
+} from '../../constants';
+import {
     ActionClue,
     ActionDiscard,
     ActionDraw,
@@ -18,21 +25,14 @@ import {
 } from './actions';
 import * as arrows from './arrows';
 import ClueEntry from './ClueEntry';
-import {
-    CARD_W,
-    CLUE_TYPE,
-    LABEL_COLOR,
-    MAX_CLUE_NUM,
-    STACK_DIRECTION,
-} from '../../constants';
 import { msgClueToClue, msgSuitToSuit } from './convert';
 import fadeCheck from './fadeCheck';
 import globals from './globals';
+import LayoutChild from './LayoutChild';
 import possibilitiesCheck from './possibilitiesCheck';
 import * as stats from './stats';
 import strikeRecord from './strikeRecord';
 import updateCurrentPlayerArea from './updateCurrentPlayerArea';
-import LayoutChild from './LayoutChild';
 
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list of notifies sent upon loading a new

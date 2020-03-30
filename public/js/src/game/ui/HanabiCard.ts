@@ -5,7 +5,7 @@
 
 // Imports
 import Konva from 'konva';
-import Clue from './Clue';
+import Color from '../../Color';
 import {
     CARD_FADE,
     CARD_H,
@@ -16,15 +16,15 @@ import {
     START_CARD_RANK,
     SUITS,
 } from '../../constants';
-import Color from '../../Color';
+import Suit from '../../Suit';
+import Clue from './Clue';
+import { msgSuitToSuit, suitToMsgSuit } from './convert';
 import globals from './globals';
 import * as HanabiCardInit from './HanabiCardInit';
-import { msgSuitToSuit, suitToMsgSuit } from './convert';
 import NoteIndicator from './NoteIndicator';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
 import RankPip from './RankPip';
-import Suit from '../../Suit';
 
 export default class HanabiCard extends Konva.Group {
     // Mark the object type for use elsewhere in the code

@@ -4,19 +4,6 @@
 
 // Imports
 import Konva from 'konva';
-import Arrow from './Arrow';
-import * as arrows from './arrows';
-import backToLobby from './backToLobby';
-import Button from './Button';
-import ButtonGroup from './ButtonGroup';
-import ClickArea from './ClickArea';
-import * as clues from './clues';
-import CurrentPlayerArea from './CurrentPlayerArea';
-import Deck from './Deck';
-import CardLayout from './CardLayout';
-import Clue from './Clue';
-import ClueLog from './ClueLog';
-import ColorButton from './ColorButton';
 import {
     ACTION,
     CLUE_TYPE,
@@ -25,6 +12,19 @@ import {
     REPLAY_ARROW_ORDER,
     STACK_BASE_RANK,
 } from '../../constants';
+import Arrow from './Arrow';
+import * as arrows from './arrows';
+import backToLobby from './backToLobby';
+import Button from './Button';
+import ButtonGroup from './ButtonGroup';
+import CardLayout from './CardLayout';
+import ClickArea from './ClickArea';
+import Clue from './Clue';
+import ClueLog from './ClueLog';
+import * as clues from './clues';
+import ColorButton from './ColorButton';
+import CurrentPlayerArea from './CurrentPlayerArea';
+import Deck from './Deck';
 import drawHands from './drawHands';
 import drawReplayArea from './drawReplayArea';
 import FitText from './FitText';
@@ -32,20 +32,20 @@ import FullActionLog from './FullActionLog';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import * as hypothetical from './hypothetical';
+import ImageWithTooltip from './ImageWithTooltip';
 import LayoutChild from './LayoutChild';
 import MultiFitText from './MultiFitText';
 import PlayerButton from './PlayerButton';
 import PlayStack from './PlayStack';
 import RankButton from './RankButton';
+import RectWithTooltip from './RectWithTooltip';
 import * as replay from './replay';
 import * as stats from './stats';
+import StrikeSquare from './StrikeSquare';
 import StrikeX from './StrikeX';
 import * as timer from './timer';
 import TimerDisplay from './TimerDisplay';
 import * as tooltips from './tooltips';
-import RectWithTooltip from './RectWithTooltip';
-import StrikeSquare from './StrikeSquare';
-import ImageWithTooltip from './ImageWithTooltip';
 
 interface Values {
     x: number,

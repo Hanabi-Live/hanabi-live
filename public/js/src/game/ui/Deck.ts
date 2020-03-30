@@ -1,10 +1,10 @@
 // Imports
 import Konva from 'konva';
+import { ACTION, REPLAY_ARROW_ORDER, TOOLTIP_DELAY } from '../../constants';
+import { timerFormatter } from '../../misc';
 import * as action from './action';
 import * as arrows from './arrows';
-import { ACTION, REPLAY_ARROW_ORDER, TOOLTIP_DELAY } from '../../constants';
 import globals from './globals';
-import { timerFormatter } from '../../misc';
 import * as tooltips from './tooltips';
 
 export default class Deck extends Konva.Group {

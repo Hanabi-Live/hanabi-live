@@ -1,8 +1,8 @@
 // Imports
 import Color from './Color';
+import variantsJSON from './data/variants.json';
 import Suit from './Suit';
 import Variant from './Variant';
-import variantsJSON from './data/variants.json';
 
 type VariantJSON = {
     id: number,

@@ -1,16 +1,16 @@
 // Imports
-import * as arrows from './arrows';
-import { ACTION, CLUE_TYPE } from '../../constants';
-import Clue from './Clue';
-import { clueToMsgClue, msgClueToClue } from './convert';
 import Color from '../../Color';
+import { ACTION, CLUE_TYPE } from '../../constants';
+import * as arrows from './arrows';
+import Clue from './Clue';
 import ColorButton from './ColorButton';
+import { clueToMsgClue, msgClueToClue } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import MsgClue from './MsgClue';
 import PlayerButton from './PlayerButton';
-import * as turn from './turn';
 import RankButton from './RankButton';
+import * as turn from './turn';
 
 export const checkLegal = () => {
     let clueTargetButtonGroup;

@@ -4,8 +4,8 @@
 
 // Imports
 import { VARIANTS } from '../constants';
-import GameHistory from './GameHistory';
 import globals from '../globals';
+import GameHistory from './GameHistory';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
 import usersDraw from './usersDraw';

@@ -1,25 +1,61 @@
 {
     // https://www.typescriptlang.org/docs/handbook/compiler-options.html
     "compilerOptions": {
+        // "outDir" specifies the output directory
+        // By default, it will put the compiled ".js" and ".js.map" next to the respective ".ts"
+        // file, which will clutter the "src" directory
         "outDir": "./dist",
-        "target": "ES2018",
-        "newLine": "lf",
-        "moduleResolution": "Node",
-        "removeComments": true,
 
-        // These options are necessary in order to import JSON files via ES6-style import statements
+        // "target" specifies the ECMAScript target version
+        // By default, it is "ES3"
+        // This is too conservative; Hanabi Live will target browsers within a 2 year timeframe
+        "target": "ES2018",
+
+        // "newLine" specifies the end of line sequence
+        // By default, it is "crlf" on Windows; we want to always use "lf" in order to match the
+        // code base and reduce the file size of the output
+        "newLine": "lf",
+
+        // "moduleResolution" specifies how modules (imports) get resolved
+        // By default, it is "Classic", but this is a legacy option,
+        // and Node will be the default in the future
+        // https://www.typescriptlang.org/docs/handbook/module-resolution.html
+        // Specifying "Node" here is also necessary in order for JSON files to be imported without
+        // erroring
+        "moduleResolution": "Node",
+
+        // "resolveJsonModule" includes modules imported with ".json" extensions
+        // By default, it is false
+        // We import JSON files in the code base, so this is needed
         "resolveJsonModule": true,
+
+        // "esModuleInterop" emits "__importStar" and "__importDefault" helpers for ecosystem
+        // compatibility and enables the "--allowSyntheticDefaultImports" flag for typesystem
+        // compatibility
+        // By default, it is false
+        // Specifying this is needed for various JavaScript libraries to work with TypeScript
         "esModuleInterop": true,
 
         // We want the compiler to be as strict as possible to catch all the things
+        // By default, these flags are false
         "strict": true,
         "noImplicitReturns": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
+
+        // By default, TypeScript will remove all blank lines
+        // This will cause the source maps to report the wrong line numbers
+        // We must specify both of these options in order to fix the problem
+        /*
+        "sourceMap": true,
+        "inlineSources": true,
+        "sourceRoot": "/src",
+        */
+        "removeComments": true,
     },
 
     "include": [
         "./src/**/*.ts",
-        "webpack.config.ts",
+        "./webpack.config.ts",
     ],
 }

@@ -1,8 +1,8 @@
 // Imports
 import Phaser from 'phaser';
 import { CARD_H, CARD_W, PLAY_AREA_PADDING } from '../constants';
-import HanabiCard from './HanabiCard';
 import Suit from '../Suit';
+import HanabiCard from './HanabiCard';
 import * as utils from './utils';
 
 // Phaser devs warned against using too many levels of nested containers, so I didn't design

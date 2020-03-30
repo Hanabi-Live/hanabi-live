@@ -1,7 +1,7 @@
 // Imports
 import Konva from 'konva';
-import CardLayout from './CardLayout';
 import { CHARACTERS } from '../../constants';
+import CardLayout from './CardLayout';
 import globals from './globals';
 import NameFrame from './NameFrame';
 import * as stats from './stats';

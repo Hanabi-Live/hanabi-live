@@ -3,8 +3,8 @@
 */
 
 // Imports
-import * as arrows from './arrows';
 import { CLUE_TYPE, REPLAY_ARROW_ORDER, VARIANTS } from '../../constants';
+import * as arrows from './arrows';
 import fadeCheck from './fadeCheck';
 import globals from './globals';
 import * as hypothetical from './hypothetical';

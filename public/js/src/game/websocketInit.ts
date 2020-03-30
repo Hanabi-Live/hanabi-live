@@ -3,10 +3,10 @@
 */
 
 // Imports
-import { VARIANTS } from '../constants';
-import drawCards from './ui/drawCards';
-import globals from '../globals';
 import phaserInit from '../client_v2/phaserInit';
+import { VARIANTS } from '../constants';
+import globals from '../globals';
+import drawCards from './ui/drawCards';
 import websocket from './ui/websocket';
 
 export default () => {

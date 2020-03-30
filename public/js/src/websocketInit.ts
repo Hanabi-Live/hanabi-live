@@ -11,10 +11,10 @@ import * as gameChat from './game/chat';
 import gameWebsocketInit from './game/websocketInit';
 import globals from './globals';
 import * as lobbyLoginMisc from './lobby/loginMisc';
+import * as pregame from './lobby/pregame';
 import * as lobbySettingsTooltip from './lobby/settingsTooltip';
 import lobbyWebsocketInit from './lobby/websocketInit';
 import * as modals from './modals';
-import * as pregame from './lobby/pregame';
 
 export default () => {
     // Ensure that we are connecting to the right URL

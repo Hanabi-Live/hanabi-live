@@ -4,14 +4,14 @@
 
 // Imports
 import Konva from 'konva';
-import * as action from './action';
 import { MAX_CLUE_NUM, REPLAY_ACTION_TYPE } from '../../constants';
+import * as action from './action';
 import fadeCheck from './fadeCheck';
 import globals from './globals';
+import LayoutChild from './LayoutChild';
 import notify from './notify';
 import Shuttle from './Shuttle';
 import * as stats from './stats';
-import LayoutChild from './LayoutChild';
 
 /*
     Main replay functions

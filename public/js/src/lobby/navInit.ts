@@ -1,10 +1,10 @@
 // Imports
-import * as createGame from './createGame';
 import { FADE_TIME } from '../constants';
 import globals from '../globals';
-import * as history from './history';
 import * as misc from '../misc';
 import * as modals from '../modals';
+import * as createGame from './createGame';
+import * as history from './history';
 import * as nav from './nav';
 import * as pregame from './pregame';
 import * as watchReplay from './watchReplay';

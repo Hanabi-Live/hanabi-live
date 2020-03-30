@@ -5,16 +5,16 @@
 
 // Imports
 import Konva from 'konva';
-import Arrow from './Arrow';
 import {
     ARROW_COLOR,
     CLUE_TYPE,
     REPLAY_ACTION_TYPE,
     STACK_BASE_RANK,
 } from '../../constants';
+import Arrow from './Arrow';
 import Clue from './Clue';
-import HanabiCard from './HanabiCard';
 import globals from './globals';
+import HanabiCard from './HanabiCard';
 
 export const hideAll = () => {
     let changed = false;

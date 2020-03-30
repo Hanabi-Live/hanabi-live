@@ -5,10 +5,10 @@
 
 // Imports
 import Konva from 'konva';
+import { STACK_BASE_RANK } from '../../constants';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
-import { STACK_BASE_RANK } from '../../constants';
 
 export default class PlayStack extends Konva.Group {
     addChild(child: LayoutChild) {

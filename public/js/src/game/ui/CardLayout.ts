@@ -6,8 +6,8 @@
 // Imports
 import Konva from 'konva';
 import globals from './globals';
-import LayoutChild from './LayoutChild';
 import HanabiCard from './HanabiCard';
+import LayoutChild from './LayoutChild';
 
 export default class CardLayout extends Konva.Group {
     align: string;

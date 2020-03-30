@@ -4,8 +4,8 @@
 
 // Imports
 import Konva from 'konva';
-import * as arrows from './arrows';
 import { CARD_H, CARD_W, START_CARD_RANK } from '../../constants';
+import * as arrows from './arrows';
 import CardLayout from './CardLayout';
 import drawPip from './drawPip';
 import globals from './globals';

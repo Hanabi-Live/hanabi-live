@@ -6,9 +6,9 @@
 import linkifyHtml from 'linkifyjs/html';
 import ChatMessage from './ChatMessage';
 import { FADE_TIME } from './constants';
-import globals from './globals';
 import emojis from './data/emojis.json';
 import emoteCategories from './data/emotes.json';
+import globals from './globals';
 
 // Variables
 const emojiMap = new Map();

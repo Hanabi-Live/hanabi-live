@@ -1,7 +1,7 @@
 // Imports
+import { ACTION, MAX_CLUE_NUM } from '../../constants';
 import * as action from './action';
 import { Action } from './actions';
-import { ACTION, MAX_CLUE_NUM } from '../../constants';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as replay from './replay';

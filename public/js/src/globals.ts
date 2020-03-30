@@ -3,10 +3,10 @@
 */
 
 // Imports
+import version from './data/version.json';
 import Game from './lobby/Game';
 import GameHistory from './lobby/GameHistory';
 import Settings from './lobby/Settings';
-import version from './data/version.json';
 // (the "version.json" file is filled in dynamically by the "build_client.sh" script)
 
 type screen = 'login' | 'lobby' | 'pregame' | 'game' | 'history' | 'historyOtherScores';

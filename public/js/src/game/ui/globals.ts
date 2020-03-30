@@ -5,18 +5,18 @@
 
 // Imports
 import Konva from 'konva';
+import { VARIANTS } from '../../constants';
+import { Globals as LobbyGlobals } from '../../globals';
+import Variant from '../../Variant';
 import { Action } from './actions';
 import Elements from './Elements';
+import HanabiCard from './HanabiCard';
 import Layers from './Layers';
 import LearnedCard from './LearnedCard';
 import Loader from './Loader';
-import { Globals as LobbyGlobals } from '../../globals';
-import HanabiCard from './HanabiCard';
-import SpectatorNote from './SpectatorNote';
 import SimpleCard from './SimpleCard';
+import SpectatorNote from './SpectatorNote';
 import State from './State';
-import Variant from '../../Variant';
-import { VARIANTS } from '../../constants';
 
 export class Globals {
     // Objects sent upon UI initialization

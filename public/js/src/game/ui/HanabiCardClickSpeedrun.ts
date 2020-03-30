@@ -3,6 +3,7 @@
 */
 
 // Imports
+import Color from '../../Color';
 import {
     ACTION,
     CLUE_TYPE,
@@ -10,7 +11,6 @@ import {
     STACK_BASE_RANK,
     START_CARD_RANK,
 } from '../../constants';
-import Color from '../../Color';
 import ColorButton from './ColorButton';
 import globals from './globals';
 import HanabiCard from './HanabiCard';

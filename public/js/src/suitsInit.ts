@@ -1,7 +1,7 @@
 // Imports
 import Color from './Color';
-import Suit from './Suit';
 import suitsJSON from './data/suits.json';
+import Suit from './Suit';
 
 type SuitJSON = {
     abbreviation?: string,
