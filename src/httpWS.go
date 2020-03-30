@@ -65,7 +65,7 @@ func httpWS(c *gin.Context) {
 	session := gsessions.Default(c)
 	var userID int
 	if v := session.Get("userID"); v == nil {
-		logger.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
+		logger.Info("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
 			"(failed userID check).")
 		http.Error(
 			w,
