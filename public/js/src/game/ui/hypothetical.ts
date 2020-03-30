@@ -138,8 +138,7 @@ export const beginTurn = () => {
     // Set the current player's hand to be draggable
     const hand = globals.elements.playerHands[globals.currentPlayerIndex];
     for (const layoutChild of hand.children.toArray() as Array<LayoutChild>) {
-        layoutChild.draggable(true);
-        layoutChild.on('dragend', layoutChild.dragEnd);
+        layoutChild.checkSetDraggable();
     }
 };
 

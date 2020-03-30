@@ -49,9 +49,11 @@ export default class LayoutChild extends Konva.Group {
         if (globals.hypothetical) {
             if (globals.amSharedReplayLeader && globals.currentPlayerIndex === card.holder) {
                 this.draggable(true);
+                this.on('dragstart', this.dragStart);
                 this.on('dragend', this.dragEnd);
             } else {
                 this.draggable(false);
+                this.off('dragstart');
                 this.off('dragend');
             }
             return;
@@ -79,6 +81,13 @@ export default class LayoutChild extends Konva.Group {
 
         this.draggable(true);
         this.on('dragend', this.dragEnd);
+    }
+
+    dragStart() {
+        // In a hypothetical, dragging a rotated card from another person's hand is frustrating,
+        // so temporarily remove all rotation (for the duration of the drag)
+        // The rotation will be automatically reset if the card tweens back to the hand
+        this.rotation(this.parent!.rotation() * -1);
     }
 
     dragEnd() {
