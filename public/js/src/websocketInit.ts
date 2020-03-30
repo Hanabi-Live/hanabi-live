@@ -154,7 +154,11 @@ const initCommands = () => {
             if (match) {
                 gameIDString = match[1];
             } else if (window.location.pathname === '/dev2') {
-                gameIDString = '51'; // The first game in the Hanabi Live database
+                if (window.location.hostname === 'localhost') {
+                    gameIDString = '1';
+                } else {
+                    gameIDString = '51'; // The first game in the Hanabi Live database
+                }
             }
             if (gameIDString !== '') {
                 setTimeout(() => {
