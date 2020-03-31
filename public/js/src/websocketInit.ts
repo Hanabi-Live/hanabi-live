@@ -101,6 +101,8 @@ const initCommands = () => {
         id: number,
         username: string,
         totalGames: number,
+        admin: boolean,
+        muted: boolean,
         firstTimeUser: boolean,
         settings: any,
         version: number,
@@ -111,6 +113,8 @@ const initCommands = () => {
         globals.id = data.id;
         globals.username = data.username; // We might have logged-in with a different stylization
         globals.totalGames = data.totalGames;
+        globals.admin = data.admin;
+        globals.muted = data.muted;
         globals.settings = data.settings;
         globals.shuttingDown = data.shuttingDown;
 

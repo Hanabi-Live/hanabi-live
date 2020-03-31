@@ -46,6 +46,12 @@ func commandChat(s *Session, d *CommandData) {
 		Validate
 	*/
 
+	// Check to see if their IP has been muted
+	if s.Muted() {
+		s.Warning("You have been muted by an administrator.")
+		return
+	}
+
 	// Validate the message
 	if d.Msg == "" {
 		if s != nil {

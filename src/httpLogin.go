@@ -48,7 +48,7 @@ func httpLogin(c *gin.Context) {
 	*/
 
 	// Check to see if their IP is banned
-	if userIsBanned, err := models.BannedIPs.Check(ip); err != nil {
+	if banned, err := models.BannedIPs.Check(ip); err != nil {
 		logger.Error("Failed to check to see if the IP \""+ip+"\" is banned:", err)
 		http.Error(
 			w,
@@ -56,7 +56,7 @@ func httpLogin(c *gin.Context) {
 			http.StatusInternalServerError,
 		)
 		return
-	} else if userIsBanned {
+	} else if banned {
 		logger.Info("IP \"" + ip + "\" tried to log in, but they are banned.")
 		http.Error(
 			w,
@@ -84,7 +84,7 @@ func httpLogin(c *gin.Context) {
 	// Validate that the user sent a username and password
 	username := c.PostForm("username")
 	if username == "" {
-		logger.Error("User from IP \"" + ip + "\" tried to log in, " +
+		logger.Info("User from IP \"" + ip + "\" tried to log in, " +
 			"but they did not provide the \"username\" parameter.")
 		http.Error(
 			w,
@@ -95,7 +95,7 @@ func httpLogin(c *gin.Context) {
 	}
 	password := c.PostForm("password")
 	if password == "" {
-		logger.Error("User from IP \"" + ip + "\" tried to log in, " +
+		logger.Info("User from IP \"" + ip + "\" tried to log in, " +
 			"but they did not provide the \"password\" parameter.")
 		http.Error(
 			w,

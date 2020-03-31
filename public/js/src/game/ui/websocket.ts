@@ -103,10 +103,9 @@ commands.set('gameOver', () => {
     globals.gameOver = false;
 
     /*
-        If we are in an in-game replay when the game ends, we need to jerk them away from what they
-        are doing and go to the end of the game. This is because we need to process all of the
-        queued "notify" messages. (Otherwise, the code will try to "reveal" cards that are
-        undefined.)
+        If the user is in an in-game replay when the game ends, we need to jerk them away from it
+        and go to the end of the game. This is because we need to process all of the queued "notify"
+        messages. (Otherwise, the code will try to "reveal" cards that are undefined.)
     */
 
     // The final turn displays how long everyone took,

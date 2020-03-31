@@ -41,7 +41,7 @@ func httpWS(c *gin.Context) {
 	}
 
 	// Check to see if their IP is banned
-	if userIsBanned, err := models.BannedIPs.Check(ip); err != nil {
+	if banned, err := models.BannedIPs.Check(ip); err != nil {
 		logger.Error("Failed to check to see if the IP \""+ip+"\" is banned:", err)
 		http.Error(
 			w,
@@ -49,7 +49,7 @@ func httpWS(c *gin.Context) {
 			http.StatusInternalServerError,
 		)
 		return
-	} else if userIsBanned {
+	} else if banned {
 		logger.Info("IP \"" + ip + "\" tried to establish a WebSocket connection, " +
 			"but they are banned.")
 		http.Error(
@@ -59,6 +59,20 @@ func httpWS(c *gin.Context) {
 			http.StatusUnauthorized,
 		)
 		return
+	}
+
+	// Check to see if their IP is muted
+	var muted bool
+	if v, err := models.MutedIPs.Check(ip); err != nil {
+		logger.Error("Failed to check to see if the IP \""+ip+"\" is muted:", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else {
+		muted = v
 	}
 
 	// If they have logged in, their cookie should have values that we set in httpLogin.go
@@ -135,6 +149,7 @@ func httpWS(c *gin.Context) {
 	keys["userID"] = userID
 	keys["username"] = username
 	keys["admin"] = admin
+	keys["muted"] = muted
 	keys["firstTimeUser"] = firstTimeUser
 	keys["currentTable"] = -1    // By default, the user is not at a table
 	keys["status"] = statusLobby // By default, the user is in the lobby

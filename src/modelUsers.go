@@ -75,6 +75,16 @@ func (*Users) GetUsername(userID int) (string, error) {
 	return username, err
 }
 
+func (*Users) GetLastIP(username string) (string, error) {
+	var lastIP string
+	err := db.QueryRow(`
+		SELECT last_ip
+		FROM users
+		WHERE username = ?
+	`, username).Scan(&lastIP)
+	return lastIP, err
+}
+
 func (*Users) Update(userID int, lastIP string) error {
 	var stmt *sql.Stmt
 	if v, err := db.Prepare(`

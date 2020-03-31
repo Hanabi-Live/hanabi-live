@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,6 +26,8 @@ func httpLocalhostInit() {
 		graceful(false)
 		c.String(200, "success")
 	})
+	httpRouter.GET("/ban/:username", httpUserAction)
+	httpRouter.GET("/mute/:username", httpUserAction)
 	httpRouter.GET("/debug", func(c *gin.Context) {
 		debug()
 		c.String(200, "success")
@@ -39,4 +42,140 @@ func httpLocalhostInit() {
 		return
 	}
 	logger.Fatal("http.ListenAndServe ended prematurely.")
+}
+
+func httpUserAction(c *gin.Context) {
+	// Local variables
+	w := c.Writer
+
+	c.FullPath()
+
+	// Parse the username from the URL
+	username := c.Param("username")
+	if username == "" {
+		http.Error(w, "Error: You must specify a username.", http.StatusNotFound)
+		return
+	}
+
+	// Check to see if this username exists in the database
+	var userID int
+	if exists, v, err := models.Users.Get(username); err != nil {
+		logger.Error("Failed to get user \""+username+"\":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else if !exists {
+		c.String(200, "User \""+username+"\" does not exist in the database.")
+		return
+	} else {
+		userID = v.ID
+	}
+
+	// Get the IP for this user
+	var lastIP string
+	if v, err := models.Users.GetLastIP(username); err != nil {
+		logger.Error("Failed to get the last IP for \""+username+"\":", err)
+		return
+	} else {
+		lastIP = v
+	}
+
+	path := c.FullPath()
+	if strings.HasPrefix(path, "/ban/") {
+		httpBan(c, username, lastIP, userID)
+	} else if strings.HasPrefix(path, "/mute/") {
+		httpMute(c, username, lastIP, userID)
+	} else {
+		http.Error(w, "Error: Invalid URL.", http.StatusNotFound)
+	}
+}
+
+func httpBan(c *gin.Context, username string, ip string, userID int) {
+	// Local variables
+	w := c.Writer
+
+	// Check to see if this IP is already banned
+	if banned, err := models.BannedIPs.Check(ip); err != nil {
+		logger.Error("Failed to check to see if the IP \""+ip+"\" is banned:", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else if banned {
+		c.String(200, "User \""+username+"\" has an IP of \""+ip+"\", "+
+			"but it is already banned.")
+		return
+	}
+
+	// Insert a new row in the database for this IP
+	if err := models.BannedIPs.Insert(ip, userID); err != nil {
+		logger.Error("Failed to insert the banned IP row:", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	logoutUser(username)
+
+	c.String(200, "success")
+}
+
+func httpMute(c *gin.Context, username string, ip string, userID int) {
+	// Local variables
+	w := c.Writer
+
+	// Check to see if this IP is already muted
+	if muted, err := models.MutedIPs.Check(ip); err != nil {
+		logger.Error("Failed to check to see if the IP \""+ip+"\" is muted:", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else if muted {
+		c.String(200, "User \""+username+"\" has an IP of \""+ip+"\", "+
+			"but it is already muted.")
+		return
+	}
+
+	// Insert a new row in the database for this IP
+	if err := models.MutedIPs.Insert(ip, userID); err != nil {
+		logger.Error("Failed to insert the muted IP row:", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	// They need to re-login for the mute to take effect,
+	// so disconnect their existing connection, if any
+	logoutUser(username)
+
+	c.String(200, "success")
+}
+
+func logoutUser(username string) {
+	for _, s := range sessions {
+		if s.Username() != username {
+			continue
+		}
+
+		if err := s.Close(); err != nil {
+			logger.Info("Attempted to manually close a WebSocket connection, but it failed.")
+		} else {
+			logger.Info("Successfully terminated a WebSocket connection.")
+		}
+		return
+	}
 }

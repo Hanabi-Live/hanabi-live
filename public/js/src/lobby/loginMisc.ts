@@ -14,7 +14,7 @@ export const hide = (firstTimeUser: boolean) => {
     // Hide the login screen
     $('#login').hide();
 
-    if (firstTimeUser) {
+    if (firstTimeUser && window.location.hostname !== 'localhost') {
         $('#tutorial').fadeIn(FADE_TIME);
         return;
     }

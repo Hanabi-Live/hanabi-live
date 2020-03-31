@@ -24,7 +24,6 @@ CREATE TABLE users (
     password             CHAR(64)     NOT NULL, /* A SHA-256 hash string is 64 characters long */
     last_ip              VARCHAR(40)  NULL, /* This will be set immediately after insertion */
     admin                BOOLEAN      NOT NULL  DEFAULT 0,
-    muted                BOOLEAN      NOT NULL  DEFAULT 0,
     tester               BOOLEAN      NOT NULL  DEFAULT 0,
     datetime_created     TIMESTAMP    NOT NULL  DEFAULT NOW(),
     datetime_last_login  TIMESTAMP    NOT NULL  DEFAULT NOW()
@@ -119,6 +118,7 @@ CREATE TABLE game_participants (
     user_id               INT      NOT NULL,
     game_id               INT      NOT NULL,
     seat                  TINYINT  NOT NULL,
+    notes                 NVARCHAR(10000)  NOT NULL, /* temp */
     character_assignment  TINYINT  NOT NULL,
     character_metadata    TINYINT  NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id),
@@ -202,12 +202,21 @@ CREATE TABLE banned_ips (
     id                 INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     ip                 VARCHAR(40)   NOT NULL,
     user_id            INT           NULL      DEFAULT NULL,
-    /* If specified, this IP address is associated with the respective user */
-    admin_responsible  INT           NOT NULL,
+    /* An entry for a banned IP can optionally be associated with a user */
     reason             VARCHAR(150)  NULL      DEFAULT NULL,
     datetime_banned    TIMESTAMP     NOT NULL  DEFAULT NOW(),
-    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY(admin_responsible) REFERENCES users(id)
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+DROP TABLE IF EXISTS muted_ips;
+CREATE TABLE muted_ips (
+    id                 INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    ip                 VARCHAR(40)   NOT NULL,
+    /* An entry for a muted IP can optionally be associated with a user */
+    user_id            INT           NULL      DEFAULT NULL,
+    reason             VARCHAR(150)  NULL      DEFAULT NULL,
+    datetime_banned    TIMESTAMP     NOT NULL  DEFAULT NOW(),
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS discord_metadata;

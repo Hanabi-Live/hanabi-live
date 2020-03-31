@@ -15,23 +15,25 @@ export class Globals {
     version: number = version;
     browserIsFirefox: boolean = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
-    id: number = -1;
     username: string = '';
     password: string = '';
-    shuttingDown: boolean = false;
 
     conn: any = null; // The WebSocket connection (set in "websocket.ts")
-    // (this must be an "any" type because we attach arbitrary methods to the object)
 
-    // Contains the settings for the "Settings" tooltip and the "Create Game" tooltip
-    settings: Settings = new Settings(); // Set upon login
+    // Values sent to us from the server in the "hello" message
+    id: number = -1;
+    totalGames: number = 0;
+    muted: boolean = false;
+    admin: boolean = false;
+    randomName: string = '';
+    settings: Settings = new Settings();
+    // (contains the settings for the "Settings" tooltip and the "Create Game" tooltip)
+    shuttingDown: boolean = false;
 
     userMap: Map<number, User> = new Map(); // Keys are IDs
     tableMap: Map<number, Table> = new Map(); // Keys are IDs
     history: Array<GameHistory> = [];
     showMoreHistoryClicked: boolean = false;
-    totalGames: number = 0; // Set upon login
-    randomName: string = ''; // Set upon login
     lastPM: string = '';
 
     game: Game | null = null; // Equal to the data from the "game" command

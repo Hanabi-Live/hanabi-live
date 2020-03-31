@@ -24,6 +24,7 @@ type Models struct {
 	GameActions2
 	GameParticipants
 	Games
+	MutedIPs
 	Users
 	UserSettings
 	UserStats

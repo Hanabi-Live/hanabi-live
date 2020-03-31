@@ -32,7 +32,7 @@ func websocketConnect(ms *melody.Session) {
 		logger.Info("Closing existing connection for user \"" + s.Username() + "\".")
 		s2.Error("You have logged on from somewhere else, so you have been disconnected here.")
 		if err := s2.Close(); err != nil {
-			logger.Error("Attempted to manually close a WebSocket connection, but it failed.")
+			logger.Info("Attempted to manually close a WebSocket connection, but it failed.")
 		} else {
 			logger.Info("Successfully terminated a WebSocket connection.")
 		}
@@ -89,6 +89,8 @@ func websocketConnect(ms *melody.Session) {
 		ID            int      `json:"id"`
 		Username      string   `json:"username"`
 		TotalGames    int      `json:"totalGames"`
+		Admin         bool     `json:"admin"`
+		Muted         bool     `json:"muted"`
 		FirstTimeUser bool     `json:"firstTimeUser"`
 		Settings      Settings `json:"settings"`
 		Version       int      `json:"version"`
@@ -107,8 +109,9 @@ func websocketConnect(ms *melody.Session) {
 		// (to be shown in the nav bar on the history page)
 		TotalGames: totalGames,
 
-		// First time users get a quick tutorial
-		FirstTimeUser: s.FirstTimeUser(),
+		Admin:         s.Admin(),         // Some users can perform admin-only commands
+		Muted:         s.Muted(),         // Some users are muted (as a resulting of spamming, etc.)
+		FirstTimeUser: s.FirstTimeUser(), // First time users get a quick tutorial
 
 		// The various client settings are stored server-side so that users can seamlessly
 		// transition between computers

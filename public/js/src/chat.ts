@@ -100,6 +100,11 @@ const keypress = (room: string) => function keypressFunction(
     // Clear the chat box
     element.val('');
 
+    if (globals.muted) {
+        modals.warningShow('You have been muted by an administrator.');
+        return;
+    }
+
     // Use "startsWith" instead of "===" to work around an unknown bug where
     // the room can already have the table number appended (e.g. "table123")
     if (room.startsWith('table')) {

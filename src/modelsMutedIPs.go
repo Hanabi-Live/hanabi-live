@@ -4,13 +4,13 @@ import (
 	"database/sql"
 )
 
-type BannedIPs struct{}
+type MutedIPs struct{}
 
-func (*BannedIPs) Check(ip string) (bool, error) {
+func (*MutedIPs) Check(ip string) (bool, error) {
 	var id int
 	if err := db.QueryRow(`
 		SELECT id
-		FROM banned_ips
+		FROM muted_ips
 		WHERE ip = ?
 	`, ip).Scan(&id); err == sql.ErrNoRows {
 		return false, nil
@@ -21,10 +21,10 @@ func (*BannedIPs) Check(ip string) (bool, error) {
 	return true, nil
 }
 
-func (*BannedIPs) Insert(ip string, userID int) error {
+func (*MutedIPs) Insert(ip string, userID int) error {
 	var stmt *sql.Stmt
 	if v, err := db.Prepare(`
-		INSERT INTO banned_ips (ip, user_id)
+		INSERT INTO muted_ips (ip, user_id)
 		VALUES (?, ?)
 	`); err != nil {
 		return err
