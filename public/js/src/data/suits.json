@@ -15,9 +15,9 @@
         "fillColors": ["#ff0000", "#ffff00", "#02ec00", "#0037ff", "#8000ff"],
         "pip": "rainbow"
     },
-    "Pink": { "clueRanks": "all", "pip": "pink_hashtag" },
-    "White": { "clueColors": [], "fill": "#d9d9d9", "pip": "white_moon" },
-    "Brown": { "clueRanks": "none", "pip": "brown_kanji" },
+    "Pink": { "clueRanks": "all", "pip": "hashtag" },
+    "White": { "clueColors": [], "fill": "#d9d9d9", "pip": "moon" },
+    "Brown": { "clueRanks": "none", "pip": "kanji" },
     "Omni": {
         "allClueColors": true,
         "clueRanks": "all",
@@ -40,21 +40,21 @@
         "clueRanks": "all",
         "fill": "#800040",
         "oneOfEach": true,
-        "pip": "pink_hashtag"
+        "pip": "hashtag"
     },
     "Gray": {
         "abbreviation": "A",
         "clueColors": [],
         "fill": "#555555",
         "oneOfEach": true,
-        "pip": "white_moon"
+        "pip": "moon"
     },
     "Dark Brown": {
         "clueColors": ["Brown"],
         "clueRanks": "none",
         "fill": "#271a0c",
         "oneOfEach": true,
-        "pip": "brown_kanji"
+        "pip": "kanji"
     },
     "Dark Omni": {
         "abbreviation": "O",
@@ -86,7 +86,7 @@
         "clueColors": [],
         "clueRanks": "all",
         "fill": "#ffbbdd",
-        "pip": "pink_hashtag"
+        "pip": "hashtag"
      },
      "Cocoa Rainbow": {
         "abbreviation": "M",
@@ -103,7 +103,7 @@
         "clueRanks": "all",
         "fill": "#b05080",
         "oneOfEach": true,
-        "pip": "pink_hashtag"
+        "pip": "hashtag"
      },
 
     "Tomato": { "clueColors": ["Red"], "fill": "#e60000", "pip": "hanabi_red" },

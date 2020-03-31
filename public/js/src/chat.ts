@@ -170,7 +170,7 @@ const keypress = (room: string) => function keypressFunction(
                 server: true,
                 datetime: new Date().getTime(),
                 room,
-                recipient: '',
+                recipient: '', // This is needed to prevent the message from being viewed as a PM
             }, false);
             return;
         }

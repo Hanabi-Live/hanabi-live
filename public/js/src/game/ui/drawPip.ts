@@ -233,7 +233,7 @@ shapeFunctions.set('hanabi_alt_blue', (ctx: CanvasRenderingContext2D) => {
     ctx.closePath();
 });
 
-shapeFunctions.set('white_moon', (ctx: CanvasRenderingContext2D) => {
+shapeFunctions.set('moon', (ctx: CanvasRenderingContext2D) => {
     ctx.scale(0.25, 0.25);
     ctx.beginPath();
     ctx.scale(sf, sf);
@@ -252,7 +252,7 @@ shapeFunctions.set('white_moon', (ctx: CanvasRenderingContext2D) => {
     ctx.scale(4, 4);
 });
 
-shapeFunctions.set('pink_hashtag', (ctx: CanvasRenderingContext2D) => {
+shapeFunctions.set('hashtag', (ctx: CanvasRenderingContext2D) => {
     ctx.scale(1 / 3, 1 / 3);
     ctx.beginPath();
     ctx.scale(sf, sf);
@@ -329,7 +329,7 @@ shapeFunctions.set('pink_hashtag', (ctx: CanvasRenderingContext2D) => {
     ctx.scale(3, 3);
 });
 
-shapeFunctions.set('brown_kanji', (ctx: CanvasRenderingContext2D) => {
+shapeFunctions.set('kanji', (ctx: CanvasRenderingContext2D) => {
     ctx.beginPath();
     ctx.scale(sf, sf);
     ctx.transform(1.000000, 0.000000, 0.000000, 1.000000, -9.007581, -241.980300);
