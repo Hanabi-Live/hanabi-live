@@ -62,6 +62,9 @@ func commandSetting(s *Session, d *CommandData) {
 		} else if v < 0 || v > 604800 { // 1 week in seconds
 			s.Warning("The setting of \"" + d.Name + "\" is too large.")
 			return
+		} else if d.Name == "volume" && v > 100 {
+			s.Warning("The setting of \"volume\" must be between 0 and 100.")
+			return
 		}
 	} else if fieldType == "float64" {
 		if v, err := strconv.ParseFloat(d.Value, 64); err != nil {
