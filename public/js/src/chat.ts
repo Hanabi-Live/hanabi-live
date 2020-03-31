@@ -170,6 +170,7 @@ const keypress = (room: string) => function keypressFunction(
                 server: true,
                 datetime: new Date().getTime(),
                 room,
+                recipient: '',
             }, false);
             return;
         }
