@@ -175,6 +175,18 @@ type Variant struct {
 	MaxScore               int
 }
 
+func (v *Variant) GetDeckSize() int {
+	deckSize := 0
+	for _, s := range v.Suits {
+		if s.OneOfEach {
+			deckSize += 5
+		} else {
+			deckSize += 10
+		}
+	}
+	return deckSize
+}
+
 func variantsInit() {
 	// Import the JSON file
 	filePath := path.Join(dataPath, "variants.json")

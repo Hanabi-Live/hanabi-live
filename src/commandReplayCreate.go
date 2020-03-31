@@ -24,9 +24,9 @@ import (
 )
 
 func commandReplayCreate(s *Session, d *CommandData) {
-	// Validate that there are no inappropriate fields
+	// Validate that there is not a password
 	if d.Password != "" {
-		s.Warning("You cannot create a replay with an invalid field.")
+		s.Warning("You cannot create a replay with a password.")
 		return
 	}
 
@@ -127,14 +127,15 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	}
 
 	// Get the notes from the database
-	var notes []NoteList
-	if v, err := models.Games.GetNotes(d.GameID); err != nil {
+	deckSize := variants[t.Options.Variant].GetDeckSize()
+	var allPlayersNotes []*NoteList
+	if v, err := models.Games.GetNotes(d.GameID, deckSize); err != nil {
 		logger.Error("Failed to get the notes from the database "+
 			"for game "+strconv.Itoa(d.GameID)+":", err)
 		s.Error(initFail)
 		return false
 	} else {
-		notes = v
+		allPlayersNotes = v
 	}
 
 	// Convert the database player objects to Player objects
@@ -154,7 +155,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 			Index: i,
 
 			Hand:              make([]*Card, 0),
-			Notes:             notes[i].Notes,
+			Notes:             allPlayersNotes[i].Notes,
 			Character:         charactersID[dbp.CharacterAssignment],
 			CharacterMetadata: dbp.CharacterMetadata,
 		}

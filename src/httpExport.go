@@ -172,8 +172,8 @@ func httpExport(c *gin.Context) {
 	}
 
 	// Get the notes from the database
-	var dbNotes []NoteList
-	if v, err := models.Games.GetNotes(gameID); err != nil {
+	var dbNotes []*NoteList
+	if v, err := models.Games.GetNotes(gameID, len(deck)); err != nil {
 		logger.Error("Failed to get the notes from the database "+
 			"for game "+strconv.Itoa(gameID)+":", err)
 		http.Error(

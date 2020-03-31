@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"strconv"
 	"time"
 )
@@ -488,41 +487,45 @@ type NoteList struct {
 	Notes []string `json:"notes"`
 }
 
-func (*Games) GetNotes(databaseID int) ([]NoteList, error) {
+func (*Games) GetNotes(databaseID int, deckSize int) ([]*NoteList, error) {
+	// nolint:lll
 	rows, err := db.Query(`
 		SELECT
+			game_participants.seat AS seat,
+			game_participant_notes.card_order AS card_order,
+			game_participant_notes.note AS note,
 			users.id AS id,
-			users.username AS name,
-			game_participants.notes AS notes
+			users.username AS name
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
+			JOIN game_participant_notes ON game_participants.id = game_participant_notes.game_participant_id
 			JOIN users ON users.id = game_participants.user_id
 		WHERE games.id = ?
-		ORDER BY game_participants.seat
+		ORDER BY game_participants.seat, game_participant_notes.card_order
 	`, databaseID)
 
-	notes := make([]NoteList, 0)
+	// These rows contain the notes for all of the players in the game, one row for each note
+	allPlayersNotes := make([]*NoteList, 0)
 	for rows.Next() {
-		// "noteList.Notes" will be an array of all of a player's notes for the game
-		var noteList NoteList
-		var notesJSON string
-		if err := rows.Scan(&noteList.ID, &noteList.Name, &notesJSON); err != nil {
+		var seat int
+		var order int
+		var note string
+		var id int
+		var name string
+		if err := rows.Scan(&seat, &order, &note, &id, &name); err != nil {
 			return nil, err
 		}
 
-		// If the notes are longer than the maximum size of the column in the database,
-		// then they will be truncated, resulting in invalid JSON
-		// So, check to see if it is valid JSON before proceeding
-		if !isJSON(notesJSON) {
-			notesJSON = "[]"
+		if len(allPlayersNotes) == seat {
+			// We have arrived at the notes for a new player
+			allPlayersNotes = append(allPlayersNotes, &NoteList{
+				ID:    id,
+				Name:  name,
+				Notes: make([]string, deckSize),
+			})
 		}
 
-		// Convert it from JSON to a slice
-		if err := json.Unmarshal([]byte(notesJSON), &noteList.Notes); err != nil {
-			return nil, err
-		}
-
-		notes = append(notes, noteList)
+		allPlayersNotes[seat].Notes[order] = note
 	}
 
 	if rows.Err() != nil {
@@ -532,7 +535,7 @@ func (*Games) GetNotes(databaseID int) ([]NoteList, error) {
 		return nil, err
 	}
 
-	return notes, nil
+	return allPlayersNotes, nil
 }
 
 func (*Games) GetFastestTime(variant int, numPlayers int, maxScore int) (int, error) {

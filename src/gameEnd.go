@@ -228,7 +228,7 @@ func (g *Game) WriteDatabase() error {
 		g.ID = v
 	}
 
-	// Next, we have to insert rows for each of the participants
+	// Next, we insert rows for each of the participants
 	for _, gp := range g.Players {
 		p := t.Players[gp.Index]
 
@@ -252,7 +252,6 @@ func (g *Game) WriteDatabase() error {
 			p.ID,
 			g.ID,
 			gp.Index,
-			gp.Notes,
 			characterID,
 			gp.CharacterMetadata,
 		); err != nil {
@@ -261,7 +260,22 @@ func (g *Game) WriteDatabase() error {
 		}
 	}
 
-	// Next, we have to insert rows for each of the actions
+	// Next, we insert rows for each note
+	for _, gp := range g.Players {
+		p := t.Players[gp.Index]
+
+		for i, note := range gp.Notes {
+			if note == "" {
+				continue
+			}
+			if err := models.GameParticipantNotes.Insert(p.ID, g.ID, i, note); err != nil {
+				logger.Error("Failed to insert the game participant note row:", err)
+				return err
+			}
+		}
+	}
+
+	// Next, we insert rows for each of the actions
 	for _, a := range g.Actions {
 		var aString string
 		if v, err := json.Marshal(a); err != nil {
@@ -277,7 +291,7 @@ func (g *Game) WriteDatabase() error {
 		}
 	}
 
-	// Next, we have to insert rows for each of the chat messages
+	// Next, we insert rows for each of chat message
 	for _, chatMsg := range t.Chat {
 		room := "table" + strconv.Itoa(t.ID)
 		if err := models.ChatLog.Insert(chatMsg.UserID, chatMsg.Msg, room); err != nil {

@@ -83,7 +83,7 @@ func main() {
 	}
 
 	// If we are running in a development environment, change some constants
-	if os.Getenv("DOMAIN") == "localhost" {
+	if os.Getenv("DOMAIN") == "localhost" || os.Getenv("DOMAIN") == "" {
 		idleGameTimeout = idleGameTimeoutDev
 	}
 

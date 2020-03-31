@@ -118,7 +118,6 @@ CREATE TABLE game_participants (
     user_id               INT      NOT NULL,
     game_id               INT      NOT NULL,
     seat                  TINYINT  NOT NULL,
-    notes                 NVARCHAR(10000)  NOT NULL, /* temp */
     character_assignment  TINYINT  NOT NULL,
     character_metadata    TINYINT  NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id),
@@ -128,11 +127,11 @@ CREATE TABLE game_participants (
 
 DROP TABLE IF EXISTS game_participant_notes;
 CREATE TABLE game_participant_notes (
-    game_participants_id  INT            NOT NULL,
-    card_order            TINYINT        NOT NULL, /* "order" is a reserved word */
-    note                  VARCHAR(1000)  NOT NULL,
-    FOREIGN KEY (game_participants_id) REFERENCES game_participants (id) ON DELETE CASCADE,
-    PRIMARY KEY (game_participants_id, card_order)
+    game_participant_id  INT            NOT NULL,
+    card_order           TINYINT        NOT NULL, /* "order" is a reserved word */
+    note                 VARCHAR(1000)  NOT NULL,
+    FOREIGN KEY (game_participant_id) REFERENCES game_participants (id) ON DELETE CASCADE,
+    PRIMARY KEY (game_participant_id, card_order)
 );
 
 DROP TABLE IF EXISTS game_actions;

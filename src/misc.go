@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"math/rand"
@@ -48,12 +47,6 @@ func intInSlice(a int, slice []int) bool {
 
 // From: https://stackoverflow.com/questions/38554353/
 var isAlphanumericSpacesAndSafeSpecialCharacters = regexp.MustCompile(`^[a-zA-Z0-9 !-]+$`).MatchString // nolint:lll
-
-// From: https://stackoverflow.com/questions/22128282/
-func isJSON(s string) bool {
-	var js json.RawMessage
-	return json.Unmarshal([]byte(s), &js) == nil
-}
 
 // From: https://gist.github.com/stoewer/fbe273b711e6a06315d19552dd4d33e6
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")

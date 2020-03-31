@@ -20,17 +20,17 @@ func httpLocalhostInit() {
 	// Path handlers
 	httpRouter.GET("/restart", func(c *gin.Context) {
 		graceful(true)
-		c.String(200, "success")
+		c.String(200, "success\n")
 	})
 	httpRouter.GET("/shutdown", func(c *gin.Context) {
 		graceful(false)
-		c.String(200, "success")
+		c.String(200, "success\n")
 	})
 	httpRouter.GET("/ban/:username", httpUserAction)
 	httpRouter.GET("/mute/:username", httpUserAction)
 	httpRouter.GET("/debug", func(c *gin.Context) {
 		debug()
-		c.String(200, "success")
+		c.String(200, "success\n")
 	})
 
 	// Listen and serve (HTTP)
@@ -68,7 +68,7 @@ func httpUserAction(c *gin.Context) {
 		)
 		return
 	} else if !exists {
-		c.String(200, "User \""+username+"\" does not exist in the database.")
+		c.String(200, "User \""+username+"\" does not exist in the database.\n")
 		return
 	} else {
 		userID = v.ID
@@ -108,7 +108,7 @@ func httpBan(c *gin.Context, username string, ip string, userID int) {
 		return
 	} else if banned {
 		c.String(200, "User \""+username+"\" has an IP of \""+ip+"\", "+
-			"but it is already banned.")
+			"but it is already banned.\n")
 		return
 	}
 
@@ -125,7 +125,7 @@ func httpBan(c *gin.Context, username string, ip string, userID int) {
 
 	logoutUser(username)
 
-	c.String(200, "success")
+	c.String(200, "success\n")
 }
 
 func httpMute(c *gin.Context, username string, ip string, userID int) {
@@ -143,7 +143,7 @@ func httpMute(c *gin.Context, username string, ip string, userID int) {
 		return
 	} else if muted {
 		c.String(200, "User \""+username+"\" has an IP of \""+ip+"\", "+
-			"but it is already muted.")
+			"but it is already muted.\n")
 		return
 	}
 
@@ -162,7 +162,7 @@ func httpMute(c *gin.Context, username string, ip string, userID int) {
 	// so disconnect their existing connection, if any
 	logoutUser(username)
 
-	c.String(200, "success")
+	c.String(200, "success\n")
 }
 
 func logoutUser(username string) {

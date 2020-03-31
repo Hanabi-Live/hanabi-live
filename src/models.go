@@ -22,6 +22,7 @@ type Models struct {
 	DiscordWaiters
 	GameActions
 	GameActions2
+	GameParticipantNotes
 	GameParticipants
 	Games
 	MutedIPs
