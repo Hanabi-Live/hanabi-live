@@ -128,14 +128,14 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 
 	// Get the notes from the database
 	deckSize := variants[t.Options.Variant].GetDeckSize()
-	var allPlayersNotes []*NoteList
-	if v, err := models.Games.GetNotes(d.GameID, deckSize); err != nil {
+	var notes [][]string
+	if v, err := models.Games.GetNotes(d.GameID, len(dbPlayers), deckSize); err != nil {
 		logger.Error("Failed to get the notes from the database "+
 			"for game "+strconv.Itoa(d.GameID)+":", err)
 		s.Error(initFail)
 		return false
 	} else {
-		allPlayersNotes = v
+		notes = v
 	}
 
 	// Convert the database player objects to Player objects
@@ -155,7 +155,7 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 			Index: i,
 
 			Hand:              make([]*Card, 0),
-			Notes:             allPlayersNotes[i].Notes,
+			Notes:             notes[i],
 			Character:         charactersID[dbp.CharacterAssignment],
 			CharacterMetadata: dbp.CharacterMetadata,
 		}

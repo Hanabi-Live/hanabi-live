@@ -171,21 +171,6 @@ func httpExport(c *gin.Context) {
 		return
 	}
 
-	// Get the notes from the database
-	var dbNotes []*NoteList
-	if v, err := models.Games.GetNotes(gameID, len(deck)); err != nil {
-		logger.Error("Failed to get the notes from the database "+
-			"for game "+strconv.Itoa(gameID)+":", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	} else {
-		dbNotes = v
-	}
-
 	// Get the players from the database
 	var dbPlayers []*DBPlayer
 	if v, err := models.Games.GetPlayers(gameID); err != nil {
@@ -207,10 +192,19 @@ func httpExport(c *gin.Context) {
 		players = append(players, p.Name)
 	}
 
-	// Convert the notes
-	notes := make([][]string, 0)
-	for _, noteList := range dbNotes {
-		notes = append(notes, noteList.Notes)
+	// Get the notes from the database
+	var notes [][]string
+	if v, err := models.Games.GetNotes(gameID, len(dbPlayers), len(deck)); err != nil {
+		logger.Error("Failed to get the notes from the database "+
+			"for game "+strconv.Itoa(gameID)+":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else {
+		notes = v
 	}
 
 	// Get the options from the database

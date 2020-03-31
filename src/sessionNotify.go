@@ -368,6 +368,12 @@ func (s *Session) NotifyReplayLeader(t *Table, playAnimation bool) {
 func (s *Session) NotifyNoteList(t *Table) {
 	g := t.Game
 
+	type NoteList struct {
+		ID    int      `json:"id"`
+		Name  string   `json:"name"`
+		Notes []string `json:"notes"`
+	}
+
 	// Get the notes from all the players & spectators
 	notes := make([]NoteList, 0)
 	for _, p := range g.Players {

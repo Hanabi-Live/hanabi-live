@@ -481,13 +481,7 @@ func (*Games) GetPlayers(databaseID int) ([]*DBPlayer, error) {
 	return players, nil
 }
 
-type NoteList struct {
-	ID    int      `json:"id"`
-	Name  string   `json:"name"`
-	Notes []string `json:"notes"`
-}
-
-func (*Games) GetNotes(databaseID int, deckSize int) ([]*NoteList, error) {
+func (*Games) GetNotes(databaseID int, numPlayers int, deckSize int) ([][]string, error) {
 	// nolint:lll
 	rows, err := db.Query(`
 		SELECT
@@ -505,7 +499,10 @@ func (*Games) GetNotes(databaseID int, deckSize int) ([]*NoteList, error) {
 	`, databaseID)
 
 	// These rows contain the notes for all of the players in the game, one row for each note
-	allPlayersNotes := make([]*NoteList, 0)
+	allPlayersNotes := make([][]string, numPlayers)
+	for i := 0; i < numPlayers; i++ {
+		allPlayersNotes[i] = make([]string, deckSize)
+	}
 	for rows.Next() {
 		var seat int
 		var order int
@@ -516,16 +513,7 @@ func (*Games) GetNotes(databaseID int, deckSize int) ([]*NoteList, error) {
 			return nil, err
 		}
 
-		if len(allPlayersNotes) == seat {
-			// We have arrived at the notes for a new player
-			allPlayersNotes = append(allPlayersNotes, &NoteList{
-				ID:    id,
-				Name:  name,
-				Notes: make([]string, deckSize),
-			})
-		}
-
-		allPlayersNotes[seat].Notes[order] = note
+		allPlayersNotes[seat][order] = note
 	}
 
 	if rows.Err() != nil {
