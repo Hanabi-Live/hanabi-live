@@ -210,12 +210,23 @@ const initCommands = () => {
         }
     });
 
-    // Received by the client when a new chat message arrives
+    // Received by the client when someone either starts or stops typing
     interface ChatTypingMessage {
         name: string,
+        typing: boolean,
     }
     globals.conn.on('chatTyping', (data: ChatTypingMessage) => {
-        console.log(data);
+        if (data.typing) {
+            if (!globals.peopleTyping.includes(data.name)) {
+                globals.peopleTyping.push(data.name);
+            }
+        } else {
+            const index = globals.peopleTyping.indexOf(data.name);
+            if (index !== -1) {
+                globals.peopleTyping.splice(index, 1);
+            }
+        }
+        chat.updatePeopletyping();
     });
 
     // The "chatList" command is sent upon initial connection

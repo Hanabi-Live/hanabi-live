@@ -340,6 +340,12 @@ table td {
     height: 1.6em; /* This is derived from how Twitch does it */
 }
 
+.istyping {
+    font-size: 0.75em;
+    position: relative;
+    bottom: 0.3em;
+}
+
 /*
     User list
 */

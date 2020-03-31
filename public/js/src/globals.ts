@@ -35,6 +35,8 @@ export class Globals {
     history: Array<GameHistory> = [];
     showMoreHistoryClicked: boolean = false;
     lastPM: string = '';
+    datetimeLastChatInput: number = new Date().getTime();
+    peopleTyping: Array<string> = [];
 
     game: Game | null = null; // Equal to the data from the "game" command
 

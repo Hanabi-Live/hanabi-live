@@ -82,7 +82,7 @@ func commandChatTypingCheckStopped(t *Table, i int, j int) {
 	}
 
 	name := ""
-	if i != 1 {
+	if i != -1 {
 		// They are a player
 		p := t.Players[i]
 		if !p.Typing {
@@ -92,7 +92,7 @@ func commandChatTypingCheckStopped(t *Table, i int, j int) {
 			p.Typing = false
 			name = p.Name
 		}
-	} else if j != 1 {
+	} else if j != -1 {
 		// They are a spectator
 		sp := t.Spectators[j]
 		if !sp.Typing {

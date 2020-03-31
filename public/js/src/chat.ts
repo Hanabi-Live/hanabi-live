@@ -52,6 +52,16 @@ const input = function input(this: HTMLElement, event: JQuery.Event) {
         throw new Error('The value of the element in the input function is not a string.');
     }
 
+    // If this is a pregame or game input, report to the server that we are typing
+    // (but don't spam the server with more than one message a second)
+    if (this.id !== 'lobby-chat-input') {
+        const datetimeNow = new Date().getTime();
+        if (datetimeNow - globals.datetimeLastChatInput >= 1000) {
+            globals.datetimeLastChatInput = datetimeNow;
+            globals.conn.send('chatTyping');
+        }
+    }
+
     // Check for a PM reply
     if (text === '/r ' && globals.lastPM !== '') {
         element.val(`/pm ${globals.lastPM} `);
@@ -267,6 +277,13 @@ export const add = (data: ChatMessage, fast: boolean) => {
             scrollTop: chat[0].scrollHeight,
         }, (fast ? 0 : 500));
     }
+
+    // Remove the person from the typing list, if present
+    const index = globals.peopleTyping.indexOf(data.who);
+    if (index !== -1) {
+        globals.peopleTyping.splice(index, 1);
+        updatePeopletyping();
+    }
 };
 
 // Discord emotes are in the form of:
@@ -309,4 +326,31 @@ const fillLocalEmotes = (message: string) => {
     }
 
     return filledMessed;
+};
+
+export const updatePeopletyping = () => {
+    const chat1 = $('#lobby-chat-pregame-istyping');
+    const chat2 = $('#game-chat-istyping');
+
+    if (globals.peopleTyping.length === 0) {
+        chat1.html('');
+        chat2.html('');
+        return;
+    }
+
+    let msg;
+    if (globals.peopleTyping.length === 1) {
+        msg = `<strong>${globals.peopleTyping[0]}</strong> is typing...`;
+    } else if (globals.peopleTyping.length === 2) {
+        msg = `<strong>${globals.peopleTyping[0]}</strong> and `;
+        msg += `<strong>${globals.peopleTyping[1]}</strong> are typing...`;
+    } else if (globals.peopleTyping.length === 3) {
+        msg = `<strong>${globals.peopleTyping[0]}</strong>, `;
+        msg += `<strong>${globals.peopleTyping[1]}</strong>, `;
+        msg += `and <strong>${globals.peopleTyping[2]}</strong> are typing...`;
+    } else {
+        msg = 'Several people are typing...';
+    }
+    chat1.html(msg);
+    chat2.html(msg);
 };
