@@ -5,6 +5,9 @@
 		msg: 'hi',
 		room: 'lobby', // Room can also be "table#", e.g. "table1", "table1234", etc.
 	}
+
+	Unlike many other commands, this command can be called with a nil session (by the server)
+	So we have to check for this before displaying WebSocket error messages
 */
 
 package main
@@ -47,7 +50,7 @@ func commandChat(s *Session, d *CommandData) {
 	*/
 
 	// Check to see if their IP has been muted
-	if s.Muted() {
+	if s != nil && s.Muted() {
 		s.Warning("You have been muted by an administrator.")
 		return
 	}
@@ -67,7 +70,9 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Validate the room
 	if d.Room != "lobby" && !strings.HasPrefix(d.Room, "table") {
-		s.Warning("That is not a valid room.")
+		if s != nil {
+			s.Warning("That is not a valid room.")
+		}
 		return
 	}
 
@@ -167,13 +172,17 @@ func commandChatTable(s *Session, d *CommandData) {
 	match := lobbyRoomRegExp.FindStringSubmatch(d.Room)
 	if match == nil {
 		logger.Error("Failed to parse the table ID from the room:", d.Room)
-		s.Error("That is an invalid room.")
+		if s != nil {
+			s.Error("That is an invalid room.")
+		}
 		return
 	}
 	var tableID int
 	if v, err := strconv.Atoi(match[1]); err != nil {
 		logger.Error("Failed to convert the table ID to a number:", err)
-		s.Error("That is an invalid room.")
+		if s != nil {
+			s.Error("That is an invalid room.")
+		}
 		return
 	} else {
 		tableID = v
@@ -182,24 +191,32 @@ func commandChatTable(s *Session, d *CommandData) {
 	// Get the corresponding table
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+		if s == nil {
+			logger.Error("Table " + strconv.Itoa(tableID) + " does not exist.")
+		} else {
+			s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+		}
 		return
 	} else {
 		t = v
 	}
 
 	// Validate that this player is in the game or spectating
-	i := t.GetPlayerIndexFromID(s.UserID())
-	j := t.GetSpectatorIndexFromID(s.UserID())
-	if !d.Server && i == -1 && j == -1 {
-		s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ", " +
-			"so you cannot send chat to it.")
-		return
+	var i int
+	var j int
+	if !d.Server {
+		i = t.GetPlayerIndexFromID(s.UserID())
+		j = t.GetSpectatorIndexFromID(s.UserID())
+		if i == -1 && j == -1 {
+			s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ", " +
+				"so you cannot send chat to it.")
+			return
+		}
 	}
 
 	// Store the chat in memory
 	userID := 0
-	if !d.Server && s != nil {
+	if s != nil {
 		userID = s.UserID()
 	}
 	chatMsg := &TableChatMessage{
