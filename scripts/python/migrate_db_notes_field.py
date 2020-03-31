@@ -13,7 +13,7 @@ import dotenv
 import mysql.connector
 
 # Configuration
-debug = True
+debug = False
 
 # Import environment variables
 dotenv.load_dotenv(dotenv.find_dotenv())
@@ -59,20 +59,29 @@ for (id, notes_json) in cursor:
         continue
 
     notes = json.loads(notes_json)
+    if len(notes) == 0:
+        continue
+
     order = 0
     for note in notes:
+        if note == '' or note == None:
+            continue
         update_list.append((id, order, note))
         order += 1
 
 cursor.close()
 print('LOADED ' + str(num_records) + ' RECORDS!')
 
+count = 0
 for thing in update_list:
     cursor = cnx.cursor()
     query = ('INSERT INTO game_participant_notes (game_participant_id, card_order, note) VALUES (%s, %s, %s)')
     cursor.execute(query, (thing[0], thing[1], thing[2]))
     cursor.close()
-    print('UPDATED ID:', thing[0], 'ORDER:', thing[1], 'NOTE:', thing[2])
+
+    count += 1
+    if count % 1000 == 0:
+        print("on query number:", count)
 
 cnx.commit()
 cnx.close()
