@@ -1,16 +1,15 @@
-List of Features
-================
+# List of Features
 
-[Hanabi Live](https://hanabi.live/) was released on October 2017 as an attempt to improve upon Keldon's [Keldon's Hanabi server](http://keldon.net/hanabi/). Much of the client code was originally borrowed from his implementation. Nearly all of the server code was written by Zamiel. Several community members have contributed to the project.
+[Hanabi Live](https://hanabi.live/) was released on October 2017 as an attempt to improve upon Keldon's [Keldon's Hanabi server](http://keldon.net/hanabi/) (which is now non-functional). Much of the client code was originally borrowed from his implementation. Nearly all of the server code was written by Zamiel. Several community members have contributed to the project.
 
 <br />
 
 ## Basic How-To
 
-* If you don't know how to play Hanabi already, you can read [the official rules](https://pastebin.com/pR54gTq4) or [watch my video explanation](https://www.youtube.com/watch?v=jR9i1qCbHXQ).
+* If you don't know how to play Hanabi already, you can read [the official rules](https://pastebin.com/pR54gTq4) or [watch Zamiel's video explanation](https://www.youtube.com/watch?v=jR9i1qCbHXQ).
 * Getting a game going should be self-explanatory, but just in case:
   * Once logged in, use the "Create Game" button on the top navigation bar and then click "Create".
-  * For everyone else, the game will now appear in the list of games. To join it, they need to click on the arrow symbol (in the "Action" column).
+  * For everyone else, the game will now appear in the list of games. To join it, they need to click on ▶️.
   * Then, the creator of the table needs to click on the "Start Game" button on the top navigation bar.
 * Once inside a game, the UI elements are as follows:
   * The play stacks are on the left (one for each suit).
@@ -207,15 +206,15 @@ Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to
 
 * Each player has the option to toggle a color-blind mode that will add a letter to each card that signifies which suit it is.
 
-#### Reverse Hand Direction
-
-* Each player has the option to toggle a "reverse hand direction" option, in which the user interface will display the hand from right-to-left instead of from left-to-right.
-* This is useful for players that are used to drawing cards from the right side instead of from the left.
-
 #### Real-Life Mode
 
 * In real-life mode, cards will no longer be filled in with positive and negative clues.
 * Furthermore, extra UI elements are turned off (8 clue warning, etc.).
+
+#### Reverse Hand Direction
+
+* Each player has the option to toggle a "reverse hand direction" option, in which the user interface will display the hand from right-to-left instead of from left-to-right.
+* This is useful for players that are used to drawing cards from the right side instead of from the left.
 
 #### Pre-Playing
 
@@ -288,39 +287,17 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 
 <br />
 
+## Chat Commands
+
+* The full list of chat commands can be found on [here](https://github.com/Zamiell/hanabi-live/blob/master/src/chatHelp.go).
+
+<br />
+
 ## Discord Integration
 
 * All lobby chat will be replicated to (and from) the [Hanabi Discord server](https://discord.gg/FADvkJp).
 * If you are part of the Hyphen-ated group and want to try to get some people together for a game, you can use the `/here` command to ping the other members.
 * If you want the Discord bot to ping you when the next game starts, use the `/next` command to be put on the waiting list.
 * The full list of commands is found in the [chatCommand.go file](https://github.com/Zamiell/hanabi-live/blob/master/src/chatCommand.go).
-
-<br />
-
-## Other Quality of Life Improvements (over Keldon's Server)
-
-* The action log is improved:
-  * It will show what slot a player played or discarded from.
-  * It will show "(blind)" for blind plays.
-  * It will shows "(clued)" when discarding clued cards.
-  * It will show 3 actions instead of 1.
-  * It will show how many cards were left in the deck at the start of each message. (This only occurs when you click the action log to see the full log.)
-  * At the end of the game, in timed games, it will show how much time each player had left. In non-timed games, it will show how much time that the game took in total.
-* The clue log will still continue to function if you mouse over played and discarded cards.
-* The "No Clues" indicator is much easier to see.
-* Replays of other games will no longer show "Alice", "Bob", etc., and will instead show the real player names. This way, if you have a question about what they did, you can message them and ask.
-* Upon refreshing the page, if you are in the middle of the game, you will be automatically taken into that game from the lobby.
-* You will no longer have to refresh the page after resizing the browser window.
-* The "Clues" text on the game UI will be red while at 8 clues.
-* Each suit name is listed below the stack in the middle of the screen during games with the multi-color variants.
-* The lobby has been completely rehauled:
-  * The nice-looking user interface is [Alpha from HTML5UP](https://html5up.net/alpha).
-  * The username box on the login box will now be automatically focused and you can press enter to login.
-  * Your name will be bolded in the user list.
-  * The ambiguous checkboxes in the lobby have been converted to a "Status" indicator, showing exactly what the person is doing.
-* You can now view a replay (or share a replay) by ID number.
-* You can now view a replay (or share a replay) from arbitrary JSON game data.
-* When you create a game, the server will suggest a randomly generated table name for you.
-* Idle games and idle shared replays will automatically be ended by the server after 30 minutes.
 
 <br />
