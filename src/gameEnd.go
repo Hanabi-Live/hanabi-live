@@ -291,7 +291,7 @@ func (g *Game) WriteDatabase() error {
 		}
 	}
 
-	// Next, we insert rows for each of chat message
+	// Next, we insert rows for each chat message
 	for _, chatMsg := range t.Chat {
 		room := "table" + strconv.Itoa(t.ID)
 		if err := models.ChatLog.Insert(chatMsg.UserID, chatMsg.Msg, room); err != nil {
