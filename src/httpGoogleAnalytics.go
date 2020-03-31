@@ -60,7 +60,7 @@ func httpGoogleAnalytics(c *gin.Context) {
 		}
 		resp, err := myHTTPClient.PostForm("https://www.google-analytics.com/collect", data)
 		if err != nil {
-			logger.Error("Failed to send a page hit to Google Analytics:", err)
+			logger.Info("Failed to send a page hit to Google Analytics:", err)
 			return
 		}
 		defer resp.Body.Close()
