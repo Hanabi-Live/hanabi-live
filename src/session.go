@@ -126,6 +126,20 @@ func (s *Session) Status() int {
 	}
 }
 
+func (s *Session) Inactive() bool {
+	if s == nil {
+		logger.Error("The \"Inactive\" method was called for a nil session.")
+		return false
+	}
+
+	if v, exists := s.Get("inactive"); !exists {
+		logger.Error("Failed to get \"inactive\" from a session.")
+		return false
+	} else {
+		return v.(bool)
+	}
+}
+
 /*
 	General purpose functions
 */

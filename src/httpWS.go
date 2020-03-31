@@ -153,6 +153,7 @@ func httpWS(c *gin.Context) {
 	keys["firstTimeUser"] = firstTimeUser
 	keys["currentTable"] = -1    // By default, the user is not at a table
 	keys["status"] = statusLobby // By default, the user is in the lobby
+	keys["inactive"] = false
 
 	// Validation succeeded, so establish the WebSocket connection
 	if err := m.HandleRequestWithKeys(w, r, keys); err != nil {

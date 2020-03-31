@@ -39,6 +39,19 @@ func (s *Session) NotifyUserLeft(u *Session) {
 	})
 }
 
+// NotifyUserInactive will notify someone about a user that is either
+// inactive or coming back from inactive status
+func (s *Session) NotifyUserInactive(u *Session) {
+	type UserInactiveMessage struct {
+		ID       int  `json:"id"`
+		Inactive bool `json:"inactive"`
+	}
+	s.Emit("userInactive", &UserInactiveMessage{
+		ID:       u.UserID(),
+		Inactive: u.Inactive(),
+	})
+}
+
 // NotifyTable will notify a user about a new game or a change in an existing game
 func (s *Session) NotifyTable(t *Table) {
 	s.Emit("table", makeTableMessage(s, t))

@@ -8,7 +8,7 @@ import { FADE_TIME } from '../constants';
 import globals from '../globals';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
-import usersDraw from './usersDraw';
+import * as usersDraw from './usersDraw';
 
 export const hide = (firstTimeUser: boolean) => {
     // Hide the login screen
@@ -37,7 +37,7 @@ export const hide = (firstTimeUser: boolean) => {
     // Show the lobby
     globals.currentScreen = 'lobby';
     tablesDraw();
-    usersDraw();
+    usersDraw.draw();
     $('#lobby').show();
     $('#lobby-history').hide();
     // We can't hide this element by default in "index.html" or else the "No game history" text

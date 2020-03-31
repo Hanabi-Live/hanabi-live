@@ -8,7 +8,7 @@ import globals from '../globals';
 import * as misc from '../misc';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
-import usersDraw from './usersDraw';
+import * as usersDraw from './usersDraw';
 
 // Constants
 const tooltipOptions: JQueryTooltipster.ITooltipsterOptions = {
@@ -67,7 +67,7 @@ export const show = () => {
 export const hide = () => {
     globals.currentScreen = 'lobby';
     tablesDraw();
-    usersDraw();
+    usersDraw.draw();
 
     // Replace the list of current players with a list of the current games
     $('#lobby-pregame').hide();

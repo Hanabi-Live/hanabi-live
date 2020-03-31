@@ -22,6 +22,7 @@ import * as gameMain from './game/main';
 import gameTooltipsInit from './game/tooltipsInit';
 import * as lobbyCreateGame from './lobby/createGame';
 import * as lobbyHistory from './lobby/history';
+import lobbyIdleInit from './lobby/idleInit';
 import lobbyKeyboardInit from './lobby/keyboardInit';
 import * as lobbyLogin from './lobby/login';
 import lobbyNavInit from './lobby/navInit';
@@ -57,6 +58,7 @@ $(document).ready(() => {
     gameTooltipsInit();
     lobbyCreateGame.init();
     lobbyHistory.init();
+    lobbyIdleInit();
     lobbyKeyboardInit();
     lobbyLogin.init();
     lobbyNavInit();

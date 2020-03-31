@@ -10,8 +10,10 @@ import Game from './Game';
 import GameHistory from './GameHistory';
 import * as history from './history';
 import * as pregame from './pregame';
+import Table from './Table';
 import tablesDraw from './tablesDraw';
-import usersDraw from './usersDraw';
+import User from './User';
+import * as usersDraw from './usersDraw';
 
 export default () => {
     for (const [commandName, commandFunction] of commands) {
@@ -159,22 +161,18 @@ commands.set('tableStart', (data: TableStartData) => {
 
 // Received by the client when a user connect or has a new status
 commands.set('user', (data: User) => {
-    userSet(data);
+    globals.userMap.set(data.id, data);
     if (globals.currentScreen === 'lobby') {
-        usersDraw();
+        usersDraw.draw();
     }
 });
 
-const userSet = (data: User) => {
-    globals.userMap.set(data.id, data);
-};
-
 commands.set('userList', (dataList: Array<User>) => {
     for (const data of dataList) {
-        userSet(data);
+        globals.userMap.set(data.id, data);
     }
     if (globals.currentScreen === 'lobby') {
-        usersDraw();
+        usersDraw.draw();
     }
 });
 
@@ -186,6 +184,20 @@ commands.set('userLeft', (data: UserLeftData) => {
     globals.userMap.delete(data.id);
 
     if (globals.currentScreen === 'lobby') {
-        usersDraw();
+        usersDraw.draw();
     }
+});
+
+interface UserInactiveData {
+    id: number,
+    inactive: boolean,
+}
+commands.set('userInactive', (data: UserInactiveData) => {
+    const user = globals.userMap.get(data.id);
+    if (!user) {
+        throw new Error(`Failed to get the user for the ID of "${data.id}".`);
+    }
+
+    user.inactive = data.inactive;
+    usersDraw.setInactive(user.id, user.inactive);
 });

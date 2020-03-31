@@ -184,6 +184,14 @@ const keypress = (room: string) => function keypressFunction(
             }, false);
             return;
         }
+
+        if (command === 'inactive') {
+            globals.idleMinutes = 15;
+            globals.conn.send('inactive', {
+                inactive: true,
+            });
+            return;
+        }
     }
 
     // This is not a command, so send a the chat message to the server

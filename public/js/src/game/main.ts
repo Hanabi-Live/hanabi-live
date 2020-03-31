@@ -6,7 +6,7 @@
 import { FADE_TIME } from '../constants';
 import globals from '../globals';
 import tablesDraw from '../lobby/tablesDraw';
-import usersDraw from '../lobby/usersDraw';
+import * as usersDraw from '../lobby/usersDraw';
 import * as misc from '../misc';
 import * as sounds from '../sounds';
 import * as chat from './chat';
@@ -36,7 +36,7 @@ export const show = () => {
 export const hide = () => {
     globals.currentScreen = 'lobby';
     tablesDraw();
-    usersDraw();
+    usersDraw.draw();
 
     globals.ui.destroy();
     globals.ui = null;

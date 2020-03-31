@@ -57,6 +57,9 @@ type CommandData struct {
 	// hypoAction
 	ActionJSON string `json:"actionJSON"`
 
+	// inactive
+	Inactive bool `json:"inactive"`
+
 	// clientError
 	Message string `json:"message"`
 	URL     string `json:"url"`
@@ -105,6 +108,7 @@ func commandInit() {
 	commandMap["chatPM"] = commandChatPM
 	commandMap["chatRead"] = commandChatRead
 	commandMap["chatTyping"] = commandChatTyping
+	commandMap["inactive"] = commandInactive
 	commandMap["getName"] = commandGetName
 	commandMap["historyGetDeals"] = commandHistoryGetDeals
 	commandMap["historyGet"] = commandHistoryGet

@@ -5,7 +5,7 @@
 // Imports
 import globals from '../globals';
 
-export default () => {
+export const draw = () => {
     $('#lobby-users-num').text(globals.userMap.size);
 
     const tbody = $('#lobby-users-table-tbody');
@@ -39,18 +39,33 @@ export default () => {
         }
         const status = user.status;
 
-        let nameColumn = `<a href="/scores/${username}" target="_blank" rel="noopener noreferrer">`;
+        let nameColumn = `<span id="online-users-${id}">`;
+        nameColumn += `<a href="/scores/${username}" target="_blank" rel="noopener noreferrer">`;
         if (username === globals.username) {
             nameColumn += `<strong><span class="name-us">${username}</span></strong>`;
         } else {
             nameColumn += username;
         }
         nameColumn += '</a>';
+        nameColumn += `<span id="online-users-${id}-zzz" class="hidden"> &nbsp;💤</span>`;
+        nameColumn += '</span>';
 
         const row = $('<tr>');
         $('<td>').html(nameColumn).appendTo(row);
         $('<td>').html(status).appendTo(row);
 
         row.appendTo(tbody);
+
+        setInactive(id, user.inactive);
+    }
+};
+
+export const setInactive = (id: number, inactive: boolean) => {
+    if (inactive) {
+        $(`#online-users-${id}`).fadeTo(0, 0.3);
+        $(`#online-users-${id}-zzz`).show();
+    } else {
+        $(`#online-users-${id}`).fadeTo(0, 1);
+        $(`#online-users-${id}-zzz`).hide();
     }
 };

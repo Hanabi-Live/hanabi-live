@@ -16,6 +16,12 @@ func notifyAllUserLeft(s *Session) {
 	}
 }
 
+func notifyAllUserInactive(s *Session) {
+	for _, s2 := range sessions {
+		s2.NotifyUserInactive(s)
+	}
+}
+
 func notifyAllTable(t *Table) {
 	if t.Visible {
 		for _, s := range sessions {

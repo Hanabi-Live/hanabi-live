@@ -7,6 +7,9 @@ import version from './data/version.json';
 import Game from './lobby/Game';
 import GameHistory from './lobby/GameHistory';
 import Settings from './lobby/Settings';
+import Table from './lobby/Table';
+import User from './lobby/User';
+
 // (the "version.json" file is filled in dynamically by the "build_client.sh" script)
 
 type screen = 'login' | 'lobby' | 'pregame' | 'game' | 'history' | 'historyOtherScores';
@@ -37,6 +40,7 @@ export class Globals {
     lastPM: string = '';
     datetimeLastChatInput: number = new Date().getTime();
     peopleTyping: Array<string> = [];
+    idleMinutes: number = 0;
 
     game: Game | null = null; // Equal to the data from the "game" command
 

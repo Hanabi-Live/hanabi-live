@@ -8,7 +8,7 @@ import globals from '../globals';
 import GameHistory from './GameHistory';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
-import usersDraw from './usersDraw';
+import * as usersDraw from './usersDraw';
 
 export const init = () => {
     $('#lobby-history-show-more').on('click', () => {
@@ -33,7 +33,7 @@ export const show = () => {
 export const hide = () => {
     globals.currentScreen = 'lobby';
     tablesDraw();
-    usersDraw();
+    usersDraw.draw();
 
     $('#lobby-history').hide();
     $('#lobby-history-other-scores').hide();

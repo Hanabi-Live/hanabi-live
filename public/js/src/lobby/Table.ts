@@ -1,4 +1,4 @@
-interface Table {
+export default interface Table {
     id: number,
     name: string,
     password: boolean,

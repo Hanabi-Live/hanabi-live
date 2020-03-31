@@ -6,6 +6,7 @@
 import globals from '../globals';
 import * as misc from '../misc';
 import * as modals from '../modals';
+import Table from './Table';
 
 const tablesDraw = () => {
     const tbody = $('#lobby-games-table-tbody');
