@@ -29,6 +29,7 @@ type Table struct {
 	Progress       int // Displayed as a percentage on the main lobby screen
 
 	DatetimeCreated      time.Time
+	DatetimeLastJoined   time.Time
 	DatetimePlannedStart time.Time
 	DatetimeStarted      time.Time
 	// This is updated any time a player interacts with the game / replay
@@ -72,6 +73,7 @@ func NewTable(name string, owner int) *Table {
 		Visible: true, // Tables are visible by default
 
 		DatetimeCreated:    time.Now(),
+		DatetimeLastJoined: time.Now(),
 		DatetimeLastAction: time.Now(),
 
 		Chat:     make([]*TableChatMessage, 0),
