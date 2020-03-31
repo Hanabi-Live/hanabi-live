@@ -16,8 +16,9 @@ import (
 )
 
 func commandClientError(s *Session, d *CommandData) {
-	logger.Info("User \"" + s.Username() + "\" got a client error:")
-	logger.Info(d.Message)
-	logger.Info(d.URL)
-	logger.Info(strconv.Itoa(d.LineNum) + ":" + strconv.Itoa(d.ColNum))
+	msg := "User \"" + s.Username() + "\" got a client error:\n"
+	msg += "\t" + d.Message + "\n"
+	msg += "\t" + d.URL + "\n"
+	msg += "\t" + strconv.Itoa(d.LineNum) + ":" + strconv.Itoa(d.ColNum)
+	logger.Error(msg)
 }
