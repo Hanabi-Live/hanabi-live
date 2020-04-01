@@ -10,11 +10,10 @@ type GameAction struct {
 	Type      int
 	Target    int
 	ClueGiver int
-	ClueType  int
 	ClueValue int
 }
 
-func (*GameActions2) Insert(databaseID, turn, gameAction GameAction) error {
+func (*GameActions2) Insert(gameID int, turn int, gameAction *GameAction) error {
 	var stmt *sql.Stmt
 	if v, err := db.Prepare(`
 		INSERT INTO game_actions2 (
@@ -23,11 +22,9 @@ func (*GameActions2) Insert(databaseID, turn, gameAction GameAction) error {
 			type,
 			target,
 			clue_giver,
-			clue_type,
 			clue_value
 		)
 		VALUES (
-			?,
 			?,
 			?,
 			?,
@@ -43,12 +40,11 @@ func (*GameActions2) Insert(databaseID, turn, gameAction GameAction) error {
 	defer stmt.Close()
 
 	_, err := stmt.Exec(
-		databaseID,
+		gameID,
 		turn,
 		gameAction.Type,
 		gameAction.Target,
 		gameAction.ClueGiver,
-		gameAction.ClueType,
 		gameAction.ClueValue,
 	)
 	return err
@@ -60,7 +56,6 @@ func (*GameActions2) GetAll(databaseID int) ([]GameAction, error) {
 			type,
 			target,
 			clue_giver,
-			clue_type,
 			clue_value
 		FROM game_actions2
 		WHERE game_id = ?
@@ -75,7 +70,6 @@ func (*GameActions2) GetAll(databaseID int) ([]GameAction, error) {
 			&action.Type,
 			&action.Target,
 			&action.ClueGiver,
-			&action.ClueType,
 			&action.ClueValue,
 		); err != nil {
 			return nil, err

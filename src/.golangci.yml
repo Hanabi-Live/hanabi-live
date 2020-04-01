@@ -31,6 +31,8 @@ issues:
     - "exported \\w+ (\\S*['.]*)([a-zA-Z'.*]*) should have comment or be unexported"
     # We block-scope variables in many places, making it impossible to outdent
     - "if block ends with a return statement, so drop this else and outdent its block"
+    # TODO in comments is okay
+    - "Line contains TODO/BUG/FIXME"
 
 linters-settings:
   lll:

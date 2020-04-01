@@ -128,7 +128,7 @@ CREATE TABLE game_participants (
 DROP TABLE IF EXISTS game_participant_notes;
 CREATE TABLE game_participant_notes (
     game_participant_id  INT            NOT NULL,
-    card_order           TINYINT        NOT NULL, /* "order" is a reserved word */
+    card_order           TINYINT        NOT NULL, /* "order" is a reserved word in MariaDB */
     note                 VARCHAR(1000)  NOT NULL,
     FOREIGN KEY (game_participant_id) REFERENCES game_participants (id) ON DELETE CASCADE,
     PRIMARY KEY (game_participant_id, card_order)
@@ -147,8 +147,9 @@ DROP TABLE IF EXISTS game_actions2;
 CREATE TABLE game_actions2 (
     game_id    INT      NOT NULL,
     turn       TINYINT  NOT NULL,
-    type       TINYINT  NOT NULL, /* 0 - number clue, 1 - color clue, 2 - play, 3 - discard */
-    target     TINYINT  NOT NULL, /* The index of the player that received the clue or the card that was played/discarded */
+    type       TINYINT  NOT NULL, /* 0 - play, 1 - discard, 2 - color clue, 3 - number clue */
+    /* The index of the player that received the clue or the card that was played/discarded */
+    target     TINYINT  NOT NULL,
     clue_giver TINYINT  NOT NULL, /* The index of the player that performed the clue */
     clue_value TINYINT  NOT NULL, /* 1 if 1, 2 if 2, etc., or 1 if blue, 2 if etc. */
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
@@ -157,9 +158,11 @@ CREATE TABLE game_actions2 (
 
 DROP TABLE IF EXISTS variant_stats;
 CREATE TABLE variant_stats (
-    variant             SMALLINT  NOT NULL  PRIMARY KEY, /* Equal to the variant ID (found in "variants.go") */
+    /* Equal to the variant ID (found in "variants.go") */
+    variant             SMALLINT  NOT NULL  PRIMARY KEY,
     num_games           INT       NOT NULL  DEFAULT 0,
-    best_score2         TINYINT   NOT NULL  DEFAULT 0, /* The overall best score for a 2-player games on this variant */
+    /* The overall best score for a 2-player games on this variant */
+    best_score2         TINYINT   NOT NULL  DEFAULT 0,
     best_score3         TINYINT   NOT NULL  DEFAULT 0,
     best_score4         TINYINT   NOT NULL  DEFAULT 0,
     best_score5         TINYINT   NOT NULL  DEFAULT 0,

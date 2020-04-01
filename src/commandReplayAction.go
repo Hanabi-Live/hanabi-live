@@ -4,7 +4,7 @@
 	{
 		type: 0, // Types are listed in the "constants.go" file
 		value: 10,
-		name: 'Zamiel',
+		name: 'Alice',
 	}
 */
 

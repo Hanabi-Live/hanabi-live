@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -17,6 +18,21 @@ func httpGoogleAnalytics(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 	r := c.Request
+
+	// We only want to track page views for "/", "/scores/Alice", etc.
+	// (this goroute will be entered for requests to "/public/css/main.min.css", for example)
+	path := c.FullPath()
+	if path == "/" &&
+		!strings.HasPrefix(path, "/scores/") &&
+		!strings.HasPrefix(path, "/profile/") &&
+		!strings.HasPrefix(path, "/history/") &&
+		!strings.HasPrefix(path, "/missing-scores/") &&
+		!strings.HasPrefix(path, "/stats") &&
+		!strings.HasPrefix(path, "/variant/") &&
+		!strings.HasPrefix(path, "/videos") {
+
+		return
+	}
 
 	// Get their Google Analytics cookie, if any
 	// If they do not have one, set a new cookie

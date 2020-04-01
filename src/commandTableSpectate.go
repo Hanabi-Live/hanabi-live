@@ -8,7 +8,7 @@
 	"data" example:
 	{
 		gameID: 15103,
-		player: "Zamiel", // Optional
+		player: 'Alice', // Optional
 		// If the player is specified, they will spectate from that player's perspective
 	}
 */

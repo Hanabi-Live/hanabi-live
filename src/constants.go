@@ -36,6 +36,14 @@ const (
 	actionTypeIdleLimitReached
 )
 
+// TODO remove the above constants after the database transition
+const (
+	actionType2Play = iota
+	actionType2Discard
+	actionType2ColorClue
+	actionType2NumberClue
+)
+
 const (
 	clueTypeRank = iota
 	clueTypeColor

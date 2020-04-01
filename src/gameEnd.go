@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -229,7 +231,7 @@ func (g *Game) WriteDatabase() error {
 	}
 
 	// Next, we insert rows for each of the participants
-	for _, gp := range g.Players {
+	for i, gp := range g.Players {
 		p := t.Players[gp.Index]
 
 		characterID := 0
@@ -255,40 +257,132 @@ func (g *Game) WriteDatabase() error {
 			characterID,
 			gp.CharacterMetadata,
 		); err != nil {
-			logger.Error("Failed to insert the game participant row:", err)
+			logger.Error("Failed to insert game participant row #"+strconv.Itoa(i)+":", err)
 			return err
 		}
 	}
 
 	// Next, we insert rows for each note
-	for _, gp := range g.Players {
+	for i, gp := range g.Players {
 		p := t.Players[gp.Index]
 
-		for i, note := range gp.Notes {
+		for j, note := range gp.Notes {
 			if note == "" {
 				continue
 			}
-			if err := models.GameParticipantNotes.Insert(p.ID, g.ID, i, note); err != nil {
-				logger.Error("Failed to insert the game participant note row:", err)
+			if err := models.GameParticipantNotes.Insert(p.ID, g.ID, j, note); err != nil {
+				logger.Error("Failed to insert the row for note #"+strconv.Itoa(j)+
+					" for game participant #"+strconv.Itoa(i)+":", err)
 				return err
 			}
 		}
 	}
 
 	// Next, we insert rows for each of the actions
-	for _, a := range g.Actions {
+	turn := 0
+	for i, a := range g.Actions {
 		var aString string
 		if v, err := json.Marshal(a); err != nil {
-			logger.Error("Failed to convert the action to JSON:", err)
+			logger.Error("Failed to convert action #"+strconv.Itoa(i)+"to JSON:", err)
 			return err
 		} else {
 			aString = string(v)
 		}
 
 		if err := models.GameActions.Insert(g.ID, aString); err != nil {
-			logger.Error("Failed to insert the action row:", err)
+			logger.Error("Failed to insert the row for action #"+strconv.Itoa(i)+":", err)
 			return err
 		}
+
+		/*
+			We also need to insert a row for each of the actions in the "new" action format
+			TODO Remove the above code block and transition to the new table for everything
+		*/
+
+		// We do not know what kind of action is it,
+		// so use the reflect package to get the value of the "Type" field
+		t := reflect.TypeOf(a)
+		v := reflect.ValueOf(a)
+		actionType := ""
+		for i := 0; i < t.NumField(); i++ {
+			if t.Field(i).Name == "Type" {
+				actionType = fmt.Sprintf("%+v", v.Field(i))
+				break
+			}
+		}
+		if actionType == "" {
+			logger.Error("Failed to find the type of action #" + strconv.Itoa(i) + ".")
+			return errors.New("")
+		}
+
+		var gameAction *GameAction
+		if actionType == "play" {
+			var actionPlay ActionPlay
+			if v, ok := a.(ActionPlay); !ok {
+				logger.Error("Failed to convert action #" + strconv.Itoa(i) +
+					" to an ActionPlay struct.")
+				return errors.New("")
+			} else {
+				actionPlay = v
+			}
+
+			gameAction = &GameAction{
+				Type:   actionType2Play,
+				Target: actionPlay.Which.Order,
+			}
+		} else if actionType == "discard" {
+			var actionDiscard ActionDiscard
+			if v, ok := a.(ActionDiscard); !ok {
+				logger.Error("Failed to convert action #" + strconv.Itoa(i) +
+					" to an ActionDiscard struct.")
+				return errors.New("")
+			} else {
+				actionDiscard = v
+			}
+
+			gameAction = &GameAction{
+				Type:   actionType2Discard,
+				Target: actionDiscard.Which.Order,
+			}
+		} else if actionType == "clue" {
+			var actionClue ActionClue
+			if v, ok := a.(ActionClue); !ok {
+				logger.Error("Failed to convert action #" + strconv.Itoa(i) +
+					" to an ActionClue struct.")
+				return errors.New("")
+			} else {
+				actionClue = v
+			}
+
+			var clueType int
+			if actionClue.Clue.Type == clueTypeColor {
+				clueType = actionType2ColorClue
+			} else if actionClue.Clue.Type == clueTypeRank {
+				clueType = actionType2NumberClue
+			} else {
+				logger.Error("Action #" + strconv.Itoa(i) + " has an invalid clue type of " +
+					strconv.Itoa(actionClue.Clue.Type) + ".")
+				return errors.New("")
+			}
+
+			gameAction = &GameAction{
+				Type:      clueType,
+				Target:    actionClue.Target,
+				ClueGiver: actionClue.Giver,
+				ClueValue: actionClue.Clue.Value,
+			}
+		}
+
+		if gameAction == nil {
+			continue
+		}
+
+		if err := models.GameActions2.Insert(g.ID, turn, gameAction); err != nil {
+			logger.Error("Failed to insert row for action #"+strconv.Itoa(i)+":", err)
+			return err
+		}
+
+		turn++
 	}
 
 	// Next, we insert rows for each chat message

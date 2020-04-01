@@ -628,6 +628,29 @@ export default class HanabiCard extends Konva.Group {
                         (rank: number) => rank !== 5,
                     );
                 }
+            } else if (
+                // Checking for "Pink-" also checks for "Light-Pink-"
+                globals.variant.name.includes('Pink-Ones')
+                || globals.variant.name.includes('Omni-Ones')
+                || globals.variant.name.includes('Pink-Fives')
+                || globals.variant.name.includes('Omni-Fives')
+            ) {
+                if (
+                    positive
+                    && this.possibleSuits.length === 1
+                    && this.suit !== null
+                    && this.suit.clueRanks === 'none'
+                    && this.possibleRanks.length >= 2
+                    && this.positiveRankClues.length > 0
+                ) {
+                    // This color clue "filled in" the card to be a suit that is not touched by any
+                    // ranks; since it is touched by one or more positive rank clues, we know for
+                    // sure that it has to be a 1 / 5
+                    ranksRemoved = filterInPlace(
+                        this.possibleRanks,
+                        (rank: number) => rank === 1,
+                    );
+                }
             }
         }
 
