@@ -127,7 +127,7 @@ for (id, action) in cursor:
                 keys_to_delete.append(key)
 
         if 'which' in action_dict:
-            for key in action_dict['which']:
+            for key in list(action_dict['which']):
                 if (key != 'index' and
                     key != 'suit' and
                     key != 'rank' and
@@ -145,7 +145,7 @@ for (id, action) in cursor:
                 keys_to_delete.append(key)
 
         if 'which' in action_dict:
-            for key in action_dict['which']:
+            for key in list(action_dict['which']):
                 if (key != 'index' and
                     key != 'suit' and
                     key != 'rank' and
