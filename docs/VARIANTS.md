@@ -251,7 +251,7 @@ Special:
 ### Duck
 
 * When players give a clue, they point at the cards clued, but say "quack" instead of a color or number.
-* This variant was invented by Jack Gurev's group.
+* This variant was invented by [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
 
 ### Throw It in a Hole
 
@@ -259,7 +259,7 @@ Special:
 * The score of the game is not revealed until the game is over.
 * Players do not get a clue back for successfully playing a 5.
 * The game will automatically end if 3 strikes are accumulated.
-* This variant was invented by Jack Gurev's group.
+* This variant was invented by [Jack Gurev's](https://www.facebook.com/jack.gurev) group.
 
 <br />
 
