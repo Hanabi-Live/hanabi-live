@@ -13,7 +13,7 @@ import (
 
 	Essentially, all we need to do is check to see if they have any cookie
 	values stored, because that implies that they got through the "httpLogin"
-	less than 5 seconds ago. But we also do a few other checks to be thorough.
+	less than 15 seconds ago. But we also do a few other checks to be thorough.
 */
 
 var (

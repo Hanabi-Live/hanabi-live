@@ -1,7 +1,7 @@
 /*
 	This is only part 1 of 2 for login authentication.
 	The user must POST to "/login" with the values of "username" and "password".
-	If successful, then they will receive a cookie from the server with an expiry of 5 seconds.
+	If successful, then they will receive a cookie from the server with an expiry of 15 seconds.
 	The client will then attempt to make a WebSocket connection; JavaScript will automatiaclly
 	use any current cookies for the website when establishing a WebSocket connection.
 	The logic for opening a websocket connection is contained in the "websocketConnect.go" file.
@@ -68,14 +68,14 @@ func httpLogin(c *gin.Context) {
 	}
 
 	// Check to see if they are already logged in
-	// (which should probably never happen since the cookie lasts 5 seconds)
+	// (which should probably never happen since the cookie lasts 15 seconds)
 	session := gsessions.Default(c)
 	if v := session.Get("userID"); v != nil {
 		logger.Info("User from IP \"" + ip + "\" tried to get a session cookie, " +
 			"but they are already logged in.")
 		http.Error(
 			w,
-			"You are already logged in. Please wait 5 seconds, then try again.",
+			"You are already logged in. Please wait 15 seconds, then try again.",
 			http.StatusUnauthorized,
 		)
 		return

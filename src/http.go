@@ -89,7 +89,7 @@ func httpInit() {
 		// After getting a cookie via "/login", the client will immediately
 		// establish a WebSocket connection via "/ws", so the cookie only needs
 		// to exist for that time frame
-		MaxAge: 1, // in seconds
+		MaxAge: 15, // in seconds
 		// Only send the cookie over HTTPS:
 		// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
 		Secure: true,
