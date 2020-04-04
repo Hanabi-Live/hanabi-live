@@ -130,7 +130,8 @@ func validateJSON(s *Session, d *CommandData) bool {
 		d.GameJSON.Options = &OptionsJSON{}
 	}
 	if d.GameJSON.Options.Variant == nil {
-		*d.GameJSON.Options.Variant = "No Variant"
+		variantText := "No Variant"
+		d.GameJSON.Options.Variant = &variantText
 	}
 
 	// Validate that the specified variant exists
@@ -339,18 +340,53 @@ func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 }
 
 func loadJSONToTable(s *Session, d *CommandData, t *Table) {
+	// In order to avoid "runtime error: invalid memory address or nil pointer dereference",
+	// we must explicitly check to see if all pointers exist
+	timed := false
+	if d.GameJSON.Options.Timed != nil {
+		timed = *d.GameJSON.Options.Timed
+	}
+	baseTime := 0
+	if d.GameJSON.Options.Timed != nil {
+		baseTime = *d.GameJSON.Options.BaseTime
+	}
+	timePerTurn := 0
+	if d.GameJSON.Options.TimePerTurn != nil {
+		timePerTurn = *d.GameJSON.Options.TimePerTurn
+	}
+	speedrun := false
+	if d.GameJSON.Options.Speedrun != nil {
+		speedrun = *d.GameJSON.Options.Speedrun
+	}
+	cardCycle := false
+	if d.GameJSON.Options.CardCycle != nil {
+		cardCycle = *d.GameJSON.Options.CardCycle
+	}
+	deckPlays := false
+	if d.GameJSON.Options.DeckPlays != nil {
+		deckPlays = *d.GameJSON.Options.DeckPlays
+	}
+	emptyClues := false
+	if d.GameJSON.Options.EmptyClues != nil {
+		emptyClues = *d.GameJSON.Options.EmptyClues
+	}
+	characterAssignments := false
+	if d.GameJSON.Options.CharacterAssignments != nil {
+		characterAssignments = *d.GameJSON.Options.CharacterAssignments
+	}
+
 	// Store the options on the table
 	// (the variant was already validated in the "validateJSON()" function)
 	t.Options = &Options{
 		Variant:              *d.GameJSON.Options.Variant,
-		Timed:                *d.GameJSON.Options.Timed,
-		BaseTime:             *d.GameJSON.Options.BaseTime,
-		TimePerTurn:          *d.GameJSON.Options.TimePerTurn,
-		Speedrun:             *d.GameJSON.Options.Speedrun,
-		CardCycle:            *d.GameJSON.Options.CardCycle,
-		DeckPlays:            *d.GameJSON.Options.DeckPlays,
-		EmptyClues:           *d.GameJSON.Options.EmptyClues,
-		CharacterAssignments: *d.GameJSON.Options.CharacterAssignments,
+		Timed:                timed,
+		BaseTime:             baseTime,
+		TimePerTurn:          timePerTurn,
+		Speedrun:             speedrun,
+		CardCycle:            cardCycle,
+		DeckPlays:            deckPlays,
+		EmptyClues:           emptyClues,
+		CharacterAssignments: characterAssignments,
 
 		Replay:     true, // We need to mark that the game should not be written to the database
 		CustomDeck: d.GameJSON.Deck,
@@ -404,6 +440,16 @@ func applyNotesToPlayers(s *Session, d *CommandData, g *Game) bool {
 		}
 	} else if d.Source == "json" {
 		notes = d.GameJSON.Notes
+	}
+
+	// Ensure that the note arrays are the correct length
+	for len(notes) < len(g.Players) {
+		notes = append(notes, make([]string, 0))
+	}
+	for i := range notes {
+		for len(notes[i]) < len(g.Deck)+len(variants[g.Options.Variant].Suits) {
+			notes[i] = append(notes[i], "")
+		}
 	}
 
 	// Apply the notes

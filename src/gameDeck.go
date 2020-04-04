@@ -64,7 +64,6 @@ func (g *Game) InitSeed() {
 }
 
 func (g *Game) ShuffleDeck() {
-	logger.Debug("11111", g.Seed)
 	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
 	for i := range g.Deck {
 		j := rand.Intn(i + 1)

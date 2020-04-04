@@ -2,7 +2,6 @@ package main
 
 // Options are things that are specified about the game upon table creation (before the game starts)
 // The pointer is copied into the Game struct when the game starts for convenience
-// Default values are specified in ?
 type Options struct {
 	StartingPlayer       int // Legacy field for games prior to April 2020
 	Variant              string
