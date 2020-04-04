@@ -134,7 +134,18 @@ const drawBackground = () => {
         width: winW,
         height: winH,
         image: globals.ImageLoader!.get('background')!,
+        listening: true,
     });
+    background.on('click tap', () => {
+        // Close any existing note tooltips
+        if (globals.editingNote === null) {
+            return;
+        }
+        const tooltip = $(`#tooltip-card-${globals.editingNote}`);
+        tooltip.tooltipster('close');
+        globals.editingNote = null;
+    });
+
     globals.layers.UI.add(background);
 
     // The dark overlay that appears when you click the action log is clicked,
@@ -566,7 +577,7 @@ const drawBottomLeftButtons = () => {
     }, [globals.ImageLoader!.get('skull')!]);
     globals.layers.UI.add(killButton as any);
     killButton.on('click tap', () => {
-        globals.lobby.conn.send('tableAbandon');
+        globals.lobby.conn.send('tableTerminate');
     });
     killButton.tooltipName = 'kill';
     killButton.tooltipContent = 'Terminate the game, ending it immediately.';

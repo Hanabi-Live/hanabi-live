@@ -266,6 +266,7 @@ export const update = (card: HanabiCard) => {
     tooltipInstance.content(note);
     if (note.length === 0) {
         tooltip.tooltipster('close');
+        globals.editingNote = null;
     }
 
     // Update the card indicator
