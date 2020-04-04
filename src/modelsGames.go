@@ -185,7 +185,7 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
 		var game GameHistory
-		if err := rows.Scan(
+		if err2 := rows.Scan(
 			&game.ID,
 			&game.NumPlayers,
 			&game.Score,
@@ -194,8 +194,8 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 			&game.Seed,
 			&game.NumSimilar,
 			&game.OtherPlayerNames,
-		); err != nil {
-			return nil, err
+		); err2 != nil {
+			return nil, err2
 		}
 		games = append(games, &game)
 	}
@@ -234,15 +234,15 @@ func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error)
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
 		var game GameHistory
-		if err := rows.Scan(
+		if err2 := rows.Scan(
 			&game.ID,
 			&game.NumPlayers,
 			&game.Score,
 			&game.VariantNum,
 			&game.OtherPlayerNames,
 			&game.DatetimeFinished,
-		); err != nil {
-			return nil, err
+		); err2 != nil {
+			return nil, err2
 		}
 		games = append(games, &game)
 	}
@@ -315,14 +315,14 @@ func (*Games) GetAllDeals(userID int, databaseID int) ([]*GameHistory, error) {
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
 		var game GameHistory
-		if err := rows.Scan(
+		if err2 := rows.Scan(
 			&game.ID,
 			&game.Score,
 			&game.DatetimeFinished,
 			&game.OtherPlayerNames,
 			&game.You,
-		); err != nil {
-			return nil, err
+		); err2 != nil {
+			return nil, err2
 		}
 		games = append(games, &game)
 	}
@@ -348,8 +348,8 @@ func (*Games) GetPlayerSeeds(userID int) ([]string, error) {
 	seeds := make([]string, 0)
 	for rows.Next() {
 		var seed string
-		if err := rows.Scan(&seed); err != nil {
-			return nil, err
+		if err2 := rows.Scan(&seed); err2 != nil {
+			return nil, err2
 		}
 		seeds = append(seeds, seed)
 	}
@@ -365,6 +365,7 @@ func (*Games) GetPlayerSeeds(userID int) ([]string, error) {
 }
 
 type DBOptions struct {
+	StartingPlayer       int // Legacy field for games prior to April 2020
 	Variant              int
 	Timed                bool
 	BaseTime             int
@@ -380,6 +381,7 @@ func (*Games) GetOptions(databaseID int) (DBOptions, error) {
 	var options DBOptions
 	err := db.QueryRow(`
 		SELECT
+			starting_player,
 			variant,
 			timed,
 			time_base,
@@ -392,6 +394,7 @@ func (*Games) GetOptions(databaseID int) (DBOptions, error) {
 		FROM games
 		WHERE games.id = ?
 	`, databaseID).Scan(
+		&options.StartingPlayer,
 		&options.Variant,
 		&options.Timed,
 		&options.BaseTime,
@@ -460,13 +463,13 @@ func (*Games) GetPlayers(databaseID int) ([]*DBPlayer, error) {
 	players := make([]*DBPlayer, 0)
 	for rows.Next() {
 		var player DBPlayer
-		if err := rows.Scan(
+		if err2 := rows.Scan(
 			&player.ID,
 			&player.Name,
 			&player.CharacterAssignment,
 			&player.CharacterMetadata,
-		); err != nil {
-			return nil, err
+		); err2 != nil {
+			return nil, err2
 		}
 		players = append(players, &player)
 	}
@@ -481,19 +484,48 @@ func (*Games) GetPlayers(databaseID int) ([]*DBPlayer, error) {
 	return players, nil
 }
 
+func (*Games) GetPlayerNames(databaseID int) ([]string, error) {
+	rows, err := db.Query(`
+		SELECT
+			users.username AS username
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+			JOIN users ON game_participants.user_id = users.id
+		WHERE games.id = ?
+		ORDER BY game_participants.seat
+	`, databaseID)
+
+	playerNames := make([]string, 0)
+	for rows.Next() {
+		var playerName string
+		if err2 := rows.Scan(
+			&playerName,
+		); err2 != nil {
+			return nil, err2
+		}
+		playerNames = append(playerNames, playerName)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+
+	return playerNames, nil
+}
+
 func (*Games) GetNotes(databaseID int, numPlayers int, deckSize int) ([][]string, error) {
 	// nolint:lll
 	rows, err := db.Query(`
 		SELECT
 			game_participants.seat AS seat,
 			game_participant_notes.card_order AS card_order,
-			game_participant_notes.note AS note,
-			users.id AS id,
-			users.username AS name
+			game_participant_notes.note AS note
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
 			JOIN game_participant_notes ON game_participants.id = game_participant_notes.game_participant_id
-			JOIN users ON users.id = game_participants.user_id
 		WHERE games.id = ?
 		ORDER BY game_participants.seat, game_participant_notes.card_order
 	`, databaseID)
@@ -507,10 +539,8 @@ func (*Games) GetNotes(databaseID int, numPlayers int, deckSize int) ([][]string
 		var seat int
 		var order int
 		var note string
-		var id int
-		var name string
-		if err := rows.Scan(&seat, &order, &note, &id, &name); err != nil {
-			return nil, err
+		if err2 := rows.Scan(&seat, &order, &note); err2 != nil {
+			return nil, err2
 		}
 
 		allPlayersNotes[seat][order] = note

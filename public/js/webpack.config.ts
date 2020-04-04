@@ -1,4 +1,3 @@
-// import SentryWebpackPlugin from '@sentry/webpack-plugin';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as webpack from 'webpack';
@@ -60,21 +59,6 @@ const config: webpack.Configuration = {
             // The Hanabi codebase and the Tooltipster library uses "$" to invoke jQuery
             $: 'jquery',
         }),
-
-        // Using the "@sentry/browser" package will cause the TypeScript source maps to get messed
-        // up; we use the custom Sentry Webpack plugin to fix this
-        // https://docs.sentry.io/platforms/javascript/sourcemaps/
-        /*
-        new SentryWebpackPlugin({
-            include: '.',
-            ignore: [
-                'lib',
-                'node_modules',
-                '.eslintrc.js',
-                'Gruntfile.js',
-            ],
-        }),
-        */
     ],
 
     // Ignore the warnings that recommend splitting up the codebase into separate bundles
@@ -85,10 +69,6 @@ const config: webpack.Configuration = {
             'You can limit the size of your bundles by using import() or require.ensure to lazy load some parts of your application.',
         ],
     },
-
-    // Enable source maps for debugging purposes
-    // (this will show the line number of the real file in the browser console)
-    // devtool: 'source-map',
 };
 
 export default config;

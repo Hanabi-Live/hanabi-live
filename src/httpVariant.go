@@ -10,9 +10,8 @@ import (
 )
 
 type VariantData struct {
-	Title  string
-	Header bool
-	Name   string
+	Title string
+	Name  string
 
 	NumGames           int
 	TimePlayed         string

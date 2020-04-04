@@ -21,8 +21,12 @@ func durationToString(d time.Duration) string {
 	return fmt.Sprintf("%02d:%02d", m, s)
 }
 
+func formatTimestampUnix(datetime time.Time) string {
+	return datetime.Format("Mon Jan 02 15:04:05 MST 2006")
+}
+
 func getCurrentTimestamp() string {
-	return time.Now().Format("Mon Jan 02 15:04:05 MST 2006")
+	return formatTimestampUnix(time.Now())
 }
 
 // From: http://golangcookbook.blogspot.com/2012/11/generate-random-number-in-given-range.html
@@ -46,7 +50,8 @@ func intInSlice(a int, slice []int) bool {
 }
 
 // From: https://stackoverflow.com/questions/38554353/
-var isAlphanumericSpacesAndSafeSpecialCharacters = regexp.MustCompile(`^[a-zA-Z0-9 !-]+$`).MatchString // nolint:lll
+var isAlphanumeric = regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString
+var isAlphanumericSpacesSafeSpecialCharacters = regexp.MustCompile(`^[a-zA-Z0-9 !-]+$`).MatchString
 
 // From: https://gist.github.com/stoewer/fbe273b711e6a06315d19552dd4d33e6
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")

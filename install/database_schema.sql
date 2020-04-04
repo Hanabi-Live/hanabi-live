@@ -10,10 +10,8 @@
       automatically deleted
 */
 
-/*
-    We have to disable foreign key checks so that we can drop the tables;
-    this will only disable it for the current session
- */
+/* We have to disable foreign key checks so that we can drop the tables;
+   this will only disable it for the current session */
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS users;
@@ -22,7 +20,7 @@ CREATE TABLE users (
     /* MySQL enforces case insensitive uniqueness by default, which is what we want */
     username             VARCHAR(20)  NOT NULL  UNIQUE,
     password             CHAR(64)     NOT NULL, /* A SHA-256 hash string is 64 characters long */
-    last_ip              VARCHAR(40)  NULL, /* This will be set immediately after insertion */
+    last_ip              VARCHAR(40)  NULL,     /* This will be set immediately after insertion */
     admin                BOOLEAN      NOT NULL  DEFAULT 0,
     tester               BOOLEAN      NOT NULL  DEFAULT 0,
     datetime_created     TIMESTAMP    NOT NULL  DEFAULT NOW(),
@@ -88,9 +86,12 @@ CREATE TABLE games (
     name                   VARCHAR(50)  NOT NULL,
     num_players            TINYINT      NOT NULL,
     owner                  INT          NOT NULL,
+    /* By default, the starting player is always at index (seat) 0
+       This field is only needed for legacy games before April 2020 */
+    starting_player        TINYINT      NOT NULL  DEFAULT 0,
     /* Equal to the variant ID (found in "variants.json") */
     variant                SMALLINT     NOT NULL,
-    timed                  BOOLEAN      NOT NULL, /* 0 - not timed, 1 - timed */
+    timed                  BOOLEAN      NOT NULL,
     time_base              INT          NOT NULL, /* in seconds */
     time_per_turn          INT          NOT NULL, /* in seconds */
     speedrun               BOOLEAN      NOT NULL,
@@ -101,8 +102,7 @@ CREATE TABLE games (
     seed                   VARCHAR(50)  NOT NULL, /* e.g. "p2v0s1" */
     score                  TINYINT      NOT NULL,
     num_turns              SMALLINT     NOT NULL,
-    /* 0 - in progress, 1 - normal, 2 - strikeout, 3 - timeout, 4 - abandoned */
-    end_condition          TINYINT      NOT NULL,
+    end_condition          TINYINT      NOT NULL, /* See "endConditionX" in "constants.go" */
     datetime_created       TIMESTAMP    NOT NULL,
     datetime_started       TIMESTAMP    NOT NULL,
     datetime_finished      TIMESTAMP    NOT NULL,
@@ -115,14 +115,14 @@ CREATE INDEX games_index_seed ON games (seed);
 DROP TABLE IF EXISTS game_participants;
 CREATE TABLE game_participants (
     id                    INT      NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
-    user_id               INT      NOT NULL,
     game_id               INT      NOT NULL,
-    seat                  TINYINT  NOT NULL,
+    user_id               INT      NOT NULL,
+    seat                  INT      NOT NULL, /* Only needed for the "GetNotes()" function */
     character_assignment  TINYINT  NOT NULL,
     character_metadata    TINYINT  NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
-    CONSTRAINT game_participants_unique UNIQUE (user_id, game_id)
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    CONSTRAINT game_participants_unique UNIQUE (game_id, user_id)
 );
 
 DROP TABLE IF EXISTS game_participant_notes;
@@ -145,13 +145,22 @@ CREATE TABLE game_actions (
 /* Eventually this table will replace the "game_actions" table */
 DROP TABLE IF EXISTS game_actions2;
 CREATE TABLE game_actions2 (
-    game_id    INT      NOT NULL,
-    turn       TINYINT  NOT NULL,
-    type       TINYINT  NOT NULL, /* 0 - play, 1 - discard, 2 - color clue, 3 - number clue */
-    /* The index of the player that received the clue or the card that was played/discarded */
-    target     TINYINT  NOT NULL,
-    clue_giver TINYINT  NOT NULL, /* The index of the player that performed the clue */
-    clue_value TINYINT  NOT NULL, /* 1 if 1, 2 if 2, etc., or 1 if blue, 2 if etc. */
+    game_id  INT      NOT NULL,
+    turn     TINYINT  NOT NULL,
+    /* 0 - play, 1 - discard, 2 - color clue, 3 - number clue, 4 - terminate */
+    type     TINYINT  NOT NULL,
+    /* If a play or a discard, then the order of the the card that was played/discarded
+       If a color clue or a number clue, then the index of the player that received the clue
+       If a terminate, then the index of the player that caused the termination */
+    target   TINYINT  NOT NULL,
+    /* If a play or discard, then 0 (as NULL)
+       It uses less database space and reduces code complexity to use a value of 0 for NULL
+       than to use a SQL NULL
+       https://dev.mysql.com/doc/refman/8.0/en/data-size.html
+       If a color clue, then 0 if red, 1 if yellow, etc.
+       If a rank clue, then 1 if 1, 2 if 2, etc.
+       If a terminate, then 0 if a timed timeout, 1 if a manual termination 2 if an idle timeout */
+    value    TINYINT  NOT NULL,
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
     PRIMARY KEY (game_id, turn)
 );
@@ -218,6 +227,17 @@ CREATE TABLE muted_ips (
     user_id            INT           NULL      DEFAULT NULL,
     reason             VARCHAR(150)  NULL      DEFAULT NULL,
     datetime_banned    TIMESTAMP     NOT NULL  DEFAULT NOW(),
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+DROP TABLE IF EXISTS throttled_ips;
+CREATE TABLE throttled_ips (
+    id                  INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    ip                  VARCHAR(40)   NOT NULL,
+    /* An entry for a throttled IP can optionally be associated with a user */
+    user_id             INT           NULL      DEFAULT NULL,
+    reason              VARCHAR(150)  NULL      DEFAULT NULL,
+    datetime_throttled  TIMESTAMP     NOT NULL  DEFAULT NOW(),
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

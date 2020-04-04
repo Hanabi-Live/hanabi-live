@@ -109,7 +109,7 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 		stats := NewUserStatsRow()
 
 		var variant int
-		if err := rows.Scan(
+		if err2 := rows.Scan(
 			&variant,
 			&stats.NumGames,
 			&stats.BestScores[0].Score, // 2-player
@@ -124,8 +124,8 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 			&stats.BestScores[4].Modifier,
 			&stats.AverageScore,
 			&stats.NumStrikeouts,
-		); err != nil {
-			return nil, err
+		); err2 != nil {
+			return nil, err2
 		}
 
 		statsMap[variant] = stats
@@ -274,8 +274,8 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 	var userIDs []int
 	for rows.Next() {
 		var userID int
-		if err := rows.Scan(&userID); err != nil {
-			return err
+		if err2 := rows.Scan(&userID); err2 != nil {
+			return err2
 		}
 		userIDs = append(userIDs, userID)
 	}

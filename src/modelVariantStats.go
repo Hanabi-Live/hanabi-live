@@ -84,7 +84,7 @@ func (*VariantStats) GetAll(variantsID map[int]string) (map[int]VariantStatsRow,
 		stats := NewVariantStatsRow()
 
 		var variant int
-		if err := rows.Scan(
+		if err2 := rows.Scan(
 			&variant,
 			&stats.NumGames,
 			&stats.BestScores[0].Score, // 2-player
@@ -95,8 +95,8 @@ func (*VariantStats) GetAll(variantsID map[int]string) (map[int]VariantStatsRow,
 			&stats.NumMaxScores,
 			&stats.AverageScore,
 			&stats.NumStrikeouts,
-		); err != nil {
-			return nil, err
+		); err2 != nil {
+			return nil, err2
 		}
 
 		statsMap[variant] = stats

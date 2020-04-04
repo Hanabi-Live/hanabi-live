@@ -8,16 +8,9 @@
 package main
 
 import (
-	"encoding/json"
-	"hash/crc64"
 	"math/rand"
-	"regexp"
 	"strconv"
 	"time"
-)
-
-var (
-	cardRegExp = regexp.MustCompile(`^(\w)(\d)$`)
 )
 
 func commandTableStart(s *Session, d *CommandData) {
@@ -94,14 +87,21 @@ func commandTableStart(s *Session, d *CommandData) {
 	g.InitDeck()
 
 	// Handle setting the seed
-	preset := false
+	shuffleDeck := true
+	shufflePlayers := true
 	seedPrefix := "p" + strconv.Itoa(len(t.Players)) + // e.g. p2v0s
 		"v" + strconv.Itoa(variants[t.Options.Variant].ID) + "s"
 	if t.Options.SetSeed != "" {
-		// This is a game with a preset seed
-		g.Seed = seedPrefix + t.Options.SetSeed
+		// This is a replay of a game from the database
+		g.Seed = t.Options.SetSeed
+		shufflePlayers = false
+	} else if t.Options.SetSeedSuffix != "" {
+		// This is a custom game created with the "!seed" prefix
+		// (e.g. playing a deal with a specific seed)
+		g.Seed = seedPrefix + t.Options.SetSeedSuffix
 	} else if t.Options.SetReplay != 0 {
-		// This is a replay of an existing game
+		// This is a custom game created with the "!replay" prefix
+		// (e.g. a replay of an existing game in the database)
 		if v, err := models.Games.GetSeed(t.Options.SetReplay); err != nil {
 			logger.Error("Failed to get the seed for game "+
 				"\""+strconv.Itoa(t.Options.SetReplay)+"\":", err)
@@ -110,13 +110,11 @@ func commandTableStart(s *Session, d *CommandData) {
 		} else {
 			g.Seed = v
 		}
-	} else if t.Options.SetDeal != "" {
-		// This is a preset deal from a file, so just set the seed equal to the file name
-		g.Seed = t.Options.SetDeal
-		preset = true // Later on, we need to skip shuffling the deck
-		if g.SetPresetDeck(s) {
-			return
-		}
+	} else if t.Options.CustomDeck != nil {
+		// This is a game with a custom (preset) deck, so just set the seed to 0
+		g.Seed = "0"
+		shuffleDeck = false
+		shufflePlayers = false
 	} else {
 		// This is a normal game with a random seed / a random deck
 		// Get a list of all the seeds that these players have played before
@@ -149,21 +147,9 @@ func commandTableStart(s *Session, d *CommandData) {
 	}
 	logger.Info(t.GetName()+"Using seed:", g.Seed)
 
-	// Seed the random number generator with the game seed
-	// Golang's "rand.Seed()" function takes an int64, so we need to convert a string to an int64
-	// We use the CRC64 hash function to do this
-	// Also note that seeding with negative numbers will not work
-	crc64Table := crc64.MakeTable(crc64.ECMA)
-	intSeed := crc64.Checksum([]byte(g.Seed), crc64Table)
-	rand.Seed(int64(intSeed))
-
-	// Shuffle the deck
-	// https://stackoverflow.com/questions/12264789/shuffle-array-in-go
-	if !preset {
-		for i := range g.Deck {
-			j := rand.Intn(i + 1)
-			g.Deck[i], g.Deck[j] = g.Deck[j], g.Deck[i]
-		}
+	g.InitSeed() // Seed the random number generator
+	if shuffleDeck {
+		g.ShuffleDeck()
 	}
 
 	// Mark the order of all of the cards in the deck
@@ -171,30 +157,33 @@ func commandTableStart(s *Session, d *CommandData) {
 		c.Order = i
 	}
 
-	// Log the deal (so that it can be distributed to others if necessary)
-	logger.Info("--------------------------------------------------")
-	logger.Info("Deal for seed: " + g.Seed + " (from top to bottom)")
-	logger.Info("(cards are dealt to a player until their hand fills up before " +
-		"moving on to the next one)")
-	for i, c := range g.Deck {
-		logger.Info(strconv.Itoa(i+1) + ") " + c.Name(g))
-	}
-	logger.Info("--------------------------------------------------")
+	/*
+		// Log the deal (so that it can be distributed to others if necessary)
+		logger.Info("--------------------------------------------------")
+		logger.Info("Deal for seed: " + g.Seed + " (from top to bottom)")
+		logger.Info("(cards are dealt to a player until their hand fills up before " +
+			"moving on to the next one)")
+		for i, c := range g.Deck {
+			logger.Info(strconv.Itoa(i+1) + ") " + c.Name(g))
+		}
+		logger.Info("--------------------------------------------------")
+	*/
 
-	// Get a random player to start first (based on the game seed)
-	// (but skip doing this if we are playing a preset deal from a file,
-	// since the player that goes first is specified on the file line of the file)
-	if !preset {
-		g.ActivePlayer = rand.Intn(len(t.Players))
-	}
-
-	// Shuffle the order of the players
-	// (otherwise, the seat order would always correspond to the order that
-	// the players joined the game in)
+	// The 0th player will always go first
+	// Since we want a random player to start first, we need to shuffle the order of the players
+	// Additionally, we need to shuffle the order of the players so that the order that the players
+	// joined the game in does not correspond to the order of the players in the actual game
 	// https://stackoverflow.com/questions/12264789/shuffle-array-in-go
-	for i := range t.Players {
-		j := rand.Intn(i + 1)
-		t.Players[i], t.Players[j] = t.Players[j], t.Players[i]
+	if shufflePlayers {
+		for i := range t.Players {
+			j := rand.Intn(i + 1)
+			t.Players[i], t.Players[j] = t.Players[j], t.Players[i]
+		}
+	}
+
+	// Games created prior to April 2020 do not always have the 0th player taking the first turn
+	if t.Options.StartingPlayer != 0 {
+		g.ActivePlayer = t.Options.StartingPlayer
 	}
 
 	// Initialize the GamePlayer objects
@@ -257,10 +246,17 @@ func commandTableStart(s *Session, d *CommandData) {
 	t.DatetimeStarted = time.Now()
 
 	// If we are replaying an existing game up to a certain point,
-	// start emulating all of the actions
+	// emulate all of the actions until turn N
 	if t.Options.SetReplay != 0 {
-		if emulateGameplayFromDatabaseActions(t, s) {
+		d.Source = "id"
+		if emulateActions(s, d, t) {
 			return
+		}
+
+		// We have to reset all of the player's clocks to avoid some bugs relating to
+		// taking super-fast turns
+		for _, p := range g.Players {
+			p.InitTime(t.Options)
 		}
 	}
 
@@ -272,120 +268,21 @@ func commandTableStart(s *Session, d *CommandData) {
 		}
 	}
 
-	// Let everyone know that the game has started, which will turn the
-	// "Join Game" button into "Spectate"
-	notifyAllTable(t)
+	// If we are emulating actions, we do not have to tell anyone about the table yet
+	if !t.Options.Replay {
+		// Let everyone know that the game has started, which will turn the
+		// "Join Game" button into "Spectate"
+		notifyAllTable(t)
 
-	// Set the status for all of the users in the game
-	for _, p := range t.Players {
-		p.Session.Set("status", statusPlaying)
-		notifyAllUser(p.Session)
+		// Set the status for all of the users in the game
+		for _, p := range t.Players {
+			p.Session.Set("status", statusPlaying)
+			notifyAllUser(p.Session)
+		}
 	}
 
 	// Start the timer
 	if t.Options.Timed {
 		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayer])
 	}
-}
-
-func emulateGameplayFromDatabaseActions(t *Table, s *Session) bool {
-	g := t.Game
-
-	// Ensure that the correct session values are set for all of the players
-	// (before we start sending messages on their behalf)
-	for _, p := range t.Players {
-		p.Session.Set("currentTable", t.ID)
-		p.Session.Set("status", statusPlaying)
-	}
-
-	var actionStrings []string
-	if v, err := models.GameActions.GetAll(t.Options.SetReplay); err != nil {
-		logger.Error("Failed to get the actions from the database for game "+
-			strconv.Itoa(t.Options.SetReplay)+":", err)
-		s.Error(initFail)
-		return true
-	} else {
-		actionStrings = v
-	}
-
-	for _, actionString := range actionStrings {
-		// Convert it from JSON
-		var action map[string]interface{}
-		if err := json.Unmarshal([]byte(actionString), &action); err != nil {
-			logger.Error("Failed to unmarshal an action while emulating gameplay "+
-				"from the database:", err)
-			s.Error(initFail)
-			return true
-		}
-
-		// Emulate the various actions
-		if action["type"] == "clue" {
-			// Unmarshal the specific action type
-			var actionClue ActionClue
-			if err := json.Unmarshal([]byte(actionString), &actionClue); err != nil {
-				logger.Error("Failed to unmarshal a clue action:", err)
-				s.Error(initFail)
-				return true
-			}
-
-			// Emulate the clue action
-			commandAction(t.Players[actionClue.Giver].Session, &CommandData{
-				Type:   actionTypeClue,
-				Target: actionClue.Target,
-				Clue:   actionClue.Clue,
-			})
-		} else if action["type"] == "play" {
-			// Unmarshal the specific action type
-			var actionPlay ActionPlay
-			if err := json.Unmarshal([]byte(actionString), &actionPlay); err != nil {
-				logger.Error("Failed to unmarshal a play action:", err)
-				s.Error(initFail)
-				return true
-			}
-
-			// Emulate the play action
-			commandAction(t.Players[actionPlay.Which.Index].Session, &CommandData{
-				Type:   actionTypePlay,
-				Target: actionPlay.Which.Order,
-			})
-		} else if action["type"] == "discard" {
-			// Unmarshal the specific action type
-			var actionDiscard ActionDiscard
-			if err := json.Unmarshal([]byte(actionString), &actionDiscard); err != nil {
-				logger.Error("Failed to unmarshal a discard action:", err)
-				s.Error(initFail)
-				return true
-			}
-
-			// Emulate the discard action
-			commandAction(t.Players[actionDiscard.Which.Index].Session, &CommandData{
-				Type:   actionTypeDiscard,
-				Target: actionDiscard.Which.Order,
-			})
-		} else if action["type"] == "turn" {
-			// Unmarshal the specific action type
-			var actionTurn ActionTurn
-			if err := json.Unmarshal([]byte(actionString), &actionTurn); err != nil {
-				logger.Error("Failed to unmarshal a turn action:", err)
-				s.Error(initFail)
-				return true
-			}
-
-			// Stop if we have reached the intended turn
-			if actionTurn.Num == t.Options.SetReplayTurn {
-				// We have to reset all of the player's clocks before we proceed
-				// to avoid some bugs relating to taking super-fast turns
-				for _, p := range g.Players {
-					p.InitTime(t.Options)
-				}
-
-				return false
-			}
-		}
-	}
-
-	logger.Error("Failed to find the intended turn before reaching the end of game " +
-		strconv.Itoa(t.Options.SetReplay) + ".")
-	s.Error(initFail)
-	return true
 }

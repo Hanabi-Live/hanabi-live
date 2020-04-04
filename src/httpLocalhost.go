@@ -20,17 +20,18 @@ func httpLocalhostInit() {
 	// Path handlers
 	httpRouter.GET("/restart", func(c *gin.Context) {
 		graceful(true)
-		c.String(200, "success\n")
+		c.String(http.StatusOK, "success\n")
 	})
 	httpRouter.GET("/shutdown", func(c *gin.Context) {
 		graceful(false)
-		c.String(200, "success\n")
+		c.String(http.StatusOK, "success\n")
 	})
 	httpRouter.GET("/ban/:username", httpUserAction)
 	httpRouter.GET("/mute/:username", httpUserAction)
+	httpRouter.GET("/uptime", httpUptime)
 	httpRouter.GET("/debug", func(c *gin.Context) {
 		debug()
-		c.String(200, "success\n")
+		c.String(http.StatusOK, "success\n")
 	})
 
 	// Listen and serve (HTTP)
@@ -47,8 +48,6 @@ func httpLocalhostInit() {
 func httpUserAction(c *gin.Context) {
 	// Local variables
 	w := c.Writer
-
-	c.FullPath()
 
 	// Parse the username from the URL
 	username := c.Param("username")
@@ -68,7 +67,7 @@ func httpUserAction(c *gin.Context) {
 		)
 		return
 	} else if !exists {
-		c.String(200, "User \""+username+"\" does not exist in the database.\n")
+		c.String(http.StatusOK, "User \""+username+"\" does not exist in the database.\n")
 		return
 	} else {
 		userID = v.ID
@@ -107,7 +106,7 @@ func httpBan(c *gin.Context, username string, ip string, userID int) {
 		)
 		return
 	} else if banned {
-		c.String(200, "User \""+username+"\" has an IP of \""+ip+"\", "+
+		c.String(http.StatusOK, "User \""+username+"\" has an IP of \""+ip+"\", "+
 			"but it is already banned.\n")
 		return
 	}
@@ -125,7 +124,7 @@ func httpBan(c *gin.Context, username string, ip string, userID int) {
 
 	logoutUser(username)
 
-	c.String(200, "success\n")
+	c.String(http.StatusOK, "success\n")
 }
 
 func httpMute(c *gin.Context, username string, ip string, userID int) {
@@ -142,7 +141,7 @@ func httpMute(c *gin.Context, username string, ip string, userID int) {
 		)
 		return
 	} else if muted {
-		c.String(200, "User \""+username+"\" has an IP of \""+ip+"\", "+
+		c.String(http.StatusOK, "User \""+username+"\" has an IP of \""+ip+"\", "+
 			"but it is already muted.\n")
 		return
 	}
@@ -162,7 +161,7 @@ func httpMute(c *gin.Context, username string, ip string, userID int) {
 	// so disconnect their existing connection, if any
 	logoutUser(username)
 
-	c.String(200, "success\n")
+	c.String(http.StatusOK, "success\n")
 }
 
 func logoutUser(username string) {
@@ -178,4 +177,26 @@ func logoutUser(username string) {
 		}
 		return
 	}
+}
+
+func httpUptime(c *gin.Context) {
+	// Local variables
+	w := c.Writer
+
+	msg := getCameOnline() + "\n"
+	var uptime string
+	if v, err := getUptime(); err != nil {
+		logger.Error("Failed to get the uptime:", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else {
+		uptime = v
+	}
+	msg += uptime + "\n"
+
+	c.String(http.StatusOK, msg)
 }

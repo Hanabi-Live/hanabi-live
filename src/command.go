@@ -67,16 +67,18 @@ type CommandData struct {
 	ColNum  int    `json:"colno"`
 
 	// Used internally
-	// (validation for all of these field must be explicitly defined in "websocketMessage.go")
-	Username             string   // Used to mark the username of a chat message
-	Discord              bool     // Used to mark if a chat message origined from Discord
-	Server               bool     // Used to mark if the server generated the chat message
-	Spam                 bool     // True if it should go to the "bot" channel
-	OnlyDiscord          bool     // True if this is a chat message that should only go to Discord
-	DiscordID            string   // Used when echoing a message from Discord to the lobby
-	DiscordDiscriminator string   // Used when echoing a message from Discord to the lobby
-	DiscordCommand       bool     // Used when echoing a message from Discord to the lobby
-	Args                 []string // Used to pass chat command arguments to a chat command handler
+	// (a tag of "-" means that the JSON encoder will ignore the field)
+	Username string `json:"-"` // Used to mark the username of a chat message
+	Discord  bool   `json:"-"` // Used to mark if a chat message origined from Discord
+	Server   bool   `json:"-"` // Used to mark if the server generated the chat message
+	Spam     bool   `json:"-"` // True if it should go to the "bot" channel
+	// True if this is a chat message that should only go to Discord
+	OnlyDiscord          bool   `json:"-"`
+	DiscordID            string `json:"-"` // Used when echoing a message from Discord to the lobby
+	DiscordDiscriminator string `json:"-"` // Used when echoing a message from Discord to the lobby
+	DiscordCommand       bool   `json:"-"` // Used when echoing a message from Discord to the lobby
+	// Used to pass chat command arguments to a chat command handler
+	Args []string `json:"-"`
 }
 
 type Clue struct {
@@ -98,7 +100,7 @@ func commandInit() {
 	commandMap["tableUnattend"] = commandTableUnattend
 	commandMap["tableReattend"] = commandTableReattend
 	commandMap["tableStart"] = commandTableStart
-	commandMap["tableAbandon"] = commandTableAbandon
+	commandMap["tableTerminate"] = commandTableTerminate
 	commandMap["tableSpectate"] = commandTableSpectate
 	commandMap["tableRestart"] = commandTableRestart
 

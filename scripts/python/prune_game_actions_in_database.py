@@ -199,14 +199,17 @@ for thing in update_list:
     query = ('UPDATE game_actions SET action = %s WHERE id = %s')
     cursor.execute(query, (thing[1], thing[0]))
     cursor.close()
-    print('UPDATED ID:', thing[0], thing[1])
+    #print('UPDATED ID:', thing[0], thing[1])
 
 for thing in delete_list:
     cursor = cnx.cursor()
     query = ('DELETE FROM game_actions WHERE id = %s')
     cursor.execute(query, (thing,))
     cursor.close()
-    print('DELETED ID:', thing)
+    #print('DELETED ID:', thing)
 
 cnx.commit()
 cnx.close()
+
+print('TOTAL RECORDS UPDATED:', update_list, flush=True)
+print('TOTAL RECORDS DELETED:', delete_list, flush=True)

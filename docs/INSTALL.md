@@ -235,6 +235,6 @@ To manage the service:
   * If you are on MacOS or Linux, then `sudo` might be necessary to run this script because the server listens on port 80 and/or 443.
 * If you change any of the Golang code, then you must restart the server for the changes to take effect.
 * If you change any of the TypeScript or CSS, then you will need to re-run the `build_client.sh` script in order to re-bundle it into `main.min.js` and `main.min.css`. (This step does not require a server restart, but you will need to perform a hard cache refresh in the browser.)
-  * Alternatively, if you are actively changing or developing the TypeScript, leave the `webpack.sh` script running and go to "https://localhost/dev". This way, the code will get automatically transpiled whenever you change a file.
+  * Alternatively, if you are actively changing or developing the TypeScript, leave the `webpack-dev-server.sh` script running and go to "https://localhost/dev". This way, the code will be automatically compiled whenever you change a file and the page will automatically refresh.
 
 <br />

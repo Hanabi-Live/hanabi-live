@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
-	"time"
 
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	gsessions "github.com/gin-contrib/sessions"
@@ -18,28 +17,22 @@ import (
 type TemplateData struct {
 	Title  string // Used to populate the <title> tag
 	Domain string // Used to validate that the user is going to the correct URL
-	Header bool   // Whether or not the template contains extra code in the <head> tag
 	Name   string // Used for the profile
 }
 
 const (
-	sessionName = "hanabi.sid"
+	// The name supplied to the Gin session middleware can be any arbitrary string
+	httpSessionName = "hanabi.sid"
+	// The most secure value is 1 second, but we instead use 2 seconds to accommodate
+	// clients that round cookies to the nearest whole second (e.g. Java)
+	httpSessionTimeout = 2
 )
 
 var (
-	sessionStore gsessions.Store
 	GATrackingID string
-	// We don't want to use the default http.Client because it has no default timeout set
-	myHTTPClient = &http.Client{
-		Timeout: 10 * time.Second,
-	}
 )
 
 func httpInit() {
-	// Create a new Gin HTTP router
-	gin.SetMode(gin.ReleaseMode) // Comment this out to debug HTTP stuff
-	httpRouter := gin.Default()  // Has the "Logger" and "Recovery" middleware attached
-
 	// Read some configuration values from environment variables
 	// (they were loaded from the ".env" file in "main.go")
 	domain = os.Getenv("DOMAIN")
@@ -74,7 +67,11 @@ func httpInit() {
 			port = 443
 		}
 	}
-	GATrackingID := os.Getenv("GA_TRACKING_ID")
+	GATrackingID = os.Getenv("GA_TRACKING_ID")
+
+	// Create a new Gin HTTP router
+	gin.SetMode(gin.ReleaseMode) // Comment this out to debug HTTP stuff
+	httpRouter := gin.Default()  // Has the "Logger" and "Recovery" middleware attached
 
 	// Attach the Sentry middleware
 	if usingSentry {
@@ -82,14 +79,14 @@ func httpInit() {
 	}
 
 	// Create a session store
-	sessionStore = cookie.NewStore([]byte(sessionSecret))
+	httpSessionStore := cookie.NewStore([]byte(sessionSecret))
 	options := gsessions.Options{
 		Path:   "/",
 		Domain: domain,
 		// After getting a cookie via "/login", the client will immediately
 		// establish a WebSocket connection via "/ws", so the cookie only needs
 		// to exist for that time frame
-		MaxAge: 1, // in seconds
+		MaxAge: httpSessionTimeout, // In seconds
 		// Only send the cookie over HTTPS:
 		// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
 		Secure: true,
@@ -100,8 +97,10 @@ func httpInit() {
 	if !useTLS {
 		options.Secure = false
 	}
-	sessionStore.Options(options)
-	httpRouter.Use(gsessions.Sessions(sessionName, sessionStore)) // Attach the sessions middleware
+	httpSessionStore.Options(options)
+
+	// Attach the sessions middleware
+	httpRouter.Use(gsessions.Sessions(httpSessionName, httpSessionStore))
 
 	// Initialize Google Analytics
 	if len(GATrackingID) > 0 {

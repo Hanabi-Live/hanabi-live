@@ -11,8 +11,16 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+var (
+	// Used for sending web requests to external sites (e.g. Google Analytics)
+	// We don't want to use the default http.Client because it has no default timeout set
+	myHTTPClient = &http.Client{
+		Timeout: 10 * time.Second,
+	}
+)
+
 // Gin middleware for sending this page view to Google Analytics
-// (we do this on the server because client-side blocking is common via Adblock Plus, uBlock Origin,
+// (we do this on the server because client-side blocking is common via uBlock Origin, Adblock Plus,
 // etc.)
 func httpGoogleAnalytics(c *gin.Context) {
 	// Local variables
@@ -20,7 +28,7 @@ func httpGoogleAnalytics(c *gin.Context) {
 	r := c.Request
 
 	// We only want to track page views for "/", "/scores/Alice", etc.
-	// (this goroute will be entered for requests to "/public/css/main.min.css", for example)
+	// (this goroutine will be entered for requests to "/public/css/main.min.css", for example)
 	path := c.FullPath()
 	if path == "/" &&
 		!strings.HasPrefix(path, "/scores/") &&
@@ -76,6 +84,8 @@ func httpGoogleAnalytics(c *gin.Context) {
 		}
 		resp, err := myHTTPClient.PostForm("https://www.google-analytics.com/collect", data)
 		if err != nil {
+			// POSTs to Google Analytics will occasionally time out; if this occurs,
+			// do not bother retrying, since losing a single page view is fairly meaningless
 			logger.Info("Failed to send a page hit to Google Analytics:", err)
 			return
 		}

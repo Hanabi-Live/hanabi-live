@@ -74,13 +74,13 @@ func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 	chatMessages := make([]DBChatMessage, 0)
 	for rows.Next() {
 		var message DBChatMessage
-		if err := rows.Scan(
+		if err2 := rows.Scan(
 			&message.Name,
 			&message.DiscordName,
 			&message.Message,
 			&message.Datetime,
-		); err != nil {
-			return nil, err
+		); err2 != nil {
+			return nil, err2
 		}
 		chatMessages = append(chatMessages, message)
 	}

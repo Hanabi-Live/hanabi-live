@@ -15,14 +15,28 @@
 package main
 
 import (
-	"encoding/json"
 	"strconv"
 	"strings"
-	"time"
 
 	melody "gopkg.in/olahol/melody.v1"
 )
 
+type GameJSON struct {
+	ID      int           `json:"id"` // Optional element only used for game exports
+	Players []string      `json:"players"`
+	Deck    []SimpleCard  `json:"deck"`
+	Actions []*GameAction `json:"actions"`
+	// Options is an optional element
+	// Thus, it must be a pointer so that we can tell if the value was specified or not
+	Options *OptionsJSON `json:"options,omitempty"`
+	// Notes is an optional element
+	Notes [][]string `json:"notes,omitempty"`
+}
+
+// The user wants to view the replay of a game from the database
+// (or is submitting arbitrary actions from a hypothetical game)
+// In order to derive the JSON actions to send to the client,
+// we need to play through a mock game using these actions
 func commandReplayCreate(s *Session, d *CommandData) {
 	// Validate that there is not a password
 	if d.Password != "" {
@@ -36,43 +50,217 @@ func commandReplayCreate(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate the source
-	if d.Source == "id" {
-		replayID(s, d)
-	} else if d.Source == "json" {
-		replayJSON(s, d)
-	} else {
-		s.Warning("That is not a valid replay source.")
+	if d.Source == "json" {
+		// Before creating a new game and emulating the actinos,
+		// we want to ensure that the submitted JSON does not have any obvious errors
+		if !validateJSON(s, d) {
+			return
+		}
 	}
-}
 
-func replayID(s *Session, d *CommandData) {
 	// Create a table
-	name := strings.Title(d.Visibility) + " replay for game #" + strconv.Itoa(d.GameID)
-	t := NewTable(name, s.UserID())
-	t.Visible = d.Visibility == "shared"
-	t.Running = true
-	t.Replay = true
+	name := strings.Title(d.Visibility) + " replay for "
+	if d.Source == "id" {
+		name += "game #" + strconv.Itoa(d.GameID)
+	} else if d.Source == "json" {
+		name += s.Username() + "'"
+		if !strings.HasSuffix(s.Username(), "s") {
+			name += "s"
+		}
+		name += " JSON game"
+	}
 
-	// Convert the game data from the database into a Game object
-	if !convertDatabaseGametoGame(s, d, t) {
+	t := NewTable(name, -1)
+	t.Visible = d.Visibility == "shared"
+	tables[t.ID] = t
+	if d.Source == "id" {
+		logger.Info("User \"" + s.Username() + "\" created a new " + d.Visibility +
+			" replay for game #" + strconv.Itoa(d.GameID))
+	} else if d.Source == "json" {
+		logger.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " JSON replay")
+	}
+	// (a "table" message will be sent in the "commandTableSpectate" function below)
+
+	// Load the players and options from the database or JSON file
+	if d.Source == "id" {
+		if !loadDatabaseToTable(s, d, t) {
+			return
+		}
+	} else if d.Source == "json" {
+		loadJSONToTable(s, d, t)
+	}
+
+	// Start the (fake) game
+	commandTableStart(t.Players[0].Session, nil)
+	g := t.Game
+	if d.Source == "id" {
+		g.ID = d.GameID
+	}
+
+	if !applyNotesToPlayers(s, d, g) {
 		return
 	}
 
-	tables[t.ID] = t
-	logger.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " replay: " +
-		"#" + strconv.Itoa(d.GameID))
-	// (a "table" message will be sent in the "commandTableSpectate" function below)
+	emulateActions(s, d, t)
+
+	// If the game was terminated or did not finish, then the deck order will not be appended yet
+	// (which is normally done in the "Game.End()" function)
+	if g.EndCondition == endConditionInProgress {
+		g.End() // This will only append the deck order and then return early
+	}
+
+	// Do a mini-version of the rest of steps in the "g.End()" function
+	t.Replay = true
+	g.EndTurn = g.Turn
+	g.Turn = 0 // We want to start viewing the replay at the beginning, not the end
+	t.Progress = 0
 
 	// Join the user to the new replay
 	d.TableID = t.ID
 	commandTableSpectate(s, d)
+	t.Owner = s.UserID()
 
 	// Start the idle timeout
 	go t.CheckIdle()
 }
 
-func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
+func validateJSON(s *Session, d *CommandData) bool {
+	// All options are optinal; specify defaults if they were not specified
+	if d.GameJSON.Options == nil {
+		d.GameJSON.Options = &OptionsJSON{}
+	}
+	if d.GameJSON.Options.Variant == nil {
+		*d.GameJSON.Options.Variant = "No Variant"
+	}
+
+	// Validate that the specified variant exists
+	var variant *Variant
+	if v, ok := variants[*d.GameJSON.Options.Variant]; !ok {
+		s.Warning("That is not a valid variant.")
+		return false
+	} else {
+		variant = v
+	}
+
+	// Validate that there is at least one action
+	if len(d.GameJSON.Actions) < 1 {
+		s.Warning("There must be at least one game action in the JSON array.")
+		return false
+	}
+
+	// Validate actions
+	for i, action := range d.GameJSON.Actions {
+		if action.Type == actionType2Play || action.Type == actionType2Discard {
+			if action.Target < 0 || action.Target > len(d.GameJSON.Deck)-1 {
+				s.Warning("Action at index " + strconv.Itoa(i) +
+					" is a play or discard with an invalid target (card order) of " +
+					strconv.Itoa(action.Target) + ".")
+				return false
+			}
+			if action.Value != 0 {
+				s.Warning("Action at index " + strconv.Itoa(i) +
+					" is a play or discard with a value of " + strconv.Itoa(action.Value) +
+					", which is nonsensical.")
+				return false
+			}
+		} else if action.Type == actionType2ColorClue || action.Type == actionType2RankClue {
+			if action.Target < 0 || action.Target > len(d.GameJSON.Players)-1 {
+				s.Warning("Action at index " + strconv.Itoa(i) +
+					" is a clue with an invalid target (player index) of " +
+					strconv.Itoa(action.Target) + ".")
+				return false
+			}
+			if action.Type == actionType2ColorClue {
+				if action.Value < 0 || action.Value > len(variant.ClueColors) {
+					s.Warning("Action at index " + strconv.Itoa(i) +
+						" is a color clue with an invalid value of " +
+						strconv.Itoa(action.Value) + ".")
+					return false
+				}
+			} else if action.Type == actionType2RankClue {
+				if action.Value < 1 || action.Value > 5 {
+					s.Warning("Action at index " + strconv.Itoa(i) +
+						" is a rank clue with an invalid value of " +
+						strconv.Itoa(action.Value) + ".")
+					return false
+				}
+			}
+		} else if action.Type == actionType2GameOver {
+			if action.Target < 0 || action.Target > len(d.GameJSON.Players)-1 {
+				s.Warning("Action at index " + strconv.Itoa(i) +
+					" is a game over with an invalid target (player index) of " +
+					strconv.Itoa(action.Target) + ".")
+				return false
+			}
+			if action.Value > 0 {
+				s.Warning("Action at index " + strconv.Itoa(i) +
+					" is a game over with a value of " + strconv.Itoa(action.Value) +
+					", which is nonsensical.")
+				return false
+			}
+		} else {
+			s.Warning("Action at index " + strconv.Itoa(i) + " has an invalid type of " +
+				strconv.Itoa(action.Type) + ".")
+			return false
+		}
+	}
+
+	// Validate the deck
+	deckSize := variant.GetDeckSize()
+	if len(d.GameJSON.Deck) != deckSize {
+		s.Warning("The deck must have " + strconv.Itoa(deckSize) + " cards in it.")
+		return false
+	}
+	for i, card := range d.GameJSON.Deck {
+		if card.Suit < 0 || card.Suit > len(variant.Suits)-1 {
+			s.Warning("The card at index " + strconv.Itoa(i) +
+				" has an invalid suit number of " + strconv.Itoa(card.Suit) + ".")
+			return false
+		}
+		if (card.Rank < 1 || card.Rank > 5) && card.Rank != startCardRank {
+			s.Warning("The card at index " + strconv.Itoa(i) +
+				" has an invalid rank number of " + strconv.Itoa(card.Rank) + ".")
+			return false
+		}
+	}
+
+	// Validate the amount of players
+	if len(d.GameJSON.Players) < 2 || len(d.GameJSON.Players) > 6 {
+		s.Warning("The number of players must be between 2 and 6.")
+		return false
+	}
+
+	// Validate the notes
+	if len(d.GameJSON.Notes) == 0 {
+		// They did not provide any notes, so create a blank note array
+		d.GameJSON.Notes = make([][]string, len(d.GameJSON.Players))
+		for i := 0; i < len(d.GameJSON.Players); i++ {
+			d.GameJSON.Notes[i] = make([]string, deckSize)
+		}
+	} else if len(d.GameJSON.Notes) != len(d.GameJSON.Players) {
+		s.Warning("The number of note arrays must match the number of players.")
+		return false
+	} else {
+		for i, playerNotes := range d.GameJSON.Notes {
+			// We add the number of suits to account for notes on the stack bases
+			maxSize := deckSize + len(variant.Suits)
+			if len(playerNotes) > maxSize {
+				s.Warning("The note array at index " + strconv.Itoa(i) +
+					" has too many notes; it must have at most " + strconv.Itoa(maxSize) + ".")
+				return false
+			}
+
+			// If a note array is empty or does not have enough notes, fill them up with blank notes
+			for len(playerNotes) < maxSize {
+				playerNotes = append(playerNotes, "")
+			}
+		}
+	}
+
+	return true
+}
+
+func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 	// Check to see if the game exists in the database
 	if exists, err := models.Games.Exists(d.GameID); err != nil {
 		logger.Error("Failed to check to see if game "+strconv.Itoa(d.GameID)+" exists:", err)
@@ -95,16 +283,31 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 	}
 
 	// Validate that the variant exists
-	if _, ok := variantsID[options.Variant]; !ok {
+	var variant string
+	if v, ok := variantsID[options.Variant]; !ok {
 		logger.Error("Failed to find a definition for variant " +
 			strconv.Itoa(options.Variant) + ".")
 		s.Error(initFail)
 		return false
+	} else {
+		variant = v
 	}
 
-	// Store them on the table
+	// Get the seed
+	var seed string
+	if v, err := models.Games.GetSeed(d.GameID); err != nil {
+		logger.Error("Failed to get the seed for game "+
+			"\""+strconv.Itoa(d.GameID)+"\":", err)
+		s.Error("Failed to create the game. Please contact an administrator.")
+		return false
+	} else {
+		seed = v
+	}
+
+	// Store the options on the table
 	t.Options = &Options{
-		Variant:              variantsID[options.Variant],
+		StartingPlayer:       options.StartingPlayer, // Legacy field for games prior to April 2020
+		Variant:              variant,
 		Timed:                options.Timed,
 		BaseTime:             options.BaseTime,
 		TimePerTurn:          options.TimePerTurn,
@@ -113,270 +316,59 @@ func convertDatabaseGametoGame(s *Session, d *CommandData, t *Table) bool {
 		DeckPlays:            options.DeckPlays,
 		EmptyClues:           options.EmptyClues,
 		CharacterAssignments: options.CharacterAssignments,
+
+		Replay:  true, // We need to mark that the game should not be written to the database
+		SetSeed: seed,
 	}
 
 	// Get the players from the database
-	var dbPlayers []*DBPlayer
-	if v, err := models.Games.GetPlayers(d.GameID); err != nil {
-		logger.Error("Failed to get the players from the database for game "+
+	var playerNames []string
+	if v, err := models.Games.GetPlayerNames(d.GameID); err != nil {
+		logger.Error("Failed to get the player names from the database for game "+
 			strconv.Itoa(d.GameID)+":", err)
 		s.Error(initFail)
 		return false
 	} else {
-		dbPlayers = v
-	}
-
-	// Get the notes from the database
-	deckSize := variants[t.Options.Variant].GetDeckSize()
-	var notes [][]string
-	if v, err := models.Games.GetNotes(d.GameID, len(dbPlayers), deckSize); err != nil {
-		logger.Error("Failed to get the notes from the database "+
-			"for game "+strconv.Itoa(d.GameID)+":", err)
-		s.Error(initFail)
-		return false
-	} else {
-		notes = v
+		playerNames = v
 	}
 
 	// Convert the database player objects to Player objects
-	for _, dbp := range dbPlayers {
-		player := &Player{
-			ID:   dbp.ID,
-			Name: dbp.Name,
-		}
-		t.Players = append(t.Players, player)
-	}
-
-	// Convert the database player objects to GamePlayer objects
-	gamePlayers := make([]*GamePlayer, 0)
-	for i, dbp := range dbPlayers {
-		gamePlayer := &GamePlayer{
-			Name:  dbp.Name,
-			Index: i,
-
-			Hand:              make([]*Card, 0),
-			Notes:             notes[i],
-			Character:         charactersID[dbp.CharacterAssignment],
-			CharacterMetadata: dbp.CharacterMetadata,
-		}
-		gamePlayers = append(gamePlayers, gamePlayer)
-	}
-
-	// Get the actions from the database
-	var actionStrings []string
-	if v, err := models.GameActions.GetAll(d.GameID); err != nil {
-		logger.Error("Failed to get the actions from the database "+
-			"for game "+strconv.Itoa(d.GameID)+":", err)
-		s.Error(initFail)
-		return false
-	} else {
-		actionStrings = v
-	}
-
-	// Convert the database action objects to normal action objects
-	actions := make([]interface{}, 0)
-	for _, actionString := range actionStrings {
-		// Convert it from JSON
-		var action interface{}
-		if err := json.Unmarshal([]byte(actionString), &action); err != nil {
-			logger.Error("Failed to unmarshal an action:", err)
-			s.Error(initFail)
-			return false
-		}
-		actions = append(actions, action)
-	}
-
-	// Get the number of turns from the database
-	var numTurns int
-	if v, err := models.Games.GetNumTurns(d.GameID); err != nil {
-		logger.Error("Failed to get the number of turns from the database for game "+
-			strconv.Itoa(d.GameID)+":", err)
-		s.Error(initFail)
-		return false
-	} else {
-		numTurns = v
-	}
-
-	// Create the game object
-	g := NewGame(t)
-	g.ID = d.GameID
-	g.Players = gamePlayers
-	g.Actions = actions
-	g.EndTurn = numTurns
-
-	// Above, when we initialized the players, the game was not created yet
-	// Attach the game pointer to each player
-	for _, p := range g.Players {
-		p.Game = g
-	}
+	loadFakePlayers(t, playerNames)
 
 	return true
 }
 
-type GameJSON struct {
-	ID          int          `json:"id"` // Optional element purely used for game exports
-	Actions     []ActionJSON `json:"actions"`
-	Deck        []SimpleCard `json:"deck"`
-	FirstPlayer int          `json:"firstPlayer"`
-	Notes       [][]string   `json:"notes"`
-	Players     []string     `json:"players"`
-	// Options is an optional element
-	// Thus, it must be a pointer so that we can tell if the value was specified or not
-	Options *OptionsJSON `json:"options"`
-}
-type ActionJSON struct {
-	Clue   Clue `json:"clue"`
-	Target int  `json:"target"`
-	Type   int  `json:"type"`
-}
-type OptionsJSON struct {
-	Variant    *string `json:"variant"`
-	EmptyClues *bool   `json:"emptyClues"`
-}
-
-func replayJSON(s *Session, d *CommandData) {
-	// Validate that there is at least one action
-	if len(d.GameJSON.Actions) < 1 {
-		s.Warning("There must be at least one game action in the JSON array.")
-		return
-	}
-
-	// Validate actions
-	for i, action := range d.GameJSON.Actions {
-		if action.Type == actionTypeClue {
-			if action.Target < 0 || action.Target > len(d.GameJSON.Players)-1 {
-				s.Warning("Action " + strconv.Itoa(i) + " is a clue with an invalid target: " +
-					strconv.Itoa(action.Target))
-				return
-			}
-			if action.Clue.Type < 0 || action.Clue.Type > 1 {
-				s.Warning("Action " + strconv.Itoa(i) + " is a clue with an clue type: " +
-					strconv.Itoa(action.Clue.Type))
-				return
-			}
-		} else if action.Type == actionTypePlay || action.Type == actionTypeDiscard {
-			if action.Target < 0 || action.Target > len(d.GameJSON.Deck)-1 {
-				s.Warning("Action " + strconv.Itoa(i) +
-					" is a play or discard with an invalid target.")
-				return
-			}
-		} else {
-			s.Warning("Action " + strconv.Itoa(i) + " has an invalid type: " +
-				strconv.Itoa(action.Type))
-			return
-		}
-	}
-
-	// All options are optinal; specify defaults if they were not specified
-	if d.GameJSON.Options == nil {
-		d.GameJSON.Options = &OptionsJSON{}
-	}
-	if d.GameJSON.Options.Variant == nil {
-		*d.GameJSON.Options.Variant = "No Variant"
-	}
-	if d.GameJSON.Options.EmptyClues == nil {
-		*d.GameJSON.Options.EmptyClues = false
-	}
-
-	// Validate that the specified variant exists
-	var variant *Variant
-	if v, ok := variants[*d.GameJSON.Options.Variant]; !ok {
-		s.Warning("That is not a valid variant.")
-		return
-	} else {
-		variant = v
-	}
-
-	// Validate that the deck contains the right amount of cards
-	totalCards := 0
-	for _, suit := range variant.Suits {
-		if suit.OneOfEach {
-			totalCards += 5
-		} else {
-			totalCards += 10
-		}
-	}
-	if strings.HasPrefix(variant.Name, "Up or Down") {
-		totalCards -= len(variant.Suits)
-	}
-	if len(d.GameJSON.Deck) != totalCards {
-		s.Warning("The deck must have " + strconv.Itoa(totalCards) + " cards in it.")
-		return
-	}
-
-	// Validate the amount of players
-	if len(d.GameJSON.Players) < 2 || len(d.GameJSON.Players) > 6 {
-		s.Warning("The number of players must be between 2 and 6.")
-		return
-	}
-
-	// Validate the notes
-	if len(d.GameJSON.Notes) == 0 {
-		// They did not provide any notes, so create a blank note array
-		d.GameJSON.Notes = make([][]string, len(d.GameJSON.Players))
-		for i := 0; i < len(d.GameJSON.Players); i++ {
-			d.GameJSON.Notes[i] = make([]string, totalCards)
-		}
-	} else if len(d.GameJSON.Notes) != len(d.GameJSON.Players) {
-		s.Warning("The number of note arrays must match the number of players.")
-		return
-	}
-
-	// Create a table
-	name := strings.Title(d.Visibility) + " replay for " + s.Username() + "'s JSON game"
-	t := NewTable(name, s.UserID())
-	t.Visible = d.Visibility == "shared"
-	t.Running = true
-
-	// Convert the JSON game to a Game object
-	convertJSONGametoGame(s, d, t)
-	g := t.Game
-
-	tables[t.ID] = t
-	logger.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " JSON replay")
-	// (a "table" message will be sent in the "commandTableSpectate" function below)
-
-	// Send messages from fake players to emulate the gameplay that occurred in the JSON actions
-	emulateJSONActions(t, d)
-
-	// If the game was abandoned or did not finish, then the deck order will not be appended yet
-	// (which is normally done in the "Game.End()" function)
-	if g.EndCondition == endConditionInProgress {
-		g.End() // This will only append the deck order and then return early
-	}
-
-	// Do a mini-version of the steps in the "g.End()" function
-	t.Replay = true
-	g.EndTurn = g.Turn
-	g.Turn = 0 // We want to start viewing the replay at the beginning, not the end
-	t.Progress = 0
-
-	// Join the user to the new replay
-	d.TableID = t.ID
-	commandTableSpectate(s, d)
-
-	// Start the idle timeout
-	go t.CheckIdle()
-}
-
-func convertJSONGametoGame(s *Session, d *CommandData, t *Table) {
+func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 	// Store the options on the table
+	// (the variant was already validated in the "validateJSON()" function)
 	t.Options = &Options{
-		Variant:    *d.GameJSON.Options.Variant,
-		EmptyClues: *d.GameJSON.Options.EmptyClues,
+		Variant:              *d.GameJSON.Options.Variant,
+		Timed:                *d.GameJSON.Options.Timed,
+		BaseTime:             *d.GameJSON.Options.BaseTime,
+		TimePerTurn:          *d.GameJSON.Options.TimePerTurn,
+		Speedrun:             *d.GameJSON.Options.Speedrun,
+		CardCycle:            *d.GameJSON.Options.CardCycle,
+		DeckPlays:            *d.GameJSON.Options.DeckPlays,
+		EmptyClues:           *d.GameJSON.Options.EmptyClues,
+		CharacterAssignments: *d.GameJSON.Options.CharacterAssignments,
 
-		JSONGame: true, // // We need to mark that the game should not be written to the database
+		Replay:     true, // We need to mark that the game should not be written to the database
+		CustomDeck: d.GameJSON.Deck,
 	}
 
+	loadFakePlayers(t, d.GameJSON.Players)
+}
+
+func loadFakePlayers(t *Table, playerNames []string) {
 	// Convert the JSON player objects to Player objects
-	for i, name := range d.GameJSON.Players {
+	for i, name := range playerNames {
 		// Prepare the player session that will be used for emulation
 		keys := make(map[string]interface{})
 		// The session ID and the user ID can be any arbitrary unique number,
-		// but we set the IDs to the negative index number
-		// so that they will not overlap with any valid user IDs
-		keys["sessionID"] = -i
-		keys["userID"] = -i
+		// but we set them to -1, -2, etc., so that they will not overlap with any valid user IDs
+		id := (i + 1) * -1
+		keys["sessionID"] = id
+		keys["userID"] = id
 		keys["username"] = name
 		keys["admin"] = false
 		keys["firstTimeUser"] = false
@@ -384,7 +376,7 @@ func convertJSONGametoGame(s *Session, d *CommandData, t *Table) {
 		keys["status"] = statusPlaying
 
 		player := &Player{
-			ID:   -i,
+			ID:   id,
 			Name: name,
 			Session: &Session{
 				&melody.Session{
@@ -395,90 +387,116 @@ func convertJSONGametoGame(s *Session, d *CommandData, t *Table) {
 		}
 		t.Players = append(t.Players, player)
 	}
-
-	// Convert the JSON player objects to GamePlayer objects
-	gamePlayers := make([]*GamePlayer, 0)
-	for i, name := range d.GameJSON.Players {
-		gamePlayer := &GamePlayer{
-			Name:  name,
-			Index: i,
-
-			Hand:  make([]*Card, 0),
-			Time:  time.Duration(0),
-			Notes: d.GameJSON.Notes[i],
-		}
-		gamePlayers = append(gamePlayers, gamePlayer)
-	}
-
-	// Create the game object
-	g := NewGame(t)
-	g.Players = gamePlayers
-	g.ActivePlayer = d.GameJSON.FirstPlayer
-
-	// Above, when we initialized the players, the game was not created yet
-	// Attach the game pointer to each player
-	for _, p := range g.Players {
-		p.Game = g
-	}
-
-	// Convert the JSON deck to a normal deck
-	for i, c := range d.GameJSON.Deck {
-		c2 := NewCard(g, c.Suit, c.Rank)
-		c2.Order = i
-		g.Deck = append(g.Deck, c2)
-	}
-
-	/*
-		The following code is mostly copied from the "commandTableStart()" function
-	*/
-
-	// Deal the cards
-	handSize := g.GetHandSize()
-	for _, p := range g.Players {
-		for i := 0; i < handSize; i++ {
-			p.DrawCard()
-		}
-	}
-
-	// Record the initial status of the game
-	t.NotifyStatus(false) // The argument is "doubleDiscard"
-
-	// Show who goes first
-	// (this must be sent before the "turn" message
-	// so that the text appears on the first turn of the replay)
-	text := g.Players[g.ActivePlayer].Name + " goes first"
-	g.Actions = append(g.Actions, ActionText{
-		Type: "text",
-		Text: text,
-	})
-	logger.Info(t.GetName() + text)
-
-	// Record a message about the first turn
-	t.NotifyTurn()
 }
 
-func emulateJSONActions(t *Table, d *CommandData) {
+func applyNotesToPlayers(s *Session, d *CommandData, g *Game) bool {
+	var notes [][]string
+	if d.Source == "id" {
+		// Get the notes from the database
+		deckSize := variants[g.Options.Variant].GetDeckSize()
+		if v, err := models.Games.GetNotes(d.GameID, len(g.Players), deckSize); err != nil {
+			logger.Error("Failed to get the notes from the database "+
+				"for game "+strconv.Itoa(d.GameID)+":", err)
+			s.Error(initFail)
+			return false
+		} else {
+			notes = v
+		}
+	} else if d.Source == "json" {
+		notes = d.GameJSON.Notes
+	}
+
+	// Apply the notes
+	for i, gp := range g.Players {
+		gp.Notes = notes[i]
+	}
+
+	return true
+}
+
+func emulateActions(s *Session, d *CommandData, t *Table) bool {
+	// Local variables
 	g := t.Game
 
-	// Emulate the JSON actions to normal action objects
-	for _, action := range d.GameJSON.Actions {
+	var actions []*GameAction
+	if d.Source == "id" {
+		// Get the actions from the database
+		if v, err := models.GameActions2.GetAll(d.GameID); err != nil {
+			logger.Error("Failed to get the actions from the database "+
+				"for game "+strconv.Itoa(d.GameID)+":", err)
+			s.Error(initFail)
+			return false
+		} else {
+			actions = v
+		}
+	} else if d.Source == "json" {
+		actions = d.GameJSON.Actions
+	}
+
+	// Make the appropriate moves in the game to match what is listed in the database
+	for i, action := range actions {
+		if t.Options.SetReplay != 0 && t.Options.SetReplayTurn == i {
+			// This is a "!replay" game and we have reached the intended turn
+			break
+		}
+
 		p := t.Players[g.ActivePlayer]
-		if action.Type == actionTypeClue {
-			commandAction(p.Session, &CommandData{
-				Type:   actionTypeClue,
-				Target: action.Target,
-				Clue:   action.Clue,
-			})
-		} else if action.Type == actionTypePlay {
+
+		if action.Type == actionType2Play {
 			commandAction(p.Session, &CommandData{
 				Type:   actionTypePlay,
 				Target: action.Target,
 			})
-		} else if action.Type == actionTypeDiscard {
+		} else if action.Type == actionType2Discard {
 			commandAction(p.Session, &CommandData{
 				Type:   actionTypeDiscard,
 				Target: action.Target,
 			})
+		} else if action.Type == actionType2ColorClue {
+			commandAction(p.Session, &CommandData{
+				Type:   actionTypeClue,
+				Target: action.Target,
+				Clue: Clue{
+					Type:  clueTypeColor,
+					Value: action.Value,
+				},
+			})
+		} else if action.Type == actionType2RankClue {
+			commandAction(p.Session, &CommandData{
+				Type:   actionTypeClue,
+				Target: action.Target,
+				Clue: Clue{
+					Type:  clueTypeRank,
+					Value: action.Value,
+				},
+			})
+		} else if action.Type == actionType2GameOver {
+			ps := t.Players[action.Target].Session
+			if action.Value == endConditionTimeout {
+				commandAction(ps, &CommandData{
+					Type: actionTypeTimeLimitReached,
+				})
+			} else if action.Value == endConditionTerminated {
+				commandTableTerminate(ps, nil)
+			} else if action.Value == endConditionIdleTimeout {
+				commandAction(ps, &CommandData{
+					Type: actionTypeIdleLimitReached,
+				})
+			}
+		} else {
+			logger.Error("Failed to interpret a game action with a type of " +
+				strconv.Itoa(action.Type) + ".")
+			s.Error(initFail)
+			return false
+		}
+
+		if g.InvalidActionOccurred {
+			logger.Info("An invalid action occurred; not emulating the rest of the actions.")
+			s.Warning("The action at index " + strconv.Itoa(i) +
+				" was not valid. Skipping all subsequent actions.")
+			return true
 		}
 	}
+
+	return true
 }

@@ -28,12 +28,12 @@ func (*DiscordWaiters) GetAll() ([]*Waiter, error) {
 
 	for rows.Next() {
 		var waiter Waiter
-		if err := rows.Scan(
+		if err2 := rows.Scan(
 			&waiter.Username,
 			&waiter.DiscordMention,
 			&waiter.DatetimeExpired,
-		); err != nil {
-			return nil, err
+		); err2 != nil {
+			return nil, err2
 		}
 		waiters = append(waiters, &waiter)
 	}

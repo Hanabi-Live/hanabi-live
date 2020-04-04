@@ -34,7 +34,7 @@ export default class FitText extends Konva.Text {
     }
 
     fitText(text: string) {
-        super.text(text);
+        this.text(text);
         this.needsResize = true;
     }
 }

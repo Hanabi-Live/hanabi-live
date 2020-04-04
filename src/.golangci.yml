@@ -35,6 +35,10 @@ issues:
     - "Line contains TODO/BUG/FIXME"
 
 linters-settings:
+  govet:
+    # Checking for shadowed variables is experimental and disabled by default
+    check-shadowing: true
+
   lll:
     # Match the line length used in the Airbnb style guide used in the Hanabi client TypeScript
     line-length: 100

@@ -67,18 +67,21 @@ func commandAction(s *Session, d *CommandData) {
 	// Validate that it is this player's turn
 	if g.ActivePlayer != i && d.Type != actionTypeIdleLimitReached {
 		s.Warning("It is not your turn, so you cannot perform an action.")
+		g.InvalidActionOccurred = true
 		return
 	}
 
 	// Validate that it is not a replay
 	if t.Replay {
 		s.Warning("You cannot perform a game action in a shared replay.")
+		g.InvalidActionOccurred = true
 		return
 	}
 
 	// Validate that the game is not paused
 	if g.Paused {
 		s.Warning("You cannot perform a game action when the game is paused.")
+		g.InvalidActionOccurred = true
 		return
 	}
 
@@ -87,9 +90,11 @@ func commandAction(s *Session, d *CommandData) {
 
 	// Validate that a player is not doing an illegal action for their character
 	if characterValidateAction(s, d, g, p) {
+		g.InvalidActionOccurred = true
 		return
 	}
 	if characterValidateSecondAction(s, d, g, p) {
+		g.InvalidActionOccurred = true
 		return
 	}
 
@@ -112,28 +117,33 @@ func commandAction(s *Session, d *CommandData) {
 		// Validate that the target of the clue is sane
 		if d.Target < 0 || d.Target > len(g.Players)-1 {
 			s.Warning("That is an invalid clue target.")
+			g.InvalidActionOccurred = true
 			return
 		}
 
 		// Validate that the player is not giving a clue to themselves
 		if g.ActivePlayer == d.Target {
 			s.Warning("You cannot give a clue to yourself.")
+			g.InvalidActionOccurred = true
 			return
 		}
 
 		// Validate that there are clues available to use
 		if g.ClueTokens == 0 {
 			s.Warning("You cannot give a clue when the team has 0 clues left.")
+			g.InvalidActionOccurred = true
 			return
 		}
 		if strings.HasPrefix(t.Options.Variant, "Clue Starved") && g.ClueTokens == 1 {
 			s.Warning("You cannot give a clue when the team only has 0.5 clues.")
+			g.InvalidActionOccurred = true
 			return
 		}
 
 		// Validate that the clue type is sane
 		if d.Clue.Type < clueTypeRank || d.Clue.Type > clueTypeColor {
 			s.Warning("That is an invalid clue type.")
+			g.InvalidActionOccurred = true
 			return
 		}
 
@@ -148,6 +158,7 @@ func commandAction(s *Session, d *CommandData) {
 			}
 			if !valid {
 				s.Warning("That is an invalid rank clue.")
+				g.InvalidActionOccurred = true
 				return
 			}
 		}
@@ -157,6 +168,7 @@ func commandAction(s *Session, d *CommandData) {
 			(d.Clue.Value < 0 || d.Clue.Value > len(variants[t.Options.Variant].ClueColors)-1) {
 
 			s.Warning("That is an invalid color clue.")
+			g.InvalidActionOccurred = true
 			return
 		}
 
@@ -165,11 +177,13 @@ func commandAction(s *Session, d *CommandData) {
 			d.Clue.Type == g.LastClueTypeGiven {
 
 			s.Warning("You cannot give two clues of the same time in a row in this variant.")
+			g.InvalidActionOccurred = true
 			return
 		}
 
 		// Validate "Detrimental Character Assignment" restrictions
 		if characterCheckClue(s, d, g, p) {
+			g.InvalidActionOccurred = true
 			return
 		}
 
@@ -193,6 +207,7 @@ func commandAction(s *Session, d *CommandData) {
 			!characterEmptyClueAllowed(d, g, p) {
 
 			s.Warning("You cannot give a clue that touches 0 cards in the hand.")
+			g.InvalidActionOccurred = true
 			return
 		}
 
@@ -207,11 +222,13 @@ func commandAction(s *Session, d *CommandData) {
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
 			s.Warning("You cannot play a card that is not in your hand.")
+			g.InvalidActionOccurred = true
 			return
 		}
 
 		// Validate "Detrimental Character Assignment" restrictions
 		if characterCheckPlay(s, d, g, p) {
+			g.InvalidActionOccurred = true
 			return
 		}
 
@@ -222,6 +239,7 @@ func commandAction(s *Session, d *CommandData) {
 		// Validate that the card is in their hand
 		if !p.InHand(d.Target) {
 			s.Warning("You cannot play a card that is not in your hand.")
+			g.InvalidActionOccurred = true
 			return
 		}
 
@@ -234,11 +252,13 @@ func commandAction(s *Session, d *CommandData) {
 		if g.ClueTokens == clueLimit {
 			s.Warning("You cannot discard while the team has " + strconv.Itoa(maxClueNum) +
 				" clues.")
+			g.InvalidActionOccurred = true
 			return
 		}
 
 		// Validate "Detrimental Character Assignment" restrictions
 		if characterCheckDiscard(s, g, p) {
+			g.InvalidActionOccurred = true
 			return
 		}
 
@@ -257,6 +277,7 @@ func commandAction(s *Session, d *CommandData) {
 		// Validate that the game type allows deck plays
 		if !t.Options.DeckPlays {
 			s.Warning("Deck plays are disabled for this game.")
+			g.InvalidActionOccurred = true
 			return
 		}
 
@@ -264,6 +285,7 @@ func commandAction(s *Session, d *CommandData) {
 		// (the client should enforce this, but do a check just in case)
 		if g.DeckIndex != len(g.Deck)-1 {
 			s.Warning("You cannot blind play the deck until there is only 1 card left.")
+			g.InvalidActionOccurred = true
 			return
 		}
 
@@ -271,7 +293,7 @@ func commandAction(s *Session, d *CommandData) {
 	} else if d.Type == actionTypeTimeLimitReached {
 		// This is a special action type sent by the server to itself when a player runs out of time
 		g.Strikes = 3
-		g.EndCondition = actionTypeTimeLimitReached
+		g.EndCondition = endConditionTimeout
 		g.Actions = append(g.Actions, ActionText{
 			Type: "text",
 			Text: p.Name + " ran out of time!",
@@ -281,7 +303,7 @@ func commandAction(s *Session, d *CommandData) {
 		// This is a special action type sent by the server to itself when
 		// the game has been idle for too long
 		g.Strikes = 3
-		g.EndCondition = actionTypeIdleLimitReached
+		g.EndCondition = endConditionIdleTimeout
 		g.Actions = append(g.Actions, ActionText{
 			Type: "text",
 			Text: "Players were idle for too long.",
@@ -289,6 +311,7 @@ func commandAction(s *Session, d *CommandData) {
 		t.NotifyAction()
 	} else {
 		s.Warning("That is not a valid action type.")
+		g.InvalidActionOccurred = true
 		return
 	}
 

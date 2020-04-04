@@ -9,8 +9,7 @@ import (
 )
 
 type StatsData struct {
-	Title  string
-	Header bool
+	Title string
 
 	NumGames                   int
 	TimePlayed                 string

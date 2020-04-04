@@ -3,6 +3,8 @@
 dump_game
 ~~~~~~~~~
 
+(This script may not work anymore after schema changes made in April 2020.)
+
 Parse, analyze hanabi.live games
 Game format documented at
   https://github.com/Zamiell/hanabi-live/blob/master/misc/example_game_with_comments.json

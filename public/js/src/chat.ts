@@ -197,7 +197,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
     // Find out which chat box we should add the new chat message to
     let chat;
     if (data.recipient === globals.username) {
-        // If this is a PM that we are recieving,
+        // If this is a PM that we are receiving,
         // we want it to always go to either the lobby chat or the game chat
         if (globals.currentScreen === 'game') {
             chat = $('#game-chat-text');

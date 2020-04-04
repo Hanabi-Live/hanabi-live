@@ -1,13 +1,21 @@
 package main
 
 import (
-	"io/ioutil"
-	"path"
-	"strconv"
+	"hash/crc64"
+	"math/rand"
 	"strings"
 )
 
 func (g *Game) InitDeck() {
+	// If a custom deck was provided along with the game options,
+	// then we can simply add every card to the deck as specified
+	if g.Options.CustomDeck != nil {
+		for _, card := range g.Options.CustomDeck {
+			g.Deck = append(g.Deck, NewCard(card.Suit, card.Rank))
+		}
+		return
+	}
+
 	// Suits are represented as a slice of integers from 0 to the number of suits - 1
 	// (e.g. {0, 1, 2, 3, 4} for a "No Variant" game)
 	for suitInt, suitObject := range variants[g.Options.Variant].Suits {
@@ -39,100 +47,27 @@ func (g *Game) InitDeck() {
 
 			for i := 0; i < amountToAdd; i++ {
 				// Add the card to the deck
-				g.Deck = append(g.Deck, NewCard(g, suitInt, rank))
-
-				// Add the possibility
-				mapIndex := suitObject.Name + strconv.Itoa(rank)
-				g.PossibleCards[mapIndex]++
+				g.Deck = append(g.Deck, NewCard(suitInt, rank))
 			}
-		}
-	}
-
-	// Copy all of the possibilities into every card
-	for _, c := range g.Deck {
-		for k, v := range g.PossibleCards {
-			c.PossibleCards[k] = v
 		}
 	}
 }
 
-func (g *Game) SetPresetDeck(s *Session) bool {
-	filePath := path.Join(projectPath, "specific-deals", g.Seed+".txt")
-	logger.Info("Using a preset deal of:", filePath)
+// InitSeed seeds the random number generator with the game seed
+// Golang's "rand.Seed()" function takes an int64, so we need to convert a string to an int64
+// We use the CRC64 hash function to do this
+// Also note that seeding with negative numbers will not work
+func (g *Game) InitSeed() {
+	crc64Table := crc64.MakeTable(crc64.ECMA)
+	intSeed := crc64.Checksum([]byte(g.Seed), crc64Table)
+	rand.Seed(int64(intSeed))
+}
 
-	var lines []string
-	if v, err := ioutil.ReadFile(filePath); err != nil {
-		logger.Error("Failed to read \""+filePath+"\":", err)
-		s.Error("Failed to create the game. Please contact an administrator.")
-		return true
-	} else {
-		lines = strings.Split(string(v), "\n")
+func (g *Game) ShuffleDeck() {
+	logger.Debug("11111", g.Seed)
+	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
+	for i := range g.Deck {
+		j := rand.Intn(i + 1)
+		g.Deck[i], g.Deck[j] = g.Deck[j], g.Deck[i]
 	}
-
-	for i, line := range lines {
-		// The first line is a number that signifies which player will go first
-		if i == 0 {
-			if v, err := strconv.Atoi(line); err != nil {
-				logger.Error("Failed to parse the first line "+
-					"(that signifies which player will go first):", line)
-				s.Error("Failed to create the game. Please contact an administrator.")
-				return true
-			} else {
-				// Player 1 would be equal to the player at index 0
-				g.ActivePlayer = v - 1
-			}
-			continue
-		}
-
-		// Ignore empty lines (the last line of the file might be empty)
-		if line == "" {
-			continue
-		}
-
-		// Parse the line for the suit and the rank
-		match2 := cardRegExp.FindStringSubmatch(line)
-		if match2 == nil {
-			logger.Error("Failed to parse line "+strconv.Itoa(i+1)+":", line)
-			s.Error("Failed to start the game. Please contact an administrator.")
-			return true
-		}
-
-		// Change the suit of all of the cards in the deck
-		suit := match2[1]
-		var newSuit int
-		if suit == "b" {
-			newSuit = 0
-		} else if suit == "g" {
-			newSuit = 1
-		} else if suit == "y" {
-			newSuit = 2
-		} else if suit == "r" {
-			newSuit = 3
-		} else if suit == "p" {
-			newSuit = 4
-		} else if suit == "m" {
-			newSuit = 5
-		} else {
-			logger.Error("Failed to parse the suit on line "+strconv.Itoa(i+1)+":", suit)
-			s.Error("Failed to create the game. Please contact an administrator.")
-			return true
-		}
-		g.Deck[i-1].Suit = newSuit
-		// (the first line is the number of players, so we have to subtract one)
-
-		// Change the rank of all of the cards in the deck
-		rank := match2[2]
-		var newRank int
-		if v, err := strconv.Atoi(rank); err != nil {
-			logger.Error("Failed to parse the rank on line "+strconv.Itoa(i+1)+":", rank)
-			s.Error("Failed to create the game. Please contact an administrator.")
-			return true
-		} else {
-			newRank = v
-		}
-		g.Deck[i-1].Rank = newRank
-		// (we subtract one because the first line is the number of players)
-	}
-
-	return false
 }

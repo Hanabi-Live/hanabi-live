@@ -24,13 +24,12 @@ type Game struct {
 	Seed              string
 	Deck              []*Card
 	DeckIndex         int
-	PossibleCards     map[string]int
 	Stacks            []int
 	StackDirections   []int // The values for this are listed in "constants.go"
 	Turn              int   // Starts at 0; the client will represent turn 0 as turn 1 to the user
 	DatetimeTurnBegin time.Time
 	TurnsInverted     bool
-	ActivePlayer      int
+	ActivePlayer      int // Every game always starts with the 0th player going first
 	ClueTokens        int
 	Score             int
 	MaxScore          int
@@ -40,8 +39,12 @@ type Game struct {
 	// Thus, Actions is a slice of different action types
 	// Furthermore, we don't want this to be a pointer of interfaces because
 	// this simplifies action scrubbing
-	Actions      []interface{}
-	EndCondition int // The values for this are listed in "constants.go"
+	Actions               []interface{}
+	InvalidActionOccurred bool // Used when emulating game actions in replays
+	EndCondition          int  // The values for this are listed in "constants.go"
+	// The index of the player who ended the game, if any
+	// (needed for writing a "game over" terminate action to the database)
+	EndPlayer int
 	// Initialized to -1 and set when the final card is drawn
 	// (to determine when the game should end)
 	EndTurn int
@@ -71,7 +74,6 @@ func NewGame(t *Table) *Game {
 
 		Players:           make([]*GamePlayer, 0),
 		Deck:              make([]*Card, 0),
-		PossibleCards:     make(map[string]int),
 		Stacks:            make([]int, len(variants[t.Options.Variant].Suits)),
 		StackDirections:   make([]int, len(variants[t.Options.Variant].Suits)),
 		DatetimeTurnBegin: time.Now(),

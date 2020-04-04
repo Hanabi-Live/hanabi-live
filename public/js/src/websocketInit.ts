@@ -44,7 +44,7 @@ export default () => {
 
     // Define event handlers
     globals.conn.on('open', () => {
-        // We will show the lobby upon recieving the "hello" command from the server
+        // We will show the lobby upon receiving the "hello" command from the server
         console.log('WebSocket connection established.');
     });
     globals.conn.on('close', () => {

@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-func commandTableAbandon(s *Session, d *CommandData) {
+func commandTableTerminate(s *Session, d *CommandData) {
 	/*
 		Validate
 	*/
@@ -29,18 +29,18 @@ func commandTableAbandon(s *Session, d *CommandData) {
 	i := t.GetPlayerIndexFromID(s.UserID())
 	if i == -1 {
 		s.Warning("You are not playing at table " + strconv.Itoa(tableID) + ", " +
-			"so you cannot abandon it.")
+			"so you cannot terminate it.")
 		return
 	}
 
 	// Validate that it is not a replay
 	if t.Replay {
-		s.Warning("You can not abandon a replay.")
+		s.Warning("You can not terminate a replay.")
 		return
 	}
 
 	/*
-		Abandon
+		Terminate
 	*/
 
 	if !t.Running {
@@ -53,7 +53,7 @@ func commandTableAbandon(s *Session, d *CommandData) {
 
 	// We want to set the end condition before advancing the turn to ensure that
 	// no active player will show
-	g.EndCondition = endConditionAbandoned
+	g.EndCondition = endConditionTerminated
 
 	// Add a text message for the termination
 	// and put it on its own turn so that it is separate from the final times

@@ -41,7 +41,8 @@ const (
 	actionType2Play = iota
 	actionType2Discard
 	actionType2ColorClue
-	actionType2NumberClue
+	actionType2RankClue
+	actionType2GameOver
 )
 
 const (
@@ -54,8 +55,9 @@ const (
 	endConditionNormal
 	endConditionStrikeout
 	endConditionTimeout
-	endConditionAbandoned
+	endConditionTerminated
 	endConditionSpeedrunFail
+	endConditionIdleTimeout
 )
 
 const (

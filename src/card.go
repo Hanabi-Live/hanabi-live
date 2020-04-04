@@ -6,40 +6,27 @@ import (
 )
 
 type Card struct {
-	Order         int // Assigned after the deck is shuffled
-	Suit          int
-	Rank          int
-	Slot          int // Assigned after the card is removed from a player's hand
-	Touched       bool
-	Clues         []*CardClue // This is a list that includes both positive and negative clues
-	PossibleSuits []*Suit
-	PossibleRanks []int
-	PossibleCards map[string]int // Maps card identities to count
-	Revealed      bool
-	Discarded     bool
-	Played        bool
-	Failed        bool
+	Order     int // Assigned after the deck is shuffled
+	Suit      int
+	Rank      int
+	Slot      int // Assigned after the card is removed from a player's hand
+	Touched   bool
+	Clues     []*CardClue // This is a list that includes both positive and negative clues
+	Discarded bool
+	Played    bool
+	Failed    bool
 	// After a player takes their final turn,
 	// all of the remaining cards in their hand are marked with the following bool
 	CannotBePlayed   bool
 	InsistentTouched bool // Used by the "Insistent" character
 }
 
-func NewCard(g *Game, suitInt int, rank int) *Card {
+func NewCard(suit int, rank int) *Card {
 	c := &Card{
-		Suit: suitInt,
+		Suit: suit,
 		Rank: rank,
 		// We can't set the order here because the deck will be shuffled later
 		Clues: make([]*CardClue, 0),
-		PossibleSuits: append(
-			variants[g.Options.Variant].Suits[:0:0],
-			variants[g.Options.Variant].Suits...,
-		),
-		PossibleRanks: append(
-			variants[g.Options.Variant].Ranks[:0:0],
-			variants[g.Options.Variant].Ranks...,
-		),
-		PossibleCards: make(map[string]int),
 	}
 
 	return c
@@ -86,20 +73,4 @@ func (c *Card) NeedsToBePlayed(g *Game) bool {
 
 	// By default, all cards not yet played will need to be played
 	return true
-}
-
-func (c *Card) RemovePossibility(suit *Suit, rank int, removeAll bool) {
-	// Every card has a possibility map that maps card identities to count
-	mapIndex := suit.Name + strconv.Itoa(rank)
-	cardsLeft := c.PossibleCards[mapIndex]
-	if cardsLeft > 0 {
-		// Remove one or all possibilities for this card,
-		// (depending on whether the card was clued
-		// or if we saw someone draw a copy of this card)
-		cardsLeft := cardsLeft - 1
-		if removeAll {
-			cardsLeft = 0
-		}
-		c.PossibleCards[mapIndex] = cardsLeft
-	}
 }

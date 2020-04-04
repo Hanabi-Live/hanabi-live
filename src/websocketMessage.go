@@ -38,7 +38,10 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 	jsonData := []byte(result[1])
 
 	// Check to see if there is a command handler for this command
-	if _, ok := commandMap[command]; !ok {
+	var commandMapFunction func(*Session, *CommandData)
+	if v, ok := commandMap[command]; ok {
+		commandMapFunction = v
+	} else {
 		logger.Error("User \"" + s.Username() + "\" sent an invalid command of " +
 			"\"" + command + "\".")
 		return
@@ -52,22 +55,7 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 		return
 	}
 
-	// Validate that the user is not trying to use any internal-only fields
-	if d.Username != "" ||
-		d.Discord ||
-		d.Server ||
-		d.Spam ||
-		d.OnlyDiscord ||
-		d.DiscordID != "" ||
-		d.DiscordDiscriminator != "" ||
-		d.Args != nil {
-
-		logger.Error("User \"" + s.Username() + "\" sent an command with " +
-			"data in an internal only field.")
-		return
-	}
-
 	// Call the command handler for this command
 	logger.Info("Command - " + command + " - " + s.Username())
-	commandMap[command](s, d)
+	commandMapFunction(s, d)
 }

@@ -184,6 +184,9 @@ func (v *Variant) GetDeckSize() int {
 			deckSize += 10
 		}
 	}
+	if strings.HasPrefix(v.Name, "Up or Down") {
+		deckSize -= len(v.Suits)
+	}
 	return deckSize
 }
 
@@ -340,6 +343,13 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 			return false
 		}
 
+		if variants[variant].Suits[card.Suit].ClueRanks == "all" {
+			return true
+		}
+		if variants[variant].Suits[card.Suit].ClueRanks == "none" {
+			return false
+		}
+
 		// Checking for "Pink-" also checks for "Light-Pink-"
 		if (strings.Contains(variant, "Pink-Ones") && card.Rank == 1) ||
 			(strings.Contains(variant, "Omni-Ones") && card.Rank == 1) ||
@@ -355,13 +365,6 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 			(strings.Contains(variant, "Null-Fives") && card.Rank == 5) ||
 			(strings.Contains(variant, "Muddy-Rainbow-Fives") && card.Rank == 5) {
 
-			return false
-		}
-
-		if variants[variant].Suits[card.Suit].ClueRanks == "all" {
-			return true
-		}
-		if variants[variant].Suits[card.Suit].ClueRanks == "none" {
 			return false
 		}
 

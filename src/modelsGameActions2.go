@@ -7,10 +7,9 @@ import (
 type GameActions2 struct{}
 
 type GameAction struct {
-	Type      int
-	Target    int
-	ClueGiver int
-	ClueValue int
+	Type   int `json:"type"`
+	Target int `json:"target"`
+	Value  int `json:"value"`
 }
 
 func (*GameActions2) Insert(gameID int, turn int, gameAction *GameAction) error {
@@ -21,11 +20,9 @@ func (*GameActions2) Insert(gameID int, turn int, gameAction *GameAction) error 
 			turn,
 			type,
 			target,
-			clue_giver,
-			clue_value
+			value
 		)
 		VALUES (
-			?,
 			?,
 			?,
 			?,
@@ -44,38 +41,35 @@ func (*GameActions2) Insert(gameID int, turn int, gameAction *GameAction) error 
 		turn,
 		gameAction.Type,
 		gameAction.Target,
-		gameAction.ClueGiver,
-		gameAction.ClueValue,
+		gameAction.Value,
 	)
 	return err
 }
 
-func (*GameActions2) GetAll(databaseID int) ([]GameAction, error) {
+func (*GameActions2) GetAll(databaseID int) ([]*GameAction, error) {
 	rows, err := db.Query(`
 		SELECT
 			type,
 			target,
-			clue_giver,
-			clue_value
+			value
 		FROM game_actions2
 		WHERE game_id = ?
 		ORDER BY turn
 	`, databaseID)
 
 	// Iterate over all of the actions and add them to a slice
-	actions := make([]GameAction, 0)
+	actions := make([]*GameAction, 0)
 	for rows.Next() {
 		var action GameAction
-		if err := rows.Scan(
+		if err2 := rows.Scan(
 			&action.Type,
 			&action.Target,
-			&action.ClueGiver,
-			&action.ClueValue,
-		); err != nil {
-			return nil, err
+			&action.Value,
+		); err2 != nil {
+			return nil, err2
 		}
 
-		actions = append(actions, action)
+		actions = append(actions, &action)
 	}
 
 	if rows.Err() != nil {

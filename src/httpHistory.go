@@ -8,7 +8,6 @@ import (
 
 type HistoryData struct {
 	Title   string
-	Header  bool
 	Name    string
 	History []*GameHistory
 }

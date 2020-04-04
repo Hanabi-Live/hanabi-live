@@ -63,21 +63,31 @@ func chatRandom(s *Session, d *CommandData, t *Table) {
 
 // /uptime
 func chatUptime(s *Session, d *CommandData, t *Table) {
-	msg := "The server came online at: " + getCurrentTimestamp()
-	chatServerSend(msg, d.Room)
-
+	chatServerSend(getCameOnline(), d.Room)
+	var uptime string
+	if v, err := getUptime(); err != nil {
+		logger.Error("Failed to get the uptime:", err)
+		chatServerSend("Something went wrong. Please contact an administrator.", d.Room)
+		return
+	} else {
+		uptime = v
+	}
+	chatServerSend(uptime, d.Room)
+}
+func getCameOnline() string {
+	return "The server came online at: " + formatTimestampUnix(datetimeStarted)
+}
+func getUptime() (string, error) {
 	elapsedTime := time.Since(datetimeStarted)
 	elapsedSeconds := elapsedTime.Seconds()
 	elapsedSecondsString := fmt.Sprintf("%f", elapsedSeconds)
 	var durationString string
 	if v, err := secondsToDurationString(elapsedSecondsString); err != nil {
-		chatServerSend("Something went wrong. Please contact an administrator.", d.Room)
-		return
+		return "", err
 	} else {
 		durationString = v
 	}
-	msg = "Uptime: " + durationString
-	chatServerSend(msg, d.Room)
+	return "Uptime: " + durationString, nil
 }
 
 // /debug

@@ -69,36 +69,6 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 			Value:    d.Clue.Value,
 			Positive: positive,
 		})
-
-		if d.Clue.Type == clueTypeRank {
-			clueRank := d.Clue.Value
-			for i := len(c.PossibleRanks) - 1; i >= 0; i-- {
-				rank := c.PossibleRanks[i]
-				if !(rank == clueRank == positive) {
-					c.PossibleRanks = append(c.PossibleRanks[:i], c.PossibleRanks[i+1:]...)
-
-					for _, suit := range variants[g.Options.Variant].Suits {
-						c.RemovePossibility(suit, rank, true)
-					}
-				}
-			}
-		} else if d.Clue.Type == clueTypeColor {
-			clueSuit := variants[g.Options.Variant].Suits[d.Clue.Value]
-			for i := len(c.PossibleSuits) - 1; i >= 0; i-- {
-				suit := c.PossibleSuits[i]
-				if !(suit == clueSuit == positive) {
-					c.PossibleSuits = append(c.PossibleSuits[:i], c.PossibleSuits[i+1:]...)
-
-					for _, rank := range variants[g.Options.Variant].Ranks {
-						c.RemovePossibility(suit, rank, true)
-					}
-				}
-			}
-		}
-
-		if len(c.PossibleSuits) == 1 && len(c.PossibleRanks) == 1 {
-			c.Revealed = true
-		}
 	}
 
 	// Send the "notify" message about the clue

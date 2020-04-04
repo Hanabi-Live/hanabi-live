@@ -5,7 +5,13 @@ import globals from './globals';
 export default (data: ActionStrike) => {
     const i = data.num - 1;
     const strikeX = globals.elements.strikeXs[i];
+    if (!strikeX) {
+        return;
+    }
     const strikeSquare = globals.elements.strikeSquares[i];
+    if (!strikeSquare) {
+        return;
+    }
 
     // We want to record the turn before the strike actually happened
     let turn;

@@ -34,8 +34,8 @@ func (*GameActions) GetAll(databaseID int) ([]string, error) {
 	actions := make([]string, 0)
 	for rows.Next() {
 		var action string
-		if err := rows.Scan(&action); err != nil {
-			return nil, err
+		if err2 := rows.Scan(&action); err2 != nil {
+			return nil, err2
 		}
 
 		actions = append(actions, action)

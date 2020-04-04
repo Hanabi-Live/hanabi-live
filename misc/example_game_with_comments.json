@@ -1,17 +1,20 @@
 /*
     This is a JSON object that represents a game of Hanabi
+    This also matches how games are stored in the Hanabi Live database
+    Created by Zamiel
+    Format version: 2.0.0
 */
 {
     /*
         An array that contains the names of the players
-        The 0th player will go first unless a non-zero value is specified for "firstPlayer" above
+        The 0th player will always go first
     */
     "players": [
-        "Robot1",
-        "Robot2",
-        "Robot3",
-        "Robot4",
-        "Robot5"
+        "Alice",
+        "Bob",
+        "Cathy",
+        "Donald",
+        "Emily"
     ],
 
     /*
@@ -22,249 +25,133 @@
         then cards are dealt to the second player until they reach the maximum number of cards,
         and so forth
 
-        The suit number corresponds to the color clue type above
+        The suit number corresponds to the suits for the particular variant, from 0 to N
+        e.g. 0 corresponds to red, 1 corresponds to yellow, etc. (in a "No Variant" game)
     */
     "deck": [
-        {
-            "rank": 1,
-            "suit": 3
-        },
-        {
-            "rank": 4,
-            "suit": 2
-        },
-        {
-            "rank": 2,
-            "suit": 1
-        },
-        {
-            "rank": 3,
-            "suit": 0
-        },
-        {
-            "rank": 1,
-            "suit": 3
-        },
-        {
-            "rank": 3,
-            "suit": 3
-        },
-        {
-            "rank": 2,
-            "suit": 1
-        },
-        {
-            "rank": 4,
-            "suit": 2
-        },
-        {
-            "rank": 4,
-            "suit": 0
-        },
-        {
-            "rank": 4,
-            "suit": 1
-        },
-        {
-            "rank": 3,
-            "suit": 2
-        },
-        {
-            "rank": 1,
-            "suit": 3
-        },
-        {
-            "rank": 3,
-            "suit": 4
-        },
-        {
-            "rank": 5,
-            "suit": 2
-        },
-        {
-            "rank": 1,
-            "suit": 1
-        },
-        {
-            "rank": 4,
-            "suit": 4
-        },
-        {
-            "rank": 1,
-            "suit": 0
-        },
-        {
-            "rank": 4,
-            "suit": 3
-        },
-        {
-            "rank": 3,
-            "suit": 0
-        },
-        {
-            "rank": 1,
-            "suit": 1
-        },
-        {
-            "rank": 3,
-            "suit": 1
-        },
-        {
-            "rank": 3,
-            "suit": 3
-        },
-        {
-            "rank": 2,
-            "suit": 0
-        },
-        {
-            "rank": 1,
-            "suit": 0
-        },
-        {
-            "rank": 1,
-            "suit": 2
-        },
-        {
-            "rank": 3,
-            "suit": 2
-        },
-        {
-            "rank": 5,
-            "suit": 1
-        },
-        {
-            "rank": 1,
-            "suit": 2
-        },
-        {
-            "rank": 5,
-            "suit": 4
-        },
-        {
-            "rank": 1,
-            "suit": 4
-        },
-        {
-            "rank": 1,
-            "suit": 2
-        },
-        {
-            "rank": 2,
-            "suit": 0
-        },
-        {
-            "rank": 2,
-            "suit": 4
-        },
-        {
-            "rank": 4,
-            "suit": 3
-        },
-        {
-            "rank": 2,
-            "suit": 2
-        },
-        {
-            "rank": 5,
-            "suit": 0
-        },
-        {
-            "rank": 4,
-            "suit": 0
-        },
-        {
-            "rank": 1,
-            "suit": 1
-        },
-        {
-            "rank": 5,
-            "suit": 3
-        },
-        {
-            "rank": 2,
-            "suit": 3
-        },
-        {
-            "rank": 4,
-            "suit": 1
-        },
-        {
-            "rank": 2,
-            "suit": 3
-        },
-        {
-            "rank": 1,
-            "suit": 0
-        },
-        {
-            "rank": 2,
-            "suit": 2
-        },
-        {
-            "rank": 3,
-            "suit": 1
-        }
+        { "rank": 1, "suit": 3 },
+        { "rank": 4, "suit": 2 },
+        { "rank": 2, "suit": 1 },
+        { "rank": 3, "suit": 0 },
+        { "rank": 1, "suit": 3 },
+        { "rank": 3, "suit": 3 },
+        { "rank": 2, "suit": 1 },
+        { "rank": 4, "suit": 2 },
+        { "rank": 4, "suit": 0 },
+        { "rank": 4, "suit": 1 },
+        { "rank": 3, "suit": 2 },
+        { "rank": 1, "suit": 3 },
+        { "rank": 3, "suit": 4 },
+        { "rank": 5, "suit": 2 },
+        { "rank": 1, "suit": 1 },
+        { "rank": 4, "suit": 4 },
+        { "rank": 1, "suit": 0 },
+        { "rank": 4, "suit": 3 },
+        { "rank": 3, "suit": 0 },
+        { "rank": 1, "suit": 1 },
+        { "rank": 3, "suit": 1 },
+        { "rank": 3, "suit": 3 },
+        { "rank": 2, "suit": 0 },
+        { "rank": 1, "suit": 0 },
+        { "rank": 1, "suit": 2 },
+        { "rank": 3, "suit": 2 },
+        { "rank": 5, "suit": 1 },
+        { "rank": 1, "suit": 2 },
+        { "rank": 5, "suit": 4 },
+        { "rank": 1, "suit": 4 },
+        { "rank": 1, "suit": 2 },
+        { "rank": 2, "suit": 0 },
+        { "rank": 2, "suit": 4 },
+        { "rank": 4, "suit": 3 },
+        { "rank": 2, "suit": 2 },
+        { "rank": 5, "suit": 0 },
+        { "rank": 4, "suit": 0 },
+        { "rank": 1, "suit": 1 },
+        { "rank": 5, "suit": 3 },
+        { "rank": 2, "suit": 3 },
+        { "rank": 4, "suit": 1 },
+        { "rank": 2, "suit": 3 },
+        { "rank": 1, "suit": 0 },
+        { "rank": 2, "suit": 2 },
+        { "rank": 3, "suit": 1 }
     ],
-
-    /*
-        The index of the player that will go first
-        This will default to 0, which corresponds to the 0th player listed below
-    */
-    "firstPlayer": 0,
 
     /*
         An array that contains all of the actions that the players performed in the game
         Valid actions types are:
-        - 0 if a clue
-        - 1 if a play
-        - 2 if a discard
+        - 0 if a play
+        - 1 if a discard
+        - 2 if a color clue
+        - 3 if a number clue
+        - 4 if a game over
         An example of each action is listed below
     */
     "actions": [
-        // A "clue" action (type 0)
         {
-            "clue": {
-                /*
-                    0 is a rank clue
-                    1 is a color clue
-                */
-                "type": 1,
-                /*
-                    If a rank clue, value is equal to the number
-                    If a color clue, value is equal to:
-                    - 0 if blue
-                    - 1 if green
-                    - 2 if yellow
-                    - 3 if red
-                    - 4 if purple
-                    - 5 if black
-                */
-                "value": 3
-            },
-            // The ID of the player receiving the clue
-            "target": 1,
-            "type": 0
-        },
-        // A "play" action (type 1)
-        {
+            // A "play" action (type 0)
+            "type": 0,
+
             // The index of the card that is being played
-            // (e.g. index 0 corresponds to the 1st card dealt, etc.)
-            "target": 4,
-            "type": 1
+            // e.g. 0 corresponds to the 1st card dealt, etc.
+            "target": 4
         },
-        // A "discard" action (type 2)
         {
+            // A "discard" action (type 1)
+            "type": 1,
+
             // The index of the card that is being discarded
-            // (e.g. index 0 corresponds to the 1st card dealt, etc.)
-            "target": 11,
-            "type": 2
+            // e.g. 0 corresponds to the 1st card dealt, etc.
+            "target": 11
+        },
+        {
+            // A "color clue" action (type 2)
+            "type": 2,
+
+            // The index of the player that is receiving the clue
+            // e.g. 0 corresponds to the 1st player, etc.
+            "target": 1,
+
+            /*
+                The value for a rank clue is equal to to the rank chosen for the clue
+                e.g. 1 corresponds to rank 1, 2 corresponds to rank 2, etc.
+            */
+            "value": 3
+        },
+        {
+            // A "rank clue" action (type 3)
+            "type": 3,
+
+            // The index of the player that is receiving the clue
+            // e.g. 0 corresponds to the 1st player, etc.
+            "target": 1,
+
+            /*
+                The value for a color clue is the index of the possible colors from 1 to N,
+                from left to right
+                e.g. 1 corresponds to red, 2 corresponds to yellow, etc. (in a "No Variant" game)
+            */
+            "value": 3
+        },
+        {
+            // A "terminate" action (type 4)
+            "type": 4,
+
+            // The index of the player that is ending the game
+            // e.g. 0 corresponds to the 1st player, etc.
+            "target": 1,
+
+            /*
+                The type of game over, corresponding to the "endCondition" value in "constants.go"
+                https://github.com/Zamiell/hanabi-live/blob/master/src/constants.go
+                e.g. 3 corresponds to a timed timeout, 4 corresponds to a manual termination, etc.
+            */
+            "value": 3
         }
     ],
 
     /*
         The options for the game
-        This field is enitrely optional
+        This field is optional
     */
     "options": {
         /*
@@ -276,23 +163,26 @@
         "variant": "No Variant",
 
         /*
-            Whether or not the "Empty Clues" feature is enabled
-            https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#bottom-deck-blind-plays
-            If this value is not specified, false will be assumed
+            Any other Hanabi Live option can be specified, such as "cardCycle" or "emptyClues"
+            A full list of options can be found in the "OptionsJSON" struct, located here:
+            https://github.com/Zamiell/hanabi-live/blob/master/src/options.go
+            The various options are documented here:
+            https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#custom-game-options
+            If an option is not specified, the default will be assumed (e.g. false or 0)
         */
-        "emptyClues": false
+        "emptyClues": true
     },
 
     /*
         An array that contains the notes of the players
         Players can write arbitrary notes on individual cards
-        The 0th array corresponds to the 0th player listed below
-        The 0th note corresponds to the card at index 0 in the deck
-        This field is entirely optional
+        The 0th array corresponds to the notes for the first player, etc.
+        The 0th note in a note array corresponds to the 1st card dealt, etc.
+        This field is optional
     */
     "notes": [
-        ["f", "cm"],
-        ["f2", "cm2"],
+        ["this is an important card", "this card should be trash"],
+        ["finessed", "chop moved"],
         [],
         [],
         []

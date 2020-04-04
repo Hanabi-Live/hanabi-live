@@ -64,9 +64,10 @@ func chatCommand(s *Session, d *CommandData, t *Table) {
 	command = strings.ToLower(command) // Commands are case-insensitive
 
 	// Check to see if there is a command handler for this command
-	if _, ok := chatCommandMap[command]; !ok {
+	if chatCommandFunction, ok := chatCommandMap[command]; ok {
+		chatCommandFunction(s, d, t)
+	} else {
 		chatServerSend("That is not a valid command.", d.Room)
 		return
 	}
-	chatCommandMap[command](s, d, t)
 }

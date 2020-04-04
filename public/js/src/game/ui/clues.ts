@@ -96,8 +96,15 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
             return false;
         }
 
-        // Checking for "Pink-" also checks for "Light-Pink-"
+        if (card.suit!.clueRanks === 'all') {
+            return true;
+        }
+        if (card.suit!.clueRanks === 'none') {
+            return false;
+        }
+
         if (
+            // Checking for "Pink-" also checks for "Light-Pink-"
             (globals.variant.name.includes('Pink-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Omni-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Pink-Fives') && card.rank === 5)
@@ -116,23 +123,21 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
             return false;
         }
 
-        if (card.suit!.clueRanks === 'all') {
-            return true;
-        }
-        if (card.suit!.clueRanks === 'none') {
-            return false;
-        }
-
         return clue.value === card.rank;
     }
 
     if (clue.type === CLUE_TYPE.COLOR) {
+        // Some detrimental characters are not able to see other people's hands
+        if (card.suit === null) {
+            return false;
+        }
+
         if (globals.variant.colorCluesTouchNothing) {
             return false;
         }
 
-        // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
         if (
+            // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
             (globals.variant.name.includes('Rainbow-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Omni-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Rainbow-Fives') && card.rank === 5)
@@ -148,11 +153,6 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
             || (globals.variant.name.includes('Null-Fives') && card.rank === 5)
             || (globals.variant.name.includes('Light-Pink-Fives') && card.rank === 5)
         ) {
-            return false;
-        }
-
-        // Some detrimental characters are not able to see other people's hands
-        if (card.suit === null) {
             return false;
         }
 

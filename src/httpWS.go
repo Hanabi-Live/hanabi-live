@@ -11,9 +11,9 @@ import (
 /*
 	Validate that they have logged in before opening a WebSocket connection
 
-	Essentially, all we need to do is check to see if they have any cookie
-	values stored, because that implies that they got through the "httpLogin"
-	less than 5 seconds ago. But we also do a few other checks to be thorough.
+	Essentially, all we need to do is check to see if they have any cookie values stored,
+	because that implies that they got through the "httpLogin" less than N seconds ago
+	But we also do a few other checks to be thorough
 */
 
 var (
@@ -80,7 +80,7 @@ func httpWS(c *gin.Context) {
 	var userID int
 	if v := session.Get("userID"); v == nil {
 		logger.Info("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
-			"(failed userID check).")
+			"(failed userID check). (This likely means that the cookie has expired.)")
 		http.Error(
 			w,
 			http.StatusText(http.StatusUnauthorized),
@@ -92,7 +92,7 @@ func httpWS(c *gin.Context) {
 	}
 	var username string
 	if v := session.Get("username"); v == nil {
-		logger.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
+		logger.Error("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
 			"(failed username check).")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
@@ -101,7 +101,7 @@ func httpWS(c *gin.Context) {
 	}
 	var admin bool
 	if v := session.Get("admin"); v == nil {
-		logger.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
+		logger.Error("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
 			"(failed admin check).")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
@@ -110,7 +110,7 @@ func httpWS(c *gin.Context) {
 	}
 	var firstTimeUser bool
 	if v := session.Get("firstTimeUser"); v == nil {
-		logger.Warning("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
+		logger.Error("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
 			"(failed firstTimeUser check).")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return

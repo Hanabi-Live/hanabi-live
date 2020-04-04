@@ -191,7 +191,9 @@ func discordSend(to string, username string, msg string) {
 	fullMsg += msg
 
 	if _, err := discord.ChannelMessageSend(to, fullMsg); err != nil {
-		logger.Error("Failed to send \""+fullMsg+"\" to Discord:", err)
+		// Occasionally, sending messages to Discord can time out; if this occurs,
+		// do not bother retrying, since losing a single message is fairly meaningless
+		logger.Info("Failed to send \""+fullMsg+"\" to Discord:", err)
 		return
 	}
 }
@@ -302,14 +304,16 @@ func discordCheckCommand(m *discordgo.MessageCreate) bool {
 		}
 
 		// We enclose the link in "<>" to prevent Discord from generating a link preview
-		id, args := args[0], args[1:]
+		id := args[0]
+		args = args[1:] // This will be an empty slice if there is nothing after the command
 		if len(args) == 0 {
 			// They specified an ID but not a turn
 			discordSend(m.ChannelID, "", "<https://hanabi.live/replay/"+id+">")
 			return true
 		}
 
-		turn, args := args[0], args[1:]
+		turn := args[0]
+		args = args[1:] // This will be an empty slice if there is nothing after the command
 		if len(args) == 0 {
 			// They specified an ID and a turn
 			discordSend(m.ChannelID, "", "<https://hanabi.live/replay/"+id+"/"+turn+">")

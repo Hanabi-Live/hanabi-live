@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -35,8 +34,8 @@ func (g *Game) End() {
 	})
 	t.NotifyAction()
 
-	// There will be no times associated with a JSON game, so don't bother with the rest of the code
-	if g.Options.JSONGame {
+	// There will be no times associated with a replay, so don't bother with the rest of the code
+	if g.Options.Replay {
 		return
 	}
 
@@ -251,8 +250,8 @@ func (g *Game) WriteDatabase() error {
 		}
 
 		if err := models.GameParticipants.Insert(
-			p.ID,
 			g.ID,
+			p.ID,
 			gp.Index,
 			characterID,
 			gp.CharacterMetadata,
@@ -281,32 +280,14 @@ func (g *Game) WriteDatabase() error {
 	// Next, we insert rows for each of the actions
 	turn := 0
 	for i, a := range g.Actions {
-		var aString string
-		if v, err := json.Marshal(a); err != nil {
-			logger.Error("Failed to convert action #"+strconv.Itoa(i)+"to JSON:", err)
-			return err
-		} else {
-			aString = string(v)
-		}
-
-		if err := models.GameActions.Insert(g.ID, aString); err != nil {
-			logger.Error("Failed to insert the row for action #"+strconv.Itoa(i)+":", err)
-			return err
-		}
-
-		/*
-			We also need to insert a row for each of the actions in the "new" action format
-			TODO Remove the above code block and transition to the new table for everything
-		*/
-
 		// We do not know what kind of action is it,
 		// so use the reflect package to get the value of the "Type" field
 		t := reflect.TypeOf(a)
 		v := reflect.ValueOf(a)
 		actionType := ""
-		for i := 0; i < t.NumField(); i++ {
-			if t.Field(i).Name == "Type" {
-				actionType = fmt.Sprintf("%+v", v.Field(i))
+		for j := 0; j < t.NumField(); j++ {
+			if t.Field(j).Name == "Type" {
+				actionType = fmt.Sprintf("%+v", v.Field(j))
 				break
 			}
 		}
@@ -340,8 +321,12 @@ func (g *Game) WriteDatabase() error {
 				actionDiscard = v
 			}
 
+			actionType := actionType2Discard
+			if actionDiscard.Failed {
+				actionType = actionType2Play
+			}
 			gameAction = &GameAction{
-				Type:   actionType2Discard,
+				Type:   actionType,
 				Target: actionDiscard.Which.Order,
 			}
 		} else if actionType == "clue" {
@@ -358,7 +343,7 @@ func (g *Game) WriteDatabase() error {
 			if actionClue.Clue.Type == clueTypeColor {
 				clueType = actionType2ColorClue
 			} else if actionClue.Clue.Type == clueTypeRank {
-				clueType = actionType2NumberClue
+				clueType = actionType2RankClue
 			} else {
 				logger.Error("Action #" + strconv.Itoa(i) + " has an invalid clue type of " +
 					strconv.Itoa(actionClue.Clue.Type) + ".")
@@ -366,10 +351,9 @@ func (g *Game) WriteDatabase() error {
 			}
 
 			gameAction = &GameAction{
-				Type:      clueType,
-				Target:    actionClue.Target,
-				ClueGiver: actionClue.Giver,
-				ClueValue: actionClue.Clue.Value,
+				Type:   clueType,
+				Target: actionClue.Target,
+				Value:  actionClue.Clue.Value,
 			}
 		}
 
@@ -383,6 +367,34 @@ func (g *Game) WriteDatabase() error {
 		}
 
 		turn++
+	}
+
+	// If the game ended in a special way, we also need to insert an "game over" action
+	var gameOverAction *GameAction
+	if g.EndCondition == endConditionTimeout {
+		gameOverAction = &GameAction{
+			Type:   actionType2GameOver,
+			Target: g.EndPlayer,
+			Value:  endConditionTimeout,
+		}
+	} else if g.EndCondition == endConditionTerminated {
+		gameOverAction = &GameAction{
+			Type:   actionType2GameOver,
+			Target: g.EndPlayer,
+			Value:  endConditionTerminated,
+		}
+	} else if g.EndCondition == endConditionIdleTimeout {
+		gameOverAction = &GameAction{
+			Type:   actionType2GameOver,
+			Target: 0,
+			Value:  endConditionIdleTimeout,
+		}
+	}
+	if gameOverAction != nil {
+		if err := models.GameActions2.Insert(g.ID, turn, gameOverAction); err != nil {
+			logger.Error("Failed to insert the game over action:", err)
+			return err
+		}
 	}
 
 	// Next, we insert rows for each chat message
@@ -487,8 +499,8 @@ func (g *Game) AnnounceGameResult() {
 		playerList = append(playerList, p.Name)
 	}
 	msg := "[" + strings.Join(playerList, ", ") + "] "
-	if g.EndCondition == endConditionAbandoned {
-		msg += "abandoned"
+	if g.EndCondition == endConditionTerminated {
+		msg += "terminated"
 	} else {
 		msg += "finished"
 	}
@@ -503,7 +515,7 @@ func (g *Game) AnnounceGameResult() {
 		msg += "n"
 	}
 	msg += " " + g.Options.Variant + " game"
-	if g.EndCondition == endConditionAbandoned {
+	if g.EndCondition == endConditionTerminated {
 		msg += ". "
 	} else {
 		msg += " with a score of " + strconv.Itoa(g.Score) + ". "

@@ -7,8 +7,8 @@ import (
 type GameParticipants struct{}
 
 func (*GameParticipants) Insert(
-	userID int,
 	gameID int,
+	userID int,
 	seat int,
 	characterAssignment int,
 	characterMetadata int,
@@ -16,8 +16,8 @@ func (*GameParticipants) Insert(
 	var stmt *sql.Stmt
 	if v, err := db.Prepare(`
 		INSERT INTO game_participants (
-			user_id,
 			game_id,
+			user_id,
 			seat,
 			character_assignment,
 			character_metadata
@@ -37,8 +37,8 @@ func (*GameParticipants) Insert(
 	defer stmt.Close()
 
 	_, err := stmt.Exec(
-		userID,
 		gameID,
+		userID,
 		seat,
 		characterAssignment,
 		characterMetadata,

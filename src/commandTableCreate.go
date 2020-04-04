@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"os"
 	"path"
 	"regexp"
@@ -14,11 +15,8 @@ const (
 )
 
 var (
-	newTableID    = 1 // Start at 1 and increment for every game created
-	seedRegExp    = regexp.MustCompile(`^!seed (.+)$`)
-	replayRegExp1 = regexp.MustCompile(`^!replay (\d+)$`)
-	replayRegExp2 = regexp.MustCompile(`^!replay (\d+) (\d+)$`)
-	dealRegExp    = regexp.MustCompile(`^!deal (.+)$`)
+	newTableID = 1 // Start at 1 and increment for every game created
+	cardRegExp = regexp.MustCompile(`^(\w)(\d)$`)
 )
 
 func commandTableCreate(s *Session, d *CommandData) {
@@ -54,63 +52,68 @@ func commandTableCreate(s *Session, d *CommandData) {
 
 	// Validate that the game name does not contain any special characters
 	// (this mitigates XSS-style attacks)
-	if !isAlphanumericSpacesAndSafeSpecialCharacters(d.Name) {
+	if !isAlphanumericSpacesSafeSpecialCharacters(d.Name) {
 		s.Warning("Game names can only contain English letters, numbers, spaces, hyphens, " +
 			"and exclamation marks.")
 		return
 	}
 
-	// If they are trying to create a game with a special option, validate the options
-	setSeed := ""
+	// Set default values for the custom game options
+	var customDeck []SimpleCard
+	setSeedSuffix := ""
 	setReplay := 0
 	setReplayTurn := 0
-	setDeal := ""
+
+	// Hande special game option creation
 	if strings.HasPrefix(d.Name, "!") {
-		if strings.HasPrefix(d.Name, "!seed") {
+		args := strings.Split(d.Name, " ")
+		command := args[0]
+		args = args[1:] // This will be an empty slice if there is nothing after the command
+		command = strings.TrimPrefix(command, "!")
+		command = strings.ToLower(command) // Commands are case-insensitive
+
+		if command == "seed" {
 			// !seed - Play a specific seed
-			match := seedRegExp.FindStringSubmatch(d.Name)
-			if match == nil {
+			if len(args) != 1 {
 				s.Warning("Games on specific seeds must be created in the form: " +
 					"!seed [seed number]")
 				return
 			}
-			setSeed = match[1]
-		} else if strings.HasPrefix(d.Name, "!replay") {
+
+			// For normal games, the server creates seed suffixes sequentially from 0, 1, 2,
+			// and so on
+			// However, the seed does not actually have to be a number,
+			// so allow the user to use any arbitrary string as a seed suffix
+			setSeedSuffix = args[0]
+		} else if command == "replay" {
 			// !replay - Replay a specific game up to a specific turn
-			match1 := replayRegExp1.FindStringSubmatch(d.Name)
-			match2 := replayRegExp2.FindStringSubmatch(d.Name)
-			if match1 != nil {
-				if v, err := strconv.Atoi(match1[1]); err != nil {
-					logger.Error("Failed to convert the !replay argument to a number:", err)
-					s.Error("Failed to create the game. Please contact an administrator.")
-					return
-				} else {
-					setReplay = v
-				}
+			if len(args) != 1 && len(args) != 2 {
+				s.Warning("Replays of specific games must be created in the form: " +
+					"!replay [game ID] [turn number]")
+				return
+			}
+
+			if v, err := strconv.Atoi(args[0]); err != nil {
+				s.Warning("The game ID of \"" + args[0] + "\" is not a number.")
+				return
+			} else {
+				setReplay = v
+			}
+
+			if len(args) == 1 {
 				setReplayTurn = 1
-			} else if match2 != nil {
-				if v, err := strconv.Atoi(match2[1]); err != nil {
-					logger.Error("Failed to convert the first !replay argument to a number:", err)
-					s.Error("Failed to create the game. Please contact an administrator.")
-					return
-				} else {
-					setReplay = v
-				}
-				if v, err := strconv.Atoi(match2[2]); err != nil {
-					logger.Error("Failed to convert the second !replay argument to a number:", err)
-					s.Error("Failed to create the game. Please contact an administrator.")
+			} else {
+				if v, err := strconv.Atoi(args[1]); err != nil {
+					s.Warning("The turn of \"" + args[1] + "\" is not a number.")
 					return
 				} else {
 					setReplayTurn = v
 				}
+
 				if setReplayTurn < 1 {
 					s.Warning("The replay turn must be greater than 0.")
 					return
 				}
-			} else {
-				s.Warning("Replays of specific games must be created in the form: " +
-					"!replay [game ID] [turn number]")
-				return
 			}
 
 			// We have to minus the turn by one since turns are stored on the server starting at 0
@@ -140,7 +143,8 @@ func commandTableCreate(s *Session, d *CommandData) {
 				numTurns = v
 			}
 			if setReplayTurn >= numTurns {
-				s.Warning("That turn is not valid for the specified game ID.")
+				s.Warning("Game #" + strconv.Itoa(setReplay) + " only has " +
+					strconv.Itoa(numTurns) + ".")
 				return
 			}
 
@@ -163,22 +167,83 @@ func commandTableCreate(s *Session, d *CommandData) {
 				d.EmptyClues = v.EmptyClues
 				d.CharacterAssignments = v.CharacterAssignments
 			}
-		} else if strings.HasPrefix(d.Name, "!deal") {
+		} else if command == "deal" {
 			// !deal - Play a specific deal read from a text file
-			match := dealRegExp.FindStringSubmatch(d.Name)
-			if match == nil {
+			if len(args) != 1 {
 				s.Warning("Games on specific deals must be created in the form: !deal [filename]")
 				return
 			}
-			setDeal = match[1]
 
-			// Check to see if the file exists on the server
-			filePath := path.Join(projectPath, "specific-deals", setDeal+".txt")
-			if _, err := os.Stat(filePath); err != nil {
-				s.Error("That preset deal does not exist on the server.")
+			if !isAlphanumeric(d.Name) {
+				s.Warning("The filename must consist of only letters and numbers.")
 				return
 			}
-			// (we won't bother parsing the file until the game is actually started)
+
+			// Check to see if the file exists on the server
+			filePath := path.Join(projectPath, "specific-deals", args[0]+".txt")
+			if _, err := os.Stat(filePath); err != nil {
+				s.Warning("That preset deal does not exist on the server.")
+				return
+			}
+
+			var lines []string
+			if v, err := ioutil.ReadFile(filePath); err != nil {
+				logger.Error("Failed to read \""+filePath+"\":", err)
+				s.Error("Failed to create the game. Please contact an administrator.")
+				return
+			} else {
+				lines = strings.Split(string(v), "\n")
+			}
+
+			customDeck = make([]SimpleCard, 0)
+			for i, line := range lines {
+				// Ignore empty lines (the last line of the file might be empty)
+				if line == "" {
+					continue
+				}
+
+				// Parse the line for the suit and the rank
+				match := cardRegExp.FindStringSubmatch(line)
+				if match == nil {
+					s.Warning("Failed to parse line " + strconv.Itoa(i+1) + ": " + line)
+					return
+				}
+
+				// Parse the suit
+				suit := match[1]
+				var newSuit int
+				if suit == "r" {
+					newSuit = 0
+				} else if suit == "y" {
+					newSuit = 1
+				} else if suit == "g" {
+					newSuit = 2
+				} else if suit == "b" {
+					newSuit = 3
+				} else if suit == "p" {
+					newSuit = 4
+				} else if suit == "m" {
+					newSuit = 5
+				} else {
+					s.Warning("Failed to parse the suit on line " + strconv.Itoa(i+1) + ": " + suit)
+					return
+				}
+
+				// Parse the rank
+				rank := match[2]
+				var newRank int
+				if v, err := strconv.Atoi(rank); err != nil {
+					s.Warning("Failed to parse the rank on line " + strconv.Itoa(i+1) + ": " + rank)
+					return
+				} else {
+					newRank = v
+				}
+
+				customDeck = append(customDeck, SimpleCard{
+					Suit: newSuit,
+					Rank: newRank,
+				})
+			}
 		} else {
 			s.Warning("You cannot start a game with an exclamation mark unless " +
 				"you are trying to use a specific game creation command.")
@@ -243,10 +308,10 @@ func commandTableCreate(s *Session, d *CommandData) {
 		EmptyClues:           d.EmptyClues,
 		CharacterAssignments: d.CharacterAssignments,
 
-		SetSeed:       setSeed,
+		CustomDeck:    customDeck,
+		SetSeedSuffix: setSeedSuffix,
 		SetReplay:     setReplay,
 		SetReplayTurn: setReplayTurn,
-		SetDeal:       setDeal,
 	}
 	tables[t.ID] = t // Add it to the map
 	logger.Info(t.GetName() + "User \"" + s.Username() + "\" created a table.")

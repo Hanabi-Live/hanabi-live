@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -12,7 +11,7 @@ func httpExport(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	// Parse the player name from the URL
+	// Parse the game ID from the URL
 	gameIDString := c.Param("game")
 	if gameIDString == "" {
 		http.Error(w, "Error: You must specify a database game ID.", http.StatusNotFound)
@@ -42,139 +41,10 @@ func httpExport(c *gin.Context) {
 		return
 	}
 
-	// Get the actions from the database
-	var actionStrings []string
-	if v, err := models.GameActions.GetAll(gameID); err != nil {
-		logger.Error("Failed to get the actions from the database "+
-			"for game "+strconv.Itoa(gameID)+":", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	} else {
-		actionStrings = v
-	}
-
-	// Convert the actions
-	actions := make([]ActionJSON, 0)
-	deck := make([]SimpleCard, 0)
-	firstPlayer := -1
-	for _, actionString := range actionStrings {
-		// Convert it from JSON
-		var action map[string]interface{}
-		if err := json.Unmarshal([]byte(actionString), &action); err != nil {
-			logger.Error("Failed to unmarshal an action while exporting a game:", err)
-			http.Error(
-				w,
-				http.StatusText(http.StatusInternalServerError),
-				http.StatusInternalServerError,
-			)
-			return
-		}
-
-		// Emulate the various actions
-		if action["type"] == "turn" && firstPlayer == -1 {
-			// Unmarshal the specific action type
-			var actionTurn ActionTurn
-			if err := json.Unmarshal([]byte(actionString), &actionTurn); err != nil {
-				logger.Error("Failed to unmarshal a turn action:", err)
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			}
-
-			firstPlayer = actionTurn.Who
-		} else if action["type"] == "clue" {
-			// Unmarshal the specific action type
-			var actionClue ActionClue
-			if err := json.Unmarshal([]byte(actionString), &actionClue); err != nil {
-				logger.Error("Failed to unmarshal a clue action:", err)
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			}
-
-			actions = append(actions, ActionJSON{
-				Clue:   actionClue.Clue,
-				Target: actionClue.Target,
-				Type:   actionTypeClue,
-			})
-		} else if action["type"] == "play" {
-			// Unmarshal the specific action type
-			var actionPlay ActionPlay
-			if err := json.Unmarshal([]byte(actionString), &actionPlay); err != nil {
-				logger.Error("Failed to unmarshal a play action:", err)
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			}
-
-			actions = append(actions, ActionJSON{
-				Target: actionPlay.Which.Order,
-				Type:   actionTypePlay,
-			})
-		} else if action["type"] == "discard" {
-			// Unmarshal the specific action type
-			var actionDiscard ActionDiscard
-			if err := json.Unmarshal([]byte(actionString), &actionDiscard); err != nil {
-				logger.Error("Failed to unmarshal a discard action:", err)
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			}
-
-			// Account for failed plays, which show up in the database as discards,
-			// but handily have the "Failed" property set to true
-			actionType := actionTypeDiscard
-			if actionDiscard.Failed {
-				actionType = actionTypePlay
-			}
-
-			actions = append(actions, ActionJSON{
-				Target: actionDiscard.Which.Order,
-				Type:   actionType,
-			})
-		} else if action["type"] == "deckOrder" {
-			// Unmarshal the specific action type
-			var actionDeckOrder ActionDeckOrder
-			if err := json.Unmarshal([]byte(actionString), &actionDeckOrder); err != nil {
-				logger.Error("Failed to unmarshal a deckOrder action:", err)
-				http.Error(
-					w,
-					http.StatusText(http.StatusInternalServerError),
-					http.StatusInternalServerError,
-				)
-				return
-			}
-
-			deck = actionDeckOrder.Deck
-		}
-	}
-	if len(deck) == 0 {
-		text := "Error: You cannot export older games without the \"deckOrder\" action in it."
-		logger.Info(text)
-		http.Error(w, text, http.StatusBadRequest)
-		return
-	}
-
-	// Get the players from the database
-	var dbPlayers []*DBPlayer
-	if v, err := models.Games.GetPlayers(gameID); err != nil {
-		logger.Error("Failed to get the players from the database for game "+
+	// Get the player names from the database
+	var playerNames []string
+	if v, err := models.Games.GetPlayerNames(gameID); err != nil {
+		logger.Error("Failed to get the player names from the database for game "+
 			strconv.Itoa(gameID)+":", err)
 		http.Error(
 			w,
@@ -183,28 +53,7 @@ func httpExport(c *gin.Context) {
 		)
 		return
 	} else {
-		dbPlayers = v
-	}
-
-	// Convert the players
-	players := make([]string, 0)
-	for _, p := range dbPlayers {
-		players = append(players, p.Name)
-	}
-
-	// Get the notes from the database
-	var notes [][]string
-	if v, err := models.Games.GetNotes(gameID, len(dbPlayers), len(deck)); err != nil {
-		logger.Error("Failed to get the notes from the database "+
-			"for game "+strconv.Itoa(gameID)+":", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	} else {
-		notes = v
+		playerNames = v
 	}
 
 	// Get the options from the database
@@ -221,24 +70,138 @@ func httpExport(c *gin.Context) {
 	} else {
 		options = v
 	}
-	variant := variantsID[options.Variant]
-	variantAddress := &variant
-	emptyClues := options.EmptyClues
-	emptyCluesAddress := &emptyClues
 
-	// Start to create a JSON game
-	g := &GameJSON{
-		ID:          gameID,
-		Actions:     actions,
-		Deck:        deck,
-		FirstPlayer: firstPlayer,
-		Notes:       notes,
-		Players:     players,
-		Options: &OptionsJSON{
-			Variant:    variantAddress,
-			EmptyClues: emptyCluesAddress,
-		},
+	// Deck specification for a particular game are not stored in the database
+	// Thus, we must recalculate the deck order based on the seed of the game
+	// Get the seed from the database
+	var seed string
+	if v, err := models.Games.GetSeed(gameID); err != nil {
+		logger.Error("Failed to get the seed for game "+
+			"\""+strconv.Itoa(gameID)+"\":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else {
+		seed = v
 	}
 
-	c.JSON(http.StatusOK, g)
+	// Make a deck and shuffle it
+	g := &Game{
+		Options: &Options{
+			Variant: variantsID[options.Variant],
+		},
+		Seed: seed,
+	}
+	g.InitDeck()
+	g.InitSeed()
+	g.ShuffleDeck()
+
+	// Create a list of cards in the deck
+	deck := make([]SimpleCard, 0)
+	for _, c := range g.Deck {
+		deck = append(deck, SimpleCard{
+			Suit: c.Suit,
+			Rank: c.Rank,
+		})
+	}
+
+	// Get the actions from the database
+	var actions []*GameAction
+	if v, err := models.GameActions2.GetAll(gameID); err != nil {
+		logger.Error("Failed to get the actions from the database "+
+			"for game "+strconv.Itoa(gameID)+":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else {
+		actions = v
+	}
+
+	// Get the notes from the database
+	var notes [][]string
+	if v, err := models.Games.GetNotes(gameID, len(playerNames), len(deck)); err != nil {
+		logger.Error("Failed to get the notes from the database "+
+			"for game "+strconv.Itoa(gameID)+":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else {
+		notes = v
+	}
+
+	// Trim off trailing empty notes
+	allPlayerNotesEmpty := true
+	for i, playerNotes := range notes {
+		for len(playerNotes) > 0 && playerNotes[len(playerNotes)-1] == "" {
+			playerNotes = playerNotes[:len(playerNotes)-1]
+		}
+		notes[i] = playerNotes
+		if len(playerNotes) > 0 {
+			allPlayerNotesEmpty = false
+		}
+	}
+	if allPlayerNotesEmpty {
+		notes = nil
+	}
+
+	// Create JSON options
+	// (we want the pointers to remain nil if the option is the default value
+	// so that they are not added to the JSON object)
+	optionsJSON := &OptionsJSON{}
+	allDefaultOptions := true
+	variant := variantsID[options.Variant]
+	if variant != "No Variant" {
+		optionsJSON.Variant = &variant
+		allDefaultOptions = false
+	}
+	if options.Timed {
+		optionsJSON.Timed = &options.Timed
+		optionsJSON.BaseTime = &options.BaseTime
+		optionsJSON.TimePerTurn = &options.TimePerTurn
+		allDefaultOptions = false
+	}
+	if options.Speedrun {
+		optionsJSON.Speedrun = &options.Speedrun
+		allDefaultOptions = false
+	}
+	if options.CardCycle {
+		optionsJSON.CardCycle = &options.CardCycle
+		allDefaultOptions = false
+	}
+	if options.DeckPlays {
+		optionsJSON.DeckPlays = &options.DeckPlays
+		allDefaultOptions = false
+	}
+	if options.EmptyClues {
+		optionsJSON.EmptyClues = &options.EmptyClues
+		allDefaultOptions = false
+	}
+	if options.CharacterAssignments {
+		optionsJSON.CharacterAssignments = &options.CharacterAssignments
+		allDefaultOptions = false
+	}
+	if allDefaultOptions {
+		optionsJSON = nil
+	}
+
+	// Create a JSON game
+	gameJSON := &GameJSON{
+		ID:      gameID,
+		Players: playerNames,
+		Deck:    deck,
+		Actions: actions,
+		Options: optionsJSON,
+		Notes:   notes,
+	}
+
+	c.JSON(http.StatusOK, gameJSON)
 }
