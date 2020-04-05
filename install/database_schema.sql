@@ -20,7 +20,7 @@ CREATE TABLE users (
     /* MySQL enforces case insensitive uniqueness by default, which is what we want */
     username             VARCHAR(20)  NOT NULL  UNIQUE,
     password             CHAR(64)     NOT NULL, /* A SHA-256 hash string is 64 characters long */
-    last_ip              VARCHAR(40)  NULL,     /* This will be set immediately after insertion */
+    last_ip              VARCHAR(40)  NOT NULL, /* This will be set immediately after insertion */
     admin                BOOLEAN      NOT NULL  DEFAULT 0,
     tester               BOOLEAN      NOT NULL  DEFAULT 0,
     datetime_created     TIMESTAMP    NOT NULL  DEFAULT NOW(),

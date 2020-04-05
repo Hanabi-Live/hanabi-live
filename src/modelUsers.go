@@ -13,13 +13,13 @@ type User struct {
 	Admin    bool
 }
 
-func (*Users) Insert(username string, password string) (User, error) {
+func (*Users) Insert(username string, password string, lastIP string) (User, error) {
 	var user User
 
 	var stmt *sql.Stmt
 	if v, err := db.Prepare(`
-		INSERT INTO users (username, password)
-		VALUES (?, ?)
+		INSERT INTO users (username, password, last_ip)
+		VALUES (?, ?, ?)
 	`); err != nil {
 		return user, err
 	} else {
@@ -28,7 +28,7 @@ func (*Users) Insert(username string, password string) (User, error) {
 	defer stmt.Close()
 
 	var res sql.Result
-	if v, err := stmt.Exec(username, password); err != nil {
+	if v, err := stmt.Exec(username, password, lastIP); err != nil {
 		return user, err
 	} else {
 		res = v

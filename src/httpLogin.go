@@ -172,9 +172,21 @@ func httpLogin(c *gin.Context) {
 			http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
 			return
 		}
+
+		// Update the database with "datetime_last_login" and "last_ip"
+		if err := models.Users.Update(user.ID, ip); err != nil {
+			logger.Error("Failed to set the login values for user "+
+				"\""+strconv.Itoa(user.ID)+"\":", err)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		}
 	} else {
 		// Create the new user in the database
-		if v, err := models.Users.Insert(username, password); err != nil {
+		if v, err := models.Users.Insert(username, password, ip); err != nil {
 			logger.Error("Failed to insert user \""+username+"\":", err)
 			http.Error(
 				w,
@@ -185,17 +197,6 @@ func httpLogin(c *gin.Context) {
 		} else {
 			user = v
 		}
-	}
-
-	// Update the database with "datetime_last_login" and "last_ip"
-	if err := models.Users.Update(user.ID, ip); err != nil {
-		logger.Error("Failed to set the login values for user \""+strconv.Itoa(user.ID)+"\":", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
 	}
 
 	// Save the information to the session cookie
