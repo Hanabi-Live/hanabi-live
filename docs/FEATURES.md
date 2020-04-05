@@ -6,7 +6,7 @@
 
 ## Basic How-To
 
-* If you don't know how to play Hanabi already, you can read [the official rules](https://pastebin.com/pR54gTq4) or [watch Zamiel's video explanation](https://www.youtube.com/watch?v=jR9i1qCbHXQ).
+* If you don't know how to play Hanabi already, you can read [the official rules](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md) or [watch Zamiel's video explanation](https://www.youtube.com/watch?v=jR9i1qCbHXQ).
 * Getting a game going should be self-explanatory, but just in case:
   * Once logged in, use the "Create Game" button on the top navigation bar and then click "Create".
   * For everyone else, the game will now appear in the list of games. To join it, they need to click on ▶️.
