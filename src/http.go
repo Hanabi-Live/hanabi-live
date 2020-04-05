@@ -8,6 +8,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/didip/tollbooth"
+	"github.com/didip/tollbooth_gin"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -72,6 +74,15 @@ func httpInit() {
 	// Create a new Gin HTTP router
 	gin.SetMode(gin.ReleaseMode) // Comment this out to debug HTTP stuff
 	httpRouter := gin.Default()  // Has the "Logger" and "Recovery" middleware attached
+
+	// Attach rate-limiting middleware from Tollbooth
+	// The limiter works per path request,
+	// meaning that a user can only request one specific path every X seconds
+	// Thus, this does not impact the ability of a user to download CSS and image files all at once
+	limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
+	limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
+	limiterMiddleware := tollbooth_gin.LimitHandler(limiter)
+	httpRouter.Use(limiterMiddleware)
 
 	// Attach the Sentry middleware
 	if usingSentry {
