@@ -29,3 +29,7 @@ if [ $AMOUNT_FULL -gt 80 ]; then
     # Delete the oldest file in the backups directory
     rm "$(ls -t "$BACKUPS_DIR" | tail -1)"
 fi
+
+# Upload it to DropBox
+/root/Dropbox-Uploader/dropbox_uploader.sh upload "$BACKUPS_DIR/$FILENAME" "$FILENAME"
+

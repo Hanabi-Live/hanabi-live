@@ -37,7 +37,7 @@ cnx = mysql.connector.connect(
 
 # Get all database records
 cursor = cnx.cursor()
-query_string = 'SELECT id, action FROM game_actions WHERE id >= 1757054 AND id <= 4295128 ORDER BY id ASC'
+query_string = 'SELECT id, action FROM game_actions ORDER BY id ASC'
 # (the broken game IDs are between these numbers)
 if debug:
     query_string += ' LIMIT 1000'
