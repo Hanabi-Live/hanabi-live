@@ -30,6 +30,5 @@ if [ $AMOUNT_FULL -gt 80 ]; then
     rm "$(ls -t "$BACKUPS_DIR" | tail -1)"
 fi
 
-# Upload it to DropBox
-/root/Dropbox-Uploader/dropbox_uploader.sh upload "$BACKUPS_DIR/$FILENAME" "$FILENAME"
-
+# Upload it to Google Drive
+/root/go/bin/gdrive upload "$BACKUPS_DIR/$FILENAME" --service-account "hanabi-live-c3373cecaf32.json" --parent "1nBTIj7n7-QBTlxo79L-Jp19Nc5tpAtIH"
