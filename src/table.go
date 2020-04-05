@@ -129,13 +129,18 @@ func (t *Table) CheckIdle() {
 		return
 	}
 
-	// Get the session of the owner
+	// Make a fake session that represents the owner
 	var s *Session
 	for _, p := range t.Players {
-		if p.Session.UserID() == t.Owner {
-			s = p.Session
+		if p.ID == t.Owner {
+			s = newFakeSession(p.ID, p.Name, t.ID)
 			break
 		}
+	}
+	if s == nil {
+		logger.Error("Failed to find the owner in the players slice in the " +
+			"\"CheckIdle()\" function.")
+		return
 	}
 
 	if t.Running {

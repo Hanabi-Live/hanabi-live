@@ -398,30 +398,36 @@ func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 func loadFakePlayers(t *Table, playerNames []string) {
 	// Convert the JSON player objects to Player objects
 	for i, name := range playerNames {
-		// Prepare the player session that will be used for emulation
-		keys := make(map[string]interface{})
 		// The session ID and the user ID can be any arbitrary unique number,
 		// but we set them to -1, -2, etc., so that they will not overlap with any valid user IDs
 		id := (i + 1) * -1
-		keys["sessionID"] = id
-		keys["userID"] = id
-		keys["username"] = name
-		keys["admin"] = false
-		keys["firstTimeUser"] = false
-		keys["currentTable"] = t.ID
-		keys["status"] = statusPlaying
 
 		player := &Player{
-			ID:   id,
-			Name: name,
-			Session: &Session{
-				&melody.Session{
-					Keys: keys,
-				},
-			},
+			ID:      id,
+			Name:    name,
+			Session: newFakeSession(id, name, t.ID),
 			Present: true,
 		}
 		t.Players = append(t.Players, player)
+	}
+}
+
+func newFakeSession(id int, name string, currentTable int) *Session {
+	// Prepare a "fake" player session that will be used for emulation
+	keys := make(map[string]interface{})
+
+	keys["sessionID"] = id
+	keys["userID"] = id
+	keys["username"] = name
+	keys["admin"] = false
+	keys["firstTimeUser"] = false
+	keys["currentTable"] = currentTable
+	keys["status"] = statusPlaying
+
+	return &Session{
+		&melody.Session{
+			Keys: keys,
+		},
 	}
 }
 

@@ -85,6 +85,7 @@ func main() {
 	// If we are running in a development environment, change some constants
 	if os.Getenv("DOMAIN") == "localhost" || os.Getenv("DOMAIN") == "" {
 		idleGameTimeout = idleGameTimeoutDev
+		idleGameTimeout = 5 * time.Second
 	}
 
 	// Initialize Sentry (in "sentry.go")
