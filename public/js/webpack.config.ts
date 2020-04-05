@@ -3,6 +3,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as webpack from 'webpack';
 
+// Constants
+const epoch = new Date().getTime();
+
 // Read the version
 const versionPath = path.join(__dirname, 'src', 'data', 'version.json');
 if (!fs.existsSync(versionPath)) {
@@ -27,6 +30,9 @@ const config: webpack.Configuration = {
     output: {
         path: __dirname, // By default, Webpack will output the file to a "dist" subdirectory
         filename: 'main.min.js',
+        // Chrome caches source maps and will not update them even after a hard-refresh
+        // Work around this by putting the epoch timestamp in the source map filename
+        sourceMapFilename: `main.min.js.${epoch}.map`,
     },
 
     resolve: {
@@ -58,14 +64,6 @@ const config: webpack.Configuration = {
             // The Hanabi codebase and the Tooltipster library uses "$" to invoke jQuery
             $: 'jquery',
         }),
-
-        // Using the "@sentry/browser" package will cause the TypeScript source maps to get messed
-        // up; we use the custom Sentry Webpack plugin to fix this
-        // https://docs.sentry.io/platforms/javascript/sourcemaps/
-        new SentryWebpackPlugin({
-            include: path.join(__dirname, 'main.min.js'),
-            release: version,
-        }),
     ],
 
     // Ignore the warnings that recommend splitting up the codebase into separate bundles
@@ -84,5 +82,22 @@ const config: webpack.Configuration = {
     // https://stackoverflow.com/questions/44315460/when-do-browsers-download-sourcemaps
     devtool: 'source-map',
 };
+
+if (
+    process.env.TRAVIS !== 'true'
+    && process.platform !== 'win32'
+    && process.platform !== 'darwin'
+) {
+    config.plugins.push(
+        // In order for Sentry to use the source maps, we must use their custom Webpack plugin
+        // This also uploads the source files + source maps to Sentry
+        // https://docs.sentry.io/platforms/javascript/sourcemaps/
+        // (we don't want to upload anything in a development or testing environment)
+        new SentryWebpackPlugin({
+            include: path.join(__dirname, 'main.min.js'),
+            release: version,
+        }),
+    );
+}
 
 export default config;
