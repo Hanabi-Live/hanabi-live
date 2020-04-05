@@ -31,4 +31,4 @@ if [ $AMOUNT_FULL -gt 80 ]; then
 fi
 
 # Upload it to Google Drive
-/root/go/bin/gdrive upload "$BACKUPS_DIR/$FILENAME" --service-account "hanabi-live-c3373cecaf32.json" --parent "1nBTIj7n7-QBTlxo79L-Jp19Nc5tpAtIH"
+/root/go/bin/gdrive upload "$BACKUPS_DIR/$FILENAME.gz" --service-account "hanabi-live-c3373cecaf32.json" --parent "1nBTIj7n7-QBTlxo79L-Jp19Nc5tpAtIH"
