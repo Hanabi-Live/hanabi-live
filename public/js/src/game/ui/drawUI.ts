@@ -488,7 +488,9 @@ const drawBottomLeftButtons = () => {
     });
     globals.layers.UI.add(restartButton as any);
     restartButton.on('click tap', () => {
-        globals.lobby.conn.send('tableRestart');
+        if (globals.speedrun || window.confirm('Are you sure you want to restart the game?')) {
+            globals.lobby.conn.send('tableRestart');
+        }
     });
     restartButton.tooltipName = 'restart';
     restartButton.tooltipContent = 'Automatically go into a new game with the current members of the shared replay (using the same game settings as this one).';
@@ -577,7 +579,9 @@ const drawBottomLeftButtons = () => {
     }, [globals.ImageLoader!.get('skull')!]);
     globals.layers.UI.add(killButton as any);
     killButton.on('click tap', () => {
-        globals.lobby.conn.send('tableTerminate');
+        if (globals.speedrun || window.confirm('Are you sure you want to terminate the game?')) {
+            globals.lobby.conn.send('tableTerminate');
+        }
     });
     killButton.tooltipName = 'kill';
     killButton.tooltipContent = 'Terminate the game, ending it immediately.';
