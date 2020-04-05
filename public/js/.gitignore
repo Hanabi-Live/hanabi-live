@@ -7,6 +7,7 @@
 
 # We don't need to include the JavaScript source maps
 # (these are not produced in development, but are still produced server-side in production)
+/main.min.js.map
 /main.min.js.*.map
 
 # We don't need to include the converted TypeScript --> Javascript files

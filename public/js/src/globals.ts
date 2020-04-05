@@ -10,11 +10,10 @@ import Settings from './lobby/Settings';
 import Table from './lobby/Table';
 import User from './lobby/User';
 
-// (the "version.json" file is filled in dynamically by the "build_client.sh" script)
-
 type screen = 'login' | 'lobby' | 'pregame' | 'game' | 'history' | 'historyOtherScores';
 
 export class Globals {
+    // The "version.json" file is filled in dynamically by the "build_client.sh" script
     version: number = version;
     browserIsFirefox: boolean = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 

@@ -70,7 +70,7 @@ func commandHello(s *Session, d *CommandData) {
 	// The seat number is equal to the index of the player in the Players slice
 	seat := i
 	if seat == -1 {
-		// By default, spectators view the game from the first players perspective
+		// By default, spectators view the game from the first player's perspective
 		seat = 0
 
 		// If a spectator is viewing a replay of a game that they played in,

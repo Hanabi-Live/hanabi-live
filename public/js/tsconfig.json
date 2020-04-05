@@ -50,10 +50,9 @@
         // By default, TypeScript will remove all blank lines
         // This will cause the source maps to report the wrong line numbers
         // We must specify both of these options in order to fix the problem
-        /*
+        // By default, these flags are false
         "sourceMap": true,
         "inlineSources": true,
-        */
     },
 
     "include": [

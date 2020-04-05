@@ -123,7 +123,4 @@ func commandInit() {
 	commandMap["note"] = commandNote
 	commandMap["pause"] = commandPause
 	commandMap["replayAction"] = commandReplayAction
-
-	// Miscellaneous commands
-	commandMap["clientError"] = commandClientError
 }

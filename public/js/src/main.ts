@@ -16,7 +16,9 @@ import 'tooltipster';
 // We import it for the side-effects for the same reason
 import '../lib/tooltipster-scrollableTip.min';
 
+import * as Sentry from '@sentry/browser';
 import * as chat from './chat';
+import version from './data/version.json';
 import * as gameChat from './game/chat';
 import * as gameMain from './game/main';
 import gameTooltipsInit from './game/tooltipsInit';
@@ -31,6 +33,14 @@ import lobbyTutorialInit from './lobby/tutorialInit';
 import * as lobbyWatchReplay from './lobby/watchReplay';
 import * as modals from './modals';
 import * as sounds from './sounds';
+
+// Initialize Sentry logging
+if (window.location.hostname !== 'localhost' && !window.location.pathname.includes('/dev')) {
+    Sentry.init({
+        dsn: 'https://93293e0a9dff44c7b8485d646738a3e5@sentry.io/5189482',
+        release: version.toString(),
+    });
+}
 
 // Add a function to the jQuery object to detect if an element is off screen
 // https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen

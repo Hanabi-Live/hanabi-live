@@ -73,25 +73,6 @@ export default () => {
         console.log(data);
         globals.conn.emit(command, data);
     };
-
-    // Send any client errors to the server for tracking purposes
-    window.onerror = (message, url, lineno, colno) => {
-        // We don't want to report errors during local development
-        if (window.location.hostname === 'localhost') {
-            return;
-        }
-
-        try {
-            globals.conn.emit('clientError', {
-                message,
-                url,
-                lineno,
-                colno,
-            });
-        } catch (err) {
-            console.error('Failed to transmit the error to the server:', err);
-        }
-    };
 };
 
 // This is all of the normal commands/messages that we expect to receive from the server
