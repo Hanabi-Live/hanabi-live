@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"strconv"
 	"time"
+
+	sentry "github.com/getsentry/sentry-go"
 )
 
 type Games struct{}
@@ -543,6 +545,21 @@ func (*Games) GetNotes(databaseID int, numPlayers int, deckSize int) ([][]string
 			return nil, err2
 		}
 
+		logger.Debug("GetNotes, " +
+			"databaseID " + strconv.Itoa(databaseID) + ", " +
+			"numPlayers " + strconv.Itoa(numPlayers) + ", " +
+			"deckSize " + strconv.Itoa(deckSize) + ", " +
+			"seat " + strconv.Itoa(seat) + ", " +
+			"order " + strconv.Itoa(order))
+		if usingSentry {
+			sentry.ConfigureScope(func(scope *sentry.Scope) {
+				scope.SetExtra("databaseID", databaseID)
+				scope.SetExtra("numPlayers", numPlayers)
+				scope.SetExtra("deckSize", deckSize)
+				scope.SetExtra("seat", seat)
+				scope.SetExtra("order", order)
+			})
+		}
 		allPlayersNotes[seat][order] = note
 	}
 

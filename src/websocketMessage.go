@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	sentry "github.com/getsentry/sentry-go"
 	melody "gopkg.in/olahol/melody.v1" // A WebSocket framework
 )
 
@@ -24,6 +25,13 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 
 	// Turn the Melody session into a custom session
 	s := &Session{ms}
+
+	if usingSentry {
+		sentry.ConfigureScope(func(scope *sentry.Scope) {
+			scope.SetExtra("userID", s.UserID())
+			scope.SetExtra("username", s.Username())
+		})
+	}
 
 	// Unpack the message to see what kind of command it is
 	// (this code is taken from Golem)
