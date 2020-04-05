@@ -70,8 +70,17 @@ func commandHello(s *Session, d *CommandData) {
 	// The seat number is equal to the index of the player in the Players slice
 	seat := i
 	if seat == -1 {
-		// Spectators view the game from the first players perspective
+		// By default, spectators view the game from the first players perspective
 		seat = 0
+
+		// If a spectator is viewing a replay of a game that they played in,
+		// we want to put them in the same seat
+		for k, name := range names {
+			if name == s.Username() {
+				seat = k
+				break
+			}
+		}
 	}
 
 	// Account for if a spectator is shadowing a specific player
