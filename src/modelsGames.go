@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"strconv"
 	"time"
-
-	sentry "github.com/getsentry/sentry-go"
 )
 
 type Games struct{}
@@ -518,7 +516,7 @@ func (*Games) GetPlayerNames(databaseID int) ([]string, error) {
 	return playerNames, nil
 }
 
-func (*Games) GetNotes(databaseID int, numPlayers int, deckSize int) ([][]string, error) {
+func (*Games) GetNotes(databaseID int, numPlayers int, noteSize int) ([][]string, error) {
 	// nolint:lll
 	rows, err := db.Query(`
 		SELECT
@@ -535,7 +533,7 @@ func (*Games) GetNotes(databaseID int, numPlayers int, deckSize int) ([][]string
 	// These rows contain the notes for all of the players in the game, one row for each note
 	allPlayersNotes := make([][]string, numPlayers)
 	for i := 0; i < numPlayers; i++ {
-		allPlayersNotes[i] = make([]string, deckSize)
+		allPlayersNotes[i] = make([]string, noteSize)
 	}
 	for rows.Next() {
 		var seat int
@@ -545,21 +543,6 @@ func (*Games) GetNotes(databaseID int, numPlayers int, deckSize int) ([][]string
 			return nil, err2
 		}
 
-		logger.Debug("GetNotes, " +
-			"databaseID " + strconv.Itoa(databaseID) + ", " +
-			"numPlayers " + strconv.Itoa(numPlayers) + ", " +
-			"deckSize " + strconv.Itoa(deckSize) + ", " +
-			"seat " + strconv.Itoa(seat) + ", " +
-			"order " + strconv.Itoa(order))
-		if usingSentry {
-			sentry.ConfigureScope(func(scope *sentry.Scope) {
-				scope.SetExtra("databaseID", databaseID)
-				scope.SetExtra("numPlayers", numPlayers)
-				scope.SetExtra("deckSize", deckSize)
-				scope.SetExtra("seat", seat)
-				scope.SetExtra("order", order)
-			})
-		}
 		allPlayersNotes[seat][order] = note
 	}
 

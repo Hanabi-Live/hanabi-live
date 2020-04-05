@@ -361,7 +361,7 @@ func (g *Game) WriteDatabase() error {
 			continue
 		}
 
-		if err := models.GameActions2.Insert(g.ID, turn, gameAction); err != nil {
+		if err := models.GameActions.Insert(g.ID, turn, gameAction); err != nil {
 			logger.Error("Failed to insert row for action #"+strconv.Itoa(i)+":", err)
 			return err
 		}
@@ -391,7 +391,7 @@ func (g *Game) WriteDatabase() error {
 		}
 	}
 	if gameOverAction != nil {
-		if err := models.GameActions2.Insert(g.ID, turn, gameOverAction); err != nil {
+		if err := models.GameActions.Insert(g.ID, turn, gameOverAction); err != nil {
 			logger.Error("Failed to insert the game over action:", err)
 			return err
 		}

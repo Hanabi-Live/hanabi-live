@@ -136,15 +136,6 @@ CREATE TABLE game_participant_notes (
 
 DROP TABLE IF EXISTS game_actions;
 CREATE TABLE game_actions (
-    id       INT            NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
-    game_id  INT            NOT NULL,
-    action   VARCHAR(1500)  NOT NULL, /* JSON */
-    FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE
-);
-
-/* Eventually this table will replace the "game_actions" table */
-DROP TABLE IF EXISTS game_actions2;
-CREATE TABLE game_actions2 (
     game_id  INT      NOT NULL,
     turn     TINYINT  NOT NULL,
     /* 0 - play, 1 - discard, 2 - color clue, 3 - number clue, 4 - terminate */

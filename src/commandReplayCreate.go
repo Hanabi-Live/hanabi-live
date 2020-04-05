@@ -429,8 +429,9 @@ func applyNotesToPlayers(s *Session, d *CommandData, g *Game) bool {
 	var notes [][]string
 	if d.Source == "id" {
 		// Get the notes from the database
-		deckSize := variants[g.Options.Variant].GetDeckSize()
-		if v, err := models.Games.GetNotes(d.GameID, len(g.Players), deckSize); err != nil {
+		variant := variants[g.Options.Variant]
+		noteSize := variant.GetDeckSize() + len(variant.Suits)
+		if v, err := models.Games.GetNotes(d.GameID, len(g.Players), noteSize); err != nil {
 			logger.Error("Failed to get the notes from the database "+
 				"for game "+strconv.Itoa(d.GameID)+":", err)
 			s.Error(initFail)
@@ -467,7 +468,7 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 	var actions []*GameAction
 	if d.Source == "id" {
 		// Get the actions from the database
-		if v, err := models.GameActions2.GetAll(d.GameID); err != nil {
+		if v, err := models.GameActions.GetAll(d.GameID); err != nil {
 			logger.Error("Failed to get the actions from the database "+
 				"for game "+strconv.Itoa(d.GameID)+":", err)
 			s.Error(initFail)

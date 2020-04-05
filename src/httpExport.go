@@ -110,7 +110,7 @@ func httpExport(c *gin.Context) {
 
 	// Get the actions from the database
 	var actions []*GameAction
-	if v, err := models.GameActions2.GetAll(gameID); err != nil {
+	if v, err := models.GameActions.GetAll(gameID); err != nil {
 		logger.Error("Failed to get the actions from the database "+
 			"for game "+strconv.Itoa(gameID)+":", err)
 		http.Error(
@@ -124,8 +124,10 @@ func httpExport(c *gin.Context) {
 	}
 
 	// Get the notes from the database
+	variant := variants[g.Options.Variant]
+	noteSize := variant.GetDeckSize() + len(variant.Suits)
 	var notes [][]string
-	if v, err := models.Games.GetNotes(gameID, len(playerNames), len(deck)); err != nil {
+	if v, err := models.Games.GetNotes(gameID, len(playerNames), noteSize); err != nil {
 		logger.Error("Failed to get the notes from the database "+
 			"for game "+strconv.Itoa(gameID)+":", err)
 		http.Error(
@@ -158,9 +160,8 @@ func httpExport(c *gin.Context) {
 	// so that they are not added to the JSON object)
 	optionsJSON := &OptionsJSON{}
 	allDefaultOptions := true
-	variant := variantsID[options.Variant]
-	if variant != "No Variant" {
-		optionsJSON.Variant = &variant
+	if options.Variant != 0 {
+		optionsJSON.Variant = &variant.Name
 		allDefaultOptions = false
 	}
 	if options.Timed {
