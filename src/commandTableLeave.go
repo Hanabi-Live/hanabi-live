@@ -45,6 +45,9 @@ func commandTableLeave(s *Session, d *CommandData) {
 	logger.Info(t.GetName() + "User \"" + s.Username() + "\" left. " +
 		"(There are now " + strconv.Itoa(len(t.Players)-1) + " players.)")
 
+	// If they were typing, remove the message
+	t.NotifyChatTyping(s.Username(), false)
+
 	// Remove the player
 	t.Players = append(t.Players[:i], t.Players[i+1:]...)
 	notifyAllTable(t)

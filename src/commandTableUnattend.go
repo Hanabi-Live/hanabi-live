@@ -1,5 +1,7 @@
 /*
 	Sent when the user clicks on the "Lobby" button while they are in the middle of a game
+	or in a a replay
+
 	"data" is empty
 */
 
@@ -44,6 +46,9 @@ func commandTableUnattend(s *Session, d *CommandData) {
 		s.Warning("You are not spectating replay " + strconv.Itoa(t.ID) + ".")
 		return
 	}
+
+	// If they were typing, remove the message
+	t.NotifyChatTyping(s.Username(), false)
 
 	if !t.Replay && i != -1 {
 		commandTableUnattendPlayer(s, t, i)

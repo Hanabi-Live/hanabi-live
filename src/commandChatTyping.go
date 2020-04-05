@@ -68,16 +68,27 @@ func commandChatTyping(s *Session, d *CommandData) {
 	}
 
 	// X seconds from now, check to see if they have stopped typing
-	go commandChatTypingCheckStopped(t, i, j)
+	go commandChatTypingCheckStopped(t, s.UserID())
 }
 
-func commandChatTypingCheckStopped(t *Table, i int, j int) {
+func commandChatTypingCheckStopped(t *Table, userID int) {
 	time.Sleep(typingDelay)
 	commandMutex.Lock()
 	defer commandMutex.Unlock()
 
 	// Check to see if the table still exists
 	if _, ok := tables[t.ID]; !ok {
+		return
+	}
+
+	// Validate that they are in the game or are a spectator
+	i := t.GetPlayerIndexFromID(userID)
+	j := t.GetSpectatorIndexFromID(userID)
+
+	if i == -1 && j == -1 {
+		// They left the game shortly after they started typing
+		// The "typing" message is automatically removed when a player leaves a table,
+		// so we don't have to do anything
 		return
 	}
 
