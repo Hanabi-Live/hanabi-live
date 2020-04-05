@@ -88,6 +88,9 @@ if (
     && process.platform !== 'win32'
     && process.platform !== 'darwin'
 ) {
+    if (typeof config.plugins === 'undefined') {
+        throw new Error('There are no existing plugins to append to.');
+    }
     config.plugins.push(
         // In order for Sentry to use the source maps, we must use their custom Webpack plugin
         // This also uploads the source files + source maps to Sentry
