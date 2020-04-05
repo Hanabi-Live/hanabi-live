@@ -1026,35 +1026,38 @@ const drawSharedReplay = () => {
             return;
         }
 
+        const spectatorMap: Map<number, string> = new Map();
+
         let msg = 'What is the number of the person that you want to pass the replay leader to?\n\n';
         let i = 1;
         for (const spectator of globals.spectators) {
-            if (spectator !== globals.lobby.username) {
-                msg += `${i} - ${spectator}\n`;
-                i += 1;
+            if (spectator === globals.lobby.username) {
+                continue;
             }
+
+            spectatorMap.set(i, spectator);
+            msg += `${i} - ${spectator}\n`;
+            i += 1;
         }
         const targetString = window.prompt(msg);
         if (targetString === null) {
             // Don't do anything if they pressed the cancel button
             return;
         }
-        let target = parseInt(targetString, 10);
+        const target = parseInt(targetString, 10);
         if (Number.isNaN(target)) {
             // Don't do anything if they entered something that is not a number
             return;
         }
-        target -= 1;
-        const name = globals.spectators[target];
-
-        // Only proceed if we chose someone else
-        if (name === globals.lobby.username) {
+        const selectedSpectator = spectatorMap.get(target);
+        if (typeof selectedSpectator === 'undefined') {
+            // Don't do anything if they entered an invalid spectator number
             return;
         }
 
         globals.lobby.conn.send('replayAction', {
             type: REPLAY_ACTION_TYPE.LEADER_TRANSFER,
-            name,
+            name: selectedSpectator,
         });
     });
 };

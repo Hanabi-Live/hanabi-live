@@ -111,6 +111,12 @@ func commandReplayAction(s *Session, d *CommandData) {
 			return
 		}
 
+		// Validate that they are not already the replay leader
+		if t.Owner == newLeaderID {
+			s.Error("You cannot pass leadership to yourself.")
+			return
+		}
+
 		// Mark them as the new replay leader
 		t.Owner = newLeaderID
 
