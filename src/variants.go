@@ -11,144 +11,10 @@ import (
 )
 
 var (
-	colors       map[string]*Color
-	suits        map[string]*Suit
 	variants     map[string]*Variant
 	variantsID   map[int]string
 	variantsList []string
 )
-
-type Color struct {
-	Name         string
-	Abbreviation string
-}
-
-func colorsInit() {
-	// Import the JSON file
-	filePath := path.Join(dataPath, "colors.json")
-	var contents []byte
-	if v, err := ioutil.ReadFile(filePath); err != nil {
-		logger.Fatal("Failed to read the \""+filePath+"\" file:", err)
-		return
-	} else {
-		contents = v
-	}
-	if err := json.Unmarshal(contents, &colors); err != nil {
-		logger.Fatal("Failed to convert the colors file to JSON:", err)
-		return
-	}
-
-	uniqueNameMap := make(map[string]bool)
-	for name, color := range colors {
-		// Validate that all of the names are unique
-		if _, ok := uniqueNameMap[name]; ok {
-			logger.Fatal("There are two colors with the name of \"" + name + "\".")
-			return
-		}
-		uniqueNameMap[name] = true
-
-		// Validate that there is an abbreviation
-		if color.Abbreviation == "" {
-			// Assume that it is the first letter of the color
-			color.Abbreviation = string([]rune(name)[0])
-		}
-	}
-}
-
-type Suit struct {
-	Name          string
-	ClueColors    []string `json:"clueColors"`
-	AllClueColors bool     `json:"allClueColors"`
-	ClueRanks     string   `json:"clueRanks"`
-	OneOfEach     bool     `json:"oneOfEach"`
-	Abbreviation  string   `json:"abbreviation"`
-}
-
-func suitsInit() {
-	// Import the JSON file
-	filePath := path.Join(dataPath, "suits.json")
-	var contents []byte
-	if v, err := ioutil.ReadFile(filePath); err != nil {
-		logger.Fatal("Failed to read the \""+filePath+"\" file:", err)
-		return
-	} else {
-		contents = v
-	}
-	if err := json.Unmarshal(contents, &suits); err != nil {
-		logger.Fatal("Failed to convert the suits file to JSON:", err)
-		return
-	}
-
-	// Handle suits that are touched by all color clues (1/2)
-	allClueColors := make([]string, 0)
-	for name := range colors {
-		allClueColors = append(allClueColors, name)
-	}
-
-	uniqueNameMap := make(map[string]bool)
-	for name, suit := range suits {
-		// Validate that all of the names are unique
-		if _, ok := uniqueNameMap[name]; ok {
-			logger.Fatal("There are two suits with the name of \"" + name + "\".")
-			return
-		}
-		uniqueNameMap[name] = true
-
-		// Validate the suit name
-		if suit.Name == "" {
-			// By default, use the name of the key
-			suit.Name = name
-		}
-
-		// Validate the clue colors (the colors that touch this suit)
-		if suit.AllClueColors {
-			// Handle suits that are touched by all color clues (2/2)
-			suit.ClueColors = allClueColors
-		} else if len(suit.ClueColors) > 1 {
-			for _, colorName := range suit.ClueColors {
-				if _, ok := colors[colorName]; !ok {
-					logger.Fatal("The suit of \"" + name + "\" has a clue color of " +
-						"\"" + colorName + "\", but that color does not exist.")
-				}
-			}
-		} else {
-			// By default, use the color of the same name
-			if _, ok := colors[name]; ok {
-				suit.ClueColors = []string{name}
-			}
-			// If the color of the same name does not exist,
-			// this must be a suit that is touched by no color clues
-		}
-
-		// Validate the clue ranks (the ranks that touch the suits)
-		if suit.ClueRanks != "" && suit.ClueRanks != "none" && suit.ClueRanks != "all" {
-			logger.Fatal("The suit of \"" + name + "\" has an invalid value for \"clueRanks\".")
-		}
-		if suit.ClueRanks == "" {
-			// Assume that the ranks work normally (e.g. a rank 1 clue touches a blue 1)
-			suit.ClueRanks = "normal"
-		}
-
-		// Validate that there is an abbreviation
-		if name != "Unknown" {
-			// By default, use the abbreviation of the color with the same name
-			if suit.Abbreviation == "" {
-				if len(suit.ClueColors) > 0 {
-					if color, ok := colors[suit.ClueColors[0]]; ok {
-						if color.Abbreviation != "" {
-							suit.Abbreviation = color.Abbreviation
-						}
-					}
-				}
-			}
-
-			// Otherwise, assume that it is the first letter of the suit
-			if suit.Abbreviation == "" {
-				suit.Abbreviation = string([]rune(name)[0])
-			}
-		}
-	}
-}
 
 type JSONVariant struct {
 	ID    int      `json:"id"`
@@ -229,6 +95,7 @@ func variantsInit() {
 		// Validate that there is at least one suit
 		if len(variant.Suits) < 1 {
 			logger.Fatal("The variant of \"" + name + "\" does not have at least one suit.")
+			return
 		}
 
 		// Validate that all of the suits exist and convert suit strings to objects
@@ -237,6 +104,7 @@ func variantsInit() {
 			if suit, ok := suits[suitName]; !ok {
 				logger.Fatal("The suit of \"" + suitName + "\" " +
 					"in variant \"" + name + "\" does not exist.")
+				return
 			} else {
 				variantSuits = append(variantSuits, suit)
 			}
@@ -275,6 +143,7 @@ func variantsInit() {
 				if _, ok := colors[colorName]; !ok {
 					logger.Fatal("The variant of \"" + name + "\" has a clue color of " +
 						"\"" + colorName + "\", but that color does not exist.")
+					return
 				}
 			}
 		}
@@ -337,33 +206,34 @@ func variantsInit() {
 // variantIsCardTouched returns true if a clue will touch a particular suit
 // For example, a yellow clue will not touch a green card in a normal game,
 // but it will the "Dual-Color" variant
-func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
+func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
+	variant := variants[variantName]
 	if clue.Type == clueTypeRank {
-		if variants[variant].RankCluesTouchNothing {
+		if variant.RankCluesTouchNothing {
 			return false
 		}
 
-		if variants[variant].Suits[card.Suit].ClueRanks == "all" {
+		if variant.Suits[card.Suit].AllClueRanks {
 			return true
 		}
-		if variants[variant].Suits[card.Suit].ClueRanks == "none" {
+		if variant.Suits[card.Suit].NoClueRanks {
 			return false
 		}
 
 		// Checking for "Pink-" also checks for "Light-Pink-"
-		if (strings.Contains(variant, "Pink-Ones") && card.Rank == 1) ||
-			(strings.Contains(variant, "Omni-Ones") && card.Rank == 1) ||
-			(strings.Contains(variant, "Pink-Fives") && card.Rank == 5) ||
-			(strings.Contains(variant, "Omni-Fives") && card.Rank == 5) {
+		if (strings.Contains(variantName, "Pink-Ones") && card.Rank == 1) ||
+			(strings.Contains(variantName, "Omni-Ones") && card.Rank == 1) ||
+			(strings.Contains(variantName, "Pink-Fives") && card.Rank == 5) ||
+			(strings.Contains(variantName, "Omni-Fives") && card.Rank == 5) {
 
 			return true
 		}
-		if (strings.Contains(variant, "Brown-Ones") && card.Rank == 1) ||
-			(strings.Contains(variant, "Null-Ones") && card.Rank == 1) ||
-			(strings.Contains(variant, "Muddy-Rainbow-Ones") && card.Rank == 1) ||
-			(strings.Contains(variant, "Brown-Fives") && card.Rank == 5) ||
-			(strings.Contains(variant, "Null-Fives") && card.Rank == 5) ||
-			(strings.Contains(variant, "Muddy-Rainbow-Fives") && card.Rank == 5) {
+		if (strings.Contains(variantName, "Brown-Ones") && card.Rank == 1) ||
+			(strings.Contains(variantName, "Null-Ones") && card.Rank == 1) ||
+			(strings.Contains(variantName, "Muddy-Rainbow-Ones") && card.Rank == 1) ||
+			(strings.Contains(variantName, "Brown-Fives") && card.Rank == 5) ||
+			(strings.Contains(variantName, "Null-Fives") && card.Rank == 5) ||
+			(strings.Contains(variantName, "Muddy-Rainbow-Fives") && card.Rank == 5) {
 
 			return false
 		}
@@ -372,31 +242,38 @@ func variantIsCardTouched(variant string, clue Clue, card *Card) bool {
 	}
 
 	if clue.Type == clueTypeColor {
-		if variants[variant].ColorCluesTouchNothing {
+		if variant.ColorCluesTouchNothing {
+			return false
+		}
+
+		if variant.Suits[card.Suit].AllClueColors {
+			return true
+		}
+		if variant.Suits[card.Suit].NoClueColors {
 			return false
 		}
 
 		// Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
-		if (strings.Contains(variant, "Rainbow-Ones") && card.Rank == 1) ||
-			(strings.Contains(variant, "Omni-Ones") && card.Rank == 1) ||
-			(strings.Contains(variant, "Rainbow-Fives") && card.Rank == 5) ||
-			(strings.Contains(variant, "Omni-Fives") && card.Rank == 5) {
+		if (strings.Contains(variantName, "Rainbow-Ones") && card.Rank == 1) ||
+			(strings.Contains(variantName, "Omni-Ones") && card.Rank == 1) ||
+			(strings.Contains(variantName, "Rainbow-Fives") && card.Rank == 5) ||
+			(strings.Contains(variantName, "Omni-Fives") && card.Rank == 5) {
 
 			return true
 		}
-		if (strings.Contains(variant, "White-Ones") && card.Rank == 1) ||
-			(strings.Contains(variant, "Null-Ones") && card.Rank == 1) ||
-			(strings.Contains(variant, "Light-Pink-Ones") && card.Rank == 1) ||
-			(strings.Contains(variant, "White-Fives") && card.Rank == 5) ||
-			(strings.Contains(variant, "Null-Fives") && card.Rank == 5) ||
-			(strings.Contains(variant, "Light-Pink-Fives") && card.Rank == 5) {
+		if (strings.Contains(variantName, "White-Ones") && card.Rank == 1) ||
+			(strings.Contains(variantName, "Null-Ones") && card.Rank == 1) ||
+			(strings.Contains(variantName, "Light-Pink-Ones") && card.Rank == 1) ||
+			(strings.Contains(variantName, "White-Fives") && card.Rank == 5) ||
+			(strings.Contains(variantName, "Null-Fives") && card.Rank == 5) ||
+			(strings.Contains(variantName, "Light-Pink-Fives") && card.Rank == 5) {
 
 			return false
 		}
 
-		color := variants[variant].ClueColors[clue.Value]
-		colors := variants[variant].Suits[card.Suit].ClueColors
-		return stringInSlice(color, colors)
+		clueColor := variant.ClueColors[clue.Value]
+		cardColors := variant.Suits[card.Suit].ClueColors
+		return stringInSlice(clueColor, cardColors)
 	}
 
 	return false

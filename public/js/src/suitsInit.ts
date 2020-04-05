@@ -4,15 +4,18 @@ import suitsJSON from './data/suits.json';
 import Suit from './Suit';
 
 type SuitJSON = {
+    name?: string,
     abbreviation?: string,
-    allClueColors?: boolean,
     clueColors?: string[],
-    clueRanks?: string,
     fill?: string,
     fillColors?: string[],
-    name?: string,
     oneOfEach?: boolean,
     pip: string,
+
+    allClueColors?: boolean,
+    allClueRanks?: boolean,
+    noClueColors?: boolean,
+    noClueRanks?: boolean,
 };
 type SuitEntryIterable = Iterable<[string, SuitJSON]>;
 
@@ -22,7 +25,7 @@ export default (COLORS: Map<string, Color>) => {
     for (const [suitName, suitJSON] of Object.entries(suitsJSON) as SuitEntryIterable) {
         // Validate the name
         // If it is not specified, assume that it is the same as the key
-        // (the name can be sometimes different from the key because
+        // (the name can sometimes be different from the key because
         // multiple suits share the same name for some specific variants)
         const name: string = suitJSON.name || suitName;
         if (name === '') {
@@ -35,7 +38,7 @@ export default (COLORS: Map<string, Color>) => {
         let abbreviation: string = suitJSON.abbreviation || '';
         if (abbreviation === '') {
             const color = COLORS.get(name);
-            if (color) {
+            if (typeof color !== 'undefined') {
                 abbreviation = color.abbreviation;
             } else {
                 abbreviation = name.charAt(0);
@@ -45,22 +48,32 @@ export default (COLORS: Map<string, Color>) => {
             throw new Error(`The "${suitName}" suit has an abbreviation with more than one letter.`);
         }
 
-        // Validate the "allClueColors" property (for suits that are clued by every color)
-        // If it is not specified, assume that it is false
+        // Validate the four clue properties
+        // If these are not specified, the suit functions normally
+        // (this has to be done before validating the clue colors)
         if (Object.hasOwnProperty.call(suitJSON, 'allClueColors') && suitJSON.allClueColors !== true) {
             throw new Error(`The "allClueColors" property for the suit "${suitName}" must be set to true.`);
         }
         const allClueColors: boolean = suitJSON.allClueColors || false;
+        if (Object.hasOwnProperty.call(suitJSON, 'allClueRanks') && suitJSON.allClueRanks !== true) {
+            throw new Error(`The "allClueRanks" property for the suit "${suitName}" must be set to true.`);
+        }
+        const allClueRanks: boolean = suitJSON.allClueRanks || false;
+        if (Object.hasOwnProperty.call(suitJSON, 'noClueColors') && suitJSON.noClueColors !== true) {
+            throw new Error(`The "noClueColors" property for the suit "${suitName}" must be set to true.`);
+        }
+        const noClueColors: boolean = suitJSON.noClueColors || false;
+        if (Object.hasOwnProperty.call(suitJSON, 'noClueRanks') && suitJSON.noClueRanks !== true) {
+            throw new Error(`The "noClueRanks" property for the suit "${suitName}" must be set to true.`);
+        }
+        const noClueRanks: boolean = suitJSON.noClueRanks || false;
 
         // Validate the clue colors (the colors that touch this suit)
         // If it is not specified, use the color of the same name
-        let clueColors: Array<Color> = [];
-        if (allClueColors) {
-            // As a special case, handle suits that are touched by all color clues
-            clueColors = [...COLORS.values()]; // Add all of the colors to the array
-        } else if (Object.hasOwnProperty.call(suitJSON, 'clueColors')) {
+        const clueColors: Array<Color> = [];
+        if (Object.hasOwnProperty.call(suitJSON, 'clueColors')) {
             if (!Array.isArray(suitJSON.clueColors)) {
-                throw new Error(`The clue colors for the suit "${suitName}" were not specified as an array.`);
+                throw new Error(`The clue colors for the suit "${suitName}" was not specified as an array.`);
             }
 
             // The clue colors are specified as an array of strings
@@ -71,30 +84,23 @@ export default (COLORS: Map<string, Color>) => {
                 }
 
                 const colorObject = COLORS.get(colorString);
-                if (colorObject) {
+                if (typeof colorObject !== 'undefined') {
                     clueColors.push(colorObject);
                 } else {
                     throw new Error(`The color "${colorString}" in the suit "${suitName}" does not exist.`);
                 }
             }
-        } else {
-            // The clue colors were not specified
+        } else if (!suitJSON.allClueColors && !suitJSON.noClueColors) {
+            // The clue colors were not specified; by default, use the color of the same name
             const color = COLORS.get(name);
-            if (color) {
+            if (typeof color !== 'undefined') {
                 clueColors.push(color);
-            } else if (name !== 'Unknown') { // The "Unknown" suit is not supposed to have clue colors
+            } else if (name !== 'Unknown') {
+                // The "Unknown" suit is not supposed to have clue colors
                 let msg = `Failed to find the clue colors for the "${suitName}" suit. `;
                 msg += `(There is no corresponding color named "${suitName}".)`;
                 throw new Error(msg);
             }
-        }
-
-        // Validate the clue ranks (the ranks that touch this suit)
-        // If it is not specified, assume that the ranks work normally
-        // (e.g. a rank 1 clue touches a blue 1)
-        const clueRanks: string = suitJSON.clueRanks || 'normal';
-        if (clueRanks === '') {
-            throw new Error(`The "clueRanks" property for the "${suitName}" suit is empty.`);
         }
 
         // Validate the fill
@@ -103,7 +109,7 @@ export default (COLORS: Map<string, Color>) => {
         let fill: string = suitJSON.fill || '';
         if (fill === '') {
             const color = COLORS.get(name);
-            if (color) {
+            if (typeof color !== 'undefined') {
                 fill = color.fill;
             } else if (clueColors.length > 0) {
                 fill = clueColors[0].fill;
@@ -141,13 +147,16 @@ export default (COLORS: Map<string, Color>) => {
         const suit: Suit = {
             name,
             abbreviation,
-            allClueColors,
             clueColors,
-            clueRanks,
             fill,
             fillColors,
             oneOfEach,
             pip,
+
+            allClueColors,
+            allClueRanks,
+            noClueColors,
+            noClueRanks,
         };
         SUITS.set(suitName, suit);
     }

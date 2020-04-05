@@ -15,17 +15,23 @@
         "fillColors": ["#ff0000", "#ffff00", "#02ec00", "#0037ff", "#8000ff"],
         "pip": "rainbow"
     },
-    "Pink": { "clueRanks": "all", "pip": "hashtag" },
-    "White": { "clueColors": [], "fill": "#d9d9d9", "pip": "moon" },
-    "Brown": { "clueRanks": "none", "pip": "kanji" },
+    "Pink": { "allClueRanks": true, "pip": "hashtag" },
+    "White": { "noClueColors": true, "fill": "#d9d9d9", "pip": "moon" },
+    "Brown": { "noClueRanks": true, "pip": "kanji" },
     "Omni": {
         "allClueColors": true,
-        "clueRanks": "all",
+        "allClueRanks": true,
         "fill": "multi",
         "fillColors": ["#ffffff", "#8000ff", "#0037ff", "#02ec00", "#ffff00", "#ff0000", "#ffffff"],
         "pip": "infinity"
     },
-    "Null": { "abbreviation": "U", "clueColors": [], "clueRanks": "none", "fill": "#ffffff", "pip": "empty_set" },
+    "Null": {
+        "abbreviation": "U",
+        "noClueColors": true,
+        "noClueRanks": true,
+        "fill": "#ffffff",
+        "pip": "empty_set"
+    },
     "Dark Rainbow": {
         "abbreviation": "M",
         "allClueColors": true,
@@ -37,21 +43,21 @@
     "Dark Pink": {
         "abbreviation": "I",
         "clueColors": ["Pink"],
-        "clueRanks": "all",
+        "allClueRanks": true,
         "fill": "#800040",
         "oneOfEach": true,
         "pip": "hashtag"
     },
     "Gray": {
         "abbreviation": "A",
-        "clueColors": [],
+        "noClueColors": true,
         "fill": "#555555",
         "oneOfEach": true,
         "pip": "moon"
     },
     "Dark Brown": {
         "clueColors": ["Brown"],
-        "clueRanks": "none",
+        "noClueRanks": true,
         "fill": "#271a0c",
         "oneOfEach": true,
         "pip": "kanji"
@@ -59,7 +65,7 @@
     "Dark Omni": {
         "abbreviation": "O",
         "allClueColors": true,
-        "clueRanks": "all",
+        "allClueRanks": true,
         "fill": "multi",
         "fillColors": ["#000000", "#5000a0", "#0000a0", "#00a000", "#a0a000", "#a00000", "#000000"],
         "oneOfEach": true,
@@ -67,8 +73,8 @@
     },
     "Dark Null": {
         "abbreviation": "U",
-        "clueColors": [],
-        "clueRanks": "none",
+        "noClueColors": true,
+        "noClueRanks": true,
         "fill": "#a6a6a6",
         "oneOfEach": true,
         "pip": "empty_set"
@@ -76,22 +82,22 @@
     "Muddy Rainbow": {
         "abbreviation": "M",
         "allClueColors": true,
-        "clueRanks": "none",
+        "noClueRanks": true,
         "fill": "multi",
         "fillColors": ["#bb4321", "#bb8021", "#808000", "#8080ff", "#500030"],
         "pip": "rainbow"
     },
     "Light Pink": {
         "abbreviation": "I",
-        "clueColors": [],
-        "clueRanks": "all",
+        "noClueColors": true,
+        "allClueRanks": true,
         "fill": "#ffbbdd",
         "pip": "hashtag"
      },
      "Cocoa Rainbow": {
         "abbreviation": "M",
         "allClueColors": true,
-        "clueRanks": "none",
+        "noClueRanks": true,
         "fill": "multi",
         "fillColors": ["#662211", "#664011", "#404000", "#404080", "#280018"],
         "oneOfEach": true,
@@ -99,8 +105,8 @@
     },
     "Gray Pink": {
         "abbreviation": "I",
-        "clueColors": [],
-        "clueRanks": "all",
+        "noClueColors": true,
+        "allClueRanks": true,
         "fill": "#b05080",
         "oneOfEach": true,
         "pip": "hashtag"

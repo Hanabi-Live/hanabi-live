@@ -385,12 +385,12 @@ export default class HanabiCard extends Konva.Group {
             if (globals.variant.rankCluesTouchNothing) {
                 // Some variants have rank clues touch no cards
                 // If this is the case, we cannot remove any rank pips from the card
-            } else if (this.possibleSuits.some((suit) => suit.clueRanks === 'none') && !positive) {
-                // Some suits are not touched by any ranks,
-                // so if this is a negative rank clue, we cannot remove any rank pips from the card
-            } else if (this.possibleSuits.some((suit) => suit.clueRanks === 'all') && positive) {
+            } else if (this.possibleSuits.some((suit) => suit.allClueRanks) && positive) {
                 // Some cards are touched by all ranks,
                 // so if this is a positive rank clue, we cannot remove any rank pips from the card
+            } else if (this.possibleSuits.some((suit) => suit.noClueRanks) && !positive) {
+                // Some suits are not touched by any ranks,
+                // so if this is a negative rank clue, we cannot remove any rank pips from the card
             } else if (
                 (
                     // Checking for "Pink-" also checks for "Light-Pink-"
@@ -450,39 +450,43 @@ export default class HanabiCard extends Konva.Group {
 
             // Some suits are touched by all rank clues
             // Some suits are not touched by any rank clues
-            // So we may be able to remove a suit pip or a card possibility
+            // So we may be able to remove a suit pip
             if (positive) {
                 suitsRemoved = filterInPlace(
                     this.possibleSuits,
-                    (suit: Suit) => suit.clueRanks !== 'none',
+                    (suit: Suit) => !suit.noClueRanks,
                 );
+            } else {
+                suitsRemoved = filterInPlace(
+                    this.possibleSuits,
+                    (suit: Suit) => !suit.allClueRanks,
+                );
+            }
 
-                // Also handle the special case where two positive rank clues
-                // should "fill in" a card of a multi-rank suit
-                if (
-                    this.positiveRankClues.length >= 2
-                    && !(globals.variant.name.includes('Pink-Ones') && this.possibleRanks.includes(1))
-                    && !(globals.variant.name.includes('Omni-Ones') && this.possibleRanks.includes(1))
-                    && !(globals.variant.name.includes('Pink-Fives') && this.possibleRanks.includes(5))
-                    && !(globals.variant.name.includes('Omni-Fives') && this.possibleRanks.includes(5))
-                ) {
-                    suitsRemoved = filterInPlace(
-                        this.possibleSuits,
-                        (suit: Suit) => suit.clueRanks === 'all',
-                    );
-                }
+            // Also handle the special case where two positive rank clues should
+            // "fill in" a card of a multi-rank suit
+            if (
+                positive
+                && this.positiveRankClues.length >= 2
+                && !(globals.variant.name.includes('Pink-Ones') && this.possibleRanks.includes(1))
+                && !(globals.variant.name.includes('Omni-Ones') && this.possibleRanks.includes(1))
+                && !(globals.variant.name.includes('Pink-Fives') && this.possibleRanks.includes(5))
+                && !(globals.variant.name.includes('Omni-Fives') && this.possibleRanks.includes(5))
+            ) {
+                const moreSuitsRemoved = filterInPlace(
+                    this.possibleSuits,
+                    (suit: Suit) => suit.allClueRanks,
+                );
+                suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
+            }
 
-                // If the rank of the card is not known yet,
-                // change the rank pip that corresponds with this number to signify a positive clue
+            // If the rank of the card is not known yet,
+            // change the rank pip that corresponds with this number to signify a positive clue
+            if (positive) {
                 const pip = this.rankPipsMap.get(clueRank)!;
                 if (pip.visible()) {
                     pip.showPositiveClue();
                 }
-            } else {
-                suitsRemoved = filterInPlace(
-                    this.possibleSuits,
-                    (suit: Suit) => suit.clueRanks !== 'all',
-                );
             }
         } else if (clue.type === CLUE_TYPE.COLOR) {
             const clueColor = clue.value as Color;
@@ -521,7 +525,10 @@ export default class HanabiCard extends Konva.Group {
                 // Remove all possibilities that do not include this color
                 suitsRemoved = filterInPlace(
                     this.possibleSuits,
-                    (suit: Suit) => suit.clueColors.includes(clueColor) === positive,
+                    (suit: Suit) => (
+                        suit.clueColors.includes(clueColor)
+                        || suit.allClueColors
+                    ) === positive,
                 );
             }
 
@@ -658,7 +665,7 @@ export default class HanabiCard extends Konva.Group {
                 }
             }
 
-            if (suit.clueRanks !== 'normal') {
+            if (suit.allClueRanks || suit.noClueRanks) {
                 // Mark to retroactively apply rank clues when we return from this function
                 this.reapplyRankClues = true;
             }
@@ -1215,6 +1222,7 @@ export default class HanabiCard extends Konva.Group {
     Misc. functions
 */
 
+// Remove everything from the array that does not match the condition in the function
 const filterInPlace = (values: Array<any>, predicate: (value: any) => boolean) => {
     const removed = [];
     let i = values.length - 1;

@@ -119,10 +119,9 @@ func main() {
 		return
 	}
 
-	// Initialize the variants (in "variants.go")
-	colorsInit()
-	suitsInit()
-	variantsInit()
+	colorsInit()   // (in "colors.go")
+	suitsInit()    // (in "suits.go")
+	variantsInit() // (in "variants.go")
 
 	// Initialize "Detrimental Character Assignments" (in "characters.go")
 	characterInit()

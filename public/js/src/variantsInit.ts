@@ -54,7 +54,7 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
             }
 
             const suitObject = SUITS.get(suitString);
-            if (suitObject) {
+            if (typeof suitObject !== 'undefined') {
                 suits.push(suitObject);
             } else {
                 throw new Error(`The suit "${suitString}" in the variant "${name}" does not exist.`);
@@ -84,7 +84,7 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
                 }
 
                 const colorObject = COLORS.get(colorString);
-                if (colorObject) {
+                if (typeof colorObject !== 'undefined') {
                     clueColors.push(colorObject);
                 } else {
                     throw new Error(`The color "${colorString}" in the variant "${name}" does not exist.`);

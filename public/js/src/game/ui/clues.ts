@@ -91,15 +91,20 @@ export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
 
 // This mirrors the function in "variants.go"
 const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
+    // Some detrimental characters are not able to see other people's hands
+    if (card.suit === null) {
+        return false;
+    }
+
     if (clue.type === CLUE_TYPE.RANK) {
         if (globals.variant.rankCluesTouchNothing) {
             return false;
         }
 
-        if (card.suit!.clueRanks === 'all') {
+        if (card.suit.allClueRanks) {
             return true;
         }
-        if (card.suit!.clueRanks === 'none') {
+        if (card.suit.noClueRanks) {
             return false;
         }
 
@@ -127,12 +132,14 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
     }
 
     if (clue.type === CLUE_TYPE.COLOR) {
-        // Some detrimental characters are not able to see other people's hands
-        if (card.suit === null) {
+        if (globals.variant.colorCluesTouchNothing) {
             return false;
         }
 
-        if (globals.variant.colorCluesTouchNothing) {
+        if (card.suit.allClueColors) {
+            return true;
+        }
+        if (card.suit.noClueColors) {
             return false;
         }
 
@@ -156,7 +163,7 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
             return false;
         }
 
-        return card.suit!.clueColors.includes(clue.value as Color);
+        return card.suit.clueColors.includes(clue.value as Color);
     }
 
     return false;
