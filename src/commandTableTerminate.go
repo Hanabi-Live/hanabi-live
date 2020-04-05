@@ -33,6 +33,12 @@ func commandTableTerminate(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that the game has started
+	if !t.Running {
+		s.Warning("You can not terminate a game that has not started yet.")
+		return
+	}
+
 	// Validate that it is not a replay
 	if t.Replay {
 		s.Warning("You can not terminate a replay.")
@@ -42,14 +48,6 @@ func commandTableTerminate(s *Session, d *CommandData) {
 	/*
 		Terminate
 	*/
-
-	if !t.Running {
-		// Just make them leave the game instead
-		s.Set("currentTable", t.ID)
-		s.Set("status", statusPregame)
-		commandTableLeave(s, d)
-		return
-	}
 
 	// We want to set the end condition before advancing the turn to ensure that
 	// no active player will show

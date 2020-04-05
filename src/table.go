@@ -117,7 +117,14 @@ func (t *Table) CheckIdle() {
 
 	// Boot all of the spectators, if any
 	for len(t.Spectators) > 0 {
-		s := t.Spectators[0].Session
+		sp := t.Spectators[0]
+		s := sp.Session
+		if s == nil {
+			// A spectator's session should never be nil
+			// They might be in the process of reconnecting,
+			// so make a fake session that will represent them
+			s = newFakeSession(sp.ID, sp.Name, t.ID)
+		}
 		s.Set("currentTable", t.ID)
 		s.Set("status", statusSpectating)
 		commandTableUnattend(s, nil)
@@ -129,11 +136,17 @@ func (t *Table) CheckIdle() {
 		return
 	}
 
-	// Make a fake session that represents the owner
+	// Get the session of the owner
 	var s *Session
 	for _, p := range t.Players {
 		if p.ID == t.Owner {
-			s = newFakeSession(p.ID, p.Name, t.ID)
+			s = p.Session
+			if s == nil {
+				// A player's session should never be nil
+				// They might be in the process of reconnecting,
+				// so make a fake session that will represent them
+				s = newFakeSession(p.ID, p.Name, t.ID)
+			}
 			break
 		}
 	}

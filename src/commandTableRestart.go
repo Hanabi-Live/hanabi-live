@@ -50,6 +50,13 @@ func commandTableRestart(s *Session, d *CommandData) {
 	playerSessions := make([]*Session, 0)
 	spectatorSessions := make([]*Session, 0)
 	for _, sp := range t.Spectators {
+		if sp.Session == nil {
+			// A spectator's session should never be nil
+			// Assume that someone is in the process of reconnecting
+			s.Warning("One of the spectators is currently reconnecting. " +
+				"Please try restarting again in a few seconds.")
+			return
+		}
 		playedInOriginalGame := false
 		for _, p := range t.Players {
 			if p.Name == sp.Name {

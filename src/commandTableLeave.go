@@ -48,6 +48,13 @@ func commandTableLeave(s *Session, d *CommandData) {
 	// If they were typing, remove the message
 	t.NotifyChatTyping(s.Username(), false)
 
+	// If there is an automatic start countdown, cancel it
+	if !t.DatetimePlannedStart.IsZero() {
+		t.DatetimePlannedStart = time.Time{} // Assign a zero value
+		room := "table" + strconv.Itoa(t.ID)
+		chatServerSend("Automatic game start has been canceled.", room)
+	}
+
 	// Remove the player
 	t.Players = append(t.Players[:i], t.Players[i+1:]...)
 	notifyAllTable(t)
@@ -65,7 +72,15 @@ func commandTableLeave(s *Session, d *CommandData) {
 	if s.UserID() == t.Owner && len(t.Players) > 0 {
 		for len(t.Players) > 0 {
 			p := t.Players[0]
-			p.Session.Set("currentTable", t.ID)
+			s2 := p.Session
+			if s2 == nil {
+				// A player's session should never be nil
+				// They might be in the process of reconnecting,
+				// so make a fake session that will represent them
+				s2 = newFakeSession(p.ID, p.Name, t.ID)
+			}
+			s2.Set("currentTable", t.ID)
+			s2.Set("status", statusPregame)
 			commandTableLeave(p.Session, d)
 		}
 		return
@@ -76,12 +91,5 @@ func commandTableLeave(s *Session, d *CommandData) {
 		delete(tables, tableID)
 		notifyAllTableGone(t)
 		return
-	}
-
-	// If there is an automatic start countdown, cancel it
-	if !t.DatetimePlannedStart.IsZero() {
-		t.DatetimePlannedStart = time.Time{} // Assign a zero value
-		room := "table" + strconv.Itoa(t.ID)
-		chatServerSend("Automatic game start has been canceled.", room)
 	}
 }

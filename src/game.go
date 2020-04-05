@@ -104,12 +104,12 @@ func NewGame(t *Table) *Game {
 */
 
 // CheckTimer is meant to be called in a new goroutine
-func (g *Game) CheckTimer(turn int, pauseCount int, p *GamePlayer) {
+func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 	// Local variables
 	t := g.Table
 
 	// Sleep until the active player runs out of time
-	time.Sleep(p.Time)
+	time.Sleep(gp.Time)
 	commandMutex.Lock()
 	defer commandMutex.Unlock()
 
@@ -133,14 +133,23 @@ func (g *Game) CheckTimer(turn int, pauseCount int, p *GamePlayer) {
 		return
 	}
 
-	p.Time = 0
-	logger.Info(t.GetName() + "Time ran out for \"" + p.Name + "\".")
+	gp.Time = 0
+	logger.Info(t.GetName() + "Time ran out for \"" + gp.Name + "\".")
+
+	// Get the session of this player
+	p := t.Players[gp.Index]
+	s := p.Session
+	if s == nil {
+		// A player's session should never be nil
+		// They might be in the process of reconnecting,
+		// so make a fake session that will represent them
+		s = newFakeSession(p.ID, p.Name, t.ID)
+	}
 
 	// End the game
-	ps := t.Players[p.Index].Session
-	ps.Set("currentTable", t.ID)
-	ps.Set("status", statusPlaying)
-	commandAction(ps, &CommandData{
+	s.Set("currentTable", t.ID)
+	s.Set("status", statusPlaying)
+	commandAction(s, &CommandData{
 		Type: actionTypeTimeLimitReached,
 	})
 }

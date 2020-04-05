@@ -93,7 +93,7 @@ if (
     }
     config.plugins.push(
         // In order for Sentry to use the source maps, we must use their custom Webpack plugin
-        // This also uploads the source files + source maps to Sentry
+        // This also uploads the packed file + source maps to Sentry
         // https://docs.sentry.io/platforms/javascript/sourcemaps/
         // (we don't want to upload anything in a development or testing environment)
         new SentryWebpackPlugin({
