@@ -1390,14 +1390,9 @@ const drawClueArea = () => {
         width: clueAreaValues.w! * winW,
     });
 
-    (globals.elements.clueArea as any).moveLeft = () => {
-        const x = (playAreaValues.x - 0.055) * winW;
-        globals.elements.clueArea!.x(x);
-    };
-
     // Player buttons
     const numPlayers = globals.playerNames.length;
-    const playerButtonW = 0.08;
+    let playerButtonW = 0.08;
     const playerButtonH = 0.025;
     const playerButtonSpacing = 0.0075;
 
@@ -1409,6 +1404,9 @@ const drawClueArea = () => {
     globals.elements.clueTargetButtonGroup = new ButtonGroup({});
     {
         const totalPlayerButtons = numPlayers - 1;
+        if (totalPlayerButtons >= 5) {
+            playerButtonW -= 0.01;
+        }
         let totalPlayerWidth = playerButtonW * totalPlayerButtons;
         totalPlayerWidth += playerButtonSpacing * (totalPlayerButtons - 1);
         let playerX = (clueAreaValues.w! * 0.5) - (totalPlayerWidth * 0.5);
@@ -1437,6 +1435,9 @@ const drawClueArea = () => {
     globals.elements.clueTargetButtonGroup2 = new ButtonGroup({});
     {
         const totalPlayerButtons = numPlayers;
+        if (totalPlayerButtons >= 5) {
+            playerButtonW -= 0.01;
+        }
         let totalPlayerWidth = playerButtonW * totalPlayerButtons;
         totalPlayerWidth += playerButtonSpacing * (totalPlayerButtons - 1);
         let playerX = (clueAreaValues.w! * 0.5) - (totalPlayerWidth * 0.5);
@@ -1692,9 +1693,17 @@ const drawHypotheticalArea = () => {
     globals.elements.hypoCircle.add(text);
 
     // The "Back 1 Turn" button
+    const hypoBackButtonValues = {
+        x: spectatorsLabelValues.x + 0.04,
+        y: bottomLeftButtonValues.y + bottomLeftButtonValues.h! + 0.01, // Same as the "Chat" button
+    };
+    if (globals.lobby.settings.keldonMode) {
+        hypoBackButtonValues.x = clueAreaValues.x + 0.38;
+        hypoBackButtonValues.y = clueAreaValues.y + 0.08;
+    }
     globals.elements.hypoBackButton = new Button({
-        x: (clueAreaValues.x + 0.32) * winW,
-        y: (clueAreaValues.y + 0.08) * winH,
+        x: hypoBackButtonValues.x * winW,
+        y: hypoBackButtonValues.y * winH,
         width: 0.07 * winW,
         height: 0.0563 * winH,
         text: 'Back 1',

@@ -42,7 +42,6 @@ export const show = () => {
     globals.elements.replayArea!.visible(false);
 
     // Modify the clue UI
-    (globals.elements.clueArea as any).moveLeft();
     if (globals.playerNames.length !== 2) {
         globals.elements.clueTargetButtonGroup!.hide();
         globals.elements.clueTargetButtonGroup2!.show();
