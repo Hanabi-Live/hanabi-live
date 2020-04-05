@@ -132,7 +132,7 @@
 
 #### 6-Player Games
 
-Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to do.
+* Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to do.
 
 <br />
 
