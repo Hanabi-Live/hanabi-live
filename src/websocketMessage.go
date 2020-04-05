@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"strconv"
 	"strings"
 
 	sentry "github.com/getsentry/sentry-go"
@@ -28,8 +29,8 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 
 	if usingSentry {
 		sentry.ConfigureScope(func(scope *sentry.Scope) {
-			scope.SetExtra("userID", s.UserID())
-			scope.SetExtra("username", s.Username())
+			scope.SetTag("userID", strconv.Itoa(s.UserID()))
+			scope.SetTag("username", s.Username())
 		})
 	}
 
