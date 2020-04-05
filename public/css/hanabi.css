@@ -74,9 +74,9 @@ a {
     color: blue;
 }
 
-.name-us {
+.name-me {
     text-decoration: underline;
-    color: #8000ff;
+    color: #e69500;
 }
 
 /* Make the lobby width be 80% on big resolutions and 100% on smaller resolutions */

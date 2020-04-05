@@ -42,7 +42,7 @@ export const draw = () => {
         let nameColumn = `<span id="online-users-${id}">`;
         nameColumn += `<a href="/scores/${username}" target="_blank" rel="noopener noreferrer">`;
         if (username === globals.username) {
-            nameColumn += `<strong><span class="name-us">${username}</span></strong>`;
+            nameColumn += `<strong><span class="name-me">${username}</span></strong>`;
         } else {
             nameColumn += username;
         }
