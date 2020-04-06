@@ -102,7 +102,8 @@ CREATE TABLE games (
     seed                   VARCHAR(50)  NOT NULL, /* e.g. "p2v0s1" */
     score                  TINYINT      NOT NULL,
     num_turns              SMALLINT     NOT NULL,
-    end_condition          TINYINT      NOT NULL, /* See "endConditionX" in "constants.go" */
+    /* See the "endCondition" values in "constants.go" */
+    end_condition          TINYINT      NOT NULL,
     datetime_created       TIMESTAMP    NOT NULL,
     datetime_started       TIMESTAMP    NOT NULL,
     datetime_finished      TIMESTAMP    NOT NULL,
@@ -150,7 +151,7 @@ CREATE TABLE game_actions (
        https://dev.mysql.com/doc/refman/8.0/en/data-size.html
        If a color clue, then 0 if red, 1 if yellow, etc.
        If a rank clue, then 1 if 1, 2 if 2, etc.
-       If a terminate, then 0 if a timed timeout, 1 if a manual termination 2 if an idle timeout */
+       If a game over, then the value corresponds to the "endCondition" values in "constants.go" */
     value    TINYINT  NOT NULL,
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
     PRIMARY KEY (game_id, turn)
