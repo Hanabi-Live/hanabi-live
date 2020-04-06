@@ -192,6 +192,21 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 
 <br />
 
+#### Set up iptables (optional)
+
+* `sudo apt install iptables-persistent -y`
+* `sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT`
+* `sudo iptables -A INPUT -p tcp --dport ssh -j ACCEPT`
+* `sudo iptables -A INPUT -p tcp --dport http -j ACCEPT`
+* `sudo iptables -A INPUT -p tcp --dport https -j ACCEPT`
+* `sudo iptables -A INPUT -p tcp --dport 8080 -j ACCEPT`
+* `sudo iptables -A INPUT -p tcp --dport 3306 -s localhost -j ACCEPT`
+* `sudo iptables -A INPUT -p tcp --dport 8081 -s localhost -j ACCEPT`
+* `sudo iptables -A INPUT -j DROP`
+* `sudo iptables-save > /etc/iptables/rules.v4`
+
+<br />
+
 #### Set up Automated Database Backups (optional)
 
 * `crontab -e`
