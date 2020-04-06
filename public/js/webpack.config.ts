@@ -1,7 +1,8 @@
-import SentryWebpackPlugin from '@sentry/webpack-plugin';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as webpack from 'webpack';
+import SentryWebpackPlugin from '@sentry/webpack-plugin';
+import * as dotenv from 'dotenv';
 
 // Constants
 const epoch = new Date().getTime();
@@ -89,7 +90,8 @@ const config: webpack.Configuration = {
 };
 
 if (
-    process.env.TRAVIS !== 'true'
+    process.env.SENTRY_DSN !== ''
+    && process.env.TRAVIS !== 'true'
     && process.platform !== 'win32'
     && process.platform !== 'darwin'
 ) {
