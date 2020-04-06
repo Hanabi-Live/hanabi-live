@@ -14,7 +14,7 @@ fi
 
 # Build the Golang files, which will automatically install the Golang dependencies
 cd "$DIR/../src"
-go build # This will discard the results by defualt
+go build -o "$DIR/$REPO"
 
 # Install the JavaScript/TypeScript dependencies
 cd "$DIR/../public/js"
