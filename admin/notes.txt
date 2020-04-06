@@ -1,1 +1,1 @@
-The scripts in this directory send messages to the localhost-only HTTP server. See "httpLocalhost.go".
+The scripts in this directory send messages to the localhost-only HTTP server. See "src/httpLocalhost.go".
