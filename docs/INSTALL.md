@@ -246,7 +246,6 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 * Install Supervisor:
   * `sudo apt install supervisor -y`
 * Copy the configuration files:
-  * `mkdir -p "/etc/supervisor/conf.d"`
   * `cp "/root/hanabi-live/install/supervisor/supervisord.conf" "/etc/supervisor/supervisord.conf"`
   * `cp "/root/hanabi-live/install/supervisor/hanabi-live.conf" "/etc/supervisor/conf.d/hanabi-live.conf"`
 * Load the new configuration:
