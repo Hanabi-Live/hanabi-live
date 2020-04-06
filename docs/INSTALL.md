@@ -162,6 +162,14 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `sudo apt install mariadb-server -y`
   * `sudo mysql_secure_installation`
     * Follow the prompts.
+* Install [nvm](https://github.com/nvm-sh/nvm) and [Node.js](https://nodejs.org/en/):
+  * `apt install curl -y`
+  * `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash`
+  * `export NVM_DIR="$HOME/.nvm"`
+  * `[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"`
+  * `[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"`
+  * `nvm install node` <br />
+  (this installs the latest version)
 * Clone the server:
   * `apt install git -y`
   * `git clone git@github.com:Zamiell/hanabi-live.git` <br />
