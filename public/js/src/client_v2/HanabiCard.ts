@@ -1,7 +1,5 @@
-/*
-    The HanabiCard object, which represents a single card
-    TODO this object has to be re-copied over due to lots of new changes in the Konva UI
-*/
+// The HanabiCard object, which represents a single card
+// TODO this object has to be re-copied over due to lots of new changes in the Konva UI
 
 // Imports
 import Phaser from 'phaser';
@@ -55,9 +53,6 @@ export default class HanabiCard extends Phaser.GameObjects.Container {
     this.add(image);
   }
 
-  /*
-        Some short helper methods
-    */
   getImage() {
     this.setCardImageName();
 
@@ -92,10 +87,6 @@ export default class HanabiCard extends Phaser.GameObjects.Container {
   isClued() {
     return this.numPositiveClues > 0;
   }
-
-  /*
-        Major card methods
-    */
 
   setCardImageName() {
     const learnedCard = globals.state.learnedCards[this.order];

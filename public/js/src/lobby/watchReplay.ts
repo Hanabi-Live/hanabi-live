@@ -1,6 +1,4 @@
-/*
-    The "Watch Specific Replay" nav button
-*/
+// The "Watch Specific Replay" nav button
 
 // Imports
 import globals from '../globals';

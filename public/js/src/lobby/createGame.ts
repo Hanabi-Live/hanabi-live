@@ -1,6 +1,4 @@
-/*
-    The "Create Game" nav button
-*/
+// The "Create Game" nav button
 
 // Imports
 import shajs from 'sha.js';
@@ -100,17 +98,16 @@ export const init = () => {
   $('#create-game-submit').on('click', submit);
 };
 
-/*
-    In the create game tooltip, the user can select a variant in a dropdown that contains all 1000+
-    variants. Unfortunately, having so many div elements causes the DOM to lag every time the
-    tooltip is opened. Thus, by default we show a variant dropdown with the basic variants in it. We
-    only populate + show the "full" variant dropdown if they select "Load custom variants..." from
-    the basic dropdown.
-
-    "createTableVariant" is a hidden element that contains the value of the chosen element
-    "create-game-variant-dropdown1" contains the the basic variants
-    "create-game-variant-dropdown2" is the full (Slim Select) dropdown
-*/
+// In the create game tooltip,
+// the user can select a variant in a dropdown that contains all 1000+ variants
+// Unfortunately, having so many div elements causes the DOM to lag every time the tooltip is opened
+// Thus, by default we show a variant dropdown with the basic variants in it
+// We only populate + show the "full" variant dropdown if they select "Load custom variants..." from
+// the basic dropdown
+//
+// "createTableVariant" is a hidden element that contains the value of the chosen element
+// "create-game-variant-dropdown1" contains the the basic variants
+// "create-game-variant-dropdown2" is the full (Slim Select) dropdown
 const firstVariantDropdownInit = () => {
   // Initialize the 1st variant dropdown with the basic variants
   for (const variant of basicVariants) {

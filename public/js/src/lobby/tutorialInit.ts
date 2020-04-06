@@ -1,10 +1,8 @@
-/*
-    A short tutorial is shown to brand-new users
-*/
+// A short tutorial is shown to brand-new users
 
 // Imports
 import { FADE_TIME } from '../constants';
-import * as loginMisc from './loginMisc';
+import * as login from './login';
 
 export default () => {
   $('#tutorial-yes').on('click', () => {
@@ -14,7 +12,7 @@ export default () => {
   });
   $('#tutorial-no').on('click', () => {
     $('#tutorial').fadeOut(FADE_TIME, () => {
-      loginMisc.hide(false);
+      login.hide(false);
     });
   });
 
@@ -70,7 +68,7 @@ export default () => {
 
   $('#tutorial-4-1-lobby').on('click', () => {
     $('#tutorial-4-1').fadeOut(FADE_TIME, () => {
-      loginMisc.hide(false);
+      login.hide(false);
     });
   });
 
@@ -81,7 +79,7 @@ export default () => {
   });
   $('#tutorial-4-2-lobby').on('click', () => {
     $('#tutorial-4-2').fadeOut(FADE_TIME, () => {
-      loginMisc.hide(false);
+      login.hide(false);
     });
   });
 
@@ -99,7 +97,7 @@ export default () => {
 
   $('#tutorial-5-lobby').on('click', () => {
     $('#tutorial-5').fadeOut(FADE_TIME, () => {
-      loginMisc.hide(false);
+      login.hide(false);
     });
   });
 };

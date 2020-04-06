@@ -1,6 +1,4 @@
-/*
-    Functions for handling all of the keyboard shortcuts
-*/
+// Functions for handling all of the keyboard shortcuts
 
 // Imports
 import { ACTION, REPLAY_ACTION_TYPE, MAX_CLUE_NUM } from '../../constants';
@@ -18,11 +16,8 @@ const hotkeyClueMap = new Map();
 const hotkeyPlayMap = new Map();
 const hotkeyDiscardMap = new Map();
 
+// Build a mapping of hotkeys to functions
 export const init = () => {
-  /*
-        Build a mapping of hotkeys to functions
-    */
-
   hotkeyClueMap.clear();
   hotkeyPlayMap.clear();
   hotkeyDiscardMap.clear();
@@ -251,13 +246,10 @@ const sharedReplaySendSound = (sound: string) => {
   });
 };
 
-/*
-    Helper functions
-*/
-
 const play = () => {
   performAction(true);
 };
+
 const discard = () => {
   performAction(false);
 };

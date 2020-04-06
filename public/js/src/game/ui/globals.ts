@@ -1,7 +1,5 @@
-/*
-    This object contains global variables for the game UI
-    Every class variable must also be reset in the "reset()" function
-*/
+// This object contains global variables for the game UI
+// Every class variable must also be reset in the "reset()" function
 
 // Imports
 import Konva from 'konva';

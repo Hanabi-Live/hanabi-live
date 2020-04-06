@@ -1,6 +1,4 @@
-/*
-    WebSocket command handlers for in-game events
-*/
+// WebSocket command handlers for in-game events
 
 // Imports
 import * as gameMain from '../game/main';

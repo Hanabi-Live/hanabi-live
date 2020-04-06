@@ -38,10 +38,7 @@ export default class CurrentPlayerArea extends Konva.Group {
 
     this.values = values;
 
-    /*
-            The left-most box that contains the name of the current player
-        */
-
+    // The left-most box that contains the name of the current player
     let box1Width = (values.w * 0.75);
     box1Width -= values.spacing;
     this.rect1 = new Konva.Rect({
@@ -116,10 +113,7 @@ export default class CurrentPlayerArea extends Konva.Group {
     });
     this.add(this.text3);
 
-    /*
-            The right-most box that contains the arrow
-        */
-
+    // The right-most box that contains the arrow
     const arrowValues = {
       x: (values.w * 0.75) + values.spacing,
       w: (values.w * 0.25) - values.spacing,

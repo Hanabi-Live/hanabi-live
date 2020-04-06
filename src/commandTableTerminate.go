@@ -1,14 +1,13 @@
-/*
-	Sent when the user clicks the "X" button in the bottom-left-hand corner
-	"data" is empty
-*/
-
 package main
 
 import (
 	"strconv"
 )
 
+// commandTableTerminate is sent when the user clicks the terminate button in the bottom-left-hand
+// corner
+//
+// Has no data
 func commandTableTerminate(s *Session, d *CommandData) {
 	/*
 		Validate

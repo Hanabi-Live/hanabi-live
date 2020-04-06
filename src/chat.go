@@ -1,3 +1,5 @@
+// Chat-related subroutines
+
 package main
 
 import (
@@ -18,10 +20,6 @@ var (
 	mentionRegExp = regexp.MustCompile(`&lt;@!*(\d+?)&gt;`)
 	channelRegExp = regexp.MustCompile(`&lt;#(\d+?)&gt;`)
 )
-
-/*
-	Chat-related subroutines
-*/
 
 type ChatMessage struct {
 	Msg       string    `json:"msg"`
@@ -71,19 +69,16 @@ func chatServerSendAll(msg string) {
 }
 
 func chatFillMentions(msg string) string {
-	/*
-		Discord mentions are in the form of "<@12345678901234567>"
-		By the time the message gets here, it will be sanitized to "&lt;@12345678901234567&gt;"
-		They can also be in the form of "<@!12345678901234567>" (with a "!" after the "@")
-		if a nickname is set for that person
-		We want to convert this to the username,
-		so that the lobby displays messages in a manner similar to the Discord client
-	*/
-
 	if discord == nil {
 		return msg
 	}
 
+	// Discord mentions are in the form of "<@12345678901234567>"
+	// By the time the message gets here, it will be sanitized to "&lt;@12345678901234567&gt;"
+	// They can also be in the form of "<@!12345678901234567>" (with a "!" after the "@")
+	// if a nickname is set for that person
+	// We want to convert this to the username,
+	// so that the lobby displays messages in a manner similar to the Discord client
 	for {
 		match := mentionRegExp.FindStringSubmatch(msg)
 		if match == nil || len(match) <= 1 {
@@ -98,15 +93,12 @@ func chatFillMentions(msg string) string {
 }
 
 func chatFillChannels(msg string) string {
-	/*
-		Discord channels are in the form of "<#380813128176500736>"
-		By the time the message gets here, it will be sanitized to "&lt;#380813128176500736&gt;"
-	*/
-
 	if discord == nil {
 		return msg
 	}
 
+	// Discord channels are in the form of "<#380813128176500736>"
+	// By the time the message gets here, it will be sanitized to "&lt;#380813128176500736&gt;"
 	for {
 		match := channelRegExp.FindStringSubmatch(msg)
 		if match == nil || len(match) <= 1 {

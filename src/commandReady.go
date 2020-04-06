@@ -1,14 +1,12 @@
-/*
-	Sent when the user has joined a game and the UI has been initialized
-	"data" is empty
-*/
-
 package main
 
 import (
 	"strconv"
 )
 
+// commandReady is sent when the user has joined a game and the UI has been initialized
+//
+// Has no data
 func commandReady(s *Session, d *CommandData) {
 	/*
 		Validate

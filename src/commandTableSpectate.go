@@ -1,24 +1,21 @@
-/*
-	Sent when the user clicks on the "Spectate" button in the lobby
-	(the client will send a "hello" message after getting "tableStart")
-	Sent on behalf of a user when they create a solo replay
-	Sent on behalf of a user when they create a shared replay
-	Sent on behalf of a user when they reconnect after having been in a shared replay
-
-	"data" example:
-	{
-		gameID: 15103,
-		player: 'Alice', // Optional
-		// If the player is specified, they will spectate from that player's perspective
-	}
-*/
-
 package main
 
 import (
 	"strconv"
 )
 
+// commandTableSpectate is sent when:
+// 1) the user clicks on the "Spectate" button in the lobby
+// 2) the user creates a solo replay
+// 3) the user creates a shared replay
+// 4) on behalf of a user when they reconnect after having been in a shared replay
+//
+// Example data:
+// {
+//   gameID: 15103,
+//   // If the player is specified, they will spectate from that player's perspective
+//   player: 'Alice', // Optional
+// }
 func commandTableSpectate(s *Session, d *CommandData) {
 	/*
 		Validation
@@ -109,5 +106,7 @@ func commandTableSpectate(s *Session, d *CommandData) {
 	notifyAllUser(s)
 
 	// Send them a "tableStart" message
+	// After the client receives the "tableStart" message, they will load the UI and then send a
+	// "hello" message to get the rest of the data for the game
 	s.NotifyTableStart()
 }

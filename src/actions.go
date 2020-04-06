@@ -1,9 +1,7 @@
-package main
+// Actions represent a change in the game state
+// Different actions will have different fields
 
-/*
-	Actions represent a change in the game state
-	Different actions will have different fields
-*/
+package main
 
 type ActionDraw struct {
 	Type  string `json:"type"`
@@ -70,6 +68,10 @@ type Which struct { // Used by "ActionPlay" and "ActionDiscard"
 	Suit  int `json:"suit"`
 	Rank  int `json:"rank"`
 	Order int `json:"order"` // The ID of the card (based on its order in the deck)
+}
+type Clue struct {
+	Type  int `json:"type"`
+	Value int `json:"value"`
 }
 type SimpleCard struct { // Used by "ActionDeckOrder"
 	Suit int `json:"suit"`

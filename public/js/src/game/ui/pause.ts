@@ -1,6 +1,4 @@
-/*
-    Miscellaneous helper functions that apply to the entire UI generally
-*/
+// Miscellaneous helper functions that apply to the entire UI generally
 
 // Imports
 import globals from './globals';

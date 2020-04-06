@@ -1,6 +1,4 @@
-/*
-    Modals (boxes that hover on top of the UI)
-*/
+// Modals (boxes that hover on top of the UI)
 
 // Imports
 import shajs from 'sha.js';

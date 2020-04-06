@@ -1,7 +1,5 @@
-/*
-    In shared replays, players can enter a hypotheticals where can perform arbitrary actions
-    in order to see what will happen
-*/
+// In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
+// to see what will happen
 
 // Imports
 import {

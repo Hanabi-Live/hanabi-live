@@ -1,6 +1,4 @@
-/*
-    The "Settings" nav button
-*/
+// The "Settings" nav button
 
 // Imports
 import globals from '../globals';

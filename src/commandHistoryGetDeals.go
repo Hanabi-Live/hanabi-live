@@ -1,11 +1,3 @@
-/*
-	Sent when the user clicks on the "Compare Scores" button
-	"data" example:
-	{
-		gameID: 15103,
-	}
-*/
-
 package main
 
 import (
@@ -13,6 +5,12 @@ import (
 	"time"
 )
 
+// commandHistoryGetDeals is sent when the user clicks on the "Compare Scores" button
+//
+// Example data:
+// {
+//   gameID: 15103,
+// }
 func commandHistoryGetDeals(s *Session, d *CommandData) {
 	gameID := d.GameID
 	var historyListDatabase []*GameHistory

@@ -1,7 +1,5 @@
-/*
-    Users can chat in the lobby, in the pregame, and in a game
-    Logic for the game chat box is located separately in "game/chat.ts"
-*/
+// Users can chat in the lobby, in the pregame, and in a game
+// Logic for the game chat box is located separately in "game/chat.ts"
 
 // Imports
 import linkifyHtml from 'linkifyjs/html';

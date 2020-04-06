@@ -1,6 +1,4 @@
-/*
-    We want to redraw the stage if the user resizes their browser window
-*/
+// We want to redraw the stage if the user resizes their browser window
 
 // This below code block deals with automatic resizing
 // (this is commented out because it is currently broken)
@@ -8,6 +6,7 @@
 // Resets the canvas dimensions to match window,
 // then draws the new borders accordingly
 
+// eslint-disable-next-line multiline-comment-style
 /*
 // window.addEventListener('resize', resizeCanvas, false);
 

@@ -1,9 +1,3 @@
-/*
-	Sent when the user is in a shared replay of a speedrun game
-	and wants to start a new game with the same settings as the current game
-	"data" is empty
-*/
-
 package main
 
 import (
@@ -11,6 +5,10 @@ import (
 	"strings"
 )
 
+// commandTableRestart is sent when the user is in a shared replay of a speedrun game and wants to
+// start a new game with the same settings as the current game
+//
+// Has no data
 func commandTableRestart(s *Session, d *CommandData) {
 	/*
 		Validate

@@ -1,6 +1,4 @@
-/*
-	Functions for the "Up or Down" variants
-*/
+// Functions for the "Up or Down" variants
 
 package main
 

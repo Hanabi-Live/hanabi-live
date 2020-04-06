@@ -1,6 +1,4 @@
-/*
-    This function draws the UI when going into a game for the first time
-*/
+// This function draws the UI when going into a game for the first time
 
 // Imports
 import Konva from 'konva';

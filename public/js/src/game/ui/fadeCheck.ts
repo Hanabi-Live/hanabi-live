@@ -1,7 +1,5 @@
-/*
-    Functions having to do with the "fade" feature
-    (e.g. cards that no longer need to be played are faded)
-*/
+// Functions having to do with the "fade" feature
+// (e.g. cards that no longer need to be played are faded)
 
 // Imports
 import globals from './globals';

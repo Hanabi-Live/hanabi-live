@@ -1,22 +1,19 @@
-/*
-	Sent when the user:
-	- is in a game that is starting
-	- joins a game that has already started
-	- starts a solo replay
-	- starts spectating a game
-
-	This is sent before the UI is initialized; the client will send a "ready"
-	message later to get more data
-
-	"data" is empty
-*/
-
 package main
 
 import (
 	"strconv"
 )
 
+// commandHello is sent when the user:
+// - is in a game that is starting
+// - joins a game that has already started
+// - starts a solo replay
+// - starts spectating a game
+//
+// This is sent before the UI is initialized;
+// the client will send a "ready" message later to get more data
+//
+// Has no data
 func commandHello(s *Session, d *CommandData) {
 	/*
 		Validate

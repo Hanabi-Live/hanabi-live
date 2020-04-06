@@ -1,8 +1,6 @@
-/*
-    The object that comprises the entire game UI
-    It is re-created every time when going into a new game
-    (and destroyed when going to the lobby)
-*/
+// The object that comprises the entire game UI
+// It is re-created every time when going into a new game
+// (and destroyed when going to the lobby)
 
 // Imports
 import Konva from 'konva';
@@ -45,9 +43,7 @@ export default class HanabiUI {
     showLoadingScreen();
   }
 
-  /*
-        The following methods are called from various parent functions
-    */
+  // The following methods are called from various parent functions
 
   updateChatLabel() { // eslint-disable-line class-methods-use-this
     let text = '💬';

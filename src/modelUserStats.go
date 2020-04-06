@@ -198,11 +198,9 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 			best_score5_mod = ?,
 			best_score6 = ?,
 			best_score6_mod = ?,
-			/*
-				We enclose this query in an "IFNULL" so that it defaults to 0 (instead of NULL)
-				if a user has not played any games
-			*/
 			average_score = (
+				/* We enclose this query in an "IFNULL" so that it defaults to 0 (instead of NULL)
+				   if a user has not played any games */
 				SELECT IFNULL(AVG(games.score), 0)
 				FROM games
 					JOIN game_participants

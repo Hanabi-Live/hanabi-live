@@ -1,7 +1,5 @@
-/*
-    This is the parent of a HanabiCard
-    It has a CardLayout or PlayStack parent
-*/
+// This is the parent of a HanabiCard
+// It has a CardLayout or PlayStack parent
 
 // Imports
 import Konva from 'konva';

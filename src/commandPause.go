@@ -1,12 +1,3 @@
-/*
-	Sent when the user pauses or unpauses the game
-	"data" example:
-	{
-		value: 'pause', // Can also be 'unpause', 'pause-queue', 'pause-unqueue'
-		// ('pause-queue' will automatically pause the game when it gets to their turn)
-	}
-*/
-
 package main
 
 import (
@@ -14,6 +5,13 @@ import (
 	"time"
 )
 
+// commandPause is sent when the user pauses or unpauses the game
+//
+// Example data:
+// {
+//   value: 'pause', // Can also be 'unpause', 'pause-queue', 'pause-unqueue'
+//   // ('pause-queue' will automatically pause the game when it gets to their turn)
+// }
 func commandPause(s *Session, d *CommandData) {
 	/*
 		Validate

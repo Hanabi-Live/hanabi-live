@@ -1,14 +1,12 @@
-/*
-	Sent when the user clicks the "Show More History" button
-	"data" example:
-	{
-		offset: 10,
-		amount: 10,
-	}
-*/
-
 package main
 
+// commandHistoryGet is sent when the user clicks the "Show More History" button
+//
+// Example data:
+// {
+//   offset: 10,
+//   amount: 10,
+// }
 func commandHistoryGet(s *Session, d *CommandData) {
 	// Validate that they sent a valid offset and amount value
 	if d.Offset < 0 {

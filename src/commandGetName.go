@@ -1,8 +1,3 @@
-/*
-	Sent when the user makes a new game
-	"data" is empty
-*/
-
 package main
 
 import (
@@ -13,7 +8,10 @@ const (
 	numRandomWords = 3
 )
 
-// Generate a random table name
+// commandGetName is sent when the user makes a new game
+// It generate a new random table name for them
+//
+// Has no data
 func commandGetName(s *Session, d *CommandData) {
 	type NameMessage struct {
 		Name string `json:"name"`

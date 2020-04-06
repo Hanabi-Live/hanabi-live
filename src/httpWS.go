@@ -9,19 +9,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-/*
-	Validate that they have logged in before opening a WebSocket connection
-
-	Essentially, all we need to do is check to see if they have any cookie values stored,
-	because that implies that they got through the "httpLogin" less than N seconds ago
-	But we also do a few other checks to be thorough
-*/
-
 var (
 	// Start at 1 and increment for every session created
 	sessionID = 1
 )
 
+// httpWS handles part 2 of 2 for logic authentication
+// Part 1 is found in "httpLogin.go"
+// After receiving a cookie in part 1, the client will attempt to open a WebSocket connection with
+// the cookie (this is done implicitly because JavaScript will automatiaclly use any current cookies
+// for the website when establishing a WebSocket connection)
+// So, before allowing anyone to open a WebSocket connection, we need to validate that they have
+// gone through part 1 (e.g. they have a valid cookie that was created N seconds ago)
+// We also do a few other checks to be thorough
+// If all of the checks pass, the WebSocket connection will be established,
+// and then the user's Hanabi data will be initialized in "websocketConnect.go"
 func httpWS(c *gin.Context) {
 	// Local variables
 	w := c.Writer
@@ -170,4 +172,6 @@ func httpWS(c *gin.Context) {
 		)
 		return
 	}
+
+	// Next, the established WebSocket connection will be initialized in "websocketConnect.go"
 }

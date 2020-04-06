@@ -1,12 +1,3 @@
-/*
-	Sent when the user writes a note
-	"data" example:
-	{
-		order: 3,
-		note: 'b1, m1',
-	}
-*/
-
 package main
 
 import (
@@ -15,6 +6,13 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 )
 
+// commandNote is sent when the user writes a note
+//
+// Example data:
+// {
+//   order: 3,
+//   note: 'b1, m1',
+// }
 func commandNote(s *Session, d *CommandData) {
 	/*
 		Validate

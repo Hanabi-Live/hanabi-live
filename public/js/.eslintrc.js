@@ -54,6 +54,16 @@ module.exports = {
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L183
     'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
 
+    // Airbnb has the multiline comment rule turned off by default,
+    // even though it is specified in the guide to use docstring-style comments
+    // This project does not use any tooling that would rely on or utilize docstrings,
+    // so there are no docstring-style comments in the codebase
+    // Instead, for "normal" multi-line comments, we prefer "separate-line" comments,
+    // since it uses a lot of extra lines to have starred-block comments all over the place
+    // This style is also used in React and Angular (at least when the comment is not a docstring)
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L240
+    'multiline-comment-style': ['error', 'separate-lines'],
+
     // The client makes use of some tasteful alerts
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js#L59
     'no-alert': ['off'],
@@ -72,13 +82,13 @@ module.exports = {
 
     // Airbnb disallows mixing * and /, which is fairly nonsensical
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L290
-    'no-mixed-operators': ['warn', { allowSamePrecedence: true }],
+    'no-mixed-operators': ['error', { allowSamePrecedence: true }],
 
     // The Airbnb configuration allows 2 empty lines in a row, which is unneeded
     // Additionally, the Airbnb configuration is bugged and
     // allows a line at the beginning of the file
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L316
-    'no-multiple-empty-lines': ['warn', { max: 1, maxBOF: 0, maxEOF: 0 }],
+    'no-multiple-empty-lines': ['error', { max: 1, maxBOF: 0, maxEOF: 0 }],
 
     // We make use of parameter reassigning where appropriate
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js#L190
@@ -87,7 +97,7 @@ module.exports = {
     // Airbnb disallows these because it can lead to errors with minified code;
     // we don't have to worry about this in for loops though
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L330
-    'no-plusplus': ['warn', { 'allowForLoopAfterthoughts': true }],
+    'no-plusplus': ['error', { 'allowForLoopAfterthoughts': true }],
 
     // Clean code can arise from for-of statements if used properly
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L334
@@ -107,6 +117,6 @@ module.exports = {
     // This allows for cleaner looking code as recommended here:
     // https://blog.javascripting.com/2015/09/07/fine-tuning-airbnbs-eslint-config/
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L448
-    'quote-props': ['warn', 'consistent-as-needed'],
+    'quote-props': ['error', 'consistent-as-needed'],
   },
 };

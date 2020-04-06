@@ -1,6 +1,4 @@
-/*
-    WebSocket command handlers for in-game events
-*/
+// WebSocket command handlers for in-game events
 
 // Imports
 import phaserInit from '../client_v2/phaserInit';
@@ -28,11 +26,7 @@ export default () => {
   }
 };
 
-/*
-    Code for the new development client
-*/
-
-// Define a command handler map
+// Define a command handler map for the new development client
 const commands = new Map();
 
 commands.set('init', (data: any) => {

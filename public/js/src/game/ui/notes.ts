@@ -1,6 +1,4 @@
-/*
-    Users can right-click cards to record information on them
-*/
+// Users can right-click cards to record information on them
 
 // Imports
 import globals from './globals';
@@ -437,10 +435,6 @@ export const shouldShowIndicator = (order: number) => {
 
   return globals.ourNotes[order] !== '';
 };
-
-/*
-    Misc. functions
-*/
 
 const stripHTMLtags = (input: string) => {
   const doc = new DOMParser().parseFromString(input, 'text/html');

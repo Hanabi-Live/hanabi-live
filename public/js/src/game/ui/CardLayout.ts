@@ -1,7 +1,5 @@
-/*
-    CardLayout is an object that represents a player's hand (or a discard pile)
-    It is composed of LayoutChild objects
-*/
+// CardLayout is an object that represents a player's hand (or a discard pile)
+// It is composed of LayoutChild objects
 
 // Imports
 import Konva from 'konva';
@@ -25,17 +23,18 @@ export default class CardLayout extends Konva.Group {
     this.empathy = false;
 
     // Debug rectangle (uncomment to show the size of the hand)
+    // eslint-disable-next-line multiline-comment-style
     /*
-        const debugRect = new Konva.Rect({
-            x: config.x,
-            y: config.y,
-            width: config.width,
-            height: config.height,
-            fill: 'black',
-            rotation: config.rotation,
-        });
-        globals.layers.UI.add(debugRect);
-        */
+    const debugRect = new Konva.Rect({
+      x: config.x,
+      y: config.y,
+      width: config.width,
+      height: config.height,
+      fill: 'black',
+      rotation: config.rotation,
+    });
+    globals.layers.UI.add(debugRect);
+    */
   }
 
   addChild(child: LayoutChild) {

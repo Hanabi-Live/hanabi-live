@@ -1,7 +1,5 @@
-/*
-    The main entry point for the Hanabi client code
-    The client code is split up into multiple files and bundled together with Webpack
-*/
+// This is the main entry point for the Hanabi client code
+// The client code is split up into multiple files and bundled together with Webpack
 
 // Tooltipster is a jQuery library, so we import it purely for the side-effects
 // (e.g. so that it can add the ".tooltipster" property to the "$" object)
@@ -79,11 +77,12 @@ $(document).ready(() => {
   sounds.init();
 
   // For debugging graphics
+  // eslint-disable-next-line multiline-comment-style
   /*
-    $('body').click((event) => {
-        console.log(`Cursor position: ${event.clientX}, ${event.clientY}`);
-    });
-    */
+  $('body').click((event) => {
+    console.log(`Cursor position: ${event.clientX}, ${event.clientY}`);
+  });
+  */
 
   // Now that the UI is initialized, automatically login if the user has cached credentials
   lobbyLogin.automaticLogin();

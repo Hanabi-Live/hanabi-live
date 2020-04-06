@@ -1,6 +1,4 @@
-/*
-    In-game tooltips (for notes, etc.)
-*/
+// In-game tooltips (for notes, etc.)
 
 // Constants
 const maxPlayers = 6;

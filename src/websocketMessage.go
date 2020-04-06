@@ -1,12 +1,10 @@
-/*
-	On top of the WebSocket protocol, he client and the server communicate using a specific format
-	based on the Golem WebSocket framework protocol
-	First, the name of the command is sent, then a 	space, then the JSON of the data
-
-	Example:
-		tableJoin {"gameID":1}
-		action {"target":1,"type":2}
-*/
+// On top of the WebSocket protocol, he client and the server communicate using a specific format
+// based on the Golem WebSocket framework protocol
+// First, the name of the command is sent, then a 	space, then the JSON of the data
+//
+// Example:
+//   tableJoin {"gameID":1}
+//   action {"target":1,"type":2}
 
 package main
 

@@ -1,7 +1,5 @@
-/*
-    These are helper functions that convert objects to the integers that the server expects
-    and vice versa
-*/
+// These are helper functions that convert objects to the integers that the server expects and
+// vice versa
 
 // Imports
 import { CLUE_TYPE } from '../../constants';

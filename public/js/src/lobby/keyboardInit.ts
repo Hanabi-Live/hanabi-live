@@ -1,6 +1,4 @@
-/*
-    Lobby keyboard shortcuts
-*/
+// Lobby keyboard shortcuts
 
 // Imports
 import globals from '../globals';

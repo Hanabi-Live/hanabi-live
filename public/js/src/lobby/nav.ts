@@ -1,6 +1,4 @@
-/*
-    The navigation bar at the top of the lobby
-*/
+// The navigation bar at the top of the lobby
 
 export const show = (target: string) => {
   const navTypes = [

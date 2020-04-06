@@ -1,6 +1,4 @@
-/*
-    A collection of miscellaneous functions
-*/
+// A collection of miscellaneous functions
 
 // From: https://stackoverflow.com/questions/27709489/jquery-tooltipster-plugin-hide-all-tips
 export const closeAllTooltips = () => {

@@ -1,31 +1,3 @@
-/*
-	Sent when the user performs an in-game action
-	"data" example:
-	{
-		clue: { // Not present if the type is 1 or 2
-			type: 0, // 0 is a rank clue, 1 is a color clue
-			value: 1, // If a rank clue, corresponds to the number
-			// If a color clue:
-			// 0 is blue
-			// 1 is green
-			// 2 is yellow
-			// 3 is red
-			// 4 is purple
-			// (these mappings change in the mixed variants)
-		},
-		target: 1,
-		// Either the player index of the recipient of the clue, or the card ID
-		// (e.g. the first card of the deck drawn is card #1, etc.)
-		type: 0,
-		// 0 is a clue
-		// 1 is a play
-		// 2 is a discard
-		// 3 is a deck blind play
-		// 4 is a time limit reached (only used by the server)
-		// 5 is a idle limit reached (only used by the server)
-	}
-*/
-
 package main
 
 import (
@@ -34,6 +6,21 @@ import (
 	"time"
 )
 
+// commandAction is sent when the user performs an in-game action
+//
+// Example data:
+// {
+//   clue: { // Not present if the type is 1 or 2
+//     type: 0, // corresponds to "clueType" in "constants.go"
+//     // If a color clue, then 0 if red, 1 if yellow, etc.
+//     // If a rank clue, then 1 if 1, 2 if 2, etc.
+//     value: 1,
+//   },
+//   // If a play or a discard, then the order of the the card that was played/discarded
+//   // If a color clue or a number clue, then the index of the player that received the clue
+//   target: 1,
+//   type: 0, // corresponds to "actionType" in "constants.go"
+// }
 func commandAction(s *Session, d *CommandData) {
 	/*
 		Validate

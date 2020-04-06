@@ -1,6 +1,4 @@
-/*
-    A Phaser demo
-*/
+// A Phaser demo
 
 // Imports
 import Phaser from 'phaser';

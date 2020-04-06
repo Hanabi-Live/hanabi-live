@@ -1,7 +1,5 @@
-/*
-    The HanabiCard object represents a single card
-    It has a LayoutChild parent
-*/
+// The HanabiCard object represents a single card
+// It has a LayoutChild parent
 
 // Imports
 import Konva from 'konva';
@@ -1218,9 +1216,9 @@ export default class HanabiCard extends Konva.Group {
   }
 }
 
-/*
-    Misc. functions
-*/
+// ---------------
+// Misc. functions
+// ---------------
 
 // Remove everything from the array that does not match the condition in the function
 const filterInPlace = (values: Array<any>, predicate: (value: any) => boolean) => {

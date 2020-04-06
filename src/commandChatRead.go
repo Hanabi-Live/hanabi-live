@@ -1,20 +1,14 @@
-/*
-	Sent when the user opens the in-game chat or
-	when they receive a chat message when the in-game chat is already open
-	"data" is empty
-*/
-
 package main
 
 import (
 	"strconv"
 )
 
+// commandChatRead is sent when the user opens the in-game chat or
+// when they receive a chat message when the in-game chat is already open
+//
+// Has no data
 func commandChatRead(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
 	// Validate that the table exists
 	tableID := s.CurrentTable()
 	var t *Table
@@ -32,9 +26,6 @@ func commandChatRead(s *Session, d *CommandData) {
 		return
 	}
 
-	/*
-		Mark that they have read all of the in-game chat
-	*/
-
+	// Mark that they have read all of the in-game chat
 	t.ChatRead[s.UserID()] = len(t.Chat)
 }

@@ -1,13 +1,3 @@
-/*
-	Sent when the user modifies a setting
-
-	"data" example:
-	{
-		name: 'soundMove',
-		value: 'false',
-	}
-*/
-
 package main
 
 import (
@@ -15,6 +5,13 @@ import (
 	"strconv"
 )
 
+// commandSetting is sent when the user modifies a setting
+//
+// 	Example data:
+// {
+//   name: 'soundMove',
+//   value: 'false',
+// }
 func commandSetting(s *Session, d *CommandData) {
 	/*
 		Validate

@@ -1,3 +1,5 @@
+// Miscellaneous subroutines
+
 package main
 
 import (
@@ -8,10 +10,6 @@ import (
 	"strings"
 	"time"
 )
-
-/*
-	Miscellaneous subroutines
-*/
 
 // From: https://stackoverflow.com/questions/47341278/how-to-format-a-duration-in-golang
 func durationToString(d time.Duration) string {

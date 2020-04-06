@@ -1,8 +1,3 @@
-/*
-	Sent when the user clicks on the "Leave Game" button in the lobby
-	"data" is empty
-*/
-
 package main
 
 import (
@@ -10,6 +5,9 @@ import (
 	"time"
 )
 
+// commandTableLeave is sent when the user clicks on the "Leave Game" button in the lobby
+//
+// Has no data
 func commandTableLeave(s *Session, d *CommandData) {
 	/*
 		Validation

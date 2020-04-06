@@ -1,6 +1,4 @@
-/*
-    "notify" WebSocket commands communicate a change in the game state
-*/
+// "notify" WebSocket commands communicate a change in the game state
 
 // Imports
 import Konva from 'konva';
@@ -463,15 +461,13 @@ notifyFunctions.set('status', (data: ActionStatus) => {
   }
 });
 
-/*
-    Data is as follows:
-    {
-        type: 'strike',
-        num: 1,
-        order: 4, // The order of the card that was misplayed
-        turn: 2,
-    }
-*/
+// Data is as follows:
+// {
+//   type: 'strike',
+//   num: 1,
+//   order: 4, // The order of the card that was misplayed
+//   turn: 2,
+// }
 notifyFunctions.set('strike', (data: ActionStrike) => {
   if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
     return;

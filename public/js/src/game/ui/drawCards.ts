@@ -1,6 +1,4 @@
-/*
-    The Hanabi card grahpics are various HTML5 canvas drawings
-*/
+// The Hanabi card grahpics are various HTML5 canvas drawings
 
 // Imports
 import Color from '../../Color';

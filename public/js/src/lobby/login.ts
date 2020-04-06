@@ -1,12 +1,13 @@
-/*
-    The initial login page
-*/
+// The initial login page
 
 // Imports
 import shajs from 'sha.js';
+import { FADE_TIME } from '../constants';
 import globals from '../globals';
 import websocketInit from '../websocketInit';
-import * as loginMisc from './loginMisc';
+import * as nav from './nav';
+import tablesDraw from './tablesDraw';
+import * as usersDraw from './usersDraw';
 
 export const init = () => {
   $('#login-button').click(() => {
@@ -50,7 +51,7 @@ const submit = (event: any) => {
 
   let username = $('#login-username').val();
   if (!username) {
-    loginMisc.formError('You must provide a username.');
+    formError('You must provide a username.');
     return;
   }
   if (typeof username !== 'string') {
@@ -59,7 +60,7 @@ const submit = (event: any) => {
 
   let passwordPlaintext = $('#login-password').val();
   if (!passwordPlaintext) {
-    loginMisc.formError('You must provide a password.');
+    formError('You must provide a password.');
     return;
   }
   if (typeof passwordPlaintext === 'number') {
@@ -114,7 +115,7 @@ const send = () => {
     websocketInit();
   });
   request.fail((jqXHR) => {
-    loginMisc.formError(`Login failed: ${getAjaxError(jqXHR)}`);
+    formError(`Login failed: ${getAjaxError(jqXHR)}`);
   });
 };
 
@@ -178,4 +179,52 @@ export const automaticLogin = () => {
 
   console.log('Automatically logging in from cookie credentials.');
   send();
+};
+
+// -------------------------
+// Miscellaneous subroutines
+// -------------------------
+
+export const hide = (firstTimeUser: boolean) => {
+  // Hide the login screen
+  $('#login').hide();
+
+  if (firstTimeUser && window.location.hostname !== 'localhost') {
+    $('#tutorial').fadeIn(FADE_TIME);
+    return;
+  }
+  $('#tutorial').hide();
+
+  // Disable scroll bars
+  // Even with height and width 100%,
+  // the scroll bar can pop up when going back from a game to the lobby
+  // It also can show up in-game if a tooltip animates off of the edge of the screen
+  // So we can set "overflow" to explicitly prevent this from occuring
+  // We don't want to set this in "hanabi.css" because
+  // there should be scrolling enabled on the login screen
+  // We need to scroll to the top of the screen before disabling the scroll bars
+  // or else the lobby can become misaligned when logging in from a scroll-down state
+  window.scrollTo(0, 0);
+  $('body').css('overflow', 'hidden');
+
+  // Show the lobby
+  globals.currentScreen = 'lobby';
+  tablesDraw();
+  usersDraw.draw();
+  $('#lobby').show();
+  $('#lobby-history').hide();
+  // We can't hide this element by default in "index.html" or else the "No game history" text
+  // will not be centered
+  nav.show('games');
+  $('#lobby-chat-input').focus();
+};
+
+export const formError = (msg: string) => {
+  // For some reason this has to be invoked asycnronously in order to work properly
+  setTimeout(() => {
+    $('#login-ajax').hide();
+    $('#login-button').removeClass('disabled');
+    $('#login-alert').html(msg);
+    $('#login-alert').fadeIn(FADE_TIME);
+  }, 0);
 };

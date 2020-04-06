@@ -1,7 +1,5 @@
-/*
-    Communication with the server is done through the WebSocket protocol
-    The client uses a slightly modified version of the Golem WebSocket library
-*/
+// Communication with the server is done through the WebSocket protocol
+// The client uses a slightly modified version of the Golem WebSocket library
 
 // Imports
 import * as chat from './chat';
@@ -10,7 +8,7 @@ import Connection from './Connection';
 import * as gameChat from './game/chat';
 import gameWebsocketInit from './game/websocketInit';
 import globals from './globals';
-import * as lobbyLoginMisc from './lobby/loginMisc';
+import * as lobbyLogin from './lobby/login';
 import * as pregame from './lobby/pregame';
 import * as lobbySettingsTooltip from './lobby/settingsTooltip';
 import lobbyWebsocketInit from './lobby/websocketInit';
@@ -57,7 +55,7 @@ export default () => {
     console.error('WebSocket error:', event);
 
     if ($('#loginbox').is(':visible')) {
-      lobbyLoginMisc.formError('Failed to connect to the WebSocket server. The server might be down!');
+      lobbyLogin.formError('Failed to connect to the WebSocket server. The server might be down!');
     }
   });
 
@@ -112,7 +110,7 @@ const initCommands = () => {
     // Update various elements of the UI to reflect our settings
     $('#nav-buttons-history-total-games').html(globals.totalGames.toString());
     lobbySettingsTooltip.setSettingsTooltip();
-    lobbyLoginMisc.hide(data.firstTimeUser);
+    lobbyLogin.hide(data.firstTimeUser);
 
     if (!data.firstTimeUser) {
       // Validate that we are on the latest JavaScript code

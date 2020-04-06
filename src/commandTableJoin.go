@@ -1,11 +1,3 @@
-/*
-	Sent when the user clicks on the "Join" button in the lobby
-	"data" example:
-	{
-		gameID: 15103,
-	}
-*/
-
 package main
 
 import (
@@ -13,6 +5,12 @@ import (
 	"time"
 )
 
+// commandTableJoin is sent when the user clicks on the "Join" button in the lobby
+//
+// Example data:
+// {
+//   gameID: 15103,
+// }
 func commandTableJoin(s *Session, d *CommandData) {
 	/*
 		Validate

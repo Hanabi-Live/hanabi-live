@@ -1,13 +1,3 @@
-/*
-	This is part 1 of 2 for login authentication
-	The user must POST to "/login" with the values of "username" and "password"
-	If successful, they will receive a cookie from the server with an expiry of N seconds
-	The client will then attempt to make a WebSocket connection; JavaScript will automatiaclly
-	use any current cookies for the website when establishing a WebSocket connection
-	The logic for opening a WebSocket connection is contained in the "httpWS.go" file and
-	the "websocketConnect.go" file
-*/
-
 package main
 
 import (
@@ -25,6 +15,10 @@ const (
 	maxUsernameLength = 15
 )
 
+// httpLogin handles part 1 of 2 for login authentication
+// The user must POST to "/login" with the values of "username" and "password"
+// If successful, they will receive a cookie from the server with an expiry of N seconds
+// Part 2 is found in "httpWS.go"
 func httpLogin(c *gin.Context) {
 	// Local variables
 	r := c.Request
@@ -218,4 +212,7 @@ func httpLogin(c *gin.Context) {
 	// (returning a code is not actually necessary but Firefox will complain otherwise)
 	logger.Info("User \""+user.Username+"\" logged in from:", ip)
 	http.Error(w, http.StatusText(http.StatusOK), http.StatusOK)
+
+	// Next, the client will attempt to esbalish a WebSocket connection,
+	// which is handled in "httpWS.go"
 }

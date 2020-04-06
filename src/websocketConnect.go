@@ -1,8 +1,7 @@
-/*
-	This is part 2 of logging in. The user must already have performed a POST to "/login"
-	and received a cookie before getting here. (The logic for that is contained in the
-	"httpLogin.go" file.)
-*/
+// This is part 2 of logging in
+// The user must already have performed a POST to "/login" and
+// received a cookie before getting here
+// (the logic for that is contained in the "httpLogin.go" file.)
 
 package main
 
@@ -16,10 +15,6 @@ import (
 )
 
 func websocketConnect(ms *melody.Session) {
-	/*
-		Establish the WebSocket session
-	*/
-
 	// Lock the command mutex for the duration of the function to ensure synchronous execution
 	commandMutex.Lock()
 	defer commandMutex.Unlock()

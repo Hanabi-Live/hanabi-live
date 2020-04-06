@@ -1,7 +1,4 @@
-/*
-    Functions for timed games
-    (and the timer that ticks up in untimed games)
-*/
+// Functions for timed games (and the timer that ticks up in untimed games)
 
 // Imports
 import globals from './globals';
@@ -17,16 +14,11 @@ interface ClockData {
 // It is sent at the beginning of every turn
 // to update the client about how much time each player has left
 // It has the following data:
-/*
-    {
-        // A list of the times for each player
-        times: [100, 200],
-        // The index of the active player
-        active: 0,
-        // The amount of time that has elasped since the turn began
-        timeTaken: 500,
-    }
-*/
+// {
+//   times: [100, 200], // A list of the times for each player
+//   active: 0, // The index of the active player
+//   timeTaken: 500, // The amount of time that has elasped since the turn began
+// }
 export const update = (data: ClockData) => {
   stop();
 
@@ -173,7 +165,7 @@ function setTickingDownTimeTooltip(i: number) {
   $(`#tooltip-player-${i}`).tooltipster('instance').content(content);
 }
 
-function setTickingDownTimeCPTooltip() {
+const setTickingDownTimeCPTooltip = () => {
   // This tooltip is disabled in non-timed games
   if (!globals.timed) {
     return;
@@ -193,16 +185,13 @@ function setTickingDownTimeCPTooltip() {
   content += millisecondsToTimeDisplay(time);
   content += '</strong>';
   $('#tooltip-time-taken').tooltipster('instance').content(content);
-}
-
-/*
-    Misc. functions
-*/
+};
 
 const millisecondsToTimeDisplay = (milliseconds: number) => {
   const seconds = Math.ceil(milliseconds / 1000);
   return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
 };
+
 const pad2 = (num: number) => {
   if (num < 10) {
     return `0${num}`;

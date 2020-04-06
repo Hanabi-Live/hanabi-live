@@ -1,6 +1,4 @@
-/*
-    The screens that show past games and other scores
-*/
+// The screens that show past games and other scores
 
 // Imports
 import { VARIANTS } from '../constants';

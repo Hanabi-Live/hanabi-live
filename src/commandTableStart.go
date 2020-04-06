@@ -1,10 +1,3 @@
-/*
-	Sent when the owner of a table clicks on the "Start Game" button
-	(the client will send a "hello" message after getting "tableStart")
-
-	"data" is empty
-*/
-
 package main
 
 import (
@@ -13,6 +6,10 @@ import (
 	"time"
 )
 
+// commandTableStart is sent when the owner of a table clicks on the "Start Game" button
+// (the client will send a "hello" message after getting "tableStart")
+//
+// Has no data
 func commandTableStart(s *Session, d *CommandData) {
 	/*
 		Validation

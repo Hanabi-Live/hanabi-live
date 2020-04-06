@@ -1,6 +1,4 @@
-/*
-    The Hanabi game UI
-*/
+// The Hanabi game UI
 
 // Imports
 import { FADE_TIME } from '../constants';

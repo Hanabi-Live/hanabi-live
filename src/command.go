@@ -83,11 +83,6 @@ type CommandData struct {
 	Args []string `json:"-"`
 }
 
-type Clue struct {
-	Type  int `json:"type"`
-	Value int `json:"value"`
-}
-
 var (
 	// Used to store all of the functions that handle each command
 	commandMap = make(map[string]func(*Session, *CommandData))

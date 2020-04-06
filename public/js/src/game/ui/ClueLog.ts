@@ -1,6 +1,4 @@
-/*
-    This is the list of clues in the top-right-hand corner of the UI
-*/
+// This is the list of clues in the top-right-hand corner of the UI
 
 // Imports
 import Konva from 'konva';

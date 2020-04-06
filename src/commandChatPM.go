@@ -8,6 +8,14 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 )
 
+// commandChatPM is sent when a user sends a private message
+//
+// Example data:
+// {
+//   msg: 'hello',
+//   recipient: 'Alice',
+//   room: 'lobby', // Room can also be "table1", "table1234", etc.
+// }
 func commandChatPM(s *Session, d *CommandData) {
 	/*
 		Validate
@@ -100,7 +108,7 @@ func commandChatPM(s *Session, d *CommandData) {
 	d.Msg = sp.Sanitize(d.Msg)
 
 	/*
-		Chat
+		Private message
 	*/
 
 	// Log the message

@@ -1,6 +1,4 @@
-/*
-    We will receive WebSocket messages / commands from the server that tell us to do things
-*/
+// We will receive WebSocket messages / commands from the server that tell us to do things
 
 // Imports
 import { CLUE_TYPE, REPLAY_ARROW_ORDER, VARIANTS } from '../../constants';
@@ -102,11 +100,9 @@ commands.set('gameOver', () => {
   // (this must be after the "replay.enter()" function)
   globals.gameOver = false;
 
-  /*
-        If the user is in an in-game replay when the game ends, we need to jerk them away from it
-        and go to the end of the game. This is because we need to process all of the queued "notify"
-        messages. (Otherwise, the code will try to "reveal" cards that are undefined.)
-    */
+  // If the user is in an in-game replay when the game ends, we need to jerk them away from it
+  // and go to the end of the game. This is because we need to process all of the queued "notify"
+  // messages. (Otherwise, the code will try to "reveal" cards that are undefined.)
 
   // The final turn displays how long everyone took,
   // so we want to go to the turn before that, which we recorded earlier
@@ -261,13 +257,11 @@ commands.set('note', (data: NoteData) => {
   notes.setCardIndicator(data.order);
 });
 
-/*
-    Received when:
-    - joining a replay
-    - joining a shared replay
-    - joining an existing game as a spectator
-    (it gives the notes of all the players & spectators)
-*/
+// Received when:
+// - joining a replay
+// - joining a shared replay
+// - joining an existing game as a spectator
+// (it gives the notes of all the players & spectators)
 interface NoteListData {
   notes: Array<NoteList>,
 }
@@ -304,10 +298,8 @@ commands.set('noteList', (data: NoteListData) => {
   notes.setAllCardIndicators();
 });
 
-/*
-    Received when reconnecting to an existing game as a player
-    (it only gets the notes of one specific player)
-*/
+// Received when reconnecting to an existing game as a player
+// (it only gets the notes of one specific player)
 interface NoteListPlayerData {
   notes: Array<string>,
 }

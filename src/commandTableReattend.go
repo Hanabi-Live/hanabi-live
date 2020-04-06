@@ -1,17 +1,15 @@
-/*
-	Sent when the user clicks on the "Resume" button in the lobby
-	"data" example:
-	{
-		gameID: 31,
-	}
-*/
-
 package main
 
 import (
 	"strconv"
 )
 
+// commandTableReattend is sent when the user clicks on the "Resume" button in the lobby
+//
+// Example data:
+// {
+//   gameID: 31,
+// }
 func commandTableReattend(s *Session, d *CommandData) {
 	/*
 		Validation

@@ -1,6 +1,4 @@
-/*
-    In-game sounds
-*/
+// In-game sounds
 
 // Imports
 import globals from './globals';

@@ -1,6 +1,4 @@
-/*
-   The lobby area that shows all of the current tables
-*/
+// The lobby area that shows all of the current tables
 
 // Imports
 import globals from '../globals';

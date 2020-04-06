@@ -1,13 +1,3 @@
-/*
-	Sent when the user performs an action in a shared replay
-	"data" example:
-	{
-		type: 0, // Types are listed in the "constants.go" file
-		value: 10,
-		name: 'Alice',
-	}
-*/
-
 package main
 
 import (
@@ -21,6 +11,14 @@ var (
 	actionTypeTurnRegExp = regexp.MustCompile(`"type":\s*"turn"`)
 )
 
+// commandReplayAction is sent when the user performs an action in a shared replay
+//
+// Example data:
+// {
+//   type: 0, // Types are listed in the "constants.go" file
+//   value: 10,
+//   name: 'Alice',
+// }
 func commandReplayAction(s *Session, d *CommandData) {
 	/*
 		Validate

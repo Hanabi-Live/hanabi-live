@@ -86,11 +86,9 @@ const initTooltips = () => {
     trigger: 'click',
     interactive: true,
     delay: 0,
-    /*
-            The "create-game" tooltip is too large for very small resolutions and will wrap off the
-            screen. We can use a Tooltipster plugin to automatically create a scroll bar for it.
-            https://github.com/louisameline/tooltipster-scrollableTip
-        */
+    // The "create-game" tooltip is too large for very small resolutions and will wrap off the
+    // screen; we can use a Tooltipster plugin to automatically create a scroll bar for it
+    // https://github.com/louisameline/tooltipster-scrollableTip
     plugins: [
       'sideTip', // Make it have the ability to be positioned on a specific side
       'scrollableTip', // Make it scrollable
@@ -101,13 +99,12 @@ const initTooltips = () => {
   };
 
   const tooltipsterClose = () => {
-    /*
-            We want to fade in the background as soon as we start the tooltip closing animation,
-            so we have to hook to the "close" event. Furthermore, we don't want to fade in the
-            background if we click from one tooltip to the other, so we have to check to see how
-            many tooltips are open. If one tooltip is open, then it is the one currently closing.
-            If two tooltips are open, then we are clicking from one to the next.
-        */
+    // We want to fade in the background as soon as we start the tooltip closing animation,
+    // so we have to hook to the "close" event
+    // Furthermore, we don't want to fade in the background if we click from one tooltip to the
+    // other, so we have to check to see how many tooltips are open
+    // If one tooltip is open, then it is the one currently closing
+    // If two tooltips are open, then we are clicking from one to the next
     let tooltipsOpen = 0;
     for (const tooltip of tooltips) {
       if ($(`#nav-buttons-games-${tooltip}`).tooltipster('status').open) {

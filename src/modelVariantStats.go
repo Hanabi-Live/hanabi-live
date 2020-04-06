@@ -160,10 +160,6 @@ func (*VariantStats) Update(variant int, maxScore int, stats VariantStatsRow) er
 			best_score4 = ?,
 			best_score5 = ?,
 			best_score6 = ?,
-			/*
-				We enclose this query in an "IFNULL" so that it defaults to 0 (instead of NULL)
-				if there have been 0 games played on this variant
-			*/
 			num_max_scores = (
 				SELECT COUNT(games.id)
 				FROM games
@@ -172,6 +168,8 @@ func (*VariantStats) Update(variant int, maxScore int, stats VariantStatsRow) er
 					AND speedrun = 0
 			),
 			average_score = (
+				/* We enclose this query in an "IFNULL" so that it defaults to 0 (instead of NULL)
+				   if there have been 0 games played on this variant */
 				SELECT IFNULL(AVG(score), 0)
 				FROM games
 				WHERE variant = ?

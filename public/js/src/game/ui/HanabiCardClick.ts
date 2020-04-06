@@ -1,6 +1,4 @@
-/*
-    Click functions for the HanabiCard object
-*/
+// Click functions for the HanabiCard object
 
 // Imports
 import { STACK_BASE_RANK } from '../../constants';

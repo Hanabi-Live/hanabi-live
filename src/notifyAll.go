@@ -1,8 +1,6 @@
-package main
+// Functions that notify all currently connected users
 
-/*
-	Functions that notify all currently connected users
-*/
+package main
 
 func notifyAllUser(s *Session) {
 	for _, s2 := range sessions {

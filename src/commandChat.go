@@ -1,15 +1,3 @@
-/*
-	Sent when the user sends a text message to the lobby by pressing enter
-	"data" example:
-	{
-		msg: 'hi',
-		room: 'lobby', // Room can also be "table#", e.g. "table1", "table1234", etc.
-	}
-
-	Unlike many other commands, this command can be called with a nil session (by the server)
-	So we have to check for this before displaying WebSocket error messages
-*/
-
 package main
 
 import (
@@ -29,6 +17,16 @@ var (
 	lobbyRoomRegExp = regexp.MustCompile(`table(\d+)`)
 )
 
+// commandChat is sent when the user presses enter after typing a text message
+// It is also used by the server to send chat messages
+// Unlike many other commands, this command can be called with a nil session (by the server),
+// so we have to check for this before displaying WebSocket error messages
+//
+// Example data:
+// {
+//   msg: 'hi',
+//   room: 'lobby', // Room can also be "table1", "table1234", etc.
+// }
 func commandChat(s *Session, d *CommandData) {
 	// Local variables
 	var userID int

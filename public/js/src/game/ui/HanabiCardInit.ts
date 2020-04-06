@@ -1,6 +1,4 @@
-/*
-    Initialization functions for the HanabiCard object
-*/
+// Initialization functions for the HanabiCard object
 
 // Imports
 import Konva from 'konva';
@@ -53,10 +51,7 @@ export function border(this: HanabiCard) {
   });
   this.add(this.cluedBorder);
 
-  /*
-        The card will also get a border if it is not clued but has a particular note on it
-    */
-
+  // The card will also get a border if it is not clued but has a particular note on it
   this.noteBorder = new Konva.Rect({
     x: 3,
     y: 3,
@@ -472,10 +467,6 @@ export function fixme(this: HanabiCard) {
   });
   this.add(this.fixme);
 }
-
-/*
-    Misc. functions
-*/
 
 const scaleCardImage = (
   ctx: CanvasRenderingContext2D,

@@ -1,6 +1,4 @@
-/*
-    These are exported global variables to be shared between all of the TypeScript code
-*/
+// These are exported global variables to be shared between all of the TypeScript code
 
 // Imports
 import version from './data/version.json';

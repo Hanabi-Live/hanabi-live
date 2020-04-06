@@ -1,17 +1,3 @@
-/*
-	Sent when the user clicks on the "Watch Replay", "Share Replay",
-	or "Watch Specific Replay" button
-	(the client will send a "hello" message after getting "tableStart")
-
-	"data" example:
-	{
-		source: 'id',
-		gameID: 15103, // Only if source is "id"
-		json: '{"actions"=[],"deck"=[]}', // Only if source is "json"
-		visibility: 'solo',
-	}
-*/
-
 package main
 
 import (
@@ -33,10 +19,20 @@ type GameJSON struct {
 	Notes [][]string `json:"notes,omitempty"`
 }
 
-// The user wants to view the replay of a game from the database
-// (or is submitting arbitrary actions from a hypothetical game)
+// commandReplayCreate is sent when the user clicks on the "Watch Replay", "Share Replay",
+// or "Watch Specific Replay" button
+// It means that they want to view the replay of a game from the database or that they are
+// submitting arbitrary actions from a hypothetical game
 // In order to derive the JSON actions to send to the client,
 // we need to play through a mock game using these actions
+//
+// Example data:
+// {
+//   source: 'id',
+//   gameID: 15103, // Only if source is "id"
+//   json: '{"actions"=[],"deck"=[]}', // Only if source is "json"
+//   visibility: 'solo',
+// }
 func commandReplayCreate(s *Session, d *CommandData) {
 	// Validate that there is not a password
 	if d.Password != "" {
@@ -122,6 +118,10 @@ func commandReplayCreate(s *Session, d *CommandData) {
 
 	// Start the idle timeout
 	go t.CheckIdle()
+
+	// The "commandTableSpectate()" function above sends the user the "tableStart" message
+	// After the client receives the "tableStart" message, they will load the UI and then send a
+	// "hello" message to get the rest of the data for the game
 }
 
 func validateJSON(s *Session, d *CommandData) bool {

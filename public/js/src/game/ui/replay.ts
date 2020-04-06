@@ -1,6 +1,4 @@
-/*
-    Functions for progressing forward and backward through time
-*/
+// Functions for progressing forward and backward through time
 
 // Imports
 import Konva from 'konva';
@@ -13,9 +11,9 @@ import notify from './notify';
 import Shuttle from './Shuttle';
 import * as stats from './stats';
 
-/*
-    Main replay functions
-*/
+// ---------------------
+// Main replay functions
+// ---------------------
 
 export const enter = () => {
   if (globals.hypothetical) {
@@ -230,9 +228,9 @@ const reset = () => {
   globals.animateFast = true;
 };
 
-/*
-    The 4 replay button functions
-*/
+// -----------------------------
+// The 4 replay button functions
+// -----------------------------
 
 export const backFull = () => {
   checkDisableSharedTurns();
@@ -254,9 +252,9 @@ export const forwardFull = () => {
   goto(globals.replayMax, true);
 };
 
-/*
-    Extra replay functions
-*/
+// ----------------------
+// Extra replay functions
+// ----------------------
 
 export const backRound = () => {
   checkDisableSharedTurns();
@@ -268,9 +266,9 @@ export const forwardRound = () => {
   goto(globals.replayTurn + globals.playerNames.length, false);
 };
 
-/*
-    The "Exit Replay" button
-*/
+// ------------------------
+// The "Exit Replay" button
+// ------------------------
 
 export const exitButton = () => {
   // Mark the time that the user clicked the "Exit Replay" button
@@ -280,9 +278,9 @@ export const exitButton = () => {
   exit();
 };
 
-/*
-    The replay shuttle
-*/
+// ------------------
+// The replay shuttle
+// ------------------
 
 export function barClick(this: Konva.Rect, event: Konva.KonvaPointerEvent) {
   const rectX = event.evt.x - this.getAbsolutePosition().x;
@@ -388,9 +386,9 @@ export const adjustShuttles = (fast: boolean) => {
   );
 };
 
-/*
-    Right-clicking the turn count
-*/
+// -----------------------------
+// Right-clicking the turn count
+// -----------------------------
 
 export const promptTurn = () => {
   const turnString = window.prompt('Which turn do you want to go to?');
@@ -414,9 +412,9 @@ export const promptTurn = () => {
   goto(turn, true);
 };
 
-/*
-    The "Toggle Shared Turns" button
-*/
+// --------------------------------
+// The "Toggle Shared Turns" button
+// --------------------------------
 
 export const toggleSharedTurns = () => {
   globals.useSharedTurns = !globals.useSharedTurns;

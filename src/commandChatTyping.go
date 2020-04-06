@@ -1,8 +1,3 @@
-/*
-	Sent when the user is typing something into the in-game chat box
-	"data" is empty
-*/
-
 package main
 
 import (
@@ -14,6 +9,9 @@ const (
 	typingDelay = 2 * time.Second
 )
 
+// commandChatTyping is sent when the user types something into a chat box
+//
+// Has no data
 func commandChatTyping(s *Session, d *CommandData) {
 	/*
 		Validate

@@ -1,6 +1,4 @@
-/*
-    In-game chat
-*/
+// In-game chat
 
 // Imports
 import interact from 'interactjs';

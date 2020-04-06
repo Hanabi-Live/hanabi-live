@@ -19,6 +19,23 @@ var (
 	cardRegExp = regexp.MustCompile(`^(\w)(\d)$`)
 )
 
+// commandTableCreate is sent when the user submits the "Create a New Game" form
+//
+// Example data:
+// {
+//   name: 'my new table',
+//   variant: 'No Variant',
+//   timed: true,
+//   baseTime: 120,
+//   timePerTurn: 20,
+//   speedrun: false,
+//   cardCycle: false,
+//   deckPlays: false,
+//   emptyClues: false,
+//   characterAssignments: false,
+//   password: '1b5f02e630254f609c90ac2d1a6404373644dd96111e7e1a2d9b05fd61905ffb',
+//   alertWaiters: false,
+// }
 func commandTableCreate(s *Session, d *CommandData) {
 	/*
 		Validate

@@ -1,7 +1,5 @@
-/*
-    PlayStack represents the stack in the middle of the table for each suit
-    It is composed of LayoutChild objects
-*/
+// PlayStack represents the stack in the middle of the table for each suit
+// It is composed of LayoutChild objects
 
 // Imports
 import Konva from 'konva';

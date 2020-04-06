@@ -1,5 +1,6 @@
 // Keldon had commented out code for reordering a hand, which might be useful in the future
 
+// eslint-disable-next-line multiline-comment-style
 /*
 if (note.who == ui.player_us) {
     child.draggable(true);

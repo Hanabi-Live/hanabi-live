@@ -1,6 +1,4 @@
-/*
-   The lobby area that shows all of the players in the current unstarted game
-*/
+// The lobby area that shows all of the players in the current unstarted game
 
 // Imports
 import { VARIANTS } from '../constants';

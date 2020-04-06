@@ -1,7 +1,5 @@
-/*
-    Arrows are used to show which cards are touched by a clue
-    (and to highlight things in shared replays)
-*/
+// Arrows are used to show which cards are touched by a clue
+// (and to highlight things in shared replays)
 
 // Imports
 import Konva from 'konva';

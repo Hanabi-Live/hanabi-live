@@ -81,10 +81,6 @@ func NewTable(name string, owner int) *Table {
 	}
 }
 
-/*
-	Major functions
-*/
-
 // CheckIdle is meant to be called in a new goroutine
 func (t *Table) CheckIdle() {
 	// Set the last action
@@ -173,10 +169,6 @@ func (t *Table) CheckIdle() {
 		commandTableLeave(s, nil)
 	}
 }
-
-/*
-	Miscellaneous functions
-*/
 
 func (t *Table) GetName() string {
 	g := t.Game

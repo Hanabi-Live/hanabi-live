@@ -1,16 +1,13 @@
-/*
-	Sent when the user clicks on the "Lobby" button while they are in the middle of a game
-	or in a a replay
-
-	"data" is empty
-*/
-
 package main
 
 import (
 	"strconv"
 )
 
+// commandTableUnattend is sent when the user clicks on the "Lobby" button while they are in the
+// middle of a game or in a a replay
+//
+// Has no data
 func commandTableUnattend(s *Session, d *CommandData) {
 	// Set their status
 	s.Set("status", statusLobby)

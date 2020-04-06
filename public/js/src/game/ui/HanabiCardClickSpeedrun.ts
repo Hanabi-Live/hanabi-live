@@ -1,6 +1,4 @@
-/*
-    Speedrun click functions for the HanabiCard object
-*/
+// Speedrun click functions for the HanabiCard object
 
 // Imports
 import Color from '../../Color';

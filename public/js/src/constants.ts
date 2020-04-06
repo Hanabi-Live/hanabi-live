@@ -1,7 +1,6 @@
-/*
-    Suit definitions, variant definitions, character definitions, and so forth
-*/
+// Suit definitions, variant definitions, character definitions, and so forth
 
+// Imports
 import charactersInit from './charactersInit';
 import colorsInit from './colorsInit';
 import suitsInit from './suitsInit';
