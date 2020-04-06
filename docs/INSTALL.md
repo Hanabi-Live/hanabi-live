@@ -162,6 +162,7 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `sudo apt install mariadb-server -y`
   * `sudo mysql_secure_installation`
     * Follow the prompts.
+    * Note that even though you change the root password, if you are the root user, MariaDB will not prompt you for a password. This is because [it uses the `unix_socket` authentication plugin](https://mariadb.com/kb/en/authentication-from-mariadb-104/) by default.
 * Install [nvm](https://github.com/nvm-sh/nvm) and [Node.js](https://nodejs.org/en/):
   * `apt install curl -y`
   * `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash`
