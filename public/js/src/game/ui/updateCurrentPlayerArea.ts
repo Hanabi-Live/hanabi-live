@@ -40,7 +40,7 @@ export default () => {
             && globals.elements.playerHands[globals.currentPlayerIndex].isLocked()
         ) {
             specialText = '(locked; may not be able to discard)';
-            text3.fill('red');
+            text3.fill(LABEL_COLOR);
         } else if (
             globals.lobby.settings.hyphenatedConventions
             && globals.elements.noDoubleDiscardBorder!.visible()
