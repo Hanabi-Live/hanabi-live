@@ -173,8 +173,10 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   (this installs the latest version)
 * Clone the server:
   * `sudo apt install git -y`
-  * `git clone https://github.com/Zamiell/hanabi-live.git` <br />
-  (or clone a fork, if you are doing development work)
+  * If you already have an SSH keypair and have the public key attached to your GitHub profile, then use the following command to clone the repostory via SSH:
+    * `git clone git@github.com:Zamiell/hanabi-live.git`
+  * If you do not already have an SSH keypair, then use the following command to clone the repository via HTTPS:
+    * `git clone https://github.com/Zamiell/hanabi-live.git`
   * `cd hanabi-live`
 * Install the project dependencies:
   * `./install/install_dependencies.sh`
