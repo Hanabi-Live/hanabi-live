@@ -16,188 +16,188 @@ import User from './User';
 import * as usersDraw from './usersDraw';
 
 export default () => {
-    for (const [commandName, commandFunction] of commands) {
-        globals.conn.on(commandName, (data: any) => {
-            commandFunction(data);
-        });
-    }
+  for (const [commandName, commandFunction] of commands) {
+    globals.conn.on(commandName, (data: any) => {
+      commandFunction(data);
+    });
+  }
 };
 
 // Define a command handler map
 const commands = new Map();
 
 interface JoinedData {
-    tableID: number,
+  tableID: number,
 }
 commands.set('joined', (data: JoinedData) => {
-    globals.tableID = data.tableID;
+  globals.tableID = data.tableID;
 
-    // We joined a new game, so transition between screens
-    pregame.show();
+  // We joined a new game, so transition between screens
+  pregame.show();
 });
 
 commands.set('game', (data: Game) => {
-    globals.game = data;
+  globals.game = data;
 
-    // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
-    globals.game.baseTime *= 1000;
-    globals.game.timePerTurn *= 1000;
+  // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
+  globals.game.baseTime *= 1000;
+  globals.game.timePerTurn *= 1000;
 
-    pregame.draw();
+  pregame.draw();
 });
 
 commands.set('gameHistory', (dataArray: Array<GameHistory>) => {
-    // data will be an array of all of the games that we have previously played
-    for (const data of dataArray) {
-        globals.history[data.id] = data;
+  // data will be an array of all of the games that we have previously played
+  for (const data of dataArray) {
+    globals.history[data.id] = data;
 
-        if (data.incrementNumGames) {
-            globals.totalGames += 1;
-        }
+    if (data.incrementNumGames) {
+      globals.totalGames += 1;
     }
+  }
 
-    // The server sent us more games because
-    // we clicked on the "Show More History" button
-    if (globals.showMoreHistoryClicked) {
-        globals.showMoreHistoryClicked = false;
-        history.draw();
-    }
+  // The server sent us more games because
+  // we clicked on the "Show More History" button
+  if (globals.showMoreHistoryClicked) {
+    globals.showMoreHistoryClicked = false;
+    history.draw();
+  }
 
-    const shownGames = Object.keys(globals.history).length;
-    $('#nav-buttons-history-shown-games').html(shownGames.toString());
-    $('#nav-buttons-history-total-games').html(globals.totalGames.toString());
-    if (shownGames === globals.totalGames) {
-        $('#lobby-history-show-more').hide();
-    }
+  const shownGames = Object.keys(globals.history).length;
+  $('#nav-buttons-history-shown-games').html(shownGames.toString());
+  $('#nav-buttons-history-total-games').html(globals.totalGames.toString());
+  if (shownGames === globals.totalGames) {
+    $('#lobby-history-show-more').hide();
+  }
 });
 
 commands.set('gameHistoryOtherScores', (data: Array<GameHistory>) => {
-    history.drawOtherScores(data);
+  history.drawOtherScores(data);
 });
 
 commands.set('left', () => {
-    // We left a table, so transition between screens
-    pregame.hide();
+  // We left a table, so transition between screens
+  pregame.hide();
 });
 
 interface NameData {
-    name: string,
+  name: string,
 }
 commands.set('name', (data: NameData) => {
-    globals.randomName = data.name;
+  globals.randomName = data.name;
 });
 
 interface SoundLobbyData {
-    file: string,
+  file: string,
 }
 commands.set('soundLobby', (data: SoundLobbyData) => {
-    sounds.play(data.file);
+  sounds.play(data.file);
 });
 
 // Received by the client when a table is created or modified
 commands.set('table', (data: Table) => {
-    tableSet(data);
-    if (globals.currentScreen === 'lobby') {
-        tablesDraw();
-    }
+  tableSet(data);
+  if (globals.currentScreen === 'lobby') {
+    tablesDraw();
+  }
 });
 
 const tableSet = (data: Table) => {
-    // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
-    data.baseTime *= 1000;
-    data.timePerTurn *= 1000;
+  // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
+  data.baseTime *= 1000;
+  data.timePerTurn *= 1000;
 
-    globals.tableMap.set(data.id, data);
+  globals.tableMap.set(data.id, data);
 };
 
 // Received by the client when a table no longer has any members present
 interface TableGoneData {
-    id: number,
+  id: number,
 }
 commands.set('tableGone', (data: TableGoneData) => {
-    globals.tableMap.delete(data.id);
+  globals.tableMap.delete(data.id);
 
-    if (globals.currentScreen === 'lobby') {
-        tablesDraw();
-    }
+  if (globals.currentScreen === 'lobby') {
+    tablesDraw();
+  }
 });
 
 // Received by the client upon initial connection
 commands.set('tableList', (dataList: Array<Table>) => {
-    for (const data of dataList) {
-        tableSet(data);
-    }
-    if (globals.currentScreen === 'lobby') {
-        tablesDraw();
-    }
+  for (const data of dataList) {
+    tableSet(data);
+  }
+  if (globals.currentScreen === 'lobby') {
+    tablesDraw();
+  }
 });
 
 interface TableProgressData {
-    id: number,
-    progress: number,
+  id: number,
+  progress: number,
 }
 
 commands.set('tableProgress', (data: TableProgressData) => {
-    const table = globals.tableMap.get(data.id);
-    if (!table) {
-        return;
-    }
-    table.progress = data.progress;
+  const table = globals.tableMap.get(data.id);
+  if (!table) {
+    return;
+  }
+  table.progress = data.progress;
 
-    if (globals.currentScreen === 'lobby') {
-        $(`#status-${data.id}`).html(data.progress.toString());
-    }
+  if (globals.currentScreen === 'lobby') {
+    $(`#status-${data.id}`).html(data.progress.toString());
+  }
 });
 
 interface TableStartData {
-    replay: boolean,
+  replay: boolean,
 }
 commands.set('tableStart', (data: TableStartData) => {
-    if (!data.replay) {
-        pregame.hide();
-    }
-    gameMain.show();
+  if (!data.replay) {
+    pregame.hide();
+  }
+  gameMain.show();
 });
 
 // Received by the client when a user connect or has a new status
 commands.set('user', (data: User) => {
-    globals.userMap.set(data.id, data);
-    if (globals.currentScreen === 'lobby') {
-        usersDraw.draw();
-    }
+  globals.userMap.set(data.id, data);
+  if (globals.currentScreen === 'lobby') {
+    usersDraw.draw();
+  }
 });
 
 commands.set('userList', (dataList: Array<User>) => {
-    for (const data of dataList) {
-        globals.userMap.set(data.id, data);
-    }
-    if (globals.currentScreen === 'lobby') {
-        usersDraw.draw();
-    }
+  for (const data of dataList) {
+    globals.userMap.set(data.id, data);
+  }
+  if (globals.currentScreen === 'lobby') {
+    usersDraw.draw();
+  }
 });
 
 // Received by the client when a user disconnects
 interface UserLeftData {
-    id: number,
+  id: number,
 }
 commands.set('userLeft', (data: UserLeftData) => {
-    globals.userMap.delete(data.id);
+  globals.userMap.delete(data.id);
 
-    if (globals.currentScreen === 'lobby') {
-        usersDraw.draw();
-    }
+  if (globals.currentScreen === 'lobby') {
+    usersDraw.draw();
+  }
 });
 
 interface UserInactiveData {
-    id: number,
-    inactive: boolean,
+  id: number,
+  inactive: boolean,
 }
 commands.set('userInactive', (data: UserInactiveData) => {
-    const user = globals.userMap.get(data.id);
-    if (!user) {
-        throw new Error(`Failed to get the user for the ID of "${data.id}".`);
-    }
+  const user = globals.userMap.get(data.id);
+  if (!user) {
+    throw new Error(`Failed to get the user for the ID of "${data.id}".`);
+  }
 
-    user.inactive = data.inactive;
-    usersDraw.setInactive(user.id, user.inactive);
+  user.inactive = data.inactive;
+  usersDraw.setInactive(user.id, user.inactive);
 });

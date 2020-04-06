@@ -2,11 +2,11 @@
 // On the client, the color is a rich object
 // On the server, the color is a simple integer mapping
 export default class MsgClue {
-    type: number;
-    value: number;
+  type: number;
+  value: number;
 
-    constructor(type: number, value: number) {
-        this.type = type;
-        this.value = value;
-    }
+  constructor(type: number, value: number) {
+    this.type = type;
+    this.value = value;
+  }
 }

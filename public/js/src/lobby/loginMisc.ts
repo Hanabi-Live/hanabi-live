@@ -11,16 +11,16 @@ import tablesDraw from './tablesDraw';
 import * as usersDraw from './usersDraw';
 
 export const hide = (firstTimeUser: boolean) => {
-    // Hide the login screen
-    $('#login').hide();
+  // Hide the login screen
+  $('#login').hide();
 
-    if (firstTimeUser && window.location.hostname !== 'localhost') {
-        $('#tutorial').fadeIn(FADE_TIME);
-        return;
-    }
-    $('#tutorial').hide();
+  if (firstTimeUser && window.location.hostname !== 'localhost') {
+    $('#tutorial').fadeIn(FADE_TIME);
+    return;
+  }
+  $('#tutorial').hide();
 
-    /*
+  /*
         Disable scroll bars
         Even with height and width 100%,
         the scroll bar can pop up when going back from a game to the lobby
@@ -31,27 +31,27 @@ export const hide = (firstTimeUser: boolean) => {
         We need to scroll to the top of the screen before disabling the scroll bars
         or else the lobby can become misaligned when logging in from a scroll-down state
     */
-    window.scrollTo(0, 0);
-    $('body').css('overflow', 'hidden');
+  window.scrollTo(0, 0);
+  $('body').css('overflow', 'hidden');
 
-    // Show the lobby
-    globals.currentScreen = 'lobby';
-    tablesDraw();
-    usersDraw.draw();
-    $('#lobby').show();
-    $('#lobby-history').hide();
-    // We can't hide this element by default in "index.html" or else the "No game history" text
-    // will not be centered
-    nav.show('games');
-    $('#lobby-chat-input').focus();
+  // Show the lobby
+  globals.currentScreen = 'lobby';
+  tablesDraw();
+  usersDraw.draw();
+  $('#lobby').show();
+  $('#lobby-history').hide();
+  // We can't hide this element by default in "index.html" or else the "No game history" text
+  // will not be centered
+  nav.show('games');
+  $('#lobby-chat-input').focus();
 };
 
 export const formError = (msg: string) => {
-    // For some reason this has to be invoked asycnronously in order to work properly
-    setTimeout(() => {
-        $('#login-ajax').hide();
-        $('#login-button').removeClass('disabled');
-        $('#login-alert').html(msg);
-        $('#login-alert').fadeIn(FADE_TIME);
-    }, 0);
+  // For some reason this has to be invoked asycnronously in order to work properly
+  setTimeout(() => {
+    $('#login-ajax').hide();
+    $('#login-button').removeClass('disabled');
+    $('#login-alert').html(msg);
+    $('#login-alert').fadeIn(FADE_TIME);
+  }, 0);
 };

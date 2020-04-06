@@ -8,12 +8,12 @@ import globals from './globals';
 
 // Resets the fade for every card in game
 export default () => {
-    if (globals.animateFast) {
-        return;
-    }
+  if (globals.animateFast) {
+    return;
+  }
 
-    for (let i = 0; i < globals.indexOfLastDrawnCard; i++) {
-        const card = globals.deck[i];
-        card.setFade();
-    }
+  for (let i = 0; i < globals.indexOfLastDrawnCard; i++) {
+    const card = globals.deck[i];
+    card.setFade();
+  }
 };

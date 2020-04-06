@@ -3,148 +3,148 @@ import Konva from 'konva';
 import FitText from './FitText';
 
 export default class Button extends Konva.Group {
-    enabled: boolean = true;
-    pressed: boolean = false;
+  enabled: boolean = true;
+  pressed: boolean = false;
 
-    background: Konva.Rect;
-    textElement: FitText | null = null;
-    imageElement: Konva.Image | null = null;
-    imageDisabledElement: Konva.Image | null = null;
+  background: Konva.Rect;
+  textElement: FitText | null = null;
+  imageElement: Konva.Image | null = null;
+  imageDisabledElement: Konva.Image | null = null;
 
-    tooltipName: string = '';
-    tooltipContent: string = '';
+  tooltipName: string = '';
+  tooltipContent: string = '';
 
-    constructor(config: Konva.ContainerConfig, images?: Array<HTMLImageElement>) {
-        super(config);
-        this.listening(true);
+  constructor(config: Konva.ContainerConfig, images?: Array<HTMLImageElement>) {
+    super(config);
+    this.listening(true);
 
-        // Local variables
-        const w = this.width();
-        const h = this.height();
+    // Local variables
+    const w = this.width();
+    const h = this.height();
 
-        this.background = new Konva.Rect({
-            x: 0,
-            y: 0,
-            width: w,
-            height: h,
-            cornerRadius: 0.12 * h,
-            fill: 'black',
-            opacity: 0.6,
+    this.background = new Konva.Rect({
+      x: 0,
+      y: 0,
+      width: w,
+      height: h,
+      cornerRadius: 0.12 * h,
+      fill: 'black',
+      opacity: 0.6,
+    });
+    this.add(this.background);
+
+    this.textElement = null;
+    this.imageElement = null;
+    if (config.text) {
+      this.textElement = new FitText({
+        x: 0,
+        y: 0.275 * h,
+        width: w,
+        height: 0.5 * h,
+        fontSize: 0.5 * h,
+        fontFamily: 'Verdana',
+        fill: 'white',
+        align: 'center',
+        text: config.text,
+        listening: false,
+      });
+      this.add(this.textElement);
+    } else if (images && images.length > 0) {
+      this.imageElement = new Konva.Image({
+        x: 0.2 * w,
+        y: 0.2 * h,
+        width: 0.6 * w,
+        height: 0.6 * h,
+        image: images[0],
+        listening: false,
+      });
+      this.add(this.imageElement);
+
+      if (images.length >= 2) {
+        this.imageDisabledElement = new Konva.Image({
+          x: 0.2 * w,
+          y: 0.2 * h,
+          width: 0.6 * w,
+          height: 0.6 * h,
+          image: images[1],
+          listening: false,
+          visible: false,
         });
-        this.add(this.background);
-
-        this.textElement = null;
-        this.imageElement = null;
-        if (config.text) {
-            this.textElement = new FitText({
-                x: 0,
-                y: 0.275 * h,
-                width: w,
-                height: 0.5 * h,
-                fontSize: 0.5 * h,
-                fontFamily: 'Verdana',
-                fill: 'white',
-                align: 'center',
-                text: config.text,
-                listening: false,
-            });
-            this.add(this.textElement);
-        } else if (images && images.length > 0) {
-            this.imageElement = new Konva.Image({
-                x: 0.2 * w,
-                y: 0.2 * h,
-                width: 0.6 * w,
-                height: 0.6 * h,
-                image: images[0],
-                listening: false,
-            });
-            this.add(this.imageElement);
-
-            if (images.length >= 2) {
-                this.imageDisabledElement = new Konva.Image({
-                    x: 0.2 * w,
-                    y: 0.2 * h,
-                    width: 0.6 * w,
-                    height: 0.6 * h,
-                    image: images[1],
-                    listening: false,
-                    visible: false,
-                });
-                this.add(this.imageDisabledElement);
-            }
-        }
-
-        const resetButton = () => {
-            this.background.fill('black');
-            const layer = this.getLayer();
-            if (layer) {
-                layer.batchDraw();
-            }
-
-            this.background.off('mouseup');
-            this.background.off('mouseout');
-        };
-        this.background.on('mousedown', () => {
-            this.background.fill('#888888');
-            const layer = this.getLayer();
-            if (layer) {
-                layer.batchDraw();
-            }
-
-            this.background.on('mouseout', () => {
-                resetButton();
-            });
-            this.background.on('mouseup', () => {
-                resetButton();
-            });
-        });
+        this.add(this.imageDisabledElement);
+      }
     }
 
-    setEnabled(enabled: boolean) {
-        if (enabled === this.enabled) {
-            return;
-        }
-        this.enabled = enabled;
+    const resetButton = () => {
+      this.background.fill('black');
+      const layer = this.getLayer();
+      if (layer) {
+        layer.batchDraw();
+      }
 
-        if (this.textElement) {
-            this.textElement.fill(enabled ? 'white' : '#444444');
-        }
+      this.background.off('mouseup');
+      this.background.off('mouseout');
+    };
+    this.background.on('mousedown', () => {
+      this.background.fill('#888888');
+      const layer = this.getLayer();
+      if (layer) {
+        layer.batchDraw();
+      }
 
-        if (this.imageElement && this.imageDisabledElement) {
-            this.imageElement.visible(enabled);
-            this.imageDisabledElement.visible(!enabled);
-        }
+      this.background.on('mouseout', () => {
+        resetButton();
+      });
+      this.background.on('mouseup', () => {
+        resetButton();
+      });
+    });
+  }
 
-        this.background.listening(enabled);
+  setEnabled(enabled: boolean) {
+    if (enabled === this.enabled) {
+      return;
+    }
+    this.enabled = enabled;
 
-        const layer = this.getLayer();
-        if (layer) {
-            layer.batchDraw();
-        }
+    if (this.textElement) {
+      this.textElement.fill(enabled ? 'white' : '#444444');
     }
 
-    setPressed(pressed: boolean) {
-        this.pressed = pressed;
-        this.background.fill(pressed ? '#cccccc' : 'black');
-        const layer = this.getLayer();
-        if (layer) {
-            layer.batchDraw();
-        }
+    if (this.imageElement && this.imageDisabledElement) {
+      this.imageElement.visible(enabled);
+      this.imageDisabledElement.visible(!enabled);
     }
 
-    text(newText: string) {
-        if (this.textElement) {
-            this.textElement.fitText(newText);
-        } else {
-            throw new Error('The "text()" method was called on a non-text Button.');
-        }
-    }
+    this.background.listening(enabled);
 
-    fill(newFill: string) {
-        if (this.textElement) {
-            this.textElement.fill(newFill);
-        } else {
-            throw new Error('The "fill()" method was called on a non-text Button.');
-        }
+    const layer = this.getLayer();
+    if (layer) {
+      layer.batchDraw();
     }
+  }
+
+  setPressed(pressed: boolean) {
+    this.pressed = pressed;
+    this.background.fill(pressed ? '#cccccc' : 'black');
+    const layer = this.getLayer();
+    if (layer) {
+      layer.batchDraw();
+    }
+  }
+
+  text(newText: string) {
+    if (this.textElement) {
+      this.textElement.fitText(newText);
+    } else {
+      throw new Error('The "text()" method was called on a non-text Button.');
+    }
+  }
+
+  fill(newFill: string) {
+    if (this.textElement) {
+      this.textElement.fill(newFill);
+    } else {
+      throw new Error('The "fill()" method was called on a non-text Button.');
+    }
+  }
 }

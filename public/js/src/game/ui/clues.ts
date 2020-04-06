@@ -13,36 +13,36 @@ import RankButton from './RankButton';
 import * as turn from './turn';
 
 export const checkLegal = () => {
-    let clueTargetButtonGroup;
-    if (globals.hypothetical) {
-        clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
-    } else {
-        clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
-    }
-    const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
-    const { clueTypeButtonGroup } = globals.elements;
-    const clueButton = clueTypeButtonGroup!.getPressed() as ColorButton | RankButton;
+  let clueTargetButtonGroup;
+  if (globals.hypothetical) {
+    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
+  } else {
+    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
+  }
+  const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
+  const { clueTypeButtonGroup } = globals.elements;
+  const clueButton = clueTypeButtonGroup!.getPressed() as ColorButton | RankButton;
 
-    if (
-        !target // They have not selected a target player
+  if (
+    !target // They have not selected a target player
         || !clueButton // They have not selected a clue type
-    ) {
-        globals.elements.giveClueButton!.setEnabled(false);
-        return;
-    }
+  ) {
+    globals.elements.giveClueButton!.setEnabled(false);
+    return;
+  }
 
-    const who = (target as PlayerButton).targetIndex;
-    if (who === globals.currentPlayerIndex) {
-        // They are in a hypothetical and trying to give a clue to the current player
-        globals.elements.giveClueButton!.setEnabled(false);
-        return;
-    }
+  const who = (target as PlayerButton).targetIndex;
+  if (who === globals.currentPlayerIndex) {
+    // They are in a hypothetical and trying to give a clue to the current player
+    globals.elements.giveClueButton!.setEnabled(false);
+    return;
+  }
 
-    const touchedAtLeastOneCard = showClueMatch(who, clueButton.clue);
+  const touchedAtLeastOneCard = showClueMatch(who, clueButton.clue);
 
-    // By default, only enable the "Give Clue" button if the clue "touched"
-    // one or more cards in the hand
-    const enabled = touchedAtLeastOneCard
+  // By default, only enable the "Give Clue" button if the clue "touched"
+  // one or more cards in the hand
+  const enabled = touchedAtLeastOneCard
         // Make an exception if they have the optional setting for "Empty Clues" turned on
         || globals.emptyClues
         // Make an exception for variants where color clues are always allowed
@@ -56,131 +56,131 @@ export const checkLegal = () => {
             && who === (globals.playerUs - 1 + globals.playerNames.length)
             % globals.playerNames.length);
 
-    globals.elements.giveClueButton!.setEnabled(enabled);
+  globals.elements.giveClueButton!.setEnabled(enabled);
 };
 
 const showClueMatch = (target: number, clue: Clue) => {
-    arrows.hideAll();
+  arrows.hideAll();
 
-    let touchedAtLeastOneCard = false;
-    const hand = globals.elements.playerHands[target].children;
-    for (let i = 0; i < hand.length; i++) {
-        const child = globals.elements.playerHands[target].children[i];
-        const card = child.children[0];
-        if (variantIsCardTouched(clue, card)) {
-            touchedAtLeastOneCard = true;
-            arrows.set(i, card, null, clue);
-        }
+  let touchedAtLeastOneCard = false;
+  const hand = globals.elements.playerHands[target].children;
+  for (let i = 0; i < hand.length; i++) {
+    const child = globals.elements.playerHands[target].children[i];
+    const card = child.children[0];
+    if (variantIsCardTouched(clue, card)) {
+      touchedAtLeastOneCard = true;
+      arrows.set(i, card, null, clue);
     }
+  }
 
-    return touchedAtLeastOneCard;
+  return touchedAtLeastOneCard;
 };
 
 export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
-    const hand = globals.elements.playerHands[target];
-    const cardsTouched: Array<number> = []; // An array of the card orders
-    for (const child of hand.children.toArray()) {
-        const card = child.children[0];
-        if (variantIsCardTouched(msgClueToClue(clue, globals.variant), card)) {
-            cardsTouched.push(card.order);
-        }
+  const hand = globals.elements.playerHands[target];
+  const cardsTouched: Array<number> = []; // An array of the card orders
+  for (const child of hand.children.toArray()) {
+    const card = child.children[0];
+    if (variantIsCardTouched(msgClueToClue(clue, globals.variant), card)) {
+      cardsTouched.push(card.order);
     }
+  }
 
-    return cardsTouched;
+  return cardsTouched;
 };
 
 // This mirrors the function in "variants.go"
 const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
-    // Some detrimental characters are not able to see other people's hands
-    if (card.suit === null) {
-        return false;
+  // Some detrimental characters are not able to see other people's hands
+  if (card.suit === null) {
+    return false;
+  }
+
+  if (clue.type === CLUE_TYPE.RANK) {
+    if (globals.variant.rankCluesTouchNothing) {
+      return false;
     }
 
-    if (clue.type === CLUE_TYPE.RANK) {
-        if (globals.variant.rankCluesTouchNothing) {
-            return false;
-        }
+    if (card.suit.allClueRanks) {
+      return true;
+    }
+    if (card.suit.noClueRanks) {
+      return false;
+    }
 
-        if (card.suit.allClueRanks) {
-            return true;
-        }
-        if (card.suit.noClueRanks) {
-            return false;
-        }
-
-        if (
-            // Checking for "Pink-" also checks for "Light-Pink-"
-            (globals.variant.name.includes('Pink-Ones') && card.rank === 1)
+    if (
+    // Checking for "Pink-" also checks for "Light-Pink-"
+      (globals.variant.name.includes('Pink-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Omni-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Pink-Fives') && card.rank === 5)
             || (globals.variant.name.includes('Omni-Fives') && card.rank === 5)
-        ) {
-            return true;
-        }
-        if (
-            (globals.variant.name.includes('Brown-Ones') && card.rank === 1)
+    ) {
+      return true;
+    }
+    if (
+      (globals.variant.name.includes('Brown-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Null-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Muddy-Rainbow-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Brown-Fives') && card.rank === 5)
             || (globals.variant.name.includes('Null-Fives') && card.rank === 5)
             || (globals.variant.name.includes('Muddy-Rainbow-Fives') && card.rank === 5)
-        ) {
-            return false;
-        }
-
-        return clue.value === card.rank;
+    ) {
+      return false;
     }
 
-    if (clue.type === CLUE_TYPE.COLOR) {
-        if (globals.variant.colorCluesTouchNothing) {
-            return false;
-        }
+    return clue.value === card.rank;
+  }
 
-        if (card.suit.allClueColors) {
-            return true;
-        }
-        if (card.suit.noClueColors) {
-            return false;
-        }
+  if (clue.type === CLUE_TYPE.COLOR) {
+    if (globals.variant.colorCluesTouchNothing) {
+      return false;
+    }
 
-        if (
-            // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
-            (globals.variant.name.includes('Rainbow-Ones') && card.rank === 1)
+    if (card.suit.allClueColors) {
+      return true;
+    }
+    if (card.suit.noClueColors) {
+      return false;
+    }
+
+    if (
+    // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
+      (globals.variant.name.includes('Rainbow-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Omni-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Rainbow-Fives') && card.rank === 5)
             || (globals.variant.name.includes('Omni-Fives') && card.rank === 5)
-        ) {
-            return true;
-        }
-        if (
-            (globals.variant.name.includes('White-Ones') && card.rank === 1)
+    ) {
+      return true;
+    }
+    if (
+      (globals.variant.name.includes('White-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Null-Ones') && card.rank === 1)
             || (globals.variant.name.includes('Light-Pink-Ones') && card.rank === 1)
             || (globals.variant.name.includes('White-Fives') && card.rank === 5)
             || (globals.variant.name.includes('Null-Fives') && card.rank === 5)
             || (globals.variant.name.includes('Light-Pink-Fives') && card.rank === 5)
-        ) {
-            return false;
-        }
-
-        return card.suit.clueColors.includes(clue.value as Color);
+    ) {
+      return false;
     }
 
-    return false;
+    return card.suit.clueColors.includes(clue.value as Color);
+  }
+
+  return false;
 };
 
 export const give = () => {
-    let clueTargetButtonGroup;
-    if (globals.hypothetical) {
-        clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
-    } else {
-        clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
-    }
-    const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
-    const { clueTypeButtonGroup } = globals.elements;
-    const clueButton = clueTypeButtonGroup!.getPressed() as ColorButton | RankButton;
-    if (
-        (!globals.ourTurn && !globals.hypothetical) // We can only give clues on our turn
+  let clueTargetButtonGroup;
+  if (globals.hypothetical) {
+    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
+  } else {
+    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
+  }
+  const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
+  const { clueTypeButtonGroup } = globals.elements;
+  const clueButton = clueTypeButtonGroup!.getPressed() as ColorButton | RankButton;
+  if (
+    (!globals.ourTurn && !globals.hypothetical) // We can only give clues on our turn
         || globals.clues === 0 // We can only give a clue if there is one available
         || !target // We might have not selected a clue recipient
         || !clueButton // We might have not selected a type of clue
@@ -188,14 +188,14 @@ export const give = () => {
         || !globals.elements.giveClueButton!.enabled
         // Prevent the user from accidentally giving a clue
         || (Date.now() - globals.UIClickTime < 1000)
-    ) {
-        return;
-    }
+  ) {
+    return;
+  }
 
-    // Send the message to the server
-    turn.end({
-        type: ACTION.CLUE,
-        target: target.targetIndex,
-        clue: clueToMsgClue(clueButton.clue, globals.variant),
-    });
+  // Send the message to the server
+  turn.end({
+    type: ACTION.CLUE,
+    target: target.targetIndex,
+    clue: clueToMsgClue(clueButton.clue, globals.variant),
+  });
 };

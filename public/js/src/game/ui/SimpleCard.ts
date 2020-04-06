@@ -1,4 +1,4 @@
 export default interface SimpleCard {
-    suit: number,
-    rank: number,
+  suit: number,
+  rank: number,
 }
