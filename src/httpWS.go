@@ -3,6 +3,7 @@ package main
 import (
 	"net"
 	"net/http"
+	"time"
 
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -154,6 +155,9 @@ func httpWS(c *gin.Context) {
 	keys["currentTable"] = -1    // By default, the user is not at a table
 	keys["status"] = statusLobby // By default, the user is in the lobby
 	keys["inactive"] = false
+	keys["fakeUser"] = false
+	keys["rateLimitAllowance"] = rateLimitRate
+	keys["rateLimitLastCheck"] = time.Now()
 
 	// Validation succeeded, so establish the WebSocket connection
 	if err := m.HandleRequestWithKeys(w, r, keys); err != nil {

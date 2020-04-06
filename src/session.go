@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"time"
 
 	melody "gopkg.in/olahol/melody.v1"
 )
@@ -137,6 +138,48 @@ func (s *Session) Inactive() bool {
 		return false
 	} else {
 		return v.(bool)
+	}
+}
+
+func (s *Session) FakeUser() bool {
+	if s == nil {
+		logger.Error("The \"FakeUser\" method was called for a nil session.")
+		return false
+	}
+
+	if v, exists := s.Get("fakeUser"); !exists {
+		logger.Error("Failed to get \"fakeUser\" from a session.")
+		return false
+	} else {
+		return v.(bool)
+	}
+}
+
+func (s *Session) RateLimitAllowance() float64 {
+	if s == nil {
+		logger.Error("The \"RateLimitAllowance\" method was called for a nil session.")
+		return rateLimitRate
+	}
+
+	if v, exists := s.Get("rateLimitAllowance"); !exists {
+		logger.Error("Failed to get \"rateLimitAllowance\" from a session.")
+		return -1
+	} else {
+		return v.(float64)
+	}
+}
+
+func (s *Session) RateLimitLastCheck() time.Time {
+	if s == nil {
+		logger.Error("The \"RateLimitLastCheck\" method was called for a nil session.")
+		return time.Now()
+	}
+
+	if v, exists := s.Get("rateLimitLastCheck"); !exists {
+		logger.Error("Failed to get \"rateLimitLastCheck\" from a session.")
+		return time.Now()
+	} else {
+		return v.(time.Time)
 	}
 }
 

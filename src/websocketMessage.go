@@ -1,23 +1,30 @@
-package main
-
-import (
-	"encoding/json"
-	"strconv"
-	"strings"
-
-	sentry "github.com/getsentry/sentry-go"
-	melody "gopkg.in/olahol/melody.v1" // A WebSocket framework
-)
-
 /*
-	On top of the WebSocket protocol, the client and the server communicate using a specific format
-	based on the Golem WebSocket framework protocol. First, the name of the command is sent, then a
-	space, then the JSON of the data.
+	On top of the WebSocket protocol, he client and the server communicate using a specific format
+	based on the Golem WebSocket framework protocol
+	First, the name of the command is sent, then a 	space, then the JSON of the data
 
 	Example:
 		tableJoin {"gameID":1}
 		action {"target":1,"type":2}
 */
+
+package main
+
+import (
+	"encoding/json"
+	"net"
+	"strconv"
+	"strings"
+	"time"
+
+	sentry "github.com/getsentry/sentry-go"
+	melody "gopkg.in/olahol/melody.v1"
+)
+
+const (
+	rateLimitRate = float64(50) // Number of messages sent
+	rateLimitPer  = float64(2)  // Per seconds
+)
 
 func websocketMessage(ms *melody.Session, msg []byte) {
 	// Lock the command mutex for the duration of the function to ensure synchronous execution
@@ -32,6 +39,29 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 			scope.SetTag("userID", strconv.Itoa(s.UserID()))
 			scope.SetTag("username", s.Username())
 		})
+	}
+
+	if !s.FakeUser() {
+		// Validate that the user is not attempting to flood the server
+		// Algorithm from: http://stackoverflow.com/questions/667508
+		now := time.Now()
+		timePassed := now.Sub(s.RateLimitLastCheck()).Seconds()
+		s.Set("rateLimitLastCheck", now)
+
+		newRateLimitAllowance := s.RateLimitAllowance() + timePassed*(rateLimitRate/rateLimitPer)
+		if newRateLimitAllowance > rateLimitRate {
+			newRateLimitAllowance = rateLimitRate
+		}
+
+		if newRateLimitAllowance < 1 {
+			// They are flooding, so automatically ban them
+			logger.Warning("User \"" + s.Username() + "\" triggered rate-limiting; banning them.")
+			ban(s)
+			return
+		}
+
+		newRateLimitAllowance--
+		s.Set("rateLimitAllowance", newRateLimitAllowance)
 	}
 
 	// Unpack the message to see what kind of command it is
@@ -67,4 +97,32 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 	// Call the command handler for this command
 	logger.Info("Command - " + command + " - " + s.Username())
 	commandMapFunction(s, d)
+}
+
+func ban(s *Session) {
+	// Parse the IP address
+	var ip string
+	if v, _, err := net.SplitHostPort(s.Session.Request.RemoteAddr); err != nil {
+		logger.Error("Failed to parse the IP address in the WebSocket function:", err)
+		return
+	} else {
+		ip = v
+	}
+
+	// Check to see if this IP is already banned
+	if banned, err := models.BannedIPs.Check(ip); err != nil {
+		logger.Error("Failed to check to see if the IP \""+ip+"\" is banned:", err)
+		return
+	} else if banned {
+		return
+	}
+
+	// Insert a new row in the database for this IP
+	if err := models.BannedIPs.Insert(ip, s.UserID()); err != nil {
+		logger.Error("Failed to insert the banned IP row:", err)
+		return
+	}
+
+	logoutUser(s.Username())
+	logger.Info("Successfully banned user \"" + s.Username() + "\" from IP address \"" + ip + "\".")
 }

@@ -423,6 +423,7 @@ func newFakeSession(id int, name string, currentTable int) *Session {
 	keys["firstTimeUser"] = false
 	keys["currentTable"] = currentTable
 	keys["status"] = statusPlaying
+	keys["fakeUser"] = true
 
 	return &Session{
 		&melody.Session{
