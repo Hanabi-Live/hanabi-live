@@ -31,4 +31,12 @@ if [ $AMOUNT_FULL -gt 80 ]; then
 fi
 
 # Upload it to Google Drive
+# Steps to install:
+# 1) go get github.com/prasmussen/gdrive
+# 2) mkdir ~/.gdrive
+# 3) https://console.cloud.google.com/iam-admin/serviceaccounts?project=hanabi-live&folder=&organizationId=&supportedpurview=project
+# 4) Actions --> Create key --> JSON --> Create
+# 5) vim ~/.gdrive/hanabi-live-c3373cecaf32.json
+# 6) Paste it in
+# References: https://github.com/gdrive-org/gdrive/issues/533
 /root/go/bin/gdrive upload "$BACKUPS_DIR/$FILENAME.gz" --service-account "hanabi-live-c3373cecaf32.json" --parent "1nBTIj7n7-QBTlxo79L-Jp19Nc5tpAtIH"
