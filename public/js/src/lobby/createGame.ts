@@ -7,6 +7,7 @@ import shajs from 'sha.js';
 import SlimSelect from 'slim-select';
 import { VARIANTS } from '../constants';
 import variantsJSON from '../data/variants.json';
+import * as debug from '../debug';
 import globals from '../globals';
 import * as misc from '../misc';
 import * as modals from '../modals';
@@ -341,7 +342,7 @@ export const before = () => {
 // (after the tooltip is added to the DOM)
 export const ready = () => {
     // Fill in the "Name" box
-    if (globals.username.startsWith('test')) {
+    if (debug.amTestUser(globals.username)) {
         $('#createTableName').val('test game');
     } else {
         $('#createTableName').val(globals.randomName);

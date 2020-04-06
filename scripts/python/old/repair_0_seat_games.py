@@ -299,7 +299,7 @@ for game_id in game_ids:
             repair_queries.append((game_id, user_id, seat))
 
     else:
-        if  num_actions <= 4 or speedrun_dict[game_id] == 1 or 'test' in usernames or 'test2' in usernames:
+        if num_actions <= 4 or speedrun_dict[game_id] == 1 or 'test' in usernames or 'test2' in usernames:
             delete_queries.append(game_id)
         else:
             print('ERROR: UNABLE TO IDENTIFY THE SEAT FOR PLAYER "' + user_id_to_username[user_id] + '" FOR GAME ID ' + str(game_id))

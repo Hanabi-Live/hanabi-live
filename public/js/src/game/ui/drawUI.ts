@@ -12,6 +12,7 @@ import {
     REPLAY_ARROW_ORDER,
     STACK_BASE_RANK,
 } from '../../constants';
+import * as debug from '../../debug';
 import Arrow from './Arrow';
 import * as arrows from './arrows';
 import backToLobby from './backToLobby';
@@ -488,7 +489,11 @@ const drawBottomLeftButtons = () => {
     });
     globals.layers.UI.add(restartButton as any);
     restartButton.on('click tap', () => {
-        if (globals.speedrun || window.confirm('Are you sure you want to restart the game?')) {
+        if (
+            globals.speedrun
+            || debug.amTestUser(globals.lobby.username)
+            || window.confirm('Are you sure you want to restart the game?')
+        ) {
             globals.lobby.conn.send('tableRestart');
         }
     });
@@ -579,7 +584,11 @@ const drawBottomLeftButtons = () => {
     }, [globals.ImageLoader!.get('skull')!]);
     globals.layers.UI.add(killButton as any);
     killButton.on('click tap', () => {
-        if (globals.speedrun || window.confirm('Are you sure you want to terminate the game?')) {
+        if (
+            globals.speedrun
+            || debug.amTestUser(globals.lobby.username)
+            || window.confirm('Are you sure you want to terminate the game?')
+        ) {
             globals.lobby.conn.send('tableTerminate');
         }
     });
