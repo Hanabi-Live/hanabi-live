@@ -1,8 +1,3 @@
-// This is part 2 of logging in
-// The user must already have performed a POST to "/login" and
-// received a cookie before getting here
-// (the logic for that is contained in the "httpLogin.go" file.)
-
 package main
 
 import (
@@ -14,6 +9,8 @@ import (
 	melody "gopkg.in/olahol/melody.v1"
 )
 
+// websocketConnect is fired when a new Melody WebSocket session is established
+// This is the third step of logging in; users will only get here if authentication was successful
 func websocketConnect(ms *melody.Session) {
 	// Lock the command mutex for the duration of the function to ensure synchronous execution
 	commandMutex.Lock()

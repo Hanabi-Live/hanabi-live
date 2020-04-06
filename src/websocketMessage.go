@@ -1,11 +1,3 @@
-// On top of the WebSocket protocol, he client and the server communicate using a specific format
-// based on the Golem WebSocket framework protocol
-// First, the name of the command is sent, then a 	space, then the JSON of the data
-//
-// Example:
-//   tableJoin {"gameID":1}
-//   action {"target":1,"type":2}
-
 package main
 
 import (
@@ -24,6 +16,17 @@ const (
 	rateLimitPer  = float64(2)  // Per seconds
 )
 
+// websocketMessage is fired every time a WebSocket user sends a message to the server
+// It deciphers the command and then funnels the request to the appropriate command handler
+//
+// On top of the WebSocket protocol, the client and the server communicate using a specific format
+// based on the protocol that the Golem WebSocket framework uses
+// First, the name of the command is sent, then a space,
+// then a JSON string of the data for the command, if any
+//
+// Example:
+//   tableJoin {"gameID":1}
+//   action {"target":1,"type":2}
 func websocketMessage(ms *melody.Session, msg []byte) {
 	// Lock the command mutex for the duration of the function to ensure synchronous execution
 	commandMutex.Lock()
