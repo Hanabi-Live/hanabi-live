@@ -92,14 +92,9 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
     arrow.base.fill(color);
 
     // Clue arrows have a circle that shows the type of clue given
-    const card: HanabiCard = element;
     if (
       globals.variant.name.startsWith('Duck')
-            || (
-              globals.characterAssignments[giver!] === 'Quacker'
-                && card.holder === globals.playerUs
-                && !globals.replay
-            )
+      || (globals.characterAssignments[giver!] === 'Quacker' && !globals.replay)
     ) {
       // Don't show the circle in variants where the clue types are supposed to be hidden
       arrow.circle.hide();
