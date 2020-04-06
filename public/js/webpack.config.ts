@@ -7,6 +7,11 @@ import * as dotenv from 'dotenv';
 // Constants
 const epoch = new Date().getTime();
 
+// Read environment variables
+dotenv.config({
+    path: path.join(__dirname, '..', '..', '.env'),
+});
+
 // Read the version
 const versionPath = path.join(__dirname, 'src', 'data', 'version.json');
 if (!fs.existsSync(versionPath)) {
