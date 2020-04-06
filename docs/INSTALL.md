@@ -220,9 +220,14 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 
 #### Install HTTPS (optional)
 
-* `sudo apt install letsencrypt -y`
-* `letsencrypt certonly --standalone -d hanabi.live -d www.hanabi.live` <br />
-(this creates "/etc/letsencrypt/live/hanabi.live/")
+* `sudo apt update`
+* `sudo apt install software-properties-common`
+* `sudo add-apt-repository universe`
+* `sudo add-apt-repository ppa:certbot/certbot`
+* `sudo apt update`
+* `sudo apt install certbot`
+* `certbot certonly --standalone -d hanabi.live -d www.hanabi.live` <br />
+  (this creates "/etc/letsencrypt/live/hanabi.live/")
 * In the `.env` file:
   * Set `TLS_CERT_FILE` to: `/etc/letsencrypt/live/hanabi.live/fullchain.pem`
   * Set `TLS_KEY_FILE` to: `/etc/letsencrypt/live/hanabi.live/privkey.pem`
