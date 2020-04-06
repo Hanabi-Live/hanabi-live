@@ -1,3 +1,8 @@
+/*
+	The Hanabi server also listens on a separate port that only accepts connections from the local
+	system; this allows administrative tasks to be performed without having to go through a browser
+*/
+
 package main
 
 import (

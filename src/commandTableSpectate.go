@@ -59,11 +59,6 @@ func commandTableSpectate(s *Session, d *CommandData) {
 	// (if provided, they want to spectate from a specific player's perspective)
 	playerIndex := -1
 	if d.Player != "" {
-		if t.Replay {
-			s.Warning("You cannot provide a player index to a replay.")
-			return
-		}
-
 		for i, p := range t.Players {
 			if p.Name == d.Player {
 				playerIndex = i

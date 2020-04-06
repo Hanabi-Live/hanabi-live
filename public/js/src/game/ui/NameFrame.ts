@@ -1,6 +1,7 @@
 // Imports
 import Konva from 'konva';
-import { LABEL_COLOR, REPLAY_ACTION_TYPE } from '../../constants';
+import { LABEL_COLOR } from '../../constants';
+import * as modals from '../../modals';
 import backToLobby from './backToLobby';
 import globals from './globals';
 import * as tooltips from './tooltips';
@@ -60,8 +61,10 @@ export default class NameFrame extends Konva.Group {
                 globals.elements.fullActionLog!.showPlayerActions(username);
             } else if (event.evt.which === 3) { // Right-click
                 if (!globals.replay && globals.spectating) {
-                    // As a spectator,
-                    // right-click on the name frame to spectate the game from their perspective
+                    // As a spectator in an ongoing game, right-clicking on a name frame reloads the
+                    // page, shifting the seat and hiding the appropriate cards
+                    // (so that you can spectate from a specific player's perspective)
+                    event.evt.preventDefault();
                     setTimeout(() => {
                         globals.lobby.conn.send('tableSpectate', {
                             tableID: globals.lobby.tableID,
@@ -69,10 +72,29 @@ export default class NameFrame extends Konva.Group {
                         });
                     }, 20);
                     backToLobby();
-                } else if (globals.sharedReplay) {
-                    // In a shared replay,
-                    // right-click on the name frame to pass the replay leader to them
-                    giveLeader(username);
+                } else if (globals.replay) {
+                    // In a replay, right-clicking on a name frame reloads the page and shifts the
+                    // seat (so that you can view the game from a specific player's perspective)
+                    if (globals.spectators.length === 1) {
+                        // Shifting perspectives will not work if we are the only player in the
+                        // replay, since going back to the lobby will automatically end the replay
+                        let msg = 'Due to technical limitations, you cannot shift your ';
+                        msg += 'perspective if you are the only person in a replay.';
+                        setTimeout(() => {
+                            // Show the warning modal in a callback so that the right-click context
+                            // menu does not show up (otherwise, the right-click would be passed
+                            // through to the non-game part of the page)
+                            modals.warningShow(msg);
+                        }, 0);
+                        return;
+                    }
+                    setTimeout(() => {
+                        globals.lobby.conn.send('tableSpectate', {
+                            tableID: globals.lobby.tableID,
+                            player: username,
+                        });
+                    }, 20);
+                    backToLobby();
                 }
             }
         });
@@ -171,30 +193,3 @@ export default class NameFrame extends Konva.Group {
         this.playerName.fill(color);
     }
 }
-
-/*
-    Misc. functions
-*/
-
-// Transfer leadership of the shared replay to another player
-const giveLeader = (username: string) => {
-    // Only proceed if we are in a shared replay
-    if (!globals.sharedReplay) {
-        return;
-    }
-
-    // Only proceed if we are the replay leader
-    if (!globals.amSharedReplayLeader) {
-        return;
-    }
-
-    // Only proceed if we chose someone else
-    if (username === globals.lobby.username) {
-        return;
-    }
-
-    globals.lobby.conn.send('replayAction', {
-        type: REPLAY_ACTION_TYPE.LEADER_TRANSFER,
-        name: username,
-    });
-};

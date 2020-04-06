@@ -38,6 +38,8 @@ type CommandData struct {
 
 	// tableSpectate
 	Player string `json:"player"` // Optional
+	// (it might be simpler to use "seat" instead of "player",
+	// but this gets tricky since 0 is the default value of an int and 0 is a valid seat number)
 
 	// replayCreate
 	Source     string   `json:"source"`
