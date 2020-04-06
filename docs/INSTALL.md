@@ -164,7 +164,7 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
     * Follow the prompts.
     * Note that even if you change the root password, if you are the root user, MariaDB will not prompt you for a password. This is because [it uses the `unix_socket` authentication plugin](https://mariadb.com/kb/en/authentication-from-mariadb-104/) by default.
 * Install [nvm](https://github.com/nvm-sh/nvm) and [Node.js](https://nodejs.org/en/):
-  * `apt install curl -y`
+  * `sudo apt install curl -y`
   * `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash`
   * `export NVM_DIR="$HOME/.nvm"`
   * `[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"`
@@ -172,8 +172,8 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `nvm install node` <br />
   (this installs the latest version)
 * Clone the server:
-  * `apt install git -y`
-  * `git clone git@github.com:Zamiell/hanabi-live.git` <br />
+  * `sudo apt install git -y`
+  * `git clone https://github.com/Zamiell/hanabi-live.git` <br />
   (or clone a fork, if you are doing development work)
   * `cd hanabi-live`
 * Install the project dependencies:
@@ -188,6 +188,7 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
     (change the username and password to the values that you specified in the ".env" file)
     * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
     * `FLUSH PRIVILEGES;`
+    * `EXIT`
   * `./install/install_database_schema.sh`
 * See [Running the Server](#running-the-server).
 
