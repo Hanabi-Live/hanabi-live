@@ -64,8 +64,7 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 
 	if usingSentry {
 		// Tags allow the user ID and username to be attached to a particular error message,
-		// which can be helpful for debugging
-		// (since we can ask a user a question about how they caused the error)
+		// which can be helpful for debugging (since we can ask the user how they caused the error)
 		sentry.ConfigureScope(func(scope *sentry.Scope) {
 			scope.SetTag("userID", strconv.Itoa(s.UserID()))
 			scope.SetTag("username", s.Username())

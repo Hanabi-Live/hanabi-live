@@ -4,7 +4,12 @@
 */
 
 // Imports
-import { ACTION, CLUE_TYPE, REPLAY_ACTION_TYPE } from '../../constants';
+import {
+    ACTION,
+    CLUE_TYPE,
+    REPLAY_ACTION_TYPE,
+    MAX_CLUE_NUM,
+} from '../../constants';
 import * as action from './action';
 import { Action } from './actions';
 import { getTouchedCardsFromClue } from './clues';
@@ -214,7 +219,7 @@ export const send = (hypoAction: Action) => {
             globals.score += 1;
         }
         if (
-            (type === 'play' && card.rank === 5)
+            (type === 'play' && card.rank === 5 && globals.clues < MAX_CLUE_NUM)
             || type === 'discard'
         ) {
             globals.clues += 1;
