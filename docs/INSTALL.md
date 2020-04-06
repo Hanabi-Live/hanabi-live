@@ -244,10 +244,17 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 #### Install as a service (optional)
 
 * Install Supervisor:
-  * `sudo apt install supervisor -y`
+  * `sudo apt install python-pip -y`
+  * `pip install supervisor`
+  * `mkdir -p /etc/supervisor/conf.d`
+  * `mkdir -p /var/log/supervisor`
 * Copy the configuration files:
   * `cp "/root/hanabi-live/install/supervisor/supervisord.conf" "/etc/supervisor/supervisord.conf"`
   * `cp "/root/hanabi-live/install/supervisor/hanabi-live.conf" "/etc/supervisor/conf.d/hanabi-live.conf"`
+  * `cp "/root/hanabi-live/install/supervisor/supervisord.service" "/etc/systemd/system/supervisord.service"`
+* Start it:
+  * `systemctl daemon-reload`
+  * `systemctl start supervisord`
 * Load the new configuration:
   * `supervisorctl reload`
 
