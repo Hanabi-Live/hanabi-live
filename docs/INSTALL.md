@@ -148,6 +148,9 @@ The following instructions will set up the server as well as the linters. We ass
 These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments may be needed if you are on a different flavor of Linux.
 
 * Install [Golang](https://golang.org/):
+  * `sudo apt update`
+  * `sudo apt upgrade -y`
+  * `sudo apt install software-properties-common -y`
   * `sudo add-apt-repository ppa:longsleep/golang-backports` <br />
   (if you don't do this, it will install a version of Golang that is very old)
   * `sudo apt update`
@@ -160,7 +163,8 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `sudo mysql_secure_installation`
     * Follow the prompts.
 * Clone the server:
-  * `git clone https://github.com/Zamiell/hanabi-live.git` <br />
+  * `apt install git -y`
+  * `git clone git@github.com:Zamiell/hanabi-live.git` <br />
   (or clone a fork, if you are doing development work)
   * `cd hanabi-live`
 * Install the project dependencies:
