@@ -195,6 +195,7 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 #### Set up iptables (optional)
 
 * `sudo apt install iptables-persistent -y`
+* `sudo iptables -A INPUT -p icmp -m state --state NEW,RELATED,ESTABLISHED -j ACCEPT`
 * `sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT`
 * `sudo iptables -A INPUT -p tcp --dport ssh -j ACCEPT`
 * `sudo iptables -A INPUT -p tcp --dport http -j ACCEPT`
