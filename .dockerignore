@@ -1,0 +1,6 @@
+# Exclude all files by default from the Docker build context as a performance optimization.
+# https://docs.docker.com/engine/reference/builder/#dockerignore-file
+# https://kevinpollet.dev/posts/how-to-use-your-dockerignore-as-a-whitelist/
+*
+!.env_template
+!src
