@@ -9,7 +9,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd "$DIR"
 
 # First, check to see if the TypeScript code compiles
-npm run-script compile
+npx tsc
 
 # Second, lint the TypeScript code
 npm run-script lint

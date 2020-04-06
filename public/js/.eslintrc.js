@@ -32,10 +32,6 @@ module.exports = {
     // We modify the linting rules from the base for some specific things
     // (listed in alphabetical order)
     rules: {
-        // Airbnb uses 2 spaces, but it is harder to read block intendation at a glance
-        // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L125
-        '@typescript-eslint/indent': ['error', 4],
-
         // This allows code to be structured in a more logical order
         // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/variables.js#L42
         '@typescript-eslint/no-use-before-define': ['off'],
@@ -62,7 +58,7 @@ module.exports = {
         // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js#L59
         'no-alert': ['off'],
 
-        // We need this for debugging
+        // We need to output messages to the console for debugging
         // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/errors.js#L27
         'no-console': ['off'],
 
