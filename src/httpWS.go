@@ -158,6 +158,7 @@ func httpWS(c *gin.Context) {
 	keys["fakeUser"] = false
 	keys["rateLimitAllowance"] = rateLimitRate
 	keys["rateLimitLastCheck"] = time.Now()
+	keys["banned"] = false
 
 	// Validation succeeded, so establish the WebSocket connection
 	if err := m.HandleRequestWithKeys(w, r, keys); err != nil {

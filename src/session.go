@@ -183,6 +183,20 @@ func (s *Session) RateLimitLastCheck() time.Time {
 	}
 }
 
+func (s *Session) Banned() bool {
+	if s == nil {
+		logger.Error("The \"Banned\" method was called for a nil session.")
+		return false
+	}
+
+	if v, exists := s.Get("banned"); !exists {
+		logger.Error("Failed to get \"banned\" from a session.")
+		return false
+	} else {
+		return v.(bool)
+	}
+}
+
 /*
 	General purpose functions
 */

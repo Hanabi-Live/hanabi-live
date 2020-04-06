@@ -34,11 +34,9 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 	// Turn the Melody session into a custom session
 	s := &Session{ms}
 
-	if usingSentry {
-		sentry.ConfigureScope(func(scope *sentry.Scope) {
-			scope.SetTag("userID", strconv.Itoa(s.UserID()))
-			scope.SetTag("username", s.Username())
-		})
+	if s.Banned() {
+		// We already banned this user, so ignore any of their remaining messages in the queue
+		return
 	}
 
 	if !s.FakeUser() {
@@ -62,6 +60,16 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 
 		newRateLimitAllowance--
 		s.Set("rateLimitAllowance", newRateLimitAllowance)
+	}
+
+	if usingSentry {
+		// Tags allow the user ID and username to be attached to a particular error message,
+		// which can be helpful for debugging
+		// (since we can ask a user a question about how they caused the error)
+		sentry.ConfigureScope(func(scope *sentry.Scope) {
+			scope.SetTag("userID", strconv.Itoa(s.UserID()))
+			scope.SetTag("username", s.Username())
+		})
 	}
 
 	// Unpack the message to see what kind of command it is
