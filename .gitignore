@@ -21,6 +21,9 @@ hanabi-live~
 # MacOS artifacts
 .DS_Store
 
+# MySQL data from Docker
+mysql_data
+
 # --------------------------
 # GitHub .gitignore Template
 # --------------------------
