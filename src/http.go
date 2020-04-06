@@ -157,7 +157,7 @@ func httpInit() {
 
 	// Other
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
-	httpRouter.StaticFile("/favicon.ico", "./public/img/favicon.png")
+	httpRouter.StaticFile("/favicon.ico", path.Join(projectPath, "public", "img", "favicon.png"))
 
 	if useTLS {
 		// We want all HTTP requests to be redirected to HTTPS

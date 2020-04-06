@@ -81,6 +81,7 @@ func main() {
 	httpRouter := gin.Default()  // Has the "Logger" and "Recovery" middleware attached
 	httpRouter.StaticFile("/", path.Join(projectPath, "maintenance", "index.html"))
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
+	httpRouter.StaticFile("/favicon.ico", path.Join(projectPath, "public", "img", "favicon.png"))
 
 	if useTLS {
 		// We want all HTTP requests to be redirected to HTTPS
