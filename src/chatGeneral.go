@@ -6,6 +6,13 @@ import (
 	"time"
 )
 
+// /help
+func chatHelp(s *Session, d *CommandData, t *Table) {
+	msg := "You can see the full list of commands here: "
+	msg += "https://github.com/Zamiell/hanabi-live/blob/master/docs/CHAT_COMMANDS.md"
+	chatServerSend(msg, d.Room)
+}
+
 // /discord
 func chatDiscord(s *Session, d *CommandData, t *Table) {
 	msg := "Join the Hanabi Discord server: https://discord.gg/FADvkJp"
