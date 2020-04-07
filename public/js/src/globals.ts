@@ -4,6 +4,7 @@
 import Connection from './Connection';
 import version from './data/version.json';
 import HanabiUI from './game/ui/HanabiUI';
+import State from './game/ui/State';
 import Game from './lobby/Game';
 import GameHistory from './lobby/GameHistory';
 import Settings from './lobby/Settings';
@@ -58,16 +59,7 @@ export class Globals {
   // TODO convert to an Init object
   init: any | null = null; // Equal to the data from the "init" command
   // ui: null, // The various graphics objects used, initialized in the "commands.init()" function
-  state: State = { // Variables relating to the current game state
-    turn: 0,
-    learnedCards: [],
-  };
-}
-
-// TODO replace with State from State.ts
-interface State {
-  turn: number,
-  learnedCards: Array<any>,
+  state: State = new State(); // Variables relating to the current game state
 }
 
 const globals = new Globals();

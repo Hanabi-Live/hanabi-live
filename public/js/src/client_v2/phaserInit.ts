@@ -100,12 +100,6 @@ function create(this: any) {
       }
 
       const suit = convertMsgSuitToSuit(suitNum, globals.init.variant);
-      if (!globals.state.learnedCards[order]) {
-        globals.state.learnedCards[order] = {
-          possibleSuits: globals.init.variant.suits.slice(),
-          possibleRanks: globals.init.variant.ranks.slice(),
-        };
-      }
       const card = new HanabiCard(this, {
         suit,
         rank,

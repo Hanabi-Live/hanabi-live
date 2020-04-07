@@ -4,12 +4,12 @@
 // Imports
 import Phaser from 'phaser';
 import { CARD_H, CARD_W, SUITS } from '../constants';
-import globals from '../globals';
+import Suit from '../Suit';
 
 export default class HanabiCard extends Phaser.GameObjects.Container {
   order: number;
   holder: number;
-  suit: number | undefined;
+  suit: Suit | undefined;
   rank: number | undefined;
   possibleSuits: Array<number>;
   possibleRanks: Array<number>;
@@ -20,7 +20,6 @@ export default class HanabiCard extends Phaser.GameObjects.Container {
   isDiscarded: boolean = false;
   turnDiscarded: number | null = null;
   isPlayed: boolean = false;
-  turnDrawn: number;
   turnPlayed: number | null = null;
   bare: any;
 
@@ -47,7 +46,6 @@ export default class HanabiCard extends Phaser.GameObjects.Container {
     // knowledge of the true suit and rank
     this.possibleSuits = config.suits;
     this.possibleRanks = config.ranks;
-    this.turnDrawn = globals.state.turn;
 
     const image = this.getImage();
     this.add(image);
@@ -89,17 +87,20 @@ export default class HanabiCard extends Phaser.GameObjects.Container {
   }
 
   setCardImageName() {
-    const learnedCard = globals.state.learnedCards[this.order];
+    const unknownSuit = SUITS.get('Unknown');
+    if (typeof unknownSuit === 'undefined') {
+      throw new Error('Failed to get the "Unknown" suit.');
+    }
 
-    const rank = (!this.showOnlyLearned && this.rank);
+    const rank = this.rank;
     const empathyPastRankUncertain = this.showOnlyLearned && this.possibleRanks.length > 1;
 
-    const suit = (!this.showOnlyLearned && this.suit);
+    const suit = this.suit;
     const empathyPastSuitUncertain = this.showOnlyLearned && this.possibleSuits.length > 1;
 
-    let suitToShow = suit || learnedCard.suit || SUITS.get('Unknown');
+    let suitToShow = suit || unknownSuit;
     if (empathyPastSuitUncertain) {
-      suitToShow = SUITS.get('Unknown');
+      suitToShow = unknownSuit;
     }
 
     // "Card-Unknown" is not created, so use "NoPip-Unknown"
@@ -114,7 +115,7 @@ export default class HanabiCard extends Phaser.GameObjects.Container {
     } else if (empathyPastRankUncertain) {
       name += '6';
     } else {
-      name += rank || learnedCard.rank || '6';
+      name += rank || '6';
     }
 
     this.imageName = name;
