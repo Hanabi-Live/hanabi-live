@@ -217,6 +217,8 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 
 #### Set up Automated Database Backups (optional)
 
+This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
+
 * `crontab -e`
 
 ```
@@ -224,11 +226,11 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 0 0 * * * /root/hanabi-live/make_database_dump.sh
 ```
 
-(This assumes you installed the code to "/root/hanabi-live". Adjust if needed.)
-
 <br />
 
 #### Install HTTPS (optional)
+
+This assumes that you installed the server to "/root/hanabi-live". Adjust if needed.
 
 * `sudo apt update`
 * `sudo apt install software-properties-common -y`
@@ -248,11 +250,11 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 0 0 * * * /root/hanabi-live/renew_cert.sh
 ```
 
-(This assumes you installed the code to "/root/hanabi-live". Adjust if needed.)
-
 <br />
 
 #### Install as a service (optional)
+
+This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the belows commands and edit the contents of the three Supervisor files.
 
 * Install Supervisor:
   * `sudo apt install python-pip -y`
@@ -274,8 +276,6 @@ To manage the service:
 * Start it: `supervisorctl start hanabi-live`
 * Stop it: `supervisorctl stop hanabi-live`
 * Restart it: `supervisorctl restart hanabi-live`
-
-(This assumes you installed the code to "/root/hanabi-live". If not, you will need to edit the paths in the above commands and edit the contents of the three Supervisor files.)
 
 <br />
 
