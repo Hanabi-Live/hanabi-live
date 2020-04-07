@@ -228,7 +228,7 @@ This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
 
 #### Install HTTPS (optional)
 
-This assumes that you installed the server to "/root/hanabi-live". Adjust if needed.
+This assumes that your domain names are "hanabi.live" and "www.hanabi.live". It also assumes that you installed the server to "/root/hanabi-live". Adjust if needed.
 
 * `sudo apt update`
 * `sudo apt install software-properties-common -y`
@@ -252,7 +252,7 @@ This assumes that you installed the server to "/root/hanabi-live". Adjust if nee
 
 #### Install as a service (optional)
 
-This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the belows commands and edit the contents of the three Supervisor files.
+This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the below commands and edit the contents of the three Supervisor files.
 
 * Install Supervisor:
   * `sudo apt install python-pip -y`
