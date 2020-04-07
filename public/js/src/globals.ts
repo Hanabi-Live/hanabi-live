@@ -3,6 +3,7 @@
 // Imports
 import Connection from './Connection';
 import version from './data/version.json';
+import HanabiUI from './game/ui/HanabiUI';
 import Game from './lobby/Game';
 import GameHistory from './lobby/GameHistory';
 import Settings from './lobby/Settings';
@@ -47,12 +48,12 @@ export class Globals {
   errorOccured: boolean = false;
 
   // Legacy UI variables
-  // TODO convert to a HanabiUI object
-  ui: any | null = null; // This contains the HanabiUI object (legacy)
+  ui: HanabiUI | null = null;
   // Used to keep track of how many in-game chat messages are currently unread
   chatUnread: number = 0;
 
   // Phaser UI variables
+  ui2: any | null = null;
   phaser: any | null = null; // TODO convert to a PhaserUI object
   // TODO convert to an Init object
   init: any | null = null; // Equal to the data from the "init" command

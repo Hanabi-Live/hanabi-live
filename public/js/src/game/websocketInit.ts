@@ -41,8 +41,8 @@ commands.set('init', (data: any) => {
   // so convert it accordingly
   globals.init.variant = VARIANTS.get(data.variant);
 
-  // Also initalize the "ui" object, which contains various graphical objects
-  globals.ui = {
+  // Also initalize the "ui2" object, which contains various graphical objects
+  globals.ui2 = {
     cards: [],
   };
 
@@ -57,7 +57,7 @@ commands.set('init', (data: any) => {
   // Build images for every card
   // (with respect to the variant that we are playing
   // and whether or not we have the colorblind UI feature enabled)
-  globals.ui.cardImages = drawCards(
+  globals.ui2.cardImages = drawCards(
     globals.init.variant,
     colorblindMode,
     styleNumbers,

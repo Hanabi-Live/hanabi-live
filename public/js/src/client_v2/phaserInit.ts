@@ -64,9 +64,9 @@ function create(this: any) {
   setGlobalScale(this.sys.canvas.height);
 
   // Convert all of the card canvases to textures
-  for (const key in globals.ui.cardImages) {
-    if (Object.prototype.hasOwnProperty.call(globals.ui.cardImages, key)) {
-      const canvas = globals.ui.cardImages[key];
+  for (const key in globals.ui2.cardImages) {
+    if (Object.prototype.hasOwnProperty.call(globals.ui2.cardImages, key)) {
+      const canvas = globals.ui2.cardImages[key];
       this.textures.addCanvas(key, canvas);
     }
   }
@@ -115,7 +115,7 @@ function create(this: any) {
         ranks: globals.init.variant.ranks.slice(),
         holder: 0,
       });
-      globals.ui.cards[order] = card;
+      globals.ui2.cards[order] = card;
       this.add.existing(card);
       card.setInteractive();
       this.input.setDraggable(card);

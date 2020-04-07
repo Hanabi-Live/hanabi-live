@@ -36,8 +36,10 @@ export const hide = () => {
   tablesDraw();
   usersDraw.draw();
 
-  globals.ui.destroy();
-  globals.ui = null;
+  if (globals.ui !== null) {
+    globals.ui.destroy();
+    globals.ui = null;
+  }
 
   $('#game').hide(); // We can't fade this out as it will overlap
   $('#page-wrapper').fadeIn(FADE_TIME, () => {
