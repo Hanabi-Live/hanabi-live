@@ -56,6 +56,9 @@ export default class Connection {
   }
 
   send(command: string, data?: any) {
+    if (this.ws.readyState !== WebSocket.OPEN) {
+      return;
+    }
     if (typeof data === 'undefined') {
       data = {};
     }
