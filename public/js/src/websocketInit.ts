@@ -2,7 +2,6 @@
 // The client uses a slightly modified version of the Golem WebSocket library
 
 // Imports
-import * as Sentry from '@sentry/browser';
 import * as chat from './chat';
 import ChatMessage from './ChatMessage';
 import Connection from './Connection';
@@ -14,6 +13,7 @@ import * as pregame from './lobby/pregame';
 import * as lobbySettingsTooltip from './lobby/settingsTooltip';
 import lobbyWebsocketInit from './lobby/websocketInit';
 import * as modals from './modals';
+import * as sentry from './sentry';
 
 export default () => {
   // Ensure that we are connecting to the right URL
@@ -93,18 +93,8 @@ const initCommands = () => {
     globals.settings = data.settings;
     globals.shuttingDown = data.shuttingDown;
 
-    // Set the Sentry context
-    if (window.location.hostname !== 'localhost' && !window.location.pathname.includes('/dev')) {
-      // Setting the user allows metadata to be attached to a particular error message,
-      // which can be helpful for debugging (since we can ask the user how they caused the error)
-      // https://docs.sentry.io/enriching-error-data/context/?platform=browser
-      Sentry.configureScope((scope) => {
-        scope.setUser({
-          id: globals.id.toString(),
-          username: globals.username,
-        });
-      });
-    }
+    // Now that we know what our user ID and username are, we can attach them to the Sentry context
+    sentry.setUserContext(globals.id, globals.username);
 
     // Some settings are stored on the server as numbers,
     // but we need them as strings because they will exist in an input field

@@ -1,5 +1,20 @@
 // A collection of miscellaneous functions
 
+// init is executed when the document is ready
+export const init = () => {
+  // Add a function to the jQuery object to detect if an element is off screen
+  // https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen
+  ($.expr as any).filters.offscreen = (el: any) => {
+    const rect = el.getBoundingClientRect();
+    return (
+      rect.top < 0 // Above the top
+          || rect.bottom > window.innerHeight // Below the bottom
+          || rect.left < 0 // Left of the left edge
+          || rect.right > window.innerWidth // Right of the right edge
+    );
+  };
+};
+
 // From: https://stackoverflow.com/questions/27709489/jquery-tooltipster-plugin-hide-all-tips
 export const closeAllTooltips = () => {
   const instances = $.tooltipster.instances();
