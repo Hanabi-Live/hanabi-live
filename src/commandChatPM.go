@@ -12,7 +12,7 @@ import (
 //
 // Example data:
 // {
-//   msg: 'hello',
+//   msg: 'i secretly adore you',
 //   recipient: 'Alice',
 //   room: 'lobby', // Room can also be "table1", "table1234", etc.
 // }

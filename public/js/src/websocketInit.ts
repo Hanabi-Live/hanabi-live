@@ -80,7 +80,6 @@ const initCommands = () => {
     muted: boolean,
     firstTimeUser: boolean,
     settings: any,
-    version: number,
     shuttingDown: boolean,
   }
   globals.conn.on('hello', (data: HelloData) => {
@@ -112,25 +111,6 @@ const initCommands = () => {
     lobbyLogin.hide(data.firstTimeUser);
 
     if (!data.firstTimeUser) {
-      // Validate that we are on the latest JavaScript code
-      if (
-        data.version !== globals.version
-        // If the server is gracefully shutting down, then ignore the version check because
-        // the new client code is probably not compiled yet
-        && !globals.shuttingDown
-        && !window.location.pathname.includes('/dev')
-      ) {
-        let msg = 'You are running an outdated version of the Hanabi client code. ';
-        msg += `(You are on <strong>v${globals.version}</strong> `;
-        msg += `and the latest is <strong>v${data.version}</strong>.)<br />`;
-        msg += 'Please perform a hard-refresh to get the latest version. ';
-        msg += '(Note that a hard-refresh is different from a normal refresh.)<br />';
-        msg += 'On Windows, the hotkey for this is <code>Ctrl + Shift + R</code>. ';
-        msg += 'On MacOS, the hotkey for this is <code>Command + Shift + R</code>.';
-        modals.warningShow(msg);
-        return;
-      }
-
       // Automatically go into a replay if we are using a "/replay/123" URL
       let gameIDString = '';
       const match = window.location.pathname.match(/\/replay\/(\d+)/);

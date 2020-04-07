@@ -19,7 +19,7 @@ import (
 type TemplateData struct {
 	Title   string // Used to populate the <title> tag
 	Domain  string // Used to validate that the user is going to the correct URL
-	Version string
+	Version int
 	Dev     bool
 	Name    string // Used for the profile
 }

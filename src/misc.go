@@ -4,9 +4,11 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math"
 	"math/rand"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -36,6 +38,29 @@ func getRandom(min int, max int) int {
 	}
 	rand.Seed(time.Now().UnixNano())
 	return rand.Intn(max-min) + min
+}
+
+// getVersion will get the current version of the JavaScript client,
+// which is contained in the "version.json" file
+// We want to read this file every time (as opposed to just reading it on server start) so that we
+// can update the client without having to restart the entire server
+func getVersion() int {
+	var fileContents []byte
+	if v, err := ioutil.ReadFile(versionPath); err != nil {
+		logger.Error("Failed to read the \""+versionPath+"\" file:", err)
+		return 0
+	} else {
+		fileContents = v
+	}
+	versionString := string(fileContents)
+	versionString = strings.TrimSpace(versionString)
+	if v, err := strconv.Atoi(versionString); err != nil {
+		logger.Error("Failed to convert \""+versionString+"\" "+
+			"(the contents of the \"version.json\" file) to a number:", err)
+		return 0
+	} else {
+		return v
+	}
 }
 
 func intInSlice(a int, slice []int) bool {

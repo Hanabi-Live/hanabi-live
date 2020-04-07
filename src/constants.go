@@ -36,7 +36,7 @@ const (
 	actionTypeIdleLimitReached
 )
 
-// TODO remove the above constants after the database transition
+// TODO remove the above constants after the client is rewritten to use not use JSON action messages
 const (
 	actionType2Play = iota
 	actionType2Discard

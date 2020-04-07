@@ -16,7 +16,7 @@ const (
 )
 
 // httpLogin handles part 1 of 2 for login authentication
-// The user must POST to "/login" with the values of "username" and "password"
+// The user must POST to "/login" with the values of "username", "password", and "version"
 // If successful, they will receive a cookie from the server with an expiry of N seconds
 // Part 2 is found in "httpWS.go"
 func httpLogin(c *gin.Context) {
@@ -62,22 +62,7 @@ func httpLogin(c *gin.Context) {
 		return
 	}
 
-	// Check to see if they are already logged in
-	// (which should probably never happen since the cookie only lasts N seconds)
-	session := gsessions.Default(c)
-	if v := session.Get("userID"); v != nil {
-		logger.Info("User from IP \"" + ip + "\" tried to get a session cookie, " +
-			"but they are already logged in.")
-		http.Error(
-			w,
-			"You are already logged in. Please wait "+strconv.Itoa(httpSessionTimeout)+
-				" seconds, then try again.",
-			http.StatusUnauthorized,
-		)
-		return
-	}
-
-	// Validate that the user sent a username and password
+	// Validate that the user sent the required POST values
 	username := c.PostForm("username")
 	if username == "" {
 		logger.Info("User from IP \"" + ip + "\" tried to log in, " +
@@ -96,6 +81,22 @@ func httpLogin(c *gin.Context) {
 		http.Error(
 			w,
 			"You must provide the \"password\" parameter to log in.",
+			http.StatusUnauthorized,
+		)
+		return
+	}
+	version := c.PostForm("version")
+	if version == "" {
+		logger.Info("User from IP \"" + ip + "\" tried to log in, " +
+			"but they did not provide the \"version\" parameter.")
+		http.Error(
+			w,
+			// TODO shorten this in July 2020 or later
+			"You must provide the \"version\" parameter to log in. <br />"+
+				"Please perform a hard-refresh to get the latest version.<br />"+
+				"(Note that a hard-refresh is different from a normal refresh.)<br />"+
+				"On Windows, the hotkey for this is: <code>Ctrl + Shift + R</code><br />"+
+				"On MacOS, the hotkey for this is: <code>Command + Shift + R</code>",
 			http.StatusUnauthorized,
 		)
 		return
@@ -136,6 +137,40 @@ func httpLogin(c *gin.Context) {
 			w,
 			"Usernames must not contain any special characters other than "+
 				"underscores, hyphens, and periods.",
+			http.StatusUnauthorized,
+		)
+		return
+	}
+
+	// Validate that the version is correct
+	// (we want to explicitly disallow clients who are running old versions of the code)
+	var versionNum int
+	if v, err := strconv.Atoi(version); err != nil {
+		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+			"\"" + username + "\", but the submitted version is not an integer.")
+		http.Error(
+			w,
+			"The submitted version must be an integer.",
+			http.StatusUnauthorized,
+		)
+		return
+	} else {
+		versionNum = v
+	}
+	currentVersion := getVersion()
+	if versionNum != currentVersion {
+		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+			"\"" + username + "\" and a version of \"" + version + "\", but this is an old " +
+			"version. (The current version is " + strconv.Itoa(currentVersion) + ".)")
+		http.Error(
+			w,
+			"You are running an outdated version of the Hanabi client code.<br />"+
+				"(You are on <strong>v"+version+"</strong> and "+
+				"the latest is <strong>v"+strconv.Itoa(currentVersion)+"</strong>.)<br />"+
+				"Please perform a hard-refresh to get the latest version.<br />"+
+				"(Note that a hard-refresh is different from a normal refresh.)<br />"+
+				"On Windows, the hotkey for this is: <code>Ctrl + Shift + R</code><br />"+
+				"On MacOS, the hotkey for this is: <code>Command + Shift + R</code>",
 			http.StatusUnauthorized,
 		)
 		return
@@ -194,6 +229,7 @@ func httpLogin(c *gin.Context) {
 	}
 
 	// Save the information to the session cookie
+	session := gsessions.Default(c)
 	session.Set("userID", user.ID)
 	session.Set("username", user.Username)
 	session.Set("admin", user.Admin)

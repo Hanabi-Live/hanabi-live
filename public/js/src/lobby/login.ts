@@ -3,6 +3,7 @@
 // Imports
 import shajs from 'sha.js';
 import { FADE_TIME } from '../constants';
+import version from '../data/version.json';
 import globals from '../globals';
 import websocketInit from '../websocketInit';
 import * as nav from './nav';
@@ -102,6 +103,7 @@ const send = () => {
   const postData = {
     username: globals.username,
     password: globals.password,
+    version,
   };
   const request = $.ajax({
     url,

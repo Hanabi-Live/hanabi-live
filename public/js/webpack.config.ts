@@ -31,9 +31,10 @@ const config: webpack.Configuration = {
 
   // Where to put the bundled file
   output: {
-    // By default, Webpack will output the file to a "dist" subdirectory
-    // We want to include the version number inside of the file name so that browsers will be forced
-    // to retrieve the latest version (and not use a cached older version)
+    // By default, Webpack will output the file to a "dist" subdirectory,
+    // which is fine for our purposes
+    // However, we want to include the version number inside of the file name so that browsers will
+    // be forced to retrieve the latest version (and not use a cached older version)
     filename: `main.${version}.min.js`,
   },
 

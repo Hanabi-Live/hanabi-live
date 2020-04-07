@@ -1,9 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
-	"strconv"
-	"strings"
 	"time"
 
 	melody "gopkg.in/olahol/melody.v1"
@@ -57,25 +54,6 @@ func websocketConnect(ms *melody.Session) {
 		settings = v
 	}
 
-	// Get the version number of the client (which is the number of commits in the repository)
-	var versionString string
-	if v, err := ioutil.ReadFile(versionPath); err != nil {
-		logger.Error("Failed to read the \""+versionPath+"\" file "+
-			"when getting the version for user \""+s.Username()+"\":", err)
-		return
-	} else {
-		versionString = string(v)
-		versionString = strings.TrimSpace(versionString)
-	}
-	var version int
-	if v, err := strconv.Atoi(versionString); err != nil {
-		logger.Error("Failed to convert \""+versionString+"\" "+
-			"(the contents of the \"version.json\" file) to a number:", err)
-		return
-	} else {
-		version = v
-	}
-
 	// They have successfully logged in, so send the initial message to the client
 	type HelloMessage struct {
 		ID            int      `json:"id"`
@@ -85,7 +63,6 @@ func websocketConnect(ms *melody.Session) {
 		Muted         bool     `json:"muted"`
 		FirstTimeUser bool     `json:"firstTimeUser"`
 		Settings      Settings `json:"settings"`
-		Version       int      `json:"version"`
 		ShuttingDown  bool     `json:"shuttingDown"`
 	}
 	s.Emit("hello", &HelloMessage{
@@ -108,10 +85,6 @@ func websocketConnect(ms *melody.Session) {
 		// The various client settings are stored server-side so that users can seamlessly
 		// transition between computers
 		Settings: settings,
-
-		// We send the latest client version number to throw a warning
-		// if a user is running old JavaScript code
-		Version: version,
 
 		// Also let the user know if the server is currently performing a graceful shutdown
 		ShuttingDown: shuttingDown,
