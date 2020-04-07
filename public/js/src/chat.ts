@@ -105,6 +105,12 @@ const keypress = (room: string) => function keypressFunction(
     throw new Error('The value of the element in the keypress function is not a string.');
   }
 
+  // Validate that they are accidentally broadcasting a private message reply
+  if (msg.startsWith('/r ')) {
+    modals.warningShow('No-one has sent you a private message yet, so you cannot reply.');
+    return;
+  }
+
   // Clear the chat box
   element.val('');
 
