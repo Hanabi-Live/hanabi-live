@@ -66,7 +66,7 @@ export default class NameFrame extends Konva.Group {
           // (so that you can spectate from a specific player's perspective)
           event.evt.preventDefault();
           setTimeout(() => {
-            globals.lobby.conn.send('tableSpectate', {
+            globals.lobby.conn!.send('tableSpectate', {
               tableID: globals.lobby.tableID,
               player: username,
             });
@@ -89,7 +89,7 @@ export default class NameFrame extends Konva.Group {
             return;
           }
           setTimeout(() => {
-            globals.lobby.conn.send('tableSpectate', {
+            globals.lobby.conn!.send('tableSpectate', {
               tableID: globals.lobby.tableID,
               player: username,
             });

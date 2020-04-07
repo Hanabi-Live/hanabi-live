@@ -1,6 +1,7 @@
 // Connection is a class that manages a WebSocket connection to the server
-// The protocol used a command followed by JSON data, e.g.
-// foo { "bar": "baz" }
+// On top of the WebSocket protocol, the client and the server communicate using a specific format
+// based on the protocol that the Golem WebSocket framework uses
+// For more information, see "websocketMessage.go"
 // Based on: https://github.com/trevex/golem_client/blob/master/golem.js
 export default class Connection {
   ws: WebSocket;
@@ -54,8 +55,13 @@ export default class Connection {
     this.callbacks[name] = callback;
   }
 
-  emit(name: string, data: any) {
-    this.ws.send(marshalAndPack(name, data));
+  send(command: string, data?: any) {
+    if (typeof data === 'undefined') {
+      data = {};
+    }
+    console.log(`%cSent ${command}:`, 'color: green;');
+    console.log(data);
+    this.ws.send(marshalAndPack(command, data));
   }
 
   close() {

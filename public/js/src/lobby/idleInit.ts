@@ -15,6 +15,10 @@ export default function idleInit() {
 }
 
 const mousemoveOrKeypress = () => {
+  if (globals.conn === null) {
+    return;
+  }
+
   if (globals.idleMinutes >= minutesToTriggerIdle) {
     globals.conn.send('inactive', {
       inactive: false,
@@ -24,6 +28,10 @@ const mousemoveOrKeypress = () => {
 };
 
 const timerIncrement = () => {
+  if (globals.conn === null) {
+    return;
+  }
+
   globals.idleMinutes += 1;
   if (globals.idleMinutes === minutesToTriggerIdle) {
     // We do not want to keep sending "inactive" messages every minute,

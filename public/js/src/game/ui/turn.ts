@@ -15,7 +15,7 @@ export const end = (actionObject: Action) => {
 
   if (globals.ourTurn) {
     replay.exit(); // Close the in-game replay if we preplayed a card in the replay
-    globals.lobby.conn.send('action', actionObject);
+    globals.lobby.conn!.send('action', actionObject);
     action.stop();
   } else {
     globals.queuedAction = actionObject;
@@ -70,7 +70,7 @@ export const begin = () => {
 
     // We don't want to send the queued action right away, or else it introduces bugs
     setTimeout(() => {
-      globals.lobby.conn.send('action', globals.queuedAction);
+      globals.lobby.conn!.send('action', globals.queuedAction);
       globals.queuedAction = null;
       globals.preCluedCard = null;
       action.stop();

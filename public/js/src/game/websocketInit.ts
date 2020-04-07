@@ -8,6 +8,10 @@ import drawCards from './ui/drawCards';
 import websocket from './ui/websocket';
 
 export default () => {
+  if (globals.conn === null) {
+    throw new Error('The "initCommands()" function was entered before "globals.conn" was initiated.');
+  }
+
   let commandsToUse: Map<string, (data: any) => void>;
   if (window.location.pathname === '/dev2') {
     commandsToUse = commands; // The new client, defined below

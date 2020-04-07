@@ -119,13 +119,13 @@ const submit = () => {
   localStorage.setItem('watchReplayVisibility', visibility);
 
   if (source === 'id') {
-    globals.conn.send('replayCreate', {
+    globals.conn!.send('replayCreate', {
       source,
       gameID,
       visibility,
     });
   } else if (source === 'json') {
-    globals.conn.send('replayCreate', {
+    globals.conn!.send('replayCreate', {
       source,
       gameJSON,
       visibility,

@@ -455,7 +455,7 @@ const shareCurrentTurn = (turn: number) => {
     return;
   }
 
-  globals.lobby.conn.send('replayAction', {
+  globals.lobby.conn!.send('replayAction', {
     type: REPLAY_ACTION_TYPE.TURN,
     turn,
   });

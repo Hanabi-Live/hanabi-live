@@ -102,7 +102,7 @@ export default class Deck extends Konva.Group {
       this.draggable(false);
       globals.elements.deckPlayAvailableLabel!.hide();
 
-      globals.lobby.conn.send('action', {
+      globals.lobby.conn!.send('action', {
         type: ACTION.DECKPLAY,
       });
 

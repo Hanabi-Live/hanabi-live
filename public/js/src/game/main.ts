@@ -28,7 +28,7 @@ export const show = () => {
     globals.ui = new HanabiUI(globals, gameExports);
     globals.chatUnread = 0;
   }
-  globals.conn.send('hello');
+  globals.conn!.send('hello');
 };
 
 export const hide = () => {

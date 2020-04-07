@@ -44,7 +44,7 @@ export const set = (order: number, note: string) => {
 
   // Send the note to the server
   if (!globals.replay && note !== oldNote) {
-    globals.lobby.conn.send('note', {
+    globals.lobby.conn!.send('note', {
       order,
       note,
     });

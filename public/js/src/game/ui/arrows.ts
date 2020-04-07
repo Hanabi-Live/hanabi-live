@@ -216,7 +216,7 @@ export const click = (event: any, order: number, element: any) => {
 };
 
 export const send = (order: number, element: any) => {
-  globals.lobby.conn.send('replayAction', {
+  globals.lobby.conn!.send('replayAction', {
     type: REPLAY_ACTION_TYPE.ARROW,
     order,
   });

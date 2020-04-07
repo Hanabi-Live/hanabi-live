@@ -16,7 +16,7 @@ export const init = () => {
     const volume = parseInt(volumeString, 10);
     globals.settings.volume = volume;
     $('#settings-volume-slider-value').html(`${volume}%`);
-    globals.conn.send('setting', {
+    globals.conn!.send('setting', {
       name: 'volume',
       value: volumeString, // The server expects all settings as strings
     });
@@ -85,7 +85,7 @@ function changeSetting(this: HTMLElement) {
   globals.settings[settingName] = checked;
 
   // Send the new value to the server
-  globals.conn.send('setting', {
+  globals.conn!.send('setting', {
     name: settingName,
     value: checked.toString(), // The server expects all settings as strings
   });

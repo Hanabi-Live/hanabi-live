@@ -1,6 +1,7 @@
 // These are exported global variables to be shared between all of the TypeScript code
 
 // Imports
+import Connection from './Connection';
 import version from './data/version.json';
 import Game from './lobby/Game';
 import GameHistory from './lobby/GameHistory';
@@ -18,7 +19,7 @@ export class Globals {
   username: string = '';
   password: string = '';
 
-  conn: any = null; // The WebSocket connection (set in "websocket.ts")
+  conn: Connection | null = null; // The WebSocket connection (set in "websocket.ts")
 
   // Values sent to us from the server in the "hello" message
   id: number = -1;

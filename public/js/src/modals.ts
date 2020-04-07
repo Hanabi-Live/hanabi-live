@@ -70,7 +70,7 @@ const passwordSubmit = () => {
   const passwordPlaintext = $('#password-modal-password').val();
   const stringToHash = `Hanabi game password ${passwordPlaintext}`;
   const password = shajs('sha256').update(stringToHash).digest('hex');
-  globals.conn.send('tableJoin', {
+  globals.conn!.send('tableJoin', {
     tableID,
     password,
   });

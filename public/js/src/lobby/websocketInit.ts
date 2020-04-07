@@ -14,6 +14,10 @@ import User from './User';
 import * as usersDraw from './usersDraw';
 
 export default () => {
+  if (globals.conn === null) {
+    throw new Error('The "initCommands()" function was entered before "globals.conn" was initiated.');
+  }
+
   for (const [commandName, commandFunction] of commands) {
     globals.conn.on(commandName, (data: any) => {
       commandFunction(data);

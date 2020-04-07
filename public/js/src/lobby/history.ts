@@ -11,7 +11,7 @@ import * as usersDraw from './usersDraw';
 export const init = () => {
   $('#lobby-history-show-more').on('click', () => {
     globals.showMoreHistoryClicked = true;
-    globals.conn.send('historyGet', {
+    globals.conn!.send('historyGet', {
       offset: Object.keys(globals.history).length,
       amount: 10,
     });
@@ -136,7 +136,7 @@ const makeReplayButton = (id: number, visibility: string) => {
   button.attr('id', `replay-${id}`);
 
   button.on('click', () => {
-    globals.conn.send('replayCreate', {
+    globals.conn!.send('replayCreate', {
       source: 'id',
       gameID: id,
       visibility,
@@ -157,7 +157,7 @@ const makeOtherScoresButton = (id: number, gameCount: number) => {
     button.addClass('disabled');
   } else {
     button.on('click', () => {
-      globals.conn.send('historyGetDeals', {
+      globals.conn!.send('historyGetDeals', {
         gameID: id,
       });
       showOtherScores();

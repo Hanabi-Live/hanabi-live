@@ -26,7 +26,7 @@ export const start = () => {
   globals.hypothetical = true;
 
   if (globals.amSharedReplayLeader) {
-    globals.lobby.conn.send('replayAction', {
+    globals.lobby.conn!.send('replayAction', {
       type: REPLAY_ACTION_TYPE.HYPO_START,
     });
   }
@@ -93,7 +93,7 @@ export const end = () => {
   // Adjust the UI, depending on whether or not we are the replay leader
   globals.elements.replayArea!.show();
   if (globals.amSharedReplayLeader) {
-    globals.lobby.conn.send('replayAction', {
+    globals.lobby.conn!.send('replayAction', {
       type: REPLAY_ACTION_TYPE.HYPO_END,
     });
 
@@ -268,7 +268,7 @@ export const send = (hypoAction: Action) => {
 };
 
 export const sendHypoAction = (hypoAction: any) => {
-  globals.lobby.conn.send('replayAction', {
+  globals.lobby.conn!.send('replayAction', {
     type: REPLAY_ACTION_TYPE.HYPO_ACTION,
     actionJSON: JSON.stringify(hypoAction),
   });
@@ -288,7 +288,7 @@ export const sendBackOneTurn = () => {
     return;
   }
 
-  globals.lobby.conn.send('replayAction', {
+  globals.lobby.conn!.send('replayAction', {
     type: REPLAY_ACTION_TYPE.HYPO_BACK,
   });
 };

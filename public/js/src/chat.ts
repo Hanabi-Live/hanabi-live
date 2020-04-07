@@ -56,7 +56,7 @@ const input = function input(this: HTMLElement, event: JQuery.Event) {
     const datetimeNow = new Date().getTime();
     if (datetimeNow - globals.datetimeLastChatInput >= 1000) {
       globals.datetimeLastChatInput = datetimeNow;
-      globals.conn.send('chatTyping');
+      globals.conn!.send('chatTyping');
     }
   }
 
@@ -163,7 +163,7 @@ const keypress = (room: string) => function keypressFunction(
         return;
       }
 
-      globals.conn.send('chatPM', {
+      globals.conn!.send('chatPM', {
         msg: args.join(' '),
         recipient,
         room,
@@ -185,7 +185,7 @@ const keypress = (room: string) => function keypressFunction(
   }
 
   // This is not a command, so send a the chat message to the server
-  globals.conn.send('chat', {
+  globals.conn!.send('chat', {
     msg,
     room,
   });

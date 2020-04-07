@@ -45,7 +45,7 @@ export default () => {
   // The "Start Game" button
   $('#nav-buttons-pregame-start').on('click', () => {
     if (!$('#nav-buttons-pregame-start').hasClass('disabled')) {
-      globals.conn.send('tableStart');
+      globals.conn!.send('tableStart');
       $('#nav-buttons-pregame-start').addClass('disabled');
     }
   });
@@ -53,13 +53,13 @@ export default () => {
   // The "Return to Lobby" button (from the "Pregame" screen)
   $('#nav-buttons-pregame-unattend').on('click', () => {
     pregame.hide();
-    globals.conn.send('tableUnattend');
+    globals.conn!.send('tableUnattend');
     globals.tableID = -1;
   });
 
   // The "Leave Game" button
   $('#nav-buttons-pregame-leave').on('click', () => {
-    globals.conn.send('tableLeave');
+    globals.conn!.send('tableLeave');
   });
 
   // The "Return to Lobby" button (from the "History" screen)

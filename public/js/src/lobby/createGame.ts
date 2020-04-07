@@ -247,7 +247,7 @@ const submit = () => {
     password = shajs('sha256').update(stringToHash).digest('hex');
   }
 
-  globals.conn.send('tableCreate', {
+  globals.conn!.send('tableCreate', {
     name: $('#createTableName').val(), // We don't bother to store the table name
     variant: getElement('createTableVariant'), // This is a hidden span field
     timed: getCheckbox('createTableTimed'),
@@ -313,7 +313,7 @@ const getElement = (setting: string) => {
 const checkChanged = (setting: string, value: boolean | string) => {
   if (value !== globals.settings[setting]) {
     globals.settings[setting] = value;
-    globals.conn.send('setting', {
+    globals.conn!.send('setting', {
       name: setting,
       value: value.toString(), // The server expects all settings as strings
     });
@@ -345,7 +345,7 @@ export const ready = () => {
     $('#createTableName').val(globals.randomName);
 
     // Get a new random name from the server for the next time we click the button
-    globals.conn.send('getName');
+    globals.conn!.send('getName');
   }
 
   // Focus the "Name" box

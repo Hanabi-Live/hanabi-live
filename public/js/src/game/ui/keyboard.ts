@@ -240,7 +240,7 @@ const sharedReplaySendSound = (sound: string) => {
   }
 
   // Send it
-  globals.lobby.conn.send('replayAction', {
+  globals.lobby.conn!.send('replayAction', {
     type: REPLAY_ACTION_TYPE.SOUND,
     sound,
   });
@@ -274,7 +274,7 @@ const performAction = (intendedPlay = true) => {
     actionObject.target = cardOrder;
   }
 
-  globals.lobby.conn.send('action', actionObject);
+  globals.lobby.conn!.send('action', actionObject);
   action.stop();
 };
 

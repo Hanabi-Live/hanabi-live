@@ -63,19 +63,14 @@ export default () => {
   // All of the normal commands/messages that we expect from the server are defined in the
   // "initCommands()" function
   initCommands();
-
-  globals.conn.send = (command: string, data: any) => {
-    if (typeof data === 'undefined') {
-      data = {};
-    }
-    console.log(`%cSent ${command}:`, 'color: green;');
-    console.log(data);
-    globals.conn.emit(command, data);
-  };
 };
 
 // This is all of the normal commands/messages that we expect to receive from the server
 const initCommands = () => {
+  if (globals.conn === null) {
+    throw new Error('The "initCommands()" function was entered before "globals.conn" was initiated.');
+  }
+
   // Received by the client upon first connecting
   interface HelloData {
     id: number,
@@ -161,7 +156,7 @@ const initCommands = () => {
         setTimeout(() => {
           // The server expects the game ID as an integer
           const gameID = parseInt(gameIDString, 10);
-          globals.conn.send('replayCreate', {
+          globals.conn!.send('replayCreate', {
             gameID,
             source: 'id',
             visibility: 'solo',
@@ -180,11 +175,11 @@ const initCommands = () => {
     }
     if (globals.currentScreen === 'pregame') {
       // Notify the server that we have read the chat message that was just received
-      globals.conn.send('chatRead');
+      globals.conn!.send('chatRead');
     } else if (globals.currentScreen === 'game' && globals.ui !== null) {
       if ($('#game-chat-modal').is(':visible')) {
         // Notify the server that we have read the chat message that was just received
-        globals.conn.send('chatRead');
+        globals.conn!.send('chatRead');
       } else if (
         globals.ui.globals.spectating
         && !globals.ui.globals.sharedReplay
@@ -192,7 +187,7 @@ const initCommands = () => {
       ) {
         // The chat window was not open; pop open the chat window every time for spectators
         gameChat.toggle();
-        globals.conn.send('chatRead');
+        globals.conn!.send('chatRead');
       } else {
         // The chat window was not open; by default, keep it closed
         // Change the "Chat" button to say "Chat (1)"
@@ -281,7 +276,7 @@ const initCommands = () => {
     modals.errorShow(data.error);
 
     // Disconnect from the server, if connected
-    if (!globals.conn) {
+    if (globals.conn !== null) {
       globals.conn.close();
     }
   });

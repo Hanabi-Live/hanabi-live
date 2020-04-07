@@ -14,6 +14,6 @@ export default () => {
   // Clear the typing list
   globals.lobby.peopleTyping = [];
 
-  globals.lobby.conn.send('tableUnattend');
+  globals.lobby.conn!.send('tableUnattend');
   globals.game!.hide();
 };
