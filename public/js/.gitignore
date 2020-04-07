@@ -1,6 +1,5 @@
 # NPM modules are not typically included in a repository
 /node_modules
-/package-lock.json
 
 # We don't need to include the converted TypeScript --> Javascript files
 /dist
