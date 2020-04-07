@@ -1,8 +1,8 @@
+import SentryWebpackPlugin from '@sentry/webpack-plugin';
+import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as webpack from 'webpack';
-import SentryWebpackPlugin from '@sentry/webpack-plugin';
-import * as dotenv from 'dotenv';
 
 // Read environment variables
 dotenv.config({
