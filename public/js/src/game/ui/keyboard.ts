@@ -96,8 +96,8 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     // Ctrl + c = Copy the current game ID
     if (
       event.key === 'c'
-            && globals.replay
-            && !($('#game-chat-modal').is(':visible'))
+      && globals.replay
+      && !($('#game-chat-modal').is(':visible'))
     ) {
       copyStringToClipboard(globals.databaseID.toString());
       return;
@@ -143,10 +143,10 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   // or if a modifier key is pressed
   if (
     $('#game-chat-input').is(':focus')
-        || event.ctrlKey
-        || event.shiftKey
-        || event.altKey
-        || event.metaKey
+    || event.ctrlKey
+    || event.shiftKey
+    || event.altKey
+    || event.metaKey
   ) {
     return;
   }
@@ -154,8 +154,8 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   // Delete = Delete the note from the card that we are currently hovering-over, if any
   if (
     event.key === 'Delete'
-        && globals.activeHover !== null
-        && globals.activeHover.type === 'HanabiCard'
+    && globals.activeHover !== null
+    && globals.activeHover.type === 'HanabiCard'
   ) {
     const card = globals.activeHover;
     card.setNote('');

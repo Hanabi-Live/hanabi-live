@@ -86,13 +86,13 @@ notifyFunctions.set('clue', (data: ActionClue) => {
     card.cluedBorder!.show();
     if (
       !globals.lobby.settings.realLifeMode
-            && !globals.variant.name.startsWith('Cow & Pig')
-            && !globals.variant.name.startsWith('Duck')
-            && !(
-              globals.characterAssignments[data.giver!] === 'Quacker'
-                && card.holder === globals.playerUs
-                && !globals.replay
-            )
+      && !globals.variant.name.startsWith('Cow & Pig')
+      && !globals.variant.name.startsWith('Duck')
+      && !(
+        globals.characterAssignments[data.giver!] === 'Quacker'
+        && card.holder === globals.playerUs
+        && !globals.replay
+      )
     ) {
       card.applyClue(clue, true);
       card.checkReapplyRankClues();
@@ -113,13 +113,13 @@ notifyFunctions.set('clue', (data: ActionClue) => {
       negativeList.push(order);
       if (
         !globals.lobby.settings.realLifeMode
-                && !globals.variant.name.startsWith('Cow & Pig')
-                && !globals.variant.name.startsWith('Duck')
-                && !(
-                  globals.characterAssignments[data.giver!] === 'Quacker'
-                    && card.holder === globals.playerUs
-                    && !globals.replay
-                )
+        && !globals.variant.name.startsWith('Cow & Pig')
+        && !globals.variant.name.startsWith('Duck')
+        && !(
+          globals.characterAssignments[data.giver!] === 'Quacker'
+          && card.holder === globals.playerUs
+          && !globals.replay
+        )
       ) {
         card.applyClue(clue, false);
         card.checkReapplyRankClues();
@@ -149,7 +149,7 @@ notifyFunctions.set('clue', (data: ActionClue) => {
     }
   } else if (
     globals.variant.name.startsWith('Duck')
-        || globals.characterAssignments[data.giver!] === 'Quacker'
+    || globals.characterAssignments[data.giver!] === 'Quacker'
   ) {
     clueName = 'Quack';
   }

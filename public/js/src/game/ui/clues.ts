@@ -25,7 +25,7 @@ export const checkLegal = () => {
 
   if (
     !target // They have not selected a target player
-        || !clueButton // They have not selected a clue type
+    || !clueButton // They have not selected a clue type
   ) {
     globals.elements.giveClueButton!.setEnabled(false);
     return;
@@ -111,19 +111,19 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
     if (
     // Checking for "Pink-" also checks for "Light-Pink-"
       (globals.variant.name.includes('Pink-Ones') && card.rank === 1)
-            || (globals.variant.name.includes('Omni-Ones') && card.rank === 1)
-            || (globals.variant.name.includes('Pink-Fives') && card.rank === 5)
-            || (globals.variant.name.includes('Omni-Fives') && card.rank === 5)
+      || (globals.variant.name.includes('Omni-Ones') && card.rank === 1)
+      || (globals.variant.name.includes('Pink-Fives') && card.rank === 5)
+      || (globals.variant.name.includes('Omni-Fives') && card.rank === 5)
     ) {
       return true;
     }
     if (
       (globals.variant.name.includes('Brown-Ones') && card.rank === 1)
-            || (globals.variant.name.includes('Null-Ones') && card.rank === 1)
-            || (globals.variant.name.includes('Muddy-Rainbow-Ones') && card.rank === 1)
-            || (globals.variant.name.includes('Brown-Fives') && card.rank === 5)
-            || (globals.variant.name.includes('Null-Fives') && card.rank === 5)
-            || (globals.variant.name.includes('Muddy-Rainbow-Fives') && card.rank === 5)
+      || (globals.variant.name.includes('Null-Ones') && card.rank === 1)
+      || (globals.variant.name.includes('Muddy-Rainbow-Ones') && card.rank === 1)
+      || (globals.variant.name.includes('Brown-Fives') && card.rank === 5)
+      || (globals.variant.name.includes('Null-Fives') && card.rank === 5)
+      || (globals.variant.name.includes('Muddy-Rainbow-Fives') && card.rank === 5)
     ) {
       return false;
     }
@@ -146,19 +146,19 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
     if (
     // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
       (globals.variant.name.includes('Rainbow-Ones') && card.rank === 1)
-            || (globals.variant.name.includes('Omni-Ones') && card.rank === 1)
-            || (globals.variant.name.includes('Rainbow-Fives') && card.rank === 5)
-            || (globals.variant.name.includes('Omni-Fives') && card.rank === 5)
+      || (globals.variant.name.includes('Omni-Ones') && card.rank === 1)
+      || (globals.variant.name.includes('Rainbow-Fives') && card.rank === 5)
+      || (globals.variant.name.includes('Omni-Fives') && card.rank === 5)
     ) {
       return true;
     }
     if (
       (globals.variant.name.includes('White-Ones') && card.rank === 1)
-            || (globals.variant.name.includes('Null-Ones') && card.rank === 1)
-            || (globals.variant.name.includes('Light-Pink-Ones') && card.rank === 1)
-            || (globals.variant.name.includes('White-Fives') && card.rank === 5)
-            || (globals.variant.name.includes('Null-Fives') && card.rank === 5)
-            || (globals.variant.name.includes('Light-Pink-Fives') && card.rank === 5)
+      || (globals.variant.name.includes('Null-Ones') && card.rank === 1)
+      || (globals.variant.name.includes('Light-Pink-Ones') && card.rank === 1)
+      || (globals.variant.name.includes('White-Fives') && card.rank === 5)
+      || (globals.variant.name.includes('Null-Fives') && card.rank === 5)
+      || (globals.variant.name.includes('Light-Pink-Fives') && card.rank === 5)
     ) {
       return false;
     }
@@ -181,13 +181,13 @@ export const give = () => {
   const clueButton = clueTypeButtonGroup!.getPressed() as ColorButton | RankButton;
   if (
     (!globals.ourTurn && !globals.hypothetical) // We can only give clues on our turn
-        || globals.clues === 0 // We can only give a clue if there is one available
-        || !target // We might have not selected a clue recipient
-        || !clueButton // We might have not selected a type of clue
-        // We might be trying to give an invalid clue (e.g. an Empty Clue)
-        || !globals.elements.giveClueButton!.enabled
-        // Prevent the user from accidentally giving a clue
-        || (Date.now() - globals.UIClickTime < 1000)
+    || globals.clues === 0 // We can only give a clue if there is one available
+    || !target // We might have not selected a clue recipient
+    || !clueButton // We might have not selected a type of clue
+    // We might be trying to give an invalid clue (e.g. an Empty Clue)
+    || !globals.elements.giveClueButton!.enabled
+    // Prevent the user from accidentally giving a clue
+    || (Date.now() - globals.UIClickTime < 1000)
   ) {
     return;
   }

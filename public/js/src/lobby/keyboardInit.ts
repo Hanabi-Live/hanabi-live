@@ -8,8 +8,8 @@ export default () => {
     // On the "Create Game" tooltip, submit the form if enter is pressed
     if (
       event.key === 'Enter'
-            && $('#create-game-tooltip-title').is(':visible')
-            && !$('.ss-search').is(':visible') // Make an exception if the variant dropdown is open
+      && $('#create-game-tooltip-title').is(':visible')
+      && !$('.ss-search').is(':visible') // Make an exception if the variant dropdown is open
     ) {
       event.preventDefault();
       $('#create-game-submit').click();
@@ -61,7 +61,7 @@ export default () => {
       }
     } else if (
       (event.altKey && (event.key === 'r' || event.key === '®')) // Alt + r
-            || event.key === 'Escape'
+      || event.key === 'Escape'
     ) {
       // Click on the "Return to Lobby" button
       // (either at the "game" screen or the "history" screen or the "scores" screen)

@@ -127,9 +127,9 @@ const keypress = (room: string) => function keypressFunction(
 
     if (
       command === 'pm'
-            || command === 'w'
-            || command === 'whisper'
-            || command === 'msg'
+      || command === 'w'
+      || command === 'whisper'
+      || command === 'msg'
     ) {
       // Validate that the format of the command is correct
       if (args.length < 2) {

@@ -146,9 +146,9 @@ export const show = () => {
   const y = localStorage.getItem('chatWindowY');
   if (
     width !== null && width !== ''
-        && height !== null && height !== ''
-        && x !== null && x !== ''
-        && y !== null && y !== ''
+    && height !== null && height !== ''
+    && x !== null && x !== ''
+    && y !== null && y !== ''
   ) {
     resetPosition = false;
     modal.css('width', width);

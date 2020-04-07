@@ -61,16 +61,16 @@ export default class LayoutChild extends Konva.Group {
     // If it is not our turn, then the card does not need to be draggable yet
     // (unless we have the "Enable pre-playing cards" feature enabled)
       (!globals.ourTurn && !globals.lobby.settings.speedrunPreplay)
-            || globals.speedrun // Cards should never be draggable while speedrunning
-            || card.holder !== globals.playerUs // Only our cards should be draggable
-            || card.isPlayed // Cards on the stacks should not be draggable
-            || card.isDiscarded // Cards in the discard pile should not be draggable
-            || globals.replay // Cards should not be draggable in solo or shared replays
-            // Cards should not be draggable if we are spectating an ongoing game
-            || globals.spectating
-            // Cards should not be draggable if they are currently playing an animation
-            // (this function will be called again upon the completion of the animation)
-            || card.tweening
+      || globals.speedrun // Cards should never be draggable while speedrunning
+      || card.holder !== globals.playerUs // Only our cards should be draggable
+      || card.isPlayed // Cards on the stacks should not be draggable
+      || card.isDiscarded // Cards in the discard pile should not be draggable
+      || globals.replay // Cards should not be draggable in solo or shared replays
+      // Cards should not be draggable if we are spectating an ongoing game
+      || globals.spectating
+      // Cards should not be draggable if they are currently playing an animation
+      // (this function will be called again upon the completion of the animation)
+      || card.tweening
     ) {
       this.draggable(false);
       this.off('dragend');
@@ -112,10 +112,10 @@ export default class LayoutChild extends Konva.Group {
     // (but disable this in speedruns and certain variants)
     if (
       draggedTo === 'playArea'
-            && !globals.speedrun
-            && !globals.variant.name.startsWith('Throw It in a Hole')
-            && globals.ourTurn // Don't use warnings for preplays
-            && !card.isPotentiallyPlayable()
+      && !globals.speedrun
+      && !globals.variant.name.startsWith('Throw It in a Hole')
+      && globals.ourTurn // Don't use warnings for preplays
+      && !card.isPotentiallyPlayable()
     ) {
       let text = 'Are you sure you want to play this card?\n';
       text += 'It is known to be unplayable based on the current information\n';

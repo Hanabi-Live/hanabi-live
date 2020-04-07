@@ -2,6 +2,7 @@
 // The client uses a slightly modified version of the Golem WebSocket library
 
 // Imports
+import * as Sentry from '@sentry/browser';
 import * as chat from './chat';
 import ChatMessage from './ChatMessage';
 import Connection from './Connection';
@@ -97,6 +98,19 @@ const initCommands = () => {
     globals.settings = data.settings;
     globals.shuttingDown = data.shuttingDown;
 
+    // Set the Sentry context
+    if (window.location.hostname !== 'localhost' && !window.location.pathname.includes('/dev')) {
+      // Setting the user allows metadata to be attached to a particular error message,
+      // which can be helpful for debugging (since we can ask the user how they caused the error)
+      // https://docs.sentry.io/enriching-error-data/context/?platform=browser
+      Sentry.configureScope((scope) => {
+        scope.setUser({
+          id: globals.id.toString(),
+          username: globals.username,
+        });
+      });
+    }
+
     // Some settings are stored on the server as numbers,
     // but we need them as strings because they will exist in an input field
     const settingsToConvertToStrings = [
@@ -116,10 +130,10 @@ const initCommands = () => {
       // Validate that we are on the latest JavaScript code
       if (
         data.version !== globals.version
-                // If the server is gracefully shutting down, then ignore the version check because
-                // the new client code is probably not compiled yet
-                && !globals.shuttingDown
-                && !window.location.pathname.includes('/dev')
+        // If the server is gracefully shutting down, then ignore the version check because
+        // the new client code is probably not compiled yet
+        && !globals.shuttingDown
+        && !window.location.pathname.includes('/dev')
       ) {
         let msg = 'You are running an outdated version of the Hanabi client code. ';
         msg += `(You are on <strong>v${globals.version}</strong> `;
@@ -173,8 +187,8 @@ const initCommands = () => {
         globals.conn.send('chatRead');
       } else if (
         globals.ui.globals.spectating
-                && !globals.ui.globals.sharedReplay
-                && !$('#game-chat-modal').is(':visible')
+        && !globals.ui.globals.sharedReplay
+        && !$('#game-chat-modal').is(':visible')
       ) {
         // The chat window was not open; pop open the chat window every time for spectators
         gameChat.toggle();
@@ -220,10 +234,10 @@ const initCommands = () => {
       chat.add(line, true); // The second argument is "fast"
     }
     if (
-    // If the UI is open, we assume that this is a list of in-game chat messages
       globals.ui !== null
-            && !$('#game-chat-modal').is(':visible')
+      && !$('#game-chat-modal').is(':visible')
     ) {
+      // If the UI is open, we assume that this is a list of in-game chat messages
       globals.chatUnread += data.unread;
       globals.ui.updateChatLabel();
     }
@@ -252,8 +266,8 @@ const initCommands = () => {
     // Re-activate in-game elements
     if (
       globals.currentScreen === 'game'
-            && globals.ui !== null
-            && globals.ui.globals.ourTurn
+      && globals.ui !== null
+      && globals.ui.globals.ourTurn
     ) {
       globals.ui.reshowClueUIAfterWarning();
     }

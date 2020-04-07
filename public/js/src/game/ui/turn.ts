@@ -58,19 +58,13 @@ export const begin = () => {
         throw new Error('"globals.preCluedCard" was null in the "turn.begin()" function.');
       }
       const card = globals.deck[globals.preCluedCard];
-      if (
-        globals.queuedAction.type === ACTION.CLUE
-                && (card.isPlayed || card.isDiscarded)
-      ) {
+      if (globals.queuedAction.type === ACTION.CLUE && (card.isPlayed || card.isDiscarded)) {
         return;
       }
     }
 
     // Prevent discarding if the team is at the maximum amount of clues
-    if (
-      globals.queuedAction.type === ACTION.DISCARD
-            && globals.clues === MAX_CLUE_NUM
-    ) {
+    if (globals.queuedAction.type === ACTION.DISCARD && globals.clues === MAX_CLUE_NUM) {
       return;
     }
 

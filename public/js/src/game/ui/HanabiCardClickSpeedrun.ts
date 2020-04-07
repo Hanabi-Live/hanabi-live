@@ -21,9 +21,9 @@ export default function HanabiCardClickSpeedrun(this: HanabiCard, event: any) {
   // solo replay / shared replay / spectating / clicking on the stack base)
   if (
     (!globals.speedrun && !globals.lobby.settings.speedrunMode)
-        || globals.replay
-        || globals.spectating
-        || this.rank === STACK_BASE_RANK
+    || globals.replay
+    || globals.spectating
+    || this.rank === STACK_BASE_RANK
   ) {
     return;
   }
@@ -38,8 +38,8 @@ export default function HanabiCardClickSpeedrun(this: HanabiCard, event: any) {
   // However, we do not want to allow clicking on the first card in the hand
   // (as it is sliding in from the deck)
     (this.tweening && this.parent.index === this.parent.parent.children.length - 1)
-        || this.isPlayed // Do nothing if we accidentally clicked on a played card
-        || this.isDiscarded // Do nothing if we accidentally clicked on a discarded card
+    || this.isPlayed // Do nothing if we accidentally clicked on a played card
+    || this.isDiscarded // Do nothing if we accidentally clicked on a discarded card
   ) {
     return;
   }
@@ -55,10 +55,10 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
   // Left-clicking on cards in our own hand is a play action
   if (
     card.holder === globals.playerUs
-        && !event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
+    && !event.ctrlKey
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
   ) {
     turn.end({
       type: ACTION.PLAY,
@@ -71,13 +71,13 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
   // (but if we are holding Ctrl, then we are using Empathy)
   if (
     card.holder !== globals.playerUs
-        && card.holder !== null
-        && card.suit !== null
-        && globals.clues !== 0
-        && !event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
+    && card.holder !== null
+    && card.suit !== null
+    && globals.clues !== 0
+    && !event.ctrlKey
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
   ) {
     globals.preCluedCard = card.order;
 
@@ -127,10 +127,10 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // Right-clicking on cards in our own hand is a discard action
   if (
     card.holder === globals.playerUs
-        && !event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
+    && !event.ctrlKey
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
   ) {
     // Prevent discarding while at the maximum amount of clues
     if (globals.clues === MAX_CLUE_NUM) {
@@ -146,15 +146,15 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // Right-clicking on cards in other people's hands is a rank clue action
   if (
     card.holder !== globals.playerUs
-        && card.holder !== null
-        && card.rank !== null
-        // It is not possible to clue a Start Card with a rank clue
-        && card.rank !== START_CARD_RANK
-        && globals.clues !== 0
-        && !event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
+    && card.holder !== null
+    && card.rank !== null
+    // It is not possible to clue a Start Card with a rank clue
+    && card.rank !== START_CARD_RANK
+    && globals.clues !== 0
+    && !event.ctrlKey
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
   ) {
     globals.preCluedCard = card.order;
 
@@ -172,9 +172,9 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // Ctrl + right-click is the normal note popup
   if (
     event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
   ) {
     notes.openEditTooltip(card);
     return;
@@ -184,9 +184,9 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // (this is a common abbreviation for "this card is Finessed")
   if (
     !event.ctrlKey
-        && event.shiftKey
-        && !event.altKey
-        && !event.metaKey
+    && event.shiftKey
+    && !event.altKey
+    && !event.metaKey
   ) {
     card.setNote('f');
     return;
@@ -196,9 +196,9 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // (this is a common abbreviation for "this card is chop moved")
   if (
     !event.ctrlKey
-        && !event.shiftKey
-        && event.altKey
-        && !event.metaKey
+    && !event.shiftKey
+    && event.altKey
+    && !event.metaKey
   ) {
     card.setNote('cm');
   }
@@ -207,9 +207,9 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // (this is a common abbreviation for "this card was told to play")
   if (
     !event.ctrlKey
-        && event.shiftKey
-        && event.altKey
-        && !event.metaKey
+    && event.shiftKey
+    && event.altKey
+    && !event.metaKey
   ) {
     card.setNote('p');
   }

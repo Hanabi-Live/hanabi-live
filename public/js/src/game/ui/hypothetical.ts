@@ -218,7 +218,7 @@ export const send = (hypoAction: Action) => {
     }
     if (
       (type === 'play' && card.rank === 5 && globals.clues < MAX_CLUE_NUM)
-            || type === 'discard'
+      || type === 'discard'
     ) {
       globals.clues += 1;
     }

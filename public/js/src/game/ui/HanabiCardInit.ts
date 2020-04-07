@@ -319,24 +319,24 @@ export function empathy(this: HanabiCard) {
   this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
     if (
       event.evt.which !== 1 // Only enable Empathy for left-clicks
-            // Disable Empathy if a modifier key is pressed
-            // (unless we are in a speedrun,
-            // because then Empathy is mapped to Ctrl + left click)
-            || (event.evt.ctrlKey && !globals.speedrun && !globals.lobby.settings.speedrunMode)
-            || (
-              !event.evt.ctrlKey
-                && (globals.speedrun || globals.lobby.settings.speedrunMode)
-                && !globals.replay
-                && !globals.spectating
-            )
-            || event.evt.shiftKey
-            || event.evt.altKey
-            || event.evt.metaKey
-            || this.tweening // Disable Empathy if the card is tweening
-            || this.isPlayed // Clicking on a played card goes to the turn that it was played
-            // Clicking on a discarded card goes to the turn that it was discarded
-            || this.isDiscarded
-            || this.order > globals.deck.length - 1 // Disable empathy for the stack bases
+      // Disable Empathy if a modifier key is pressed
+      // (unless we are in a speedrun,
+      // because then Empathy is mapped to Ctrl + left click)
+      || (event.evt.ctrlKey && !globals.speedrun && !globals.lobby.settings.speedrunMode)
+      || (
+        !event.evt.ctrlKey
+          && (globals.speedrun || globals.lobby.settings.speedrunMode)
+          && !globals.replay
+          && !globals.spectating
+      )
+      || event.evt.shiftKey
+      || event.evt.altKey
+      || event.evt.metaKey
+      || this.tweening // Disable Empathy if the card is tweening
+      || this.isPlayed // Clicking on a played card goes to the turn that it was played
+      // Clicking on a discarded card goes to the turn that it was discarded
+      || this.isDiscarded
+      || this.order > globals.deck.length - 1 // Disable empathy for the stack bases
     ) {
       return;
     }
@@ -397,8 +397,8 @@ export function click(this: HanabiCard) {
   this.on('mousedown', (event: any) => {
     if (
       event.evt.which !== 1 // Dragging uses left click
-            || !this.parent
-            || !this.parent.draggable()
+      || !this.parent
+      || !this.parent.draggable()
     ) {
       return;
     }
@@ -448,7 +448,7 @@ export function possibilities(this: HanabiCard) {
     // (because they do not know what it is yet)
     if (
       card.holder === this.holder
-            && (card.possibleSuits.length > 1 || card.possibleRanks.length > 1)
+      && (card.possibleSuits.length > 1 || card.possibleRanks.length > 1)
     ) {
       continue;
     }

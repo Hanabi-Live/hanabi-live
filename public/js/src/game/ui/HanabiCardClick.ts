@@ -16,8 +16,8 @@ export default function HanabiCardClick(this: HanabiCard, event: any) {
   // solo replay / shared replay / spectating)
   if (
     (globals.speedrun || globals.lobby.settings.speedrunMode)
-        && !globals.replay
-        && !globals.spectating
+    && !globals.replay
+    && !globals.spectating
   ) {
     return;
   }
@@ -89,14 +89,14 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // Alt + right-click is a card morph (in a hypothetical)
   if (
     globals.replay
-        && globals.sharedReplay
-        && globals.amSharedReplayLeader
-        && globals.useSharedTurns
-        && globals.hypothetical
-        && !event.ctrlKey
-        && !event.shiftKey
-        && event.altKey
-        && !event.metaKey
+    && globals.sharedReplay
+    && globals.amSharedReplayLeader
+    && globals.useSharedTurns
+    && globals.hypothetical
+    && !event.ctrlKey
+    && !event.shiftKey
+    && event.altKey
+    && !event.metaKey
   ) {
     clickMorph(card.order);
     return;
@@ -108,9 +108,9 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // in case someone is pushing their push-to-talk hotkey while highlighting cards)
   if (
     globals.replay
-        && globals.sharedReplay
-        && globals.amSharedReplayLeader
-        && globals.useSharedTurns
+    && globals.sharedReplay
+    && globals.amSharedReplayLeader
+    && globals.useSharedTurns
   ) {
     arrows.send(card.order, card);
     return;
@@ -125,11 +125,11 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // (this must be above the other note code because of the modifiers)
   if (
     event.ctrlKey
-        && event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-        && !globals.replay
-        && !globals.spectating
+    && event.shiftKey
+    && !event.altKey
+    && !event.metaKey
+    && !globals.replay
+    && !globals.spectating
   ) {
     card.setNote(globals.lastNote);
     return;
@@ -139,11 +139,11 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // (this is a common abbreviation for "this card is Finessed")
   if (
     !event.ctrlKey
-        && event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-        && !globals.replay
-        && !globals.spectating
+    && event.shiftKey
+    && !event.altKey
+    && !event.metaKey
+    && !globals.replay
+    && !globals.spectating
   ) {
     card.setNote('f');
     return;
@@ -153,11 +153,11 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // (this is a common abbreviation for "this card is chop moved")
   if (
     !event.ctrlKey
-        && !event.shiftKey
-        && event.altKey
-        && !event.metaKey
-        && !globals.replay
-        && !globals.spectating
+    && !event.shiftKey
+    && event.altKey
+    && !event.metaKey
+    && !globals.replay
+    && !globals.spectating
   ) {
     card.setNote('cm');
     return;
@@ -167,9 +167,9 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // (this is a common abbreviation for "this card was told to play")
   if (
     !event.ctrlKey
-        && event.shiftKey
-        && event.altKey
-        && !event.metaKey
+    && event.shiftKey
+    && event.altKey
+    && !event.metaKey
   ) {
     card.setNote('p');
   }
@@ -181,10 +181,10 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // it could be misleading as to who the real replay leader is
   if (
     event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-        && !globals.sharedReplay
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
+    && !globals.sharedReplay
   ) {
     arrows.toggle(card);
     return;
@@ -193,10 +193,10 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // A normal right-click is edit a note
   if (
     !event.ctrlKey
-        && !event.shiftKey
-        && !event.altKey
-        && !event.metaKey
-        && !globals.replay
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey
+    && !globals.replay
   ) {
     notes.openEditTooltip(card);
   }

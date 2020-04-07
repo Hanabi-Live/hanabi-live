@@ -39,9 +39,9 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
   let rot = 0;
   if (
     element.type === 'HanabiCard'
-        && !element.isPlayed
-        && !element.isDiscarded
-        && element.rank !== STACK_BASE_RANK
+    && !element.isPlayed
+    && !element.isDiscarded
+    && element.rank !== STACK_BASE_RANK
   ) {
     if (element.parent && element.parent.parent) {
       rot = element.parent.parent.origRotation;
@@ -49,10 +49,10 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
     if (
       (
         !globals.lobby.settings.keldonMode
-                && element.holder === globals.playerUs
+        && element.holder === globals.playerUs
       ) || (
         globals.lobby.settings.keldonMode
-                && (element.holder !== globals.playerUs && element.holder !== null)
+        && (element.holder !== globals.playerUs && element.holder !== null)
       )
     ) {
       // In BGA mode, invert the arrows on our hand
@@ -207,9 +207,9 @@ const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, tur
 export const click = (event: any, order: number, element: any) => {
   if (
     event.evt.which === 3 // Right-click
-        && globals.sharedReplay
-        && globals.amSharedReplayLeader
-        && globals.useSharedTurns
+    && globals.sharedReplay
+    && globals.amSharedReplayLeader
+    && globals.useSharedTurns
   ) {
     send(order, element);
   }

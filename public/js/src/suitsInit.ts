@@ -123,8 +123,8 @@ export default (COLORS: Map<string, Color>) => {
     // Validate the fill colors
     if (
       Object.hasOwnProperty.call(suitJSON, 'fillColors')
-            && Array.isArray(suitJSON.fillColors)
-            && suitJSON.fillColors.length === 0
+      && Array.isArray(suitJSON.fillColors)
+      && suitJSON.fillColors.length === 0
     ) {
       throw new Error(`The "fillColor" array for the suit "${suitName}" is empty.`);
     }

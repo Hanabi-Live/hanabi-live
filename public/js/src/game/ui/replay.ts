@@ -92,8 +92,8 @@ export const goto = (target: number, fast: boolean) => {
 
   if (
     globals.sharedReplay
-        && globals.amSharedReplayLeader
-        && globals.useSharedTurns
+    && globals.amSharedReplayLeader
+    && globals.useSharedTurns
   ) {
     shareCurrentTurn(target);
   }
@@ -441,9 +441,9 @@ export const toggleSharedTurns = () => {
 export const checkDisableSharedTurns = () => {
   if (
     globals.replay
-        && globals.sharedReplay
-        && !globals.amSharedReplayLeader
-        && globals.useSharedTurns
+    && globals.sharedReplay
+    && !globals.amSharedReplayLeader
+    && globals.useSharedTurns
   ) {
     // Replay actions are currently enabled, so disable them
     toggleSharedTurns();

@@ -114,7 +114,7 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
     // If it is not specified, assume false (e.g. cluing colors in this variant works normally)
     if (
       Object.hasOwnProperty.call(variantJSON, 'colorCluesTouchNothing')
-            && variantJSON.colorCluesTouchNothing !== true
+      && variantJSON.colorCluesTouchNothing !== true
     ) {
       throw new Error(`The "colorCluesTouchNothing" property for the variant "${variantName}" must be set to true.`);
     }
@@ -124,7 +124,7 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
     // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
     if (
       Object.hasOwnProperty.call(variantJSON, 'rankCluesTouchNothing')
-            && variantJSON.rankCluesTouchNothing !== true
+      && variantJSON.rankCluesTouchNothing !== true
     ) {
       throw new Error(`The "rankCluesTouchNothing" property for the variant "${variantName}" must be set to true.`);
     }
@@ -134,7 +134,7 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
     // If it is not specified, assume that we are not showing the suit names
     if (
       Object.hasOwnProperty.call(variantJSON, 'showSuitNames')
-            && variantJSON.showSuitNames !== true
+      && variantJSON.showSuitNames !== true
     ) {
       throw new Error(`The "showSuitNames" property for the variant "${variantName}" must be set to true.`);
     }
@@ -144,7 +144,7 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
     // If it is not specified, assume that there is no spacing
     if (
       Object.hasOwnProperty.call(variantJSON, 'spacing')
-            && variantJSON.spacing !== true
+      && variantJSON.spacing !== true
     ) {
       throw new Error(`The "spacing" property for the variant "${variantName}" must be set to true.`);
     }

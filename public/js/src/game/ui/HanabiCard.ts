@@ -207,8 +207,8 @@ export default class HanabiCard extends Konva.Group {
       suitToShow = learnedCard.suit;
       if (
         this.rank === STACK_BASE_RANK
-                && this.noteSuit !== null
-                && !globals.replay
+        && this.noteSuit !== null
+        && !globals.replay
       ) {
         // The card note suit has precedence over the "real" suit,
         // but only for the stack bases (and not in replays)
@@ -244,8 +244,8 @@ export default class HanabiCard extends Konva.Group {
       rankToShow = learnedCard.rank;
       if (
         this.rank === STACK_BASE_RANK
-                && this.noteRank !== null
-                && !globals.replay
+        && this.noteRank !== null
+        && !globals.replay
       ) {
         // The card note rank has precedence over the "real" rank,
         // but only for the stack bases (and not in replays)
@@ -264,27 +264,27 @@ export default class HanabiCard extends Konva.Group {
     // always show the vanilla card back if the card is not fully revealed)
     if (
       this.noteKnownTrash
-            && !this.empathy
-            && !this.isPlayed
-            && !this.isDiscarded
-            && !globals.replay
-            && !globals.spectating
+      && !this.empathy
+      && !this.isPlayed
+      && !this.isDiscarded
+      && !globals.replay
+      && !globals.spectating
     ) {
       this.bareName = 'known-trash';
     } else if (
       this.noteBlank
-            && !this.empathy
-            && !this.isPlayed
-            && !this.isDiscarded
-            && !globals.replay
-            && !globals.spectating
+      && !this.empathy
+      && !this.isPlayed
+      && !this.isDiscarded
+      && !globals.replay
+      && !globals.spectating
     ) {
       this.bareName = 'deck-back';
     } else if (
       (
         globals.lobby.settings.realLifeMode
-                || globals.variant.name.startsWith('Cow & Pig')
-                || globals.variant.name.startsWith('Duck')
+        || globals.variant.name.startsWith('Cow & Pig')
+        || globals.variant.name.startsWith('Duck')
       ) && (suitToShow!.name === 'Unknown' || rankToShow === 6)
     ) {
       this.bareName = 'deck-back';
@@ -295,9 +295,9 @@ export default class HanabiCard extends Konva.Group {
     // Show or hide the pips
     if (
       this.bareName === 'known-trash'
-            || globals.lobby.settings.realLifeMode
-            || globals.variant.name.startsWith('Cow & Pig')
-            || globals.variant.name.startsWith('Duck')
+      || globals.lobby.settings.realLifeMode
+      || globals.variant.name.startsWith('Cow & Pig')
+      || globals.variant.name.startsWith('Duck')
     ) {
       this.suitPips!.hide();
       this.rankPips!.hide();
@@ -309,9 +309,9 @@ export default class HanabiCard extends Konva.Group {
     // Show or hide the "fixme" image
     this.fixme!.visible((
       this.noteNeedsFix
-            && !this.empathy
-            && !globals.replay
-            && !globals.spectating
+      && !this.empathy
+      && !globals.replay
+      && !globals.spectating
     ));
   }
 
@@ -319,8 +319,8 @@ export default class HanabiCard extends Konva.Group {
   setFade() {
     if (
       globals.lobby.settings.realLifeMode
-            || globals.speedrun
-            || globals.variant.name.startsWith('Throw It in a Hole')
+      || globals.speedrun
+      || globals.variant.name.startsWith('Throw It in a Hole')
     ) {
       return;
     }
@@ -330,12 +330,12 @@ export default class HanabiCard extends Konva.Group {
     let newOpacity = 1;
     if (
       this.suit !== null
-            && this.rank !== null
-            && this.numPositiveClues === 0
-            && !this.isPlayed
-            && !this.isDiscarded
-            && !this.empathy
-            && !this.needsToBePlayed()
+      && this.rank !== null
+      && this.numPositiveClues === 0
+      && !this.isPlayed
+      && !this.isDiscarded
+      && !this.empathy
+      && !this.needsToBePlayed()
     ) {
       newOpacity = CARD_FADE;
     }
@@ -391,9 +391,9 @@ export default class HanabiCard extends Konva.Group {
         // so if this is a negative rank clue, we cannot remove any rank pips from the card
       } else if (
         (
-        // Checking for "Pink-" also checks for "Light-Pink-"
+          // Checking for "Pink-" also checks for "Light-Pink-"
           globals.variant.name.includes('Pink-Ones')
-                    || globals.variant.name.includes('Omni-Ones')
+          || globals.variant.name.includes('Omni-Ones')
         ) && this.possibleRanks.includes(1)
       ) {
         // In some variants, the 1 of every suit is touched by all rank clues
@@ -403,9 +403,9 @@ export default class HanabiCard extends Konva.Group {
         );
       } else if (
         (
-        // Checking for "Pink-" also checks for "Light-Pink-"
+          // Checking for "Pink-" also checks for "Light-Pink-"
           globals.variant.name.includes('Pink-Fives')
-                    || globals.variant.name.includes('Omni-Fives')
+          || globals.variant.name.includes('Omni-Fives')
         ) && this.possibleRanks.includes(5)
       ) {
         // In some variants, the 5 of every suit is touched by all rank clues
@@ -416,8 +416,8 @@ export default class HanabiCard extends Konva.Group {
       } else if (
         (
           globals.variant.name.includes('Brown-Ones')
-                    || globals.variant.name.includes('Null-Ones')
-                    || globals.variant.name.includes('Muddy-Rainbow-Ones')
+          || globals.variant.name.includes('Null-Ones')
+          || globals.variant.name.includes('Muddy-Rainbow-Ones')
         ) && this.possibleRanks.includes(1)
       ) {
         // In some variants, the 1 of every suit is not touched by any rank clues
@@ -428,8 +428,8 @@ export default class HanabiCard extends Konva.Group {
       } else if (
         (
           globals.variant.name.includes('Brown-Fives')
-                    || globals.variant.name.includes('Null-Fives')
-                    || globals.variant.name.includes('Muddy-Rainbow-Fives')
+          || globals.variant.name.includes('Null-Fives')
+          || globals.variant.name.includes('Muddy-Rainbow-Fives')
         ) && this.possibleRanks.includes(5)
       ) {
         // In some variants, the 5 of every suit is not touched by any rank clues
@@ -465,11 +465,11 @@ export default class HanabiCard extends Konva.Group {
       // "fill in" a card of a multi-rank suit
       if (
         positive
-                && this.positiveRankClues.length >= 2
-                && !(globals.variant.name.includes('Pink-Ones') && this.possibleRanks.includes(1))
-                && !(globals.variant.name.includes('Omni-Ones') && this.possibleRanks.includes(1))
-                && !(globals.variant.name.includes('Pink-Fives') && this.possibleRanks.includes(5))
-                && !(globals.variant.name.includes('Omni-Fives') && this.possibleRanks.includes(5))
+        && this.positiveRankClues.length >= 2
+        && !(globals.variant.name.includes('Pink-Ones') && this.possibleRanks.includes(1))
+        && !(globals.variant.name.includes('Omni-Ones') && this.possibleRanks.includes(1))
+        && !(globals.variant.name.includes('Pink-Fives') && this.possibleRanks.includes(5))
+        && !(globals.variant.name.includes('Omni-Fives') && this.possibleRanks.includes(5))
       ) {
         const moreSuitsRemoved = filterInPlace(
           this.possibleSuits,
@@ -493,27 +493,27 @@ export default class HanabiCard extends Konva.Group {
         // If this is the case, we cannot remove any suit pips from the card
       } else if (
         positive
-                && (
-        // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
-                  (globals.variant.name.includes('Rainbow-Ones') && this.possibleRanks.includes(1))
-                    || (globals.variant.name.includes('Omni-Ones') && this.possibleRanks.includes(1))
-                    || (globals.variant.name.includes('Rainbow-Fives') && this.possibleRanks.includes(5))
-                    || (globals.variant.name.includes('Omni-Fives') && this.possibleRanks.includes(5))
-                )
+        && (
+          // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
+          (globals.variant.name.includes('Rainbow-Ones') && this.possibleRanks.includes(1))
+          || (globals.variant.name.includes('Omni-Ones') && this.possibleRanks.includes(1))
+          || (globals.variant.name.includes('Rainbow-Fives') && this.possibleRanks.includes(5))
+          || (globals.variant.name.includes('Omni-Fives') && this.possibleRanks.includes(5))
+        )
       ) {
         // In some variants, 1's or 5's are touched by all colors
         // So if this is a positive color clue,
         // we cannot remove any color pips from the card
       } else if (
         !positive
-                && (
-                  (globals.variant.name.includes('White-Ones') && this.possibleRanks.includes(1))
-                    || (globals.variant.name.includes('Null-Ones') && this.possibleRanks.includes(1))
-                    || (globals.variant.name.includes('Light-Pink-Ones') && this.possibleRanks.includes(1))
-                    || (globals.variant.name.includes('White-Fives') && this.possibleRanks.includes(5))
-                    || (globals.variant.name.includes('Null-Fives') && this.possibleRanks.includes(5))
-                    || (globals.variant.name.includes('Light-Pink-Fives') && this.possibleRanks.includes(5))
-                )
+        && (
+          (globals.variant.name.includes('White-Ones') && this.possibleRanks.includes(1))
+          || (globals.variant.name.includes('Null-Ones') && this.possibleRanks.includes(1))
+          || (globals.variant.name.includes('Light-Pink-Ones') && this.possibleRanks.includes(1))
+          || (globals.variant.name.includes('White-Fives') && this.possibleRanks.includes(5))
+          || (globals.variant.name.includes('Null-Fives') && this.possibleRanks.includes(5))
+          || (globals.variant.name.includes('Light-Pink-Fives') && this.possibleRanks.includes(5))
+        )
       ) {
         // In some variants, 1's or 5's are not touched by any colors
         // So if this is a negative color clue,
@@ -532,14 +532,14 @@ export default class HanabiCard extends Konva.Group {
 
       // Handle special ones and fives
       if (
-      // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
+        // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
         globals.variant.name.includes('Rainbow-Ones')
-                || globals.variant.name.includes('Omni-Ones')
+        || globals.variant.name.includes('Omni-Ones')
       ) {
         if (positive) {
           if (
             this.positiveColorClues.length >= 2
-                        && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0
+            && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0
           ) {
             // Two positive color clues should "fill in" a 1
             // (that cannot be a mult-color suit)
@@ -556,14 +556,14 @@ export default class HanabiCard extends Konva.Group {
           );
         }
       } else if (
-      // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
+        // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
         globals.variant.name.includes('Rainbow-Fives')
-                || globals.variant.name.includes('Omni-Fives')
+        || globals.variant.name.includes('Omni-Fives')
       ) {
         if (positive) {
           if (
             this.positiveColorClues.length >= 2
-                        && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0
+            && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0
           ) {
             // Two positive color clues should "fill in" a 5
             // (that cannot be a mult-color suit)
@@ -581,8 +581,8 @@ export default class HanabiCard extends Konva.Group {
         }
       } else if (
         globals.variant.name.includes('White-Ones')
-                || globals.variant.name.includes('Null-Ones')
-                || globals.variant.name.includes('Light-Pink-Ones')
+        || globals.variant.name.includes('Null-Ones')
+        || globals.variant.name.includes('Light-Pink-Ones')
       ) {
         if (positive) {
           // Positive color means that the card cannot be a 1
@@ -593,8 +593,8 @@ export default class HanabiCard extends Konva.Group {
         }
       } else if (
         globals.variant.name.includes('White-Fives')
-                || globals.variant.name.includes('Null-Fives')
-                || globals.variant.name.includes('Light-Pink-Fives')
+        || globals.variant.name.includes('Null-Fives')
+        || globals.variant.name.includes('Light-Pink-Fives')
       ) {
         if (positive) {
           // Positive color means that the card cannot be a 5
@@ -620,20 +620,20 @@ export default class HanabiCard extends Konva.Group {
       }
 
       if (
-      // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
-      // Checking for "Pink-" also checks for "Light-Pink-"
+        // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
+        // Checking for "Pink-" also checks for "Light-Pink-"
         (globals.variant.name.includes('Rainbow-Ones') && rank === 1)
-                || (globals.variant.name.includes('Pink-Ones') && rank === 1)
-                || (globals.variant.name.includes('White-Ones') && rank === 1)
-                || (globals.variant.name.includes('Brown-Ones') && rank === 1)
-                || (globals.variant.name.includes('Omni-Ones') && rank === 1)
-                || (globals.variant.name.includes('Null-Ones') && rank === 1)
-                || (globals.variant.name.includes('Rainbow-Fives') && rank === 5)
-                || (globals.variant.name.includes('Pink-Fives') && rank === 5)
-                || (globals.variant.name.includes('White-Fives') && rank === 5)
-                || (globals.variant.name.includes('Brown-Fives') && rank === 5)
-                || (globals.variant.name.includes('Omni-Fives') && rank === 5)
-                || (globals.variant.name.includes('Null-Fives') && rank === 5)
+        || (globals.variant.name.includes('Pink-Ones') && rank === 1)
+        || (globals.variant.name.includes('White-Ones') && rank === 1)
+        || (globals.variant.name.includes('Brown-Ones') && rank === 1)
+        || (globals.variant.name.includes('Omni-Ones') && rank === 1)
+        || (globals.variant.name.includes('Null-Ones') && rank === 1)
+        || (globals.variant.name.includes('Rainbow-Fives') && rank === 5)
+        || (globals.variant.name.includes('Pink-Fives') && rank === 5)
+        || (globals.variant.name.includes('White-Fives') && rank === 5)
+        || (globals.variant.name.includes('Brown-Fives') && rank === 5)
+        || (globals.variant.name.includes('Omni-Fives') && rank === 5)
+        || (globals.variant.name.includes('Null-Fives') && rank === 5)
       ) {
         // Mark to retroactively apply color clues when we return from this function
         this.reapplyColorClues = true;
@@ -782,11 +782,7 @@ export default class HanabiCard extends Konva.Group {
     this.rank = rank;
 
     // Played cards are not revealed in the "Throw It in a Hole" variant
-    if (
-      globals.variant.name.startsWith('Throw It in a Hole')
-            && !globals.replay
-            && this.isPlayed
-    ) {
+    if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay && this.isPlayed) {
       return;
     }
 
@@ -831,11 +827,7 @@ export default class HanabiCard extends Konva.Group {
     // 1) unknown card that we played or
     // 2) a card that was just fully revealed in our hand via a clue
     // then we also need to update the possibilities for the other hands
-    if (
-      this.holder === globals.playerUs
-            && !globals.replay
-            && !globals.spectating
-    ) {
+    if (this.holder === globals.playerUs && !globals.replay && !globals.spectating) {
       for (let i = 0; i < globals.elements.playerHands.length; i++) {
         if (i === this.holder) {
           // We already updated our own hand above
@@ -937,10 +929,10 @@ export default class HanabiCard extends Konva.Group {
   isCritical() {
     if (
       this.suit === null
-            || this.rank === null
-            || this.isPlayed
-            || this.isDiscarded
-            || this.needsToBePlayed()
+      || this.rank === null
+      || this.isPlayed
+      || this.isDiscarded
+      || this.needsToBePlayed()
     ) {
       return false;
     }
@@ -958,11 +950,7 @@ export default class HanabiCard extends Konva.Group {
       if (card.order === this.order) {
         continue;
       }
-      if (
-        card.suit === this.suit
-                && card.rank === this.rank
-                && card.isPlayed
-      ) {
+      if (card.suit === this.suit && card.rank === this.rank && card.isPlayed) {
         return false;
       }
     }
@@ -1065,11 +1053,7 @@ export default class HanabiCard extends Konva.Group {
     // (the previous function handles the case where the stack is finished)
     // Check to see if the entire suit is dead in the case where
     // all 3 of the start cards are discarded
-    if (
-      allDiscarded.get(1)
-            && allDiscarded.get(5)
-            && allDiscarded.get(START_CARD_RANK)
-    ) {
+    if (allDiscarded.get(1) && allDiscarded.get(5) && allDiscarded.get(START_CARD_RANK)) {
       return true;
     }
 
@@ -1203,11 +1187,7 @@ export default class HanabiCard extends Konva.Group {
 
     // If we wrote a card identity note and all the possibilities for that note have been
     // eliminated, unmorph the card
-    if (
-      suit === this.noteSuit
-            && rank === this.noteRank
-            && cardsLeft === 0
-    ) {
+    if (suit === this.noteSuit && rank === this.noteRank && cardsLeft === 0) {
       this.noteSuit = null;
       this.noteRank = null;
       this.setBareImage();

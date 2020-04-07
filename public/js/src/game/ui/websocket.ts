@@ -371,7 +371,7 @@ commands.set('notify', (data: any) => {
   // Now that it is recorded, change the actual drawn game state
   if (
     !globals.inReplay // Unless we are in an in-game replay
-        && !globals.gameOver // Unless it is the miscellaneous data sent at the end of a game
+    && !globals.gameOver // Unless it is the miscellaneous data sent at the end of a game
   ) {
     notify(data);
   }
@@ -578,10 +578,10 @@ commands.set('replayTurn', (data: ReplayTurnData) => {
   }
 
   if (
-  // If we are the replay leader, then we don't have to do anything
+    // If we are the replay leader, then we don't have to do anything
     globals.amSharedReplayLeader
-        // Make an exception for when we are first loading the game
-        && globals.sharedReplayTurn !== -1
+    // Make an exception for when we are first loading the game
+    && globals.sharedReplayTurn !== -1
   ) {
     return;
   }

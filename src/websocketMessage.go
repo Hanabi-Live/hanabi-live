@@ -64,11 +64,23 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 	}
 
 	if usingSentry {
-		// Tags allow the user ID and username to be attached to a particular error message,
+		// Parse the IP address
+		var ip string
+		if v, _, err := net.SplitHostPort(s.Session.Request.RemoteAddr); err != nil {
+			logger.Error("Failed to parse the IP address in the WebSocket function:", err)
+			return
+		} else {
+			ip = v
+		}
+
+		// Setting the user allows metadata to be attached to a particular error message,
 		// which can be helpful for debugging (since we can ask the user how they caused the error)
 		sentry.ConfigureScope(func(scope *sentry.Scope) {
-			scope.SetTag("userID", strconv.Itoa(s.UserID()))
-			scope.SetTag("username", s.Username())
+			scope.SetUser(sentry.User{
+				ID:        strconv.Itoa(s.UserID()),
+				IPAddress: ip,
+				Username:  s.Username(),
+			})
 		})
 	}
 

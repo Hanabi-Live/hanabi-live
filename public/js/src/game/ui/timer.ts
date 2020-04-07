@@ -128,13 +128,13 @@ function setTickingDownTime(timer: TimerDisplay) {
   // Do not play it more frequently than about once per second
   if (
     globals.timed
-        && globals.lobby.settings.soundTimer
-        && millisecondsLeft > 0 // Between 0 and 10 seconds
-        && millisecondsLeft <= 10000
-        && timeElapsed > 900
-        && timeElapsed < 1100
-        && !globals.paused
-        && !globals.lobby.errorOccured
+    && globals.lobby.settings.soundTimer
+    && millisecondsLeft > 0 // Between 0 and 10 seconds
+    && millisecondsLeft <= 10000
+    && timeElapsed > 900
+    && timeElapsed < 1100
+    && !globals.paused
+    && !globals.lobby.errorOccured
   ) {
     globals.game!.sounds.play('tone');
   }

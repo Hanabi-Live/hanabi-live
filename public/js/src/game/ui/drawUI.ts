@@ -303,11 +303,11 @@ const drawPlayStacks = () => {
   // unless we manually adjust them
   if (
     (globals.variant.suits.length === 4 && !globals.variant.showSuitNames)
-        || (
-          globals.variant.suits.length === 5
-            && globals.variant.showSuitNames
-            && globals.lobby.settings.keldonMode
-        )
+    || (
+      globals.variant.suits.length === 5
+      && globals.variant.showSuitNames
+      && globals.lobby.settings.keldonMode
+    )
   ) {
     playStackValues.x += (cardWidth + playStackValues.spacing) / 2;
   } else if (globals.variant.suits.length === 4 && globals.variant.showSuitNames) {
@@ -351,10 +351,7 @@ const drawPlayStacks = () => {
     // (a text description of the suit)
     if (globals.variant.showSuitNames) {
       let text = suit.name;
-      if (
-        globals.lobby.settings.colorblindMode
-                && suit.clueColors.length === 2
-      ) {
+      if (globals.lobby.settings.colorblindMode && suit.clueColors.length === 2) {
         const colorList = suit.clueColors.map((color) => color.abbreviation).join('/');
         text += ` [${colorList}]`;
       }
@@ -489,8 +486,8 @@ const drawBottomLeftButtons = () => {
   restartButton.on('click tap', () => {
     if (
       globals.speedrun
-            || debug.amTestUser(globals.lobby.username)
-            || window.confirm('Are you sure you want to restart the game?')
+      || debug.amTestUser(globals.lobby.username)
+      || window.confirm('Are you sure you want to restart the game?')
     ) {
       globals.lobby.conn.send('tableRestart');
     }
@@ -584,8 +581,8 @@ const drawBottomLeftButtons = () => {
   killButton.on('click tap', () => {
     if (
       globals.speedrun
-            || debug.amTestUser(globals.lobby.username)
-            || window.confirm('Are you sure you want to terminate the game?')
+      || debug.amTestUser(globals.lobby.username)
+      || window.confirm('Are you sure you want to terminate the game?')
     ) {
       globals.lobby.conn.send('tableTerminate');
     }
@@ -1335,8 +1332,8 @@ const drawTimers = () => {
   globals.elements.timer1.on('click', (event) => {
     if (
       event.evt.which !== 3 // Right-click
-            || !globals.timed // We don't need to pause if this is not a timed game
-            || globals.paused // We don't need to pause if the game is already paused
+      || !globals.timed // We don't need to pause if this is not a timed game
+      || globals.paused // We don't need to pause if the game is already paused
     ) {
       return;
     }
@@ -1659,7 +1656,7 @@ const drawPreplayArea = () => {
     // If we dragged a card, we have to put the card back in the hand
     if (
       globals.queuedAction.type === ACTION.PLAY
-            || globals.queuedAction.type === ACTION.DISCARD
+      || globals.queuedAction.type === ACTION.DISCARD
     ) {
       globals.elements.playerHands[globals.playerUs].doLayout();
     }

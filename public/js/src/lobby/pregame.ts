@@ -366,8 +366,8 @@ export const enableStartGameButton = () => {
 
   if (
     globals.game.owner === globals.id
-        && globals.game.players.length >= 2
-        && globals.game.players.length <= 6
+    && globals.game.players.length >= 2
+    && globals.game.players.length <= 6
   ) {
     $('#nav-buttons-pregame-start').removeClass('disabled');
   }
