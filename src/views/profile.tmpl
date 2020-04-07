@@ -1,94 +1,93 @@
 {{define "content"}}
 <style>
-    th:hover {
-        background-color: rgb(220, 220, 220);
-        cursor: pointer;
-    }
+  th:hover {
+    background-color: rgb(220, 220, 220);
+    cursor: pointer;
+  }
 </style>
 
 <div id="page-wrapper">
 
-    <!-- Header -->
-    <header id="header">
-        <h1>Hanabi Live</h1>
-        <nav id="nav"></nav>
+  <!-- Header -->
+  <header id="header">
+    <h1>Hanabi Live</h1>
+    <nav id="nav"></nav>
+  </header>
+
+  <!-- Main -->
+  <section id="main" class="container max">
+    <header>
+      <h2><img src="/public/img/logos/5.png" height="200"></h2>
     </header>
+    <div class="row uniform 100%">
+      <div class="col-12">
+        <section class="box">
+          <h2 class="align-center">{{.Name}}'s Profile</h2>
 
-    <!-- Main -->
-    <section id="main" class="container max">
-        <header>
-            <h2><img src="/public/img/logos/5.png" height="200"></h2>
-        </header>
-        <div class="row uniform 100%">
-            <div class="col-12">
-                <section class="box">
-                    <h2 class="align-center">{{.Name}}'s Profile</h2>
+          <div>
+            <ul class="actions fit">
+              <li>
+                <a class="button fit icon fa-chart-area{{if eq .Title "Scores"}} disabled{{else}}" href="/scores/{{.Name}}{{end}}">Scores & Statistics</a>
+              </li>
+              <li>
+                <a class="button fit icon fa-history{{if eq .Title "History"}} disabled{{else}}" href="/history/{{.Name}}{{end}}">Full Game History</a>
+              </li>
+              <li>
+                <a class="button fit icon fa-question{{if eq .Title "Missing Scores"}} disabled{{else}}" href="/missing-scores/{{.Name}}{{end}}">Missing Scores</a>
+              </li>
+            </ul>
+          </div>
 
-                    <div>
-                        <ul class="actions fit">
-                            <li>
-                                <a class="button fit icon fa-chart-area{{if eq .Title "Scores"}} disabled{{else}}" href="/scores/{{.Name}}{{end}}">Scores & Statistics</a>
-                            </li>
-                            <li>
-                                <a class="button fit icon fa-history{{if eq .Title "History"}} disabled{{else}}" href="/history/{{.Name}}{{end}}">Full Game History</a>
-                            </li>
-                            <li>
-                                <a class="button fit icon fa-question{{if eq .Title "Missing Scores"}} disabled{{else}}" href="/missing-scores/{{.Name}}{{end}}">Missing Scores</a>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {{template "profile" .}}
-
-                </section>
-            </div>
-        </div>
-    </section>
+          {{template "profile" .}}
+        </section>
+      </div>
+    </div>
+  </section>
 </div>
 
 <!-- Tooltips -->
 <div class="hidden">
-    <div id="modifier-deckplays" class="profile-tooltip">
-        This score is not legitimate since the <strong>Bottom-Deck Blind-Play</strong> option was used.
-    </div>
-    <div id="modifier-emptyclues" class="profile-tooltip">
-        This score is not legitimate since the <strong>Empty Clue</strong> option was used.
-    </div>
-    <div id="modifier-deckplays-emptyclues" class="profile-tooltip">
-        This score is not legitimate since the <strong>Bottom-Deck Blind-Play</strong> and <strong>Empty Clue</strong> options were used.
-    </div>
+  <div id="modifier-deckplays" class="profile-tooltip">
+    This score is not legitimate since the <strong>Bottom-Deck Blind-Play</strong> option was used.
+  </div>
+  <div id="modifier-emptyclues" class="profile-tooltip">
+    This score is not legitimate since the <strong>Empty Clue</strong> option was used.
+  </div>
+  <div id="modifier-deckplays-emptyclues" class="profile-tooltip">
+    This score is not legitimate since the <strong>Bottom-Deck Blind-Play</strong> and <strong>Empty Clue</strong> options were used.
+  </div>
 </div>
 
 <script type="text/javascript" src="/public/js/lib/jquery-3.3.1.min.js"></script>
 <script type="text/javascript" src="/public/js/lib/jquery.tablesorter-2.31.1.min.js"></script>
 <script type="text/javascript" src="/public/js/lib/tooltipster.bundle.min.js"></script>
 <script type="text/javascript">
-    $(document).ready(() => {
-        // Initialize the tooltips
-        $('.tooltip').tooltipster({
-            animation: 'grow',
-            contentAsHTML: true,
-            delay: 0,
-            theme: [
-                'tooltipster-shadow',
-                'tooltipster-shadow-big',
-            ],
-        });
-
-        // Initialize the table sorting
-        $('table').tablesorter();
-
-        // Initialize the "Filter by # of Players" dropdown
-        $('#filter-by-players').change(() => {
-            const numPlayersSelected = $('#filter-by-players').val();
-            for (let i = 2; i <= 6; i++) {
-                if (numPlayersSelected === i.toString() || numPlayersSelected === 'all') {
-                    $(`.missing-scores-row-${i}`).show();
-                } else {
-                    $(`.missing-scores-row-${i}`).hide();
-                }
-            }
-        });
+  $(document).ready(() => {
+    // Initialize the tooltips
+    $('.tooltip').tooltipster({
+      animation: 'grow',
+      contentAsHTML: true,
+      delay: 0,
+      theme: [
+        'tooltipster-shadow',
+        'tooltipster-shadow-big',
+      ],
     });
+
+    // Initialize the table sorting
+    $('table').tablesorter();
+
+    // Initialize the "Filter by # of Players" dropdown
+    $('#filter-by-players').change(() => {
+      const numPlayersSelected = $('#filter-by-players').val();
+      for (let i = 2; i <= 6; i++) {
+        if (numPlayersSelected === i.toString() || numPlayersSelected === 'all') {
+          $(`.missing-scores-row-${i}`).show();
+        } else {
+          $(`.missing-scores-row-${i}`).hide();
+        }
+      }
+    });
+  });
 </script>
 {{end}}

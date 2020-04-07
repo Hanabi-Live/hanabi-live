@@ -1,86 +1,86 @@
 {{define "profile"}}
 <style>
-    .stat-description {
-        /* Override the existing width since the columns are shorter on this page */
-        width: 11em;
-    }
+  .stat-description {
+    /* Override the existing width since the columns are shorter on this page */
+    width: 11em;
+  }
 </style>
 
 <h3>Current Max Scores:</h3>
 
 <table>
-    <thead>
-        <tr>
-            <th>2-player</th>
-            <th>3-player</th>
-            <th>4-player</th>
-            <th>5-player</th>
-            <th>6-player</th>
-            <th>Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>{{index .NumMaxScoresPerType 0}} &nbsp;({{index .PercentageMaxScoresPerType 0}}%)</td>
-            <td>{{index .NumMaxScoresPerType 1}} &nbsp;({{index .PercentageMaxScoresPerType 1}}%)</td>
-            <td>{{index .NumMaxScoresPerType 2}} &nbsp;({{index .PercentageMaxScoresPerType 2}}%)</td>
-            <td>{{index .NumMaxScoresPerType 3}} &nbsp;({{index .PercentageMaxScoresPerType 3}}%)</td>
-            <td>{{index .NumMaxScoresPerType 4}} &nbsp;({{index .PercentageMaxScoresPerType 4}}%)</td>
-            <td>{{.NumMaxScores}} &nbsp;({{.PercentageMaxScores}}%)</td>
-        </tr>
-    </tbody>
+  <thead>
+    <tr>
+      <th>2-player</th>
+      <th>3-player</th>
+      <th>4-player</th>
+      <th>5-player</th>
+      <th>6-player</th>
+      <th>Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>{{index .NumMaxScoresPerType 0}} &nbsp;({{index .PercentageMaxScoresPerType 0}}%)</td>
+      <td>{{index .NumMaxScoresPerType 1}} &nbsp;({{index .PercentageMaxScoresPerType 1}}%)</td>
+      <td>{{index .NumMaxScoresPerType 2}} &nbsp;({{index .PercentageMaxScoresPerType 2}}%)</td>
+      <td>{{index .NumMaxScoresPerType 3}} &nbsp;({{index .PercentageMaxScoresPerType 3}}%)</td>
+      <td>{{index .NumMaxScoresPerType 4}} &nbsp;({{index .PercentageMaxScoresPerType 4}}%)</td>
+      <td>{{.NumMaxScores}} &nbsp;({{.PercentageMaxScores}}%)</td>
+    </tr>
+  </tbody>
 </table>
 
 <ul id="filter-players" class="horizontal">
-    <li>
-        <div class="create-game-icon">
-            <i class="fas fa-users" style="position: relative; top: 1px;"></i>
-        </div>
-        Filter by # of Players
-    </li>
-    <li>
-        <select id="filter-by-players">
-            <option value="all">All</option>
-            <option value="2">2-Players</option>
-            <option value="3">3-Players</option>
-            <option value="4">4-Players</option>
-            <option value="5">5-Players</option>
-            <option value="6">6-Players</option>
-        </select>
-    </li>
+  <li>
+    <div class="create-game-icon">
+        <i class="fas fa-users" style="position: relative; top: 1px;"></i>
+    </div>
+    Filter by # of Players
+  </li>
+  <li>
+    <select id="filter-by-players">
+      <option value="all">All</option>
+      <option value="2">2-Players</option>
+      <option value="3">3-Players</option>
+      <option value="4">4-Players</option>
+      <option value="5">5-Players</option>
+      <option value="6">6-Players</option>
+    </select>
+  </li>
 </ul>
 
 <br /><br /><br />
 
 <table>
-    <thead>
-        <tr>
-            <th>Variant</th>
-            <th># of Players</th>
-            <th>Current Score</th>
-        </tr>
-    </thead>
-    <tbody>
-        {{range $index, $results := .VariantStats}}
-            {{range $index2, $results2 := .BestScores}}
-                {{if or (ne .Score $results.MaxScore) (ne .Modifier 0)}}
-                    <tr class="missing-scores-row-{{.NumPlayers}}">
-                        <td>{{$results.Name}}</td>
-                        <td>{{.NumPlayers}}</td>
-                        <td>
-                            {{.Score}} / {{$results.MaxScore}} &nbsp;
-                            {{if eq .Modifier 1}}
-                                <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays"></i>
-                            {{else if eq .Modifier 2}}
-                                <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-emptyclues"></i>
-                            {{else if eq .Modifier 3}}
-                                <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays-emptyclues"></i>
-                            {{end}}
-                        </td>
-                    </tr>
-                {{end}}
-            {{- end -}}
-        {{- end -}}
-    </tbody>
+  <thead>
+    <tr>
+      <th>Variant</th>
+      <th># of Players</th>
+      <th>Current Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range $index, $results := .VariantStats}}
+      {{range $index2, $results2 := .BestScores}}
+        {{if or (ne .Score $results.MaxScore) (ne .Modifier 0)}}
+          <tr class="missing-scores-row-{{.NumPlayers}}">
+            <td>{{$results.Name}}</td>
+            <td>{{.NumPlayers}}</td>
+            <td>
+              {{.Score}} / {{$results.MaxScore}} &nbsp;
+              {{if eq .Modifier 1}}
+                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays"></i>
+              {{else if eq .Modifier 2}}
+                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-emptyclues"></i>
+              {{else if eq .Modifier 3}}
+                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays-emptyclues"></i>
+              {{end}}
+            </td>
+          </tr>
+        {{end}}
+      {{- end -}}
+    {{- end -}}
+  </tbody>
 </table>
 {{end}}

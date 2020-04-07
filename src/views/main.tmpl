@@ -2,960 +2,1005 @@
 <!-- Header & Login & Lobby -->
 <div id="page-wrapper">
 
-    <!-- Header -->
-    <header id="header">
-        <h1>Hanabi Live</h1>
-        <nav id="nav">
-            <!-- We use <i> instead of the icon class because it results in a more compact button -->
-            <ul id="nav-buttons-games" class="hidden">
-                <li>
-                    <a id="nav-buttons-games-create-game" class="button tooltip" data-tooltip-content="#create-game-tooltip">
-                        <i class="fas fa-plus nav-icon"></i>
-                        <span class="nav-hotkey-indicator">C</span>reate Game
-                    </a>
-                </li>
-                <li>
-                    <a id="nav-buttons-games-history" class="button">
-                        <i class="fas fa-history nav-icon"></i>
-                        Show <span class="nav-hotkey-indicator">H</span>istory
-                    </a>
-                </li>
-                <li>
-                    <a id="nav-buttons-games-replay" class="button tooltip" data-tooltip-content="#replay-tooltip">
-                        <i class="fas fa-eye nav-icon"></i>
-                        W<span class="nav-hotkey-indicator">a</span>tch Specific Replay
-                    </a>
-                </li>
-                <li>
-                    <a id="nav-buttons-games-stats" class="button" href="/stats" target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-chart-area nav-icon"></i>
-                        Stats
-                    </a>
-                </li>
-                <li>
-                    <a id="nav-buttons-games-help" class="button" href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md" target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-question-circle question-mark nav-icon"></i>
-                        Help
-                    </a>
-                </li>
-                <li>
-                    <a id="nav-buttons-games-resources" class="button tooltip" data-tooltip-content="#resources-tooltip">
-                        <i class="fas fa-link nav-icon"></i>
-                        Resources
-                    </a>
-                </li>
-                <li>
-                    <a id="nav-buttons-games-settings" class="button tooltip" data-tooltip-content="#settings-tooltip">
-                        <i class="fas fa-cog nav-icon"></i>
-                        Settings
-                    </a>
-                </li>
-                <li>
-                    <a id="nav-buttons-games-sign-out" class="button">
-                        <i class="fas fa-sign-out-alt nav-icon"></i>
-                        Sign <span class="nav-hotkey-indicator">O</span>ut
-                    </a>
-                </li>
-            </ul>
-            <ul id="nav-buttons-pregame" class="hidden">
-                <li>
-                    <a id="nav-buttons-pregame-start" class="button disabled">
-                        <i class="fas fa-play nav-icon"></i>
-                        <span class="nav-hotkey-indicator">S</span>tart Game
-                    </a>
-                </li>
-                <li>
-                    <a id="nav-buttons-pregame-unattend" class="button">
-                        <i class="fas fa-pause nav-icon"></i>
-                        <span class="nav-hotkey-indicator">R</span>eturn to Lobby
-                    </a>
-                </li>
-                <li>
-                    <a id="nav-buttons-pregame-leave" class="button">
-                        <i class="fas fa-times nav-icon"></i>
-                        <span class="nav-hotkey-indicator">L</span>eave Game
-                    </a>
-                </li>
-            </ul>
-            <ul id="nav-buttons-history" class="hidden">
-                <li>
-                    Shown games: <span id="nav-buttons-history-shown-games">0</span> / <span id="nav-buttons-history-total-games">0</span>
-                </li>
-                <li>&nbsp;</li>
-                <li>
-                    <a id="nav-buttons-history-return" class="button">
-                        <i class="fas fa-home nav-icon"></i>
-                        <span class="nav-hotkey-indicator">R</span>eturn to Lobby
-                    </a>
-                </li>
-            </ul>
-            <ul id="nav-buttons-history-other-scores" class="hidden">
-                <li>
-                    <a id="nav-buttons-history-other-scores-return" class="button">
-                        <i class="fas fa-history nav-icon"></i>
-                        <span class="nav-hotkey-indicator">R</span>eturn to History
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </header>
+  <!-- Header -->
+  <header id="header">
+    <h1>Hanabi Live</h1>
+    <nav id="nav">
+      <!-- We use <i> instead of the icon class because it results in a more compact button -->
+      <ul id="nav-buttons-games" class="hidden">
+        <li>
+          <a id="nav-buttons-games-create-game" class="button tooltip" data-tooltip-content="#create-game-tooltip">
+            <i class="fas fa-plus nav-icon"></i>
+            <span class="nav-hotkey-indicator">C</span>reate Game
+          </a>
+        </li>
+        <li>
+          <a id="nav-buttons-games-history" class="button">
+            <i class="fas fa-history nav-icon"></i>
+            Show <span class="nav-hotkey-indicator">H</span>istory
+          </a>
+        </li>
+        <li>
+          <a id="nav-buttons-games-replay" class="button tooltip" data-tooltip-content="#replay-tooltip">
+            <i class="fas fa-eye nav-icon"></i>
+            W<span class="nav-hotkey-indicator">a</span>tch Specific Replay
+          </a>
+        </li>
+        <li>
+          <a id="nav-buttons-games-stats" class="button" href="/stats" target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-chart-area nav-icon"></i>
+            Stats
+          </a>
+        </li>
+        <li>
+          <a id="nav-buttons-games-help" class="button"
+            href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md" target="_blank"
+            rel="noopener noreferrer">
+            <i class="fas fa-question-circle question-mark nav-icon"></i>
+            Help
+          </a>
+        </li>
+        <li>
+          <a id="nav-buttons-games-resources" class="button tooltip" data-tooltip-content="#resources-tooltip">
+            <i class="fas fa-link nav-icon"></i>
+            Resources
+          </a>
+        </li>
+        <li>
+          <a id="nav-buttons-games-settings" class="button tooltip" data-tooltip-content="#settings-tooltip">
+            <i class="fas fa-cog nav-icon"></i>
+            Settings
+          </a>
+        </li>
+        <li>
+          <a id="nav-buttons-games-sign-out" class="button">
+            <i class="fas fa-sign-out-alt nav-icon"></i>
+            Sign <span class="nav-hotkey-indicator">O</span>ut
+          </a>
+        </li>
+      </ul>
+      <ul id="nav-buttons-pregame" class="hidden">
+        <li>
+          <a id="nav-buttons-pregame-start" class="button disabled">
+            <i class="fas fa-play nav-icon"></i>
+            <span class="nav-hotkey-indicator">S</span>tart Game
+          </a>
+        </li>
+        <li>
+          <a id="nav-buttons-pregame-unattend" class="button">
+            <i class="fas fa-pause nav-icon"></i>
+            <span class="nav-hotkey-indicator">R</span>eturn to Lobby
+          </a>
+        </li>
+        <li>
+          <a id="nav-buttons-pregame-leave" class="button">
+            <i class="fas fa-times nav-icon"></i>
+            <span class="nav-hotkey-indicator">L</span>eave Game
+          </a>
+        </li>
+      </ul>
+      <ul id="nav-buttons-history" class="hidden">
+        <li>
+          Shown games: <span id="nav-buttons-history-shown-games">0</span> / <span
+            id="nav-buttons-history-total-games">0</span>
+        </li>
+        <li>&nbsp;</li>
+        <li>
+          <a id="nav-buttons-history-return" class="button">
+            <i class="fas fa-home nav-icon"></i>
+            <span class="nav-hotkey-indicator">R</span>eturn to Lobby
+          </a>
+        </li>
+      </ul>
+      <ul id="nav-buttons-history-other-scores" class="hidden">
+        <li>
+          <a id="nav-buttons-history-other-scores-return" class="button">
+            <i class="fas fa-history nav-icon"></i>
+            <span class="nav-hotkey-indicator">R</span>eturn to History
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </header>
 
-    <!-- Login -->
-    <div id="login">
-        <section id="main" class="container">
-            <header>
-                <h2 class="align-center-v">
-                    <img src="/public/img/logos/5.png" height=200 />
-                </h2>
-                <p id="title-sub">
-                    A place to play <strong>Hanabi</strong> online,<br />
-                    a cooperative card game of logic and reasoning
-                </p>
-            </header>
+  <!-- Login -->
+  <div id="login">
+    <section id="main" class="container">
+      <header>
+        <h2 class="align-center-v">
+          <img src="/public/img/logos/5.png" height=200 />
+        </h2>
+        <p id="title-sub">
+          A place to play <strong>Hanabi</strong> online,<br />
+          a cooperative card game of logic and reasoning
+        </p>
+      </header>
 
-            <div class="row">
-                <div class="col-8 off-2">
-                    <section id="firefox-warning" class="box align-center hidden">
-                        <h3><i class="fas fa-exclamation-triangle"></i> Warning!</h3>
-                        <p>
-                            For unknown reasons, this website performs terribly in Firefox.<br />
-                            Please, for your sanity, use Chrome or Chromium when using Hanabi Live.
-                        </p>
-                        <button id="firefox-warning-button" class="button align-center">OK</button>
-                    </section>
+      <div class="row">
+        <div class="col-8 off-2">
+          <section id="firefox-warning" class="box align-center hidden">
+            <h3><i class="fas fa-exclamation-triangle"></i> Warning!</h3>
+            <p>
+              For unknown reasons, this website performs terribly in Firefox.<br />
+              Please, for your sanity, use Chrome or Chromium when using Hanabi Live.
+            </p>
+            <button id="firefox-warning-button" class="button align-center">OK</button>
+          </section>
 
-                    <section id="sign-in" class="box align-center">
-                        <h3>Sign In / Create Account</h3>
-                        <p>
-                            To create a new account, simply login with a new username and select a password. <br />
-                            Do <strong>NOT</strong> reuse any of your previous passwords!
-                        </p>
-                        <form id="login-form">
-                            <div class="row">
-                                <div class="col-1 off-2">
-                                    <i class="fas fa-user fa-2x login-icon"></i>
-                                </div>
-                                <div class="col-7">
-                                    <input id="login-username" type="text" placeholder="Username" autofocus />
-                                </div>
-                            </div>
-                            <div class="padding0p75"></div>
-                            <div class="row">
-                                <div class="col-1 off-2">
-                                    <i class="fas fa-key fa-2x login-icon"></i>
-                                </div>
-                                <div class="col-7">
-                                    <input id="login-password" type="password" placeholder="Password" />
-                                </div>
-                            </div>
-                            <br />
-                            <div class="row">
-                                <div class="col-3 off-3">
-                                    <ul class="actions">
-                                        <li>
-                                            <a id="login-button" class="button fit icon fa-sign-in-alt">Sign In</a>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="col-1">
-                                    <img id="login-ajax" class="hidden" src="/public/img/ajax.gif">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-12">
-                                    <p id="login-alert" class="hidden"></p>
-                                </div>
-                            </div>
-                        </form>
-                    </section>
+          <section id="sign-in" class="box align-center">
+            <h3>Sign In / Create Account</h3>
+            <p>
+              To create a new account, simply login with a new username and select a password. <br />
+              Do <strong>NOT</strong> reuse any of your previous passwords!
+            </p>
+            <form id="login-form">
+              <div class="row">
+                <div class="col-1 off-2">
+                  <i class="fas fa-user fa-2x login-icon"></i>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-12 align-center">
-                    <a href="https://discord.gg/FADvkJp">
-                        <img id="title-discord" src="/public/img/discord.png" />
-                    </a>
+                <div class="col-7">
+                  <input id="login-username" type="text" placeholder="Username" autofocus />
                 </div>
+              </div>
+              <div class="padding0p75"></div>
+              <div class="row">
+                <div class="col-1 off-2">
+                  <i class="fas fa-key fa-2x login-icon"></i>
+                </div>
+                <div class="col-7">
+                  <input id="login-password" type="password" placeholder="Password" />
+                </div>
+              </div>
+              <br />
+              <div class="row">
+                <div class="col-3 off-3">
+                  <ul class="actions">
+                    <li>
+                      <a id="login-button" class="button fit icon fa-sign-in-alt">Sign In</a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="col-1">
+                  <img id="login-ajax" class="hidden" src="/public/img/ajax.gif">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-12">
+                  <p id="login-alert" class="hidden"></p>
+                </div>
+              </div>
+            </form>
+          </section>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12 align-center">
+          <a href="https://discord.gg/FADvkJp">
+            <img id="title-discord" src="/public/img/discord.png" />
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Tutorial -->
+  <div id="tutorial" class="hidden">
+    <section id="main" class="container">
+      <div class="row">
+        <div class="col-10 off-1">
+          <section id="tutorial-1" class="box align-center">
+            <h3>Welcome!</h3>
+            <p>It looks like you are logging on to <em>Hanabi Live</em> for the first time. There are some things you
+              should know.</p>
+            <div class="row">
+              <div class="col-6">
+                <a id="tutorial-yes" class="button fit icon fa-question-circle">Give me a basic rundown.</a>
+              </div>
+              <div class="col-6">
+                <a id="tutorial-no" class="button fit icon fa-chess-queen">I already know how everything works.</a>
+              </div>
             </div>
+          </section>
+
+          <section id="tutorial-2" class="box align-center hidden">
+            <h3>The Rules</h3>
+            <p>Do you already know how to play Hanabi?</p>
+            <div class="row">
+              <div class="col-6">
+                <a id="tutorial-2-yes" class="button fit icon fa-check">Yup.</a>
+              </div>
+              <div class="col-6">
+                <a id="tutorial-2-no" class="button fit icon fa-times">Nope.</a>
+              </div>
+            </div>
+          </section>
+
+          <section id="tutorial-2-1" class="box align-center hidden">
+            <h3>The Rules</h3>
+            <p>Good, because the website assumes that you already know how to play - there isn't a tutorial mode or
+              anything like that.</p>
+            <div class="row">
+              <div class="col-12 align-center">
+                <a id="tutorial-2-1-ok" class="button icon fa-check">Ok, what's next?</a>
+              </div>
+            </div>
+          </section>
+
+          <section id="tutorial-2-2" class="box align-center hidden">
+            <h3>The Rules</h3>
+            <p>Well, unfortunately <em>Hanabi Live</em> doesn't have a tutorial mode or anything like that. You will
+              have to learn the rules on your own. Thankfully, Tricky has <a href="http://pastebin.com/6brGz2J4"
+                target="_blank" rel="noopener noreferrer">a nice writeup on Pastebin</a>. Or, you can watch <a
+                href="https://www.youtube.com/watch?v=jR9i1qCbHXQ" target="_blank" rel="noopener noreferrer">my video
+                explanation</a>.</p>
+            <div class="row">
+              <div class="col-12 align-center">
+                <a id="tutorial-2-2-ok" class="button icon fa-check">Ok, I'll learn the rules on my own.</a>
+              </div>
+            </div>
+          </section>
+
+          <section id="tutorial-3" class="box align-center hidden">
+            <h3>Other Players</h3>
+            <p>Do you already have a team / a group of players to play with?</p>
+            <div class="row">
+              <div class="col-6">
+                <a id="tutorial-3-yes" class="button fit icon fa-check">Yup.</a>
+              </div>
+              <div class="col-6">
+                <a id="tutorial-3-no" class="button fit icon fa-times">Nope.</a>
+              </div>
+            </div>
+          </section>
+
+          <section id="tutorial-3-1" class="box align-center hidden">
+            <h3>Other Players</h3>
+            <p>Good, because this website doesn't get that much traffic, so finding teammates online usually requires
+              some coordination beforehand.</p>
+            <div class="row">
+              <div class="col-12 align-center">
+                <a id="tutorial-3-1-ok" class="button icon fa-check">Ok, what's next?</a>
+              </div>
+            </div>
+          </section>
+
+          <section id="tutorial-4" class="box align-center hidden">
+            <h3>Other Players</h3>
+            <p>Hanabi is a lot like Chess in that it is easy to learn, but hard to master, even after spending hundreds
+              of hours playing.</p>
+            <p>
+              Are you looking to play a few casual one-off games?<br />
+              Or, are you looking to "get into" Hanabi and have a permanent team to learn from and grow with?
+            </p>
+            <a id="tutorial-4-casual" class="button icon fa-dice-one fit">
+              I'm not super into Hanabi, so I just want to play a few one-off games.
+            </a>
+            <br /><br />
+            <a id="tutorial-4-expert" class="button icon fa-dice-six fit">
+              I love Hanabi and would be willing to spend a lot of time to play with experienced players.
+            </a>
+          </section>
+
+          <section id="tutorial-4-1" class="box align-center hidden">
+            <h3>Other Players</h3>
+            <p>Unfortunately, finding quick games with strangers on <em>Hanabi Live</em> is difficult because the
+              website does not get that much traffic.</p>
+            <p>Fortunately, <a href="https://en.boardgamearena.com/">Board Game Arena</a> is a website where you can
+              play many different board games online, including Hanabi. Their implementation of the game does have not
+              as many variants and features as this website does, but you will have much better luck finding random
+              pick-up games on that website, so you will definately want to check it out.</p>
+            <div class="row">
+              <div class="col-6">
+                <a href="https://en.boardgamearena.com/" class="button icon fa-sign-out-alt">Ok, I'll be leaving
+                  then.</a>
+              </div>
+              <div class="col-6">
+                <a id="tutorial-4-1-lobby" class="button icon fa-sign-in-alt">Take me to the Hanabi Live lobby
+                  anyway.</a>
+              </div>
+            </div>
+          </section>
+
+          <section id="tutorial-4-2" class="box align-center hidden">
+            <h3>Other Players</h3>
+            <p>That's good to hear. In general, <em>Hanabi Live</em> does not get that much traffic, so most of the
+              people who play games on the website are members of my group, the <em>Hyphen-ated Group</em>. I'd like to
+              welcome you to play with us - we have been playing Hanabi for a long time, but we could always use new
+              players.</p>
+            <p></p>
+            <div class="row">
+              <div class="col-6">
+                <a id="tutorial-4-2-ok" class="button icon fa-question-circle">Ok, so how do I play with your group?</a>
+              </div>
+              <div class="col-6">
+                <a id="tutorial-4-2-lobby" class="button icon fa-sign-in-alt">I'll pass, just take me to the lobby for
+                  now.</a>
+              </div>
+            </div>
+          </section>
+
+          <section id="tutorial-4-3" class="box align-center hidden">
+            <h3>Getting Games Going</h3>
+            <p>Unfortunately, the group is fairly small, so we don't have enough players to have games going at all
+              times of the day. However, we do get games going at various times, mostly during (American) evenings.</p>
+            <p>The members of the group hang out in a <a href="https://discord.gg/FADvkJp" target="_blank"
+                rel="noopener noreferrer">Discord server</a>. (Discord is a voice and text chat application that you can
+              run in a browser.) To get games going, we generally type "/here" into the Hanabi Live lobby, which alerts
+              everyone who happens to be at their computer that someone is wanting to get a game going.</p>
+            <div class="row">
+              <div class="col-12">
+                <a id="tutorial-4-3-ok" class="button icon fa-check">Is there anything I should know before I do my
+                  first "/here" ping?</a>
+              </div>
+            </div>
+          </section>
+
+          <section id="tutorial-4-4" class="box align-center hidden">
+            <h3>Some Basic Conventions</h3>
+            <p>I'm glad you asked. If you try to play with our group and don't understand what some basic clues mean,
+              things won't go well. We ask that before you start to play games with us, you spend some time and read the
+              <a href="https://github.com/Zamiell/hanabi-conventions/blob/master/Beginner.md" target="_blank"
+                rel="noopener noreferrer">beginners guide</a>.</p>
+            <div class="row">
+              <div class="col-12">
+                <a id="tutorial-4-4-ok" class="button icon fa-check">I'll read the guide, but how do I use the website
+                  itself?</a>
+              </div>
+            </div>
+          </section>
+
+          <section id="tutorial-5" class="box align-center hidden">
+            <h3>Using the Website</h3>
+            <p>Starting a game should be fairly straightforward. You click on the "Create Game" button in the top
+              navigation bar. Then, other people join the game by clicking on the &nbsp; <i
+                class="fas fa-sign-in-alt nav-icon"></i> icon.</p>
+            <p>
+              Once the game has started:<br />
+              1) Play a card by clicking and dragging it to the center.<br />
+              2) Discard a card by clicking and dragging it to the bottom-right-hand corner.<br />
+              3) Give a clue by clicking the buttons in the middle of the screen.<br />
+            </p>
+            <p>For more detailed info, click on the "Help" button on the top navigation bar.</p>
+            <div class="row">
+              <div class="col-12 align-center">
+                <a id="tutorial-5-lobby" class="button icon fa-sign-in-alt">Ok, stop bothering me and take me to the
+                  lobby already.</a>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Lobby -->
+  <div id="lobby" class="container max hidden">
+    <div id="lobby-top-half" class="row lobby-half">
+      <div class="col-12">
+        <!-- The "games" table (all current games) -->
+        <section id="lobby-games" class="box align-center-v">
+          <h3 id="lobby-games-no">No current games.</h3>
+          <div id="lobby-games-table-container" class="hidden lobby-table-container">
+            <table id="lobby-games-table" class="alt">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th># of Players</th>
+                  <th>Variant</th>
+                  <th>Timed</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                  <th>Players</th>
+                  <th>Spectators</th>
+                </tr>
+              </thead>
+              <tbody id="lobby-games-table-tbody"></tbody>
+            </table>
+            </table>
         </section>
-    </div>
 
-    <!-- Tutorial -->
-    <div id="tutorial" class="hidden">
-        <section id="main" class="container">
-            <div class="row">
-                <div class="col-10 off-1">
-                    <section id="tutorial-1" class="box align-center">
-                        <h3>Welcome!</h3>
-                        <p>It looks like you are logging on to <em>Hanabi Live</em> for the first time. There are some things you should know.</p>
-                        <div class="row">
-                            <div class="col-6">
-                                <a id="tutorial-yes" class="button fit icon fa-question-circle">Give me a basic rundown.</a>
-                            </div>
-                            <div class="col-6">
-                                <a id="tutorial-no" class="button fit icon fa-chess-queen">I already know how everything works.</a>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="tutorial-2" class="box align-center hidden">
-                        <h3>The Rules</h3>
-                        <p>Do you already know how to play Hanabi?</p>
-                        <div class="row">
-                            <div class="col-6">
-                                <a id="tutorial-2-yes" class="button fit icon fa-check">Yup.</a>
-                            </div>
-                            <div class="col-6">
-                                <a id="tutorial-2-no" class="button fit icon fa-times">Nope.</a>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="tutorial-2-1" class="box align-center hidden">
-                        <h3>The Rules</h3>
-                        <p>Good, because the website assumes that you already know how to play - there isn't a tutorial mode or anything like that.</p>
-                        <div class="row">
-                            <div class="col-12 align-center">
-                                <a id="tutorial-2-1-ok" class="button icon fa-check">Ok, what's next?</a>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="tutorial-2-2" class="box align-center hidden">
-                        <h3>The Rules</h3>
-                        <p>Well, unfortunately <em>Hanabi Live</em> doesn't have a tutorial mode or anything like that. You will have to learn the rules on your own. Thankfully, Tricky has <a href="http://pastebin.com/6brGz2J4" target="_blank" rel="noopener noreferrer">a nice writeup on Pastebin</a>. Or, you can watch <a href="https://www.youtube.com/watch?v=jR9i1qCbHXQ" target="_blank" rel="noopener noreferrer">my video explanation</a>.</p>
-                        <div class="row">
-                            <div class="col-12 align-center">
-                                <a id="tutorial-2-2-ok" class="button icon fa-check">Ok, I'll learn the rules on my own.</a>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="tutorial-3" class="box align-center hidden">
-                        <h3>Other Players</h3>
-                        <p>Do you already have a team / a group of players to play with?</p>
-                        <div class="row">
-                            <div class="col-6">
-                                <a id="tutorial-3-yes" class="button fit icon fa-check">Yup.</a>
-                            </div>
-                            <div class="col-6">
-                                <a id="tutorial-3-no" class="button fit icon fa-times">Nope.</a>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="tutorial-3-1" class="box align-center hidden">
-                        <h3>Other Players</h3>
-                        <p>Good, because this website doesn't get that much traffic, so finding teammates online usually requires some coordination beforehand.</p>
-                        <div class="row">
-                            <div class="col-12 align-center">
-                                <a id="tutorial-3-1-ok" class="button icon fa-check">Ok, what's next?</a>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="tutorial-4" class="box align-center hidden">
-                        <h3>Other Players</h3>
-                        <p>Hanabi is a lot like Chess in that it is easy to learn, but hard to master, even after spending hundreds of hours playing.</p>
-                        <p>
-                            Are you looking to play a few casual one-off games?<br />
-                            Or, are you looking to "get into" Hanabi and have a permanent team to learn from and grow with?
-                        </p>
-                        <a id="tutorial-4-casual" class="button icon fa-dice-one fit">
-                            I'm not super into Hanabi, so I just want to play a few one-off games.
-                        </a>
-                        <br /><br />
-                        <a id="tutorial-4-expert" class="button icon fa-dice-six fit">
-                            I love Hanabi and would be willing to spend a lot of time to play with experienced players.
-                        </a>
-                    </section>
-
-                    <section id="tutorial-4-1" class="box align-center hidden">
-                        <h3>Other Players</h3>
-                        <p>Unfortunately, finding quick games with strangers on <em>Hanabi Live</em> is difficult because the website does not get that much traffic.</p>
-                        <p>Fortunately, <a href="https://en.boardgamearena.com/">Board Game Arena</a> is a website where you can play many different board games online, including Hanabi. Their implementation of the game does have not as many variants and features as this website does, but you will have much better luck finding random pick-up games on that website, so you will definately want to check it out.</p>
-                        <div class="row">
-                            <div class="col-6">
-                                <a href="https://en.boardgamearena.com/" class="button icon fa-sign-out-alt">Ok, I'll be leaving then.</a>
-                            </div>
-                            <div class="col-6">
-                                <a id="tutorial-4-1-lobby" class="button icon fa-sign-in-alt">Take me to the Hanabi Live lobby anyway.</a>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="tutorial-4-2" class="box align-center hidden">
-                        <h3>Other Players</h3>
-                        <p>That's good to hear. In general, <em>Hanabi Live</em> does not get that much traffic, so most of the people who play games on the website are members of my group, the <em>Hyphen-ated Group</em>. I'd like to welcome you to play with us - we have been playing Hanabi for a long time, but we could always use new players.</p>
-                        <p></p>
-                        <div class="row">
-                            <div class="col-6">
-                                <a id="tutorial-4-2-ok" class="button icon fa-question-circle">Ok, so how do I play with your group?</a>
-                            </div>
-                            <div class="col-6">
-                                <a id="tutorial-4-2-lobby" class="button icon fa-sign-in-alt">I'll pass, just take me to the lobby for now.</a>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="tutorial-4-3" class="box align-center hidden">
-                        <h3>Getting Games Going</h3>
-                        <p>Unfortunately, the group is fairly small, so we don't have enough players to have games going at all times of the day. However, we do get games going at various times, mostly during (American) evenings.</p>
-                        <p>The members of the group hang out in a <a href="https://discord.gg/FADvkJp" target="_blank" rel="noopener noreferrer">Discord server</a>. (Discord is a voice and text chat application that you can run in a browser.) To get games going, we generally type "/here" into the Hanabi Live lobby, which alerts everyone who happens to be at their computer that someone is wanting to get a game going.</p>
-                        <div class="row">
-                            <div class="col-12">
-                                <a id="tutorial-4-3-ok" class="button icon fa-check">Is there anything I should know before I do my first "/here" ping?</a>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="tutorial-4-4" class="box align-center hidden">
-                        <h3>Some Basic Conventions</h3>
-                        <p>I'm glad you asked. If you try to play with our group and don't understand what some basic clues mean, things won't go well. We ask that before you start to play games with us, you spend some time and read the <a href="https://github.com/Zamiell/hanabi-conventions/blob/master/Beginner.md" target="_blank" rel="noopener noreferrer">beginners guide</a>.</p>
-                        <div class="row">
-                            <div class="col-12">
-                                <a id="tutorial-4-4-ok" class="button icon fa-check">I'll read the guide, but how do I use the website itself?</a>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="tutorial-5" class="box align-center hidden">
-                        <h3>Using the Website</h3>
-                        <p>Starting a game should be fairly straightforward. You click on the "Create Game" button in the top navigation bar. Then, other people join the game by clicking on the &nbsp; <i class="fas fa-sign-in-alt nav-icon"></i> icon.</p>
-                        <p>
-                            Once the game has started:<br />
-                            1) Play a card by clicking and dragging it to the center.<br />
-                            2) Discard a card by clicking and dragging it to the bottom-right-hand corner.<br />
-                            3) Give a clue by clicking the buttons in the middle of the screen.<br />
-                        </p>
-                        <p>For more detailed info, click on the "Help" button on the top navigation bar.</p>
-                        <div class="row">
-                            <div class="col-12 align-center">
-                                <a id="tutorial-5-lobby" class="button icon fa-sign-in-alt">Ok, stop bothering me and take me to the lobby already.</a>
-                            </div>
-                        </div>
-                    </section>
-
-
-                </div>
+        <!-- The "pregame" table -->
+        <section id="lobby-pregame" class="box hidden">
+          <div class="row">
+            <div id="lobby-pregame-left" class="col-2 padding-right1">
+              <h4 class="padding0p5">
+                <strong><i class="fas fa-signature"></i>&nbsp; Name:</strong><br />
+                <span id="lobby-pregame-name"></span>
+              </h4>
+              <h4 class="padding0p5">
+                <strong><i class="fas fa-rainbow"></i>&nbsp; Variant:</strong><br />
+                <span id="lobby-pregame-variant"></span>
+              </h4>
+              <h4 class="padding0p5">
+                <span id="lobby-pregame-options-title"><strong>Options:</strong></span><br />
+                <ul id="lobby-pregame-options"></ul>
+              </h4>
             </div>
+            <div id="lobby-pregame-player-1" class="col-2 lobby-pregame-player"></div>
+            <div id="lobby-pregame-player-2" class="col-2 lobby-pregame-player"></div>
+            <div id="lobby-pregame-player-3" class="col-2 lobby-pregame-player"></div>
+            <div id="lobby-pregame-player-4" class="col-2 lobby-pregame-player"></div>
+            <div id="lobby-pregame-player-5" class="col-2 lobby-pregame-player"></div>
+            <div id="lobby-pregame-player-6" class="col-2 lobby-pregame-player"></div>
+          </div>
         </section>
+      </div>
     </div>
 
-    <!-- Lobby -->
-    <div id="lobby" class="container max hidden">
-        <div id="lobby-top-half" class="row lobby-half">
-            <div class="col-12">
-                <!-- The "games" table (all current games) -->
-                <section id="lobby-games" class="box align-center-v">
-                    <h3 id="lobby-games-no">No current games.</h3>
-                    <div id="lobby-games-table-container" class="hidden lobby-table-container">
-                        <table id="lobby-games-table" class="alt">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th># of Players</th>
-                                    <th>Variant</th>
-                                    <th>Timed</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                    <th>Players</th>
-                                    <th>Spectators</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lobby-games-table-tbody"></tbody>
-                        </table>
-                    </table>
-                </section>
+    <!-- Spacing -->
+    <div id="lobby-separator" class="row"></div>
 
-                <!-- The "pregame" table -->
-                <section id="lobby-pregame" class="box hidden">
-                    <div class="row">
-                        <div id="lobby-pregame-left" class="col-2 padding-right1">
-                            <h4 class="padding0p5">
-                                <strong><i class="fas fa-signature"></i>&nbsp; Name:</strong><br />
-                                <span id="lobby-pregame-name"></span>
-                            </h4>
-                            <h4 class="padding0p5">
-                                <strong><i class="fas fa-rainbow"></i>&nbsp; Variant:</strong><br />
-                                <span id="lobby-pregame-variant"></span>
-                            </h4>
-                            <h4 class="padding0p5">
-                                <span id="lobby-pregame-options-title"><strong>Options:</strong></span><br />
-                                <ul id="lobby-pregame-options"></ul>
-                            </h4>
-                        </div>
-                        <div id="lobby-pregame-player-1" class="col-2 lobby-pregame-player"></div>
-                        <div id="lobby-pregame-player-2" class="col-2 lobby-pregame-player"></div>
-                        <div id="lobby-pregame-player-3" class="col-2 lobby-pregame-player"></div>
-                        <div id="lobby-pregame-player-4" class="col-2 lobby-pregame-player"></div>
-                        <div id="lobby-pregame-player-5" class="col-2 lobby-pregame-player"></div>
-                        <div id="lobby-pregame-player-6" class="col-2 lobby-pregame-player"></div>
-                    </div>
-                </section>
-            </div>
-        </div>
+    <div id="lobby-bottom-half" class="row lobby-half">
+      <!-- The chat for the entire lobby -->
+      <div id="lobby-chat-container" class="col-8">
+        <section id="lobby-chat" class="box">
+          <h3 class="lobby-title">Lobby Chat</h3>
+          <div id="lobby-chat-text" class="lobby-chat-text-box"></div>
+          <input id="lobby-chat-input" type="text" placeholder="Chat" autocomplete="off" />
+        </section>
+      </div>
 
-        <!-- Spacing -->
-        <div id="lobby-separator" class="row"></div>
+      <!-- The chat for the players in the currently unstarted game -->
+      <div id="lobby-chat-pregame-container" class="col-4 hidden">
+        <section id="lobby-chat-pregame" class="box">
+          <h3 class="lobby-title">Pre-Game Chat</h3>
+          <div id="lobby-chat-pregame-text" class="lobby-chat-text-box"></div>
+          <input id="lobby-chat-pregame-input" type="text" placeholder="Chat" autocomplete="off" />
+          <div id="lobby-chat-pregame-istyping" class="istyping"></div>
+        </section>
+      </div>
 
-        <div id="lobby-bottom-half" class="row lobby-half">
-            <!-- The chat for the entire lobby -->
-            <div id="lobby-chat-container" class="col-8">
-                <section id="lobby-chat" class="box">
-                    <h3 class="lobby-title">Lobby Chat</h3>
-                    <div id="lobby-chat-text" class="lobby-chat-text-box"></div>
-                    <input id="lobby-chat-input" type="text" placeholder="Chat" autocomplete="off" />
-                </section>
-            </div>
-
-            <!-- The chat for the players in the currently unstarted game -->
-            <div id="lobby-chat-pregame-container" class="col-4 hidden">
-                <section id="lobby-chat-pregame" class="box">
-                    <h3 class="lobby-title">Pre-Game Chat</h3>
-                    <div id="lobby-chat-pregame-text" class="lobby-chat-text-box"></div>
-                    <input id="lobby-chat-pregame-input" type="text" placeholder="Chat" autocomplete="off" />
-                    <div id="lobby-chat-pregame-istyping" class="istyping"></div>
-                </section>
-            </div>
-
-            <!-- The "Online Users" section -->
-            <div class="col-4 lobby-users-box-container">
-                <section class="box">
-                    <h3 class="lobby-title">Online Users (<span id="lobby-users-num">0</span>)</h3>
-                    <div id="lobby-users-container">
-                        <table id="lobby-users-table" class="slim-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lobby-users-table-tbody"></tbody>
-                        </table>
-                    </div>
-                </section>
-            </div>
-        </div>
-
-        <!-- History -->
-        <div class="row lobby-full">
-            <div class="col-12">
-                <!-- The history table (all played games) -->
-                <section id="lobby-history" class="box">
-                    <h3 id="lobby-history-no" class="align-center">No game history. Play some games!</h3>
-                    <div id="lobby-history-table-container" class="hidden lobby-table-container">
-                        <table class="alt">
-                            <thead>
-                                <tr>
-                                    <th>Game ID</th>
-                                    <th># of Players</th>
-                                    <th>Score</th>
-                                    <th>Variant</th>
-                                    <th>Other Players</th>
-                                    <th>Date Played</th>
-                                    <th>Watch Replay</th>
-                                    <th>Share Replay</th>
-                                    <th>Other Scores</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lobby-history-table-tbody"></tbody>
-                        </table>
-
-                        <div class="align-center">
-                            <button id="lobby-history-show-more" class="button align-center" type="submit">
-                                <i class="fas fa-chevron-circle-down"></i>&nbsp;
-                                Show More History
-                            </button>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- The other scores table (all games on a specific seed) -->
-                <section id="lobby-history-other-scores" class="box hidden">
-                    <div class="lobby-table-container">
-                        <table class="alt">
-                            <thead>
-                                <tr>
-                                    <th>Game ID</th>
-                                    <th>Score</th>
-                                    <th>Players</th>
-                                    <th>Date Played</th>
-                                    <th>Watch Replay</th>
-                                    <th>Share Replay</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lobby-history-other-scores-table-tbody"></tbody>
-                        </table>
-                    </div>
-                </section>
-            </div>
-        </div>
+      <!-- The "Online Users" section -->
+      <div class="col-4 lobby-users-box-container">
+        <section class="box">
+          <h3 class="lobby-title">Online Users (<span id="lobby-users-num">0</span>)</h3>
+          <div id="lobby-users-container">
+            <table id="lobby-users-table" class="slim-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="lobby-users-table-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </div>
+
+    <!-- History -->
+    <div class="row lobby-full">
+      <div class="col-12">
+        <!-- The history table (all played games) -->
+        <section id="lobby-history" class="box">
+          <h3 id="lobby-history-no" class="align-center">No game history. Play some games!</h3>
+          <div id="lobby-history-table-container" class="hidden lobby-table-container">
+            <table class="alt">
+              <thead>
+                <tr>
+                  <th>Game ID</th>
+                  <th># of Players</th>
+                  <th>Score</th>
+                  <th>Variant</th>
+                  <th>Other Players</th>
+                  <th>Date Played</th>
+                  <th>Watch Replay</th>
+                  <th>Share Replay</th>
+                  <th>Other Scores</th>
+                </tr>
+              </thead>
+              <tbody id="lobby-history-table-tbody"></tbody>
+            </table>
+
+            <div class="align-center">
+              <button id="lobby-history-show-more" class="button align-center" type="submit">
+                <i class="fas fa-chevron-circle-down"></i>&nbsp;
+                Show More History
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- The other scores table (all games on a specific seed) -->
+        <section id="lobby-history-other-scores" class="box hidden">
+          <div class="lobby-table-container">
+            <table class="alt">
+              <thead>
+                <tr>
+                  <th>Game ID</th>
+                  <th>Score</th>
+                  <th>Players</th>
+                  <th>Date Played</th>
+                  <th>Watch Replay</th>
+                  <th>Share Replay</th>
+                </tr>
+              </thead>
+              <tbody id="lobby-history-other-scores-table-tbody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Tooltips -->
 <div class="hidden">
-    <div id="create-game-tooltip">
-        <h2 id="create-game-tooltip-title">Create a New Game</h2>
+  <div id="create-game-tooltip">
+    <h2 id="create-game-tooltip-title">Create a New Game</h2>
 
-        <div class="row">
-            <div class="col-3 input-text">
-                <div class="create-game-icon">
-                    <i class="fas fa-signature"></i>
-                </div>
-                Name
-            </div>
-            <div class="col-8">
-                <input id="createTableName" type="text" placeholder="Name" />
-            </div>
+    <div class="row">
+      <div class="col-3 input-text">
+        <div class="create-game-icon">
+          <i class="fas fa-signature"></i>
         </div>
-        <br />
+        Name
+      </div>
+      <div class="col-8">
+        <input id="createTableName" type="text" placeholder="Name" />
+      </div>
+    </div>
+    <br />
 
-        <div class="row">
-            <div class="col-3 input-text">
-                <div class="create-game-icon">
-                    <i class="fas fa-rainbow" style="position: relative; top: 1px;"></i>
-                </div>
-                Variant
-            </div>
-            <div class="col-6">
-                <!-- See "createGame.ts" -->
-                <span id="createTableVariant" class="hidden"></span>
-                <select id="create-game-variant-dropdown1"></select>
-                <select id="create-game-variant-loading" class="hidden">
-                    <option>Loading...</option>
-                </select>
-                <select id="create-game-variant-dropdown2" class="hidden"></select>
-            </div>
-            <div class="col-1 input-text align-center">
-                <i id="dice" class="fas fa-dice hidden"></i>
-            </div>
-            <div class="col-1 input-text align-center">
-                <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-question-circle question-mark"></i>
-                </a>
-            </div>
+    <div class="row">
+      <div class="col-3 input-text">
+        <div class="create-game-icon">
+          <i class="fas fa-rainbow" style="position: relative; top: 1px;"></i>
         </div>
-        <br />
+        Variant
+      </div>
+      <div class="col-6">
+        <!-- See "createGame.ts" -->
+        <span id="createTableVariant" class="hidden"></span>
+        <select id="create-game-variant-dropdown1"></select>
+        <select id="create-game-variant-loading" class="hidden">
+          <option>Loading...</option>
+        </select>
+        <select id="create-game-variant-dropdown2" class="hidden"></select>
+      </div>
+      <div class="col-1 input-text align-center">
+        <i id="dice" class="fas fa-dice hidden"></i>
+      </div>
+      <div class="col-1 input-text align-center">
+        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md" target="_blank"
+          rel="noopener noreferrer">
+          <i class="fas fa-question-circle question-mark"></i>
+        </a>
+      </div>
+    </div>
+    <br />
 
-        <div id="create-game-timed-row" class="row">
-            <div id="create-game-timed-label" class="col-3">
-                <div class="create-game-icon">
-                    <i class="fas fa-clock" style="position: relative; top: 1px;"></i>
-                </div>
-                Timed
-            </div>
-            <div id="create-game-timed-container" class="col-1">
-                <input id="createTableTimed" type="checkbox" />
-                <label for="createTableTimed"></label>
-            </div>
-            <div id="create-game-timed-option-1" class="col-2 input-text2 align-center">
-                Base Time<br />
-                (in minutes)
-            </div>
-            <div id="create-game-timed-option-2" class="col-2">
-                <input id="createTableBaseTimeMinutes" type="text" placeholder="Base Time">
-            </div>
-            <div id="create-game-timed-option-3" class="col-2 input-text2 align-center">
-                Time per Turn<br />
-                (in seconds)
-            </div>
-            <div id="create-game-timed-option-4" class="col-2">
-                <input id="createTableTimePerTurnSeconds" type="text" placeholder="Time per Turn">
-            </div>
+    <div id="create-game-timed-row" class="row">
+      <div id="create-game-timed-label" class="col-3">
+        <div class="create-game-icon">
+          <i class="fas fa-clock" style="position: relative; top: 1px;"></i>
         </div>
-        <span id="create-game-timed-row-spacing">
-            <br /><br />
-        </span>
+        Timed
+      </div>
+      <div id="create-game-timed-container" class="col-1">
+        <input id="createTableTimed" type="checkbox" />
+        <label for="createTableTimed"></label>
+      </div>
+      <div id="create-game-timed-option-1" class="col-2 input-text2 align-center">
+        Base Time<br />
+        (in minutes)
+      </div>
+      <div id="create-game-timed-option-2" class="col-2">
+        <input id="createTableBaseTimeMinutes" type="text" placeholder="Base Time">
+      </div>
+      <div id="create-game-timed-option-3" class="col-2 input-text2 align-center">
+        Time per Turn<br />
+        (in seconds)
+      </div>
+      <div id="create-game-timed-option-4" class="col-2">
+        <input id="createTableTimePerTurnSeconds" type="text" placeholder="Time per Turn">
+      </div>
+    </div>
+    <span id="create-game-timed-row-spacing">
+      <br /><br />
+    </span>
 
-        <div class="row">
-            <div class="col-9 create-game-text-label">
-                <div class="create-game-icon">
-                    <i class="fas fa-running"></i>
-                </div>
-                Speedrun
-            </div>
-            <div class="col-1">
-                <input id="createTableSpeedrun" type="checkbox" />
-                <label for="createTableSpeedrun"></label>
-            </div>
-            <div class="col-1 align-center">
-                <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#speedruns" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-                </a>
-            </div>
+    <div class="row">
+      <div class="col-9 create-game-text-label">
+        <div class="create-game-icon">
+          <i class="fas fa-running"></i>
         </div>
-        <br />
+        Speedrun
+      </div>
+      <div class="col-1">
+        <input id="createTableSpeedrun" type="checkbox" />
+        <label for="createTableSpeedrun"></label>
+      </div>
+      <div class="col-1 align-center">
+        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#speedruns" target="_blank"
+          rel="noopener noreferrer">
+          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+        </a>
+      </div>
+    </div>
+    <br />
 
-        <div class="row">
-            <div class="col-9 create-game-text-label">
-                <div class="create-game-icon">
-                    <i class="fas fa-sync-alt"></i>
-                </div>
-                Card Cycling
-            </div>
-            <div class="col-1">
-                <input id="createTableCardCycle" type="checkbox" />
-                <label for="createTableCardCycle"></label>
-            </div>
-            <div class="col-1 align-center">
-                <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#card-cycling" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-                </a>
-            </div>
+    <div class="row">
+      <div class="col-9 create-game-text-label">
+        <div class="create-game-icon">
+          <i class="fas fa-sync-alt"></i>
         </div>
-        <br />
+        Card Cycling
+      </div>
+      <div class="col-1">
+        <input id="createTableCardCycle" type="checkbox" />
+        <label for="createTableCardCycle"></label>
+      </div>
+      <div class="col-1 align-center">
+        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#card-cycling" target="_blank"
+          rel="noopener noreferrer">
+          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+        </a>
+      </div>
+    </div>
+    <br />
 
-        <div class="row">
-            <div class="col-9 create-game-text-label">
-                <div class="create-game-icon">
-                    <i class="fas fa-blind" style="position: relative; left: 0.2em;"></i>
-                </div>
-                Bottom-Deck Blind-Plays
-            </div>
-            <div class="col-1">
-                <input id="createTableDeckPlays" type="checkbox" />
-                <label for="createTableDeckPlays"></label>
-            </div>
-            <div class="col-1 align-center">
-                <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#bottom-deck-blind-plays" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-                </a>
-            </div>
+    <div class="row">
+      <div class="col-9 create-game-text-label">
+        <div class="create-game-icon">
+          <i class="fas fa-blind" style="position: relative; left: 0.2em;"></i>
         </div>
-        <br />
+        Bottom-Deck Blind-Plays
+      </div>
+      <div class="col-1">
+        <input id="createTableDeckPlays" type="checkbox" />
+        <label for="createTableDeckPlays"></label>
+      </div>
+      <div class="col-1 align-center">
+        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#bottom-deck-blind-plays"
+          target="_blank" rel="noopener noreferrer">
+          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+        </a>
+      </div>
+    </div>
+    <br />
 
-        <div class="row">
-            <div class="col-9 create-game-text-label">
-                <div class="create-game-icon" style="position: relative; top: 1px;">
-                    <i class="fas fa-expand"></i>
-                </div>
-                Empty Clues
-            </div>
-            <div class="col-1">
-                <input id="createTableEmptyClues" type="checkbox" />
-                <label for="createTableEmptyClues"></label>
-            </div>
-            <div class="col-1 align-center">
-                <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#empty-clues" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-                </a>
-            </div>
+    <div class="row">
+      <div class="col-9 create-game-text-label">
+        <div class="create-game-icon" style="position: relative; top: 1px;">
+          <i class="fas fa-expand"></i>
         </div>
-        <br />
+        Empty Clues
+      </div>
+      <div class="col-1">
+        <input id="createTableEmptyClues" type="checkbox" />
+        <label for="createTableEmptyClues"></label>
+      </div>
+      <div class="col-1 align-center">
+        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#empty-clues" target="_blank"
+          rel="noopener noreferrer">
+          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+        </a>
+      </div>
+    </div>
+    <br />
 
-        <div class="row">
-            <div class="col-9 create-game-text-label">
-                <div class="create-game-icon">
-                    🤔
-                </div>
-                Detrimental Characters
-            </div>
-            <div class="col-1">
-                <input id="createTableCharacterAssignments" type="checkbox" />
-                <label for="createTableCharacterAssignments"></label>
-            </div>
-            <div class="col-1 align-center">
-                <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/CHARACTERS.md" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-                </a>
-            </div>
+    <div class="row">
+      <div class="col-9 create-game-text-label">
+        <div class="create-game-icon">
+          🤔
         </div>
-        <br />
+        Detrimental Characters
+      </div>
+      <div class="col-1">
+        <input id="createTableCharacterAssignments" type="checkbox" />
+        <label for="createTableCharacterAssignments"></label>
+      </div>
+      <div class="col-1 align-center">
+        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/CHARACTERS.md" target="_blank"
+          rel="noopener noreferrer">
+          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+        </a>
+      </div>
+    </div>
+    <br />
 
-        <div class="row">
-            <div class="col-4 input-text">
-                <div class="create-game-icon">
-                    <i class="fas fa-key nav-icon" style="position: relative; left: 1px;"></i>
-                </div>
-                Password
-            </div>
-            <div class="col-6">
-                <input id="createTablePassword" type="text" placeholder="Password (optional)" />
-            </div>
+    <div class="row">
+      <div class="col-4 input-text">
+        <div class="create-game-icon">
+          <i class="fas fa-key nav-icon" style="position: relative; left: 1px;"></i>
         </div>
-        <br />
+        Password
+      </div>
+      <div class="col-6">
+        <input id="createTablePassword" type="text" placeholder="Password (optional)" />
+      </div>
+    </div>
+    <br />
 
-        <div class="row">
-            <div class="col-9 create-game-text-label">
-                <div class="create-game-icon">
-                    <i class="fas fa-bed nav-icon" style="position: relative; left: 1px;"></i>
-                </div>
-                Alert people on the waiting list
-            </div>
-            <div class="col-1">
-                <input id="createTableAlertWaiters" type="checkbox" />
-                <label for="createTableAlertWaiters"></label>
-            </div>
-            <div class="col-1 align-center">
-                <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#discord-integration" target="_blank" rel="noopener noreferrer">
-                    <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-                </a>
-            </div>
+    <div class="row">
+      <div class="col-9 create-game-text-label">
+        <div class="create-game-icon">
+          <i class="fas fa-bed nav-icon" style="position: relative; left: 1px;"></i>
         </div>
-        <br />
+        Alert people on the waiting list
+      </div>
+      <div class="col-1">
+        <input id="createTableAlertWaiters" type="checkbox" />
+        <label for="createTableAlertWaiters"></label>
+      </div>
+      <div class="col-1 align-center">
+        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#discord-integration"
+          target="_blank" rel="noopener noreferrer">
+          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+        </a>
+      </div>
+    </div>
+    <br />
 
-        <br />
-        <button id="create-game-submit" class="button fit" type="submit">
-            <i class="fas fa-check"></i>&nbsp;
-            Create
+    <br />
+    <button id="create-game-submit" class="button fit" type="submit">
+      <i class="fas fa-check"></i>&nbsp;
+      Create
+    </button>
+  </div>
+
+  <div id="resources-tooltip">
+    <h2>Resources</h2>
+    <ul>
+      <li>
+        <a href="https://discord.gg/FADvkJp" target="_blank" rel="noopener noreferrer">The Hanabi Discord
+          Server</a><br />
+        A place to find teammates and discuss strategy.
+      </li>
+      <br />
+      <li>
+        <a href="https://github.com/Zamiell/hanabi-conventions" target="_blank" rel="noopener noreferrer">Strategies and
+          Conventions</a><br />
+        This is a document that lists the strategies and conventions used by the Hyphen-ated group.<br />
+        (You don't have to use them if you don't want to.)
+      </li>
+      <br />
+      <li>
+        <a href="/videos" target="_blank">Videos</a><br />
+        A collection of various Hanabi videos.
+      </li>
+      <br />
+      <li>
+        <a href="https://github.com/Zamiell/hanabi-live" target="_blank" rel="noopener noreferrer">The Code
+          Repository</a><br />
+        This client and server are open-source, hosted on GitHub.
+      </li>
+      <br />
+      <li>
+        <a href="https://www.speedrun.com/hanabi" target="_blank" rel="noopener noreferrer">Speedrun.com
+          Leaderboards</a><br />
+        The fastest times in the world are tracked here.
+      </li>
+      <br />
+      <li>
+        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" rel="noopener noreferrer"
+          id="donateform" style="margin-bottom: 0;">
+          <input type="hidden" name="cmd" value="_s-xclick">
+          <input type="hidden" name="hosted_button_id" value="GFKEQ9MTFJRUL">
+          <a href="#" onclick="document.getElementById('donateform').submit()">Donate (via PayPal) to Keldon</a>
+        </form>
+        Keldon was the original creator of the well-designed JavaScript client.
+      </li>
+    </ul>
+  </div>
+
+  <div id="settings-tooltip">
+    <h2>Settings</h2>
+
+    <p class="margin1"><strong>Sounds</strong></p>
+
+    <input id="soundMove" type="checkbox">
+    <label for="soundMove">
+      <span class="label-text">
+        Play a sound when a move is made
+      </span>
+    </label>
+
+    <br />
+
+    <input id="soundTimer" type="checkbox">
+    <label for="soundTimer">
+      <span class="label-text">
+        Play a sound when a timer is below 10 seconds
+      </span>
+    </label>
+
+    <br /><br /><br />
+
+    <p class="margin1"><strong>Appearance</strong></p>
+
+    <input id="keldonMode" type="checkbox">
+    <label for="keldonMode">
+      <span class="label-text">
+        Keldon mode (hands spread around the table)
+      </span>
+    </label>
+
+    <br />
+
+    <input id="colorblindMode" type="checkbox">
+    <label for="colorblindMode">
+      <span class="label-text">
+        Colorblind mode
+      </span>
+    </label>
+
+    <br />
+
+    <input id="realLifeMode" type="checkbox">
+    <label for="realLifeMode">
+      <span class="label-text">
+        Real-life mode (no extra UI elements)
+      </span>
+    </label>
+
+    <br />
+
+    <input id="reverseHands" type="checkbox">
+    <label for="reverseHands">
+      <span class="label-text">
+        Reverse hand direction (new cards go on the right)
+      </span>
+    </label>
+
+    <br />
+
+    <input id="styleNumbers" type="checkbox">
+    <label for="styleNumbers">
+      <span class="label-text">
+        Make numbers on cards match the art style
+      </span>
+    </label>
+
+    <br />
+
+    <input id="showTimerInUntimed" type="checkbox">
+    <label for="showTimerInUntimed">
+      <span class="label-text">
+        Show turn timers in untimed games
+      </span>
+    </label>
+
+    <br /><br /><br />
+
+    <p class="margin1"><strong>Volume</strong></p>
+
+    <ul id="settings-volume" class="horizontal">
+      <li>
+        <input id="settings-volume-slider" type="range" min="0" max="100" step="5" value="50" />
+      </li>
+      <li id="settings-volume-slider-value"></li>
+      <li>
+        <button id="settings-volume-test" class="button alt small" type="button">
+          <span lang="en">Test</span>
         </button>
+      </li>
+    </ul>
+
+    <br /><br /><br />
+
+    <p class="margin1"><strong>Expert Features</strong></p>
+
+    <input id="speedrunPreplay" type="checkbox">
+    <label for="speedrunPreplay">
+      <span class="label-text">
+        Enable pre-playing cards
+      </span>
+    </label>
+
+    <br />
+
+    <input id="speedrunMode" type="checkbox">
+    <label for="speedrunMode">
+      <span class="label-text">
+        Enable speedrun features in non-speedrun games
+      </span>
+    </label>
+
+    <br />
+
+    <input id="hyphenatedConventions" type="checkbox">
+    <label for="hyphenatedConventions">
+      <span class="label-text">
+        Enable <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#hyphen-ated-conventions"
+          target="_blank" rel="noopener noreferrer">Hyphen-ated group</a> features
+      </span>
+    </label>
+
+    <br /><br />
+  </div>
+
+  <div id="replay-tooltip">
+    <h2 id="replay-tooltip-title">Watch a Specific Replay</h2>
+
+    <div class="row">
+      <div class="col-3 input-text">
+        <div class="create-game-icon">
+          <i class="fas fa-database"></i>
+        </div>
+        Source
+      </div>
+      <div class="col-4">
+        <input id="replay-source-id" type="radio" name="replay-source" value="id" checked />
+        <label class="replay-radio" for="replay-source-id">
+          <span class="replay-radio-label">Database ID</span>
+        </label>
+      </div>
+      <div class="col-4">
+        <input id="replay-source-json" type="radio" name="replay-source" value="json" />
+        <label class="replay-radio" for="replay-source-json">
+          <span class="replay-radio-label">JSON Data</span>
+        </label>
+      </div>
+    </div>
+    <br /><br />
+
+    <div id="replay-id-row" class="row">
+      <div class="col-3 input-text">
+        <div class="create-game-icon">
+          <i class="fas fa-fingerprint"></i>
+        </div>
+        ID
+      </div>
+      <div class="col-8">
+        <input id="replay-id" type="text" />
+      </div>
     </div>
 
-    <div id="resources-tooltip">
-        <h2>Resources</h2>
-        <ul>
-            <li>
-                <a href="https://discord.gg/FADvkJp" target="_blank" rel="noopener noreferrer">The Hanabi Discord Server</a><br />
-                A place to find teammates and discuss strategy.
-            </li>
-            <br />
-            <li>
-                <a href="https://github.com/Zamiell/hanabi-conventions" target="_blank" rel="noopener noreferrer">Strategies and Conventions</a><br />
-                This is a document that lists the strategies and conventions used by the Hyphen-ated group.<br />
-                (You don't have to use them if you don't want to.)
-            </li>
-            <br />
-            <li>
-                <a href="/videos" target="_blank">Videos</a><br />
-                A collection of various Hanabi videos.
-            </li>
-            <br />
-            <li>
-                <a href="https://github.com/Zamiell/hanabi-live" target="_blank" rel="noopener noreferrer">The Code Repository</a><br />
-                This client and server are open-source, hosted on GitHub.
-            </li>
-            <br />
-            <li>
-                <a href="https://www.speedrun.com/hanabi" target="_blank" rel="noopener noreferrer">Speedrun.com Leaderboards</a><br />
-                The fastest times in the world are tracked here.
-            </li>
-            <br />
-            <li>
-                <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" rel="noopener noreferrer" id="donateform" style="margin-bottom: 0;">
-                    <input type="hidden" name="cmd" value="_s-xclick">
-                    <input type="hidden" name="hosted_button_id" value="GFKEQ9MTFJRUL">
-                    <a href="#" onclick="document.getElementById('donateform').submit()">Donate (via PayPal) to Keldon</a>
-                </form>
-                Keldon was the original creator of the well-designed JavaScript client.
-            </li>
-        </ul>
+    <div id="replay-json-row" class="row">
+      <div class="col-3 input-text">
+        <div class="create-game-icon">
+          <i class="fas fa-table"></i>
+        </div>
+        JSON
+      </div>
+      <div class="col-8">
+        <textarea id="replay-json" rows="3"></textarea>
+      </div>
     </div>
 
-    <div id="settings-tooltip">
-        <h2>Settings</h2>
+    <!-- Spacing for the ID row or the JSON row -->
+    <br />
 
-        <p class="margin1"><strong>Sounds</strong></p>
-
-        <input id="soundMove" type="checkbox">
-        <label for="soundMove">
-            <span class="label-text">
-                Play a sound when a move is made
-            </span>
-        </label>
-
-        <br />
-
-        <input id="soundTimer" type="checkbox">
-        <label for="soundTimer">
-            <span class="label-text">
-                Play a sound when a timer is below 10 seconds
-            </span>
-        </label>
-
-        <br /><br /><br />
-
-        <p class="margin1"><strong>Appearance</strong></p>
-
-        <input id="keldonMode" type="checkbox">
-        <label for="keldonMode">
-            <span class="label-text">
-                Keldon mode (hands spread around the table)
-            </span>
-        </label>
-
-        <br />
-
-        <input id="colorblindMode" type="checkbox">
-        <label for="colorblindMode">
-            <span class="label-text">
-                Colorblind mode
-            </span>
-        </label>
-
-        <br />
-
-        <input id="realLifeMode" type="checkbox">
-        <label for="realLifeMode">
-            <span class="label-text">
-                Real-life mode (no extra UI elements)
-            </span>
-        </label>
-
-        <br />
-
-        <input id="reverseHands" type="checkbox">
-        <label for="reverseHands">
-            <span class="label-text">
-                Reverse hand direction (new cards go on the right)
-            </span>
-        </label>
-
-        <br />
-
-        <input id="styleNumbers" type="checkbox">
-        <label for="styleNumbers">
-            <span class="label-text">
-                Make numbers on cards match the art style
-            </span>
-        </label>
-
-        <br />
-
-        <input id="showTimerInUntimed" type="checkbox">
-        <label for="showTimerInUntimed">
-            <span class="label-text">
-                Show turn timers in untimed games
-            </span>
-        </label>
-
-        <br /><br /><br />
-
-        <p class="margin1"><strong>Volume</strong></p>
-
-        <ul id="settings-volume" class="horizontal">
-            <li>
-                <input id="settings-volume-slider" type="range" min="0" max="100" step="5" value="50" />
-            </li>
-            <li id="settings-volume-slider-value"></li>
-            <li>
-                <button id="settings-volume-test" class="button alt small" type="button">
-                    <span lang="en">Test</span>
-                </button>
-            </li>
-        </ul>
-
-        <br /><br /><br />
-
-        <p class="margin1"><strong>Expert Features</strong></p>
-
-        <input id="speedrunPreplay" type="checkbox">
-        <label for="speedrunPreplay">
-            <span class="label-text">
-                Enable pre-playing cards
-            </span>
-        </label>
-
-        <br />
-
-        <input id="speedrunMode" type="checkbox">
-        <label for="speedrunMode">
-            <span class="label-text">
-                Enable speedrun features in non-speedrun games
-            </span>
-        </label>
-
-        <br />
-
-        <input id="hyphenatedConventions" type="checkbox">
-        <label for="hyphenatedConventions">
-            <span class="label-text">
-                Enable <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#hyphen-ated-conventions" target="_blank" rel="noopener noreferrer">Hyphen-ated group</a> features
-            </span>
-        </label>
-
-        <br /><br />
+    <div id="replay-error-row" class="row">
+      <div class="col-3 input-text"></div>
+      <div id="replay-error-row-text" class="col-8"></div>
+    </div>
+    <div id="replay-error-row-spacing">
+      <br /><br />
     </div>
 
-    <div id="replay-tooltip">
-        <h2 id="replay-tooltip-title">Watch a Specific Replay</h2>
-
-        <div class="row">
-            <div class="col-3 input-text">
-                <div class="create-game-icon">
-                    <i class="fas fa-database"></i>
-                </div>
-                Source
-            </div>
-            <div class="col-4">
-                <input id="replay-source-id" type="radio" name="replay-source" value="id" checked />
-                <label class="replay-radio" for="replay-source-id">
-                    <span class="replay-radio-label">Database ID</span>
-                </label>
-            </div>
-            <div class="col-4">
-                <input id="replay-source-json" type="radio" name="replay-source" value="json" />
-                <label class="replay-radio" for="replay-source-json">
-                    <span class="replay-radio-label">JSON Data</span>
-                </label>
-            </div>
+    <div class="row">
+      <div class="col-3 input-text">
+        <div class="create-game-icon">
+          <i class="fas fa-users"></i>
         </div>
-        <br /><br />
-
-        <div id="replay-id-row" class="row">
-            <div class="col-3 input-text">
-                <div class="create-game-icon">
-                    <i class="fas fa-fingerprint"></i>
-                </div>
-                ID
-            </div>
-            <div class="col-8">
-                <input id="replay-id" type="text" />
-            </div>
-        </div>
-
-        <div id="replay-json-row" class="row">
-            <div class="col-3 input-text">
-                <div class="create-game-icon">
-                    <i class="fas fa-table"></i>
-                </div>
-                JSON
-            </div>
-            <div class="col-8">
-                <textarea id="replay-json" rows="3"></textarea>
-            </div>
-        </div>
-
-        <!-- Spacing for the ID row or the JSON row -->
-        <br />
-
-        <div id="replay-error-row" class="row">
-            <div class="col-3 input-text"></div>
-            <div id="replay-error-row-text" class="col-8"></div>
-        </div>
-        <div id="replay-error-row-spacing">
-            <br /><br />
-        </div>
-
-        <div class="row">
-            <div class="col-3 input-text">
-                <div class="create-game-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                Visibility
-            </div>
-            <div class="col-4">
-                <input id="replay-visibility-solo" type="radio" name="replay-visibility" checked />
-                <label class="replay-radio" for="replay-visibility-solo">
-                    <span class="replay-radio-label">Solo</span>
-                </label>
-            </div>
-            <div class="col-4">
-                <input id="replay-visibility-shared" type="radio" name="replay-visibility" />
-                <label class="replay-radio" for="replay-visibility-shared">
-                    <span class="replay-radio-label">Shared</span>
-                </label>
-            </div>
-        </div>
-        <br />
-
-        <br />
-        <button id="replay-submit" class="button fit" type="submit">
-            <i class="fas fa-eye"></i>&nbsp;
-            Watch
-        </button>
+        Visibility
+      </div>
+      <div class="col-4">
+        <input id="replay-visibility-solo" type="radio" name="replay-visibility" checked />
+        <label class="replay-radio" for="replay-visibility-solo">
+          <span class="replay-radio-label">Solo</span>
+        </label>
+      </div>
+      <div class="col-4">
+        <input id="replay-visibility-shared" type="radio" name="replay-visibility" />
+        <label class="replay-radio" for="replay-visibility-shared">
+          <span class="replay-radio-label">Shared</span>
+        </label>
+      </div>
     </div>
+    <br />
+
+    <br />
+    <button id="replay-submit" class="button fit" type="submit">
+      <i class="fas fa-eye"></i>&nbsp;
+      Watch
+    </button>
+  </div>
 </div>
 
 <!-- Game (the UI when playing a game) -->
@@ -966,86 +1011,86 @@
 
 <!-- Password modal -->
 <div id="password-modal" class="modal hidden">
-    <section class="box">
-        <h3>Enter Password</h3>
-        <p>Enter the password for this game:</p>
-        <input id="password-modal-id" type="hidden" />
-        <input id="password-modal-password" type="text" placeholder="Password" />
-        <br />
-        <ul class="actions">
-            <li>
-                <button id="password-modal-submit" class="button small">Submit</button>
-            </li>
-            <li>
-                <button id="password-modal-cancel" class="button small">Cancel</button>
-            </li>
-        </ul>
-    </section>
+  <section class="box">
+    <h3>Enter Password</h3>
+    <p>Enter the password for this game:</p>
+    <input id="password-modal-id" type="hidden" />
+    <input id="password-modal-password" type="text" placeholder="Password" />
+    <br />
+    <ul class="actions">
+      <li>
+        <button id="password-modal-submit" class="button small">Submit</button>
+      </li>
+      <li>
+        <button id="password-modal-cancel" class="button small">Cancel</button>
+      </li>
+    </ul>
+  </section>
 </div>
 
 <!-- Game chat modal -->
 <div id="game-chat-modal" class="hidden draggable">
-    <div id="game-chat-modal-header">
-        <a id="game-chat-modal-header-close">
-            <i class="fas fa-times fa-xs"></i>
-        </a>
-    </div>
-    <section id="game-chat-modal-white" class="box">
-        <div id="game-chat-text" class="lobby-chat-text-box"></div>
-        <input id="game-chat-input" type="text" placeholder="Chat" autocomplete="off" />
-        <div id="game-chat-istyping" class="istyping"></div>
-    </section>
+  <div id="game-chat-modal-header">
+    <a id="game-chat-modal-header-close">
+      <i class="fas fa-times fa-xs"></i>
+    </a>
+  </div>
+  <section id="game-chat-modal-white" class="box">
+    <div id="game-chat-text" class="lobby-chat-text-box"></div>
+    <input id="game-chat-input" type="text" placeholder="Chat" autocomplete="off" />
+    <div id="game-chat-istyping" class="istyping"></div>
+  </section>
 </div>
 
 <!-- Warning modal -->
 <div id="warning-modal" class="modal hidden">
-    <section class="box">
-        <h3>Warning</h3>
-        <p id="warning-modal-description"></p>
-        <ul class="actions">
-            <li>
-                <button id="warning-modal-button" class="button small">Close</button>
-            </li>
-        </ul>
-    </section>
+  <section class="box">
+    <h3>Warning</h3>
+    <p id="warning-modal-description"></p>
+    <ul class="actions">
+      <li>
+        <button id="warning-modal-button" class="button small">Close</button>
+      </li>
+    </ul>
+  </section>
 </div>
 
 <!-- Error modal -->
 <div id="error-modal" class="modal hidden">
-    <section class="box">
-        <h3>Error</h3>
-        <p id="error-modal-description"></p>
-        <ul class="actions">
-            <li>
-                <button id="error-modal-button" class="button small">Reload</button>
-                <button id="error-modal-signout" class="button small hidden">Sign Out</button>
-            </li>
-        </ul>
-    </section>
+  <section class="box">
+    <h3>Error</h3>
+    <p id="error-modal-description"></p>
+    <ul class="actions">
+      <li>
+        <button id="error-modal-button" class="button small">Reload</button>
+        <button id="error-modal-signout" class="button small hidden">Sign Out</button>
+      </li>
+    </ul>
+  </section>
 </div>
 
 <!-- Preload some images that are used while in a game -->
 <div id="preload" class="hidden">
-    <img src="/public/img/crown.png" />
-    <img src="/public/img/eyes.png" />
-    <img src="/public/img/home.png" />
-    <img src="/public/img/note.png" />
-    <img src="/public/img/replay.png" />
-    <img src="/public/img/replay-disabled.png" />
-    <img src="/public/img/replay-back.png" />
-    <img src="/public/img/replay-back-disabled.png" />
-    <img src="/public/img/replay-back-full.png" />
-    <img src="/public/img/replay-back-full-disabled.png" />
-    <img src="/public/img/replay-forward.png" />
-    <img src="/public/img/replay-forward-disabled.png" />
-    <img src="/public/img/replay-forward-full.png" />
-    <img src="/public/img/replay-forward-full-disabled.png" />
-    <img src="/public/img/skull.png" />
-    <img src="/public/img/trashcan.png" />
-    <img src="/public/img/trashcan2.png" />
-    <img src="/public/img/x.png" />
-    <img src="/public/img/wrench.png" />
-    <img src="/public/img/background.jpg" />
+  <img src="/public/img/crown.png" />
+  <img src="/public/img/eyes.png" />
+  <img src="/public/img/home.png" />
+  <img src="/public/img/note.png" />
+  <img src="/public/img/replay.png" />
+  <img src="/public/img/replay-disabled.png" />
+  <img src="/public/img/replay-back.png" />
+  <img src="/public/img/replay-back-disabled.png" />
+  <img src="/public/img/replay-back-full.png" />
+  <img src="/public/img/replay-back-full-disabled.png" />
+  <img src="/public/img/replay-forward.png" />
+  <img src="/public/img/replay-forward-disabled.png" />
+  <img src="/public/img/replay-forward-full.png" />
+  <img src="/public/img/replay-forward-full-disabled.png" />
+  <img src="/public/img/skull.png" />
+  <img src="/public/img/trashcan.png" />
+  <img src="/public/img/trashcan2.png" />
+  <img src="/public/img/x.png" />
+  <img src="/public/img/wrench.png" />
+  <img src="/public/img/background.jpg" />
 </div>
 
 <!-- Used to validate that we are connecting to the correct URL -->
@@ -1058,8 +1103,10 @@
 -->
 <script type="text/javascript" src="http://localhost:8080/main.min.js"></script>
 {{else}}
-<!-- All of the JavaScript is bundled into one file with Webpack -->
-<!-- We specify a "v=####" query string to force the browser to load new versions -->
+<!--
+  All of the JavaScript is bundled into one file with Webpack
+  We specify a "v=####" query string to force the browser to load new versions
+-->
 <script type="text/javascript" src="/public/js/main.min.js?v={{.Version}}"></script>
 {{end}}
 {{end}}

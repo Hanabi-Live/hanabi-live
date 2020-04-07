@@ -1,72 +1,72 @@
 {{define "profile"}}
 <ul>
-    <li>
-        <span class="stat-description">Games played (in non-speedruns):</span>
-        {{.NumGames}}
-    </li>
-    <li>
-        <span class="stat-description">Time spent playing (in non-speedruns):</span>
-        {{if .TimePlayed}}{{.TimePlayed}}{{else}}-{{end}}
-    </li>
-    <li>
-        <span class="stat-description">Games played (in speedruns):</span>
-        {{.NumGamesSpeedrun}}
-    </li>
-    <li>
-        <span class="stat-description">Time spent playing (in speedruns):</span>
-        {{if .TimePlayedSpeedrun}}{{.TimePlayedSpeedrun}}{{else}}-{{end}}
-    </li>
-    <li>
-        <span class="stat-description">Total max scores:</span>
-        {{.NumMaxScores}} &nbsp;({{.PercentageMaxScores}}%)
-    </li>
+  <li>
+    <span class="stat-description">Games played (in non-speedruns):</span>
+    {{.NumGames}}
+  </li>
+  <li>
+    <span class="stat-description">Time spent playing (in non-speedruns):</span>
+    {{if .TimePlayed}}{{.TimePlayed}}{{else}}-{{end}}
+  </li>
+  <li>
+    <span class="stat-description">Games played (in speedruns):</span>
+    {{.NumGamesSpeedrun}}
+  </li>
+  <li>
+    <span class="stat-description">Time spent playing (in speedruns):</span>
+    {{if .TimePlayedSpeedrun}}{{.TimePlayedSpeedrun}}{{else}}-{{end}}
+  </li>
+  <li>
+    <span class="stat-description">Total max scores:</span>
+    {{.NumMaxScores}} &nbsp;({{.PercentageMaxScores}}%)
+  </li>
 </ul>
 
 {{if gt .NumGames 0}}
 <table>
-    <thead>
+  <thead>
+    <tr>
+      <th>Variant</th>
+      <th>Total Games</th>
+      <th>2-Player Best Score</th>
+      <th>3-Player Best Score</th>
+      <th>4-Player Best Score</th>
+      <th>5-Player Best Score</th>
+      <th>6-Player Best Score</th>
+      <th>Average Score</th>
+      <th>Strikeout Rate</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range $index, $results := .VariantStats}}
+      {{if gt .NumGames 0}}
         <tr>
-            <th>Variant</th>
-            <th>Total Games</th>
-            <th>2-Player Best Score</th>
-            <th>3-Player Best Score</th>
-            <th>4-Player Best Score</th>
-            <th>5-Player Best Score</th>
-            <th>6-Player Best Score</th>
-            <th>Average Score</th>
-            <th>Strikeout Rate</th>
-        </tr>
-    </thead>
-    <tbody>
-        {{range $index, $results := .VariantStats}}
-            {{if gt .NumGames 0}}
-            <tr>
-                <td><a href="/variant/{{.ID}}">{{.Name}}</a></td>
-                <td>{{.NumGames}}</td>
-                {{range $index2, $results2 := .BestScores}}
-                    <td>
-                        {{if eq .Score $results.MaxScore}}<strong>{{end}}
-                        {{.Score}} / {{$results.MaxScore}}
-                        {{if eq .Score $results.MaxScore}}
-                            </strong> &nbsp;
-                            {{if eq .Modifier 0}}
-                                <i class="fas fa-check score-modifier green"></i>
-                            {{else if eq .Modifier 1}}
-                                <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays"></i>
-                            {{else if eq .Modifier 2}}
-                                <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-emptyclues"></i>
-                            {{else if eq .Modifier 3}}
-                                <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays-emptyclues"></i>
-                            {{end}}
-                        {{end}}
-                    </td>
+          <td><a href="/variant/{{.ID}}">{{.Name}}</a></td>
+          <td>{{.NumGames}}</td>
+          {{range $index2, $results2 := .BestScores}}
+            <td>
+              {{if eq .Score $results.MaxScore}}<strong>{{end}}
+              {{.Score}} / {{$results.MaxScore}}
+              {{if eq .Score $results.MaxScore}}
+                </strong> &nbsp;
+                {{if eq .Modifier 0}}
+                  <i class="fas fa-check score-modifier green"></i>
+                {{else if eq .Modifier 1}}
+                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays"></i>
+                {{else if eq .Modifier 2}}
+                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-emptyclues"></i>
+                {{else if eq .Modifier 3}}
+                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays-emptyclues"></i>
                 {{end}}
-                <td>{{if ne .AverageScore "0"}}{{.AverageScore}}{{else}}-{{end}}</td>
-                <td>{{.StrikeoutRate}}{{if ne .StrikeoutRate "-"}}%{{end}}</td>
-            </tr>
-            {{- end -}}
-        {{- end -}}
-    </tbody>
+              {{end}}
+            </td>
+          {{end}}
+          <td>{{if ne .AverageScore "0"}}{{.AverageScore}}{{else}}-{{end}}</td>
+          <td>{{.StrikeoutRate}}{{if ne .StrikeoutRate "-"}}%{{end}}</td>
+        </tr>
+      {{- end -}}
+    {{- end -}}
+  </tbody>
 </table>
 {{end}}
 
