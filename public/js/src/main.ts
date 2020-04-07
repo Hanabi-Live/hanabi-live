@@ -38,6 +38,7 @@ if (window.location.hostname !== 'localhost' && !window.location.pathname.includ
     dsn: 'https://93293e0a9dff44c7b8485d646738a3e5@sentry.io/5189482',
     release: version.toString(),
     debug: true,
+    blacklistUrls: ['chrome-extension://'], // Otherwise, we get errors for LastPass, etc.
     beforeSend: (
       event: Sentry.Event,
       hint?: Sentry.EventHint | undefined,
@@ -61,9 +62,6 @@ if (window.location.hostname !== 'localhost' && !window.location.pathname.includ
           || msg.match(/The fetching process for the media resource was aborted by the user agent at the user's request./)
           || msg.match(/Failed to load because no supported source was found./)
           || msg.match(/AbortError: The operation was aborted./)
-
-          // Has to do with LastPass
-          || msg.match(/a.LegacyGlobal.LP_explicit_ignored is not a function./)
         ) {
           return (null as any);
         }
