@@ -119,6 +119,13 @@ func commandTableJoin(s *Session, d *CommandData) {
 	chatSendPastFromTable(s, t)
 	t.ChatRead[p.ID] = 0
 
+	// Send them messages for people typing, if any
+	for _, p := range t.Players {
+		if p.Typing {
+			s.NotifyChatTyping(p.Name, p.Typing)
+		}
+	}
+
 	// If there is an automatic start countdown, cancel it
 	if !t.DatetimePlannedStart.IsZero() {
 		t.DatetimePlannedStart = time.Time{} // Assign a zero value

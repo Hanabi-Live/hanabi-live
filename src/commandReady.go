@@ -112,6 +112,18 @@ func commandReady(s *Session, d *CommandData) {
 
 		// Send them the chat history for this game
 		chatSendPastFromTable(s, t)
+
+		// Send them messages for people typing, if any
+		for _, p := range t.Players {
+			if p.Typing {
+				s.NotifyChatTyping(p.Name, p.Typing)
+			}
+		}
+		for _, sp := range t.Spectators {
+			if sp.Typing {
+				s.NotifyChatTyping(sp.Name, sp.Typing)
+			}
+		}
 	}
 
 	if t.Replay && t.Visible {
