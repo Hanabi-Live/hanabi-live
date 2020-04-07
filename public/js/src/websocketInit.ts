@@ -277,6 +277,7 @@ const initCommands = () => {
 
     // Disconnect from the server, if connected
     if (globals.conn !== null) {
+      // This is safe to call if the WebSocket connection is already closed
       globals.conn.close();
     }
   });
