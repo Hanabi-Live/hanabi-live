@@ -21,25 +21,31 @@ func chatDiscord(s *Session, d *CommandData, t *Table) {
 
 // /random [min] [max]
 func chatRandom(s *Session, d *CommandData, t *Table) {
-	errorMsg := "That is not a correct usage of the /random command."
-
 	// We expect something like "/random 2" or "/random 1 2"
 	if len(d.Args) != 1 && len(d.Args) != 2 {
-		chatServerSend(errorMsg, d.Room)
+		chatServerSend("That is not a correct usage of the /random command.", d.Room)
 		return
 	}
 
 	// Ensure that both arguments are numbers
 	var arg1, arg2 int
 	if v, err := strconv.Atoi(d.Args[0]); err != nil {
-		chatServerSend(errorMsg, d.Room)
+		if _, err := strconv.ParseFloat(d.Args[0], 64); err != nil {
+			chatServerSend("\""+d.Args[0]+"\" is not a number.", d.Room)
+		} else {
+			chatServerSend("The /random command only accepts integers.", d.Room)
+		}
 		return
 	} else {
 		arg1 = v
 	}
 	if len(d.Args) == 2 {
 		if v, err := strconv.Atoi(d.Args[1]); err != nil {
-			chatServerSend(errorMsg, d.Room)
+			if _, err := strconv.ParseFloat(d.Args[1], 64); err != nil {
+				chatServerSend("\""+d.Args[1]+"\" is not a number.", d.Room)
+			} else {
+				chatServerSend("The /random command only accepts integers.", d.Room)
+			}
 			return
 		} else {
 			arg2 = v
@@ -57,8 +63,10 @@ func chatRandom(s *Session, d *CommandData, t *Table) {
 	}
 
 	// Do a sanity check
-	if max-min <= 0 {
-		chatServerSend(errorMsg, d.Room)
+	if min >= max {
+		msg := strconv.Itoa(min) + " is greater than or equal to " + strconv.Itoa(max) + ", " +
+			"so that request is nonsensical."
+		chatServerSend(msg, d.Room)
 		return
 	}
 

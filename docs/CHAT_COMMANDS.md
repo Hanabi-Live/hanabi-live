@@ -4,7 +4,7 @@
 
 | Command             | Description
 | ------------------- | -----------
-| /help               | Display this message
+| /help               | Get the link to this page
 | /discord            | Get the link for the Hanabi Discord server
 | /random [min] [max] | Get a random number
 | /uptime             | Get how long the server has been online
@@ -63,3 +63,5 @@
 | /maintenance | Disable new game creation
 | /cancel      | Enable new game creation
 | /debug       | Print out some server-side info
+
+Note that admin-commands can also be performed by making the appropriate HTTP request to [the second web server](https://github.com/Zamiell/hanabi-live/blob/master/src/httpLocalhost.go).
