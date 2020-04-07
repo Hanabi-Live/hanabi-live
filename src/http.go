@@ -17,9 +17,11 @@ import (
 )
 
 type TemplateData struct {
-	Title  string // Used to populate the <title> tag
-	Domain string // Used to validate that the user is going to the correct URL
-	Name   string // Used for the profile
+	Title   string // Used to populate the <title> tag
+	Domain  string // Used to validate that the user is going to the correct URL
+	Version string
+	Dev     bool
+	Name    string // Used for the profile
 }
 
 const (
@@ -133,12 +135,12 @@ func httpInit() {
 
 	// Path handlers (for development)
 	// ("/dev" is the same as "/" but uses unbundled JavaScript/CSS)
-	httpRouter.GET("/dev", httpDev)
-	httpRouter.GET("/dev/replay", httpDev)
-	httpRouter.GET("/dev/replay/:gameID", httpDev)
-	httpRouter.GET("/dev/replay/:gameID/:turn", httpDev)
-	httpRouter.GET("/dev/test", httpDev)
-	httpRouter.GET("/dev/test/:testNum", httpDev)
+	httpRouter.GET("/dev", httpMain)
+	httpRouter.GET("/dev/replay", httpMain)
+	httpRouter.GET("/dev/replay/:gameID", httpMain)
+	httpRouter.GET("/dev/replay/:gameID/:turn", httpMain)
+	httpRouter.GET("/dev/test", httpMain)
+	httpRouter.GET("/dev/test/:testNum", httpMain)
 
 	// Path handlers for other URLs
 	httpRouter.GET("/scores", httpScores)
