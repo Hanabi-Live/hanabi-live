@@ -1,710 +1,710 @@
 /*
-    Local Google Fonts
-    From: https://google-webfonts-helper.herokuapp.com/
+  Local Google Fonts
+  From: https://google-webfonts-helper.herokuapp.com/
 */
 
 /* source-sans-pro-300 - latin */
 @font-face {
-    font-family: 'Source Sans Pro';
-    font-style: normal;
-    font-weight: 300;
-    src: local('Source Sans Pro Light'), local('SourceSansPro-Light'),
-         url('/public/webfonts/source-sans-pro-v11-latin-300.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-         url('/public/webfonts/source-sans-pro-v11-latin-300.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  font-family: 'Source Sans Pro';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Source Sans Pro Light'), local('SourceSansPro-Light'),
+       url('/public/webfonts/source-sans-pro-v11-latin-300.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/public/webfonts/source-sans-pro-v11-latin-300.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /* source-sans-pro-300italic - latin */
 @font-face {
-    font-family: 'Source Sans Pro';
-    font-style: italic;
-    font-weight: 300;
-    src: local('Source Sans Pro Light Italic'), local('SourceSansPro-LightItalic'),
-         url('/public/webfonts/source-sans-pro-v11-latin-300italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-         url('/public/webfonts/source-sans-pro-v11-latin-300italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  font-family: 'Source Sans Pro';
+  font-style: italic;
+  font-weight: 300;
+  src: local('Source Sans Pro Light Italic'), local('SourceSansPro-LightItalic'),
+       url('/public/webfonts/source-sans-pro-v11-latin-300italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/public/webfonts/source-sans-pro-v11-latin-300italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /* source-sans-pro-regular - latin */
 @font-face {
-    font-family: 'Source Sans Pro';
-    font-style: normal;
-    font-weight: 400;
-    src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'),
-         url('/public/webfonts/source-sans-pro-v11-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-         url('/public/webfonts/source-sans-pro-v11-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  font-family: 'Source Sans Pro';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'),
+       url('/public/webfonts/source-sans-pro-v11-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/public/webfonts/source-sans-pro-v11-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /* source-sans-pro-italic - latin */
 @font-face {
-    font-family: 'Source Sans Pro';
-    font-style: italic;
-    font-weight: 400;
-    src: local('Source Sans Pro Italic'), local('SourceSansPro-Italic'),
-         url('/public/fonts/source-sans-pro-v11-latin-italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-         url('/public/fonts/source-sans-pro-v11-latin-italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  font-family: 'Source Sans Pro';
+  font-style: italic;
+  font-weight: 400;
+  src: local('Source Sans Pro Italic'), local('SourceSansPro-Italic'),
+       url('/public/fonts/source-sans-pro-v11-latin-italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('/public/fonts/source-sans-pro-v11-latin-italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /*
-    Font Awesome 6 fixes
+  Font Awesome 6 fixes
 */
 
 input[type="checkbox"] + label:before,
 input[type="radio"] + label:before,
 .icon:before,
 #navButton .toggle:before {
-    font-family: "Font Awesome 5 Free";
+  font-family: "Font Awesome 5 Free";
 }
 
 /*
-    Alpha edits
+  Alpha edits
 */
 
 #main > header p {
-    border-top: 0;
-    margin-top: 0;
+  border-top: 0;
+  margin-top: 0;
 }
 
 .row {
-    border-bottom: 0;
+  border-bottom: 0;
 }
 
 a {
-    /* The default link style is a dotted bottom border, which is quite ugly */
-    border-bottom: 0;
-    text-decoration: underline;
-    color: blue;
+  /* The default link style is a dotted bottom border, which is quite ugly */
+  border-bottom: 0;
+  text-decoration: underline;
+  color: blue;
 }
 
 .name-me {
-    text-decoration: underline;
-    color: #e69500;
+  text-decoration: underline;
+  color: #e69500;
 }
 
 /* Make the lobby width be 80% on big resolutions and 100% on smaller resolutions */
 @media screen and (min-width: 1280px) {
-    .container.max {
-        width: 80%;
-    }
+  .container.max {
+    width: 80%;
+  }
 }
 
 /* Make the nav bar always show, even on the tiniest resolutions */
 @media screen and (max-width: 840px) {
-    #header {
-        display: block;
-    }
+  #header {
+    display: block;
+  }
 }
 
 /*
-    Common
+  Common
 */
 
 html, body, #page-wrapper {
-    height: 100%;
+  height: 100%;
 }
 
 body {
-    background-color: #00420f;
-    background-image: url(../img/dark-wood.png);
-    background-repeat: repeat;
-    background-attachment: fixed;
+  background-color: #00420f;
+  background-image: url(../img/dark-wood.png);
+  background-repeat: repeat;
+  background-attachment: fixed;
 }
 
 table td {
-    /* In Chrome, middle is default, but in Firefox, bottom is default */
-    vertical-align: middle;
+  /* In Chrome, middle is default, but in Firefox, bottom is default */
+  vertical-align: middle;
 }
 
 /*
-    The "align-center" class will do horizontal centering (in "alpha.css")
-    The "align-center-v" class will do vertical centering
+  The "align-center" class will do horizontal centering (in "alpha.css")
+  The "align-center-v" class will do vertical centering
 */
 .align-center-v {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hidden {
-    display: none;
+  display: none;
 }
 
 .margin0 {
-    margin: 0 !important;
+  margin: 0 !important;
 }
 
 .margin1 {
-    margin-bottom: 1em;
+  margin-bottom: 1em;
 }
 
 .margin3 {
-    margin-bottom: 3em;
+  margin-bottom: 3em;
 }
 
 .padding0 {
-    padding: 0 !important;
+  padding: 0 !important;
 }
 
 .padding0p5 {
-    padding-bottom: 0.5em;
+  padding-bottom: 0.5em;
 }
 
 .padding0p75 {
-    padding-bottom: 0.75em;
+  padding-bottom: 0.75em;
 }
 
 .padding-top1 {
-    padding-top: 1em !important;
+  padding-top: 1em !important;
 }
 
 .padding-top1p5 {
-    padding-top: 1.5em !important;
+  padding-top: 1.5em !important;
 }
 
 .padding-right1 {
-    padding-right: 1em;
+  padding-right: 1em;
 }
 
 .slim-table {
-    margin-bottom: 0.5em;
+  margin-bottom: 0.5em;
 }
 
 .slim-table td {
-    padding: 0.25em 0.25em; /* vanilla is 0.75em 0.75em */
+  padding: 0.25em 0.25em; /* vanilla is 0.75em 0.75em */
 }
 
 /* For text input labels */
 .input-text {
-    position: relative;
-    top: 1em;
+  position: relative;
+  top: 1em;
 }
 
 /* For text input labels with 2 lines */
 .input-text2 {
-    position: relative;
-    top: 0.5em;
+  position: relative;
+  top: 0.5em;
 }
 
 /* For checkbox labels */
 .label-text {
-    position: relative;
-    top: 0.25em;
+  position: relative;
+  top: 0.25em;
 }
 
 /*
-    Title
+  Title
 */
 
 #title-text {
-    color: white;
-    position: relative;
-    top: 0.1em;
+  color: white;
+  position: relative;
+  top: 0.1em;
 }
 
 #title-sub {
-    color: #f2f2f2 !important;
+  color: #f2f2f2 !important;
 }
 
 #title-sub strong {
-    color: white !important;
+  color: white !important;
 }
 
 .login-icon {
-    position: relative;
-    top: 0.275em;
-    right: 0.5em;
+  position: relative;
+  top: 0.275em;
+  right: 0.5em;
 }
 
 #login-ajax {
-    height: 3em;
+  height: 3em;
 }
 
 /* Based on the Bootstrap alert color */
 #login-alert {
-    color: #a94442;
-    background-color: #f2dede;
-    border-color: #ebccd1;
-    padding: 15px;
-    margin-bottom: 0;
-    border: 1px solid transparent;
-    border-radius: 4px;
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #ebccd1;
+  padding: 15px;
+  margin-bottom: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
 }
 
 #title-discord {
-    margin-top: 3em;
-    width: 5em;
+  margin-top: 3em;
+  width: 5em;
 }
 
 /*
-    Nav (the top bar)
+  Nav (the top bar)
 */
 
 .nav-icon {
-    position: relative;
-    top: 0.05em;
-    right: 0.3em;
+  position: relative;
+  top: 0.05em;
+  right: 0.3em;
 }
 
 .nav-hotkey-indicator {
-    border-bottom: dotted 1px;
+  border-bottom: dotted 1px;
 }
 
 /*
-    Lobby
+  Lobby
 */
 
 #lobby {
-    margin-top: 1.5em;
-    margin-bottom: 1.5em;
-    /* Left and right margins are handled on the rows in "alpha.css" */
-    height: calc(100% - 3em); /* The header is 3em */
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  /* Left and right margins are handled on the rows in "alpha.css" */
+  height: calc(100% - 3em); /* The header is 3em */
 }
 
 #lobby > div > div {
-    height: 100%;
+  height: 100%;
 }
 
 #lobby > div > div > section {
-    padding: 1.5em;
-    margin-bottom: 0;
-    height: 100%;
+  padding: 1.5em;
+  margin-bottom: 0;
+  height: 100%;
 }
 
 .lobby-half {
-    height: calc((100% - 1.5em) / 2);
+  height: calc((100% - 1.5em) / 2);
 }
 
 #lobby-separator {
-    height: 1.5em;
+  height: 1.5em;
 }
 
 .lobby-full {
-    height: 100%;
+  height: 100%;
 }
 
 .lobby-table-container {
-    overflow-y: auto;
-    height: 100%;
+  overflow-y: auto;
+  height: 100%;
 }
 
 .lobby-button-icon {
-    font-size: 1.5em;
-    position: relative;
-    top: 0.22em;
+  font-size: 1.5em;
+  position: relative;
+  top: 0.22em;
 }
 
 .lobby-title {
-    /* We want to make h3 elements a bit smaller */
-    font-size: 1.3em;
+  /* We want to make h3 elements a bit smaller */
+  font-size: 1.3em;
 }
 
 /*
-    The list of ongoing tables / games
+  The list of ongoing tables / games
 */
 
 #lobby-games-table {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .lobby-games-table-joined {
-    background-color: #f2f2ff !important;
+  background-color: #f2f2ff !important;
 }
 .lobby-games-table-unstarted {
-    background-color: #fffff0 !important;
+  background-color: #fffff0 !important;
 }
 .lobby-games-table-unstarted-password {
-    background-color: #ffeaea !important;
+  background-color: #ffeaea !important;
 }
 .lobby-games-table-started {
-    background-color: #e6ffee !important;
+  background-color: #e6ffee !important;
 }
 .lobby-games-table-replay {
-    background-color: #fff0ff !important;
+  background-color: #fff0ff !important;
 }
 
 /*
-    Lobby chat
+  Lobby chat
 */
 
 .lobby-chat-text-box {
-    overflow-y: auto;
-    overflow-wrap: break-word;
-    border-style: solid !important;
-    border-color: #e5e5e5 !important;
-    border: 1px;
-    margin-bottom: 1em;
-    padding: 0 0.5em 0 0.5em;
-    height: calc(100% - 3.5em - 2.5em);
-    /* (the height of the input box is 3.5em and the hight of the "Lobby Chat" text is 2.5em) */
+  overflow-y: auto;
+  overflow-wrap: break-word;
+  border-style: solid !important;
+  border-color: #e5e5e5 !important;
+  border: 1px;
+  margin-bottom: 1em;
+  padding: 0 0.5em 0 0.5em;
+  height: calc(100% - 3.5em - 2.5em);
+  /* (the height of the input box is 3.5em and the hight of the "Lobby Chat" text is 2.5em) */
 }
 
 .chat-emote {
-    height: 1.6em; /* This is derived from how Twitch does it */
+  height: 1.6em; /* This is derived from how Twitch does it */
 }
 
 .istyping {
-    font-size: 0.75em;
-    position: relative;
-    bottom: 0.3em;
+  font-size: 0.75em;
+  position: relative;
+  bottom: 0.3em;
 }
 
 /*
-    User list
+  User list
 */
 
 #lobby-users-container {
-    overflow-y: auto;
-    height: calc(100% - 3em); /* The height of the "Online Users" text is 3em */
+  overflow-y: auto;
+  height: calc(100% - 3em); /* The height of the "Online Users" text is 3em */
 }
 
 .lobby-users-box-container {
-    padding-left: 1.5em !important;
+  padding-left: 1.5em !important;
 }
 
 #lobby-users-table-tbody a {
-    text-decoration-skip-ink: none;
+  text-decoration-skip-ink: none;
 }
 
 /*
-    Pregame
+  Pregame
 */
 
 #lobby-pregame > div {
-    height: 100%;
+  height: 100%;
 }
 
 #lobby-pregame-left {
-    font-size: 0.85em;
+  font-size: 0.85em;
 }
 
 .lobby-pregame-player {
-    border: 1px solid black;
-    border-radius: 5px;
-    padding: 1em;
-    height: 100%;
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 1em;
+  height: 100%;
 }
 
 .lobby-pregame-player-away {
-    margin-top: 1em;
-    margin-bottom: 0;
+  margin-top: 1em;
+  margin-bottom: 0;
 }
 
 #lobby-pregame-options {
-    padding-left: 1em;
+  padding-left: 1em;
 }
 
 #lobby-pregame-options > li {
-    padding-left: 0;
+  padding-left: 0;
 }
 
 .lobby-pregame-tooltip {
-    font-size: 0.75em;
-    width: 8em;
+  font-size: 0.75em;
+  width: 8em;
 }
 
 .lobby-pregame-tooltip-icon {
-    font-size: 0.75em;
+  font-size: 0.75em;
 }
 
 .lobby-pregame-tooltip > div {
-    /* Alpha sets this to -2em, so we have to reset it */
-    margin-left: 0em;
-    text-align: left;
+  /* Alpha sets this to -2em, so we have to reset it */
+  margin-left: 0em;
+  text-align: left;
 }
 
 .lobby-pregame-tooltip > div > div {
-    padding-left: 0;
+  padding-left: 0;
 }
 
 .lobby-pregame-col {
-    width: 13.75%;
+  width: 13.75%;
 }
 
 /*
-    Create Game Tooltip
+  Create Game Tooltip
 */
 
 #create-game-tooltip-title {
-    width: 11em;
+  width: 11em;
 }
 
 #create-game-tooltip > div {
-    /* Alpha sets this to -2em, so we have to reset it */
-    margin-left: 0em;
-    text-align: left;
+  /* Alpha sets this to -2em, so we have to reset it */
+  margin-left: 0em;
+  text-align: left;
 }
 
 #create-game-tooltip > div > div {
-    padding-left: 0;
+  padding-left: 0;
 }
 
 .create-game-icon {
-    display: inline-block;
-    width: 2em;
-    text-align: center;
+  display: inline-block;
+  width: 2em;
+  text-align: center;
 }
 
 .create-game-info-icon {
-    position: relative;
-    top: 0.35em;
+  position: relative;
+  top: 0.35em;
 }
 
 .create-game-text-label {
-    /* Annoyingly, the text does not line up with the checkbox */
-    position: relative;
-    top: 0.25em;
+  /* Annoyingly, the text does not line up with the checkbox */
+  position: relative;
+  top: 0.25em;
 }
 
 #create-game-timed-label {
-    /* We need to move the "Timed" label even more */
-    position: relative;
-    top: 0.75em;
+  /* We need to move the "Timed" label even more */
+  position: relative;
+  top: 0.75em;
 }
 
 #create-game-timed-container {
-    /* We need to move this down so that it is centered with the input elements */
-    position: relative;
-    top: 0.5em;
+  /* We need to move this down so that it is centered with the input elements */
+  position: relative;
+  top: 0.5em;
 }
 
 #create-game-submit {
-    font-size: 1em;
+  font-size: 1em;
 }
 
 .question-mark:hover {
-    color: #6666ff;
+  color: #6666ff;
 }
 
 #dice {
-    color: green;
-    position: relative;
-    left: 0.2em;
+  color: green;
+  position: relative;
+  left: 0.2em;
 }
 
 #dice:hover {
-    color: #00cc00;
-    cursor: pointer;
+  color: #00cc00;
+  cursor: pointer;
 }
 
 .ss-single-selected {
-    /* Used in the "Variant" dropdown; we modify it to match the Alpha style */
-    background-color: #f8f8f8 !important;
-    border-radius: 6px !important;
-    border: solid 1px #e5e5e5 !important;
-    height: 3em !important;
-    text-indent: 0.65em !important;
-    color: #777 !important;
+  /* Used in the "Variant" dropdown; we modify it to match the Alpha style */
+  background-color: #f8f8f8 !important;
+  border-radius: 6px !important;
+  border: solid 1px #e5e5e5 !important;
+  height: 3em !important;
+  text-indent: 0.65em !important;
+  color: #777 !important;
 }
 
 .ss-search > input:focus {
-    /* We want the focus colors to match Alpha */
-    border-color: #e89980 !important;
-    box-shadow: 0 0 0 2px #e89980 !important;
+  /* We want the focus colors to match Alpha */
+  border-color: #e89980 !important;
+  box-shadow: 0 0 0 2px #e89980 !important;
 }
 
 .ss-disabled {
-    /* By default it is an ugly "not-allowed" cursor */
-    cursor: auto !important;
+  /* By default it is an ugly "not-allowed" cursor */
+  cursor: auto !important;
 }
 
 /*
-    Watch Specific Replay Tooltip
+  Watch Specific Replay Tooltip
 */
 
 #replay-tooltip-title {
-    width: 13em;
+  width: 13em;
 }
 
 #replay-json {
-    resize: none;
+  resize: none;
 }
 
 #replay-error-row-text {
-    color: red;
+  color: red;
 }
 
 .replay-radio-container {
-    position: absolute;
+  position: absolute;
 }
 
 .replay-radio {
-    top: 0.6em;
+  top: 0.6em;
 }
 
 .replay-radio-label {
-    position: relative;
-    top: 0.4em;
+  position: relative;
+  top: 0.4em;
 }
 
 /*
-    Settings
+  Settings
 */
 
 .horizontal {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .horizontal > li {
-    vertical-align: center;
-    list-style-type: none;
-    float: left;
-    margin-right: 1em;
+  vertical-align: center;
+  list-style-type: none;
+  float: left;
+  margin-right: 1em;
 }
 
 #settings-volume > li {
-    height: 2.25em;
-    line-height: 2.25em;
+  height: 2.25em;
+  line-height: 2.25em;
 }
 
 #settings-volume-slider {
-    position: relative;
-    bottom: 0.25em;
-    width: 12.5em;
-    height: 0.25em;
-    background: #ddd;
-    border: none;
-    border-radius: 3px;
+  position: relative;
+  bottom: 0.25em;
+  width: 12.5em;
+  height: 0.25em;
+  background: #ddd;
+  border: none;
+  border-radius: 3px;
 }
 
 /*
-    Modals
+  Modals
 */
 
 .modal {
-    position: absolute;
-    z-index: 1;
-    top: 5em;
-    left: 5em;
-    right: 5em;
-    bottom: 5em;
-    overflow: auto;
+  position: absolute;
+  z-index: 1;
+  top: 5em;
+  left: 5em;
+  right: 5em;
+  bottom: 5em;
+  overflow: auto;
 }
 
 /*
-    Game
+  Game
 */
 
 #game {
-    height: 100%;
+  height: 100%;
 }
 
 /*
-    In-game tooltips
+  In-game tooltips
 */
 
 #game-tooltips > div {
-    position: absolute;
+  position: absolute;
 }
 
 .tooltipster-sidetip.tooltipster-shadow.tooltipster-shadow-big .tooltipster-content {
-    font-size: 1.5em;
-    padding: 0.5em;
-    line-height: 1em;
+  font-size: 1.5em;
+  padding: 0.5em;
+  line-height: 1em;
 }
 
 .game-tooltips-ul {
-    list-style-type: none;
-    margin-top: 0.5em;
-    margin-bottom: 0;
-    text-indent: -0.5em;
+  list-style-type: none;
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  text-indent: -0.5em;
 }
 
 .game-tooltips-ul > li {
-    margin-bottom: 0.1em;
+  margin-bottom: 0.1em;
 }
 
 .game-tooltips-icon {
-    display: inline-block;
-    width: 0.5em;
-    text-align: center;
+  display: inline-block;
+  width: 0.5em;
+  text-align: center;
 }
 
 .game-tooltips-ol {
-    margin-top: 0.5em;
-    margin-bottom: 0;
-    padding-left: 0.9em;
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  padding-left: 0.9em;
 }
 
 /*
-    In-game modals
+  In-game modals
 */
 
 #game-chat-modal {
-    position: absolute;
-    z-index: 1;
-    /* The modal is automatically positioned in the "chat.js" file */
-    background-color: black;
-    border-radius: 10px; /* This has to match the border-radius below */
-    border: 3px solid black;
+  position: absolute;
+  z-index: 1;
+  /* The modal is automatically positioned in the "chat.js" file */
+  background-color: black;
+  border-radius: 10px; /* This has to match the border-radius below */
+  border: 3px solid black;
 }
 
 #game-chat-modal-header {
-    height: 1.25em;
-    text-align: right;
+  height: 1.25em;
+  text-align: right;
 }
 
 #game-chat-modal-header-close {
-    cursor: pointer;
-    color: white;
-    margin-right: 0.3em;
-    padding: 0.25em; /* We want some padding so that the activation range is bigger */
-    position: relative;
-    bottom: 0.3em;
+  cursor: pointer;
+  color: white;
+  margin-right: 0.3em;
+  padding: 0.25em; /* We want some padding so that the activation range is bigger */
+  position: relative;
+  bottom: 0.3em;
 }
 
 #game-chat-modal-white {
-    width: calc(100% - 0.3em);
-    height: calc(100% - 1.25em - 0.3em);
-    /* We have to move it further down because of the header */
-    padding: 1em;
-    margin: 0;
-    position: relative;
-    top: 0.05em;
-    left: 0.15em;
+  width: calc(100% - 0.3em);
+  height: calc(100% - 1.25em - 0.3em);
+  /* We have to move it further down because of the header */
+  padding: 1em;
+  margin: 0;
+  position: relative;
+  top: 0.05em;
+  left: 0.15em;
 }
 
 #game-chat-text {
-    /*
-        The height of the in-game chat text box is bigger than the lobby text boxes
-        (e.g. ".lobby-chat-text-box") because there is no title to account for
-    */
-    height: calc(100% - 4em);
+  /*
+    The height of the in-game chat text box is bigger than the lobby text boxes
+    (e.g. ".lobby-chat-text-box") because there is no title to account for
+  */
+  height: calc(100% - 4em);
 }
 
 /* From: https://codepen.io/ZeroX-DG/pen/vjdoYe */
 .resizable .resizers{
-    width: 100%;
-    height: 100%;
-    border: 3px solid black;
-    border-radius: 10px; /* This has to match the border-radius above */
-    box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  border: 3px solid black;
+  border-radius: 10px; /* This has to match the border-radius above */
+  box-sizing: border-box;
 }
 
 /*
-    Profile
+  Profile
 */
 
 #filter-players > li {
-    height: 3em;
-    line-height: 3em;
+  height: 3em;
+  line-height: 3em;
 }
 
 .score-modifier {
-    font-size: 0.75em;
+  font-size: 0.75em;
 }
 
 .green {
-    color: green;
+  color: green;
 }
 
 .red {
-    color: red;
+  color: red;
 }
 
 .profile-tooltip {
-    font-size: 0.75em;
+  font-size: 0.75em;
 }
 
 .stat-description {
-    display: inline-block;
-    width: 19em;
+  display: inline-block;
+  width: 19em;
 }
