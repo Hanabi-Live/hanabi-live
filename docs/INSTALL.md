@@ -191,7 +191,7 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
     (change the username and password to the values that you specified in the ".env" file)
     * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
     * `FLUSH PRIVILEGES;`
-    * `EXIT`
+    * `exit`
   * `./install/install_database_schema.sh`
 * See [Running the Server](#running-the-server).
 
