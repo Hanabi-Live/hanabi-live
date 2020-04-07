@@ -7,6 +7,7 @@ import * as gameChat from './game/chat';
 import globals from './globals';
 import * as lobbyNav from './lobby/nav';
 import * as misc from './misc';
+import * as sounds from './sounds';
 
 // The list of all of the modals
 const modals = [
@@ -117,6 +118,11 @@ export const errorShow = (msg: string) => {
     $('#error-modal-signout').show();
   } else {
     $('#error-modal-signout').hide();
+  }
+
+  // Alert administrators if the server has shut down
+  if (globals.admin && msg.match(/The server is going down for scheduled maintenance./)) {
+    sounds.play('turn_double_discard');
   }
 };
 
