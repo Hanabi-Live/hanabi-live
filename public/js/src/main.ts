@@ -37,6 +37,26 @@ if (window.location.hostname !== 'localhost' && !window.location.pathname.includ
   Sentry.init({
     dsn: 'https://93293e0a9dff44c7b8485d646738a3e5@sentry.io/5189482',
     release: version.toString(),
+    beforeSend: (
+      event: Sentry.Event,
+      hint?: Sentry.EventHint | undefined,
+    ): Sentry.Event | PromiseLike<Sentry.Event | null> => {
+      if (typeof hint === 'undefined') {
+        return event;
+      }
+
+      // We want to not send certain specific common events to Sentry
+      // (to avoid using up our monthly limit)
+      const error = hint.originalException;
+      if (
+        error
+        && (error as Error).message
+        && (error as Error).message.match(/The request is not allowed by the user agent or the platform in the current context, possibly because the user denied permission./)
+      ) {
+        return (null as any);
+      }
+      return event;
+    },
   });
 }
 
