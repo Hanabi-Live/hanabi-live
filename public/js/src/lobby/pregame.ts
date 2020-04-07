@@ -76,6 +76,9 @@ export const hide = () => {
   $('#lobby-chat-container').removeClass('col-4');
   $('#lobby-chat-pregame-container').hide();
 
+  // Clear the typing list
+  globals.peopleTyping = [];
+
   // Adjust the navigation bar
   nav.show('games');
 };

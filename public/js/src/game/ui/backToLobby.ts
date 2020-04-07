@@ -11,6 +11,9 @@ export default () => {
   // Stop any timer-related callbacks
   timer.stop();
 
+  // Clear the typing list
+  globals.lobby.peopleTyping = [];
+
   globals.lobby.conn.send('tableUnattend');
   globals.game!.hide();
 };
