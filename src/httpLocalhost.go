@@ -31,6 +31,8 @@ func httpLocalhostInit() {
 	})
 	httpRouter.GET("/ban/:username", httpUserAction)
 	httpRouter.GET("/mute/:username", httpUserAction)
+	httpRouter.POST("/sendWarning/:username", httpUserAction)
+	httpRouter.POST("/sendError/:username", httpUserAction)
 	httpRouter.GET("/uptime", httpUptime)
 	httpRouter.GET("/clearEmptyTables", httpClearEmptyTables)
 	httpRouter.GET("/debug", func(c *gin.Context) {
@@ -91,6 +93,10 @@ func httpUserAction(c *gin.Context) {
 		httpBan(c, username, lastIP, userID)
 	} else if strings.HasPrefix(path, "/mute/") {
 		httpMute(c, username, lastIP, userID)
+	} else if strings.HasPrefix(path, "/sendWarning/") {
+		httpSendWarning(c, userID)
+	} else if strings.HasPrefix(path, "/sendError/") {
+		httpSendError(c, userID)
 	} else {
 		http.Error(w, "Error: Invalid URL.", http.StatusNotFound)
 	}
@@ -181,6 +187,50 @@ func logoutUser(username string) {
 		}
 		return
 	}
+}
+
+func httpSendWarning(c *gin.Context, userID int) {
+	// Validate that the admin sent a message
+	msg := c.PostForm("msg")
+	if msg == "" {
+		c.String(http.StatusOK, "You must send a \"msg\" POST parameter.\n")
+		return
+	}
+
+	var s *Session
+	if v, ok := sessions[userID]; !ok {
+		msg2 := "Failed to get the session for the user ID of \"" + strconv.Itoa(userID) + "\"."
+		logger.Error(msg2)
+		c.String(http.StatusInternalServerError, msg2)
+		return
+	} else {
+		s = v
+	}
+
+	s.Warning(msg)
+	c.String(http.StatusOK, "success\n")
+}
+
+func httpSendError(c *gin.Context, userID int) {
+	// Validate that the admin sent a message
+	msg := c.PostForm("msg")
+	if msg == "" {
+		c.String(http.StatusOK, "You must send a \"msg\" POST parameter.\n")
+		return
+	}
+
+	var s *Session
+	if v, ok := sessions[userID]; !ok {
+		msg2 := "Failed to get the session for the user ID of \"" + strconv.Itoa(userID) + "\"."
+		logger.Error(msg2)
+		c.String(http.StatusInternalServerError, msg2)
+		return
+	} else {
+		s = v
+	}
+
+	s.Error(msg)
+	c.String(http.StatusOK, "success\n")
 }
 
 func httpUptime(c *gin.Context) {
