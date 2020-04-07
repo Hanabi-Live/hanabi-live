@@ -123,9 +123,10 @@ const initCommands = () => {
         let msg = 'You are running an outdated version of the Hanabi client code. ';
         msg += `(You are on <strong>v${globals.version}</strong> `;
         msg += `and the latest is <strong>v${data.version}</strong>.)<br />`;
-        msg += 'Please perform a hard-refresh to get the latest version.<br />';
-        msg += '(On Windows, the hotkey for this is "Ctrl + Shift + R". ';
-        msg += 'On MacOS, the hotkey for this is "Command + Shift + R".)';
+        msg += 'Please perform a hard-refresh to get the latest version. ';
+        msg += '(Note that a hard-refresh is different from a normal refresh.)<br />';
+        msg += 'On Windows, the hotkey for this is <code>Ctrl + Shift + R</code>. ';
+        msg += 'On MacOS, the hotkey for this is <code>Command + Shift + R</code>.';
         modals.warningShow(msg);
         return;
       }

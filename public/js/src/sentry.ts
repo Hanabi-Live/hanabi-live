@@ -12,7 +12,6 @@ export const init = () => {
   Sentry.init({
     dsn: 'https://93293e0a9dff44c7b8485d646738a3e5@sentry.io/5189482',
     release: version.toString(),
-    debug: true,
     blacklistUrls: ['chrome-extension://'], // Otherwise, we get errors for LastPass, etc.
     beforeSend, // Ignore some kinds of errors
   });
