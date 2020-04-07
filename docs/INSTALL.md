@@ -44,6 +44,7 @@ The following instructions will set up the server as well as the linters. We ass
   * `FLUSH PRIVILEGES;`
   * `exit`
 * Clone the repository:
+  * `cd [the path where you want the code to live]` (optional)
   * If you already have an SSH keypair and have the public key attached to your GitHub profile, then use the following command to clone the repostory via SSH:
     * `git clone git@github.com:Zamiell/hanabi-live.git`
   * If you do not already have an SSH keypair, then use the following command to clone the repository via HTTPS:
@@ -110,6 +111,7 @@ The following instructions will set up the server as well as the linters. We ass
   * `FLUSH PRIVILEGES;`
   * `exit`
 * Clone the repository:
+  * `cd [the path where you want the code to live]` (optional)
   * If you already have an SSH keypair and have the public key attached to your GitHub profile, then use the following command to clone the repostory via SSH:
     * `git clone git@github.com:Zamiell/hanabi-live.git`
   * If you do not already have an SSH keypair, then use the following command to clone the repository via HTTPS:
@@ -173,6 +175,7 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   (this installs the latest version)
 * Clone the server:
   * `sudo apt install git -y`
+  * `cd /root` (or change to the path where you want the code to live; "/root" is recommended)
   * If you already have an SSH keypair and have the public key attached to your GitHub profile, then use the following command to clone the repostory via SSH:
     * `git clone git@github.com:Zamiell/hanabi-live.git`
   * If you do not already have an SSH keypair, then use the following command to clone the repository via HTTPS:
@@ -221,6 +224,8 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 0 0 * * * /root/hanabi-live/make_database_dump.sh
 ```
 
+(This assumes you installed the code to "/root/hanabi-live". Adjust if needed.)
+
 <br />
 
 #### Install HTTPS (optional)
@@ -242,6 +247,8 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 # Every day, keep the Let's Encrypt certificate up to date
 0 0 * * * /root/hanabi-live/renew_cert.sh
 ```
+
+(This assumes you installed the code to "/root/hanabi-live". Adjust if needed.)
 
 <br />
 
@@ -267,6 +274,8 @@ To manage the service:
 * Start it: `supervisorctl start hanabi-live`
 * Stop it: `supervisorctl stop hanabi-live`
 * Restart it: `supervisorctl restart hanabi-live`
+
+(This assumes you installed the code to "/root/hanabi-live". If not, you will need to edit the paths in the above commands and edit the contents of the three Supervisor files.)
 
 <br />
 
