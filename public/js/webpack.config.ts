@@ -19,9 +19,9 @@ const version = fs.readFileSync(versionPath).toString().trim();
 // Clear out the "dist" subdirectory, as it might contain old JavaScript bundles and old source maps
 const distPath = path.join(__dirname, 'dist');
 if (fs.existsSync(distPath)) {
-  const files = fs.readdirSync(__dirname);
+  const files = fs.readdirSync(distPath);
   for (const file of files) {
-    fs.unlinkSync(path.join(__dirname, file));
+    fs.unlinkSync(path.join(distPath, file));
   }
 }
 
