@@ -93,8 +93,6 @@ The following instructions will set up the server as well as the linters. We ass
   * `refreshenv`
   * `git config --global user.name "Your_Username"`
   * `git config --global user.email "your@email.com"`
-  * `git config --global core.autocrlf false` <br />
-  (so that Git does not convert LF to CRLF when cloning repositories)
   * `git config --global pull.rebase true` <br />
   (so that Git automatically rebases when pulling)
 * Start MariaDB:
