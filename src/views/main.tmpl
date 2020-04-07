@@ -1103,10 +1103,7 @@
 -->
 <script type="text/javascript" src="http://localhost:8080/main.min.js"></script>
 {{else}}
-<!--
-  All of the JavaScript is bundled into one file with Webpack
-  We specify a "v=####" query string to force the browser to load new versions
--->
-<script type="text/javascript" src="/public/js/main.min.js?v={{.Version}}"></script>
+<!-- All of the JavaScript is bundled into one file with Webpack -->
+<script type="text/javascript" src="/public/js/dist/main.{{.Version}}.min.js"></script>
 {{end}}
 {{end}}

@@ -4,9 +4,6 @@ import * as webpack from 'webpack';
 import SentryWebpackPlugin from '@sentry/webpack-plugin';
 import * as dotenv from 'dotenv';
 
-// Constants
-const epoch = new Date().getTime();
-
 // Read environment variables
 dotenv.config({
   path: path.join(__dirname, '..', '..', '.env'),
@@ -17,13 +14,13 @@ const versionPath = path.join(__dirname, 'src', 'data', 'version.json');
 if (!fs.existsSync(versionPath)) {
   throw new Error(`The version.json file does not exist at "${versionPath}".`);
 }
-const version = fs.readFileSync(versionPath).toString();
+const version = fs.readFileSync(versionPath).toString().trim();
 
-// Delete old source maps
-const files = fs.readdirSync(__dirname);
-for (const file of files) {
-  const match = file.match(/main.min.js.\d+.map/g);
-  if (match) {
+// Clear out the "dist" subdirectory, as it might contain old JavaScript bundles and old source maps
+const distPath = path.join(__dirname, 'dist');
+if (fs.existsSync(distPath)) {
+  const files = fs.readdirSync(__dirname);
+  for (const file of files) {
     fs.unlinkSync(path.join(__dirname, file));
   }
 }
@@ -34,11 +31,10 @@ const config: webpack.Configuration = {
 
   // Where to put the bundled file
   output: {
-    path: __dirname, // By default, Webpack will output the file to a "dist" subdirectory
-    filename: 'main.min.js',
-    // Chrome caches source maps and will not update them even after a hard-refresh
-    // Work around this by putting the epoch timestamp in the source map filename
-    sourceMapFilename: `main.min.js.${epoch}.map`,
+    // By default, Webpack will output the file to a "dist" subdirectory
+    // We want to include the version number inside of the file name so that browsers will be forced
+    // to retrieve the latest version (and not use a cached older version)
+    filename: `main.${version}.min.js`,
   },
 
   resolve: {
