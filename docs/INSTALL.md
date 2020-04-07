@@ -1,6 +1,6 @@
 # Hanabi Live Installation
 
-If you just want to install Hanabi Live without editing the code, skip to [the production installation section](#installation-for-production-linux).
+If you just want to install Hanabi Live without the ability to edit the code, skip to [the production installation section](#installation-for-production-linux).
 
 Like many code projects, we use [linters](https://en.wikipedia.org/wiki/Lint_(software)) to ensure that all of the code is written consistently and error-free. For Golang (the server-side code), we use [golangci-lint](https://github.com/golangci/golangci-lint). For TypeScript (the client-side code), we use [ESLint](https://eslint.org/) and have a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). We ask that all pull requests pass our linting rules.
 
