@@ -45,15 +45,27 @@ if (window.location.hostname !== 'localhost' && !window.location.pathname.includ
         return event;
       }
 
-      // We want to not send certain specific common events to Sentry
+      // We do not want to not send certain specific common events to Sentry
       // (to avoid using up our monthly limit)
       const error = hint.originalException;
-      if (
-        error
-        && (error as Error).message
-        && (error as Error).message.match(/The request is not allowed by the user agent or the platform in the current context, possibly because the user denied permission./)
-      ) {
-        return (null as any);
+      if (error && (error as Error).message) {
+        const msg = (error as Error).message;
+        if (
+          // All of these are related to playing a sound file before the user has interacted with
+          // the page
+          msg.match(/The request is not allowed by the user agent or the platform in the current context, possibly because the user denied permission./)
+          || msg.match(/The play method is not allowed by the user agent or the platform in the current context, possibly because the user denied permission./)
+          || msg.match(/play() can only be initiated by a user gesture./)
+          || msg.match(/play() failed because the user didn't interact with the document first./)
+          || msg.match(/The fetching process for the media resource was aborted by the user agent at the user's request./)
+          || msg.match(/Failed to load because no supported source was found./)
+          || msg.match(/AbortError: The operation was aborted./)
+
+          // Has to do with LastPass
+          || msg.match(/a.LegacyGlobal.LP_explicit_ignored is not a function./)
+        ) {
+          return (null as any);
+        }
       }
       return event;
     },
