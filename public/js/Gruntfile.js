@@ -31,7 +31,7 @@ module.exports = (grunt) => {
       },
     },
   });
- 
+
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.registerTask('default', [
