@@ -356,25 +356,29 @@ notifyFunctions.set('play', (data: ActionPlay) => {
   }
 });
 
+// Has the following data:
+// {
+//   type: 'reorder',
+//   target: 0, // The index of the player
+//   handOrder: [1, 2, 3, 4, 0], // An array of card orders
+// }
 notifyFunctions.set('reorder', (data: ActionReorder) => {
+  // Make a list of card orders currently in the hand
   const hand = globals.elements.playerHands[data.target];
-
-  // Get the LayoutChild objects in the hand and put them in the right order in a temporary array
-  const newChildOrder = [];
-  const handSize = hand.children.length;
-  for (let i = 0; i < handSize; i++) {
-    const order = data.handOrder[i];
-    const child = globals.deck[order].parent! as unknown as LayoutChild;
-    newChildOrder.push(child);
-
-    // Take them out of the hand itself
-    child.remove();
+  const currentCardOrders: Array<number> = [];
+  for (const layoutChild of hand.children.toArray() as Array<LayoutChild>) {
+    const card = layoutChild.children[0] as unknown as HanabiCard;
+    currentCardOrders.push(card.order);
   }
 
-  // Put them back into the hand in the new order
-  for (let i = 0; i < handSize; i++) {
-    const child = newChildOrder[i];
-    hand.addChild(child);
+  for (let i = 0; i < data.handOrder.length; i++) {
+    const newCardOrderForThisSlot = data.handOrder[i];
+    const currentIndexOfNewCard = currentCardOrders.indexOf(newCardOrderForThisSlot);
+    const numMoveDown = currentIndexOfNewCard - i;
+    const layoutChild = globals.deck[newCardOrderForThisSlot].parent! as unknown as LayoutChild;
+    for (let j = 0; j < numMoveDown; j++) {
+      layoutChild.moveDown();
+    }
   }
 });
 
