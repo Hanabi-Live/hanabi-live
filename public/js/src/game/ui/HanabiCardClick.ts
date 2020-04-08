@@ -39,14 +39,13 @@ export default function HanabiCardClick(this: HanabiCard, event: any) {
 const clickLeft = (card: HanabiCard, event: PointerEvent) => {
   // The "Empathy" feature is handled in the "HanabiCardInit.ts" file,
   // so we don't have to worry about it here
-
-  // Disable this for the stack base
-  if (card.rank === STACK_BASE_RANK) {
-    return;
-  }
-
-  // No actions in this function use modifiers other than Alt
-  if (event.ctrlKey || event.shiftKey || event.metaKey) {
+  if (
+    event.ctrlKey // No actions in this function use modifiers other than Alt
+    || event.shiftKey
+    || event.metaKey
+    || card.rank === STACK_BASE_RANK // Disable clicking on the stack base
+    || globals.hypothetical // No replay actions should happen in a hypothetical
+  ) {
     return;
   }
 
