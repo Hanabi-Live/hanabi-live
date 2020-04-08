@@ -525,7 +525,7 @@ export default class HanabiCard extends Konva.Group {
           this.possibleSuits,
           (suit: Suit) => (
             suit.clueColors.includes(clueColor)
-                        || suit.allClueColors
+            || suit.allClueColors
           ) === positive,
         );
       }
@@ -572,8 +572,9 @@ export default class HanabiCard extends Konva.Group {
               (rank: number) => rank === 5,
             );
           }
-        } else {
+        } else if (this.possibleSuits.filter((suit) => suit.noClueColors).length === 0) {
           // Negative color means that the card cannot be a 5
+          // (as long as the card cannot be a suit that is never touched by color clues)
           ranksRemoved = filterInPlace(
             this.possibleRanks,
             (rank: number) => rank !== 5,
