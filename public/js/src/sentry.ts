@@ -61,14 +61,14 @@ export const setUserContext = (userID: number, username: string) => {
     return;
   }
 
-  // Setting the user allows metadata to be attached to a particular error message,
+  // If we encounter an error later on, we want metadata to be attached to the error message,
   // which can be helpful for debugging (since we can ask the user how they caused the error)
+  // We use "SetTags()" instead of "SetUser()" since tags are more easy to see in the
+  // Sentry GUI than users
   // https://docs.sentry.io/enriching-error-data/context/?platform=browser
   Sentry.configureScope((scope) => {
-    scope.setUser({
-      id: userID.toString(),
-      username,
-    });
+    scope.setTag('userID', userID.toString());
+    scope.setTag('username', username);
   });
 };
 
