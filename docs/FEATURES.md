@@ -108,10 +108,18 @@
 * A shared replay is similar to a normal replay, but others can join to have a coordinated review session.
 * At the end of each game, you will automatically be put into a shared replay with everyone who played the game.
 * The leader controls what turn is being shown. By default, the leader will be the person who created the game or created the shared replay.
+* Players can "break free" of what the leader is showing by clicking the "Pause Shared Turns" button, or by manually navigating to a different turn. To resyncronize with the team, they need to click on the "Use Shared Turns Button". (The up arrow and down arrow are also shortcuts for clicking on this button.)
 * The leader can right-click on a card to highlight it with a red arrow (to point out things to the other players).
-* The leader can Ctrl + Shift + Alt + right-click on a card to morph it into an arbitrary card.
 * The current leader can be seen by hovering over the "👑" icon in the bottom right-hand corner.
-* The leader role can be transfered by right-clicking on a player's name or by right-clicking the crown.
+* The leader role can be transfered by right-clicking the crown.
+
+#### Hypotheticals
+
+* In a shared replay, the leader has the option to begin a hypothetical.
+* In a hypothetical, the leader can perform actions for all of the players, playing the game forward for as long as desired.
+* Hypotheticals are useful to show what would happen if a player decided to do a different move than they really did in the game.
+* When a hypothetical is active, other players cannot "break free" or return to previous turns.
+* The leader can Alt + right-click on a card to morph it into an arbitrary card. This can be useful for showing how players have to account for different kinds of situations or to create specific game states.
 
 #### Game Statistics
 
@@ -252,14 +260,18 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 ## Keyboard Shortcuts
 
 * In the lobby:
+  * Join the first game: `Alt + j`
   * Create a table: `Alt + c`
   * Show history: `Alt + h`
+  * Watch a specific replay: `Alt + a`
+  * Sign out: `Alt + o`
+* In a pre-game:
   * Start a game: `Alt + s`
-  * Leave a table: `Alt + l`
-  * Return to tables: `Alt + r`
+  * Return to the lobby: `Alt + r` or `Escape`
+  * Leave the game: `Alt + l`
 * In a game:
-  * Play a card: `a` or `+` (will prompt an alert for the slot number)
-  * Discard a card: `d` or `-` (will prompt an alert for the slot number)
+  * Play a card: `a` or `+` (will prompt for the slot number)
+  * Discard a card: `d` or `-` (will prompt for the slot number)
   * Clue:
     * `Tab` to select a player
     * `1`, `2`, `3`, `4`, `5` for a rank clue
@@ -272,6 +284,8 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
   * Fast-forward one full rotation: `]`
   * Go to the beginning: `Home`
   * Go to the end: `End`
+* In a shared replay:
+  * Toggle shared turns: `Up` or `Down`
 
 <br />
 

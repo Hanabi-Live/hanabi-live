@@ -23,7 +23,12 @@ export default () => {
 
     // We also account for MacOS special characters that are inserted when
     // you hold down the option key
-    if (event.altKey && (event.key === 'c' || event.key === 'ç')) { // Alt + c
+    if (event.altKey && (event.key === 'j' || event.key === '∆')) { // Alt + j
+      // Click on the first "Join" button in the table list
+      if (globals.currentScreen === 'lobby') {
+        $('.lobby-games-first-join-button').click();
+      }
+    } else if (event.altKey && (event.key === 'c' || event.key === 'ç')) { // Alt + c
       // Click the "Create Game" button
       if (globals.currentScreen === 'lobby') {
         $('#nav-buttons-games-create-game').click();
@@ -43,11 +48,6 @@ export default () => {
       // Click the "Sign Out" button
       if (globals.currentScreen === 'lobby') {
         $('#nav-buttons-games-sign-out').click();
-      }
-    } else if (event.altKey && (event.key === 'j' || event.key === '∆')) { // Alt + j
-      // Click on the first "Join" button in the table list
-      if (globals.currentScreen === 'lobby') {
-        $('.lobby-games-first-join-button').click();
       }
     } else if (event.altKey && (event.key === 's' || event.key === 'ß')) { // Alt + s
       // Click on the "Start Game" button
