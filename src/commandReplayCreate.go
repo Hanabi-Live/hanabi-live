@@ -193,12 +193,6 @@ func validateJSON(s *Session, d *CommandData) bool {
 					strconv.Itoa(action.Target) + ".")
 				return false
 			}
-			if action.Value > 0 {
-				s.Warning("Action at index " + strconv.Itoa(i) +
-					" is a game over with a value of " + strconv.Itoa(action.Value) +
-					", which is nonsensical.")
-				return false
-			}
 		} else {
 			s.Warning("Action at index " + strconv.Itoa(i) + " has an invalid type of " +
 				strconv.Itoa(action.Type) + ".")
