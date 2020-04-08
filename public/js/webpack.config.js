@@ -62,8 +62,7 @@ module.exports = {
       {
         test: /\.ts$/,
         include: path.join(__dirname, 'src'),
-        // loader: 'ts-loader',
-        loader: 'tsickle-loader',
+        loader: 'ts-loader',
         options: {},
       },
     ],
