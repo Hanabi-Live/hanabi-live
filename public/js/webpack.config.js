@@ -18,6 +18,9 @@ if (!fs.existsSync(versionPath)) {
 }
 const version = fs.readFileSync(versionPath).toString().trim();
 
+// Constants
+const filename = `main.${version}.min.js`;
+
 // Clear out the "dist" subdirectory, as it might contain old JavaScript bundles and old source maps
 const distPath = path.join(__dirname, 'dist');
 if (fs.existsSync(distPath)) {
@@ -37,7 +40,7 @@ module.exports = {
     // which is fine for our purposes
     // However, we want to include the version number inside of the file name so that browsers will
     // be forced to retrieve the latest version (and not use a cached older version)
-    filename: `main.${version}.min.js`,
+    filename,
   },
 
   resolve: {
@@ -63,7 +66,6 @@ module.exports = {
         test: /\.ts$/,
         include: path.join(__dirname, 'src'),
         loader: 'ts-loader',
-        options: {},
       },
     ],
   },
@@ -109,7 +111,7 @@ if (
     // https://docs.sentry.io/platforms/javascript/sourcemaps/
     // (we don't want to upload anything in a development or testing environment)
     new SentryWebpackPlugin({
-      include: path.join(__dirname, 'main.min.js'),
+      include: path.join(__dirname, 'dist', filename),
       release: version,
     }),
   );
