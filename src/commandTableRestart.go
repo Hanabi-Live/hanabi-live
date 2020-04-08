@@ -135,8 +135,15 @@ func commandTableRestart(s *Session, d *CommandData) {
 	t2 := tables[newTableID-1]
 
 	// Copy over the chat from the previous game, if any
-	t2.Chat = make([]*TableChatMessage, len(t.Chat))
-	copy(t2.Chat, t.Chat)
+	if t.Chat == nil {
+		// This should never be nil, since it is initialized in the "NewTable()" function
+		// However, Sentry reports that it is possible to get here with "t.Chat" being nil,
+		// so handle this
+		t2.Chat = make([]*TableChatMessage, 0)
+	} else {
+		t2.Chat = make([]*TableChatMessage, len(t.Chat))
+		copy(t2.Chat, t.Chat)
+	}
 
 	// Emulate the other players joining the game
 	for _, s2 := range playerSessions {
