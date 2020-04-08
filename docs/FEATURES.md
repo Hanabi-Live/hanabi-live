@@ -38,26 +38,26 @@
 * The cards last touched by a clue are indicated by arrows. A circle on the arrow shows the type of clue that was given.
 * Orange borders around a card signify that it has been "touched" by one or more clues.
 * The game will keep track of the clues that accumulate on your cards, "filling them in" for you.
-* You can left-click on someone else's card to see how it appears to them. (This is referred to as "Empathy".)
+* You can left-click on someone else's card to see how it appears to them. (This is referred to as "empathy".)
 
 #### Pips
 
-* Color pips (that match the suits of the stack) and black boxes (that match the number possibilities) will appear on cards in a player's hand.
+* Suit pips (that represent the possible suits) and black boxes (that represent the possible ranks) will appear on cards in a player's hand.
 * The pips and boxes will automatically disappear as positive clues and negative clues "touch" the card.
 * The pips and boxes will automatically be crossed out if all the particular cards for that suit/rank are visible.
 
 #### Clue Log
 
-* A clue log is also shown in the top-right-hand corner.
-* When mousing over a card, the positive clues that have touched the card will turn white and the negative clues that have touched the card will turn red.
+* A clue log is shown in the top-right-hand corner.
+* When the cursor is hovering over a card, the positive clues that have touched the card will turn white and the negative clues that have touched the card will turn red.
 * You can click on an entry in the clue log to go to the turn when the clue was given.
 
 #### Notes
 
 * Players can right-click on any card to add a note to it. Afterward, by hovering over a card, a tooltip will appear with the written note.
 * This is useful for storing contextual information about a card for later.
-* Notes can also be written inside of an in-game replay as a way to track the card as it moves throughout your hand.
-* If the note matches the name of a card (e.g. "red 1", "r1", etc.), the card face will change to match. (The card face will automatically be deactivated if a clue is received that falsifies the note.)
+* Notes can also be written during an in-game replay as a way to track the card as it moves throughout your hand.
+* If the note matches the name of a card (e.g. "red 1", "r1", etc.), the card face will change to match. (The card face will automatically be deactivated if a clue is received that falsifies the note.) If this is undesired, append a question mark to the end of your note (e.g. "r1?").
 * Since notes are tracked by the server, players can switch computers mid-game and keep any notes written.
 * Notes are saved in the database and will persist into the replay.
 * Everyone's notes are combined and shown to spectators, which is fun to see.
@@ -73,7 +73,7 @@
 
 #### Spectators
 
-* All games have the ability to be spectated by other idle players.
+* All games have the ability to be spectated by others.
 * Spectators will see all of the hands.
 * The list of current spectators can be seen by hovering over the "👀" icon in the bottom-right-hand corner.
 * Spectators can right-click on a player's name to view the game from their perspective.
@@ -84,8 +84,7 @@
 * Using this feature, players can go back in time to see the exact game state at a specific turn.
 * There are some helpful shortcuts for going to a specific turn:
   * You can Alt + click on a card to go to the turn it was drawn.
-  * You can Alt + middle-click on a card to go to the turn it was first positively clued.
-  * You can middle-click on a card go to the previous turn it was positively clued.
+  * You can middle-click on a card go to the turn it was first positively clued.
   * You can click on a card in the play stacks to go to the turn before the card was played.
   * You can click on a card in the discard pile to go to the turn before the card was discarded.
   * You can click on an entry in the clue log to go to the turn when the clue was given.
@@ -159,7 +158,7 @@
 
 #### Speedruns
 
-* Each game has the option to be created as a speedrun. Speedruns are where players attempt to beat the game as fast as possible (as a special challenge). The best speedrun times are tracked on the [Speedrun.com leaderboards](https://www.speedrun.com/hanabi).
+* Each game has the option to be created as a speedrun. In speedruns, players attempt to beat the game as fast as possible (as a special challenge). The best speedrun times are tracked on the [Speedrun.com leaderboards](https://www.speedrun.com/hanabi).
 * In a speedrun, the controls work differently and are optimized for faster play:
   * Left-clicking on a card in your hand will play it.
   * Right-clicking on a card in your hand hand will discard it.
