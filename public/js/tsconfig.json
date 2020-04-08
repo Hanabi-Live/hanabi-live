@@ -58,6 +58,6 @@
   "include": [
     "./src/**/*.ts",
     "./Gruntfile.js",
-    "./webpack.config.ts",
+    "./webpack.config.js",
   ],
 }

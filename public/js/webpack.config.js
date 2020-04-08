@@ -1,8 +1,10 @@
-import SentryWebpackPlugin from '@sentry/webpack-plugin';
-import * as dotenv from 'dotenv';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as webpack from 'webpack';
+// It is possible for the Webpack configuration to be written in TypeScript,
+// but this will not work with the full range of options in "tsconfig.json"
+const SentryWebpackPlugin = require('@sentry/webpack-plugin');
+const dotenv = require('dotenv');
+const fs = require('fs');
+const path = require('path');
+const webpack = require('webpack');
 
 // Read environment variables
 dotenv.config({
@@ -25,7 +27,7 @@ if (fs.existsSync(distPath)) {
   }
 }
 
-const config: webpack.Configuration = {
+module.exports = {
   // The entry file to bundle
   entry: path.join(__dirname, 'src', 'main.ts'),
 
@@ -60,7 +62,9 @@ const config: webpack.Configuration = {
       {
         test: /\.ts$/,
         include: path.join(__dirname, 'src'),
-        loader: 'ts-loader',
+        // loader: 'ts-loader',
+        loader: 'tsickle-loader',
+        options: {},
       },
     ],
   },
@@ -97,10 +101,10 @@ if (
   && process.platform !== 'win32'
   && process.platform !== 'darwin'
 ) {
-  if (typeof config.plugins === 'undefined') {
+  if (typeof module.exports.plugins === 'undefined') {
     throw new Error('There are no existing plugins to append to.');
   }
-  config.plugins.push(
+  module.exports.plugins.push(
     // In order for Sentry to use the source maps, we must use their custom Webpack plugin
     // This also uploads the packed file + source maps to Sentry
     // https://docs.sentry.io/platforms/javascript/sourcemaps/
@@ -111,5 +115,3 @@ if (
     }),
   );
 }
-
-export default config;
