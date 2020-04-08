@@ -46,7 +46,7 @@ for variantName in variants:
 
 for variant_id in variant_ids:
     cursor = cnx.cursor()
-    query = ('DELETE FROM games WHERE id = %s')
+    query = ('DELETE FROM games WHERE variant = %s AND datetime_started > 2020-04-05;')
     cursor.execute(query, (variant_id,))
     cursor.close()
 
