@@ -6,6 +6,7 @@ import (
 
 type GameActions struct{}
 
+// These fields are described in "database_schema.sql"
 type GameAction struct {
 	Type   int `json:"type"`
 	Target int `json:"target"`

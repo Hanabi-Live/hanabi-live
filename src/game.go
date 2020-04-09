@@ -40,6 +40,7 @@ type Game struct {
 	// Furthermore, we don't want this to be a pointer of interfaces because
 	// this simplifies action scrubbing
 	Actions               []interface{}
+	Actions2              []*GameAction
 	InvalidActionOccurred bool // Used when emulating game actions in replays
 	EndCondition          int  // The values for this are listed in "constants.go"
 	// The index of the player who ended the game, if any
@@ -81,6 +82,7 @@ func NewGame(t *Table) *Game {
 		MaxScore:          len(variants[t.Options.Variant].Suits) * 5,
 		LastClueTypeGiven: -1,
 		Actions:           make([]interface{}, 0),
+		Actions2:          make([]*GameAction, 0),
 		EndTurn:           -1,
 
 		HypoActions: make([]string, 0),
