@@ -82,7 +82,7 @@ func chatUptime(s *Session, d *CommandData, t *Table) {
 	var uptime string
 	if v, err := getUptime(); err != nil {
 		logger.Error("Failed to get the uptime:", err)
-		chatServerSend("Something went wrong. Please contact an administrator.", d.Room)
+		chatServerSend(defaultErrorMsg, d.Room)
 		return
 	} else {
 		uptime = v

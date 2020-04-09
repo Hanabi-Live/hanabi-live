@@ -39,7 +39,7 @@ func (s *Session) Emit(command string, d interface{}) {
 func (s *Session) Warning(message string) {
 	// Specify a default warning message
 	if message == "" {
-		message = "Something went wrong. Please contact an administrator."
+		message = defaultErrorMsg
 	}
 
 	logger.Info("Warning - " + message + " - " + s.Username())
@@ -56,7 +56,7 @@ func (s *Session) Warning(message string) {
 func (s *Session) Error(message string) {
 	// Specify a default error message
 	if message == "" {
-		message = "Something went wrong. Please contact an administrator."
+		message = defaultErrorMsg
 	}
 
 	logger.Info("Error - " + message + " - " + s.Username())

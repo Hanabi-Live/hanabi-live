@@ -117,6 +117,24 @@ func chatUnpause(s *Session, d *CommandData, t *Table) {
 	})
 }
 
+// /lastmove
+func chatLastMove(s *Session, d *CommandData, t *Table) {
+	if d.Room == "lobby" {
+		chatServerSend("You can only perform this command while in a game.", d.Room)
+		return
+	}
+
+	if !t.Running {
+		chatServerSend("The game is not yet started, so you cannot use that command.", d.Room)
+		return
+	}
+
+	g := t.Game
+	secondsSinceLastMove := time.Since(g.DatetimeTurnBegin)
+	durationString := durationToString(secondsSinceLastMove)
+	chatServerSend("Time since the last move: "+durationString, d.Room)
+}
+
 // /findvariant
 func chatFindVariant(s *Session, d *CommandData, t *Table) {
 	if d.Room == "lobby" {
@@ -149,7 +167,7 @@ func chatFindVariant(s *Session, d *CommandData, t *Table) {
 		if v, err := models.UserStats.GetAll(userID); err != nil {
 			logger.Error("Failed to get all of the variant-specific stats for player ID "+
 				strconv.Itoa(userID)+":", err)
-			chatServerSend("Something went wrong. Please contact an administrator.", d.Room)
+			chatServerSend(defaultErrorMsg, d.Room)
 			return
 		} else {
 			statsMaps = append(statsMaps, v)

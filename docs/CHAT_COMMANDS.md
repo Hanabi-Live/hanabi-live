@@ -33,10 +33,11 @@
 
 ### Game commands
 
-| Command  | Description
-| -------- | -----------
-| /pause   | Pause the game (can be done on any turn)
-| /unpause | Unpause the game
+| Command   | Description
+| --------- | -----------
+| /pause    | Pause the game (can be done on any turn)
+| /unpause  | Unpause the game
+| /lastmove | Show long how it has been since the last move
 
 <br />
 

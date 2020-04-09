@@ -28,6 +28,7 @@ func chatCommandInit() {
 	chatCommandMap["startin"] = chatStartIn
 	chatCommandMap["pause"] = chatPause
 	chatCommandMap["unpause"] = chatUnpause
+	chatCommandMap["lastmove"] = chatLastMove
 	chatCommandMap["findvariant"] = chatFindVariant
 	chatCommandMap["randomvariant"] = chatFindVariant
 
