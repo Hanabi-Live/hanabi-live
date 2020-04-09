@@ -487,6 +487,7 @@ const drawBottomLeftButtons = () => {
     if (
       globals.speedrun
       || debug.amTestUser(globals.lobby.username)
+      || globals.lobby.totalGames >= 1000
       || window.confirm('Are you sure you want to restart the game?')
     ) {
       globals.lobby.conn!.send('tableRestart');
@@ -582,6 +583,7 @@ const drawBottomLeftButtons = () => {
     if (
       globals.speedrun
       || debug.amTestUser(globals.lobby.username)
+      || globals.lobby.totalGames >= 1000
       || window.confirm('Are you sure you want to terminate the game?')
     ) {
       globals.lobby.conn!.send('tableTerminate');
