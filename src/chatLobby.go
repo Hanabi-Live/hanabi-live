@@ -19,21 +19,6 @@ func chatRestart(s *Session, d *CommandData, t *Table) {
 	shutdown(true)
 }
 
-// /graceful
-func chatGraceful(s *Session, d *CommandData, t *Table) {
-	// Validate the channel
-	if d.Room != "lobby" {
-		chatServerSend(notFromLobbyErrorMessage, d.Room)
-		return
-	}
-
-	if !isAdmin(s, d) {
-		return
-	}
-
-	graceful(true)
-}
-
 // /shutdown
 func chatShutdown(s *Session, d *CommandData, t *Table) {
 	// Validate the channel
@@ -46,7 +31,7 @@ func chatShutdown(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	graceful(false)
+	shutdown(false)
 }
 
 // /maintenance
@@ -61,10 +46,7 @@ func chatMaintenance(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	shuttingDown = true
-	notifyAllShutdown()
-	chatServerSendAll("The server is entering maintenance mode. " +
-		"New game creation has been disabled.")
+	maintenance()
 }
 
 // /cancel
@@ -80,7 +62,5 @@ func chatCancel(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	shuttingDown = false
-	notifyAllShutdown()
-	chatServerSendAll("Server restart has been canceled. New game creation has been enabled.")
+	cancel()
 }

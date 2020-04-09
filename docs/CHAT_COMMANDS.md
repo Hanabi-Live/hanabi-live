@@ -58,8 +58,7 @@
 
 | Command      | Description
 | ------------ |------------
-| /restart     | Restart the server
-| /graceful    | Gracefully restart the server
+| /restart     | Gracefully restart the server
 | /shutdown    | Gracefully shutdown the server
 | /maintenance | Disable new game creation
 | /cancel      | Enable new game creation

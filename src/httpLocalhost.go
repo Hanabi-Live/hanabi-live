@@ -22,11 +22,19 @@ func httpLocalhostInit() {
 
 	// Path handlers
 	httpRouter.GET("/restart", func(c *gin.Context) {
-		graceful(true)
+		shutdown(true)
 		c.String(http.StatusOK, "success\n")
 	})
 	httpRouter.GET("/shutdown", func(c *gin.Context) {
-		graceful(false)
+		shutdown(false)
+		c.String(http.StatusOK, "success\n")
+	})
+	httpRouter.GET("/maintenance", func(c *gin.Context) {
+		maintenance()
+		c.String(http.StatusOK, "success\n")
+	})
+	httpRouter.GET("/cancel", func(c *gin.Context) {
+		cancel()
 		c.String(http.StatusOK, "success\n")
 	})
 	httpRouter.GET("/ban/:username", httpUserAction)
