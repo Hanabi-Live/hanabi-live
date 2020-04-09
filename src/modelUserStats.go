@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 type UserStats struct{}
@@ -296,7 +297,15 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 	// Go through each user
 	for _, userID := range userIDs {
 		fmt.Println("Updating user:", userID)
-		for variant := 0; variant <= highestVariantID; variant++ {
+		// for variant := 0; variant <= highestVariantID; variant++ {
+		for variantName, variantObject := range variants {
+			if !strings.Contains(variantName, "-Ones") &&
+				!strings.Contains(variantName, "-Fives") {
+
+				continue
+			}
+			variant := variantObject.ID
+
 			// Check to see if this user has played any games of this variant
 			var numRows int
 			if err := db.QueryRow(`
