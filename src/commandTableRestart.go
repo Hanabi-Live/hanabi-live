@@ -102,6 +102,16 @@ func commandTableRestart(s *Session, d *CommandData) {
 		}
 	}
 
+	// Before the table is deleted, make a copy of the chat, if any
+	oldChat := make([]*TableChatMessage, len(t.Chat))
+	copy(oldChat, t.Chat)
+
+	// Additionally, make a copy of the ChatRead map
+	oldChatRead := make(map[int]int)
+	for k, v := range t.ChatRead {
+		oldChatRead[k] = v
+	}
+
 	// Force the client of all of the spectators to go back to the lobby
 	t.NotifyBoot()
 
@@ -134,17 +144,6 @@ func commandTableRestart(s *Session, d *CommandData) {
 	// so assume that the ID of the last game created is equal to the "newTableID" minus 1
 	t2 := tables[newTableID-1]
 
-	// Copy over the chat from the previous game, if any
-	if t.Chat == nil {
-		// This should never be nil, since it is initialized in the "NewTable()" function
-		// However, Sentry reports that it is possible to get here with "t.Chat" being nil,
-		// so handle this
-		t2.Chat = make([]*TableChatMessage, 0)
-	} else {
-		t2.Chat = make([]*TableChatMessage, len(t.Chat))
-		copy(t2.Chat, t.Chat)
-	}
-
 	// Emulate the other players joining the game
 	for _, s2 := range playerSessions {
 		if s2.UserID() == s.UserID() {
@@ -156,9 +155,14 @@ func commandTableRestart(s *Session, d *CommandData) {
 		})
 	}
 
-	// For each player, re-copy the markers for which chat messages that they have read
+	// Copy over the old chat
+	t2.Chat = make([]*TableChatMessage, len(t.Chat))
+	copy(t2.Chat, oldChat)
+
+	// Copy over the old ChatRead map
 	// (this has to be done after the players join the game)
-	for k, v := range t.ChatRead {
+	t2.ChatRead = make(map[int]int)
+	for k, v := range oldChatRead {
 		t2.ChatRead[k] = v
 	}
 
