@@ -42,6 +42,19 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	g := p.Game
 	t := g.Table
 
+	// Add the action to the action log
+	// (in the future, we will delete GameActions and only keep track of GameActions2)
+	var actionType int
+	if d.Clue.Type == clueTypeColor {
+		actionType = actionType2ColorClue
+	} else if d.Clue.Type == clueTypeRank {
+		actionType = actionType2RankClue
+	}
+	g.Actions2 = append(g.Actions2, &GameAction{
+		Type:   actionType,
+		Target: d.Target,
+	})
+
 	// Keep track that someone clued (i.e. doing 1 clue costs 1 "Clue Token")
 	g.ClueTokens--
 	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
@@ -176,6 +189,13 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	// Local variables
 	g := p.Game
 	t := g.Table
+
+	// Add the action to the action log
+	// (in the future, we will delete GameActions and only keep track of GameActions2)
+	g.Actions2 = append(g.Actions2, &GameAction{
+		Type:   actionType2Play,
+		Target: c.Order,
+	})
 
 	// Check to see if revealing this card would surprise the player
 	// (we want to have it at the beginning of the function so that the fail sound will overwrite
@@ -350,6 +370,13 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 	// Local variables
 	g := p.Game
 	t := g.Table
+
+	// Add the action to the action log
+	// (in the future, we will delete GameActions and only keep track of GameActions2)
+	g.Actions2 = append(g.Actions2, &GameAction{
+		Type:   actionType2Discard,
+		Target: c.Order,
+	})
 
 	// Mark that the card is discarded
 	c.Discarded = true

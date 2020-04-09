@@ -2,8 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -279,89 +277,8 @@ func (g *Game) WriteDatabase() error {
 
 	// Next, we insert rows for each of the actions
 	turn := 0
-	for i, a := range g.Actions {
-		// We do not know what kind of action is it,
-		// so use the reflect package to get the value of the "Type" field
-		t := reflect.TypeOf(a)
-		v := reflect.ValueOf(a)
-		actionType := ""
-		for j := 0; j < t.NumField(); j++ {
-			if t.Field(j).Name == "Type" {
-				actionType = fmt.Sprintf("%+v", v.Field(j))
-				break
-			}
-		}
-		if actionType == "" {
-			logger.Error("Failed to find the type of action #" + strconv.Itoa(i) + ".")
-			return errors.New("")
-		}
-
-		var gameAction *GameAction
-		if actionType == "play" {
-			var actionPlay ActionPlay
-			if v, ok := a.(ActionPlay); !ok {
-				logger.Error("Failed to convert action #" + strconv.Itoa(i) +
-					" to an ActionPlay struct.")
-				return errors.New("")
-			} else {
-				actionPlay = v
-			}
-
-			gameAction = &GameAction{
-				Type:   actionType2Play,
-				Target: actionPlay.Which.Order,
-			}
-		} else if actionType == "discard" {
-			var actionDiscard ActionDiscard
-			if v, ok := a.(ActionDiscard); !ok {
-				logger.Error("Failed to convert action #" + strconv.Itoa(i) +
-					" to an ActionDiscard struct.")
-				return errors.New("")
-			} else {
-				actionDiscard = v
-			}
-
-			actionType := actionType2Discard
-			if actionDiscard.Failed {
-				actionType = actionType2Play
-			}
-			gameAction = &GameAction{
-				Type:   actionType,
-				Target: actionDiscard.Which.Order,
-			}
-		} else if actionType == "clue" {
-			var actionClue ActionClue
-			if v, ok := a.(ActionClue); !ok {
-				logger.Error("Failed to convert action #" + strconv.Itoa(i) +
-					" to an ActionClue struct.")
-				return errors.New("")
-			} else {
-				actionClue = v
-			}
-
-			var clueType int
-			if actionClue.Clue.Type == clueTypeColor {
-				clueType = actionType2ColorClue
-			} else if actionClue.Clue.Type == clueTypeRank {
-				clueType = actionType2RankClue
-			} else {
-				logger.Error("Action #" + strconv.Itoa(i) + " has an invalid clue type of " +
-					strconv.Itoa(actionClue.Clue.Type) + ".")
-				return errors.New("")
-			}
-
-			gameAction = &GameAction{
-				Type:   clueType,
-				Target: actionClue.Target,
-				Value:  actionClue.Clue.Value,
-			}
-		}
-
-		if gameAction == nil {
-			continue
-		}
-
-		if err := models.GameActions.Insert(g.ID, turn, gameAction); err != nil {
+	for i, action := range g.Actions2 {
+		if err := models.GameActions.Insert(g.ID, turn, action); err != nil {
 			logger.Error("Failed to insert row for action #"+strconv.Itoa(i)+":", err)
 			return err
 		}
