@@ -185,11 +185,10 @@ func debug() {
 	logger.Debug("    discordLastAtHere:", discordLastAtHere)
 	logger.Debug("---------------------------------------------------------------")
 
-	//updateAllUserStats()
-	//updateAllVariantStats()
+	updateAllUserStats()
+	updateAllVariantStats()
 }
 
-/*
 func updateAllUserStats() {
 	if err := models.UserStats.UpdateAll(variantGetHighestID()); err != nil {
 		logger.Error("Failed to update the stats for every user:", err)
@@ -197,9 +196,7 @@ func updateAllUserStats() {
 		logger.Info("Updated the stats for every user.")
 	}
 }
-*/
 
-/*
 func updateAllVariantStats() {
 	highestID := variantGetHighestID()
 	maxScores := make([]int, 0)
@@ -213,9 +210,7 @@ func updateAllVariantStats() {
 		logger.Info("Updated the stats for every variant.")
 	}
 }
-*/
 
-/*
 func variantGetHighestID() int {
 	highestID := 0
 	for k := range variantsID {
@@ -225,4 +220,3 @@ func variantGetHighestID() int {
 	}
 	return highestID
 }
-*/
