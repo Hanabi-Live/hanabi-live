@@ -75,6 +75,14 @@ func commandTableStart(s *Session, d *CommandData) {
 
 	logger.Info(t.GetName() + "Starting the game.")
 
+	// Make everyone stop typing
+	for _, p := range t.Players {
+		if p.Typing {
+			p.Typing = false
+			t.NotifyChatTyping(p.Name, false)
+		}
+	}
+
 	// Create the game object
 	g := NewGame(t)
 
