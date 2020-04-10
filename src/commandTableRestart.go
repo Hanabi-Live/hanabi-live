@@ -142,7 +142,15 @@ func commandTableRestart(s *Session, d *CommandData) {
 
 	// We increment the newTableID after creating a game,
 	// so assume that the ID of the last game created is equal to the "newTableID" minus 1
-	t2 := tables[newTableID-1]
+	var t2 *Table
+	if v, ok := tables[newTableID-1]; !ok {
+		logger.Error("Failed to get the pointer to the new table in the " +
+			"\"commandTableRestart()\" function.")
+		s.Error(initFail)
+		return
+	} else {
+		t2 = v
+	}
 
 	// Emulate the other players joining the game
 	for _, s2 := range playerSessions {

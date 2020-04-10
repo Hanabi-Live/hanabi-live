@@ -276,14 +276,13 @@ func (g *Game) WriteDatabase() error {
 	}
 
 	// Next, we insert rows for each of the actions
-	turn := 0
 	for i, action := range g.Actions2 {
-		if err := models.GameActions.Insert(g.ID, turn, action); err != nil {
+		// The index of the action in the slice is equivalent to the turn number that the
+		// action happened
+		if err := models.GameActions.Insert(g.ID, i, action); err != nil {
 			logger.Error("Failed to insert row for action #"+strconv.Itoa(i)+":", err)
 			return err
 		}
-
-		turn++
 	}
 
 	// If the game ended in a special way, we also need to insert an "game over" action
@@ -308,7 +307,7 @@ func (g *Game) WriteDatabase() error {
 		}
 	}
 	if gameOverAction != nil {
-		if err := models.GameActions.Insert(g.ID, turn, gameOverAction); err != nil {
+		if err := models.GameActions.Insert(g.ID, len(g.Actions2), gameOverAction); err != nil {
 			logger.Error("Failed to insert the game over action:", err)
 			return err
 		}

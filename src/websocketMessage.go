@@ -98,12 +98,12 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 
 	// Check to see if there is a command handler for this command
 	var commandMapFunction func(*Session, *CommandData)
-	if v, ok := commandMap[command]; ok {
-		commandMapFunction = v
-	} else {
+	if v, ok := commandMap[command]; !ok {
 		logger.Error("User \"" + s.Username() + "\" sent an invalid command of " +
 			"\"" + command + "\".")
 		return
+	} else {
+		commandMapFunction = v
 	}
 
 	// Unmarshal the JSON (this code is taken from Golem)

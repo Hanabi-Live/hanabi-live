@@ -84,8 +84,7 @@ func suitsInit() {
 			// The clue colors were not specified; by default, use the color of the same name
 			if _, ok := colors[name]; ok {
 				suit.ClueColors = []string{name}
-			} else if name != "Unknown" {
-				// The "Unknown" suit is not supposed to have clue colors
+			} else if name != "Unknown" { // The "Unknown" suit is not supposed to have clue colors
 				logger.Fatal("The suit of \"" + name + "\" has no clue colors defined and there " +
 					"is no color of the same name.")
 				return

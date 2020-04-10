@@ -53,6 +53,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	g.Actions2 = append(g.Actions2, &GameAction{
 		Type:   actionType,
 		Target: d.Target,
+		Value:  d.Clue.Value,
 	})
 
 	// Keep track that someone clued (i.e. doing 1 clue costs 1 "Clue Token")
