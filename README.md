@@ -10,7 +10,6 @@
   * A lot of the code was originally taken from [Keldon's Hanabi webpage](http://keldon.net/hanabi/). (The site no longer works.)
 * The server is programmed in [Go](https://golang.org/). It is located in the `src` subdirectory.
   * It uses a [MariaDB](https://mariadb.org/) database to store information about the users and games.
-  * Database logic is in the `src/models` subdirectory.
 
 <br />
 
