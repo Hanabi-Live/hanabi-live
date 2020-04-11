@@ -495,10 +495,18 @@
             </table>
 
             <div class="align-center">
-              <button id="lobby-history-show-more" class="button align-center" type="submit">
+              <button id="lobby-history-show-more" class="button align-center" style="margin-right: 2em;" type="submit">
                 <i class="fas fa-chevron-circle-down"></i>&nbsp;
                 Show More History
               </button>
+              <a id="lobby-history-show-all" href="/history" target="_blank"
+              rel="noopener noreferrer">
+                <!-- The correct link is set in "lobby/websocketInit.ts" -->
+                <button class="button align-center">
+                  <i class="fas fa-history"></i>&nbsp;
+                  All History
+                </button>
+              </a>
             </div>
           </div>
         </section>

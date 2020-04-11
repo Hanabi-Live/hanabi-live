@@ -8,7 +8,7 @@ import (
 // corner
 //
 // Has no data unless the server is emulating a server-initiated termination
-// (if this is the case, "Server" will be set to true)
+// (if this is the case, "d.Server" will be set to true)
 func commandTableTerminate(s *Session, d *CommandData) {
 	/*
 		Validate

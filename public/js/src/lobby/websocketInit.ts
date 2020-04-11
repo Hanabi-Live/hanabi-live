@@ -71,6 +71,7 @@ commands.set('gameHistory', (dataArray: Array<GameHistory>) => {
   if (shownGames === globals.totalGames) {
     $('#lobby-history-show-more').hide();
   }
+  $('#lobby-history-show-all').attr('href', `/history/${globals.username}`);
 });
 
 commands.set('gameHistoryOtherScores', (data: Array<GameHistory>) => {
