@@ -89,7 +89,7 @@ Like any other website on the internet, usage of Hanabi Live relies on an implic
 * Since Hanabi Live is hosted in America, the United States government technically has the ability to gain full control of the server under a [gag order](https://en.wikipedia.org/wiki/Gag_order). This means that members of the government could:
   1) intercept any data submitted to the website
   2) get any data from the database, and
-  3) deploy any arbitrary JavaScript code, which would run on your computer when visiting.
+  3) deploy any arbitrary JavaScript code, which would run on your computer when visiting
 * In a similar vein, since [vpsdime](https://vpsdime.com/) has physical control of the server, the above points also apply to members of the their company.
 * Since I have virtual control of the server, the above points also apply to me.
 * While I do my best to harden the server and codebase as much as reasonably possible, I cannot guarantee that the site will not ever be breached by an attacker, in which case the above points would also apply to the attacker.
