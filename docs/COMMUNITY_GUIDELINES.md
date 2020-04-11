@@ -6,9 +6,8 @@ Since Hanabi Live is a free website that provides a chat room for random strange
 2) Keep discussion safe for work. (No porn, gore, etc.)
 3) Use English.
 4) Keep excessive discussion out of the lobby in order to avoid spamming everyone else.
-5) Keep off-topic discussion in the #off-topic channel. Excessive non-Hanabi related discussion should be taken to private messages or a separate Discord server.
-6) Treat others with respect. Flames, personal attacks, and so forth should be handled in either a private message or off platform.
-7) Do not post another user's personal information without their prior consent.
+5) Treat others with respect. Flames, personal attacks, and so forth should be handled in either a private message or off platform.
+6) Do not post another user's personal information without their prior consent.
 
 The Hanabi Live staff reserves the right to warn, mute, or ban users who violate these guidelines, depending on the nature of the offense, whether or not it is a repeat offense, and the administrator's individual discretion.
 
