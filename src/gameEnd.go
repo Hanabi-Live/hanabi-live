@@ -486,7 +486,7 @@ func (t *Table) ConvertToSharedReplay() {
 
 		// If this game was ended due to idleness,
 		// skip conversion so that the shared replay gets deleted below
-		if g.EndCondition == endConditionTimeout {
+		if g.EndCondition == endConditionIdleTimeout {
 			logger.Info("Skipped converting " + p.Name + " to a spectator " +
 				"since the game ended due to idleness.")
 			continue

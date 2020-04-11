@@ -139,11 +139,11 @@ DROP TABLE IF EXISTS game_actions;
 CREATE TABLE game_actions (
     game_id  INT      NOT NULL,
     turn     TINYINT  NOT NULL,
-    /* 0 - play, 1 - discard, 2 - color clue, 3 - number clue, 4 - terminate */
+    /* 0 - play, 1 - discard, 2 - color clue, 3 - number clue, 4 - game over */
     type     TINYINT  NOT NULL,
     /* If a play or a discard, then the order of the the card that was played/discarded
        If a color clue or a number clue, then the index of the player that received the clue
-       If a terminate, then the index of the player that caused the termination */
+       If a game over, then the index of the player that caused the game to end */
     target   TINYINT  NOT NULL,
     /* If a play or discard, then 0 (as NULL)
        It uses less database space and reduces code complexity to use a value of 0 for NULL
