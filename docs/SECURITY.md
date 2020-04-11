@@ -24,7 +24,7 @@ The site is hosted on a [virtual private server](https://en.wikipedia.org/wiki/V
 
 ### Staff
 
-I am the only administrator for the website. This means that only I have the ability to mute users, ban users, and so forth. Furthermore, only I have access to the VPS and the underlying data associated with the server.
+I am the only administrator for the website. This means that only I have the ability to mute users, ban users, and so forth.
 
 In the [Hanabi Discord server](https://discord.gg/FADvkJp), any user with a "1+ Years Experience" role is considered a Discord administrator, and has the ability to delete messages, ban users, and so forth (in the Discord).
 
