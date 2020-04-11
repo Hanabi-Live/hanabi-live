@@ -111,7 +111,8 @@ if (
     // https://docs.sentry.io/platforms/javascript/sourcemaps/
     // (we don't want to upload anything in a development or testing environment)
     new SentryWebpackPlugin({
-      include: path.join(__dirname, 'dist', filename),
+      // This must be the directory containing the source file and the source map
+      include: path.join(__dirname, 'dist'),
       release: version,
     }),
   );
