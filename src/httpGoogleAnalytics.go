@@ -30,7 +30,7 @@ func httpGoogleAnalytics(c *gin.Context) {
 	// We only want to track page views for "/", "/scores/Alice", etc.
 	// (this goroutine will be entered for requests to "/public/css/main.min.css", for example)
 	path := c.FullPath()
-	if path == "/" &&
+	if path != "/" &&
 		!strings.HasPrefix(path, "/scores/") &&
 		!strings.HasPrefix(path, "/profile/") &&
 		!strings.HasPrefix(path, "/history/") &&
