@@ -51,6 +51,7 @@ func commandTableTerminate(s *Session, d *CommandData) {
 	// We want to set the end condition before advancing the turn to ensure that
 	// no active player will show
 	g.EndCondition = endConditionTerminated
+	g.EndPlayer = i
 
 	// Add a text message for the termination
 	// and put it on its own turn so that it is separate from the final times

@@ -281,6 +281,7 @@ func commandAction(s *Session, d *CommandData) {
 		// This is a special action type sent by the server to itself when a player runs out of time
 		g.Strikes = 3
 		g.EndCondition = endConditionTimeout
+		g.EndPlayer = g.ActivePlayer
 		g.Actions = append(g.Actions, ActionText{
 			Type: "text",
 			Text: p.Name + " ran out of time!",
