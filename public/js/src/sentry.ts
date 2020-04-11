@@ -47,13 +47,15 @@ const beforeSend = (
 
 const ignoredErrors = [
   // All of these are related to playing a sound file before the user has interacted with the page
-  /The request is not allowed by the user agent or the platform in the current context, possibly because the user denied permission./,
-  /The play method is not allowed by the user agent or the platform in the current context, possibly because the user denied permission./,
-  /play\(\) can only be initiated by a user gesture./,
-  /play\(\) failed because the user didn't interact with the document first./,
-  /The fetching process for the media resource was aborted by the user agent at the user's request./,
-  /Failed to load because no supported source was found./,
-  /AbortError: The operation was aborted./,
+  // https://gamedev.stackexchange.com/questions/163365
+  /AbortError: The operation was aborted\./,
+  /AbortError: The play\(\) request was interrupted by a call to pause\(\)\./,
+  /Failed to load because no supported source was found\./,
+  /The fetching process for the media resource was aborted by the user agent at the user's request\./,
+  /The play method is not allowed by the user agent or the platform in the current context, possibly because the user denied permission\./,
+  /The request is not allowed by the user agent or the platform in the current context, possibly because the user denied permission\./,
+  /play\(\) can only be initiated by a user gesture\./,
+  /play\(\) failed because the user didn't interact with the document first\./,
 ];
 
 export const setUserContext = (userID: number, username: string) => {
