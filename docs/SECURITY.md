@@ -52,7 +52,7 @@ Some slightly-smarter people have a few different passwords that they use for di
 
 The real solution is to use a [password manager](https://www.pcmag.com/picks/the-best-password-managers) such as [LastPass](https://www.lastpass.com/). Every single website that you use should have a unique, randomly generated, super-long password. And the password manager will remember all of them for you and automatically enter them in whenever you go to a website. Easy.
 
-If you use the same password for every website, it is analogous to not brushing your teeth. You might not get a cavity right away, but eventually it is going to come back to bite you. Not to mention that it comes off as pretty disgusting for everyone else in the civilized world.
+If you use the same password for every website, it is analogous to not brushing your teeth. You might not get a cavity right away, but eventually not brushing your teeth is going to come back to bite you. Not to mention that it comes off as pretty disgusting for everyone else in the civilized world.
 
 <br />
 
