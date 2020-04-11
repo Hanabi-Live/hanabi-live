@@ -8,8 +8,15 @@ import (
 
 // /help
 func chatHelp(s *Session, d *CommandData, t *Table) {
-	msg := "You can see the full list of commands here: "
+	msg := "You can see the list of chat commands here: "
 	msg += "https://github.com/Zamiell/hanabi-live/blob/master/docs/CHAT_COMMANDS.md"
+	chatServerSend(msg, d.Room)
+}
+
+// /rules
+func chatRules(s *Session, d *CommandData, t *Table) {
+	msg := "Please follow the Hanabi Live community guidelines: "
+	msg += "https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md"
 	chatServerSend(msg, d.Room)
 }
 
