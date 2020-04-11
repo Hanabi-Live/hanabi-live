@@ -6,7 +6,7 @@ Many tech comapanies have security blogs that explain how they use your data, ho
 
 ### Owner
 
-The site is paid for out of pocket by me, Zamiel, a Hanabi enthusiast from America. The site does not run any ads and is not monetized in any way.
+The site is owned by me (Zamiel), a Hanabi enthusiast from America. It is paid for out of pocket. The site does not run any ads and is not monetized in any way.
 
 <br />
 
