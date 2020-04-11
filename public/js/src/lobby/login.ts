@@ -1,14 +1,17 @@
 // The initial login page
 
 // Imports
-import shajs from 'sha.js';
 import { FADE_TIME } from '../constants';
 import version from '../data/version.json';
 import globals from '../globals';
+import * as misc from '../misc';
 import websocketInit from '../websocketInit';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
 import * as usersDraw from './usersDraw';
+
+// Constants
+const passwordSalt = 'Hanabi password ';
 
 export const init = () => {
   $('#login-button').click(() => {
@@ -71,7 +74,7 @@ const submit = (event: any) => {
     throw new Error('The password is not a string.');
   }
 
-  const password = hashPassword(passwordPlaintext);
+  const password = misc.hashPassword(passwordSalt, passwordPlaintext);
 
   localStorage.setItem('hanabiuser', username);
   localStorage.setItem('hanabipass', password);
@@ -80,13 +83,6 @@ const submit = (event: any) => {
   globals.password = password;
 
   send();
-};
-
-const hashPassword = (passwordPlaintext: string) => {
-  // We salt the password with a prefix of "Hanabi password "
-  // and then hash it with SHA256 before sending it to the server
-  const stringToHash = `Hanabi password ${passwordPlaintext}`;
-  return shajs('sha256').update(stringToHash).digest('hex');
 };
 
 const send = () => {
@@ -156,7 +152,7 @@ export const automaticLogin = () => {
 
     const username = `test${testNumber}`;
     globals.username = username;
-    globals.password = hashPassword(username);
+    globals.password = misc.hashPassword(passwordSalt, username);
 
     console.log(`Automatically logging in as "${username}".`);
     send();

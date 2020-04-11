@@ -1,7 +1,6 @@
 // The "Create Game" nav button
 
 // Imports
-import shajs from 'sha.js';
 import SlimSelect from 'slim-select';
 import { VARIANTS } from '../constants';
 import variantsJSON from '../data/variants.json';
@@ -20,6 +19,7 @@ const basicVariants = [
 const variantNames = Array.from(VARIANTS.keys());
 const dropdown1 = $('#create-game-variant-dropdown1');
 const dropdown2 = $('#create-game-variant-dropdown2');
+const passwordSalt = 'Hanabi game password ';
 
 // Pre-prepare the variant names in the format that the Slim Select dropdown expects
 const slimSelectData: Array<any> = [];
@@ -243,8 +243,7 @@ const submit = () => {
   }
   localStorage.setItem('createTablePassword', password);
   if (password !== '') {
-    const stringToHash = `Hanabi game password ${password}`;
-    password = shajs('sha256').update(stringToHash).digest('hex');
+    password = misc.hashPassword(passwordSalt, password);
   }
 
   globals.conn!.send('tableCreate', {
