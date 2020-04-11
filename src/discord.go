@@ -109,7 +109,8 @@ func discordRefreshMembers() {
 		// as large servers will only have the first 100 or so cached in "guild.Members" by default
 		// This updates the state in the background
 		if err := discord.RequestGuildMembers(discordGuildID, "", 0); err != nil {
-			logger.Error("Failed to request the Discord guild members:", err)
+			// This can occasionally fail, so we don't want to report the error to Sentry
+			logger.Info("Failed to request the Discord guild members:", err)
 		}
 
 		time.Sleep(5 * time.Minute)
