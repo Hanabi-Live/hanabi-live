@@ -1,6 +1,6 @@
 # Hanabi Live Community Guidelines
 
-Since Hanabi Live is a website that provides a chat room for random strangers on the internet, there is the potential for abuse. We ask that citizens of the website follow a few rules so that our public discussion meets a certain minimum level of quality.
+Since Hanabi Live is a free website that provides a chat room for random strangers on the internet, there is the potential for abuse. We ask that citizens of the website follow a few rules so that our public discussion meets a certain minimum level of quality.
 
 1) Use common sense.
 2) Keep discussion safe for work. (No porn, gore, etc.)
@@ -9,3 +9,7 @@ Since Hanabi Live is a website that provides a chat room for random strangers on
 5) Keep off-topic discussion in the #off-topic channel. Excessive non-Hanabi related discussion should be taken to private messages or a separate Discord server.
 6) Treat others with respect. Flames, personal attacks, and so forth should be handled in either a private message or off platform.
 7) Do not post another user's personal information without their prior consent.
+
+The Hanabi Live staff reserves the right to warn, mute, or ban users who violate these guidelines, depending on the nature of the offense, whether or not it is a repeat offense, and the administrator's individual discretion.
+
+Since user accounts are free and do not require email validation or anything like that, the staff only has very limited ways to prevent abuse. Even if you disagree with the decision of a staff member, please respect their decisions and treat the server kindly.
