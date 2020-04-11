@@ -7,7 +7,8 @@ import (
 // commandTableTerminate is sent when the user clicks the terminate button in the bottom-left-hand
 // corner
 //
-// Has no data
+// Has no data unless the server is emulating a server-initiated termination
+// (if this is the case, "Server" will be set to true)
 func commandTableTerminate(s *Session, d *CommandData) {
 	/*
 		Validate
@@ -22,7 +23,6 @@ func commandTableTerminate(s *Session, d *CommandData) {
 	} else {
 		t = v
 	}
-	g := t.Game
 
 	// Validate that they are in the game
 	i := t.GetPlayerIndexFromID(s.UserID())
@@ -48,14 +48,25 @@ func commandTableTerminate(s *Session, d *CommandData) {
 		Terminate
 	*/
 
+	username := s.Username()
+	if d.Server {
+		username = "Hanabi Live"
+	}
+	terminate(t, username, i)
+}
+
+func terminate(t *Table, username string, endPlayerIndex int) {
+	// Local variables
+	g := t.Game
+
 	// We want to set the end condition before advancing the turn to ensure that
 	// no active player will show
 	g.EndCondition = endConditionTerminated
-	g.EndPlayer = i
+	g.EndPlayer = endPlayerIndex
 
 	// Add a text message for the termination
 	// and put it on its own turn so that it is separate from the final times
-	text := s.Username() + " terminated the game!"
+	text := username + " terminated the game!"
 	g.Actions = append(g.Actions, ActionText{
 		Type: "text",
 		Text: text,

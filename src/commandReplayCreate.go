@@ -523,13 +523,27 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 				},
 			})
 		} else if action.Type == actionType2GameOver {
-			ps := t.Players[action.Target].Session
+			var ps *Session
+			if action.Target < 0 {
+				// A target of "-1" indicates that this was a termination initiated by the server
+				// itself, so just use the session of the 1st player to send the termination
+				ps = t.Players[0].Session
+			} else {
+				ps = t.Players[action.Target].Session
+			}
+
 			if action.Value == endConditionTimeout {
 				commandAction(ps, &CommandData{
 					Type: actionTypeTimeLimitReached,
 				})
 			} else if action.Value == endConditionTerminated {
-				commandTableTerminate(ps, nil)
+				serverTermination := false
+				if action.Target < 0 {
+					serverTermination = true
+				}
+				commandTableTerminate(ps, &CommandData{
+					Server: serverTermination,
+				})
 			} else if action.Value == endConditionIdleTimeout {
 				commandAction(ps, &CommandData{
 					Type: actionTypeIdleLimitReached,

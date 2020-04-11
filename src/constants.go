@@ -84,6 +84,10 @@ const (
 	// The amount of time that someone can be on the waiting list
 	idleWaitingListTimeout = time.Hour * 8
 
+	// The amount of time that players have to finish their game once
+	// a server shutdown or restart is initiated
+	shutdownTimeout = time.Minute * 30
+
 	// The amount of time in between allowed @here Discord alerts
 	discordAtHereTimeout = time.Hour * 2
 

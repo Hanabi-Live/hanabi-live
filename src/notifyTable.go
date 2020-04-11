@@ -8,6 +8,18 @@ import (
 	Notifications for both before and during a game
 */
 
+func (t *Table) NotifyChat(chatMessage *ChatMessage) {
+	if !t.Replay {
+		for _, p := range t.Players {
+			p.Session.Emit("chat", chatMessage)
+		}
+	}
+
+	for _, sp := range t.Spectators {
+		sp.Session.Emit("chat", chatMessage)
+	}
+}
+
 func (t *Table) NotifyChatTyping(name string, typing bool) {
 	for _, p := range t.Players {
 		if p.Present && p.Name != name { // We do not need to alert the person who is typing

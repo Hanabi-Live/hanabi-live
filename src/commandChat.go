@@ -226,24 +226,14 @@ func commandChatTable(s *Session, d *CommandData) {
 	t.Chat = append(t.Chat, chatMsg)
 
 	// Send it to all of the players and spectators
-	chatMessage := &ChatMessage{
+	t.NotifyChat(&ChatMessage{
 		Msg:      d.Msg,
 		Who:      d.Username,
 		Discord:  d.Discord,
 		Server:   d.Server,
 		Datetime: chatMsg.Datetime,
 		Room:     d.Room,
-	}
-	if !t.Replay {
-		for _, p := range t.Players {
-			if p.Present {
-				p.Session.Emit("chat", chatMessage)
-			}
-		}
-	}
-	for _, sp := range t.Spectators {
-		sp.Session.Emit("chat", chatMessage)
-	}
+	})
 
 	// Check for commands
 	chatCommand(s, d, t)

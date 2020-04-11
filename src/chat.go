@@ -53,8 +53,8 @@ func isAdmin(s *Session, d *CommandData) bool {
 func chatServerSend(msg string, room string) {
 	commandChat(nil, &CommandData{
 		Msg:    msg,
-		Room:   room,
 		Server: true,
+		Room:   room,
 	})
 }
 

@@ -30,7 +30,8 @@ var (
 	// For storing the players who are waiting for the next game to start
 	waitingList = make([]*Waiter, 0)
 	// If true, the server will shutdown or restart after all games are finished
-	shuttingDown = false
+	shuttingDown         = false
+	datetimeShutdownInit time.Time
 )
 
 func main() {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os/exec"
 	"path"
 	"strconv"
@@ -23,11 +24,33 @@ func shutdown(restart bool) {
 	} else {
 		// Notify the lobby and all ongoing tables
 		shuttingDown = true
+		datetimeShutdownInit = time.Now()
 		notifyAllShutdown()
-		chatServerSendAll("The server will " + verb + " when all ongoing games have finished. " +
+		numMinutes := fmt.Sprintf("%f", shutdownTimeout.Minutes())
+		chatServerSendAll("The server will " + verb + " in " + numMinutes + " minutes " +
+			"or when all ongoing games have finished, whichever comes first. " +
 			"New game creation has been disabled.")
-
+		go shutdownXMinutesLeft(verb)
 		go shutdownWait(restart)
+	}
+}
+
+func shutdownXMinutesLeft(verb string) {
+	minutesLeft := 5
+	time.Sleep(shutdownTimeout - time.Duration(minutesLeft)*time.Minute)
+
+	if !shuttingDown {
+		return
+	}
+
+	msg := "The server will " + verb + " in " + strconv.Itoa(minutesLeft) + " minutes. " +
+		"Finish your game soon or it will be automatically terminated!"
+	for _, t := range tables {
+		t.NotifyChat(&ChatMessage{
+			Msg:      msg,
+			Server:   true,
+			Datetime: time.Now(),
+		})
 	}
 }
 
@@ -36,6 +59,16 @@ func shutdownWait(restart bool) {
 		if !shuttingDown {
 			logger.Info("The shutdown was aborted.")
 			break
+		}
+
+		if countActiveTables() > 0 && time.Since(datetimeShutdownInit) >= shutdownTimeout {
+			// It has been a long time since the server shutdown/restart was initiated,
+			// so automatically terminate any remaining ongoing games
+			for _, t := range tables {
+				if t.Running && !t.Replay {
+					terminate(t, "Hanabi Live", -1)
+				}
+			}
 		}
 
 		if countActiveTables() == 0 {
