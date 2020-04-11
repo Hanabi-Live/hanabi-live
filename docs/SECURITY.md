@@ -32,7 +32,7 @@ In the [Hanabi Discord server](https://discord.gg/FADvkJp), any user with a "1+ 
 
 ### Data
 
-The database stores usernames, salted password hashes, the last IP that you logged on with, chat messages, private messages, and (obviously) Hanabi-related game history. The full schema for the database can be found [here](https://github.com/Zamiell/hanabi-live/blob/master/install/database_schema.sql). Furthermore, similar other web servers on the internet, the web logs contain the IP address of every connection.
+The database stores usernames, salted password hashes, the last IP that you logged on with, chat messages, private messages, and (obviously) Hanabi-related game history. The full schema for the database can be found [here](https://github.com/Zamiell/hanabi-live/blob/master/install/database_schema.sql). Furthermore, similar to other web servers on the internet, the web logs contain the IP address of every connection.
 
 Notably, there is no [personally identifiable information](https://en.wikipedia.org/wiki/Personal_data) in the database (e.g. email addresses), which makes Hanabi Live a pretty low-priority target for an attacker looking to breach the website and harvest all of the data.
 
