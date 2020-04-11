@@ -40,7 +40,7 @@ Notably, there is no [personally identifiable information](https://en.wikipedia.
 
 ### Password Hasing
 
-When you login to the website (or when you create a password-protected table), the client-side JavaScript [hashes](https://en.wikipedia.org/wiki/Cryptographic_hash_function) your password, transforming it to an alphanumeric string using the [SHA-2(https://en.wikipedia.org/wiki/SHA-2]) algorithm with a [salt](https://en.wikipedia.org/wiki/Salt_(cryptography)) that is [specific to the website](https://github.com/Zamiell/hanabi-live/blob/master/public/js/src/lobby/login.ts). Then, it then sends the hash to the server. This means that unlike other websites such as Google and Facebook, your real passwords are not ever sent to the server.
+When you login to the website (or when you create a password-protected table), the client-side JavaScript [hashes](https://en.wikipedia.org/wiki/Cryptographic_hash_function) your password, transforming it to an alphanumeric string using the [SHA-2](https://en.wikipedia.org/wiki/SHA-2]) algorithm with a [salt](https://en.wikipedia.org/wiki/Salt_(cryptography)) that is [specific to the website](https://github.com/Zamiell/hanabi-live/blob/master/public/js/src/lobby/login.ts). Then, it then sends the hash to the server. This means that unlike other websites such as Google and Facebook, your real passwords are not ever sent to the server.
 
 <br />
 
