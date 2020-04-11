@@ -8,7 +8,8 @@ Since Hanabi Live is a free website that provides a chat room for random strange
 4) Keep excessive discussion out of the lobby in order to avoid spamming everyone else.
 5) Treat others with respect. Flames, personal attacks, and so forth should be handled in either a private message or off platform.
 6) Do not post another user's personal information without their prior consent.
+7) Do not reveal anything to players about their ongoing game.
 
 The Hanabi Live staff reserves the right to warn, mute, or ban users who violate these guidelines, depending on the nature of the offense, whether or not it is a repeat offense, and the administrator's individual discretion.
 
-Since user accounts are free and do not require email validation or anything like that, the staff only has very limited ways to prevent abuse. Even if you disagree with the decision of a staff member, please respect their decisions and treat the server kindly.
+Since user accounts are free and do not require email validation, the staff only has very limited ways to prevent abuse. Even if you disagree with the decision of a staff member, please respect their decisions and treat the server kindly.
