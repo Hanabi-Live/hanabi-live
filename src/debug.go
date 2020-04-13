@@ -90,70 +90,90 @@ func debug() {
 
 		// Manually enumerate the slices and maps
 		logger.Debug("    Options:")
-		s2 := reflect.ValueOf(t.Options).Elem()
-		maxChars2 := 0
-		for i := 0; i < s2.NumField(); i++ {
-			fieldName := s2.Type().Field(i).Name
-			if len(fieldName) > maxChars2 {
-				maxChars2 = len(fieldName)
+		if t.Options == nil {
+			logger.Debug("      [Options is nil; this should never happen]")
+		} else {
+			s2 := reflect.ValueOf(t.Options).Elem()
+			maxChars2 := 0
+			for i := 0; i < s2.NumField(); i++ {
+				fieldName := s2.Type().Field(i).Name
+				if len(fieldName) > maxChars2 {
+					maxChars2 = len(fieldName)
+				}
 			}
-		}
-		for i := 0; i < s2.NumField(); i++ {
-			fieldName := s2.Type().Field(i).Name
-			f := s2.Field(i)
-			line := "    "
-			for i := len(fieldName); i < maxChars2; i++ {
-				line += " "
+			for i := 0; i < s2.NumField(); i++ {
+				fieldName := s2.Type().Field(i).Name
+				f := s2.Field(i)
+				line := "    "
+				for i := len(fieldName); i < maxChars2; i++ {
+					line += " "
+				}
+				line += "%s = %v"
+				line = fmt.Sprintf(line, fieldName, f.Interface())
+				if strings.HasSuffix(line, " = ") {
+					line += "[empty string]"
+				}
+				line += "\n"
+				logger.Debug(line)
 			}
-			line += "%s = %v"
-			line = fmt.Sprintf(line, fieldName, f.Interface())
-			if strings.HasSuffix(line, " = ") {
-				line += "[empty string]"
-			}
-			line += "\n"
-			logger.Debug(line)
 		}
 		logger.Debug("\n")
 
 		logger.Debug("    Players (" + strconv.Itoa(len(t.Players)) + "):")
-		for j, p := range t.Players { // This is a []*Player
-			logger.Debug("        " + strconv.Itoa(j) + " - " +
-				"User ID: " + strconv.Itoa(p.ID) + ", " +
-				"Username: " + p.Name + ", " +
-				"Present: " + strconv.FormatBool(p.Present))
-		}
-		if len(t.Players) == 0 {
-			logger.Debug("        [no players]")
+		if t.Players == nil {
+			logger.Debug("      [Players is nil; this should never happen]")
+		} else {
+			for j, p := range t.Players { // This is a []*Player
+				logger.Debug("        " + strconv.Itoa(j) + " - " +
+					"User ID: " + strconv.Itoa(p.ID) + ", " +
+					"Username: " + p.Name + ", " +
+					"Present: " + strconv.FormatBool(p.Present))
+			}
+			if len(t.Players) == 0 {
+				logger.Debug("        [no players]")
+			}
 		}
 		logger.Debug("\n")
 
 		logger.Debug("    Spectators (" + strconv.Itoa(len(t.Spectators)) + "):")
-		for j, sp := range t.Spectators { // This is a []*Session
-			logger.Debug("        " + strconv.Itoa(j) + " - " +
-				"User ID: " + strconv.Itoa(sp.ID) + ", " +
-				"Username: " + sp.Name)
-		}
-		if len(t.Spectators) == 0 {
-			logger.Debug("        [no spectators]")
+		if t.Spectators == nil {
+			logger.Debug("      [Spectators is nil; this should never happen]")
+		} else {
+			for j, sp := range t.Spectators { // This is a []*Session
+				logger.Debug("        " + strconv.Itoa(j) + " - " +
+					"User ID: " + strconv.Itoa(sp.ID) + ", " +
+					"Username: " + sp.Name)
+			}
+			if len(t.Spectators) == 0 {
+				logger.Debug("        [no spectators]")
+			}
 		}
 		logger.Debug("\n")
 
 		logger.Debug("    DisconSpectators (" + strconv.Itoa(len(t.DisconSpectators)) + "):")
-		for k, v := range t.DisconSpectators { // This is a map[int]*bool
-			logger.Debug("        User ID: " + strconv.Itoa(k) + " - " + strconv.FormatBool(v))
-		}
-		if len(t.DisconSpectators) == 0 {
-			logger.Debug("        [no disconnected spectators]")
+		if t.DisconSpectators == nil {
+			logger.Debug("      [DisconSpectators is nil; this should never happen]")
+		} else {
+			for k, v := range t.DisconSpectators { // This is a map[int]*bool
+				logger.Debug("        User ID: " + strconv.Itoa(k) + " - " + strconv.FormatBool(v))
+			}
+			if len(t.DisconSpectators) == 0 {
+				logger.Debug("        [no disconnected spectators]")
+			}
 		}
 		logger.Debug("\n")
 
 		logger.Debug("    Chat (" + strconv.Itoa(len(t.Chat)) + "):")
-		for j, m := range t.Chat { // This is a []*GameChatMessage
-			logger.Debug("        " + strconv.Itoa(j) + " - " +
-				"[" + strconv.Itoa(m.UserID) + "] <" + m.Username + "> " + m.Msg)
-		}
-		if len(t.Chat) == 0 {
-			logger.Debug("        [no chat]")
+		if t.Chat == nil {
+			logger.Debug("      [Chat is nil; this should never happen]")
+		} else {
+			for j, m := range t.Chat { // This is a []*GameChatMessage
+				logger.Debug("        " + strconv.Itoa(j) + " - " +
+					"[" + strconv.Itoa(m.UserID) + "] <" + m.Username + "> " + m.Msg)
+			}
+			if len(t.Chat) == 0 {
+				logger.Debug("        [no chat]")
+			}
 		}
 		logger.Debug("\n")
 
