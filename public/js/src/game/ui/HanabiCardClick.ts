@@ -14,11 +14,7 @@ export default function HanabiCardClick(this: HanabiCard, event: any) {
   // Speedrunning overrides the normal card clicking behavior
   // (but do not use the speedrunning behavior if we are in a
   // solo replay / shared replay / spectating)
-  if (
-    (globals.speedrun || globals.lobby.settings.speedrunMode)
-    && !globals.replay
-    && !globals.spectating
-  ) {
+  if ((globals.speedrun || globals.lobby.settings.speedrunMode) && !globals.replay && !globals.spectating) {
     return;
   }
 
@@ -27,11 +23,14 @@ export default function HanabiCardClick(this: HanabiCard, event: any) {
     return;
   }
 
-  if (event.evt.which === 1) { // Left-click
+  if (event.evt.which === 1) {
+    // Left-click
     clickLeft(this, event.evt);
-  } else if (event.evt.which === 2) { // Middle-click
+  } else if (event.evt.which === 2) {
+    // Middle-click
     clickMiddle(this, event.evt);
-  } else if (event.evt.which === 3) { // Right-click
+  } else if (event.evt.which === 3) {
+    // Right-click
     clickRight(this, event.evt);
   }
 }
@@ -40,11 +39,11 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
   // The "Empathy" feature is handled in the "HanabiCardInit.ts" file,
   // so we don't have to worry about it here
   if (
-    event.ctrlKey // No actions in this function use modifiers other than Alt
-    || event.shiftKey
-    || event.metaKey
-    || card.rank === STACK_BASE_RANK // Disable clicking on the stack base
-    || globals.hypothetical // No replay actions should happen in a hypothetical
+    event.ctrlKey || // No actions in this function use modifiers other than Alt
+    event.shiftKey ||
+    event.metaKey ||
+    card.rank === STACK_BASE_RANK || // Disable clicking on the stack base
+    globals.hypothetical // No replay actions should happen in a hypothetical
   ) {
     return;
   }
@@ -87,15 +86,15 @@ const clickMiddle = (card: HanabiCard, event: PointerEvent) => {
 const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // Alt + right-click is a card morph (in a hypothetical)
   if (
-    globals.replay
-    && globals.sharedReplay
-    && globals.amSharedReplayLeader
-    && globals.useSharedTurns
-    && globals.hypothetical
-    && !event.ctrlKey
-    && !event.shiftKey
-    && event.altKey
-    && !event.metaKey
+    globals.replay &&
+    globals.sharedReplay &&
+    globals.amSharedReplayLeader &&
+    globals.useSharedTurns &&
+    globals.hypothetical &&
+    !event.ctrlKey &&
+    !event.shiftKey &&
+    event.altKey &&
+    !event.metaKey
   ) {
     clickMorph(card.order);
     return;
@@ -105,12 +104,7 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // The arrow is shown to all the members of the reply in order to draw attention to the card
   // (we want it to work no matter what modifiers are being pressed,
   // in case someone is pushing their push-to-talk hotkey while highlighting cards)
-  if (
-    globals.replay
-    && globals.sharedReplay
-    && globals.amSharedReplayLeader
-    && globals.useSharedTurns
-  ) {
+  if (globals.replay && globals.sharedReplay && globals.amSharedReplayLeader && globals.useSharedTurns) {
     arrows.send(card.order, card);
     return;
   }
@@ -122,54 +116,28 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
 
   // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered
   // (this must be above the other note code because of the modifiers)
-  if (
-    event.ctrlKey
-    && event.shiftKey
-    && !event.altKey
-    && !event.metaKey
-    && !globals.replay
-    && !globals.spectating
-  ) {
+  if (event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey && !globals.replay && !globals.spectating) {
     card.setNote(globals.lastNote);
     return;
   }
 
   // Shift + right-click is a "f" note
   // (this is a common abbreviation for "this card is Finessed")
-  if (
-    !event.ctrlKey
-    && event.shiftKey
-    && !event.altKey
-    && !event.metaKey
-    && !globals.replay
-    && !globals.spectating
-  ) {
+  if (!event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey && !globals.replay && !globals.spectating) {
     card.setNote('f');
     return;
   }
 
   // Alt + right-click is a "cm" note
   // (this is a common abbreviation for "this card is chop moved")
-  if (
-    !event.ctrlKey
-    && !event.shiftKey
-    && event.altKey
-    && !event.metaKey
-    && !globals.replay
-    && !globals.spectating
-  ) {
+  if (!event.ctrlKey && !event.shiftKey && event.altKey && !event.metaKey && !globals.replay && !globals.spectating) {
     card.setNote('cm');
     return;
   }
 
   // Alt + shift + right-click is a "p" note
   // (this is a common abbreviation for "this card was told to play")
-  if (
-    !event.ctrlKey
-    && event.shiftKey
-    && event.altKey
-    && !event.metaKey
-  ) {
+  if (!event.ctrlKey && event.shiftKey && event.altKey && !event.metaKey) {
     card.setNote('p');
   }
 
@@ -178,25 +146,13 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // a user might still want to draw an arrow on a card for demonstration purposes
   // However, we don't want this functionality in shared replays because
   // it could be misleading as to who the real replay leader is
-  if (
-    event.ctrlKey
-    && !event.shiftKey
-    && !event.altKey
-    && !event.metaKey
-    && !globals.sharedReplay
-  ) {
+  if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey && !globals.sharedReplay) {
     arrows.toggle(card);
     return;
   }
 
   // A normal right-click is edit a note
-  if (
-    !event.ctrlKey
-    && !event.shiftKey
-    && !event.altKey
-    && !event.metaKey
-    && !globals.replay
-  ) {
+  if (!event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey && !globals.replay) {
     notes.openEditTooltip(card);
   }
 };
@@ -241,9 +197,7 @@ const clickMorph = (order: number) => {
     const suitNumber = parseInt(card[0], 10);
     if (Number.isNaN(suitNumber)) {
       let msg = `The letter "${suitLetter}" does nto corresponds to a suit.\n`;
-      const abbreviations = globals.variant.suits.map(
-        (variantSuit) => variantSuit.abbreviation.toLowerCase(),
-      );
+      const abbreviations = globals.variant.suits.map((variantSuit) => variantSuit.abbreviation.toLowerCase());
       msg += `The available acronyms are: ${abbreviations}`;
       window.alert(msg);
       return;

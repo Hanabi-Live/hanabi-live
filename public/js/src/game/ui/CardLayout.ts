@@ -86,7 +86,7 @@ export default class CardLayout extends Konva.Group {
 
     const storedPostAnimationLayout = globals.postAnimationLayout;
     for (let i = 0; i < n; i++) {
-      const node = this.children[i] as unknown as LayoutChild;
+      const node = (this.children[i] as unknown) as LayoutChild;
 
       if (!node.height()) {
         continue;
@@ -110,7 +110,7 @@ export default class CardLayout extends Konva.Group {
         // Animate the card going from the deck to the hand
         // (or from the hand to the discard pile)
         // and animate the rest of the cards sliding over
-        const card = node.children[0] as unknown as HanabiCard;
+        const card = (node.children[0] as unknown) as HanabiCard;
         card.tweening = true;
         if (card.doMisplayAnimation) {
           // If this card just misplayed, do a special animation
@@ -140,7 +140,7 @@ export default class CardLayout extends Konva.Group {
         }).play();
       }
 
-      x += ((scale * node.width()) + dist) * (this.reverse ? -1 : 1);
+      x += (scale * node.width() + dist) * (this.reverse ? -1 : 1);
     }
   }
 
@@ -151,10 +151,10 @@ export default class CardLayout extends Konva.Group {
     const h = this.height();
 
     // The rotation comes from Konva in radians but we need to convert it to degrees
-    const rot = this.origRotation / 180 * Math.PI;
+    const rot = (this.origRotation / 180) * Math.PI;
 
-    pos.x += (w / 2 * Math.cos(rot)) - (h / 2 * Math.sin(rot));
-    pos.y += (w / 2 * Math.sin(rot)) + (h / 2 * Math.cos(rot));
+    pos.x += (w / 2) * Math.cos(rot) - (h / 2) * Math.sin(rot);
+    pos.y += (w / 2) * Math.sin(rot) + (h / 2) * Math.cos(rot);
 
     return pos;
   }

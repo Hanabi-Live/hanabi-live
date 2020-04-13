@@ -56,10 +56,12 @@ export default class NameFrame extends Konva.Group {
 
     this.playerName.on('click tap', function click(event) {
       const username = this.text();
-      if (event.evt.which === 1) { // Left-click
+      if (event.evt.which === 1) {
+        // Left-click
         // Left-click on the name frame to see a log of only their actions
         globals.elements.fullActionLog!.showPlayerActions(username);
-      } else if (event.evt.which === 3) { // Right-click
+      } else if (event.evt.which === 3) {
+        // Right-click
         if (!globals.replay && globals.spectating) {
           // As a spectator in an ongoing game, right-clicking on a name frame reloads the
           // page, shifting the seat and hiding the appropriate cards
@@ -103,14 +105,7 @@ export default class NameFrame extends Konva.Group {
     w *= 1.4;
 
     this.leftLine = new Konva.Line({
-      points: [
-        0,
-        0,
-        0,
-        config.height / 2,
-        (config.width / 2) - (w / 2),
-        config.height / 2,
-      ],
+      points: [0, 0, 0, config.height / 2, config.width / 2 - w / 2, config.height / 2],
       stroke: LABEL_COLOR,
       strokeWidth: 1,
       lineJoin: 'round',
@@ -126,14 +121,7 @@ export default class NameFrame extends Konva.Group {
     this.add(this.leftLine);
 
     this.rightLine = new Konva.Line({
-      points: [
-        (config.width / 2) + (w / 2),
-        config.height / 2,
-        config.width,
-        config.height / 2,
-        config.width,
-        0,
-      ],
+      points: [config.width / 2 + w / 2, config.height / 2, config.width, config.height / 2, config.width, 0],
       stroke: LABEL_COLOR,
       strokeWidth: 1,
       lineJoin: 'round',

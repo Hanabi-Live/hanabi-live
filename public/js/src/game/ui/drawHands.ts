@@ -16,11 +16,11 @@ export default (winW: number, winH: number) => {
   let rect;
 
   interface HandConfig {
-    x: number,
-    y: number,
-    w?: number,
-    h?: number,
-    rot?: number,
+    x: number;
+    y: number;
+    w?: number;
+    h?: number;
+    rot?: number;
   }
 
   /* eslint-disable object-curly-newline */
@@ -97,7 +97,7 @@ export default (winW: number, winH: number) => {
     for (let j = 0; j < i; j++) {
       handPosBGA[i].push({
         x: handX,
-        y: handY + (handSpacing * j),
+        y: handY + handSpacing * j,
         w: handW,
         h: handH,
         rot: 0,
@@ -118,7 +118,7 @@ export default (winW: number, winH: number) => {
   for (let j = 0; j < 4; j++) {
     handPosBGA[4].push({
       x: handPosBGAValues4.x,
-      y: handPosBGAValues4.y + (handPosBGAValues4.spacing * j),
+      y: handPosBGAValues4.y + handPosBGAValues4.spacing * j,
       w: handPosBGAValues4.w,
       h: handPosBGAValues4.h,
       rot: 0,
@@ -357,21 +357,11 @@ export default (winW: number, winH: number) => {
           x: shadePos[numPlayers][j].w! * winW,
           y: 0,
         },
-        fillLinearGradientColorStops: [
-          0,
-          'rgba(0,0,0,0)',
-          0.9,
-          'white',
-        ],
+        fillLinearGradientColorStops: [0, 'rgba(0,0,0,0)', 0.9, 'white'],
       });
 
       if (isHandReversed(j)) {
-        rect.fillLinearGradientColorStops([
-          1,
-          'rgba(0,0,0,0)',
-          0.1,
-          'white',
-        ]);
+        rect.fillLinearGradientColorStops([1, 'rgba(0,0,0,0)', 0.1, 'white']);
       }
 
       globals.layers.UI.add(rect);
@@ -412,8 +402,8 @@ export default (winW: number, winH: number) => {
       const charIcon = new TextWithTooltip({
         width: width2,
         height: height2,
-        x: (playerNamePos[numPlayers][j].x * winW) - (width2 / 2),
-        y: (playerNamePos[numPlayers][j].y * winH) - (height2 / 2),
+        x: playerNamePos[numPlayers][j].x * winW - width2 / 2,
+        y: playerNamePos[numPlayers][j].y * winH - height2 / 2,
         fontSize: 0.03 * winH,
         fontFamily: 'Verdana',
         align: 'center',
@@ -437,20 +427,14 @@ export default (winW: number, winH: number) => {
         // Replace "[random color]" with the selected color
         tooltipContent = tooltipContent.replace(
           '[random color]',
-          globals.variant.clueColors[metadata].name.toLowerCase(),
+          globals.variant.clueColors[metadata].name.toLowerCase()
         );
       } else if (tooltipContent.includes('[random number]')) {
         // Replace "[random number]" with the selected number
-        tooltipContent = tooltipContent.replace(
-          '[random number]',
-          metadata.toString(),
-        );
+        tooltipContent = tooltipContent.replace('[random number]', metadata.toString());
       } else if (tooltipContent.includes('[random suit]')) {
         // Replace "[random suit]" with the selected suit name
-        tooltipContent = tooltipContent.replace(
-          '[random suit]',
-          globals.variant.suits[metadata].name,
-        );
+        tooltipContent = tooltipContent.replace('[random suit]', globals.variant.suits[metadata].name);
       }
       charIcon.tooltipContent = tooltipContent;
       tooltips.init(charIcon, false, true);

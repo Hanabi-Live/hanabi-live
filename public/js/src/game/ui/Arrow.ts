@@ -34,12 +34,7 @@ export default class Arrow extends Konva.Group {
     // We want there to be a black outline around the arrow,
     // so we draw a second arrow that is slightly bigger than the first
     const border = new Konva.Arrow({
-      points: [
-        x,
-        0,
-        x,
-        y * 0.8,
-      ],
+      points: [x, 0, x, y * 0.8],
       pointerLength,
       pointerWidth: pointerLength,
       fill: 'black',
@@ -53,12 +48,7 @@ export default class Arrow extends Konva.Group {
     // The border arrow will be missing a bottom edge,
     // so draw that manually at the bottom of the arrow
     const edge = new Konva.Line({
-      points: [
-        x - pointerLength,
-        0,
-        x + pointerLength,
-        0,
-      ],
+      points: [x - pointerLength, 0, x + pointerLength, 0],
       fill: 'black',
       stroke: 'black',
       strokeWidth: pointerLength * 0.75,
@@ -67,12 +57,7 @@ export default class Arrow extends Konva.Group {
 
     // The main (inside) arrow is exported so that we can change the color later
     this.base = new Konva.Arrow({
-      points: [
-        x,
-        0,
-        x,
-        y * 0.8,
-      ],
+      points: [x, 0, x, y * 0.8],
       pointerLength,
       pointerWidth: pointerLength,
       fill: 'white',

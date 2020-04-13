@@ -4,18 +4,18 @@ import { LABEL_COLOR } from '../../constants';
 import FitText from './FitText';
 
 interface ElementValues {
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  spacing: number,
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  spacing: number;
 }
 
 interface TextElementValues {
-  w: number,
-  w2: number,
-  x: number,
-  x2: number,
+  w: number;
+  w2: number;
+  x: number;
+  x2: number;
 }
 
 export default class CurrentPlayerArea extends Konva.Group {
@@ -39,7 +39,7 @@ export default class CurrentPlayerArea extends Konva.Group {
     this.values = values;
 
     // The left-most box that contains the name of the current player
-    let box1Width = (values.w * 0.75);
+    let box1Width = values.w * 0.75;
     box1Width -= values.spacing;
     this.rect1 = new Konva.Rect({
       width: box1Width * winW,
@@ -51,13 +51,13 @@ export default class CurrentPlayerArea extends Konva.Group {
     this.add(this.rect1);
 
     const textValues = {
-      w: box1Width - (values.spacing * 4),
-      w2: box1Width - (values.spacing * 2),
+      w: box1Width - values.spacing * 4,
+      w2: box1Width - values.spacing * 2,
       x: 0,
       x2: 0,
     };
-    textValues.x = (box1Width / 2) - (textValues.w / 2);
-    textValues.x2 = (box1Width / 2) - (textValues.w2 / 2);
+    textValues.x = box1Width / 2 - textValues.w / 2;
+    textValues.x2 = box1Width / 2 - textValues.w2 / 2;
 
     this.text1 = new FitText({
       x: textValues.x * winW,
@@ -115,8 +115,8 @@ export default class CurrentPlayerArea extends Konva.Group {
 
     // The right-most box that contains the arrow
     const arrowValues = {
-      x: (values.w * 0.75) + values.spacing,
-      w: (values.w * 0.25) - values.spacing,
+      x: values.w * 0.75 + values.spacing,
+      w: values.w * 0.25 - values.spacing,
       h: values.h,
       spacing: 0.01,
     };
@@ -132,7 +132,7 @@ export default class CurrentPlayerArea extends Konva.Group {
     this.add(rect2);
 
     this.arrow = new Konva.Group({
-      x: (arrowValues.x + (arrowValues.w / 2)) * winW,
+      x: (arrowValues.x + arrowValues.w / 2) * winW,
       y: (values.h / 2) * winH,
       offset: {
         x: (arrowValues.w / 2) * winW,
@@ -160,10 +160,10 @@ export default class CurrentPlayerArea extends Konva.Group {
 
     const arrowBorderEdge = new Konva.Line({
       points: [
-        (arrowValues.spacing) * winW,
-        ((arrowValues.h / 2) - 0.005) * winH,
-        (arrowValues.spacing) * winW,
-        ((arrowValues.h / 2) + 0.005) * winH,
+        arrowValues.spacing * winW,
+        (arrowValues.h / 2 - 0.005) * winH,
+        arrowValues.spacing * winW,
+        (arrowValues.h / 2 + 0.005) * winH,
       ],
       fill: 'black',
       stroke: 'black',

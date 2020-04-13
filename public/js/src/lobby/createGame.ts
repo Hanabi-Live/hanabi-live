@@ -10,12 +10,7 @@ import * as misc from '../misc';
 import * as modals from '../modals';
 
 // Constants
-const basicVariants = [
-  'No Variant',
-  '6 Suits',
-  'Black (6 Suits)',
-  'Rainbow (6 Suits)',
-];
+const basicVariants = ['No Variant', '6 Suits', 'Black (6 Suits)', 'Rainbow (6 Suits)'];
 const variantNames = Array.from(VARIANTS.keys());
 const dropdown1 = $('#create-game-variant-dropdown1');
 const dropdown2 = $('#create-game-variant-dropdown2');
@@ -327,7 +322,9 @@ export const before = () => {
   }
 
   if (globals.shuttingDown) {
-    modals.warningShow('The server is restarting soon (when all ongoing games have finished). You cannot start any new games for the time being.');
+    modals.warningShow(
+      'The server is restarting soon (when all ongoing games have finished). You cannot start any new games for the time being.'
+    );
     return false;
   }
 

@@ -43,7 +43,7 @@ export const show = (element: any) => {
   if (typeof element.getTextWidth === 'function') {
     width = element.getTextWidth();
   }
-  const tooltipX = pos.x + (width / 2);
+  const tooltipX = pos.x + width / 2;
   tooltip.css('left', tooltipX);
   tooltip.css('top', pos.y);
   tooltip.tooltipster('open');

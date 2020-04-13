@@ -34,12 +34,12 @@ export const handle = () => {
   if (
     // This is unnecessary if the pre-play setting is enabled,
     // as the hand will already be draggable
-    !globals.lobby.settings.speedrunPreplay
+    !globals.lobby.settings.speedrunPreplay &&
     // This is unnecessary if this a speedrun,
     // as clicking on cards takes priority over dragging cards
-    && !globals.speedrun
+    !globals.speedrun &&
     // In hypotheticals, setting cards to be draggable is handled elsewhere
-    && !globals.hypothetical
+    !globals.hypothetical
   ) {
     const ourHand = globals.elements.playerHands[globals.playerUs];
     for (const layoutChild of ourHand.children.toArray() as Array<LayoutChild>) {

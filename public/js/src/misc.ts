@@ -10,10 +10,10 @@ export const init = () => {
   ($.expr as any).filters.offscreen = (el: any) => {
     const rect = el.getBoundingClientRect();
     return (
-      rect.top < 0 // Above the top
-          || rect.bottom > window.innerHeight // Below the bottom
-          || rect.left < 0 // Left of the left edge
-          || rect.right > window.innerWidth // Right of the right edge
+      rect.top < 0 || // Above the top
+      rect.bottom > window.innerHeight || // Below the bottom
+      rect.left < 0 || // Left of the left edge
+      rect.right > window.innerWidth // Right of the right edge
     );
   };
 };
@@ -39,10 +39,7 @@ export const copyStringToClipboard = (str: string) => {
   document.body.removeChild(el); // Remove temporary element
 };
 
-export const getRandomNumber = (
-  min: number,
-  max: number,
-) => Math.floor((Math.random() * (max - min + 1)) + min);
+export const getRandomNumber = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min);
 
 // We salt passwords and then hash them with SHA256 before sending them to the server
 export const hashPassword = (salt: string, plaintextPassword: string) => {

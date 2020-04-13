@@ -73,14 +73,14 @@ const initCommands = () => {
 
   // Received by the client upon first connecting
   interface HelloData {
-    id: number,
-    username: string,
-    totalGames: number,
-    admin: boolean,
-    muted: boolean,
-    firstTimeUser: boolean,
-    settings: any,
-    shuttingDown: boolean,
+    id: number;
+    username: string;
+    totalGames: number;
+    admin: boolean;
+    muted: boolean;
+    firstTimeUser: boolean;
+    settings: any;
+    shuttingDown: boolean;
   }
   globals.conn.on('hello', (data: HelloData) => {
     // Store some variables (mostly relating to our user account)
@@ -97,10 +97,7 @@ const initCommands = () => {
 
     // Some settings are stored on the server as numbers,
     // but we need them as strings because they will exist in an input field
-    const settingsToConvertToStrings = [
-      'createTableBaseTimeMinutes',
-      'createTableTimePerTurnSeconds',
-    ];
+    const settingsToConvertToStrings = ['createTableBaseTimeMinutes', 'createTableTimePerTurnSeconds'];
     for (const setting of settingsToConvertToStrings) {
       globals.settings[setting] = globals.settings[setting].toString();
     }
@@ -152,9 +149,9 @@ const initCommands = () => {
         // Notify the server that we have read the chat message that was just received
         globals.conn!.send('chatRead');
       } else if (
-        globals.ui.globals.spectating
-        && !globals.ui.globals.sharedReplay
-        && !$('#game-chat-modal').is(':visible')
+        globals.ui.globals.spectating &&
+        !globals.ui.globals.sharedReplay &&
+        !$('#game-chat-modal').is(':visible')
       ) {
         // The chat window was not open; pop open the chat window every time for spectators
         gameChat.toggle();
@@ -171,8 +168,8 @@ const initCommands = () => {
 
   // Received by the client when someone either starts or stops typing
   interface ChatTypingMessage {
-    name: string,
-    typing: boolean,
+    name: string;
+    typing: boolean;
   }
   globals.conn.on('chatTyping', (data: ChatTypingMessage) => {
     if (data.typing) {
@@ -192,17 +189,14 @@ const initCommands = () => {
   // to give the client a list of past lobby chat messages
   // It is also sent upon connecting to a game to give a list of past in-game chat messages
   interface ChatListData {
-    list: Array<ChatMessage>,
-    unread: number,
+    list: Array<ChatMessage>;
+    unread: number;
   }
   globals.conn.on('chatList', (data: ChatListData) => {
     for (const line of data.list) {
       chat.add(line, true); // The second argument is "fast"
     }
-    if (
-      globals.ui !== null
-      && !$('#game-chat-modal').is(':visible')
-    ) {
+    if (globals.ui !== null && !$('#game-chat-modal').is(':visible')) {
       // If the UI is open, we assume that this is a list of in-game chat messages
       globals.chatUnread += data.unread;
       globals.ui.updateChatLabel();
@@ -210,14 +204,14 @@ const initCommands = () => {
   });
 
   interface ShutdownData {
-    shuttingDown: boolean,
+    shuttingDown: boolean;
   }
   globals.conn.on('shutdown', (data: ShutdownData) => {
     globals.shuttingDown = data.shuttingDown;
   });
 
   interface WarningData {
-    warning: string,
+    warning: string;
   }
   globals.conn.on('warning', (data: WarningData) => {
     console.warn(data.warning);
@@ -230,17 +224,13 @@ const initCommands = () => {
     }
 
     // Re-activate in-game elements
-    if (
-      globals.currentScreen === 'game'
-      && globals.ui !== null
-      && globals.ui.globals.ourTurn
-    ) {
+    if (globals.currentScreen === 'game' && globals.ui !== null && globals.ui.globals.ourTurn) {
       globals.ui.reshowClueUIAfterWarning();
     }
   });
 
   interface ErrorData {
-    error: string,
+    error: string;
   }
   globals.conn.on('error', (data: ErrorData) => {
     console.error(data.error);

@@ -94,11 +94,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     }
 
     // Ctrl + c = Copy the current game ID
-    if (
-      event.key === 'c'
-      && globals.replay
-      && !($('#game-chat-modal').is(':visible'))
-    ) {
+    if (event.key === 'c' && globals.replay && !$('#game-chat-modal').is(':visible')) {
       copyStringToClipboard(globals.databaseID.toString());
       return;
     }
@@ -107,33 +103,39 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   // Alt hotkeys
   if (event.altKey && !event.ctrlKey && !event.shiftKey && !event.metaKey) {
     // Sound hotkeys
-    if (event.key === 'b' || event.key === '∫') { // Alt + b
+    if (event.key === 'b' || event.key === '∫') {
+      // Alt + b
       // This is used for fun in shared replays
       sharedReplaySendSound('buzz');
       return;
     }
-    if (event.key === 'h' || event.key === '˙') { // Alt + h
+    if (event.key === 'h' || event.key === '˙') {
+      // Alt + h
       // This is used for fun in shared replays
       sharedReplaySendSound('holy');
       return;
     }
-    if (event.key === 'n' || event.key === '˜') { // Alt + n
+    if (event.key === 'n' || event.key === '˜') {
+      // Alt + n
       // This is used for fun in shared replays
       sharedReplaySendSound('nooo');
       return;
     }
-    if (event.key === 'z' || event.key === 'Ω') { // Alt + z
+    if (event.key === 'z' || event.key === 'Ω') {
+      // Alt + z
       // This is used as a sound test
       globals.game!.sounds.play('turn_us');
       return;
     }
 
     // Other
-    if (event.key === 'l' || event.key === '¬') { // Alt + l
+    if (event.key === 'l' || event.key === '¬') {
+      // Alt + l
       backToLobby();
       return;
     }
-    if (event.key === 't' || event.key === '†') { // Alt + t
+    if (event.key === 't' || event.key === '†') {
+      // Alt + t
       replay.promptTurn();
       return;
     }
@@ -141,22 +143,12 @@ const keydown = (event: JQuery.KeyDownEvent) => {
 
   // The rest of the hotkeys should be disabled if we are typing in the in-game chat
   // or if a modifier key is pressed
-  if (
-    $('#game-chat-input').is(':focus')
-    || event.ctrlKey
-    || event.shiftKey
-    || event.altKey
-    || event.metaKey
-  ) {
+  if ($('#game-chat-input').is(':focus') || event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) {
     return;
   }
 
   // Delete = Delete the note from the card that we are currently hovering-over, if any
-  if (
-    event.key === 'Delete'
-    && globals.activeHover !== null
-    && globals.activeHover.type === 'HanabiCard'
-  ) {
+  if (event.key === 'Delete' && globals.activeHover !== null && globals.activeHover.type === 'HanabiCard') {
     const card = globals.activeHover;
     card.setNote('');
     return;

@@ -99,15 +99,21 @@ export const draw = () => {
 
     // Column 7 - Watch Replay
     const watchReplayButton = makeReplayButton(ids[i], 'solo');
-    $('<td>').html(watchReplayButton as any).appendTo(row);
+    $('<td>')
+      .html(watchReplayButton as any)
+      .appendTo(row);
 
     // Column 8 - Share Replay
     const shareReplayButton = makeReplayButton(ids[i], 'shared');
-    $('<td>').html(shareReplayButton as any).appendTo(row);
+    $('<td>')
+      .html(shareReplayButton as any)
+      .appendTo(row);
 
     // Column 9 - Other Scores
     const otherScoresButton = makeOtherScoresButton(ids[i], gameData.numSimilar);
-    $('<td>').html(otherScoresButton as any).appendTo(row);
+    $('<td>')
+      .html(otherScoresButton as any)
+      .appendTo(row);
 
     row.appendTo(tbody);
   }
@@ -233,21 +239,22 @@ export const drawOtherScores = (data: Array<GameHistory>) => {
 
     // Column 5 - Watch Replay
     const watchReplayButton = makeReplayButton(gameData.id, 'solo');
-    $('<td>').html(watchReplayButton as any).appendTo(row);
+    $('<td>')
+      .html(watchReplayButton as any)
+      .appendTo(row);
 
     // Column 6 - Share Replay
     const shareReplayButton = makeReplayButton(gameData.id, 'shared');
-    $('<td>').html(shareReplayButton as any).appendTo(row);
+    $('<td>')
+      .html(shareReplayButton as any)
+      .appendTo(row);
 
     row.appendTo(tbody);
   }
 };
 
-const dateTimeFormatter = new Intl.DateTimeFormat(
-  undefined,
-  {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  },
-);
+const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});

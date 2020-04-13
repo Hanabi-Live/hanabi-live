@@ -2,13 +2,7 @@
 
 // Imports
 import Konva from 'konva';
-import {
-  CARD_W,
-  CLUE_TYPE,
-  LABEL_COLOR,
-  MAX_CLUE_NUM,
-  STACK_DIRECTION,
-} from '../../constants';
+import { CARD_W, CLUE_TYPE, LABEL_COLOR, MAX_CLUE_NUM, STACK_DIRECTION } from '../../constants';
 import {
   ActionClue,
   ActionDiscard,
@@ -85,14 +79,10 @@ notifyFunctions.set('clue', (data: ActionClue) => {
     card.hideBorders();
     card.cluedBorder!.show();
     if (
-      !globals.lobby.settings.realLifeMode
-      && !globals.variant.name.startsWith('Cow & Pig')
-      && !globals.variant.name.startsWith('Duck')
-      && !(
-        globals.characterAssignments[data.giver!] === 'Quacker'
-        && card.holder === globals.playerUs
-        && !globals.replay
-      )
+      !globals.lobby.settings.realLifeMode &&
+      !globals.variant.name.startsWith('Cow & Pig') &&
+      !globals.variant.name.startsWith('Duck') &&
+      !(globals.characterAssignments[data.giver!] === 'Quacker' && card.holder === globals.playerUs && !globals.replay)
     ) {
       card.applyClue(clue, true);
       card.checkReapplyRankClues();
@@ -112,13 +102,13 @@ notifyFunctions.set('clue', (data: ActionClue) => {
     if (data.list.indexOf(order) < 0) {
       negativeList.push(order);
       if (
-        !globals.lobby.settings.realLifeMode
-        && !globals.variant.name.startsWith('Cow & Pig')
-        && !globals.variant.name.startsWith('Duck')
-        && !(
-          globals.characterAssignments[data.giver!] === 'Quacker'
-          && card.holder === globals.playerUs
-          && !globals.replay
+        !globals.lobby.settings.realLifeMode &&
+        !globals.variant.name.startsWith('Cow & Pig') &&
+        !globals.variant.name.startsWith('Duck') &&
+        !(
+          globals.characterAssignments[data.giver!] === 'Quacker' &&
+          card.holder === globals.playerUs &&
+          !globals.replay
         )
       ) {
         card.applyClue(clue, false);
@@ -147,10 +137,7 @@ notifyFunctions.set('clue', (data: ActionClue) => {
     } else if (data.clue.type === CLUE_TYPE.COLOR) {
       clueName = 'Moo';
     }
-  } else if (
-    globals.variant.name.startsWith('Duck')
-    || globals.characterAssignments[data.giver!] === 'Quacker'
-  ) {
+  } else if (globals.variant.name.startsWith('Duck') || globals.characterAssignments[data.giver!] === 'Quacker') {
     clueName = 'Quack';
   }
 
@@ -297,7 +284,7 @@ notifyFunctions.set('draw', (data: ActionDraw) => {
 
   // Each card is contained within a LayoutChild
   // Position the LayoutChild over the deck
-  const child = card.parent as unknown as LayoutChild;
+  const child = (card.parent as unknown) as LayoutChild;
   // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
   // and the user rewinds to the beginning of the replay
   child!.visible(true);
@@ -367,7 +354,7 @@ notifyFunctions.set('reorder', (data: ActionReorder) => {
   const hand = globals.elements.playerHands[data.target];
   const currentCardOrders: Array<number> = [];
   for (const layoutChild of hand.children.toArray() as Array<LayoutChild>) {
-    const card = layoutChild.children[0] as unknown as HanabiCard;
+    const card = (layoutChild.children[0] as unknown) as HanabiCard;
     currentCardOrders.push(card.order);
   }
 
@@ -375,7 +362,7 @@ notifyFunctions.set('reorder', (data: ActionReorder) => {
     const newCardOrderForThisSlot = data.handOrder[i];
     const currentIndexOfNewCard = currentCardOrders.indexOf(newCardOrderForThisSlot);
     const numMoveDown = currentIndexOfNewCard - i;
-    const layoutChild = globals.deck[newCardOrderForThisSlot].parent! as unknown as LayoutChild;
+    const layoutChild = (globals.deck[newCardOrderForThisSlot].parent! as unknown) as LayoutChild;
     for (let j = 0; j < numMoveDown; j++) {
       layoutChild.moveDown();
     }
@@ -511,9 +498,9 @@ notifyFunctions.set('text', (data: ActionText) => {
 });
 
 interface RevealMessage {
-  suit: number,
-  rank: number,
-  order: number,
+  suit: number;
+  rank: number;
+  order: number;
 }
 
 notifyFunctions.set('reveal', (data: RevealMessage) => {

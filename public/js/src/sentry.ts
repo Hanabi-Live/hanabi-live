@@ -22,7 +22,7 @@ export const init = () => {
 // https://docs.sentry.io/error-reporting/configuration/filtering/?platform=browser
 const beforeSend = (
   event: Sentry.Event,
-  hint?: Sentry.EventHint | undefined,
+  hint?: Sentry.EventHint | undefined
 ): Sentry.Event | PromiseLike<Sentry.Event | null> => {
   if (typeof hint === 'undefined') {
     return event;
@@ -39,7 +39,7 @@ const beforeSend = (
     }
     if (ignore) {
       // Returning null will prevent Sentry from sending the message
-      return (null as any);
+      return null as any;
     }
   }
   return event;
@@ -74,7 +74,4 @@ export const setUserContext = (userID: number, username: string) => {
   });
 };
 
-const useSentry = () => (
-  window.location.hostname !== 'localhost'
-  && !window.location.pathname.includes('/dev')
-);
+const useSentry = () => window.location.hostname !== 'localhost' && !window.location.pathname.includes('/dev');

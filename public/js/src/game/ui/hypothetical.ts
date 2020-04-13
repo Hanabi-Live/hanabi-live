@@ -2,12 +2,7 @@
 // to see what will happen
 
 // Imports
-import {
-  ACTION,
-  CLUE_TYPE,
-  REPLAY_ACTION_TYPE,
-  MAX_CLUE_NUM,
-} from '../../constants';
+import { ACTION, CLUE_TYPE, REPLAY_ACTION_TYPE, MAX_CLUE_NUM } from '../../constants';
 import * as action from './action';
 import { Action } from './actions';
 import { getTouchedCardsFromClue } from './clues';
@@ -177,14 +172,7 @@ export const send = (hypoAction: Action) => {
     // Text
     let text = `${globals.playerNames[globals.currentPlayerIndex]} tells `;
     text += `${globals.playerNames[hypoAction.target]} about `;
-    const words = [
-      'zero',
-      'one',
-      'two',
-      'three',
-      'four',
-      'five',
-    ];
+    const words = ['zero', 'one', 'two', 'three', 'four', 'five'];
     text += `${words[list.length]} `;
 
     if (hypoAction.clue!.type === CLUE_TYPE.RANK) {
@@ -216,10 +204,7 @@ export const send = (hypoAction: Action) => {
     if (type === 'play') {
       globals.score += 1;
     }
-    if (
-      (type === 'play' && card.rank === 5 && globals.clues < MAX_CLUE_NUM)
-      || type === 'discard'
-    ) {
+    if ((type === 'play' && card.rank === 5 && globals.clues < MAX_CLUE_NUM) || type === 'discard') {
       globals.clues += 1;
     }
 
@@ -234,7 +219,8 @@ export const send = (hypoAction: Action) => {
     // Draw
     const nextCardOrder = globals.indexOfLastDrawnCard + 1;
     const nextCard = globals.deckOrder[nextCardOrder];
-    if (nextCard) { // All the cards might have already been drawn
+    if (nextCard) {
+      // All the cards might have already been drawn
       sendHypoAction({
         type: 'draw',
         order: nextCardOrder,
@@ -310,10 +296,7 @@ export const backOneTurn = () => {
       break;
     }
   }
-  globals.elements.hypoBackButton!.visible((
-    globals.amSharedReplayLeader
-        && globals.hypoActions.length > 0
-  ));
+  globals.elements.hypoBackButton!.visible(globals.amSharedReplayLeader && globals.hypoActions.length > 0);
 
   // Reset to the turn where the hypothetical started
   globals.replayTurn = globals.replayMax;

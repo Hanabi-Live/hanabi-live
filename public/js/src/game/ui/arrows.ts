@@ -3,12 +3,7 @@
 
 // Imports
 import Konva from 'konva';
-import {
-  ARROW_COLOR,
-  CLUE_TYPE,
-  REPLAY_ACTION_TYPE,
-  STACK_BASE_RANK,
-} from '../../constants';
+import { ARROW_COLOR, CLUE_TYPE, REPLAY_ACTION_TYPE, STACK_BASE_RANK } from '../../constants';
 import Arrow from './Arrow';
 import Clue from './Clue';
 import globals from './globals';
@@ -37,23 +32,13 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
 
   // Figure out whether the arrrow should be inverted or not
   let rot = 0;
-  if (
-    element.type === 'HanabiCard'
-    && !element.isPlayed
-    && !element.isDiscarded
-    && element.rank !== STACK_BASE_RANK
-  ) {
+  if (element.type === 'HanabiCard' && !element.isPlayed && !element.isDiscarded && element.rank !== STACK_BASE_RANK) {
     if (element.parent && element.parent.parent) {
       rot = element.parent.parent.origRotation;
     }
     if (
-      (
-        !globals.lobby.settings.keldonMode
-        && element.holder === globals.playerUs
-      ) || (
-        globals.lobby.settings.keldonMode
-        && (element.holder !== globals.playerUs && element.holder !== null)
-      )
+      (!globals.lobby.settings.keldonMode && element.holder === globals.playerUs) ||
+      (globals.lobby.settings.keldonMode && element.holder !== globals.playerUs && element.holder !== null)
     ) {
       // In BGA mode, invert the arrows on our hand
       // (so that it doesn't get cut off by the top of the screen)
@@ -91,8 +76,8 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
 
     // Clue arrows have a circle that shows the type of clue given
     if (
-      globals.variant.name.startsWith('Duck')
-      || (globals.characterAssignments[giver!] === 'Quacker' && !globals.replay)
+      globals.variant.name.startsWith('Duck') ||
+      (globals.characterAssignments[giver!] === 'Quacker' && !globals.replay)
     ) {
       // Don't show the circle in variants where the clue types are supposed to be hidden
       arrow.circle.hide();
@@ -206,10 +191,10 @@ const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, tur
 
 export const click = (event: any, order: number, element: any) => {
   if (
-    event.evt.which === 3 // Right-click
-    && globals.sharedReplay
-    && globals.amSharedReplayLeader
-    && globals.useSharedTurns
+    event.evt.which === 3 && // Right-click
+    globals.sharedReplay &&
+    globals.amSharedReplayLeader &&
+    globals.useSharedTurns
   ) {
     send(order, element);
   }
@@ -236,10 +221,7 @@ export const toggle = (element: any) => {
   }
 
   const arrow = globals.elements.arrows[0];
-  const show = (
-    arrow.pointingTo !== element
-        || arrow.base.fill() !== ARROW_COLOR.HIGHLIGHT
-  );
+  const show = arrow.pointingTo !== element || arrow.base.fill() !== ARROW_COLOR.HIGHLIGHT;
   hideAll();
   if (show) {
     set(0, element, null, null);

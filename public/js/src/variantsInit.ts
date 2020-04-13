@@ -5,16 +5,16 @@ import Suit from './Suit';
 import Variant from './Variant';
 
 type VariantJSON = {
-  id: number,
-  suits: string[],
+  id: number;
+  suits: string[];
 
-  clueColors?: string[],
-  clueRanks?: number[],
-  colorCluesTouchNothing?: boolean,
+  clueColors?: string[];
+  clueRanks?: number[];
+  colorCluesTouchNothing?: boolean;
 
-  rankCluesTouchNothing?: boolean,
-  showSuitNames?: boolean,
-  spacing?: boolean,
+  rankCluesTouchNothing?: boolean;
+  showSuitNames?: boolean;
+  spacing?: boolean;
 };
 type VariantEntryIterable = Iterable<[string, VariantJSON]>;
 
@@ -113,8 +113,8 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
     // Validate the "colorCluesTouchNothing" property
     // If it is not specified, assume false (e.g. cluing colors in this variant works normally)
     if (
-      Object.hasOwnProperty.call(variantJSON, 'colorCluesTouchNothing')
-      && variantJSON.colorCluesTouchNothing !== true
+      Object.hasOwnProperty.call(variantJSON, 'colorCluesTouchNothing') &&
+      variantJSON.colorCluesTouchNothing !== true
     ) {
       throw new Error(`The "colorCluesTouchNothing" property for the variant "${variantName}" must be set to true.`);
     }
@@ -123,8 +123,8 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
     // Validate the "rankCluesTouchNothing" property
     // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
     if (
-      Object.hasOwnProperty.call(variantJSON, 'rankCluesTouchNothing')
-      && variantJSON.rankCluesTouchNothing !== true
+      Object.hasOwnProperty.call(variantJSON, 'rankCluesTouchNothing') &&
+      variantJSON.rankCluesTouchNothing !== true
     ) {
       throw new Error(`The "rankCluesTouchNothing" property for the variant "${variantName}" must be set to true.`);
     }
@@ -132,20 +132,14 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
 
     // Validate the "showSuitNames" property
     // If it is not specified, assume that we are not showing the suit names
-    if (
-      Object.hasOwnProperty.call(variantJSON, 'showSuitNames')
-      && variantJSON.showSuitNames !== true
-    ) {
+    if (Object.hasOwnProperty.call(variantJSON, 'showSuitNames') && variantJSON.showSuitNames !== true) {
       throw new Error(`The "showSuitNames" property for the variant "${variantName}" must be set to true.`);
     }
     const showSuitNames: boolean = variantJSON.showSuitNames || false;
 
     // Validate the "spacing" property
     // If it is not specified, assume that there is no spacing
-    if (
-      Object.hasOwnProperty.call(variantJSON, 'spacing')
-      && variantJSON.spacing !== true
-    ) {
+    if (Object.hasOwnProperty.call(variantJSON, 'spacing') && variantJSON.spacing !== true) {
       throw new Error(`The "spacing" property for the variant "${variantName}" must be set to true.`);
     }
     const spacing: boolean = variantJSON.spacing || false;

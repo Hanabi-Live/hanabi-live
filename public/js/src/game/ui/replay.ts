@@ -90,11 +90,7 @@ export const goto = (target: number, fast: boolean) => {
 
   const rewind = target < globals.replayTurn;
 
-  if (
-    globals.sharedReplay
-    && globals.amSharedReplayLeader
-    && globals.useSharedTurns
-  ) {
+  if (globals.sharedReplay && globals.amSharedReplayLeader && globals.useSharedTurns) {
     shareCurrentTurn(target);
   }
 
@@ -205,7 +201,7 @@ const reset = () => {
 
   // Reset all of the cards in the deck
   for (const card of globals.deck) {
-    const child = card.parent as unknown as LayoutChild;
+    const child = (card.parent as unknown) as LayoutChild;
     if (!child) {
       return;
     }
@@ -286,7 +282,7 @@ export function barClick(this: Konva.Rect, event: Konva.KonvaPointerEvent) {
   const rectX = event.evt.x - this.getAbsolutePosition().x;
   const w = this.width();
   const step = w / globals.replayMax;
-  const newTurn = Math.floor((rectX + (step / 2)) / step);
+  const newTurn = Math.floor((rectX + step / 2) / step);
   if (newTurn !== globals.replayTurn) {
     checkDisableSharedTurns();
     goto(newTurn, true);
@@ -294,7 +290,7 @@ export function barClick(this: Konva.Rect, event: Konva.KonvaPointerEvent) {
 }
 
 export function barDrag(this: Konva.Rect, pos: Konva.Vector2d) {
-  const min = globals.elements.replayBar!.getAbsolutePosition().x + (this.width() * 0.5);
+  const min = globals.elements.replayBar!.getAbsolutePosition().x + this.width() * 0.5;
   const w = globals.elements.replayBar!.width() - this.width();
   let shuttleX = pos.x - min;
   const shuttleY = this.getAbsolutePosition().y;
@@ -305,7 +301,7 @@ export function barDrag(this: Konva.Rect, pos: Konva.Vector2d) {
     shuttleX = w;
   }
   const step = w / globals.replayMax;
-  const newTurn = Math.floor((shuttleX + (step / 2)) / step);
+  const newTurn = Math.floor((shuttleX + step / 2) / step);
   if (newTurn !== globals.replayTurn) {
     checkDisableSharedTurns();
     goto(newTurn, true);
@@ -317,12 +313,7 @@ export function barDrag(this: Konva.Rect, pos: Konva.Vector2d) {
   };
 }
 
-const positionReplayShuttle = (
-  shuttle: Shuttle,
-  turn: number,
-  smaller: boolean,
-  fast: boolean,
-) => {
+const positionReplayShuttle = (shuttle: Shuttle, turn: number, smaller: boolean, fast: boolean) => {
   let max = globals.replayMax;
 
   // During initialization, the turn will be -1 and the maximum number of replay turns will be 0
@@ -336,8 +327,8 @@ const positionReplayShuttle = (
 
   const winH = globals.stage.height();
   const sliderW = globals.elements.replayBar!.width() - shuttle.width();
-  const x = globals.elements.replayBar!.x() + (sliderW / max * turn) + (shuttle.width() / 2);
-  let y = globals.elements.replayBar!.y() + (shuttle.height() * 0.55);
+  const x = globals.elements.replayBar!.x() + (sliderW / max) * turn + shuttle.width() / 2;
+  let y = globals.elements.replayBar!.y() + shuttle.height() * 0.55;
   if (smaller) {
     y -= 0.003 * winH;
   }
@@ -372,18 +363,8 @@ export const adjustShuttles = (fast: boolean) => {
 
   // Adjust the shuttles along the X axis based on the current turn
   // If it is smaller, we need to nudge it to the right a bit in order to center it
-  positionReplayShuttle(
-    globals.elements.replayShuttleShared!,
-    globals.sharedReplayTurn,
-    false,
-    fast,
-  );
-  positionReplayShuttle(
-    globals.elements.replayShuttle!,
-    globals.replayTurn,
-    smaller,
-    fast,
-  );
+  positionReplayShuttle(globals.elements.replayShuttleShared!, globals.sharedReplayTurn, false, fast);
+  positionReplayShuttle(globals.elements.replayShuttle!, globals.replayTurn, smaller, fast);
 };
 
 // -----------------------------
@@ -439,12 +420,7 @@ export const toggleSharedTurns = () => {
 
 // Navigating as a follower in a shared replay disables replay actions
 export const checkDisableSharedTurns = () => {
-  if (
-    globals.replay
-    && globals.sharedReplay
-    && !globals.amSharedReplayLeader
-    && globals.useSharedTurns
-  ) {
+  if (globals.replay && globals.sharedReplay && !globals.amSharedReplayLeader && globals.useSharedTurns) {
     // Replay actions are currently enabled, so disable them
     toggleSharedTurns();
   }

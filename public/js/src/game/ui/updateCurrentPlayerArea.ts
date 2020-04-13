@@ -12,12 +12,12 @@ export default () => {
   currentPlayerArea.visible(
     // Don't show it if we are in a solo/shared replay
     // or if we happen to have the in-game replay open
-    !globals.inReplay
-        // Don't show it if the clue UI is there
-        && (!globals.ourTurn || globals.clues === 0)
-        // Don't show it if the premove button is there
-        && !globals.elements.premoveCancelButton!.visible()
-        && globals.currentPlayerIndex !== -1, // Don't show it if this is the end of the game
+    !globals.inReplay &&
+      // Don't show it if the clue UI is there
+      (!globals.ourTurn || globals.clues === 0) &&
+      // Don't show it if the premove button is there
+      !globals.elements.premoveCancelButton!.visible() &&
+      globals.currentPlayerIndex !== -1 // Don't show it if this is the end of the game
   );
 
   if (globals.currentPlayerIndex === -1) {
@@ -36,26 +36,19 @@ export default () => {
       specialText = `(cannot discard; at ${MAX_CLUE_NUM} clues)`;
       text3.fill(LABEL_COLOR);
     } else if (
-      globals.lobby.settings.hyphenatedConventions
-      && globals.elements.playerHands[globals.currentPlayerIndex].isLocked()
+      globals.lobby.settings.hyphenatedConventions &&
+      globals.elements.playerHands[globals.currentPlayerIndex].isLocked()
     ) {
       specialText = '(locked; may not be able to discard)';
       text3.fill(LABEL_COLOR);
-    } else if (
-      globals.lobby.settings.hyphenatedConventions
-      && globals.elements.noDoubleDiscardBorder!.visible()
-    ) {
+    } else if (globals.lobby.settings.hyphenatedConventions && globals.elements.noDoubleDiscardBorder!.visible()) {
       specialText = '(potentially in a "Double Discard" situation)';
       text3.fill('yellow');
     }
   }
 
   const setPlayerText = (threeLines: boolean) => {
-    const {
-      rect1,
-      textValues,
-      values,
-    } = currentPlayerArea;
+    const { rect1, textValues, values } = currentPlayerArea;
 
     text2.fitText(globals.playerNames[globals.currentPlayerIndex]);
 
@@ -69,7 +62,7 @@ export default () => {
       text2.width(text2.width() * 0.9);
       text2.resize();
     }
-    text2.x((rect1.width() / 2) - (text2.width() / 2));
+    text2.x(rect1.width() / 2 - text2.width() / 2);
   };
 
   const totalH = currentPlayerArea.height();
@@ -79,17 +72,17 @@ export default () => {
     setPlayerText(false);
     const text2H = text2.measureSize(text2.text()).height;
     const spacing = 0.03 * winH;
-    text1.y((totalH / 2) - (text1H / 2) - spacing);
-    text2.y((totalH / 2) - (text2H / 2) + spacing);
+    text1.y(totalH / 2 - text1H / 2 - spacing);
+    text2.y(totalH / 2 - text2H / 2 + spacing);
     text3.hide();
   } else {
     // 3 lines
     setPlayerText(true);
     const text2H = text2.measureSize(text2.text()).height;
     const spacing = 0.04 * winH;
-    text1.y((totalH / 2) - (text1H / 2) - spacing);
-    text2.y((totalH / 2) - (text2H / 2) + (spacing * 0.25));
-    text3.y((totalH / 2) - (text1H / 2) + (spacing * 1.5));
+    text1.y(totalH / 2 - text1H / 2 - spacing);
+    text2.y(totalH / 2 - text2H / 2 + spacing * 0.25);
+    text3.y(totalH / 2 - text1H / 2 + spacing * 1.5);
     text3.fitText(specialText);
     text3.show();
   }

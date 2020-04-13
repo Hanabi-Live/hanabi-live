@@ -14,10 +14,7 @@ const tooltipOptions: JQueryTooltipster.ITooltipsterOptions = {
   animation: 'grow',
   contentAsHTML: true,
   delay: 0,
-  theme: [
-    'tooltipster-shadow',
-    'tooltipster-shadow-big',
-  ],
+  theme: ['tooltipster-shadow', 'tooltipster-shadow-big'],
 };
 
 export const show = () => {
@@ -87,7 +84,9 @@ export const hide = () => {
 
 export const draw = () => {
   if (globals.game === null) {
-    throw new Error('Attempted to draw the pre-game screen without having first recieved a "game" message from the server.');
+    throw new Error(
+      'Attempted to draw the pre-game screen without having first recieved a "game" message from the server.'
+    );
   }
 
   // Update the information on the left-hand side of the screen
@@ -211,7 +210,7 @@ export const draw = () => {
   // Draw the player boxes
   const numPlayers = globals.game.players.length;
   for (let i = 0; i <= 5; i++) {
-    const div = $(`#lobby-pregame-player-${(i + 1)}`);
+    const div = $(`#lobby-pregame-player-${i + 1}`);
 
     const player = globals.game.players[i];
     if (!player) {
@@ -249,7 +248,7 @@ export const draw = () => {
     }
     let strikeoutRateString;
     if (variantStats.numGames > 0) {
-      let strikeoutRate = variantStats.numStrikeouts / variantStats.numGames * 100;
+      let strikeoutRate = (variantStats.numStrikeouts / variantStats.numGames) * 100;
       strikeoutRate = Math.round(strikeoutRate * 10) / 10; // (round it to 1 decimal places)
       strikeoutRateString = `${strikeoutRate}%`;
     } else {
@@ -308,7 +307,11 @@ export const draw = () => {
                     ${numPlayers === 1 ? 'B' : 'Other b'}est scores:
                 </div>
                 <div class="col-2 align-right padding0">
-                    <i id="lobby-pregame-player-${i + 1}-scores-icon" class="fas fa-chart-area green" data-tooltip-content="#lobby-pregame-player-${i + 1}-tooltip"></i>
+                    <i id="lobby-pregame-player-${
+                      i + 1
+                    }-scores-icon" class="fas fa-chart-area green" data-tooltip-content="#lobby-pregame-player-${
+      i + 1
+    }-tooltip"></i>
                 </div>
             </div>
             <div class="hidden">
@@ -366,11 +369,7 @@ export const enableStartGameButton = () => {
     return;
   }
 
-  if (
-    globals.game.owner === globals.id
-    && globals.game.players.length >= 2
-    && globals.game.players.length <= 6
-  ) {
+  if (globals.game.owner === globals.id && globals.game.players.length >= 2 && globals.game.players.length <= 6) {
     $('#nav-buttons-pregame-start').removeClass('disabled');
   }
 };

@@ -74,12 +74,7 @@ export default () => {
 };
 
 const initTooltips = () => {
-  const tooltips = [
-    'create-game',
-    'replay',
-    'resources',
-    'settings',
-  ];
+  const tooltips = ['create-game', 'replay', 'resources', 'settings'];
 
   const tooltipsterOptions = {
     theme: 'tooltipster-shadow',

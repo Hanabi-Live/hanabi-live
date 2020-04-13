@@ -64,8 +64,8 @@ export const init = () => {
     .on('resizemove', (event: any) => {
       // Get the new position based on the delta between the event and the old position
       // (which is conveniently stored in the "data-x" and "data-y" attributes)
-      let x = (parseFloat(event.target.getAttribute('data-x')) || 0);
-      let y = (parseFloat(event.target.getAttribute('data-y')) || 0);
+      let x = parseFloat(event.target.getAttribute('data-x')) || 0;
+      let y = parseFloat(event.target.getAttribute('data-y')) || 0;
 
       // Translate when resizing from top or left edges
       x += event.deltaRect.left;
@@ -145,10 +145,14 @@ export const show = () => {
   const x = localStorage.getItem('chatWindowX');
   const y = localStorage.getItem('chatWindowY');
   if (
-    width !== null && width !== ''
-    && height !== null && height !== ''
-    && x !== null && x !== ''
-    && y !== null && y !== ''
+    width !== null &&
+    width !== '' &&
+    height !== null &&
+    height !== '' &&
+    x !== null &&
+    x !== '' &&
+    y !== null &&
+    y !== ''
   ) {
     resetPosition = false;
     modal.css('width', width);

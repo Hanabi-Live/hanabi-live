@@ -29,7 +29,7 @@ export default () => {
 const commands = new Map();
 
 interface JoinedData {
-  tableID: number,
+  tableID: number;
 }
 commands.set('joined', (data: JoinedData) => {
   globals.tableID = data.tableID;
@@ -84,14 +84,14 @@ commands.set('left', () => {
 });
 
 interface NameData {
-  name: string,
+  name: string;
 }
 commands.set('name', (data: NameData) => {
   globals.randomName = data.name;
 });
 
 interface SoundLobbyData {
-  file: string,
+  file: string;
 }
 commands.set('soundLobby', (data: SoundLobbyData) => {
   sounds.play(data.file);
@@ -115,7 +115,7 @@ const tableSet = (data: Table) => {
 
 // Received by the client when a table no longer has any members present
 interface TableGoneData {
-  id: number,
+  id: number;
 }
 commands.set('tableGone', (data: TableGoneData) => {
   globals.tableMap.delete(data.id);
@@ -136,8 +136,8 @@ commands.set('tableList', (dataList: Array<Table>) => {
 });
 
 interface TableProgressData {
-  id: number,
-  progress: number,
+  id: number;
+  progress: number;
 }
 
 commands.set('tableProgress', (data: TableProgressData) => {
@@ -153,7 +153,7 @@ commands.set('tableProgress', (data: TableProgressData) => {
 });
 
 interface TableStartData {
-  replay: boolean,
+  replay: boolean;
 }
 commands.set('tableStart', (data: TableStartData) => {
   if (!data.replay) {
@@ -181,7 +181,7 @@ commands.set('userList', (dataList: Array<User>) => {
 
 // Received by the client when a user disconnects
 interface UserLeftData {
-  id: number,
+  id: number;
 }
 commands.set('userLeft', (data: UserLeftData) => {
   globals.userMap.delete(data.id);
@@ -192,8 +192,8 @@ commands.set('userLeft', (data: UserLeftData) => {
 });
 
 interface UserInactiveData {
-  id: number,
-  inactive: boolean,
+  id: number;
+  inactive: boolean;
 }
 commands.set('userInactive', (data: UserInactiveData) => {
   const user = globals.userMap.get(data.id);

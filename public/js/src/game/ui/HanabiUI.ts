@@ -45,7 +45,8 @@ export default class HanabiUI {
 
   // The following methods are called from various parent functions
 
-  updateChatLabel() { // eslint-disable-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this
+  updateChatLabel() {
     let text = '💬';
     if (globals.lobby.chatUnread > 0) {
       text += ` (${globals.lobby.chatUnread})`;
@@ -54,14 +55,16 @@ export default class HanabiUI {
     globals.layers.UI.batchDraw();
   }
 
-  destroy() { // eslint-disable-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this
+  destroy() {
     keyboard.destroy();
     timer.stop();
     globals.stage.destroy();
     // window.removeEventListener('resize', resizeCanvas, false);
   }
 
-  reshowClueUIAfterWarning() { // eslint-disable-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this
+  reshowClueUIAfterWarning() {
     action.handle();
   }
 }
@@ -157,7 +160,7 @@ const loadingFinishedCallback = () => {
   globals.cardImages = drawCards(
     globals.variant,
     globals.lobby.settings.colorblindMode,
-    globals.lobby.settings.styleNumbers,
+    globals.lobby.settings.styleNumbers
   );
 
   // Construct a list of all of the cards in the deck

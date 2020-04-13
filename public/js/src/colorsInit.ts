@@ -3,8 +3,8 @@ import Color from './Color';
 import colorsJSON from './data/colors.json';
 
 type ColorJSON = {
-  fill: string,
-  abbreviation?: string,
+  fill: string;
+  abbreviation?: string;
 };
 type ColorEntryIterable = Iterable<[string, ColorJSON]>;
 

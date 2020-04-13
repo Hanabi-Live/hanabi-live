@@ -5,9 +5,9 @@ import globals from './globals';
 import TimerDisplay from './TimerDisplay';
 
 interface ClockData {
-  times: Array<number>,
-  active: number,
-  timeTaken: number,
+  times: Array<number>;
+  active: number;
+  timeTaken: number;
 }
 
 // This function handles the "clock" WebSocket command
@@ -78,7 +78,7 @@ export const update = (data: ClockData) => {
   }
 
   // Start the local timer for the active player
-  const activeTimer = (ourTurn ? globals.elements.timer1 : globals.elements.timer2);
+  const activeTimer = ourTurn ? globals.elements.timer1 : globals.elements.timer2;
   globals.timerID = window.setInterval(() => {
     setTickingDownTime(activeTimer);
     setTickingDownTimeTooltip(globals.activeIndex);
@@ -127,14 +127,14 @@ function setTickingDownTime(timer: TimerDisplay) {
   // Play a sound to indicate that the current player is almost out of time
   // Do not play it more frequently than about once per second
   if (
-    globals.timed
-    && globals.lobby.settings.soundTimer
-    && millisecondsLeft > 0 // Between 0 and 10 seconds
-    && millisecondsLeft <= 10000
-    && timeElapsed > 900
-    && timeElapsed < 1100
-    && !globals.paused
-    && !globals.lobby.errorOccured
+    globals.timed &&
+    globals.lobby.settings.soundTimer &&
+    millisecondsLeft > 0 && // Between 0 and 10 seconds
+    millisecondsLeft <= 10000 &&
+    timeElapsed > 900 &&
+    timeElapsed < 1100 &&
+    !globals.paused &&
+    !globals.lobby.errorOccured
   ) {
     globals.game!.sounds.play('tone');
   }

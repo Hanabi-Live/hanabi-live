@@ -53,13 +53,9 @@ function create(this: any) {
   // Not sure if setting this is good
   this.cameras.roundPixels = true;
   // Set the background
-  const background = this.add.sprite(
-    this.canvas.width / 2,
-    this.canvas.height / 2,
-    'background',
-  );
-    // canvas width and height are expanded to browser window then shrunk minimally
-    // to achieve 16:9 aspect ratio, via getGameSize
+  const background = this.add.sprite(this.canvas.width / 2, this.canvas.height / 2, 'background');
+  // canvas width and height are expanded to browser window then shrunk minimally
+  // to achieve 16:9 aspect ratio, via getGameSize
   background.setDisplaySize(this.sys.canvas.width, this.sys.canvas.height);
   setGlobalScale(this.sys.canvas.height);
 

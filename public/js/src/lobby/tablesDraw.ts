@@ -127,7 +127,9 @@ const tablesDraw = () => {
       button.attr('id', `resume-${table.id}`);
       button.on('click', tableReattendButton(table));
     }
-    $('<td>').html(button as any).appendTo(row);
+    $('<td>')
+      .html(button as any)
+      .appendTo(row);
 
     // Column 7 - Players
     $('<td>').html(table.players).appendTo(row);

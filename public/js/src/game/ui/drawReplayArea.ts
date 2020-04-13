@@ -69,8 +69,8 @@ export default (winW: number, winH: number) => {
     width: shuttleValues.w * winW,
     height: shuttleValues.h * winH,
     offset: {
-      x: shuttleValues.w / 2 * winW,
-      y: shuttleValues.h / 2 * winW,
+      x: (shuttleValues.w / 2) * winW,
+      y: (shuttleValues.h / 2) * winW,
     },
     cornerRadius: shuttleValues.cornerRadius * winW,
     fill: '#d1d1d1', // Gray
@@ -89,8 +89,8 @@ export default (winW: number, winH: number) => {
     width: shuttleValues.w * winW,
     height: shuttleValues.h * winH,
     offset: {
-      x: shuttleValues.w / 2 * winW,
-      y: shuttleValues.h / 2 * winW,
+      x: (shuttleValues.w / 2) * winW,
+      y: (shuttleValues.h / 2) * winW,
     },
     cornerRadius: shuttleValues.cornerRadius * winW,
     fill: '#0000cc', // Blue
@@ -123,10 +123,7 @@ export default (winW: number, winH: number) => {
         width: replayButtonValues.w * winW,
         height: replayButtonValues.h * winH,
       },
-      [
-        globals.ImageLoader!.get('replay-back-full')!,
-        globals.ImageLoader!.get('replay-back-full-disabled')!,
-      ],
+      [globals.ImageLoader!.get('replay-back-full')!, globals.ImageLoader!.get('replay-back-full-disabled')!]
     );
     globals.elements.replayBackFullButton!.on('click tap', replay.backFull);
     globals.elements.replayArea.add(globals.elements.replayBackFullButton as any);
@@ -140,10 +137,7 @@ export default (winW: number, winH: number) => {
         width: replayButtonValues.w * winW,
         height: replayButtonValues.h * winH,
       },
-      [
-        globals.ImageLoader!.get('replay-back')!,
-        globals.ImageLoader!.get('replay-back-disabled')!,
-      ],
+      [globals.ImageLoader!.get('replay-back')!, globals.ImageLoader!.get('replay-back-disabled')!]
     );
     globals.elements.replayBackButton.on('click tap', () => {
       // Prevent accidental double clicks
@@ -165,10 +159,7 @@ export default (winW: number, winH: number) => {
         width: replayButtonValues.w * winW,
         height: replayButtonValues.h * winH,
       },
-      [
-        globals.ImageLoader!.get('replay-forward')!,
-        globals.ImageLoader!.get('replay-forward-disabled')!,
-      ],
+      [globals.ImageLoader!.get('replay-forward')!, globals.ImageLoader!.get('replay-forward-disabled')!]
     );
     globals.elements.replayForwardButton.on('click tap', () => {
       // Prevent accidental double clicks
@@ -190,10 +181,7 @@ export default (winW: number, winH: number) => {
         width: replayButtonValues.w * winW,
         height: replayButtonValues.h * winH,
       },
-      [
-        globals.ImageLoader!.get('replay-forward-full')!,
-        globals.ImageLoader!.get('replay-forward-full-disabled')!,
-      ],
+      [globals.ImageLoader!.get('replay-forward-full')!, globals.ImageLoader!.get('replay-forward-full-disabled')!]
     );
     globals.elements.replayForwardFullButton.on('click tap', replay.forwardFull);
     globals.elements.replayArea.add(globals.elements.replayForwardFullButton as any);
@@ -204,9 +192,9 @@ export default (winW: number, winH: number) => {
     y: 0.17,
   };
   globals.elements.replayExitButton = new Button({
-    x: (replayButtonValues.x + replayButtonValues.w + (replayButtonValues.spacing / 2)) * winW,
+    x: (replayButtonValues.x + replayButtonValues.w + replayButtonValues.spacing / 2) * winW,
     y: bottomButtonValues.y * winH,
-    width: ((replayButtonValues.w * 2) + (replayButtonValues.spacing * 2)) * winW,
+    width: (replayButtonValues.w * 2 + replayButtonValues.spacing * 2) * winW,
     height: replayButtonValues.w * winH,
     text: 'Exit Replay',
     visible: !globals.replay,
@@ -218,7 +206,7 @@ export default (winW: number, winH: number) => {
   const bottomLeftReplayButtonValues = {
     x: replayButtonValues.x - extra,
     y: bottomButtonValues.y,
-    w: (replayButtonValues.w * 2) + replayButtonValues.spacing + extra,
+    w: replayButtonValues.w * 2 + replayButtonValues.spacing + extra,
     h: 0.06,
   };
 
@@ -246,9 +234,9 @@ export default (winW: number, winH: number) => {
 
   // The previous two buttons will be moved to the left for replay leaders and
   // centered for non-replay-leaders
-  const totalWidth = (replayButtonValues.w * 4) + (replayButtonValues.spacing * 3);
+  const totalWidth = replayButtonValues.w * 4 + replayButtonValues.spacing * 3;
   function setCenter(this: Button) {
-    const x = replayButtonValues.x + ((totalWidth - bottomLeftReplayButtonValues.w) / 2);
+    const x = replayButtonValues.x + (totalWidth - bottomLeftReplayButtonValues.w) / 2;
     this.x(x * winW);
     this.y(bottomLeftReplayButtonValues.y * winH);
   }
@@ -262,7 +250,7 @@ export default (winW: number, winH: number) => {
   (globals.elements.useSharedTurnsButton as any).setLeft = setLeft;
 
   const bottomRightReplayButtonValues = {
-    x: replayButtonValues.x + (replayButtonValues.w * 2) + (replayButtonValues.spacing * 2),
+    x: replayButtonValues.x + replayButtonValues.w * 2 + replayButtonValues.spacing * 2,
     y: bottomLeftReplayButtonValues.y,
     w: bottomLeftReplayButtonValues.w,
     h: bottomLeftReplayButtonValues.h,

@@ -2,14 +2,7 @@
 
 // Imports
 import Color from '../../Color';
-import {
-  CARD_H,
-  CARD_W,
-  STACK_BASE_RANK,
-  START_CARD_RANK,
-  SUITS,
-  UNKNOWN_CARD_RANK,
-} from '../../constants';
+import { CARD_H, CARD_W, STACK_BASE_RANK, START_CARD_RANK, SUITS, UNKNOWN_CARD_RANK } from '../../constants';
 import Suit from '../../Suit';
 import Variant from '../../Variant';
 import drawPip from './drawPip';
@@ -162,12 +155,7 @@ const cloneCanvas = (oldCvs: HTMLCanvasElement) => {
   return newCvs;
 };
 
-const drawSuitPips = (
-  ctx: CanvasRenderingContext2D,
-  rank: number,
-  suit: Suit,
-  colorblindMode: boolean,
-) => {
+const drawSuitPips = (ctx: CanvasRenderingContext2D, rank: number, suit: Suit, colorblindMode: boolean) => {
   const scale = 0.4;
 
   // The middle for card 1
@@ -308,8 +296,8 @@ const makeDeckBack = (variant: Variant) => {
     const suit = variant.suits[i];
 
     // Transform polar to cartesian coordinates
-        const x = -1.05 * Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2)); // eslint-disable-line
-        const y = -1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2)); // eslint-disable-line
+    const x = -1.05 * Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2)); // eslint-disable-line
+    const y = -1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2)); // eslint-disable-line
 
     ctx.save();
     ctx.translate(x, y);
@@ -398,7 +386,7 @@ const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Array<Co
   ctx.moveTo(CARD_W - borderSize, borderSize); // Start at the top-right-hand corner
   ctx.lineTo(CARD_W - borderSize - triangleSize, borderSize); // Move left
   // Move down and right diagonally
-  ctx.lineTo(CARD_W - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2));
+  ctx.lineTo(CARD_W - borderSize - triangleSize / 2, borderSize + triangleSize / 2);
   ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
   ctx.fillStyle = clueColor1.fill;
   drawShape(ctx);
@@ -408,7 +396,7 @@ const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Array<Co
   ctx.moveTo(CARD_W - borderSize, borderSize); // Start at the top-right-hand corner
   ctx.lineTo(CARD_W - borderSize, borderSize + triangleSize); // Move down
   // Move up and left diagonally
-  ctx.lineTo(CARD_W - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2));
+  ctx.lineTo(CARD_W - borderSize - triangleSize / 2, borderSize + triangleSize / 2);
   ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
   ctx.fillStyle = clueColor2.fill;
   drawShape(ctx);
@@ -418,7 +406,7 @@ const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Array<Co
   ctx.moveTo(borderSize, CARD_H - borderSize); // Start at the bottom right-hand corner
   ctx.lineTo(borderSize, CARD_H - borderSize - triangleSize); // Move up
   // Move right and down diagonally
-  ctx.lineTo(borderSize + (triangleSize / 2), CARD_H - borderSize - (triangleSize / 2));
+  ctx.lineTo(borderSize + triangleSize / 2, CARD_H - borderSize - triangleSize / 2);
   ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
   ctx.fillStyle = clueColor1.fill;
   drawShape(ctx);
@@ -428,7 +416,7 @@ const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Array<Co
   ctx.moveTo(borderSize, CARD_H - borderSize); // Start at the bottom right-hand corner
   ctx.lineTo(borderSize + triangleSize, CARD_H - borderSize); // Move right
   // Move left and up diagonally
-  ctx.lineTo(borderSize + (triangleSize / 2), CARD_H - borderSize - (triangleSize / 2));
+  ctx.lineTo(borderSize + triangleSize / 2, CARD_H - borderSize - triangleSize / 2);
   ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
   ctx.fillStyle = clueColor2.fill;
   drawShape(ctx);
@@ -448,14 +436,14 @@ const drawCardTexture = (ctx: CanvasRenderingContext2D) => {
   ctx.globalAlpha = 0.2;
   ctx.strokeStyle = 'black';
 
-  for (let x = 0; x < CARD_W; x += 4 + (Math.random() * 4)) {
+  for (let x = 0; x < CARD_W; x += 4 + Math.random() * 4) {
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, CARD_H);
     ctx.stroke();
   }
 
-  for (let y = 0; y < CARD_H; y += 4 + (Math.random() * 4)) {
+  for (let y = 0; y < CARD_H; y += 4 + Math.random() * 4) {
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(CARD_W, y);
@@ -486,11 +474,7 @@ const getSuitStyle = (suit: Suit, ctx: CanvasRenderingContext2D, cardArea: strin
 };
 
 // Generates a vertical gradient that is evenly distributed between its component colors
-const evenLinearGradient = (
-  ctx: CanvasRenderingContext2D,
-  colors: Array<string>,
-  args: Array<number>,
-) => {
+const evenLinearGradient = (ctx: CanvasRenderingContext2D, colors: Array<string>, args: Array<number>) => {
   const grad = ctx.createLinearGradient(args[0], args[1], args[2], args[3]);
   for (let i = 0; i < colors.length; ++i) {
     grad.addColorStop(i / (colors.length - 1), colors[i]);

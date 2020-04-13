@@ -25,13 +25,7 @@ export function image(this: HanabiCard) {
     image: null as any,
   });
   (this.bare as any).sceneFunc((ctx: CanvasRenderingContext2D) => {
-    scaleCardImage(
-      ctx,
-      this.bareName,
-      this.bare!.width(),
-      this.bare!.height(),
-      this.bare!.getAbsoluteTransform(),
-    );
+    scaleCardImage(ctx, this.bareName, this.bare!.width(), this.bare!.height(), this.bare!.getAbsoluteTransform());
   });
   this.add(this.bare);
 }
@@ -101,13 +95,14 @@ export function pips(this: HanabiCard) {
     // Set the pip at the middle of the card
     const x = Math.floor(CARD_W * 0.5);
     const y = Math.floor(CARD_H * 0.5);
-    const scale = { // Scale numbers are magic
+    const scale = {
+      // Scale numbers are magic
       x: 0.4,
       y: 0.4,
     };
     // Transform polar to Cartesian coordinates
     const offsetBase = CARD_W * 0.7;
-    const offsetTrig = ((-i / suits.length) + 0.25) * Math.PI * 2;
+    const offsetTrig = (-i / suits.length + 0.25) * Math.PI * 2;
     const offset = {
       x: Math.floor(offsetBase * Math.cos(offsetTrig)),
       y: Math.floor(offsetBase * Math.sin(offsetTrig)),
@@ -125,7 +120,8 @@ export function pips(this: HanabiCard) {
       fill,
       stroke: 'black',
       strokeWidth: 5,
-      sceneFunc: (ctx: any) => { // Konva.Context does not exist for some reason
+      sceneFunc: (ctx: any) => {
+        // Konva.Context does not exist for some reason
         drawPip(ctx, suit, false, false);
       },
       listening: false,
@@ -134,11 +130,16 @@ export function pips(this: HanabiCard) {
     // Gradient numbers are magic
     if (suit.fill === 'multi') {
       suitPip.fillRadialGradientColorStops([
-        0.3, suit.fillColors[0],
-        0.425, suit.fillColors[1],
-        0.65, suit.fillColors[2],
-        0.875, suit.fillColors[3],
-        1, suit.fillColors[4],
+        0.3,
+        suit.fillColors[0],
+        0.425,
+        suit.fillColors[1],
+        0.65,
+        suit.fillColors[2],
+        0.875,
+        suit.fillColors[3],
+        1,
+        suit.fillColors[4],
       ]);
       suitPip.fillRadialGradientStartPoint({
         x: 75,
@@ -167,8 +168,8 @@ export function pips(this: HanabiCard) {
       visible: false,
       sceneFunc: (ctx, shape) => {
         const width = 50;
-        const xx = Math.floor((CARD_W * 0.25) - (width * 0.5));
-        const xy = Math.floor((CARD_H * 0.25) - (width * 0.05));
+        const xx = Math.floor(CARD_W * 0.25 - width * 0.5);
+        const xy = Math.floor(CARD_H * 0.25 - width * 0.05);
         ctx.translate(-1.4 * width, -2 * width);
         drawX(ctx, shape, xx, xy, 50, width);
       },
@@ -192,7 +193,7 @@ export function pips(this: HanabiCard) {
   this.rankPipsMap = new Map();
   this.rankPipsXMap = new Map();
   for (const rank of globals.variant.ranks) {
-    const x = Math.floor(CARD_W * ((rank * 0.19) - 0.14));
+    const x = Math.floor(CARD_W * (rank * 0.19 - 0.14));
     const y = 0;
     let opacity = 1;
     if (rank === START_CARD_RANK) {
@@ -318,25 +319,23 @@ export function note(this: HanabiCard) {
 export function empathy(this: HanabiCard) {
   this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
     if (
-      event.evt.which !== 1 // Only enable Empathy for left-clicks
+      event.evt.which !== 1 || // Only enable Empathy for left-clicks
       // Disable Empathy if a modifier key is pressed
       // (unless we are in a speedrun,
       // because then Empathy is mapped to Ctrl + left click)
-      || (event.evt.ctrlKey && !globals.speedrun && !globals.lobby.settings.speedrunMode)
-      || (
-        !event.evt.ctrlKey
-          && (globals.speedrun || globals.lobby.settings.speedrunMode)
-          && !globals.replay
-          && !globals.spectating
-      )
-      || event.evt.shiftKey
-      || event.evt.altKey
-      || event.evt.metaKey
-      || this.tweening // Disable Empathy if the card is tweening
-      || this.isPlayed // Clicking on a played card goes to the turn that it was played
+      (event.evt.ctrlKey && !globals.speedrun && !globals.lobby.settings.speedrunMode) ||
+      (!event.evt.ctrlKey &&
+        (globals.speedrun || globals.lobby.settings.speedrunMode) &&
+        !globals.replay &&
+        !globals.spectating) ||
+      event.evt.shiftKey ||
+      event.evt.altKey ||
+      event.evt.metaKey ||
+      this.tweening || // Disable Empathy if the card is tweening
+      this.isPlayed || // Clicking on a played card goes to the turn that it was played
       // Clicking on a discarded card goes to the turn that it was discarded
-      || this.isDiscarded
-      || this.order > globals.deck.length - 1 // Disable empathy for the stack bases
+      this.isDiscarded ||
+      this.order > globals.deck.length - 1 // Disable empathy for the stack bases
     ) {
       return;
     }
@@ -347,7 +346,8 @@ export function empathy(this: HanabiCard) {
 
   // Konva.PointerEvent does not have a "type" property for some reason
   this.on('mouseup mouseout', (event: any) => {
-    if (event.type === 'mouseup' && event.evt.which !== 1) { // Left-click
+    if (event.type === 'mouseup' && event.evt.which !== 1) {
+      // Left-click
       return;
     }
 
@@ -364,7 +364,7 @@ export function empathy(this: HanabiCard) {
     if (!this.parent || !this.parent.parent) {
       return;
     }
-    const hand = this.parent.parent as unknown as CardLayout;
+    const hand = (this.parent.parent as unknown) as CardLayout;
     if (!hand || hand.children.length === 0 || hand.empathy === enabled) {
       return;
     }
@@ -396,9 +396,9 @@ export function click(this: HanabiCard) {
   this.on('mousedown', HanabiCardClickSpeedrun);
   this.on('mousedown', (event: any) => {
     if (
-      event.evt.which !== 1 // Dragging uses left click
-      || !this.parent
-      || !this.parent.draggable()
+      event.evt.which !== 1 || // Dragging uses left click
+      !this.parent ||
+      !this.parent.draggable()
     ) {
       return;
     }
@@ -446,10 +446,7 @@ export function possibilities(this: HanabiCard) {
     // If the card is still in the player's hand and it is not fully "filled in" with clues,
     // then we cannot remove it from the list of possibilities
     // (because they do not know what it is yet)
-    if (
-      card.holder === this.holder
-      && (card.possibleSuits.length > 1 || card.possibleRanks.length > 1)
-    ) {
+    if (card.holder === this.holder && (card.possibleSuits.length > 1 || card.possibleRanks.length > 1)) {
       continue;
     }
 
@@ -473,15 +470,15 @@ const scaleCardImage = (
   name: string,
   width: number,
   height: number,
-  tf: any, // Konva.Transform does not exist for some reason
+  tf: any // Konva.Transform does not exist for some reason
 ) => {
   let src = globals.cardImages.get(name);
   if (typeof src === 'undefined') {
     throw new Error(`The image "${name}" was not generated.`);
   }
 
-  const dw = Math.sqrt((tf.m[0] * tf.m[0]) + (tf.m[1] * tf.m[1])) * width;
-  const dh = Math.sqrt((tf.m[2] * tf.m[2]) + (tf.m[3] * tf.m[3])) * height;
+  const dw = Math.sqrt(tf.m[0] * tf.m[0] + tf.m[1] * tf.m[1]) * width;
+  const dh = Math.sqrt(tf.m[2] * tf.m[2] + tf.m[3] * tf.m[3]) * height;
 
   if (dw < 1 || dh < 1) {
     return;
@@ -532,7 +529,7 @@ const drawX = (
   x: number,
   y: number,
   size: number,
-  width: number,
+  width: number
 ) => {
   // Start at the top left corner and draw an X
   ctx.beginPath();

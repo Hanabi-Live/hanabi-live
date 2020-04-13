@@ -26,18 +26,18 @@ export default class PlayArea extends Phaser.GameObjects.Container {
       config.x,
       config.y,
       this.horizSpacing * config.suits.length,
-      CARD_H * config.scale,
+      CARD_H * config.scale
     );
     this.zone.zoneContainer = this;
-    this.zone.setRectangleDropZone(
-      this.horizSpacing * config.suits.length,
-      CARD_H * config.scale,
+    this.zone.setRectangleDropZone(this.horizSpacing * config.suits.length, CARD_H * config.scale);
+    const cardsToAdd = this.suits.map(
+      (suit: Suit) =>
+        new HanabiCard(scene, {
+          suit,
+          rank: 0,
+          scale: config.scale,
+        })
     );
-    const cardsToAdd = this.suits.map((suit: Suit) => new HanabiCard(scene, {
-      suit,
-      rank: 0,
-      scale: config.scale,
-    }));
     this.addCards(cardsToAdd);
   }
 
@@ -56,7 +56,7 @@ export default class PlayArea extends Phaser.GameObjects.Container {
 
     for (const card of cards) {
       const suitIdx = this.suits.findIndex((suit: Suit) => suit === card.suit);
-      const x = (suitIdx + (1 / 2) - (nSuits / 2)) * this.horizSpacing;
+      const x = (suitIdx + 1 / 2 - nSuits / 2) * this.horizSpacing;
       this.scene.tweens.add({
         targets: card,
         x,

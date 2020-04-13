@@ -84,64 +84,45 @@ export const checkSpecialNote = (card: HanabiCard) => {
   card.setBareImage();
 
   // Feature 2 - Give the card a special border if it is chop moved
-  card.noteBorder!.visible((
-    card.noteChopMoved
-        && !card.cluedBorder!.visible()
-        && !globals.replay
-        && !globals.spectating
-  ));
+  card.noteBorder!.visible(
+    card.noteChopMoved && !card.cluedBorder!.visible() && !globals.replay && !globals.spectating
+  );
 
   // Feature 3 - Give the card a special border if it is finessed
-  card.finesseBorder!.visible((
-    card.noteFinessed
-        && !card.cluedBorder!.visible()
-        && !globals.replay
-        && !globals.spectating
-  ));
+  card.finesseBorder!.visible(
+    card.noteFinessed && !card.cluedBorder!.visible() && !globals.replay && !globals.spectating
+  );
 
   globals.layers.card.batchDraw();
 };
 
 const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => {
   // First, check to see if this card should be marked with certain properties
-  card.noteKnownTrash = (
-    note === 'kt'
-        || fullNote.includes('[kt]')
-        || note === 'trash'
-        || fullNote.includes('[trash]')
-        || note === 'stale'
-        || fullNote.includes('[stale]')
-        || note === 'bad'
-        || fullNote.includes('[bad]')
-  );
-  card.noteNeedsFix = (
-    note === 'fixme'
-        || fullNote.includes('[fixme]')
-  );
-  card.noteChopMoved = (
-    note === 'cm'
-        || fullNote.includes('[cm]')
-        || note === '5cm'
-        || fullNote.includes('[5cm]')
-        || note === 'tcm'
-        || fullNote.includes('[tcm]')
-        || note === 'tccm'
-        || fullNote.includes('[tccm]')
-        || note === 'sdcm'
-        || fullNote.includes('[sdcm]')
-        || note === 'sbpcm'
-        || fullNote.includes('[sbpcm]')
-  );
-  card.noteFinessed = (
-    note === 'f'
-        || fullNote.includes('[f]')
-        || note === 'pf'
-        || fullNote.includes('[pf]')
-  );
-  card.noteBlank = (
-    note === 'blank'
-        || fullNote.includes('[blank]')
-  );
+  card.noteKnownTrash =
+    note === 'kt' ||
+    fullNote.includes('[kt]') ||
+    note === 'trash' ||
+    fullNote.includes('[trash]') ||
+    note === 'stale' ||
+    fullNote.includes('[stale]') ||
+    note === 'bad' ||
+    fullNote.includes('[bad]');
+  card.noteNeedsFix = note === 'fixme' || fullNote.includes('[fixme]');
+  card.noteChopMoved =
+    note === 'cm' ||
+    fullNote.includes('[cm]') ||
+    note === '5cm' ||
+    fullNote.includes('[5cm]') ||
+    note === 'tcm' ||
+    fullNote.includes('[tcm]') ||
+    note === 'tccm' ||
+    fullNote.includes('[tccm]') ||
+    note === 'sdcm' ||
+    fullNote.includes('[sdcm]') ||
+    note === 'sbpcm' ||
+    fullNote.includes('[sbpcm]');
+  card.noteFinessed = note === 'f' || fullNote.includes('[f]') || note === 'pf' || fullNote.includes('[pf]');
+  card.noteBlank = note === 'blank' || fullNote.includes('[blank]');
 
   // Second, check the contents of the note right of the right-most pipe
   card.noteSuit = null;
@@ -159,12 +140,12 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
         return;
       }
       if (
-        note === `${suit.abbreviation.toLowerCase()}${rank}` // e.g. "b1" or "B1"
-        || note === `${suit.name.toLowerCase()}${rank}` // e.g. "blue1" or "Blue1" or "BLUE1"
-        || note === `${suit.name.toLowerCase()} ${rank}` // e.g. "blue 1" or "Blue 1" or "BLUE 1"
-        || note === `${rank}${suit.abbreviation.toLowerCase()}` // e.g. "1b" or "1B"
-        || note === `${rank}${suit.name.toLowerCase()}` // e.g. "1blue" or "1Blue" or "1BLUE"
-        || note === `${rank} ${suit.name.toLowerCase()}` // e.g. "1 blue" or "1 Blue" or "1 BLUE"
+        note === `${suit.abbreviation.toLowerCase()}${rank}` || // e.g. "b1" or "B1"
+        note === `${suit.name.toLowerCase()}${rank}` || // e.g. "blue1" or "Blue1" or "BLUE1"
+        note === `${suit.name.toLowerCase()} ${rank}` || // e.g. "blue 1" or "Blue 1" or "BLUE 1"
+        note === `${rank}${suit.abbreviation.toLowerCase()}` || // e.g. "1b" or "1B"
+        note === `${rank}${suit.name.toLowerCase()}` || // e.g. "1blue" or "1Blue" or "1BLUE"
+        note === `${rank} ${suit.name.toLowerCase()}` // e.g. "1 blue" or "1 Blue" or "1 BLUE"
       ) {
         card.noteSuit = suit;
         card.noteRank = rank;
@@ -188,12 +169,12 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
         return;
       }
       if (
-        fullNote.includes(`[${suit.abbreviation.toLowerCase()}${rank}]`) // e.g. "b1" or "B1"
-        || fullNote.includes(`[${suit.name.toLowerCase()}${rank}]`) // e.g. "blue1" or "Blue1" or "BLUE1"
-        || fullNote.includes(`[${suit.name.toLowerCase()} ${rank}]`) // e.g. "blue 1" or "Blue 1" or "BLUE 1"
-        || fullNote.includes(`[${rank}${suit.abbreviation.toLowerCase()}]`) // e.g. "1b" or "1B"
-        || fullNote.includes(`[${rank}${suit.name.toLowerCase()}]`) // e.g. "1blue" or "1Blue" or "1BLUE"
-        || fullNote.includes(`[${rank} ${suit.name.toLowerCase()}]`) // e.g. "1 blue" or "1 Blue" or "1 BLUE"
+        fullNote.includes(`[${suit.abbreviation.toLowerCase()}${rank}]`) || // e.g. "b1" or "B1"
+        fullNote.includes(`[${suit.name.toLowerCase()}${rank}]`) || // e.g. "blue1" or "Blue1" or "BLUE1"
+        fullNote.includes(`[${suit.name.toLowerCase()} ${rank}]`) || // e.g. "blue 1" or "Blue 1" or "BLUE 1"
+        fullNote.includes(`[${rank}${suit.abbreviation.toLowerCase()}]`) || // e.g. "1b" or "1B"
+        fullNote.includes(`[${rank}${suit.name.toLowerCase()}]`) || // e.g. "1blue" or "1Blue" or "1BLUE"
+        fullNote.includes(`[${rank} ${suit.name.toLowerCase()}]`) // e.g. "1 blue" or "1 Blue" or "1 BLUE"
       ) {
         card.noteSuit = suit;
         card.noteRank = rank;
@@ -289,13 +270,13 @@ export const show = (card: HanabiCard) => {
   // We want the tooltip to appear above the card by default
   const pos = card.getAbsolutePosition();
   let posX = pos.x;
-  let posY = pos.y - (card.height() * card.parent!.scale().y / 2);
+  let posY = pos.y - (card.height() * card.parent!.scale().y) / 2;
   tooltipInstance.option('side', 'top');
 
   // Flip the tooltip if it is too close to the top of the screen
   if (posY < 200) {
     // 200 is just an arbitrary threshold; 100 is not big enough for the BGA layout
-    posY = pos.y + (card.height() * card.parent!.scale().y / 2);
+    posY = pos.y + (card.height() * card.parent!.scale().y) / 2;
     tooltipInstance.option('side', 'bottom');
   }
 
@@ -303,7 +284,7 @@ export const show = (card: HanabiCard) => {
   // so move it over to the right a little bit
   for (const arrow of globals.elements.arrows) {
     if (arrow.pointingTo === card.order) {
-      posX = pos.x + ((card.width() * card.parent!.scale().x / 2) / 2.5);
+      posX = pos.x + (card.width() * card.parent!.scale().x) / 2 / 2.5;
       break;
     }
   }
