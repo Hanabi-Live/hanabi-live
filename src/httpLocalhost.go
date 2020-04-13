@@ -5,17 +5,31 @@ package main
 
 import (
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	localhostPort = 8081
-)
-
 func httpLocalhostInit() {
+	// Read some configuration values from environment variables
+	// (they were loaded from the ".env" file in "main.go")
+	portString := os.Getenv("LOCALHOST_PORT")
+	var port int
+	if len(portString) == 0 {
+		port = 8081
+	} else {
+		if v, err := strconv.Atoi(portString); err != nil {
+			logger.Fatal("Failed to convert the \"LOCALHOST_PORT\" " +
+				"environment variable to a number.")
+			return
+		} else {
+			port = v
+		}
+	}
+
 	// Create a new Gin HTTP router
 	gin.SetMode(gin.ReleaseMode)
 	httpRouter := gin.Default() // Has the "Logger" and "Recovery" middleware attached
@@ -48,15 +62,19 @@ func httpLocalhostInit() {
 		c.String(http.StatusOK, "success\n")
 	})
 
-	// Listen and serve (HTTP)
-	if err := http.ListenAndServe(
-		"127.0.0.1:"+strconv.Itoa(localhostPort),
-		httpRouter,
-	); err != nil {
-		logger.Fatal("http.ListenAndServe failed:", err)
+	// We need to create a new http.Server because the default one has no timeouts
+	// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
+	HTTPServerWithTimeout := &http.Server{
+		Addr:         "127.0.0.1:" + strconv.Itoa(port), // Listen only on the localhost interface
+		Handler:      httpRouter,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+	if err := HTTPServerWithTimeout.ListenAndServe(); err != nil {
+		logger.Fatal("ListenAndServe failed (for localhost):", err)
 		return
 	}
-	logger.Fatal("http.ListenAndServe ended prematurely.")
+	logger.Fatal("ListenAndServe ended prematurely (for localhost).")
 }
 
 func httpUserAction(c *gin.Context) {
