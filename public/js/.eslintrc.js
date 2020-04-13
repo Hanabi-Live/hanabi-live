@@ -2,7 +2,7 @@ module.exports = {
   // The linter base is the Airbnb style guide, located here:
   // https://github.com/airbnb/javascript
   // The actual ESLint config is located here:
-  // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js
+  // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules
   extends: 'airbnb-typescript/base',
 
   env: {

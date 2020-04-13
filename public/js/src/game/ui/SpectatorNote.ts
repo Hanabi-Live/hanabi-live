@@ -1,4 +1,4 @@
 export default interface SpectatorNote {
-  name: string,
-  note: string,
+  name: string;
+  note: string;
 }
