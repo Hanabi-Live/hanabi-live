@@ -1,6 +1,7 @@
 // The lobby area that shows all of the players in the current unstarted game
 
 // Imports
+import * as chat from '../chat';
 import { VARIANTS } from '../constants';
 import globals from '../globals';
 import * as misc from '../misc';
@@ -78,6 +79,7 @@ export const hide = () => {
 
   // Clear the typing list
   globals.peopleTyping = [];
+  chat.updatePeopletyping();
 
   // Adjust the navigation bar
   nav.show('games');

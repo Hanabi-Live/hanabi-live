@@ -1,3 +1,4 @@
+import * as chat from '../../chat';
 import globals from './globals';
 import * as timer from './timer';
 
@@ -13,6 +14,7 @@ export default () => {
 
   // Clear the typing list
   globals.lobby.peopleTyping = [];
+  chat.updatePeopletyping();
 
   globals.lobby.conn!.send('tableUnattend');
   globals.game!.hide();
