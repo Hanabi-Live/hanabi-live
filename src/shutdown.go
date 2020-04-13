@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os/exec"
 	"path"
 	"strconv"
@@ -26,7 +25,7 @@ func shutdown(restart bool) {
 		shuttingDown = true
 		datetimeShutdownInit = time.Now()
 		notifyAllShutdown()
-		numMinutes := fmt.Sprintf("%f", shutdownTimeout.Minutes())
+		numMinutes := strconv.Itoa(int(shutdownTimeout.Minutes()))
 		chatServerSendAll("The server will " + verb + " in " + numMinutes + " minutes " +
 			"or when all ongoing games have finished, whichever comes first. " +
 			"New game creation has been disabled.")

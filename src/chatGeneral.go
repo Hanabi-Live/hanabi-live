@@ -112,6 +112,27 @@ func getUptime() (string, error) {
 	return "Uptime: " + durationString, nil
 }
 
+// /timeleft
+func chatTimeLeft(s *Session, d *CommandData, t *Table) {
+	if !shuttingDown {
+		chatServerSend("The server is not scheduled to restart any time soon.", d.Room)
+		return
+	}
+
+	timeLeft := shutdownTimeout - time.Since(datetimeShutdownInit)
+	timeLeftSeconds := timeLeft.Seconds()
+	timeLeftSecondsString := fmt.Sprintf("%f", timeLeftSeconds)
+	var durationString string
+	if v, err := secondsToDurationString(timeLeftSecondsString); err != nil {
+		logger.Error("Failed to get the time left:", err)
+		chatServerSend(defaultErrorMsg, d.Room)
+		return
+	} else {
+		durationString = v
+	}
+	chatServerSend("Time left until server restart: "+durationString, d.Room)
+}
+
 // /debug
 // Even though "/debug" is an admin-only command,
 // we wait to be able to use it both in the lobby and in-game
