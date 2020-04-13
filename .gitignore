@@ -15,9 +15,6 @@ backups
 hanabi-live
 hanabi-live~
 
-# VS Code stuff
-.vscode
-
 # MacOS artifacts
 .DS_Store
 

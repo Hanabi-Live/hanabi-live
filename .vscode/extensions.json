@@ -1,0 +1,9 @@
+{
+  // These are Visual Studio Code extensions that are intended to be used with this particular repository
+  // https://go.microsoft.com/fwlink/?LinkId=827846
+  "recommendations": [
+    "ms-vscode.Go",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+  ],
+}
