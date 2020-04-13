@@ -32,13 +32,18 @@ stateChangeFunctions.set('clue', (data: ActionClue) => {
     turn: data.turn,
   });
 
-  for (const order of globals.state.hands[data.target]) {
-    const card = globals.state.deck[order];
-    card.clues.push({
-      type: data.clue.type,
-      value: data.clue.value,
-      positive: data.list.includes(order),
-    });
+  const hand = globals.state.hands[data.target];
+  if (hand) {
+    for (const order of hand) {
+      const card = globals.state.deck[order];
+      card.clues.push({
+        type: data.clue.type,
+        value: data.clue.value,
+        positive: data.list.includes(order),
+      });
+    }
+  } else {
+    throw new Error(`Failed to get "globals.state.hands[]" with an index of ${data.target}.`);
   }
 });
 
@@ -51,6 +56,10 @@ stateChangeFunctions.set('deckOrder', (data: ActionDeckOrder) => {
 // A player just discarded a card
 // {failed: false, type: "discard", which: {index: 0, order: 4, rank: 1, suit: 2}}
 stateChangeFunctions.set('discard', (data: ActionDiscard) => {
+  if (!data.which) {
+    throw new Error('The data for the "discard" state change function did not include a "which" object.');
+  }
+
   // Reveal all cards discarded
   const card = globals.state.deck[data.which.order];
   card.suit = data.which.suit;
@@ -76,7 +85,10 @@ stateChangeFunctions.set('draw', (data: ActionDraw) => {
     rank: data.rank,
     clues: [],
   };
-  globals.state.hands[data.who].push(data.order);
+  const hand = globals.state.hands[data.who];
+  if (hand) {
+    hand.push(data.order);
+  }
 });
 
 // A player just played a card

@@ -46,11 +46,15 @@ export default class HanabiUI {
   // The following methods are called from various parent functions
 
   updateChatLabel() { // eslint-disable-line class-methods-use-this
+    if (globals.elements.chatButton === null) {
+      return;
+    }
+
     let text = '💬';
     if (globals.lobby.chatUnread > 0) {
       text += ` (${globals.lobby.chatUnread})`;
     }
-    globals.elements.chatButton!.text(text);
+    globals.elements.chatButton.text(text);
     globals.layers.UI.batchDraw();
   }
 

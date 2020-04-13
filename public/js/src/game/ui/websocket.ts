@@ -336,6 +336,11 @@ commands.set('noteListPlayer', (data: NoteListPlayerData) => {
 
 // Used when the game state changes
 commands.set('notify', (data: any) => {
+  if (globals.loading) {
+    // We have not loaded everything yet
+    return;
+  }
+
   // Update the state table
   const stateChangeFunction = stateChange.get(data.type);
   if (typeof stateChangeFunction !== 'undefined') {

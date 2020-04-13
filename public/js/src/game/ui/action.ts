@@ -42,8 +42,12 @@ export const handle = () => {
     && !globals.hypothetical
   ) {
     const ourHand = globals.elements.playerHands[globals.playerUs];
-    for (const layoutChild of ourHand.children.toArray() as Array<LayoutChild>) {
-      layoutChild.checkSetDraggable();
+    if (ourHand) {
+      for (const layoutChild of ourHand.children.toArray() as Array<LayoutChild>) {
+        layoutChild.checkSetDraggable();
+      }
+    } else {
+      throw new Error(`Failed to get "globals.elements.playerHands[]" with an index of ${globals.playerUs}.`);
     }
   }
 
