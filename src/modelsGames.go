@@ -571,6 +571,7 @@ func (*Games) GetFastestTime(variant int, numPlayers int, maxScore int) (int, er
 }
 
 type Stats struct {
+	DateJoined         time.Time
 	NumGames           int
 	TimePlayed         sql.NullString
 	NumGamesSpeedrun   int
@@ -582,6 +583,11 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 
 	if err := db.QueryRow(`
 		SELECT
+			(
+				SELECT datetime_created
+				FROM users
+				WHERE id = ?
+			) AS date_joined,
 			(
 				SELECT COUNT(games.id)
 				FROM games
@@ -610,7 +616,8 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 				WHERE game_participants.user_id = ?
 					AND games.speedrun = 1
 			) AS time_played_speedrun
-	`, userID, userID, userID, userID).Scan(
+	`, userID, userID, userID, userID, userID).Scan(
+		&stats.DateJoined,
 		&stats.NumGames,
 		&stats.TimePlayed,
 		&stats.NumGamesSpeedrun,

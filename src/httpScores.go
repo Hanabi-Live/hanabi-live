@@ -12,6 +12,7 @@ type ProfileData struct {
 	Title string
 	Name  string
 
+	DateJoined                 string
 	NumGames                   int
 	TimePlayed                 string
 	NumGamesSpeedrun           int
@@ -77,6 +78,19 @@ func httpScores(c *gin.Context) {
 	} else {
 		profileStats = v
 	}
+
+	// Format the date that they joined
+	// https://stackoverflow.com/questions/28889818/formatting-verbose-dates-in-go
+	suffix := "th"
+	switch profileStats.DateJoined.Day() {
+	case 1, 21, 31:
+		suffix = "st"
+	case 2, 22:
+		suffix = "nd"
+	case 3, 23:
+		suffix = "rd"
+	}
+	dateJoined := profileStats.DateJoined.Format("January 2" + suffix + ", 2006")
 
 	// It will only be valid if they have played a non-speedrun game
 	timePlayed := ""
@@ -207,6 +221,7 @@ func httpScores(c *gin.Context) {
 		Title: "Scores",
 		Name:  user.Username,
 
+		DateJoined:                 dateJoined,
 		NumGames:                   profileStats.NumGames,
 		TimePlayed:                 timePlayed,
 		NumGamesSpeedrun:           profileStats.NumGamesSpeedrun,
