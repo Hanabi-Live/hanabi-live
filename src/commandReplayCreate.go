@@ -559,7 +559,8 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 		if g.InvalidActionOccurred {
 			logger.Info("An invalid action occurred; not emulating the rest of the actions.")
 			s.Warning("The action at index " + strconv.Itoa(i) +
-				" was not valid. Skipping all subsequent actions.")
+				" was not valid. Skipping all subsequent actions. " +
+				"Please report this error to an administrator.")
 			return true
 		}
 	}
