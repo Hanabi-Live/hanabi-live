@@ -156,6 +156,7 @@ func httpInit() {
 	httpRouter.GET("/videos", httpVideos)
 	httpRouter.GET("/export", httpExport)
 	httpRouter.GET("/export/:game", httpExport)
+	httpRouter.GET("/password-reset", httpPasswordReset)
 
 	// Other
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
