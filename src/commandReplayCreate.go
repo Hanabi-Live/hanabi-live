@@ -97,12 +97,20 @@ func commandReplayCreate(s *Session, d *CommandData) {
 		return
 	}
 
-	emulateActions(s, d, t)
+	if !emulateActions(s, d, t) {
+		return
+	}
 
 	// If the game was terminated or did not finish, then the deck order will not be appended yet
 	// (which is normally done in the "Game.End()" function)
 	if g.EndCondition == endConditionInProgress {
 		g.End() // This will only append the deck order and then return early
+	}
+
+	// Handle scripts that are creating replays with no sessions
+	if s == nil {
+		delete(tables, t.ID)
+		return
 	}
 
 	// Do a mini-version of the rest of steps in the "g.End()" function
@@ -557,11 +565,14 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 		}
 
 		if g.InvalidActionOccurred {
-			logger.Info("An invalid action occurred; not emulating the rest of the actions.")
-			s.Warning("The action at index " + strconv.Itoa(i) +
-				" was not valid. Skipping all subsequent actions. " +
-				"Please report this error to an administrator.")
-			return true
+			logger.Info("An invalid action occurred for game " + strconv.Itoa(d.GameID) + "; " +
+				"not emulating the rest of the actions.")
+			if s != nil {
+				s.Warning("The action at index " + strconv.Itoa(i) +
+					" was not valid. Skipping all subsequent actions. " +
+					"Please report this error to an administrator.")
+			}
+			break
 		}
 	}
 
