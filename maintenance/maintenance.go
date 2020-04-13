@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -100,14 +101,21 @@ func main() {
 			}),
 		)
 
-		// ListenAndServe is blocking, so start listening on a new goroutine
+		// ListenAndServe is blocking, so we need to start listening in a new goroutine
 		go func() {
-			// Nothing before the colon implies 0.0.0.0
-			if err := http.ListenAndServe(":80", HTTPServeMux); err != nil {
-				logger.Fatal("http.ListenAndServe failed to start on 80.")
+			// We need to create a new http.Server because the default one has no timeouts
+			// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
+			HTTPRedirectServerWithTimeout := &http.Server{
+				Addr:         "0.0.0.0:80", // Listen on all IP addresses
+				Handler:      HTTPServeMux,
+				ReadTimeout:  5 * time.Second,
+				WriteTimeout: 10 * time.Second,
+			}
+			if err := HTTPRedirectServerWithTimeout.ListenAndServe(); err != nil {
+				logger.Fatal("ListenAndServe failed to start on port 80.")
 				return
 			}
-			logger.Fatal("http.ListenAndServe ended for port 80.")
+			logger.Fatal("ListenAndServe ended for port 80.")
 		}()
 	}
 
@@ -122,27 +130,26 @@ func main() {
 	})
 
 	// Start listening and serving requests (which is blocking)
+	// We need to create a new http.Server because the default one has no timeouts
+	// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
 	logger.Info("Listening on port " + strconv.Itoa(port) + ".")
+	HTTPServerWithTimeout := &http.Server{
+		Addr:         "0.0.0.0:" + strconv.Itoa(port), // Listen on all IP addresses
+		Handler:      httpRouter,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
 	if useTLS {
-		if err := http.ListenAndServeTLS(
-			":"+strconv.Itoa(port), // Nothing before the colon implies 0.0.0.0
-			tlsCertFile,
-			tlsKeyFile,
-			httpRouter,
-		); err != nil {
-			logger.Fatal("http.ListenAndServeTLS failed:", err)
+		if err := HTTPServerWithTimeout.ListenAndServeTLS(tlsCertFile, tlsKeyFile); err != nil {
+			logger.Fatal("ListenAndServeTLS failed:", err)
 			return
 		}
-		logger.Fatal("http.ListenAndServeTLS ended prematurely.")
+		logger.Fatal("ListenAndServeTLS ended prematurely.")
 	} else {
-		// Listen and serve (HTTP)
-		if err := http.ListenAndServe(
-			":"+strconv.Itoa(port), // Nothing before the colon implies 0.0.0.0
-			httpRouter,
-		); err != nil {
-			logger.Fatal("http.ListenAndServe failed:", err)
+		if err := HTTPServerWithTimeout.ListenAndServe(); err != nil {
+			logger.Fatal("ListenAndServe failed:", err)
 			return
 		}
-		logger.Fatal("http.ListenAndServe ended prematurely.")
+		logger.Fatal("ListenAndServe ended prematurely.")
 	}
 }

@@ -12,9 +12,10 @@ import (
 )
 
 var (
-	// Used for sending web requests to external sites (e.g. Google Analytics)
+	// HTTPClientWithTimeout is used for sending web requests to external sites
+	// (e.g. Google Analytics)
 	// We don't want to use the default http.Client because it has no default timeout set
-	myHTTPClient = &http.Client{
+	HTTPClientWithTimeout = &http.Client{
 		Timeout: 10 * time.Second,
 	}
 )
@@ -82,7 +83,10 @@ func httpGoogleAnalytics(c *gin.Context) {
 			"uip": {ip},            // IP address override
 			"ua":  {r.UserAgent()}, // User agent override
 		}
-		resp, err := myHTTPClient.PostForm("https://www.google-analytics.com/collect", data)
+		resp, err := HTTPClientWithTimeout.PostForm(
+			"https://www.google-analytics.com/collect",
+			data,
+		)
 		if err != nil {
 			// POSTs to Google Analytics will occasionally time out; if this occurs,
 			// do not bother retrying, since losing a single page view is fairly meaningless
