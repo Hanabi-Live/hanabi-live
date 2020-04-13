@@ -21,7 +21,7 @@ export class Globals {
   // Objects sent upon UI initialization
   lobby: LobbyGlobals = new LobbyGlobals();
   game: GameExports | null = null;
-  loading: boolean = false;
+  loading: boolean = true;
 
   // Game settings
   // (sent in the "init" message)
@@ -151,7 +151,7 @@ export class Globals {
   reset() {
     this.lobby = new LobbyGlobals();
     this.game = null;
-    this.loading = false;
+    this.loading = true;
     this.playerNames = [];
     this.variant = VARIANTS.get('No Variant')!;
     this.playerUs = -1;

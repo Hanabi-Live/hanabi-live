@@ -47,6 +47,11 @@ interface ConnectedData {
   list: Array<boolean>,
 }
 commands.set('connected', (data: ConnectedData) => {
+  if (globals.loading) {
+    // We have not loaded everything yet
+    return;
+  }
+
   for (let i = 0; i < data.list.length; i++) {
     const nameFrame = globals.elements.nameFrames[i];
     if (nameFrame) {
