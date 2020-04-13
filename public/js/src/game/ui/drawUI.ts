@@ -1455,7 +1455,9 @@ const drawClueArea = () => {
     totalPlayerWidth += playerButtonSpacing * (totalPlayerButtons - 1);
     let playerX = (clueAreaValues.w! * 0.5) - (totalPlayerWidth * 0.5);
     for (let i = 0; i < totalPlayerButtons; i++) {
-      const j = (globals.playerUs + i + 1) % numPlayers;
+      // We change the calculation of j from the above code block because we want the buttons to
+      // follow the order of players from top to bottom (in BGA mode)
+      const j = (globals.playerUs + i) % numPlayers;
       const button = new PlayerButton({
         x: playerX * winW,
         y: 0,
