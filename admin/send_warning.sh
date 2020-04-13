@@ -1,8 +1,15 @@
 #!/bin/bash
 
+# Get the directory of this script
+# https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# Import the localhost port
+source "$DIR/../.env"
+
 if [ $# -eq 0 ]; then
     echo "usage: `basename "$0"` [username] [msg]"
     exit 1
 fi
 
-curl --silent "http://localhost:8081/sendWarning/$1" --data "msg=$2"
+curl --silent "http://localhost:$LOCALHOST_PORT/sendWarning/$1" --data "msg=$2"
