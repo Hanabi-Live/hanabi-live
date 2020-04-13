@@ -224,7 +224,12 @@ const initCommands = () => {
     }
 
     // Re-activate in-game elements
-    if (globals.currentScreen === 'game' && globals.ui !== null && globals.ui.globals.ourTurn) {
+    if (
+      //
+      globals.currentScreen === 'game' &&
+      globals.ui !== null &&
+      globals.ui.globals.ourTurn
+    ) {
       globals.ui.reshowClueUIAfterWarning();
     }
   });

@@ -49,7 +49,14 @@ export default function HanabiCardClickSpeedrun(this: HanabiCard, event: any) {
 
 const clickLeft = (card: HanabiCard, event: PointerEvent) => {
   // Left-clicking on cards in our own hand is a play action
-  if (card.holder === globals.playerUs && !event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
+  if (
+    //
+    card.holder === globals.playerUs &&
+    !event.ctrlKey &&
+    !event.shiftKey &&
+    !event.altKey &&
+    !event.metaKey
+  ) {
     turn.end({
       type: ACTION.PLAY,
       target: card.order,
@@ -111,7 +118,14 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
 
 const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // Right-clicking on cards in our own hand is a discard action
-  if (card.holder === globals.playerUs && !event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
+  if (
+    //
+    card.holder === globals.playerUs &&
+    !event.ctrlKey &&
+    !event.shiftKey &&
+    !event.altKey &&
+    !event.metaKey
+  ) {
     // Prevent discarding while at the maximum amount of clues
     if (globals.clues === MAX_CLUE_NUM) {
       return;
@@ -150,27 +164,51 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   }
 
   // Ctrl + right-click is the normal note popup
-  if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
+  if (
+    //
+    event.ctrlKey &&
+    !event.shiftKey &&
+    !event.altKey &&
+    !event.metaKey
+  ) {
     notes.openEditTooltip(card);
     return;
   }
 
   // Shift + right-click is a "f" note
   // (this is a common abbreviation for "this card is Finessed")
-  if (!event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey) {
+  if (
+    //
+    !event.ctrlKey &&
+    event.shiftKey &&
+    !event.altKey &&
+    !event.metaKey
+  ) {
     card.setNote('f');
     return;
   }
 
   // Alt + right-click is a "cm" note
   // (this is a common abbreviation for "this card is chop moved")
-  if (!event.ctrlKey && !event.shiftKey && event.altKey && !event.metaKey) {
+  if (
+    //
+    !event.ctrlKey &&
+    !event.shiftKey &&
+    event.altKey &&
+    !event.metaKey
+  ) {
     card.setNote('cm');
   }
 
   // Alt + shift + right-click is a "p" note
   // (this is a common abbreviation for "this card was told to play")
-  if (!event.ctrlKey && event.shiftKey && event.altKey && !event.metaKey) {
+  if (
+    //
+    !event.ctrlKey &&
+    event.shiftKey &&
+    event.altKey &&
+    !event.metaKey
+  ) {
     card.setNote('p');
   }
 };

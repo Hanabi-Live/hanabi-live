@@ -129,17 +129,13 @@ export function pips(this: HanabiCard) {
 
     // Gradient numbers are magic
     if (suit.fill === 'multi') {
+      // prettier-ignore
       suitPip.fillRadialGradientColorStops([
-        0.3,
-        suit.fillColors[0],
-        0.425,
-        suit.fillColors[1],
-        0.65,
-        suit.fillColors[2],
-        0.875,
-        suit.fillColors[3],
-        1,
-        suit.fillColors[4],
+        0.3, suit.fillColors[0],
+        0.425, suit.fillColors[1],
+        0.65, suit.fillColors[2],
+        0.875, suit.fillColors[3],
+        1, suit.fillColors[4],
       ]);
       suitPip.fillRadialGradientStartPoint({
         x: 75,

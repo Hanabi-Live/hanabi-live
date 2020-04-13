@@ -14,7 +14,12 @@ export default function HanabiCardClick(this: HanabiCard, event: any) {
   // Speedrunning overrides the normal card clicking behavior
   // (but do not use the speedrunning behavior if we are in a
   // solo replay / shared replay / spectating)
-  if ((globals.speedrun || globals.lobby.settings.speedrunMode) && !globals.replay && !globals.spectating) {
+  if (
+    //
+    (globals.speedrun || globals.lobby.settings.speedrunMode) &&
+    !globals.replay &&
+    !globals.spectating
+  ) {
     return;
   }
 
@@ -104,7 +109,13 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // The arrow is shown to all the members of the reply in order to draw attention to the card
   // (we want it to work no matter what modifiers are being pressed,
   // in case someone is pushing their push-to-talk hotkey while highlighting cards)
-  if (globals.replay && globals.sharedReplay && globals.amSharedReplayLeader && globals.useSharedTurns) {
+  if (
+    //
+    globals.replay &&
+    globals.sharedReplay &&
+    globals.amSharedReplayLeader &&
+    globals.useSharedTurns
+  ) {
     arrows.send(card.order, card);
     return;
   }
@@ -116,28 +127,58 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
 
   // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered
   // (this must be above the other note code because of the modifiers)
-  if (event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey && !globals.replay && !globals.spectating) {
+  if (
+    //
+    event.ctrlKey &&
+    event.shiftKey &&
+    !event.altKey &&
+    !event.metaKey &&
+    !globals.replay &&
+    !globals.spectating
+  ) {
     card.setNote(globals.lastNote);
     return;
   }
 
   // Shift + right-click is a "f" note
   // (this is a common abbreviation for "this card is Finessed")
-  if (!event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey && !globals.replay && !globals.spectating) {
+  if (
+    //
+    !event.ctrlKey &&
+    event.shiftKey &&
+    !event.altKey &&
+    !event.metaKey &&
+    !globals.replay &&
+    !globals.spectating
+  ) {
     card.setNote('f');
     return;
   }
 
   // Alt + right-click is a "cm" note
   // (this is a common abbreviation for "this card is chop moved")
-  if (!event.ctrlKey && !event.shiftKey && event.altKey && !event.metaKey && !globals.replay && !globals.spectating) {
+  if (
+    //
+    !event.ctrlKey &&
+    !event.shiftKey &&
+    event.altKey &&
+    !event.metaKey &&
+    !globals.replay &&
+    !globals.spectating
+  ) {
     card.setNote('cm');
     return;
   }
 
   // Alt + shift + right-click is a "p" note
   // (this is a common abbreviation for "this card was told to play")
-  if (!event.ctrlKey && event.shiftKey && event.altKey && !event.metaKey) {
+  if (
+    //
+    !event.ctrlKey &&
+    event.shiftKey &&
+    event.altKey &&
+    !event.metaKey
+  ) {
     card.setNote('p');
   }
 
@@ -146,13 +187,27 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // a user might still want to draw an arrow on a card for demonstration purposes
   // However, we don't want this functionality in shared replays because
   // it could be misleading as to who the real replay leader is
-  if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey && !globals.sharedReplay) {
+  if (
+    //
+    event.ctrlKey &&
+    !event.shiftKey &&
+    !event.altKey &&
+    !event.metaKey &&
+    !globals.sharedReplay
+  ) {
     arrows.toggle(card);
     return;
   }
 
   // A normal right-click is edit a note
-  if (!event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey && !globals.replay) {
+  if (
+    //
+    !event.ctrlKey &&
+    !event.shiftKey &&
+    !event.altKey &&
+    !event.metaKey &&
+    !globals.replay
+  ) {
     notes.openEditTooltip(card);
   }
 };
