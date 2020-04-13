@@ -3,7 +3,13 @@ module.exports = {
   // https://github.com/airbnb/javascript
   // The actual ESLint config is located here:
   // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js
-  extends: 'airbnb-typescript/base',
+  extends: [
+    'airbnb-typescript/base',
+
+    // https://www.robertcooper.me/using-eslint-and-prettier-in-a-typescript-project
+    'prettier/@typescript-eslint',
+    'plugin:prettier/recommended',
+  ],
 
   env: {
     browser: true,
@@ -16,7 +22,7 @@ module.exports = {
   parserOptions: {
     project: './tsconfig.json',
   },
-  plugins: [ '@typescript-eslint' ],
+  plugins: [ '@typescript-eslint', 'prettier' ],
   settings: {
     'import/extensions': ['.js', '.ts'],
     'import/parsers': {
@@ -80,10 +86,6 @@ module.exports = {
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L279
     'no-continue': ['off'],
 
-    // Airbnb disallows mixing * and /, which is fairly nonsensical
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L290
-    'no-mixed-operators': ['error', { allowSamePrecedence: true }],
-
     // The Airbnb configuration allows 2 empty lines in a row, which is unneeded
     // Additionally, the Airbnb configuration is bugged and
     // allows a line at the beginning of the file
@@ -107,6 +109,9 @@ module.exports = {
     // (remove this once the code base is transitioned to Phaser)
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L371
     'no-underscore-dangle': ['off'],
+
+    // Enforce consistent formatting
+    'prettier/prettier': ['error'],
 
     // Array destructuring can result in non-intuitive code
     // Object destructuring is disgustingly verbose in TypeScript

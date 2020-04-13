@@ -10,6 +10,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Install VS Code extensions
 code --install-extension "ms-vscode.Go" # For Golang
 code --install-extension "dbaeumer.vscode-eslint" # For TypeScript
+code --install-extension "esbenp.prettier-vscode" # For TypeScript formatting
 
 # Install the Golang linter
 # (it is not recommended to install this with "go get")
