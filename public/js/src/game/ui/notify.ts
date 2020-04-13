@@ -423,7 +423,13 @@ notifyFunctions.set('status', (data: ActionStatus) => {
   globals.elements.cluesNumberLabel!.text(globals.clues.toString());
 
   if (!globals.lobby.settings.realLifeMode) {
-    globals.elements.cluesNumberLabel!.fill(globals.clues === 0 ? 'red' : LABEL_COLOR);
+    if (globals.clues === 0) {
+      globals.elements.cluesNumberLabel!.fill('red');
+    } else if (globals.clues === 1) {
+      globals.elements.cluesNumberLabel!.fill('yellow');
+    } else {
+      globals.elements.cluesNumberLabel!.fill(LABEL_COLOR);
+    }
     globals.elements.noClueBorder!.visible(globals.clues === 0);
 
     if (globals.clues === MAX_CLUE_NUM) {
