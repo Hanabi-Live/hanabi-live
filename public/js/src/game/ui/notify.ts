@@ -541,7 +541,10 @@ notifyFunctions.set('turn', (data: ActionTurn) => {
 
   // Bold the name frame of the current player to indicate that it is their turn
   for (let i = 0; i < globals.playerNames.length; i++) {
-    globals.elements.nameFrames[i].setActive(globals.currentPlayerIndex === i);
+    const nameFrame = globals.elements.nameFrames[i];
+    if (nameFrame) {
+      nameFrame.setActive(globals.currentPlayerIndex === i);
+    }
   }
 
   // Update the turn count in the score area

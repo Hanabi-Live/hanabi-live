@@ -48,7 +48,10 @@ interface ConnectedData {
 }
 commands.set('connected', (data: ConnectedData) => {
   for (let i = 0; i < data.list.length; i++) {
-    globals.elements.nameFrames[i].setConnected(data.list[i]);
+    const nameFrame = globals.elements.nameFrames[i];
+    if (nameFrame) {
+      nameFrame.setConnected(data.list[i]);
+    }
   }
   globals.layers.UI.batchDraw();
 });
