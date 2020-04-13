@@ -40,6 +40,10 @@ interface ClockData {
   timeTaken: number,
 }
 commands.set('clock', (data: ClockData) => {
+  if (globals.loading) {
+    // We have not loaded everything yet
+    return;
+  }
   timer.update(data);
 });
 
@@ -655,8 +659,12 @@ interface SpectatorsData {
   names: Array<string>,
 }
 commands.set('spectators', (data: SpectatorsData) => {
-  if (!globals.elements.spectatorsLabel) {
-    // Sometimes we can get here without the spectators label being initiated yet
+  if (
+    globals.loading
+    || !globals.elements.spectatorsLabel
+    || !globals.elements.spectatorsNumLabel
+  ) {
+    // We have not loaded everything yet
     return;
   }
 
@@ -665,9 +673,9 @@ commands.set('spectators', (data: SpectatorsData) => {
 
   const visible = data.names.length > 0;
   globals.elements.spectatorsLabel.visible(visible);
-  globals.elements.spectatorsNumLabel!.visible(visible);
+  globals.elements.spectatorsNumLabel.visible(visible);
   if (visible) {
-    globals.elements.spectatorsNumLabel!.text(data.names.length.toString());
+    globals.elements.spectatorsNumLabel.text(data.names.length.toString());
 
     // Build the string that shows all the names
     const nameEntries = data.names.map((name) => `<li>${name}</li>`).join('');
