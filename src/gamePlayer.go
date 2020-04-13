@@ -374,10 +374,13 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 
 	// Add the action to the action log
 	// (in the future, we will delete GameActions and only keep track of GameActions2)
-	g.Actions2 = append(g.Actions2, &GameAction{
-		Type:   actionType2Discard,
-		Target: c.Order,
-	})
+	if !c.Failed {
+		// If this is a failed play, then we already added the action in the "PlayCard()"" function
+		g.Actions2 = append(g.Actions2, &GameAction{
+			Type:   actionType2Discard,
+			Target: c.Order,
+		})
+	}
 
 	// Mark that the card is discarded
 	c.Discarded = true
