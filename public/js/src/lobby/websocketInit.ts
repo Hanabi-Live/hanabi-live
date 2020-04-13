@@ -197,10 +197,8 @@ interface UserInactiveData {
 }
 commands.set('userInactive', (data: UserInactiveData) => {
   const user = globals.userMap.get(data.id);
-  if (!user) {
-    throw new Error(`Failed to get the user for the ID of "${data.id}".`);
+  if (user) {
+    user.inactive = data.inactive;
+    usersDraw.setInactive(user.id, user.inactive);
   }
-
-  user.inactive = data.inactive;
-  usersDraw.setInactive(user.id, user.inactive);
 });
