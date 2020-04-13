@@ -548,8 +548,9 @@ export default class HanabiCard extends Konva.Group {
               (rank: number) => rank === 1,
             );
           }
-        } else {
+        } else if (this.possibleSuits.filter((suit) => suit.noClueColors).length === 0) {
           // Negative color means that the card cannot be a 1
+          // (as long as the card cannot be a suit that is never touched by color clues)
           ranksRemoved = filterInPlace(
             this.possibleRanks,
             (rank: number) => rank !== 1,
@@ -585,8 +586,9 @@ export default class HanabiCard extends Konva.Group {
         || globals.variant.name.includes('Null-Ones')
         || globals.variant.name.includes('Light-Pink-Ones')
       ) {
-        if (positive) {
+        if (positive && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0) {
           // Positive color means that the card cannot be a 1
+          // (as long as the card cannot be a suit that is always touched by color clues)
           ranksRemoved = filterInPlace(
             this.possibleRanks,
             (rank: number) => rank !== 1,
@@ -597,8 +599,9 @@ export default class HanabiCard extends Konva.Group {
         || globals.variant.name.includes('Null-Fives')
         || globals.variant.name.includes('Light-Pink-Fives')
       ) {
-        if (positive) {
+        if (positive && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0) {
           // Positive color means that the card cannot be a 5
+          // (as long as the card cannot be a suit that is always touched by color clues)
           ranksRemoved = filterInPlace(
             this.possibleRanks,
             (rank: number) => rank !== 5,
