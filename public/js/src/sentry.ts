@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/browser';
 import version from './data/version.json';
 
 export const init = () => {
-  if (!useSentry) {
+  if (!useSentry()) {
     return;
   }
 
@@ -59,7 +59,7 @@ const ignoredErrors = [
 ];
 
 export const setUserContext = (userID: number, username: string) => {
-  if (!useSentry) {
+  if (!useSentry()) {
     return;
   }
 
