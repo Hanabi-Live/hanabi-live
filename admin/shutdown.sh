@@ -5,5 +5,8 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 source "$DIR/../.env"
+if [ -z "$LOCALHOST_PORT" ]; then
+    LOCALHOST_PORT=8081
+fi
 
 curl --silent "http://localhost:$LOCALHOST_PORT/shutdown"

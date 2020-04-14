@@ -6,6 +6,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Import the localhost port
 source "$DIR/../.env"
+if [ -z "$LOCALHOST_PORT" ]; then
+    LOCALHOST_PORT=8081
+fi
 
 if [ $# -eq 0 ]; then
     echo "usage: `basename "$0"` [username] [msg]"
