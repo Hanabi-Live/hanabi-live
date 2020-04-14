@@ -12,13 +12,16 @@ The following instructions will set up the server as well as the linters. We ass
 
 1. [Installation for Development (Windows)](#installation-for-development-windows)
 2. [Installation for Development (MacOS)](#installation-for-development-macos)
-3. [Installation for Production (Linux)](#installation-for-production-linux)
-4. [Running the Server](#running-the-server)
-5. [Running the backend in Docker](#running-the-backend-in-docker)
+3. [Installation for Development (Docker)](#installation-for-development-docker)
+4. [Installation for Production (Linux)](#installation-for-production-linux)
+5. [Running the Server](#running-the-server)
+6. [Running the Server in Docker](#running-the-server-in-docker)
 
 <br />
 
 ## Installation for Development (Windows)
+
+If you want to install less stuff on your computer, you can alternatively follow the instructions for [Installation for Development (Docker)](#installation-for-development-docker), although this is not recommended.
 
 * Open a [Command Prompt as an administrator](https://www.howtogeek.com/194041/how-to-open-the-command-prompt-as-administrator-in-windows-8.1/).
 * Install the [Chocolatey](https://chocolatey.org/) package manager:
@@ -84,9 +87,11 @@ The following instructions will set up the server as well as the linters. We ass
 
 ## Installation for Development (MacOS)
 
+If you want to install less stuff on your computer, you can alternatively follow the instructions for [Installation for Development (Docker)](#installation-for-development-docker), although this is not recommended.
+
 * Install the [Homebrew](https://brew.sh/) package manager:
   * `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
-* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/) (not required if [running the backend in Docker](#running-the-backend-in-docker)), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
+* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
   * `brew install git golang mariadb node`
   * `brew cask install visual-studio-code`
 * Enable [launching Visual Studio Code from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line).
@@ -96,9 +101,9 @@ The following instructions will set up the server as well as the linters. We ass
   * `git config --global user.email "your@email.com"`
   * `git config --global pull.rebase true` <br />
   (so that Git automatically rebases when pulling)
-* Start MariaDB (not required if [running the backend in Docker](#running-the-backend-in-docker)):
+* Start MariaDB:
   * `mysql.server start`
-* Configure MariaDB (not required if [running the backend in Docker](#running-the-backend-in-docker)):
+* Configure MariaDB:
   * `mysql -u root`
   * `DELETE FROM mysql.user WHERE User='';` <br />
   (this deletes the anonymous user that is installed by default)
@@ -122,7 +127,7 @@ The following instructions will set up the server as well as the linters. We ass
 * Install some dependencies:
   * `./install/install_dependencies.sh`
   * `./install/install_development_dependencies.sh`
-  * `./install/install_database_schema.sh` (not required if [running the backend in Docker](#running-the-backend-in-docker))
+  * `./install/install_database_schema.sh`
 * Set the domain URL (optional):
   * `open -t .env` <br />
   (if you plan to use a URL of "http://localhost", then do not change anything)
@@ -141,6 +146,18 @@ The following instructions will set up the server as well as the linters. We ass
   * On the left pane, navigate to and open "public\js\src\main.ts".
   * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
 * See [Running the Server](#running-the-server).
+
+<br />
+
+## Installation for Development (Docker)
+
+We provide a [docker-compose.yml](../docker-compose.yml) file which runs MariaDB and the Golang backend inside of networked Docker containers.
+
+* [Install Docker](https://docs.docker.com/get-docker/).
+* Run `docker-compose up --build` to build and run the server.
+  * The database will be automatically initialized when the server is first run, and will persist in a local directory called `mysql_data`.
+* Run `webpack-dev-server.sh`, as above, to build the frontend.
+* Visit "http://localhost:8081/dev".
 
 <br />
 
@@ -280,8 +297,6 @@ To manage the service:
 
 ## Running the Server
 
-(See [Running the backend in Docker](#running-the-backend-in-docker))
-
 * The "run.sh" script in the root of the repository will build and run the server.
   * If you are on Windows, you should run this script from a Git Bash window.
   * If you are on Windows, you might have to accept a Windows Firewall dialog (because a new program is listening on new ports).
@@ -289,17 +304,3 @@ To manage the service:
 * If you change any of the Golang code, then you must restart the server for the changes to take effect.
 * If you change any of the TypeScript or CSS, then you will need to re-run the `build_client.sh` script in order to re-bundle it into `main.min.js` and `main.min.css`. (This step does not require a server restart, but you will need to perform a hard cache refresh in the browser.)
   * Alternatively, if you are actively changing or developing the TypeScript, leave the `webpack-dev-server.sh` script running and go to "https://localhost/dev". This way, the code will be automatically compiled whenever you change a file and the page will automatically refresh.
-
-<br />
-
-## Running the backend in Docker
-
-For easy frontend development, we provide a [docker-compose.yml](../docker-compose.yml) file which runs MariaDB and the Golang backend inside networked Docker containers.
-
-* [Install Docker](https://docs.docker.com/get-docker/).
-* Run `docker-compose up --build` to build and run the server.
-  * The database will be automatically initialized when the server is first run, and will persist in a local directory called `mysql_data`.
-* Run `webpack-dev-server.sh`, as above, to build the frontend.
-* Visit "http://localhost:8081/dev".
-
-<br />
