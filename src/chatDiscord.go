@@ -25,7 +25,12 @@ func chatHere(s *Session, d *CommandData, t *Table) {
 		timeCanPingAgain := discordLastAtHere.Add(discordAtHereTimeout)
 		minutesLeft := int(math.Ceil(time.Until(timeCanPingAgain).Minutes()))
 		msg += "In order to prevent spam, "
-		msg += "you need to wait another " + strconv.Itoa(minutesLeft) + " minutes "
+		msg += "you need to wait "
+		if minutesLeft == 1 {
+			msg += "a minute "
+		} else {
+			msg += "another " + strconv.Itoa(minutesLeft) + " minutes "
+		}
 		msg += "before you can send out another mass ping."
 	} else {
 		msg += d.Username + " wants to play. Anyone "
