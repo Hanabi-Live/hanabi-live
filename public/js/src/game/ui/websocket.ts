@@ -2,6 +2,7 @@
 
 // Imports
 import { CLUE_TYPE, REPLAY_ARROW_ORDER, VARIANTS } from '../../constants';
+import * as sentry from '../../sentry';
 import * as arrows from './arrows';
 import ClockData from './ClockData';
 import fadeCheck from './fadeCheck';
@@ -198,6 +199,10 @@ interface InitData {
   pauseQueued: boolean;
 }
 commands.set('init', (data: InitData) => {
+  // Data contains the game settings for the game we are entering;
+  // attach this to the Sentry context to make debugging easier
+  sentry.setGameContext(data);
+
   // Game settings
   globals.lobby.tableID = data.tableID; // Equal to the table ID on the server
   globals.playerNames = data.names;

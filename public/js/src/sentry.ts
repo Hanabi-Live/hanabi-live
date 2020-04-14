@@ -78,3 +78,16 @@ const useSentry = () => (
   window.location.hostname !== 'localhost'
   && !window.location.pathname.includes('/dev')
 );
+
+export const setGameContext = (gameInitData: any) => {
+  if (!useSentry()) {
+    return;
+  }
+
+  // If we encounter an error later on, we want metadata to be attached to the error message,
+  // which can be helpful for debugging (since we know what type of game that the user was in)
+  // https://docs.sentry.io/enriching-error-data/context/?platform=browser
+  Sentry.configureScope((scope) => {
+    scope.setTag('gameInitData', gameInitData);
+  });
+};

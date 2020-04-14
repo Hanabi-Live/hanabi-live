@@ -56,12 +56,11 @@ stateChangeFunctions.set('deckOrder', (data: ActionDeckOrder) => {
 // A player just discarded a card
 // {failed: false, type: "discard", which: {index: 0, order: 4, rank: 1, suit: 2}}
 stateChangeFunctions.set('discard', (data: ActionDiscard) => {
-  if (!data.which) {
-    throw new Error('The data for the "discard" state change function did not include a "which" object.');
-  }
-
   // Reveal all cards discarded
   const card = globals.state.deck[data.which.order];
+  if (!card) {
+    throw new Error(`Failed to get the card for index ${data.which.order}.`);
+  }
   card.suit = data.which.suit;
   card.rank = data.which.rank;
 
@@ -97,6 +96,9 @@ stateChangeFunctions.set('draw', (data: ActionDraw) => {
 stateChangeFunctions.set('play', (data: ActionPlay) => {
   // Reveal all cards played
   const card = globals.state.deck[data.which.order];
+  if (!card) {
+    throw new Error(`Failed to get the card for index ${data.which.order}.`);
+  }
   card.suit = data.which.suit;
   card.rank = data.which.rank;
 
