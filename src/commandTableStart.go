@@ -254,7 +254,8 @@ func commandTableStart(s *Session, d *CommandData) {
 	// emulate all of the actions until turn N
 	if t.Options.SetReplay != 0 {
 		d.Source = "id"
-		if emulateActions(s, d, t) {
+		d.GameID = t.Options.SetReplay
+		if !emulateActions(s, d, t) {
 			return
 		}
 
