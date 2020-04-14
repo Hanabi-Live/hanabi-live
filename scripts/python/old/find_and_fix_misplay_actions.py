@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # (the "dotenv" module does not work in Python 2)
 
+# This script must be run 3 times in a row because there can be up to 3 misplays per game
+
 import sys
 if sys.version_info < (3, 0):
     print('This script requires Python 3.x.')
@@ -53,6 +55,7 @@ cursor.close()
 print('LOADED ' + str(len(game_ids)) + ' GAME IDS!', flush=True)
 
 num_inspected = 0
+num_games_fixed = 0
 for game_id in game_ids:
     num_inspected += 1
     if num_inspected % 2000 == 0:
@@ -67,7 +70,6 @@ for game_id in game_ids:
         game_actions.append((actionType, target))
     cursor.close()
 
-    num_games_fixed = 0
     lastType = -1
     lastTarget = -1
     fixing = False
