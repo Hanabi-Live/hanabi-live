@@ -4,6 +4,5 @@
   "recommendations": [
     "ms-vscode.Go",
     "dbaeumer.vscode-eslint",
-    "esbenp.prettier-vscode",
   ],
 }
