@@ -243,11 +243,8 @@ export const drawOtherScores = (data: Array<GameHistory>) => {
   }
 };
 
-const dateTimeFormatter = new Intl.DateTimeFormat(
-  undefined,
-  {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  },
-);
+const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});

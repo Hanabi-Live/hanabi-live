@@ -131,12 +131,7 @@ const keypress = (room: string) => function keypressFunction(
     let command = args.shift();
     command = command!.substring(1); // Remove the forward slash
 
-    if (
-      command === 'pm'
-      || command === 'w'
-      || command === 'whisper'
-      || command === 'msg'
-    ) {
+    if (command === 'pm' || command === 'w' || command === 'whisper' || command === 'msg') {
       // Validate that the format of the command is correct
       if (args.length < 2) {
         modals.warningShow('The format of a private message is: <code>/w Alice hello</code>');
@@ -232,14 +227,11 @@ export const add = (data: ChatMessage, fast: boolean) => {
   data.msg = fillLocalEmotes(data.msg);
 
   // Get the hours and minutes from the time
-  const datetime = new Intl.DateTimeFormat(
-    undefined,
-    {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    },
-  ).format(new Date(data.datetime));
+  const datetime = new Intl.DateTimeFormat(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(new Date(data.datetime));
 
   let line = `<span id="chat-line-${chatLineNum}" class="${fast ? '' : 'hidden'}">`;
   line += `[${datetime}]&nbsp; `;
@@ -279,7 +271,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
   if (autoScroll) {
     chat.animate({
       scrollTop: chat[0].scrollHeight,
-    }, (fast ? 0 : 500));
+    }, fast ? 0 : 500);
   }
 
   // Remove the person from the typing list, if present

@@ -31,10 +31,7 @@ export default class HanabiCard extends Phaser.GameObjects.Container {
     this.y = config.y || 0;
     if (!config.scale) config.scale = 1;
     this.scale = config.scale;
-    this.setSize(
-      CARD_W * config.scale,
-      CARD_H * config.scale,
-    );
+    this.setSize(CARD_W * config.scale, CARD_H * config.scale);
 
     // Card variables
     this.order = config.order;

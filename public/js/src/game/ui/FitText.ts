@@ -23,10 +23,7 @@ export default class FitText extends Konva.Text {
   resize() {
     this.fontSize(this.origFontSize);
 
-    while (
-      this.measureSize(this.text()).width > this.width()
-            && this.fontSize() > 5
-    ) {
+    while (this.measureSize(this.text()).width > this.width() && this.fontSize() > 5) {
       this.fontSize(this.fontSize() * 0.9);
     }
 

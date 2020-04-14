@@ -16,11 +16,11 @@ export default (winW: number, winH: number) => {
   let rect;
 
   interface HandConfig {
-    x: number,
-    y: number,
-    w?: number,
-    h?: number,
-    rot?: number,
+    x: number;
+    y: number;
+    w?: number;
+    h?: number;
+    rot?: number;
   }
 
   /* eslint-disable object-curly-newline */
@@ -357,21 +357,11 @@ export default (winW: number, winH: number) => {
           x: shadePos[numPlayers][j].w! * winW,
           y: 0,
         },
-        fillLinearGradientColorStops: [
-          0,
-          'rgba(0,0,0,0)',
-          0.9,
-          'white',
-        ],
+        fillLinearGradientColorStops: [0, 'rgba(0,0,0,0)', 0.9, 'white'],
       });
 
       if (isHandReversed(j)) {
-        rect.fillLinearGradientColorStops([
-          1,
-          'rgba(0,0,0,0)',
-          0.1,
-          'white',
-        ]);
+        rect.fillLinearGradientColorStops([1, 'rgba(0,0,0,0)', 0.1, 'white']);
       }
 
       globals.layers.UI.add(rect);

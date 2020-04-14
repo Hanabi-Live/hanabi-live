@@ -4,18 +4,18 @@ import { LABEL_COLOR } from '../../constants';
 import FitText from './FitText';
 
 interface ElementValues {
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  spacing: number,
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  spacing: number;
 }
 
 interface TextElementValues {
-  w: number,
-  w2: number,
-  x: number,
-  x2: number,
+  w: number;
+  w2: number;
+  x: number;
+  x2: number;
 }
 
 export default class CurrentPlayerArea extends Konva.Group {

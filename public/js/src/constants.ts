@@ -11,9 +11,9 @@ export const CARD_W = 286;
 export const CARD_H = 406;
 export const PLAY_AREA_PADDING = 1.15;
 export const HAND_PADDING = 1.05;
-export const HAND_BASE_SCALE = 0.40;
+export const HAND_BASE_SCALE = 0.4;
 // This is a temporary scale only to be used with phaser until dynamic scaling is implemented
-export const PLAY_AREA_BASE_SCALE = 0.40;
+export const PLAY_AREA_BASE_SCALE = 0.4;
 export const CARD_FADE = 0.6;
 
 // Other miscellaneous constants for the UI

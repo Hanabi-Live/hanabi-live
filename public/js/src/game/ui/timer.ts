@@ -1,14 +1,9 @@
 // Functions for timed games (and the timer that ticks up in untimed games)
 
 // Imports
+import ClockData from './ClockData';
 import globals from './globals';
 import TimerDisplay from './TimerDisplay';
-
-interface ClockData {
-  times: Array<number>,
-  active: number,
-  timeTaken: number,
-}
 
 // This function handles the "clock" WebSocket command
 // It is sent at the beginning of every turn

@@ -47,10 +47,10 @@ import TimerDisplay from './TimerDisplay';
 import * as tooltips from './tooltips';
 
 interface Values {
-  x: number,
-  y: number,
-  w?: number,
-  h?: number,
+  x: number;
+  y: number;
+  w?: number;
+  h?: number;
 }
 
 // Variables
@@ -1658,10 +1658,7 @@ const drawPreplayArea = () => {
     }
 
     // If we dragged a card, we have to put the card back in the hand
-    if (
-      globals.queuedAction.type === ACTION.PLAY
-      || globals.queuedAction.type === ACTION.DISCARD
-    ) {
+    if (globals.queuedAction.type === ACTION.PLAY || globals.queuedAction.type === ACTION.DISCARD) {
       globals.elements.playerHands[globals.playerUs].doLayout();
     }
 
@@ -1786,7 +1783,7 @@ const drawPauseArea = () => {
   });
   globals.elements.pauseArea.add(globals.elements.pauseText);
 
-  const button1W = pauseAreaValues.w * 0.40;
+  const button1W = pauseAreaValues.w * 0.4;
   const button2W = pauseAreaValues.w * 0.125;
   const buttonH = 0.33;
   const spacing = pauseAreaValues.w * 0.1;

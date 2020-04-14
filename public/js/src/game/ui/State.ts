@@ -17,21 +17,21 @@ export default class State {
 }
 
 interface StateCard {
-  suit: number,
-  rank: number,
-  clues: Array<StateCardClue>,
+  suit: number;
+  rank: number;
+  clues: Array<StateCardClue>;
 }
 
 interface StateClue {
-  type: number,
-  value: number,
-  giver: number,
-  target: number,
-  turn: number,
+  type: number;
+  value: number;
+  giver: number;
+  target: number;
+  turn: number;
 }
 
 interface StateCardClue {
-  type: number,
-  value: number,
-  positive: boolean,
+  type: number;
+  value: number;
+  positive: boolean;
 }

@@ -177,14 +177,7 @@ export const send = (hypoAction: Action) => {
     // Text
     let text = `${globals.playerNames[globals.currentPlayerIndex]} tells `;
     text += `${globals.playerNames[hypoAction.target]} about `;
-    const words = [
-      'zero',
-      'one',
-      'two',
-      'three',
-      'four',
-      'five',
-    ];
+    const words = ['zero', 'one', 'two', 'three', 'four', 'five'];
     text += `${words[list.length]} `;
 
     if (hypoAction.clue!.type === CLUE_TYPE.RANK) {

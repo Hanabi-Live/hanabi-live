@@ -64,8 +64,8 @@ export const init = () => {
     .on('resizemove', (event: any) => {
       // Get the new position based on the delta between the event and the old position
       // (which is conveniently stored in the "data-x" and "data-y" attributes)
-      let x = (parseFloat(event.target.getAttribute('data-x')) || 0);
-      let y = (parseFloat(event.target.getAttribute('data-y')) || 0);
+      let x = parseFloat(event.target.getAttribute('data-x')) || 0;
+      let y = parseFloat(event.target.getAttribute('data-y')) || 0;
 
       // Translate when resizing from top or left edges
       x += event.deltaRect.left;

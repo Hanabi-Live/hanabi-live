@@ -517,11 +517,10 @@ notifyFunctions.set('text', (data: ActionText) => {
 });
 
 interface RevealMessage {
-  suit: number,
-  rank: number,
-  order: number,
+  suit: number;
+  rank: number;
+  order: number;
 }
-
 notifyFunctions.set('reveal', (data: RevealMessage) => {
   // This is the reveal for hypotheticals
   // The code here is copied from the "websocket.ts" file

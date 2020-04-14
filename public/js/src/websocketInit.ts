@@ -73,14 +73,14 @@ const initCommands = () => {
 
   // Received by the client upon first connecting
   interface HelloData {
-    id: number,
-    username: string,
-    totalGames: number,
-    admin: boolean,
-    muted: boolean,
-    firstTimeUser: boolean,
-    settings: any,
-    shuttingDown: boolean,
+    id: number;
+    username: string;
+    totalGames: number;
+    admin: boolean;
+    muted: boolean;
+    firstTimeUser: boolean;
+    settings: any;
+    shuttingDown: boolean;
   }
   globals.conn.on('hello', (data: HelloData) => {
     // Store some variables (mostly relating to our user account)
@@ -171,8 +171,8 @@ const initCommands = () => {
 
   // Received by the client when someone either starts or stops typing
   interface ChatTypingMessage {
-    name: string,
-    typing: boolean,
+    name: string;
+    typing: boolean;
   }
   globals.conn.on('chatTyping', (data: ChatTypingMessage) => {
     if (data.typing) {
@@ -192,8 +192,8 @@ const initCommands = () => {
   // to give the client a list of past lobby chat messages
   // It is also sent upon connecting to a game to give a list of past in-game chat messages
   interface ChatListData {
-    list: Array<ChatMessage>,
-    unread: number,
+    list: Array<ChatMessage>;
+    unread: number;
   }
   globals.conn.on('chatList', (data: ChatListData) => {
     for (const line of data.list) {
@@ -210,14 +210,14 @@ const initCommands = () => {
   });
 
   interface ShutdownData {
-    shuttingDown: boolean,
+    shuttingDown: boolean;
   }
   globals.conn.on('shutdown', (data: ShutdownData) => {
     globals.shuttingDown = data.shuttingDown;
   });
 
   interface WarningData {
-    warning: string,
+    warning: string;
   }
   globals.conn.on('warning', (data: WarningData) => {
     console.warn(data.warning);
@@ -240,7 +240,7 @@ const initCommands = () => {
   });
 
   interface ErrorData {
-    error: string,
+    error: string;
   }
   globals.conn.on('error', (data: ErrorData) => {
     console.error(data.error);

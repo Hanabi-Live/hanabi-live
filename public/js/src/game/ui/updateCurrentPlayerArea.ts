@@ -51,11 +51,7 @@ export default () => {
   }
 
   const setPlayerText = (threeLines: boolean) => {
-    const {
-      rect1,
-      textValues,
-      values,
-    } = currentPlayerArea;
+    const { rect1, textValues, values } = currentPlayerArea;
 
     text2.fitText(globals.playerNames[globals.currentPlayerIndex]);
 

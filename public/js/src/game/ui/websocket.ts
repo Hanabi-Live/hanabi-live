@@ -3,6 +3,7 @@
 // Imports
 import { CLUE_TYPE, REPLAY_ARROW_ORDER, VARIANTS } from '../../constants';
 import * as arrows from './arrows';
+import ClockData from './ClockData';
 import fadeCheck from './fadeCheck';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
@@ -34,11 +35,6 @@ commands.set('boot', () => {
 
 // Updates the clocks to show how much time people are taking
 // or how much time people have left
-interface ClockData {
-  times: Array<number>,
-  active: number,
-  timeTaken: number,
-}
 commands.set('clock', (data: ClockData) => {
   if (globals.loading) {
     // We have not loaded everything yet
@@ -48,7 +44,7 @@ commands.set('clock', (data: ClockData) => {
 });
 
 interface ConnectedData {
-  list: Array<boolean>,
+  list: Array<boolean>;
 }
 commands.set('connected', (data: ConnectedData) => {
   if (globals.loading) {
@@ -66,7 +62,7 @@ commands.set('connected', (data: ConnectedData) => {
 });
 
 interface DatabaseIDData {
-  id: number,
+  id: number;
 }
 commands.set('databaseID', (data: DatabaseIDData) => {
   globals.databaseID = data.id;
@@ -172,34 +168,34 @@ commands.set('hypoStart', () => {
 
 interface InitData {
   // Game settings
-  tableID: number,
-  names: Array<string>,
-  variant: string,
-  seat: number,
-  spectating: boolean,
-  replay: boolean,
-  sharedReplay: boolean,
-  databaseID: number,
+  tableID: number;
+  names: Array<string>;
+  variant: string;
+  seat: number;
+  spectating: boolean;
+  replay: boolean;
+  sharedReplay: boolean;
+  databaseID: number;
 
   // Optional settings
-  timed: boolean,
-  baseTime: number,
-  timePerTurn: number,
-  speedrun: boolean,
-  cardCycle: boolean,
-  deckPlays: boolean,
-  emptyClues: boolean,
-  characterAssignments: Array<string>,
-  characterMetadata: Array<number>,
+  timed: boolean;
+  baseTime: number;
+  timePerTurn: number;
+  speedrun: boolean;
+  cardCycle: boolean;
+  deckPlays: boolean;
+  emptyClues: boolean;
+  characterAssignments: Array<string>;
+  characterMetadata: Array<number>;
 
   // Hypothetical settings
-  hypothetical: boolean,
-  hypoActions: Array<string>,
+  hypothetical: boolean;
+  hypoActions: Array<string>;
 
   // Other features
-  paused: boolean,
-  pausePlayer: string,
-  pauseQueued: boolean,
+  paused: boolean;
+  pausePlayer: string;
+  pauseQueued: boolean;
 }
 commands.set('init', (data: InitData) => {
   // Game settings
@@ -253,8 +249,8 @@ commands.set('init', (data: InitData) => {
 
 // Received when spectating a game
 interface NoteData {
-  order: number,
-  notes: Array<SpectatorNote>,
+  order: number;
+  notes: Array<SpectatorNote>;
 }
 commands.set('note', (data: NoteData) => {
   // If we are not spectating and we got this message, something has gone wrong
@@ -275,12 +271,12 @@ commands.set('note', (data: NoteData) => {
 // - joining an existing game as a spectator
 // (it gives the notes of all the players & spectators)
 interface NoteListData {
-  notes: Array<NoteList>,
+  notes: Array<NoteList>;
 }
 interface NoteList {
-  id: number,
-  name: string,
-  notes: Array<string>,
+  id: number;
+  name: string;
+  notes: Array<string>;
 }
 commands.set('noteList', (data: NoteListData) => {
   // Reset any existing notes
@@ -313,7 +309,7 @@ commands.set('noteList', (data: NoteListData) => {
 // Received when reconnecting to an existing game as a player
 // (it only gets the notes of one specific player)
 interface NoteListPlayerData {
-  notes: Array<string>,
+  notes: Array<string>;
 }
 commands.set('noteListPlayer', (data: NoteListPlayerData) => {
   // Store our notes
@@ -447,8 +443,8 @@ commands.set('notifyList', (dataList: Array<any>) => {
 });
 
 interface PauseData {
-  paused: boolean,
-  pausePlayer: string,
+  paused: boolean;
+  pausePlayer: string;
 }
 commands.set('pause', (data: PauseData) => {
   globals.paused = data.paused;
@@ -460,7 +456,7 @@ commands.set('pause', (data: PauseData) => {
 
 // This is used in shared replays to highlight a specific card (or UI element)
 interface ReplayIndicatorData {
-  order: number,
+  order: number;
 }
 commands.set('replayIndicator', (data: ReplayIndicatorData) => {
   if (globals.loading) {
@@ -514,8 +510,8 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
 
 // This is used in shared replays to specify who the leader is
 interface ReplayLeaderData {
-  name: string,
-  playAnimation: boolean,
+  name: string;
+  playAnimation: boolean;
 }
 commands.set('replayLeader', (data: ReplayLeaderData) => {
   // Store who the shared replay leader is
@@ -568,7 +564,7 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
 
 // This is used in shared replays to make fun sounds
 interface ReplaySoundData {
-  sound: string,
+  sound: string;
 }
 commands.set('replaySound', (data: ReplaySoundData) => {
   if (globals.loading) {
@@ -581,7 +577,7 @@ commands.set('replaySound', (data: ReplaySoundData) => {
 
 // This is used in shared replays to change the turn
 interface ReplayTurnData {
-  turn: number,
+  turn: number;
 }
 commands.set('replayTurn', (data: ReplayTurnData) => {
   if (globals.loading) {
@@ -640,9 +636,9 @@ commands.set('replayTurn', (data: ReplayTurnData) => {
 });
 
 interface RevealData {
-  suit: number,
-  rank: number,
-  order: number,
+  suit: number;
+  rank: number;
+  order: number;
 }
 commands.set('reveal', (data: RevealData) => {
   let card = globals.deck[data.order];
@@ -656,7 +652,7 @@ commands.set('reveal', (data: RevealData) => {
 
 // This is used to update the names of the people currently spectating the game
 interface SpectatorsData {
-  names: Array<string>,
+  names: Array<string>;
 }
 commands.set('spectators', (data: SpectatorsData) => {
   if (
@@ -705,7 +701,7 @@ commands.set('spectators', (data: SpectatorsData) => {
 });
 
 interface SoundData {
-  file: string,
+  file: string;
 }
 commands.set('sound', (data: SoundData) => {
   if (globals.lobby.settings.soundMove) {
