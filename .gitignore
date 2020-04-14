@@ -15,11 +15,11 @@ backups
 hanabi-live
 hanabi-live~
 
-# MacOS artifacts
-.DS_Store
-
 # MySQL data from Docker
 mysql_data
+
+# MacOS artifacts
+.DS_Store
 
 # --------------------------
 # GitHub .gitignore Template
