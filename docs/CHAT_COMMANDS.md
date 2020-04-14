@@ -1,6 +1,6 @@
 # Hanabi Live Chat Commands
 
-If you need general help with the website, then read the [features page](Features.md). If you need the list of chat commands, read on.
+If you need general help with the website, then read the [features page](FEATURES.md). If you need the list of chat commands, read on.
 
 <br />
 
