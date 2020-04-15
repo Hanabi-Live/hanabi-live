@@ -29,13 +29,13 @@ func shutdown(restart bool) {
 		chatServerSendAll("The server will " + verb + " in " + numMinutes + " minutes " +
 			"or when all ongoing games have finished, whichever comes first. " +
 			"New game creation has been disabled.")
-		go shutdownXMinutesLeft(verb)
+		go shutdownXMinutesLeft(verb, 5)
+		go shutdownXMinutesLeft(verb, 10)
 		go shutdownWait(restart)
 	}
 }
 
-func shutdownXMinutesLeft(verb string) {
-	minutesLeft := 5
+func shutdownXMinutesLeft(verb string, minutesLeft int) {
 	time.Sleep(shutdownTimeout - time.Duration(minutesLeft)*time.Minute)
 
 	if !shuttingDown {
