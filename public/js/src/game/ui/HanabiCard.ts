@@ -67,7 +67,7 @@ export default class HanabiCard extends Konva.Group {
 
   bare: Konva.Image | null = null;
   cluedBorder: Konva.Rect | null = null;
-  noteBorder: Konva.Rect | null = null;
+  chopMoveBorder: Konva.Rect | null = null;
   finesseBorder: Konva.Rect | null = null;
   suitPips: Konva.Group | null = null;
   suitPipsMap: Map<Suit, Konva.Shape> = new Map();
@@ -142,7 +142,7 @@ export default class HanabiCard extends Konva.Group {
     if (!globals.replay && !globals.spectating) {
       // If it has a "chop move" note on it, we want to keep the chop move border turned on
       if (this.noteChopMoved) {
-        this.noteBorder!.show();
+        this.chopMoveBorder!.show();
       }
       // If it has a "finessed" note on it, we want to keep the finesse border turned on
       if (this.noteFinessed) {
@@ -184,7 +184,7 @@ export default class HanabiCard extends Konva.Group {
 
   hideBorders() {
     this.cluedBorder!.hide();
-    this.noteBorder!.hide();
+    this.chopMoveBorder!.hide();
     this.finesseBorder!.hide();
   }
 

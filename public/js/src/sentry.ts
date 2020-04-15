@@ -74,11 +74,6 @@ export const setUserContext = (userID: number, username: string) => {
   });
 };
 
-const useSentry = () => (
-  window.location.hostname !== 'localhost'
-  && !window.location.pathname.includes('/dev')
-);
-
 export const setGameContext = (gameInitData: any) => {
   if (!useSentry()) {
     return;
@@ -91,3 +86,8 @@ export const setGameContext = (gameInitData: any) => {
     scope.setTag('gameInitData', gameInitData);
   });
 };
+
+const useSentry = () => (
+  window.location.hostname !== 'localhost'
+  && !window.location.pathname.includes('/dev')
+);

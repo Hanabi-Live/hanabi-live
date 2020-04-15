@@ -84,7 +84,7 @@ export const checkSpecialNote = (card: HanabiCard) => {
   card.setBareImage();
 
   // Feature 2 - Give the card a special border if it is chop moved
-  card.noteBorder!.visible((
+  card.chopMoveBorder!.visible((
     card.noteChopMoved
         && !card.cluedBorder!.visible()
         && !globals.replay

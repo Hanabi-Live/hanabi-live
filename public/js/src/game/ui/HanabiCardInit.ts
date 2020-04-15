@@ -51,8 +51,8 @@ export function border(this: HanabiCard) {
   });
   this.add(this.cluedBorder);
 
-  // The card will also get a border if it is not clued but has a particular note on it
-  this.noteBorder = new Konva.Rect({
+  // The card will get a special border if the player tells us that it is chop moved
+  this.chopMoveBorder = new Konva.Rect({
     x: 3,
     y: 3,
     width: CARD_W - 6,
@@ -63,8 +63,9 @@ export function border(this: HanabiCard) {
     visible: false,
     listening: false,
   });
-  this.add(this.noteBorder);
+  this.add(this.chopMoveBorder);
 
+  // The card will get a special border if the player tells us that it is finessed
   this.finesseBorder = new Konva.Rect({
     x: 3,
     y: 3,
