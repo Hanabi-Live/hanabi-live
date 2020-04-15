@@ -55,6 +55,7 @@ func httpLocalhostInit() {
 	httpRouter.GET("/mute/:username", httpUserAction)
 	httpRouter.POST("/sendWarning/:username", httpUserAction)
 	httpRouter.POST("/sendError/:username", httpUserAction)
+	httpRouter.GET("/timeLeft", httpTimeLeft)
 	httpRouter.GET("/uptime", httpUptime)
 	httpRouter.GET("/clearEmptyTables", httpClearEmptyTables)
 	httpRouter.GET("/debug", func(c *gin.Context) {
@@ -257,6 +258,27 @@ func httpSendError(c *gin.Context, userID int) {
 
 	s.Error(msg)
 	c.String(http.StatusOK, "success\n")
+}
+
+func httpTimeLeft(c *gin.Context) {
+	// Local variables
+	w := c.Writer
+
+	var timeLeft string
+	if v, err := getUptime(); err != nil {
+		logger.Error("Failed to get the time left:", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else {
+		timeLeft = v
+	}
+	timeLeft += "\n"
+
+	c.String(http.StatusOK, timeLeft)
 }
 
 func httpUptime(c *gin.Context) {

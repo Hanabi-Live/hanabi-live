@@ -51,7 +51,7 @@ module.exports = {
   // Webpack will display a warning unless we specify the mode
   // Production mode minifies the resulting JavaScript, reducing the file size by a huge factor
   // However, production mode takes a lot longer to pack than development mode,
-  // so only enable it on the real web server so that we can have speedy development
+  // so we only enable it on the real web server so that we can have speedy development
   mode: (
     process.platform === 'win32'
     || process.platform === 'darwin' ? 'development' : 'production'
