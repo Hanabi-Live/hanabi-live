@@ -1,43 +1,54 @@
 {
-    "editor.fontSize": 17,
-    "editor.renderWhitespace": "all", // We want to see spaces and tabs
-    "editor.rulers": [100], // This matches the Airbnb JavaScript style guide
-    "editor.tabCompletion": "on", // IntelliSense tab completion is off by default
-    "editor.wordWrap": "on",
+  "editor.fontSize": 17,
+  "editor.renderWhitespace": "all", // We want to see spaces and tabs
+  "editor.rulers": [100], // This matches the Airbnb JavaScript style guide
+  "editor.tabCompletion": "on", // IntelliSense tab completion is off by default
+  "editor.wordWrap": "on",
 
-    // This is needed for VSCode to see ESLint errors on TypeScript files
-    "eslint.validate": [
-        "javascript",
-        { "language": "typescript", "autoFix": true },
-    ],
-    "eslint.workingDirectories": [
-        "./public/js",
-    ],
+  // This is needed for VSCode to see ESLint errors on TypeScript files
+  "eslint.validate": [
+    "javascript",
+    "typescript"
+  ],
+  "eslint.workingDirectories": [
+    "./public/js"
+  ],
 
-    // Disable the confirmation box when deleting a file
-    "explorer.confirmDelete": false,
+  // Disable the confirmation box when deleting a file
+  "explorer.confirmDelete": false,
 
-    // Linux line endings are commonly used as a programming standard
-    "files.eol": "\n",
+  "files.associations": {
+    // By default, this maps to MSSQL
+    "*.sql": "sql",
 
-    // VSCode recommends goimports over goreturns
-    "go.formatTool": "goimports",
+    // Golang HTML templates are saved as "tmpl" files
+    "*.tmpl": "html"
+  },
 
-    // The default Golang linter is golint, which is only concerned with coding style
-    // GolangCI-Lint does a suite of different checks
-    "go.lintTool": "golangci-lint",
+  // Linux line endings are commonly used as a programming standard
+  "files.eol": "\n",
 
-    // This is recommended as per the GolangCI-Lint README file
-    "go.lintFlags": [
-        "--fast",
-    ],
+  // VSCode recommends goimports over goreturns
+  "go.formatTool": "goimports",
 
-    // Disable the annoying release notes popup everytime that VSCode updates itself
-    "update.showReleaseNotes": false,
+  // The default Golang linter is golint, which is only concerned with coding style
+  // GolangCI-Lint does a suite of different checks
+  "go.lintTool": "golangci-lint",
 
-    // Show the full path of the file in the window title
-    "window.title": "${activeEditorLong}${separator}${rootName}",
+  // This is recommended as per the GolangCI-Lint README file
+  "go.lintFlags": [
+    "--fast"
+  ],
 
-    // Don't show the VSCode welcome screen
-    "workbench.startupEditor": "newUntitledFile",
+  // Disable the annoying release notes popup everytime that VSCode updates itself
+  "update.showReleaseNotes": false,
+
+  // Show the full path of the file in the window title
+  "window.title": "${activeEditorLong}${separator}${rootName}",
+
+  // This is the default, which will change if you accidently use Ctrl + - or Ctrl + =
+  "window.zoomLevel": 0,
+
+  // Don't show the welcome screen
+  "workbench.startupEditor": "newUntitledFile"
 }
