@@ -265,7 +265,7 @@ func httpTimeLeft(c *gin.Context) {
 	w := c.Writer
 
 	var timeLeft string
-	if v, err := getUptime(); err != nil {
+	if v, err := getTimeLeft(); err != nil {
 		logger.Error("Failed to get the time left:", err)
 		http.Error(
 			w,
