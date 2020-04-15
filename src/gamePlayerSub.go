@@ -12,22 +12,15 @@ import (
 // GetChopIndex gets the index of the oldest (right-most) unclued card
 // (used for the "Card Cycling" feature)
 func (p *GamePlayer) GetChopIndex() int {
-	chopIndex := -1
-
-	// Go through their hand
 	for i := 0; i < len(p.Hand); i++ {
 		if !p.Hand[i].Touched {
-			chopIndex = i
-			break
+			return i
 		}
 	}
-	if chopIndex == -1 {
-		// Their hand is filled with clued cards,
-		// so the chop is considered to be their newest (left-most) card
-		chopIndex = len(p.Hand) - 1
-	}
 
-	return chopIndex
+	// Their hand is filled with clued cards,
+	// so the chop is considered to be their newest (left-most) card
+	return len(p.Hand) - 1
 }
 
 func (p *GamePlayer) InitTime(options *Options) {

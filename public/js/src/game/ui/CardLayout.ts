@@ -168,4 +168,19 @@ export default class CardLayout extends Konva.Group {
     }
     return true;
   }
+
+  getChopIndex() {
+    const hand = this.children.toArray();
+    for (let i = 0; i < hand.length; i++) {
+      const layoutChild = hand[i];
+      const card: HanabiCard = layoutChild.children[0];
+      if (!card.isClued()) {
+        return i;
+      }
+    }
+
+    // Their hand is filled with clued cards,
+    // so the chop is considered to be their newest (left-most) card
+    return hand.length - 1;
+  }
 }
