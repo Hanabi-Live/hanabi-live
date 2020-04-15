@@ -12,6 +12,7 @@ import * as modals from './modals';
 
 // Variables
 const emojiMap = new Map();
+const emoteList: Array<string> = [];
 let chatLineNum = 1;
 
 export const init = () => {
@@ -25,7 +26,7 @@ export const init = () => {
   $('#game-chat-input').on('keypress', keypress('table'));
   $('#game-chat-input').on('keydown', keydown);
 
-  // Ensure that there are no overlapping emotes
+  // Make an emote list and ensure that there are no overlapping emotes
   const emoteMap = new Map();
   for (const category of Object.values(emoteCategories)) {
     for (const emote of category) {
@@ -34,6 +35,7 @@ export const init = () => {
       } else {
         emoteMap.set(emote, true);
       }
+      emoteList.push(emote);
     }
   }
 
@@ -209,11 +211,16 @@ const keydown = function keydown(this: HTMLElement, event: JQuery.Event) {
     throw new Error('Failed to get the element for the keydown function.');
   }
 
-  // The up and down arrows are only caught in the "keydown"
+  // The up and down arrows are only caught in the "keydown" event
+  // https://stackoverflow.com/questions/5597060/detecting-arrow-key-presses-in-javascript
+  // The tab key is only caught in the "keydown" event because it switches the input focus
   if (event.key === 'ArrowUp') {
     arrowUp(element);
   } else if (event.key === 'ArrowDown') {
     arrowDown(element);
+  } else if (event.key === 'Tab') {
+    event.preventDefault();
+    tab(element);
   }
 };
 
@@ -244,6 +251,99 @@ export const arrowDown = (element: JQuery<HTMLElement>) => {
   // Set the chat input box to what we last typed
   const retrievedHistory = globals.typedChatHistory[globals.typedChatHistoryIndex];
   element.val(retrievedHistory);
+};
+
+export const tab = (element: JQuery<HTMLElement>) => {
+  // Make a list of the currently connected users
+  const userList = [];
+  for (const user of globals.userMap.values()) {
+    userList.push(user.name);
+  }
+
+  // We want to be able to tab complete both users and emotes
+  const tabList = userList.concat(emoteList);
+  tabList.sort();
+
+  // Prioritize the more commonly used NotLikeThis over NootLikeThis
+  const notLikeThisIndex = tabList.indexOf('NotLikeThis');
+  const nootLikeThisIndex = tabList.indexOf('NootLikeThis');
+  tabList[notLikeThisIndex] = 'NootLikeThis';
+  tabList[nootLikeThisIndex] = 'NotLikeThis';
+
+  // Prioritize the more commonly used Kappa over Kadda
+  const kappaIndex = tabList.indexOf('Kappa');
+  const kaddaIndex = tabList.indexOf('Kadda');
+  tabList[kaddaIndex] = 'Kappa';
+  tabList[kappaIndex] = 'Kadda';
+
+  // Prioritize the more commonly used FrankerZ over all the other Franker emotes
+  const frankerZIndex = tabList.indexOf('FrankerZ');
+  const frankerBIndex = tabList.indexOf('FrankerB');
+  let tempEmote1 = tabList[frankerBIndex];
+  tabList[frankerBIndex] = 'FrankerZ';
+  for (let i = frankerBIndex; i < frankerZIndex; i++) {
+    const tempEmote2 = tabList[i + 1];
+    tabList[i + 1] = tempEmote1;
+    tempEmote1 = tempEmote2;
+  }
+
+  if (globals.tabCompleteCounter === 0) {
+    // This is the first time we are pressing tab
+    let message = element.val();
+    if (typeof message !== 'string') {
+      message = '';
+    }
+    message = message.trim();
+
+    globals.tabCompleteWordList = message.split(' ');
+    const messageEnd = globals.tabCompleteWordList[globals.tabCompleteWordList.length - 1];
+    for (let i = 0; i < tabList.length; i++) {
+      const tabWord = tabList[i];
+      const temp = tabWord.slice(0, messageEnd.length).toLowerCase();
+      if (temp === messageEnd.toLowerCase()) {
+        globals.tabCompleteIndex = i;
+        globals.tabCompleteCounter += 1;
+        let newMessage = '';
+        for (let j = 0; j < globals.tabCompleteWordList.length - 1; j++) {
+          newMessage += globals.tabCompleteWordList[j];
+          newMessage += ' ';
+        }
+        newMessage += tabWord;
+        element.val(newMessage);
+        break;
+      }
+    }
+  } else {
+    // We have already pressed tab once, so we need to cycle through the rest of the
+    // autocompletion words
+    let index = globals.tabCompleteCounter + globals.tabCompleteIndex;
+    const messageEnd = globals.tabCompleteWordList[globals.tabCompleteWordList.length - 1];
+    if (globals.tabCompleteCounter >= tabList.length) {
+      globals.tabCompleteCounter = 0;
+      element.val(messageEnd);
+      index = globals.tabCompleteCounter + globals.tabCompleteIndex;
+    }
+    const tempSlice = tabList[index].slice(0, messageEnd.length).toLowerCase();
+    if (tempSlice === messageEnd.toLowerCase()) {
+      globals.tabCompleteCounter += 1;
+      let newMessage = '';
+      for (let i = 0; i < globals.tabCompleteWordList.length - 1; i++) {
+        newMessage += globals.tabCompleteWordList[i];
+        newMessage += ' ';
+      }
+      newMessage += tabList[index];
+      element.val(newMessage);
+    } else {
+      globals.tabCompleteCounter = 0;
+      let newMessage = '';
+      for (let i = 0; i < globals.tabCompleteWordList.length - 1; i++) {
+        newMessage += globals.tabCompleteWordList[i];
+        newMessage += ' ';
+      }
+      newMessage += messageEnd;
+      element.val(newMessage);
+    }
+  }
 };
 
 export const add = (data: ChatMessage, fast: boolean) => {
