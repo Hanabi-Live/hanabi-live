@@ -87,6 +87,13 @@ func commandTableRestart(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that the server is not shutting down
+	if shuttingDown {
+		s.Warning("The server is shutting down or restarting soon, " +
+			"so new game creation is currently disabled.")
+		return
+	}
+
 	/*
 		Restart
 	*/
