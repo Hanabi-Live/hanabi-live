@@ -1,4 +1,9 @@
 {
+  // This will run "eslint --fix" on save so that code is automatically formatted
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+
   "editor.fontSize": 17,
   "editor.renderWhitespace": "all", // We want to see spaces and tabs
   "editor.rulers": [100], // This matches the Airbnb JavaScript style guide
