@@ -1,3 +1,5 @@
+# Note that this script does not get the "<3" emote; that must be added manually
+
 # Imports
 import os
 import re

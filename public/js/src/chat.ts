@@ -352,7 +352,7 @@ const fillDiscordEmotes = (message: string) => {
 };
 
 const fillLocalEmotes = (message: string) => {
-  let filledMessed = message;
+  let filledMessage = message;
 
   // Search through the text for each emote
   for (const [category, emotes] of Object.entries(emoteCategories)) {
@@ -363,19 +363,19 @@ const fillLocalEmotes = (message: string) => {
       if (index !== -1 && message[index + emote.length] !== '"') {
         const re = new RegExp(`\\b${emote}\\b`, 'g'); // "\b" is a word boundary in regex
         const emoteTag = `<img class="chat-emote" src="/public/img/emotes/${category}/${emote}.png" title="${emote}" />`;
-        filledMessed = filledMessed.replace(re, emoteTag);
+        filledMessage = filledMessage.replace(re, emoteTag);
       }
     }
   }
 
-  // Also handle special emotes that do not match the filenames
-  if (message.indexOf('&lt;3') !== -1) {
-    const emoteTag = '<img class="chat-emote" src="/public/img/emotes/3.png" title="&lt;3" />';
-    const re = new RegExp('&lt;3', 'g');
-    message = message.replace(re, emoteTag);
+  // Also handle emotes that have special characters in them
+  if (filledMessage.indexOf('&lt;3') !== -1) {
+    const emoteTag = '<img class="chat-emote" src="/public/img/emotes/other/3.png" title="&lt;3" />';
+    const re = new RegExp('&lt;3', 'g'); // "\b" won't work with a semicolon
+    filledMessage = filledMessage.replace(re, emoteTag);
   }
 
-  return filledMessed;
+  return filledMessage;
 };
 
 export const updatePeopletyping = () => {
