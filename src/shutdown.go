@@ -45,11 +45,7 @@ func shutdownXMinutesLeft(verb string) {
 	msg := "The server will " + verb + " in " + strconv.Itoa(minutesLeft) + " minutes. " +
 		"Finish your game soon or it will be automatically terminated!"
 	for _, t := range tables {
-		t.NotifyChat(&ChatMessage{
-			Msg:      msg,
-			Server:   true,
-			Datetime: time.Now(),
-		})
+		chatServerSend(msg, "table"+strconv.Itoa(t.ID))
 	}
 }
 
