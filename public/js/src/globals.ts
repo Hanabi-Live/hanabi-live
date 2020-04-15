@@ -36,10 +36,12 @@ export class Globals {
   userMap: Map<number, User> = new Map(); // Keys are IDs
   tableMap: Map<number, Table> = new Map(); // Keys are IDs
   history: Array<GameHistory> = [];
-  showMoreHistoryClicked: boolean = false;
   lastPM: string = '';
   datetimeLastChatInput: number = new Date().getTime();
+  typedChatHistory: Array<string> = [];
+  typedChatHistoryIndex = 0;
   peopleTyping: Array<string> = [];
+  showMoreHistoryClicked: boolean = false;
   idleMinutes: number = 0;
 
   game: Game | null = null; // Equal to the data from the "game" command

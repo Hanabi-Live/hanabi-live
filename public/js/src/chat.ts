@@ -17,10 +17,13 @@ let chatLineNum = 1;
 export const init = () => {
   $('#lobby-chat-input').on('input', input);
   $('#lobby-chat-input').on('keypress', keypress('lobby'));
+  $('#lobby-chat-input').on('keydown', keydown);
   $('#lobby-chat-pregame-input').on('input', input);
   $('#lobby-chat-pregame-input').on('keypress', keypress('table'));
+  $('#lobby-chat-pregame-input').on('keydown', keydown);
   $('#game-chat-input').on('input', input);
   $('#game-chat-input').on('keypress', keypress('table'));
+  $('#game-chat-input').on('keydown', keydown);
 
   // Ensure that there are no overlapping emotes
   const emoteMap = new Map();
@@ -88,15 +91,17 @@ const keypress = (room: string) => function keypressFunction(
   this: HTMLElement,
   event: JQuery.Event,
 ) {
-  // Check for submission
-  if (event.key !== 'Enter') {
-    return;
-  }
-
   const element = $(this);
   if (!element) {
     throw new Error('Failed to get the element for the keypress function.');
   }
+
+  if (event.key === 'Enter') {
+    submit(room, element);
+  }
+};
+
+const submit = (room: string, element: JQuery<HTMLElement>) => {
   const msg = element.val();
   if (!msg) {
     return;
@@ -124,6 +129,12 @@ const keypress = (room: string) => function keypressFunction(
   if (room.startsWith('table')) {
     room = `table${globals.tableID}`;
   }
+
+  // Add the chat message to the typed history so that we can use the up arrow later
+  globals.typedChatHistory.unshift(msg);
+
+  // Reset the typed history index
+  globals.typedChatHistoryIndex = -1;
 
   // Check for chat commands
   const args = msg.split(' ');
@@ -190,6 +201,49 @@ const keypress = (room: string) => function keypressFunction(
     msg,
     room,
   });
+};
+
+const keydown = function keydown(this: HTMLElement, event: JQuery.Event) {
+  const element = $(this);
+  if (!element) {
+    throw new Error('Failed to get the element for the keydown function.');
+  }
+
+  // The up and down arrows are only caught in the "keydown"
+  if (event.key === 'ArrowUp') {
+    arrowUp(element);
+  } else if (event.key === 'ArrowDown') {
+    arrowDown(element);
+  }
+};
+
+export const arrowUp = (element: JQuery<HTMLElement>) => {
+  globals.typedChatHistoryIndex += 1;
+
+  // Check to see if we have reached the end of the history list
+  if (globals.typedChatHistoryIndex > globals.typedChatHistory.length - 1) {
+    globals.typedChatHistoryIndex = globals.typedChatHistory.length - 1;
+    return;
+  }
+
+  // Set the chat input box to what we last typed
+  const retrievedHistory = globals.typedChatHistory[globals.typedChatHistoryIndex];
+  element.val(retrievedHistory);
+};
+
+export const arrowDown = (element: JQuery<HTMLElement>) => {
+  globals.typedChatHistoryIndex -= 1;
+
+  // Check to see if we have reached the beginning of the history list
+  // We check for -2 instead of -1 here because we want down arrow to clear the chat
+  if (globals.typedChatHistoryIndex <= -2) {
+    globals.typedChatHistoryIndex = -1;
+    return;
+  }
+
+  // Set the chat input box to what we last typed
+  const retrievedHistory = globals.typedChatHistory[globals.typedChatHistoryIndex];
+  element.val(retrievedHistory);
 };
 
 export const add = (data: ChatMessage, fast: boolean) => {
