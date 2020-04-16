@@ -6,13 +6,21 @@ set -e # Exit on any errors
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+# Record the starting time
+START_TIME=`date +%s`
+
+# Create a file that informs the server that the compiled JavaScript will not be available for the
+# next few seconds
+COMPILING_FILE="$DIR/compiling_client"
+touch "$COMPILING_FILE"
+
 # Set the version number in the "version.ts" file
 # (which is equal to the number of commits in the git repository)
 VERSION=$(git rev-list --count HEAD)
 echo "$VERSION" > "$DIR/public/js/src/data/version.json"
 
 # If we need to, add the NPM directory to the path
-# (the Golang process will execute this script on a graceful shutdown
+# (the Golang process will execute this script during a graceful restart
 # and it will not have it in the path by default)
 if ! command -v npx > /dev/null; then
     # MacOS only has Bash version 3, which does not have assosiative arrays,
@@ -37,7 +45,19 @@ if ! command -v npx > /dev/null; then
 fi
 
 cd "$DIR/public/js"
+
 echo "Packing the TypeScript using WebPack..."
+echo
 npx webpack # Pack the TypeScript into one file
+
+echo
 echo "Packing the CSS using Grunt..."
+echo
 npx grunt # Pack the CSS into one file
+rm -f "$COMPILING_FILE"
+
+# Calculate how much time it took to build the client
+END_TIME=`date +%s`
+ELAPSED_SECONDS=$((END_TIME-START_TIME))
+echo
+echo "Client v$VERSION successfully built in $ELAPSED_SECONDS seconds."

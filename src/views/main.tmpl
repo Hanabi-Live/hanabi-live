@@ -118,15 +118,6 @@
 
       <div class="row">
         <div class="col-8 off-2">
-          <section id="firefox-warning" class="box align-center hidden">
-            <h3><i class="fas fa-exclamation-triangle"></i> Warning!</h3>
-            <p>
-              For unknown reasons, this website performs terribly in Firefox.<br />
-              Please, for your sanity, use Chrome or Chromium when using Hanabi Live.
-            </p>
-            <button id="firefox-warning-button" class="button align-center">OK</button>
-          </section>
-
           <section id="sign-in" class="box align-center">
             <h3>Sign In / Create Account</h3>
             <p>
@@ -170,6 +161,23 @@
                 </div>
               </div>
             </form>
+          </section>
+
+          <section id="firefox-warning" class="box align-center hidden">
+            <h3><i class="fas fa-exclamation-triangle"></i> Warning!</h3>
+            <p>
+              For unknown reasons, this website performs terribly in Firefox.<br />
+              Please, for your sanity, use Chrome or Chromium when using Hanabi Live.
+            </p>
+            <button id="firefox-warning-button" class="button align-center">OK</button>
+          </section>
+
+          <section id="compiling-warning" class="box align-center hidden">
+            <h3><i class="fas fa-tools"></i>&nbsp; Maintenance</h3>
+            <p>
+              A new version of Hanabi Live has been released and the server is in the process of building the new client. Please wait.
+            </p>
+            <img id="login-ajax" src="/public/img/ajax.gif">
           </section>
         </div>
       </div>
@@ -1119,6 +1127,10 @@
     (this is necessary because it provides "hot reloading" and speeds up long compilation times)
 -->
 <script type="text/javascript" src="http://localhost:8080/main.{{.Version}}.min.js"></script>
+{{else if .Compiling}}
+<!-- The server is currently in the process of compiling the TypeScript -->
+<script type="text/javascript" src="/public/js/lib/jquery-3.3.1.min.js"></script>
+<script type="text/javascript" src="/public/js/compiling.js"></script>
 {{else}}
 <!-- All of the JavaScript is bundled into one file with Webpack -->
 <script type="text/javascript" src="/public/js/dist/main.{{.Version}}.min.js"></script>

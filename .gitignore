@@ -15,6 +15,9 @@ backups
 hanabi-live
 hanabi-live~
 
+# Temporary files
+compiling_client
+
 # MySQL data from Docker
 mysql_data
 

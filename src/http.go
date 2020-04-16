@@ -18,11 +18,12 @@ import (
 )
 
 type TemplateData struct {
-	Title   string // Used to populate the <title> tag
-	Domain  string // Used to validate that the user is going to the correct URL
-	Version int
-	Dev     bool
-	Name    string // Used for the profile
+	Title     string // Used to populate the <title> tag
+	Domain    string // Used to validate that the user is going to the correct URL
+	Version   int
+	Compiling bool // True if we are currently recompiling the TypeScript client
+	Dev       bool
+	Name      string // Used for the profile
 }
 
 const (
@@ -132,7 +133,7 @@ func httpInit() {
 	httpRouter.GET("/replay/:gameID/:turn", httpMain)
 	httpRouter.GET("/test", httpMain)
 	httpRouter.GET("/test/:testNum", httpMain)
-	httpRouter.GET("/dev2", httpMain) // Used for testing Phaser
+	httpRouter.GET("/dev2", httpMain) // Used for testing the new Phaser client
 
 	// Path handlers (for development)
 	// ("/dev" is the same as "/" but uses unbundled JavaScript/CSS)

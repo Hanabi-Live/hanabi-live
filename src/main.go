@@ -52,6 +52,9 @@ func main() {
 		logger.Fatal("The data path of \"" + dataPath + "\" does not exist. " +
 			"This directory should always exist; please try re-cloning the repository.")
 		return
+	} else if err != nil {
+		logger.Fatal("Failed to check if the \""+dataPath+"\" file exists:", err)
+		return
 	}
 
 	// Check to see if the version file exists
@@ -61,6 +64,9 @@ func main() {
 			"Did you run the \"install_dependencies.sh\" script before running the server? " +
 			"This file should automatically be created when building the client.")
 		return
+	} else if err != nil {
+		logger.Fatal("Failed to check if the \""+versionPath+"\" file exists:", err)
+		return
 	}
 
 	// Check to see if the ".env" file exists
@@ -69,6 +75,9 @@ func main() {
 		logger.Fatal("The \"" + envPath + "\" file does not exist. " +
 			"Did you run the \"install_dependencies.sh\" script before running the server? " +
 			"This file should automatically be created when running this script.")
+		return
+	} else if err != nil {
+		logger.Fatal("Failed to check if the \""+envPath+"\" file exists:", err)
 		return
 	}
 
