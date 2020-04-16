@@ -7,51 +7,71 @@ import (
 	"time"
 )
 
+var (
+	shutdownMode         = shutdownModeNone // See "constants.go"
+	datetimeShutdownInit time.Time
+)
+
 func shutdown(restart bool) {
 	var verb string
 	if restart {
 		verb = "restart"
+		shutdownMode = shutdownModeRestart
 	} else {
 		verb = "shutdown"
+		shutdownMode = shutdownModeShutdown
 	}
+	datetimeShutdownInit = time.Now()
 
 	numGames := countActiveTables()
 	logger.Info("Initiating a graceful server " + verb + " " +
 		"(with " + strconv.Itoa(numGames) + " active games).")
 	if numGames == 0 {
-		shutdownImmediate(restart)
+		shutdownImmediate(restart, verb)
 	} else {
 		// Notify the lobby and all ongoing tables
-		shuttingDown = true
-		datetimeShutdownInit = time.Now()
 		notifyAllShutdown()
 		numMinutes := strconv.Itoa(int(shutdownTimeout.Minutes()))
-		chatServerSendAll("The server will " + verb + " in " + numMinutes + " minutes " +
-			"or when all ongoing games have finished, whichever comes first. " +
-			"New game creation has been disabled.")
-		go shutdownXMinutesLeft(verb, 5)
-		go shutdownXMinutesLeft(verb, 10)
-		go shutdownWait(restart)
+		chatServerSendAll("The server will " + verb + " in " + numMinutes + " minutes or " +
+			"when all ongoing games have finished, whichever comes first.")
+		go shutdownXMinutesLeft(5, verb)
+		go shutdownXMinutesLeft(10, verb)
+		go shutdownWait(restart, verb)
 	}
 }
 
-func shutdownXMinutesLeft(verb string, minutesLeft int) {
+func shutdownXMinutesLeft(minutesLeft int, verb string) {
 	time.Sleep(shutdownTimeout - time.Duration(minutesLeft)*time.Minute)
 
-	if !shuttingDown {
+	if shutdownMode == shutdownModeNone {
 		return
 	}
 
-	msg := "The server will " + verb + " in " + strconv.Itoa(minutesLeft) + " minutes. " +
-		"Finish your game soon or it will be automatically terminated!"
+	// Automatically end all unstarted games,
+	// since they will almost certainly not have time to finish
+	if minutesLeft == 5 {
+		for _, t := range tables {
+			if !t.Running {
+				s := t.GetOwnerSession()
+				s.Set("currentTable", t.ID)
+				s.Set("status", statusPregame)
+				commandTableLeave(s, nil)
+			}
+		}
+	}
+
+	// Send a warning message to the lobby and to the people still playing
+	msg := "The server will " + verb + " in " + strconv.Itoa(minutesLeft) + " minutes."
+	chatServerSend(msg, "lobby")
+	msg += " Finish your game soon or it will be automatically terminated!"
 	for _, t := range tables {
 		chatServerSend(msg, "table"+strconv.Itoa(t.ID))
 	}
 }
 
-func shutdownWait(restart bool) {
+func shutdownWait(restart bool, verb string) {
 	for {
-		if !shuttingDown {
+		if shutdownMode == shutdownModeNone {
 			logger.Info("The shutdown was aborted.")
 			break
 		}
@@ -70,12 +90,8 @@ func shutdownWait(restart bool) {
 			// Wait 10 seconds so that the players are not immediately booted upon finishing
 			time.Sleep(time.Second * 10)
 
-			if restart {
-				logger.Info("Restarting now.")
-			} else {
-				logger.Info("Shutting down now.")
-			}
-			shutdownImmediate(restart)
+			logger.Info("There are 0 active tables left.")
+			shutdownImmediate(restart, verb)
 			break
 		}
 
@@ -97,14 +113,15 @@ func countActiveTables() int {
 	return numTables
 }
 
-func shutdownImmediate(restart bool) {
-	var verb string
+func shutdownImmediate(restart bool, verb string) {
+	logger.Info("Initiating an immediate server " + verb + ".")
+
 	if restart {
-		verb = "restart"
-	} else {
-		verb = "shutdown"
+		// We build the client first before kicking everyone off in order to reduce the total amount
+		// of downtime
+		logger.Info("Building the client...")
+		execute("build_client.sh", projectPath)
 	}
-	logger.Info("Initiating a server " + verb + ".")
 
 	for _, s := range sessions {
 		if restart {
@@ -117,7 +134,6 @@ func shutdownImmediate(restart bool) {
 	}
 
 	if restart {
-		execute("build_client.sh", projectPath)
 		execute("restart.sh", projectPath)
 	} else {
 		commandChat(nil, &CommandData{
@@ -130,18 +146,47 @@ func shutdownImmediate(restart bool) {
 	}
 }
 
-func maintenance() {
-	shuttingDown = true
+func cancel() {
+	var verb string
+	if shutdownMode == shutdownModeRestart {
+		verb = "restart"
+	} else if shutdownMode == shutdownModeShutdown {
+		verb = "shutdown"
+	}
+	shutdownMode = shutdownModeNone
 	notifyAllShutdown()
-	chatServerSendAll("The server is entering maintenance mode. " +
-		"New game creation has been disabled.")
+	chatServerSendAll("Server " + verb + " has been canceled.")
 }
 
-func cancel() {
-	shuttingDown = false
-	notifyAllShutdown()
-	chatServerSendAll("Server restart/maintenance has been canceled. " +
-		"New game creation has been enabled.")
+func checkImminenntShutdown(s *Session) bool {
+	if shutdownMode == shutdownModeNone {
+		return false
+	}
+
+	timeLeft := shutdownTimeout - time.Since(datetimeShutdownInit)
+	minutesLeft := int(timeLeft.Minutes())
+	if minutesLeft <= 5 {
+		var verb string
+		if shutdownMode == shutdownModeRestart {
+			verb = "restarting"
+		} else if shutdownMode == shutdownModeShutdown {
+			verb = "shutting down"
+		}
+
+		msg := "The server is " + verb + " "
+		if minutesLeft == 0 {
+			msg += "momentarily"
+		} else if minutesLeft == 1 {
+			msg += "in 1 minute"
+		} else {
+			msg += "in " + strconv.Itoa(minutesLeft) + " minutes"
+		}
+		msg += ". You cannot start any new games for the time being."
+		s.Warning(msg)
+		return true
+	}
+
+	return false
 }
 
 /*

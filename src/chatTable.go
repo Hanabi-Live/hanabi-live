@@ -233,6 +233,7 @@ func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
 	}
 }
 
+// startIn is meant to be run in a goroutine
 func startIn(t *Table, timeToWait time.Duration, datetimePlannedStart time.Time) {
 	// Sleep until it is time to automatically start
 	time.Sleep(timeToWait)

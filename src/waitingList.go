@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+var (
+	// For storing the players who are waiting for the next game to start
+	waitingList = make([]*Waiter, 0)
+)
+
 /*
 	Main functions
 */

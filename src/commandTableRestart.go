@@ -87,10 +87,15 @@ func commandTableRestart(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that the server is not shutting down
-	if shuttingDown {
-		s.Warning("The server is shutting down or restarting soon, " +
-			"so new game creation is currently disabled.")
+	// Validate that the server is not about to go offline
+	if checkImminenntShutdown(s) {
+		return
+	}
+
+	// Validate that the server is not undergoing maintenance
+	if maintenanceMode {
+		s.Warning("The server is undergoing maintenance. " +
+			"You cannot start any new games for the time being.")
 		return
 	}
 

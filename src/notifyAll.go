@@ -49,3 +49,9 @@ func notifyAllShutdown() {
 		s.NotifyShutdown()
 	}
 }
+
+func notifyAllMaintenance() {
+	for _, s := range sessions {
+		s.NotifyMaintenance()
+	}
+}

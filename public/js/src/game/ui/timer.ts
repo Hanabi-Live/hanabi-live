@@ -91,14 +91,14 @@ export const stop = () => {
 function setTickingDownTime(timer: TimerDisplay) {
   // Calculate the elapsed time since the last timer update
   const now = new Date().getTime();
-  const timeElapsed = now - globals.lastTimerUpdateTimeMS;
+  const elapsedTime = now - globals.lastTimerUpdateTimeMS;
   globals.lastTimerUpdateTimeMS = now;
-  if (timeElapsed < 0) {
+  if (elapsedTime < 0) {
     return;
   }
 
   // Update the time in local array to approximate server times
-  globals.playerTimes[globals.activeIndex] -= timeElapsed;
+  globals.playerTimes[globals.activeIndex] -= elapsedTime;
   if (globals.timed && globals.playerTimes[globals.activeIndex] < 0) {
     // Don't let the timer go into negative values, or else it will mess up the display
     // (but in non-timed games, we want this to happen)
@@ -126,8 +126,8 @@ function setTickingDownTime(timer: TimerDisplay) {
     && globals.lobby.settings.soundTimer
     && millisecondsLeft > 0 // Between 0 and 10 seconds
     && millisecondsLeft <= 10000
-    && timeElapsed > 900
-    && timeElapsed < 1100
+    && elapsedTime > 900
+    && elapsedTime < 1100
     && !globals.paused
     && !globals.lobby.errorOccured
   ) {

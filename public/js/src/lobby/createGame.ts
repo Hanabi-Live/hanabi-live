@@ -326,8 +326,28 @@ export const before = () => {
     return false;
   }
 
-  if (globals.shuttingDown) {
-    modals.warningShow('The server is restarting soon (when all ongoing games have finished). You cannot start any new games for the time being.');
+  if (globals.shutdownMode > 0) {
+    const now = new Date().getTime();
+    const elapsedTime = now - globals.datetimeShutdownInit;
+    const numMinutes = new Date(elapsedTime).getMinutes();
+    if (numMinutes > 5) {
+      const verb = globals.shutdownMode === 1 ? 'restarting' : 'shutting down';
+      let msg = `The server is ${verb} in `;
+      if (numMinutes === 0) {
+        msg += 'momentarily';
+      } else if (numMinutes === 1) {
+        msg += 'in 1 minute';
+      } else {
+        msg += `in ${numMinutes} minutes`;
+      }
+      msg += '. You cannot start any new games for the time being.';
+      modals.warningShow(msg);
+      return false;
+    }
+  }
+
+  if (globals.maintenanceMode) {
+    modals.warningShow('The server is currently in maintenance mode. You cannot start any new games for the time being.');
     return false;
   }
 

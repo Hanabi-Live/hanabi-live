@@ -132,26 +132,7 @@ func (t *Table) CheckIdle() {
 		return
 	}
 
-	// Get the session of the owner
-	var s *Session
-	for _, p := range t.Players {
-		if p.ID == t.Owner {
-			s = p.Session
-			if s == nil {
-				// A player's session should never be nil
-				// They might be in the process of reconnecting,
-				// so make a fake session that will represent them
-				s = newFakeSession(p.ID, p.Name, t.ID)
-			}
-			break
-		}
-	}
-	if s == nil {
-		logger.Error("Failed to find the owner in the players slice in the " +
-			"\"CheckIdle()\" function.")
-		return
-	}
-
+	s := t.GetOwnerSession()
 	if t.Running {
 		// We need to end a game that has started
 		// (this will put everyone in a non-shared replay of the idle game)
@@ -198,4 +179,32 @@ func (t *Table) GetSpectatorIndexFromID(id int) int {
 		}
 	}
 	return -1
+}
+
+func (t *Table) GetOwnerSession() *Session {
+	if t.Replay {
+		logger.Error("The \"GetOwnerSession\" function was called on a table that is a replay.")
+		return nil
+	}
+
+	var s *Session
+	for _, p := range t.Players {
+		if p.ID == t.Owner {
+			s = p.Session
+			if s == nil {
+				// A player's session should never be nil
+				// They might be in the process of reconnecting,
+				// so make a fake session that will represent them
+				s = newFakeSession(p.ID, p.Name, t.ID)
+			}
+			break
+		}
+	}
+
+	if s == nil {
+		logger.Error("Failed to find the owner for table " + strconv.Itoa(t.ID) + ".")
+		s = newFakeSession(-1, "Unknown", t.ID)
+	}
+
+	return s
 }

@@ -56,14 +56,16 @@ func websocketConnect(ms *melody.Session) {
 
 	// They have successfully logged in, so send the initial message to the client
 	type HelloMessage struct {
-		ID            int      `json:"id"`
-		Username      string   `json:"username"`
-		TotalGames    int      `json:"totalGames"`
-		Admin         bool     `json:"admin"`
-		Muted         bool     `json:"muted"`
-		FirstTimeUser bool     `json:"firstTimeUser"`
-		Settings      Settings `json:"settings"`
-		ShuttingDown  bool     `json:"shuttingDown"`
+		ID                   int       `json:"id"`
+		Username             string    `json:"username"`
+		TotalGames           int       `json:"totalGames"`
+		Admin                bool      `json:"admin"`
+		Muted                bool      `json:"muted"`
+		FirstTimeUser        bool      `json:"firstTimeUser"`
+		Settings             Settings  `json:"settings"`
+		ShutdownMode         int       `json:"shutdownMode"`
+		DatetimeShutdownInit time.Time `json:"datetimeShutdownInit"`
+		MaintenanceMode      bool      `json:"maintenanceMode"`
 	}
 	s.Emit("hello", &HelloMessage{
 		// Send the user their corresponding user ID
@@ -86,8 +88,10 @@ func websocketConnect(ms *melody.Session) {
 		// transition between computers
 		Settings: settings,
 
-		// Also let the user know if the server is currently performing a graceful shutdown
-		ShuttingDown: shuttingDown,
+		// Also let the user know if the server is currently restarting or shutting down
+		ShutdownMode:         shutdownMode,
+		DatetimeShutdownInit: datetimeShutdownInit,
+		MaintenanceMode:      maintenanceMode,
 	})
 
 	// Send them a random name

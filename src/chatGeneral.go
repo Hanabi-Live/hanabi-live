@@ -127,7 +127,7 @@ func chatTimeLeft(s *Session, d *CommandData, t *Table) {
 }
 
 func getTimeLeft() (string, error) {
-	if !shuttingDown {
+	if shutdownMode == shutdownModeNone {
 		return "The server is not scheduled to restart any time soon.", nil
 	}
 

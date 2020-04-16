@@ -79,7 +79,7 @@ func commandTableLeave(s *Session, d *CommandData) {
 			}
 			s2.Set("currentTable", t.ID)
 			s2.Set("status", statusPregame)
-			commandTableLeave(p.Session, d)
+			commandTableLeave(s2, d)
 		}
 		return
 	}

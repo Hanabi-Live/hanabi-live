@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -41,9 +42,14 @@ func commandTableCreate(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the server is not in shutdown mode
-	if shuttingDown {
-		s.Warning("The server is restarting soon (when all ongoing games have finished). " +
+	// Validate that the server is not about to go offline
+	if checkImminenntShutdown(s) {
+		return
+	}
+
+	// Validate that the server is not undergoing maintenance
+	if maintenanceMode {
+		s.Warning("The server is undergoing maintenance. " +
 			"You cannot start any new games for the time being.")
 		return
 	}
@@ -347,5 +353,21 @@ func commandTableCreate(s *Session, d *CommandData) {
 		!strings.HasPrefix(t.Name, "test ") {
 
 		waitingListAlert(t, s.Username())
+	}
+
+	// If the server is shutting down / restarting soon, warn the players
+	if shutdownMode > shutdownModeNone {
+		timeLeft := shutdownTimeout - time.Since(datetimeShutdownInit)
+		minutesLeft := int(timeLeft.Minutes())
+		var verb string
+		if shutdownMode == shutdownModeRestart {
+			verb = "restarting"
+		} else if shutdownMode == shutdownModeShutdown {
+			verb = "shutting down"
+		}
+
+		msg := "The server is " + verb + " in " + strconv.Itoa(minutesLeft) + " minutes. "
+		msg += "Keep in mind that if your game is not finished in time, it will be terminated."
+		chatServerSend(msg, "table"+strconv.Itoa(t.ID))
 	}
 }

@@ -43,12 +43,16 @@ func httpLocalhostInit() {
 		shutdown(false)
 		c.String(http.StatusOK, "success\n")
 	})
-	httpRouter.GET("/maintenance", func(c *gin.Context) {
-		maintenance()
-		c.String(http.StatusOK, "success\n")
-	})
 	httpRouter.GET("/cancel", func(c *gin.Context) {
 		cancel()
+		c.String(http.StatusOK, "success\n")
+	})
+	httpRouter.GET("/maintenance", func(c *gin.Context) {
+		maintenance(true)
+		c.String(http.StatusOK, "success\n")
+	})
+	httpRouter.GET("/unmaintenance", func(c *gin.Context) {
+		maintenance(false)
 		c.String(http.StatusOK, "success\n")
 	})
 	httpRouter.GET("/ban/:username", httpUserAction)

@@ -34,6 +34,21 @@ func chatShutdown(s *Session, d *CommandData, t *Table) {
 	shutdown(false)
 }
 
+// /cancel
+func chatCancel(s *Session, d *CommandData, t *Table) {
+	// Validate the channel
+	if d.Room != "lobby" {
+		chatServerSend(notFromLobbyErrorMessage, d.Room)
+		return
+	}
+
+	if !isAdmin(s, d) {
+		return
+	}
+
+	cancel()
+}
+
 // /maintenance
 func chatMaintenance(s *Session, d *CommandData, t *Table) {
 	// Validate the channel
@@ -46,11 +61,11 @@ func chatMaintenance(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	maintenance()
+	maintenance(true)
 }
 
-// /cancel
-func chatCancel(s *Session, d *CommandData, t *Table) {
+// /unmaintenance
+func chatUnmaintenance(s *Session, d *CommandData, t *Table) {
 	// Validate the channel
 	if d.Room != "lobby" {
 		chatServerSend(notFromLobbyErrorMessage, d.Room)
@@ -58,9 +73,8 @@ func chatCancel(s *Session, d *CommandData, t *Table) {
 	}
 
 	if !isAdmin(s, d) {
-		chatServerSend("You must be an admin in order to perform this command.", d.Room)
 		return
 	}
 
-	cancel()
+	maintenance(false)
 }

@@ -195,10 +195,21 @@ func (s *Session) NotifyTableStart() {
 
 func (s *Session) NotifyShutdown() {
 	type ShutdownMessage struct {
-		ShuttingDown bool `json:"shuttingDown"`
+		ShutdownMode         int       `json:"shutdownMode"`
+		DatetimeShutdownInit time.Time `json:"datetimeShutdownInit"`
 	}
 	s.Emit("shutdown", &ShutdownMessage{
-		ShuttingDown: shuttingDown,
+		ShutdownMode:         shutdownMode,
+		DatetimeShutdownInit: datetimeShutdownInit,
+	})
+}
+
+func (s *Session) NotifyMaintenance() {
+	type MaintenanceMessage struct {
+		MaintenanceMode bool `json:"maintenanceMode"`
+	}
+	s.Emit("maintenance", &MaintenanceMessage{
+		MaintenanceMode: maintenanceMode,
 	})
 }
 

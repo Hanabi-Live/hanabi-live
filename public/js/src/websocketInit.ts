@@ -80,7 +80,8 @@ const initCommands = () => {
     muted: boolean;
     firstTimeUser: boolean;
     settings: any;
-    shuttingDown: boolean;
+    shutdownMode: number;
+    maintenanceMode: boolean;
   }
   globals.conn.on('hello', (data: HelloData) => {
     // Store some variables (mostly relating to our user account)
@@ -90,7 +91,8 @@ const initCommands = () => {
     globals.admin = data.admin;
     globals.muted = data.muted;
     globals.settings = data.settings;
-    globals.shuttingDown = data.shuttingDown;
+    globals.shutdownMode = data.shutdownMode;
+    globals.maintenanceMode = data.maintenanceMode;
 
     // Now that we know what our user ID and username are, we can attach them to the Sentry context
     sentry.setUserContext(globals.id, globals.username);
@@ -210,10 +212,19 @@ const initCommands = () => {
   });
 
   interface ShutdownData {
-    shuttingDown: boolean;
+    shutdownMode: number;
+    datetimeShutdownInit: number,
   }
   globals.conn.on('shutdown', (data: ShutdownData) => {
-    globals.shuttingDown = data.shuttingDown;
+    globals.shutdownMode = data.shutdownMode;
+    globals.datetimeShutdownInit = data.datetimeShutdownInit;
+  });
+
+  interface MaintenanceData {
+    maintenanceMode: boolean;
+  }
+  globals.conn.on('maintenance', (data: MaintenanceData) => {
+    globals.maintenanceMode = data.maintenanceMode;
   });
 
   interface WarningData {

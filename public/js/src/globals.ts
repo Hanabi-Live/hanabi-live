@@ -31,7 +31,9 @@ export class Globals {
   randomName: string = '';
   settings: Settings = new Settings();
   // (contains the settings for the "Settings" tooltip and the "Create Game" tooltip)
-  shuttingDown: boolean = false;
+  shutdownMode: number = 0;
+  datetimeShutdownInit: number = 0;
+  maintenanceMode: boolean = false;
 
   userMap: Map<number, User> = new Map(); // Keys are IDs
   tableMap: Map<number, Table> = new Map(); // Keys are IDs
