@@ -1,5 +1,6 @@
 // Imports
 import { ACTION, MAX_CLUE_NUM } from '../../constants';
+import * as notifications from '../../notifications';
 import * as action from './action';
 import { Action } from './actions';
 import globals from './globals';
@@ -39,6 +40,10 @@ export const begin = () => {
 
   if (globals.animateFast) {
     return;
+  }
+
+  if (globals.lobby.settings.desktopNotifications) {
+    notifications.send('It is your turn.', 'turn');
   }
 
   // Handle pre-playing / pre-discarding / pre-cluing

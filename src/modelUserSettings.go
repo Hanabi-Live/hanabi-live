@@ -7,6 +7,7 @@ import (
 type UserSettings struct{}
 
 type Settings struct {
+	DesktopNotification             bool    `json:"desktopNotification"`
 	SoundMove                       bool    `json:"soundMove"`
 	SoundTimer                      bool    `json:"soundTimer"`
 	KeldonMode                      bool    `json:"keldonMode"`
@@ -48,6 +49,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 
 	if err := db.QueryRow(`
 		SELECT
+			desktop_notification,
 			sound_move,
 			sound_timer,
 			keldon_mode,
@@ -73,6 +75,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		FROM user_settings
 		WHERE user_id = ?
 	`, userID).Scan(
+		&settings.DesktopNotification,
 		&settings.SoundMove,
 		&settings.SoundTimer,
 		&settings.KeldonMode,

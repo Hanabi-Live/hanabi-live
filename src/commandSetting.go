@@ -27,8 +27,8 @@ func commandSetting(s *Session, d *CommandData) {
 	valid := false
 	for i := 0; i < settings.NumField(); i++ {
 		field := settings.Type().Field(i)
-		fieldTag := string(field.Tag)            // e.g. json:"soundMove"
-		fieldTag = fieldTag[6 : len(fieldTag)-1] // e.g. soundMove
+		fieldTag := string(field.Tag)            // e.g. json:"desktopNotification"
+		fieldTag = fieldTag[6 : len(fieldTag)-1] // e.g. desktopNotification
 		if fieldTag == d.Name {
 			fieldType = field.Type.String()
 			valid = true

@@ -2,6 +2,7 @@
 
 // Imports
 import globals from '../globals';
+import * as notifications from '../notifications';
 
 export const init = () => {
   $('#settings-volume-slider').change(function settingsVolumeSliderChange() {
@@ -89,4 +90,8 @@ function changeSetting(this: HTMLElement) {
     name: settingName,
     value: checked.toString(), // The server expects all settings as strings
   });
+
+  if (setting === 'desktopNotification' && checked) {
+    notifications.test();
+  }
 }

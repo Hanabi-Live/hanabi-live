@@ -32,6 +32,7 @@ CREATE INDEX users_index_username ON users (username);
 DROP TABLE IF EXISTS user_settings;
 CREATE TABLE user_settings (
     user_id                             INT          NOT NULL  PRIMARY KEY,
+    desktop_notification                BOOLEAN      NOT NULL  DEFAULT 0,
     sound_move                          BOOLEAN      NOT NULL  DEFAULT 1,
     sound_timer                         BOOLEAN      NOT NULL  DEFAULT 1,
     keldon_mode                         BOOLEAN      NOT NULL  DEFAULT 0,
