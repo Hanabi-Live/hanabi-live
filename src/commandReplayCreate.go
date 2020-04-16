@@ -296,17 +296,6 @@ func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 		variant = v
 	}
 
-	// Get the seed
-	var seed string
-	if v, err := models.Games.GetSeed(d.GameID); err != nil {
-		logger.Error("Failed to get the seed for game "+
-			"\""+strconv.Itoa(d.GameID)+"\":", err)
-		s.Error("Failed to create the game. Please contact an administrator.")
-		return false
-	} else {
-		seed = v
-	}
-
 	// Store the options on the table
 	t.Options = &Options{
 		StartingPlayer:       options.StartingPlayer, // Legacy field for games prior to April 2020
@@ -320,8 +309,12 @@ func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 		EmptyClues:           options.EmptyClues,
 		CharacterAssignments: options.CharacterAssignments,
 
-		Replay:  true, // We need to mark that the game should not be written to the database
-		SetSeed: seed,
+		// We need to mark that the game should not be written to the database
+		Replay: true,
+
+		// We need to reference the database ID for the game later on when the game starts in order
+		// to look up the seed for the game and the character assignments, if any
+		DatabaseID: d.GameID,
 	}
 
 	// Get the players from the database
@@ -495,7 +488,7 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 
 	// Make the appropriate moves in the game to match what is listed in the database
 	for i, action := range actions {
-		if t.Options.SetReplay != 0 && t.Options.SetReplayTurn == i {
+		if t.Options.SetReplay && t.Options.SetReplayTurn == i {
 			// This is a "!replay" game and we have reached the intended turn
 			break
 		}

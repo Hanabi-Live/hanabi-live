@@ -81,14 +81,14 @@ func characterGenerate(g *Game) {
 		return
 	}
 
-	// If this is a "!replay" game, use the character selections from the database instead of
-	// generating new random ones
-	if g.Options.SetReplay != 0 {
+	// If this is a replay of a game from the database (or a "!replay" game),
+	// use the character selections from the database instead of generating new random ones
+	if g.Options.DatabaseID != 0 {
 		// Get the players from the database
 		var dbPlayers []*DBPlayer
-		if v, err := models.Games.GetPlayers(g.Options.SetReplay); err != nil {
+		if v, err := models.Games.GetPlayers(g.Options.DatabaseID); err != nil {
 			logger.Error("Failed to get the players from the database for game "+
-				strconv.Itoa(g.Options.SetReplay)+":", err)
+				strconv.Itoa(g.Options.DatabaseID)+":", err)
 			return
 		} else {
 			dbPlayers = v

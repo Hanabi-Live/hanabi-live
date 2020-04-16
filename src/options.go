@@ -16,13 +16,13 @@ type Options struct {
 
 	// Whether or not this is a game created from a reply or a user-submitted JSON array
 	Replay     bool
-	SetSeed    string       // For replays games created from the database
+	DatabaseID int          // For replays created from the database (or "!replay" games)
 	CustomDeck []SimpleCard // For replays created from arbitrary JSON data
 
 	// The rest of the options are parsed from the game name
 	// (for "!seed", "!replay", and "!deal" games respectively)
 	SetSeedSuffix string
-	SetReplay     int
+	SetReplay     bool
 	SetReplayTurn int
 	SetDeal       string
 }

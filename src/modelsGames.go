@@ -337,33 +337,6 @@ func (*Games) GetAllDeals(userID int, databaseID int) ([]*GameHistory, error) {
 	return games, nil
 }
 
-func (*Games) GetPlayerSeeds(userID int) ([]string, error) {
-	rows, err := db.Query(`
-		SELECT games.seed AS seed
-		FROM games
-			JOIN game_participants ON games.id = game_participants.game_id
-		WHERE game_participants.user_id = ?
-	`, userID)
-
-	seeds := make([]string, 0)
-	for rows.Next() {
-		var seed string
-		if err2 := rows.Scan(&seed); err2 != nil {
-			return nil, err2
-		}
-		seeds = append(seeds, seed)
-	}
-
-	if rows.Err() != nil {
-		return nil, err
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-
-	return seeds, nil
-}
-
 type DBOptions struct {
 	StartingPlayer       int // Legacy field for games prior to April 2020
 	Variant              int
@@ -514,6 +487,36 @@ func (*Games) GetPlayerNames(databaseID int) ([]string, error) {
 	}
 
 	return playerNames, nil
+}
+
+func (*Games) GetPlayerSeeds(userID int) ([]string, error) {
+	// We want to use "DISCTINCT" since it is possible for a player to play on the same seed twice
+	// with the "!seed" feature or the "!replay" feature
+	rows, err := db.Query(`
+		SELECT DISTINCT games.seed AS seed
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+		WHERE game_participants.user_id = ?
+		ORDER BY seed
+	`, userID)
+
+	seeds := make([]string, 0)
+	for rows.Next() {
+		var seed string
+		if err2 := rows.Scan(&seed); err2 != nil {
+			return nil, err2
+		}
+		seeds = append(seeds, seed)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+
+	return seeds, nil
 }
 
 func (*Games) GetNotes(databaseID int, numPlayers int, noteSize int) ([][]string, error) {

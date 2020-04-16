@@ -84,7 +84,8 @@ func commandTableCreate(s *Session, d *CommandData) {
 	// Set default values for the custom game options
 	var customDeck []SimpleCard
 	setSeedSuffix := ""
-	setReplay := 0
+	setReplay := false
+	databaseID := 0
 	setReplayTurn := 0
 
 	// Hande special game option creation
@@ -120,7 +121,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 				s.Warning("The game ID of \"" + args[0] + "\" is not a number.")
 				return
 			} else {
-				setReplay = v
+				databaseID = v
 			}
 
 			if len(args) == 1 {
@@ -144,9 +145,9 @@ func commandTableCreate(s *Session, d *CommandData) {
 			setReplayTurn--
 
 			// Check to see if the game ID exists on the server
-			if exists, err := models.Games.Exists(setReplay); err != nil {
+			if exists, err := models.Games.Exists(databaseID); err != nil {
 				logger.Error("Failed to check to see if game "+
-					strconv.Itoa(setReplay)+" exists:", err)
+					strconv.Itoa(databaseID)+" exists:", err)
 				s.Error("Failed to create the game. Please contact an administrator.")
 				return
 			} else if !exists {
@@ -157,24 +158,24 @@ func commandTableCreate(s *Session, d *CommandData) {
 			// Check to see if this turn is valid
 			// (it has to be a turn before the game ends)
 			var numTurns int
-			if v, err := models.Games.GetNumTurns(setReplay); err != nil {
+			if v, err := models.Games.GetNumTurns(databaseID); err != nil {
 				logger.Error("Failed to get the number of turns from the database for game "+
-					strconv.Itoa(setReplay)+":", err)
+					strconv.Itoa(databaseID)+":", err)
 				s.Error(initFail)
 				return
 			} else {
 				numTurns = v
 			}
 			if setReplayTurn >= numTurns {
-				s.Warning("Game #" + strconv.Itoa(setReplay) + " only has " +
+				s.Warning("Game #" + strconv.Itoa(databaseID) + " only has " +
 					strconv.Itoa(numTurns) + ".")
 				return
 			}
 
 			// Set the options of the game to be the same as the one in the database
-			if v, err := models.Games.GetOptions(setReplay); err != nil {
+			if v, err := models.Games.GetOptions(databaseID); err != nil {
 				logger.Error("Failed to get the variant from the database for game "+
-					strconv.Itoa(setReplay)+":", err)
+					strconv.Itoa(databaseID)+":", err)
 				s.Error(initFail)
 				return
 			} else {
@@ -190,6 +191,8 @@ func commandTableCreate(s *Session, d *CommandData) {
 				d.EmptyClues = v.EmptyClues
 				d.CharacterAssignments = v.CharacterAssignments
 			}
+
+			setReplay = true
 		} else if command == "deal" {
 			// !deal - Play a specific deal read from a text file
 			if len(args) != 1 {
@@ -334,6 +337,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 		CustomDeck:    customDeck,
 		SetSeedSuffix: setSeedSuffix,
 		SetReplay:     setReplay,
+		DatabaseID:    databaseID,
 		SetReplayTurn: setReplayTurn,
 	}
 	tables[t.ID] = t // Add it to the map
