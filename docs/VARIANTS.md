@@ -22,16 +22,6 @@ One of each card per suit (e.g. 5 in total):
 | **Own rank clue**  | Gray             | Black          | Dark Rainbow    |
 | **All rank clues** | Gray Pink        | Dark Pink      | Dark Omni       |
 
-Special:
-
-| Touched by        | Variant               |
-| ----------------- | --------------------- |
-| No clues          | Totally Blind         |
-| No color clues    | Color Blind           |
-| No rank clue      | Number Blind          |
-| Suits share color | Ambiguous             |
-| Colors share suit | Dual color            |
-
 <br />
 
 ## Detailed Rules per Variant
