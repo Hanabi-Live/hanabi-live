@@ -8,7 +8,7 @@
 
 Normal amount of cards per suit (e.g. 10 in total):
 
-| Touched by         | No color clues | Own color clue | All color clues |
+|                    | No color clues | Own color clue | All color clues |
 | ------------------ | -------------- | -------------- | --------------- |
 | **No rank clues**  | Null           | Brown          | Muddy Rainbow   |
 | **Own rank clue**  | White          | No Variant     | Rainbow         |
@@ -16,7 +16,7 @@ Normal amount of cards per suit (e.g. 10 in total):
 
 One of each card per suit (e.g. 5 in total):
 
-| Touched by         |  No color clues  | Own color clue | All color clues |
+|                    |  No color clues  | Own color clue | All color clues |
 | ------------------ | ---------------- | -------------- | --------------- |
 | **No rank clues**  | Dark Null        | Dark Brown     | Cocoa Rainbow   |
 | **Own rank clue**  | Gray             | Black          | Dark Rainbow    |
