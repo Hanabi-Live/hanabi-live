@@ -1,4 +1,5 @@
 export default class Settings {
+  desktopNotification: boolean = false;
   soundMove: boolean = true;
   soundTimer: boolean = true;
   keldonMode: boolean = false;

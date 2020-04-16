@@ -42,7 +42,7 @@ export const begin = () => {
     return;
   }
 
-  if (globals.lobby.settings.desktopNotifications) {
+  if (globals.lobby.settings.desktopNotification) {
     notifications.send('It is your turn.', 'turn');
   }
 

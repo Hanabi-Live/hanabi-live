@@ -91,7 +91,7 @@ function changeSetting(this: HTMLElement) {
     value: checked.toString(), // The server expects all settings as strings
   });
 
-  if (setting === 'desktopNotification' && checked) {
+  if (settingName === 'desktopNotification' && checked) {
     notifications.test();
   }
 }
