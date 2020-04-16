@@ -329,19 +329,21 @@ const cycleHand = () => {
   const chopIndex = hand.getChopIndex();
 
   // We don't need to reorder anything if the chop is slot 1 (the left-most card)
-  const cards: Array<HanabiCard> = hand.children.toArray();
-  if (chopIndex === cards.length - 1) {
+  const layoutChilds: Array<HanabiCard> = hand.children.toArray();
+  if (chopIndex === layoutChilds.length - 1) {
     return;
   }
 
   // Make a list of the card orders
   const cardOrders: Array<number> = [];
-  for (const card of cards) {
+  for (const layoutChild of layoutChilds) {
+    const card = layoutChild.children[0] as unknown as HanabiCard;
     cardOrders.push(card.order);
   }
 
   // Remove the chop card
-  const chopCardOrder = cards[chopIndex].order;
+  const chopCard = layoutChilds[chopIndex].children[0] as unknown as HanabiCard;
+  const chopCardOrder = chopCard.order;
   cardOrders.splice(chopIndex, 1);
 
   // Add it to the end (the left-most position)

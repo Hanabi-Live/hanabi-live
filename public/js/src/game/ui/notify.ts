@@ -373,9 +373,16 @@ notifyFunctions.set('reorder', (data: ActionReorder) => {
 
   for (let i = 0; i < data.handOrder.length; i++) {
     const newCardOrderForThisSlot = data.handOrder[i];
+    if (typeof newCardOrderForThisSlot !== 'number') {
+      throw new Error(`Received an invalid card order of ${newCardOrderForThisSlot} in the "reorder" notify.`);
+    }
     const currentIndexOfNewCard = currentCardOrders.indexOf(newCardOrderForThisSlot);
     const numMoveDown = currentIndexOfNewCard - i;
-    const layoutChild = globals.deck[newCardOrderForThisSlot].parent! as unknown as LayoutChild;
+    const card = globals.deck[newCardOrderForThisSlot];
+    if (typeof card === 'undefined') {
+      throw new Error(`Received an invalid card order of ${newCardOrderForThisSlot} in the "reorder" notify.`);
+    }
+    const layoutChild = card.parent as unknown as LayoutChild; // All cards should have parents
     for (let j = 0; j < numMoveDown; j++) {
       layoutChild.moveDown();
     }
