@@ -10,17 +10,17 @@ Normal amount of cards per suit (e.g. 10 in total):
 
 | Touched by         | No color clues | Own color clue | All color clues |
 | ------------------ | -------------- | -------------- | --------------- |
-| No rank clues      | Null           | Brown          | Muddy Rainbow   |
-| Own rank clue      | White          | No Variant     | Rainbow         |
-| All rank clues     | Light Pink     | Pink           | Omni            |
+| **No rank clues**  | Null           | Brown          | Muddy Rainbow   |
+| **Own rank clue**  | White          | No Variant     | Rainbow         |
+| **All rank clues** | Light Pink     | Pink           | Omni            |
 
 One of each card per suit (e.g. 5 in total):
 
 | Touched by         |  No color clues  | Own color clue | All color clues |
 | ------------------ | ---------------- | -------------- | --------------- |
-| No rank clues      | Dark Null        | Dark Brown     | Cocoa Rainbow   |
-| Own rank clue      | Gray             | Black          | Dark Rainbow    |
-| All rank clues     | Gray Pink        | Dark Pink      | Dark Omni       |
+| **No rank clues**  | Dark Null        | Dark Brown     | Cocoa Rainbow   |
+| **Own rank clue**  | Gray             | Black          | Dark Rainbow    |
+| **All rank clues** | Gray Pink        | Dark Pink      | Dark Omni       |
 
 Special:
 
