@@ -131,19 +131,6 @@ func discordReady(s *discordgo.Session, event *discordgo.Ready) {
 
 // Copy messages from Discord to the lobby
 func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	// Ignore all messages created by the bot itself
-	if m.Author.ID == discordBotID {
-		return
-	}
-
-	// Check for Discord-only commands in all Discord channels
-	usedCommand := discordCheckCommand(m)
-
-	// Only replicate messages from the listed channels
-	if !stringInSlice(m.ChannelID, discordListenChannels) {
-		return
-	}
-
 	// Get the channel
 	var channel *discordgo.Channel
 	if v, err := discord.Channel(m.ChannelID); err != nil {
@@ -156,6 +143,19 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Log the message
 	logger.Info("[D#" + channel.Name + "] " +
 		"<" + m.Author.Username + "#" + m.Author.Discriminator + "> " + m.Content)
+
+	// Ignore all messages created by the bot itself
+	if m.Author.ID == discordBotID {
+		return
+	}
+
+	// Check for Discord-only commands in all Discord channels
+	usedCommand := discordCheckCommand(m)
+
+	// Only replicate messages from the listed channels
+	if !stringInSlice(m.ChannelID, discordListenChannels) {
+		return
+	}
 
 	// Send everyone the notification
 	commandMutex.Lock()
