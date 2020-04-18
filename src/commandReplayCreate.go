@@ -8,15 +8,22 @@ import (
 )
 
 type GameJSON struct {
-	ID      int           `json:"id"` // Optional element only used for game exports
+	ID      int           `json:"id,omitempty"` // Optional element only used for game exports
 	Players []string      `json:"players"`
 	Deck    []SimpleCard  `json:"deck"`
 	Actions []*GameAction `json:"actions"`
 	// Options is an optional element
 	// Thus, it must be a pointer so that we can tell if the value was specified or not
 	Options *OptionsJSON `json:"options,omitempty"`
-	// Notes is an optional element
+	// Notes is an optional element that contains the notes for each player
 	Notes [][]string `json:"notes,omitempty"`
+	// Characters ia an optional element that specifies the "Detrimental Character Assignments" for
+	// each player, if any
+	Characters []*CharacterJSON `json:"characters,omitempty"`
+}
+type CharacterJSON struct {
+	Name     string `json:"name"`
+	Metadata int    `json:"metadata"`
 }
 
 // commandReplayCreate is sent when the user clicks on the "Watch Replay", "Share Replay",

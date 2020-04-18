@@ -10,40 +10,11 @@
   "editor.tabCompletion": "on", // IntelliSense tab completion is off by default
   "editor.wordWrap": "on",
 
-  // This is needed for VSCode to see ESLint errors on TypeScript files
-  "eslint.validate": [
-    "javascript",
-    "typescript"
-  ],
-  "eslint.workingDirectories": [
-    "./public/js"
-  ],
-
   // Disable the confirmation box when deleting a file
   "explorer.confirmDelete": false,
 
-  "files.associations": {
-    // By default, this maps to MSSQL
-    "*.sql": "sql",
-
-    // Golang HTML templates are saved as "tmpl" files
-    "*.tmpl": "html"
-  },
-
   // Linux line endings are commonly used as a programming standard
   "files.eol": "\n",
-
-  // VSCode recommends goimports over goreturns
-  "go.formatTool": "goimports",
-
-  // The default Golang linter is golint, which is only concerned with coding style
-  // GolangCI-Lint does a suite of different checks
-  "go.lintTool": "golangci-lint",
-
-  // This is recommended as per the GolangCI-Lint README file
-  "go.lintFlags": [
-    "--fast"
-  ],
 
   // Disable the annoying release notes popup everytime that VSCode updates itself
   "update.showReleaseNotes": false,

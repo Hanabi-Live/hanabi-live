@@ -41,10 +41,10 @@ func httpExport(c *gin.Context) {
 		return
 	}
 
-	// Get the player names from the database
-	var playerNames []string
-	if v, err := models.Games.GetPlayerNames(gameID); err != nil {
-		logger.Error("Failed to get the player names from the database for game "+
+	// Get the players from the database
+	var dbPlayers []*DBPlayer
+	if v, err := models.Games.GetPlayers(gameID); err != nil {
+		logger.Error("Failed to get the players from the database for game "+
 			strconv.Itoa(gameID)+":", err)
 		http.Error(
 			w,
@@ -53,7 +53,13 @@ func httpExport(c *gin.Context) {
 		)
 		return
 	} else {
-		playerNames = v
+		dbPlayers = v
+	}
+
+	// Make a list of their names
+	playerNames := make([]string, 0)
+	for _, p := range dbPlayers {
+		playerNames = append(playerNames, p.Name)
 	}
 
 	// Get the options from the database
@@ -127,7 +133,7 @@ func httpExport(c *gin.Context) {
 	variant := variants[g.Options.Variant]
 	noteSize := variant.GetDeckSize() + len(variant.Suits)
 	var notes [][]string
-	if v, err := models.Games.GetNotes(gameID, len(playerNames), noteSize); err != nil {
+	if v, err := models.Games.GetNotes(gameID, len(dbPlayers), noteSize); err != nil {
 		logger.Error("Failed to get the notes from the database "+
 			"for game "+strconv.Itoa(gameID)+":", err)
 		http.Error(
@@ -153,6 +159,19 @@ func httpExport(c *gin.Context) {
 	}
 	if allPlayerNotesEmpty {
 		notes = nil
+	}
+
+	// If this was a game with the "Detrimental Characters" option turned on,
+	// make a list of the characters for each player
+	var playerCharacters []*CharacterJSON
+	if options.CharacterAssignments {
+		playerCharacters = make([]*CharacterJSON, 0)
+		for _, p := range dbPlayers {
+			playerCharacters = append(playerCharacters, &CharacterJSON{
+				Name:     charactersID[p.CharacterAssignment],
+				Metadata: p.CharacterMetadata,
+			})
+		}
 	}
 
 	// Create JSON options
@@ -196,12 +215,13 @@ func httpExport(c *gin.Context) {
 
 	// Create a JSON game
 	gameJSON := &GameJSON{
-		ID:      gameID,
-		Players: playerNames,
-		Deck:    deck,
-		Actions: actions,
-		Options: optionsJSON,
-		Notes:   notes,
+		ID:         gameID,
+		Players:    playerNames,
+		Deck:       deck,
+		Actions:    actions,
+		Options:    optionsJSON,
+		Notes:      notes,
+		Characters: playerCharacters,
 	}
 
 	c.JSON(http.StatusOK, gameJSON)

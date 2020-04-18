@@ -1,0 +1,32 @@
+{
+  // This is needed for VSCode to see ESLint errors on TypeScript files
+  "eslint.validate": [
+    "javascript",
+    "typescript"
+  ],
+  "eslint.workingDirectories": [
+    "./public/js"
+  ],
+
+  // These are Visual Studio Code settings that should apply to this particular repository
+  "files.associations": {
+    "example_game_with_comments.json": "jsonc", // This is "json" by default
+    "*.tmpl": "html", // Golang HTML templates are saved as "tmpl" files
+  },
+
+  // Linux line endings are commonly used as a programming standard
+  "files.eol": "\n",
+
+  // VSCode recommends goimports over goreturns
+  "go.formatTool": "goimports",
+
+  // The default Golang linter is golint, which is only concerned with coding style
+  // GolangCI-Lint does a suite of different checks
+  "go.lintTool": "golangci-lint",
+
+  // This is recommended as per the GolangCI-Lint README file
+  // https://github.com/golangci/golangci-lint/blob/master/README.md
+  "go.lintFlags": [
+      "--fast",
+  ],
+}

@@ -1,180 +1,180 @@
-/**
- * This is a JSON object that represents a game of Hanabi
- * This also matches how games are stored in the Hanabi Live database
- * Created by Zamiel
- * Format version: 2.0.0
- */
+// This is a JSON object that represents a game of Hanabi
+// This also matches how games are stored in the Hanabi Live database
+// Created by Zamiel
+// Format version: 2.0.1
 {
-    // "players" is an array that contains the names of the players
-    // The 0th player will always go first
-    "players": [
-        "Alice",
-        "Bob",
-        "Cathy",
-        "Donald",
-        "Emily"
-    ],
+  // "players" is an array that contains the names of the players
+  // The 0th player will always go first
+  "players": [
+    "Alice",
+    "Bob",
+    "Cathy",
+    "Donald",
+    "Emily"
+  ],
 
-    /**
-     * "deck" is an array that contains all of the cards in the deck
-     * It lists the cards from top to bottom
-     * Cards are NOT dealt to the players like they would be in real life
-     * Cards are dealt to the first player until they reach the maximum number of cards,
-     * then cards are dealt to the second player until they reach the maximum number of cards,
-     * and so forth
-     *
-     * The suit number corresponds to the suits for the particular variant, from 0 to N
-     * e.g. 0 corresponds to red, 1 corresponds to yellow, etc. (in a "No Variant" game)
-     */
-    "deck": [
-        { "rank": 1, "suit": 3 },
-        { "rank": 4, "suit": 2 },
-        { "rank": 2, "suit": 1 },
-        { "rank": 3, "suit": 0 },
-        { "rank": 1, "suit": 3 },
-        { "rank": 3, "suit": 3 },
-        { "rank": 2, "suit": 1 },
-        { "rank": 4, "suit": 2 },
-        { "rank": 4, "suit": 0 },
-        { "rank": 4, "suit": 1 },
-        { "rank": 3, "suit": 2 },
-        { "rank": 1, "suit": 3 },
-        { "rank": 3, "suit": 4 },
-        { "rank": 5, "suit": 2 },
-        { "rank": 1, "suit": 1 },
-        { "rank": 4, "suit": 4 },
-        { "rank": 1, "suit": 0 },
-        { "rank": 4, "suit": 3 },
-        { "rank": 3, "suit": 0 },
-        { "rank": 1, "suit": 1 },
-        { "rank": 3, "suit": 1 },
-        { "rank": 3, "suit": 3 },
-        { "rank": 2, "suit": 0 },
-        { "rank": 1, "suit": 0 },
-        { "rank": 1, "suit": 2 },
-        { "rank": 3, "suit": 2 },
-        { "rank": 5, "suit": 1 },
-        { "rank": 1, "suit": 2 },
-        { "rank": 5, "suit": 4 },
-        { "rank": 1, "suit": 4 },
-        { "rank": 1, "suit": 2 },
-        { "rank": 2, "suit": 0 },
-        { "rank": 2, "suit": 4 },
-        { "rank": 4, "suit": 3 },
-        { "rank": 2, "suit": 2 },
-        { "rank": 5, "suit": 0 },
-        { "rank": 4, "suit": 0 },
-        { "rank": 1, "suit": 1 },
-        { "rank": 5, "suit": 3 },
-        { "rank": 2, "suit": 3 },
-        { "rank": 4, "suit": 1 },
-        { "rank": 2, "suit": 3 },
-        { "rank": 1, "suit": 0 },
-        { "rank": 2, "suit": 2 },
-        { "rank": 3, "suit": 1 }
-    ],
+  // "deck" is an array that contains all of the cards in the deck
+  // It lists the cards from top to bottom
+  // Cards are NOT dealt to the players like they would be in real life
+  // Cards are dealt to the first player until they reach the maximum number of cards,
+  // then cards are dealt to the second player until they reach the maximum number of cards,
+  // and so forth
+  // The suit number corresponds to the suits for the particular variant, from 0 to N
+  // e.g. 0 corresponds to red, 1 corresponds to yellow, etc. (in a "No Variant" game)
+  "deck": [
+    { "rank": 1, "suit": 3 },
+    { "rank": 4, "suit": 2 },
+    { "rank": 2, "suit": 1 },
+    { "rank": 3, "suit": 0 },
+    { "rank": 1, "suit": 3 },
+    { "rank": 3, "suit": 3 },
+    { "rank": 2, "suit": 1 },
+    { "rank": 4, "suit": 2 },
+    { "rank": 4, "suit": 0 },
+    { "rank": 4, "suit": 1 },
+    { "rank": 3, "suit": 2 },
+    { "rank": 1, "suit": 3 },
+    { "rank": 3, "suit": 4 },
+    { "rank": 5, "suit": 2 },
+    { "rank": 1, "suit": 1 },
+    { "rank": 4, "suit": 4 },
+    { "rank": 1, "suit": 0 },
+    { "rank": 4, "suit": 3 },
+    { "rank": 3, "suit": 0 },
+    { "rank": 1, "suit": 1 },
+    { "rank": 3, "suit": 1 },
+    { "rank": 3, "suit": 3 },
+    { "rank": 2, "suit": 0 },
+    { "rank": 1, "suit": 0 },
+    { "rank": 1, "suit": 2 },
+    { "rank": 3, "suit": 2 },
+    { "rank": 5, "suit": 1 },
+    { "rank": 1, "suit": 2 },
+    { "rank": 5, "suit": 4 },
+    { "rank": 1, "suit": 4 },
+    { "rank": 1, "suit": 2 },
+    { "rank": 2, "suit": 0 },
+    { "rank": 2, "suit": 4 },
+    { "rank": 4, "suit": 3 },
+    { "rank": 2, "suit": 2 },
+    { "rank": 5, "suit": 0 },
+    { "rank": 4, "suit": 0 },
+    { "rank": 1, "suit": 1 },
+    { "rank": 5, "suit": 3 },
+    { "rank": 2, "suit": 3 },
+    { "rank": 4, "suit": 1 },
+    { "rank": 2, "suit": 3 },
+    { "rank": 1, "suit": 0 },
+    { "rank": 2, "suit": 2 },
+    { "rank": 3, "suit": 1 }
+  ],
 
-    /**
-     * "actions" is an array that contains all of the actions that the players performed in the game
-     * Valid actions types are:
-     * - 0 if a play
-     * - 1 if a discard
-     * - 2 if a color clue
-     * - 3 if a number clue
-     * - 4 if a game over
-     * An example of each action is listed below
-     */
-    "actions": [
-        {
-            // A "play" action (type 0)
-            "type": 0,
+  // "actions" is an array that contains all of the actions that the players performed in the game
+  // Valid actions types are:
+  // - 0 if a play
+  // - 1 if a discard
+  // - 2 if a color clue
+  // - 3 if a number clue
+  // - 4 if a game over
+  // An example of each action is listed below
+  "actions": [
+    {
+      // A "play" action (type 0)
+      "type": 0,
 
-            // The index of the card that is being played
-            // e.g. 0 corresponds to the 1st card dealt, etc.
-            "target": 4
-        },
-        {
-            // A "discard" action (type 1)
-            "type": 1,
-
-            // The index of the card that is being discarded
-            // e.g. 0 corresponds to the 1st card dealt, etc.
-            "target": 11
-        },
-        {
-            // A "color clue" action (type 2)
-            "type": 2,
-
-            // The index of the player that is receiving the clue
-            // e.g. 0 corresponds to the 1st player, etc.
-            "target": 1,
-
-            // The value for a rank clue is equal to to the rank chosen for the clue
-            // e.g. 1 corresponds to rank 1, 2 corresponds to rank 2, etc.
-            "value": 3
-        },
-        {
-            // A "rank clue" action (type 3)
-            "type": 3,
-
-            // The index of the player that is receiving the clue
-            // e.g. 0 corresponds to the 1st player, etc.
-            "target": 1,
-
-            // The value for a color clue is the index of the possible colors from 1 to N,
-            // from left to right
-            // e.g. 1 corresponds to red, 2 corresponds to yellow, etc. (in a "No Variant" game)
-            "value": 3
-        },
-        {
-            // A "terminate" action (type 4)
-            "type": 4,
-
-            // The index of the player that is ending the game
-            // e.g. 0 corresponds to the 1st player, etc.
-            "target": 1,
-
-            // The type of game over, corresponding to the "endCondition" value in "constants.go"
-            // https://github.com/Zamiell/hanabi-live/blob/master/src/constants.go
-            // e.g. 3 corresponds to a timed timeout, 4 corresponds to a manual termination, etc.
-            "value": 3
-        }
-    ],
-
-    // The options for the game
-    // This field is optional
-    "options": {
-        /**
-         * The name of the variant, e.g. "No Variant" for the base game
-         * A full list of variants can be found here:
-         * https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md#full-variant-listing
-         * If this value is not specified, "No Variant" will be assumed
-         */
-        "variant": "No Variant",
-
-        /**
-         * Any other Hanabi Live option can be specified, such as "cardCycle" or "emptyClues"
-         * A full list of options can be found in the "OptionsJSON" struct, located here:
-         * https://github.com/Zamiell/hanabi-live/blob/master/src/options.go
-         * The various options are documented here:
-         * https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#custom-game-options
-         * If an option is not specified, the default will be assumed (e.g. false or 0)
-         */
-        "emptyClues": true
+      // The index of the card that is being played
+      // e.g. 0 corresponds to the 1st card dealt, etc.
+      "target": 4
     },
+    {
+      // A "discard" action (type 1)
+      "type": 1,
 
-    /**
-     * "notes" is an array that contains the notes of the players
-     * Players can write arbitrary notes on individual cards
-     * The 0th array corresponds to the notes for the first player, etc.
-     * The 0th note in a note array corresponds to the 1st card dealt, etc.
-     * This field is optional
-     */
-    "notes": [
-        ["this is an important card", "this card should be trash"],
-        ["finessed", "chop moved"],
-        [],
-        [],
-        []
-    ]
+      // The index of the card that is being discarded
+      // e.g. 0 corresponds to the 1st card dealt, etc.
+      "target": 11
+    },
+    {
+      // A "color clue" action (type 2)
+      "type": 2,
+
+      // The index of the player that is receiving the clue
+      // e.g. 0 corresponds to the 1st player, etc.
+      "target": 1,
+
+      // The value for a rank clue is equal to to the rank chosen for the clue
+      // e.g. 1 corresponds to rank 1, 2 corresponds to rank 2, etc.
+      "value": 3
+    },
+    {
+      // A "rank clue" action (type 3)
+      "type": 3,
+
+      // The index of the player that is receiving the clue
+      // e.g. 0 corresponds to the 1st player, etc.
+      "target": 1,
+
+      // The value for a color clue is the index of the possible colors from 1 to N,
+      // from left to right
+      // e.g. 1 corresponds to red, 2 corresponds to yellow, etc. (in a "No Variant" game)
+      "value": 3
+    },
+    {
+      // A "terminate" action (type 4)
+      "type": 4,
+
+      // The index of the player that is ending the game
+      // e.g. 0 corresponds to the 1st player, etc.
+      "target": 1,
+
+      // The type of game over, corresponding to the "endCondition" value in "constants.go"
+      // https://github.com/Zamiell/hanabi-live/blob/master/src/constants.go
+      // e.g. 3 corresponds to a timed timeout, 4 corresponds to a manual termination, etc.
+      "value": 3
+    }
+  ],
+
+  // The options for the game
+  // This field is optional
+  "options": {
+    // The name of the variant, e.g. "No Variant" for the base game
+    // A full list of variants can be found here:
+    // https://github.com/Zamiell/hanabi-live/blob/master/docs/VARIANTS.md#full-variant-listing
+    // If this value is not specified, "No Variant" will be assumed
+    "variant": "No Variant",
+
+    // Any other Hanabi Live option can be specified, such as "cardCycle" or "emptyClues"
+    // A full list of options can be found in the "OptionsJSON" struct, located here:
+    // https://github.com/Zamiell/hanabi-live/blob/master/src/options.go
+    // The various options are documented here:
+    // https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#custom-game-options
+    // If an option is not specified, the default will be assumed (e.g. false or 0)
+    "emptyClues": true
+  },
+
+  // "notes" is an array of arrays, containing the notes for each player
+  // Players can write arbitrary notes on individual cards
+  // The 0th array corresponds to the notes for the first player, etc.
+  // The 0th note in a note array corresponds to the 1st card dealt, etc.
+  // This field is optional
+  "notes": [
+    ["this is an important card", "this card should be trash"],
+    ["finessed", "chop moved"],
+    [],
+    [],
+    []
+  ],
+
+  // "characters" is an array of character objects,
+  // containing the "Detrimental Character" specification for each player
+  // "Detrimental Characters" is an optional setting used on Hanabi Live that is based on a
+  // a post from Sean McCarthy: https://boardgamegeek.com/thread/1688194/hanabi-characters-variant
+  // This field is optional
+  "characters": [
+    { "name": "Fuming", "metadata": 2 },
+    { "name": "Dumbfounded", "metadata": 3 },
+    { "name": "Conservative", "metadata": -1 },
+    { "name": "Greedy", "metadata": -1 },
+    { "name": "Picky", "metadata": -1 }
+  ]
 }
