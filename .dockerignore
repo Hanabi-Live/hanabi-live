@@ -6,5 +6,18 @@
 *
 
 # Allow files and folders with a pattern starting with !
-!.env_template
+
+
+# for building the docker-entrypoint
+!docker/src
+
+# for building the backend
 !src
+
+# for building the frontend
+!.git
+!public
+!build_client.sh
+
+# for the development docker container
+!.env_template

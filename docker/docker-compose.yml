@@ -1,0 +1,63 @@
+version: '3.7'
+
+services:
+  hanabilive:
+
+    # for the hanabilive service, build the dockerfile in the root directory.
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        SENTRY_DSN: "${SENTRY_DSN}"
+    
+    # expose the configured public port
+    ports:
+      - ${PUBLIC_PORT}:8080
+    
+    # read all the environment variables from the .env file
+    environment:
+      - DOMAIN=${DOMAIN}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - DISCORD_LISTEN_CHANNEL_IDS=${DISCORD_LISTEN_CHANNEL_IDS}
+      - DISCORD_LOBBY_CHANNEL_ID=${DISCORD_LOBBY_CHANNEL_ID}
+      - DISCORD_BOT_CHANNEL_ID=${DISCORD_BOT_CHANNEL_ID}
+      - GA_TRACKING_ID=${GA_TRACKING_ID}
+
+      # the database host and port are taken from the other service
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+    
+    # we need the mariadb container for this
+    depends_on:
+      - mariadb
+    
+    # restart the docker container
+    restart: always
+  
+
+  mariadb:
+    # use the mariadb service
+    image: mariadb
+    environment:
+      # intialize with the given username and password
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASS}
+
+      # ideally we would like to disable the root account completely
+      # but the best we can do is a random password
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+    
+    # ensure that we keep mariadb data in a volume
+    volumes:
+      - "mariadb:/var/lib/mysql"
+      # First-time initialization
+      - ../install/database_schema.sql:/docker-entrypoint-initdb.d/database_schema.sql
+    restart: always
+
+volumes:
+    mariadb:
