@@ -1,24 +1,34 @@
+// These are Visual Studio Code settings that should apply to this particular repository
 {
+  // This will run "eslint --fix" when saving JavaScript/TypeScript files so that code is
+  // automatically formatted
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+
+  // This matches the Airbnb JavaScript style guide
+  // Golang code also conforms to this rule
+  "editor.rulers": [100],
+
   // This is needed for VSCode to see ESLint errors on TypeScript files
   "eslint.validate": [
     "javascript",
     "typescript"
   ],
+
+  // This is needed because the "package.json" and so forth are not located in the root of the
+  // repository
   "eslint.workingDirectories": [
     "./public/js"
   ],
 
-  // These are Visual Studio Code settings that should apply to this particular repository
   "files.associations": {
     "example_game_with_comments.json": "jsonc", // This is "json" by default
     "*.tmpl": "html", // Golang HTML templates are saved as "tmpl" files
   },
 
-  // Linux line endings are commonly used as a programming standard
+  // Linux line endings are used in this project
   "files.eol": "\n",
-
-  // VSCode recommends goimports over goreturns
-  "go.formatTool": "goimports",
 
   // The default Golang linter is golint, which is only concerned with coding style
   // GolangCI-Lint does a suite of different checks
