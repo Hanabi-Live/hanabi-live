@@ -40,6 +40,33 @@ matrix:
         - ../../build_client.sh
         # Run ESLint (the TypeScript linter)
         - npm run-script lint
+    
+    # a docker image "smoketest"
+    # it builds the production docker image and checks if it responds with a HTTP 200
+    - language: minimal
+      services:
+        - docker
+      install:
+        - docker pull golang:stretch
+        - docker pull node:stretch
+        - docker pull alpine:latest
+        - docker-compose pull
+      script:
+        # setup the environment
+        - cd docker
+        - cp .env_template .env
+
+        # build the image and then start it in the background
+        - docker-compose build
+        - docker-compose up &
+
+        # wait for everything to come up
+        - sleep 60
+
+        # check that / returns HTTP 200
+        - curl -s --fail --show-error http://localhost:8080/ > /dev/null
+      after_script:
+        - docker-compose down
 
 notifications:
   email:

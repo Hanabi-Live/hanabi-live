@@ -1,0 +1,4 @@
+github.com/Zamiell/go-logging v0.0.0-20200330042608-74a4ce81eb96 h1:m7Hyar0pwVpqPYr4iPwjLJbtK5VSS96+7V0YwPilMPM=
+github.com/Zamiell/go-logging v0.0.0-20200330042608-74a4ce81eb96/go.mod h1:kvwiyTwfrieIOP/a4jsWCxlc8Gbx8WR0GUQNUC1tqk0=
+github.com/go-sql-driver/mysql v1.5.0 h1:ozyZYNQW3x3HtqT1jira07DN2PArx2v7/mN66gGcHOs=
+github.com/go-sql-driver/mysql v1.5.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
