@@ -5,9 +5,6 @@
 # Contains secrets
 .env
 
-# Log files
-logs/*.log*
-
 # Directories
 backups
 
