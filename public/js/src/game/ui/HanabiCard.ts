@@ -563,6 +563,18 @@ export default class HanabiCard extends Konva.Group {
             this.possibleRanks,
             (rank: number) => rank !== 1,
           );
+        } else if (this.rank === 1) {
+          // Negative color to a known 1 means that we can remove all suits
+          // other that the ones that are never touched by color clues
+          const moreSuitsRemoved = filterInPlace(
+            this.possibleSuits,
+            (suit: Suit) => suit.noClueColors,
+          );
+          suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
+
+          // Remove any duplicates
+          // https://medium.com/dailyjs/how-to-remove-array-duplicates-in-es6-5daa8789641c
+          suitsRemoved = suitsRemoved.filter((suit, index) => suitsRemoved.indexOf(suit) === index);
         }
       } else if (
         // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
@@ -588,6 +600,18 @@ export default class HanabiCard extends Konva.Group {
             this.possibleRanks,
             (rank: number) => rank !== 5,
           );
+        } else if (this.rank === 5) {
+          // Negative color to a known 5 means that we can remove all suits
+          // other that the ones that are never touched by color clues
+          const moreSuitsRemoved = filterInPlace(
+            this.possibleSuits,
+            (suit: Suit) => suit.noClueColors,
+          );
+          suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
+
+          // Remove any duplicates
+          // https://medium.com/dailyjs/how-to-remove-array-duplicates-in-es6-5daa8789641c
+          suitsRemoved = suitsRemoved.filter((suit, index) => suitsRemoved.indexOf(suit) === index);
         }
       } else if (
         globals.variant.name.includes('White-Ones')
