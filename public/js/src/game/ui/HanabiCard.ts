@@ -684,7 +684,8 @@ export default class HanabiCard extends Konva.Group {
       [this.suit] = this.possibleSuits;
 
       // Don't record the suit or hide the pips if the card is unclued
-      if (this.holder === null || this.isClued()) {
+      // (but clued cards can be played or discarded, so account for that)
+      if (this.isClued() || this.holder === null) {
         globals.learnedCards[this.order].suit = this.suit;
         this.suitPipsMap.get(this.suit)!.hide();
         this.suitPips!.hide();
