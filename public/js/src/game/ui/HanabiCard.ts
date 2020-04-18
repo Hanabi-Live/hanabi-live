@@ -77,7 +77,8 @@ export default class HanabiCard extends Konva.Group {
   rankPipsXMap: Map<number, Konva.Shape> = new Map();
   noteIndicator: NoteIndicator | null = null;
   tooltipName: string = '';
-  fixme: Konva.Image | null = null;
+  trashcan: Konva.Image | null = null;
+  wrench: Konva.Image | null = null;
 
   constructor(config: Konva.ContainerConfig) {
     super(config);
@@ -104,7 +105,8 @@ export default class HanabiCard extends Konva.Group {
     HanabiCardInit.note.call(this);
     HanabiCardInit.empathy.call(this);
     HanabiCardInit.click.call(this);
-    HanabiCardInit.fixme.call(this);
+    HanabiCardInit.trashcan.call(this);
+    HanabiCardInit.wrench.call(this);
   }
 
   // Erase all of the data on the card to make it like it was freshly drawn
@@ -263,15 +265,6 @@ export default class HanabiCard extends Konva.Group {
     // (but in Real-Life mode or Cow & Pig / Duck variants,
     // always show the vanilla card back if the card is not fully revealed)
     if (
-      this.noteKnownTrash
-      && !this.empathy
-      && !this.isPlayed
-      && !this.isDiscarded
-      && !globals.replay
-      && !globals.spectating
-    ) {
-      this.bareName = 'known-trash';
-    } else if (
       this.noteBlank
       && !this.empathy
       && !this.isPlayed
@@ -306,13 +299,23 @@ export default class HanabiCard extends Konva.Group {
       this.rankPips!.visible(rankToShow === 6);
     }
 
+    // Show or hide the "trash" image
+    this.trashcan!.visible((
+      this.noteKnownTrash
+      && !this.empathy
+      && !globals.replay
+      && !globals.spectating
+    ));
+
     // Show or hide the "fixme" image
-    this.fixme!.visible((
+    this.wrench!.visible((
       this.noteNeedsFix
       && !this.empathy
       && !globals.replay
       && !globals.spectating
     ));
+
+    this.setFade();
   }
 
   // Fade this card if it is useless, fully revealed, and still in a player's hand
@@ -337,6 +340,11 @@ export default class HanabiCard extends Konva.Group {
       && !this.empathy
       && !this.needsToBePlayed()
     ) {
+      newOpacity = CARD_FADE;
+    }
+
+    // Override the above logic and always fade the card if it is explicitly marked as known trash
+    if (this.trashcan!.visible() && this.numPositiveClues === 0) {
       newOpacity = CARD_FADE;
     }
 

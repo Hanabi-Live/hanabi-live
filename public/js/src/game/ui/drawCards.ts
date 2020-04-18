@@ -14,7 +14,6 @@ import Suit from '../../Suit';
 import Variant from '../../Variant';
 import drawPip from './drawPip';
 import drawRank from './drawRank';
-import globals from './globals';
 
 // This function returns an object containing all of the drawn cards images (on individual canvases)
 export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean) => {
@@ -138,7 +137,6 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
 
   cardImages.set(`NoPip-Unknown-${UNKNOWN_CARD_RANK}`, makeUnknownCard());
   cardImages.set('deck-back', makeDeckBack(variant));
-  cardImages.set('known-trash', makeKnownTrash());
 
   return cardImages;
 };
@@ -321,27 +319,14 @@ const makeDeckBack = (variant: Variant) => {
   return cvs;
 };
 
-const makeKnownTrash = () => {
-  const cvs = makeUnknownCard();
-  const ctx = cvs.getContext('2d');
-  if (ctx === null) {
-    throw new Error('Failed to get the context for a new canvas element.');
-  }
-
-  // Draw the trash can image on top of the card
-  ctx.drawImage(globals.ImageLoader!.get('trashcan2')!, -103, -120);
-
-  return cvs;
-};
-
 const drawCardBase = (ctx: CanvasRenderingContext2D, suit: Suit, rank: number) => {
   // Draw the background
   ctx.fillStyle = getSuitStyle(suit, ctx, 'background');
   ctx.strokeStyle = getSuitStyle(suit, ctx, 'background');
   cardBorderPath(ctx, 4);
 
-  ctx.save();
   // Draw the borders (on visible cards) and the color fill
+  ctx.save();
   ctx.globalAlpha = 0.3;
   ctx.fill();
   ctx.globalAlpha = 0.7;
@@ -351,7 +336,6 @@ const drawCardBase = (ctx: CanvasRenderingContext2D, suit: Suit, rank: number) =
     ctx.globalAlpha = 1;
   }
   ctx.stroke();
-
   ctx.restore();
 };
 

@@ -380,7 +380,6 @@ export function empathy(this: HanabiCard) {
       const card = layoutChild.children[0];
       card.empathy = enabled;
       card.setBareImage();
-      card.setFade();
     }
     globals.layers.card.batchDraw();
   };
@@ -463,15 +462,27 @@ export function possibilities(this: HanabiCard) {
   }
 }
 
-export function fixme(this: HanabiCard) {
-  this.fixme = new Konva.Image({
+export function trashcan(this: HanabiCard) {
+  this.trashcan = new Konva.Image({
+    x: 0.15 * CARD_W,
+    y: 0.2 * CARD_H,
+    width: 0.7 * CARD_W,
+    height: 0.6 * CARD_H,
+    image: globals.ImageLoader!.get('trashcan2')!,
+    visible: false,
+  });
+  this.add(this.trashcan);
+}
+
+export function wrench(this: HanabiCard) {
+  this.wrench = new Konva.Image({
     x: 0.1 * CARD_W,
     y: 0.33 * CARD_H,
     width: 0.8 * CARD_W,
     image: globals.ImageLoader!.get('wrench')!,
     visible: false,
   });
-  this.add(this.fixme);
+  this.add(this.wrench);
 }
 
 const scaleCardImage = (

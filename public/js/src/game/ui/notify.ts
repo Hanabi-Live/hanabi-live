@@ -98,7 +98,6 @@ notifyFunctions.set('clue', (data: ActionClue) => {
       card.checkReapplyRankClues();
       card.checkReapplyColorClues();
       card.setBareImage();
-      card.setFade(); // Unfade the card if it is faded
     }
   }
 
@@ -196,7 +195,6 @@ notifyFunctions.set('discard', (data: ActionDiscard) => {
 
   card.reveal(data.which.suit, data.which.rank);
   card.removeFromParent();
-  card.setFade(); // Unfade the card if it is faded
   card.hideBorders();
 
   if (card.isMisplayed && !globals.animateFast && !globals.speedrun) {
@@ -293,7 +291,6 @@ notifyFunctions.set('draw', (data: ActionDraw) => {
     card.suitPips!.visible(false);
     card.rankPips!.visible(false);
   }
-  card.setFade(); // Fade the card if it is already played
 
   // Each card is contained within a LayoutChild
   // Position the LayoutChild over the deck
