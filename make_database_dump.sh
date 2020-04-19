@@ -26,8 +26,8 @@ echo Complete.
 # Delete old backups if the hard drive is getting full
 AMOUNT_FULL=$(df "$DIR" | tail -1 | awk '{print $5}' | rev | cut -c 2- | rev)
 if [ $AMOUNT_FULL -gt 80 ]; then
-    # Delete the oldest file in the backups directory
-    rm "$(ls -t "$BACKUPS_DIR" | tail -1)"
+  # Delete the oldest file in the backups directory
+  rm "$(ls -t "$BACKUPS_DIR" | tail -1)"
 fi
 
 # Upload it to Google Drive

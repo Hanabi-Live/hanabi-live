@@ -20,9 +20,9 @@ var (
 	versionPath string
 
 	logger          *Logger
+	startingVersion int
 	usingSentry     bool
 	models          *Models
-	domain          string
 	datetimeStarted time.Time
 	tables          = make(map[int]*Table) // Defined in "table.go"
 	// For storing all of the random words (used for random table names)
@@ -68,6 +68,10 @@ func main() {
 		logger.Fatal("Failed to check if the \""+versionPath+"\" file exists:", err)
 		return
 	}
+
+	// Record the version of the code that corresponds to when the Golang code was compiled
+	// (this is useful since it is possible to update the client without restarting the server)
+	startingVersion = getVersion()
 
 	// Check to see if the ".env" file exists
 	envPath := path.Join(projectPath, ".env")

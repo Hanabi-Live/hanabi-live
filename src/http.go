@@ -35,6 +35,7 @@ const (
 )
 
 var (
+	domain       string
 	GATrackingID string
 )
 

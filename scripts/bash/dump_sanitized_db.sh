@@ -13,14 +13,26 @@ DATABASE=hanabi
 DB_FILE=sanitized_dump.sql
 EXCLUDED_TABLES=(
 users
-banned_ips
+user_settings
+user_stats
+# games
+# game_participants
+game_participant_notes
+# game_actions
+variant_stats
 chat_log
+chat_log_pm
+banned_ips
+muted_ips
+throttled_ips
+discord_metadata
+discord_waiters
 )
 
 IGNORED_TABLES_STRING=''
 for TABLE in "${EXCLUDED_TABLES[@]}"
 do :
-   IGNORED_TABLES_STRING+=" --ignore-table=${DATABASE}.${TABLE}"
+  IGNORED_TABLES_STRING+=" --ignore-table=${DATABASE}.${TABLE}"
 done
 
 echo "Dump structure"

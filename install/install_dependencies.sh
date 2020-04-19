@@ -14,7 +14,7 @@ REPO="$(basename "$REPO")"
 
 # Ensure that the ".env" file exists
 if [ ! -f "$DIR/../.env" ]; then
-    cp "$DIR/../.env_template" "$DIR/../.env"
+  cp "$DIR/../.env_template" "$DIR/../.env"
 fi
 
 # Build the Golang files, which will automatically install the Golang dependencies

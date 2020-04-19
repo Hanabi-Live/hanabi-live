@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Configuration
-USER="Zamiel"
-SCORE="30"
-VARIANT="Black & Dark Rainbow (6 Suits)"
+USER="Alice"
+SCORE="25"
+VARIANT="0"
 
 # Import the database username and password
 source ../../.env

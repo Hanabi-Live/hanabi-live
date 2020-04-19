@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-GAME_ID="17232"
+GAME_ID="1"
 
 # Import the database username and password
 source ../.env
