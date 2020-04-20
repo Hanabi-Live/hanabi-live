@@ -236,7 +236,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 				}
 
 				// Parse the suit
-				suit := match[1]
+				suit := strings.ToLower(match[1])
 				var newSuit int
 				if suit == "r" {
 					newSuit = 0
@@ -248,7 +248,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 					newSuit = 3
 				} else if suit == "p" {
 					newSuit = 4
-				} else if suit == "m" {
+				} else if suit == "m" || suit == "t" {
 					newSuit = 5
 				} else {
 					s.Warning("Failed to parse the suit on line " + strconv.Itoa(i+1) + ": " + suit)
