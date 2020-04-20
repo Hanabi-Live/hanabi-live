@@ -188,7 +188,7 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
     && !event.altKey
     && !event.metaKey
   ) {
-    card.setNote('f');
+    card.appendNote('[f]');
     return;
   }
 
@@ -200,17 +200,6 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
     && event.altKey
     && !event.metaKey
   ) {
-    card.setNote('cm');
-  }
-
-  // Alt + shift + right-click is a "p" note
-  // (this is a common abbreviation for "this card was told to play")
-  if (
-    !event.ctrlKey
-    && event.shiftKey
-    && event.altKey
-    && !event.metaKey
-  ) {
-    card.setNote('p');
+    card.appendNote('[cm]');
   }
 };

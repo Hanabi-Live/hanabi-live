@@ -53,9 +53,15 @@ func commandReplayCreate(s *Session, d *CommandData) {
 		return
 	}
 
-	if d.Source == "json" {
-		// Before creating a new game and emulating the actinos,
-		// we want to ensure that the submitted JSON does not have any obvious errors
+	if d.Source == "id" {
+		// Before creating a new game and emulating the actions,
+		// ensure that the ID exists in the database
+		if !validateDatabase(s, d) {
+			return
+		}
+	} else if d.Source == "json" {
+		// Before creating a new game and emulating the actions,
+		// ensure that the submitted JSON does not have any obvious errors
 		if !validateJSON(s, d) {
 			return
 		}
@@ -87,6 +93,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	// Load the players and options from the database or JSON file
 	if d.Source == "id" {
 		if !loadDatabaseToTable(s, d, t) {
+			delete(tables, t.ID)
 			return
 		}
 	} else if d.Source == "json" {
@@ -101,10 +108,12 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	}
 
 	if !applyNotesToPlayers(s, d, g) {
+		delete(tables, t.ID)
 		return
 	}
 
 	if !emulateActions(s, d, t) {
+		delete(tables, t.ID)
 		return
 	}
 
@@ -137,6 +146,20 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	// The "commandTableSpectate()" function above sends the user the "tableStart" message
 	// After the client receives the "tableStart" message, they will load the UI and then send a
 	// "hello" message to get the rest of the data for the game
+}
+
+func validateDatabase(s *Session, d *CommandData) bool {
+	// Check to see if the game exists in the database
+	if exists, err := models.Games.Exists(d.GameID); err != nil {
+		logger.Error("Failed to check to see if game "+strconv.Itoa(d.GameID)+" exists:", err)
+		s.Error(initFail)
+		return false
+	} else if !exists {
+		s.Warning("Game #" + strconv.Itoa(d.GameID) + " does not exist in the database.")
+		return false
+	}
+
+	return true
 }
 
 func validateJSON(s *Session, d *CommandData) bool {
@@ -271,16 +294,6 @@ func validateJSON(s *Session, d *CommandData) bool {
 }
 
 func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
-	// Check to see if the game exists in the database
-	if exists, err := models.Games.Exists(d.GameID); err != nil {
-		logger.Error("Failed to check to see if game "+strconv.Itoa(d.GameID)+" exists:", err)
-		s.Error(initFail)
-		return false
-	} else if !exists {
-		s.Warning("Game #" + strconv.Itoa(d.GameID) + " does not exist in the database.")
-		return false
-	}
-
 	// Get the options from the database
 	var options DBOptions
 	if v, err := models.Games.GetOptions(d.GameID); err != nil {

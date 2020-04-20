@@ -947,6 +947,11 @@ export default class HanabiCard extends Konva.Group {
     }
   }
 
+  appendNote(note: string) {
+    // TODO
+    this.setNote(note);
+  }
+
   getSlotNum() {
     if (!this.parent || !this.parent.parent) {
       return -1;

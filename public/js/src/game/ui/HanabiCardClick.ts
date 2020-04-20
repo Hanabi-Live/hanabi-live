@@ -144,7 +144,7 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
     && !globals.replay
     && !globals.spectating
   ) {
-    card.setNote('f');
+    card.appendNote('[f]');
     return;
   }
 
@@ -158,19 +158,8 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
     && !globals.replay
     && !globals.spectating
   ) {
-    card.setNote('cm');
+    card.appendNote('[cm]');
     return;
-  }
-
-  // Alt + shift + right-click is a "p" note
-  // (this is a common abbreviation for "this card was told to play")
-  if (
-    !event.ctrlKey
-    && event.shiftKey
-    && event.altKey
-    && !event.metaKey
-  ) {
-    card.setNote('p');
   }
 
   // Ctrl + right-click is a local arrow
