@@ -200,7 +200,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 				return
 			}
 
-			if !isAlphanumeric(d.Name) {
+			if !isAlphanumeric(args[0]) {
 				s.Warning("The filename must consist of only letters and numbers.")
 				return
 			}

@@ -91,12 +91,7 @@ func httpLogin(c *gin.Context) {
 			"but they did not provide the \"version\" parameter.")
 		http.Error(
 			w,
-			// TODO shorten this in July 2020 or later
-			"You must provide the \"version\" parameter to log in. <br />"+
-				"Please perform a hard-refresh to get the latest version.<br />"+
-				"(Note that a hard-refresh is different from a normal refresh.)<br />"+
-				"On Windows, the hotkey for this is: <code>Ctrl + Shift + R</code><br />"+
-				"On MacOS, the hotkey for this is: <code>Command + Shift + R</code>",
+			"You must provide the \"version\" parameter to log in.",
 			http.StatusUnauthorized,
 		)
 		return
