@@ -120,7 +120,7 @@
       "value": 3
     },
     {
-      // A "terminate" action (type 4)
+      // A "game over" action (type 4)
       "type": 4,
 
       // The index of the player that is ending the game
