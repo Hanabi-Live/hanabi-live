@@ -139,36 +139,39 @@ func httpLogin(c *gin.Context) {
 
 	// Validate that the version is correct
 	// (we want to explicitly disallow clients who are running old versions of the code)
-	var versionNum int
-	if v, err := strconv.Atoi(version); err != nil {
-		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
-			"\"" + username + "\", but the submitted version is not an integer.")
-		http.Error(
-			w,
-			"The submitted version must be an integer.",
-			http.StatusUnauthorized,
-		)
-		return
-	} else {
-		versionNum = v
-	}
-	currentVersion := getVersion()
-	if versionNum != currentVersion {
-		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
-			"\"" + username + "\" and a version of \"" + version + "\", but this is an old " +
-			"version. (The current version is " + strconv.Itoa(currentVersion) + ".)")
-		http.Error(
-			w,
-			"You are running an outdated version of the Hanabi client code.<br />"+
-				"(You are on <strong>v"+version+"</strong> and "+
-				"the latest is <strong>v"+strconv.Itoa(currentVersion)+"</strong>.)<br />"+
-				"Please perform a hard-refresh to get the latest version.<br />"+
-				"(Note that a hard-refresh is different from a normal refresh.)<br />"+
-				"On Windows, the hotkey for this is: <code>Ctrl + Shift + R</code><br />"+
-				"On MacOS, the hotkey for this is: <code>Command + Shift + R</code>",
-			http.StatusUnauthorized,
-		)
-		return
+	// But make an exception for bots, who can just use the string of "bot"
+	if version != "bot" {
+		var versionNum int
+		if v, err := strconv.Atoi(version); err != nil {
+			logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+				"\"" + username + "\", but the submitted version is not an integer.")
+			http.Error(
+				w,
+				"The submitted version must be an integer.",
+				http.StatusUnauthorized,
+			)
+			return
+		} else {
+			versionNum = v
+		}
+		currentVersion := getVersion()
+		if versionNum != currentVersion {
+			logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+				"\"" + username + "\" and a version of \"" + version + "\", but this is an old " +
+				"version. (The current version is " + strconv.Itoa(currentVersion) + ".)")
+			http.Error(
+				w,
+				"You are running an outdated version of the Hanabi client code.<br />"+
+					"(You are on <strong>v"+version+"</strong> and "+
+					"the latest is <strong>v"+strconv.Itoa(currentVersion)+"</strong>.)<br />"+
+					"Please perform a hard-refresh to get the latest version.<br />"+
+					"(Note that a hard-refresh is different from a normal refresh.)<br />"+
+					"On Windows, the hotkey for this is: <code>Ctrl + Shift + R</code><br />"+
+					"On MacOS, the hotkey for this is: <code>Command + Shift + R</code>",
+				http.StatusUnauthorized,
+			)
+			return
+		}
 	}
 
 	/*
