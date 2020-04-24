@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function admin_command {
-  if [ $# -ne 1 ]; then
+  if [[ $# -ne 1 ]]; then
     echo "usage: admin_command [command]"
     exit 1
   fi
@@ -12,7 +12,7 @@ function admin_command {
 
   # Import the localhost port
   source "$DIR/../.env"
-  if [ -z "$LOCALHOST_PORT" ]; then
+  if [[ -z $LOCALHOST_PORT ]]; then
     LOCALHOST_PORT=8081
   fi
 

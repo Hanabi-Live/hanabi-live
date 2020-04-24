@@ -13,7 +13,7 @@ REPO="$(basename "$DIR")"
 # Windows Firewall will pop up a new alert every time we want to re-run the server
 cd "$DIR/src"
 go build -o "$DIR/$REPO"
-if [ $? -eq 0 ]; then
+if [[ $? -eq 0 ]]; then
   # The build was successful; run the server
   cd "$DIR"
   "$DIR/$REPO"

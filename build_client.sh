@@ -27,7 +27,7 @@ if ! command -v npx > /dev/null; then
   # so the below check will not work
   # https://unix.stackexchange.com/questions/92208/bash-how-to-get-the-first-number-that-occurs-in-a-variables-content
   BASH_VERSION_FIRST_DIGIT=$(bash --version | grep -o -E '[0-9]+' | head -1 | sed -e 's/^0\+//')
-  if [ "$BASH_VERSION_FIRST_DIGIT" -lt "4" ]; then
+  if [[ $BASH_VERSION_FIRST_DIGIT -lt 4 ]]; then
     echo "Failed to find the \"npx\" binary (on bash version $BASH_VERSION_FIRST_DIGIT)."
     exit 1
   fi
@@ -36,7 +36,7 @@ if ! command -v npx > /dev/null; then
   # https://github.com/creationix/nvm
   NODE_VERSION_DIRS=(/root/.nvm/versions/node/*)
   NODE_VERSION_DIR="${NODE_VERSION_DIRS[-1]}"
-  if [ ! -d "$NODE_VERSION_DIR" ]; then
+  if [[ ! -d $NODE_VERSION_DIR ]]; then
     echo "Failed to find the \"npx\" binary (in the \"/root/.nvm/versions/node\" directory)."
     exit 1
   fi

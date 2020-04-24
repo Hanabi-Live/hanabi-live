@@ -13,7 +13,7 @@ REPO="$(dirname "$DIR")"
 REPO="$(basename "$REPO")"
 
 # Ensure that the ".env" file exists
-if [ ! -f "$DIR/../.env" ]; then
+if [[ ! -f "$DIR/../.env" ]]; then
   cp "$DIR/../.env_template" "$DIR/../.env"
 fi
 

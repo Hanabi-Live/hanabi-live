@@ -15,7 +15,7 @@ export HOME=/root
 # Recompile the Golang code and restart the service
 cd "$DIR/src"
 go build -o "$DIR/$REPO"
-if [ $? -eq 0 ]; then
+if [[ $? -eq 0 ]]; then
   # The build was successful; restart the server
   supervisorctl restart "$REPO"
 else
