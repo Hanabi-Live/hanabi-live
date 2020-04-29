@@ -8,6 +8,7 @@ import (
 
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	emoji "github.com/tmdvs/Go-Emoji-Utils"
 )
 
 const (
@@ -132,6 +133,18 @@ func httpLogin(c *gin.Context) {
 			w,
 			"Usernames must not contain any special characters other than "+
 				"underscores, hyphens, and periods.",
+			http.StatusUnauthorized,
+		)
+		return
+	}
+
+	// Validate that the username does not have any emojis in it
+	if searchResults := emoji.FindAll(username); len(searchResults) > 0 {
+		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+			"\"" + username + "\", but it has emojis in it.")
+		http.Error(
+			w,
+			"Usernames must not contain any emojis.",
 			http.StatusUnauthorized,
 		)
 		return
