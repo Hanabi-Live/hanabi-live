@@ -64,7 +64,6 @@ func commandTableReattend(s *Session, d *CommandData) {
 	}
 
 	// Set their status
-	s.Set("currentTable", tableID)
 	if t.Running {
 		s.Set("status", statusPlaying)
 	} else {

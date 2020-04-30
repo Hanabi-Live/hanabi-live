@@ -62,7 +62,6 @@ func commandTableLeave(s *Session, d *CommandData) {
 	t.NotifyPlayerChange()
 
 	// Set their status
-	s.Set("currentTable", -1)
 	s.Set("status", statusLobby)
 	notifyAllUser(s)
 
@@ -78,7 +77,7 @@ func commandTableLeave(s *Session, d *CommandData) {
 				// A player's session should never be nil
 				// They might be in the process of reconnecting,
 				// so make a fake session that will represent them
-				s2 = newFakeSession(p.ID, p.Name, t.ID)
+				s2 = newFakeSession(p.ID, p.Name)
 			}
 			commandTableLeave(s2, &CommandData{
 				TableID: t.ID,

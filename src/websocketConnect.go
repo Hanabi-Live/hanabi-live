@@ -167,7 +167,6 @@ func websocketConnect(ms *melody.Session) {
 			commandTableReattend(s, &CommandData{
 				TableID: t.ID,
 			})
-			// (this function does not care what their current game and/or status is)
 
 			// If the user happens to be in both a game and a replay, then ignore the replay
 			return

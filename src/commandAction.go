@@ -412,10 +412,9 @@ func commandAction(s *Session, d *CommandData) {
 		// If the player queued a pause command, then pause the game
 		if np.RequestedPause {
 			np.RequestedPause = false
-			nps.Set("currentTable", t.ID)
-			nps.Set("status", statusPlaying)
 			commandPause(nps, &CommandData{
-				Value: "pause",
+				TableID: t.ID,
+				Value:   "pause",
 			})
 		}
 	}

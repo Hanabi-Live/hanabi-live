@@ -41,9 +41,9 @@ func websocketDisconnect2(s *Session) {
 			if t.Running {
 				logger.Info(t.GetName() + "Unattending player \"" + s.Username() + "\" " +
 					"since they disconnected.")
-				s.Set("currentTable", t.ID)
-				s.Set("status", statusPlaying)
-				commandTableUnattend(s, nil)
+				commandTableUnattend(s, &CommandData{
+					TableID: t.ID,
+				})
 			} else {
 				logger.Info(t.GetName() + "Ejecting player \"" + s.Username() + "\" " +
 					"from an unstarted game since they disconnected.")
@@ -58,9 +58,9 @@ func websocketDisconnect2(s *Session) {
 			logger.Info(t.GetName() + "Ejecting spectator \"" + s.Username() + "\" " +
 				"since they disconnected.")
 			t.DisconSpectators[s.UserID()] = true
-			s.Set("currentTable", t.ID)
-			s.Set("status", statusSpectating)
-			commandTableUnattend(s, nil)
+			commandTableUnattend(s, &CommandData{
+				TableID: t.ID,
+			})
 		}
 	}
 

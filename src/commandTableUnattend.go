@@ -36,7 +36,6 @@ func commandTableUnattend(s *Session, d *CommandData) {
 
 	// Set their status
 	s.Set("status", statusLobby)
-	s.Set("currentTable", -1)
 	notifyAllUser(s)
 
 	// If they were typing, remove the message

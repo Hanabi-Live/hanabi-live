@@ -133,10 +133,14 @@ func commandTableRestart(s *Session, d *CommandData) {
 	// On the server side, all of the spectators will still be in the game,
 	// so manually disconnect everybody
 	for _, s2 := range playerSessions {
-		commandTableUnattend(s2, nil)
+		commandTableUnattend(s2, &CommandData{
+			TableID: t.ID,
+		})
 	}
 	for _, s2 := range spectatorSessions {
-		commandTableUnattend(s2, nil)
+		commandTableUnattend(s2, &CommandData{
+			TableID: t.ID,
+		})
 	}
 
 	// The shared replay should now be deleted, since all of the players have left
@@ -190,7 +194,9 @@ func commandTableRestart(s *Session, d *CommandData) {
 	}
 
 	// Emulate the game owner clicking on the "Start Game" button
-	commandTableStart(s, nil)
+	commandTableStart(s, &CommandData{
+		TableID: t2.ID,
+	})
 
 	// Automatically join any other spectators that were watching
 	for _, s2 := range spectatorSessions {

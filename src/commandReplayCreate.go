@@ -101,7 +101,9 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	}
 
 	// Start the (fake) game
-	commandTableStart(t.Players[0].Session, nil)
+	commandTableStart(t.Players[0].Session, &CommandData{
+		TableID: t.ID,
+	})
 	g := t.Game
 	if d.Source == "id" {
 		g.ID = d.GameID
@@ -420,14 +422,14 @@ func loadFakePlayers(t *Table, playerNames []string) {
 		player := &Player{
 			ID:      id,
 			Name:    name,
-			Session: newFakeSession(id, name, t.ID),
+			Session: newFakeSession(id, name),
 			Present: true,
 		}
 		t.Players = append(t.Players, player)
 	}
 }
 
-func newFakeSession(id int, name string, currentTable int) *Session {
+func newFakeSession(id int, name string) *Session {
 	// Prepare a "fake" player session that will be used for emulation
 	keys := make(map[string]interface{})
 
@@ -436,7 +438,6 @@ func newFakeSession(id int, name string, currentTable int) *Session {
 	keys["username"] = name
 	keys["admin"] = false
 	keys["firstTimeUser"] = false
-	keys["currentTable"] = currentTable
 	keys["status"] = statusPlaying
 	keys["fakeUser"] = true
 
@@ -517,18 +518,21 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 
 		if action.Type == actionType2Play {
 			commandAction(p.Session, &CommandData{
-				Type:   actionTypePlay,
-				Target: action.Target,
+				TableID: t.ID,
+				Type:    actionTypePlay,
+				Target:  action.Target,
 			})
 		} else if action.Type == actionType2Discard {
 			commandAction(p.Session, &CommandData{
-				Type:   actionTypeDiscard,
-				Target: action.Target,
+				TableID: t.ID,
+				Type:    actionTypeDiscard,
+				Target:  action.Target,
 			})
 		} else if action.Type == actionType2ColorClue {
 			commandAction(p.Session, &CommandData{
-				Type:   actionTypeClue,
-				Target: action.Target,
+				TableID: t.ID,
+				Type:    actionTypeClue,
+				Target:  action.Target,
 				Clue: Clue{
 					Type:  clueTypeColor,
 					Value: action.Value,
@@ -536,8 +540,9 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 			})
 		} else if action.Type == actionType2RankClue {
 			commandAction(p.Session, &CommandData{
-				Type:   actionTypeClue,
-				Target: action.Target,
+				TableID: t.ID,
+				Type:    actionTypeClue,
+				Target:  action.Target,
 				Clue: Clue{
 					Type:  clueTypeRank,
 					Value: action.Value,
@@ -555,7 +560,8 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 
 			if action.Value == endConditionTimeout {
 				commandAction(ps, &CommandData{
-					Type: actionTypeTimeLimitReached,
+					TableID: t.ID,
+					Type:    actionTypeTimeLimitReached,
 				})
 			} else if action.Value == endConditionTerminated {
 				serverTermination := false
@@ -563,11 +569,13 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 					serverTermination = true
 				}
 				commandTableTerminate(ps, &CommandData{
-					Server: serverTermination,
+					TableID: t.ID,
+					Server:  serverTermination,
 				})
 			} else if action.Value == endConditionIdleTimeout {
 				commandAction(ps, &CommandData{
-					Type: actionTypeIdleLimitReached,
+					TableID: t.ID,
+					Type:    actionTypeIdleLimitReached,
 				})
 			}
 		} else {

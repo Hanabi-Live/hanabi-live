@@ -96,7 +96,8 @@ func chatPause(s *Session, d *CommandData, t *Table) {
 	}
 
 	commandPause(s, &CommandData{
-		Value: "pause",
+		TableID: t.ID,
+		Value:   "pause",
 	})
 }
 
@@ -113,7 +114,8 @@ func chatUnpause(s *Session, d *CommandData, t *Table) {
 	}
 
 	commandPause(s, &CommandData{
-		Value: "unpause",
+		TableID: t.ID,
+		Value:   "unpause",
 	})
 }
 
@@ -225,7 +227,9 @@ func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
 	}
 
 	if len(t.Players) == numPlayers {
-		commandTableStart(s, nil)
+		commandTableStart(s, &CommandData{
+			TableID: t.ID,
+		})
 	} else {
 		t.AutomaticStart = numPlayers
 		chatServerSend("The game will start as soon as "+strconv.Itoa(numPlayers)+
@@ -266,7 +270,9 @@ func startIn(t *Table, timeToWait time.Duration, datetimePlannedStart time.Time)
 			}
 
 			logger.Info(t.GetName() + " Automatically starting (from the /startin command).")
-			commandTableStart(p.Session, nil)
+			commandTableStart(p.Session, &CommandData{
+				TableID: t.ID,
+			})
 			return
 		}
 	}

@@ -119,11 +119,11 @@ func (t *Table) CheckIdle() {
 			// A spectator's session should never be nil
 			// They might be in the process of reconnecting,
 			// so make a fake session that will represent them
-			s = newFakeSession(sp.ID, sp.Name, t.ID)
+			s = newFakeSession(sp.ID, sp.Name)
 		}
-		s.Set("currentTable", t.ID)
-		s.Set("status", statusSpectating)
-		commandTableUnattend(s, nil)
+		commandTableUnattend(s, &CommandData{
+			TableID: t.ID,
+		})
 	}
 
 	if t.Replay {
@@ -136,10 +136,9 @@ func (t *Table) CheckIdle() {
 	if t.Running {
 		// We need to end a game that has started
 		// (this will put everyone in a non-shared replay of the idle game)
-		s.Set("currentTable", t.ID)
-		s.Set("status", statusPlaying)
 		commandAction(s, &CommandData{
-			Type: actionTypeIdleLimitReached,
+			TableID: t.ID,
+			Type:    actionTypeIdleLimitReached,
 		})
 	} else {
 		// We need to end a game that hasn't started yet
@@ -195,7 +194,7 @@ func (t *Table) GetOwnerSession() *Session {
 				// A player's session should never be nil
 				// They might be in the process of reconnecting,
 				// so make a fake session that will represent them
-				s = newFakeSession(p.ID, p.Name, t.ID)
+				s = newFakeSession(p.ID, p.Name)
 			}
 			break
 		}
@@ -203,7 +202,7 @@ func (t *Table) GetOwnerSession() *Session {
 
 	if s == nil {
 		logger.Error("Failed to find the owner for table " + strconv.Itoa(t.ID) + ".")
-		s = newFakeSession(-1, "Unknown", t.ID)
+		s = newFakeSession(-1, "Unknown")
 	}
 
 	return s

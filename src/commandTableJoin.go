@@ -102,7 +102,6 @@ func commandTableJoin(s *Session, d *CommandData) {
 	t.NotifyPlayerChange()
 
 	// Set their status
-	s.Set("currentTable", tableID)
 	s.Set("status", statusPregame)
 	notifyAllUser(s)
 
@@ -145,7 +144,9 @@ func commandTableJoin(s *Session, d *CommandData) {
 					return
 				}
 
-				commandTableStart(p2.Session, nil)
+				commandTableStart(p2.Session, &CommandData{
+					TableID: t.ID,
+				})
 				return
 			}
 		}

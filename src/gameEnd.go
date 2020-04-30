@@ -147,7 +147,6 @@ func (g *Game) End() {
 	// they will be manually set to having a "Shared Replay" status later
 	// after the game is converted)
 	for _, p := range t.Players {
-		p.Session.Set("currentTable", -1)
 		p.Session.Set("status", statusLobby)
 		notifyAllUser(p.Session)
 	}
@@ -541,7 +540,6 @@ func (t *Table) ConvertToSharedReplay() {
 
 	for _, sp := range t.Spectators {
 		// Reset everyone's status (both players and spectators are now spectators)
-		sp.Session.Set("currentTable", t.ID)
 		sp.Session.Set("status", statusSharedReplay)
 		notifyAllUser(sp.Session)
 

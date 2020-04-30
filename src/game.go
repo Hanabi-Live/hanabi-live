@@ -145,14 +145,13 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 		// A player's session should never be nil
 		// They might be in the process of reconnecting,
 		// so make a fake session that will represent them
-		s = newFakeSession(p.ID, p.Name, t.ID)
+		s = newFakeSession(p.ID, p.Name)
 	}
 
 	// End the game
-	s.Set("currentTable", t.ID)
-	s.Set("status", statusPlaying)
 	commandAction(s, &CommandData{
-		Type: actionTypeTimeLimitReached,
+		TableID: t.ID,
+		Type:    actionTypeTimeLimitReached,
 	})
 }
 

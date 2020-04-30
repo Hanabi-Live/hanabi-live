@@ -188,8 +188,7 @@ func debug() {
 	for i, s2 := range sessions { // This is a map[int]*Session
 		logger.Debug("    User ID: " + strconv.Itoa(i) + ", " +
 			"Username: " + s2.Username() + ", " +
-			"Status: " + strconv.Itoa(s2.Status()) + ", " +
-			"Current table: " + strconv.Itoa(s2.CurrentTable()))
+			"Status: " + strconv.Itoa(s2.Status()))
 	}
 	logger.Debug("---------------------------------------------------------------")
 

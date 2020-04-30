@@ -90,20 +90,6 @@ func (s *Session) FirstTimeUser() bool {
 	}
 }
 
-func (s *Session) CurrentTable() int {
-	if s == nil {
-		logger.Error("The \"CurrentTable\" method was called for a nil session.")
-		return -1
-	}
-
-	if v, exists := s.Get("currentTable"); !exists {
-		logger.Error("Failed to get \"currentTable\" from a session.")
-		return -1
-	} else {
-		return v.(int)
-	}
-}
-
 func (s *Session) Status() int {
 	if s == nil {
 		logger.Error("The \"Status\" method was called for a nil session.")

@@ -154,7 +154,6 @@ func httpWS(c *gin.Context) {
 	keys["admin"] = admin
 	keys["muted"] = muted
 	keys["firstTimeUser"] = firstTimeUser
-	keys["currentTable"] = -1    // By default, the user is not at a table
 	keys["status"] = statusLobby // By default, the user is in the lobby
 	keys["inactive"] = false
 	keys["fakeUser"] = false
