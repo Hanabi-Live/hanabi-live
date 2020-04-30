@@ -38,7 +38,7 @@ type CharacterJSON struct {
 //   source: 'id',
 //   gameID: 15103, // Only if source is "id"
 //   json: '{"actions"=[],"deck"=[]}', // Only if source is "json"
-//   visibility: 'solo',
+//   visibility: 'solo', // Can also be "shared"
 // }
 func commandReplayCreate(s *Session, d *CommandData) {
 	// Validate that there is not a password

@@ -102,26 +102,48 @@ const initCommands = () => {
     lobbySettingsTooltip.setSettingsTooltip();
     lobbyLogin.hide(data.firstTimeUser);
 
-    if (!data.firstTimeUser) {
-      // Automatically go into a replay if we are using a "/replay/123" URL
-      let gameIDString = '';
-      const match = window.location.pathname.match(/\/replay\/(\d+)/);
-      if (match) {
-        gameIDString = match[1];
-      } else if (window.location.pathname === '/dev2') {
-        gameIDString = '2906';
-      }
-      if (gameIDString !== '') {
-        setTimeout(() => {
-          // The server expects the game ID as an integer
-          const gameID = parseInt(gameIDString, 10);
-          globals.conn!.send('replayCreate', {
-            gameID,
-            source: 'id',
-            visibility: 'solo',
-          });
-        }, 10);
-      }
+    // Disable custom path functionality for first time users
+    if (data.firstTimeUser) {
+      return;
+    }
+
+    // Automatically go into a replay if we are testing the new development client
+    if (window.location.pathname === '/dev2') {
+      setTimeout(() => {
+        globals.conn!.send('replayCreate', {
+          gameID: 2906, // The first game in the Hanabi Live database
+          source: 'id',
+          visibility: 'solo',
+        });
+      }, 10);
+      return;
+    }
+
+    // Automatically go into a replay if we are using a "/replay/123" URL
+    const match1 = window.location.pathname.match(/\/replay\/(\d+)/);
+    if (match1) {
+      setTimeout(() => {
+        const gameID = parseInt(match1[1], 10); // The server expects the game ID as an integer
+        globals.conn!.send('replayCreate', {
+          gameID,
+          source: 'id',
+          visibility: 'solo',
+        });
+      }, 10);
+      return;
+    }
+
+    // Automatically go into a shared replay if we are using a "/sharedReplay/123" URL
+    const match2 = window.location.pathname.match(/\/sharedReplay\/(\d+)/);
+    if (match2) {
+      setTimeout(() => {
+        const gameID = parseInt(match2[1], 10); // The server expects the game ID as an integer
+        globals.conn!.send('replayCreate', {
+          gameID,
+          source: 'id',
+          visibility: 'shared',
+        });
+      }, 10);
     }
   });
 
