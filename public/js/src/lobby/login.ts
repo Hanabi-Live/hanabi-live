@@ -187,7 +187,7 @@ export const hide = (firstTimeUser: boolean) => {
   // Hide the login screen
   $('#login').hide();
 
-  if (firstTimeUser && window.location.hostname !== 'localhost') {
+  if (firstTimeUser && !window.location.pathname.includes('/dev')) {
     $('#tutorial').fadeIn(FADE_TIME);
     return;
   }
@@ -215,6 +215,13 @@ export const hide = (firstTimeUser: boolean) => {
   // will not be centered
   nav.show('games');
   $('#lobby-chat-input').focus();
+
+  // Scroll to the bottom of the chat
+  // (this is necessary if we are getting here after the tutorial)
+  const chat = $('#lobby-chat-text');
+  chat.animate({
+    scrollTop: chat[0].scrollHeight,
+  }, 0);
 };
 
 export const formError = (msg: string) => {

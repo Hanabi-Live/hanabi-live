@@ -38,65 +38,81 @@ export default () => {
     });
   });
 
-  $('#tutorial-3-yes').on('click', () => {
-    $('#tutorial-3').fadeOut(FADE_TIME, () => {
-      $('#tutorial-3-1').fadeIn(FADE_TIME);
-    });
-  });
-  $('#tutorial-3-no').on('click', () => {
+  $('#tutorial-3-ok').on('click', () => {
     $('#tutorial-3').fadeOut(FADE_TIME, () => {
       $('#tutorial-4').fadeIn(FADE_TIME);
     });
   });
 
-  $('#tutorial-3-1-ok').on('click', () => {
-    $('#tutorial-3-1').fadeOut(FADE_TIME, () => {
-      $('#tutorial-5').fadeIn(FADE_TIME);
-    });
-  });
-
-  $('#tutorial-4-casual').on('click', () => {
+  $('#tutorial-4-yes').on('click', () => {
     $('#tutorial-4').fadeOut(FADE_TIME, () => {
       $('#tutorial-4-1').fadeIn(FADE_TIME);
     });
   });
-  $('#tutorial-4-expert').on('click', () => {
+  $('#tutorial-4-no').on('click', () => {
     $('#tutorial-4').fadeOut(FADE_TIME, () => {
-      $('#tutorial-4-2').fadeIn(FADE_TIME);
+      $('#tutorial-5').fadeIn(FADE_TIME);
     });
   });
 
-  $('#tutorial-4-1-lobby').on('click', () => {
+  $('#tutorial-4-1-ok').on('click', () => {
     $('#tutorial-4-1').fadeOut(FADE_TIME, () => {
       login.hide(false);
     });
   });
 
-  $('#tutorial-4-2-ok').on('click', () => {
-    $('#tutorial-4-2').fadeOut(FADE_TIME, () => {
-      $('#tutorial-4-3').fadeIn(FADE_TIME);
+  $('#tutorial-5-casual').on('click', () => {
+    $('#tutorial-5').fadeOut(FADE_TIME, () => {
+      $('#tutorial-5-1').fadeIn(FADE_TIME);
     });
   });
-  $('#tutorial-4-2-lobby').on('click', () => {
-    $('#tutorial-4-2').fadeOut(FADE_TIME, () => {
+  $('#tutorial-5-expert').on('click', () => {
+    $('#tutorial-5').fadeOut(FADE_TIME, () => {
+      $('#tutorial-6').fadeIn(FADE_TIME);
+    });
+  });
+
+  $('#tutorial-5-1-lobby').on('click', () => {
+    $('#tutorial-5-1').fadeOut(FADE_TIME, () => {
       login.hide(false);
     });
   });
 
-  $('#tutorial-4-3-ok').on('click', () => {
-    $('#tutorial-4-3').fadeOut(FADE_TIME, () => {
-      $('#tutorial-4-4').fadeIn(FADE_TIME);
+  $('#tutorial-6-ok').on('click', () => {
+    $('#tutorial-6').fadeOut(FADE_TIME, () => {
+      $('#tutorial-7').fadeIn(FADE_TIME);
+    });
+  });
+  $('#tutorial-6-lobby').on('click', () => {
+    $('#tutorial-6').fadeOut(FADE_TIME, () => {
+      login.hide(false);
     });
   });
 
-  $('#tutorial-4-4-ok').on('click', () => {
-    $('#tutorial-4-4').fadeOut(FADE_TIME, () => {
-      $('#tutorial-5').fadeIn(FADE_TIME);
+  $('#tutorial-7-yes').on('click', () => {
+    $('#tutorial-7').fadeOut(FADE_TIME, () => {
+      $('#tutorial-8').fadeIn(FADE_TIME);
+    });
+  });
+  $('#tutorial-7-no').on('click', () => {
+    $('#tutorial-7').fadeOut(FADE_TIME, () => {
+      $('#tutorial-7-1').fadeIn(FADE_TIME);
     });
   });
 
-  $('#tutorial-5-lobby').on('click', () => {
-    $('#tutorial-5').fadeOut(FADE_TIME, () => {
+  $('#tutorial-7-1-microphone').on('click', () => {
+    $('#tutorial-7-1').fadeOut(FADE_TIME, () => {
+      $('#tutorial-8').fadeIn(FADE_TIME);
+    });
+  });
+  $('#tutorial-7-1-lobby').on('click', () => {
+    $('#tutorial-7-1').fadeOut(FADE_TIME, () => {
+      login.hide(false);
+    });
+  });
+
+  $('#tutorial-8-ok').on('click', () => {
+    $('#tutorial-8').fadeOut(FADE_TIME, () => {
       login.hide(false);
     });
   });
