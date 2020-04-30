@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	rateLimitRate = float64(50) // Number of messages sent
-	rateLimitPer  = float64(2)  // Per seconds
+	rateLimitRate = float64(100) // Number of messages sent
+	rateLimitPer  = float64(2)   // Per seconds
 )
 
 // websocketMessage is fired every time a WebSocket user sends a message to the server
