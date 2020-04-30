@@ -22,6 +22,4 @@ export default class Settings {
   createTableEmptyClues: boolean = false;
   createTableCharacterAssignments: boolean = false;
   createTableAlertWaiters: boolean = false;
-
-  [key: string]: boolean | number | string;
 }

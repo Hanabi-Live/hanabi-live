@@ -7,14 +7,17 @@ import (
 
 // commandTableLeave is sent when the user clicks on the "Leave Game" button in the lobby
 //
-// Has no data
+// Example data:
+// {
+//   tableID: 5,
+// }
 func commandTableLeave(s *Session, d *CommandData) {
 	/*
 		Validation
 	*/
 
 	// Validate that the table exists
-	tableID := s.CurrentTable()
+	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
 		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
@@ -77,9 +80,9 @@ func commandTableLeave(s *Session, d *CommandData) {
 				// so make a fake session that will represent them
 				s2 = newFakeSession(p.ID, p.Name, t.ID)
 			}
-			s2.Set("currentTable", t.ID)
-			s2.Set("status", statusPregame)
-			commandTableLeave(s2, d)
+			commandTableLeave(s2, &CommandData{
+				TableID: t.ID,
+			})
 		}
 		return
 	}

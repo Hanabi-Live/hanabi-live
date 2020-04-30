@@ -16,6 +16,8 @@ export default () => {
   globals.lobby.peopleTyping = [];
   chat.updatePeopletyping();
 
-  globals.lobby.conn!.send('tableUnattend');
+  globals.lobby.conn!.send('tableUnattend', {
+    tableID: globals.lobby.tableID,
+  });
   globals.game!.hide();
 };

@@ -8,7 +8,7 @@ import (
 //
 // Example data:
 // {
-//   gameID: 31,
+//   tableID: 31,
 // }
 func commandTableReattend(s *Session, d *CommandData) {
 	/*

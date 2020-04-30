@@ -6,14 +6,17 @@ import (
 
 // commandReady is sent when the user has joined a game and the UI has been initialized
 //
-// Has no data
+// Example data:
+// {
+//   tableID: 5,
+// }
 func commandReady(s *Session, d *CommandData) {
 	/*
 		Validate
 	*/
 
 	// Validate that the table exists
-	tableID := s.CurrentTable()
+	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
 		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")

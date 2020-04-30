@@ -10,16 +10,17 @@ import (
 //
 // Example data:
 // {
+//   tableID: 5,
+//   // If a play or a discard, then the order of the the card that was played/discarded
+//   // If a color clue or a number clue, then the index of the player that received the clue
+//   type: 0, // Corresponds to "actionType" in "constants.go"
+//   target: 1,
 //   clue: { // Not present if the type is 1 or 2
 //     type: 0, // corresponds to "clueType" in "constants.go"
 //     // If a color clue, then 0 if red, 1 if yellow, etc.
 //     // If a rank clue, then 1 if 1, 2 if 2, etc.
 //     value: 1,
 //   },
-//   // If a play or a discard, then the order of the the card that was played/discarded
-//   // If a color clue or a number clue, then the index of the player that received the clue
-//   target: 1,
-//   type: 0, // corresponds to "actionType" in "constants.go"
 // }
 func commandAction(s *Session, d *CommandData) {
 	/*
@@ -27,7 +28,7 @@ func commandAction(s *Session, d *CommandData) {
 	*/
 
 	// Validate that the table exists
-	tableID := s.CurrentTable()
+	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
 		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")

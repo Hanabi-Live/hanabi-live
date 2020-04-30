@@ -13,14 +13,17 @@ import (
 // This is sent before the UI is initialized;
 // the client will send a "ready" message later to get more data
 //
-// Has no data
+// Example data:
+// {
+//   tableID: 5,
+// }
 func commandHello(s *Session, d *CommandData) {
 	/*
 		Validate
 	*/
 
 	// Validate that the table exists
-	tableID := s.CurrentTable()
+	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
 		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")

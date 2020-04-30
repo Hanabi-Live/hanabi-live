@@ -7,26 +7,16 @@ import (
 // commandTableUnattend is sent when the user clicks on the "Lobby" button while they are in the
 // middle of a game or in a a replay
 //
-// Has no data
+// Example data:
+// {
+//   tableID: 5,
+// }
 func commandTableUnattend(s *Session, d *CommandData) {
-	// Set their status
-	s.Set("status", statusLobby)
-	tableID := s.CurrentTable()
-	s.Set("currentTable", -1)
-	notifyAllUser(s)
-
-	// Validate that the game exists
-	if tableID == -1 {
-		// The user may be returning from a replay that was ended due to idleness,
-		// or perhaps they lagged and sent two tableUnattend messages,
-		// with this one being the second one
-		logger.Info("User \"" + s.Username() + "\" tried to unattend, " +
-			"but their table ID was set to -1.")
-		return
-	}
+	// Validate that the table exists
+	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
-		s.Error("Table " + strconv.Itoa(tableID) + " does not exist, so you cannot unattend it.")
+		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist, so you cannot unattend it.")
 		return
 	} else {
 		t = v
@@ -43,6 +33,11 @@ func commandTableUnattend(s *Session, d *CommandData) {
 		s.Warning("You are not spectating replay " + strconv.Itoa(t.ID) + ".")
 		return
 	}
+
+	// Set their status
+	s.Set("status", statusLobby)
+	s.Set("currentTable", -1)
+	notifyAllUser(s)
 
 	// If they were typing, remove the message
 	t.NotifyChatTyping(s.Username(), false)
@@ -65,10 +60,6 @@ func commandTableUnattendPlayer(s *Session, t *Table, i int) {
 	} else {
 		t.NotifyPlayerChange()
 	}
-
-	// They got sent a "tableGone" message earlier (if the game started),
-	// so send them a new table message
-	s.NotifyTable(t)
 }
 
 func commandTableUnattendSpectator(t *Table, j int) {

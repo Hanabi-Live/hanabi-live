@@ -9,14 +9,17 @@ import (
 // commandTableStart is sent when the owner of a table clicks on the "Start Game" button
 // (the client will send a "hello" message after getting "tableStart")
 //
-// Has no data
+// Example data:
+// {
+//   tableID: 5,
+// }
 func commandTableStart(s *Session, d *CommandData) {
 	/*
 		Validation
 	*/
 
 	// Validate that the table exists
-	tableID := s.CurrentTable()
+	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
 		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")

@@ -145,9 +145,9 @@ func (t *Table) CheckIdle() {
 		// We need to end a game that hasn't started yet
 		// Force the owner to leave, which should subsequently eject everyone else
 		// (this will send everyone back to the main lobby screen)
-		s.Set("currentTable", t.ID)
-		s.Set("status", statusPregame)
-		commandTableLeave(s, nil)
+		commandTableLeave(s, &CommandData{
+			TableID: t.ID,
+		})
 	}
 }
 

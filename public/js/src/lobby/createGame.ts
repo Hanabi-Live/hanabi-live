@@ -310,8 +310,13 @@ const getElement = (setting: string) => {
 };
 
 const checkChanged = (setting: string, value: boolean | string) => {
+  if (!misc.isKeyOf(setting, globals.settings)) {
+    throw new Error(`The setting of ${setting} does not exist in the Settings class.`);
+  }
+
   if (value !== globals.settings[setting]) {
-    globals.settings[setting] = value;
+    // We must cast the settings to any since this assignment violates type safety
+    (globals.settings as any)[setting] = value;
     globals.conn!.send('setting', {
       name: setting,
       value: value.toString(), // The server expects all settings as strings

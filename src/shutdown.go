@@ -53,9 +53,9 @@ func shutdownXMinutesLeft(minutesLeft int, verb string) {
 		for _, t := range tables {
 			if !t.Running {
 				s := t.GetOwnerSession()
-				s.Set("currentTable", t.ID)
-				s.Set("status", statusPregame)
-				commandTableLeave(s, nil)
+				commandTableLeave(s, &CommandData{
+					TableID: t.ID,
+				})
 			}
 		}
 	}

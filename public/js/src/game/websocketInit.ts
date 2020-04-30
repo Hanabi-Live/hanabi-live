@@ -70,5 +70,5 @@ commands.set('init', (data: any) => {
   // keyboard.init();
 
   // Tell the server that we are finished loading
-  // globals.lobby.conn.send('ready');
+  // TODO send "ready" command
 });

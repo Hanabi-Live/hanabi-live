@@ -9,7 +9,7 @@ import (
 //
 // Example data:
 // {
-//   gameID: 15103,
+//   tableID: 15103,
 // }
 func commandTableJoin(s *Session, d *CommandData) {
 	/*

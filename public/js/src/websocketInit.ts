@@ -97,16 +97,6 @@ const initCommands = () => {
     // Now that we know what our user ID and username are, we can attach them to the Sentry context
     sentry.setUserContext(globals.id, globals.username);
 
-    // Some settings are stored on the server as numbers,
-    // but we need them as strings because they will exist in an input field
-    const settingsToConvertToStrings = [
-      'createTableBaseTimeMinutes',
-      'createTableTimePerTurnSeconds',
-    ];
-    for (const setting of settingsToConvertToStrings) {
-      globals.settings[setting] = globals.settings[setting].toString();
-    }
-
     // Update various elements of the UI to reflect our settings
     $('#nav-buttons-history-total-games').html(globals.totalGames.toString());
     lobbySettingsTooltip.setSettingsTooltip();
@@ -144,11 +134,15 @@ const initCommands = () => {
     }
     if (globals.currentScreen === 'pregame') {
       // Notify the server that we have read the chat message that was just received
-      globals.conn!.send('chatRead');
+      globals.conn!.send('chatRead', {
+        tableID: globals.tableID,
+      });
     } else if (globals.currentScreen === 'game' && globals.ui !== null) {
       if ($('#game-chat-modal').is(':visible')) {
         // Notify the server that we have read the chat message that was just received
-        globals.conn!.send('chatRead');
+        globals.conn!.send('chatRead', {
+          tableID: globals.tableID,
+        });
       } else if (
         globals.ui.globals.spectating
         && !globals.ui.globals.sharedReplay
@@ -156,7 +150,9 @@ const initCommands = () => {
       ) {
         // The chat window was not open; pop open the chat window every time for spectators
         gameChat.toggle();
-        globals.conn!.send('chatRead');
+        globals.conn!.send('chatRead', {
+          tableID: globals.tableID,
+        });
       } else {
         // The chat window was not open; by default, keep it closed
         // Change the "Chat" button to say "Chat (1)"

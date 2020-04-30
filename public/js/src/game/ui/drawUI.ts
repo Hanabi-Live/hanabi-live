@@ -490,7 +490,9 @@ const drawBottomLeftButtons = () => {
       || globals.lobby.totalGames >= 1000
       || window.confirm('Are you sure you want to restart the game?')
     ) {
-      globals.lobby.conn!.send('tableRestart');
+      globals.lobby.conn!.send('tableRestart', {
+        tableID: globals.lobby.tableID,
+      });
     }
   });
   restartButton.tooltipName = 'restart';
@@ -586,7 +588,9 @@ const drawBottomLeftButtons = () => {
       || globals.lobby.totalGames >= 1000
       || window.confirm('Are you sure you want to terminate the game?')
     ) {
-      globals.lobby.conn!.send('tableTerminate');
+      globals.lobby.conn!.send('tableTerminate', {
+        tableID: globals.lobby.tableID,
+      });
     }
   });
   killButton.tooltipName = 'kill';
@@ -1066,6 +1070,7 @@ const drawSharedReplay = () => {
     }
 
     globals.lobby.conn!.send('replayAction', {
+      tableID: globals.lobby.tableID,
       type: REPLAY_ACTION_TYPE.LEADER_TRANSFER,
       name: selectedSpectator,
     });
@@ -1351,6 +1356,7 @@ const drawTimers = () => {
       globals.pauseQueued = true;
     }
     globals.lobby.conn!.send('pause', {
+      tableID: globals.lobby.tableID,
       value,
     });
 
@@ -1797,6 +1803,7 @@ const drawPauseArea = () => {
   });
   globals.elements.pauseButton.on('click tap', () => {
     globals.lobby.conn!.send('pause', {
+      tableID: globals.lobby.tableID,
       value: 'unpause',
     });
   });

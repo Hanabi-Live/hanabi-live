@@ -15,9 +15,10 @@ var (
 //
 // Example data:
 // {
+//   tableID: 5,
 //   type: 0, // Types are listed in the "constants.go" file
-//   value: 10,
-//   name: 'Alice',
+//   value: 10, // Optional
+//   name: 'Alice', // Optional
 // }
 func commandReplayAction(s *Session, d *CommandData) {
 	/*
@@ -25,7 +26,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 	*/
 
 	// Validate that the table exists
-	tableID := s.CurrentTable()
+	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
 		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")

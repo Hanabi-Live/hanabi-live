@@ -180,7 +180,9 @@ const loadingFinishedCallback = () => {
   pause();
 
   // Tell the server that we are finished loading
-  globals.lobby.conn!.send('ready');
+  globals.lobby.conn!.send('ready', {
+    tableID: globals.lobby.tableID,
+  });
 };
 
 const initCardsMap = () => {

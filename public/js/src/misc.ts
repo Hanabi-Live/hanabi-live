@@ -50,6 +50,9 @@ export const hashPassword = (salt: string, plaintextPassword: string) => {
   return shajs('sha256').update(stringToHash).digest('hex');
 };
 
+// From: https://stackoverflow.com/questions/61526746
+export const isKeyOf = <T>(p: PropertyKey, target: T): p is keyof T => p in target;
+
 export const timerFormatter = (milliseconds: number) => {
   if (!milliseconds) {
     milliseconds = 0;

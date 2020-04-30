@@ -4,7 +4,6 @@
 import { ACTION, REPLAY_ACTION_TYPE, MAX_CLUE_NUM } from '../../constants';
 import { copyStringToClipboard } from '../../misc';
 import * as action from './action';
-import { Action } from './actions';
 import backToLobby from './backToLobby';
 import * as clues from './clues';
 import globals from './globals';
@@ -241,6 +240,7 @@ const sharedReplaySendSound = (sound: string) => {
 
   // Send it
   globals.lobby.conn!.send('replayAction', {
+    tableID: globals.lobby.tableID,
     type: REPLAY_ACTION_TYPE.SOUND,
     sound,
   });
@@ -266,15 +266,16 @@ const performAction = (intendedPlay = true) => {
     return;
   }
 
-  const actionObject = {} as Action;
+  let type = intendedPlay ? ACTION.PLAY : ACTION.DISCARD;
   if (cardOrder === 'deck') {
-    actionObject.type = ACTION.DECKPLAY;
-  } else {
-    actionObject.type = intendedPlay ? ACTION.PLAY : ACTION.DISCARD;
-    actionObject.target = cardOrder;
+    type = ACTION.DECKPLAY;
   }
 
-  globals.lobby.conn!.send('action', actionObject);
+  globals.lobby.conn!.send('action', {
+    tableID: globals.lobby.tableID,
+    type,
+    target: cardOrder,
+  });
   action.stop();
 };
 

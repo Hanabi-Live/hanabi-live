@@ -28,6 +28,7 @@ export const start = () => {
 
   if (globals.amSharedReplayLeader) {
     globals.lobby.conn!.send('replayAction', {
+      tableID: globals.lobby.tableID,
       type: REPLAY_ACTION_TYPE.HYPO_START,
     });
   }
@@ -95,6 +96,7 @@ export const end = () => {
   globals.elements.replayArea!.show();
   if (globals.amSharedReplayLeader) {
     globals.lobby.conn!.send('replayAction', {
+      tableID: globals.lobby.tableID,
       type: REPLAY_ACTION_TYPE.HYPO_END,
     });
 
@@ -265,6 +267,7 @@ export const send = (hypoAction: Action) => {
 
 export const sendHypoAction = (hypoAction: any) => {
   globals.lobby.conn!.send('replayAction', {
+    tableID: globals.lobby.tableID,
     type: REPLAY_ACTION_TYPE.HYPO_ACTION,
     actionJSON: JSON.stringify(hypoAction),
   });
@@ -285,6 +288,7 @@ export const sendBackOneTurn = () => {
   }
 
   globals.lobby.conn!.send('replayAction', {
+    tableID: globals.lobby.tableID,
     type: REPLAY_ACTION_TYPE.HYPO_BACK,
   });
 };

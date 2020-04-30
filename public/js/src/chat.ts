@@ -61,7 +61,9 @@ const input = function input(this: HTMLElement, event: JQuery.Event) {
     const datetimeNow = new Date().getTime();
     if (datetimeNow - globals.datetimeLastChatInput >= 1000) {
       globals.datetimeLastChatInput = datetimeNow;
-      globals.conn!.send('chatTyping');
+      globals.conn!.send('chatTyping', {
+        tableID: globals.tableID,
+      });
     }
   }
 

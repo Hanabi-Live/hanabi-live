@@ -112,14 +112,16 @@ export const show = () => {
   const modal = $('#game-chat-modal');
   modal.fadeIn(FADE_TIME);
 
-  // Check to see if there are any uncurrently unread chat messages
+  // Check to see if there are any unread chat messages
   if (globals.chatUnread !== 0) {
     // If the user is opening the chat, then we assume that all of the chat messages are read
     globals.chatUnread = 0;
 
     // We need to notify the server that we have read everything
     if (globals.conn) {
-      globals.conn.send('chatRead');
+      globals.conn.send('chatRead', {
+        tableID: globals.tableID,
+      });
     } else {
       throw new Error('The "globals.conn" object is not initialized.');
     }

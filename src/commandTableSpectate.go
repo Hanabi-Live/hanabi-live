@@ -12,7 +12,7 @@ import (
 //
 // Example data:
 // {
-//   gameID: 15103,
+//   tableID: 15103,
 //   // If the player is specified, they will spectate from that player's perspective
 //   player: 'Alice', // Optional
 // }

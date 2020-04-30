@@ -2,6 +2,7 @@
 
 // Imports
 import globals from '../globals';
+import * as misc from '../misc';
 import * as notifications from '../notifications';
 
 export const init = () => {
@@ -75,6 +76,9 @@ function changeSetting(this: HTMLElement) {
   if (!settingName) {
     throw new Error('Failed to get the ID of the element in the "changeSetting()" function.');
   }
+  if (!misc.isKeyOf(settingName, globals.settings)) {
+    throw new Error(`The setting of ${settingName} does not exist in the Settings class.`);
+  }
   const setting = globals.settings[settingName];
 
   const checked = element.is(':checked');
@@ -83,7 +87,8 @@ function changeSetting(this: HTMLElement) {
   }
 
   // Write the new value to our local variable
-  globals.settings[settingName] = checked;
+  // We must cast the settings to any since this assignment violates type safety
+  (globals.settings as any)[settingName] = checked;
 
   // Send the new value to the server
   globals.conn!.send('setting', {

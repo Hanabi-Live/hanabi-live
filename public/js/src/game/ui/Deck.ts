@@ -103,6 +103,7 @@ export default class Deck extends Konva.Group {
       globals.elements.deckPlayAvailableLabel!.hide();
 
       globals.lobby.conn!.send('action', {
+        tableID: globals.lobby.tableID,
         type: ACTION.DECKPLAY,
       });
 

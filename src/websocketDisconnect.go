@@ -47,9 +47,9 @@ func websocketDisconnect2(s *Session) {
 			} else {
 				logger.Info(t.GetName() + "Ejecting player \"" + s.Username() + "\" " +
 					"from an unstarted game since they disconnected.")
-				s.Set("currentTable", t.ID)
-				s.Set("status", statusPregame)
-				commandTableLeave(s, nil)
+				commandTableLeave(s, &CommandData{
+					TableID: t.ID,
+				})
 			}
 		}
 

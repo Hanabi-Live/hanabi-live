@@ -10,6 +10,7 @@ import (
 //
 // Example data:
 // {
+//   tableID: 5,
 //   order: 3,
 //   note: 'b1, m1',
 // }
@@ -19,7 +20,7 @@ func commandNote(s *Session, d *CommandData) {
 	*/
 
 	// Validate that the table exists
-	tableID := s.CurrentTable()
+	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
 		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")

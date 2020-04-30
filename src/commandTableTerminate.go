@@ -7,15 +7,18 @@ import (
 // commandTableTerminate is sent when the user clicks the terminate button in the bottom-left-hand
 // corner
 //
-// Has no data unless the server is emulating a server-initiated termination
-// (if this is the case, "d.Server" will be set to true)
+// Example data:
+// {
+//   tableID: 5,
+//   server: true, // True if a server-initiated termination, otherwise omitted
+// }
 func commandTableTerminate(s *Session, d *CommandData) {
 	/*
 		Validate
 	*/
 
 	// Validate that the table exists
-	tableID := s.CurrentTable()
+	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
 		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")

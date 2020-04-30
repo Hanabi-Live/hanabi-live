@@ -9,6 +9,7 @@ import (
 //
 // Example data:
 // {
+//   tableID: 5,
 //   value: 'pause', // Can also be 'unpause', 'pause-queue', 'pause-unqueue'
 //   // ('pause-queue' will automatically pause the game when it gets to their turn)
 // }
@@ -18,7 +19,7 @@ func commandPause(s *Session, d *CommandData) {
 	*/
 
 	// Validate that the table exists
-	tableID := s.CurrentTable()
+	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
 		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")

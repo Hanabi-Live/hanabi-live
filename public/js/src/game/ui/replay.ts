@@ -456,6 +456,7 @@ const shareCurrentTurn = (turn: number) => {
   }
 
   globals.lobby.conn!.send('replayAction', {
+    tableID: globals.lobby.tableID,
     type: REPLAY_ACTION_TYPE.TURN,
     turn,
   });

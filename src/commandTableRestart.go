@@ -8,14 +8,17 @@ import (
 // commandTableRestart is sent when the user is in a shared replay of a speedrun game and wants to
 // start a new game with the same settings as the current game
 //
-// Has no data
+// Example data:
+// {
+//   tableID: 15103,
+// }
 func commandTableRestart(s *Session, d *CommandData) {
 	/*
 		Validate
 	*/
 
 	// Validate that the table exists
-	tableID := s.CurrentTable()
+	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
 		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
