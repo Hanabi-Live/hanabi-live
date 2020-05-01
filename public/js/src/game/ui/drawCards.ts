@@ -278,7 +278,7 @@ const makeUnknownCard = () => {
   ctx.save();
   ctx.globalAlpha = 0.5;
   ctx.fill();
-  ctx.globalAlpha = 0.7;
+  ctx.globalAlpha = 0.6;
   ctx.lineWidth = 8;
   ctx.stroke();
   ctx.restore();
