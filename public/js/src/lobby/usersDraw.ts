@@ -24,38 +24,51 @@ export const draw = () => {
     (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
   );
 
-  // Add all of the users in alphabetical order
+  // First, draw our username at the top
+  drawUser(globals.username, usernameMapping, tbody);
+
+  // Then, draw all of the users in alphabetical order
   for (const username of alphabeticalUsernames) {
-    // Find the status of this user from the "userList" map
-    const id = usernameMapping.get(username);
-    if (!id) {
-      throw new Error(`Failed to get the ID for the username of "${username}".`);
+    if (username !== globals.username) {
+      drawUser(username, usernameMapping, tbody);
     }
-    const user = globals.userMap.get(id);
-    if (!user) {
-      throw new Error(`Failed to get the user for the ID of "${id}".`);
-    }
-    const status = user.status;
-
-    let nameColumn = `<span id="online-users-${id}">`;
-    nameColumn += `<a href="/scores/${username}" target="_blank" rel="noopener noreferrer">`;
-    if (username === globals.username) {
-      nameColumn += `<strong><span class="name-me">${username}</span></strong>`;
-    } else {
-      nameColumn += username;
-    }
-    nameColumn += '</a>';
-    nameColumn += `<span id="online-users-${id}-zzz" class="hidden"> &nbsp;💤</span>`;
-    nameColumn += '</span>';
-
-    const row = $('<tr>');
-    $('<td>').html(nameColumn).appendTo(row);
-    $('<td>').html(status).appendTo(row);
-
-    row.appendTo(tbody);
-
-    setInactive(id, user.inactive);
   }
+};
+
+const drawUser = (
+  username: string,
+  usernameMapping: Map<string, number>,
+  tbody: JQuery<HTMLElement>,
+) => {
+  // Find the status of this user from the "userList" map
+  const id = usernameMapping.get(username);
+  if (!id) {
+    throw new Error(`Failed to get the ID for the username of "${username}".`);
+  }
+  const user = globals.userMap.get(id);
+  if (!user) {
+    throw new Error(`Failed to get the user for the ID of "${id}".`);
+  }
+  const status = user.status;
+
+  let nameColumn = `<span id="online-users-${id}">`;
+  nameColumn += `<a href="/scores/${username}" target="_blank" rel="noopener noreferrer">`;
+  if (username === globals.username) {
+    nameColumn += `<strong><span class="name-me">${username}</span></strong>`;
+  } else {
+    nameColumn += username;
+  }
+  nameColumn += '</a>';
+  nameColumn += `<span id="online-users-${id}-zzz" class="hidden"> &nbsp;💤</span>`;
+  nameColumn += '</span>';
+
+  const row = $('<tr>');
+  $('<td>').html(nameColumn).appendTo(row);
+  $('<td>').html(status).appendTo(row);
+
+  row.appendTo(tbody);
+
+  setInactive(id, user.inactive);
 };
 
 export const setInactive = (id: number, inactive: boolean) => {
