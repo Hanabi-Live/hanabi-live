@@ -37,7 +37,6 @@ services:
     
     # restart the docker container
     restart: always
-  
 
   mariadb:
     # use the mariadb service

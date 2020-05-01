@@ -1,4 +1,4 @@
-### This Dockerfile is a multi-stage build, to improve runtime size. 
+### This Dockerfile is a multi-stage build, to improve runtime size.
 ### See: https://docs.docker.com/develop/develop-images/multistage-build/
 
 #####
@@ -45,7 +45,7 @@ RUN SENTRY_DSN="${SENTRY_DSN}" ../../build_client.sh
 FROM alpine:latest as assembly
 
 # As per https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user
-# we should not run as root if we don't need to. 
+# we should not run as root if we don't need to.
 # So we create an explicit user to run everything with
 ENV USER=appuser
 ENV UID=10001
