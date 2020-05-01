@@ -270,7 +270,7 @@ func commandTableStart(s *Session, d *CommandData) {
 	for _, p := range t.Players {
 		// If a player is back in the lobby, then don't automatically force them into the game
 		if !intInSlice(p.ID, listOfAwayPlayers) {
-			p.Session.NotifyTableStart()
+			p.Session.NotifyTableStart(t)
 		}
 	}
 

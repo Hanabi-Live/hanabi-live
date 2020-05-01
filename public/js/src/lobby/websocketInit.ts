@@ -153,9 +153,12 @@ commands.set('tableProgress', (data: TableProgressData) => {
 });
 
 interface TableStartData {
+  tableID: number;
   replay: boolean;
 }
 commands.set('tableStart', (data: TableStartData) => {
+  globals.tableID = data.tableID;
+
   if (!data.replay) {
     pregame.hide();
   }

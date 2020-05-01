@@ -1,6 +1,8 @@
 // Imports
 import Konva from 'konva';
 import Clue from './Clue';
+import drawPip from './drawPip';
+import globals from './globals';
 
 export default class ColorButton extends Konva.Group {
   pressed: boolean = false;
@@ -42,22 +44,47 @@ export default class ColorButton extends Konva.Group {
     });
     this.add(color);
 
-    const text = new Konva.Text({
+    const suit = globals.variant.suits[0];
+    let { fill } = suit;
+    if (suit.fill === 'multi') {
+      fill = '';
+    }
+    const suitPip = new Konva.Shape({
       x: 0,
       y: 0.275 * h,
-      width: w,
-      height: 0.6 * h,
-      fontSize: 0.5 * h,
-      fontFamily: 'Verdana',
-      fill: 'white',
+      // width: w,
+      // height: 0.6 * h,
+      // scale,
+      // offset,
+      fill,
       stroke: 'black',
-      strokeWidth: 1,
-      align: 'center',
-      text: config.text,
-      visible: colorblindMode,
+      strokeWidth: 5,
+      sceneFunc: (ctx: any) => { // Konva.Context does not exist for some reason
+        drawPip(ctx, suit, false, false);
+      },
       listening: false,
+      visible: colorblindMode,
     });
-    this.add(text);
+    this.add(suitPip);
+
+    //
+    // const text = new Konva.Text({
+    // x: 0,
+    // y: 0.275 * h,
+    // width: w,
+    // height: 0.6 * h,
+    // fontSize: 0.5 * h,
+    // fontFamily: 'Verdana',
+    // fill: 'white',
+    // stroke: 'black',
+    // strokeWidth: 1,
+    // align: 'center',
+    // text: config.text,
+    // visible: colorblindMode,
+    // listening: false,
+    // });
+    // this.add(text);
+    //
 
     const resetButton = () => {
       this.background.fill('black');

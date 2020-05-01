@@ -184,12 +184,14 @@ func (s *Session) NotifyGameHistory(historyListDatabase []*GameHistory, incremen
 	s.Emit("gameHistory", &historyList)
 }
 
-func (s *Session) NotifyTableStart() {
+func (s *Session) NotifyTableStart(t *Table) {
 	type TableStartMessage struct {
-		Replay bool `json:"replay"`
+		TableID int  `json:"tableID"`
+		Replay  bool `json:"replay"`
 	}
 	s.Emit("tableStart", &TableStartMessage{
-		Replay: s.Status() == statusReplay || s.Status() == statusSharedReplay,
+		TableID: t.ID,
+		Replay:  t.Replay,
 	})
 }
 

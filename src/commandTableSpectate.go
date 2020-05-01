@@ -107,5 +107,5 @@ func commandTableSpectate(s *Session, d *CommandData) {
 	// Send them a "tableStart" message
 	// After the client receives the "tableStart" message, they will load the UI and then send a
 	// "hello" message to get the rest of the data for the game
-	s.NotifyTableStart()
+	s.NotifyTableStart(t)
 }
