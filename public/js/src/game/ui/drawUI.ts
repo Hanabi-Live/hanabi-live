@@ -1494,6 +1494,19 @@ const drawClueArea = () => {
   const colorY = playerButtonH + buttonYSpacing - playerButtonAdjustment;
   for (let i = 0; i < globals.variant.clueColors.length; i++) {
     const color = globals.variant.clueColors[i];
+
+    // Find the first suit that matches this color
+    let matchingSuit;
+    for (const suit of globals.variant.suits) {
+      if (suit.clueColors.includes(color)) {
+        matchingSuit = suit;
+        break;
+      }
+    }
+    if (typeof matchingSuit === 'undefined') {
+      throw new Error(`Failed to find the suit for the color of "${color.name}".`);
+    }
+
     const button = new ColorButton({
       x: (colorX + (i * (buttonW + buttonXSpacing))) * winW,
       y: colorY * winH,
@@ -1502,7 +1515,7 @@ const drawClueArea = () => {
       color: color.fill,
       text: color.abbreviation,
       clue: new Clue(CLUE_TYPE.COLOR, color),
-    }, globals.lobby.settings.colorblindMode);
+    }, matchingSuit);
 
     globals.elements.clueTypeButtonGroup!.add(button as any);
     globals.elements.clueTypeButtonGroup!.addList(button);

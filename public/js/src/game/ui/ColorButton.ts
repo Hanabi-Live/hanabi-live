@@ -1,5 +1,6 @@
 // Imports
 import Konva from 'konva';
+import Suit from '../../Suit';
 import Clue from './Clue';
 import drawPip from './drawPip';
 import globals from './globals';
@@ -10,7 +11,7 @@ export default class ColorButton extends Konva.Group {
 
   background: Konva.Rect;
 
-  constructor(config: Konva.ContainerConfig, colorblindMode: boolean) {
+  constructor(config: Konva.ContainerConfig, suit: Suit) {
     super(config);
     this.listening(true);
 
@@ -32,7 +33,7 @@ export default class ColorButton extends Konva.Group {
     });
     this.add(this.background);
 
-    const color = new Konva.Rect({
+    const backgroundColor = new Konva.Rect({
       x: 0.1 * w,
       y: 0.1 * h,
       width: 0.8 * w,
@@ -42,49 +43,47 @@ export default class ColorButton extends Konva.Group {
       opacity: 0.9,
       listening: false,
     });
-    this.add(color);
+    this.add(backgroundColor);
 
-    const suit = globals.variant.suits[0];
-    let { fill } = suit;
-    if (suit.fill === 'multi') {
-      fill = '';
+    if (globals.lobby.settings.colorblindMode) {
+      if (globals.variant.name.startsWith('Dual-Color')) {
+        // For Dual-Color variants, draw the color abbreviation (as text)
+        const text = new Konva.Text({
+          x: 0,
+          y: 0.275 * h,
+          width: w,
+          height: 0.6 * h,
+          fontSize: 0.5 * h,
+          fontFamily: 'Verdana',
+          fill: 'white',
+          stroke: 'black',
+          strokeWidth: 1,
+          align: 'center',
+          text: config.text,
+          listening: false,
+        });
+        this.add(text);
+      } else {
+        // Draw the suit pip that corresponds to this color
+        const suitPip = new Konva.Shape({
+          scale: {
+            x: 0.3,
+            y: 0.3,
+          },
+          offset: {
+            x: -w * 1.7,
+            y: -h * 1.7,
+          },
+          stroke: 'black',
+          strokeWidth: 5,
+          sceneFunc: (ctx: any) => { // Konva.Context does not exist for some reason
+            drawPip(ctx, suit, false, false);
+          },
+          listening: false,
+        });
+        this.add(suitPip);
+      }
     }
-    const suitPip = new Konva.Shape({
-      x: 0,
-      y: 0.275 * h,
-      // width: w,
-      // height: 0.6 * h,
-      // scale,
-      // offset,
-      fill,
-      stroke: 'black',
-      strokeWidth: 5,
-      sceneFunc: (ctx: any) => { // Konva.Context does not exist for some reason
-        drawPip(ctx, suit, false, false);
-      },
-      listening: false,
-      visible: colorblindMode,
-    });
-    this.add(suitPip);
-
-    //
-    // const text = new Konva.Text({
-    // x: 0,
-    // y: 0.275 * h,
-    // width: w,
-    // height: 0.6 * h,
-    // fontSize: 0.5 * h,
-    // fontFamily: 'Verdana',
-    // fill: 'white',
-    // stroke: 'black',
-    // strokeWidth: 1,
-    // align: 'center',
-    // text: config.text,
-    // visible: colorblindMode,
-    // listening: false,
-    // });
-    // this.add(text);
-    //
 
     const resetButton = () => {
       this.background.fill('black');
