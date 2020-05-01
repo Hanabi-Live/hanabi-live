@@ -948,8 +948,8 @@ export default class HanabiCard extends Konva.Group {
   }
 
   appendNote(note: string) {
-    // TODO
-    this.setNote(note);
+    const existingNote = globals.ourNotes[this.order];
+    this.setNote(`${existingNote} ${note}`);
   }
 
   getSlotNum() {
