@@ -156,8 +156,8 @@ func commandTableJoin(s *Session, d *CommandData) {
 		return
 	}
 
-	// Play a notification sound if it has been more than 10 seconds since the last person joined
-	if time.Since(t.DatetimeLastJoined) <= time.Second*10 {
+	// Play a notification sound if it has been more than 15 seconds since the last person joined
+	if time.Since(t.DatetimeLastJoined) <= time.Second*15 {
 		return
 	}
 	t.DatetimeLastJoined = time.Now()
