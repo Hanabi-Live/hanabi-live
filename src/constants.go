@@ -71,12 +71,6 @@ const (
 	replayActionTypeHypoBack   // Go back one turn in the hypothetical
 )
 
-const (
-	shutdownModeNone = iota
-	shutdownModeRestart
-	shutdownModeShutdown
-)
-
 var (
 	// The amount of time that a game is inactive before it is killed by the server
 	idleGameTimeout    = time.Minute * 30

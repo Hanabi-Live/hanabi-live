@@ -31,22 +31,6 @@ type ChatMessage struct {
 	Recipient string    `json:"recipient"`
 }
 
-func isAdmin(s *Session, d *CommandData) bool {
-	// Validate that this message was not sent from Discord
-	if d.Discord {
-		chatServerSend("You can not issue that command from Discord.", d.Room)
-		return false
-	}
-
-	// Validate that they are an administrator
-	if !s.Admin() {
-		chatServerSend("You can only perform that command if you are an administrator.", d.Room)
-		return false
-	}
-
-	return true
-}
-
 // chatServerSend is a helper function to send a message from the server
 // (e.g. to give feedback to a user after they type a command,
 // to notify that the server is shutting down, etc.)

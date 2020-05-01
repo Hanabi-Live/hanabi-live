@@ -127,7 +127,7 @@ func chatTimeLeft(s *Session, d *CommandData, t *Table) {
 }
 
 func getTimeLeft() (string, error) {
-	if shutdownMode == shutdownModeNone {
+	if !shuttingDown {
 		return "The server is not scheduled to restart any time soon.", nil
 	}
 
@@ -142,15 +142,4 @@ func getTimeLeft() (string, error) {
 	}
 
 	return "Time left until server restart: " + durationString, nil
-}
-
-// /debug
-// Even though "/debug" is an admin-only command,
-// we wait to be able to use it both in the lobby and in-game
-func chatDebug(s *Session, d *CommandData, t *Table) {
-	if !isAdmin(s, d) {
-		return
-	}
-
-	debug()
 }

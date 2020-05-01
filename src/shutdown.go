@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"os/exec"
 	"path"
 	"strconv"
@@ -8,42 +10,78 @@ import (
 )
 
 var (
-	shutdownMode         = shutdownModeNone // See "constants.go"
+	shuttingDown         = false
 	datetimeShutdownInit time.Time
 )
 
-func shutdown(restart bool) {
-	var verb string
-	if restart {
-		verb = "restart"
-		shutdownMode = shutdownModeRestart
-	} else {
-		verb = "shutdown"
-		shutdownMode = shutdownModeShutdown
+// We want to record all of the ongoing games to a flat file on the disk
+// This allows the server to restart without waiting for ongoing games to finish
+func restart() {
+	// We build the client first before kicking everyone off in order to
+	// reduce the total amount of downtime
+	logger.Info("Building the client...")
+	// execute("build_client.sh", projectPath)
+
+	for _, t := range tables {
+		// Only serialize ongoing games
+		if !t.Running || t.Replay {
+			continue
+		}
+
+		// First, nullify the sessions, since it is not necessary to serialize those
+		for _, p := range t.Players {
+			p.Session = nil
+		}
+		for _, sp := range t.Spectators {
+			sp.Session = nil
+		}
+
+		var tableJSON []byte
+		if v, err := json.Marshal(t); err != nil {
+			logger.Error("Failed to marshal table "+strconv.Itoa(t.ID)+":", err)
+			return
+		} else {
+			tableJSON = v
+		}
+
+		tablePath := path.Join(tablesPath, strconv.Itoa(t.ID)+".json")
+		if err := ioutil.WriteFile(tablePath, tableJSON, 0644); err != nil {
+			logger.Error("Failed to write the table "+strconv.Itoa(t.ID)+" to "+
+				"\""+tablePath+"\":", err)
+			return
+		}
 	}
+
+	logger.Info("Finished writing all tables to disk. Restarting...")
+	execute("restart.sh", projectPath)
+}
+
+func shutdown() {
+	shuttingDown = true
 	datetimeShutdownInit = time.Now()
 
 	numGames := countActiveTables()
-	logger.Info("Initiating a graceful server " + verb + " " +
+	logger.Info("Initiating a graceful server shutdown " +
 		"(with " + strconv.Itoa(numGames) + " active games).")
 	if numGames == 0 {
-		shutdownImmediate(restart, verb)
+		shutdownImmediate()
 	} else {
 		// Notify the lobby and all ongoing tables
 		notifyAllShutdown()
 		numMinutes := strconv.Itoa(int(shutdownTimeout.Minutes()))
-		chatServerSendAll("The server will " + verb + " in " + numMinutes + " minutes or " +
+		chatServerSendAll("The server will shutdown in " + numMinutes + " minutes or " +
 			"when all ongoing games have finished, whichever comes first.")
-		go shutdownXMinutesLeft(5, verb)
-		go shutdownXMinutesLeft(10, verb)
-		go shutdownWait(restart, verb)
+		go shutdownXMinutesLeft(5)
+		go shutdownXMinutesLeft(10)
+		go shutdownWait()
 	}
 }
 
-func shutdownXMinutesLeft(minutesLeft int, verb string) {
+func shutdownXMinutesLeft(minutesLeft int) {
 	time.Sleep(shutdownTimeout - time.Duration(minutesLeft)*time.Minute)
 
-	if shutdownMode == shutdownModeNone {
+	// Do nothing if the shutdown was canceled
+	if !shuttingDown {
 		return
 	}
 
@@ -61,7 +99,7 @@ func shutdownXMinutesLeft(minutesLeft int, verb string) {
 	}
 
 	// Send a warning message to the lobby and to the people still playing
-	msg := "The server will " + verb + " in " + strconv.Itoa(minutesLeft) + " minutes."
+	msg := "The server will shutdown in " + strconv.Itoa(minutesLeft) + " minutes."
 	chatServerSend(msg, "lobby")
 	msg += " Finish your game soon or it will be automatically terminated!"
 	for _, t := range tables {
@@ -69,9 +107,9 @@ func shutdownXMinutesLeft(minutesLeft int, verb string) {
 	}
 }
 
-func shutdownWait(restart bool, verb string) {
+func shutdownWait() {
 	for {
-		if shutdownMode == shutdownModeNone {
+		if !shuttingDown {
 			logger.Info("The shutdown was aborted.")
 			break
 		}
@@ -91,7 +129,7 @@ func shutdownWait(restart bool, verb string) {
 			time.Sleep(time.Second * 10)
 
 			logger.Info("There are 0 active tables left.")
-			shutdownImmediate(restart, verb)
+			shutdownImmediate()
 			break
 		}
 
@@ -113,67 +151,38 @@ func countActiveTables() int {
 	return numTables
 }
 
-func shutdownImmediate(restart bool, verb string) {
-	logger.Info("Initiating an immediate server " + verb + ".")
-
-	if restart {
-		// We build the client first before kicking everyone off in order to reduce the total amount
-		// of downtime
-		logger.Info("Building the client...")
-		execute("build_client.sh", projectPath)
-	}
+func shutdownImmediate() {
+	logger.Info("Initiating an immediate server shutdown.")
 
 	for _, s := range sessions {
-		if restart {
-			s.Error("The server is going down for a scheduled restart. " +
-				"Please wait a few seconds and then refresh the page.")
-		} else {
-			s.Error("The server is going down for scheduled maintenance. The server might be " +
-				"down for a while; please see the Discord server for more specific updates.")
-		}
+		s.Error("The server is going down for scheduled maintenance. The server might be " +
+			"down for a while; please see the Discord server for more specific updates.")
 	}
 
-	if restart {
-		execute("restart.sh", projectPath)
-	} else {
-		commandChat(nil, &CommandData{
-			Msg:    "The server successfully shut down at: " + getCurrentTimestamp(),
-			Room:   "lobby",
-			Server: true,
-			Spam:   true,
-		})
-		execute("stop.sh", projectPath)
-	}
+	commandChat(nil, &CommandData{
+		Msg:    "The server successfully shut down at: " + getCurrentTimestamp(),
+		Room:   "lobby",
+		Server: true,
+		Spam:   true,
+	})
+	execute("stop.sh", projectPath)
 }
 
 func cancel() {
-	var verb string
-	if shutdownMode == shutdownModeRestart {
-		verb = "restart"
-	} else if shutdownMode == shutdownModeShutdown {
-		verb = "shutdown"
-	}
-	shutdownMode = shutdownModeNone
+	shuttingDown = false
 	notifyAllShutdown()
-	chatServerSendAll("Server " + verb + " has been canceled.")
+	chatServerSendAll("Server shutdown has been canceled.")
 }
 
 func checkImminenntShutdown(s *Session) bool {
-	if shutdownMode == shutdownModeNone {
+	if !shuttingDown {
 		return false
 	}
 
 	timeLeft := shutdownTimeout - time.Since(datetimeShutdownInit)
 	minutesLeft := int(timeLeft.Minutes())
 	if minutesLeft <= 5 {
-		var verb string
-		if shutdownMode == shutdownModeRestart {
-			verb = "restarting"
-		} else if shutdownMode == shutdownModeShutdown {
-			verb = "shutting down"
-		}
-
-		msg := "The server is " + verb + " "
+		msg := "The server is shutting down "
 		if minutesLeft == 0 {
 			msg += "momentarily"
 		} else if minutesLeft == 1 {

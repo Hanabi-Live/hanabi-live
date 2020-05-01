@@ -18,7 +18,9 @@ export const handle = () => {
     }
     globals.elements.clueTypeButtonGroup!.clearPressed();
     globals.elements.clueArea!.show();
-    globals.elements.yourTurn!.show();
+    if (globals.elements.yourTurn !== null) {
+      globals.elements.yourTurn.show();
+    }
     globals.elements.currentPlayerArea!.hide();
 
     // Fade the clue UI if there is not a clue available
@@ -68,7 +70,9 @@ export const handle = () => {
 export const stop = () => {
   globals.elements.clueArea!.hide();
   globals.elements.clueAreaDisabled!.hide();
-  globals.elements.yourTurn!.hide();
+  if (globals.elements.yourTurn !== null) {
+    globals.elements.yourTurn.hide();
+  }
   globals.elements.currentPlayerArea!.hide();
   globals.elements.premoveCancelButton!.hide();
   globals.elements.noDiscardBorder!.hide();

@@ -12,9 +12,9 @@ type Game struct {
 	ID int
 
 	// This is a reference to the parent object; every game must have a parent Table object
-	Table *Table
+	Table *Table `json:"-"` // Skip circular references when encoding
 	// This is a reference to the Options field of the Table object (for convenience purposes)
-	Options *Options
+	Options *Options `json:"-"` // Skip circular references when encoding
 
 	// Game state related fields
 	Players []*GamePlayer

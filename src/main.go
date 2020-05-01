@@ -18,6 +18,7 @@ var (
 	projectPath string
 	dataPath    string
 	versionPath string
+	tablesPath  string
 
 	logger          *Logger
 	startingVersion int
@@ -66,6 +67,17 @@ func main() {
 		return
 	} else if err != nil {
 		logger.Fatal("Failed to check if the \""+versionPath+"\" file exists:", err)
+		return
+	}
+
+	// Check to see if the "ongoing-tables" directory exists
+	tablesPath = path.Join(projectPath, "ongoing-tables")
+	if _, err := os.Stat(tablesPath); os.IsNotExist(err) {
+		logger.Error("The directory \"" + tablesPath + "\" does not exist. " +
+			"This directory should always exist; please try re-cloning the repository.")
+		return
+	} else if err != nil {
+		logger.Fatal("Failed to check if the \""+tablesPath+"\" file exists:", err)
 		return
 	}
 
@@ -162,6 +174,9 @@ func main() {
 
 	// Record the time that the server started
 	datetimeStarted = time.Now()
+
+	// Restore tables that were ongoing at the time of the last server restart
+	restoreTables()
 
 	// Initialize an HTTP router that will only listen locally for maintenance-related commands
 	// (in "httpLocalhost.go")

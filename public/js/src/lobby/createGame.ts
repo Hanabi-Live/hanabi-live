@@ -331,13 +331,12 @@ export const before = () => {
     return false;
   }
 
-  if (globals.shutdownMode > 0) {
+  if (globals.shuttingDown) {
     const now = new Date().getTime();
     const elapsedTime = now - globals.datetimeShutdownInit;
     const numMinutes = new Date(elapsedTime).getMinutes();
     if (numMinutes > 5) {
-      const verb = globals.shutdownMode === 1 ? 'restarting' : 'shutting down';
-      let msg = `The server is ${verb} in `;
+      let msg = 'The server is shutting down in ';
       if (numMinutes === 0) {
         msg += 'momentarily';
       } else if (numMinutes === 1) {

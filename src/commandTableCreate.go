@@ -16,7 +16,6 @@ const (
 )
 
 var (
-	newTableID = 1 // Start at 1 and increment for every game created
 	cardRegExp = regexp.MustCompile(`^(\w)(\d)$`)
 )
 
@@ -360,17 +359,11 @@ func commandTableCreate(s *Session, d *CommandData) {
 	}
 
 	// If the server is shutting down / restarting soon, warn the players
-	if shutdownMode > shutdownModeNone {
+	if shuttingDown {
 		timeLeft := shutdownTimeout - time.Since(datetimeShutdownInit)
 		minutesLeft := int(timeLeft.Minutes())
-		var verb string
-		if shutdownMode == shutdownModeRestart {
-			verb = "restarting"
-		} else if shutdownMode == shutdownModeShutdown {
-			verb = "shutting down"
-		}
 
-		msg := "The server is " + verb + " in " + strconv.Itoa(minutesLeft) + " minutes. "
+		msg := "The server is shutting down in " + strconv.Itoa(minutesLeft) + " minutes. "
 		msg += "Keep in mind that if your game is not finished in time, it will be terminated."
 		chatServerSend(msg, "table"+strconv.Itoa(t.ID))
 	}

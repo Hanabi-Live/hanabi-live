@@ -197,11 +197,11 @@ func (s *Session) NotifyTableStart(t *Table) {
 
 func (s *Session) NotifyShutdown() {
 	type ShutdownMessage struct {
-		ShutdownMode         int       `json:"shutdownMode"`
+		ShuttingDown         bool      `json:"shuttingDown"`
 		DatetimeShutdownInit time.Time `json:"datetimeShutdownInit"`
 	}
 	s.Emit("shutdown", &ShutdownMessage{
-		ShutdownMode:         shutdownMode,
+		ShuttingDown:         shuttingDown,
 		DatetimeShutdownInit: datetimeShutdownInit,
 	})
 }

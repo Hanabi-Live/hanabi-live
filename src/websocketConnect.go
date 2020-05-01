@@ -63,7 +63,7 @@ func websocketConnect(ms *melody.Session) {
 		Muted                bool      `json:"muted"`
 		FirstTimeUser        bool      `json:"firstTimeUser"`
 		Settings             Settings  `json:"settings"`
-		ShutdownMode         int       `json:"shutdownMode"`
+		ShuttingDown         bool      `json:"shuttingDown"`
 		DatetimeShutdownInit time.Time `json:"datetimeShutdownInit"`
 		MaintenanceMode      bool      `json:"maintenanceMode"`
 	}
@@ -89,7 +89,7 @@ func websocketConnect(ms *melody.Session) {
 		Settings: settings,
 
 		// Also let the user know if the server is currently restarting or shutting down
-		ShutdownMode:         shutdownMode,
+		ShuttingDown:         shuttingDown,
 		DatetimeShutdownInit: datetimeShutdownInit,
 		MaintenanceMode:      maintenanceMode,
 	})

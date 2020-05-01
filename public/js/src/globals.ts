@@ -31,7 +31,7 @@ export class Globals {
   randomName: string = '';
   settings: Settings = new Settings();
   // (contains the settings for the "Settings" tooltip and the "Create Game" tooltip)
-  shutdownMode: number = 0;
+  shuttingDown: boolean = false;
   datetimeShutdownInit: number = 0;
   maintenanceMode: boolean = false;
 

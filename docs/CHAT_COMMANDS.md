@@ -55,17 +55,3 @@ If you need general help with the website, then read the [features page](FEATURE
 | /unnext           | Take yourself off the waiting list
 | /list             | Show the people on the waiting list
 | /link [id] [turn] | Link to a specific game and turn
-
-<br />
-
-### Admin-only commands (from the lobby only)
-
-| Command      | Description
-| ------------ |------------
-| /restart     | Gracefully restart the server
-| /shutdown    | Gracefully shutdown the server
-| /maintenance | Disable new game creation
-| /cancel      | Enable new game creation
-| /debug       | Print out some server-side info
-
-Note that admin-commands can also be performed by making the appropriate HTTP request to [the second web server](https://github.com/Zamiell/hanabi-live/blob/master/src/httpLocalhost.go).

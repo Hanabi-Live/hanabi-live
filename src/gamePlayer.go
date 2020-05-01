@@ -19,7 +19,8 @@ type GamePlayer struct {
 	// Some entries are copied from the Player object for convenience
 	Name  string
 	Index int
-	Game  *Game
+	// This is a reference to the parent game
+	Game *Game `json:"-"` // Skip circular references when encoding
 
 	// These relate to the game state
 	Hand               []*Card

@@ -36,25 +36,13 @@ func httpLocalhostInit() {
 
 	// Path handlers
 	httpRouter.GET("/restart", func(c *gin.Context) {
-		shutdown(true)
+		restart()
 		c.String(http.StatusOK, "success\n")
 	})
-	httpRouter.GET("/shutdown", func(c *gin.Context) {
-		shutdown(false)
-		c.String(http.StatusOK, "success\n")
-	})
-	httpRouter.GET("/cancel", func(c *gin.Context) {
-		cancel()
-		c.String(http.StatusOK, "success\n")
-	})
-	httpRouter.GET("/maintenance", func(c *gin.Context) {
-		maintenance(true)
-		c.String(http.StatusOK, "success\n")
-	})
-	httpRouter.GET("/unmaintenance", func(c *gin.Context) {
-		maintenance(false)
-		c.String(http.StatusOK, "success\n")
-	})
+	httpRouter.GET("/shutdown", httpShutdown)
+	httpRouter.GET("/cancel", httpCancel)
+	httpRouter.GET("/maintenance", httpMaintenance)
+	httpRouter.GET("/unmaintenance", httpUnmaintenance)
 	httpRouter.POST("/ban", httpUserAction)
 	httpRouter.POST("/mute", httpUserAction)
 	httpRouter.POST("/sendWarning", httpUserAction)
@@ -81,6 +69,66 @@ func httpLocalhostInit() {
 		return
 	}
 	logger.Fatal("ListenAndServe ended prematurely (for localhost).")
+}
+
+func httpShutdown(c *gin.Context) {
+	// Local variables
+	w := c.Writer
+
+	if shuttingDown {
+		http.Error(w, "The server is already shutting down.", http.StatusBadRequest)
+		return
+	}
+
+	shutdown()
+	c.String(http.StatusOK, "success\n")
+}
+
+func httpCancel(c *gin.Context) {
+	// Local variables
+	w := c.Writer
+
+	if !shuttingDown {
+		http.Error(
+			w,
+			"The server is not shutting down, so you cannot cancel it.",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	cancel()
+	c.String(http.StatusOK, "success\n")
+}
+
+func httpMaintenance(c *gin.Context) {
+	// Local variables
+	w := c.Writer
+
+	if maintenanceMode {
+		http.Error(w, "The server is already in maintenance mode.", http.StatusBadRequest)
+		return
+	}
+
+	maintenance(true)
+	c.String(http.StatusOK, "success\n")
+}
+
+func httpUnmaintenance(c *gin.Context) {
+	// Local variables
+	w := c.Writer
+
+	if !maintenanceMode {
+		http.Error(
+			w,
+			"The server is not in maintenance mode, so you cannot unmaintenance it.",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	maintenance(false)
+	c.String(http.StatusOK, "success\n")
 }
 
 func httpUserAction(c *gin.Context) {

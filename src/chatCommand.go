@@ -43,14 +43,6 @@ func chatCommandInit() {
 	chatCommandMap["removenext"] = chatUnnext
 	chatCommandMap["list"] = chatList
 	// (there are additional Discord-only commands in "discord.go")
-
-	// Admin-only commands (from the lobby only)
-	chatCommandMap["restart"] = chatRestart
-	chatCommandMap["shutdown"] = chatShutdown
-	chatCommandMap["cancel"] = chatCancel
-	chatCommandMap["maintenance"] = chatMaintenance
-	chatCommandMap["unmaintenance"] = chatUnmaintenance
-	chatCommandMap["debug"] = chatDebug
 }
 
 func chatCommand(s *Session, d *CommandData, t *Table) {

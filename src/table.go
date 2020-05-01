@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+var (
+	newTableID = 0 // We increment the ID for every table created
+)
+
 type Table struct {
 	ID   int
 	Name string
@@ -57,8 +61,22 @@ type TableChatMessage struct {
 
 func NewTable(name string, owner int) *Table {
 	// Get a new table ID
+	for {
+		newTableID++
+
+		// Ensure that the table ID does not conflict with any existing tables
+		valid := true
+		for _, t := range tables {
+			if t.ID == newTableID {
+				valid = false
+				break
+			}
+		}
+		if valid {
+			break
+		}
+	}
 	tableID := newTableID
-	newTableID++
 
 	// Create the table object
 	return &Table{
