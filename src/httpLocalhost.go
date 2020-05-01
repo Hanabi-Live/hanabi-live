@@ -55,10 +55,10 @@ func httpLocalhostInit() {
 		maintenance(false)
 		c.String(http.StatusOK, "success\n")
 	})
-	httpRouter.GET("/ban/:username", httpUserAction)
-	httpRouter.GET("/mute/:username", httpUserAction)
-	httpRouter.POST("/sendWarning/:username", httpUserAction)
-	httpRouter.POST("/sendError/:username", httpUserAction)
+	httpRouter.POST("/ban", httpUserAction)
+	httpRouter.POST("/mute", httpUserAction)
+	httpRouter.POST("/sendWarning", httpUserAction)
+	httpRouter.POST("/sendError", httpUserAction)
 	httpRouter.GET("/version", httpVersion)
 	httpRouter.GET("/uptime", httpUptime)
 	httpRouter.GET("/timeLeft", httpTimeLeft)
@@ -88,7 +88,7 @@ func httpUserAction(c *gin.Context) {
 	w := c.Writer
 
 	// Parse the username from the URL
-	username := c.Param("username")
+	username := c.PostForm("username")
 	if username == "" {
 		http.Error(w, "Error: You must specify a username.", http.StatusNotFound)
 		return
@@ -121,13 +121,13 @@ func httpUserAction(c *gin.Context) {
 	}
 
 	path := c.FullPath()
-	if strings.HasPrefix(path, "/ban/") {
+	if strings.HasPrefix(path, "/ban") {
 		httpBan(c, username, lastIP, userID)
-	} else if strings.HasPrefix(path, "/mute/") {
+	} else if strings.HasPrefix(path, "/mute") {
 		httpMute(c, username, lastIP, userID)
-	} else if strings.HasPrefix(path, "/sendWarning/") {
+	} else if strings.HasPrefix(path, "/sendWarning") {
 		httpSendWarning(c, userID)
-	} else if strings.HasPrefix(path, "/sendError/") {
+	} else if strings.HasPrefix(path, "/sendError") {
 		httpSendError(c, userID)
 	} else {
 		http.Error(w, "Error: Invalid URL.", http.StatusNotFound)
