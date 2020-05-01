@@ -16,7 +16,6 @@ type screen = 'login' | 'lobby' | 'pregame' | 'game' | 'history' | 'historyOther
 export class Globals {
   // The "version.json" file is filled in dynamically by the "build_client.sh" script
   version: number = version;
-  browserIsFirefox: boolean = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
   username: string = '';
   password: string = '';

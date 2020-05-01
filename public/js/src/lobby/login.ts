@@ -11,6 +11,7 @@ import tablesDraw from './tablesDraw';
 
 // Constants
 const passwordSalt = 'Hanabi password ';
+const browserIsFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
 export const init = () => {
   $('#login-button').click(() => {
@@ -25,9 +26,8 @@ export const init = () => {
   $('#login-form').submit(submit);
 
   // Make the tooltip for the Discord icon at the bottom of the screen
-  let discordContent = 'Discord is a voice and text chat application that you can run in a ';
-  discordContent += 'browser.<br />If the server is down, you can probably find out why in the ';
-  discordContent += 'Hanabi server / chat room.';
+  let discordContent = 'Discord is a voice and text chat application that you can run in a browser.<br />';
+  discordContent += 'If the server is down, you can probably find out why in the Hanabi server / chat room.';
   $('#title-discord').tooltipster({
     theme: 'tooltipster-shadow',
     delay: 0,
@@ -37,7 +37,7 @@ export const init = () => {
 
   // Check to see if we have accepted the Firefox warning
   // (cookies are strings, so we cannot check for equality)
-  if (globals.browserIsFirefox && localStorage.getItem('acceptedFirefoxWarning') !== 'true') {
+  if (browserIsFirefox && localStorage.getItem('acceptedFirefoxWarning') !== 'true') {
     $('#sign-in').hide();
     $('#firefox-warning').show();
   }
@@ -129,7 +129,7 @@ const getAjaxError = (jqXHR: any) => {
 export const automaticLogin = () => {
   // Don't automatically login if they are on Firefox and have not confirmed the warning dialog
   // (cookies are strings, so we cannot check for equality)
-  if (globals.browserIsFirefox && localStorage.getItem('acceptedFirefoxWarning') !== 'true') {
+  if (browserIsFirefox && localStorage.getItem('acceptedFirefoxWarning') !== 'true') {
     return;
   }
 
