@@ -67,12 +67,12 @@ export default class ColorButton extends Konva.Group {
         // Draw the suit pip that corresponds to this color
         const suitPip = new Konva.Shape({
           scale: {
-            x: 0.3,
-            y: 0.3,
+            x: 0.25,
+            y: 0.25,
           },
           offset: {
-            x: -w * 1.7,
-            y: -h * 1.7,
+            x: w * -2,
+            y: h * -2,
           },
           stroke: 'black',
           strokeWidth: 5,
