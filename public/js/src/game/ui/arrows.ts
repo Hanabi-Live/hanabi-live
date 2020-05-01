@@ -99,25 +99,30 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
     } else {
       arrow.circle.show();
       if (clue.type === CLUE_TYPE.RANK) {
-        arrow.circle.fill('black');
         let text = clue.value.toString();
         if (globals.variant.name.startsWith('Cow & Pig')) {
           text = '#';
         }
         arrow.text.text(text);
         arrow.text.show();
+
+        // The circle for number clues should have a white border and a black fill
+        arrow.circle.stroke('white');
+        arrow.circle.fill('black');
       } else if (clue.type === CLUE_TYPE.COLOR) {
-        if (typeof clue.value === 'number') {
-          throw new Error('The clue value was a number for a color clue.');
-        }
-        if (globals.variant.name.startsWith('Cow & Pig')) {
-          arrow.circle.fill('white');
-          arrow.circle.stroke('black');
-        } else {
-          arrow.circle.fill(clue.value.fill);
-          arrow.circle.stroke('white');
-        }
         arrow.text.hide();
+
+        // The circle for color clues should have a black border and a fill matching the color
+        arrow.circle.stroke('black');
+        if (globals.variant.name.startsWith('Cow & Pig')) {
+          // The specific clue color is hidden in "Cow & Pig" variants
+          arrow.circle.fill('white');
+        } else {
+          if (typeof clue.value === 'number') {
+            throw new Error('The clue value was a number for a color clue.');
+          }
+          arrow.circle.fill(clue.value.fill);
+        }
       }
     }
   }
