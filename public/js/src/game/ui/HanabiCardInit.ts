@@ -45,7 +45,7 @@ export function border(this: HanabiCard) {
     height: CARD_H - 6,
     cornerRadius: 6,
     strokeWidth: 16,
-    stroke: 'orange',
+    stroke: globals.lobby.settings.colorblindMode ? 'black' : 'orange',
     visible: false,
     listening: false,
   });
