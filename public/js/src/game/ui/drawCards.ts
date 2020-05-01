@@ -173,7 +173,7 @@ const drawSuitPips = (
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 1.8, scale * 1.8);
-    drawPip(ctx, suit, true, false);
+    drawPip(ctx, suit, true);
     ctx.restore();
   }
 
@@ -184,7 +184,7 @@ const drawSuitPips = (
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(0, -symbolYPos);
     ctx.scale(scale * 1.4, scale * 1.4);
-    drawPip(ctx, suit, true, false);
+    drawPip(ctx, suit, true);
     ctx.restore();
 
     ctx.save();
@@ -192,7 +192,7 @@ const drawSuitPips = (
     ctx.translate(0, symbolYPos);
     ctx.scale(scale * 1.4, scale * 1.4);
     ctx.rotate(Math.PI);
-    drawPip(ctx, suit, true, false);
+    drawPip(ctx, suit, true);
     ctx.restore();
   }
 
@@ -203,7 +203,7 @@ const drawSuitPips = (
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(0, -symbolYPos);
     ctx.scale(scale, scale);
-    drawPip(ctx, suit, true, false);
+    drawPip(ctx, suit, true);
     ctx.restore();
 
     ctx.save();
@@ -211,7 +211,7 @@ const drawSuitPips = (
     ctx.translate(0, symbolYPos);
     ctx.scale(scale, scale);
     ctx.rotate(Math.PI);
-    drawPip(ctx, suit, true, false);
+    drawPip(ctx, suit, true);
     ctx.restore();
   }
 
@@ -221,7 +221,7 @@ const drawSuitPips = (
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.translate(-90, 0);
     ctx.scale(scale, scale);
-    drawPip(ctx, suit, true, false);
+    drawPip(ctx, suit, true);
     ctx.restore();
 
     ctx.save();
@@ -229,7 +229,7 @@ const drawSuitPips = (
     ctx.translate(90, 0);
     ctx.scale(scale, scale);
     ctx.rotate(Math.PI);
-    drawPip(ctx, suit, true, false);
+    drawPip(ctx, suit, true);
     ctx.restore();
   }
 
@@ -239,7 +239,7 @@ const drawSuitPips = (
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 1.2, scale * 1.2);
-    drawPip(ctx, suit, true, false);
+    drawPip(ctx, suit, true);
     ctx.restore();
   }
 
@@ -249,7 +249,7 @@ const drawSuitPips = (
     ctx.save();
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 2.5, scale * 2.5);
-    drawPip(ctx, suit, true, false);
+    drawPip(ctx, suit, true);
     ctx.restore();
   }
 
@@ -259,7 +259,7 @@ const drawSuitPips = (
     ctx.globalAlpha = colorblindMode ? 0.4 : 0.1;
     ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 3, scale * 3);
-    drawPip(ctx, suit, true, false);
+    drawPip(ctx, suit, true);
     ctx.restore();
   }
 };
@@ -306,12 +306,12 @@ const makeDeckBack = (variant: Variant) => {
     const suit = variant.suits[i];
 
     // Transform polar to cartesian coordinates
-        const x = -1.05 * Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2)); // eslint-disable-line
-        const y = -1.05 * Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2)); // eslint-disable-line
+    const x = -1.05 * Math.floor(CARD_W * 0.7 * Math.cos(((-i / nSuits) + 0.25) * Math.PI * 2));
+    const y = -1.05 * Math.floor(CARD_W * 0.7 * Math.sin(((-i / nSuits) + 0.25) * Math.PI * 2));
 
     ctx.save();
     ctx.translate(x, y);
-    drawPip(ctx, suit, true, true);
+    drawPip(ctx, suit, true, '#444444'); // Pips on the back of the deck should be gray
     ctx.restore();
   }
   ctx.scale(1 / sf, 1 / sf);

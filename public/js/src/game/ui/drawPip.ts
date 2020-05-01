@@ -649,7 +649,7 @@ export default (
   ctx: CanvasRenderingContext2D,
   suit: Suit,
   shadow: boolean,
-  deckBack: boolean,
+  fill?: string,
 ) => {
   // Each suit has a shape defined in the "suits.json" file (as the 'pip' property)
   const shapeFunction = shapeFunctions.get(suit.pip);
@@ -662,9 +662,9 @@ export default (
     ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
   }
 
-  if (deckBack) {
-    // Pips on the back of the deck should be gray
-    ctx.fillStyle = '#444444';
+  if (fill) {
+    // The parent function has specified a custom fill color
+    ctx.fillStyle = fill;
     shapeFunction(ctx);
     ctx.fill();
   } else if (suit.fill === 'multi') {
@@ -680,7 +680,7 @@ export default (
   }
 
   // Draw a black border around the shape
-  ctx.lineWidth = deckBack ? 8 : 5;
+  ctx.lineWidth = fill ? 8 : 5;
   if (shadow) {
     ctx.shadowColor = 'rgba(0, 0, 0, 0)';
   }
