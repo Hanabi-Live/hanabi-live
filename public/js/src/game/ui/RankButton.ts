@@ -18,7 +18,6 @@ export default class RankButton extends Konva.Group {
     const h = this.height();
 
     this.background = new Konva.Rect({
-      name: 'background',
       x: 0,
       y: 0,
       width: w,

@@ -90,6 +90,7 @@ export default () => {
   drawScoreArea();
   drawSpectators();
   drawSharedReplay();
+  drawYourTurn();
 
   // The middle column
   drawHands(winW, winH);
@@ -1075,6 +1076,60 @@ const drawSharedReplay = () => {
       name: selectedSpectator,
     });
   });
+};
+
+// A notification that shows it is your turn
+const drawYourTurn = () => {
+  if (globals.lobby.settings.keldonMode) {
+    return;
+  }
+
+  globals.elements.yourTurn = new Konva.Group({
+    x: (spectatorsLabelValues.x + 0.06) * winW,
+    y: (spectatorsLabelValues.y - 0.04) * winH,
+    visible: false,
+  });
+  globals.layers.UI.add(globals.elements.yourTurn);
+
+  const circle = new Konva.Ellipse({
+    radiusX: 0.042 * winW,
+    radiusY: 0.06 * winH,
+    fill: 'black',
+    opacity: 0.5,
+    stroke: 'black',
+    strokeWidth: 4,
+    offset: {
+      x: -0.025 * winW,
+      y: -0.036 * winH,
+    },
+  });
+  globals.elements.yourTurn.add(circle);
+
+  const text = new Konva.Text({
+    fontSize: 0.04 * winH,
+    fontFamily: 'Verdana',
+    fill: LABEL_COLOR,
+    align: 'center',
+    text: 'Your\nTurn',
+  });
+  globals.elements.yourTurn.add(text);
+
+  const yourTurnTween = new Konva.Tween({
+    node: text,
+    fill: 'yellow',
+    duration: 2,
+    onFinish: () => {
+      if (text && yourTurnTween) {
+        yourTurnTween.reverse();
+      }
+    },
+    onReset: () => {
+      if (text && yourTurnTween) {
+        yourTurnTween.play();
+      }
+    },
+  });
+  yourTurnTween.play();
 };
 
 const drawClueLog = () => {

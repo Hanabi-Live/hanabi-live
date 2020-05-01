@@ -22,11 +22,13 @@ const version = fs.readFileSync(versionPath).toString().trim();
 const filename = `main.${version}.min.js`;
 
 // Clear out the "dist" subdirectory, as it might contain old JavaScript bundles and old source maps
-const distPath = path.join(__dirname, 'dist');
-if (fs.existsSync(distPath)) {
-  const files = fs.readdirSync(distPath);
-  for (const file of files) {
-    fs.unlinkSync(path.join(distPath, file));
+if (!process.env.WEBPACK_DEV_SERVER) {
+  const distPath = path.join(__dirname, 'dist');
+  if (fs.existsSync(distPath)) {
+    const files = fs.readdirSync(distPath);
+    for (const file of files) {
+      fs.unlinkSync(path.join(distPath, file));
+    }
   }
 }
 

@@ -66,6 +66,7 @@ export default class Elements {
   sharedReplayLeaderLabel: Konva.Image | null = null;
   sharedReplayLeaderCircle: Konva.Circle | null = null;
   sharedReplayLeaderLabelPulse: Konva.Tween | null = null;
+  yourTurn: Konva.Group | null = null;
 
   // The clue UI
   clueArea: Konva.Group | null = null;
