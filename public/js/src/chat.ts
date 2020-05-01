@@ -373,10 +373,17 @@ export const add = (data: ChatMessage, fast: boolean) => {
     throw new Error('Failed to get the chat element in the "chat.add()" function.');
   }
 
-  // Linkify any links
-  data.msg = linkifyHtml(data.msg, {
-    target: '_blank',
-  });
+  // Linkify any non-server links
+  // (this prevents linkifying the reported scores from users with periods in their name,
+  // e.g. "test.live")
+  if (!data.server) {
+    data.msg = linkifyHtml(data.msg, {
+      target: '_blank',
+      attributes: {
+        rel: 'noopener noreferrer',
+      },
+    });
+  }
 
   // Convert emotes to images
   data.msg = fillDiscordEmotes(data.msg);
