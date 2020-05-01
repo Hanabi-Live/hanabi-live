@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"math"
 	"math/rand"
+	"os/exec"
+	"path"
 	"regexp"
 	"strconv"
 	"strings"
@@ -19,6 +21,20 @@ func durationToString(d time.Duration) string {
 	d -= m * time.Minute
 	s := d / time.Second
 	return fmt.Sprintf("%02d:%02d", m, s)
+}
+
+func execute(script string, cwd string) {
+	cmd := exec.Command(path.Join(cwd, script)) // nolint:gosec
+	cmd.Dir = cwd
+	if output, err := cmd.CombinedOutput(); err != nil {
+		logger.Error("Failed to execute \""+script+"\":", err)
+		if string(output) != "" {
+			logger.Error("Output is as follows:")
+			logger.Error(string(output))
+		}
+	} else {
+		logger.Info("\""+script+"\" completed:", string(output))
+	}
 }
 
 func formatTimestampUnix(datetime time.Time) string {

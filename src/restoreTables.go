@@ -61,6 +61,6 @@ func restoreTables() {
 		}
 	}
 
-	// (we do need to adjust the "newTableID" variable because
+	// (we do not need to adjust the "newTableID" variable because
 	// we have logic to not allow duplicate game IDs)
 }
