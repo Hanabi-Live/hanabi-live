@@ -43,7 +43,13 @@ func commandReplayAction(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that this person is leading the review
+	// Validate that this person is spectating the shared replay
+	i := t.GetSpectatorIndexFromID(s.UserID())
+	if i < -1 {
+		s.Warning("You are not in shared replay " + strconv.Itoa(tableID) + ".")
+	}
+
+	// Validate that this person is leading the shared replay
 	if s.UserID() != t.Owner {
 		s.Warning("You cannot send a shared replay action unless you are the leader.")
 		return

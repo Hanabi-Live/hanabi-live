@@ -29,6 +29,10 @@ func httpWS(c *gin.Context) {
 	w := c.Writer
 	r := c.Request
 
+	// Lock the command mutex for the duration of the function to ensure synchronous execution
+	commandMutex.Lock()
+	defer commandMutex.Unlock()
+
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
@@ -137,7 +141,7 @@ func httpWS(c *gin.Context) {
 		return
 	} else if userID != user.ID {
 		logger.Error("User \"" + username + "\" exists in the database, " +
-			"but they are trying to establish a WebSocket connection with an account ID that" +
+			"but they are trying to establish a WebSocket connection with an account ID that " +
 			"does not match the ID in the database.")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return

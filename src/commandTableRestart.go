@@ -34,6 +34,12 @@ func commandTableRestart(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that this person is spectating the shared replay
+	i := t.GetSpectatorIndexFromID(s.UserID())
+	if i < -1 {
+		s.Warning("You are not in shared replay " + strconv.Itoa(tableID) + ".")
+	}
+
 	// Validate that this person is leading the shared replay
 	if s.UserID() != t.Owner {
 		s.Warning("You cannot restart a game unless you are the leader.")
@@ -187,7 +193,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 	}
 
 	// Copy over the old chat
-	t2.Chat = make([]*TableChatMessage, len(t.Chat))
+	t2.Chat = make([]*TableChatMessage, len(oldChat))
 	copy(t2.Chat, oldChat)
 
 	// Copy over the old ChatRead map
