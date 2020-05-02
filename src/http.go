@@ -292,7 +292,8 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 			strings.HasSuffix(err.Error(), "http2: stream closed") ||
 			strings.HasSuffix(err.Error(), "write: broken pipe") ||
 			strings.HasSuffix(err.Error(), "write: connection reset by peer") ||
-			strings.HasSuffix(err.Error(), "write: connection timed out") {
+			strings.HasSuffix(err.Error(), "write: connection timed out") ||
+			strings.HasSuffix(err.Error(), "i/o timeout") {
 
 			// Some errors are common and expected
 			// (e.g. the user presses the "Stop" button while the template is executing)
