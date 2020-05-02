@@ -85,7 +85,7 @@ func commandChat(s *Session, d *CommandData) {
 	*/
 
 	// Log the message
-	text := ""
+	text := "#" + d.Room + " "
 	if d.Username != "" {
 		text += "<" + d.Username
 		if d.DiscordDiscriminator != "" {
