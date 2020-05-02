@@ -21,12 +21,26 @@ func restart() {
 			continue
 		}
 
+		// Force all of the spectators to leave, if any
+		for _, sp := range t.Spectators {
+			s := sp.Session
+			if s == nil {
+				// A spectator's session should never be nil
+				// They might be in the process of reconnecting,
+				// so make a fake session that will represent them
+				s = newFakeSession(sp.ID, sp.Name)
+			} else {
+				// Boot them from the game
+				s.Emit("boot", nil)
+			}
+			commandTableUnattend(s, &CommandData{
+				TableID: t.ID,
+			})
+		}
+
 		// First, nullify the sessions, since it is not necessary to serialize those
 		for _, p := range t.Players {
 			p.Session = nil
-		}
-		for _, sp := range t.Spectators {
-			sp.Session = nil
 		}
 
 		var tableJSON []byte

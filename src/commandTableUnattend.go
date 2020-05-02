@@ -4,8 +4,10 @@ import (
 	"strconv"
 )
 
-// commandTableUnattend is sent when the user clicks on the "Lobby" button while they are in the
-// middle of a game or in a a replay
+// commandTableUnattend is sent when the user clicks on the "Lobby" button while they are:
+// 1) playing in an ongoing game
+// 2) spectating an ongoing game
+// 3) viewing a reply or shared replay
 //
 // Example data:
 // {
