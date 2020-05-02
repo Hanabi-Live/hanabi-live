@@ -186,18 +186,6 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
       });
       return;
     }
-
-    if (command === 'whoami') {
-      add({
-        msg: `You are:&nbsp; <strong>${globals.username}</strong>`,
-        who: '',
-        server: true,
-        datetime: new Date().getTime(),
-        room,
-        recipient: '', // This is needed to prevent the message from being viewed as a PM
-      }, false);
-      return;
-    }
   }
 
   // This is not a command, so send a the chat message to the server
