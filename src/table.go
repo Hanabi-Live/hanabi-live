@@ -23,8 +23,9 @@ type Table struct {
 	// or the current leader of the shared replay
 	Owner   int
 	Visible bool // Whether or not this table is shown to other users
-	// This is a salted SHA512 hash sent by the client, but technically it can be any string at all
-	Password string
+	// This is an Argon2id hash generated from the plain-text password
+	// that the table creator sends us
+	PasswordHash string
 	// Whether or not the table was created with the "Alert people" checkbox checked
 	AlertWaiters   bool
 	Running        bool

@@ -29,10 +29,8 @@ type TemplateData struct {
 
 const (
 	// The name supplied to the Gin session middleware can be any arbitrary string
-	httpSessionName = "hanabi.sid"
-	// The most secure value is 1 second, but we instead use 2 seconds to accommodate
-	// clients that round cookies to the nearest whole second (e.g. Java)
-	httpSessionTimeout = 2
+	httpSessionName    = "hanabi.sid"
+	httpSessionTimeout = 60 * 60 * 24 * 365 // 1 year in seconds
 )
 
 var (
@@ -110,6 +108,9 @@ func httpInit() {
 		// Mitigate XSS attacks:
 		// https://www.owasp.org/index.php/HttpOnly
 		HttpOnly: true,
+		// Mitigate CSRF attacks:
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#SameSite_cookies
+		SameSite: http.SameSiteStrictMode,
 	}
 	if !useTLS {
 		options.Secure = false
@@ -126,6 +127,7 @@ func httpInit() {
 
 	// Path handlers (for the WebSocket server)
 	httpRouter.POST("/login", httpLogin)
+	httpRouter.GET("/testCookie", httpTestCookie)
 	httpRouter.GET("/ws", httpWS)
 
 	// Path handlers (for the main website)

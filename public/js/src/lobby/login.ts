@@ -4,13 +4,11 @@
 import { FADE_TIME } from '../constants';
 import version from '../data/version.json';
 import globals from '../globals';
-import * as misc from '../misc';
 import websocketInit from '../websocketInit';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
 
 // Constants
-const passwordSalt = 'Hanabi password ';
 const browserIsFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
 export const init = () => {
@@ -61,30 +59,26 @@ const submit = (event: any) => {
     username = username.toString();
   }
 
-  let passwordPlaintext = $('#login-password').val();
-  if (!passwordPlaintext) {
+  let password = $('#login-password').val();
+  if (!password) {
     formError('You must provide a password.');
     return;
   }
-  if (typeof passwordPlaintext === 'number') {
-    passwordPlaintext = passwordPlaintext.toString();
+  if (typeof password === 'number') {
+    password = password.toString();
   }
-  if (typeof passwordPlaintext !== 'string') {
+  if (typeof password !== 'string') {
     throw new Error('The password is not a string.');
   }
 
-  const password = misc.hashPassword(passwordSalt, passwordPlaintext);
+  // Remember the username for later so that we can partially fill in the form
+  // during subsequent login attempts
+  localStorage.setItem('username', username);
 
-  localStorage.setItem('hanabiuser', username);
-  localStorage.setItem('hanabipass', password);
-
-  globals.username = username;
-  globals.password = password;
-
-  send();
+  send(username, password);
 };
 
-const send = () => {
+const send = (username: string, password: string) => {
   $('#login-button').addClass('disabled');
   $('#login-explanation').hide();
   $('#login-ajax').show();
@@ -96,8 +90,8 @@ const send = () => {
   }
   url += '/login';
   const postData = {
-    username: globals.username,
-    password: globals.password,
+    username,
+    password,
     version,
   };
   const request = $.ajax({
@@ -150,32 +144,29 @@ export const automaticLogin = () => {
     }
 
     const username = `test${testNumber}`;
-    globals.username = username;
-    globals.password = misc.hashPassword(passwordSalt, username);
-
     console.log(`Automatically logging in as "${username}".`);
-    send();
+    send(username, username); // For test accounts, we use the username as the password
     return;
   }
 
-  // Automatically sign in to the WebSocket server if we have cached credentials
-  const username = localStorage.getItem('hanabiuser');
+  // If we have logged in previously, automatically fill in the username field
+  const username = localStorage.getItem('username');
   if (username === null || username === '') {
     return;
   }
-  globals.username = username;
-
-  $('#login-username').val(globals.username);
+  $('#login-username').val(username);
   $('#login-password').focus();
 
-  const password = localStorage.getItem('hanabipass');
-  if (password === null || password === '') {
-    return;
-  }
-  globals.password = password;
-
-  console.log('Automatically logging in from cookie credentials.');
-  send();
+  // If we have logged in previously and our cookie is still good, automatically login
+  console.log('Testing to see if we have a cached WebSocket cookie.');
+  fetch('/testCookie').then((response) => {
+    if (response.status === 200) {
+      console.log('WebSocket cookie confirmed to be good. Automatically logging in to the WebSocket server.');
+      websocketInit();
+    } else {
+      console.log('Either we have not previously logged in or the cookie is expired.');
+    }
+  });
 };
 
 // -------------------------

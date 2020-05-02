@@ -1,7 +1,7 @@
 export default interface Table {
   id: number;
   name: string;
-  password: boolean;
+  passwordProtected: boolean;
   joined: boolean;
   numPlayers: number;
   owned: boolean;

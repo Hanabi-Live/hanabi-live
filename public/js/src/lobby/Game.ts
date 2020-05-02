@@ -11,7 +11,7 @@ export default interface Game {
   deckPlays: boolean;
   emptyClues: boolean;
   characterAssignments: boolean;
-  password: boolean;
+  passwordProtected: boolean;
 }
 
 interface Player {

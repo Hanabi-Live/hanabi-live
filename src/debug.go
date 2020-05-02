@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func debug() {
+func debugPrint() {
 	logger.Debug("---------------------------------------------------------------")
 	logger.Debug("Current total tables:", len(tables))
 

@@ -181,7 +181,7 @@ export const draw = () => {
     `;
   }
 
-  if (globals.game.password) {
+  if (globals.game.passwordProtected) {
     html += '<li><i id="lobby-pregame-options-password" class="fas fa-lock" ';
     html += 'data-tooltip-content="#pregame-tooltip-password"></i></li>';
     html += `

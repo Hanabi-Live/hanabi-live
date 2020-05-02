@@ -16,15 +16,17 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
-    id                   INT          NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
+    id                   INT           NOT NULL  PRIMARY KEY  AUTO_INCREMENT,
     /* MySQL enforces case insensitive uniqueness by default, which is what we want */
-    username             VARCHAR(20)  NOT NULL  UNIQUE,
-    password             CHAR(64)     NOT NULL, /* A SHA-256 hash string is 64 characters long */
-    last_ip              VARCHAR(40)  NOT NULL, /* This will be set immediately after insertion */
-    admin                BOOLEAN      NOT NULL  DEFAULT 0,
-    tester               BOOLEAN      NOT NULL  DEFAULT 0,
-    datetime_created     TIMESTAMP    NOT NULL  DEFAULT NOW(),
-    datetime_last_login  TIMESTAMP    NOT NULL  DEFAULT NOW()
+    username             VARCHAR(20)   NOT NULL  UNIQUE,
+    /* TODO set "password_hash" to NOT NULL once password migration is complete */
+    password_hash        VARCHAR(100)  NULL, /* An Argon2id hash; should only be 97 characters long */
+    old_password_hash    CHAR(64)      NULL, /* A SHA-256 hash string is 64 characters long */
+    last_ip              VARCHAR(40)   NOT NULL,
+    admin                BOOLEAN       NOT NULL  DEFAULT 0,
+    tester               BOOLEAN       NOT NULL  DEFAULT 0,
+    datetime_created     TIMESTAMP     NOT NULL  DEFAULT NOW(),
+    datetime_last_login  TIMESTAMP     NOT NULL  DEFAULT NOW()
 );
 CREATE INDEX users_index_username ON users (username);
 

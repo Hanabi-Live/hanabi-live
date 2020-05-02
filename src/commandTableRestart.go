@@ -86,7 +86,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 	// Validate that there is currently no-one on the waiting list
 	waitingListPurgeOld()
 	if t.AlertWaiters &&
-		t.Password == "" &&
+		t.PasswordHash == "" &&
 		t.Name != "test" &&
 		!strings.HasPrefix(t.Name, "test ") &&
 		len(waitingList) > 0 {

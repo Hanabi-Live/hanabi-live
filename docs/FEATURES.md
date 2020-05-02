@@ -198,7 +198,6 @@
 
 * Each game has the option to be created with a password.
 * This allows private tables to be created.
-* Note that all passwords are [salted](https://en.wikipedia.org/wiki/Salt_(cryptography)) and [hashed](https://en.wikipedia.org/wiki/Cryptographic_hash_function) (with [SHA256](https://en.wikipedia.org/wiki/SHA-2)) before being sent to the server.
 
 <br />
 

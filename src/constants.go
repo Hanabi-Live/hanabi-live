@@ -92,6 +92,8 @@ const (
 	discordAtHereTimeout = time.Hour * 2
 
 	// Common error messages
+	createFail      = "Failed to create the game. Please contact an administrator."
+	startFail       = "Failed to start the game. Please contact an administrator."
 	initFail        = "Failed to initialize the game. Please contact an administrator."
 	defaultErrorMsg = "Something went wrong. Please contact an administrator."
 

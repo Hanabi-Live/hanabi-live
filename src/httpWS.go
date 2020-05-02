@@ -31,7 +31,8 @@ func httpWS(c *gin.Context) {
 
 	// Lock the command mutex for the duration of the function to ensure synchronous execution
 	commandMutex.Lock()
-	defer commandMutex.Unlock()
+	// (we cannot use "defer commandMutex.Unlock()" since this function will not return until the
+	// WebSocket connection is terminated)
 
 	// Parse the IP address
 	var ip string
@@ -42,6 +43,7 @@ func httpWS(c *gin.Context) {
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
+		commandMutex.Unlock()
 		return
 	} else {
 		ip = v
@@ -55,6 +57,7 @@ func httpWS(c *gin.Context) {
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
+		commandMutex.Unlock()
 		return
 	} else if banned {
 		logger.Info("IP \"" + ip + "\" tried to establish a WebSocket connection, " +
@@ -77,6 +80,7 @@ func httpWS(c *gin.Context) {
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
+		commandMutex.Unlock()
 		return
 	} else {
 		muted = v
@@ -93,6 +97,7 @@ func httpWS(c *gin.Context) {
 			http.StatusText(http.StatusUnauthorized),
 			http.StatusUnauthorized,
 		)
+		commandMutex.Unlock()
 		return
 	} else {
 		userID = v.(int)
@@ -102,6 +107,7 @@ func httpWS(c *gin.Context) {
 		logger.Error("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
 			"(failed username check).")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		commandMutex.Unlock()
 		return
 	} else {
 		username = v.(string)
@@ -111,6 +117,7 @@ func httpWS(c *gin.Context) {
 		logger.Error("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
 			"(failed admin check).")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		commandMutex.Unlock()
 		return
 	} else {
 		admin = v.(bool)
@@ -120,6 +127,7 @@ func httpWS(c *gin.Context) {
 		logger.Error("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
 			"(failed firstTimeUser check).")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		commandMutex.Unlock()
 		return
 	} else {
 		firstTimeUser = v.(bool)
@@ -133,17 +141,20 @@ func httpWS(c *gin.Context) {
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
+		commandMutex.Unlock()
 		return
 	} else if !exists {
 		logger.Error("User \"" + username + "\" does not exist in the database; " +
 			"they are trying to establish a WebSocket connection with an orphaned account.")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		commandMutex.Unlock()
 		return
 	} else if userID != user.ID {
 		logger.Error("User \"" + username + "\" exists in the database, " +
 			"but they are trying to establish a WebSocket connection with an account ID that " +
 			"does not match the ID in the database.")
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		commandMutex.Unlock()
 		return
 	}
 
@@ -165,7 +176,10 @@ func httpWS(c *gin.Context) {
 	keys["rateLimitLastCheck"] = time.Now()
 	keys["banned"] = false
 
-	// Validation succeeded, so establish the WebSocket connection
+	// Validation succeeded; establish the WebSocket connection
+	// "HandleRequestWithKeys()" will call the "websocketConnect()" function if successful;
+	// further initialization is performed there
+	commandMutex.Unlock() // We will acquire the lock again in the "websocketConnect()" function
 	if err := m.HandleRequestWithKeys(w, r, keys); err != nil {
 		logger.Error("Failed to establish the WebSocket connection for user \""+username+"\":", err)
 		http.Error(
@@ -175,6 +189,4 @@ func httpWS(c *gin.Context) {
 		)
 		return
 	}
-
-	// Next, the established WebSocket connection will be initialized in "websocketConnect.go"
 }

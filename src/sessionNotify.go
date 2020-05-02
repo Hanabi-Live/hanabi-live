@@ -58,21 +58,21 @@ func (s *Session) NotifyTable(t *Table) {
 }
 
 type TableMessage struct {
-	ID           int    `json:"id"`
-	Name         string `json:"name"`
-	Password     bool   `json:"password"`
-	Joined       bool   `json:"joined"`
-	NumPlayers   int    `json:"numPlayers"`
-	Owned        bool   `json:"owned"`
-	Running      bool   `json:"running"`
-	Variant      string `json:"variant"`
-	Timed        bool   `json:"timed"`
-	BaseTime     int    `json:"baseTime"`
-	TimePerTurn  int    `json:"timePerTurn"`
-	SharedReplay bool   `json:"sharedReplay"`
-	Progress     int    `json:"progress"`
-	Players      string `json:"players"`
-	Spectators   string `json:"spectators"`
+	ID                int    `json:"id"`
+	Name              string `json:"name"`
+	PasswordProtected bool   `json:"passwordProtected"`
+	Joined            bool   `json:"joined"`
+	NumPlayers        int    `json:"numPlayers"`
+	Owned             bool   `json:"owned"`
+	Running           bool   `json:"running"`
+	Variant           string `json:"variant"`
+	Timed             bool   `json:"timed"`
+	BaseTime          int    `json:"baseTime"`
+	TimePerTurn       int    `json:"timePerTurn"`
+	SharedReplay      bool   `json:"sharedReplay"`
+	Progress          int    `json:"progress"`
+	Players           string `json:"players"`
+	Spectators        string `json:"spectators"`
 }
 
 func makeTableMessage(s *Session, t *Table) *TableMessage {
@@ -106,21 +106,21 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 	}
 
 	return &TableMessage{
-		ID:           t.ID,
-		Name:         t.Name,
-		Password:     len(t.Password) > 0,
-		Joined:       joined,
-		NumPlayers:   numPlayers,
-		Owned:        s.UserID() == t.Owner,
-		Running:      t.Running,
-		Variant:      t.Options.Variant,
-		Timed:        t.Options.Timed,
-		BaseTime:     t.Options.BaseTime,
-		TimePerTurn:  t.Options.TimePerTurn,
-		SharedReplay: t.Replay,
-		Progress:     t.Progress,
-		Players:      players,
-		Spectators:   spectators,
+		ID:                t.ID,
+		Name:              t.Name,
+		PasswordProtected: len(t.PasswordHash) > 0,
+		Joined:            joined,
+		NumPlayers:        numPlayers,
+		Owned:             s.UserID() == t.Owner,
+		Running:           t.Running,
+		Variant:           t.Options.Variant,
+		Timed:             t.Options.Timed,
+		BaseTime:          t.Options.BaseTime,
+		TimePerTurn:       t.Options.TimePerTurn,
+		SharedReplay:      t.Replay,
+		Progress:          t.Progress,
+		Players:           players,
+		Spectators:        spectators,
 	}
 }
 

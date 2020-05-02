@@ -1,8 +1,5 @@
 // A collection of miscellaneous functions
 
-// Imports
-import shajs from 'sha.js';
-
 // init is executed when the document is ready
 export const init = () => {
   // Add a function to the jQuery object to detect if an element is off screen
@@ -43,12 +40,6 @@ export const getRandomNumber = (
   min: number,
   max: number,
 ) => Math.floor((Math.random() * (max - min + 1)) + min);
-
-// We salt passwords and then hash them with SHA256 before sending them to the server
-export const hashPassword = (salt: string, plaintextPassword: string) => {
-  const stringToHash = `${salt}${plaintextPassword}`;
-  return shajs('sha256').update(stringToHash).digest('hex');
-};
 
 // From: https://stackoverflow.com/questions/61526746
 export const isKeyOf = <T>(p: PropertyKey, target: T): p is keyof T => p in target;

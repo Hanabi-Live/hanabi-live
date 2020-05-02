@@ -17,13 +17,11 @@ export class Globals {
   // The "version.json" file is filled in dynamically by the "build_client.sh" script
   version: number = version;
 
-  username: string = '';
-  password: string = '';
-
   conn: Connection | null = null; // The WebSocket connection (set in "websocket.ts")
 
   // Values sent to us from the server in the "hello" message
   id: number = -1;
+  username: string = '';
   totalGames: number = 0;
   muted: boolean = false;
   admin: boolean = false;

@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/Zamiell/go-logging v0.0.0-20200330042608-74a4ce81eb96
+	github.com/alexedwards/argon2id v0.0.0-20200420065805-90c52fcb498a
 	github.com/bwmarrin/discordgo v0.20.3
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth_gin v0.0.0-20170928041415-5752492be505

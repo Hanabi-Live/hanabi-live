@@ -86,7 +86,7 @@ func (t *Table) NotifyPlayerChange() {
 			DeckPlays            bool                 `json:"deckPlays"`
 			EmptyClues           bool                 `json:"emptyClues"`
 			CharacterAssignments bool                 `json:"characterAssignments"`
-			Password             bool                 `json:"password"`
+			PasswordProtected    bool                 `json:"passwordProtected"`
 		}
 		p.Session.Emit("game", &GameMessage{
 			Name:                 t.Name,
@@ -101,7 +101,7 @@ func (t *Table) NotifyPlayerChange() {
 			DeckPlays:            t.Options.DeckPlays,
 			EmptyClues:           t.Options.EmptyClues,
 			CharacterAssignments: t.Options.CharacterAssignments,
-			Password:             t.Password != "",
+			PasswordProtected:    t.PasswordHash != "",
 		})
 	}
 }

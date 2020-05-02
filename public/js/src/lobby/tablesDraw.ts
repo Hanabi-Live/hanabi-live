@@ -34,9 +34,9 @@ const tablesDraw = () => {
     for (const [id, table] of globals.tableMap) {
       if (i === 1 && table.joined && !table.sharedReplay) {
         tableIDsOfThisType.push(id);
-      } else if (i === 2 && !table.running && !table.password && !table.joined) {
+      } else if (i === 2 && !table.running && !table.passwordProtected && !table.joined) {
         tableIDsOfThisType.push(id);
-      } else if (i === 3 && !table.running && table.password && !table.joined) {
+      } else if (i === 3 && !table.running && table.passwordProtected && !table.joined) {
         tableIDsOfThisType.push(id);
       } else if (i === 4 && table.running && !table.sharedReplay && !table.joined) {
         tableIDsOfThisType.push(id);
@@ -64,7 +64,7 @@ const tablesDraw = () => {
       htmlClass = 'joined';
     } else if (table.running) {
       htmlClass = 'started';
-    } else if (table.password) {
+    } else if (table.passwordProtected) {
       htmlClass = 'unstarted-password';
     } else {
       htmlClass = 'unstarted';
@@ -73,7 +73,7 @@ const tablesDraw = () => {
 
     // Column 1 - Name
     let name = table.name;
-    if (table.password && !table.running && !table.sharedReplay) {
+    if (table.passwordProtected && !table.running && !table.sharedReplay) {
       name = `<i class="fas fa-key fa-sm"></i> &nbsp; ${name}`;
     }
     $('<td>').html(name).appendTo(row);
@@ -147,7 +147,7 @@ const tableSpectateButton = (table: Table) => () => {
 };
 
 const tableJoinButton = (table: Table) => () => {
-  if (table.password) {
+  if (table.passwordProtected) {
     modals.passwordShow(table.id);
     return;
   }

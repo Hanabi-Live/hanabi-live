@@ -1,7 +1,6 @@
 // Modals (boxes that hover on top of the UI)
 
 // Imports
-import shajs from 'sha.js';
 import { FADE_TIME } from './constants';
 import * as gameChat from './game/chat';
 import globals from './globals';
@@ -68,9 +67,13 @@ const passwordSubmit = () => {
     throw new Error('The "password-modal-id" element does not have a string value.');
   }
   const tableID = parseInt(tableIDString, 10); // The server expects this as a number
-  const passwordPlaintext = $('#password-modal-password').val();
-  const stringToHash = `Hanabi game password ${passwordPlaintext}`;
-  const password = shajs('sha256').update(stringToHash).digest('hex');
+  let password = $('#password-modal-password').val();
+  if (typeof password === 'number') {
+    password = password.toString();
+  }
+  if (typeof password !== 'string') {
+    return;
+  }
   globals.conn!.send('tableJoin', {
     tableID,
     password,

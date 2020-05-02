@@ -52,7 +52,7 @@ func httpLocalhostInit() {
 	httpRouter.GET("/timeLeft", httpTimeLeft)
 	httpRouter.GET("/clearEmptyTables", httpClearEmptyTables)
 	httpRouter.GET("/debug", func(c *gin.Context) {
-		debug()
+		debugPrint()
 		c.String(http.StatusOK, "success\n")
 	})
 

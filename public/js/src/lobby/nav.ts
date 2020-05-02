@@ -16,7 +16,6 @@ export const show = (target: string) => {
 };
 
 export const signOut = () => {
-  localStorage.removeItem('hanabiuser');
-  localStorage.removeItem('hanabipass');
+  localStorage.removeItem('username');
   window.location.reload();
 };

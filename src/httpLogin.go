@@ -1,11 +1,14 @@
 package main
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"net"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/alexedwards/argon2id"
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	emoji "github.com/tmdvs/Go-Emoji-Utils"
@@ -212,9 +215,72 @@ func httpLogin(c *gin.Context) {
 	}
 
 	if exists {
-		if password != user.Password {
-			http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
-			return
+		// First, check to see if they have a a legacy password hash stored in the database
+		if user.OldPasswordHash.Valid {
+			// This is the first time that they are logging in after the password hash transition
+			// Hash the submitted password with SHA256
+			passwordSalt := "Hanabi password "
+			combined := passwordSalt + password
+			oldPasswordHashBytes := sha256.Sum256([]byte(combined))
+			oldPasswordHashString := fmt.Sprintf("%x", oldPasswordHashBytes)
+			if oldPasswordHashString != user.OldPasswordHash.String {
+				http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
+				return
+			}
+
+			// Create an Argon2id hash of the plain-text password
+			var passwordHash string
+			if v, err := argon2id.CreateHash(password, argon2id.DefaultParams); err != nil {
+				logger.Error("Failed to create a hash from the submitted password for "+
+					"\""+username+"\":", err)
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
+				return
+			} else {
+				passwordHash = v
+			}
+
+			// Update their password to the new Argon2 format
+			if err := models.Users.UpdatePassword(user.ID, passwordHash); err != nil {
+				logger.Error("Failed to set the new hash for \""+username+"\":", err)
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
+				return
+			}
+		} else {
+			// Check to see if their password is correct
+			if !user.PasswordHash.Valid {
+				logger.Error("Failed to get the Argon2 hash from the database for " +
+					"\"" + username + "\".")
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
+				return
+			}
+			if match, err := argon2id.ComparePasswordAndHash(
+				password,
+				user.PasswordHash.String,
+			); err != nil {
+				logger.Error("Failed to compare the password to the Argon2 hash for "+
+					"\""+username+"\":", err)
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
+				return
+			} else if !match {
+				http.Error(w, "That is not the correct password.", http.StatusUnauthorized)
+				return
+			}
 		}
 
 		// Update the database with "datetime_last_login" and "last_ip"
@@ -229,8 +295,23 @@ func httpLogin(c *gin.Context) {
 			return
 		}
 	} else {
+		// Create an Argon2id hash of the plain-text password
+		var passwordHash string
+		if v, err := argon2id.CreateHash(password, argon2id.DefaultParams); err != nil {
+			logger.Error("Failed to create a hash from the submitted password for "+
+				"\""+username+"\":", err)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		} else {
+			passwordHash = v
+		}
+
 		// Create the new user in the database
-		if v, err := models.Users.Insert(username, password, ip); err != nil {
+		if v, err := models.Users.Insert(username, passwordHash, ip); err != nil {
 			logger.Error("Failed to insert user \""+username+"\":", err)
 			http.Error(
 				w,

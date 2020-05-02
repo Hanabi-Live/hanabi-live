@@ -3,6 +3,8 @@ package main
 import (
 	"strconv"
 	"time"
+
+	"github.com/alexedwards/argon2id"
 )
 
 // commandTableJoin is sent when the user clicks on the "Join" button in the lobby
@@ -53,9 +55,15 @@ func commandTableJoin(s *Session, d *CommandData) {
 	}
 
 	// Validate that they entered the correct password
-	if t.Password != "" && d.Password != t.Password {
-		s.Warning("That is not the correct password for this game.")
-		return
+	if t.PasswordHash != "" {
+		if match, err := argon2id.ComparePasswordAndHash(d.Password, t.PasswordHash); err != nil {
+			logger.Error("Failed to compare the submitted password to the Argon2 hash:", err)
+			s.Error(defaultErrorMsg)
+			return
+		} else if !match {
+			s.Warning("That is not the correct password for this game.")
+			return
+		}
 	}
 
 	/*

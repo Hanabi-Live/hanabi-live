@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/alexedwards/argon2id"
 )
 
 const (
@@ -33,7 +35,7 @@ var (
 //   deckPlays: false,
 //   emptyClues: false,
 //   characterAssignments: false,
-//   password: '1b5f02e630254f609c90ac2d1a6404373644dd96111e7e1a2d9b05fd61905ffb',
+//   password: 'super_secret',
 //   alertWaiters: false,
 // }
 func commandTableCreate(s *Session, d *CommandData) {
@@ -147,7 +149,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 			if exists, err := models.Games.Exists(databaseID); err != nil {
 				logger.Error("Failed to check to see if game "+
 					strconv.Itoa(databaseID)+" exists:", err)
-				s.Error("Failed to create the game. Please contact an administrator.")
+				s.Error(createFail)
 				return
 			} else if !exists {
 				s.Warning("That game ID does not exist in the database.")
@@ -214,7 +216,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 			var lines []string
 			if v, err := ioutil.ReadFile(filePath); err != nil {
 				logger.Error("Failed to read \""+filePath+"\":", err)
-				s.Error("Failed to create the game. Please contact an administrator.")
+				s.Error(createFail)
 				return
 			} else {
 				lines = strings.Split(string(v), "\n")
@@ -319,8 +321,20 @@ func commandTableCreate(s *Session, d *CommandData) {
 		Create
 	*/
 
+	passwordHash := ""
+	if d.Password != "" {
+		// Create an Argon2id hash of the plain-text password
+		if v, err := argon2id.CreateHash(d.Password, argon2id.DefaultParams); err != nil {
+			logger.Error("Failed to create a hash from the submitted table password:", err)
+			s.Error(createFail)
+			return
+		} else {
+			passwordHash = v
+		}
+	}
+
 	t := NewTable(d.Name, s.UserID())
-	t.Password = d.Password
+	t.PasswordHash = passwordHash
 	t.AlertWaiters = d.AlertWaiters
 	t.Options = &Options{
 		Variant:              d.Variant,
@@ -351,7 +365,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 	// (even if they check the "Alert people" checkbox,
 	// we don't want to alert on password-protected games or test games)
 	if t.AlertWaiters &&
-		t.Password == "" &&
+		t.PasswordHash == "" &&
 		t.Name != "test" &&
 		!strings.HasPrefix(t.Name, "test ") {
 

@@ -19,7 +19,6 @@ const basicVariants = [
 const variantNames = Array.from(VARIANTS.keys());
 const dropdown1 = $('#create-game-variant-dropdown1');
 const dropdown2 = $('#create-game-variant-dropdown2');
-const passwordSalt = 'Hanabi game password ';
 
 // Pre-prepare the variant names in the format that the Slim Select dropdown expects
 const slimSelectData: Array<any> = [];
@@ -237,14 +236,11 @@ const submit = () => {
 
   // All "Create Game" settings are stored on the server with the exception of passwords;
   // passwords are stored locally as cookies
-  let password = $('#createTablePassword').val();
+  const password = $('#createTablePassword').val();
   if (typeof password !== 'string') {
     throw new Error('The value of the "createTablePassword" element was not a string.');
   }
   localStorage.setItem('createTablePassword', password);
-  if (password !== '') {
-    password = misc.hashPassword(passwordSalt, password);
-  }
 
   globals.conn!.send('tableCreate', {
     name: $('#createTableName').val(), // We don't bother to store the table name
