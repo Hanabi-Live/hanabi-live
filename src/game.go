@@ -37,7 +37,7 @@ type Game struct {
 	LastClueTypeGiven int
 	// Different actions will have different fields
 	// Thus, Actions is a slice of different action types
-	// Furthermore, we don't want this to be a pointer of interfaces because
+	// Furthermore, we do not want this to be a pointer of interfaces because
 	// this simplifies action scrubbing
 	Actions               []interface{}
 	Actions2              []*GameAction

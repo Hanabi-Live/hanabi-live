@@ -6,7 +6,10 @@ import (
 	"log"
 	"os"
 	"path"
+	"strconv"
 	"time"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 // restoreTables recreates tables that were ongoing at the time of the last server restart
@@ -45,6 +48,22 @@ func restoreTables() {
 		g.Options = t.Options
 		for _, gp := range g.Players {
 			gp.Game = g
+		}
+
+		// Restore the types of the actions
+		for i, a := range g.Actions {
+			if action, ok := a.(map[string]interface{}); !ok {
+				logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
+					strconv.Itoa(t.ID) + " to a map.")
+			} else if action["type"] == "draw" {
+				actionDraw := ActionDraw{}
+				if err := mapstructure.Decode(a, &actionDraw); err != nil {
+					logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
+						strconv.Itoa(t.ID) + " to a draw action.")
+				}
+				g.Actions[i] = actionDraw
+			}
+			// (we don't have to bother converting any other actions)
 		}
 
 		// If this is a timed game, give the current player some additional seconds

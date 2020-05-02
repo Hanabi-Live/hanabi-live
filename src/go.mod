@@ -13,6 +13,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/joho/godotenv v1.3.0
 	github.com/microcosm-cc/bluemonday v1.0.2
+	github.com/mitchellh/mapstructure v1.1.2
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/tmdvs/Go-Emoji-Utils v1.1.0
