@@ -134,7 +134,8 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Get the channel
 	var channel *discordgo.Channel
 	if v, err := discord.Channel(m.ChannelID); err != nil {
-		logger.Error("Failed to get the Discord channel of \""+m.ChannelID+"\":", err)
+		// This can occasionally fail, so we don't want to report the error to Sentry
+		logger.Info("Failed to get the Discord channel of \""+m.ChannelID+"\":", err)
 		return
 	} else {
 		channel = v
@@ -206,7 +207,8 @@ func discordGetNickname(discordID string) string {
 	// Get the Discord guild object
 	var guild *discordgo.Guild
 	if v, err := discord.Guild(guildID); err != nil {
-		logger.Error("Failed to get the Discord guild:", err)
+		// This can occasionally fail, so we don't want to report the error to Sentry
+		logger.Info("Failed to get the Discord guild:", err)
 		return "[error]"
 	} else {
 		guild = v
@@ -228,8 +230,9 @@ func discordGetNickname(discordID string) string {
 	// If the "RequestGuildMembers()" function has not finished populating the "guild.Members",
 	// then the above code block may not find the user
 	// Default to getting the user's username directly from the API
+	// This can occasionally fail, so we don't want to report the error to Sentry
 	if user, err := discord.User(discordID); err != nil {
-		logger.Error("Failed to get the Discord user of \""+discordID+"\":", err)
+		logger.Info("Failed to get the Discord user of \""+discordID+"\":", err)
 		return "[error]"
 	} else {
 		return user.Username
@@ -240,7 +243,8 @@ func discordGetChannel(discordID string) string {
 	// Get the Discord guild object
 	var guild *discordgo.Guild
 	if v, err := discord.Guild(discordListenChannels[0]); err != nil {
-		logger.Error("Failed to get the Discord guild:", err)
+		// This can occasionally fail, so we don't want to report the error to Sentry
+		logger.Info("Failed to get the Discord guild:", err)
 		return ""
 	} else {
 		guild = v
@@ -261,7 +265,8 @@ func discordGetID(username string) string {
 	// Get the Discord guild object
 	var guild *discordgo.Guild
 	if v, err := discord.Guild(discordListenChannels[0]); err != nil {
-		logger.Error("Failed to get the Discord guild:", err)
+		// This can occasionally fail, so we don't want to report the error to Sentry
+		logger.Info("Failed to get the Discord guild:", err)
 		return ""
 	} else {
 		guild = v
