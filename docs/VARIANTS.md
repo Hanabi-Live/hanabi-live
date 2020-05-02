@@ -142,6 +142,11 @@ One of each card per suit (e.g. 5 in total):
 
 * Fives have the property of the suit prefix. For example, rainbow-fives are "touched" by all colors.
 
+### Suit-Ones or Suit-Fives with Another Special Suit
+
+* Suit-Ones or Suit-Fives of a special suit inherit the suit's special properties and override the property of the one/five if a conflict is present.
+* For example, in the "Muddy-Rainbow-Fives & Pink" variant, the pink 5 is touched by all colors and touched by all ranks.
+
 ### Special Mix (5 Suits)
 
 * This is a mix of several variants. The suits are as follows:
