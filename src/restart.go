@@ -61,4 +61,7 @@ func restart() {
 
 	logger.Info("Finished writing all tables to disk. Restarting...")
 	execute("restart.sh", projectPath)
+
+	// Block until the process is killed so that no more moves can be submitted
+	select {}
 }
