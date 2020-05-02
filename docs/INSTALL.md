@@ -145,7 +145,7 @@ If you want to install less stuff on your computer, you can alternatively follow
 
 ## Installation for Development (Docker)
 
-We provide a [docker-compose.yml](../docker-compose.yml) file which runs MariaDB and the Golang backend inside of networked Docker containers.
+Docker is **not supported** as an official installation method. However, we provide a [docker-compose.yml](../docker-compose.yml) file which should run MariaDB and the Golang backend inside of networked Docker containers, if you so choose.
 
 * [Install Docker](https://docs.docker.com/get-docker/).
 * Run `docker-compose up --build` to build and run the server.
