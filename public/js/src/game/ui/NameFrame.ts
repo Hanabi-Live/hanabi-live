@@ -78,8 +78,7 @@ export default class NameFrame extends Konva.Group {
           if (globals.spectators.length === 1) {
             // Shifting perspectives will not work if we are the only player in the
             // replay, since going back to the lobby will automatically end the replay
-            let msg = 'Due to technical limitations, you cannot shift your ';
-            msg += 'perspective if you are the only person in a replay.';
+            const msg = 'Due to technical limitations, you cannot shift your perspective if you are the only person in a replay.';
             setTimeout(() => {
               // Show the warning modal in a callback so that the right-click context
               // menu does not show up (otherwise, the right-click would be passed

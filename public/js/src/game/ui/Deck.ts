@@ -148,7 +148,9 @@ export default class Deck extends Konva.Group {
     });
 
     // The tooltip will show what the deck is, followed by the current game options
-    let content = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> &nbsp;This is the deck, which shows the number of cards remaining.</span><br /><br />';
+    let content = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> ';
+    content += '&nbsp;This is the deck, which shows the number of cards remaining.</span>';
+    content += '<br /><br />';
     content += '<strong>Game Options:</strong>';
     content += '<ul class="game-tooltips-ul">';
     content += '<li><span class="game-tooltips-icon"><i class="fas fa-rainbow"></i></span>';

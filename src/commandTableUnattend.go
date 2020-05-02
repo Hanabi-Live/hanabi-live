@@ -16,7 +16,10 @@ func commandTableUnattend(s *Session, d *CommandData) {
 	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist, so you cannot unattend it.")
+		// Unlike other command handlers,
+		// we do not want to show a warning to the user if the table does not exist
+		// In some cases, network latency will cause the "unattend" message to get to the server
+		// after the respective table has already been deleted
 		return
 	} else {
 		t = v

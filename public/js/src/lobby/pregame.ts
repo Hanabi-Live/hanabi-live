@@ -110,24 +110,24 @@ export const draw = () => {
     html += misc.timerFormatter(globals.game.timePerTurn);
     html += ')</li>';
     html += `
-            <div class="hidden">
-                <div id="pregame-tooltip-timer" class="lobby-pregame-tooltip-icon">
-                    This is a timed game.
-                </div>
-            </div>
-        `;
+      <div class="hidden">
+        <div id="pregame-tooltip-timer" class="lobby-pregame-tooltip-icon">
+          This is a timed game.
+        </div>
+      </div>
+    `;
   }
 
   if (globals.game.speedrun) {
     html += '<li><i id="lobby-pregame-options-speedrun" class="fas fa-running" ';
     html += 'data-tooltip-content="#pregame-tooltip-speedrun"></i></li>';
     html += `
-            <div class="hidden">
-                <div id="pregame-tooltip-speedrun" class="lobby-pregame-tooltip-icon">
-                    This is a speedrun.
-                </div>
-            </div>
-        `;
+      <div class="hidden">
+        <div id="pregame-tooltip-speedrun" class="lobby-pregame-tooltip-icon">
+          This is a speedrun.
+        </div>
+      </div>
+    `;
   }
 
   if (globals.game.cardCycle) {
@@ -135,12 +135,12 @@ export const draw = () => {
     html += 'style="position: relative; left: 0.2em;" ';
     html += 'data-tooltip-content="#pregame-tooltip-card-cycle"></i></li>';
     html += `
-            <div class="hidden">
-                <div id="pregame-tooltip-card-cycle" class="lobby-pregame-tooltip-icon">
-                    The <strong>Card Cycling</strong> option is enabled.
-                </div>
-            </div>
-        `;
+      <div class="hidden">
+        <div id="pregame-tooltip-card-cycle" class="lobby-pregame-tooltip-icon">
+          The <strong>Card Cycling</strong> option is enabled.
+        </div>
+      </div>
+    `;
   }
 
   if (globals.game.deckPlays) {
@@ -148,24 +148,24 @@ export const draw = () => {
     html += 'style="position: relative; left: 0.2em;" ';
     html += 'data-tooltip-content="#pregame-tooltip-deck-plays"></i></li>';
     html += `
-            <div class="hidden">
-                <div id="pregame-tooltip-deck-plays" class="lobby-pregame-tooltip-icon">
-                    The <strong>Bottom-Deck Blind-Plays</strong> option is enabled.
-                </div>
-            </div>
-        `;
+      <div class="hidden">
+        <div id="pregame-tooltip-deck-plays" class="lobby-pregame-tooltip-icon">
+          The <strong>Bottom-Deck Blind-Plays</strong> option is enabled.
+        </div>
+      </div>
+    `;
   }
 
   if (globals.game.emptyClues) {
     html += '<li><i id="lobby-pregame-options-empty-clues" class="fas fa-expand" ';
     html += 'data-tooltip-content="#pregame-tooltip-empty-clues"></i></li>';
     html += `
-            <div class="hidden">
-                <div id="pregame-tooltip-empty-clues" class="lobby-pregame-tooltip-icon">
-                    The <strong>Empty Clues</strong> option is enabled.
-                </div>
-            </div>
-        `;
+      <div class="hidden">
+        <div id="pregame-tooltip-empty-clues" class="lobby-pregame-tooltip-icon">
+          The <strong>Empty Clues</strong> option is enabled.
+        </div>
+      </div>
+    `;
   }
 
   if (globals.game.characterAssignments) {
@@ -173,24 +173,24 @@ export const draw = () => {
     html += 'style="position: relative; right: 0.2em;" ';
     html += 'data-tooltip-content="#pregame-tooltip-characters">🤔</span></li>';
     html += `
-            <div class="hidden">
-                <div id="pregame-tooltip-characters" class="lobby-pregame-tooltip-icon">
-                    The <strong>Detrimental Characters</strong> option is enabled.
-                </div>
-            </div>
-        `;
+      <div class="hidden">
+        <div id="pregame-tooltip-characters" class="lobby-pregame-tooltip-icon">
+          The <strong>Detrimental Characters</strong> option is enabled.
+        </div>
+      </div>
+    `;
   }
 
   if (globals.game.password) {
     html += '<li><i id="lobby-pregame-options-password" class="fas fa-lock" ';
     html += 'data-tooltip-content="#pregame-tooltip-password"></i></li>';
     html += `
-            <div class="hidden">
-                <div id="pregame-tooltip-password" class="lobby-pregame-tooltip-icon">
-                    This game is password protected.
-                </div>
-            </div>
-        `;
+      <div class="hidden">
+        <div id="pregame-tooltip-password" class="lobby-pregame-tooltip-icon">
+          This game is password protected.
+        </div>
+      </div>
+    `;
   }
 
   options.html(html);
@@ -223,10 +223,10 @@ export const draw = () => {
     div.show();
 
     html = `
-            <p class="margin0 padding0p5">
-                <strong>${player.name}</strong>
-            </p>
-        `;
+      <p class="margin0 padding0p5">
+        <strong>${player.name}</strong>
+      </p>
+    `;
 
     // There is not enough room to draw the full box for 6 players
     if (numPlayers === 6) {
@@ -257,63 +257,63 @@ export const draw = () => {
     }
 
     html += `
-            <div class="row">
-                <div class="col-10">
-                    Total games:
-                </div>
-                <div class="col-2 align-right padding0">
-                    ${player.stats.numGames}
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-10">
-                    ...of this variant:
-                </div>
-                <div class="col-2 align-right padding0">
-                    ${variantStats.numGames}
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-10">
-                    Average score:
-                </div>
-                <div class="col-2 align-right padding0">
-                    ${averageScoreString}
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-10">
-                    Strikeout rate:
-                </div>
-                <div class="col-2 align-right padding0">
-                    ${strikeoutRateString}
-                </div>
-            </div>
-        `;
+      <div class="row">
+        <div class="col-10">
+          Total games:
+        </div>
+        <div class="col-2 align-right padding0">
+          ${player.stats.numGames}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-10">
+          ...of this variant:
+        </div>
+        <div class="col-2 align-right padding0">
+          ${variantStats.numGames}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-10">
+          Average score:
+        </div>
+        <div class="col-2 align-right padding0">
+          ${averageScoreString}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-10">
+          Strikeout rate:
+        </div>
+        <div class="col-2 align-right padding0">
+          ${strikeoutRateString}
+        </div>
+      </div>
+    `;
     if (numPlayers > 1) {
       html += `
-                <div class="row">
-                    <div class="col-10">
-                        ${numPlayers}-player best score:
-                    </div>
-                    <div class="col-2 align-right padding0">
-                        ${variantStats.bestScores[numPlayers - 2].score}
-                    </div>
-                </div>
-            `;
+        <div class="row">
+          <div class="col-10">
+            ${numPlayers}-player best score:
+          </div>
+          <div class="col-2 align-right padding0">
+            ${variantStats.bestScores[numPlayers - 2].score}
+          </div>
+        </div>
+      `;
     }
     html += `
-            <div class="row">
-                <div class="col-10">
-                    ${numPlayers === 1 ? 'B' : 'Other b'}est scores:
-                </div>
-                <div class="col-2 align-right padding0">
-                    <i id="lobby-pregame-player-${i + 1}-scores-icon" class="fas fa-chart-area green" data-tooltip-content="#lobby-pregame-player-${i + 1}-tooltip"></i>
-                </div>
-            </div>
-            <div class="hidden">
-                <div id="lobby-pregame-player-${i + 1}-tooltip" class="lobby-pregame-tooltip">
-        `;
+      <div class="row">
+        <div class="col-10">
+          ${numPlayers === 1 ? 'B' : 'Other b'}est scores:
+        </div>
+        <div class="col-2 align-right padding0">
+          <i id="lobby-pregame-player-${i + 1}-scores-icon" class="fas fa-chart-area green" data-tooltip-content="#lobby-pregame-player-${i + 1}-tooltip"></i>
+        </div>
+      </div>
+      <div class="hidden">
+        <div id="lobby-pregame-player-${i + 1}-tooltip" class="lobby-pregame-tooltip">
+    `;
     const variant = VARIANTS.get(globals.game.variant);
     if (!variant) {
       throw new Error(`Failed to get the "${globals.game.variant}" variant.`);
@@ -341,9 +341,9 @@ export const draw = () => {
       html += '</div></div>';
     }
     html += `
-                </div>
-            </div>
-        `;
+        </div>
+      </div>
+    `;
     if (!player.present) {
       html += '<p class="lobby-pregame-player-away"><strong>AWAY</strong></p>';
     }
