@@ -7,6 +7,7 @@ import globals from '../globals';
 import websocketInit from '../websocketInit';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
+import * as usersDraw from './usersDraw';
 
 // Constants
 const browserIsFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
@@ -198,6 +199,7 @@ export const hide = (firstTimeUser: boolean) => {
   // Show the lobby
   globals.currentScreen = 'lobby';
   tablesDraw();
+  usersDraw.draw();
   $('#lobby').show();
   $('#lobby-history').hide();
   // We can't hide this element by default in "index.html" or else the "No game history" text
