@@ -11,6 +11,12 @@ export const draw = () => {
   // Clear all of the existing rows
   tbody.html('');
 
+  // Don't do anything if there are no users
+  // (this will be the case when first logging in and not doing the tutorial)
+  if (globals.userMap.size === 0) {
+    return;
+  }
+
   // Make a mapping of user names to IDs
   const usernameMapping: Map<string, number> = new Map();
   for (const [id, user] of globals.userMap) {
@@ -42,7 +48,7 @@ const drawUser = (
 ) => {
   // Find the status of this user from the "userList" map
   const id = usernameMapping.get(username);
-  if (!id) {
+  if (typeof id === 'undefined') {
     throw new Error(`Failed to get the ID for the username of "${username}".`);
   }
   const user = globals.userMap.get(id);

@@ -199,7 +199,7 @@ export const hide = (firstTimeUser: boolean) => {
   // Show the lobby
   globals.currentScreen = 'lobby';
   tablesDraw();
-  usersDraw.draw();
+  usersDraw.draw(); // If we were in the tutorial, we have to re-draw all of the user rows
   $('#lobby').show();
   $('#lobby-history').hide();
   // We can't hide this element by default in "index.html" or else the "No game history" text
