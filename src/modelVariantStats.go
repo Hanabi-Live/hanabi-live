@@ -1,8 +1,10 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"errors"
+
+	"github.com/jackc/pgx/v4"
 )
 
 type VariantStats struct{}
@@ -30,7 +32,7 @@ func (*VariantStats) Get(variant int) (VariantStatsRow, error) {
 	stats := NewVariantStatsRow()
 
 	// If this variant has never been played, all the values will default to 0
-	if err := db.QueryRow(`
+	if err := db.QueryRow(context.Background(), `
 		SELECT
 			num_games,
 			best_score2,
@@ -42,7 +44,7 @@ func (*VariantStats) Get(variant int) (VariantStatsRow, error) {
 			average_score,
 			num_strikeouts
 		FROM variant_stats
-		WHERE variant = ?
+		WHERE variant = $1
 	`, variant).Scan(
 		&stats.NumGames,
 		&stats.BestScores[0].Score, // 2-player
@@ -53,7 +55,7 @@ func (*VariantStats) Get(variant int) (VariantStatsRow, error) {
 		&stats.NumMaxScores,
 		&stats.AverageScore,
 		&stats.NumStrikeouts,
-	); err == sql.ErrNoRows {
+	); err == pgx.ErrNoRows {
 		return stats, nil
 	} else if err != nil {
 		return stats, err
@@ -63,7 +65,7 @@ func (*VariantStats) Get(variant int) (VariantStatsRow, error) {
 }
 
 func (*VariantStats) GetAll(variantsID map[int]string) (map[int]VariantStatsRow, error) {
-	rows, err := db.Query(`
+	rows, err := db.Query(context.Background(), `
 		SELECT
 			variant,
 			num_games,
@@ -105,9 +107,7 @@ func (*VariantStats) GetAll(variantsID map[int]string) (map[int]VariantStatsRow,
 	if rows.Err() != nil {
 		return nil, err
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
+	rows.Close()
 
 	return statsMap, nil
 }
@@ -121,77 +121,65 @@ func (*VariantStats) Update(variant int, maxScore int, stats VariantStatsRow) er
 	// First, check to see if there is a row in the table for this variant already
 	// If not, we need to insert a new one
 	var numRows int
-	if err := db.QueryRow(`
+	if err := db.QueryRow(context.Background(), `
 		SELECT COUNT(variant)
 		FROM variant_stats
-		WHERE variant = ?
+		WHERE variant = $1
 	`, variant).Scan(&numRows); err != nil {
 		return err
 	}
 	if numRows == 0 {
-		var stmt *sql.Stmt
-		if v, err := db.Prepare(`
+		if _, err := db.Exec(context.Background(), `
 			INSERT INTO variant_stats (variant)
-			VALUES (?)
-		`); err != nil {
-			return err
-		} else {
-			stmt = v
-		}
-		defer stmt.Close()
-
-		if _, err := stmt.Exec(variant); err != nil {
+			VALUES ($1)
+		`, variant); err != nil {
 			return err
 		}
 	}
 
-	var stmt *sql.Stmt
-	if v, err := db.Prepare(`
-		UPDATE variant_stats
-		SET
-			num_games = (
-				SELECT COUNT(games.id)
-				FROM games
-				WHERE variant = ?
-					AND games.speedrun = 0
-			),
-			best_score2 = ?,
-			best_score3 = ?,
-			best_score4 = ?,
-			best_score5 = ?,
-			best_score6 = ?,
-			num_max_scores = (
-				SELECT COUNT(games.id)
-				FROM games
-				WHERE variant = ?
-					AND score = ?
-					AND speedrun = 0
-			),
-			average_score = (
-				/* We enclose this query in an "IFNULL" so that it defaults to 0 (instead of NULL)
-				   if there have been 0 games played on this variant */
-				SELECT IFNULL(AVG(score), 0)
-				FROM games
-				WHERE variant = ?
-					AND score != 0
-					AND speedrun = 0
-			),
-			num_strikeouts = (
-				SELECT COUNT(id)
-				FROM games
-				WHERE variant = ?
-					AND score = 0
-					AND speedrun = 0
-			)
-		WHERE variant = ?
-	`); err != nil {
-		return err
-	} else {
-		stmt = v
-	}
-	defer stmt.Close()
-
-	_, err := stmt.Exec(
+	_, err := db.Exec(
+		context.Background(),
+		`
+			UPDATE variant_stats
+			SET
+				num_games = (
+					SELECT COUNT(games.id)
+					FROM games
+					WHERE variant = $1
+						AND games.speedrun = FALSE
+				),
+				best_score2 = $2,
+				best_score3 = $3,
+				best_score4 = $4,
+				best_score5 = $5,
+				best_score6 = $6,
+				num_max_scores = (
+					SELECT COUNT(games.id)
+					FROM games
+					WHERE variant = $7
+						AND score = $8
+						AND speedrun = FALSE
+				),
+				average_score = (
+					/*
+					 * We enclose this query in an "COALESCE" so that it defaults to 0 (instead of
+					 * NULL) if there have been 0 games played on this variant
+					 */
+					 SELECT COALESCE(AVG(score), 0)
+					 FROM games
+					 WHERE variant = $9
+						AND score != 0
+						AND speedrun = FALSE
+				),
+				num_strikeouts = (
+					SELECT COUNT(id)
+					FROM games
+					WHERE variant = $10
+						AND score = 0
+						AND speedrun = FALSE
+				)
+			WHERE variant = $11
+		`,
 		variant,                   // num_games
 		stats.BestScores[0].Score, // 2-player
 		stats.BestScores[1].Score, // 3-player
@@ -209,25 +197,17 @@ func (*VariantStats) Update(variant int, maxScore int, stats VariantStatsRow) er
 
 func (vs *VariantStats) UpdateAll(highestVariantID int, maxScores []int) error {
 	// Delete all of the existing rows
-	var stmt *sql.Stmt
-	if v, err := db.Prepare("TRUNCATE variant_stats"); err != nil {
-		return err
-	} else {
-		stmt = v
-	}
-	defer stmt.Close()
-
-	if _, err := stmt.Exec(); err != nil {
+	if _, err := db.Exec(context.Background(), "DELETE FROM variant_stats"); err != nil {
 		return err
 	}
 
 	for variant := 0; variant <= highestVariantID; variant++ {
 		// Check to see if any users have played a game of this variant
 		var numRows int
-		if err := db.QueryRow(`
+		if err := db.QueryRow(context.Background(), `
 			SELECT COUNT(id)
 			FROM games
-			WHERE variant = ?
+			WHERE variant = $1
 		`, variant).Scan(&numRows); err != nil {
 			return err
 		}
@@ -243,13 +223,13 @@ func (vs *VariantStats) UpdateAll(highestVariantID int, maxScores []int) error {
 
 			// Get the score for this player count (using no modifiers)
 			var bestScore int
-			if err := db.QueryRow(`
-				SELECT IFNULL(MAX(games.score), 0)
+			if err := db.QueryRow(context.Background(), `
+				SELECT COALESCE(MAX(games.score), 0)
 				FROM games
-				WHERE variant = ?
-					AND num_players = ?
-					AND games.deck_plays = 0
-					AND games.empty_clues = 0
+				WHERE variant = $1
+					AND num_players = $2
+					AND games.deck_plays = FALSE
+					AND games.empty_clues = FALSE
 			`, variant, numPlayers).Scan(&bestScore); err != nil {
 				return err
 			}

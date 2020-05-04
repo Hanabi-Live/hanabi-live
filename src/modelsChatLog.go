@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"strconv"
 	"time"
@@ -9,34 +10,18 @@ import (
 type ChatLog struct{}
 
 func (*ChatLog) Insert(userID int, message string, room string) error {
-	var stmt *sql.Stmt
-	if v, err := db.Prepare(`
+	_, err := db.Exec(context.Background(), `
 		INSERT INTO chat_log (user_id, message, room)
-		VALUES (?, ?, ?)
-	`); err != nil {
-		return err
-	} else {
-		stmt = v
-	}
-	defer stmt.Close()
-
-	_, err := stmt.Exec(userID, message, room)
+		VALUES ($1, $2, $3)
+	`, userID, message, room)
 	return err
 }
 
 func (*ChatLog) InsertDiscord(discordName string, message string, room string) error {
-	var stmt *sql.Stmt
-	if v, err := db.Prepare(`
+	_, err := db.Exec(context.Background(), `
 		INSERT INTO chat_log (user_id, discord_name, message, room)
-		VALUES (0, ?, ?, ?)
-	`); err != nil {
-		return err
-	} else {
-		stmt = v
-	}
-	defer stmt.Close()
-
-	_, err := stmt.Exec(discordName, message, room)
+		VALUES (0, $1, $2, $3)
+	`, discordName, message, room)
 	return err
 }
 
@@ -51,7 +36,7 @@ type DBChatMessage struct {
 func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 	SQLString := `
 		SELECT
-			IFNULL(users.username, "__server"),
+			COALESCE(users.username, '__server'),
 			chat_log.discord_name,
 			chat_log.message,
 			chat_log.datetime_sent
@@ -60,7 +45,7 @@ func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 		LEFT JOIN
 			users ON users.id = chat_log.user_id
 		WHERE
-			room = ?
+			room = $1
 		ORDER BY
 			chat_log.datetime_sent DESC
 	`
@@ -68,8 +53,7 @@ func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 		SQLString += "LIMIT " + strconv.Itoa(count)
 	}
 
-	var rows *sql.Rows
-	rows, err := db.Query(SQLString, room)
+	rows, err := db.Query(context.Background(), SQLString, room)
 
 	chatMessages := make([]DBChatMessage, 0)
 	for rows.Next() {
@@ -88,9 +72,7 @@ func (*ChatLog) Get(room string, count int) ([]DBChatMessage, error) {
 	if rows.Err() != nil {
 		return nil, err
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
+	rows.Close()
 
 	return chatMessages, nil
 }

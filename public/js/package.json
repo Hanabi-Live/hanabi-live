@@ -40,7 +40,6 @@
     "konva": "^3.4.1",
     "linkifyjs": "^2.1.9",
     "phaser": "^3.23.0",
-    "slim-select": "^1.26.0",
     "tooltipster": "^4.2.7"
   }
 }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 )
 
 type GameActions struct{}
@@ -14,30 +14,24 @@ type GameAction struct {
 }
 
 func (*GameActions) Insert(gameID int, turn int, gameAction *GameAction) error {
-	var stmt *sql.Stmt
-	if v, err := db.Prepare(`
-		INSERT INTO game_actions (
-			game_id,
-			turn,
-			type,
-			target,
-			value
-		)
-		VALUES (
-			?,
-			?,
-			?,
-			?,
-			?
-		)
-	`); err != nil {
-		return err
-	} else {
-		stmt = v
-	}
-	defer stmt.Close()
-
-	_, err := stmt.Exec(
+	_, err := db.Exec(
+		context.Background(),
+		`
+			INSERT INTO game_actions (
+				game_id,
+				turn,
+				type,
+				target,
+				value
+			)
+			VALUES (
+				$1,
+				$2,
+				$3,
+				$4,
+				$5
+			)
+		`,
 		gameID,
 		turn,
 		gameAction.Type,
@@ -48,13 +42,13 @@ func (*GameActions) Insert(gameID int, turn int, gameAction *GameAction) error {
 }
 
 func (*GameActions) GetAll(databaseID int) ([]*GameAction, error) {
-	rows, err := db.Query(`
+	rows, err := db.Query(context.Background(), `
 		SELECT
 			type,
 			target,
 			value
 		FROM game_actions
-		WHERE game_id = ?
+		WHERE game_id = $1
 		ORDER BY turn
 	`, databaseID)
 
@@ -76,9 +70,7 @@ func (*GameActions) GetAll(databaseID int) ([]*GameAction, error) {
 	if rows.Err() != nil {
 		return nil, err
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
+	rows.Close()
 
 	return actions, nil
 }

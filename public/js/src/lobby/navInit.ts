@@ -16,7 +16,6 @@ export default () => {
   // The "Create Game" button
   $('#nav-buttons-games-create-game').tooltipster('option', 'functionBefore', createGame.before);
   $('#nav-buttons-games-create-game').tooltipster('option', 'functionReady', createGame.ready);
-  $('#nav-buttons-games-create-game').tooltipster('option', 'functionAfter', createGame.after);
   // (the logic for this tooltip is handled in the "createGame.ts" file)
 
   // The "Show History" button

@@ -24,7 +24,6 @@ export class Globals {
   username: string = '';
   totalGames: number = 0;
   muted: boolean = false;
-  admin: boolean = false;
   randomName: string = '';
   settings: Settings = new Settings();
   // (contains the settings for the "Settings" tooltip and the "Create Game" tooltip)

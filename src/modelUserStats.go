@@ -1,11 +1,13 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"errors"
 	"fmt"
 	"sort"
 	"strconv"
+
+	"github.com/jackc/pgx/v4"
 )
 
 type UserStats struct{}
@@ -37,7 +39,7 @@ func NewUserStatsRow() UserStatsRow {
 func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
 	stats := NewUserStatsRow()
 
-	if err := db.QueryRow(`
+	if err := db.QueryRow(context.Background(), `
 		SELECT
 			num_games,
 			best_score2,
@@ -53,8 +55,8 @@ func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
 			average_score,
 			num_strikeouts
 		FROM user_stats
-		WHERE user_id = ?
-			AND variant = ?
+		WHERE user_id = $1
+			AND variant = $2
 	`, userID, variant).Scan(
 		&stats.NumGames,
 		&stats.BestScores[0].Score, // 2-player
@@ -69,7 +71,7 @@ func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
 		&stats.BestScores[4].Modifier,
 		&stats.AverageScore,
 		&stats.NumStrikeouts,
-	); err == sql.ErrNoRows {
+	); err == pgx.ErrNoRows {
 		// This user has not played this variant before,
 		// so return a stats object that contains all zero values
 		return stats, nil
@@ -82,7 +84,7 @@ func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
 
 func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 	// Get all of the statistics for this user (for every individual variant)
-	rows, err := db.Query(`
+	rows, err := db.Query(context.Background(), `
 		SELECT
 			variant,
 			num_games,
@@ -99,7 +101,7 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 			average_score,
 			num_strikeouts
 		FROM user_stats
-		WHERE user_id = ?
+		WHERE user_id = $1
 		ORDER BY variant ASC
 	`, userID)
 
@@ -134,9 +136,7 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 	if rows.Err() != nil {
 		return nil, err
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
+	rows.Close()
 
 	return statsMap, nil
 }
@@ -150,86 +150,74 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 	// First, check to see if they have a row in the stats table for this variant already
 	// If they don't, then we need to insert a new row
 	var numRows int
-	if err := db.QueryRow(`
+	if err := db.QueryRow(context.Background(), `
 		SELECT COUNT(user_id)
 		FROM user_stats
-		WHERE user_id = ?
-			AND variant = ?
+		WHERE user_id = $1
+			AND variant = $2
 	`, userID, variant).Scan(&numRows); err != nil {
 		return err
 	}
 	if numRows == 0 {
-		var stmt *sql.Stmt
-		if v, err := db.Prepare(`
+		if _, err := db.Exec(context.Background(), `
 			INSERT INTO user_stats (user_id, variant)
-			VALUES (?, ?)
-		`); err != nil {
-			return err
-		} else {
-			stmt = v
-		}
-		defer stmt.Close()
-
-		if _, err := stmt.Exec(userID, variant); err != nil {
+			VALUES ($1, $2)
+		`, userID, variant); err != nil {
 			return err
 		}
 	}
 
-	var stmt *sql.Stmt
-	if v, err := db.Prepare(`
-		UPDATE user_stats
-		SET
-			num_games = (
-				SELECT COUNT(games.id)
-				FROM games
-					JOIN game_participants
-						ON game_participants.game_id = games.id
-				WHERE game_participants.user_id = ?
-					AND games.variant = ?
-					AND games.speedrun = 0
-			),
-			best_score2 = ?,
-			best_score2_mod = ?,
-			best_score3 = ?,
-			best_score3_mod = ?,
-			best_score4 = ?,
-			best_score4_mod = ?,
-			best_score5 = ?,
-			best_score5_mod = ?,
-			best_score6 = ?,
-			best_score6_mod = ?,
-			average_score = (
-				/* We enclose this query in an "IFNULL" so that it defaults to 0 (instead of NULL)
-				   if a user has not played any games */
-				SELECT IFNULL(AVG(games.score), 0)
-				FROM games
-					JOIN game_participants
-						ON game_participants.game_id = games.id
-				WHERE game_participants.user_id = ?
-					AND games.score != 0
-					AND games.variant = ?
-					AND games.speedrun = 0
-			),
-			num_strikeouts = (
-				SELECT COUNT(games.id)
-				FROM games
-					JOIN game_participants
-						ON game_participants.game_id = games.id
-				WHERE game_participants.user_id = ?
-					AND games.score = 0
-					AND games.variant = ?
-					AND games.speedrun = 0
-			)
-		WHERE user_id = ?
-			AND variant = ?
-	`); err != nil {
-		return err
-	} else {
-		stmt = v
-	}
-	defer stmt.Close()
-
-	_, err := stmt.Exec(
+	_, err := db.Exec(
+		context.Background(),
+		`
+			UPDATE user_stats
+			SET
+				num_games = (
+					SELECT COUNT(games.id)
+					FROM games
+						JOIN game_participants
+							ON game_participants.game_id = games.id
+					WHERE game_participants.user_id = $1
+						AND games.variant = $2
+						AND games.speedrun = FALSE
+				),
+				best_score2 = $3,
+				best_score2_mod = $4,
+				best_score3 = $5,
+				best_score3_mod = $6,
+				best_score4 = $7,
+				best_score4_mod = $8,
+				best_score5 = $9,
+				best_score5_mod = $10,
+				best_score6 = $11,
+				best_score6_mod = $12,
+				average_score = (
+					/*
+					 * We enclose this query in an "COALESCE" so that it defaults to 0 (instead of
+					 * NULL) if a user has not played any games
+					 */
+					SELECT COALESCE(AVG(games.score), 0)
+					FROM games
+						JOIN game_participants
+							ON game_participants.game_id = games.id
+					WHERE game_participants.user_id = $13
+						AND games.score != 0
+						AND games.variant = $14
+						AND games.speedrun = FALSE
+				),
+				num_strikeouts = (
+					SELECT COUNT(games.id)
+					FROM games
+						JOIN game_participants
+							ON game_participants.game_id = games.id
+					WHERE game_participants.user_id = $15
+						AND games.score = 0
+						AND games.variant = $16
+						AND games.speedrun = FALSE
+				)
+			WHERE user_id = $17
+				AND variant = $18
+		`,
 		userID, // num_games
 		variant,
 		stats.BestScores[0].Score, // 2-player
@@ -254,20 +242,12 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 
 func (us *UserStats) UpdateAll(highestVariantID int) error {
 	// Delete all of the existing rows
-	var stmt *sql.Stmt
-	if v, err := db.Prepare("TRUNCATE user_stats"); err != nil {
-		return err
-	} else {
-		stmt = v
-	}
-	defer stmt.Close()
-
-	if _, err := stmt.Exec(); err != nil {
+	if _, err := db.Exec(context.Background(), "DELETE FROM user_stats"); err != nil {
 		return err
 	}
 
 	// Get all of the users
-	rows, err := db.Query("SELECT id FROM users")
+	rows, err := db.Query(context.Background(), "SELECT id FROM users")
 
 	var userIDs []int
 	for rows.Next() {
@@ -281,9 +261,7 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 	if rows.Err() != nil {
 		return err
 	}
-	if err := rows.Close(); err != nil {
-		return err
-	}
+	rows.Close()
 
 	// Sort the user IDs (ascending)
 	sort.Slice(userIDs, func(i, j int) bool {
@@ -299,12 +277,12 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 		for variant := 0; variant <= highestVariantID; variant++ {
 			// Check to see if this user has played any games of this variant
 			var numRows int
-			if err := db.QueryRow(`
+			if err := db.QueryRow(context.Background(), `
 				SELECT COUNT(game_participants.game_id)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
-				WHERE game_participants.user_id = ?
-					AND games.variant = ?
+				WHERE game_participants.user_id = $1
+					AND games.variant = $2
 			`, userID, variant).Scan(&numRows); err != nil {
 				return err
 			}
@@ -324,36 +302,37 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 					// Get the score for this player count and modifier
 					var bestScore int
 					SQLString := `
-						SELECT IFNULL(MAX(games.score), 0)
+						SELECT COALESCE(MAX(games.score), 0)
 						FROM games
 							JOIN game_participants
 								ON game_participants.game_id = games.id
-						WHERE game_participants.user_id = ?
-							AND games.variant = ?
-							AND games.num_players = ?
+						WHERE game_participants.user_id = $1
+							AND games.variant = $2
+							AND games.num_players = $3
 					`
 					if modifier == 0 {
 						SQLString += `
-							AND games.deck_plays = 0
-							AND games.empty_clues = 0
+							AND games.deck_plays = FALSE
+							AND games.empty_clues = FALSE
 						`
 					} else if modifier == 1 {
 						SQLString += `
-							AND games.deck_plays = 1
-							AND games.empty_clues = 0
+							AND games.deck_plays = TRUE
+							AND games.empty_clues = FALSE
 						`
 					} else if modifier == 2 {
 						SQLString += `
-							AND games.deck_plays = 0
-							AND games.empty_clues = 1
+							AND games.deck_plays = FALSE
+							AND games.empty_clues = TRUE
 						`
 					} else if modifier == 3 {
 						SQLString += `
-							AND games.deck_plays = 1
-							AND games.empty_clues = 1
+							AND games.deck_plays = TRUE
+							AND games.empty_clues = TRUE
 						`
 					}
 					if err := db.QueryRow(
+						context.Background(),
 						SQLString,
 						userID,
 						variant,

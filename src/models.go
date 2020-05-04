@@ -1,15 +1,14 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"os"
 
-	// This is the documented way to use the driver
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/jackc/pgx/v4"
 )
 
 var (
-	db     *sql.DB
+	db     *pgx.Conn
 	dbName string
 )
 
@@ -41,8 +40,8 @@ func modelsInit() (*Models, error) {
 	}
 	dbPort := os.Getenv("DB_PORT")
 	if len(dbPort) == 0 {
-		// 3306 is the default port for MariaDB
-		dbPort = "3306"
+		// 5432 is the default port for PostgreSQL
+		dbPort = "5432"
 	}
 	dbUser := os.Getenv("DB_USER")
 	if len(dbUser) == 0 {
@@ -61,10 +60,8 @@ func modelsInit() (*Models, error) {
 	}
 
 	// Initialize the database
-	// We need to set parseTime to true so that we can scan DATETIME fields into time.Time variables
-	// See: https://github.com/go-sql-driver/mysql
-	dsn := dbUser + ":" + dbPass + "@(" + dbHost + ":" + dbPort + ")/" + dbName + "?parseTime=true"
-	if v, err := sql.Open("mysql", dsn); err != nil {
+	url := "postgres://" + dbUser + ":" + dbPass + "@" + dbHost + ":" + dbPort + "/" + dbName
+	if v, err := pgx.Connect(context.Background(), url); err != nil {
 		return nil, err
 	} else {
 		db = v
@@ -76,7 +73,7 @@ func modelsInit() (*Models, error) {
 
 // Close exposes the ability to close the underlying database connection
 func (*Models) Close() {
-	if err := db.Close(); err != nil {
+	if err := db.Close(context.Background()); err != nil {
 		logger.Fatal("Failed to close the database connection:", err)
 	}
 }

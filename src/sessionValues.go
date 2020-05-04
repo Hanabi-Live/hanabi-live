@@ -48,20 +48,6 @@ func (s *Session) Username() string {
 	}
 }
 
-func (s *Session) Admin() bool {
-	if s == nil {
-		logger.Error("The \"Admin\" method was called for a nil session.")
-		return false
-	}
-
-	if v, exists := s.Get("admin"); !exists {
-		logger.Error("Failed to get \"admin\" from a session.")
-		return false
-	} else {
-		return v.(bool)
-	}
-}
-
 func (s *Session) Muted() bool {
 	if s == nil {
 		logger.Error("The \"Muted\" method was called for a nil session.")
@@ -70,20 +56,6 @@ func (s *Session) Muted() bool {
 
 	if v, exists := s.Get("muted"); !exists {
 		logger.Error("Failed to get \"muted\" from a session.")
-		return false
-	} else {
-		return v.(bool)
-	}
-}
-
-func (s *Session) FirstTimeUser() bool {
-	if s == nil {
-		logger.Error("The \"FirstTimeUser\" method was called for a nil session.")
-		return false
-	}
-
-	if v, exists := s.Get("firstTimeUser"); !exists {
-		logger.Error("Failed to get \"firstTimeUser\" from a session.")
 		return false
 	} else {
 		return v.(bool)

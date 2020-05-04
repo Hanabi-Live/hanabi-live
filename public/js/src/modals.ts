@@ -116,15 +116,8 @@ export const errorShow = (msg: string) => {
   $('#error-modal-description').html(msg);
   $('#error-modal').fadeIn(FADE_TIME);
 
-  // Show the "Sign Out" button if this is a specific type of error message
-  if (msg.startsWith('You have logged on from somewhere else')) {
-    $('#error-modal-signout').show();
-  } else {
-    $('#error-modal-signout').hide();
-  }
-
-  // Alert administrators if the server has shut down
-  if (globals.admin && msg.match(/The server is going down for scheduled maintenance./)) {
+  // Play a sound if the server has shut down
+  if (msg.match(/The server is going down for scheduled maintenance./)) {
     sounds.play('turn_double_discard');
   }
 };

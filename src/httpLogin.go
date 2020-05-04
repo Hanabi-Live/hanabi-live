@@ -327,9 +327,6 @@ func httpLogin(c *gin.Context) {
 	// Save the information to the session cookie
 	session := gsessions.Default(c)
 	session.Set("userID", user.ID)
-	session.Set("username", user.Username)
-	session.Set("admin", user.Admin)
-	session.Set("firstTimeUser", !exists)
 	if err := session.Save(); err != nil {
 		logger.Error("Failed to write to the login cookie for user \""+user.Username+"\":", err)
 		http.Error(

@@ -1,7 +1,11 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"time"
+
+	"github.com/jackc/pgx/v4"
 )
 
 type Users struct{}
@@ -11,35 +15,20 @@ type User struct {
 	Username        string
 	PasswordHash    sql.NullString
 	OldPasswordHash sql.NullString
-	Admin           bool
 }
 
 func (*Users) Insert(username string, passwordHash string, lastIP string) (User, error) {
 	var user User
 
-	var stmt *sql.Stmt
-	if v, err := db.Prepare(`
-		INSERT INTO users (username, password_hash, last_ip)
-		VALUES (?, ?, ?)
-	`); err != nil {
-		return user, err
-	} else {
-		stmt = v
-	}
-	defer stmt.Close()
-
-	var res sql.Result
-	if v, err := stmt.Exec(username, passwordHash, lastIP); err != nil {
-		return user, err
-	} else {
-		res = v
-	}
-
+	// https://www.postgresql.org/docs/9.5/dml-returning.html
+	// https://github.com/jackc/pgx/issues/411
 	var id int
-	if v, err := res.LastInsertId(); err != nil {
+	if err := db.QueryRow(context.Background(), `
+		INSERT INTO users (username, password_hash, last_ip)
+		VALUES ($1, $2, $3)
+		RETURNING id
+	`, username, passwordHash, lastIP).Scan(&id); err != nil {
 		return user, err
-	} else {
-		id = int(v)
 	}
 
 	return User{
@@ -48,26 +37,23 @@ func (*Users) Insert(username string, passwordHash string, lastIP string) (User,
 	}, nil
 }
 
-// Get is used when a user is logging in
-// We need to get the existing username in case they submitted the wrong case
+// We need to return the existing username in case they submitted the wrong case
 func (*Users) Get(username string) (bool, User, error) {
 	var user User
-	if err := db.QueryRow(`
+	if err := db.QueryRow(context.Background(), `
 		SELECT
 			id,
 			username,
 			password_hash,
-			old_password_hash,
-			admin
+			old_password_hash
 		FROM users
-		WHERE username = ?
+		WHERE username = $1
 	`, username).Scan(
 		&user.ID,
 		&user.Username,
 		&user.PasswordHash,
 		&user.OldPasswordHash,
-		&user.Admin,
-	); err == sql.ErrNoRows {
+	); err == pgx.ErrNoRows {
 		return false, user, nil
 	} else if err != nil {
 		return false, user, err
@@ -78,55 +64,53 @@ func (*Users) Get(username string) (bool, User, error) {
 
 func (*Users) GetUsername(userID int) (string, error) {
 	var username string
-	err := db.QueryRow(`
+	err := db.QueryRow(context.Background(), `
 		SELECT username
 		FROM users
-		WHERE id = ?
+		WHERE id = $1
 	`, userID).Scan(&username)
 	return username, err
 }
 
 func (*Users) GetLastIP(username string) (string, error) {
 	var lastIP string
-	err := db.QueryRow(`
+	err := db.QueryRow(context.Background(), `
 		SELECT last_ip
 		FROM users
-		WHERE username = ?
+		WHERE username = $1
 	`, username).Scan(&lastIP)
 	return lastIP, err
 }
 
-func (*Users) Update(userID int, lastIP string) error {
-	var stmt *sql.Stmt
-	if v, err := db.Prepare(`
-		UPDATE users
-		SET datetime_last_login = NOW(), last_ip = ?
-		WHERE id = ?
-	`); err != nil {
-		return err
-	} else {
-		stmt = v
-	}
-	defer stmt.Close()
+func (*Users) GetDatetimeCreated(userID int) (time.Time, error) {
+	var datetimeCreated time.Time
+	err := db.QueryRow(context.Background(), `
+		SELECT datetime_created
+		FROM users
+		WHERE id = $1
+	`, userID).Scan(&datetimeCreated)
+	return datetimeCreated, err
+}
 
-	_, err := stmt.Exec(lastIP, userID)
+func (*Users) Update(userID int, lastIP string) error {
+	_, err := db.Exec(context.Background(), `
+		UPDATE users
+		SET
+			datetime_last_login = NOW(),
+			last_ip = $1
+		WHERE id = $2
+	`, lastIP, userID)
 	return err
 }
 
 // Legacy function; delete this when all users have logged in or in 2022, whichever comes first
 func (*Users) UpdatePassword(userID int, passwordHash string) error {
-	var stmt *sql.Stmt
-	if v, err := db.Prepare(`
+	_, err := db.Exec(context.Background(), `
 		UPDATE users
-		SET password_hash = ?, old_password_hash = NULL
-		WHERE id = ?
-	`); err != nil {
-		return err
-	} else {
-		stmt = v
-	}
-	defer stmt.Close()
-
-	_, err := stmt.Exec(passwordHash, userID)
+		SET
+			password_hash = $1,
+			old_password_hash = NULL
+		WHERE id = $2
+	`, passwordHash, userID)
 	return err
 }

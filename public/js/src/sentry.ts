@@ -18,7 +18,7 @@ export const init = () => {
 };
 
 // We do not want to not send certain specific common events to Sentry
-// (to avoid using up our monthly limit)
+// (to avoid going over the monthly limit)
 // https://docs.sentry.io/error-reporting/configuration/filtering/?platform=browser
 const beforeSend = (
   event: Sentry.Event,

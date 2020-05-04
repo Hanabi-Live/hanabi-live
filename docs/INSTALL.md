@@ -15,8 +15,7 @@ The following instructions will set up the server as well as the linters. We ass
 3. [Installation for Development (Docker)](#installation-for-development-docker)
 4. [Installation for Production (Linux)](#installation-for-production-linux)
 5. [Running the Server](#running-the-server)
-6. [Running the Server in Docker](#running-the-server-in-docker)
-7. [Running a Production Docker Image](#running-a-production-docker-image)
+
 <br />
 
 ## Installation for Development (Windows)
@@ -26,27 +25,29 @@ If you want to install less stuff on your computer, you can alternatively follow
 * Open a [Command Prompt as an administrator](https://www.howtogeek.com/194041/how-to-open-the-command-prompt-as-administrator-in-windows-8.1/).
 * Install the [Chocolatey](https://chocolatey.org/) package manager:
   * `@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"`
-* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
-  * `choco install git golang mariadb nodejs vscode -y`
-  * `refreshenv`
+* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
+  * `choco install git golang nodejs vscode -y`
 * Configure Git:
+  * `refreshenv`
   * `git config --global user.name "Your_Username"`
   * `git config --global user.email "your@email.com"`
   * `git config --global core.autocrlf false` <br />
   (so that Git does not convert LF to CRLF when cloning repositories)
   * `git config --global pull.rebase true` <br />
   (so that Git automatically rebases when pulling)
-* Configure MariaDB:
-  * `mysql -u root`
-  * `DELETE FROM mysql.user WHERE User='';` <br />
-  (this deletes the anonymous user that is installed by default)
-  * `DROP DATABASE IF EXISTS test;` <br />
-  (this deletes the test database that is installed by default)
+* Install [PostgreSQL](https://www.postgresql.org/):
+  * `choco install postgresql -y --params '/Password 1234567890'` <br />
+  (remove the `--params '/Password 1234567890'` if you want it to generate a random password, which will be displayed in the post-installation output)
+* Make it so that PostgreSQL only listens on localhost instead of on all interfaces:
+  * `notepad "C:\Program Files\PostgreSQL\12\data\postgresql.conf"`
+    * Add a "#" in front of the "listen_addresses" line.
+  * `net stop postgresql-x64-12`
+  * `net start postgresql-x64-12`
+* Configure PostgreSQL:
+  * `refreshenv`
+  * `psql -U postgres`
   * `CREATE DATABASE hanabi;`
-  * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';`
-  * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
-  * `FLUSH PRIVILEGES;`
-  * `exit`
+  * `\q`
 * Clone the repository:
   * `cd [the path where you want the code to live]` (optional)
   * If you already have an SSH keypair and have the public key attached to your GitHub profile, then use the following command to clone the repostory via SSH:
@@ -73,11 +74,11 @@ If you want to install less stuff on your computer, you can alternatively follow
 * Test the Golang linter:
   * On the left pane, navigate to and open "src\main.go".
   * If you get a popup asking to use any experimental features (e.g. gopls), ignore it and/or do not allow it to proceed.
-  * Add a new line of "asdf" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
+  * Add a new line of "test" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
   * Add a blank line somewhere, save the file, and watch as the blank line is automatically removed (because VSCode will automatically run the "goimports" tool every time you save a file).
 * Test the TypeScript linter:
   * On the left pane, navigate to and open "public\js\src\main.ts".
-  * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
+  * Add a new line of "test" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
 * See [Running the Server](#running-the-server).
 
 <br />
@@ -88,29 +89,20 @@ If you want to install less stuff on your computer, you can alternatively follow
 
 * Install the [Homebrew](https://brew.sh/) package manager:
   * `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
-* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [MariaDB](https://mariadb.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
-  * `brew install git golang mariadb node`
+* Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
+  * `brew install git golang node`
   * `brew cask install visual-studio-code`
-* Enable [launching Visual Studio Code from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line).
 * Configure Git:
-  * `refreshenv`
   * `git config --global user.name "Your_Username"`
   * `git config --global user.email "your@email.com"`
   * `git config --global pull.rebase true` <br />
   (so that Git automatically rebases when pulling)
-* Start MariaDB:
-  * `mysql.server start`
-* Configure MariaDB:
-  * `mysql -u root`
-  * `DELETE FROM mysql.user WHERE User='';` <br />
-  (this deletes the anonymous user that is installed by default)
-  * `DROP DATABASE IF EXISTS test;` <br />
-  (this deletes the test database that is installed by default)
+* Enable [launching Visual Studio Code from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line).
+* Install [PostgreSQL](https://www.postgresql.org/):
+  * `brew install postgresql`
+  * `psql -U postgres`
   * `CREATE DATABASE hanabi;`
-  * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';`
-  * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
-  * `FLUSH PRIVILEGES;`
-  * `exit`
+  * `\q`
 * Clone the repository:
   * `cd [the path where you want the code to live]` (optional)
   * If you already have an SSH keypair and have the public key attached to your GitHub profile, then use the following command to clone the repostory via SSH:
@@ -145,7 +137,7 @@ If you want to install less stuff on your computer, you can alternatively follow
 
 ## Installation for Development (Docker)
 
-Docker is **not supported** as an official installation method. However, we provide a [docker-compose.yml](../docker-compose.yml) file which should run MariaDB and the Golang backend inside of networked Docker containers, if you so choose.
+Docker is **not supported** as an official installation method. However, we provide a [docker-compose.yml](../docker-compose.yml) file which runs PostgreSQL and the Golang backend inside of networked Docker containers, if you so choose.
 
 * [Install Docker](https://docs.docker.com/get-docker/).
 * Run `docker-compose up --build` to build and run the server.
@@ -159,22 +151,26 @@ Docker is **not supported** as an official installation method. However, we prov
 
 These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments may be needed if you are on a different flavor of Linux.
 
-* Install [Golang](https://golang.org/):
+* Make sure the package manager is up to date:
   * `sudo apt update`
   * `sudo apt upgrade -y`
+* Install and configure [Git](https://git-scm.com/):
+  * `sudo apt install git -y`
+  * `git config --global user.name "Your_Username"`
+  * `git config --global user.email "your@email.com"`
+  * `git config --global pull.rebase true` <br />
+  (so that Git automatically rebases when pulling)
+* Install and configure [Golang](https://golang.org/):
   * `sudo apt install software-properties-common -y`
   * `sudo add-apt-repository ppa:longsleep/golang-backports` <br />
-  (if you don't do this, it will install a version of Golang that is very old)
+  (if we do not use the custom repository, the package manager will install a version of Golang that is very old)
   * `sudo apt update`
   * `sudo apt install golang-go -y`
   * `mkdir "$HOME/go"`
   * `export GOPATH=$HOME/go && echo 'export GOPATH=$HOME/go' >> ~/.profile`
   * `export PATH=$PATH:$GOPATH/bin && echo 'export PATH=$PATH:$GOPATH/bin' >> ~/.profile`
-* Install [MariaDB](https://mariadb.org/):
-  * `sudo apt install mariadb-server -y`
-  * `sudo mysql_secure_installation`
-    * Follow the prompts.
-    * Note that even if you change the root password, if you are the root user, MariaDB will not prompt you for a password. This is because [it uses the `unix_socket` authentication plugin](https://mariadb.com/kb/en/authentication-from-mariadb-104/) by default.
+* Install [PostgreSQL](https://www.postgresql.org/):
+  * `sudo apt install postgresql postgresql postgresql-contrib -y`
 * Install [nvm](https://github.com/nvm-sh/nvm) and [Node.js](https://nodejs.org/en/):
   * `sudo apt install curl -y`
   * `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash`
@@ -184,7 +180,6 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `nvm install node` <br />
   (this installs the latest version)
 * Clone the server:
-  * `sudo apt install git -y`
   * `cd /root` (or change to the path where you want the code to live; "/root" is recommended)
   * If you already have an SSH keypair and have the public key attached to your GitHub profile, then use the following command to clone the repostory via SSH:
     * `git clone git@github.com:Zamiell/hanabi-live.git`
@@ -298,15 +293,3 @@ To manage the service:
 * If you change any of the Golang code, then you must restart the server for the changes to take effect.
 * If you change any of the TypeScript or CSS, then you will need to re-run the `build_client.sh` script in order to re-bundle it into `main.min.js` and `main.min.css`. (This step does not require a server restart, but you will need to perform a hard cache refresh in the browser.)
   * Alternatively, if you are actively changing or developing the TypeScript, leave the `webpack-dev-server.sh` script running and go to "https://localhost/dev". This way, the code will be automatically compiled whenever you change a file and the page will automatically refresh.
-
-## Running a Production Docker Image
-
-We provide a [docker-compose.yml](../docker/docker-compose.yml) file which runs mariadb, the backend and static files inside a docker container. 
-
-* [Install Docker](https://docs.docker.com/get-docker/)
-* Clone this repository into some directory. 
-* Copy `docker/.env_template` to `docker/.env` and adjust the file according to your setup. 
-* cd into the `docker` directory and run `docker-compose up --build -d` to build and then start the docker containers in the background.
-  * The database data will automatically persist inside a dedicated volume.
-  * If you restart your server, the docker containers will automatically restart. 
-  * To stop the containers, use `docker-compose down`. This will not delete the database volume. 

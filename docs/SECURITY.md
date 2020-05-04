@@ -52,7 +52,7 @@ Notably, there is no [personally identifiable information](https://en.wikipedia.
 
 ### Cookies
 
-Upon logging in for the first time, the site will store a [cookie](https://en.wikipedia.org/wiki/HTTP_cookie) so that on subsequent visits, you won't have to reauthenticate. This kind of thing is pretty standard. Cookies are hardened according to [best practice](https://odino.org/security-hardening-http-cookies/).
+Upon logging in for the first time, the site will store a [cookie](https://en.wikipedia.org/wiki/HTTP_cookie) so that on subsequent visits, you won't have to reauthenticate. This kind of thing is pretty standard. Cookies are encrypted and hardened according to [best practice](https://odino.org/security-hardening-http-cookies/).
 
 Furthermore, the site stores your username in a local cookie. This is so that when your cookie expires, the username field will automatically be filled out.
 

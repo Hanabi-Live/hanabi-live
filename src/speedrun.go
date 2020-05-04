@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"strconv"
 )
 
@@ -18,6 +17,8 @@ var (
 
 func speedrunInit() {
 	for _, variant := range officialSpeedrunVariants {
+		// Speedrun times are tracked for 2 to 5-players in each variant
+		// (e.g. we need to do "fastestTimes[variant][5]")
 		fastestTimes[variant] = make([]int, 6)
 		maxScore := 5 * len(variants[variant].Suits) // Assuming 5 points per stack
 		for numPlayers := 2; numPlayers <= 5; numPlayers++ {
@@ -25,11 +26,9 @@ func speedrunInit() {
 				variants[variant].ID,
 				numPlayers,
 				maxScore,
-			); err == sql.ErrNoRows {
-				fastestTimes[variant][numPlayers] = 60 * 60 // Default to 1 hour
-			} else if err != nil {
+			); err != nil {
 				logger.Fatal("Failed to get the fastest time for variant \""+variant+"\" "+
-					"with "+strconv.Itoa(numPlayers)+":", err)
+					"with "+strconv.Itoa(numPlayers)+" players:", err)
 				return
 			} else {
 				fastestTimes[variant][numPlayers] = v

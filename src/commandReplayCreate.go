@@ -177,7 +177,7 @@ func validateJSON(s *Session, d *CommandData) bool {
 	// Validate that the specified variant exists
 	var variant *Variant
 	if v, ok := variants[*d.GameJSON.Options.Variant]; !ok {
-		s.Warning("That is not a valid variant.")
+		s.Warning("\"" + *d.GameJSON.Options.Variant + "\" is not a valid variant.")
 		return false
 	} else {
 		variant = v

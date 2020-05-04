@@ -1,7 +1,7 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"time"
 )
 
@@ -18,7 +18,7 @@ type Waiter struct {
 func (*DiscordWaiters) GetAll() ([]*Waiter, error) {
 	waiters := make([]*Waiter, 0)
 
-	rows, err := db.Query(`
+	rows, err := db.Query(context.Background(), `
 		SELECT
 			username,
 			discord_mention,
@@ -38,62 +38,31 @@ func (*DiscordWaiters) GetAll() ([]*Waiter, error) {
 		waiters = append(waiters, &waiter)
 	}
 
-	if err == sql.ErrNoRows {
-		return waiters, nil
-	}
 	if rows.Err() != nil {
 		return nil, err
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
+	rows.Close()
 
 	return waiters, nil
 }
 
 func (*DiscordWaiters) Insert(waiter *Waiter) error {
-	var stmt *sql.Stmt
-	if v, err := db.Prepare(`
+	_, err := db.Exec(context.Background(), `
 		INSERT INTO discord_waiters (username, discord_mention, datetime_expired)
-		VALUES (?, ?, ?)
-	`); err != nil {
-		return err
-	} else {
-		stmt = v
-	}
-	defer stmt.Close()
-
-	_, err := stmt.Exec(waiter.Username, waiter.DiscordMention, waiter.DatetimeExpired)
+		VALUES ($1, $2, $3)
+	`, waiter.Username, waiter.DiscordMention, waiter.DatetimeExpired)
 	return err
 }
 
 func (*DiscordWaiters) Delete(username string) error {
-	var stmt *sql.Stmt
-	if v, err := db.Prepare(`
+	_, err := db.Exec(context.Background(), `
 		DELETE FROM discord_waiters
-		WHERE username = ?
-	`); err != nil {
-		return err
-	} else {
-		stmt = v
-	}
-	defer stmt.Close()
-
-	_, err := stmt.Exec(username)
+		WHERE username = $1
+	`, username)
 	return err
 }
 
 func (*DiscordWaiters) DeleteAll() error {
-	var stmt *sql.Stmt
-	if v, err := db.Prepare(`
-		DELETE FROM discord_waiters
-	`); err != nil {
-		return err
-	} else {
-		stmt = v
-	}
-	defer stmt.Close()
-
-	_, err := stmt.Exec()
+	_, err := db.Exec(context.Background(), "DELETE FROM discord_waiters")
 	return err
 }

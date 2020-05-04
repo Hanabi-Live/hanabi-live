@@ -280,26 +280,30 @@ func commandTableCreate(s *Session, d *CommandData) {
 
 	// Validate that the variant name is valid
 	if _, ok := variants[d.Variant]; !ok {
-		s.Warning("That is not a valid variant.")
+		s.Warning("\"" + d.Variant + "\" is not a valid variant.")
 		return
 	}
 
 	// Validate that the time controls are sane
 	if d.Timed {
 		if d.BaseTime <= 0 {
-			s.Warning("That is not a valid value for \"Base Time\".")
+			s.Warning("\"" + strconv.Itoa(d.BaseTime) + "\" is too small of a value for " +
+				"\"Base Time\".")
 			return
 		}
 		if d.BaseTime > 604800 { // 1 week in seconds
-			s.Warning("The value for \"Base Time\" is too large.")
+			s.Warning("\"" + strconv.Itoa(d.BaseTime) + "\" is too large of a value for " +
+				"\"Base Time\".")
 			return
 		}
 		if d.TimePerTurn <= 0 {
-			s.Warning("That is not a valid value for \"Time per Turn\".")
+			s.Warning("\"" + strconv.Itoa(d.TimePerTurn) + "\" is too small of a value for " +
+				"\"Time per Turn\".")
 			return
 		}
 		if d.TimePerTurn > 86400 { // 1 day in seconds
-			s.Warning("The value for \"Time per Turn\" is too large.")
+			s.Warning("\"" + strconv.Itoa(d.TimePerTurn) + "\" is too large of a value for " +
+				"\"Time per Turn\".")
 			return
 		}
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	gsessions "github.com/gin-contrib/sessions"
@@ -86,12 +87,12 @@ func httpWS(c *gin.Context) {
 		muted = v
 	}
 
-	// If they have logged in, their cookie should have values that we set in httpLogin.go
+	// If they have a valid cookie, it should have the "userID" value that we set in "httpLogin()"
 	session := gsessions.Default(c)
 	var userID int
 	if v := session.Get("userID"); v == nil {
-		logger.Info("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
-			"(failed userID check). (This likely means that the cookie has expired.)")
+		logger.Info("Unauthorized WebSocket handshake detected from \"" + ip + "\". " +
+			"This likely means that their cookie has expired.")
 		http.Error(
 			w,
 			http.StatusText(http.StatusUnauthorized),
@@ -102,40 +103,11 @@ func httpWS(c *gin.Context) {
 	} else {
 		userID = v.(int)
 	}
-	var username string
-	if v := session.Get("username"); v == nil {
-		logger.Error("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
-			"(failed username check).")
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		commandMutex.Unlock()
-		return
-	} else {
-		username = v.(string)
-	}
-	var admin bool
-	if v := session.Get("admin"); v == nil {
-		logger.Error("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
-			"(failed admin check).")
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		commandMutex.Unlock()
-		return
-	} else {
-		admin = v.(bool)
-	}
-	var firstTimeUser bool
-	if v := session.Get("firstTimeUser"); v == nil {
-		logger.Error("Unauthorized WebSocket handshake detected from \"" + ip + "\" " +
-			"(failed firstTimeUser check).")
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		commandMutex.Unlock()
-		return
-	} else {
-		firstTimeUser = v.(bool)
-	}
 
-	// Check for sessions that belong to orphaned accounts
-	if exists, user, err := models.Users.Get(username); err != nil {
-		logger.Error("Failed to get user \""+username+"\":", err)
+	// Get the username for this user
+	var username string
+	if v, err := models.Users.GetUsername(userID); err != nil {
+		logger.Error("Failed to get the username for user "+strconv.Itoa(userID)+":", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -143,19 +115,8 @@ func httpWS(c *gin.Context) {
 		)
 		commandMutex.Unlock()
 		return
-	} else if !exists {
-		logger.Error("User \"" + username + "\" does not exist in the database; " +
-			"they are trying to establish a WebSocket connection with an orphaned account.")
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		commandMutex.Unlock()
-		return
-	} else if userID != user.ID {
-		logger.Error("User \"" + username + "\" exists in the database, " +
-			"but they are trying to establish a WebSocket connection with an account ID that " +
-			"does not match the ID in the database.")
-		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		commandMutex.Unlock()
-		return
+	} else {
+		username = v
 	}
 
 	// If they got this far, they are a valid user
@@ -166,9 +127,7 @@ func httpWS(c *gin.Context) {
 	sessionID++
 	keys["userID"] = userID
 	keys["username"] = username
-	keys["admin"] = admin
 	keys["muted"] = muted
-	keys["firstTimeUser"] = firstTimeUser
 	keys["status"] = statusLobby // By default, the user is in the lobby
 	keys["inactive"] = false
 	keys["fakeUser"] = false

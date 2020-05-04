@@ -647,7 +647,8 @@
         <select id="create-game-variant-loading" class="hidden">
           <option>Loading...</option>
         </select>
-        <select id="create-game-variant-dropdown2" class="hidden"></select>
+        <input id="create-game-variant-dropdown2" class="hidden" type="text" list="create-game-variant-list" />
+        <datalist id="create-game-variant-list"></datalist>
       </div>
       <div class="col-1 input-text align-center">
         <i id="dice" class="fas fa-dice hidden"></i>
@@ -1161,7 +1162,7 @@
     <ul class="actions">
       <li>
         <button id="error-modal-button" class="button small">Reload</button>
-        <button id="error-modal-signout" class="button small hidden">Sign Out</button>
+        <button id="error-modal-signout" class="button small">Sign Out</button>
       </li>
     </ul>
   </section>

@@ -473,6 +473,10 @@ table td {
   color: #6666ff;
 }
 
+input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
 #dice {
   color: green;
   position: relative;

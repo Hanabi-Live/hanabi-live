@@ -54,12 +54,21 @@ func websocketConnect(ms *melody.Session) {
 		settings = v
 	}
 
+	// Get their join date from the database
+	var datetimeCreated time.Time
+	if v, err := models.Users.GetDatetimeCreated(s.UserID()); err != nil {
+		logger.Error("Failed to get the join date for user \""+s.Username()+"\":", err)
+		return
+	} else {
+		datetimeCreated = v
+	}
+	firstTimeUser := time.Since(datetimeCreated) < 10*time.Second
+
 	// They have successfully logged in, so send the initial message to the client
 	type HelloMessage struct {
 		ID                   int       `json:"id"`
 		Username             string    `json:"username"`
 		TotalGames           int       `json:"totalGames"`
-		Admin                bool      `json:"admin"`
 		Muted                bool      `json:"muted"`
 		FirstTimeUser        bool      `json:"firstTimeUser"`
 		Settings             Settings  `json:"settings"`
@@ -80,9 +89,8 @@ func websocketConnect(ms *melody.Session) {
 		// (to be shown in the nav bar on the history page)
 		TotalGames: totalGames,
 
-		Admin:         s.Admin(),         // Some users can perform admin-only commands
-		Muted:         s.Muted(),         // Some users are muted (as a resulting of spamming, etc.)
-		FirstTimeUser: s.FirstTimeUser(), // First time users get a quick tutorial
+		Muted:         s.Muted(),     // Some users are muted (as a resulting of spamming, etc.)
+		FirstTimeUser: firstTimeUser, // First time users get a quick tutorial
 
 		// The various client settings are stored server-side so that users can seamlessly
 		// transition between computers

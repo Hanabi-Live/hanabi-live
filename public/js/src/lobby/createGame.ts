@@ -1,9 +1,7 @@
 // The "Create Game" nav button
 
 // Imports
-import SlimSelect from 'slim-select';
 import { VARIANTS } from '../constants';
-import variantsJSON from '../data/variants.json';
 import * as debug from '../debug';
 import globals from '../globals';
 import * as misc from '../misc';
@@ -17,39 +15,25 @@ const basicVariants = [
   'Rainbow (6 Suits)',
 ];
 const variantNames = Array.from(VARIANTS.keys());
-const dropdown1 = $('#create-game-variant-dropdown1');
-const dropdown2 = $('#create-game-variant-dropdown2');
-
-// Pre-prepare the variant names in the format that the Slim Select dropdown expects
-const slimSelectData: Array<any> = [];
-const line = '──────────────';
-for (const [variantName, variantJSON] of Object.entries(variantsJSON) as any) {
-  slimSelectData.push({
-    text: variantName,
-    selected: false,
-  });
-
-  if (variantJSON.spacing) {
-    slimSelectData.push({
-      text: line,
-      disabled: true,
-      selected: false,
-    });
-  }
-}
 
 // Local variables
-let slimSelect: SlimSelect;
+let dropdown1: JQuery<Element>;
+let dropdown2: JQuery<Element>;
+let timeStart: Date;
 
 export const init = () => {
+  dropdown1 = $('#create-game-variant-dropdown1');
+  dropdown2 = $('#create-game-variant-dropdown2');
+
   firstVariantDropdownInit();
+  secondVariantDropdownInit();
 
   // The "dice" button will select a random variant from the list
   $('#dice').on('click', () => {
     const randomVariantIndex = misc.getRandomNumber(0, variantNames.length - 1);
     const randomVariant = variantNames[randomVariantIndex];
     $('#createTableVariant').text(randomVariant);
-    slimSelect.setData([{ text: randomVariant }]);
+    // slimSelect.setData([{ text: randomVariant }]); // TODO
   });
 
   // Make the extra time fields appear and disappear depending on whether the checkbox is checked
@@ -57,17 +41,17 @@ export const init = () => {
     if ($('#createTableTimed').prop('checked')) {
       $('#create-game-timed-label').removeClass('col-3');
       $('#create-game-timed-label').addClass('col-2');
-      $('#create-game-timed-option-1').show(0);
-      $('#create-game-timed-option-2').show(0);
-      $('#create-game-timed-option-3').show(0);
-      $('#create-game-timed-option-4').show(0);
+      $('#create-game-timed-option-1').show();
+      $('#create-game-timed-option-2').show();
+      $('#create-game-timed-option-3').show();
+      $('#create-game-timed-option-4').show();
     } else {
       $('#create-game-timed-label').addClass('col-3');
       $('#create-game-timed-label').removeClass('col-2');
-      $('#create-game-timed-option-1').hide(0);
-      $('#create-game-timed-option-2').hide(0);
-      $('#create-game-timed-option-3').hide(0);
-      $('#create-game-timed-option-4').hide(0);
+      $('#create-game-timed-option-1').hide();
+      $('#create-game-timed-option-2').hide();
+      $('#create-game-timed-option-3').hide();
+      $('#create-game-timed-option-4').hide();
     }
 
     // Redraw the tooltip so that the new elements will fit better
@@ -75,11 +59,11 @@ export const init = () => {
   });
   $('#createTableSpeedrun').change(() => {
     if ($('#createTableSpeedrun').prop('checked')) {
-      $('#create-game-timed-row').hide(0);
-      $('#create-game-timed-row-spacing').hide(0);
+      $('#create-game-timed-row').hide();
+      $('#create-game-timed-row-spacing').hide();
     } else {
-      $('#create-game-timed-row').show(0);
-      $('#create-game-timed-row-spacing').show(0);
+      $('#create-game-timed-row').show();
+      $('#create-game-timed-row-spacing').show();
     }
 
     // Redraw the tooltip so that the new elements will fit better
@@ -101,7 +85,7 @@ export const init = () => {
 // the user can select a variant in a dropdown that contains all 1000+ variants
 // Unfortunately, having so many div elements causes the DOM to lag every time the tooltip is opened
 // Thus, by default we show a variant dropdown with the basic variants in it
-// We only populate + show the "full" variant dropdown if they select "Load custom variants..." from
+// We only populate & show the full variant dropdown if they select "Load custom variants..." from
 // the basic dropdown
 //
 // "createTableVariant" is a hidden element that contains the value of the chosen element
@@ -110,7 +94,7 @@ export const init = () => {
 const firstVariantDropdownInit = () => {
   // Initialize the 1st variant dropdown with the basic variants
   for (const variant of basicVariants) {
-    // As a sanity check, ensure that this variant actually exist in the variants JSON
+    // As a sanity check, ensure that this variant actually exists in the variants JSON
     if (!variantNames.includes(variant)) {
       throw new Error(`The "basic" variant of "${variant}" does not exist in the "variants.json" file.`);
     }
@@ -121,8 +105,8 @@ const firstVariantDropdownInit = () => {
   const spacing = new Option('──────────────');
   spacing.disabled = true;
   dropdown1.append(spacing);
-  const loadText = 'Load custom variants...';
-  const loadCustom = new Option(loadText);
+  const searchText = 'Search for custom variants...';
+  const loadCustom = new Option(searchText);
   dropdown1.append(loadCustom);
 
   // Specify functionality when the user selects an option from this dropdown
@@ -132,8 +116,11 @@ const firstVariantDropdownInit = () => {
       selection = 'No Variant';
     }
 
-    if (selection === loadText) {
-      slimSelectInitWithAllVariants();
+    if (selection === searchText) {
+      dropdown1.hide();
+      dropdown2.show();
+      dropdown2.val('');
+      $('#dice').show();
     } else {
       // Update the hidden field with what the user selected
       $('#createTableVariant').text(selection);
@@ -141,90 +128,30 @@ const firstVariantDropdownInit = () => {
   });
 };
 
-const slimSelectInitWithAllVariants = () => {
-  // The user selected the "Load custom variants" option in the first dropdown
-  dropdown1.hide(0);
-  dropdown1.val('No Variant');
-  const loading = $('#create-game-variant-loading');
-  loading.show(0);
+const secondVariantDropdownInit = () => {
+  // Populate the full variant dropdown
+  for (const variantName of VARIANTS.keys()) {
+    const option = new Option(variantName, variantName);
+    $('#create-game-variant-list').append($(option));
+    // (disabling elements on a datalist is not possible)
+  }
 
-  // We give the browser time to render the "Loading..." element,
-  // and then begin the laggy process of switching to the "full" variant dropdown
-  setTimeout(() => {
-    dropdown1.hide(0);
-    loading.hide(0);
+  dropdown2.change(() => {
+    // Update the hidden field with what the user selected
+    let variantChosen = dropdown2.val();
+    if (typeof variantChosen !== 'string') {
+      variantChosen = 'No Variant';
+    }
+    $('#createTableVariant').text(variantChosen);
 
-    // Initialize the second dropdown
-    // (we must reinitialize Slim Select because using "slimSelect.setData()"
-    // results in display bugs)
-    // (we don't specify any data because it will be automatically populated in the
-    // "slimSelectBeforeOpen()" function)
-    slimSelectDestroy();
-    dropdown2.show(0);
-    $('#dice').show(0);
-    slimSelect = new SlimSelect({
-      select: '#create-game-variant-dropdown2',
-      beforeOpen: slimSelectBeforeOpen,
-      afterClose: slimSelectAfterClose,
-    });
-    slimSelect.open();
-  }, 5);
-};
-
-const slimSelectInitWithOneVariant = (variant: string) => {
-  dropdown1.hide(0);
-  slimSelectDestroy();
-  dropdown2.show(0);
-  $('#dice').show(0);
-  slimSelect = new SlimSelect({
-    select: '#create-game-variant-dropdown2',
-    data: [{ text: variant }],
-    beforeOpen: slimSelectBeforeOpen,
-    afterClose: slimSelectAfterClose,
+    // If they chose a basic variant, revert back to the basic dropdown
+    if (basicVariants.includes(variantChosen)) {
+      dropdown1.show();
+      dropdown1.val(variantChosen);
+      dropdown2.hide();
+      $('#dice').hide();
+    }
   });
-};
-
-const slimSelectBeforeOpen = () => {
-  // Set the default variant to be the one we already had selected
-  const oldVariant = $('#createTableVariant').text();
-  for (const entry of slimSelectData) {
-    entry.selected = entry.text === oldVariant;
-  }
-
-  // Currently, the dropdown only has zero or one elements in it
-  // Load the rest of the variants
-  slimSelect.setData(slimSelectData);
-};
-
-const slimSelectAfterClose = () => {
-  // Update the hidden field with what the user selected
-  let variantChosen = dropdown2.val();
-  if (typeof variantChosen !== 'string') {
-    variantChosen = 'No Variant';
-  }
-  $('#createTableVariant').text(variantChosen);
-
-  // If they chose a basic variant, revert back to the basic dropdown
-  if (basicVariants.includes(variantChosen)) {
-    dropdown1.show(0);
-    dropdown1.val(variantChosen);
-    slimSelectDestroy();
-    $('#dice').hide(0);
-    return;
-  }
-
-  // Otherwise, empty out the Slim Select element (except for the one variant chosen)
-  // in order to reduce lag
-  slimSelect.setData([{ text: variantChosen }]);
-};
-
-const slimSelectDestroy = () => {
-  if (slimSelect) {
-    slimSelect.destroy();
-  }
-
-  dropdown2.empty();
-  dropdown2.hide(0);
 };
 
 const submit = () => {
@@ -333,7 +260,7 @@ export const before = () => {
     const numMinutes = new Date(elapsedTime).getMinutes();
     if (numMinutes > 5) {
       let msg = 'The server is shutting down in ';
-      if (numMinutes === 0) {
+      if (numMinutes <= 0) {
         msg += 'momentarily';
       } else if (numMinutes === 1) {
         msg += 'in 1 minute';
@@ -350,6 +277,8 @@ export const before = () => {
     modals.warningShow('The server is currently in maintenance mode. You cannot start any new games for the time being.');
     return false;
   }
+
+  timeStart = new Date();
 
   return true;
 };
@@ -397,6 +326,10 @@ export const ready = () => {
   if (password) {
     $('#createTablePassword').val(password);
   }
+
+  const now = new Date();
+  const diff = now.getTime() - timeStart.getTime();
+  console.log(diff);
 };
 
 const readyVariant = (value: any) => {
@@ -416,20 +349,15 @@ const readyVariant = (value: any) => {
 
   if (basicVariants.includes(variant)) {
     // If this is one of the basic variants, set it in the first dropdown
-    dropdown1.show(0);
+    dropdown1.show();
     dropdown1.val(variant);
-    dropdown2.hide(0);
-    $('#dice').hide(0);
+    dropdown2.hide();
+    $('#dice').hide();
   } else {
     // If this is not one of the basic variants,
     // initialize the second dropdown to have 1 element
     // (we must reinitialize Slim Select because using "slimSelect.setData()"
     // results in display bugs)
-    slimSelectInitWithOneVariant(variant);
+    // slimSelectInitWithOneVariant(variant); // TODO
   }
-};
-
-// This function is executed when the tooltip is closed and removed from the DOM
-export const after = () => {
-  slimSelectDestroy();
 };

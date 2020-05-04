@@ -1,7 +1,9 @@
 package main
 
 import (
-	"database/sql"
+	"context"
+
+	"github.com/jackc/pgx/v4"
 )
 
 type UserSettings struct{}
@@ -47,7 +49,7 @@ var (
 func (*UserSettings) Get(userID int) (Settings, error) {
 	settings := Settings{}
 
-	if err := db.QueryRow(`
+	if err := db.QueryRow(context.Background(), `
 		SELECT
 			desktop_notification,
 			sound_move,
@@ -73,7 +75,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 			create_table_character_assignments,
 			create_table_alert_waiters
 		FROM user_settings
-		WHERE user_id = ?
+		WHERE user_id = $1
 	`, userID).Scan(
 		&settings.DesktopNotification,
 		&settings.SoundMove,
@@ -98,7 +100,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		&settings.CreateTableEmptyClues,
 		&settings.CreateTableCharacterAssignments,
 		&settings.CreateTableAlertWaiters,
-	); err == sql.ErrNoRows {
+	); err == pgx.ErrNoRows {
 		return defaultSettings, nil
 	} else if err != nil {
 		return defaultSettings, err
@@ -110,49 +112,33 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 func (*UserSettings) Set(userID int, name string, value string) error {
 	// First, find out if they have customized any settings yet
 	var count int
-	if err := db.QueryRow(`
+	if err := db.QueryRow(context.Background(), `
 		SELECT COUNT(user_id)
 		FROM user_settings
-		WHERE user_id = ?
+		WHERE user_id = $1
 	`, userID).Scan(&count); err != nil {
 		return err
 	}
 	if count == 0 {
 		// They have not customized any settings yet, so insert a row for them with default settings
-		var stmt *sql.Stmt
-		if v, err := db.Prepare(`
-			INSERT INTO user_settings (user_id) VALUES (?)
-		`); err != nil {
-			return err
-		} else {
-			stmt = v
-		}
-		defer stmt.Close()
-
-		if _, err := stmt.Exec(userID); err != nil {
+		if _, err := db.Exec(context.Background(), `
+			INSERT INTO user_settings (user_id) VALUES ($1)
+		`, userID); err != nil {
 			return err
 		}
 	}
 
-	var stmt *sql.Stmt
 	// Disable the gosec linter for this next code block
-	// We cannot use "?" to put variables for column names,
+	// We cannot use "$1" to put a variable for the column name,
 	// so we must build the query string dynamically
 	// Validation has already occurred in the "commandSetting()" function,
 	// so this should be safe
 	// https://www.reddit.com/r/golang/comments/5l5k4e/
 	// nolint: gosec
-	if v, err := db.Prepare(`
+	_, err := db.Exec(context.Background(), `
 		UPDATE user_settings
-		SET ` + name + ` = ?
-		WHERE user_id = ?
-	`); err != nil {
-		return err
-	} else {
-		stmt = v
-	}
-	defer stmt.Close()
-
-	_, err := stmt.Exec(value, userID)
+		SET `+name+` = $1
+		WHERE user_id = $2
+	`, value, userID)
 	return err
 }
