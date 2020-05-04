@@ -173,7 +173,10 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `export GOPATH=$HOME/go && echo 'export GOPATH=$HOME/go' >> ~/.profile`
   * `export PATH=$PATH:$GOPATH/bin && echo 'export PATH=$PATH:$GOPATH/bin' >> ~/.profile`
 * Install [PostgreSQL](https://www.postgresql.org/):
-  * `sudo apt install postgresql postgresql postgresql-contrib -y`
+  * `sudo apt install postgresql postgresql-contrib -y` <br />
+* Set the password for the "postgres" user:
+  * `passwd postgres`
+  * Enter a secure password.
 * Install [nvm](https://github.com/nvm-sh/nvm) and [Node.js](https://nodejs.org/en/):
   * `sudo apt install curl -y`
   * `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash`
@@ -194,14 +197,10 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 * Set up environment variables:
   * `nano .env`
     * Fill in the values accordingly. The most important one is "DOMAIN" - this must match the URL that the user types in to their browser.
-* Set up a database user and import the database schema:
-  * `sudo mysql -u root -p`
+* Create the database and import the schema:
+  * `sudo -u postgres psql`
     * `CREATE DATABASE hanabi;`
-    * `CREATE USER 'hanabiuser'@'localhost' IDENTIFIED BY '1234567890';` <br />
-    (change the username and password to the values that you specified in the ".env" file)
-    * `GRANT ALL PRIVILEGES ON hanabi.* to 'hanabiuser'@'localhost';`
-    * `FLUSH PRIVILEGES;`
-    * `exit`
+    * `\q`
   * `./install/install_database_schema.sh`
 * See [Running the Server](#running-the-server).
 
@@ -216,7 +215,7 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 * `sudo iptables -A INPUT -p tcp --dport http -j ACCEPT`
 * `sudo iptables -A INPUT -p tcp --dport https -j ACCEPT`
 * `sudo iptables -A INPUT -p tcp --dport 8080 -j ACCEPT`
-* `sudo iptables -A INPUT -p tcp --dport 3306 -s localhost -j ACCEPT`
+* `sudo iptables -A INPUT -p tcp --dport 5432 -s localhost -j ACCEPT`
 * `sudo iptables -A INPUT -p tcp --dport 8081 -s localhost -j ACCEPT`
 * `sudo iptables -A INPUT -j DROP`
 * `sudo iptables-save > /etc/iptables/rules.v4`
