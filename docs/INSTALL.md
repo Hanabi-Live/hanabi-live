@@ -102,7 +102,8 @@ If you want to install less stuff on your computer, you can alternatively follow
   * `brew install postgresql`
   * `brew services start postgresql`
   * `psql postgres`
-  * `CREATE ROLE postgres WITH LOGIN PASSWORD '1234567890';`
+  * `CREATE USER postgres WITH PASSWORD '1234567890';`
+  * `ALTER USER postgres WITH SUPERUSER`;
   * `CREATE DATABASE hanabi;`
   * `\q`
 * Clone the repository:
