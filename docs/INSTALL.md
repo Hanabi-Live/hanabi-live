@@ -88,7 +88,7 @@ If you want to install less stuff on your computer, you can alternatively follow
 If you want to install less stuff on your computer, you can alternatively follow the instructions for [Installation for Development (Docker)](#installation-for-development-docker), although this is not recommended.
 
 * Install the [Homebrew](https://brew.sh/) package manager:
-  * `/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
+  * `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"`
 * Install [Git](https://git-scm.com/), [Golang](https://golang.org/), [Node.js](https://nodejs.org/en/), and [Visual Studio Code](https://code.visualstudio.com/):
   * `brew install git golang node`
   * `brew cask install visual-studio-code`
@@ -100,7 +100,9 @@ If you want to install less stuff on your computer, you can alternatively follow
 * Enable [launching Visual Studio Code from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line).
 * Install [PostgreSQL](https://www.postgresql.org/):
   * `brew install postgresql`
-  * `psql -U postgres`
+  * `brew services start postgresql`
+  * `psql postgres`
+  * `CREATE ROLE postgres WITH LOGIN PASSWORD '1234567890';`
   * `CREATE DATABASE hanabi;`
   * `\q`
 * Clone the repository:

@@ -9,6 +9,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Import the database username and password
 source "$DIR/../.env"
 
-PGPASSWRD="$DB_PASS" pgql -U "$DB_USER" "$DB_NAME" < "$DIR/database_schema.sql"
+PGPASSWRD="$DB_PASS" psql -U "$DB_USER" "$DB_NAME" < "$DIR/database_schema.sql"
 
 echo "Successfully installed the database schema."
