@@ -11,19 +11,15 @@ require (
 	github.com/getsentry/sentry-go v0.6.0
 	github.com/gin-contrib/sessions v0.0.3
 	github.com/gin-gonic/gin v1.6.2
-	github.com/go-sql-driver/mysql v1.5.0
 	github.com/golang/protobuf v1.4.0 // indirect
 	github.com/gorilla/sessions v1.2.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
-	github.com/jackc/pgconn v1.5.0
-	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jackc/pgx/v4 v4.6.0
 	github.com/joho/godotenv v1.3.0
 	github.com/microcosm-cc/bluemonday v1.0.2
 	github.com/mitchellh/mapstructure v1.3.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/satori/go.uuid v1.2.0
-	github.com/tmdvs/Go-Emoji-Utils v1.1.0
 	github.com/virtuald/go-ordered-json v0.0.0-20170621173500-b18e6e673d74
 	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79 // indirect
 	golang.org/x/net v0.0.0-20200501053045-e0ff5e5a1de5 // indirect
