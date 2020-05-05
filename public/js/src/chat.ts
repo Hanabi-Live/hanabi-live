@@ -186,6 +186,19 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
       });
       return;
     }
+
+    // Check for local-only commands
+    if (command === 'version') {
+      add({
+        msg: `You are running version <strong>${globals.version}</strong> of the Hanabi Live client.`,
+        who: '',
+        server: true,
+        datetime: new Date().getTime(),
+        room,
+        recipient: '', // This is needed to prevent the message from being viewed as a PM
+      }, false);
+      return;
+    }
   }
 
   // This is not a command, so send a the chat message to the server
