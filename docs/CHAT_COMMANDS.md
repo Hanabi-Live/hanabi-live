@@ -27,14 +27,26 @@ If you need general help with the website, then read the [features page](FEATURE
 
 <br />
 
-### Pre-game commands
+### Pre-game commands (table-owner-only)
 
-| Command            | Description
-| ------------------ |------------
-| /s                 | Automatically start the game when the next person joins
-| /s#                | Automatically start the game when it has # players
-| /startin [minutes] | Automatically start the game in N minutes
-| /findvariant       | Find a random variant that everyone needs the max score in
+| Command                  | Description
+| ------------------------ |------------
+| /changevariant [variant] | Change the variant of the current game
+| /s                       | Automatically start the game when the next person joins
+| /s2                      | Automatically start the game when it has 2 players
+| /s3                      | Automatically start the game when it has 3 players
+| /s4                      | Automatically start the game when it has 4 players
+| /s5                      | Automatically start the game when it has 5 players
+| /s6                      | Automatically start the game when it has 6 players
+| /startin [minutes]       | Automatically start the game in the provided amount of minutes
+
+<br />
+
+### Pre-game or game commands
+
+| Command      | Description
+| -------------|------------
+| /findvariant | Find a random variant that everyone needs the max score in
 
 <br />
 
@@ -50,11 +62,10 @@ If you need general help with the website, then read the [features page](FEATURE
 
 ### Discord commands
 
-| Command           | Description
-| ----------------- |------------
-| /here             | Ping members of the Hyphen-ated group to get a game going
-| /last             | See how long it has been since the last ping
-| /next             | Put yourself on the waiting list
-| /unnext           | Take yourself off the waiting list
-| /list             | Show the people on the waiting list
-| /link [id] [turn] | Link to a specific game and turn
+| Command | Description
+| ------- |------------
+| /here   | Ping members of the Hyphen-ated group to get a game going
+| /last   | See how long it has been since the last ping
+| /next   | Put yourself on the waiting list
+| /unnext | Take yourself off the waiting list
+| /list   | Show the people on the waiting list

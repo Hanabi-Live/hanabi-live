@@ -2,12 +2,55 @@ package main
 
 import (
 	"strconv"
+	"strings"
 	"time"
 )
 
 /*
-	Game chat commands
+	Pregame chat commands
 */
+
+// /changevariant [variant]
+func chatChangeVariant(s *Session, d *CommandData, t *Table) {
+	if d.Room == "lobby" {
+		chatServerSend(chatCommandNotInGameFail, d.Room)
+		return
+	}
+
+	if t.Running {
+		chatServerSend(chatCommandStartedFail, d.Room)
+		return
+	}
+
+	if s.UserID() != t.Owner {
+		chatServerSend(chatCommandNotOwnerFail, d.Room)
+		return
+	}
+
+	// If the user did not specify the amount of minutes, assume 1
+	if len(d.Args) == 0 {
+		chatServerSend(
+			"You must specify the variant. (e.g. \"/changevariant Rainbow (6 Suits)\")",
+			d.Room,
+		)
+		return
+	}
+
+	variantName := strings.Join(d.Args, " ")
+	if _, ok := variants[variantName]; !ok {
+		chatServerSend("The variant of \""+variantName+"\" does not exist.", d.Room)
+		return
+	}
+	t.Options.Variant = variantName
+	chatServerSend("The variant has been changed to: "+variantName, d.Room)
+
+	// Update the variant in the table list for everyone in the lobby
+	notifyAllTable(t)
+
+	// Even though no-one has joined or left the game,
+	// this function will update the display of the variant on the client
+	t.NotifyPlayerChange()
+}
 
 // /s
 func chatS(s *Session, d *CommandData, t *Table) {
@@ -39,20 +82,20 @@ func chatS6(s *Session, d *CommandData, t *Table) {
 	automaticStart(s, d, t, 6)
 }
 
-// /startin
+// /startin [minutes]
 func chatStartIn(s *Session, d *CommandData, t *Table) {
 	if d.Room == "lobby" {
-		chatServerSend("You can only perform this command while in a game.", d.Room)
+		chatServerSend(chatCommandNotInGameFail, d.Room)
 		return
 	}
 
 	if t.Running {
-		chatServerSend("The game is already started, so you cannot use that command.", d.Room)
+		chatServerSend("chatCommandNotStartedFail", d.Room)
 		return
 	}
 
 	if s.UserID() != t.Owner {
-		chatServerSend("Only the table owner can use that command.", d.Room)
+		chatServerSend(chatCommandNotOwnerFail, d.Room)
 		return
 	}
 
@@ -63,8 +106,10 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 
 	var minutesToWait int
 	if v, err := strconv.Atoi(d.Args[0]); err != nil {
-		chatServerSend("You must specify the amount of minutes to wait. (e.g. \"/startin 1\")",
-			d.Room)
+		chatServerSend(
+			"You must specify the amount of minutes to wait. (e.g. \"/startin 1\")",
+			d.Room,
+		)
 		return
 	} else {
 		minutesToWait = v
@@ -83,64 +128,10 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 	go startIn(t, timeToWait, timeToStart)
 }
 
-// /pause
-func chatPause(s *Session, d *CommandData, t *Table) {
-	if d.Room == "lobby" {
-		chatServerSend("You can only perform this command while in a game.", d.Room)
-		return
-	}
-
-	if !t.Running {
-		chatServerSend("The game is not yet started, so you cannot use that command.", d.Room)
-		return
-	}
-
-	commandPause(s, &CommandData{
-		TableID: t.ID,
-		Value:   "pause",
-	})
-}
-
-// /unpause
-func chatUnpause(s *Session, d *CommandData, t *Table) {
-	if d.Room == "lobby" {
-		chatServerSend("You can only perform this command while in a game.", d.Room)
-		return
-	}
-
-	if !t.Running {
-		chatServerSend("The game is not yet started, so you cannot use that command.", d.Room)
-		return
-	}
-
-	commandPause(s, &CommandData{
-		TableID: t.ID,
-		Value:   "unpause",
-	})
-}
-
-// /lastmove
-func chatLastMove(s *Session, d *CommandData, t *Table) {
-	if d.Room == "lobby" {
-		chatServerSend("You can only perform this command while in a game.", d.Room)
-		return
-	}
-
-	if !t.Running {
-		chatServerSend("The game is not yet started, so you cannot use that command.", d.Room)
-		return
-	}
-
-	g := t.Game
-	secondsSinceLastMove := time.Since(g.DatetimeTurnBegin)
-	durationString := durationToString(secondsSinceLastMove)
-	chatServerSend("Time since the last move: "+durationString, d.Room)
-}
-
 // /findvariant
 func chatFindVariant(s *Session, d *CommandData, t *Table) {
 	if d.Room == "lobby" {
-		chatServerSend("You can only perform this command while in a game.", d.Room)
+		chatServerSend(chatCommandNotInGameFail, d.Room)
 		return
 	}
 
@@ -207,22 +198,80 @@ func chatFindVariant(s *Session, d *CommandData, t *Table) {
 }
 
 /*
+	Game chat commands
+*/
+
+// /pause
+func chatPause(s *Session, d *CommandData, t *Table) {
+	if d.Room == "lobby" {
+		chatServerSend(chatCommandNotInGameFail, d.Room)
+		return
+	}
+
+	if !t.Running {
+		chatServerSend("The game is not yet started, so you cannot use that command.", d.Room)
+		return
+	}
+
+	commandPause(s, &CommandData{
+		TableID: t.ID,
+		Value:   "pause",
+	})
+}
+
+// /unpause
+func chatUnpause(s *Session, d *CommandData, t *Table) {
+	if d.Room == "lobby" {
+		chatServerSend(chatCommandNotInGameFail, d.Room)
+		return
+	}
+
+	if !t.Running {
+		chatServerSend("The game is not yet started, so you cannot use that command.", d.Room)
+		return
+	}
+
+	commandPause(s, &CommandData{
+		TableID: t.ID,
+		Value:   "unpause",
+	})
+}
+
+// /lastmove
+func chatLastMove(s *Session, d *CommandData, t *Table) {
+	if d.Room == "lobby" {
+		chatServerSend(chatCommandNotInGameFail, d.Room)
+		return
+	}
+
+	if !t.Running {
+		chatServerSend("The game is not yet started, so you cannot use that command.", d.Room)
+		return
+	}
+
+	g := t.Game
+	secondsSinceLastMove := time.Since(g.DatetimeTurnBegin)
+	durationString := durationToString(secondsSinceLastMove)
+	chatServerSend("Time since the last move: "+durationString, d.Room)
+}
+
+/*
 	Subroutines
 */
 
 func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
 	if t == nil {
-		chatServerSend("You can only perform this command while in a game.", d.Room)
+		chatServerSend(chatCommandNotInGameFail, d.Room)
 		return
 	}
 
 	if t.Running {
-		chatServerSend("The game is already started, so you cannot use that command.", d.Room)
+		chatServerSend(chatCommandStartedFail, d.Room)
 		return
 	}
 
 	if s.UserID() != t.Owner {
-		chatServerSend("Only the table owner can use that command.", d.Room)
+		chatServerSend(chatCommandNotOwnerFail, d.Room)
 		return
 	}
 

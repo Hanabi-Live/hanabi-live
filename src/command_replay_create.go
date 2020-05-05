@@ -154,7 +154,7 @@ func validateDatabase(s *Session, d *CommandData) bool {
 	// Check to see if the game exists in the database
 	if exists, err := models.Games.Exists(d.GameID); err != nil {
 		logger.Error("Failed to check to see if game "+strconv.Itoa(d.GameID)+" exists:", err)
-		s.Error(initFail)
+		s.Error(initGameFail)
 		return false
 	} else if !exists {
 		s.Warning("Game #" + strconv.Itoa(d.GameID) + " does not exist in the database.")
@@ -301,7 +301,7 @@ func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 	if v, err := models.Games.GetOptions(d.GameID); err != nil {
 		logger.Error("Failed to get the options from the database for game "+
 			strconv.Itoa(d.GameID)+":", err)
-		s.Error(initFail)
+		s.Error(initGameFail)
 		return false
 	} else {
 		options = v
@@ -312,7 +312,7 @@ func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 	if v, ok := variantsID[options.Variant]; !ok {
 		logger.Error("Failed to find a definition for variant " +
 			strconv.Itoa(options.Variant) + ".")
-		s.Error(initFail)
+		s.Error(initGameFail)
 		return false
 	} else {
 		variant = v
@@ -344,7 +344,7 @@ func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 	if v, err := models.Games.GetPlayerNames(d.GameID); err != nil {
 		logger.Error("Failed to get the player names from the database for game "+
 			strconv.Itoa(d.GameID)+":", err)
-		s.Error(initFail)
+		s.Error(initGameFail)
 		return false
 	} else {
 		playerNames = v
@@ -457,7 +457,7 @@ func applyNotesToPlayers(s *Session, d *CommandData, g *Game) bool {
 		if v, err := models.Games.GetNotes(d.GameID, len(g.Players), noteSize); err != nil {
 			logger.Error("Failed to get the notes from the database "+
 				"for game "+strconv.Itoa(d.GameID)+":", err)
-			s.Error(initFail)
+			s.Error(initGameFail)
 			return false
 		} else {
 			notes = v
@@ -494,7 +494,7 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 		if v, err := models.GameActions.GetAll(d.GameID); err != nil {
 			logger.Error("Failed to get the actions from the database "+
 				"for game "+strconv.Itoa(d.GameID)+":", err)
-			s.Error(initFail)
+			s.Error(initGameFail)
 			return false
 		} else {
 			actions = v
@@ -581,7 +581,7 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 		} else {
 			logger.Error("Failed to interpret a game action with a type of " +
 				strconv.Itoa(action.Type) + ".")
-			s.Error(initFail)
+			s.Error(initGameFail)
 			return false
 		}
 

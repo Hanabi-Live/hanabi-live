@@ -25,6 +25,7 @@ func chatCommandInit() {
 	chatCommandMap["timeleft"] = chatTimeLeft
 
 	// Table-only commands
+	chatCommandMap["changevariant"] = chatChangeVariant
 	chatCommandMap["s"] = chatS
 	chatCommandMap["s2"] = chatS2
 	chatCommandMap["s3"] = chatS3

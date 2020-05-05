@@ -149,7 +149,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 			if exists, err := models.Games.Exists(databaseID); err != nil {
 				logger.Error("Failed to check to see if game "+
 					strconv.Itoa(databaseID)+" exists:", err)
-				s.Error(createFail)
+				s.Error(createGameFail)
 				return
 			} else if !exists {
 				s.Warning("That game ID does not exist in the database.")
@@ -162,7 +162,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 			if v, err := models.Games.GetNumTurns(databaseID); err != nil {
 				logger.Error("Failed to get the number of turns from the database for game "+
 					strconv.Itoa(databaseID)+":", err)
-				s.Error(initFail)
+				s.Error(initGameFail)
 				return
 			} else {
 				numTurns = v
@@ -177,7 +177,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 			if v, err := models.Games.GetOptions(databaseID); err != nil {
 				logger.Error("Failed to get the variant from the database for game "+
 					strconv.Itoa(databaseID)+":", err)
-				s.Error(initFail)
+				s.Error(initGameFail)
 				return
 			} else {
 				// The variant is submitted to the server as a name
@@ -216,7 +216,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 			var lines []string
 			if v, err := ioutil.ReadFile(filePath); err != nil {
 				logger.Error("Failed to read \""+filePath+"\":", err)
-				s.Error(createFail)
+				s.Error(createGameFail)
 				return
 			} else {
 				lines = strings.Split(string(v), "\n")
@@ -330,7 +330,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 		// Create an Argon2id hash of the plain-text password
 		if v, err := argon2id.CreateHash(d.Password, argon2id.DefaultParams); err != nil {
 			logger.Error("Failed to create a hash from the submitted table password:", err)
-			s.Error(createFail)
+			s.Error(createGameFail)
 			return
 		} else {
 			passwordHash = v
@@ -366,7 +366,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 	commandTableJoin(s, d)
 
 	// Alert the people on the waiting list, if any
-	// (even if they check the "Alert people" checkbox,
+	// (even if they check the "Alert people on the waiting list" checkbox,
 	// we don't want to alert on password-protected games or test games)
 	if t.AlertWaiters &&
 		t.PasswordHash == "" &&
