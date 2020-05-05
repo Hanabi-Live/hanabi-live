@@ -9,9 +9,6 @@ import * as nav from './nav';
 import tablesDraw from './tablesDraw';
 import * as usersDraw from './usersDraw';
 
-// Constants
-const browserIsFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-
 export const init = () => {
   $('#login-button').click(() => {
     $('#login-form').submit();
@@ -32,18 +29,6 @@ export const init = () => {
     delay: 0,
     content: discordContent,
     contentAsHTML: true,
-  });
-
-  // Check to see if we have accepted the Firefox warning
-  // (cookies are strings, so we cannot check for equality)
-  if (browserIsFirefox && localStorage.getItem('acceptedFirefoxWarning') !== 'true') {
-    $('#sign-in').hide();
-    $('#firefox-warning').show();
-  }
-  $('#firefox-warning-button').click(() => {
-    localStorage.setItem('acceptedFirefoxWarning', 'true');
-    $('#firefox-warning').hide();
-    $('#sign-in').show();
   });
 };
 
@@ -118,12 +103,6 @@ const getAjaxError = (jqXHR: any) => {
 };
 
 export const automaticLogin = () => {
-  // Don't automatically login if they are on Firefox and have not confirmed the warning dialog
-  // (cookies are strings, so we cannot check for equality)
-  if (browserIsFirefox && localStorage.getItem('acceptedFirefoxWarning') !== 'true') {
-    return;
-  }
-
   // Automatically sign in to the WebSocket server if we are using a "/test" URL
   if (window.location.pathname.includes('/test')) {
     // Parse the test number from the URL, if any
@@ -146,20 +125,26 @@ export const automaticLogin = () => {
     return;
   }
 
-  // Automatically focus the login form
-  $('#login-username').focus();
-
   // If we have logged in previously and our cookie is still good, automatically login
   console.log('Testing to see if we have a cached WebSocket cookie.');
   fetch('/testCookie').then((response) => {
     if (response.status === 200) {
       console.log('WebSocket cookie confirmed to be good. Automatically logging in to the WebSocket server.');
       websocketInit();
-    } else if (response.status === 204) {
+      return;
+    }
+
+    if (response.status === 204) {
       console.log('Either we have not previously logged in or the existing cookie is expired.');
     } else {
       console.log('Received an unknown status back from the server:', response.status);
     }
+
+    // Show the login screen
+    $('#loading').hide();
+    $('#sign-in').show();
+    $('#title-discord').show();
+    $('#login-username').focus();
   });
 };
 

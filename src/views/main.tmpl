@@ -118,7 +118,13 @@
 
       <div class="row">
         <div class="col-8 off-2">
-          <section id="sign-in" class="box align-center">
+          <section id="loading" class="box align-center">
+            <h3>Loading...</h3>
+            <p>Hanabi Live is loading. Please wait!</p>
+            <img id="login-ajax" src="/public/img/ajax.gif">
+          </section>
+
+          <section id="sign-in" class="box align-center hidden">
             <h3>Sign In / Create Account</h3>
             <p>
               To create a new account, simply login with a new username and select a password. <br />
@@ -163,15 +169,6 @@
             </form>
           </section>
 
-          <section id="firefox-warning" class="box align-center hidden">
-            <h3><i class="fas fa-exclamation-triangle"></i> Warning!</h3>
-            <p>
-              For unknown reasons, this website performs terribly in Firefox.<br />
-              Please, for your sanity, use Chrome or Chromium when using Hanabi Live.
-            </p>
-            <button id="firefox-warning-button" class="button align-center">OK</button>
-          </section>
-
           <section id="compiling-warning" class="box align-center hidden">
             <h3><i class="fas fa-tools"></i>&nbsp; Maintenance</h3>
             <p>
@@ -186,7 +183,7 @@
       <div class="row">
         <div class="col-12 align-center">
           <a href="https://discord.gg/FADvkJp">
-            <img id="title-discord" src="/public/img/discord.png" />
+            <img id="title-discord" class="hidden" src="/public/img/discord.png" />
           </a>
         </div>
       </div>
