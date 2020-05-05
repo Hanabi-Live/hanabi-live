@@ -148,7 +148,7 @@ func main() {
 	characterInit()
 
 	// Initialize the word list
-	wordListPath := path.Join(projectPath, "src", "assets", "wordList.txt")
+	wordListPath := path.Join(projectPath, "src", "assets", "word_list.txt")
 	if v, err := ioutil.ReadFile(wordListPath); err != nil {
 		logger.Fatal("Failed to read the \""+wordListPath+"\" file:", err)
 		return

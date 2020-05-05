@@ -237,7 +237,7 @@ func httpScores(c *gin.Context) {
 
 	if strings.HasPrefix(c.Request.URL.Path, "/missing-scores/") {
 		data.Title = "Missing Scores"
-		httpServeTemplate(w, data, "profile", "missingScores")
+		httpServeTemplate(w, data, "profile", "missing-scores")
 	} else {
 		httpServeTemplate(w, data, "profile", "scores")
 	}
