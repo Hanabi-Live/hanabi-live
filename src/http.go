@@ -136,9 +136,9 @@ func httpInit() {
 	httpRouter.GET("/replay", httpMain)
 	httpRouter.GET("/replay/:gameID", httpMain)
 	httpRouter.GET("/replay/:gameID/:turn", httpMain)
-	httpRouter.GET("/sharedReplay", httpMain)
-	httpRouter.GET("/sharedReplay/:gameID", httpMain)
-	httpRouter.GET("/sharedReplay/:gameID/:turn", httpMain)
+	httpRouter.GET("/shared-replay", httpMain)
+	httpRouter.GET("/shared-replay/:gameID", httpMain)
+	httpRouter.GET("/shared-replay/:gameID/:turn", httpMain)
 	httpRouter.GET("/test", httpMain)
 	httpRouter.GET("/test/:testNum", httpMain)
 
