@@ -361,10 +361,9 @@ export const add = (data: ChatMessage, fast: boolean) => {
     throw new Error('Failed to get the chat element in the "chat.add()" function.');
   }
 
-  // Linkify any non-server links
-  // (this prevents linkifying the reported scores from users with periods in their name,
-  // e.g. "test.live")
-  if (!data.server) {
+  // Automatically generate links from any URLs that are present in the message
+  // (but make an exception for messages from the server that start with "[")
+  if (!data.server || !data.msg.startsWith('[')) {
     data.msg = linkifyHtml(data.msg, {
       target: '_blank',
       attributes: {

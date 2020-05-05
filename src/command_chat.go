@@ -158,11 +158,8 @@ func commandChat(s *Session, d *CommandData) {
 	}
 
 	// Check for commands
-	// (unless they already successfully performed a Discord-only command)
-	if !d.DiscordCommand {
-		// We pass nil as the third argument here because there is no associated table
-		chatCommand(s, d, nil)
-	}
+	chatCommand(s, d, nil)
+	// (we pass nil as the third argument here because there is no associated table)
 }
 
 func commandChatTable(s *Session, d *CommandData) {

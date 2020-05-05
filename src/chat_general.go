@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -26,11 +27,75 @@ func chatDiscord(s *Session, d *CommandData, t *Table) {
 	chatServerSend(msg, d.Room)
 }
 
+// /replay [game ID] [turn]
+func chatReplay(s *Session, d *CommandData, t *Table) {
+	if len(d.Args) == 0 {
+		chatServerSend(
+			"The format of the /replay command is: /replay [game ID] [turn number]",
+			d.Room,
+		)
+		return
+	}
+
+	// Validate that the first argument is a number
+	arg1 := d.Args[0]
+	d.Args = d.Args[1:] // This will be an empty slice if there is nothing after the command
+	var id int
+	if v, err := strconv.Atoi(arg1); err != nil {
+		var msg string
+		if _, err := strconv.ParseFloat(arg1, 64); err != nil {
+			msg = "\"" + arg1 + "\" is not a number."
+		} else {
+			msg = "The /replay command only accepts integers."
+		}
+		chatServerSend(msg, d.Room)
+		return
+	} else {
+		id = v
+	}
+
+	if len(d.Args) == 0 {
+		// They specified an ID but not a turn
+		msg := "https://hanabi.live/replay/" + strconv.Itoa(id)
+		chatServerSend(msg, d.Room)
+		return
+	}
+
+	// Validate that the second argument is a number
+	arg2 := d.Args[0]
+	d.Args = d.Args[1:] // This will be an empty slice if there is nothing after the command
+	var turn int
+	if v, err := strconv.Atoi(arg2); err != nil {
+		var msg string
+		if _, err := strconv.ParseFloat(arg2, 64); err != nil {
+			msg = "\"" + arg2 + "\" is not a number."
+		} else {
+			msg = "The /replay command only accepts integers."
+		}
+		chatServerSend(msg, d.Room)
+		return
+	} else {
+		turn = v
+	}
+
+	if len(d.Args) == 0 {
+		// They specified an ID and a turn
+		msg := "https://hanabi.live/replay/" + strconv.Itoa(id) + "/" + strconv.Itoa(turn)
+		chatServerSend(msg, d.Room)
+		return
+	}
+
+	// They specified an ID and a turn and typed a message afterward
+	msg := "https://hanabi.live/replay/" + strconv.Itoa(id) + "/" + strconv.Itoa(turn) +
+		strings.Join(d.Args, " ")
+	chatServerSend(msg, d.Room)
+}
+
 // /random [min] [max]
 func chatRandom(s *Session, d *CommandData, t *Table) {
 	// We expect something like "/random 2" or "/random 1 2"
 	if len(d.Args) != 1 && len(d.Args) != 2 {
-		chatServerSend("That is not a correct usage of the /random command.", d.Room)
+		chatServerSend("The format of the /random command is: /random [min] [max]", d.Room)
 		return
 	}
 

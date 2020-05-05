@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -150,11 +151,13 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	// Check for Discord-only commands in all Discord channels
-	usedCommand := discordCheckCommand(m)
-
-	// Only replicate messages from the listed channels
+	// We want to replicate Discord messages to the Hanabi Live lobby,
+	// but only from specific channels
 	if !stringInSlice(m.ChannelID, discordListenChannels) {
+		// Handle specific commands in non-listening channels
+		// (to replicate lobby functionality to the Discord server more generally)
+		discordCheckCommand(m)
+
 		return
 	}
 
@@ -170,8 +173,6 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		DiscordID: m.Author.ID,
 		// Pass through the discriminator so we can append it to the username
 		DiscordDiscriminator: m.Author.Discriminator,
-		// Pass through whether or not we used a Discord-only command
-		DiscordCommand: usedCommand,
 	})
 }
 
@@ -285,8 +286,8 @@ func discordGetID(username string) string {
 
 // We need to check for special commands that occur in Discord channels other than #general
 // (because the messages will not flow to the normal "chatCommandMap")
-func discordCheckCommand(m *discordgo.MessageCreate) bool {
-	// This logic is replicated from the "chatCommand()" function
+func discordCheckCommand(m *discordgo.MessageCreate) {
+	// This code is duplicated from the "chatCommand()" function
 	args := strings.Split(m.Content, " ")
 	command := args[0]
 	args = args[1:] // This will be an empty slice if there is nothing after the command
@@ -294,45 +295,76 @@ func discordCheckCommand(m *discordgo.MessageCreate) bool {
 
 	// Commands will start with a "/", so we can ignore everything else
 	if !strings.HasPrefix(command, "/") {
-		return false
+		return
 	}
 	command = strings.TrimPrefix(command, "/")
 	command = strings.ToLower(command) // Commands are case-insensitive
 
-	if command == "link" || command == "game" || command == "replay" {
+	// This code is duplicated from the "chatReplay()" function
+	if command == "replay" || command == "link" || command == "game" {
 		if len(args) == 0 {
 			discordSend(
 				m.ChannelID,
 				"",
-				"The format of the /link command is: /link [game ID] [turn number]",
+				"The format of the /replay command is: /replay [game ID] [turn number]",
 			)
-			return true
+			return
+		}
+
+		// Validate that the first argument is a number
+		arg1 := args[0]
+		args = args[1:] // This will be an empty slice if there is nothing after the command
+		var id int
+		if v, err := strconv.Atoi(arg1); err != nil {
+			var msg string
+			if _, err := strconv.ParseFloat(arg1, 64); err != nil {
+				msg = "\"" + arg1 + "\" is not a number."
+			} else {
+				msg = "The /replay command only accepts integers."
+			}
+			discordSend(m.ChannelID, "", msg)
+			return
+		} else {
+			id = v
 		}
 
 		// We enclose the link in "<>" to prevent Discord from generating a link preview
-		id := args[0]
-		args = args[1:] // This will be an empty slice if there is nothing after the command
 		if len(args) == 0 {
 			// They specified an ID but not a turn
-			discordSend(m.ChannelID, "", "<https://hanabi.live/replay/"+id+">")
-			return true
+			msg := "<https://hanabi.live/replay/" + strconv.Itoa(id) + ">"
+			discordSend(m.ChannelID, "", msg)
+			return
 		}
 
-		turn := args[0]
+		// Validate that the second argument is a number
+		arg2 := args[0]
 		args = args[1:] // This will be an empty slice if there is nothing after the command
+		var turn int
+		if v, err := strconv.Atoi(arg2); err != nil {
+			var msg string
+			if _, err := strconv.ParseFloat(arg2, 64); err != nil {
+				msg = "\"" + arg2 + "\" is not a number."
+			} else {
+				msg = "The /replay command only accepts integers."
+			}
+			discordSend(m.ChannelID, "", msg)
+			return
+		} else {
+			turn = v
+		}
+
 		if len(args) == 0 {
 			// They specified an ID and a turn
-			discordSend(m.ChannelID, "", "<https://hanabi.live/replay/"+id+"/"+turn+">")
-			return true
+			msg := "<https://hanabi.live/replay/" + strconv.Itoa(id) + "/" +
+				strconv.Itoa(turn) + ">"
+			discordSend(m.ChannelID, "", msg)
+			return
 		}
 
 		// They specified an ID and a turn and typed a message afterward
-		msg := "<https://hanabi.live/replay/" + id + "/" + turn + "> " + strings.Join(args, "")
+		msg := "<https://hanabi.live/replay/" + strconv.Itoa(id) + "/" +
+			strconv.Itoa(turn) + "> " + strings.Join(args, "")
 		discordSend(m.ChannelID, "", msg)
-		return true
+		return
 	}
-
-	// Do not display an error message on an invalid command because normal commands are parsed
-	// later on when they are replicated to the lobby in the "chatCommand()" function
-	return false
 }

@@ -78,7 +78,6 @@ type CommandData struct {
 	OnlyDiscord          bool   `json:"-"`
 	DiscordID            string `json:"-"` // Used when echoing a message from Discord to the lobby
 	DiscordDiscriminator string `json:"-"` // Used when echoing a message from Discord to the lobby
-	DiscordCommand       bool   `json:"-"` // Used when echoing a message from Discord to the lobby
 	// Used to pass chat command arguments to a chat command handler
 	Args []string `json:"-"`
 }

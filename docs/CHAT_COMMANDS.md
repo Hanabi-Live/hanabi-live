@@ -6,12 +6,15 @@ If you need general help with the website, then read the [features page](FEATURE
 
 ### General commands (that work everywhere):
 
-| Command             | Description
-| ------------------- | -----------
-| /help               | Get the link to this page
-| /discord            | Get the link for the Hanabi Discord server
-| /random [min] [max] | Get a random number
-| /uptime             | Get how long the server has been online
+| Command                  | Description
+| ------------------------ | -----------
+| /help                    | Get the link to this page
+| /discord                 | Get the link for the [Hanabi Discord server](https://discord.gg/FADvkJp)
+| /rules                   | Get the link for the [Hanabi Community Guidelines](https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md)
+| /replay [game ID] [turn] | Generate a link to a replay so that you can share it with others
+| /random [min] [max]      | Get a random number
+| /uptime                  | Get how long the server has been online
+| /timeleft                | Get how much time is left before the server shuts down
 
 <br />
 
