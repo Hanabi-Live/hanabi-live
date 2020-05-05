@@ -39,5 +39,6 @@ See the [installation documentation](https://github.com/Zamiell/hanabi-live/tree
 
 ## Credits
 
+* [Antoine Bauza](https://en.wikipedia.org/wiki/Antoine_Bauza) created Hanabi. If you enjoy playing the game online, then you should purchase a physical copy of the game, since he will presumably receive a portion of the proceeds.
 * [Keldon Jones](http://keldon.net/) was the original creator of the client-side user interface.
-* [Hyphen-ated](https://github.com/Hyphen-ated/) created [Make Hanabi Great Again](https://github.com/Hyphen-ated/MakeHanabiGreatAgain), a useful Chrome extension that extended the features of Keldon's site. The features from the extension are integrated into Hanabi Live.
+* [Hyphen-ated](https://github.com/Hyphen-ated/) created [Make Hanabi Great Again](https://github.com/Hyphen-ated/MakeHanabiGreatAgain), a Chrome extension that extended the features of Keldon's site. The features from the extension are integrated into Hanabi Live.
