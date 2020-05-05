@@ -104,6 +104,9 @@ func httpLogin(c *gin.Context) {
 		return
 	}
 
+	// Trim whitespace from both sides of the username
+	username = strings.TrimSpace(username)
+
 	// Validate that the username is not excessively short
 	if len(username) < minUsernameLength {
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
