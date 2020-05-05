@@ -6,7 +6,6 @@
 // Resets the canvas dimensions to match window,
 // then draws the new borders accordingly
 
-// eslint-disable-next-line multiline-comment-style
 /*
 // window.addEventListener('resize', resizeCanvas, false);
 

@@ -23,7 +23,7 @@ import * as lobbyHistory from './lobby/history';
 import lobbyIdleInit from './lobby/idleInit';
 import lobbyKeyboardInit from './lobby/keyboardInit';
 import * as lobbyLogin from './lobby/login';
-import lobbyNavInit from './lobby/navInit';
+import * as lobbyNav from './lobby/nav';
 import * as lobbySettingsTooltip from './lobby/settingsTooltip';
 import lobbyTutorialInit from './lobby/tutorialInit';
 import * as lobbyWatchReplay from './lobby/watchReplay';
@@ -51,7 +51,7 @@ $(document).ready(() => {
   lobbyIdleInit();
   lobbyKeyboardInit();
   lobbyLogin.init();
-  lobbyNavInit();
+  lobbyNav.init();
   lobbySettingsTooltip.init();
   lobbyTutorialInit();
   lobbyWatchReplay.init();
@@ -60,7 +60,6 @@ $(document).ready(() => {
   sounds.init();
 
   // For debugging graphics
-  // eslint-disable-next-line multiline-comment-style
   /*
   $('body').click((event) => {
     console.log(`Cursor position: ${event.clientX}, ${event.clientY}`);

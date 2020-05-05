@@ -125,8 +125,9 @@ func httpInit() {
 		httpRouter.Use(httpGoogleAnalytics) // Attach the Google Analytics middleware
 	}
 
-	// Path handlers (for the WebSocket server)
+	// Path handlers (for cookies and logging in)
 	httpRouter.POST("/login", httpLogin)
+	httpRouter.GET("/logout", httpLogout)
 	httpRouter.GET("/testCookie", httpTestCookie)
 	httpRouter.GET("/ws", httpWS)
 
@@ -277,8 +278,8 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 	templateName = append(templateName, layoutPath)
 
 	// Create the template
-	tmpl, err := template.ParseFiles(templateName...)
-	if err != nil {
+	var tmpl *template.Template
+	if v, err := template.ParseFiles(templateName...); err != nil {
 		logger.Error("Failed to create the template:", err.Error())
 		http.Error(
 			w,
@@ -286,6 +287,8 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 			http.StatusInternalServerError,
 		)
 		return
+	} else {
+		tmpl = v
 	}
 
 	// Execute the template and send it to the user

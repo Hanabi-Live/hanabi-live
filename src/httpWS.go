@@ -25,6 +25,8 @@ var (
 // We also do a few other checks to be thorough
 // If all of the checks pass, the WebSocket connection will be established,
 // and then the user's Hanabi data will be initialized in "websocketConnect.go"
+// If anything fails in this function, we want to delete the user's cookie in order to force them to
+// start authentication from the beginning
 func httpWS(c *gin.Context) {
 	// Local variables
 	w := c.Writer
@@ -44,6 +46,7 @@ func httpWS(c *gin.Context) {
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
+		deleteCookie(c)
 		commandMutex.Unlock()
 		return
 	} else {
@@ -58,6 +61,7 @@ func httpWS(c *gin.Context) {
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
+		deleteCookie(c)
 		commandMutex.Unlock()
 		return
 	} else if banned {
@@ -69,6 +73,8 @@ func httpWS(c *gin.Context) {
 				"Please contact an administrator if you think this is a mistake.",
 			http.StatusUnauthorized,
 		)
+		deleteCookie(c)
+		commandMutex.Unlock()
 		return
 	}
 
@@ -81,6 +87,7 @@ func httpWS(c *gin.Context) {
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
+		deleteCookie(c)
 		commandMutex.Unlock()
 		return
 	} else {
@@ -98,6 +105,7 @@ func httpWS(c *gin.Context) {
 			http.StatusText(http.StatusUnauthorized),
 			http.StatusUnauthorized,
 		)
+		deleteCookie(c)
 		commandMutex.Unlock()
 		return
 	} else {
@@ -113,6 +121,7 @@ func httpWS(c *gin.Context) {
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
+		deleteCookie(c)
 		commandMutex.Unlock()
 		return
 	} else {
@@ -146,6 +155,7 @@ func httpWS(c *gin.Context) {
 			http.StatusText(http.StatusInternalServerError),
 			http.StatusInternalServerError,
 		)
+		deleteCookie(c)
 		return
 	}
 }

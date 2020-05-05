@@ -599,7 +599,7 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $4
-					AND games.speedrun = 1
+					AND games.speedrun = TRUE
 			) AS num_games_speedrun,
 			(
 				SELECT SUM(
@@ -609,7 +609,7 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $5
-					AND games.speedrun = 1
+					AND games.speedrun = TRUE
 			) AS time_played_speedrun
 	`, userID, userID, userID, userID, userID).Scan(
 		&stats.DateJoined,
@@ -646,7 +646,7 @@ func (*Games) GetGlobalStats() (Stats, error) {
 			(
 				SELECT COUNT(id)
 				FROM games
-				WHERE games.speedrun = 1
+				WHERE games.speedrun = TRUE
 			) AS num_games_speedrun,
 			(
 				SELECT SUM(
@@ -655,7 +655,7 @@ func (*Games) GetGlobalStats() (Stats, error) {
 				)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
-				WHERE games.speedrun = 1
+				WHERE games.speedrun = TRUE
 			) AS time_played_speedrun
 	`).Scan(
 		&stats.NumGames,
@@ -694,7 +694,7 @@ func (*Games) GetVariantStats(variant int) (Stats, error) {
 				SELECT COUNT(id)
 				FROM games
 				WHERE variant = $3
-					AND games.speedrun = 1
+					AND games.speedrun = TRUE
 			) AS num_games_speedrun,
 			(
 				SELECT SUM(
@@ -704,7 +704,7 @@ func (*Games) GetVariantStats(variant int) (Stats, error) {
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE variant = $4
-					AND games.speedrun = 1
+					AND games.speedrun = TRUE
 			) AS time_played_speedrun
 	`, variant, variant, variant, variant).Scan(
 		&stats.NumGames,

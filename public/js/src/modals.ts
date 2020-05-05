@@ -45,9 +45,6 @@ export const init = () => {
   $('#error-modal-button').click(() => {
     window.location.reload();
   });
-  $('#error-modal-signout').click(() => {
-    lobbyNav.signOut();
-  });
 };
 
 export const passwordShow = (tableID: number) => {

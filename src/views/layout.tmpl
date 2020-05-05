@@ -14,7 +14,8 @@
   <!-- We remove "user-scalable=no" since we are removing the mobile nav and want them to be able to zoom -->
   <meta name="description" content="A place to play Hanabi online, a cooperative card game of logic and reasoning.">
   <meta name="keywords" content="hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning">
-  {{if eq .Title "Dev"}}
+  {{if .Dev}}
+    <!-- These should match the CSS array in "Gruntfile.js" -->
     <link rel="stylesheet" type="text/css" href="/public/css/lib/fontawesome.min.css" />
     <link rel="stylesheet" type="text/css" href="/public/css/lib/solid.min.css" />
     <link rel="stylesheet" type="text/css" href="/public/css/lib/tooltipster.bundle.min.css" />

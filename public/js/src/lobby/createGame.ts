@@ -1,7 +1,7 @@
 // The "Create Game" nav button
 
 // Imports
-import { VARIANTS } from '../constants';
+import { FADE_TIME, VARIANTS } from '../constants';
 import * as debug from '../debug';
 import globals from '../globals';
 import * as misc from '../misc';
@@ -33,7 +33,7 @@ export const init = () => {
     const randomVariantIndex = misc.getRandomNumber(0, variantNames.length - 1);
     const randomVariant = variantNames[randomVariantIndex];
     $('#createTableVariant').text(randomVariant);
-    // slimSelect.setData([{ text: randomVariant }]); // TODO
+    dropdown2.val(randomVariant);
   });
 
   // Make the extra time fields appear and disappear depending on whether the checkbox is checked
@@ -81,16 +81,13 @@ export const init = () => {
   $('#create-game-submit').on('click', submit);
 };
 
-// In the create game tooltip,
-// the user can select a variant in a dropdown that contains all 1000+ variants
-// Unfortunately, having so many div elements causes the DOM to lag every time the tooltip is opened
-// Thus, by default we show a variant dropdown with the basic variants in it
-// We only populate & show the full variant dropdown if they select "Load custom variants..." from
-// the basic dropdown
+// There are over 1000+ variants on Hanabi Live
+// To prevent confusion, only show the basic variants to the user by default
+// They can select "Search custom variants..." if they want access to the "full" dropdown
 //
 // "createTableVariant" is a hidden element that contains the value of the chosen element
 // "create-game-variant-dropdown1" contains the the basic variants
-// "create-game-variant-dropdown2" is the full (Slim Select) dropdown
+// "create-game-variant-dropdown2" is the full (datalist) dropdown
 const firstVariantDropdownInit = () => {
   // Initialize the 1st variant dropdown with the basic variants
   for (const variant of basicVariants) {
@@ -102,10 +99,10 @@ const firstVariantDropdownInit = () => {
     const option = new Option(variant, variant);
     dropdown1.append(option);
   }
-  const spacing = new Option('──────────────');
+  const spacing = new Option('───────────────');
   spacing.disabled = true;
   dropdown1.append(spacing);
-  const searchText = 'Search for custom variants...';
+  const searchText = 'Search custom variants...';
   const loadCustom = new Option(searchText);
   dropdown1.append(loadCustom);
 
@@ -120,6 +117,7 @@ const firstVariantDropdownInit = () => {
       dropdown1.hide();
       dropdown2.show();
       dropdown2.val('');
+      $('#create-game-variant-dropdown2-icon').show();
       $('#dice').show();
     } else {
       // Update the hidden field with what the user selected
@@ -129,26 +127,31 @@ const firstVariantDropdownInit = () => {
 };
 
 const secondVariantDropdownInit = () => {
-  // Populate the full variant dropdown
+  // Populate the full datalist/dropdown in the "Create Game" tooltip
   for (const variantName of VARIANTS.keys()) {
     const option = new Option(variantName, variantName);
-    $('#create-game-variant-list').append($(option));
-    // (disabling elements on a datalist is not possible)
+    $('#create-game-variant-dropdown2-list').append($(option));
   }
 
-  dropdown2.change(() => {
-    // Update the hidden field with what the user selected
-    let variantChosen = dropdown2.val();
-    if (typeof variantChosen !== 'string') {
-      variantChosen = 'No Variant';
+  dropdown2.on('input', () => {
+    // Get what they are searching for
+    let search = dropdown2.val();
+    if (typeof search === 'number') {
+      search = search.toString();
     }
-    $('#createTableVariant').text(variantChosen);
+    if (typeof search !== 'string') {
+      search = 'No Variant';
+    }
+
+    // Update the hidden field with what the user selected
+    $('#createTableVariant').text(search);
 
     // If they chose a basic variant, revert back to the basic dropdown
-    if (basicVariants.includes(variantChosen)) {
+    if (basicVariants.includes(search)) {
       dropdown1.show();
-      dropdown1.val(variantChosen);
+      dropdown1.val(search);
       dropdown2.hide();
+      $('#create-game-variant-dropdown2-icon').hide();
       $('#dice').hide();
     }
   });
@@ -171,7 +174,7 @@ const submit = () => {
 
   globals.conn!.send('tableCreate', {
     name: $('#createTableName').val(), // We don't bother to store the table name
-    variant: getElement('createTableVariant'), // This is a hidden span field
+    variant: getVariant('createTableVariant'), // This is a hidden span field
     timed: getCheckbox('createTableTimed'),
     baseTime,
     timePerTurn,
@@ -215,19 +218,16 @@ const getTextbox = (setting: string) => {
   return value;
 };
 
-const getElement = (setting: string) => {
+const getVariant = (setting: string) => {
   const element = $(`#${setting}`);
   if (!element) {
     throw new Error(`Failed to get the element of "${setting}".`);
   }
   let value = element.text();
-  if (!value) {
-    throw new Error(`Failed to get the value of element "${setting}".`);
-  }
-  if (typeof value !== 'string') {
-    throw new Error(`The value of element "${setting}" is not a string.`);
-  }
   value = value.trim(); // Trim leading and trailing whitespace
+  if (value === '') {
+    value = 'No Variant';
+  }
   checkChanged(setting, value);
   return value;
 };
@@ -277,6 +277,8 @@ export const before = () => {
     modals.warningShow('The server is currently in maintenance mode. You cannot start any new games for the time being.');
     return false;
   }
+
+  $('#lobby').fadeTo(FADE_TIME, 0.4);
 
   timeStart = new Date();
 
@@ -352,12 +354,14 @@ const readyVariant = (value: any) => {
     dropdown1.show();
     dropdown1.val(variant);
     dropdown2.hide();
+    $('#create-game-variant-dropdown2-icon').hide();
     $('#dice').hide();
   } else {
-    // If this is not one of the basic variants,
-    // initialize the second dropdown to have 1 element
-    // (we must reinitialize Slim Select because using "slimSelect.setData()"
-    // results in display bugs)
-    // slimSelectInitWithOneVariant(variant); // TODO
+    // If this is not one of the basic variants, set it in the second dropdown
+    dropdown1.hide();
+    dropdown2.show();
+    dropdown2.val(variant);
+    $('#create-game-variant-dropdown2-icon').show();
+    $('#dice').show();
   }
 };

@@ -44,7 +44,7 @@
 }
 
 /*
-  Font Awesome 6 fixes
+  Font Awesome 5 fixes
 */
 
 input[type="checkbox"] + label:before,
@@ -187,6 +187,16 @@ table td {
 .label-text {
   position: relative;
   top: 0.25em;
+}
+
+/* 
+  For inserting elements without changing the surrounding formatting
+  https://stackoverflow.com/questions/6040005/relatively-position-an-element-without-it-taking-up-space-in-document-flow
+*/
+.relative-container {
+  position: relative;
+  width: 0;
+  height: 0;
 }
 
 /*
@@ -474,7 +484,17 @@ table td {
 }
 
 input::-webkit-calendar-picker-indicator {
-  display: none;
+	display: none;
+}
+
+#create-game-variant-dropdown2 {
+  padding-right: 2.25em;
+}
+
+#create-game-variant-dropdown2-icon {
+  position: relative;
+  right: 1.8em;
+  pointer-events: none; /* We want to "click through" this element */
 }
 
 #dice {
@@ -486,27 +506,6 @@ input::-webkit-calendar-picker-indicator {
 #dice:hover {
   color: #00cc00;
   cursor: pointer;
-}
-
-.ss-single-selected {
-  /* Used in the "Variant" dropdown; we modify it to match the Alpha style */
-  background-color: #f8f8f8 !important;
-  border-radius: 6px !important;
-  border: solid 1px #e5e5e5 !important;
-  height: 3em !important;
-  text-indent: 0.65em !important;
-  color: #777 !important;
-}
-
-.ss-search > input:focus {
-  /* We want the focus colors to match Alpha */
-  border-color: #e89980 !important;
-  box-shadow: 0 0 0 2px #e89980 !important;
-}
-
-.ss-disabled {
-  /* By default it is an ugly "not-allowed" cursor */
-  cursor: auto !important;
 }
 
 /*

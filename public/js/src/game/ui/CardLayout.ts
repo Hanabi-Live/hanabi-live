@@ -23,7 +23,6 @@ export default class CardLayout extends Konva.Group {
     this.empathy = false;
 
     // Debug rectangle (uncomment to show the size of the hand)
-    // eslint-disable-next-line multiline-comment-style
     /*
     const debugRect = new Konva.Rect({
       x: config.x,

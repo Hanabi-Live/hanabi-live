@@ -53,7 +53,7 @@
           </a>
         </li>
         <li>
-          <a id="nav-buttons-games-sign-out" class="button">
+          <a id="nav-buttons-games-sign-out" class="button" href="/logout">
             <i class="fas fa-sign-out-alt nav-icon"></i>
             Sign <span class="nav-hotkey-indicator">O</span>ut
           </a>
@@ -644,13 +644,13 @@
         <!-- See "createGame.ts" -->
         <span id="createTableVariant" class="hidden"></span>
         <select id="create-game-variant-dropdown1"></select>
-        <select id="create-game-variant-loading" class="hidden">
-          <option>Loading...</option>
-        </select>
-        <input id="create-game-variant-dropdown2" class="hidden" type="text" list="create-game-variant-list" />
-        <datalist id="create-game-variant-list"></datalist>
+        <input id="create-game-variant-dropdown2" class="hidden" type="text" list="create-game-variant-dropdown2-list" autocomplete="off" />
+        <datalist id="create-game-variant-dropdown2-list"></datalist>
       </div>
       <div class="col-1 input-text align-center">
+        <div class="relative-container">
+          <i id="create-game-variant-dropdown2-icon" class="fas fa-search"></i>
+        </div>
         <i id="dice" class="fas fa-dice hidden"></i>
       </div>
       <div class="col-1 input-text align-center">
@@ -1162,7 +1162,7 @@
     <ul class="actions">
       <li>
         <button id="error-modal-button" class="button small">Reload</button>
-        <button id="error-modal-signout" class="button small">Sign Out</button>
+        <a href="/logout"><button id="error-modal-signout" class="button small">Sign Out</button></a>
       </li>
     </ul>
   </section>

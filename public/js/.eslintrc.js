@@ -54,16 +54,6 @@ module.exports = {
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L183
     'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
 
-    // Airbnb has the multiline comment rule turned off by default,
-    // even though it is specified in the guide to use docstring-style comments
-    // This project does not use any tooling that would rely on or utilize docstrings,
-    // so there are no docstring-style comments in the codebase
-    // Instead, for "normal" multi-line comments, we prefer "separate-line" comments,
-    // since it uses a lot of extra lines to have starred-block comments all over the place
-    // This style is also used in React and Angular (at least when the comment is not a docstring)
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L240
-    'multiline-comment-style': ['error', 'separate-lines'],
-
     // The client makes use of some tasteful alerts
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js#L59
     'no-alert': ['off'],

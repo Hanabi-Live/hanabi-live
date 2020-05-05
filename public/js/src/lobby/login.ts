@@ -72,10 +72,6 @@ const submit = (event: any) => {
     throw new Error('The password is not a string.');
   }
 
-  // Remember the username for later so that we can partially fill in the form
-  // during subsequent login attempts
-  localStorage.setItem('username', username);
-
   send(username, password);
 };
 
@@ -150,13 +146,8 @@ export const automaticLogin = () => {
     return;
   }
 
-  // If we have logged in previously, automatically fill in the username field
-  const username = localStorage.getItem('username');
-  if (username === null || username === '') {
-    return;
-  }
-  $('#login-username').val(username);
-  $('#login-password').focus();
+  // Automatically focus the login form
+  $('#login-username').focus();
 
   // If we have logged in previously and our cookie is still good, automatically login
   console.log('Testing to see if we have a cached WebSocket cookie.');
@@ -164,8 +155,10 @@ export const automaticLogin = () => {
     if (response.status === 200) {
       console.log('WebSocket cookie confirmed to be good. Automatically logging in to the WebSocket server.');
       websocketInit();
+    } else if (response.status === 204) {
+      console.log('Either we have not previously logged in or the existing cookie is expired.');
     } else {
-      console.log('Either we have not previously logged in or the cookie is expired.');
+      console.log('Received an unknown status back from the server:', response.status);
     }
   });
 };
