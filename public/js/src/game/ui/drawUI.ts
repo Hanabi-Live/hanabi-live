@@ -1114,22 +1114,21 @@ const drawYourTurn = () => {
   });
   globals.elements.yourTurn.add(text);
 
-  const yourTurnTween = new Konva.Tween({
+  globals.elements.yourTurnTween = new Konva.Tween({
     node: text,
     fill: 'yellow',
     duration: 2,
     onFinish: () => {
-      if (text && yourTurnTween) {
-        yourTurnTween.reverse();
+      if (globals.elements.yourTurnTween !== null) {
+        globals.elements.yourTurnTween.reverse();
       }
     },
     onReset: () => {
-      if (text && yourTurnTween) {
-        yourTurnTween.play();
+      if (globals.elements.yourTurnTween !== null) {
+        globals.elements.yourTurnTween.play();
       }
     },
   });
-  yourTurnTween.play();
 };
 
 const drawClueLog = () => {
