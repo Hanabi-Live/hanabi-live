@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -63,7 +62,6 @@ func chatReplay(s *Session, d *CommandData, t *Table) {
 
 	// Validate that the second argument is a number
 	arg2 := d.Args[0]
-	d.Args = d.Args[1:] // This will be an empty slice if there is nothing after the command
 	var turn int
 	if v, err := strconv.Atoi(arg2); err != nil {
 		var msg string
@@ -78,16 +76,8 @@ func chatReplay(s *Session, d *CommandData, t *Table) {
 		turn = v
 	}
 
-	if len(d.Args) == 0 {
-		// They specified an ID and a turn
-		msg := "https://hanabi.live/replay/" + strconv.Itoa(id) + "/" + strconv.Itoa(turn)
-		chatServerSend(msg, d.Room)
-		return
-	}
-
-	// They specified an ID and a turn and typed a message afterward
-	msg := "https://hanabi.live/replay/" + strconv.Itoa(id) + "/" + strconv.Itoa(turn) +
-		strings.Join(d.Args, " ")
+	// They specified an ID and a turn
+	msg := "https://hanabi.live/replay/" + strconv.Itoa(id) + "/" + strconv.Itoa(turn)
 	chatServerSend(msg, d.Room)
 }
 

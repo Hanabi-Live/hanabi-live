@@ -338,7 +338,6 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 
 		// Validate that the second argument is a number
 		arg2 := args[0]
-		args = args[1:] // This will be an empty slice if there is nothing after the command
 		var turn int
 		if v, err := strconv.Atoi(arg2); err != nil {
 			var msg string
@@ -353,18 +352,10 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 			turn = v
 		}
 
-		if len(args) == 0 {
-			// They specified an ID and a turn
-			msg := "<https://hanabi.live/replay/" + strconv.Itoa(id) + "/" +
-				strconv.Itoa(turn) + ">"
-			discordSend(m.ChannelID, "", msg)
-			return
-		}
-
-		// They specified an ID and a turn and typed a message afterward
-		msg := "<https://hanabi.live/replay/" + strconv.Itoa(id) + "/" +
-			strconv.Itoa(turn) + "> " + strings.Join(args, "")
+		// They specified an ID and a turn
+		msg := "<https://hanabi.live/replay/" + strconv.Itoa(id) + "/" + strconv.Itoa(turn) + ">"
 		discordSend(m.ChannelID, "", msg)
+
 		return
 	}
 }
