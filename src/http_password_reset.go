@@ -8,6 +8,7 @@ func httpPasswordReset(c *gin.Context) {
 	w := c.Writer
 	data := TemplateData{
 		Title: "Password Reset",
+		Dev:   false,
 	}
 	httpServeTemplate(w, data, "informational", "password-reset")
 }

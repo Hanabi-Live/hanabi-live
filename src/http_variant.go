@@ -11,8 +11,9 @@ import (
 
 type VariantData struct {
 	Title string
-	Name  string
+	Dev   bool
 
+	Name               string
 	NumGames           int
 	TimePlayed         string
 	NumGamesSpeedrun   int
@@ -155,8 +156,9 @@ func httpVariant(c *gin.Context) {
 
 	data := VariantData{
 		Title: "Variant Stats",
-		Name:  variantsID[variantID],
+		Dev:   false,
 
+		Name:               variantsID[variantID],
 		NumGames:           stats.NumGames,
 		TimePlayed:         timePlayed,
 		NumGamesSpeedrun:   stats.NumGamesSpeedrun,

@@ -8,6 +8,7 @@ import (
 
 type HistoryData struct {
 	Title   string
+	Dev     bool
 	Name    string
 	History []*GameHistory
 }
@@ -57,6 +58,7 @@ func httpHistory(c *gin.Context) {
 
 	data := HistoryData{
 		Title:   "History",
+		Dev:     false,
 		Name:    user.Username,
 		History: history,
 	}

@@ -10,8 +10,9 @@ import (
 
 type ProfileData struct {
 	Title string
-	Name  string
+	Dev   bool
 
+	Name                       string
 	DateJoined                 string
 	NumGames                   int
 	TimePlayed                 string
@@ -219,8 +220,9 @@ func httpScores(c *gin.Context) {
 
 	data := ProfileData{
 		Title: "Scores",
-		Name:  user.Username,
+		Dev:   false,
 
+		Name:                       user.Username,
 		DateJoined:                 dateJoined,
 		NumGames:                   profileStats.NumGames,
 		TimePlayed:                 timePlayed,

@@ -10,6 +10,7 @@ import (
 
 type StatsData struct {
 	Title string
+	Dev   bool
 
 	NumGames                   int
 	TimePlayed                 string
@@ -180,6 +181,7 @@ func httpStats(c *gin.Context) {
 
 	data := StatsData{
 		Title: "Stats",
+		Dev:   false,
 
 		NumGames:                   globalStats.NumGames,
 		TimePlayed:                 timePlayed,
