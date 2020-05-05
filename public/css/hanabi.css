@@ -568,6 +568,10 @@ input::-webkit-calendar-picker-indicator {
   border-radius: 3px;
 }
 
+#settings-volume-test {
+  outline: none;
+}
+
 /*
   Modals
 */
