@@ -1085,15 +1085,15 @@ const drawYourTurn = () => {
   }
 
   globals.elements.yourTurn = new Konva.Group({
-    x: (spectatorsLabelValues.x + 0.06) * winW,
-    y: (spectatorsLabelValues.y - 0.04) * winH,
+    x: (spectatorsLabelValues.x + 0.052) * winW,
+    y: (spectatorsLabelValues.y - 0.01) * winH,
     visible: false,
   });
   globals.layers.UI.add(globals.elements.yourTurn);
 
   const circle = new Konva.Ellipse({
-    radiusX: 0.042 * winW,
-    radiusY: 0.06 * winH,
+    radiusX: 0.039 * winW,
+    radiusY: 0.05 * winH,
     fill: 'black',
     opacity: 0.5,
     stroke: 'black',
@@ -1106,7 +1106,9 @@ const drawYourTurn = () => {
   globals.elements.yourTurn.add(circle);
 
   const text = new Konva.Text({
-    fontSize: 0.04 * winH,
+    x: 0.003 * winW,
+    y: 0.003 * winH,
+    fontSize: 0.034 * winH,
     fontFamily: 'Verdana',
     fill: LABEL_COLOR,
     align: 'center',
