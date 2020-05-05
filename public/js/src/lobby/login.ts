@@ -127,7 +127,7 @@ export const automaticLogin = () => {
 
   // If we have logged in previously and our cookie is still good, automatically login
   console.log('Testing to see if we have a cached WebSocket cookie.');
-  fetch('/testCookie').then((response) => {
+  fetch('/test-cookie').then((response) => {
     if (response.status === 200) {
       console.log('WebSocket cookie confirmed to be good. Automatically logging in to the WebSocket server.');
       websocketInit();
