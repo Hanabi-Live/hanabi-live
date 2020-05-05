@@ -51,10 +51,10 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
         drawMixedCardHelper(ctx, suit.clueColors);
       }
 
-      drawCardBase(ctx, suit, rank);
+      drawCardBase(ctx, suit, rank, colorblindMode);
 
       ctx.shadowBlur = 10;
-      ctx.fillStyle = getSuitStyle(suit, ctx, 'number');
+      ctx.fillStyle = getSuitStyle(suit, ctx, 'number', colorblindMode);
       ctx.strokeStyle = 'black';
       ctx.lineWidth = 2;
       ctx.lineJoin = 'round';
@@ -319,10 +319,15 @@ const makeDeckBack = (variant: Variant) => {
   return cvs;
 };
 
-const drawCardBase = (ctx: CanvasRenderingContext2D, suit: Suit, rank: number) => {
+const drawCardBase = (
+  ctx: CanvasRenderingContext2D,
+  suit: Suit,
+  rank: number,
+  colorblindMode: boolean,
+) => {
   // Draw the background
-  ctx.fillStyle = getSuitStyle(suit, ctx, 'background');
-  ctx.strokeStyle = getSuitStyle(suit, ctx, 'background');
+  ctx.fillStyle = getSuitStyle(suit, ctx, 'background', colorblindMode);
+  ctx.strokeStyle = getSuitStyle(suit, ctx, 'background', colorblindMode);
   cardBorderPath(ctx, 4);
 
   // Draw the borders (on visible cards) and the color fill
@@ -449,10 +454,15 @@ const drawCardTexture = (ctx: CanvasRenderingContext2D) => {
   ctx.restore();
 };
 
-const getSuitStyle = (suit: Suit, ctx: CanvasRenderingContext2D, cardArea: string) => {
+const getSuitStyle = (
+  suit: Suit,
+  ctx: CanvasRenderingContext2D,
+  cardArea: string,
+  colorblindMode: boolean,
+) => {
   // Nearly all suits have a solid fill
   if (suit.fill !== 'multi') {
-    return suit.fill;
+    return colorblindMode ? suit.fillColorblind : suit.fill;
   }
 
   // Rainbow suits use a gradient fill, but the specific type of gradient will depend on the

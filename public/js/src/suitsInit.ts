@@ -103,14 +103,16 @@ export default (COLORS: Map<string, Color>) => {
       }
     }
 
-    // Validate the fill
+    // Validate the fill and colorblind fill
     // If it is not specified, use the fill of the color with the same name
     // Otherwise, assume the fill of the first clue color
     let fill: string = suitJSON.fill || '';
+    let fillColorblind: string = '';
     if (fill === '') {
       const color = COLORS.get(name);
       if (typeof color !== 'undefined') {
         fill = color.fill;
+        fillColorblind = color.fillColorblind;
       } else if (clueColors.length > 0) {
         fill = clueColors[0].fill;
       } else {
@@ -118,6 +120,9 @@ export default (COLORS: Map<string, Color>) => {
         msg += `(There is no corresponding color named "${suitName}" and this suit has no clue colors specified.)`;
         throw new Error(msg);
       }
+    }
+    if (fillColorblind === '') {
+      fillColorblind = fill;
     }
 
     // Validate the fill colors
@@ -149,6 +154,7 @@ export default (COLORS: Map<string, Color>) => {
       abbreviation,
       clueColors,
       fill,
+      fillColorblind,
       fillColors,
       oneOfEach,
       pip,

@@ -4,6 +4,7 @@ import colorsJSON from './data/colors.json';
 
 type ColorJSON = {
   fill: string,
+  fillColorblind?: string,
   abbreviation?: string,
 };
 type ColorEntryIterable = Iterable<[string, ColorJSON]>;
@@ -31,11 +32,17 @@ export default () => {
       throw new Error(`The "${name}" color has an empty fill.`);
     }
 
+    // Validate the colorblind fill
+    // (optionally, there can be an alternate fill when "Colorblind Mode" is enabled)
+    const fillColorblind: string = colorJSON.fillColorblind || fill;
+    // (if it is not specified, then just use the default fill)
+
     // Add it to the map
     const color: Color = {
       name,
-      abbreviation,
       fill,
+      fillColorblind,
+      abbreviation,
     };
     COLORS.set(colorName, color);
   }
