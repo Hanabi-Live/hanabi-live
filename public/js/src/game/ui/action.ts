@@ -18,7 +18,7 @@ export const handle = () => {
     }
     globals.elements.clueTypeButtonGroup!.clearPressed();
     globals.elements.clueArea!.show();
-    if (globals.elements.yourTurn !== null) {
+    if (globals.elements.yourTurn !== null && !globals.hypothetical) {
       globals.elements.yourTurn.show();
     }
     globals.elements.currentPlayerArea!.hide();
