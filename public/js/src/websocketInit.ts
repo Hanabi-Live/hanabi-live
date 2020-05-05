@@ -131,8 +131,8 @@ const initCommands = () => {
       return;
     }
 
-    // Automatically go into a shared replay if we are using a "/sharedReplay/123" URL
-    const match2 = window.location.pathname.match(/\/sharedReplay\/(\d+)/);
+    // Automatically go into a shared replay if we are using a "/shared-replay/123" URL
+    const match2 = window.location.pathname.match(/\/shared-replay\/(\d+)/);
     if (match2) {
       setTimeout(() => {
         const gameID = parseInt(match2[1], 10); // The server expects the game ID as an integer

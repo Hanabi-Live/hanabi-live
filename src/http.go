@@ -148,9 +148,9 @@ func httpInit() {
 	httpRouter.GET("/dev/replay", httpMain)
 	httpRouter.GET("/dev/replay/:gameID", httpMain)
 	httpRouter.GET("/dev/replay/:gameID/:turn", httpMain)
-	httpRouter.GET("/dev/sharedReplay", httpMain)
-	httpRouter.GET("/dev/sharedReplay/:gameID", httpMain)
-	httpRouter.GET("/dev/sharedReplay/:gameID/:turn", httpMain)
+	httpRouter.GET("/dev/shared-replay", httpMain)
+	httpRouter.GET("/dev/shared-replay/:gameID", httpMain)
+	httpRouter.GET("/dev/shared-replay/:gameID/:turn", httpMain)
 	httpRouter.GET("/dev/test", httpMain)
 	httpRouter.GET("/dev/test/:testNum", httpMain)
 	httpRouter.GET("/dev2", httpMain) // Used for testing the new Phaser client
