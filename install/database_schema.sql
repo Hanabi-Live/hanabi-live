@@ -22,9 +22,9 @@ DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE users (
     id                   SERIAL       PRIMARY KEY,
     /*
-    * CITEXT is case-insensitive text; we want users to be case-insensitive unique
-    * (e.g. it should not be possible for both "Alice" and "alice" to exist)
-    */
+     * CITEXT is case-insensitive text; we want users to be case-insensitive unique
+     * (e.g. it should not be possible for both "Alice" and "alice" to exist)
+     */
     username             CITEXT       NOT NULL  UNIQUE,
     /* TODO set "password_hash" to NOT NULL once password migration is complete for all users */
     password_hash        TEXT         NULL, /* An Argon2id hash */
