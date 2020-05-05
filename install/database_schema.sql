@@ -88,6 +88,15 @@ CREATE TABLE user_stats (
     PRIMARY KEY (user_id, variant)
 );
 
+DROP TABLE IF EXISTS user_friends CASCADE;
+CREATE TABLE user_stats (
+    user_id    INTEGER  NOT NULL,
+    friend_id  INTEGER  NOT NULL,
+    FOREIGN KEY (user_id)   REFERENCES users (id) ON DELETE CASCADE,
+    FOREIGN KEY (friend_id) REFERENCES users (id) ON DELETE CASCADE,
+    PRIMARY KEY (user_id, friend_id)
+);
+
 DROP TABLE IF EXISTS games CASCADE;
 CREATE TABLE games (
     id                     SERIAL       PRIMARY KEY,
