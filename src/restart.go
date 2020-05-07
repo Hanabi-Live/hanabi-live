@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"path"
+	"runtime"
 	"strconv"
 )
 
@@ -12,8 +13,11 @@ import (
 func restart() {
 	// We build the client first before kicking everyone off in order to
 	// reduce the total amount of downtime
-	logger.Info("Building the client...")
-	execute("build_client.sh", projectPath)
+	// (but executing Bash scripts will not work on Windows)
+	if runtime.GOOS != "windows" {
+		logger.Info("Building the client...")
+		execute("build_client.sh", projectPath)
+	}
 
 	for _, t := range tables {
 		// Only serialize ongoing games
