@@ -2,10 +2,10 @@ package main
 
 type UserFriends struct{}
 
-func (*Users) Insert(userID int, friendID int) error {
-
+func (*UserFriends) Insert(userID int, friendID int) error {
+	return nil
 }
 
-func (*Users) GetAll(userID int) error {
-
+func (*UserFriends) GetAll(userID int) error {
+	return nil
 }
