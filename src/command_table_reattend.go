@@ -45,7 +45,7 @@ func commandTableReattend(s *Session, d *CommandData) {
 	} else {
 		// Set their "present" variable back to true,
 		// which will remove the "AWAY" if the game has not started yet
-		// (if the game is running, this is handled in the "commandReady()" function)
+		// (if the game is running, this is handled in the "getGameInfo2()" function)
 		p := t.Players[i]
 		p.Present = true
 		t.NotifyPlayerChange()
@@ -59,7 +59,7 @@ func commandTableReattend(s *Session, d *CommandData) {
 		})
 
 		// Send them the chat history for this game
-		// (if the game is running, this is handled in the "commandReady()" function)
+		// (if the game is running, this is handled in the "getGameInfo2()" function)
 		chatSendPastFromTable(s, t)
 	}
 

@@ -70,5 +70,5 @@ commands.set('init', (data: any) => {
   // keyboard.init();
 
   // Tell the server that we are finished loading
-  // TODO send "ready" command
+  // TODO send "getGameInfo2" command
 });

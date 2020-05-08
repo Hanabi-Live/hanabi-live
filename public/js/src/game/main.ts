@@ -28,7 +28,11 @@ export const show = () => {
     globals.ui = new HanabiUI(globals, gameExports);
     globals.chatUnread = 0;
   }
-  globals.conn!.send('hello', {
+
+  // Request some high-level information about the game (e.g. the number of players)
+  // This will be enough information to load the UI
+  // (we will request the specific actions for the game later on)
+  globals.conn!.send('getGameInfo1', {
     tableID: globals.tableID,
   });
 };

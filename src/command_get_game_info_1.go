@@ -4,20 +4,22 @@ import (
 	"strconv"
 )
 
-// commandHello is sent when the user:
+// commandGetGameInfo1 provides some high-level information about the game
+// (like the number of players)
+// It is sent when the user:
 // - is in a game that is starting
 // - joins a game that has already started
 // - starts a solo replay
 // - starts spectating a game
 //
 // This is sent before the UI is initialized;
-// the client will send a "ready" message later to get more data
+// the client will send a "getGameInfo2" command later to get more specific data
 //
 // Example data:
 // {
 //   tableID: 5,
 // }
-func commandHello(s *Session, d *CommandData) {
+func commandGetGameInfo1(s *Session, d *CommandData) {
 	/*
 		Validate
 	*/
@@ -48,7 +50,7 @@ func commandHello(s *Session, d *CommandData) {
 	}
 
 	/*
-		Hello
+		Provide the info
 	*/
 
 	// Create a list of names of the users in this game

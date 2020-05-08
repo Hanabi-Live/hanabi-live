@@ -146,8 +146,8 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	go t.CheckIdle()
 
 	// The "commandTableSpectate()" function above sends the user the "tableStart" message
-	// After the client receives the "tableStart" message, they will load the UI and then send a
-	// "hello" message to get the rest of the data for the game
+	// After the client receives the "tableStart" message, they will send a "getGameInfo1" command
+	// to begin the process of loading the UI and putting them in the game
 }
 
 func validateDatabase(s *Session, d *CommandData) bool {

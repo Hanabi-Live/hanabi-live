@@ -4,13 +4,14 @@ import (
 	"strconv"
 )
 
-// commandReady is sent when the user has joined a game and the UI has been initialized
+// commandGetGameInfo2 provides all of the actions that have happened thus far in the game
+// It is sent when the user has joined a game and the UI has been initialized
 //
 // Example data:
 // {
 //   tableID: 5,
 // }
-func commandReady(s *Session, d *CommandData) {
+func commandGetGameInfo2(s *Session, d *CommandData) {
 	/*
 		Validate
 	*/

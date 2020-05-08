@@ -7,7 +7,9 @@ import (
 )
 
 // commandTableStart is sent when the owner of a table clicks on the "Start Game" button
-// (the client will send a "hello" message after getting "tableStart")
+// It will echo back a "tableStart" command if the game successfully started
+// (at which point the client will send a "getTableInfo1" message to get more information about the
+// game)
 //
 // Example data:
 // {
@@ -212,7 +214,7 @@ func commandTableStart(s *Session, d *CommandData) {
 
 	// Initialize all of the players to not being present
 	// This is so that we don't send them unnecessary messages during the game initialization
-	// (we will set them back to present once they send the "ready" message)
+	// (we will set them back to present once they send the "getGameInfo2" message)
 	listOfAwayPlayers := make([]int, 0)
 	for _, p := range t.Players {
 		if p.Present {
