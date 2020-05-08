@@ -135,10 +135,10 @@ func httpUserAction(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	// Parse the username from the URL
+	// Validate the username
 	username := c.PostForm("username")
 	if username == "" {
-		http.Error(w, "Error: You must specify a username.", http.StatusNotFound)
+		http.Error(w, "Error: You must specify a username.", http.StatusBadRequest)
 		return
 	}
 

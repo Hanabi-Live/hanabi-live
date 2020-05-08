@@ -1,6 +1,6 @@
 # List of Features
 
-[Hanabi Live](https://hanabi.live/) was released on October 2017 as an attempt to improve upon Keldon's [Keldon's Hanabi server](http://keldon.net/hanabi/) (which is now non-functional). Much of the client code was originally borrowed from his implementation. Nearly all of the server code was written by Zamiel. Several community members have contributed to the project.
+[Hanabi Live](https://hanabi.live/) was released on October 2017 as an attempt to improve upon [Keldon Jones'](http://keldon.net/) Hanabi site (which is now deleted). Much of the client code was originally borrowed from his implementation. Nearly all of the server code was written by Zamiel. Several community members have contributed to the project.
 
 <br />
 

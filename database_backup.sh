@@ -20,6 +20,9 @@ source "$DIR/.env"
 mkdir -p "$BACKUPS_DIR"
 echo Dumping the database...
 PGPASSWORD="$DB_PASS" pg_dump --username="$DB_USER" "$DB_NAME" > "$BACKUPS_DIR/$FILENAME.bak"
+if [[ $? -eq 0 ]]; then
+  exit 1
+fi
 #echo Zipping the backup...
 #gzip "$BACKUPS_DIR/$FILENAME"
 echo Complete.

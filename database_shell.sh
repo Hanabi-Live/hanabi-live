@@ -13,10 +13,4 @@ if uname -a | grep MINGW64 >/dev/null 2>&1; then
 fi
 
 # Open a database shell
-if id "postgres" >/dev/null 2>&1; then
-  # Linux
-  sudo -u postgres psql hanabi
-else
-  # MacOS
-  PGPASSWORD="$DB_PASS" psql -U "$DB_USER" "$DB_NAME"
-fi
+PGPASSWORD="$DB_PASS" psql --username="$DB_USER" "$DB_NAME"

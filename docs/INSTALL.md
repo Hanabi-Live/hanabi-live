@@ -37,16 +37,20 @@ If you want to install less stuff on your computer, you can alternatively follow
   (so that Git automatically rebases when pulling)
 * Install [PostgreSQL](https://www.postgresql.org/):
   * `choco install postgresql -y --params '/Password 1234567890'` <br />
-  (remove the `--params '/Password 1234567890'` if you want it to generate a random password, which will be displayed in the post-installation output)
+  (replace "1234567890" with a more secure password, or remove the `--params '/Password 1234567890'` if you want it to generate a random password, which will be displayed in the post-installation output)
 * Make it so that PostgreSQL only listens on localhost instead of on all interfaces:
   * `notepad "C:\Program Files\PostgreSQL\12\data\postgresql.conf"`
     * Add a "#" in front of the "listen_addresses" line.
   * `net stop postgresql-x64-12`
   * `net start postgresql-x64-12`
-* Configure PostgreSQL:
+* Create a new database and set up a database user:
   * `refreshenv`
   * `psql -U postgres`
+  * Enter the password for the "postgres" user that you created in the previous step.
   * `CREATE DATABASE hanabi;`
+  * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
+  (replace "1234567890" with a more secure password)
+  * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   * `\q`
 * Clone the repository:
   * `cd [the path where you want the code to live]` (optional)
@@ -98,13 +102,17 @@ If you want to install less stuff on your computer, you can alternatively follow
   * `git config --global pull.rebase true` <br />
   (so that Git automatically rebases when pulling)
 * Enable [launching Visual Studio Code from the command line](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line).
-* Install [PostgreSQL](https://www.postgresql.org/):
+* Install [PostgreSQL](https://www.postgresql.org/), create a new database, and set up a database user:
   * `brew install postgresql`
   * `brew services start postgresql`
-  * `psql postgres`
-  * `CREATE USER postgres WITH PASSWORD '1234567890';`
-  * `ALTER USER postgres WITH SUPERUSER`;
+  * `psql postgres` <br />
+  (on MacOS, there is no password by default)
+  * `\password postgres`
+  * Enter a secure password for the postgres user. (This is the "master" account that has access to all databases.)
   * `CREATE DATABASE hanabi;`
+  * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
+  (replace "1234567890" with a more secure password)
+  * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   * `\q`
 * Clone the repository:
   * `cd [the path where you want the code to live]` (optional)
@@ -115,7 +123,7 @@ If you want to install less stuff on your computer, you can alternatively follow
   * Or, if you are doing development work, then clone your forked version of the repository. For example:
     * `git clone https://github.com/[Your_Username]/hanabi-live.git`
 * Enter the cloned repository:
-    * `cd hanabi-live`
+  * `cd hanabi-live`
 * Install some dependencies:
   * `./install/install_dependencies.sh`
   * `./install/install_development_dependencies.sh`
@@ -129,11 +137,11 @@ If you want to install less stuff on your computer, you can alternatively follow
 * Test the Golang linter:
   * On the left pane, navigate to and open "src\main.go".
   * If you get a popup asking to use any experimental features (e.g. gopls), ignore it and/or do not allow it to proceed.
-  * Add a new line of "asdf" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
+  * Add a new line of "testing" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
   * Add a blank line somewhere, save the file, and watch as the blank line is automatically removed (because VSCode will automatically run the "goimports" tool every time you save a file).
 * Test the TypeScript linter:
   * On the left pane, navigate to and open "public\js\src\main.ts".
-  * Add a new line of "asdf" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
+  * Add a new line of "testing" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
 * See [Running the Server](#running-the-server).
 
 <br />
@@ -172,12 +180,14 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `mkdir "$HOME/go"`
   * `export GOPATH=$HOME/go && echo 'export GOPATH=$HOME/go' >> ~/.profile`
   * `export PATH=$PATH:$GOPATH/bin && echo 'export PATH=$PATH:$GOPATH/bin' >> ~/.profile`
-* Install [PostgreSQL](https://www.postgresql.org/):
+* Install [PostgreSQL](https://www.postgresql.org/), create a new database, and set up a database user:
   * `sudo apt install postgresql postgresql-contrib -y` <br />
-* Set the password for the "postgres" user:
-  * `sudo -u postgres sql`
-  * `ALTER USER postgres WITH PASSWORD '1234567890';` <br />
+  * `sudo -u postgres psql` <br />
+  (on Linux, there is no default password; you must connect through the "postgres" operating system account)
+  * `CREATE DATABASE hanabi;`
+  * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
   (replace the "1234567890" with a secure password)
+  * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
 * Install [nvm](https://github.com/nvm-sh/nvm) and [Node.js](https://nodejs.org/en/):
   * `sudo apt install curl -y`
   * `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash`
