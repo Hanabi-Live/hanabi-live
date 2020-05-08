@@ -150,12 +150,12 @@ func commandTableRestart(s *Session, d *CommandData) {
 	}
 
 	// Generate a random name for the new game
-	name := getName()
+	newTableName := getName()
 
 	// The shared replay should now be deleted, since all of the players have left
 	// Now, emulate the game owner creating a new game
 	commandTableCreate(s, &CommandData{
-		Name:                 name,
+		Name:                 newTableName,
 		Variant:              t.Options.Variant,
 		Timed:                t.Options.Timed,
 		BaseTime:             t.Options.BaseTime,
@@ -171,13 +171,16 @@ func commandTableRestart(s *Session, d *CommandData) {
 	// Find the table ID for the new game
 	var t2 *Table
 	for _, existingTable := range tables {
-		if existingTable.Name == name {
+		if existingTable.Name == newTableName {
 			t2 = existingTable
 			break
 		}
 	}
 	if t2 == nil {
-		logger.Error("Failed to find the newly created game of \"" + name + "\" in the table map.")
+		logger.Error("Failed to find the newly created table of \"" + newTableName + "\" " +
+			"in the table map.")
+		s.Error("Something went wrong when restarting the game. " +
+			"Please report this error to an administrator.")
 		return
 	}
 
