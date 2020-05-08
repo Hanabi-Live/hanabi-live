@@ -1,0 +1,14 @@
+LOAD DATABASE
+    FROM mysql://hanabiuser:1234567890@localhost/hanabi
+    INTO postgresql://postgres:1234567890@localhost/hanabi
+
+/*INCLUDING ONLY table names matching 'users'*/
+
+WITH include no drop, disable triggers, create no tables, create no indexes, no foreign keys, data only
+
+CAST type varchar to text,
+     type char to text
+
+ALTER SCHEMA 'hanabi' RENAME TO 'public'
+
+;
