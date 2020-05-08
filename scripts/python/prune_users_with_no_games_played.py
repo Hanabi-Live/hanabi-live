@@ -52,7 +52,7 @@ for user in users:
         cursor = cnx.cursor()
         query = ('DELETE FROM users WHERE id = %s')
         cursor.execute(query, (user[0],))
-        print('Deleted user:', user[0], user[1])
+        print('Deleted user:', user[0])
 
 cnx.commit()
 cnx.close()
