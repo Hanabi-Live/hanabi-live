@@ -19,7 +19,7 @@ export class Globals {
 
   conn: Connection | null = null; // The WebSocket connection (set in "websocket.ts")
 
-  // Values sent to us from the server in the "hello" message
+  // Values sent to us from the server in the "welcome" message
   id: number = -1;
   username: string = '';
   totalGames: number = 0;

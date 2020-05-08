@@ -43,7 +43,7 @@ export default () => {
 
   // Define event handlers
   globals.conn.on('open', () => {
-    // We will show the lobby upon receiving the "hello" command from the server
+    // We will show the lobby upon receiving the "welcome" command from the server
     console.log('WebSocket connection established.');
   });
   globals.conn.on('close', () => {
@@ -72,7 +72,7 @@ const initCommands = () => {
   }
 
   // Received by the client upon first connecting
-  interface HelloData {
+  interface WelcomeData {
     id: number;
     username: string;
     totalGames: number;
@@ -82,7 +82,7 @@ const initCommands = () => {
     shuttingDown: boolean;
     maintenanceMode: boolean;
   }
-  globals.conn.on('hello', (data: HelloData) => {
+  globals.conn.on('welcome', (data: WelcomeData) => {
     // Store some variables (mostly relating to our user account)
     globals.id = data.id;
     globals.username = data.username; // We might have logged-in with a different stylization

@@ -36,6 +36,9 @@ func websocketConnect(ms *melody.Session) {
 	sessions[s.UserID()] = s
 	logger.Info("User \""+s.Username()+"\" connected;", len(sessions), "user(s) now connected.")
 
+	// They have successfully logged in
+	// Now, gather some additional information
+
 	// Get their total number of games played
 	var totalGames int
 	if v, err := models.Games.GetUserNumGames(s.UserID(), true); err != nil {
@@ -64,8 +67,9 @@ func websocketConnect(ms *melody.Session) {
 	}
 	firstTimeUser := time.Since(datetimeCreated) < 10*time.Second
 
-	// They have successfully logged in, so send the initial message to the client
-	type HelloMessage struct {
+	// Send an initial message that contains information about who they are and
+	// the current state of the server
+	type WelcomeMessage struct {
 		ID                   int       `json:"id"`
 		Username             string    `json:"username"`
 		TotalGames           int       `json:"totalGames"`
@@ -76,7 +80,7 @@ func websocketConnect(ms *melody.Session) {
 		DatetimeShutdownInit time.Time `json:"datetimeShutdownInit"`
 		MaintenanceMode      bool      `json:"maintenanceMode"`
 	}
-	s.Emit("hello", &HelloMessage{
+	s.Emit("welcome", &WelcomeMessage{
 		// Send the user their corresponding user ID
 		ID: s.UserID(),
 
