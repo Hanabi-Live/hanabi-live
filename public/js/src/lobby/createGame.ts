@@ -1,7 +1,7 @@
 // The "Create Game" nav button
 
 // Imports
-import { FADE_TIME, VARIANTS } from '../constants';
+import { FADE_TIME, SHUTDOWN_TIMEOUT, VARIANTS } from '../constants';
 import * as debug from '../debug';
 import globals from '../globals';
 import * as misc from '../misc';
@@ -257,15 +257,18 @@ export const before = () => {
   if (globals.shuttingDown) {
     const now = new Date().getTime();
     const elapsedTime = now - globals.datetimeShutdownInit;
-    const numMinutes = new Date(elapsedTime).getMinutes();
-    if (numMinutes > 5) {
+    // SHUTDOWN_TIMEOUT is in minutes
+    const shutdownTimeoutMilliseconds = SHUTDOWN_TIMEOUT * 60 * 1000;
+    const timeLeft = shutdownTimeoutMilliseconds - elapsedTime;
+    const minutesLeft = new Date(timeLeft).getMinutes();
+    if (minutesLeft > 5) {
       let msg = 'The server is shutting down in ';
-      if (numMinutes <= 0) {
+      if (minutesLeft <= 0) {
         msg += 'momentarily';
-      } else if (numMinutes === 1) {
+      } else if (minutesLeft === 1) {
         msg += 'in 1 minute';
       } else {
-        msg += `in ${numMinutes} minutes`;
+        msg += `in ${minutesLeft} minutes`;
       }
       msg += '. You cannot start any new games for the time being.';
       modals.warningShow(msg);
