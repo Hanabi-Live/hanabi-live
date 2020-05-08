@@ -18,13 +18,6 @@
  */
 SET client_min_messages TO WARNING;
 
-/*
- * "UNIQUE" constraints in PostgreSQL are case-sensitive;
- *  we want some fields to be case-insensitive unique
- *  http://shuber.io/case-insensitive-unique-constraints-in-postgres/
- */
-CREATE EXTENSION IF NOT EXISTS citext;
-
 DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE users (
     id                   SERIAL       PRIMARY KEY,

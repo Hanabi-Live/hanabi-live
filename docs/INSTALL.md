@@ -48,11 +48,15 @@ If you want to install less stuff on your computer, you can alternatively follow
   * `psql -U postgres`
   * Enter the password for the "postgres" user that you created in the previous step.
   * `CREATE DATABASE hanabi;`
-  * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
-  (replace "1234567890" with a more secure password)
-  * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   * `\c hanabi`
+  * `CREATE EXTENSION IF NOT EXISTS citext;` <br />
+  (this [allows "UNIQUE" constraints to be case-insensitive](http://shuber.io/case-insensitive-unique-constraints-in-postgres/) if needed)
+  * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
+  (replace "1234567890" with a secure password)
+  * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
+  * `GRANT USAGE ON SCHEMA public TO hanabiuser;`
   * `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
+  * `GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO hanabiuser;`
   * `\q`
 * Clone the repository:
   * `cd [the path where you want the code to live]` (optional)
@@ -112,11 +116,15 @@ If you want to install less stuff on your computer, you can alternatively follow
   * `\password postgres`
   * Enter a secure password for the postgres user. (This is the "master" account that has access to all databases.)
   * `CREATE DATABASE hanabi;`
-  * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
-  (replace "1234567890" with a more secure password)
-  * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   * `\c hanabi`
+  * `CREATE EXTENSION IF NOT EXISTS citext;` <br />
+  (this [allows "UNIQUE" constraints to be case-insensitive](http://shuber.io/case-insensitive-unique-constraints-in-postgres/) if needed)
+  * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
+  (replace "1234567890" with a secure password)
+  * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
+  * `GRANT USAGE ON SCHEMA public TO hanabiuser;`
   * `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
+  * `GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO hanabiuser;`
   * `\q`
 * Clone the repository:
   * `cd [the path where you want the code to live]` (optional)
@@ -189,11 +197,15 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `sudo -u postgres psql` <br />
   (on Linux, there is no default password; you must connect through the "postgres" operating system account)
   * `CREATE DATABASE hanabi;`
-  * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
-  (replace the "1234567890" with a secure password)
-  * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
   * `\c hanabi`
+  * `CREATE EXTENSION IF NOT EXISTS citext;` <br />
+  (this [allows "UNIQUE" constraints to be case-insensitive](http://shuber.io/case-insensitive-unique-constraints-in-postgres/) if needed)
+  * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
+  (replace "1234567890" with a secure password)
+  * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
+  * `GRANT USAGE ON SCHEMA public TO hanabiuser;`
   * `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
+  * `GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO hanabiuser;`
   * `\q`
 * Install [nvm](https://github.com/nvm-sh/nvm) and [Node.js](https://nodejs.org/en/):
   * `sudo apt install curl -y`
@@ -217,8 +229,17 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
     * Fill in the values accordingly. The most important one is "DOMAIN" - this must match the URL that the user types in to their browser.
 * Create the database and import the schema:
   * `sudo -u postgres psql`
-    * `CREATE DATABASE hanabi;`
-    * `\q`
+  * `CREATE DATABASE hanabi;`
+  * `\c hanabi`
+  * `CREATE EXTENSION IF NOT EXISTS citext;` <br />
+  (this [allows "UNIQUE" constraints to be case-insensitive](http://shuber.io/case-insensitive-unique-constraints-in-postgres/) if needed)
+  * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
+  (replace "1234567890" with a secure password)
+  * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
+  * `GRANT USAGE ON SCHEMA public TO hanabiuser;`
+  * `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
+  * `GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO hanabiuser;`
+  * `\q`
   * `./install/install_database_schema.sh`
 * See [Running the Server](#running-the-server).
 
