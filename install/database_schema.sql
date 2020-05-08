@@ -89,7 +89,7 @@ CREATE TABLE user_stats (
 );
 
 DROP TABLE IF EXISTS user_friends CASCADE;
-CREATE TABLE user_stats (
+CREATE TABLE user_friends (
     user_id    INTEGER  NOT NULL,
     friend_id  INTEGER  NOT NULL,
     FOREIGN KEY (user_id)   REFERENCES users (id) ON DELETE CASCADE,
