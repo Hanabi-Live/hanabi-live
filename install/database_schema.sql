@@ -144,7 +144,7 @@ CREATE TABLE game_participants (
     id                    SERIAL    PRIMARY KEY,
     game_id               INTEGER   NOT NULL,
     user_id               INTEGER   NOT NULL,
-    seat                  INTEGER   NOT NULL, /* Needed for the "GetNotes()" function */
+    seat                  SMALLINT  NOT NULL, /* Needed for the "GetNotes()" function */
     character_assignment  SMALLINT  NOT NULL,
     character_metadata    SMALLINT  NOT NULL,
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,

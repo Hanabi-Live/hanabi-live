@@ -9,7 +9,7 @@ source "$DIR/../.env"
 
 if id "postgres" >/dev/null 2>&1; then
   # Linux (does not use a password)
-  sudo -u postgres psql --quiet --variable=ON_ERROR_STOP=1 "$DB_NAME" < "$DIR/database_schema.sql"
+  sudo --user=postgres psql --quiet --variable=ON_ERROR_STOP=1 "$DB_NAME" < "$DIR/database_schema.sql"
 else
   # Windows & MacOS (uses a password)
   PGPASSWORD="$DB_PASS" psql --quiet --variable=ON_ERROR_STOP=1 --username="$DB_USER" "$DB_NAME" < "$DIR/database_schema.sql"
