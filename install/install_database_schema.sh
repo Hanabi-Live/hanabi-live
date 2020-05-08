@@ -9,6 +9,7 @@ source "$DIR/../.env"
 
 if id "postgres" >/dev/null 2>&1; then
   # Linux (does not use a password)
+  cd "/tmp"
   sudo --user=postgres psql --quiet --variable=ON_ERROR_STOP=1 "$DB_NAME" < "$DIR/database_schema.sql"
 else
   # Windows & MacOS (uses a password)
