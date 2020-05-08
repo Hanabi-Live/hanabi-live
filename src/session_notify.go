@@ -372,7 +372,7 @@ func (s *Session) NotifyReplayLeader(t *Table, playAnimation bool) {
 		if v, err := models.Users.GetUsername(t.Owner); err != nil {
 			logger.Error("Failed to get the username for user "+strconv.Itoa(t.Owner)+
 				" who is the owner of table:", t.ID)
-			return
+			name = "(Unknown)"
 		} else {
 			name = v
 		}

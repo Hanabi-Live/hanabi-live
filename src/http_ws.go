@@ -8,6 +8,7 @@ import (
 
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v4"
 )
 
 var (
@@ -114,7 +115,22 @@ func httpWS(c *gin.Context) {
 
 	// Get the username for this user
 	var username string
-	if v, err := models.Users.GetUsername(userID); err != nil {
+	if v, err := models.Users.GetUsername(userID); err == pgx.ErrNoRows {
+		// The user has a cookie for a user that does not exist in the database,
+		// e.g. an "orphaned" user
+		// This can happen in situations where a test user was deleted, for example
+		// Delete their cookie and force them to relogin
+		logger.Info("User from \"" + ip + "\" tried to login with a cookie for an orphaned user " +
+			"ID of " + strconv.Itoa(userID) + ". Deleting their cookie.")
+		http.Error(
+			w,
+			http.StatusText(http.StatusUnauthorized),
+			http.StatusUnauthorized,
+		)
+		deleteCookie(c)
+		commandMutex.Unlock()
+		return
+	} else if err != nil {
 		logger.Error("Failed to get the username for user "+strconv.Itoa(userID)+":", err)
 		http.Error(
 			w,
