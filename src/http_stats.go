@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -57,10 +58,10 @@ func httpStats(c *gin.Context) {
 
 	// It will only be valid if they have played a non-speedrun game
 	timePlayed := ""
-	if globalStats.TimePlayed.Valid {
-		if v, err := secondsToDurationString(globalStats.TimePlayed.String); err != nil {
+	if globalStats.TimePlayed != 0 {
+		if v, err := secondsToDurationString(globalStats.TimePlayed); err != nil {
 			logger.Error("Failed to parse the duration of "+
-				"\""+globalStats.TimePlayed.String+"s\" for the global stats:", err)
+				"\""+strconv.Itoa(globalStats.TimePlayed)+"\" for the global stats:", err)
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -74,10 +75,10 @@ func httpStats(c *gin.Context) {
 
 	// It will only be valid if they have played a speedrun game
 	timePlayedSpeedrun := ""
-	if globalStats.TimePlayedSpeedrun.Valid {
-		if v, err := secondsToDurationString(globalStats.TimePlayedSpeedrun.String); err != nil {
+	if globalStats.TimePlayedSpeedrun != 0 {
+		if v, err := secondsToDurationString(globalStats.TimePlayedSpeedrun); err != nil {
 			logger.Error("Failed to parse the duration of "+
-				"\""+globalStats.TimePlayedSpeedrun.String+"s\" for the global stats:", err)
+				"\""+strconv.Itoa(globalStats.TimePlayedSpeedrun)+"\" for the global stats:", err)
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 )
@@ -156,10 +155,9 @@ func getCameOnline() string {
 }
 func getUptime() (string, error) {
 	elapsedTime := time.Since(datetimeStarted)
-	elapsedSeconds := elapsedTime.Seconds()
-	elapsedSecondsString := fmt.Sprintf("%f", elapsedSeconds)
+	elapsedSeconds := int(elapsedTime.Seconds())
 	var durationString string
-	if v, err := secondsToDurationString(elapsedSecondsString); err != nil {
+	if v, err := secondsToDurationString(elapsedSeconds); err != nil {
 		return "", err
 	} else {
 		durationString = v
@@ -187,10 +185,9 @@ func getTimeLeft() (string, error) {
 	}
 
 	timeLeft := shutdownTimeout - time.Since(datetimeShutdownInit)
-	timeLeftSeconds := timeLeft.Seconds()
-	timeLeftSecondsString := fmt.Sprintf("%f", timeLeftSeconds)
+	timeLeftSeconds := int(timeLeft.Seconds())
 	var durationString string
-	if v, err := secondsToDurationString(timeLeftSecondsString); err != nil {
+	if v, err := secondsToDurationString(timeLeftSeconds); err != nil {
 		return "", err
 	} else {
 		durationString = v

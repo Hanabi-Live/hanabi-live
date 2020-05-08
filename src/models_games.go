@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"strconv"
 	"time"
 
@@ -562,9 +561,9 @@ func (*Games) GetFastestTime(variant int, numPlayers int, maxScore int) (int, er
 type Stats struct {
 	DateJoined         time.Time
 	NumGames           int
-	TimePlayed         sql.NullString
+	TimePlayed         int
 	NumGamesSpeedrun   int
-	TimePlayedSpeedrun sql.NullString
+	TimePlayedSpeedrun int
 }
 
 func (*Games) GetProfileStats(userID int) (Stats, error) {
@@ -593,7 +592,7 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $3
 					AND games.speedrun = FALSE
-			) AS timed_played,
+			) AS time_played,
 			(
 				SELECT COUNT(games.id)
 				FROM games
@@ -642,7 +641,7 @@ func (*Games) GetGlobalStats() (Stats, error) {
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE games.speedrun = FALSE
-			) AS timed_played,
+			) AS time_played,
 			(
 				SELECT COUNT(id)
 				FROM games
@@ -689,7 +688,7 @@ func (*Games) GetVariantStats(variant int) (Stats, error) {
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE variant = $2
 					AND games.speedrun = FALSE
-			) AS timed_played,
+			) AS time_played,
 			(
 				SELECT COUNT(id)
 				FROM games

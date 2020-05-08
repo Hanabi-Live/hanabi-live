@@ -273,7 +273,7 @@ CREATE TABLE discord_metadata (
     value  TEXT    NOT NULL
 );
 /* The "last_at_here" value is stored as a RFC3339 string */
-INSERT INTO discord_metadata (name, value) VALUES ('last_at_here', '2006-01-02T15:04:05Z07:00');
+INSERT INTO discord_metadata (name, value) VALUES ('last_at_here', '2006-01-02T15:04:05Z');
 
 DROP TABLE IF EXISTS discord_waiters CASCADE;
 CREATE TABLE discord_waiters (

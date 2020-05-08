@@ -104,10 +104,10 @@ func max(x, y int) int {
 	return y
 }
 
-func secondsToDurationString(str string) (string, error) {
+func secondsToDurationString(seconds int) (string, error) {
 	// The s is for seconds
 	var duration time.Duration
-	if v, err := time.ParseDuration(str + "s"); err != nil {
+	if v, err := time.ParseDuration(strconv.Itoa(seconds) + "s"); err != nil {
 		return "", err
 	} else {
 		duration = v

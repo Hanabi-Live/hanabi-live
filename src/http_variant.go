@@ -108,10 +108,10 @@ func httpVariant(c *gin.Context) {
 
 	// It will only be valid if someone has played a non-speedrun game in this variant
 	timePlayed := ""
-	if stats.TimePlayed.Valid {
-		if v, err := secondsToDurationString(stats.TimePlayed.String); err != nil {
+	if stats.TimePlayed != 0 {
+		if v, err := secondsToDurationString(stats.TimePlayed); err != nil {
 			logger.Error("Failed to parse the duration of "+
-				"\""+stats.TimePlayed.String+"s\" for the variant stats:", err)
+				"\""+strconv.Itoa(stats.TimePlayed)+"\" for the variant stats:", err)
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),
@@ -125,10 +125,10 @@ func httpVariant(c *gin.Context) {
 
 	// It will only be valid if someone has played a speedrun game in this variant
 	timePlayedSpeedrun := ""
-	if stats.TimePlayedSpeedrun.Valid {
-		if v, err := secondsToDurationString(stats.TimePlayedSpeedrun.String); err != nil {
+	if stats.TimePlayedSpeedrun != 0 {
+		if v, err := secondsToDurationString(stats.TimePlayedSpeedrun); err != nil {
 			logger.Error("Failed to parse the duration of "+
-				"\""+stats.TimePlayedSpeedrun.String+"s\" for the variant stats:", err)
+				"\""+strconv.Itoa(stats.TimePlayedSpeedrun)+"\" for the variant stats:", err)
 			http.Error(
 				w,
 				http.StatusText(http.StatusInternalServerError),

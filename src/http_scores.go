@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -95,10 +96,10 @@ func httpScores(c *gin.Context) {
 
 	// It will only be valid if they have played a non-speedrun game
 	timePlayed := ""
-	if profileStats.TimePlayed.Valid {
-		if v, err := secondsToDurationString(profileStats.TimePlayed.String); err != nil {
+	if profileStats.TimePlayed != 0 {
+		if v, err := secondsToDurationString(profileStats.TimePlayed); err != nil {
 			logger.Error("Failed to parse the duration of "+
-				"\""+profileStats.TimePlayed.String+"s\" for player "+
+				"\""+strconv.Itoa(profileStats.TimePlayed)+"\" for player "+
 				"\""+user.Username+"\":", err)
 			http.Error(
 				w,
@@ -113,10 +114,10 @@ func httpScores(c *gin.Context) {
 
 	// It will only be valid if they have played a speedrun game
 	timePlayedSpeedrun := ""
-	if profileStats.TimePlayedSpeedrun.Valid {
-		if v, err := secondsToDurationString(profileStats.TimePlayedSpeedrun.String); err != nil {
+	if profileStats.TimePlayedSpeedrun != 0 {
+		if v, err := secondsToDurationString(profileStats.TimePlayedSpeedrun); err != nil {
 			logger.Error("Failed to parse the duration of "+
-				"\""+profileStats.TimePlayedSpeedrun.String+"s\" for player "+
+				"\""+strconv.Itoa(profileStats.TimePlayedSpeedrun)+"\" for player "+
 				"\""+user.Username+"\":", err)
 			http.Error(
 				w,

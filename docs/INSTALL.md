@@ -175,8 +175,9 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 * Install [PostgreSQL](https://www.postgresql.org/):
   * `sudo apt install postgresql postgresql-contrib -y` <br />
 * Set the password for the "postgres" user:
-  * `passwd postgres`
-  * Enter a secure password.
+  * `sudo -u postgres sql`
+  * `ALTER USER postgres WITH PASSWORD '1234567890';` <br />
+  (replace the "1234567890" with a secure password)
 * Install [nvm](https://github.com/nvm-sh/nvm) and [Node.js](https://nodejs.org/en/):
   * `sudo apt install curl -y`
   * `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash`
@@ -230,7 +231,7 @@ This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
 
 ```
 # Every day, backup the "hanabi" database
-0 0 * * * /root/hanabi-live/make_database_dump.sh
+0 0 * * * /root/hanabi-live/database_backup.sh
 ```
 
 <br />
