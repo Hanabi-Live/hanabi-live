@@ -15,11 +15,14 @@ hanabi-live~
 # Temporary files
 compiling_client
 
-# MySQL data from Docker
-mysql_data
+# The message of the day
+motd.txt
 
 # MacOS artifacts
 .DS_Store
+
+# MySQL data from Docker
+mysql_data
 
 # --------------------------
 # GitHub .gitignore Template

@@ -1,6 +1,10 @@
 package main
 
 import (
+	"io/ioutil"
+	"os"
+	"path"
+	"strings"
 	"time"
 
 	melody "gopkg.in/olahol/melody.v1"
@@ -137,7 +141,7 @@ func websocketConnect(ms *melody.Session) {
 	// Send the past 50 chat messages from the lobby
 	chatSendPastFromDatabase(s, "lobby", 50)
 
-	// Send them the message(s) of the day
+	// Send them a message about the Discord server
 	msg := "Find teammates and discuss strategy in the "
 	msg += "<a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">"
 	msg += "Hanabi Discord chat</a>."
@@ -147,6 +151,33 @@ func websocketConnect(ms *melody.Session) {
 		Datetime: time.Now(),
 		Room:     "lobby",
 	})
+
+	// Send them the message of the day, if any
+	motdPath := path.Join(projectPath, "motd.txt")
+	exists := true
+	if _, err := os.Stat(motdPath); os.IsNotExist(err) {
+		exists = false
+	} else if err != nil {
+		logger.Error("Failed to check if the \""+motdPath+"\" file exists:", err)
+		exists = false
+	}
+	if exists {
+		if fileContents, err := ioutil.ReadFile(motdPath); err != nil {
+			logger.Error("Failed to read the \""+motdPath+"\" file:", err)
+		} else {
+			motd := string(fileContents)
+			motd = strings.TrimSpace(motd)
+			if len(motd) > 0 {
+				msg := "[Server Notice] " + motd
+				s.Emit("chat", &ChatMessage{
+					Msg:      msg,
+					Server:   true,
+					Datetime: time.Now(),
+					Room:     "lobby",
+				})
+			}
+		}
+	}
 
 	// Send the user's game history
 	// (only the last 10 games to prevent wasted bandwidth)
