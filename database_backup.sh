@@ -10,7 +10,7 @@ REPO="$(basename "$DIR")"
 
 # Configuration
 BACKUPS_DIR="$DIR/backups"
-FILENAME=$REPO-`date +%s` # "date +%s" returns the epoch timestamp
+FILENAME=$REPO-`date +%s`.sql # "date +%s" returns the epoch timestamp
 
 # Import the database information
 source "$DIR/.env"
@@ -21,15 +21,15 @@ if [[ -z $DB_PORT ]]; then
   DB_PORT=5432
 fi
 
-# Back up the database
-# (we specify an extension of ".bak", which means that pg_dump will automatically compress the data)
+# Back up the database and gzip it
 mkdir -p "$BACKUPS_DIR"
 echo "Dumping the database..."
-PGPASSWORD="$DB_PASS" pg_dump --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" > "$BACKUPS_DIR/$FILENAME.bak"
+PGPASSWORD="$DB_PASS" pg_dump --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" > "$BACKUPS_DIR/$FILENAME"
 if [[ $? -ne 0 ]]; then
   exit 1
 fi
-echo "Dump complete."
+echo "Zipping the backup..."
+gzip "$BACKUPS_DIR/$FILENAME"
 
 # Delete old backups if the hard drive is getting full
 # (but skip this if we are on Windows)
@@ -53,7 +53,7 @@ fi
 # References: https://github.com/gdrive-org/gdrive/issues/533
 if command -v gdrive > /dev/null; then
   if [[ ! -z $GOOGLE_DRIVE_SERVICE_ACCOUNT ]]; then
-    gdrive upload "$BACKUPS_DIR/$FILENAME.bak" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY"
+    gdrive upload "$BACKUPS_DIR/$FILENAME.gz" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY"
   else
     echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_SERVICE_ACCOUNT\" is not set in the \".env\" file."
   fi
