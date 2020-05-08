@@ -37,6 +37,7 @@ if uname -a | grep -v MINGW64 >/dev/null 2>&1; then
   AMOUNT_FULL=$(df "$DIR" | tail -1 | awk '{print $5}' | rev | cut -c 2- | rev)
   if [[ $AMOUNT_FULL -gt 80 ]]; then
     # Delete the oldest file in the backups directory
+    echo "Hard drive over 80% full; deleting one of the older backups."
     rm "$(ls -t "$BACKUPS_DIR" | tail -1)"
   fi
 fi
@@ -52,8 +53,7 @@ fi
 # References: https://github.com/gdrive-org/gdrive/issues/533
 if command -v gdrive > /dev/null; then
   if [[ ! -z $GOOGLE_DRIVE_SERVICE_ACCOUNT ]]; then
-    gdrive upload "$BACKUPS_DIR/$FILENAME" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY"
-    echo "Upload complete."
+    gdrive upload "$BACKUPS_DIR/$FILENAME.bak" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY"
   else
     echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_SERVICE_ACCOUNT\" is not set in the \".env\" file."
   fi
