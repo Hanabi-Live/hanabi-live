@@ -12,5 +12,9 @@ if uname -a | grep MINGW64 >/dev/null 2>&1; then
   exit 1
 fi
 
+if [[ -z $DB_HOST ]]; then
+  DB_HOST=localhost
+fi
+
 # Open a database shell
-PGPASSWORD="$DB_PASS" psql --username="$DB_USER" "$DB_NAME"
+PGPASSWORD="$DB_PASS" psql --host="$DB_HOST" --username="$DB_USER" "$DB_NAME"

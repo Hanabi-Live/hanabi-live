@@ -12,15 +12,18 @@ REPO="$(basename "$DIR")"
 BACKUPS_DIR="$DIR/backups"
 FILENAME=$REPO-`date +%s` # "date +%s" returns the epoch timestamp
 
-# Import the database username and password
+# Import the database host, username, and password
 source "$DIR/.env"
+if [[ -z $DB_HOST ]]; then
+  DB_HOST=localhost
+fi
 
 # Back up the database
 # (we specify an extension of ".bak", which means that pg_dump will automatically compress the data)
 mkdir -p "$BACKUPS_DIR"
 echo Dumping the database...
-PGPASSWORD="$DB_PASS" pg_dump --username="$DB_USER" "$DB_NAME" > "$BACKUPS_DIR/$FILENAME.bak"
-if [[ $? -eq 0 ]]; then
+PGPASSWORD="$DB_PASS" pg_dump --host="$DB_HOST" --username="$DB_USER" "$DB_NAME" > "$BACKUPS_DIR/$FILENAME.bak"
+if [[ $? -ne 0 ]]; then
   exit 1
 fi
 #echo Zipping the backup...
