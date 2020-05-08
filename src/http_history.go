@@ -17,6 +17,11 @@ func httpHistory(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
+	// Lock the command mutex for the duration of the function
+	// (since we only have one database connection and it is not safe for concurrent uses)
+	commandMutex.Lock()
+	defer commandMutex.Unlock()
+
 	// Parse the player name from the URL
 	player := c.Param("player")
 	if player == "" {

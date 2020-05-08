@@ -42,6 +42,11 @@ func httpStats(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
+	// Lock the command mutex for the duration of the function
+	// (since we only have one database connection and it is not safe for concurrent uses)
+	commandMutex.Lock()
+	defer commandMutex.Unlock()
+
 	// Get some global statistics
 	var globalStats Stats
 	if v, err := models.Games.GetGlobalStats(); err != nil {
