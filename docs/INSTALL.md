@@ -51,6 +51,8 @@ If you want to install less stuff on your computer, you can alternatively follow
   * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
   (replace "1234567890" with a more secure password)
   * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
+  * `\c hanabi`
+  * `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
   * `\q`
 * Clone the repository:
   * `cd [the path where you want the code to live]` (optional)
@@ -113,6 +115,8 @@ If you want to install less stuff on your computer, you can alternatively follow
   * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
   (replace "1234567890" with a more secure password)
   * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
+  * `\c hanabi`
+  * `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
   * `\q`
 * Clone the repository:
   * `cd [the path where you want the code to live]` (optional)
@@ -188,6 +192,9 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
   (replace the "1234567890" with a secure password)
   * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
+  * `\c hanabi`
+  * `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
+  * `\q`
 * Install [nvm](https://github.com/nvm-sh/nvm) and [Node.js](https://nodejs.org/en/):
   * `sudo apt install curl -y`
   * `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash`
