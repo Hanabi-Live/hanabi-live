@@ -1,5 +1,5 @@
 $(document).ready(() => {
-  $('#sign-in').hide();
+  $('#loading').hide();
   $('#compiling-warning').show();
 
   // The time for the server to build the client is not consistent;
