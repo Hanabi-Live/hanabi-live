@@ -7,14 +7,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Import the database username and password
 source "$DIR/../.env"
 
-if id "postgres" >/dev/null 2>&1; then
-  # Linux (does not use a password)
-  cd "/tmp"
-  sudo --user=postgres psql --quiet --variable=ON_ERROR_STOP=1 "$DB_NAME" < "$DIR/database_schema.sql"
-else
-  # Windows & MacOS (uses a password)
-  PGPASSWORD="$DB_PASS" psql --quiet --variable=ON_ERROR_STOP=1 --username="$DB_USER" "$DB_NAME" < "$DIR/database_schema.sql"
-fi
+PGPASSWORD="$DB_PASS" psql --quiet --variable=ON_ERROR_STOP=1 --username="$DB_USER" "$DB_NAME" < "$DIR/database_schema.sql"
 
 if [[ $? -eq 0 ]]; then
   echo "Successfully installed the database schema."

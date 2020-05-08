@@ -10,17 +10,18 @@ REPO="$(basename "$DIR")"
 
 # Configuration
 BACKUPS_DIR="$DIR/backups"
-FILENAME=$REPO-`date +%s`.sql # "date +%s" returns the epoch timestamp
+FILENAME=$REPO-`date +%s` # "date +%s" returns the epoch timestamp
 
 # Import the database username and password
 source "$DIR/.env"
 
-# Back up the database and gzip it
+# Back up the database
+# (we specify an extension of ".bak", which means that pg_dump will automatically compress the data)
 mkdir -p "$BACKUPS_DIR"
 echo Dumping the database...
-mysqldump -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" > "$BACKUPS_DIR/$FILENAME"
-echo Zipping the backup...
-gzip "$BACKUPS_DIR/$FILENAME"
+PGPASSWORD="$DB_PASS" pg_dump --username="$DB_USER" "$DB_NAME" > "$BACKUPS_DIR/$FILENAME.bak"
+#echo Zipping the backup...
+#gzip "$BACKUPS_DIR/$FILENAME"
 echo Complete.
 
 # Delete old backups if the hard drive is getting full
@@ -39,4 +40,12 @@ fi
 # 5) vim ~/.gdrive/hanabi-live-c3373cecaf32.json
 # 6) Paste it in
 # References: https://github.com/gdrive-org/gdrive/issues/533
-/root/go/bin/gdrive upload "$BACKUPS_DIR/$FILENAME.gz" --service-account "hanabi-live-c3373cecaf32.json" --parent "1nBTIj7n7-QBTlxo79L-Jp19Nc5tpAtIH"
+if command -v gdrive > /dev/null; then
+  if [[ ! -z $GOOGLE_DRIVE_SERVICE_ACCOUNT ]]; then
+    gdrive upload "$BACKUPS_DIR/$FILENAME" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY"
+  else
+    echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_SERVICE_ACCOUNT\" is not set in the \".env\" file."
+  fi
+else
+  echo "Skipping upload to Google Drive since the \"gdrive\" binary is not found."
+fi
