@@ -7,7 +7,7 @@
 
 * This is the source code for [Hanabi Live](http://hanabi.live/), which is a website that allows people to play the card game [Hanabi](https://boardgamegeek.com/boardgame/98778/hanabi) online.
 * The client is programmed in [TypeScript](https://www.typescriptlang.org/). It is located in the `public/js` directory.
-  * A lot of the code was originally taken from [Keldon's Hanabi webpage](http://keldon.net/hanabi/). (The site no longer works.)
+  * A lot of the code was originally taken from [Keldon Jone's](http://keldon.net/) Hanabi webpage. (The site no longer exists.)
 * The server is programmed in [Go](https://golang.org/). It is located in the `src` subdirectory.
   * It uses a [PostgreSQL](https://www.postgresql.org/) database to store information about the users and games.
 
