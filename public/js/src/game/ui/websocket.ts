@@ -24,7 +24,7 @@ const commands = new Map();
 export default commands;
 
 // Received when it is our turn
-commands.set('action', () => {
+commands.set('yourTurn', () => {
   turn.begin();
 });
 

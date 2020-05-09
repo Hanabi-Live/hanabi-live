@@ -66,9 +66,9 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	// Send a "notify" message for every action of the game
 	s.Emit("notifyList", &scrubbedActions)
 
-	// If it is their turn, send an "action" message
+	// If it is their turn, send a "yourTurn" message
 	if !t.Replay && g.ActivePlayer == i {
-		s.NotifyAction()
+		s.NotifyYourTurn()
 	}
 
 	// Check if the game is still in progress

@@ -7,39 +7,6 @@ import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as replay from './replay';
 
-export const end = (actionObject: Action) => {
-  if (globals.hypothetical) {
-    hypothetical.send(actionObject);
-    action.stop();
-    return;
-  }
-
-  if (globals.ourTurn) {
-    replay.exit(); // Close the in-game replay if we preplayed a card in the replay
-    globals.lobby.conn!.send('action', {
-      tableID: globals.lobby.tableID,
-      type: actionObject.type,
-      target: actionObject.target,
-      clue: actionObject.clue,
-    });
-    action.stop();
-  } else {
-    globals.queuedAction = actionObject;
-    let text = 'Cancel Pre-';
-    if (globals.queuedAction.type === ACTION.CLUE) {
-      text += 'Clue';
-    } else if (globals.queuedAction.type === ACTION.PLAY) {
-      text += 'Play';
-    } else if (globals.queuedAction.type === ACTION.DISCARD) {
-      text += 'Discard';
-    }
-    globals.elements.premoveCancelButton!.text(text);
-    globals.elements.premoveCancelButton!.show();
-    globals.elements.currentPlayerArea!.hide();
-    globals.layers.UI.batchDraw();
-  }
-};
-
 export const begin = () => {
   action.handle();
 
@@ -95,5 +62,38 @@ export const begin = () => {
       globals.preCluedCard = null;
       action.stop();
     }, 100);
+  }
+};
+
+export const end = (actionObject: Action) => {
+  if (globals.hypothetical) {
+    hypothetical.send(actionObject);
+    action.stop();
+    return;
+  }
+
+  if (globals.ourTurn) {
+    replay.exit(); // Close the in-game replay if we preplayed a card in the replay
+    globals.lobby.conn!.send('action', {
+      tableID: globals.lobby.tableID,
+      type: actionObject.type,
+      target: actionObject.target,
+      clue: actionObject.clue,
+    });
+    action.stop();
+  } else {
+    globals.queuedAction = actionObject;
+    let text = 'Cancel Pre-';
+    if (globals.queuedAction.type === ACTION.CLUE) {
+      text += 'Clue';
+    } else if (globals.queuedAction.type === ACTION.PLAY) {
+      text += 'Play';
+    } else if (globals.queuedAction.type === ACTION.DISCARD) {
+      text += 'Discard';
+    }
+    globals.elements.premoveCancelButton!.text(text);
+    globals.elements.premoveCancelButton!.show();
+    globals.elements.currentPlayerArea!.hide();
+    globals.layers.UI.batchDraw();
   }
 };
