@@ -28,24 +28,40 @@ const tablesDraw = () => {
   // 3) Unstarted & password-protected tables
   // 4) Ongoing tables
   // 5) Shared replays
+  // Furthermore, we want tables with one or more of our friends to be drawn above other tables
+  // within each subsection
   let sortedTableIDs: number[] = [];
   for (let i = 1; i <= 5; i++) {
-    const tableIDsOfThisType: number[] = [];
-    for (const [id, table] of globals.tableMap) {
-      if (i === 1 && table.joined && !table.sharedReplay) {
-        tableIDsOfThisType.push(id);
-      } else if (i === 2 && !table.running && !table.passwordProtected && !table.joined) {
-        tableIDsOfThisType.push(id);
-      } else if (i === 3 && !table.running && table.passwordProtected && !table.joined) {
-        tableIDsOfThisType.push(id);
-      } else if (i === 4 && table.running && !table.sharedReplay && !table.joined) {
-        tableIDsOfThisType.push(id);
-      } else if (i === 5 && table.running && table.sharedReplay) {
-        tableIDsOfThisType.push(id);
+    for (let j = 0; j <= 1; j++) {
+      const tableIDsOfThisType: number[] = [];
+      for (const [id, table] of globals.tableMap) {
+        let hasFriends = false;
+        const players = table.players.split(', ');
+        for (const player of players) {
+          if (globals.friends.includes(player)) {
+            hasFriends = true;
+            break;
+          }
+        }
+        if ((j === 0 && !hasFriends) || (j === 1 && hasFriends)) {
+          continue;
+        }
+
+        if (i === 1 && table.joined && !table.sharedReplay) {
+          tableIDsOfThisType.push(id);
+        } else if (i === 2 && !table.running && !table.passwordProtected && !table.joined) {
+          tableIDsOfThisType.push(id);
+        } else if (i === 3 && !table.running && table.passwordProtected && !table.joined) {
+          tableIDsOfThisType.push(id);
+        } else if (i === 4 && table.running && !table.sharedReplay && !table.joined) {
+          tableIDsOfThisType.push(id);
+        } else if (i === 5 && table.running && table.sharedReplay) {
+          tableIDsOfThisType.push(id);
+        }
       }
+      tableIDsOfThisType.sort();
+      sortedTableIDs = sortedTableIDs.concat(tableIDsOfThisType);
     }
-    tableIDsOfThisType.sort();
-    sortedTableIDs = sortedTableIDs.concat(tableIDsOfThisType);
   }
 
   // Add all of the games
