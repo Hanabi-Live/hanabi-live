@@ -38,6 +38,15 @@ commands.set('joined', (data: JoinedData) => {
   pregame.show();
 });
 
+interface FriendsData {
+  friends: string[];
+}
+commands.set('friends', (data: FriendsData) => {
+  globals.friends = data.friends;
+  usersDraw.draw();
+  tablesDraw();
+});
+
 commands.set('game', (data: Game) => {
   globals.game = data;
 
