@@ -193,16 +193,16 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 				best_score6_mod = $12,
 				average_score = (
 					/*
-					 * We enclose this query in an "COALESCE" so that it defaults to 0 (instead of
-					 * NULL) if a user has not played any games
+					 * We enclose this query in an "COALESCE" so that it defaults to 0
+					 * (instead of NULL) if the user has not played any games in this variant
 					 */
 					SELECT COALESCE(AVG(games.score), 0)
 					FROM games
 						JOIN game_participants
 							ON game_participants.game_id = games.id
-					WHERE game_participants.user_id = $13
+					WHERE game_participants.user_id = $1
 						AND games.score != 0
-						AND games.variant = $14
+						AND games.variant = $2
 						AND games.speedrun = FALSE
 				),
 				num_strikeouts = (
@@ -210,13 +210,13 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 					FROM games
 						JOIN game_participants
 							ON game_participants.game_id = games.id
-					WHERE game_participants.user_id = $15
+					WHERE game_participants.user_id = $1
 						AND games.score = 0
-						AND games.variant = $16
+						AND games.variant = $2
 						AND games.speedrun = FALSE
 				)
-			WHERE user_id = $17
-				AND variant = $18
+			WHERE user_id = $1
+				AND variant = $2
 		`,
 		userID, // num_games
 		variant,
@@ -230,12 +230,6 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 		stats.BestScores[3].Modifier,
 		stats.BestScores[4].Score, // 6-player
 		stats.BestScores[4].Modifier,
-		userID, // average_score
-		variant,
-		userID, // num_strikeouts
-		variant,
-		userID, // WHERE
-		variant,
 	)
 	return err
 }
@@ -302,6 +296,10 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 					// Get the score for this player count and modifier
 					var bestScore int
 					SQLString := `
+						/*
+						 * We enclose this query in an "COALESCE" so that it defaults to 0
+						 * (instead of NULL) if the user has not played any games in this variant
+						 */
 						SELECT COALESCE(MAX(games.score), 0)
 						FROM games
 							JOIN game_participants

@@ -23,6 +23,8 @@ func chatCommandInit() {
 	chatCommandMap["random"] = chatRandom
 	chatCommandMap["uptime"] = chatUptime
 	chatCommandMap["timeleft"] = chatTimeLeft
+	chatCommandMap["friend"] = chatFriend
+	chatCommandMap["unfriend"] = chatUnfriend
 
 	// Table-only commands
 	chatCommandMap["changevariant"] = chatChangeVariant

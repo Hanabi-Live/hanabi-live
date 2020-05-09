@@ -163,14 +163,14 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 			) AS other_player_names
 		FROM games AS games1
 			JOIN game_participants AS game_participants1 ON games1.id = game_participants1.game_id
-		WHERE game_participants1.user_id = $2
+		WHERE game_participants1.user_id = $1
 		ORDER BY games1.id DESC
 	`
 	if !all {
 		SQLString += "LIMIT " + strconv.Itoa(amount) + " OFFSET " + strconv.Itoa(offset)
 	}
 
-	rows, err := db.Query(context.Background(), SQLString, userID, userID)
+	rows, err := db.Query(context.Background(), SQLString, userID)
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
@@ -211,10 +211,10 @@ func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error)
 				FROM game_participants
 					JOIN users ON users.id = game_participants.user_id
 				WHERE game_participants.game_id = games.id
-			) AS player_names
+			) AS player_names,
 			datetime_finished
 		FROM games
-		WHERE variant = $1
+		WHERE games.variant = $1
 		ORDER BY games.id DESC
 		LIMIT $2
 	`, variant, amount)
@@ -290,13 +290,13 @@ func (*Games) GetAllDeals(userID int, databaseID int) ([]*GameHistory, error) {
 			(
 				SELECT COUNT(game_participants.game_id)
 				FROM game_participants
-				WHERE user_id = $2
+				WHERE user_id = $1
 					AND game_id = games.id
 			) AS you
 		FROM games
-		WHERE seed = (SELECT seed FROM games WHERE id = $3)
+		WHERE seed = (SELECT seed FROM games WHERE id = $2)
 		ORDER BY id
-	`, userID, userID, databaseID)
+	`, userID, databaseID)
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
@@ -563,9 +563,9 @@ func (*Games) GetFastestTime(variant int, numPlayers int, maxScore int) (int, er
 type Stats struct {
 	DateJoined         time.Time
 	NumGames           int
-	TimePlayed         int
+	TimePlayed         int // In seconds
 	NumGamesSpeedrun   int
-	TimePlayedSpeedrun int
+	TimePlayedSpeedrun int // In seconds
 }
 
 func (*Games) GetProfileStats(userID int) (Stats, error) {
@@ -582,7 +582,7 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 				SELECT COUNT(games.id)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
-				WHERE game_participants.user_id = $2
+				WHERE game_participants.user_id = $1
 					AND games.speedrun = FALSE
 			) AS num_games,
 			(
@@ -592,14 +592,14 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 				) AS INTEGER)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
-				WHERE game_participants.user_id = $3
+				WHERE game_participants.user_id = $1
 					AND games.speedrun = FALSE
 			) AS time_played,
 			(
 				SELECT COUNT(games.id)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
-				WHERE game_participants.user_id = $4
+				WHERE game_participants.user_id = $1
 					AND games.speedrun = TRUE
 			) AS num_games_speedrun,
 			(
@@ -609,10 +609,10 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 				) AS INTEGER)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
-				WHERE game_participants.user_id = $5
+				WHERE game_participants.user_id = $1
 					AND games.speedrun = TRUE
 			) AS time_played_speedrun
-	`, userID, userID, userID, userID, userID).Scan(
+	`, userID).Scan(
 		&stats.DateJoined,
 		&stats.NumGames,
 		&stats.TimePlayed,
@@ -679,35 +679,43 @@ func (*Games) GetVariantStats(variant int) (Stats, error) {
 				SELECT COUNT(id)
 				FROM games
 				WHERE variant = $1
-					AND games.speedrun = FALSE
+					AND speedrun = FALSE
 			) AS num_games,
 			(
-				SELECT CAST(SUM(
+				/*
+				* We enclose this query in an "COALESCE" so that it defaults to 0
+				* (instead of NULL) if a there are no games played yet
+				*/
+				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				) AS INTEGER)
+				) AS INTEGER), 0)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
-				WHERE variant = $2
+				WHERE games.variant = $1
 					AND games.speedrun = FALSE
 			) AS time_played,
 			(
 				SELECT COUNT(id)
 				FROM games
-				WHERE variant = $3
+				WHERE games.variant = $1
 					AND games.speedrun = TRUE
 			) AS num_games_speedrun,
 			(
-				SELECT CAST(SUM(
+				/*
+				* We enclose this query in an "COALESCE" so that it defaults to 0
+				* (instead of NULL) if a there are no games played yet
+				*/
+				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				) AS INTEGER)
+				) AS INTEGER), 0)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
-				WHERE variant = $4
+				WHERE games.variant = $1
 					AND games.speedrun = TRUE
 			) AS time_played_speedrun
-	`, variant, variant, variant, variant).Scan(
+	`, variant).Scan(
 		&stats.NumGames,
 		&stats.TimePlayed,
 		&stats.NumGamesSpeedrun,

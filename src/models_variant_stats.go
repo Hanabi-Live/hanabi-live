@@ -143,10 +143,10 @@ func (*VariantStats) Update(variant int, maxScore int, stats VariantStatsRow) er
 			UPDATE variant_stats
 			SET
 				num_games = (
-					SELECT COUNT(games.id)
+					SELECT COUNT(id)
 					FROM games
 					WHERE variant = $1
-						AND games.speedrun = FALSE
+						AND speedrun = FALSE
 				),
 				best_score2 = $2,
 				best_score3 = $3,
@@ -154,31 +154,31 @@ func (*VariantStats) Update(variant int, maxScore int, stats VariantStatsRow) er
 				best_score5 = $5,
 				best_score6 = $6,
 				num_max_scores = (
-					SELECT COUNT(games.id)
+					SELECT COUNT(id)
 					FROM games
-					WHERE variant = $7
-						AND score = $8
+					WHERE variant = $1
+						AND score = $7
 						AND speedrun = FALSE
 				),
 				average_score = (
 					/*
-					 * We enclose this query in an "COALESCE" so that it defaults to 0 (instead of
-					 * NULL) if there have been 0 games played on this variant
+					 * We enclose this query in an "COALESCE" so that it defaults to 0
+					 * (instead of NULL) if there have been 0 games played on this variant
 					 */
 					 SELECT COALESCE(AVG(score), 0)
 					 FROM games
-					 WHERE variant = $9
+					 WHERE variant = $1
 						AND score != 0
 						AND speedrun = FALSE
 				),
 				num_strikeouts = (
 					SELECT COUNT(id)
 					FROM games
-					WHERE variant = $10
+					WHERE variant = $1
 						AND score = 0
 						AND speedrun = FALSE
 				)
-			WHERE variant = $11
+			WHERE variant = $1
 		`,
 		variant,                   // num_games
 		stats.BestScores[0].Score, // 2-player
@@ -186,11 +186,7 @@ func (*VariantStats) Update(variant int, maxScore int, stats VariantStatsRow) er
 		stats.BestScores[2].Score, // 4-player
 		stats.BestScores[3].Score, // 5-player
 		stats.BestScores[4].Score, // 6-player
-		variant,                   // num_max_scores
-		maxScore,
-		variant, // average_score
-		variant, // num_strikeouts
-		variant, // WHERE
+		maxScore,                  // num_max_scores
 	)
 	return err
 }
@@ -224,6 +220,10 @@ func (vs *VariantStats) UpdateAll(highestVariantID int, maxScores []int) error {
 			// Get the score for this player count (using no modifiers)
 			var bestScore int
 			if err := db.QueryRow(context.Background(), `
+				/*
+				 * We enclose this query in an "COALESCE" so that it defaults to 0
+				 * (instead of NULL) if there have been 0 games played on this variant
+				 */
 				SELECT COALESCE(MAX(games.score), 0)
 				FROM games
 				WHERE variant = $1

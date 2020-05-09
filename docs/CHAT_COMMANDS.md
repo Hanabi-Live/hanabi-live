@@ -22,7 +22,7 @@ If you need general help with the website, then read the [features page](FEATURE
 
 | Command               | Description
 | --------------------- |------------
-| /pm [recipient] [msg] | Send a private message
+| /pm [username] [msg]  | Send a private message
 | /r [msg]              | Reply to a private message
 | /friend [username]    | Add someone to your friends list
 | /unfriend [username]  | Remove someone from your friends list
