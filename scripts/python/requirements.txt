@@ -1,2 +1,2 @@
 python-dotenv
-mysql-connector
+psycopg2
