@@ -100,11 +100,11 @@ type ChatListMessage struct {
 	Unread int            `json:"unread"`
 }
 
-func chatSendPastFromDatabase(s *Session, room string, count int) {
+func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 	var rawMsgs []DBChatMessage
 	if v, err := models.ChatLog.Get(room, count); err != nil {
 		logger.Error("Failed to get the lobby chat history for user \""+s.Username()+"\":", err)
-		return
+		return false
 	} else {
 		rawMsgs = v
 	}
@@ -139,6 +139,8 @@ func chatSendPastFromDatabase(s *Session, room string, count int) {
 	s.Emit("chatList", &ChatListMessage{
 		List: msgs,
 	})
+
+	return true
 }
 
 func chatSendPastFromTable(s *Session, t *Table) {

@@ -79,6 +79,7 @@ const initCommands = () => {
     muted: boolean;
     firstTimeUser: boolean;
     settings: any;
+    friends: Array<string>;
     shuttingDown: boolean;
     maintenanceMode: boolean;
   }
@@ -89,6 +90,7 @@ const initCommands = () => {
     globals.totalGames = data.totalGames;
     globals.muted = data.muted;
     globals.settings = data.settings;
+    globals.friends = data.friends;
     globals.shuttingDown = data.shuttingDown;
     globals.maintenanceMode = data.maintenanceMode;
 

@@ -130,7 +130,14 @@ const tablesDraw = () => {
     $('<td>').html(button as any).appendTo(row);
 
     // Column 7 - Players
-    $('<td>').html(table.players).appendTo(row);
+    const players = table.players.split(', ');
+    for (let i = 0; i < players.length; i++) {
+      const player = players[i];
+      if (globals.friends.includes(player)) {
+        players[i] = `<span class="friend">${player}</span>`;
+      }
+    }
+    $('<td>').html(players.join(', ')).appendTo(row);
 
     // Column 8 - Spectators
     $('<td>').html(table.spectators).appendTo(row);

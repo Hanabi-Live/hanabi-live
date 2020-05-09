@@ -222,11 +222,13 @@ export const draw = () => {
 
     div.show();
 
-    html = `
-      <p class="margin0 padding0p5">
-        <strong>${player.name}</strong>
-      </p>
-    `;
+    html = '<p class="margin0 padding0p5"><strong>';
+    if (globals.friends.includes(player.name)) {
+      html += '<span class="friend">';
+    } else {
+      html += '<span>';
+    }
+    html += `${player.name}</strong></span></p>`;
 
     // There is not enough room to draw the full box for 6 players
     if (numPlayers === 6) {

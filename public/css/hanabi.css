@@ -75,8 +75,12 @@ a {
 }
 
 .name-me {
-  text-decoration: underline;
   color: #e69500;
+  text-decoration: underline; /* This is needed or else the underline will be blue */
+}
+
+.friend {
+  color: hotpink;
 }
 
 /* Make the lobby width be 80% on big resolutions and 100% on smaller resolutions */

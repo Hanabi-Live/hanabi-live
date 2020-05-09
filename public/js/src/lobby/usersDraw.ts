@@ -17,10 +17,14 @@ export const draw = () => {
     return;
   }
 
-  // Make a mapping of user names to IDs
+  // Make a mapping of user names to IDs (and keep track of our friends)
   const usernameMapping: Map<string, number> = new Map();
+  const onlineFriends: Array<string> = [];
   for (const [id, user] of globals.userMap) {
     usernameMapping.set(user.name, id);
+    if (globals.friends.includes(user.name)) {
+      onlineFriends.push(user.name);
+    }
   }
 
   // Make an alphabetical list of all of the usernames
@@ -31,12 +35,20 @@ export const draw = () => {
   );
 
   // First, draw our username at the top
-  drawUser(globals.username, usernameMapping, tbody);
+  const alreadyDrawnUsers: Array<string> = [];
+  drawUser(globals.username, usernameMapping, tbody, false);
+  alreadyDrawnUsers.push(globals.username);
 
-  // Then, draw all of the users in alphabetical order
+  // Second, draw our currently online friends, if any
+  for (const friend of onlineFriends) {
+    drawUser(friend, usernameMapping, tbody, true);
+    alreadyDrawnUsers.push(friend);
+  }
+
+  // Then, draw all of the other users in alphabetical order
   for (const username of alphabeticalUsernames) {
-    if (username !== globals.username) {
-      drawUser(username, usernameMapping, tbody);
+    if (!alreadyDrawnUsers.includes(username)) {
+      drawUser(username, usernameMapping, tbody, false);
     }
   }
 };
@@ -45,6 +57,7 @@ const drawUser = (
   username: string,
   usernameMapping: Map<string, number>,
   tbody: JQuery<HTMLElement>,
+  friend: boolean,
 ) => {
   // Find the status of this user from the "userList" map
   const id = usernameMapping.get(username);
@@ -58,7 +71,11 @@ const drawUser = (
   const status = user.status;
 
   let nameColumn = `<span id="online-users-${id}">`;
-  nameColumn += `<a href="/scores/${username}" target="_blank" rel="noopener noreferrer">`;
+  nameColumn += `<a href="/scores/${username}" `;
+  if (friend) {
+    nameColumn += 'class="friend" ';
+  }
+  nameColumn += 'target="_blank" rel="noopener noreferrer">';
   if (username === globals.username) {
     nameColumn += `<strong><span class="name-me">${username}</span></strong>`;
   } else {

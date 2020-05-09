@@ -47,6 +47,7 @@ func websocketConnect(ms *melody.Session) {
 	var totalGames int
 	if v, err := models.Games.GetUserNumGames(s.UserID(), true); err != nil {
 		logger.Error("Failed to get the number of games played for user \""+s.Username()+"\":", err)
+		s.Error(defaultErrorMsg)
 		return
 	} else {
 		totalGames = v
@@ -56,15 +57,27 @@ func websocketConnect(ms *melody.Session) {
 	var settings Settings
 	if v, err := models.UserSettings.Get(s.UserID()); err != nil {
 		logger.Error("Failed to get the settings for user \""+s.Username()+"\":", err)
+		s.Error(defaultErrorMsg)
 		return
 	} else {
 		settings = v
+	}
+
+	// Get their friends from the database
+	var friends []string
+	if v, err := models.UserFriends.GetAll(s.UserID()); err != nil {
+		logger.Error("Failed to get the friends for user \""+s.Username()+"\":", err)
+		s.Error(defaultErrorMsg)
+		return
+	} else {
+		friends = v
 	}
 
 	// Get their join date from the database
 	var datetimeCreated time.Time
 	if v, err := models.Users.GetDatetimeCreated(s.UserID()); err != nil {
 		logger.Error("Failed to get the join date for user \""+s.Username()+"\":", err)
+		s.Error(defaultErrorMsg)
 		return
 	} else {
 		datetimeCreated = v
@@ -80,6 +93,7 @@ func websocketConnect(ms *melody.Session) {
 		Muted                bool      `json:"muted"`
 		FirstTimeUser        bool      `json:"firstTimeUser"`
 		Settings             Settings  `json:"settings"`
+		Friends              []string  `json:"friends"`
 		ShuttingDown         bool      `json:"shuttingDown"`
 		DatetimeShutdownInit time.Time `json:"datetimeShutdownInit"`
 		MaintenanceMode      bool      `json:"maintenanceMode"`
@@ -103,6 +117,7 @@ func websocketConnect(ms *melody.Session) {
 		// The various client settings are stored server-side so that users can seamlessly
 		// transition between computers
 		Settings: settings,
+		Friends:  friends,
 
 		// Also let the user know if the server is currently restarting or shutting down
 		ShuttingDown:         shuttingDown,
@@ -139,7 +154,9 @@ func websocketConnect(ms *melody.Session) {
 	s.Emit("tableList", tableMessageList)
 
 	// Send the past 50 chat messages from the lobby
-	chatSendPastFromDatabase(s, "lobby", 50)
+	if !chatSendPastFromDatabase(s, "lobby", 50) {
+		return
+	}
 
 	// Send them a message about the Discord server
 	msg := "Find teammates and discuss strategy in the "
@@ -159,11 +176,13 @@ func websocketConnect(ms *melody.Session) {
 		exists = false
 	} else if err != nil {
 		logger.Error("Failed to check if the \""+motdPath+"\" file exists:", err)
+		s.Error(defaultErrorMsg)
 		exists = false
 	}
 	if exists {
 		if fileContents, err := ioutil.ReadFile(motdPath); err != nil {
 			logger.Error("Failed to read the \""+motdPath+"\" file:", err)
+			s.Error(defaultErrorMsg)
 		} else {
 			motd := string(fileContents)
 			motd = strings.TrimSpace(motd)
@@ -184,6 +203,7 @@ func websocketConnect(ms *melody.Session) {
 	var history []*GameHistory
 	if v, err := models.Games.GetUserHistory(s.UserID(), 0, 10, false); err != nil {
 		logger.Error("Failed to get the history for user \""+s.Username()+"\":", err)
+		s.Error(defaultErrorMsg)
 		return
 	} else {
 		history = v

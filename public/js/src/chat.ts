@@ -187,7 +187,32 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
       return;
     }
 
-    // Check for local-only commands
+    if (command === 'friend') {
+      // Validate that the format of the command is correct
+      if (args.length < 1) {
+        modals.warningShow('The format of the /friend command is: <code>/friend Alice</code>');
+        return;
+      }
+
+      globals.conn!.send('chatFriend', {
+        name: args.join(' '),
+      });
+      return;
+    }
+
+    if (command === 'unfriend') {
+      // Validate that the format of the command is correct
+      if (args.length < 1) {
+        modals.warningShow('The format of the /unfriend command is: <code>/unfriend Alice</code>');
+        return;
+      }
+
+      globals.conn!.send('chatUnfriend', {
+        name: args.join(' '),
+      });
+      return;
+    }
+
     if (command === 'version') {
       add({
         msg: `You are running version <strong>${globals.version}</strong> of the Hanabi Live client.`,

@@ -195,13 +195,3 @@ func getTimeLeft() (string, error) {
 
 	return "Time left until server restart: " + durationString, nil
 }
-
-// /friend [username]
-func chatFriend(s *Session, d *CommandData, t *Table) {
-
-}
-
-// /unfriend [username]
-func chatUnfriend(s *Session, d *CommandData, t *Table) {
-
-}

@@ -27,6 +27,7 @@ export class Globals {
   randomName: string = '';
   settings: Settings = new Settings();
   // (contains the settings for the "Settings" tooltip and the "Create Game" tooltip)
+  friends: Array<string> = [];
   shuttingDown: boolean = false;
   datetimeShutdownInit: number = 0;
   maintenanceMode: boolean = false;
