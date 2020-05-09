@@ -299,14 +299,21 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 
 <br />
 
-## Chat Commands
+## Chat
 
-* The full list of chat commands can be found [here](CHAT_COMMANDS.md).
+* Hanabi Live offers a public lobby chat and a private per-game chat.
+* You can also send private messages to other players.
+* You can type any emoji into chat using the [standard emoji shortcode](https://raw.githubusercontent.com/Zamiell/hanabi-live/master/public/js/src/data/emojis.json). For example, `:thinking:` will turn into 🤔.
+* You can type any [Twitch emote](https://raw.githubusercontent.com/Zamiell/hanabi-live/master/public/js/src/data/emotes.json) into chat. For example, `Kappa` will turn into <img src="https://github.com/Zamiell/hanabi-live/raw/master/public/img/emotes/twitch/Kappa.png">.
+* There are various chat commands. The full list can be found [here](CHAT_COMMANDS.md).
+* All lobby chat will be replicated to (and from) the [Hanabi Discord server](https://discord.gg/FADvkJp).
 
 <br />
 
-## Discord Integration
+## Friends
 
-* All lobby chat will be replicated to (and from) the [Hanabi Discord server](https://discord.gg/FADvkJp).
+* When there are a lot of users online and a lot of games going on, it can be cumbersome to find the people you care about. Hanabi Live supports a friends feature, where you can manually add specific people to your friends list with the `/friend` command.
+* Your friends will be listed alphabetically at the top of the user list.
+* Games that contain one or more of your friends will be sorted at the top of the games list.
 
 <br />
