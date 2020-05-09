@@ -36,7 +36,7 @@ func httpLocalhostInit() {
 
 	// Path handlers
 	httpRouter.GET("/restart", func(c *gin.Context) {
-		c.String(http.StatusOK, "success\n")
+		// Sending "c.String()" won't work here for some reason
 		restart()
 	})
 	httpRouter.GET("/shutdown", httpShutdown)

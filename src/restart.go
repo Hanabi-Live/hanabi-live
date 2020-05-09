@@ -50,6 +50,7 @@ func restart() {
 		// First, set all the session to nil, since it is not necessary to serialize those
 		for _, p := range t.Players {
 			p.Session = nil
+			p.Present = false
 		}
 
 		var tableJSON []byte
