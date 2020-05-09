@@ -10,11 +10,18 @@ The following instructions will set up the server as well as the linters. We ass
 
 ## Table of Contents
 
-1. [Installation for Development (Windows)](#installation-for-development-windows)
-2. [Installation for Development (MacOS)](#installation-for-development-macos)
-3. [Installation for Development (Docker)](#installation-for-development-docker)
-4. [Installation for Production (Linux)](#installation-for-production-linux)
-5. [Running the Server](#running-the-server)
+1. [Hardware Prerequisites](#hardware-prerequisites)
+2. [Installation for Development (Windows)](#installation-for-development-windows)
+3. [Installation for Development (MacOS)](#installation-for-development-macos)
+4. [Installation for Development (Docker)](#installation-for-development-docker)
+5. [Installation for Production (Linux)](#installation-for-production-linux)
+6. [Running the Server](#running-the-server)
+
+<br />
+
+## Hardware Prerequisites
+
+Building the client code can be memory intensive. Make sure that your system has at least 2 GB of RAM.
 
 <br />
 
