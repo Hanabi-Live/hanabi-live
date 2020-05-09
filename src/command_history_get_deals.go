@@ -12,12 +12,11 @@ import (
 //   gameID: 15103,
 // }
 func commandHistoryGetDeals(s *Session, d *CommandData) {
-	gameID := d.GameID
 	var historyListDatabase []*GameHistory
-	if v, err := models.Games.GetAllDeals(s.UserID(), gameID); err != nil {
+	if v, err := models.Games.GetAllDeals(d.GameID); err != nil {
 		logger.Error("Failed to get the deals from the database for game "+
-			strconv.Itoa(gameID)+":", err)
-		s.Error("Failed to get the deals for game " + strconv.Itoa(gameID) + ". " +
+			strconv.Itoa(d.GameID)+":", err)
+		s.Error("Failed to get the deals for game " + strconv.Itoa(d.GameID) + ". " +
 			"Please contact an administrator.")
 		return
 	} else {
@@ -26,20 +25,20 @@ func commandHistoryGetDeals(s *Session, d *CommandData) {
 	historyListDatabase = historyFillVariants(historyListDatabase)
 
 	type GameHistoryOtherScoresMessage struct {
-		ID               int       `json:"id"`
-		OtherPlayerNames string    `json:"otherPlayerNames"`
-		Score            int       `json:"score"`
-		Datetime         time.Time `json:"datetime"`
-		You              bool      `json:"you"`
+		ID          int       `json:"id"`
+		Score       int       `json:"score"`
+		PlayerNames string    `json:"playerNames"`
+		Datetime    time.Time `json:"datetime"`
+		Seed        string    `json:"seed"`
 	}
 	historyList := make([]*GameHistoryOtherScoresMessage, 0)
 	for _, g := range historyListDatabase {
 		historyList = append(historyList, &GameHistoryOtherScoresMessage{
-			ID:               g.ID,
-			OtherPlayerNames: g.OtherPlayerNames, // The SQL query calculates these
-			Score:            g.Score,
-			Datetime:         g.DatetimeFinished,
-			You:              g.You,
+			ID:          g.ID,
+			Score:       g.Score,
+			PlayerNames: g.PlayerNames,
+			Datetime:    g.DatetimeFinished,
+			Seed:        g.Seed,
 		})
 	}
 	s.Emit("gameHistoryOtherScores", &historyList)

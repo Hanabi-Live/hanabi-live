@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v4"
@@ -132,14 +134,15 @@ type GameHistory struct {
 	Score            int
 	VariantNum       int
 	Variant          string
-	OtherPlayerNames string
-	You              bool
+	PlayerNames      string
 	DatetimeFinished time.Time
 	Seed             string
 	NumSimilar       int
 }
 
 func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*GameHistory, error) {
+	// We rename "games" to "games1" and "game_participants" to "game_participants1" so that the
+	// subquery can access their values (otherwise, the table names would conflict)
 	SQLString := `
 		SELECT
 			games1.id,
@@ -154,13 +157,11 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 				WHERE games2.seed = games1.seed
 			) AS num_similar,
 			(
-				/* The "ORDER BY" part must be inside of the "STRING_AGG" function */
-				SELECT STRING_AGG(users.username, ', ' ORDER BY game_participants2.seat)
+				SELECT STRING_AGG(users.username, ', ')
 				FROM game_participants AS game_participants2
 					JOIN users ON users.id = game_participants2.user_id
 				WHERE game_participants2.game_id = games1.id
-					AND game_participants2.user_id != $1
-			) AS other_player_names
+			) AS player_names
 		FROM games AS games1
 			JOIN game_participants AS game_participants1 ON games1.id = game_participants1.game_id
 		WHERE game_participants1.user_id = $1
@@ -175,6 +176,7 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
 		var game GameHistory
+		var playerNames string
 		if err2 := rows.Scan(
 			&game.ID,
 			&game.NumPlayers,
@@ -183,10 +185,18 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 			&game.DatetimeFinished,
 			&game.Seed,
 			&game.NumSimilar,
-			&game.OtherPlayerNames,
+			&playerNames,
 		); err2 != nil {
 			return nil, err2
 		}
+
+		// The players come from the database in a random order
+		// (since we did not include an "ORDER BY" keyword)
+		// Alphabetize the players
+		playerNamesSlice := strings.Split(playerNames, ", ")
+		sort.Strings(playerNamesSlice)
+		game.PlayerNames = strings.Join(playerNamesSlice, ", ")
+
 		games = append(games, &game)
 	}
 
@@ -201,37 +211,45 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error) {
 	rows, err := db.Query(context.Background(), `
 		SELECT
-			games.id,
-			games.num_players,
-			games.score,
-			games.variant,
+			id,
+			num_players,
+			score,
+			variant,
 			(
-				/* The "ORDER BY" part must be inside of the "STRING_AGG" function */
-				SELECT STRING_AGG(users.username, ', ' ORDER BY game_participants.seat)
+				SELECT STRING_AGG(users.username, ', ')
 				FROM game_participants
 					JOIN users ON users.id = game_participants.user_id
 				WHERE game_participants.game_id = games.id
 			) AS player_names,
 			datetime_finished
 		FROM games
-		WHERE games.variant = $1
-		ORDER BY games.id DESC
+		WHERE variant = $1
+		ORDER BY id DESC
 		LIMIT $2
 	`, variant, amount)
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
 		var game GameHistory
+		var playerNames string
 		if err2 := rows.Scan(
 			&game.ID,
 			&game.NumPlayers,
 			&game.Score,
 			&game.VariantNum,
-			&game.OtherPlayerNames,
+			&playerNames,
 			&game.DatetimeFinished,
 		); err2 != nil {
 			return nil, err2
 		}
+
+		// The players come from the database in a random order
+		// (since we did not include an "ORDER BY" keyword)
+		// Alphabetize the players
+		playerNamesSlice := strings.Split(playerNames, ", ")
+		sort.Strings(playerNamesSlice)
+		game.PlayerNames = strings.Join(playerNamesSlice, ", ")
+
 		games = append(games, &game)
 	}
 
@@ -273,45 +291,45 @@ func (*Games) GetNumSimilar(seed string) (int, error) {
 	return count, nil
 }
 
-func (*Games) GetAllDeals(userID int, databaseID int) ([]*GameHistory, error) {
+func (*Games) GetAllDeals(databaseID int) ([]*GameHistory, error) {
 	rows, err := db.Query(context.Background(), `
 		SELECT
-			games.id,
-			games.score,
-			games.datetime_finished,
+			id,
+			score,
 			(
-				/* The "ORDER BY" part must be inside of the "STRING_AGG" function */
-				SELECT STRING_AGG(users.username, ', ' ORDER BY game_participants.seat)
+				SELECT STRING_AGG(users.username, ', ')
 				FROM game_participants
 					JOIN users ON users.id = game_participants.user_id
 				WHERE game_participants.game_id = games.id
-					AND game_participants.user_id != $1
-			) AS other_player_names,
-			(
-				SELECT COUNT(game_participants.game_id)
-				FROM game_participants
-				WHERE user_id = $1
-					AND game_id = games.id
-			) AS you
+			) AS player_names,
+			datetime_finished,
+			seed
 		FROM games
-		WHERE seed = (SELECT seed FROM games WHERE id = $2)
+		WHERE seed = (SELECT seed FROM games WHERE id = $1)
 		ORDER BY id
-	`, userID, databaseID)
+	`, databaseID)
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
 		var game GameHistory
-		var you int
+		var playerNames string
 		if err2 := rows.Scan(
 			&game.ID,
 			&game.Score,
+			&playerNames,
 			&game.DatetimeFinished,
-			&game.OtherPlayerNames,
-			you,
+			&game.Seed,
 		); err2 != nil {
 			return nil, err2
 		}
-		game.You = you == 0
+
+		// The players come from the database in a random order
+		// (since we did not include an "ORDER BY" keyword)
+		// Alphabetize the players
+		playerNamesSlice := strings.Split(playerNames, ", ")
+		sort.Strings(playerNamesSlice)
+		game.PlayerNames = strings.Join(playerNamesSlice, ", ")
+
 		games = append(games, &game)
 	}
 

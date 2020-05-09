@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -166,27 +167,25 @@ func (g *Game) End() {
 	} else {
 		numSimilar = v
 	}
+	playerNamesSlice := make([]string, 0)
 	for _, p := range t.Players {
-		var otherPlayerNames string
-		for _, p2 := range t.Players {
-			if p2.Name != p.Name {
-				otherPlayerNames += p2.Name + ", "
-			}
-		}
-		otherPlayerNames = strings.TrimSuffix(otherPlayerNames, ", ")
-
-		h := make([]*GameHistory, 0)
-		h = append(h, &GameHistory{
-			ID:               g.ID, // Recorded in the "WriteDatabase()" function above
-			NumPlayers:       len(g.Players),
-			NumSimilar:       numSimilar,
-			Score:            g.Score,
-			DatetimeFinished: t.DatetimeFinished,
-			Variant:          g.Options.Variant,
-			OtherPlayerNames: otherPlayerNames,
-		})
-		p.Session.NotifyGameHistory(h, true)
+		playerNamesSlice = append(playerNamesSlice, p.Name)
+	}
+	sort.Strings(playerNamesSlice)
+	playerNames := strings.Join(playerNamesSlice, ", ")
+	h := make([]*GameHistory, 0)
+	h = append(h, &GameHistory{
+		ID:               g.ID, // Recorded in the "WriteDatabase()" function above
+		NumPlayers:       len(g.Players),
+		NumSimilar:       numSimilar,
+		Score:            g.Score,
+		DatetimeFinished: t.DatetimeFinished,
+		Variant:          g.Options.Variant,
+		PlayerNames:      playerNames,
+	})
+	for _, p := range t.Players {
 		// The second argument tells the client to increment the total number of games played
+		p.Session.NotifyGameHistory(h, true)
 	}
 
 	// Send a chat message with the game result and players

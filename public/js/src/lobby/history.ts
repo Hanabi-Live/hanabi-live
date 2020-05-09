@@ -91,7 +91,12 @@ export const draw = () => {
     $('<td>').html(gameData.variant).appendTo(row);
 
     // Column 5 - Other Players
-    $('<td>').html(gameData.otherPlayerNames).appendTo(row);
+    // Remove our name from the list of players
+    const playerNamesArray = gameData.playerNames.split(', ');
+    const ourIndex = playerNamesArray.indexOf(globals.username);
+    playerNamesArray.splice(ourIndex, 1);
+    const playerNames = playerNamesArray.join(', ');
+    $('<td>').html(playerNames).appendTo(row);
 
     // Column 6 - Date Played
     const datePlayed = dateTimeFormatter.format(new Date(gameData.datetime));
@@ -201,41 +206,59 @@ export const drawOtherScores = (data: GameHistory[]) => {
 
   // Add all of the games
   for (const gameData of data) {
+    // Find out if this game was played by us
+    const playerNamesArray = gameData.playerNames.split(', ');
+    const ourGame = playerNamesArray.includes(globals.username);
+
     const row = $('<tr>');
 
     // Column 1 - Game ID
     let id = `#${gameData.id}`;
-    if (gameData.you) {
+    if (ourGame) {
       id = `<strong>${id}</strong>`;
     }
     $('<td>').html(id).appendTo(row);
 
     // Column 2 - Score
     let score = `${gameData.score}/${variant.maxScore}`;
-    if (gameData.you) {
+    if (ourGame) {
       score = `<strong>${score}</strong>`;
     }
     $('<td>').html(score).appendTo(row);
 
     // Column 3 - Players
-    let otherPlayers = gameData.otherPlayerNames;
-    if (gameData.you) {
-      otherPlayers = `<strong>${globals.username}, ${otherPlayers}</strong>`;
+    let playerNames = gameData.playerNames;
+    if (ourGame) {
+      playerNames = `<strong>${playerNames}</strong>`;
     }
-    $('<td>').html(otherPlayers).appendTo(row);
+    $('<td>').html(playerNames).appendTo(row);
 
     // Column 4 - Date Played
     let datePlayed = dateTimeFormatter.format(new Date(gameData.datetime));
-    if (gameData.you) {
+    if (ourGame) {
       datePlayed = `<strong>${datePlayed}</strong>`;
     }
     $('<td>').html(datePlayed).appendTo(row);
 
-    // Column 5 - Watch Replay
+    // Column 5 - Seed
+    // Chop off the prefix
+    const match = gameData.seed.match(/p\dv\d+s(\d+)/);
+    let seed;
+    if (match === null || match.length < 2) {
+      seed = 'Unknown';
+    } else {
+      seed = match[1];
+    }
+    if (ourGame) {
+      seed = `<strong>${seed}</strong>`;
+    }
+    $('<td>').html(seed).appendTo(row);
+
+    // Column 6 - Watch Replay
     const watchReplayButton = makeReplayButton(gameData.id, 'solo');
     $('<td>').html(watchReplayButton as any).appendTo(row);
 
-    // Column 6 - Share Replay
+    // Column 7 - Share Replay
     const shareReplayButton = makeReplayButton(gameData.id, 'shared');
     $('<td>').html(shareReplayButton as any).appendTo(row);
 

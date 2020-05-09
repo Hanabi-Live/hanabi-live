@@ -162,7 +162,7 @@ func (s *Session) NotifyGameHistory(historyListDatabase []*GameHistory, incremen
 		ID                int       `json:"id"`
 		NumPlayers        int       `json:"numPlayers"`
 		NumSimilar        int       `json:"numSimilar"`
-		OtherPlayerNames  string    `json:"otherPlayerNames"`
+		PlayerNames       string    `json:"playerNames"`
 		Score             int       `json:"score"`
 		DatetimeFinished  time.Time `json:"datetime"`
 		Variant           string    `json:"variant"`
@@ -174,7 +174,7 @@ func (s *Session) NotifyGameHistory(historyListDatabase []*GameHistory, incremen
 			ID:                g.ID,
 			NumPlayers:        g.NumPlayers,
 			NumSimilar:        g.NumSimilar,
-			OtherPlayerNames:  g.OtherPlayerNames,
+			PlayerNames:       g.PlayerNames,
 			Score:             g.Score,
 			DatetimeFinished:  g.DatetimeFinished,
 			Variant:           g.Variant,
