@@ -19,6 +19,11 @@ func restart() {
 		execute("build_client.sh", projectPath)
 	}
 
+	// Lock the command mutex to prevent any more moves from being submitted
+	commandMutex.Lock()
+	defer commandMutex.Unlock()
+
+	logger.Info("Serializing the tables...")
 	for _, t := range tables {
 		// Only serialize ongoing games
 		if !t.Running || t.Replay {
@@ -42,7 +47,7 @@ func restart() {
 			})
 		}
 
-		// First, nullify the sessions, since it is not necessary to serialize those
+		// First, set all the session to nil, since it is not necessary to serialize those
 		for _, p := range t.Players {
 			p.Session = nil
 		}

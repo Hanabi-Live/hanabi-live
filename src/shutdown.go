@@ -108,6 +108,10 @@ func countActiveTables() int {
 func shutdownImmediate() {
 	logger.Info("Initiating an immediate server shutdown.")
 
+	// Lock the command mutex to prevent any more moves from being submitted
+	commandMutex.Lock()
+	defer commandMutex.Unlock()
+
 	for _, s := range sessions {
 		s.Error("The server is going down for scheduled maintenance. The server might be " +
 			"down for a while; please see the Discord server for more specific updates.")
@@ -120,6 +124,9 @@ func shutdownImmediate() {
 		Spam:   true,
 	})
 	execute("stop.sh", projectPath)
+
+	// Block until the process is killed so that no more moves can be submitted
+	select {}
 }
 
 func cancel() {
