@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/alexedwards/argon2id"
 	gsessions "github.com/gin-contrib/sessions"
@@ -107,6 +108,21 @@ func httpLogin(c *gin.Context) {
 	// Trim whitespace from both sides of the username
 	username = strings.TrimSpace(username)
 
+	// Validate that the username does not contain any whitespace
+	// (other than a normal space character)
+	for _, letter := range username {
+		if unicode.IsSpace(letter) && letter != ' ' {
+			logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+				"\"" + username + "\", but it contained illegal whitespace.")
+			http.Error(
+				w,
+				"Usernames must not contain any whitespace characters (other than a normal space).",
+				http.StatusUnauthorized,
+			)
+			return
+		}
+	}
+
 	// Validate that the username is not excessively short
 	if len(username) < minUsernameLength {
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
@@ -154,6 +170,20 @@ func httpLogin(c *gin.Context) {
 		http.Error(
 			w,
 			"Usernames must not contain any emojis.",
+			http.StatusUnauthorized,
+		)
+		return
+	}
+
+	// Validate that the username is not reserved
+	usernameWithNoSpaces := strings.Replace(username, " ", "", -1)
+	usernameWithNoSpacesLowercase := strings.ToLower(usernameWithNoSpaces)
+	if usernameWithNoSpacesLowercase == "hanabilive" {
+		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+			"\"" + username + "\", but that username is reserved.")
+		http.Error(
+			w,
+			"That username is reserved. Please choose a different one.",
 			http.StatusUnauthorized,
 		)
 		return
