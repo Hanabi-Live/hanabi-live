@@ -301,7 +301,7 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 
 ## Chat Commands
 
-* The full list of chat commands can be found [here](https://github.com/Zamiell/hanabi-live/blob/master/src/chatHelp.go).
+* The full list of chat commands can be found [here](CHAT_COMMANDS.md).
 
 <br />
 
