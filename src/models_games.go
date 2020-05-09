@@ -541,7 +541,7 @@ func (*Games) GetFastestTime(variant int, numPlayers int, maxScore int) (int, er
 	var seconds int
 	if err := db.QueryRow(context.Background(), `
 		SELECT
-			CAST(
+			CAST((
 				EXTRACT(EPOCH FROM datetime_finished) -
 				EXTRACT(EPOCH FROM datetime_started)
 			) AS INTEGER) AS datetime_elapsed
