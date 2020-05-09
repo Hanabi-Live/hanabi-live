@@ -47,7 +47,7 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
 
     // The suits are specified as an array of strings
     // Convert the strings to objects
-    const suits: Array<Suit> = [];
+    const suits: Suit[] = [];
     for (const suitString of variantJSON.suits) {
       if (typeof suitString !== 'string') {
         throw new Error(`One of the suits for the variant "${name}" was not specified as a string.`);
@@ -70,7 +70,7 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
     }
 
     // Validate the clue colors (the colors available to clue in this variant)
-    const clueColors: Array<Color> = [];
+    const clueColors: Color[] = [];
     if (Object.hasOwnProperty.call(variantJSON, 'clueColors')) {
       if (!Array.isArray(variantJSON.clueColors)) {
         throw new Error(`The clue colors for the variant "${name}" were not specified as an array.`);
@@ -108,7 +108,7 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
 
     // Validate the clue ranks (the ranks available to clue in this variant)
     // If it is not specified, assume that players can clue ranks 1 through 5
-    const clueRanks: Array<number> = variantJSON.clueRanks || [1, 2, 3, 4, 5];
+    const clueRanks: number[] = variantJSON.clueRanks || [1, 2, 3, 4, 5];
 
     // Validate the "colorCluesTouchNothing" property
     // If it is not specified, assume false (e.g. cluing colors in this variant works normally)

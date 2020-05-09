@@ -14,7 +14,7 @@ export default class Button extends Konva.Group {
   tooltipName: string = '';
   tooltipContent: string = '';
 
-  constructor(config: Konva.ContainerConfig, images?: Array<HTMLImageElement>) {
+  constructor(config: Konva.ContainerConfig, images?: HTMLImageElement[]) {
     super(config);
     this.listening(true);
 

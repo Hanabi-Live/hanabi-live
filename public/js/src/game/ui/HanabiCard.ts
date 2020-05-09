@@ -44,20 +44,20 @@ export default class HanabiCard extends Konva.Group {
   noteBlank: boolean = false;
 
   // The following are the variables that are refreshed
-  possibleSuits: Array<Suit> = [];
-  possibleRanks: Array<number> = [];
+  possibleSuits: Suit[] = [];
+  possibleRanks: number[] = [];
   possibleCards: Map<string, number> = new Map();
   tweening: boolean = false;
   empathy: boolean = false;
   doMisplayAnimation: boolean = false;
   numPositiveClues: number = 0;
-  positiveColorClues: Array<Color> = [];
-  negativeColorClues: Array<Color> = [];
-  positiveRankClues: Array<number> = [];
-  negativeRankClues: Array<number> = [];
+  positiveColorClues: Color[] = [];
+  negativeColorClues: Color[] = [];
+  positiveRankClues: number[] = [];
+  negativeRankClues: number[] = [];
   reapplyColorClues: boolean = false;
   reapplyRankClues: boolean = false;
-  turnsClued: Array<number> = [];
+  turnsClued: number[] = [];
   turnDrawn: number = -1;
   isDiscarded: boolean = false;
   turnDiscarded: number = -1;
@@ -384,8 +384,8 @@ export default class HanabiCard extends Konva.Group {
     }
 
     // Find out if we can remove some rank pips or suit pips from this clue
-    let ranksRemoved: Array<number> = [];
-    let suitsRemoved: Array<Suit> = [];
+    let ranksRemoved: number[] = [];
+    let suitsRemoved: Suit[] = [];
     if (clue.type === CLUE_TYPE.RANK) {
       const clueRank = clue.value as number;
       if (globals.variant.rankCluesTouchNothing) {
@@ -1243,7 +1243,7 @@ export default class HanabiCard extends Konva.Group {
 // ---------------
 
 // Remove everything from the array that does not match the condition in the function
-const filterInPlace = (values: Array<any>, predicate: (value: any) => boolean) => {
+const filterInPlace = (values: any[], predicate: (value: any) => boolean) => {
   const removed = [];
   let i = values.length - 1;
   while (i >= 0) {

@@ -2,7 +2,7 @@ import Suit from '../../Suit';
 
 const shapeFunctions: Map<string, (
   ctx: CanvasRenderingContext2D,
-  colors?: Array<string>,
+  colors?: string[],
 ) => void> = new Map();
 const sf = 3; // Scale factor
 
@@ -414,7 +414,7 @@ shapeFunctions.set('empty_set', (ctx: CanvasRenderingContext2D) => {
   ctx.scale(3.5, 3.5);
 });
 
-shapeFunctions.set('infinity', (ctx: CanvasRenderingContext2D, colors?: Array<string>) => {
+shapeFunctions.set('infinity', (ctx: CanvasRenderingContext2D, colors?: string[]) => {
   ctx.scale(1.2, 1.2);
   ctx.beginPath();
   ctx.scale(sf, sf);
@@ -451,7 +451,7 @@ shapeFunctions.set('infinity', (ctx: CanvasRenderingContext2D, colors?: Array<st
   }
 });
 
-shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: Array<string>) => {
+shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: string[]) => {
   ctx.scale(sf, sf);
   ctx.translate(-122.267240, -111.175040);
 

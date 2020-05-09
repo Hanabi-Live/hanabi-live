@@ -48,7 +48,7 @@ commands.set('game', (data: Game) => {
   pregame.draw();
 });
 
-commands.set('gameHistory', (dataArray: Array<GameHistory>) => {
+commands.set('gameHistory', (dataArray: GameHistory[]) => {
   // data will be an array of all of the games that we have previously played
   for (const data of dataArray) {
     globals.history[data.id] = data;
@@ -74,7 +74,7 @@ commands.set('gameHistory', (dataArray: Array<GameHistory>) => {
   $('#lobby-history-show-all').attr('href', `/history/${globals.username}`);
 });
 
-commands.set('gameHistoryOtherScores', (data: Array<GameHistory>) => {
+commands.set('gameHistoryOtherScores', (data: GameHistory[]) => {
   history.drawOtherScores(data);
 });
 
@@ -126,7 +126,7 @@ commands.set('tableGone', (data: TableGoneData) => {
 });
 
 // Received by the client upon initial connection
-commands.set('tableList', (dataList: Array<Table>) => {
+commands.set('tableList', (dataList: Table[]) => {
   for (const data of dataList) {
     tableSet(data);
   }
@@ -173,7 +173,7 @@ commands.set('user', (data: User) => {
   }
 });
 
-commands.set('userList', (dataList: Array<User>) => {
+commands.set('userList', (dataList: User[]) => {
   for (const data of dataList) {
     globals.userMap.set(data.id, data);
   }

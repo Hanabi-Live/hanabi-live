@@ -1,6 +1,6 @@
 export default class State {
-  log: Array<any> = []; // TODO set to action log message object
-  deck: Array<StateCard> = [];
+  log: any[] = []; // TODO set to action log message object
+  deck: StateCard[] = [];
   deckSize: number = 0;
   score: number = 0;
   maxScore: number = 0;
@@ -9,17 +9,17 @@ export default class State {
   strikes: number = 0;
   pace: number = 0;
   currentPlayerIndex: number = 0;
-  hands: Array<Array<number>> = [];
-  playStacks: Array<Array<number>> = [];
-  playStacksDirections: Array<number> = [];
-  discardStacks: Array<Array<number>> = [];
-  clues: Array<StateClue> = [];
+  hands: number[][] = [];
+  playStacks: number[][] = [];
+  playStacksDirections: number[] = [];
+  discardStacks: number[][] = [];
+  clues: StateClue[] = [];
 }
 
 interface StateCard {
   suit: number;
   rank: number;
-  clues: Array<StateCardClue>;
+  clues: StateCardClue[];
 }
 
 interface StateClue {

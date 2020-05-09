@@ -5,7 +5,7 @@ import globals from './globals';
 
 export default class MultiFitText extends Konva.Group {
   maxLines: number;
-  smallHistory: Array<any> = [];
+  smallHistory: any[] = [];
 
   constructor(config: Konva.ContainerConfig, maxLines: number) {
     super(config);

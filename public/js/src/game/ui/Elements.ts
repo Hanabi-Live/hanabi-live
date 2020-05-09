@@ -26,11 +26,11 @@ export default class Elements {
   stageFade: Konva.Rect | null = null;
   playArea: ClickArea | null = null;
   playStacks: Map<Suit | string, PlayStack> = new Map();
-  suitLabelTexts: Array<FitText> = [];
+  suitLabelTexts: FitText[] = [];
   discardArea: ClickArea | null = null;
   discardStacks: Map<Suit, CardLayout> = new Map();
-  playerHands: Array<CardLayout> = [];
-  nameFrames: Array<NameFrame> = [];
+  playerHands: CardLayout[] = [];
+  nameFrames: NameFrame[] = [];
   actionLog: MultiFitText | null = null;
   replayButton: Button | null = null;
   chatButton: Button | null = null;
@@ -59,8 +59,8 @@ export default class Elements {
   maxScoreNumberLabel: Konva.Text | null = null;
   cluesNumberLabel: Konva.Text | null = null;
   cluesNumberLabelPulse: Konva.Tween | null = null;
-  strikeXs: Array<StrikeX> = [];
-  strikeSquares: Array<StrikeSquare> = [];
+  strikeXs: StrikeX[] = [];
+  strikeSquares: StrikeSquare[] = [];
   spectatorsLabel: Konva.Image | null = null;
   spectatorsNumLabel: Konva.Text | null = null;
   sharedReplayLeaderLabel: Konva.Image | null = null;
@@ -74,8 +74,8 @@ export default class Elements {
   clueTargetButtonGroup: ButtonGroup | null = null;
   clueTargetButtonGroup2: ButtonGroup | null = null;
   clueTypeButtonGroup: ButtonGroup | null = null;
-  rankClueButtons: Array<RankButton> = [];
-  colorClueButtons: Array<ColorButton> = [];
+  rankClueButtons: RankButton[] = [];
+  colorClueButtons: ColorButton[] = [];
   giveClueButton: Button | null = null;
   clueAreaDisabled: Konva.Group | null = null;
 
@@ -107,7 +107,7 @@ export default class Elements {
   fullActionLog: FullActionLog | null = null;
 
   // Other conditional elements
-  arrows: Array<Arrow> = [];
+  arrows: Arrow[] = [];
   timer1Circle: Konva.Ellipse | null = null;
   timer1: TimerDisplay | null = null;
   timer2: TimerDisplay | null = null;

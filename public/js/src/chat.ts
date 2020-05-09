@@ -12,7 +12,7 @@ import * as modals from './modals';
 
 // Variables
 const emojiMap = new Map();
-const emoteList: Array<string> = [];
+const emoteList: string[] = [];
 let chatLineNum = 1;
 
 export const init = () => {

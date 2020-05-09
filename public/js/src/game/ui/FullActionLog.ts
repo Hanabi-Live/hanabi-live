@@ -6,8 +6,8 @@ import MultiFitText from './MultiFitText';
 export default class FullActionLog extends Konva.Group {
   logText: MultiFitText;
   logNumbers: MultiFitText;
-  playerLogs: Array<MultiFitText> = [];
-  playerLogNumbers: Array<MultiFitText> = [];
+  playerLogs: MultiFitText[] = [];
+  playerLogNumbers: MultiFitText[] = [];
 
   constructor(winW: number, winH: number) {
     super({

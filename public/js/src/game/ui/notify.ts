@@ -362,8 +362,8 @@ notifyFunctions.set('play', (data: ActionPlay) => {
 notifyFunctions.set('reorder', (data: ActionReorder) => {
   // Make a list of card orders currently in the hand
   const hand = globals.elements.playerHands[data.target];
-  const currentCardOrders: Array<number> = [];
-  for (const layoutChild of hand.children.toArray() as Array<LayoutChild>) {
+  const currentCardOrders: number[] = [];
+  for (const layoutChild of hand.children.toArray() as LayoutChild[]) {
     const card = layoutChild.children[0] as unknown as HanabiCard;
     currentCardOrders.push(card.order);
   }

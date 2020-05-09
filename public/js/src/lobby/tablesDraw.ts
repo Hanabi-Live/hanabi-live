@@ -28,9 +28,9 @@ const tablesDraw = () => {
   // 3) Unstarted & password-protected tables
   // 4) Ongoing tables
   // 5) Shared replays
-  let sortedTableIDs: Array<number> = [];
+  let sortedTableIDs: number[] = [];
   for (let i = 1; i <= 5; i++) {
-    const tableIDsOfThisType: Array<number> = [];
+    const tableIDsOfThisType: number[] = [];
     for (const [id, table] of globals.tableMap) {
       if (i === 1 && table.joined && !table.sharedReplay) {
         tableIDsOfThisType.push(id);

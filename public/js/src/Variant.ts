@@ -6,10 +6,10 @@ export default interface Variant {
   readonly name: string;
 
   readonly id: number;
-  readonly suits: Array<Suit>;
-  readonly ranks: Array<number>;
-  readonly clueColors: Array<Color>;
-  readonly clueRanks: Array<number>;
+  readonly suits: Suit[];
+  readonly ranks: number[];
+  readonly clueColors: Color[];
+  readonly clueRanks: number[];
   readonly colorCluesTouchNothing: boolean;
   readonly rankCluesTouchNothing: boolean;
   readonly showSuitNames: boolean;

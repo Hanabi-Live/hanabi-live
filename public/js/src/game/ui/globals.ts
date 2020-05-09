@@ -25,7 +25,7 @@ export class Globals {
 
   // Game settings
   // (sent in the "init" message)
-  playerNames: Array<string> = [];
+  playerNames: string[] = [];
   variant: Variant = VARIANTS.get('No Variant')!;
   playerUs: number = -1;
   spectating: boolean = false;
@@ -42,13 +42,13 @@ export class Globals {
   cardCycle: boolean = false;
   deckPlays: boolean = false;
   emptyClues: boolean = false;
-  characterAssignments: Array<string> = [];
-  characterMetadata: Array<number> = [];
-  characterRememberedCards: Array<SimpleCard> = [];
+  characterAssignments: string[] = [];
+  characterMetadata: number[] = [];
+  characterRememberedCards: SimpleCard[] = [];
 
   // Game constants (set upon first initialization)
-  deck: Array<HanabiCard> = [];
-  stackBases: Array<HanabiCard> = [];
+  deck: HanabiCard[] = [];
+  stackBases: HanabiCard[] = [];
   cardsMap: Map<string, number> = new Map();
 
   // Game state variables (reset when rewinding in a replay)
@@ -63,7 +63,7 @@ export class Globals {
   clues: number = 0;
   cardsGotten: number = 0;
   cluesSpentPlusStrikes: number = 0;
-  stackDirections: Array<number> = [];
+  stackDirections: number[] = [];
 
   // UI elements
   ImageLoader: Loader | null = null;
@@ -72,11 +72,11 @@ export class Globals {
   elements: Elements = new Elements();
   activeHover: any = null; // The element that the mouse cursor is currently over
   cardImages: Map<string, HTMLCanvasElement> = new Map();
-  scaledCardImages: Map<string, Array<HTMLCanvasElement>> = new Map();
+  scaledCardImages: Map<string, HTMLCanvasElement[]> = new Map();
 
   // Replay feature
   inReplay: boolean = false; // Whether or not the replay controls are currently showing
-  replayLog: Array<any> = []; // Contains all of the "notify" messages for the game
+  replayLog: any[] = []; // Contains all of the "notify" messages for the game
   replayPos: number = 0; // The current index of the "globals.replayLog" array
   replayTurn: number = 0; // The current game turn
   replayMax: number = 0; // The maximum turn recorded so fast
@@ -86,7 +86,7 @@ export class Globals {
   finalReplayTurn: number = 0;
   // In replays, we can show information about a card that was not known at the time,
   // but is known now; these are cards we have "learned"
-  learnedCards: Array<LearnedCard> = [];
+  learnedCards: LearnedCard[] = [];
 
   // Shared replay feature
   sharedReplayLeader: string = ''; // Equal to the username of the leader
@@ -95,13 +95,13 @@ export class Globals {
   useSharedTurns: boolean = false;
   sharedReplayLoading: boolean = false; // This is used to not animate cards when loading in
   hypothetical: boolean = false; // Whether or not we are in a hypothetical
-  hypoActions: Array<any> = []; // An array of the actions in the current hypothetical
+  hypoActions: any[] = []; // An array of the actions in the current hypothetical
 
   // Notes feature
-  ourNotes: Array<string> = []; // An array containing strings, indexed by card order
+  ourNotes: string[] = []; // Indexed by card order
   // An array containing objects, indexed by card order;
   // It represents the notes of every player & spectator
-  allNotes: Array<Array<SpectatorNote>> = [];
+  allNotes: SpectatorNote[][] = [];
   // Used to keep track of which card the user is editing;
   // users can only update one note at a time to prevent bugs
   // Equal to the card order number or null
@@ -112,7 +112,7 @@ export class Globals {
 
   // Timer feature
   timerID: number | null = null;
-  playerTimes: Array<number> = [];
+  playerTimes: number[] = [];
   // "activeIndex" must be tracked separately from the "currentPlayerIndex" because
   // the current player may change in an in-game replay
   activeIndex: number = -1;
@@ -134,15 +134,15 @@ export class Globals {
   // A function called after an action from the server moves cards
   postAnimationLayout: (() => void) | null = null;
   UIClickTime: number = 0; // Used to prevent accidental double clicks
-  spectators: Array<string> = [];
+  spectators: string[] = [];
   chatUnread: number = 0;
 
   // State information
   state: State = new State(); // The current state
-  states: Array<State> = []; // The state for each turn
+  states: State[] = []; // The state for each turn
   // We also keep track of the strikes outside of the state object so that we can show a faded X
-  strikes: Array<StateStrike> = [];
-  deckOrder: Array<SimpleCard> = []; // Sent when the game ends
+  strikes: StateStrike[] = [];
+  deckOrder: SimpleCard[] = []; // Sent when the game ends
 
   // We provide a method to reset every class variable to its initial value
   // This is called when the user goes into a new game

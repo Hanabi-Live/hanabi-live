@@ -374,7 +374,7 @@ const drawText = (ctx: CanvasRenderingContext2D, textYPos: number, indexLabel: s
   ctx.strokeText(indexLabel, 19, textYPos);
 };
 
-const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Array<Color>) => {
+const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Color[]) => {
   const [clueColor1, clueColor2] = clueColors;
 
   ctx.save();
@@ -482,8 +482,8 @@ const getSuitStyle = (
 // Generates a vertical gradient that is evenly distributed between its component colors
 const evenLinearGradient = (
   ctx: CanvasRenderingContext2D,
-  colors: Array<string>,
-  args: Array<number>,
+  colors: string[],
+  args: number[],
 ) => {
   const grad = ctx.createLinearGradient(args[0], args[1], args[2], args[3]);
   for (let i = 0; i < colors.length; ++i) {

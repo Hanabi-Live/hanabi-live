@@ -4,10 +4,10 @@ import Color from './Color';
 export default interface Suit {
   readonly name: string;
   readonly abbreviation: string;
-  readonly clueColors: Array<Color>;
+  readonly clueColors: Color[];
   readonly fill: string;
   readonly fillColorblind: string;
-  readonly fillColors: Array<string>;
+  readonly fillColors: string[];
   readonly oneOfEach: boolean;
   readonly pip: string;
 

@@ -8,8 +8,8 @@ import HanabiCard from './HanabiCard';
 import * as replay from './replay';
 
 export default class ClueEntry extends Konva.Group {
-  list: Array<number>;
-  negativeList: Array<number>;
+  list: number[];
+  negativeList: number[];
   turn: number;
 
   background: Konva.Rect;

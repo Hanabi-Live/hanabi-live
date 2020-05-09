@@ -1,7 +1,7 @@
 export default interface Game {
   name: string;
   owner: number;
-  players: Array<Player>;
+  players: Player[];
   variant: string;
   timed: boolean;
   baseTime: number;
@@ -29,7 +29,7 @@ interface Stats {
 
 interface StatsVariant {
   numGames: number;
-  bestScores: Array<BestScore>;
+  bestScores: BestScore[];
   averageScore: number;
   numStrikeouts: number;
 }

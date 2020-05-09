@@ -47,7 +47,7 @@ export const handle = () => {
   ) {
     const ourHand = globals.elements.playerHands[globals.playerUs];
     if (ourHand) {
-      for (const layoutChild of ourHand.children.toArray() as Array<LayoutChild>) {
+      for (const layoutChild of ourHand.children.toArray() as LayoutChild[]) {
         layoutChild.checkSetDraggable();
       }
     } else {

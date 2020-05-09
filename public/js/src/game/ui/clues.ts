@@ -78,7 +78,7 @@ const showClueMatch = (target: number, clue: Clue) => {
 
 export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
   const hand = globals.elements.playerHands[target];
-  const cardsTouched: Array<number> = []; // An array of the card orders
+  const cardsTouched: number[] = []; // An array of the card orders
   for (const child of hand.children.toArray()) {
     const card = child.children[0];
     if (variantIsCardTouched(msgClueToClue(clue, globals.variant), card)) {

@@ -30,7 +30,7 @@ export default (winW: number, winH: number) => {
   const handPos6H = 0.165; // 5-player is 0.189
   const handPos6Ratio = 0.34 / 0.189;
   const handPos6W = handPos6H * handPos6Ratio * 0.75;
-  const handPos: Array<Array<HandConfig>> = [];
+  const handPos: HandConfig[][] = [];
   handPos[2] = [
     { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
     { x: 0.19, y: 0.01, w: 0.42, h: 0.189, rot: 0 },
@@ -128,7 +128,7 @@ export default (winW: number, winH: number) => {
   // This is the position for the white shade that shows where the new side of the hand is
   // The x and y coordinates cannot be algorithmically derived from the hand positions
   // Note that there is no shade in BGA mode
-  const shadePos: Array<Array<HandConfig>> = [];
+  const shadePos: HandConfig[][] = [];
   shadePos[2] = [
     { x: handPos[2][0].x + 0.001, y: handPos[2][0].y - 0.008 },
     { x: handPos[2][1].x - 0.011, y: handPos[2][1].y - 0.008 },
@@ -172,7 +172,7 @@ export default (winW: number, winH: number) => {
   const namePosValues = {
     h: 0.02,
   };
-  const namePos: Array<Array<HandConfig>> = [];
+  const namePos: HandConfig[][] = [];
   namePos[2] = [
     { x: 0.18, y: 0.97, w: 0.44, h: namePosValues.h },
     { x: 0.18, y: 0.21, w: 0.44, h: namePosValues.h },
@@ -266,7 +266,7 @@ export default (winW: number, winH: number) => {
     y: 0.17,
   };
   const numCardsPerHand = stats.getNumCardsPerHand();
-  const namePosBGA: Array<Array<HandConfig>> = [];
+  const namePosBGA: HandConfig[][] = [];
   for (let i = 2; i <= 6; i++) {
     let { y } = namePosBGAMod;
     if (i === 6) {

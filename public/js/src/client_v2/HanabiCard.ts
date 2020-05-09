@@ -11,8 +11,8 @@ export default class HanabiCard extends Phaser.GameObjects.Container {
   holder: number;
   suit: Suit | undefined;
   rank: number | undefined;
-  possibleSuits: Array<number>;
-  possibleRanks: Array<number>;
+  possibleSuits: number[];
+  possibleRanks: number[];
   tweening: boolean = false;
   imageName: string | undefined = undefined;
   showOnlyLearned: boolean = false;

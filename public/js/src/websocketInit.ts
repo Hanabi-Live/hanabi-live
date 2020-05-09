@@ -79,7 +79,7 @@ const initCommands = () => {
     muted: boolean;
     firstTimeUser: boolean;
     settings: any;
-    friends: Array<string>;
+    friends: string[];
     shuttingDown: boolean;
     maintenanceMode: boolean;
   }
@@ -208,7 +208,7 @@ const initCommands = () => {
   // to give the client a list of past lobby chat messages
   // It is also sent upon connecting to a game to give a list of past in-game chat messages
   interface ChatListData {
-    list: Array<ChatMessage>;
+    list: ChatMessage[];
     unread: number;
   }
   globals.conn.on('chatList', (data: ChatListData) => {

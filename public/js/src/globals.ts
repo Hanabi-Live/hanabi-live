@@ -27,23 +27,23 @@ export class Globals {
   randomName: string = '';
   settings: Settings = new Settings();
   // (contains the settings for the "Settings" tooltip and the "Create Game" tooltip)
-  friends: Array<string> = [];
+  friends: string[] = [];
   shuttingDown: boolean = false;
   datetimeShutdownInit: number = 0;
   maintenanceMode: boolean = false;
 
   userMap: Map<number, User> = new Map(); // Keys are IDs
   tableMap: Map<number, Table> = new Map(); // Keys are IDs
-  history: Array<GameHistory> = [];
+  history: GameHistory[] = [];
 
   lastPM: string = '';
   datetimeLastChatInput: number = new Date().getTime();
-  typedChatHistory: Array<string> = [];
+  typedChatHistory: string[] = [];
   typedChatHistoryIndex = 0;
   tabCompleteCounter: number = 0;
   tabCompleteIndex: number = 0;
-  tabCompleteWordList: Array<string> = [];
-  peopleTyping: Array<string> = [];
+  tabCompleteWordList: string[] = [];
+  peopleTyping: string[] = [];
 
   showMoreHistoryClicked: boolean = false;
   idleMinutes: number = 0;

@@ -70,7 +70,7 @@ export default (COLORS: Map<string, Color>) => {
 
     // Validate the clue colors (the colors that touch this suit)
     // If it is not specified, use the color of the same name
-    const clueColors: Array<Color> = [];
+    const clueColors: Color[] = [];
     if (Object.hasOwnProperty.call(suitJSON, 'clueColors')) {
       if (!Array.isArray(suitJSON.clueColors)) {
         throw new Error(`The clue colors for the suit "${suitName}" was not specified as an array.`);
@@ -133,7 +133,7 @@ export default (COLORS: Map<string, Color>) => {
     ) {
       throw new Error(`The "fillColor" array for the suit "${suitName}" is empty.`);
     }
-    const fillColors: Array<string> = suitJSON.fillColors || [];
+    const fillColors: string[] = suitJSON.fillColors || [];
 
     // Validate the "oneOfEach" property
     // If it is not specified, the suit is not one of each (e.g. every card is not critical)

@@ -128,7 +128,7 @@ export const beginTurn = () => {
 
   // Enable or disable the individual clue target buttons, depending on whose turn it is
   const buttonGroup = globals.elements.clueTargetButtonGroup2!;
-  const buttons = buttonGroup.children.toArray() as Array<PlayerButton>;
+  const buttons = buttonGroup.children.toArray() as PlayerButton[];
   for (const button of buttons) {
     button.setPressed(false);
     const enabled = button.targetIndex !== globals.currentPlayerIndex;
@@ -147,7 +147,7 @@ export const beginTurn = () => {
   // Set the current player's hand to be draggable
   disableDragOnAllHands();
   const hand = globals.elements.playerHands[globals.currentPlayerIndex];
-  for (const layoutChild of hand.children.toArray() as Array<LayoutChild>) {
+  for (const layoutChild of hand.children.toArray() as LayoutChild[]) {
     layoutChild.checkSetDraggable();
   }
 };
@@ -333,13 +333,13 @@ const cycleHand = () => {
   const chopIndex = hand.getChopIndex();
 
   // We don't need to reorder anything if the chop is slot 1 (the left-most card)
-  const layoutChilds: Array<HanabiCard> = hand.children.toArray();
+  const layoutChilds: HanabiCard[] = hand.children.toArray();
   if (chopIndex === layoutChilds.length - 1) {
     return;
   }
 
   // Make a list of the card orders
-  const cardOrders: Array<number> = [];
+  const cardOrders: number[] = [];
   for (const layoutChild of layoutChilds) {
     const card = layoutChild.children[0] as unknown as HanabiCard;
     cardOrders.push(card.order);

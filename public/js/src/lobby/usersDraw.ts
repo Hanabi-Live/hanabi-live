@@ -19,7 +19,7 @@ export const draw = () => {
 
   // Make a mapping of user names to IDs (and keep track of our friends)
   const usernameMapping: Map<string, number> = new Map();
-  const onlineFriends: Array<string> = [];
+  const onlineFriends: string[] = [];
   for (const [id, user] of globals.userMap) {
     usernameMapping.set(user.name, id);
     if (globals.friends.includes(user.name)) {
@@ -35,7 +35,7 @@ export const draw = () => {
   );
 
   // First, draw our username at the top
-  const alreadyDrawnUsers: Array<string> = [];
+  const alreadyDrawnUsers: string[] = [];
   drawUser(globals.username, usernameMapping, tbody, false);
   alreadyDrawnUsers.push(globals.username);
 

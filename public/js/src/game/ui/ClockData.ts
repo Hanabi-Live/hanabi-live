@@ -1,5 +1,5 @@
 export default interface ClockData {
-  times: Array<number>;
+  times: number[];
   active: number;
   timeTaken: number;
 }

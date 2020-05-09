@@ -181,7 +181,7 @@ export const hideOtherScores = () => {
   nav.show('history');
 };
 
-export const drawOtherScores = (data: Array<GameHistory>) => {
+export const drawOtherScores = (data: GameHistory[]) => {
   const tbody = $('#lobby-history-other-scores-table-tbody');
 
   // Clear all of the existing rows

@@ -45,7 +45,7 @@ commands.set('clock', (data: ClockData) => {
 });
 
 interface ConnectedData {
-  list: Array<boolean>;
+  list: boolean[];
 }
 commands.set('connected', (data: ConnectedData) => {
   if (globals.loading) {
@@ -170,7 +170,7 @@ commands.set('hypoStart', () => {
 interface InitData {
   // Game settings
   tableID: number;
-  names: Array<string>;
+  names: string[];
   variant: string;
   seat: number;
   spectating: boolean;
@@ -186,12 +186,12 @@ interface InitData {
   cardCycle: boolean;
   deckPlays: boolean;
   emptyClues: boolean;
-  characterAssignments: Array<string>;
-  characterMetadata: Array<number>;
+  characterAssignments: string[];
+  characterMetadata: number[];
 
   // Hypothetical settings
   hypothetical: boolean;
-  hypoActions: Array<string>;
+  hypoActions: string[];
 
   // Other features
   paused: boolean;
@@ -255,7 +255,7 @@ commands.set('init', (data: InitData) => {
 // Received when spectating a game
 interface NoteData {
   order: number;
-  notes: Array<SpectatorNote>;
+  notes: SpectatorNote[];
 }
 commands.set('note', (data: NoteData) => {
   // If we are not spectating and we got this message, something has gone wrong
@@ -276,12 +276,12 @@ commands.set('note', (data: NoteData) => {
 // - joining an existing game as a spectator
 // (it gives the notes of all the players & spectators)
 interface NoteListData {
-  notes: Array<NoteList>;
+  notes: NoteList[];
 }
 interface NoteList {
   id: number;
   name: string;
-  notes: Array<string>;
+  notes: string[];
 }
 commands.set('noteList', (data: NoteListData) => {
   // Reset any existing notes
@@ -314,7 +314,7 @@ commands.set('noteList', (data: NoteListData) => {
 // Received when reconnecting to an existing game as a player
 // (it only gets the notes of one specific player)
 interface NoteListPlayerData {
-  notes: Array<string>;
+  notes: string[];
 }
 commands.set('noteListPlayer', (data: NoteListPlayerData) => {
   // Store our notes
@@ -398,7 +398,7 @@ commands.set('notify', (data: any) => {
   }
 });
 
-commands.set('notifyList', (dataList: Array<any>) => {
+commands.set('notifyList', (dataList: any[]) => {
   // Initialize the state table
   globals.state.deckSize = stats.getTotalCardsInTheDeck(globals.variant);
   globals.state.maxScore = globals.variant.maxScore;
@@ -657,7 +657,7 @@ commands.set('reveal', (data: RevealData) => {
 
 // This is used to update the names of the people currently spectating the game
 interface SpectatorsData {
-  names: Array<string>;
+  names: string[];
 }
 commands.set('spectators', (data: SpectatorsData) => {
   if (

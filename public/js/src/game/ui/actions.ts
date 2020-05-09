@@ -27,7 +27,7 @@ export interface ActionStatus {
 
 export interface ActionStackDirections {
   type: string;
-  directions: Array<number>;
+  directions: number[];
 }
 
 export interface ActionText {
@@ -45,7 +45,7 @@ export interface ActionClue {
   type: string;
   clue: MsgClue;
   giver: number;
-  list: Array<number>;
+  list: number[];
   target: number;
   turn: number;
 }
@@ -64,7 +64,7 @@ export interface ActionDiscard {
 export interface ActionReorder {
   type: string;
   target: number;
-  handOrder: Array<number>;
+  handOrder: number[];
 }
 
 export interface ActionStrike {
@@ -76,7 +76,7 @@ export interface ActionStrike {
 
 export interface ActionDeckOrder {
   type: string;
-  deck: Array<SimpleCard>;
+  deck: SimpleCard[];
 }
 
 interface Which {
