@@ -42,7 +42,5 @@ func httpPasswordResetPost(c *gin.Context) {
 		hash = v
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"hash": hash,
-	})
+	c.String(http.StatusOK, hash)
 }
