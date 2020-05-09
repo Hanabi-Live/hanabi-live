@@ -28,11 +28,10 @@ const tablesDraw = () => {
   // 3) Unstarted & password-protected tables
   // 4) Ongoing tables
   // 5) Shared replays
-  // Furthermore, we want tables with one or more of our friends to be drawn above other tables
-  // within each subsection
+  // Furthermore, we want tables with one or more of our friends to be drawn above all other tables
   let sortedTableIDs: number[] = [];
-  for (let i = 1; i <= 5; i++) {
-    for (let j = 0; j <= 1; j++) {
+  for (const friends of [true, false]) {
+    for (let i = 1; i <= 5; i++) {
       const tableIDsOfThisType: number[] = [];
       for (const [id, table] of globals.tableMap) {
         let hasFriends = false;
@@ -43,7 +42,7 @@ const tablesDraw = () => {
             break;
           }
         }
-        if ((j === 0 && !hasFriends) || (j === 1 && hasFriends)) {
+        if ((friends && !hasFriends) || (!friends && hasFriends)) {
           continue;
         }
 
