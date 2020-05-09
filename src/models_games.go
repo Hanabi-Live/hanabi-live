@@ -586,10 +586,14 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 					AND games.speedrun = FALSE
 			) AS num_games,
 			(
-				SELECT CAST(SUM(
+				/*
+				* We enclose this query in an "COALESCE" so that it defaults to 0
+				* (instead of NULL) if the user has not yet played this variant
+				*/
+				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				) AS INTEGER)
+				) AS INTEGER), 0)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $1
@@ -603,10 +607,14 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 					AND games.speedrun = TRUE
 			) AS num_games_speedrun,
 			(
-				SELECT CAST(SUM(
+				/*
+				* We enclose this query in an "COALESCE" so that it defaults to 0
+				* (instead of NULL) if the user has not yet played this variant
+				*/
+				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				) AS INTEGER)
+				) AS INTEGER), 0)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $1
@@ -636,10 +644,14 @@ func (*Games) GetGlobalStats() (Stats, error) {
 				WHERE games.speedrun = FALSE
 			) AS num_games,
 			(
-				SELECT CAST(SUM(
+				/*
+				* We enclose this query in an "COALESCE" so that it defaults to 0
+				* (instead of NULL) if a there are no games played yet
+				*/
+				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				) AS INTEGER)
+				) AS INTEGER), 0)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE games.speedrun = FALSE
@@ -650,10 +662,14 @@ func (*Games) GetGlobalStats() (Stats, error) {
 				WHERE games.speedrun = TRUE
 			) AS num_games_speedrun,
 			(
-				SELECT CAST(SUM(
+				/*
+				* We enclose this query in an "COALESCE" so that it defaults to 0
+				* (instead of NULL) if a there are no games played yet
+				*/
+				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				) AS INTEGER)
+				) AS INTEGER), 0)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE games.speedrun = TRUE
@@ -684,7 +700,7 @@ func (*Games) GetVariantStats(variant int) (Stats, error) {
 			(
 				/*
 				* We enclose this query in an "COALESCE" so that it defaults to 0
-				* (instead of NULL) if a there are no games played yet
+				* (instead of NULL) if a there are no games played yet of this variant
 				*/
 				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
@@ -704,7 +720,7 @@ func (*Games) GetVariantStats(variant int) (Stats, error) {
 			(
 				/*
 				* We enclose this query in an "COALESCE" so that it defaults to 0
-				* (instead of NULL) if a there are no games played yet
+				* (instead of NULL) if a there are no games played yet of this variant
 				*/
 				SELECT COALESCE(CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
