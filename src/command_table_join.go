@@ -110,8 +110,10 @@ func commandTableJoin(s *Session, d *CommandData) {
 	t.NotifyPlayerChange()
 
 	// Set their status
-	s.Set("status", statusPregame)
-	notifyAllUser(s)
+	if s != nil {
+		s.Set("status", statusPregame)
+		notifyAllUser(s)
+	}
 
 	// Send them a "joined" message
 	// (to let them know they successfully joined the table)

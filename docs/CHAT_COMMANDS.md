@@ -25,6 +25,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | /pm [recipient] [msg] | Send a private message
 | /r [msg]              | Reply to a private message
 | /friend [username]    | Add someone to your friends list
+| /unfriend [username]  | Remove someone from your friends list
 
 <br />
 

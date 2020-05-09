@@ -6,8 +6,8 @@ package main
 //   inactive: true,
 // }
 func commandInactive(s *Session, d *CommandData) {
-	s.Set("inactive", d.Inactive)
-
-	// Notify everyone about this change in inactivity
-	notifyAllUserInactive(s)
+	if s != nil {
+		s.Set("inactive", d.Inactive)
+		notifyAllUserInactive(s)
+	}
 }

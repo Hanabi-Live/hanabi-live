@@ -62,8 +62,10 @@ func commandTableLeave(s *Session, d *CommandData) {
 	t.NotifyPlayerChange()
 
 	// Set their status
-	s.Set("status", statusLobby)
-	notifyAllUser(s)
+	if s != nil {
+		s.Set("status", statusLobby)
+		notifyAllUser(s)
+	}
 
 	// Make the client switch screens to show the base lobby
 	s.Emit("left", nil)

@@ -101,8 +101,10 @@ func commandTableSpectate(s *Session, d *CommandData) {
 			status = statusReplay
 		}
 	}
-	s.Set("status", status)
-	notifyAllUser(s)
+	if s != nil {
+		s.Set("status", status)
+		notifyAllUser(s)
+	}
 
 	// Send them a "tableStart" message
 	// After the client receives the "tableStart" message, they will send a "getGameInfo1" command

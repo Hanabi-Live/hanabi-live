@@ -40,8 +40,10 @@ func commandTableUnattend(s *Session, d *CommandData) {
 	}
 
 	// Set their status
-	s.Set("status", statusLobby)
-	notifyAllUser(s)
+	if s != nil {
+		s.Set("status", statusLobby)
+		notifyAllUser(s)
+	}
 
 	// If they were typing, remove the message
 	t.NotifyChatTyping(s.Username(), false)

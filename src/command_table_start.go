@@ -284,8 +284,10 @@ func commandTableStart(s *Session, d *CommandData) {
 
 		// Set the status for all of the users in the game
 		for _, p := range t.Players {
-			p.Session.Set("status", statusPlaying)
-			notifyAllUser(p.Session)
+			if p.Session != nil {
+				p.Session.Set("status", statusPlaying)
+				notifyAllUser(p.Session)
+			}
 		}
 	}
 
