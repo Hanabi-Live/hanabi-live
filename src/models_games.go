@@ -301,15 +301,17 @@ func (*Games) GetAllDeals(userID int, databaseID int) ([]*GameHistory, error) {
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
 		var game GameHistory
+		var you int
 		if err2 := rows.Scan(
 			&game.ID,
 			&game.Score,
 			&game.DatetimeFinished,
 			&game.OtherPlayerNames,
-			&game.You,
+			you,
 		); err2 != nil {
 			return nil, err2
 		}
+		game.You = you == 0
 		games = append(games, &game)
 	}
 
@@ -539,10 +541,10 @@ func (*Games) GetFastestTime(variant int, numPlayers int, maxScore int) (int, er
 	var seconds int
 	if err := db.QueryRow(context.Background(), `
 		SELECT
-			(
+			CAST(
 				EXTRACT(EPOCH FROM datetime_finished) -
 				EXTRACT(EPOCH FROM datetime_started)
-			) AS datetime_elapsed
+			) AS INTEGER) AS datetime_elapsed
 		FROM games
 		WHERE variant = $1
 			AND num_players = $2
@@ -584,10 +586,10 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 					AND games.speedrun = FALSE
 			) AS num_games,
 			(
-				SELECT SUM(
+				SELECT CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				)
+				) AS INTEGER)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $3
@@ -601,10 +603,10 @@ func (*Games) GetProfileStats(userID int) (Stats, error) {
 					AND games.speedrun = TRUE
 			) AS num_games_speedrun,
 			(
-				SELECT SUM(
+				SELECT CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				)
+				) AS INTEGER)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $5
@@ -634,10 +636,10 @@ func (*Games) GetGlobalStats() (Stats, error) {
 				WHERE games.speedrun = FALSE
 			) AS num_games,
 			(
-				SELECT SUM(
+				SELECT CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				)
+				) AS INTEGER)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE games.speedrun = FALSE
@@ -648,10 +650,10 @@ func (*Games) GetGlobalStats() (Stats, error) {
 				WHERE games.speedrun = TRUE
 			) AS num_games_speedrun,
 			(
-				SELECT SUM(
+				SELECT CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				)
+				) AS INTEGER)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE games.speedrun = TRUE
@@ -680,10 +682,10 @@ func (*Games) GetVariantStats(variant int) (Stats, error) {
 					AND games.speedrun = FALSE
 			) AS num_games,
 			(
-				SELECT SUM(
+				SELECT CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				)
+				) AS INTEGER)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE variant = $2
@@ -696,10 +698,10 @@ func (*Games) GetVariantStats(variant int) (Stats, error) {
 					AND games.speedrun = TRUE
 			) AS num_games_speedrun,
 			(
-				SELECT SUM(
+				SELECT CAST(SUM(
 					EXTRACT(EPOCH FROM datetime_finished) -
 					EXTRACT(EPOCH FROM datetime_started)
-				)
+				) AS INTEGER)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE variant = $4
