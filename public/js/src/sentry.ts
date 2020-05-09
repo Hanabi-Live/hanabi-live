@@ -25,11 +25,15 @@ const beforeSend = (
   hint?: Sentry.EventHint | undefined,
 ): Sentry.Event | PromiseLike<Sentry.Event | null> => {
   if (typeof hint === 'undefined') {
+    console.log('Sentry - Hint is undefined.');
     return event;
   }
+  console.log('Sentry - Hint is:', hint);
   const error = hint.originalException;
+  console.log('Sentry - Error is:', error);
   if (error && (error as Error).message) {
     const msg = (error as Error).message;
+    console.log('Sentry - Msg is:', msg);
     let ignore = false;
     for (const ignoredError of ignoredErrors) {
       if (msg.includes(ignoredError)) {
@@ -39,9 +43,12 @@ const beforeSend = (
     }
     if (ignore) {
       // Returning null will prevent Sentry from sending the message
+      console.log('Sentry - Ignoring error.');
       return (null as any);
     }
   }
+
+  console.log('Sentry - Sending error.');
   return event;
 };
 
