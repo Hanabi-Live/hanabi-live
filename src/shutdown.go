@@ -123,6 +123,7 @@ func shutdownImmediate() {
 		Server: true,
 		Spam:   true,
 	})
+
 	execute("stop.sh", projectPath)
 
 	// Block until the process is killed so that no more moves can be submitted
