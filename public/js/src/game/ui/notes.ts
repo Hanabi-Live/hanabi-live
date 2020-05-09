@@ -124,6 +124,8 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
         || fullNote.includes('[cm]')
         || note === '5cm'
         || fullNote.includes('[5cm]')
+        || note === 'e5cm'
+        || fullNote.includes('[e5cm]')
         || note === 'tcm'
         || fullNote.includes('[tcm]')
         || note === 'tccm'
