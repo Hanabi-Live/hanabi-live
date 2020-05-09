@@ -73,11 +73,12 @@ If you want to install less stuff on your computer, you can alternatively follow
 * Install some dependencies:
   * `./install/install_dependencies.sh`
   * `./install/install_development_dependencies.sh`
-  * `./install/install_database_schema.sh`
   * `exit`
-* Set the domain URL (optional):
+* Set up environment variables (optional):
   * `notepad .env` <br />
-  (if you plan to use a URL of "http://localhost", then do not change anything)
+  (the two important ones to verify are "DOMAIN" and "DB_PASS")
+* Install the database schema:
+  * `./install/install_database_schema.sh`
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
 * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
@@ -139,10 +140,11 @@ If you want to install less stuff on your computer, you can alternatively follow
 * Install some dependencies:
   * `./install/install_dependencies.sh`
   * `./install/install_development_dependencies.sh`
-  * `./install/install_database_schema.sh`
-* Set the domain URL (optional):
+* Set up environment variables (optional):
   * `open -t .env` <br />
-  (if you plan to use a URL of "http://localhost", then do not change anything)
+  (the two important ones to verify are "DOMAIN" and "DB_PASS")
+* Install the database schema:
+  * `./install/install_database_schema.sh`
 * Open VSCode using the cloned repository as the project folder:
   * `code .`
 * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
@@ -226,20 +228,8 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `./install/install_dependencies.sh`
 * Set up environment variables:
   * `nano .env`
-    * Fill in the values accordingly. The most important one is "DOMAIN" - this must match the URL that the user types in to their browser.
-* Create the database and import the schema:
-  * `sudo -u postgres psql`
-  * `CREATE DATABASE hanabi;`
-  * `\c hanabi`
-  * `CREATE EXTENSION IF NOT EXISTS citext;` <br />
-  (this [allows "UNIQUE" constraints to be case-insensitive](http://shuber.io/case-insensitive-unique-constraints-in-postgres/) if needed)
-  * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
-  (replace "1234567890" with a secure password)
-  * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
-  * `GRANT USAGE ON SCHEMA public TO hanabiuser;`
-  * `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO hanabiuser;`
-  * `GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO hanabiuser;`
-  * `\q`
+  (the two important ones to verify are "DOMAIN" and "DB_PASS")
+* Install the database schema:
   * `./install/install_database_schema.sh`
 * See [Running the Server](#running-the-server).
 
