@@ -126,7 +126,7 @@ func main() {
 	defer models.Close()
 
 	// Validate that the database exists
-	if err := models.DiscordMetadata.TestDatabase(); err != nil {
+	if err := models.Metadata.TestDatabase(); err != nil {
 		if strings.Contains(err.Error(), "Unknown database") {
 			logger.Fatal("The \"" + dbName + "\" database does not exist. " +
 				"Please follow the instructions located in the \"docs/INSTALL.md\" file " +

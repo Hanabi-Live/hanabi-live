@@ -17,12 +17,12 @@ type Models struct {
 	BannedIPs
 	ChatLog
 	ChatLogPM
-	DiscordMetadata
 	DiscordWaiters
 	GameActions
 	GameParticipantNotes
 	GameParticipants
 	Games
+	Metadata
 	MutedIPs
 	Users
 	UserFriends

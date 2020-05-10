@@ -55,14 +55,15 @@ func discordInit() {
 
 	// Get the last time a "@here" ping was sent
 	var timeAsString string
-	if v, err := models.DiscordMetadata.Get("last_at_here"); err != nil {
-		logger.Fatal("Failed to retrieve the \"last_at_here\" value from the database:", err)
+	if v, err := models.Metadata.Get("discord_last_at_here"); err != nil {
+		logger.Fatal("Failed to retrieve the \"discord_last_at_here\" "+
+			"value from the database:", err)
 		return
 	} else {
 		timeAsString = v
 	}
 	if v, err := time.Parse(time.RFC3339, timeAsString); err != nil {
-		logger.Fatal("Failed to parse the \"last_at_here\" value from the database:", err)
+		logger.Fatal("Failed to parse the \"discord_last_at_here\" value from the database:", err)
 		return
 	} else {
 		discordLastAtHere = v

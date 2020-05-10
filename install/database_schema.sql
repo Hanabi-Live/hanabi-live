@@ -259,14 +259,14 @@ CREATE TABLE throttled_ips (
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS discord_metadata CASCADE;
-CREATE TABLE discord_metadata (
+DROP TABLE IF EXISTS metadata CASCADE;
+CREATE TABLE metadata (
     id     SERIAL  PRIMARY KEY,
     name   TEXT    NOT NULL  UNIQUE,
     value  TEXT    NOT NULL
 );
-/* The "last_at_here" value is stored as a RFC3339 string */
-INSERT INTO discord_metadata (name, value) VALUES ('last_at_here', '2006-01-02T15:04:05Z');
+/* The "discord_last_at_here" value is stored as a RFC3339 string */
+INSERT INTO metadata (name, value) VALUES ('discord_last_at_here', '2006-01-02T15:04:05Z');
 
 DROP TABLE IF EXISTS discord_waiters CASCADE;
 CREATE TABLE discord_waiters (

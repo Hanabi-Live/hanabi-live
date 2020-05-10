@@ -48,8 +48,8 @@ func chatHere(s *Session, d *CommandData, t *Table) {
 		// Record the time of the "@here" ping so that we can enforce the time limit
 		if !test {
 			discordLastAtHere = time.Now()
-			if err := models.DiscordMetadata.Put(
-				"last_at_here",
+			if err := models.Metadata.Put(
+				"discord_last_at_here",
 				discordLastAtHere.Format(time.RFC3339),
 			); err != nil {
 				logger.Error("Failed to update the database for the last @here:", err)
