@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"time"
 )
 
@@ -34,6 +35,18 @@ func friend(s *Session, d *CommandData, add bool) {
 			msg = "The format of the /unfriend command is: /unfriend [username]"
 		}
 		s.Warning(msg)
+		return
+	}
+
+	// Validate that they did not target themselves
+	if strings.EqualFold(d.Name, s.Username()) {
+		var verb string
+		if add {
+			verb = "friend"
+		} else {
+			verb = "unfriend"
+		}
+		s.Warning("You cannot " + verb + " yourself.")
 		return
 	}
 

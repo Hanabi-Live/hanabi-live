@@ -12,9 +12,8 @@
  */
 
 /*
- * By default, PostgreSQL will show us notices about dropping tables (even with the "--quiet" flag
- * enabled); 
- * we only want messages to display on warnings or errors
+ * By default, PostgreSQL will show us notices about dropping tables
+ * (even with the "--quiet" flag enabled);  we only want messages to display on warnings or errors
  */
 SET client_min_messages TO WARNING;
 

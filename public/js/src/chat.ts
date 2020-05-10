@@ -194,8 +194,14 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
         return;
       }
 
+      // Validate that we are not targeting ourselves
+      const name = args.join(' ');
+      if (name.toLowerCase() === globals.username.toLowerCase()) {
+        modals.warningShow('You cannot friend yourself.');
+      }
+
       globals.conn!.send('chatFriend', {
-        name: args.join(' '),
+        name,
       });
       return;
     }
@@ -225,8 +231,14 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
         return;
       }
 
+      // Validate that we are not targeting ourselves
+      const name = args.join(' ');
+      if (name.toLowerCase() === globals.username.toLowerCase()) {
+        modals.warningShow('You cannot unfriend yourself.');
+      }
+
       globals.conn!.send('chatUnfriend', {
-        name: args.join(' '),
+        name,
       });
       return;
     }
