@@ -4,6 +4,21 @@
 
 <br />
 
+## Table of Contents
+
+1. [Basic How-To](#basic-how-to)
+2. [Major Features](#major-features)
+3. [Custom Game Options](#custom-game-options)
+4. [Other Options](#other-options)
+5. [Sounds](#sounds)
+6. [Keyboard Shortcuts](#keyboard-shortcuts)
+7. [Similar Deals and Competitive Play](#similar-deals-and-competitive-play)
+8. [Chat](#chat)
+9. [Friends](#friends]
+10. [Research & Bots](#research--bots)
+
+<br />
+
 ## Basic How-To
 
 * If you don't know how to play Hanabi already, you can read [the official rules](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md) or [watch Zamiel's video explanation](https://www.youtube.com/watch?v=jR9i1qCbHXQ).
@@ -315,5 +330,19 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 * When there are a lot of users online and a lot of games going on, it can be cumbersome to find the people you care about. The website supports adding specific people to your friends list with the `/friend` command.
 * Your friends will be listed alphabetically at the top of the user list.
 * Games that contain one or more of your friends will be sorted at the top of the games list.
+
+<br />
+
+## Research & Bots
+
+* The game of Hanabi has relevance to researchers in artificial intelligence:
+  * In 1997, an artifical intelligence named [Deep Blue](https://en.wikipedia.org/wiki/Deep_Blue_(chess_computer)) defeated world-champion [Gary Kasparov](https://en.wikipedia.org/wiki/Garry_Kasparov) in [chess](https://en.wikipedia.org/wiki/Chess).
+  * In 2011, an artificial intelligence named [Watson](https://en.wikipedia.org/wiki/Watson_(computer)) defeated world-champions [Brad Rutter](https://en.wikipedia.org/wiki/Brad_Rutter) and [Ken Jennings](https://en.wikipedia.org/wiki/Ken_Jennings) in [Jeopardy!](https://en.wikipedia.org/wiki/Jeopardy!)
+  * In 2016, an artificial intelligence named [AlphaGo](https://en.wikipedia.org/wiki/AlphaGo) defeated world-champion [Lee Sedol](https://en.wikipedia.org/wiki/Lee_Sedol) in [Go](https://en.wikipedia.org/wiki/Go_(game)).
+  * In 2019, [AI researchers proposed]([https://arxiv.org/pdf/1902.00506.pdf] that the next challenge for the AI community should be Hanabi. If bots could successfully cooperate with one another (and cooperate with humans) by demonstrating a [theory of mind](https://en.wikipedia.org/wiki/Theory_of_mind), it would be an important leap forward.
+* A game of Hanabi can be stored as a [JSON](https://www.json.org/json-en.html) object. The Hanabi community uses [the following format](https://raw.githubusercontent.com/Zamiell/hanabi-live/master/misc/example_game_with_comments.json) to specify a game.
+* Hanabi Live supports watching arbitrary games from JSON files. Simply select "Watch Specific Replay" from the menu, select "JSON Data" as the source, and then paste in the JSON data.
+* This is useful for researchers and bot-makers because you can take one of the games that your bot plays and then plug it into Hanabi Live in order to more-easily see what kinds of strategies that it is doing.
+* It is also possible to program a bot to play on Hanabi Live with other players. Unlike other websites such as [lichess.org](https://lichess.org/), there is no bot-specific API. Bots must connect to the WebSocket server and send messages in exactly the same way that a real player would. A reference bot implementation can be found [here](https://github.com/Zamiell/hanabi-live-bot).
 
 <br />
