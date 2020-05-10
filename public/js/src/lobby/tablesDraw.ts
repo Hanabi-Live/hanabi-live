@@ -35,16 +35,14 @@ const tablesDraw = () => {
       const tableIDsOfThisType: number[] = [];
       for (const [id, table] of globals.tableMap) {
         let hasFriends = false;
-        const players = table.players.split(', ');
-        for (const player of players) {
+        for (const player of table.players) {
           if (globals.friends.includes(player)) {
             hasFriends = true;
             break;
           }
         }
         if (!hasFriends) {
-          const spectators = table.spectators.split(', ');
-          for (const spectator of spectators) {
+          for (const spectator of table.spectators) {
             if (globals.friends.includes(spectator)) {
               hasFriends = true;
               break;
@@ -154,25 +152,32 @@ const tablesDraw = () => {
     $('<td>').html(button as any).appendTo(row);
 
     // Column 7 - Players
-    const players = table.players.split(', ');
-    for (let i = 0; i < players.length; i++) {
-      const player = players[i];
+    const playersArray: string[] = [];
+    for (const player of table.players) {
       if (globals.friends.includes(player)) {
-        players[i] = `<span class="friend">${player}</span>`;
+        playersArray.push(`<span class="friend">${player}</span>`);
+      } else {
+        playersArray.push(player);
       }
     }
-    const playersString = players.join(', ');
+    const playersString = playersArray.join(', ');
     $('<td>').html(playersString).appendTo(row);
 
     // Column 8 - Spectators
-    const spectators = table.spectators.split(', ');
-    for (let i = 0; i < spectators.length; i++) {
-      const spectator = spectators[i];
-      if (globals.friends.includes(spectator)) {
-        spectators[i] = `<span class="friend">${spectator}</span>`;
+    let spectatorsString: string;
+    if (table.spectators.length === 0) {
+      spectatorsString = '-';
+    } else {
+      const spectatorsArray: string[] = [];
+      for (const spectator of table.spectators) {
+        if (globals.friends.includes(spectator)) {
+          spectatorsArray.push(`<span class="friend">${spectator}</span>`);
+        } else {
+          spectatorsArray.push(spectator);
+        }
       }
+      spectatorsString = spectatorsArray.join(', ');
     }
-    const spectatorsString = spectators.join(', ');
     $('<td>').html(spectatorsString).appendTo(row);
 
     row.appendTo(tbody);

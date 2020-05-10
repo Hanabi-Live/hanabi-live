@@ -177,7 +177,7 @@ commands.set('tableStart', (data: TableStartData) => {
 // Received by the client when a user connect or has a new status
 commands.set('user', (data: User) => {
   globals.userMap.set(data.id, data);
-  if (globals.currentScreen === 'lobby') {
+  if (globals.currentScreen === 'lobby' || globals.currentScreen === 'pregame') {
     usersDraw.draw();
   }
 });

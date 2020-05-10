@@ -2,7 +2,6 @@ package main
 
 import (
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -58,21 +57,21 @@ func (s *Session) NotifyTable(t *Table) {
 }
 
 type TableMessage struct {
-	ID                int    `json:"id"`
-	Name              string `json:"name"`
-	PasswordProtected bool   `json:"passwordProtected"`
-	Joined            bool   `json:"joined"`
-	NumPlayers        int    `json:"numPlayers"`
-	Owned             bool   `json:"owned"`
-	Running           bool   `json:"running"`
-	Variant           string `json:"variant"`
-	Timed             bool   `json:"timed"`
-	BaseTime          int    `json:"baseTime"`
-	TimePerTurn       int    `json:"timePerTurn"`
-	SharedReplay      bool   `json:"sharedReplay"`
-	Progress          int    `json:"progress"`
-	Players           string `json:"players"`
-	Spectators        string `json:"spectators"`
+	ID                int      `json:"id"`
+	Name              string   `json:"name"`
+	PasswordProtected bool     `json:"passwordProtected"`
+	Joined            bool     `json:"joined"`
+	NumPlayers        int      `json:"numPlayers"`
+	Owned             bool     `json:"owned"`
+	Running           bool     `json:"running"`
+	Variant           string   `json:"variant"`
+	Timed             bool     `json:"timed"`
+	BaseTime          int      `json:"baseTime"`
+	TimePerTurn       int      `json:"timePerTurn"`
+	SharedReplay      bool     `json:"sharedReplay"`
+	Progress          int      `json:"progress"`
+	Players           []string `json:"players"`
+	Spectators        []string `json:"spectators"`
 }
 
 func makeTableMessage(s *Session, t *Table) *TableMessage {
@@ -87,22 +86,14 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		numPlayers = len(t.Spectators)
 	}
 
-	playerNames := make([]string, 0)
+	players := make([]string, 0)
 	for _, p := range t.Players {
-		playerNames = append(playerNames, p.Name)
-	}
-	players := strings.Join(playerNames, ", ")
-	if players == "" {
-		players = "-"
+		players = append(players, p.Name)
 	}
 
-	spectatorNames := make([]string, 0)
+	spectators := make([]string, 0)
 	for _, sp := range t.Spectators {
-		spectatorNames = append(spectatorNames, sp.Name)
-	}
-	spectators := strings.Join(spectatorNames, ", ")
-	if spectators == "" {
-		spectators = "-"
+		spectators = append(spectators, sp.Name)
 	}
 
 	return &TableMessage{
