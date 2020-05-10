@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"net/http"
 	"os"
 	"path"
@@ -221,13 +220,11 @@ func httpInit() {
 	// We need to create a new http.Server because the default one has no timeouts
 	// https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
 	logger.Info("Listening on port " + strconv.Itoa(port) + ".")
-	emptyMap := make(map[string]func(*http.Server, *tls.Conn, http.Handler))
 	HTTPServerWithTimeout := &http.Server{
 		Addr:         "0.0.0.0:" + strconv.Itoa(port), // Listen on all IP addresses
 		Handler:      httpRouter,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
-		TLSNextProto: emptyMap, // Disable HTTP2 to prevent unknown errors with some users
 	}
 	if useTLS {
 		if err := HTTPServerWithTimeout.ListenAndServeTLS(tlsCertFile, tlsKeyFile); err != nil {
