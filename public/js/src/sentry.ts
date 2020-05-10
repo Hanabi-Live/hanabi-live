@@ -12,47 +12,12 @@ export const init = () => {
   Sentry.init({
     dsn: 'https://93293e0a9dff44c7b8485d646738a3e5@sentry.io/5189482',
     release: version.toString(),
-    blacklistUrls: ['chrome-extension://'], // Otherwise, we get errors for LastPass, etc.
-    beforeSend, // Ignore some kinds of errors
+    whitelistUrls: ['hanabi.live'], // Otherwise, we get errors for LastPass, etc.
+    ignoreErrors,
   });
 };
 
-// We do not want to not send certain specific common events to Sentry
-// (to avoid going over the monthly limit)
-// https://docs.sentry.io/error-reporting/configuration/filtering/?platform=browser
-const beforeSend = (
-  event: Sentry.Event,
-  hint?: Sentry.EventHint | undefined,
-): Sentry.Event | PromiseLike<Sentry.Event | null> => {
-  if (typeof hint === 'undefined') {
-    console.log('Sentry - Hint is undefined.');
-    return event;
-  }
-  console.log('Sentry - Hint is:', hint);
-  const error = hint.originalException;
-  console.log('Sentry - Error is:', error);
-  if (error && (error as Error).message) {
-    const msg = (error as Error).message;
-    console.log('Sentry - Msg is:', msg);
-    let ignore = false;
-    for (const ignoredError of ignoredErrors) {
-      if (msg.includes(ignoredError)) {
-        ignore = true;
-        break;
-      }
-    }
-    if (ignore) {
-      // Returning null will prevent Sentry from sending the message
-      console.log('Sentry - Ignoring error.');
-      return (null as any);
-    }
-  }
-
-  console.log('Sentry - Sending error.');
-  return event;
-};
-
-const ignoredErrors = [
+const ignoreErrors = [
   // All of these are related to playing a sound file before the user has interacted with the page
   // https://gamedev.stackexchange.com/questions/163365
   'AbortError: The operation was aborted.',
