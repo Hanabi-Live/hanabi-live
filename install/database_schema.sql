@@ -158,12 +158,12 @@ DROP TABLE IF EXISTS game_actions CASCADE;
 CREATE TABLE game_actions (
     game_id  INTEGER   NOT NULL,
     turn     SMALLINT  NOT NULL,
-    /* 0 - play, 1 - discard, 2 - color clue, 3 - number clue, 4 - game over */
+    /* 0 - play, 1 - discard, 2 - color clue, 3 - rank clue, 4 - game over */
     type     SMALLINT  NOT NULL,
     /*
-     * If a play or a discard, then the order of the the card that was played/discarded
-     * If a color clue or a number clue, then the index of the player that received the clue
-     * If a game over, then the index of the player that caused the game to end
+     * If a play or a discard, corresponds to the order of the the card that was played/discarded
+     * If a clue, corresponds to the index of the player that received the clue
+     * If a game over, corresponds to the index of the player that caused the game to end
      */
     target   SMALLINT  NOT NULL,
     /*

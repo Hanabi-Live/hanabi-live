@@ -254,27 +254,31 @@ const discard = () => {
   performAction(false);
 };
 
-// If intendedPlay is true, it plays a card
-// If intendedPlay is false, it discards a card
-const performAction = (intendedPlay = true) => {
-  const cardOrder = promptOwnHandOrder(intendedPlay ? 'play' : 'discard');
+// If playAction is true, it plays a card
+// If playAction is false, it discards a card
+const performAction = (playAction = true) => {
+  const cardOrder = promptOwnHandOrder(playAction ? 'play' : 'discard');
 
   if (cardOrder === null) {
     return;
   }
-  if (cardOrder === 'deck' && !intendedPlay) {
-    return;
-  }
 
-  let type = intendedPlay ? ACTION.PLAY : ACTION.DISCARD;
+  let type = playAction ? ACTION.PLAY : ACTION.DISCARD;
+  let target = cardOrder;
+
   if (cardOrder === 'deck') {
-    type = ACTION.DECKPLAY;
+    if (!playAction) {
+      return;
+    }
+
+    type = ACTION.PLAY;
+    target = globals.deck.length - 1;
   }
 
   globals.lobby.conn!.send('action', {
     tableID: globals.lobby.tableID,
     type,
-    target: cardOrder,
+    target,
   });
   turn.hideClueUIAndDisableDragging();
 };

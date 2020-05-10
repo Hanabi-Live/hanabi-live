@@ -136,7 +136,7 @@ export default class LayoutChild extends Konva.Group {
     }
 
     turn.end({
-      type: (draggedTo === 'playArea' ? ACTION.PLAY : ACTION.DISCARD),
+      type: draggedTo === 'playArea' ? ACTION.PLAY : ACTION.DISCARD,
       target: card.order,
     });
   }

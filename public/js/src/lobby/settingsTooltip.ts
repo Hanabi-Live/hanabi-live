@@ -20,7 +20,7 @@ export const init = () => {
     $('#settings-volume-slider-value').html(`${volume}%`);
     globals.conn!.send('setting', {
       name: 'volume',
-      value: volumeString, // The server expects all settings as strings
+      setting: volumeString, // The server expects all setting values as strings
     });
   });
 
@@ -93,7 +93,7 @@ function changeSetting(this: HTMLElement) {
   // Send the new value to the server
   globals.conn!.send('setting', {
     name: settingName,
-    value: checked.toString(), // The server expects all settings as strings
+    setting: checked.toString(), // The server expects all setting values as strings
   });
 
   if (settingName === 'desktopNotification' && checked) {

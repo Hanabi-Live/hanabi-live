@@ -215,7 +215,7 @@ func chatPause(s *Session, d *CommandData, t *Table) {
 
 	commandPause(s, &CommandData{
 		TableID: t.ID,
-		Value:   "pause",
+		Setting: "pause",
 	})
 }
 
@@ -233,7 +233,7 @@ func chatUnpause(s *Session, d *CommandData, t *Table) {
 
 	commandPause(s, &CommandData{
 		TableID: t.ID,
-		Value:   "unpause",
+		Setting: "unpause",
 	})
 }
 

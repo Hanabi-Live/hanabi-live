@@ -6,7 +6,7 @@ type CommandData struct {
 	GameID  int `json:"gameID"`
 
 	// setting
-	Value string `json:"value"`
+	Setting string `json:"setting"`
 
 	// chat
 	Msg       string `json:"msg"`
@@ -28,9 +28,9 @@ type CommandData struct {
 	AlertWaiters         bool   `json:"alertWaiters"`
 
 	// action
-	Clue   Clue `json:"clue"`
-	Target int  `json:"target"`
-	Type   int  `json:"type"`
+	Type   int `json:"type"`
+	Target int `json:"target"`
+	Value  int `json:"value"`
 
 	// note
 	Note  string `json:"note"`

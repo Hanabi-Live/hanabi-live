@@ -191,7 +191,7 @@ func validateJSON(s *Session, d *CommandData) bool {
 
 	// Validate actions
 	for i, action := range d.GameJSON.Actions {
-		if action.Type == actionType2Play || action.Type == actionType2Discard {
+		if action.Type == actionTypePlay || action.Type == actionTypeDiscard {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Deck)-1 {
 				s.Warning("Action at index " + strconv.Itoa(i) +
 					" is a play or discard with an invalid target (card order) of " +
@@ -204,21 +204,21 @@ func validateJSON(s *Session, d *CommandData) bool {
 					", which is nonsensical.")
 				return false
 			}
-		} else if action.Type == actionType2ColorClue || action.Type == actionType2RankClue {
+		} else if action.Type == actionTypeColorClue || action.Type == actionTypeRankClue {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Players)-1 {
 				s.Warning("Action at index " + strconv.Itoa(i) +
 					" is a clue with an invalid target (player index) of " +
 					strconv.Itoa(action.Target) + ".")
 				return false
 			}
-			if action.Type == actionType2ColorClue {
+			if action.Type == actionTypeColorClue {
 				if action.Value < 0 || action.Value > len(variant.ClueColors) {
 					s.Warning("Action at index " + strconv.Itoa(i) +
 						" is a color clue with an invalid value of " +
 						strconv.Itoa(action.Value) + ".")
 					return false
 				}
-			} else if action.Type == actionType2RankClue {
+			} else if action.Type == actionTypeRankClue {
 				if action.Value < 1 || action.Value > 5 {
 					s.Warning("Action at index " + strconv.Itoa(i) +
 						" is a rank clue with an invalid value of " +
@@ -226,7 +226,7 @@ func validateJSON(s *Session, d *CommandData) bool {
 					return false
 				}
 			}
-		} else if action.Type == actionType2GameOver {
+		} else if action.Type == actionTypeGameOver {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Players)-1 {
 				s.Warning("Action at index " + strconv.Itoa(i) +
 					" is a game over with an invalid target (player index) of " +
@@ -503,8 +503,9 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 		actions = d.GameJSON.Actions
 	}
 
-	// Store the actions on the game (in the future, this will be sent to and used by the Phaser
-	// client, making the below emulation unnecessary)
+	// Store the actions on the game
+	// (in the future, this will be sent to and used by the client,
+	// making the below emulation unnecessary)
 	g.Actions2 = actions
 
 	// Make the appropriate moves in the game to match what is listed in the database
@@ -516,73 +517,33 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 
 		p := t.Players[g.ActivePlayer]
 
-		if action.Type == actionType2Play {
-			commandAction(p.Session, &CommandData{
-				TableID: t.ID,
-				Type:    actionTypePlay,
-				Target:  action.Target,
-			})
-		} else if action.Type == actionType2Discard {
-			commandAction(p.Session, &CommandData{
-				TableID: t.ID,
-				Type:    actionTypeDiscard,
-				Target:  action.Target,
-			})
-		} else if action.Type == actionType2ColorClue {
-			commandAction(p.Session, &CommandData{
-				TableID: t.ID,
-				Type:    actionTypeClue,
-				Target:  action.Target,
-				Clue: Clue{
-					Type:  clueTypeColor,
-					Value: action.Value,
-				},
-			})
-		} else if action.Type == actionType2RankClue {
-			commandAction(p.Session, &CommandData{
-				TableID: t.ID,
-				Type:    actionTypeClue,
-				Target:  action.Target,
-				Clue: Clue{
-					Type:  clueTypeRank,
-					Value: action.Value,
-				},
-			})
-		} else if action.Type == actionType2GameOver {
+		if action.Type == actionTypeGameOver && action.Value == endConditionTerminated {
+			// Terminations do not flow through the "commandAction()" function,
+			// so this is a special case
+			// (this is because any player can terminate the game, even if it is not their turn)
 			var ps *Session
+			var serverTermination bool
 			if action.Target < 0 {
 				// A target of "-1" indicates that this was a termination initiated by the server
 				// itself, so just use the session of the 1st player to send the termination
 				ps = t.Players[0].Session
+				serverTermination = true
 			} else {
 				ps = t.Players[action.Target].Session
+				serverTermination = false
 			}
-
-			if action.Value == endConditionTimeout {
-				commandAction(ps, &CommandData{
-					TableID: t.ID,
-					Type:    actionTypeTimeLimitReached,
-				})
-			} else if action.Value == endConditionTerminated {
-				serverTermination := false
-				if action.Target < 0 {
-					serverTermination = true
-				}
-				commandTableTerminate(ps, &CommandData{
-					TableID: t.ID,
-					Server:  serverTermination,
-				})
-			} else if action.Value == endConditionIdleTimeout {
-				commandAction(ps, &CommandData{
-					TableID: t.ID,
-					Type:    actionTypeIdleLimitReached,
-				})
-			}
+			commandTableTerminate(ps, &CommandData{
+				TableID: t.ID,
+				Server:  serverTermination,
+			})
 		} else {
-			logger.Error("Failed to interpret a game action with a type of " +
-				strconv.Itoa(action.Type) + ".")
-			s.Error(initGameFail)
-			return false
+			// A normal action (e.g. play, discard, or clue)
+			commandAction(p.Session, &CommandData{
+				TableID: t.ID,
+				Type:    actionTypeColorClue,
+				Target:  action.Target,
+				Value:   action.Value,
+			})
 		}
 
 		if g.InvalidActionOccurred {

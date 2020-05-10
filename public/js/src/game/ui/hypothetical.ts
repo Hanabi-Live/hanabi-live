@@ -16,6 +16,7 @@ import fadeCheck from './fadeCheck';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
+import MsgClue from './MsgClue';
 import PlayerButton from './PlayerButton';
 import * as replay from './replay';
 import * as turn from './turn';
@@ -154,22 +155,34 @@ export const beginTurn = () => {
 
 export const send = (hypoAction: Action) => {
   let type = '';
-  if (hypoAction.type === ACTION.CLUE) {
-    type = 'clue';
-  } else if (hypoAction.type === ACTION.PLAY) {
+  if (hypoAction.type === ACTION.PLAY) {
     type = 'play';
   } else if (hypoAction.type === ACTION.DISCARD) {
     type = 'discard';
-  } else if (hypoAction.type === ACTION.DECKPLAY) {
-    type = 'play';
+  } else if (
+    hypoAction.type === ACTION.COLOR_CLUE
+    || hypoAction.type === ACTION.RANK_CLUE
+  ) {
+    type = 'clue';
   }
 
   if (type === 'clue') {
     // Clue
-    const list = getTouchedCardsFromClue(hypoAction.target, hypoAction.clue!);
+    if (typeof hypoAction.value === 'undefined') {
+      throw new Error('The hypothetical action was a clue but it did not include a value.');
+    }
+    let clue;
+    if (hypoAction.type === ACTION.COLOR_CLUE) {
+      clue = new MsgClue(CLUE_TYPE.COLOR, hypoAction.value);
+    } else if (hypoAction.type === ACTION.RANK_CLUE) {
+      clue = new MsgClue(CLUE_TYPE.RANK, hypoAction.value);
+    } else {
+      throw new Error('The hypothetical action had an invalid clue type.');
+    }
+    const list = getTouchedCardsFromClue(hypoAction.target, clue);
     sendHypoAction({
       type,
-      clue: hypoAction.clue,
+      clue,
       giver: globals.currentPlayerIndex,
       list,
       target: hypoAction.target,
@@ -183,10 +196,10 @@ export const send = (hypoAction: Action) => {
     const words = ['zero', 'one', 'two', 'three', 'four', 'five'];
     text += `${words[list.length]} `;
 
-    if (hypoAction.clue!.type === CLUE_TYPE.RANK) {
-      text += hypoAction.clue!.value;
-    } else if (hypoAction.clue!.type === CLUE_TYPE.COLOR) {
-      text += globals.variant.clueColors[hypoAction.clue!.value].name;
+    if (clue.type === CLUE_TYPE.COLOR) {
+      text += globals.variant.clueColors[clue.value].name;
+    } else if (clue.type === CLUE_TYPE.RANK) {
+      text += clue.value;
     }
     if (list.length !== 1) {
       text += 's';

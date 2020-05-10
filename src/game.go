@@ -35,11 +35,15 @@ type Game struct {
 	MaxScore          int
 	Strikes           int
 	LastClueTypeGiven int
-	// Different actions will have different fields
-	// Thus, Actions is a slice of different action types
+	DoubleDiscard     bool
+	// Actions is a list of all of the in-game moves that players have taken thus far
+	// Different actions will have different fields, so we need this to be an generic interface
 	// Furthermore, we do not want this to be a pointer of interfaces because
 	// this simplifies action scrubbing
-	Actions               []interface{}
+	// In the future, we will just send Actions2 to the client and delete Actions
+	Actions []interface{}
+	// Actions2 is a database-compatible representation of in-game moves
+	// (it is much less verbose when compared with Actions)
 	Actions2              []*GameAction
 	InvalidActionOccurred bool // Used when emulating game actions in replays
 	EndCondition          int  // The values for this are listed in "constants.go"
@@ -151,7 +155,8 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 	// End the game
 	commandAction(s, &CommandData{
 		TableID: t.ID,
-		Type:    actionTypeTimeLimitReached,
+		Type:    actionTypeGameOver,
+		Value:   endConditionTimeout,
 	})
 }
 
@@ -165,7 +170,7 @@ func (g *Game) CheckEnd() bool {
 	}
 
 	// Check to see if the game ended to idleness
-	if g.EndCondition == actionTypeIdleLimitReached {
+	if g.EndCondition == endConditionIdleTimeout {
 		return true
 	}
 

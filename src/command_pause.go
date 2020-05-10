@@ -10,7 +10,7 @@ import (
 // Example data:
 // {
 //   tableID: 5,
-//   value: 'pause', // Can also be 'unpause', 'pause-queue', 'pause-unqueue'
+//   setting: 'pause', // Can also be 'unpause', 'pause-queue', 'pause-unqueue'
 //   // ('pause-queue' will automatically pause the game when it gets to their turn)
 // }
 func commandPause(s *Session, d *CommandData) {
@@ -51,33 +51,33 @@ func commandPause(s *Session, d *CommandData) {
 	}
 
 	// If a player requests a queued pause on their turn, turn it into a normal pause
-	if d.Value == "pause-queue" && g.ActivePlayer == i {
-		d.Value = "pause"
+	if d.Setting == "pause-queue" && g.ActivePlayer == i {
+		d.Setting = "pause"
 	}
 
-	// Validate the value
-	if d.Value == "pause" {
+	// Validate the settomg
+	if d.Setting == "pause" {
 		if g.Paused {
 			s.Warning("The game is already paused.")
 			return
 		}
-	} else if d.Value == "unpause" {
+	} else if d.Setting == "unpause" {
 		if !g.Paused {
 			s.Warning("The game is not paused, so you cannot unpause.")
 			return
 		}
-	} else if d.Value == "pause-queue" {
+	} else if d.Setting == "pause-queue" {
 		if p.RequestedPause {
 			s.Warning("You have already requested a pause when it gets to your turn.")
 			return
 		}
-	} else if d.Value == "pause-unqueue" {
+	} else if d.Setting == "pause-unqueue" {
 		if !p.RequestedPause {
 			s.Warning("You have not requested a pause, so you cannot unqueue one.")
 			return
 		}
 	} else {
-		s.Warning("That is not a valid value.")
+		s.Warning("That is not a valid setting.")
 		return
 	}
 
@@ -85,21 +85,21 @@ func commandPause(s *Session, d *CommandData) {
 		Pause
 	*/
 
-	if d.Value == "pause-queue" {
+	if d.Setting == "pause-queue" {
 		p.RequestedPause = true
 		return
 	}
-	if d.Value == "pause-unqueue" {
+	if d.Setting == "pause-unqueue" {
 		p.RequestedPause = false
 		return
 	}
 
-	if d.Value == "pause" {
+	if d.Setting == "pause" {
 		g.Paused = true
 		g.PauseTime = time.Now()
 		g.PauseCount++
 		g.PausePlayer = i
-	} else if d.Value == "unpause" {
+	} else if d.Setting == "unpause" {
 		g.Paused = false
 
 		// Add the time elapsed during the pause to the time recorded when the turn began

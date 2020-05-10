@@ -28,26 +28,16 @@ var (
 )
 
 const (
-	actionTypeClue = iota
-	actionTypePlay
+	actionTypePlay = iota
 	actionTypeDiscard
-	actionTypeDeckPlay
-	actionTypeTimeLimitReached
-	actionTypeIdleLimitReached
-)
-
-// TODO remove the above constants after the client is rewritten to use not use JSON action messages
-const (
-	actionType2Play = iota
-	actionType2Discard
-	actionType2ColorClue
-	actionType2RankClue
-	actionType2GameOver
+	actionTypeColorClue
+	actionTypeRankClue
+	actionTypeGameOver
 )
 
 const (
-	clueTypeRank = iota
-	clueTypeColor
+	clueTypeColor = iota
+	clueTypeRank
 )
 
 const (

@@ -4,7 +4,7 @@ import { ACTION, CLUE_TYPE } from '../../constants';
 import * as arrows from './arrows';
 import Clue from './Clue';
 import ColorButton from './ColorButton';
-import { clueToMsgClue, msgClueToClue } from './convert';
+import { colorToMsgColor, msgClueToClue } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import MsgClue from './MsgClue';
@@ -192,10 +192,22 @@ export const give = () => {
     return;
   }
 
+  let type: number;
+  let value: number;
+  if (clueButton.clue.type === CLUE_TYPE.COLOR) {
+    type = ACTION.COLOR_CLUE;
+    value = colorToMsgColor((clueButton.clue.value as Color), globals.variant);
+  } else if (clueButton.clue.type === CLUE_TYPE.RANK) {
+    type = ACTION.RANK_CLUE;
+    value = (clueButton.clue.value as number);
+  } else {
+    throw new Error('The clue button has an invalid clue type.');
+  }
+
   // Send the message to the server
   turn.end({
-    type: ACTION.CLUE,
+    type,
     target: target.targetIndex,
-    clue: clueToMsgClue(clueButton.clue, globals.variant),
+    value,
   });
 };

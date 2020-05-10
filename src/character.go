@@ -165,6 +165,7 @@ func characterGenerate(g *Game) {
 	}
 }
 
+// characterValidateAction returns true if validation fails
 func characterValidateAction(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	if !g.Options.CharacterAssignments {
 		return false
@@ -172,14 +173,14 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *GamePlayer)
 
 	if p.Character == "Vindictive" && // 9
 		p.CharacterMetadata == 0 &&
-		d.Type != actionTypeClue {
+		(d.Type != actionTypeColorClue && d.Type != actionTypeRankClue) {
 
 		s.Warning("You are " + p.Character + ", so you must give a clue if you have been given " +
 			"a clue on this go-around.")
 		return true
 	} else if p.Character == "Insistent" && // 13
 		p.CharacterMetadata != -1 &&
-		d.Type != actionTypeClue {
+		(d.Type != actionTypeColorClue && d.Type != actionTypeRankClue) {
 
 		s.Warning("You are " + p.Character + ", so you must continue to clue cards until " +
 			"one of them is played or discarded.")
@@ -210,6 +211,7 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *GamePlayer)
 	return false
 }
 
+// characterValidateSecondAction returns true if validation fails
 func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	if !g.Options.CharacterAssignments {
 		return false
@@ -220,12 +222,7 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *GameP
 	}
 
 	if p.Character == "Genius" { // 24
-		if d.Type != actionTypeClue {
-			s.Warning("You are " + p.Character + ", so you must now give your second clue.")
-			return true
-		}
-
-		if d.Clue.Type != clueTypeColor {
+		if d.Type != actionTypeColorClue {
 			s.Warning("You are " + p.Character + ", so you must now give a color clue.")
 			return true
 		}
@@ -236,12 +233,7 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *GameP
 			return true
 		}
 	} else if p.Character == "Synesthetic" { // 25
-		if d.Type != actionTypeClue {
-			s.Warning("You are " + p.Character + ", so you must now give your second clue.")
-			return true
-		}
-
-		if d.Clue.Type != clueTypeColor {
+		if d.Type != actionTypeColorClue {
 			s.Warning("You are " + p.Character + ", so you must now give a color clue.")
 			return true
 		}
@@ -252,7 +244,7 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *GameP
 			return true
 		}
 
-		if d.Clue.Value != p.CharacterMetadata2 {
+		if d.Value != p.CharacterMetadata2 {
 			s.Warning("You are " + p.Character + ", so you must give the matching color clue.")
 			return true
 		}
@@ -267,29 +259,29 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *GameP
 	return false
 }
 
-// characterCheckClue returns true if the clue cannot be given
-func characterCheckClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
+// characterValidateClue returns true if validation fails
+func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	if !g.Options.CharacterAssignments {
 		return false
 	}
 
-	// Get the target of the clue
-	p2 := g.Players[d.Target]
+	clue := NewClue(d)        // Convert the incoming data to a clue object
+	p2 := g.Players[d.Target] // Get the target of the clue
 
 	if p.Character == "Fuming" && // 0
-		d.Clue.Type == clueTypeColor &&
-		d.Clue.Value != p.CharacterMetadata {
+		clue.Type == clueTypeColor &&
+		clue.Value != p.CharacterMetadata {
 
 		s.Warning("You are " + p.Character + ", so you can not give that type of clue.")
 		return true
 	} else if p.Character == "Dumbfounded" && // 1
-		d.Clue.Type == clueTypeRank &&
-		d.Clue.Value != p.CharacterMetadata {
+		clue.Type == clueTypeRank &&
+		clue.Value != p.CharacterMetadata {
 
 		s.Warning("You are " + p.Character + ", so you can not give that type of clue.")
 		return true
 	} else if p.Character == "Inept" { // 2
-		cardsTouched := p2.FindCardsTouchedByClue(d.Clue)
+		cardsTouched := p2.FindCardsTouchedByClue(clue)
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			if c.Suit == p.CharacterMetadata {
@@ -299,7 +291,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool
 			}
 		}
 	} else if p.Character == "Awkward" { // 3
-		cardsTouched := p2.FindCardsTouchedByClue(d.Clue)
+		cardsTouched := p2.FindCardsTouchedByClue(clue)
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			if c.Rank == p.CharacterMetadata {
@@ -309,21 +301,21 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool
 			}
 		}
 	} else if p.Character == "Conservative" && // 4
-		len(p2.FindCardsTouchedByClue(d.Clue)) != 1 {
+		len(p2.FindCardsTouchedByClue(clue)) != 1 {
 
 		s.Warning("You are " + p.Character + ", so you can only give clues that touch " +
 			"a single card.")
 		return true
 	} else if p.Character == "Greedy" && // 5
-		len(p2.FindCardsTouchedByClue(d.Clue)) < 2 {
+		len(p2.FindCardsTouchedByClue(clue)) < 2 {
 
 		s.Warning("You are " + p.Character + ", so you can only give clues that touch 2+ cards.")
 		return true
 	} else if p.Character == "Picky" && // 6
-		((d.Clue.Type == clueTypeRank &&
-			d.Clue.Value%2 == 0) ||
-			(d.Clue.Type == clueTypeColor &&
-				(d.Clue.Value+1)%2 == 0)) {
+		((clue.Type == clueTypeRank &&
+			clue.Value%2 == 0) ||
+			(clue.Type == clueTypeColor &&
+				(clue.Value+1)%2 == 0)) {
 
 		s.Warning("You are " + p.Character + ", so you can only clue odd numbers or " +
 			"clues that touch odd amounts of cards.")
@@ -353,14 +345,14 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool
 			"there are 4 or more clues available.")
 		return true
 	} else if p.Character == "Compulsive" && // 11
-		!p2.IsFirstCardTouchedByClue(d.Clue) &&
-		!p2.IsLastCardTouchedByClue(d.Clue) {
+		!p2.IsFirstCardTouchedByClue(clue) &&
+		!p2.IsLastCardTouchedByClue(clue) {
 
 		s.Warning("You are " + p.Character + ", so you can only give a clue if it touches either " +
 			"the newest or oldest card in a hand.")
 		return true
 	} else if p.Character == "Mood Swings" && // 12
-		p.CharacterMetadata == d.Clue.Type {
+		p.CharacterMetadata == clue.Type {
 
 		s.Warning("You are " + p.Character + ", so cannot give the same clue type twice in a row.")
 		return true
@@ -373,7 +365,7 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool
 			return true
 		}
 
-		cardsTouched := p2.FindCardsTouchedByClue(d.Clue)
+		cardsTouched := p2.FindCardsTouchedByClue(clue)
 		touchedInsistentCards := false
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
@@ -395,23 +387,19 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool
 				"two clues available for you to give a clue.")
 			return true
 		}
-		if d.Clue.Type != clueTypeRank {
+		if clue.Type != clueTypeRank {
 			s.Warning("You are " + p.Character + ", so you must give a rank clue first.")
 			return true
 		}
 	} else if p.Character == "Synesthetic" && // 25
 		p.CharacterMetadata == -1 {
 
-		if d.Clue.Type != clueTypeRank {
+		if clue.Type != clueTypeRank {
 			s.Warning("You are " + p.Character + ", so you must give a rank clue first.")
 			return true
 		}
 
 		if !g.Options.EmptyClues {
-			clue := Clue{
-				Type:  clueTypeColor,
-				Value: d.Clue.Value - 1,
-			}
 			cardsTouched := p2.FindCardsTouchedByClue(clue)
 			if len(cardsTouched) == 0 {
 				s.Warning("You are " + p.Character + ", so both versions of the clue must touch " +
@@ -422,15 +410,14 @@ func characterCheckClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool
 	}
 
 	if p2.Character == "Vulnerable" && // 14
-		d.Clue.Type == clueTypeRank &&
-		(d.Clue.Value == 2 ||
-			d.Clue.Value == 5) {
+		clue.Type == clueTypeRank &&
+		(clue.Value == 2 || clue.Value == 5) {
 
 		s.Warning("You cannot give a number 2 or number 5 clue to a " + p2.Character +
 			" character.")
 		return true
 	} else if p2.Character == "Color-Blind" && // 15
-		d.Clue.Type == clueTypeColor {
+		clue.Type == clueTypeColor {
 
 		s.Warning("You cannot give that color clue to a " + p2.Character + " character.")
 		return true
@@ -511,14 +498,14 @@ func characterPostClue(d *CommandData, g *Game, p *GamePlayer) {
 		return
 	}
 
-	// Get the target of the clue
-	p2 := g.Players[d.Target]
+	clue := NewClue(d)        // Convert the incoming data to a clue object
+	p2 := g.Players[d.Target] // Get the target of the clue
 
 	if p.Character == "Mood Swings" { // 12
-		p.CharacterMetadata = d.Clue.Type
+		p.CharacterMetadata = clue.Type
 	} else if p.Character == "Insistent" { // 13
 		// Mark that the cards that they clued must be continue to be clued
-		cardsTouched := p2.FindCardsTouchedByClue(d.Clue)
+		cardsTouched := p2.FindCardsTouchedByClue(clue)
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			c.InsistentTouched = true
@@ -529,7 +516,7 @@ func characterPostClue(d *CommandData, g *Game, p *GamePlayer) {
 		// Store that they have had at least one clue given to them on this go-around of the table
 		p2.CharacterMetadata = 0
 	} else if p2.Character == "Impulsive" && // 17
-		p2.IsFirstCardTouchedByClue(d.Clue) {
+		p2.IsFirstCardTouchedByClue(clue) {
 
 		// Store that they had their slot 1 card clued
 		p2.CharacterMetadata = 0
@@ -600,8 +587,11 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 		return false
 	}
 
+	// Convert the incoming data to a clue object
+	clue := NewClue(d)
+
 	if p.Character == "Genius" && // 24
-		d.Type == actionTypeClue {
+		d.Type == actionTypeRankClue {
 
 		// Must clue both a number and a color (uses 2 clues)
 		// The clue target is stored in "p.CharacterMetadata"
@@ -612,14 +602,14 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 		p.CharacterMetadata = -1
 		return false
 	} else if p.Character == "Synesthetic" && // 25
-		d.Type == actionTypeClue {
+		d.Type == actionTypeRankClue {
 
 		// Must clue both a number and a color of the same value (uses 1 clue)
 		// The clue target is stored in "p.CharacterMetadata"
 		// The value of the clue is stored in "p.CharacterMetadata2"
 		if p.CharacterMetadata == -1 {
 			p.CharacterMetadata = d.Target
-			p.CharacterMetadata2 = d.Clue.Value - 1
+			p.CharacterMetadata2 = clue.Value - 1
 			return true
 		}
 		p.CharacterMetadata = -1

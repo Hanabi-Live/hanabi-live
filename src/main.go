@@ -144,6 +144,9 @@ func main() {
 	suitsInit()    // (in "suits.go")
 	variantsInit() // (in "variants.go")
 
+	// Initialize the action functions command map (in "command_action.go")
+	actionsFunctionsInit()
+
 	// Initialize "Detrimental Character Assignments" (in "characters.go")
 	characterInit()
 

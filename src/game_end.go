@@ -289,19 +289,19 @@ func (g *Game) WriteDatabase() error {
 	var gameOverAction *GameAction
 	if g.EndCondition == endConditionTimeout {
 		gameOverAction = &GameAction{
-			Type:   actionType2GameOver,
+			Type:   actionTypeGameOver,
 			Target: g.EndPlayer,
 			Value:  endConditionTimeout,
 		}
 	} else if g.EndCondition == endConditionTerminated {
 		gameOverAction = &GameAction{
-			Type:   actionType2GameOver,
+			Type:   actionTypeGameOver,
 			Target: g.EndPlayer,
 			Value:  endConditionTerminated,
 		}
 	} else if g.EndCondition == endConditionIdleTimeout {
 		gameOverAction = &GameAction{
-			Type:   actionType2GameOver,
+			Type:   actionTypeGameOver,
 			Target: 0,
 			Value:  endConditionIdleTimeout,
 		}

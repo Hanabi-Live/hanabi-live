@@ -4,12 +4,12 @@
 import Color from '../../Color';
 import {
   ACTION,
-  CLUE_TYPE,
   MAX_CLUE_NUM,
   STACK_BASE_RANK,
   START_CARD_RANK,
 } from '../../constants';
 import ColorButton from './ColorButton';
+import { colorToMsgColor } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import * as notes from './notes';
@@ -79,7 +79,7 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
     && !event.altKey
     && !event.metaKey
   ) {
-    globals.preCluedCard = card.order;
+    globals.preCluedCardOrder = card.order;
 
     // A card may be cluable by more than one color,
     // so we need to figure out which color to use
@@ -109,16 +109,10 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
       }
     }
 
-    const value = globals.variant.clueColors.findIndex(
-      (variantColor) => variantColor === clueColor,
-    );
     turn.end({
-      type: ACTION.CLUE,
+      type: ACTION.COLOR_CLUE,
       target: card.holder,
-      clue: {
-        type: CLUE_TYPE.COLOR,
-        value,
-      },
+      value: colorToMsgColor(clueColor, globals.variant),
     });
   }
 };
@@ -156,15 +150,12 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
     && !event.altKey
     && !event.metaKey
   ) {
-    globals.preCluedCard = card.order;
+    globals.preCluedCardOrder = card.order;
 
     turn.end({
-      type: ACTION.CLUE,
+      type: ACTION.RANK_CLUE,
       target: card.holder,
-      clue: {
-        type: CLUE_TYPE.RANK,
-        value: card.rank,
-      },
+      value: card.rank,
     });
     return;
   }

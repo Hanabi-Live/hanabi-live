@@ -232,17 +232,17 @@ const getVariant = (setting: string) => {
   return value;
 };
 
-const checkChanged = (setting: string, value: boolean | string) => {
-  if (!misc.isKeyOf(setting, globals.settings)) {
-    throw new Error(`The setting of ${setting} does not exist in the Settings class.`);
+const checkChanged = (settingName: string, value: boolean | string) => {
+  if (!misc.isKeyOf(settingName, globals.settings)) {
+    throw new Error(`The setting of ${settingName} does not exist in the Settings class.`);
   }
 
-  if (value !== globals.settings[setting]) {
+  if (value !== globals.settings[settingName]) {
     // We must cast the settings to any since this assignment violates type safety
-    (globals.settings as any)[setting] = value;
+    (globals.settings as any)[settingName] = value;
     globals.conn!.send('setting', {
-      name: setting,
-      value: value.toString(), // The server expects all settings as strings
+      name: settingName,
+      setting: value.toString(), // The server expects the value of all settings as strings
     });
   }
 };

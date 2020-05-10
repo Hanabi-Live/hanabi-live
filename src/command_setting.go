@@ -10,7 +10,7 @@ import (
 // 	Example data:
 // {
 //   name: 'soundMove',
-//   value: 'false',
+//   setting: 'false', // All setting values must be strings
 // }
 func commandSetting(s *Session, d *CommandData) {
 	/*
@@ -43,17 +43,17 @@ func commandSetting(s *Session, d *CommandData) {
 	// Validate the setting value
 	if fieldType == "bool" {
 		// Bools are stored in the database as 0s and 1s
-		if d.Value == "true" {
-			d.Value = "1"
-		} else if d.Value == "false" {
-			d.Value = "0"
+		if d.Setting == "true" {
+			d.Setting = "1"
+		} else if d.Setting == "false" {
+			d.Setting = "0"
 		} else {
 			s.Warning("The setting of \"" + d.Name + "\" " +
 				"must have a value of \"true\" or \"false\".")
 			return
 		}
 	} else if fieldType == "int" {
-		if v, err := strconv.Atoi(d.Value); err != nil {
+		if v, err := strconv.Atoi(d.Setting); err != nil {
 			s.Warning("The setting of \"" + d.Name + "\" must be an integer.")
 			return
 		} else if v < 0 || v > 604800 { // 1 week in seconds
@@ -64,7 +64,7 @@ func commandSetting(s *Session, d *CommandData) {
 			return
 		}
 	} else if fieldType == "float64" {
-		if v, err := strconv.ParseFloat(d.Value, 64); err != nil {
+		if v, err := strconv.ParseFloat(d.Setting, 64); err != nil {
 			s.Warning("The setting of \"" + d.Name + "\" must be an float64.")
 			return
 		} else if v <= 0 || v > 86400 { // 1 day in seconds
@@ -77,7 +77,7 @@ func commandSetting(s *Session, d *CommandData) {
 		Set
 	*/
 
-	if err := models.UserSettings.Set(s.UserID(), toSnakeCase(d.Name), d.Value); err != nil {
+	if err := models.UserSettings.Set(s.UserID(), toSnakeCase(d.Name), d.Setting); err != nil {
 		logger.Error("Failed to set a setting for user \""+s.Username()+"\":", err)
 		s.Error("")
 		return

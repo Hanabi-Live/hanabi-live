@@ -122,7 +122,7 @@ export class Globals {
 
   // Pre-move feature
   queuedAction: Action | null = null;
-  preCluedCard: number | null = null;
+  preCluedCardOrder: number | null = null;
 
   // Pause feature
   paused: boolean = false; // Whether or not the game is currently paused
@@ -219,7 +219,7 @@ export class Globals {
     this.startingTurnTime = 0;
     this.lastTimerUpdateTimeMS = 0;
     this.queuedAction = null;
-    this.preCluedCard = 0;
+    this.preCluedCardOrder = 0;
     this.paused = false;
     this.pausePlayer = '';
     this.pauseQueued = false;

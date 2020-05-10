@@ -6,7 +6,7 @@ import SimpleCard from './SimpleCard';
 export interface Action {
   type: number;
   target: number;
-  clue?: MsgClue;
+  value?: number;
 }
 
 export interface ActionDraw {

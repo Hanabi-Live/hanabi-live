@@ -32,7 +32,7 @@ type ActionTurn struct {
 }
 type ActionClue struct {
 	Type   string `json:"type"`
-	Clue   Clue   `json:"clue"` // Defined in "command.go"
+	Clue   Clue   `json:"clue"`
 	Giver  int    `json:"giver"`
 	List   []int  `json:"list"` // The list of cards that the clue "touches"
 	Target int    `json:"target"`
@@ -108,5 +108,15 @@ func (a *ActionDraw) Scrub(t *Table, userID int) {
 
 		a.Rank = -1
 		a.Suit = -1
+	}
+}
+
+func NewClue(d *CommandData) Clue {
+	return Clue{
+		// A color clue is action type 2
+		// A rank clue is action type 3
+		// Remap these to 0 and 1, respectively
+		Type:  d.Type - 2,
+		Value: d.Value,
 	}
 }

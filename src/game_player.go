@@ -42,19 +42,20 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	// Local variables
 	g := p.Game
 	t := g.Table
+	clue := NewClue(d) // Convert the incoming data to a clue object
 
 	// Add the action to the action log
 	// (in the future, we will delete GameActions and only keep track of GameActions2)
 	var actionType int
-	if d.Clue.Type == clueTypeColor {
-		actionType = actionType2ColorClue
-	} else if d.Clue.Type == clueTypeRank {
-		actionType = actionType2RankClue
+	if clue.Type == clueTypeColor {
+		actionType = actionTypeColorClue
+	} else if clue.Type == clueTypeRank {
+		actionType = actionTypeRankClue
 	}
 	g.Actions2 = append(g.Actions2, &GameAction{
 		Type:   actionType,
 		Target: d.Target,
-		Value:  d.Clue.Value,
+		Value:  clue.Value,
 	})
 
 	// Keep track that someone clued (i.e. doing 1 clue costs 1 "Clue Token")
@@ -65,28 +66,21 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 		// On the client, clues are shown to the user to be divided by two
 		g.ClueTokens--
 	}
-	g.LastClueTypeGiven = d.Clue.Type
+	g.LastClueTypeGiven = clue.Type
 
 	// Apply the positive and negative clues to the cards in the hand
 	p2 := g.Players[d.Target] // The target of the clue
 	cardsTouched := make([]int, 0)
 	for _, c := range p2.Hand {
-		positive := false
-		if variantIsCardTouched(g.Options.Variant, d.Clue, c) {
+		if variantIsCardTouched(g.Options.Variant, clue, c) {
 			c.Touched = true
 			cardsTouched = append(cardsTouched, c.Order)
-			positive = true
 		}
-		c.Clues = append(c.Clues, &CardClue{
-			Type:     d.Clue.Type,
-			Value:    d.Clue.Value,
-			Positive: positive,
-		})
 	}
 
 	g.Actions = append(g.Actions, ActionClue{
 		Type:   "clue",
-		Clue:   d.Clue,
+		Clue:   clue,
 		Giver:  p.Index,
 		List:   cardsTouched,
 		Target: d.Target,
@@ -106,10 +100,10 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	}
 	text += words[len(cardsTouched)] + " "
 
-	if d.Clue.Type == clueTypeRank {
-		text += strconv.Itoa(d.Clue.Value)
-	} else if d.Clue.Type == clueTypeColor {
-		text += variants[g.Options.Variant].ClueColors[d.Clue.Value]
+	if clue.Type == clueTypeRank {
+		text += strconv.Itoa(clue.Value)
+	} else if clue.Type == clueTypeColor {
+		text += variants[g.Options.Variant].ClueColors[clue.Value]
 	}
 	if len(cardsTouched) != 1 {
 		text += "s"
@@ -130,10 +124,10 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 		if strings.HasPrefix(g.Options.Variant, "Cow & Pig") {
 			// We want color clues to correspond to the first animal since color buttons are above
 			// number buttons, even though rank comes first in the enum
-			if d.Clue.Type == clueTypeRank {
+			if clue.Type == clueTypeRank {
 				text += "oinks"
 				g.Sound = "oink"
-			} else if d.Clue.Type == clueTypeColor {
+			} else if clue.Type == clueTypeColor {
 				text += "moos"
 				g.Sound = "moo"
 			}
@@ -194,7 +188,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	// Add the action to the action log
 	// (in the future, we will delete GameActions and only keep track of GameActions2)
 	g.Actions2 = append(g.Actions2, &GameAction{
-		Type:   actionType2Play,
+		Type:   actionTypePlay,
 		Target: c.Order,
 	})
 
@@ -375,7 +369,7 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 	if !c.Failed {
 		// If this is a failed play, then we already added the action in the "PlayCard()"" function
 		g.Actions2 = append(g.Actions2, &GameAction{
-			Type:   actionType2Discard,
+			Type:   actionTypeDiscard,
 			Target: c.Order,
 		})
 	}

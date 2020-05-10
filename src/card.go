@@ -11,7 +11,6 @@ type Card struct {
 	Rank      int
 	Slot      int // Assigned after the card is removed from a player's hand
 	Touched   bool
-	Clues     []*CardClue // This is a list that includes both positive and negative clues
 	Discarded bool
 	Played    bool
 	Failed    bool
@@ -26,7 +25,6 @@ func NewCard(suit int, rank int) *Card {
 		Suit: suit,
 		Rank: rank,
 		// We can't set the order here because the deck will be shuffled later
-		Clues: make([]*CardClue, 0),
 	}
 
 	return c

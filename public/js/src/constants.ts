@@ -28,14 +28,14 @@ export const FADE_TIME = 350; // In milliseconds
 
 // These constants much match their server-side counterparts
 export const ACTION = {
-  CLUE: 0,
-  PLAY: 1,
-  DISCARD: 2,
-  DECKPLAY: 3,
+  PLAY: 0,
+  DISCARD: 1,
+  COLOR_CLUE: 2,
+  RANK_CLUE: 3,
 };
 export const CLUE_TYPE = {
-  RANK: 0,
-  COLOR: 1,
+  COLOR: 0,
+  RANK: 1,
 };
 export const REPLAY_ACTION_TYPE = {
   TURN: 0,

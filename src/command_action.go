@@ -6,21 +6,36 @@ import (
 	"time"
 )
 
+var (
+	actionFunctions map[int]func(*Session, *CommandData, *Game, *GamePlayer) bool
+)
+
+func actionsFunctionsInit() {
+	actionFunctions = map[int]func(*Session, *CommandData, *Game, *GamePlayer) bool{
+		actionTypePlay:      commandActionPlay,
+		actionTypeDiscard:   commandActionDiscard,
+		actionTypeColorClue: commandActionClue,
+		actionTypeRankClue:  commandActionClue,
+		actionTypeGameOver:  commandActionGameOver,
+	}
+}
+
 // commandAction is sent when the user performs an in-game action
 //
 // Example data:
 // {
 //   tableID: 5,
-//   // If a play or a discard, then the order of the the card that was played/discarded
-//   // If a color clue or a number clue, then the index of the player that received the clue
-//   type: 0, // Corresponds to "actionType" in "constants.go"
+//   // Corresponds to "actionType" in "constants.go"
+//   type: 0,
+//   // If a play or a discard, corresponds to the order of the the card that was played/discarded
+//   // If a clue, correponds to the index of the player that received the clue
+//   // If a game over, correponds to the index of the player that caused the game to end
 //   target: 1,
-//   clue: { // Not present if the type is 1 or 2
-//     type: 0, // corresponds to "clueType" in "constants.go"
-//     // If a color clue, then 0 if red, 1 if yellow, etc.
-//     // If a rank clue, then 1 if 1, 2 if 2, etc.
-//     value: 1,
-//   },
+//   // Optional; only present if a clue
+//   // If a color clue, then 0 if red, 1 if yellow, etc.
+//   // If a rank clue, then 1 if 1, 2 if 2, etc.
+//   // If a game over, then the value corresponds to the "endCondition" values in "constants.go"
+//   value: 0,
 // }
 func commandAction(s *Session, d *CommandData) {
 	/*
@@ -53,7 +68,7 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Validate that it is this player's turn
-	if g.ActivePlayer != i && d.Type != actionTypeIdleLimitReached {
+	if g.ActivePlayer != i && d.Type != actionTypeGameOver {
 		s.Warning("It is not your turn, so you cannot perform an action.")
 		g.InvalidActionOccurred = true
 		return
@@ -90,214 +105,23 @@ func commandAction(s *Session, d *CommandData) {
 		Action
 	*/
 
+	// Remove the double discard state
+	g.DoubleDiscard = false
+
 	// Remove the "fail#" and "blind#" states
 	g.Sound = ""
 
 	// Start the idle timeout
-	// (but don't update the idle variable if we are ending the game due to idleness)
-	if d.Type != actionTypeIdleLimitReached {
+	// (but don't update the idle variable if we are ending the game)
+	if d.Type != actionTypeGameOver {
 		go t.CheckIdle()
 	}
 
 	// Do different tasks depending on the action
-	doubleDiscard := false
-	if d.Type == actionTypeClue {
-		// Validate that the target of the clue is sane
-		if d.Target < 0 || d.Target > len(g.Players)-1 {
-			s.Warning("That is an invalid clue target.")
-			g.InvalidActionOccurred = true
+	if actionFunction, ok := actionFunctions[d.Type]; ok {
+		if !actionFunction(s, d, g, p) {
 			return
 		}
-
-		// Validate that the player is not giving a clue to themselves
-		if g.ActivePlayer == d.Target {
-			s.Warning("You cannot give a clue to yourself.")
-			g.InvalidActionOccurred = true
-			return
-		}
-
-		// Validate that there are clues available to use
-		if g.ClueTokens == 0 {
-			s.Warning("You cannot give a clue when the team has 0 clues left.")
-			g.InvalidActionOccurred = true
-			return
-		}
-		if strings.HasPrefix(t.Options.Variant, "Clue Starved") && g.ClueTokens == 1 {
-			s.Warning("You cannot give a clue when the team only has 0.5 clues.")
-			g.InvalidActionOccurred = true
-			return
-		}
-
-		// Validate that the clue type is sane
-		if d.Clue.Type < clueTypeRank || d.Clue.Type > clueTypeColor {
-			s.Warning("That is an invalid clue type.")
-			g.InvalidActionOccurred = true
-			return
-		}
-
-		// Validate that rank clues are valid
-		if d.Clue.Type == clueTypeRank {
-			valid := false
-			for _, rank := range variants[t.Options.Variant].ClueRanks {
-				if rank == d.Clue.Value {
-					valid = true
-					break
-				}
-			}
-			if !valid {
-				s.Warning("That is an invalid rank clue.")
-				g.InvalidActionOccurred = true
-				return
-			}
-		}
-
-		// Validate that the color clues are valid
-		if d.Clue.Type == clueTypeColor &&
-			(d.Clue.Value < 0 || d.Clue.Value > len(variants[t.Options.Variant].ClueColors)-1) {
-
-			s.Warning("That is an invalid color clue.")
-			g.InvalidActionOccurred = true
-			return
-		}
-
-		// Validate special variant restrictions
-		if strings.HasPrefix(g.Options.Variant, "Alternating Clues") &&
-			d.Clue.Type == g.LastClueTypeGiven {
-
-			s.Warning("You cannot give two clues of the same time in a row in this variant.")
-			g.InvalidActionOccurred = true
-			return
-		}
-
-		// Validate "Detrimental Character Assignment" restrictions
-		if characterCheckClue(s, d, g, p) {
-			g.InvalidActionOccurred = true
-			return
-		}
-
-		// Validate that the clue touches at least one card
-		p2 := g.Players[d.Target] // The target of the clue
-		touchedAtLeastOneCard := false
-		for _, c := range p2.Hand {
-			if variantIsCardTouched(t.Options.Variant, d.Clue, c) {
-				touchedAtLeastOneCard = true
-				break
-			}
-		}
-		if !touchedAtLeastOneCard &&
-			// Make an exception if they have the optional setting for "Empty Clues" turned on
-			!t.Options.EmptyClues &&
-			// Make an exception for variants where color clues are always allowed
-			(!variants[t.Options.Variant].ColorCluesTouchNothing || d.Clue.Type != clueTypeColor) &&
-			// Make an exception for variants where rank clues are always allowed
-			(!variants[t.Options.Variant].RankCluesTouchNothing || d.Clue.Type != clueTypeRank) &&
-			// Make an exception for certain characters
-			!characterEmptyClueAllowed(d, g, p) {
-
-			s.Warning("You cannot give a clue that touches 0 cards in the hand.")
-			g.InvalidActionOccurred = true
-			return
-		}
-
-		p.GiveClue(d)
-
-		// Mark that the blind-play streak has ended
-		g.BlindPlays = 0
-
-		// Mark that the misplay streak has ended
-		g.Misplays = 0
-	} else if d.Type == actionTypePlay {
-		// Validate that the card is in their hand
-		if !p.InHand(d.Target) {
-			s.Warning("You cannot play a card that is not in your hand.")
-			g.InvalidActionOccurred = true
-			return
-		}
-
-		// Validate "Detrimental Character Assignment" restrictions
-		if characterCheckPlay(s, d, g, p) {
-			g.InvalidActionOccurred = true
-			return
-		}
-
-		c := p.RemoveCard(d.Target)
-		doubleDiscard = p.PlayCard(c)
-		p.DrawCard()
-	} else if d.Type == actionTypeDiscard {
-		// Validate that the card is in their hand
-		if !p.InHand(d.Target) {
-			s.Warning("You cannot play a card that is not in your hand.")
-			g.InvalidActionOccurred = true
-			return
-		}
-
-		// Validate that the team is not at the maximum amount of clues
-		// (the client should enforce this, but do a check just in case)
-		clueLimit := maxClueNum
-		if strings.HasPrefix(t.Options.Variant, "Clue Starved") {
-			clueLimit *= 2
-		}
-		if g.ClueTokens == clueLimit {
-			s.Warning("You cannot discard while the team has " + strconv.Itoa(maxClueNum) +
-				" clues.")
-			g.InvalidActionOccurred = true
-			return
-		}
-
-		// Validate "Detrimental Character Assignment" restrictions
-		if characterCheckDiscard(s, g, p) {
-			g.InvalidActionOccurred = true
-			return
-		}
-
-		g.ClueTokens++
-		c := p.RemoveCard(d.Target)
-		doubleDiscard = p.DiscardCard(c)
-		characterShuffle(g, p)
-		p.DrawCard()
-
-		// Mark that the blind-play streak has ended
-		g.BlindPlays = 0
-
-		// Mark that the misplay streak has ended
-		g.Misplays = 0
-	} else if d.Type == actionTypeDeckPlay {
-		// Validate that the game type allows deck plays
-		if !t.Options.DeckPlays {
-			s.Warning("Deck plays are disabled for this game.")
-			g.InvalidActionOccurred = true
-			return
-		}
-
-		// Validate that there is only 1 card left
-		// (the client should enforce this, but do a check just in case)
-		if g.DeckIndex != len(g.Deck)-1 {
-			s.Warning("You cannot blind play the deck until there is only 1 card left.")
-			g.InvalidActionOccurred = true
-			return
-		}
-
-		p.PlayDeck()
-	} else if d.Type == actionTypeTimeLimitReached {
-		// This is a special action type sent by the server to itself when a player runs out of time
-		g.Strikes = 3
-		g.EndCondition = endConditionTimeout
-		g.EndPlayer = g.ActivePlayer
-		g.Actions = append(g.Actions, ActionText{
-			Type: "text",
-			Text: p.Name + " ran out of time!",
-		})
-		t.NotifyGameAction()
-	} else if d.Type == actionTypeIdleLimitReached {
-		// This is a special action type sent by the server to itself when
-		// the game has been idle for too long
-		g.Strikes = 3
-		g.EndCondition = endConditionIdleTimeout
-		g.Actions = append(g.Actions, ActionText{
-			Type: "text",
-			Text: "Players were idle for too long.",
-		})
-		t.NotifyGameAction()
 	} else {
 		s.Warning("That is not a valid action type.")
 		g.InvalidActionOccurred = true
@@ -308,13 +132,12 @@ func commandAction(s *Session, d *CommandData) {
 	characterPostAction(d, g, p)
 
 	// Send a message about the current status
-	t.NotifyStatus(doubleDiscard)
+	t.NotifyStatus(g.DoubleDiscard)
 
 	// Adjust the timer for the player that just took their turn
-	// (if the game is over now due to a player running out of time, we don't
-	// need to adjust the timer because we already set it to 0 in the
-	// "checkTimer" function)
-	if d.Type != actionTypeTimeLimitReached {
+	// (if the game is over now due to a player running out of time, we don't need to adjust the
+	// timer because we already set it to 0 in the "checkTimer" function)
+	if d.Type != actionTypeGameOver {
 		p.Time -= time.Since(g.DatetimeTurnBegin)
 		// (in non-timed games,
 		// "Time" will decrement into negative numbers to show how much time they are taking)
@@ -414,8 +237,216 @@ func commandAction(s *Session, d *CommandData) {
 			np.RequestedPause = false
 			commandPause(nps, &CommandData{
 				TableID: t.ID,
-				Value:   "pause",
+				Setting: "pause",
 			})
 		}
 	}
+}
+
+func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
+	// Validate "Detrimental Character Assignment" restrictions
+	if characterCheckPlay(s, d, g, p) {
+		g.InvalidActionOccurred = true
+		return false
+	}
+
+	// Validate deck plays
+	if g.Options.DeckPlays &&
+		g.DeckIndex == len(g.Deck)-1 && // There is 1 card left in the deck
+		d.Target == g.DeckIndex { // The target is the last card left in the deck
+
+		p.PlayDeck()
+		return true
+	}
+
+	// Validate that the card is in their hand
+	if !p.InHand(d.Target) {
+		s.Warning("You cannot play a card that is not in your hand.")
+		g.InvalidActionOccurred = true
+		return false
+	}
+
+	c := p.RemoveCard(d.Target)
+	g.DoubleDiscard = p.PlayCard(c)
+	p.DrawCard()
+
+	return true
+}
+
+func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
+	// Validate that the card is in their hand
+	if !p.InHand(d.Target) {
+		s.Warning("You cannot play a card that is not in your hand.")
+		g.InvalidActionOccurred = true
+		return false
+	}
+
+	// Validate that the team is not at the maximum amount of clues
+	// (the client should enforce this, but do a check just in case)
+	clueLimit := maxClueNum
+	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
+		clueLimit *= 2
+	}
+	if g.ClueTokens == clueLimit {
+		s.Warning("You cannot discard while the team has " + strconv.Itoa(maxClueNum) +
+			" clues.")
+		g.InvalidActionOccurred = true
+		return false
+	}
+
+	// Validate "Detrimental Character Assignment" restrictions
+	if characterCheckDiscard(s, g, p) {
+		g.InvalidActionOccurred = true
+		return false
+	}
+
+	g.ClueTokens++
+	c := p.RemoveCard(d.Target)
+	g.DoubleDiscard = p.DiscardCard(c)
+	characterShuffle(g, p)
+	p.DrawCard()
+
+	// Mark that the blind-play streak has ended
+	g.BlindPlays = 0
+
+	// Mark that the misplay streak has ended
+	g.Misplays = 0
+
+	return true
+}
+
+func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
+	// Validate that the target of the clue is sane
+	if d.Target < 0 || d.Target > len(g.Players)-1 {
+		s.Warning("That is an invalid clue target.")
+		g.InvalidActionOccurred = true
+		return false
+	}
+
+	// Validate that the player is not giving a clue to themselves
+	if g.ActivePlayer == d.Target {
+		s.Warning("You cannot give a clue to yourself.")
+		g.InvalidActionOccurred = true
+		return false
+	}
+
+	// Validate that there are clues available to use
+	if g.ClueTokens == 0 {
+		s.Warning("You cannot give a clue when the team has 0 clues left.")
+		g.InvalidActionOccurred = true
+		return false
+	}
+	if strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens == 1 {
+		s.Warning("You cannot give a clue when the team only has 0.5 clues.")
+		g.InvalidActionOccurred = true
+		return false
+	}
+
+	// Convert the incoming data to a clue object
+	clue := NewClue(d)
+
+	// Validate the clue value
+	if clue.Type == clueTypeColor {
+		if clue.Value < 0 || clue.Value > len(variants[g.Options.Variant].ClueColors)-1 {
+			s.Warning("You cannot give a color clue with a value of " +
+				"\"" + strconv.Itoa(clue.Value) + "\".")
+			g.InvalidActionOccurred = true
+			return false
+		}
+	} else if clue.Type == clueTypeRank {
+		if !intInSlice(clue.Value, variants[g.Options.Variant].ClueRanks) {
+			s.Warning("You cannot give a rank clue with a value of " +
+				"\"" + strconv.Itoa(clue.Value) + "\".")
+			g.InvalidActionOccurred = true
+			return false
+		}
+	} else {
+		s.Warning("The clue type of " + strconv.Itoa(clue.Type) + " is invalid..")
+		g.InvalidActionOccurred = true
+		return false
+	}
+
+	// Validate special variant restrictions
+	if strings.HasPrefix(g.Options.Variant, "Alternating Clues") &&
+		clue.Type == g.LastClueTypeGiven {
+
+		s.Warning("You cannot give two clues of the same time in a row in this variant.")
+		g.InvalidActionOccurred = true
+		return false
+	}
+
+	// Validate "Detrimental Character Assignment" restrictions
+	if characterValidateClue(s, d, g, p) {
+		g.InvalidActionOccurred = true
+		return false
+	}
+
+	// Validate that the clue touches at least one card
+	p2 := g.Players[d.Target] // The target of the clue
+	touchedAtLeastOneCard := false
+	for _, c := range p2.Hand {
+		if variantIsCardTouched(g.Options.Variant, clue, c) {
+			touchedAtLeastOneCard = true
+			break
+		}
+	}
+	if !touchedAtLeastOneCard &&
+		// Make an exception if they have the optional setting for "Empty Clues" turned on
+		!g.Options.EmptyClues &&
+		// Make an exception for variants where color clues are always allowed
+		(!variants[g.Options.Variant].ColorCluesTouchNothing || clue.Type != clueTypeColor) &&
+		// Make an exception for variants where rank clues are always allowed
+		(!variants[g.Options.Variant].RankCluesTouchNothing || clue.Type != clueTypeRank) &&
+		// Make an exception for certain characters
+		!characterEmptyClueAllowed(d, g, p) {
+
+		s.Warning("You cannot give a clue that touches 0 cards in the hand.")
+		g.InvalidActionOccurred = true
+		return false
+	}
+
+	p.GiveClue(d)
+
+	// Mark that the blind-play streak has ended
+	g.BlindPlays = 0
+
+	// Mark that the misplay streak has ended
+	g.Misplays = 0
+
+	return true
+}
+
+func commandActionGameOver(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
+	// Local variables
+	t := g.Table
+
+	// A "gameOver" action is a special action type sent by the server to itself when it needs to
+	// end an ongoing game
+	// The value will correspond to the end condition (see "endCondition" in "constants.go")
+	// Validate the value
+	if d.Value != endConditionTimeout &&
+		d.Value != endConditionIdleTimeout {
+
+		s.Warning("That is not a valid value for the game over action.")
+		g.InvalidActionOccurred = true
+		return false
+	}
+
+	g.Strikes = 3
+	g.EndCondition = d.Value
+	g.EndPlayer = g.ActivePlayer
+
+	var text string
+	if d.Value == endConditionTimeout {
+		text = p.Name + " ran out of time!"
+	} else if d.Value == endConditionIdleTimeout {
+		text = "Players were idle for too long."
+	}
+	g.Actions = append(g.Actions, ActionText{
+		Type: "text",
+		Text: text,
+	})
+	t.NotifyGameAction()
+
+	return true
 }

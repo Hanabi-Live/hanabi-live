@@ -1401,19 +1401,19 @@ const drawTimers = () => {
       return;
     }
 
-    let value;
+    let setting;
     if (globals.ourTurn) {
-      value = 'pause';
+      setting = 'pause';
     } else if (globals.pauseQueued) {
-      value = 'pause-unqueue';
+      setting = 'pause-unqueue';
       globals.pauseQueued = false;
     } else {
-      value = 'pause-queue';
+      setting = 'pause-queue';
       globals.pauseQueued = true;
     }
     globals.lobby.conn!.send('pause', {
       tableID: globals.lobby.tableID,
-      value,
+      setting,
     });
 
     const wasVisible = globals.elements.timer1Circle!.visible();
@@ -1873,7 +1873,7 @@ const drawPauseArea = () => {
   globals.elements.pauseButton.on('click tap', () => {
     globals.lobby.conn!.send('pause', {
       tableID: globals.lobby.tableID,
-      value: 'unpause',
+      setting: 'unpause',
     });
   });
   globals.elements.pauseArea.add(globals.elements.pauseButton as any);

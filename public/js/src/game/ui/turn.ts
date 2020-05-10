@@ -25,18 +25,21 @@ export const begin = () => {
     globals.elements.premoveCancelButton!.hide();
     globals.layers.UI.batchDraw();
 
-    if (globals.queuedAction.type === ACTION.CLUE) {
+    if (
+      globals.queuedAction.type === ACTION.COLOR_CLUE
+      || globals.queuedAction.type === ACTION.RANK_CLUE
+    ) {
       // Prevent pre-cluing if the team is now at 0 clues
       if (globals.clues === 0) {
         return;
       }
 
       // Prevent pre-cluing if the card is no longer in the hand
-      if (globals.preCluedCard === null) {
-        throw new Error('"globals.preCluedCard" was null in the "turn.begin()" function.');
+      if (globals.preCluedCardOrder === null) {
+        throw new Error('"globals.preCluedCardOrder" was null in the "turn.begin()" function.');
       }
-      const card = globals.deck[globals.preCluedCard];
-      if (globals.queuedAction.type === ACTION.CLUE && (card.isPlayed || card.isDiscarded)) {
+      const card = globals.deck[globals.preCluedCardOrder];
+      if (card.isPlayed || card.isDiscarded) {
         return;
       }
     }
@@ -56,11 +59,11 @@ export const begin = () => {
         tableID: globals.lobby.tableID,
         type: globals.queuedAction.type,
         target: globals.queuedAction.target,
-        clue: globals.queuedAction.clue,
+        value: globals.queuedAction.value,
       });
 
       globals.queuedAction = null;
-      globals.preCluedCard = null;
+      globals.preCluedCardOrder = null;
       hideClueUIAndDisableDragging();
     }, 100);
   }
@@ -144,18 +147,21 @@ export const end = (actionObject: Action) => {
       tableID: globals.lobby.tableID,
       type: actionObject.type,
       target: actionObject.target,
-      clue: actionObject.clue,
+      value: actionObject.value,
     });
     hideClueUIAndDisableDragging();
   } else {
     globals.queuedAction = actionObject;
     let text = 'Cancel Pre-';
-    if (globals.queuedAction.type === ACTION.CLUE) {
-      text += 'Clue';
-    } else if (globals.queuedAction.type === ACTION.PLAY) {
+    if (globals.queuedAction.type === ACTION.PLAY) {
       text += 'Play';
     } else if (globals.queuedAction.type === ACTION.DISCARD) {
       text += 'Discard';
+    } else if (
+      globals.queuedAction.type === ACTION.COLOR_CLUE
+      || globals.queuedAction.type === ACTION.RANK_CLUE
+    ) {
+      text += 'Clue';
     }
     globals.elements.premoveCancelButton!.text(text);
     globals.elements.premoveCancelButton!.show();
