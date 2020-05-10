@@ -200,6 +200,24 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
       return;
     }
 
+    if (command === 'friends') {
+      let friendsMsg;
+      if (globals.friends.length === 0) {
+        friendsMsg = 'Currently, you do not have any friends on your friends list.';
+      } else {
+        friendsMsg = `Current friends: ${globals.friends.join(', ')}`;
+      }
+      add({
+        msg: friendsMsg,
+        who: '',
+        server: true,
+        datetime: new Date().getTime(),
+        room,
+        recipient: '', // This is needed to prevent the message from being viewed as a PM
+      }, false);
+      return;
+    }
+
     if (command === 'unfriend') {
       // Validate that the format of the command is correct
       if (args.length < 1) {
