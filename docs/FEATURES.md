@@ -14,7 +14,7 @@
 6. [Keyboard Shortcuts](#keyboard-shortcuts)
 7. [Similar Deals and Competitive Play](#similar-deals-and-competitive-play)
 8. [Chat](#chat)
-9. [Friends](#friends]
+9. [Friends](#friends)
 10. [Research & Bots](#research--bots)
 
 <br />
