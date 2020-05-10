@@ -75,8 +75,8 @@ export default class ColorButton extends Konva.Group {
           },
           stroke: 'black',
           strokeWidth: 5,
-          sceneFunc: (ctx: any) => { // Konva.Context does not exist for some reason
-            drawPip(ctx, suit, false, 'white');
+          sceneFunc: (ctx: any) => {
+            drawPip(ctx, suit, false);
           },
           listening: false,
         });
