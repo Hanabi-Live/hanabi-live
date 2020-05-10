@@ -691,7 +691,14 @@ commands.set('spectators', (data: SpectatorsData) => {
     globals.elements.spectatorsNumLabel.text(data.names.length.toString());
 
     // Build the string that shows all the names
-    const nameEntries = data.names.map((name) => `<li>${name}</li>`).join('');
+    let nameEntries = '';
+    for (const name of data.names) {
+      if (globals.lobby.friends.includes(name)) {
+        nameEntries += `<li><span class="friend">${name}</span></li>`;
+      } else {
+        nameEntries += `<li>${name}</li>`;
+      }
+    }
     let content = '<strong>';
     if (globals.replay) {
       content += 'Shared Replay Viewers';
