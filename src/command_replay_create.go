@@ -540,7 +540,7 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 			// A normal action (e.g. play, discard, or clue)
 			commandAction(p.Session, &CommandData{
 				TableID: t.ID,
-				Type:    actionTypeColorClue,
+				Type:    action.Type,
 				Target:  action.Target,
 				Value:   action.Value,
 			})
