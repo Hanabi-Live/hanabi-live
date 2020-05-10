@@ -47,6 +47,16 @@ func chatCommandInit() {
 	chatCommandMap["removenext"] = chatUnnext
 	chatCommandMap["list"] = chatList
 	// (there are additional Discord-only commands in "discord.go")
+
+	// Error handlers for website-only commands
+	chatCommandMap["pm"] = chatCommandWebsiteOnly
+	chatCommandMap["w"] = chatCommandWebsiteOnly
+	chatCommandMap["whisper"] = chatCommandWebsiteOnly
+	chatCommandMap["msg"] = chatCommandWebsiteOnly
+	chatCommandMap["friend"] = chatCommandWebsiteOnly
+	chatCommandMap["friends"] = chatCommandWebsiteOnly
+	chatCommandMap["unfriend"] = chatCommandWebsiteOnly
+	chatCommandMap["version"] = chatCommandWebsiteOnly
 }
 
 func chatCommand(s *Session, d *CommandData, t *Table) {
@@ -70,4 +80,9 @@ func chatCommand(s *Session, d *CommandData, t *Table) {
 	} else {
 		chatCommandFunction(s, d, t)
 	}
+}
+
+func chatCommandWebsiteOnly(s *Session, d *CommandData, t *Table) {
+	chatServerSend("You cannot perform that command from Discord; "+
+		"please use the website instead.", d.Room)
 }
