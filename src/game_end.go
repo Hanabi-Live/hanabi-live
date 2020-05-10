@@ -31,7 +31,7 @@ func (g *Game) End() {
 		Type: "deckOrder",
 		Deck: deck,
 	})
-	t.NotifyAction()
+	t.NotifyGameAction()
 
 	// There will be no times associated with a replay, so don't bother with the rest of the code
 	if g.Options.Replay {
@@ -52,7 +52,7 @@ func (g *Game) End() {
 			Type: "text",
 			Text: text,
 		})
-		t.NotifyAction()
+		t.NotifyGameAction()
 		logger.Info(t.GetName() + text)
 	}
 
@@ -63,7 +63,7 @@ func (g *Game) End() {
 		Type: "text",
 		Text: text,
 	})
-	t.NotifyAction()
+	t.NotifyGameAction()
 	logger.Info(t.GetName() + text)
 
 	// In speedruns, send a text message to show how close to the record they got
@@ -97,7 +97,7 @@ func (g *Game) End() {
 				Type: "text",
 				Text: text,
 			})
-			t.NotifyAction()
+			t.NotifyGameAction()
 			logger.Info(t.GetName() + text)
 
 			text = "Congratulations on a new world record!"
@@ -108,7 +108,7 @@ func (g *Game) End() {
 				Type: "text",
 				Text: text,
 			})
-			t.NotifyAction()
+			t.NotifyGameAction()
 			logger.Info(t.GetName() + text)
 		}
 	}

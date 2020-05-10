@@ -3,13 +3,13 @@
 // Imports
 import { CLUE_TYPE, REPLAY_ARROW_ORDER, VARIANTS } from '../../constants';
 import * as sentry from '../../sentry';
+import action from './action';
 import * as arrows from './arrows';
 import ClockData from './ClockData';
 import fadeCheck from './fadeCheck';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as notes from './notes';
-import notify from './notify';
 import pause from './pause';
 import * as replay from './replay';
 import SpectatorNote from './SpectatorNote';
@@ -110,8 +110,8 @@ commands.set('gameOver', () => {
   globals.gameOver = false;
 
   // If the user is in an in-game replay when the game ends, we need to jerk them away from it
-  // and go to the end of the game. This is because we need to process all of the queued "notify"
-  // messages. (Otherwise, the code will try to "reveal" cards that are undefined.)
+  // and go to the end of the game. This is because we need to process all of the queued "action"
+  // messages (otherwise, the code will try to "reveal" cards that might be undefined)
 
   // The final turn displays how long everyone took,
   // so we want to go to the turn before that, which we recorded earlier
@@ -136,14 +136,14 @@ commands.set('gameOver', () => {
 });
 
 commands.set('hypoAction', (data: string) => {
-  const notifyMessage = JSON.parse(data);
+  const actionMessage = JSON.parse(data);
 
   // We need to save this game state change for the purposes of the in-game hypothetical
-  globals.hypoActions.push(notifyMessage);
+  globals.hypoActions.push(actionMessage);
 
-  notify(notifyMessage);
+  action(actionMessage);
 
-  if (notifyMessage.type === 'turn') {
+  if (actionMessage.type === 'turn') {
     hypothetical.beginTurn();
   }
 });
@@ -336,22 +336,30 @@ commands.set('noteListPlayer', (data: NoteListPlayerData) => {
 });
 
 // Used when the game state changes
-commands.set('notify', (data: any) => {
+interface GameActionData {
+  tableID: number,
+  action: any,
+}
+commands.set('gameAction', (data: GameActionData) => {
+  processNewAction(data.action);
+});
+
+const processNewAction = (actionMessage: any) => {
   // Update the state table
-  const stateChangeFunction = stateChange.get(data.type);
+  const stateChangeFunction = stateChange.get(actionMessage.type);
   if (typeof stateChangeFunction !== 'undefined') {
-    stateChangeFunction(data);
+    stateChangeFunction(actionMessage);
   }
 
   // We need to save this game state change for the purposes of the in-game replay
-  globals.replayLog.push(data);
+  globals.replayLog.push(actionMessage);
 
-  if (data.type === 'turn') {
+  if (actionMessage.type === 'turn') {
     // Keep track of whether it is our turn or not
-    globals.ourTurn = data.who === globals.playerUs && !globals.spectating;
+    globals.ourTurn = actionMessage.who === globals.playerUs && !globals.spectating;
 
     // We need to update the replay slider, based on the new amount of turns
-    globals.replayMax = data.num;
+    globals.replayMax = actionMessage.num;
     if (globals.inReplay) {
       replay.adjustShuttles(false);
       globals.elements.replayForwardButton!.setEnabled(true);
@@ -363,15 +371,15 @@ commands.set('notify', (data: any) => {
     if (!globals.replay && globals.replayMax > 0) {
       globals.elements.replayButton!.setEnabled(true);
     }
-  } else if (data.type === 'clue' && globals.variant.name.startsWith('Alternating Clues')) {
-    if (data.clue.type === CLUE_TYPE.RANK) {
+  } else if (actionMessage.type === 'clue' && globals.variant.name.startsWith('Alternating Clues')) {
+    if (actionMessage.clue.type === CLUE_TYPE.RANK) {
       for (const button of globals.elements.colorClueButtons) {
         button.show();
       }
       for (const button of globals.elements.rankClueButtons) {
         button.hide();
       }
-    } else if (data.clue.type === CLUE_TYPE.COLOR) {
+    } else if (actionMessage.clue.type === CLUE_TYPE.COLOR) {
       for (const button of globals.elements.colorClueButtons) {
         button.hide();
       }
@@ -386,19 +394,23 @@ commands.set('notify', (data: any) => {
     !globals.inReplay // Unless we are in an in-game replay
     && !globals.gameOver // Unless it is the miscellaneous data sent at the end of a game
   ) {
-    notify(data);
+    action(actionMessage);
   }
 
   // If the game is over,
   // don't immediately draw the subsequent turns that contain the game times
-  if (!globals.gameOver && data.type === 'turn' && data.who === -1) {
+  if (!globals.gameOver && actionMessage.type === 'turn' && actionMessage.who === -1) {
     globals.gameOver = true;
     globals.finalReplayPos = globals.replayLog.length;
-    globals.finalReplayTurn = data.num;
+    globals.finalReplayTurn = actionMessage.num;
   }
-});
+};
 
-commands.set('notifyList', (dataList: any[]) => {
+interface GameActionListData {
+  tableID: number,
+  list: any[],
+}
+commands.set('gameActionList', (data: GameActionListData) => {
   // Initialize the state table
   globals.state.deckSize = stats.getTotalCardsInTheDeck(globals.variant);
   globals.state.maxScore = globals.variant.maxScore;
@@ -411,17 +423,17 @@ commands.set('notifyList', (dataList: any[]) => {
   }
 
   // Play through all of the turns
-  for (const data of dataList) {
-    commands.get('notify')(data);
+  for (const actionMessage of data.list) {
+    processNewAction(actionMessage);
 
     // Some specific messages contain global state information that we need to record
     // (since we might be in a replay that is starting on the first turn,
-    // the respective notify functions will not be reached until
+    // the respective action functions will not be reached until
     // we actually progress to that turn of the replay)
-    if (data.type === 'strike') {
+    if (actionMessage.type === 'strike') {
       // Record the turns that the strikes happen
       // (or else clicking on the strike squares won't work on a freshly initialized replay)
-      strikeRecord(data);
+      strikeRecord(actionMessage);
     }
   }
 

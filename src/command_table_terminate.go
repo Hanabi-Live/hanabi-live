@@ -74,7 +74,7 @@ func terminate(t *Table, username string, endPlayerIndex int) {
 		Type: "text",
 		Text: text,
 	})
-	t.NotifyAction()
+	t.NotifyGameAction()
 	g.Turn++
 	t.NotifyTurn()
 

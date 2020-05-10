@@ -1,4 +1,4 @@
-// "notify" WebSocket commands communicate a change in the game state
+// The "gameAction" WebSocket command communicate a change in the game state
 
 // Imports
 import Konva from 'konva';
@@ -34,7 +34,7 @@ import strikeRecord from './strikeRecord';
 import updateCurrentPlayerArea from './updateCurrentPlayerArea';
 
 // The server has sent us a new game action
-// (either during an ongoing game or as part of a big list of notifies sent upon loading a new
+// (either during an ongoing game or as part of a big list that was sent upon loading a new
 // game/replay)
 export default (data: any) => {
   // If a user is editing a note and an action in the game happens,
@@ -49,17 +49,17 @@ export default (data: any) => {
     globals.activeHover = null;
   }
 
-  const notifyFunction = notifyFunctions.get(data.type);
-  if (typeof notifyFunction === 'undefined') {
-    throw new Error(`A WebSocket notify function for the "${data.type}" command is not defined.`);
+  const actionFunction = actionFunctions.get(data.type);
+  if (typeof actionFunction === 'undefined') {
+    throw new Error(`A WebSocket action function for "${data.type}" is not defined.`);
   }
-  notifyFunction(data);
+  actionFunction(data);
 };
 
 // Define a command handler map
-const notifyFunctions = new Map();
+const actionFunctions = new Map();
 
-notifyFunctions.set('clue', (data: ActionClue) => {
+actionFunctions.set('clue', (data: ActionClue) => {
   // The clue comes from the server as an integer, so convert it to an object
   const clue = msgClueToClue(data.clue, globals.variant);
 
@@ -170,16 +170,16 @@ notifyFunctions.set('clue', (data: ActionClue) => {
   }
 });
 
-notifyFunctions.set('deckOrder', () => {
+actionFunctions.set('deckOrder', () => {
   // If we are exiting a hypothetical, we might re-receive a deckOrder command
   // If this is the case, we don't need to do anything,
   // as the order should already be stored in the global variables
 });
 
-notifyFunctions.set('discard', (data: ActionDiscard) => {
+actionFunctions.set('discard', (data: ActionDiscard) => {
   // In "Throw It in a Hole" variants, convert misplays to real plays
   if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay && data.failed) {
-    notifyFunctions.get('play')(data);
+    actionFunctions.get('play')(data);
     return;
   }
 
@@ -215,7 +215,7 @@ notifyFunctions.set('discard', (data: ActionDiscard) => {
 });
 
 // A player just drew a card from the deck
-notifyFunctions.set('draw', (data: ActionDraw) => {
+actionFunctions.set('draw', (data: ActionDraw) => {
   // Local variables
   const { order } = data;
   // Suit and rank come from the server as -1 if the card is unknown
@@ -330,7 +330,7 @@ notifyFunctions.set('draw', (data: ActionDraw) => {
   }
 });
 
-notifyFunctions.set('play', (data: ActionPlay) => {
+actionFunctions.set('play', (data: ActionPlay) => {
   // Local variables
   const card = globals.deck[data.which.order];
 
@@ -359,7 +359,7 @@ notifyFunctions.set('play', (data: ActionPlay) => {
 //   target: 0, // The index of the player
 //   handOrder: [1, 2, 3, 4, 0], // An array of card orders
 // }
-notifyFunctions.set('reorder', (data: ActionReorder) => {
+actionFunctions.set('reorder', (data: ActionReorder) => {
   // Make a list of card orders currently in the hand
   const hand = globals.elements.playerHands[data.target];
   const currentCardOrders: number[] = [];
@@ -371,13 +371,13 @@ notifyFunctions.set('reorder', (data: ActionReorder) => {
   for (let i = 0; i < data.handOrder.length; i++) {
     const newCardOrderForThisSlot = data.handOrder[i];
     if (typeof newCardOrderForThisSlot !== 'number') {
-      throw new Error(`Received an invalid card order of ${newCardOrderForThisSlot} in the "reorder" notify.`);
+      throw new Error(`Received an invalid card order of ${newCardOrderForThisSlot} in the "reorder" action.`);
     }
     const currentIndexOfNewCard = currentCardOrders.indexOf(newCardOrderForThisSlot);
     const numMoveDown = currentIndexOfNewCard - i;
     const card = globals.deck[newCardOrderForThisSlot];
     if (typeof card === 'undefined') {
-      throw new Error(`Received an invalid card order of ${newCardOrderForThisSlot} in the "reorder" notify.`);
+      throw new Error(`Received an invalid card order of ${newCardOrderForThisSlot} in the "reorder" action.`);
     }
     const layoutChild = card.parent as unknown as LayoutChild; // All cards should have parents
     for (let j = 0; j < numMoveDown; j++) {
@@ -386,7 +386,7 @@ notifyFunctions.set('reorder', (data: ActionReorder) => {
   }
 });
 
-notifyFunctions.set('stackDirections', (data: ActionStackDirections) => {
+actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
   // Update the stack directions (only in "Up or Down" variants)
   globals.stackDirections = data.directions;
   if (globals.variant.name.startsWith('Up or Down')) {
@@ -412,7 +412,7 @@ notifyFunctions.set('stackDirections', (data: ActionStackDirections) => {
   }
 });
 
-notifyFunctions.set('status', (data: ActionStatus) => {
+actionFunctions.set('status', (data: ActionStatus) => {
   // Update internal state variables
   globals.clues = data.clues;
   if (globals.variant.name.startsWith('Clue Starved')) {
@@ -482,7 +482,7 @@ notifyFunctions.set('status', (data: ActionStatus) => {
 //   order: 4, // The order of the card that was misplayed
 //   turn: 2,
 // }
-notifyFunctions.set('strike', (data: ActionStrike) => {
+actionFunctions.set('strike', (data: ActionStrike) => {
   if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
     return;
   }
@@ -511,7 +511,7 @@ notifyFunctions.set('strike', (data: ActionStrike) => {
 });
 
 // A new line of text has appeared in the action log
-notifyFunctions.set('text', (data: ActionText) => {
+actionFunctions.set('text', (data: ActionText) => {
   globals.elements.actionLog!.setMultiText(data.text);
   globals.elements.fullActionLog!.addMessage(data.text);
   if (!globals.animateFast) {
@@ -525,7 +525,7 @@ interface RevealMessage {
   rank: number;
   order: number;
 }
-notifyFunctions.set('reveal', (data: RevealMessage) => {
+actionFunctions.set('reveal', (data: RevealMessage) => {
   // This is the reveal for hypotheticals
   // The code here is copied from the "websocket.ts" file
   let card = globals.deck[data.order];
@@ -537,7 +537,7 @@ notifyFunctions.set('reveal', (data: RevealMessage) => {
   globals.layers.card.batchDraw();
 });
 
-notifyFunctions.set('turn', (data: ActionTurn) => {
+actionFunctions.set('turn', (data: ActionTurn) => {
   // Store the current turn in memory
   globals.turn = data.num;
   globals.currentPlayerIndex = data.who;

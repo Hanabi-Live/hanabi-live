@@ -287,7 +287,7 @@ func commandAction(s *Session, d *CommandData) {
 			Type: "text",
 			Text: p.Name + " ran out of time!",
 		})
-		t.NotifyAction()
+		t.NotifyGameAction()
 	} else if d.Type == actionTypeIdleLimitReached {
 		// This is a special action type sent by the server to itself when
 		// the game has been idle for too long
@@ -297,7 +297,7 @@ func commandAction(s *Session, d *CommandData) {
 			Type: "text",
 			Text: "Players were idle for too long.",
 		})
-		t.NotifyAction()
+		t.NotifyGameAction()
 	} else {
 		s.Warning("That is not a valid action type.")
 		g.InvalidActionOccurred = true
@@ -368,7 +368,7 @@ func commandAction(s *Session, d *CommandData) {
 			Type: "text",
 			Text: text,
 		})
-		t.NotifyAction()
+		t.NotifyGameAction()
 		logger.Info(t.GetName() + " " + text)
 	}
 

@@ -63,8 +63,15 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 		scrubbedActions = g.Actions
 	}
 
-	// Send a "notify" message for every action of the game
-	s.Emit("notifyList", &scrubbedActions)
+	// Send them all the actions in the game that have happened thus far
+	type GameActionListMessage struct {
+		TableID int           `json:"tableID"`
+		List    []interface{} `json:"list"`
+	}
+	s.Emit("gameActionList", &GameActionListMessage{
+		TableID: t.ID,
+		List:    scrubbedActions,
+	})
 
 	// If it is their turn, send a "yourTurn" message
 	if !t.Replay && g.ActivePlayer == i {

@@ -220,7 +220,7 @@ func (p *GamePlayer) CycleHand() {
 		HandOrder: handOrder,
 	})
 
-	t.NotifyAction()
+	t.NotifyGameAction()
 	logger.Info("Reordered the cards for player:", p.Name)
 }
 
@@ -256,5 +256,5 @@ func (p *GamePlayer) ShuffleHand() {
 		Target:    p.Index,
 		HandOrder: handOrder,
 	})
-	t.NotifyAction()
+	t.NotifyGameAction()
 }

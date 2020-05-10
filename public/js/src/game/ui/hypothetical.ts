@@ -8,6 +8,7 @@ import {
   REPLAY_ACTION_TYPE,
   MAX_CLUE_NUM,
 } from '../../constants';
+import action from './action';
 import { Action } from './actions';
 import { getTouchedCardsFromClue } from './clues';
 import { suitToMsgSuit } from './convert';
@@ -15,7 +16,6 @@ import fadeCheck from './fadeCheck';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
-import notify from './notify';
 import PlayerButton from './PlayerButton';
 import * as replay from './replay';
 import * as turn from './turn';
@@ -71,7 +71,7 @@ export const playThroughPastActions = () => {
     // This is a mini-version of what happens in the "replay.goto()" function
     globals.animateFast = true;
     for (const actionMessage of globals.hypoActions) {
-      notify(actionMessage);
+      action(actionMessage);
     }
     fadeCheck();
     globals.animateFast = false;
@@ -305,8 +305,8 @@ export const backOneTurn = () => {
     if (globals.hypoActions.length === 0) {
       break;
     }
-    const lastNotify = globals.hypoActions[globals.hypoActions.length - 1];
-    if (lastNotify.type === 'turn') {
+    const lastAction = globals.hypoActions[globals.hypoActions.length - 1];
+    if (lastAction.type === 'turn') {
       break;
     }
   }

@@ -243,21 +243,22 @@ func (s *Session) NotifyYourTurn() {
 	s.Emit("yourTurn", nil)
 }
 
-func (s *Session) NotifyGameAction(a interface{}, t *Table) {
+func (s *Session) NotifyGameAction(action interface{}, t *Table) {
 	// Check to see if we need to remove some card information
-	drawAction, ok := a.(ActionDraw)
+	drawAction, ok := action.(ActionDraw)
 	if ok && drawAction.Type == "draw" {
 		drawAction.Scrub(t, s.UserID())
-		a = drawAction
+		action = drawAction
 	}
 
-	/*
-		type NotifyMessage struct {
-			TableID int         `json:"tableID"`
-			Notify  interface{} `json:""`
-		}
-	*/
-	s.Emit("notify", a)
+	type GameActionMessage struct {
+		TableID int         `json:"tableID"`
+		Action  interface{} `json:"action"`
+	}
+	s.Emit("gameAction", &GameActionMessage{
+		TableID: t.ID,
+		Action:  action,
+	})
 }
 
 func (s *Session) NotifySound(t *Table, i int) {

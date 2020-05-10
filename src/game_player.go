@@ -84,7 +84,6 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 		})
 	}
 
-	// Send the "notify" message about the clue
 	g.Actions = append(g.Actions, ActionClue{
 		Type:   "clue",
 		Clue:   d.Clue,
@@ -93,7 +92,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 		Target: d.Target,
 		Turn:   g.Turn,
 	})
-	t.NotifyAction()
+	t.NotifyGameAction()
 
 	// Send the "message" message about the clue
 	text := p.Name + " tells " + p2.Name + " about "
@@ -155,7 +154,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 		Type: "text",
 		Text: text,
 	})
-	t.NotifyAction()
+	t.NotifyGameAction()
 	logger.Info(t.GetName() + text)
 
 	// Do post-clue tasks
@@ -249,14 +248,13 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 			g.Sound = "fail" + strconv.Itoa(g.Misplays)
 		}
 
-		// Send the "notify" message about the strike
 		g.Actions = append(g.Actions, ActionStrike{
 			Type:  "strike",
 			Num:   g.Strikes,
 			Turn:  g.Turn,
 			Order: c.Order,
 		})
-		t.NotifyAction()
+		t.NotifyGameAction()
 
 		return p.DiscardCard(c)
 	}
@@ -272,7 +270,6 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	// Mark that the misplay streak has ended
 	g.Misplays = 0
 
-	// Send the "notify" message about the play
 	g.Actions = append(g.Actions, ActionPlay{
 		Type: "play",
 		Which: Which{
@@ -282,7 +279,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 			Order: c.Order,
 		},
 	})
-	t.NotifyAction()
+	t.NotifyGameAction()
 
 	// Send the "message" about the play
 	text := p.Name + " plays "
@@ -313,7 +310,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 		Type: "text",
 		Text: text,
 	})
-	t.NotifyAction()
+	t.NotifyGameAction()
 	logger.Info(t.GetName() + text)
 
 	// Give the team a clue if the final card of the suit was played
@@ -396,7 +393,7 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 			Order: c.Order,
 		},
 	})
-	t.NotifyAction()
+	t.NotifyGameAction()
 
 	text := p.Name + " "
 	if c.Failed {
@@ -432,7 +429,7 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 		Type: "text",
 		Text: text,
 	})
-	t.NotifyAction()
+	t.NotifyGameAction()
 	logger.Info(t.GetName() + text)
 
 	// Check to see if revealing this card would surprise the player
@@ -484,7 +481,7 @@ func (p *GamePlayer) DrawCard() {
 		Order: c.Order,
 	})
 	if t.Running {
-		t.NotifyAction()
+		t.NotifyGameAction()
 	}
 
 	// Check to see if that was the last card drawn

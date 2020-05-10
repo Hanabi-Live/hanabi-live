@@ -162,7 +162,7 @@ func (t *Table) NotifyStatus(doubleDiscard bool) {
 		MaxScore:      g.MaxScore,
 		DoubleDiscard: doubleDiscard,
 	})
-	t.NotifyAction()
+	t.NotifyGameAction()
 
 	// If we are playing an "Up or Down" variant, we also need to send the stack directions
 	if strings.HasPrefix(t.Options.Variant, "Up or Down") {
@@ -175,7 +175,7 @@ func (t *Table) NotifyStatus(doubleDiscard bool) {
 			Type:       "stackDirections",
 			Directions: stackDirections,
 		})
-		t.NotifyAction()
+		t.NotifyGameAction()
 	}
 }
 
@@ -191,11 +191,11 @@ func (t *Table) NotifyTurn() {
 		Num:  g.Turn,
 		Who:  who,
 	})
-	t.NotifyAction()
+	t.NotifyGameAction()
 }
 
-// NotifyAction sends the people in the game an update about the new action
-func (t *Table) NotifyAction() {
+// NotifyGameAction sends the people in the game an update about the new action
+func (t *Table) NotifyGameAction() {
 	g := t.Game
 
 	if !t.Running {

@@ -3,10 +3,10 @@
 // Imports
 import Konva from 'konva';
 import { MAX_CLUE_NUM, REPLAY_ACTION_TYPE } from '../../constants';
+import action from './action';
 import fadeCheck from './fadeCheck';
 import globals from './globals';
 import LayoutChild from './LayoutChild';
-import notify from './notify';
 import Shuttle from './Shuttle';
 import * as stats from './stats';
 import * as turn from './turn';
@@ -121,8 +121,8 @@ export const goto = (target: number, fast: boolean) => {
       break;
     }
 
-    // Re-process all notify messages; this will correctly position cards and text
-    notify(msg);
+    // Re-process all game actions; this will correctly position cards and text
+    action(msg);
 
     // Stop if you're at the current turn
     if (msg.type === 'turn' && msg.num === globals.replayTurn) {

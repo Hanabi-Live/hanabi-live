@@ -701,7 +701,7 @@ func characterCheckSoftlock(g *Game, p *GamePlayer) {
 			Type: "text",
 			Text: text,
 		})
-		t.NotifyAction()
+		t.NotifyGameAction()
 	}
 }
 

@@ -76,7 +76,7 @@ export class Globals {
 
   // Replay feature
   inReplay: boolean = false; // Whether or not the replay controls are currently showing
-  replayLog: any[] = []; // Contains all of the "notify" messages for the game
+  replayLog: any[] = []; // Contains all of the "action" messages for the game
   replayPos: number = 0; // The current index of the "globals.replayLog" array
   replayTurn: number = 0; // The current game turn
   replayMax: number = 0; // The maximum turn recorded so fast
