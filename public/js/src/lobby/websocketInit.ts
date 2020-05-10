@@ -186,7 +186,7 @@ commands.set('userList', (dataList: User[]) => {
   for (const data of dataList) {
     globals.userMap.set(data.id, data);
   }
-  if (globals.currentScreen === 'lobby') {
+  if (globals.currentScreen === 'lobby' || globals.currentScreen === 'pregame') {
     usersDraw.draw();
   }
 });
@@ -198,7 +198,7 @@ interface UserLeftData {
 commands.set('userLeft', (data: UserLeftData) => {
   globals.userMap.delete(data.id);
 
-  if (globals.currentScreen === 'lobby') {
+  if (globals.currentScreen === 'lobby' || globals.currentScreen === 'pregame') {
     usersDraw.draw();
   }
 });
@@ -211,6 +211,8 @@ commands.set('userInactive', (data: UserInactiveData) => {
   const user = globals.userMap.get(data.id);
   if (user) {
     user.inactive = data.inactive;
-    usersDraw.setInactive(user.id, user.inactive);
+    if (globals.currentScreen === 'lobby' || globals.currentScreen === 'pregame') {
+      usersDraw.setInactive(user.id, user.inactive);
+    }
   }
 });
