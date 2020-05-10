@@ -554,10 +554,12 @@ func (t *Table) ConvertToSharedReplay() {
 
 		// Send them the database ID
 		type IDMessage struct {
-			ID int `json:"id"`
+			TableID int `json:"tableID"`
+			ID      int `json:"id"`
 		}
 		sp.Session.Emit("databaseID", &IDMessage{
-			ID: g.ID,
+			TableID: t.ID,
+			ID:      g.ID,
 		})
 	}
 
