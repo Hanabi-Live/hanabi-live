@@ -42,6 +42,15 @@ const tablesDraw = () => {
             break;
           }
         }
+        if (!hasFriends) {
+          const spectators = table.spectators.split(', ');
+          for (const spectator of spectators) {
+            if (globals.friends.includes(spectator)) {
+              hasFriends = true;
+              break;
+            }
+          }
+        }
         if ((friends && !hasFriends) || (!friends && hasFriends)) {
           continue;
         }
@@ -152,10 +161,19 @@ const tablesDraw = () => {
         players[i] = `<span class="friend">${player}</span>`;
       }
     }
-    $('<td>').html(players.join(', ')).appendTo(row);
+    const playersString = players.join(', ');
+    $('<td>').html(playersString).appendTo(row);
 
     // Column 8 - Spectators
-    $('<td>').html(table.spectators).appendTo(row);
+    const spectators = table.spectators.split(', ');
+    for (let i = 0; i < spectators.length; i++) {
+      const spectator = spectators[i];
+      if (globals.friends.includes(spectator)) {
+        spectators[i] = `<span class="friend">${spectator}</span>`;
+      }
+    }
+    const spectatorsString = spectators.join(', ');
+    $('<td>').html(spectatorsString).appendTo(row);
 
     row.appendTo(tbody);
   }
