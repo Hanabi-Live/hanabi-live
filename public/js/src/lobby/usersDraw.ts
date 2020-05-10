@@ -34,6 +34,12 @@ export const draw = () => {
     (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
   );
 
+  // Additionally, alphabetize all of our friends
+  onlineFriends.sort(
+    // We want to do a case-insensitive sort, which will not occur by default
+    (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
+  );
+
   // First, draw our username at the top
   const alreadyDrawnUsers: string[] = [];
   drawUser(globals.username, usernameMapping, tbody, false);
