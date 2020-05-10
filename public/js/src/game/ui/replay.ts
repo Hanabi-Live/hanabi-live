@@ -3,13 +3,13 @@
 // Imports
 import Konva from 'konva';
 import { MAX_CLUE_NUM, REPLAY_ACTION_TYPE } from '../../constants';
-import * as action from './action';
 import fadeCheck from './fadeCheck';
 import globals from './globals';
 import LayoutChild from './LayoutChild';
 import notify from './notify';
 import Shuttle from './Shuttle';
 import * as stats from './stats';
+import * as turn from './turn';
 
 // ---------------------
 // Main replay functions
@@ -41,7 +41,7 @@ export const enter = () => {
   }
 
   // Hide the UI elements that overlap with the replay area
-  action.stop();
+  turn.hideClueUIAndDisableDragging();
 
   // Next, show the replay area and initialize some UI elements
   globals.elements.replayArea!.show();
@@ -60,7 +60,7 @@ export const exit = () => {
   globals.elements.replayArea!.hide();
 
   if (globals.ourTurn) {
-    action.handle();
+    turn.showClueUIAndEnableDragging();
   }
   globals.elements.currentPlayerArea!.visible(!globals.elements.clueArea!.visible());
   if (globals.queuedAction !== null) {
@@ -319,7 +319,7 @@ export function barDrag(this: Konva.Rect, pos: Konva.Vector2d) {
 
 const positionReplayShuttle = (
   shuttle: Shuttle,
-  turn: number,
+  targetTurn: number,
   smaller: boolean,
   fast: boolean,
 ) => {
@@ -327,8 +327,8 @@ const positionReplayShuttle = (
 
   // During initialization, the turn will be -1 and the maximum number of replay turns will be 0
   // Account for this and provide sane defaults
-  if (turn === -1) {
-    turn = 0;
+  if (targetTurn === -1) {
+    targetTurn = 0;
   }
   if (max === 0) {
     max = 1;
@@ -336,7 +336,7 @@ const positionReplayShuttle = (
 
   const winH = globals.stage.height();
   const sliderW = globals.elements.replayBar!.width() - shuttle.width();
-  const x = globals.elements.replayBar!.x() + (sliderW / max * turn) + (shuttle.width() / 2);
+  const x = globals.elements.replayBar!.x() + (sliderW / max * targetTurn) + (shuttle.width() / 2);
   let y = globals.elements.replayBar!.y() + (shuttle.height() * 0.55);
   if (smaller) {
     y -= 0.003 * winH;
@@ -395,21 +395,21 @@ export const promptTurn = () => {
   if (turnString === null) {
     return;
   }
-  let turn = parseInt(turnString, 10);
-  if (Number.isNaN(turn)) {
+  let targetTurn = parseInt(turnString, 10);
+  if (Number.isNaN(targetTurn)) {
     return;
   }
 
   // We need to decrement the turn because
   // the turn shown to the user is always one greater than the real turn
-  turn -= 1;
+  targetTurn -= 1;
 
   if (globals.replay) {
     checkDisableSharedTurns();
   } else {
     enter();
   }
-  goto(turn, true);
+  goto(targetTurn, true);
 };
 
 // --------------------------------
@@ -450,25 +450,25 @@ export const checkDisableSharedTurns = () => {
   }
 };
 
-const shareCurrentTurn = (turn: number) => {
-  if (globals.sharedReplayTurn === turn) {
+const shareCurrentTurn = (targetTurn: number) => {
+  if (globals.sharedReplayTurn === targetTurn) {
     return;
   }
 
   globals.lobby.conn!.send('replayAction', {
     tableID: globals.lobby.tableID,
     type: REPLAY_ACTION_TYPE.TURN,
-    turn,
+    turn: targetTurn,
   });
-  globals.sharedReplayTurn = turn;
+  globals.sharedReplayTurn = targetTurn;
   adjustShuttles(false);
 };
 
-export const clueLogClickHandler = (turn: number) => {
+export const clueLogClickHandler = (targetTurn: number) => {
   if (globals.replay) {
     checkDisableSharedTurns();
   } else {
     enter();
   }
-  goto(turn + 1, true);
+  goto(targetTurn + 1, true);
 };

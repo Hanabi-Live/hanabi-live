@@ -2,10 +2,10 @@
 import Konva from 'konva';
 import { ACTION, REPLAY_ARROW_ORDER, TOOLTIP_DELAY } from '../../constants';
 import { timerFormatter } from '../../misc';
-import * as action from './action';
 import * as arrows from './arrows';
 import globals from './globals';
 import * as tooltips from './tooltips';
+import * as turn from './turn';
 
 export default class Deck extends Konva.Group {
   cardBack: Konva.Image;
@@ -107,7 +107,7 @@ export default class Deck extends Konva.Group {
         type: ACTION.DECKPLAY,
       });
 
-      action.stop();
+      turn.hideClueUIAndDisableDragging();
     } else {
       // The deck was dragged to an invalid location, so animate the card back to where it was
       new Konva.Tween({

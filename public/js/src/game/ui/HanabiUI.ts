@@ -7,7 +7,6 @@ import Konva from 'konva';
 import { LABEL_COLOR, STACK_BASE_RANK } from '../../constants';
 import { Globals as LobbyGlobals } from '../../globals';
 import { GameExports } from '../main';
-import * as action from './action';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
 import globals, { Globals } from './globals';
@@ -18,6 +17,7 @@ import Loader from './Loader';
 import pause from './pause';
 import * as stats from './stats';
 import * as timer from './timer';
+import * as turn from './turn';
 
 export default class HanabiUI {
   globals: Globals;
@@ -66,7 +66,7 @@ export default class HanabiUI {
   }
 
   reshowClueUIAfterWarning() { // eslint-disable-line class-methods-use-this
-    action.handle();
+    turn.showClueUIAndEnableDragging();
   }
 }
 

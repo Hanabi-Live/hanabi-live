@@ -3,12 +3,12 @@
 // Imports
 import { ACTION, REPLAY_ACTION_TYPE, MAX_CLUE_NUM } from '../../constants';
 import { copyStringToClipboard } from '../../misc';
-import * as action from './action';
 import backToLobby from './backToLobby';
 import * as clues from './clues';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as replay from './replay';
+import * as turn from './turn';
 
 // Variables
 const hotkeyClueMap = new Map();
@@ -276,7 +276,7 @@ const performAction = (intendedPlay = true) => {
     type,
     target: cardOrder,
   });
-  action.stop();
+  turn.hideClueUIAndDisableDragging();
 };
 
 // Keyboard actions for playing and discarding cards

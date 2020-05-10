@@ -8,7 +8,6 @@ import {
   REPLAY_ACTION_TYPE,
   MAX_CLUE_NUM,
 } from '../../constants';
-import * as action from './action';
 import { Action } from './actions';
 import { getTouchedCardsFromClue } from './clues';
 import { suitToMsgSuit } from './convert';
@@ -19,6 +18,7 @@ import LayoutChild from './LayoutChild';
 import notify from './notify';
 import PlayerButton from './PlayerButton';
 import * as replay from './replay';
+import * as turn from './turn';
 
 export const start = () => {
   if (globals.hypothetical) {
@@ -106,7 +106,7 @@ export const end = () => {
 
     // Furthermore, disable dragging and get rid of the clue UI
     disableDragOnAllHands();
-    action.stop();
+    turn.hideClueUIAndDisableDragging();
   } else {
     globals.elements.hypoCircle!.hide();
   }
@@ -141,7 +141,7 @@ export const beginTurn = () => {
     }
   }
 
-  action.handle(); // Bring up the clue UI
+  turn.showClueUIAndEnableDragging();
   globals.elements.hypoBackButton!.visible(globals.hypoActions.length > 0);
 
   // Set the current player's hand to be draggable

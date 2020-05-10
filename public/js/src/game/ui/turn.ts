@@ -1,14 +1,15 @@
 // Imports
 import { ACTION, MAX_CLUE_NUM } from '../../constants';
 import * as notifications from '../../notifications';
-import * as action from './action';
 import { Action } from './actions';
+import * as arrows from './arrows';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
+import LayoutChild from './LayoutChild';
 import * as replay from './replay';
 
 export const begin = () => {
-  action.handle();
+  showClueUIAndEnableDragging();
 
   if (globals.animateFast) {
     return;
@@ -60,15 +61,80 @@ export const begin = () => {
 
       globals.queuedAction = null;
       globals.preCluedCard = null;
-      action.stop();
+      hideClueUIAndDisableDragging();
     }, 100);
   }
+};
+
+export const showClueUIAndEnableDragging = () => {
+  if (globals.inReplay && !globals.hypothetical) {
+    return;
+  }
+
+  if (globals.ourTurn || globals.hypothetical) {
+    // Reset and show the clue UI
+    if (globals.playerNames.length === 2) {
+      // In 2-player games,
+      // default the clue recipient button to the only other player available
+      // Otherwise, leave the last player selected
+      globals.elements.clueTargetButtonGroup!.list[0].setPressed(true);
+    }
+    globals.elements.clueTypeButtonGroup!.clearPressed();
+    globals.elements.clueArea!.show();
+    if (globals.elements.yourTurn !== null && !globals.hypothetical) {
+      globals.elements.yourTurn.show();
+      globals.elements.yourTurnTween!.play();
+    }
+    globals.elements.currentPlayerArea!.hide();
+
+    // Fade the clue UI if there is not a clue available
+    if (globals.clues >= 1) {
+      globals.elements.clueArea!.opacity(1);
+      globals.elements.clueAreaDisabled!.hide();
+    } else {
+      globals.elements.clueArea!.opacity(0.2);
+      globals.elements.clueAreaDisabled!.show();
+    }
+  }
+
+  // Set our hand to being draggable
+  if (
+    // This is unnecessary if the pre-play setting is enabled,
+    // as the hand will already be draggable
+    !globals.lobby.settings.speedrunPreplay
+    // This is unnecessary if this a speedrun,
+    // as clicking on cards takes priority over dragging cards
+    && !globals.speedrun
+    // In hypotheticals, setting cards to be draggable is handled elsewhere
+    && !globals.hypothetical
+  ) {
+    const ourHand = globals.elements.playerHands[globals.playerUs];
+    if (ourHand) {
+      for (const layoutChild of ourHand.children.toArray() as LayoutChild[]) {
+        layoutChild.checkSetDraggable();
+      }
+    } else {
+      throw new Error(`Failed to get "globals.elements.playerHands[]" with an index of ${globals.playerUs}.`);
+    }
+  }
+
+  if (globals.deckPlays) {
+    globals.elements.deck!.cardBack.draggable(globals.deckSize === 1);
+    globals.elements.deckPlayAvailableLabel!.visible(globals.deckSize === 1);
+
+    // Ensure the deck is above other cards and UI elements
+    if (globals.deckSize === 1) {
+      globals.elements.deck!.moveToTop();
+    }
+  }
+
+  globals.layers.UI.batchDraw();
 };
 
 export const end = (actionObject: Action) => {
   if (globals.hypothetical) {
     hypothetical.send(actionObject);
-    action.stop();
+    hideClueUIAndDisableDragging();
     return;
   }
 
@@ -80,7 +146,7 @@ export const end = (actionObject: Action) => {
       target: actionObject.target,
       clue: actionObject.clue,
     });
-    action.stop();
+    hideClueUIAndDisableDragging();
   } else {
     globals.queuedAction = actionObject;
     let text = 'Cancel Pre-';
@@ -96,4 +162,32 @@ export const end = (actionObject: Action) => {
     globals.elements.currentPlayerArea!.hide();
     globals.layers.UI.batchDraw();
   }
+};
+
+export const hideClueUIAndDisableDragging = () => {
+  globals.elements.clueArea!.hide();
+  globals.elements.clueAreaDisabled!.hide();
+  if (globals.elements.yourTurn !== null) {
+    globals.elements.yourTurn.hide();
+    globals.elements.yourTurnTween!.pause();
+  }
+  globals.elements.currentPlayerArea!.hide();
+  globals.elements.premoveCancelButton!.hide();
+  globals.elements.noDiscardBorder!.hide();
+  globals.elements.noDoubleDiscardBorder!.hide();
+  arrows.hideAll();
+
+  // Make all of the cards in our hand not draggable
+  // (but we need to keep them draggable if the pre-play setting is enabled)
+  if (!globals.lobby.settings.speedrunPreplay) {
+    const ourHand = globals.elements.playerHands[globals.playerUs];
+    for (const child of ourHand.children.toArray()) {
+      // This is a LayoutChild
+      child.off('dragend');
+      child.draggable(false);
+    }
+  }
+
+  globals.elements.deck!.cardBack.draggable(false);
+  globals.elements.deckPlayAvailableLabel!.hide();
 };
