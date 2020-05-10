@@ -130,21 +130,19 @@ actionFunctions.set('clue', (data: ActionClue) => {
 
   // Add an entry to the clue log
   let clueName;
-  if (data.clue.type === CLUE_TYPE.RANK) {
-    clueName = clue.value.toString();
-  } else if (data.clue.type === CLUE_TYPE.COLOR) {
+  if (data.clue.type === CLUE_TYPE.COLOR) {
     if (typeof clue.value === 'number') {
       throw new Error('The value of a color clue was a number.');
     }
     clueName = clue.value.name;
+  } else if (data.clue.type === CLUE_TYPE.RANK) {
+    clueName = clue.value.toString();
   }
   if (globals.variant.name.startsWith('Cow & Pig')) {
-    // We want color clues to correspond to the first animal since color buttons are above
-    // number buttons, even though rank comes first in the enum
-    if (data.clue.type === CLUE_TYPE.RANK) {
-      clueName = 'Oink';
-    } else if (data.clue.type === CLUE_TYPE.COLOR) {
+    if (data.clue.type === CLUE_TYPE.COLOR) {
       clueName = 'Moo';
+    } else if (data.clue.type === CLUE_TYPE.RANK) {
+      clueName = 'Oink';
     }
   } else if (
     globals.variant.name.startsWith('Duck')

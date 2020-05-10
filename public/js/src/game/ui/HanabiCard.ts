@@ -369,132 +369,24 @@ export default class HanabiCard extends Konva.Group {
     }
 
     // Record unique clues that touch the card for later
-    if (clue.type === CLUE_TYPE.RANK) {
-      if (positive && !this.positiveRankClues.includes(clue.value as number)) {
-        this.positiveRankClues.push(clue.value as number);
-      } else if (!positive && !this.negativeRankClues.includes(clue.value as number)) {
-        this.negativeRankClues.push(clue.value as number);
-      }
-    } else if (clue.type === CLUE_TYPE.COLOR) {
+    if (clue.type === CLUE_TYPE.COLOR) {
       if (positive && !this.positiveColorClues.includes(clue.value as Color)) {
         this.positiveColorClues.push(clue.value as Color);
       } else if (!positive && !this.negativeColorClues.includes(clue.value as Color)) {
         this.negativeColorClues.push(clue.value as Color);
+      }
+    } else if (clue.type === CLUE_TYPE.RANK) {
+      if (positive && !this.positiveRankClues.includes(clue.value as number)) {
+        this.positiveRankClues.push(clue.value as number);
+      } else if (!positive && !this.negativeRankClues.includes(clue.value as number)) {
+        this.negativeRankClues.push(clue.value as number);
       }
     }
 
     // Find out if we can remove some rank pips or suit pips from this clue
     let ranksRemoved: number[] = [];
     let suitsRemoved: Suit[] = [];
-    if (clue.type === CLUE_TYPE.RANK) {
-      const clueRank = clue.value as number;
-      if (globals.variant.rankCluesTouchNothing) {
-        // Some variants have rank clues touch no cards
-        // If this is the case, we cannot remove any rank pips from the card
-      } else if (this.possibleSuits.some((suit) => suit.allClueRanks) && positive) {
-        // Some cards are touched by all ranks,
-        // so if this is a positive rank clue, we cannot remove any rank pips from the card
-      } else if (this.possibleSuits.some((suit) => suit.noClueRanks) && !positive) {
-        // Some suits are not touched by any ranks,
-        // so if this is a negative rank clue, we cannot remove any rank pips from the card
-      } else if (
-        (
-          // Checking for "Pink-" also checks for "Light-Pink-"
-          globals.variant.name.includes('Pink-Ones')
-          || globals.variant.name.includes('Omni-Ones')
-        ) && this.possibleRanks.includes(1)
-      ) {
-        // In some variants, the 1 of every suit is touched by all rank clues
-        ranksRemoved = filterInPlace(
-          this.possibleRanks,
-          (rank: number) => (rank === clueRank || rank === 1) === positive,
-        );
-      } else if (
-        (
-          // Checking for "Pink-" also checks for "Light-Pink-"
-          globals.variant.name.includes('Pink-Fives')
-          || globals.variant.name.includes('Omni-Fives')
-        ) && this.possibleRanks.includes(5)
-      ) {
-        // In some variants, the 5 of every suit is touched by all rank clues
-        ranksRemoved = filterInPlace(
-          this.possibleRanks,
-          (rank: number) => (rank === clueRank || rank === 5) === positive,
-        );
-      } else if (
-        (
-          globals.variant.name.includes('Brown-Ones')
-          || globals.variant.name.includes('Null-Ones')
-          || globals.variant.name.includes('Muddy-Rainbow-Ones')
-        ) && this.possibleRanks.includes(1)
-      ) {
-        // In some variants, the 1 of every suit is not touched by any rank clues
-        ranksRemoved = filterInPlace(
-          this.possibleRanks,
-          (rank: number) => (rank === clueRank && rank !== 1) === positive,
-        );
-      } else if (
-        (
-          globals.variant.name.includes('Brown-Fives')
-          || globals.variant.name.includes('Null-Fives')
-          || globals.variant.name.includes('Muddy-Rainbow-Fives')
-        ) && this.possibleRanks.includes(5)
-      ) {
-        // In some variants, the 5 of every suit is not touched by any rank clues
-        ranksRemoved = filterInPlace(
-          this.possibleRanks,
-          (rank: number) => (rank === clueRank && rank !== 5) === positive,
-        );
-      } else {
-        // The default case (e.g. No Variant)
-        // Remove all possibilities that do not include this rank
-        ranksRemoved = filterInPlace(
-          this.possibleRanks,
-          (rank: number) => (rank === clueRank) === positive,
-        );
-      }
-
-      // Some suits are touched by all rank clues
-      // Some suits are not touched by any rank clues
-      // So we may be able to remove a suit pip
-      if (positive) {
-        suitsRemoved = filterInPlace(
-          this.possibleSuits,
-          (suit: Suit) => !suit.noClueRanks,
-        );
-      } else {
-        suitsRemoved = filterInPlace(
-          this.possibleSuits,
-          (suit: Suit) => !suit.allClueRanks,
-        );
-      }
-
-      // Also handle the special case where two positive rank clues should
-      // "fill in" a card of a multi-rank suit
-      if (
-        positive
-        && this.positiveRankClues.length >= 2
-        && !(globals.variant.name.includes('Pink-Ones') && this.possibleRanks.includes(1))
-        && !(globals.variant.name.includes('Omni-Ones') && this.possibleRanks.includes(1))
-        && !(globals.variant.name.includes('Pink-Fives') && this.possibleRanks.includes(5))
-        && !(globals.variant.name.includes('Omni-Fives') && this.possibleRanks.includes(5))
-      ) {
-        const moreSuitsRemoved = filterInPlace(
-          this.possibleSuits,
-          (suit: Suit) => suit.allClueRanks,
-        );
-        suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
-      }
-
-      // If the rank of the card is not known yet,
-      // change the rank pip that corresponds with this number to signify a positive clue
-      if (positive) {
-        const pip = this.rankPipsMap.get(clueRank)!;
-        if (pip.visible()) {
-          pip.showPositiveClue();
-        }
-      }
-    } else if (clue.type === CLUE_TYPE.COLOR) {
+    if (clue.type === CLUE_TYPE.COLOR) {
       const clueColor = clue.value as Color;
       if (globals.variant.colorCluesTouchNothing) {
         // Some variants have color clues touch no cards
@@ -640,6 +532,114 @@ export default class HanabiCard extends Konva.Group {
           );
         }
       }
+    } else if (clue.type === CLUE_TYPE.RANK) {
+      const clueRank = clue.value as number;
+      if (globals.variant.rankCluesTouchNothing) {
+        // Some variants have rank clues touch no cards
+        // If this is the case, we cannot remove any rank pips from the card
+      } else if (this.possibleSuits.some((suit) => suit.allClueRanks) && positive) {
+        // Some cards are touched by all ranks,
+        // so if this is a positive rank clue, we cannot remove any rank pips from the card
+      } else if (this.possibleSuits.some((suit) => suit.noClueRanks) && !positive) {
+        // Some suits are not touched by any ranks,
+        // so if this is a negative rank clue, we cannot remove any rank pips from the card
+      } else if (
+        (
+          // Checking for "Pink-" also checks for "Light-Pink-"
+          globals.variant.name.includes('Pink-Ones')
+          || globals.variant.name.includes('Omni-Ones')
+        ) && this.possibleRanks.includes(1)
+      ) {
+        // In some variants, the 1 of every suit is touched by all rank clues
+        ranksRemoved = filterInPlace(
+          this.possibleRanks,
+          (rank: number) => (rank === clueRank || rank === 1) === positive,
+        );
+      } else if (
+        (
+          // Checking for "Pink-" also checks for "Light-Pink-"
+          globals.variant.name.includes('Pink-Fives')
+          || globals.variant.name.includes('Omni-Fives')
+        ) && this.possibleRanks.includes(5)
+      ) {
+        // In some variants, the 5 of every suit is touched by all rank clues
+        ranksRemoved = filterInPlace(
+          this.possibleRanks,
+          (rank: number) => (rank === clueRank || rank === 5) === positive,
+        );
+      } else if (
+        (
+          globals.variant.name.includes('Brown-Ones')
+          || globals.variant.name.includes('Null-Ones')
+          || globals.variant.name.includes('Muddy-Rainbow-Ones')
+        ) && this.possibleRanks.includes(1)
+      ) {
+        // In some variants, the 1 of every suit is not touched by any rank clues
+        ranksRemoved = filterInPlace(
+          this.possibleRanks,
+          (rank: number) => (rank === clueRank && rank !== 1) === positive,
+        );
+      } else if (
+        (
+          globals.variant.name.includes('Brown-Fives')
+          || globals.variant.name.includes('Null-Fives')
+          || globals.variant.name.includes('Muddy-Rainbow-Fives')
+        ) && this.possibleRanks.includes(5)
+      ) {
+        // In some variants, the 5 of every suit is not touched by any rank clues
+        ranksRemoved = filterInPlace(
+          this.possibleRanks,
+          (rank: number) => (rank === clueRank && rank !== 5) === positive,
+        );
+      } else {
+        // The default case (e.g. No Variant)
+        // Remove all possibilities that do not include this rank
+        ranksRemoved = filterInPlace(
+          this.possibleRanks,
+          (rank: number) => (rank === clueRank) === positive,
+        );
+      }
+
+      // Some suits are touched by all rank clues
+      // Some suits are not touched by any rank clues
+      // So we may be able to remove a suit pip
+      if (positive) {
+        suitsRemoved = filterInPlace(
+          this.possibleSuits,
+          (suit: Suit) => !suit.noClueRanks,
+        );
+      } else {
+        suitsRemoved = filterInPlace(
+          this.possibleSuits,
+          (suit: Suit) => !suit.allClueRanks,
+        );
+      }
+
+      // Also handle the special case where two positive rank clues should
+      // "fill in" a card of a multi-rank suit
+      if (
+        positive
+        && this.positiveRankClues.length >= 2
+        && !(globals.variant.name.includes('Pink-Ones') && this.possibleRanks.includes(1))
+        && !(globals.variant.name.includes('Omni-Ones') && this.possibleRanks.includes(1))
+        && !(globals.variant.name.includes('Pink-Fives') && this.possibleRanks.includes(5))
+        && !(globals.variant.name.includes('Omni-Fives') && this.possibleRanks.includes(5))
+      ) {
+        const moreSuitsRemoved = filterInPlace(
+          this.possibleSuits,
+          (suit: Suit) => suit.allClueRanks,
+        );
+        suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
+      }
+
+      // If the rank of the card is not known yet,
+      // change the rank pip that corresponds with this number to signify a positive clue
+      if (positive) {
+        const pip = this.rankPipsMap.get(clueRank)!;
+        if (pip.visible()) {
+          pip.showPositiveClue();
+        }
+      }
     }
 
     // Remove rank pips, if any
@@ -723,25 +723,6 @@ export default class HanabiCard extends Konva.Group {
     }
   }
 
-  // If a clue just eliminated the possibility of being a special multi-rank card,
-  // we can retroactively remove rank pips from previous rank clues
-  checkReapplyRankClues() {
-    if (!this.reapplyRankClues) {
-      return;
-    }
-
-    this.reapplyRankClues = false;
-    const { positiveRankClues, negativeRankClues } = this;
-    this.positiveRankClues = [];
-    this.negativeRankClues = [];
-    for (const rank of positiveRankClues) {
-      this.applyClue(new Clue(CLUE_TYPE.RANK, rank), true);
-    }
-    for (const rank of negativeRankClues) {
-      this.applyClue(new Clue(CLUE_TYPE.RANK, rank), false);
-    }
-  }
-
   // If a clue just eliminated the possibility of being a special multi-color card,
   // we need to retroactively apply previous color clues
   checkReapplyColorClues() {
@@ -758,6 +739,25 @@ export default class HanabiCard extends Konva.Group {
     }
     for (const color of negativeColorClues) {
       this.applyClue(new Clue(CLUE_TYPE.COLOR, color), false);
+    }
+  }
+
+  // If a clue just eliminated the possibility of being a special multi-rank card,
+  // we can retroactively remove rank pips from previous rank clues
+  checkReapplyRankClues() {
+    if (!this.reapplyRankClues) {
+      return;
+    }
+
+    this.reapplyRankClues = false;
+    const { positiveRankClues, negativeRankClues } = this;
+    this.positiveRankClues = [];
+    this.negativeRankClues = [];
+    for (const rank of positiveRankClues) {
+      this.applyClue(new Clue(CLUE_TYPE.RANK, rank), true);
+    }
+    for (const rank of negativeRankClues) {
+      this.applyClue(new Clue(CLUE_TYPE.RANK, rank), false);
     }
   }
 

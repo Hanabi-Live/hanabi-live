@@ -100,10 +100,10 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	}
 	text += words[len(cardsTouched)] + " "
 
-	if clue.Type == clueTypeRank {
-		text += strconv.Itoa(clue.Value)
-	} else if clue.Type == clueTypeColor {
+	if clue.Type == clueTypeColor {
 		text += variants[g.Options.Variant].ClueColors[clue.Value]
+	} else if clue.Type == clueTypeRank {
+		text += strconv.Itoa(clue.Value)
 	}
 	if len(cardsTouched) != 1 {
 		text += "s"
@@ -122,14 +122,12 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 
 		text = p.Name + " "
 		if strings.HasPrefix(g.Options.Variant, "Cow & Pig") {
-			// We want color clues to correspond to the first animal since color buttons are above
-			// number buttons, even though rank comes first in the enum
-			if clue.Type == clueTypeRank {
-				text += "oinks"
-				g.Sound = "oink"
-			} else if clue.Type == clueTypeColor {
+			if clue.Type == clueTypeColor {
 				text += "moos"
 				g.Sound = "moo"
+			} else if clue.Type == clueTypeRank {
+				text += "oinks"
+				g.Sound = "oink"
 			}
 		} else if strings.HasPrefix(g.Options.Variant, "Duck") ||
 			p.Character == "Quacker" { // 34

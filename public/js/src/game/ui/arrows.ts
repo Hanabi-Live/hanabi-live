@@ -98,18 +98,7 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
       arrow.circle.hide();
     } else {
       arrow.circle.show();
-      if (clue.type === CLUE_TYPE.RANK) {
-        let text = clue.value.toString();
-        if (globals.variant.name.startsWith('Cow & Pig')) {
-          text = '#';
-        }
-        arrow.text.text(text);
-        arrow.text.show();
-
-        // The circle for number clues should have a white border and a black fill
-        arrow.circle.stroke('white');
-        arrow.circle.fill('black');
-      } else if (clue.type === CLUE_TYPE.COLOR) {
+      if (clue.type === CLUE_TYPE.COLOR) {
         arrow.text.hide();
 
         // The circle for color clues should have a black border and a fill matching the color
@@ -123,6 +112,17 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
           }
           arrow.circle.fill(clue.value.fill);
         }
+      } else if (clue.type === CLUE_TYPE.RANK) {
+        let text = clue.value.toString();
+        if (globals.variant.name.startsWith('Cow & Pig')) {
+          text = '#';
+        }
+        arrow.text.text(text);
+        arrow.text.show();
+
+        // The circle for number clues should have a white border and a black fill
+        arrow.circle.stroke('white');
+        arrow.circle.fill('black');
       }
     }
   }

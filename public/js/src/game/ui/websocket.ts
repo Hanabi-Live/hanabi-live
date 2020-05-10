@@ -372,19 +372,19 @@ const processNewAction = (actionMessage: any) => {
       globals.elements.replayButton!.setEnabled(true);
     }
   } else if (actionMessage.type === 'clue' && globals.variant.name.startsWith('Alternating Clues')) {
-    if (actionMessage.clue.type === CLUE_TYPE.RANK) {
-      for (const button of globals.elements.colorClueButtons) {
-        button.show();
-      }
-      for (const button of globals.elements.rankClueButtons) {
-        button.hide();
-      }
-    } else if (actionMessage.clue.type === CLUE_TYPE.COLOR) {
+    if (actionMessage.clue.type === CLUE_TYPE.COLOR) {
       for (const button of globals.elements.colorClueButtons) {
         button.hide();
       }
       for (const button of globals.elements.rankClueButtons) {
         button.show();
+      }
+    } else if (actionMessage.clue.type === CLUE_TYPE.RANK) {
+      for (const button of globals.elements.colorClueButtons) {
+        button.show();
+      }
+      for (const button of globals.elements.rankClueButtons) {
+        button.hide();
       }
     }
   }
