@@ -169,7 +169,7 @@ If you want to install less stuff on your computer, you can alternatively follow
 
 ## Installation for Production (Linux)
 
-These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments may be needed if you are on a different flavor of Linux.
+These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments may be needed if you are on a different flavor of Linux. Alternatively, you can follow the instructions for [Installation (Docker)](#installation-docker), although this is not recommended.
 
 * Make sure the package manager is up to date:
   * `sudo apt update`
