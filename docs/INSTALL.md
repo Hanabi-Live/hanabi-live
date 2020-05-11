@@ -13,8 +13,8 @@ The following instructions will set up the server as well as the linters. We ass
 1. [Hardware Prerequisites](#hardware-prerequisites)
 2. [Installation for Development (Windows)](#installation-for-development-windows)
 3. [Installation for Development (MacOS)](#installation-for-development-macos)
-4. [Installation for Development (Docker)](#installation-for-development-docker)
 5. [Installation for Production (Linux)](#installation-for-production-linux)
+4. [Installation (Docker)](#installation-docker)
 6. [Running the Server](#running-the-server)
 
 <br />
@@ -27,7 +27,7 @@ Building the client code can be memory intensive. Make sure that your system has
 
 ## Installation for Development (Windows)
 
-If you want to install less stuff on your computer, you can alternatively follow the instructions for [Installation for Development (Docker)](#installation-for-development-docker), although this is not recommended.
+If you want to install less stuff on your computer, you can alternatively follow the instructions for [Installation (Docker)](#installation-docker), although this is not recommended.
 
 * Open a [Command Prompt as an administrator](https://www.howtogeek.com/194041/how-to-open-the-command-prompt-as-administrator-in-windows-8.1/).
 * Install the [Chocolatey](https://chocolatey.org/) package manager:
@@ -103,7 +103,7 @@ If you want to install less stuff on your computer, you can alternatively follow
 
 ## Installation for Development (MacOS)
 
-If you want to install less stuff on your computer, you can alternatively follow the instructions for [Installation for Development (Docker)](#installation-for-development-docker), although this is not recommended.
+If you want to install less stuff on your computer, you can alternatively follow the instructions for [Installation (Docker)](#installation-docker), although this is not recommended.
 
 * Install the [Homebrew](https://brew.sh/) package manager:
   * `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"`
@@ -164,18 +164,6 @@ If you want to install less stuff on your computer, you can alternatively follow
   * On the left pane, navigate to and open "public\js\src\main.ts".
   * Add a new line of "testing" somewhere and watch as some "Problems" appear in the bottom pane. (There is no need to save the file.)
 * See [Running the Server](#running-the-server).
-
-<br />
-
-## Installation for Development (Docker)
-
-Docker is **not supported** as an official installation method. However, we provide a [docker-compose.yml](../docker-compose.yml) file which runs PostgreSQL and the Golang backend inside of networked Docker containers, if you so choose.
-
-* [Install Docker](https://docs.docker.com/get-docker/).
-* Run `docker-compose up --build` to build and run the server.
-  * The database will be automatically initialized when the server is first run, and will persist in a local directory called `mysql_data`.
-* Run `webpack-dev-server.sh`, as above, to build the frontend.
-* Visit "http://localhost:8081/dev".
 
 <br />
 
@@ -319,6 +307,18 @@ To manage the service:
 * Start it: `supervisorctl start hanabi-live`
 * Stop it: `supervisorctl stop hanabi-live`
 * Restart it: `supervisorctl restart hanabi-live`
+
+<br />
+
+## Installation (Docker)
+
+Docker is **not supported** as an official installation method. However, we provide a [docker-compose.yml](../docker-compose.yml) file which runs PostgreSQL and the Golang backend inside of networked Docker containers, if you so choose.
+
+* [Install Docker](https://docs.docker.com/get-docker/).
+* Run `docker-compose up --build` to build and run the server.
+  * The database will be automatically initialized when the server is first run, and will persist in a local directory called `mysql_data`.
+* Run `webpack-dev-server.sh`, as above, to build the frontend.
+* Visit "http://localhost:8081/dev".
 
 <br />
 
