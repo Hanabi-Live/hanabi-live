@@ -3,6 +3,7 @@
 {
   "recommendations": [
     "ms-vscode.Go",
+    "ms-python.python",
     "dbaeumer.vscode-eslint",
   ],
 }

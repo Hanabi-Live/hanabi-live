@@ -12,6 +12,7 @@ import (
 	"github.com/alexedwards/argon2id"
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/text/unicode/norm"
 )
 
 const (
@@ -104,6 +105,10 @@ func httpLogin(c *gin.Context) {
 		)
 		return
 	}
+
+	// Normalize the username to prevent errors with Unicode
+	// https://blog.golang.org/normalization
+	username = norm.NFKC.String(username)
 
 	// Trim whitespace from both sides of the username
 	username = strings.TrimSpace(username)

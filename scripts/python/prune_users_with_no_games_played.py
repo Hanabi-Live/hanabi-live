@@ -20,31 +20,42 @@ password = os.getenv('DB_PASS')
 host = os.getenv('DB_HOST')
 if host == '':
     host = 'localhost'
+port = os.getenv('DB_PORT')
+if port == '':
+    port = '5432'
 database = os.getenv('DB_NAME')
 
 # Connect to the PostgreSQL database
-# TODO
-cnx = mysql.connector.connect(
+conn = psycopg2.connect(
+    host=host,
+    port=port,
     user=user,
     password=password,
-    host=host,
-    database=database
+    database=database,
 )
 
 # Get all users
-cursor = cnx.cursor()
-query = ('SELECT id, username FROM users')
-cursor.execute(query)
-
+cursor = conn.cursor()
+cursor.execute('SELECT id, username FROM users')
+rows = cursor.fetchall()
 users = []
-for (user_id, username) in cursor:
-    users.append((user_id, username))
+for row in rows:
+    print(row[0])
+    if row[0] == 1180:
+        f = open('demofile2.txt', 'w', encoding='utf-8')
+        f.write(row[1])
+        f.close()
+        pass
+    #users.append(row)
+    print(row)
 cursor.close()
 
+sys.exit(1)
+'''
 for user in users:
     cursor = cnx.cursor()
     query = ('SELECT COUNT(game_id) FROM game_participants WHERE user_id = %s')
-    cursor.execute(query, (user[0],))
+    cursor.execute(query, (user[0], ))
     for (count) in cursor:
         num_games = count[0]
     cursor.close()
@@ -52,8 +63,9 @@ for user in users:
     if num_games == 0:
         cursor = cnx.cursor()
         query = ('DELETE FROM users WHERE id = %s')
-        cursor.execute(query, (user[0],))
+        cursor.execute(query, (user[0], ))
         print('Deleted user:', user[0])
 
 cnx.commit()
 cnx.close()
+'''

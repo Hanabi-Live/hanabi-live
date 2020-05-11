@@ -6,7 +6,7 @@ import requests
 import sys
 
 # Configuration
-emotes_file = 'betterttv.txt' # Copy-pasted from the source code of: https://api.betterttv.net/emotes
+emotes_file = 'betterttv.txt'  # Copy-pasted from the source code of: https://api.betterttv.net/emotes
 directory = 'betterttv'
 
 if not os.path.exists(directory):
