@@ -37,7 +37,8 @@ conn = psycopg2.connect(
 
 # Get all users
 cursor = conn.cursor()
-cursor.execute('SELECT id, username FROM users')
+cursor.execute('SELECT id, username FROM users WHERE id > 15000')
+# (users before 15000 are verified to have at least 1 game played)
 rows = cursor.fetchall()
 users = []
 for row in rows:
@@ -62,7 +63,7 @@ for user in users:
         cursor = conn.cursor()
         cursor.execute('DELETE FROM users WHERE id = %s', (user[0], ))
         cursor.close()
-        print('Deleted user:', user[0].encode('utf8'), flush=True)
+        print('Deleted user:', user[0], flush=True)
 
 conn.commit()
 conn.close()
