@@ -125,7 +125,7 @@ CREATE TABLE games (
     datetime_created       TIMESTAMPTZ  NOT NULL,
     datetime_started       TIMESTAMPTZ  NOT NULL,
     datetime_finished      TIMESTAMPTZ  NOT NULL,
-    FOREIGN KEY (owner) REFERENCES users (id)
+    FOREIGN KEY (owner) REFERENCES users (id) ON DELETE CASCADE
 );
 CREATE INDEX games_index_num_players ON games (num_players);
 CREATE INDEX games_index_variant     ON games (variant);
@@ -140,7 +140,7 @@ CREATE TABLE game_participants (
     character_assignment  SMALLINT  NOT NULL,
     character_metadata    SMALLINT  NOT NULL,
     FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT game_participants_unique UNIQUE (game_id, user_id)
 );
 
