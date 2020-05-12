@@ -49,8 +49,9 @@ func commandChatTyping(s *Session, d *CommandData) {
 	*/
 
 	// Update the "LastTyped" and "Typing" fields
+	// Check for spectators first in case this is a shared replay that the player happened to be in
 	name := ""
-	if j != -1 { // Check for spectators first
+	if j != -1 {
 		// They are a spectator
 		s := t.Spectators[j]
 		s.LastTyped = time.Now()
@@ -90,26 +91,20 @@ func commandChatTypingCheckStopped(t *Table, userID int) {
 	// Validate that they are in the game or are a spectator
 	i := t.GetPlayerIndexFromID(userID)
 	j := t.GetSpectatorIndexFromID(userID)
-
 	if i == -1 && j == -1 {
 		// They left the game shortly after they started typing
 		// The "typing" message is automatically removed when a player leaves a table,
 		// so we don't have to do anything
 		return
 	}
+	if t.Replay && j == -1 {
+		// Same as above
+		return
+	}
 
+	// Check for spectators first in case this is a shared replay that the player happened to be in
 	name := ""
-	if i != -1 {
-		// They are a player
-		p := t.Players[i]
-		if !p.Typing {
-			return
-		}
-		if time.Since(p.LastTyped) >= typingDelay {
-			p.Typing = false
-			name = p.Name
-		}
-	} else if j != -1 {
+	if j != -1 {
 		// They are a spectator
 		sp := t.Spectators[j]
 		if !sp.Typing {
@@ -118,6 +113,16 @@ func commandChatTypingCheckStopped(t *Table, userID int) {
 		if time.Since(sp.LastTyped) >= typingDelay {
 			sp.Typing = false
 			name = sp.Name
+		}
+	} else if i != -1 {
+		// They are a player
+		p := t.Players[i]
+		if !p.Typing {
+			return
+		}
+		if time.Since(p.LastTyped) >= typingDelay {
+			p.Typing = false
+			name = p.Name
 		}
 	}
 

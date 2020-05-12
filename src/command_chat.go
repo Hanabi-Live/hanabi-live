@@ -236,20 +236,21 @@ func commandChatTable(s *Session, d *CommandData) {
 	chatCommand(s, d, t)
 
 	// If this user was typing, set them so that they are not typing
+	// Check for spectators first in case this is a shared replay that the player happened to be in
 	if d.Server {
 		return
 	}
-	if i != -1 {
-		// They are a player
-		p := t.Players[i]
-		if p.Typing {
-			p.Typing = false
-		}
-	} else if j != -1 {
+	if j != -1 {
 		// They are a spectator
 		sp := t.Spectators[j]
 		if sp.Typing {
 			sp.Typing = false
+		}
+	} else if i != -1 {
+		// They are a player
+		p := t.Players[i]
+		if p.Typing {
+			p.Typing = false
 		}
 	}
 }
