@@ -11,7 +11,9 @@ import (
 func (t *Table) NotifyChat(chatMessage *ChatMessage) {
 	if !t.Replay {
 		for _, p := range t.Players {
-			p.Session.Emit("chat", chatMessage)
+			if p.Present {
+				p.Session.Emit("chat", chatMessage)
+			}
 		}
 	}
 
@@ -21,9 +23,11 @@ func (t *Table) NotifyChat(chatMessage *ChatMessage) {
 }
 
 func (t *Table) NotifyChatTyping(name string, typing bool) {
-	for _, p := range t.Players {
-		if p.Present && p.Name != name { // We do not need to alert the person who is typing
-			p.Session.NotifyChatTyping(name, typing)
+	if !t.Replay {
+		for _, p := range t.Players {
+			if p.Present && p.Name != name { // We do not need to alert the person who is typing
+				p.Session.NotifyChatTyping(name, typing)
+			}
 		}
 	}
 
@@ -153,14 +157,14 @@ func (t *Table) NotifySpectators() {
 }
 
 // NotifyStatus appends a new "status" action and alerts everyone
-func (t *Table) NotifyStatus(doubleDiscard bool) {
+func (t *Table) NotifyStatus() {
 	g := t.Game
 	g.Actions = append(g.Actions, ActionStatus{
 		Type:          "status",
 		Clues:         g.ClueTokens,
 		Score:         g.Score,
 		MaxScore:      g.MaxScore,
-		DoubleDiscard: doubleDiscard,
+		DoubleDiscard: g.DoubleDiscard,
 	})
 	t.NotifyGameAction()
 

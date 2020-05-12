@@ -233,7 +233,7 @@ func commandTableStart(s *Session, d *CommandData) {
 	}
 
 	// Record the initial status of the game
-	t.NotifyStatus(false) // The argument is "doubleDiscard"
+	t.NotifyStatus() // The argument is "doubleDiscard"
 
 	// Show who goes first
 	// (this must be sent before the "turn" message

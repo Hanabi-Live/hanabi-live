@@ -132,7 +132,7 @@ func commandAction(s *Session, d *CommandData) {
 	characterPostAction(d, g, p)
 
 	// Send a message about the current status
-	t.NotifyStatus(g.DoubleDiscard)
+	t.NotifyStatus()
 
 	// Adjust the timer for the player that just took their turn
 	// (if the game is over now due to a player running out of time, we don't need to adjust the
