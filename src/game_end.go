@@ -2,10 +2,15 @@ package main
 
 import (
 	"errors"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+)
+
+var (
+	seedRegexp = regexp.MustCompile(`p\dv\d+s(\d+)`)
 )
 
 func (g *Game) End() {
@@ -441,7 +446,13 @@ func (g *Game) AnnounceGameResult() {
 			msg += bibleThump + " "
 		}
 	}
-	msg += "(id: " + strconv.Itoa(g.ID) + ", seed: " + g.Seed + ")"
+	msg += "(id: " + strconv.Itoa(g.ID) + ", "
+	match := seedRegexp.FindStringSubmatch(g.Seed)
+	if match == nil {
+		logger.Error("Failed to parse the seed when ending game " + strconv.Itoa(g.ID))
+		return
+	}
+	msg += "seed: " + match[1] + ")"
 
 	commandChat(nil, &CommandData{
 		Server: true,
