@@ -23,11 +23,12 @@ const ignoreErrors = [
   'AbortError: The operation was aborted.',
   'AbortError: The play() request was interrupted by a call to pause().',
   'Failed to load because no supported source was found.',
+  'NotSupportedError: The operation is not supported.',
+  'play() can only be initiated by a user gesture.',
+  'play() failed because the user didn\'t interact with the document first.',
   'The fetching process for the media resource was aborted by the user agent at the user\'s request.',
   'The play method is not allowed by the user agent or the platform in the current context, possibly because the user denied permission.',
   'The request is not allowed by the user agent or the platform in the current context, possibly because the user denied permission.',
-  'play() can only be initiated by a user gesture.',
-  'play() failed because the user didn\'t interact with the document first.',
 ];
 
 export const setUserContext = (userID: number, username: string) => {
