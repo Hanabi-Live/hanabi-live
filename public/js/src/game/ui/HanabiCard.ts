@@ -948,8 +948,16 @@ export default class HanabiCard extends Konva.Group {
   }
 
   appendNote(note: string) {
+    // By default, set the note directly on the card
+    let newNote = note;
+
+    // If we had an existing note, append the new note to the end using pipe notation
     const existingNote = globals.ourNotes[this.order];
-    this.setNote(`${existingNote} ${note}`);
+    if (existingNote !== '') {
+      newNote = `${existingNote} | ${note}`;
+    }
+
+    this.setNote(newNote);
   }
 
   getSlotNum() {
