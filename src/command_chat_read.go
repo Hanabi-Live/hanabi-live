@@ -23,8 +23,15 @@ func commandChatRead(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are in the game or are a spectator
-	if t.GetPlayerIndexFromID(s.UserID()) == -1 && t.GetSpectatorIndexFromID(s.UserID()) == -1 {
+	i := t.GetPlayerIndexFromID(s.UserID())
+	j := t.GetSpectatorIndexFromID(s.UserID())
+	if i == -1 && j == -1 {
 		s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ", " +
+			"so you cannot acknowledge its chat.")
+		return
+	}
+	if t.Replay && j == -1 {
+		s.Warning("You are not spectating replay " + strconv.Itoa(t.ID) + ", " +
 			"so you cannot acknowledge its chat.")
 		return
 	}

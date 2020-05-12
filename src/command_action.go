@@ -59,6 +59,13 @@ func commandAction(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that it is not a replay
+	if t.Replay {
+		s.Warning("You cannot perform a game action in a shared replay.")
+		g.InvalidActionOccurred = true
+		return
+	}
+
 	// Validate that they are in the game
 	i := t.GetPlayerIndexFromID(s.UserID())
 	if i == -1 {
@@ -70,13 +77,6 @@ func commandAction(s *Session, d *CommandData) {
 	// Validate that it is this player's turn
 	if g.ActivePlayer != i && d.Type != actionTypeGameOver {
 		s.Warning("It is not your turn, so you cannot perform an action.")
-		g.InvalidActionOccurred = true
-		return
-	}
-
-	// Validate that it is not a replay
-	if t.Replay {
-		s.Warning("You cannot perform a game action in a shared replay.")
 		g.InvalidActionOccurred = true
 		return
 	}

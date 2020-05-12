@@ -38,6 +38,11 @@ func commandChatTyping(s *Session, d *CommandData) {
 			"so you cannot report that you are typing in the chat.")
 		return
 	}
+	if t.Replay && j == -1 {
+		s.Warning("You are not spectating replay " + strconv.Itoa(t.ID) + ", " +
+			"so you cannot areport that you are typing in the chat.")
+		return
+	}
 
 	/*
 		Alert everyone else that this person is now typing
@@ -45,21 +50,21 @@ func commandChatTyping(s *Session, d *CommandData) {
 
 	// Update the "LastTyped" and "Typing" fields
 	name := ""
-	if i != -1 {
-		// They are a player
-		p := t.Players[i]
-		p.LastTyped = time.Now()
-		if !p.Typing {
-			p.Typing = true
-			name = p.Name
-		}
-	} else if j != -1 {
+	if j != -1 { // Check for spectators first
 		// They are a spectator
 		s := t.Spectators[j]
 		s.LastTyped = time.Now()
 		if !s.Typing {
 			s.Typing = true
 			name = s.Name
+		}
+	} else if i != -1 {
+		// They are a player
+		p := t.Players[i]
+		p.LastTyped = time.Now()
+		if !p.Typing {
+			p.Typing = true
+			name = p.Name
 		}
 	}
 

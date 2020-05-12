@@ -31,11 +31,13 @@ func commandTableUnattend(s *Session, d *CommandData) {
 	i := t.GetPlayerIndexFromID(s.UserID())
 	j := t.GetSpectatorIndexFromID(s.UserID())
 	if i == -1 && j == -1 {
-		s.Warning("You are not playing or spectating at table " + strconv.Itoa(t.ID) + ".")
+		s.Warning("You are not playing or spectating at table " + strconv.Itoa(t.ID) + ", " +
+			"so you cannot unattend it.")
 		return
 	}
 	if t.Replay && j == -1 {
-		s.Warning("You are not spectating replay " + strconv.Itoa(t.ID) + ".")
+		s.Warning("You are not spectating replay " + strconv.Itoa(t.ID) + ", " +
+			"so you cannot unattend it.")
 		return
 	}
 
