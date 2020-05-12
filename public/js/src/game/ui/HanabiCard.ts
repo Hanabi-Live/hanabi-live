@@ -401,6 +401,11 @@ export default class HanabiCard extends Konva.Group {
         // In some variants, 1's or 5's are touched by all colors
         // So if this is a positive color clue,
         // we cannot remove any color pips from the card
+        // An exception to this is special suits touched by no colors
+        suitsRemoved = filterInPlace(
+          this.possibleSuits,
+          (suit: Suit) => !suit.noClueColors,
+        );
       } else if (
         !positive
         && (
@@ -415,6 +420,11 @@ export default class HanabiCard extends Konva.Group {
         // In some variants, 1's or 5's are not touched by any colors
         // So if this is a negative color clue,
         // we cannot remove any color pips from the card
+        // An exception to this is special suits touched by all colors
+        suitsRemoved = filterInPlace(
+          this.possibleSuits,
+          (suit: Suit) => !suit.allClueColors,
+        );
       } else {
         // The default case (e.g. No Variant)
         // Remove all possibilities that do not include this color
@@ -531,15 +541,12 @@ export default class HanabiCard extends Konva.Group {
       }
     } else if (clue.type === CLUE_TYPE.RANK) {
       const clueRank = clue.value as number;
+      // ranksRemoved keeps track of ranks removed for normal suits touched by their own rank
+      // This allows for proper checking of possibilities to cross out suit pips
+      // For pink/brown suits no rank pips can be removed, which is rectified later
       if (globals.variant.rankCluesTouchNothing) {
         // Some variants have rank clues touch no cards
         // If this is the case, we cannot remove any rank pips from the card
-      } else if (this.possibleSuits.some((suit) => suit.allClueRanks) && positive) {
-        // Some cards are touched by all ranks,
-        // so if this is a positive rank clue, we cannot remove any rank pips from the card
-      } else if (this.possibleSuits.some((suit) => suit.noClueRanks) && !positive) {
-        // Some suits are not touched by any ranks,
-        // so if this is a negative rank clue, we cannot remove any rank pips from the card
       } else if (
         (
           // Checking for "Pink-" also checks for "Light-Pink-"
@@ -548,9 +555,8 @@ export default class HanabiCard extends Konva.Group {
         ) && this.possibleRanks.includes(1)
       ) {
         // In some variants, the 1 of every suit is touched by all rank clues
-        ranksRemoved = filterInPlace(
-          this.possibleRanks,
-          (rank: number) => (rank === clueRank || rank === 1) === positive,
+        ranksRemoved = this.possibleRanks.filter(
+          (rank: number) => (rank === clueRank || rank === 1) !== positive,
         );
       } else if (
         (
@@ -560,9 +566,8 @@ export default class HanabiCard extends Konva.Group {
         ) && this.possibleRanks.includes(5)
       ) {
         // In some variants, the 5 of every suit is touched by all rank clues
-        ranksRemoved = filterInPlace(
-          this.possibleRanks,
-          (rank: number) => (rank === clueRank || rank === 5) === positive,
+        ranksRemoved = this.possibleRanks.filter(
+          (rank: number) => (rank === clueRank || rank === 5) !== positive,
         );
       } else if (
         (
@@ -572,9 +577,8 @@ export default class HanabiCard extends Konva.Group {
         ) && this.possibleRanks.includes(1)
       ) {
         // In some variants, the 1 of every suit is not touched by any rank clues
-        ranksRemoved = filterInPlace(
-          this.possibleRanks,
-          (rank: number) => (rank === clueRank && rank !== 1) === positive,
+        ranksRemoved = this.possibleRanks.filter(
+          (rank: number) => (rank === clueRank || rank !== 1) !== positive,
         );
       } else if (
         (
@@ -584,16 +588,14 @@ export default class HanabiCard extends Konva.Group {
         ) && this.possibleRanks.includes(5)
       ) {
         // In some variants, the 5 of every suit is not touched by any rank clues
-        ranksRemoved = filterInPlace(
-          this.possibleRanks,
-          (rank: number) => (rank === clueRank && rank !== 5) === positive,
+        ranksRemoved = this.possibleRanks.filter(
+          (rank: number) => (rank === clueRank || rank !== 5) !== positive,
         );
       } else {
         // The default case (e.g. No Variant)
         // Remove all possibilities that do not include this rank
-        ranksRemoved = filterInPlace(
-          this.possibleRanks,
-          (rank: number) => (rank === clueRank) === positive,
+        ranksRemoved = this.possibleRanks.filter(
+          (rank: number) => (rank === clueRank) !== positive,
         );
       }
 
@@ -637,6 +639,30 @@ export default class HanabiCard extends Konva.Group {
           pip.showPositiveClue();
         }
       }
+
+      if (possibilitiesCheck()) {
+        for (const suit of this.possibleSuits) {
+          // We can remove possibilities for normal suits touched by their own rank
+          if (!suit.allClueRanks && !suit.noClueRanks) {
+            for (const rank of ranksRemoved) {
+              this.removePossibility(suit, rank, true);
+            }
+          }
+        }
+      }
+
+      if (this.possibleSuits.some((suit) => suit.allClueRanks) && positive) {
+        // Some cards are touched by all ranks,
+        // so if this is a positive rank clue, we cannot remove any rank pips from the card
+        ranksRemoved = [];
+      } else if (this.possibleSuits.some((suit) => suit.noClueRanks) && !positive) {
+        // Some suits are not touched by any ranks,
+        // so if this is a negative rank clue, we cannot remove any rank pips from the card
+        ranksRemoved = [];
+      } else {
+        // We can safely remove the ranks from possible ranks
+        filterInPlace(this.possibleRanks, (rank: number) => ranksRemoved.indexOf(rank) === -1);
+      }
     }
 
     // Remove rank pips, if any
@@ -644,13 +670,6 @@ export default class HanabiCard extends Konva.Group {
       // Hide the rank pips
       this.rankPipsMap.get(rank)!.hide();
       this.rankPipsXMap.get(rank)!.hide();
-
-      // Remove any card possibilities for this rank
-      if (possibilitiesCheck()) {
-        for (const suit of globals.variant.suits) {
-          this.removePossibility(suit, rank, true);
-        }
-      }
 
       if (
         // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
@@ -1226,7 +1245,7 @@ export default class HanabiCard extends Konva.Group {
     if (cardsLeft > 0) {
       // Remove one or all possibilities for this card,
       // (depending on whether the card was clued
-      // or if we saw someone draw aw copy of this card)
+      // or if we saw someone draw a copy of this card)
       cardsLeft = all ? 0 : cardsLeft - 1;
       this.possibleCards.set(mapIndex, cardsLeft);
       this.checkPipPossibilities(suit, rank);
