@@ -242,8 +242,12 @@ table td {
   border-radius: 4px;
 }
 
+.login-text {
+  color: #f2f2f2;
+  text-align: center;
+}
+
 #title-discord {
-  margin-top: 3em;
   width: 5em;
 }
 
