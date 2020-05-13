@@ -13,7 +13,7 @@ import {
 import Suit from '../../Suit';
 import Variant from '../../Variant';
 import drawPip from './drawPip';
-import drawRank from './drawRank';
+import drawStylizedRank from './drawStylizedRank';
 
 // This function returns an object containing all of the drawn cards images (on individual canvases)
 export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean) => {
@@ -80,7 +80,7 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
         // Draw the rank on the top left
         if (styleNumbers && !colorblindMode) {
           ctx.save();
-          drawRank(ctx, rank);
+          drawStylizedRank(ctx, rank);
           ctx.restore();
           ctx.fill();
           ctx.stroke();
@@ -99,7 +99,7 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
         ctx.translate(CARD_W, CARD_H);
         ctx.rotate(Math.PI);
         if (styleNumbers && !colorblindMode) {
-          drawRank(ctx, rank);
+          drawStylizedRank(ctx, rank);
           ctx.restore();
           ctx.translate(CARD_W, CARD_H);
           ctx.rotate(Math.PI);
