@@ -1110,27 +1110,11 @@ const drawYourTurn = () => {
     y: 0.003 * winH,
     fontSize: 0.034 * winH,
     fontFamily: 'Verdana',
-    fill: LABEL_COLOR,
+    fill: 'yellow',
     align: 'center',
     text: 'Your\nTurn',
   });
   globals.elements.yourTurn.add(text);
-
-  globals.elements.yourTurnTween = new Konva.Tween({
-    node: text,
-    fill: 'yellow',
-    duration: 2,
-    onFinish: () => {
-      if (globals.elements.yourTurnTween !== null) {
-        globals.elements.yourTurnTween.reverse();
-      }
-    },
-    onReset: () => {
-      if (globals.elements.yourTurnTween !== null) {
-        globals.elements.yourTurnTween.play();
-      }
-    },
-  });
 };
 
 const drawClueLog = () => {
