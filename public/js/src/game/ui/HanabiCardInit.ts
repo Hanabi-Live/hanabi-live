@@ -36,16 +36,17 @@ export function image(this: HanabiCard) {
   this.add(this.bare);
 }
 
+const borderCornerRadius = 6;
+const borderStrokeWidth = 16;
+
 export function border(this: HanabiCard) {
   // The card will get a border when it becomes clued
   this.cluedBorder = new Konva.Rect({
-    x: 3,
-    y: 3,
-    width: CARD_W - 6,
-    height: CARD_H - 6,
-    cornerRadius: 6,
-    strokeWidth: 16,
-    stroke: globals.lobby.settings.colorblindMode ? 'black' : 'orange',
+    width: CARD_W,
+    height: CARD_H,
+    cornerRadius: borderCornerRadius,
+    strokeWidth: borderStrokeWidth,
+    stroke: '#0d0d0d', // Off-black
     visible: false,
     listening: false,
   });
@@ -53,12 +54,10 @@ export function border(this: HanabiCard) {
 
   // The card will get a special border if the player tells us that it is chop moved
   this.chopMoveBorder = new Konva.Rect({
-    x: 3,
-    y: 3,
-    width: CARD_W - 6,
-    height: CARD_H - 6,
-    cornerRadius: 6,
-    strokeWidth: 16,
+    width: CARD_W,
+    height: CARD_H,
+    cornerRadius: borderCornerRadius,
+    strokeWidth: borderStrokeWidth,
     stroke: '#fffce6', // White with a yellow tint
     visible: false,
     listening: false,
@@ -67,12 +66,10 @@ export function border(this: HanabiCard) {
 
   // The card will get a special border if the player tells us that it is finessed
   this.finesseBorder = new Konva.Rect({
-    x: 3,
-    y: 3,
-    width: CARD_W - 6,
-    height: CARD_H - 6,
-    cornerRadius: 6,
-    strokeWidth: 16,
+    width: CARD_W,
+    height: CARD_H,
+    cornerRadius: borderCornerRadius,
+    strokeWidth: borderStrokeWidth,
     stroke: 'aqua',
     visible: false,
     listening: false,

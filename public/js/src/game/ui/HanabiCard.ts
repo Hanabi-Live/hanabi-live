@@ -224,12 +224,6 @@ export default class HanabiCard extends Konva.Group {
       }
     }
 
-    // "Card-Unknown" is not created, so use "NoPip-Unknown"
-    let prefix = 'Card';
-    if (suitToShow!.name === 'Unknown') {
-      prefix = 'NoPip';
-    }
-
     // Find out the rank to display
     // (6 is a used for unclued cards)
     let rankToShow;
@@ -262,9 +256,10 @@ export default class HanabiCard extends Konva.Group {
     }
 
     // Set the name
-    // (but in Real-Life mode or Cow & Pig / Duck variants,
-    // always show the vanilla card back if the card is not fully revealed)
+    // (setting "this.bareName" will automatically update how the card appears the next time that
+    // the "card" layer is drawn)
     if (
+      // A "blank" note overrides everything
       this.noteBlank
       && !this.empathy
       && !this.isPlayed
@@ -280,9 +275,11 @@ export default class HanabiCard extends Konva.Group {
         || globals.variant.name.startsWith('Duck')
       ) && (suitToShow!.name === 'Unknown' || rankToShow === 6)
     ) {
+      // In Real-Life mode or Cow & Pig / Duck variants,
+      // always show the vanilla card back if the card is not fully revealed
       this.bareName = 'deck-back';
     } else {
-      this.bareName = `${prefix}-${suitToShow!.name}-${rankToShow}`;
+      this.bareName = `card-${suitToShow!.name}-${rankToShow}`;
     }
 
     // Show or hide the pips

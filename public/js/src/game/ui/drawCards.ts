@@ -19,22 +19,25 @@ import drawStylizedRank from './drawStylizedRank';
 export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean) => {
   const cardImages: Map<string, HTMLCanvasElement> = new Map();
 
-  // Add the "unknown" suit to the list of suits for this variant
-  // The unknown suit has semi-blank gray cards, representing unknown cards
+  // Add the "Unknown" suit to the list of suits for this variant
+  // The unknown suit has blank white cards, representing cards of known rank but unknown suit
   const unknownSuit = SUITS.get('Unknown');
   if (typeof unknownSuit === 'undefined') {
     throw new Error('Failed to get the "Unknown" variant in the "drawCards()" function.');
   }
   const suits = variant.suits.concat(unknownSuit);
 
-  for (let i = 0; i < suits.length; i++) {
-    const suit = suits[i];
-
+  for (const suit of suits) {
     // Rank 0 is the stack base
     // Rank 1-5 are the normal cards
     // Rank 6 is a card of unknown rank
     // Rank 7 is a "START" card (in the "Up or Down" variants)
     for (let rank = 0; rank <= 7; rank++) {
+      // We only need unknown cards for 1 through 5
+      if (suit.name === 'Unknown' && (rank === 0 || rank >= 6)) {
+        continue;
+      }
+
       const cvs = initCanvas();
       const ctx = cvs.getContext('2d');
       if (ctx === null) {
@@ -42,7 +45,7 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
       }
 
       // We don't need the cross texture pattern on the stack base
-      if (rank !== 0) {
+      if (rank !== STACK_BASE_RANK) {
         drawCardTexture(ctx);
       }
 
@@ -51,6 +54,7 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
         drawMixedCardHelper(ctx, suit.clueColors);
       }
 
+      // Draw the background and the borders around the card
       drawCardBase(ctx, suit, rank, colorblindMode);
 
       ctx.shadowBlur = 10;
@@ -113,29 +117,24 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
         ctx.restore();
       }
 
-      // "NoPip" cards are used for
-      // - cards of known rank before suit learned
-      // - cards of unknown rank
-      // Entirely unknown cards (e.g. "NoPip-Unknown-6")
-      // have a custom image defined separately
-      if (rank >= 1 && (rank <= 5 || suit.name !== 'Unknown')) {
-        const cardImagesIndex = `NoPip-${suit.name}-${rank}`;
-        cardImages.set(cardImagesIndex, cloneCanvas(cvs));
-      }
-
+      // The "Unknown" suit does not have pips
+      // (it is a white suit that is used for cards that are clued with rank)
       if (suit.name !== 'Unknown') {
         drawSuitPips(ctx, rank, suit, colorblindMode);
       }
 
-      // "Card-Unknown" images would be identical to "NoPip-Unknown" images
-      if (suit.name !== 'Unknown') {
-        const cardImagesIndex = `Card-${suit.name}-${rank}`;
-        cardImages.set(cardImagesIndex, cvs);
-      }
+      const cardImagesIndex = `card-${suit.name}-${rank}`;
+      cardImages.set(cardImagesIndex, cvs);
     }
   }
 
-  cardImages.set(`NoPip-Unknown-${UNKNOWN_CARD_RANK}`, makeUnknownCard());
+  // Unknown 6 is a card that is completely unknown
+  // This is a special case; we want to render completely unknown cards as a blank gray card
+  // (instead of a blank white card)
+  cardImages.set(`card-Unknown-${UNKNOWN_CARD_RANK}`, makeUnknownCard());
+
+  // Additionally, create an image for the deck back
+  // This is similar to the Unknown 6 card, except it has pips for each suit
   cardImages.set('deck-back', makeDeckBack(variant));
 
   return cardImages;
