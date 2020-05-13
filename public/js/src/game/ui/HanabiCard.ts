@@ -578,7 +578,7 @@ export default class HanabiCard extends Konva.Group {
       ) {
         // In some variants, the 1 of every suit is not touched by any rank clues
         ranksRemoved = this.possibleRanks.filter(
-          (rank: number) => (rank === clueRank || rank !== 1) !== positive,
+          (rank: number) => (rank === clueRank && rank !== 1) !== positive,
         );
       } else if (
         (
@@ -589,7 +589,7 @@ export default class HanabiCard extends Konva.Group {
       ) {
         // In some variants, the 5 of every suit is not touched by any rank clues
         ranksRemoved = this.possibleRanks.filter(
-          (rank: number) => (rank === clueRank || rank !== 5) !== positive,
+          (rank: number) => (rank === clueRank && rank !== 5) !== positive,
         );
       } else {
         // The default case (e.g. No Variant)
