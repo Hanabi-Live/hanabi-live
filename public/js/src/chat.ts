@@ -254,6 +254,15 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
       }, false);
       return;
     }
+
+    if (command === 'warning') {
+      let warning = args.join(' ');
+      if (warning === '') {
+        warning = 'This is a warning!';
+      }
+      modals.warningShow(warning);
+      return;
+    }
   }
 
   // This is not a command, so send a the chat message to the server

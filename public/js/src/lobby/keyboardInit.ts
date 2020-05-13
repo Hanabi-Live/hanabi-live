@@ -2,6 +2,7 @@
 
 // Imports
 import globals from '../globals';
+import * as modals from '../modals';
 
 export default () => {
   $(document).keydown((event) => {
@@ -59,19 +60,28 @@ export default () => {
       if (globals.currentScreen === 'pregame') {
         $('#nav-buttons-pregame-leave').click();
       }
-    } else if (
-      (event.altKey && (event.key === 'r' || event.key === '®')) // Alt + r
-      || event.key === 'Escape'
-    ) {
-      // Click on the "Return to Lobby" button
-      // (either at the "game" screen or the "history" screen or the "scores" screen)
-      if (globals.currentScreen === 'pregame') {
-        $('#nav-buttons-pregame-unattend').click();
-      } else if (globals.currentScreen === 'history') {
-        $('#nav-buttons-history-return').click();
-      } else if (globals.currentScreen === 'historyOtherScores') {
-        $('#nav-buttons-history-other-scores-return').click();
+    } else if (event.altKey && (event.key === 'r' || event.key === '®')) { // Alt + r
+      clickReturnToLobby();
+    } else if (event.key === 'Escape') {
+      // If a modal is open, pressing escape should close it
+      // Otherwise, pressing escape should go "back" one screen
+      if (globals.modalShowing) {
+        modals.closeAll();
+      } else {
+        clickReturnToLobby();
       }
     }
   });
+};
+
+const clickReturnToLobby = () => {
+  // Click on the "Return to Lobby" button
+  // (either at the "game" screen or the "history" screen or the "scores" screen)
+  if (globals.currentScreen === 'pregame') {
+    $('#nav-buttons-pregame-unattend').click();
+  } else if (globals.currentScreen === 'history') {
+    $('#nav-buttons-history-return').click();
+  } else if (globals.currentScreen === 'historyOtherScores') {
+    $('#nav-buttons-history-other-scores-return').click();
+  }
 };

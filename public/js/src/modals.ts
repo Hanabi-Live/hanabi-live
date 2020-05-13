@@ -9,15 +9,15 @@ import * as misc from './misc';
 import * as sounds from './sounds';
 
 // The list of all of the modals
-const modals = [
+const lobbyModals = [
   'password',
   // "warning" and "error" are intentionally omitted, as they are handled separately
 ];
 
 // Initialize various element behavior within the modals
 export const init = () => {
-  // All modals
-  for (const modal of modals) {
+  // There are not currently any game modals
+  for (const modal of lobbyModals) {
     $(`#${modal}-modal-cancel`).click(closeAll);
   }
 
@@ -34,10 +34,14 @@ export const init = () => {
   $('#warning-modal-button').click(() => {
     $('#warning-modal').fadeOut(FADE_TIME);
     if ($('#lobby').is(':visible')) {
-      $('#lobby').fadeTo(FADE_TIME, 1);
+      $('#lobby').fadeTo(FADE_TIME, 1, () => {
+        globals.modalShowing = false;
+      });
     }
     if ($('#game').is(':visible')) {
-      $('#game').fadeTo(FADE_TIME, 1);
+      $('#game').fadeTo(FADE_TIME, 1, () => {
+        globals.modalShowing = false;
+      });
     }
   });
 
@@ -50,6 +54,7 @@ export const init = () => {
 export const passwordShow = (tableID: number) => {
   $('#lobby').fadeTo(FADE_TIME, 0.25);
   misc.closeAllTooltips();
+  globals.modalShowing = true;
 
   $('#password-modal-id').val(tableID);
   $('#password-modal').fadeIn(FADE_TIME);
@@ -58,7 +63,9 @@ export const passwordShow = (tableID: number) => {
 
 const passwordSubmit = () => {
   $('#password-modal').fadeOut(FADE_TIME);
-  $('#lobby').fadeTo(FADE_TIME, 1);
+  $('#lobby').fadeTo(FADE_TIME, 1, () => {
+    globals.modalShowing = false;
+  });
   const tableIDString = $('#password-modal-id').val();
   if (typeof tableIDString !== 'string') {
     throw new Error('The "password-modal-id" element does not have a string value.');
@@ -86,6 +93,7 @@ export const warningShow = (msg: string) => {
   }
   misc.closeAllTooltips();
   gameChat.hide();
+  globals.modalShowing = true;
 
   $('#warning-modal-description').html(msg);
   $('#warning-modal').fadeIn(FADE_TIME);
@@ -106,6 +114,7 @@ export const errorShow = (msg: string) => {
   }
   misc.closeAllTooltips();
   gameChat.hide();
+  globals.modalShowing = true;
 
   // Clear out the top navigation buttons
   lobbyNav.show('nothing');
@@ -120,8 +129,17 @@ export const errorShow = (msg: string) => {
 };
 
 export const closeAll = () => {
-  for (const modal of modals) {
+  // Error modals cannot be closed, since we want to force the user to refresh the page
+  if ($('#error-modal').is(':visible')) {
+    return;
+  }
+
+  for (const modal of lobbyModals) {
     $(`#${modal}-modal`).fadeOut(FADE_TIME);
   }
-  $('#lobby').fadeTo(FADE_TIME, 1);
+  $('#warning-modal').fadeOut(FADE_TIME);
+
+  $('#lobby').fadeTo(FADE_TIME, 1, () => {
+    globals.modalShowing = false;
+  });
 };
