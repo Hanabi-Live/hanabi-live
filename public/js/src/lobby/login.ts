@@ -143,7 +143,6 @@ export const automaticLogin = () => {
     // Show the login screen
     $('#loading').hide();
     $('#sign-in').show();
-    $('#title-discord').show();
     $('#login-username').focus();
   });
 };
