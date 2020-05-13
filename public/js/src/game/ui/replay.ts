@@ -76,7 +76,15 @@ export const exit = () => {
   globals.layers.card.batchDraw();
 };
 
-export const goto = (target: number, fast: boolean) => {
+export const goto = (target: number, fast: boolean, force?: boolean) => {
+  if (globals.hypothetical && !force) {
+    // Don't allow the user to "break free" in a hypothetical
+    // (e.g. by clicking on a clue entry in the top-right hand corner)
+    // "force" will be set to true if this function is being called from a function in
+    // "hypothetical.ts"
+    return;
+  }
+
   // Validate function arguments
   if (target < 0) {
     target = 0;
@@ -439,6 +447,10 @@ export const toggleSharedTurns = () => {
 
 // Navigating as a follower in a shared replay disables replay actions
 export const checkDisableSharedTurns = () => {
+  if (globals.hypothetical) {
+    // Don't allow the user to "break free" in a hypothetical
+    return;
+  }
   if (
     globals.replay
     && globals.sharedReplay

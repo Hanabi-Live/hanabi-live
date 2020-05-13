@@ -119,7 +119,7 @@ export const end = () => {
   // so set the current replay turn to the end of the game to force it to draw/compute the
   // game from the beginning
   globals.replayTurn = globals.replayMax;
-  replay.goto(globals.sharedReplayTurn, true);
+  replay.goto(globals.sharedReplayTurn, true, true);
 };
 
 export const beginTurn = () => {
@@ -330,7 +330,7 @@ export const backOneTurn = () => {
 
   // Reset to the turn where the hypothetical started
   globals.replayTurn = globals.replayMax;
-  replay.goto(globals.sharedReplayTurn, true);
+  replay.goto(globals.sharedReplayTurn, true, true);
 
   // Replay all of the hypothetical actions
   playThroughPastActions();
