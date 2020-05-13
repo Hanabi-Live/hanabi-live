@@ -1,5 +1,9 @@
 const shapeFunctions: Map<number, (ctx: CanvasRenderingContext2D) => void> = new Map();
-const sf = 1.8; // Scale factor
+const sf = 2.2; // Scale factor
+
+shapeFunctions.set(0, (ctx: CanvasRenderingContext2D) => {
+  ctx.beginPath();
+});
 
 shapeFunctions.set(1, (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
@@ -215,21 +219,16 @@ shapeFunctions.set(7, (ctx: CanvasRenderingContext2D) => {
   ctx.closePath();
 });
 
-shapeFunctions.set(0, (ctx: CanvasRenderingContext2D) => {
-  ctx.beginPath();
-});
-
-export default function drawRank(
-  ctx: CanvasRenderingContext2D,
-  rank: number,
-) {
+export default (ctx: CanvasRenderingContext2D, rank: number) => {
   // Each rank has a shape
   const shapeFunction = shapeFunctions.get(rank);
   if (!shapeFunction) {
     throw new Error(`Failed to find the shape function for rank "${rank}".`);
   }
+
+  // Move the cursor to the top-left hand corner
+  ctx.translate(60, 135);
+
   // Draw the respective shape on the canvas
-  // (or, for text pips, define the type of text)
-  ctx.translate(60, 110);
   shapeFunction(ctx);
-}
+};

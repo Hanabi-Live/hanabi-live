@@ -24,8 +24,7 @@ func chatHere(s *Session, d *CommandData, t *Table) {
 	if time.Since(discordLastAtHere) < discordAtHereTimeout {
 		timeCanPingAgain := discordLastAtHere.Add(discordAtHereTimeout)
 		minutesLeft := int(math.Ceil(time.Until(timeCanPingAgain).Minutes()))
-		msg += "In order to prevent spam, "
-		msg += "you need to wait "
+		msg += "In order to prevent spam, you need to wait "
 		if minutesLeft == 1 {
 			msg += "a minute "
 		} else {

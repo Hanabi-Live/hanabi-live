@@ -447,6 +447,7 @@ func (g *Game) AnnounceGameResult() {
 		}
 	}
 	msg += "(id: " + strconv.Itoa(g.ID) + ", "
+	// Instead of displaying the full seed (e.g. "p2v0s1"), only communicate the final number suffix
 	match := seedRegexp.FindStringSubmatch(g.Seed)
 	if match == nil {
 		logger.Error("Failed to parse the seed when ending game " + strconv.Itoa(g.ID))

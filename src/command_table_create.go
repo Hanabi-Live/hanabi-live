@@ -381,8 +381,8 @@ func commandTableCreate(s *Session, d *CommandData) {
 		timeLeft := shutdownTimeout - time.Since(datetimeShutdownInit)
 		minutesLeft := int(timeLeft.Minutes())
 
-		msg := "The server is shutting down in " + strconv.Itoa(minutesLeft) + " minutes. "
-		msg += "Keep in mind that if your game is not finished in time, it will be terminated."
+		msg := "The server is shutting down in " + strconv.Itoa(minutesLeft) + " minutes. " +
+			"Keep in mind that if your game is not finished in time, it will be terminated."
 		chatServerSend(msg, "table"+strconv.Itoa(t.ID))
 	}
 }

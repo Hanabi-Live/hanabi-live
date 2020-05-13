@@ -11,6 +11,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | /help                    | Get the link to this page
 | /discord                 | Get the link for the [Hanabi Discord server](https://discord.gg/FADvkJp)
 | /rules                   | Get the link for the [Hanabi Community Guidelines](https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md)
+| /new                     | Displays a stock message for new users, encouraging them to join the Discord server
 | /replay [game ID] [turn] | Generate a link to a replay so that you can share it with others
 | /random [min] [max]      | Get a random number
 | /uptime                  | Get how long the server has been online
