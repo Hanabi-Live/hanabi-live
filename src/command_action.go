@@ -222,7 +222,7 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Send the "yourTurn" message to the next player
-	nps.NotifyYourTurn()
+	nps.NotifyYourTurn(t)
 
 	// Send everyone new clock values
 	t.NotifyTime()

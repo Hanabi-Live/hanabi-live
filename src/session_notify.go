@@ -230,8 +230,13 @@ func (s *Session) NotifyConnected(t *Table) {
 
 // NotifyYourTurn will send someone an "yourTurn" message
 // This is sent at the beginning of their turn to bring up the clue UI
-func (s *Session) NotifyYourTurn() {
-	s.Emit("yourTurn", nil)
+func (s *Session) NotifyYourTurn(t *Table) {
+	type YourTurnMessage struct {
+		TableID int `json:"tableID"`
+	}
+	s.Emit("yourTurn", &YourTurnMessage{
+		TableID: t.ID,
+	})
 }
 
 func (s *Session) NotifyGameAction(action interface{}, t *Table) {
