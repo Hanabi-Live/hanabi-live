@@ -648,8 +648,9 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: string[])
 export default (
   ctx: CanvasRenderingContext2D,
   suit: Suit,
-  shadow: boolean,
-  fill?: string,
+  shadow?: boolean,
+  thickBorder?: boolean,
+  customFill?: string,
 ) => {
   // Each suit has a shape defined in the "suits.json" file (as the 'pip' property)
   const shapeFunction = shapeFunctions.get(suit.pip);
@@ -658,18 +659,19 @@ export default (
   }
 
   // Handle the shadow
-  if (shadow) {
+  ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+  if (typeof shadow !== 'undefined' && shadow) {
     ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
   }
 
-  if (fill) {
+  if (typeof customFill !== 'undefined') {
     // The parent function has specified a custom fill color
-    ctx.fillStyle = fill;
+    ctx.fillStyle = customFill;
     shapeFunction(ctx);
     ctx.fill();
   } else if (suit.fill === 'multi') {
-    // Rainbow and omni cards have a multiple color fill
-    // which is passed as an array to the drawing function
+    // Rainbow and omni cards have a multiple color fill which is passed as an array to
+    // the drawing function
     // The drawing function will handle the filling
     shapeFunction(ctx, suit.fillColors);
   } else {
@@ -680,9 +682,14 @@ export default (
   }
 
   // Draw a black border around the shape
-  ctx.lineWidth = fill ? 8 : 5;
-  if (shadow) {
-    ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+  if (typeof customFill !== 'undefined') {
+    ctx.lineWidth = 8;
+  } else {
+    ctx.lineWidth = 3;
   }
+  if (typeof thickBorder !== 'undefined' && thickBorder) {
+    ctx.lineWidth = 7;
+  }
+  ctx.shadowColor = 'rgba(0, 0, 0, 0)';
   ctx.stroke();
 };

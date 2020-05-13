@@ -651,7 +651,7 @@ const drawDeck = () => {
     y: deckValues.y * winH,
     width: deckValues.w! * winW,
     height: deckValues.h! * winH,
-    cardBack: 'deck-back',
+    cardBack: 'deck',
     suits: globals.variant.suits,
   });
   globals.layers.card.add(globals.elements.deck as any);

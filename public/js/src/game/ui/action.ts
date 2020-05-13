@@ -284,11 +284,6 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   card.suit = suit; // This will be null if we don't know the suit
   card.rank = rank; // This will be null if we don't know the rank
   card.refresh();
-  if (suit && rank) {
-    // Hide the pips if we have full knowledge of the suit / rank
-    card.suitPips!.visible(false);
-    card.rankPips!.visible(false);
-  }
 
   // Each card is contained within a LayoutChild
   // Position the LayoutChild over the deck

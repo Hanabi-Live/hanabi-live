@@ -17,6 +17,8 @@ import {
 import Suit from '../../Suit';
 import Clue from './Clue';
 import { msgSuitToSuit, suitToMsgSuit } from './convert';
+import drawPip from './drawPip';
+import FitText from './FitText';
 import globals from './globals';
 import * as HanabiCardInit from './HanabiCardInit';
 import NoteIndicator from './NoteIndicator';
@@ -72,9 +74,11 @@ export default class HanabiCard extends Konva.Group {
   suitPips: Konva.Group | null = null;
   suitPipsMap: Map<Suit, Konva.Shape> = new Map();
   suitPipsXMap: Map<Suit, Konva.Shape> = new Map();
+  suitIndicator: Konva.Shape | null = null;
   rankPips: Konva.Group | null = null;
   rankPipsMap: Map<number, RankPip> = new Map();
   rankPipsXMap: Map<number, Konva.Shape> = new Map();
+  rankIndicator: FitText | null = null;
   noteIndicator: NoteIndicator | null = null;
   tooltipName: string = '';
   trashcan: Konva.Image | null = null;
@@ -164,6 +168,9 @@ export default class HanabiCard extends Konva.Group {
         suitPipX.hide();
       }
     }
+    if (this.suitIndicator !== null) {
+      this.suitIndicator.hide();
+    }
     if (this.rankPipsMap) {
       for (const [, rankPip] of this.rankPipsMap) {
         rankPip.show();
@@ -174,6 +181,9 @@ export default class HanabiCard extends Konva.Group {
       for (const [, rankPipX] of this.rankPipsXMap) {
         rankPipX.hide();
       }
+    }
+    if (this.rankIndicator !== null) {
+      this.rankIndicator.hide();
     }
 
     HanabiCardInit.possibilities.call(this);
@@ -224,12 +234,6 @@ export default class HanabiCard extends Konva.Group {
       }
     }
 
-    // "Card-Unknown" is not created, so use "NoPip-Unknown"
-    let prefix = 'Card';
-    if (suitToShow!.name === 'Unknown') {
-      prefix = 'NoPip';
-    }
-
     // Find out the rank to display
     // (6 is a used for unclued cards)
     let rankToShow;
@@ -262,9 +266,10 @@ export default class HanabiCard extends Konva.Group {
     }
 
     // Set the name
-    // (but in Real-Life mode or Cow & Pig / Duck variants,
-    // always show the vanilla card back if the card is not fully revealed)
+    // (setting "this.bareName" will automatically update how the card appears the next time that
+    // the "card" layer is drawn)
     if (
+      // A "blank" note overrides everything
       this.noteBlank
       && !this.empathy
       && !this.isPlayed
@@ -272,31 +277,47 @@ export default class HanabiCard extends Konva.Group {
       && !globals.replay
       && !globals.spectating
     ) {
-      this.bareName = 'deck-back';
+      this.bareName = 'deck';
     } else if (
+      // In Real-Life mode or Cow & Pig / Duck variants,
+      // always show the vanilla card back if the card is not fully revealed
       (
         globals.lobby.settings.realLifeMode
         || globals.variant.name.startsWith('Cow & Pig')
         || globals.variant.name.startsWith('Duck')
       ) && (suitToShow!.name === 'Unknown' || rankToShow === 6)
     ) {
-      this.bareName = 'deck-back';
+      this.bareName = 'deck';
+    } else if (
+      (this.possibleSuits.length === 1 && this.possibleRanks.length === 1)
+      || this.isPlayed
+      || this.isDiscarded
+    ) {
+      // This card is globally revealed
+      // (e.g. it has either been completely "filled in" with clues, played, or discarded)
+      this.bareName = `revealed-${this.suit!.name}-${this.rank!}`;
     } else {
-      this.bareName = `${prefix}-${suitToShow!.name}-${rankToShow}`;
+      // The card is not yet globally revealed
+      // (it may be unknown to us, or unknown to only certain players)
+      this.bareName = `card-${suitToShow!.name}-${rankToShow}`;
     }
 
     // Show or hide the pips
-    if (
-      this.bareName === 'known-trash'
+    const shouldHidePips = (
+      this.bareName.startsWith('revealed-')
+      || rankToShow === STACK_BASE_RANK
       || globals.lobby.settings.realLifeMode
       || globals.variant.name.startsWith('Cow & Pig')
       || globals.variant.name.startsWith('Duck')
-    ) {
-      this.suitPips!.hide();
-      this.rankPips!.hide();
-    } else {
-      this.suitPips!.visible(suitToShow!.name === 'Unknown');
-      this.rankPips!.visible(rankToShow === 6);
+    );
+    this.suitPips!.visible(!shouldHidePips);
+    this.rankPips!.visible(!shouldHidePips);
+
+    // Revealed cards should not show the rank/suit indicators,
+    // since the rank and the suit are "baked" into the card image
+    if (this.bareName.startsWith('revealed-')) {
+      this.suitIndicator!.hide();
+      this.rankIndicator!.hide();
     }
 
     // Show or hide the "trash" image
@@ -683,6 +704,8 @@ export default class HanabiCard extends Konva.Group {
         globals.learnedCards[this.order].rank = this.rank;
         this.rankPipsMap.get(this.rank)!.hide();
         this.rankPips!.hide();
+        this.rankIndicator!.text(this.rank.toString());
+        this.rankIndicator!.show();
       }
     }
 
@@ -713,6 +736,11 @@ export default class HanabiCard extends Konva.Group {
         globals.learnedCards[this.order].suit = this.suit;
         this.suitPipsMap.get(this.suit)!.hide();
         this.suitPips!.hide();
+        this.suitIndicator!.sceneFunc((ctx: any) => {
+          ctx.shadowBlur = 5;
+          drawPip(ctx, this.suit!, true);
+        });
+        this.suitIndicator!.show();
       }
     }
 

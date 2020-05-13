@@ -19,22 +19,25 @@ import drawStylizedRank from './drawStylizedRank';
 export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean) => {
   const cardImages: Map<string, HTMLCanvasElement> = new Map();
 
-  // Add the "unknown" suit to the list of suits for this variant
-  // The unknown suit has semi-blank gray cards, representing unknown cards
+  // Add the "Unknown" suit to the list of suits for this variant
+  // The unknown suit has blank white cards, representing cards of known rank but unknown suit
   const unknownSuit = SUITS.get('Unknown');
   if (typeof unknownSuit === 'undefined') {
     throw new Error('Failed to get the "Unknown" variant in the "drawCards()" function.');
   }
   const suits = variant.suits.concat(unknownSuit);
 
-  for (let i = 0; i < suits.length; i++) {
-    const suit = suits[i];
-
+  for (const suit of suits) {
     // Rank 0 is the stack base
     // Rank 1-5 are the normal cards
     // Rank 6 is a card of unknown rank
     // Rank 7 is a "START" card (in the "Up or Down" variants)
     for (let rank = 0; rank <= 7; rank++) {
+      // We only need unknown cards for 1 through 5
+      if (suit.name === 'Unknown' && (rank === 0 || rank >= 6)) {
+        continue;
+      }
+
       const cvs = initCanvas();
       const ctx = cvs.getContext('2d');
       if (ctx === null) {
@@ -42,7 +45,7 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
       }
 
       // We don't need the cross texture pattern on the stack base
-      if (rank !== 0) {
+      if (rank !== STACK_BASE_RANK) {
         drawCardTexture(ctx);
       }
 
@@ -51,92 +54,56 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
         drawMixedCardHelper(ctx, suit.clueColors);
       }
 
+      // Draw the background and the borders around the card
       drawCardBase(ctx, suit, rank, colorblindMode);
 
-      ctx.shadowBlur = 10;
-      ctx.fillStyle = getSuitStyle(suit, ctx, 'number', colorblindMode);
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 2;
-      ctx.lineJoin = 'round';
+      // Make a copy of the card before we write the rank
+      const cvs2 = cloneCanvas(cvs);
+      const ctx2 = cvs2.getContext('2d');
+      if (ctx2 === null) {
+        throw new Error('Failed to get the context for a new canvas element.');
+      }
+
+      for (const context of [ctx, ctx2]) {
+        context.shadowBlur = 10;
+        context.fillStyle = getSuitStyle(suit, ctx, 'number', colorblindMode);
+        context.strokeStyle = 'black';
+        context.lineWidth = 2;
+        context.lineJoin = 'round';
+      }
 
       if (rank !== STACK_BASE_RANK && rank !== UNKNOWN_CARD_RANK) {
-        let textYPos;
-        let rankLabel = rank.toString();
-        if (rank === START_CARD_RANK) {
-          rankLabel = 'S';
-        }
-        let fontSize;
-        if (colorblindMode) {
-          rankLabel += suit.abbreviation;
-          fontSize = 68;
-          textYPos = 83;
-        } else {
-          fontSize = 96;
-          textYPos = 110;
-        }
-
-        ctx.font = `bold ${fontSize}pt Arial`;
-
-        // Draw the rank on the top left
-        if (styleNumbers && !colorblindMode) {
-          ctx.save();
-          drawStylizedRank(ctx, rank);
-          ctx.restore();
-          ctx.fill();
-          ctx.stroke();
-        } else {
-          drawText(ctx, textYPos, rankLabel);
-        }
-        ctx.restore();
-
-        // "Index" cards are used to draw cards of learned but not yet known rank
-        // (e.g. for in-game replays)
-        const cardImagesIndex = `Index-${suit.name}-${rank}`;
-        cardImages.set(cardImagesIndex, cloneCanvas(cvs));
-
-        // Draw the rank on the bottom right
-        ctx.save();
-        ctx.translate(CARD_W, CARD_H);
-        ctx.rotate(Math.PI);
-        if (styleNumbers && !colorblindMode) {
-          drawStylizedRank(ctx, rank);
-          ctx.restore();
-          ctx.translate(CARD_W, CARD_H);
-          ctx.rotate(Math.PI);
-          ctx.fill();
-          ctx.stroke();
-          ctx.translate(CARD_W, CARD_H);
-          ctx.rotate(Math.PI);
-        } else {
-          drawText(ctx, textYPos, rankLabel);
-        }
-        ctx.restore();
+        drawRank(ctx, rank, suit, colorblindMode, styleNumbers, false);
+        drawRank(ctx2, rank, suit, colorblindMode, styleNumbers, true);
       }
 
-      // "NoPip" cards are used for
-      // - cards of known rank before suit learned
-      // - cards of unknown rank
-      // Entirely unknown cards (e.g. "NoPip-Unknown-6")
-      // have a custom image defined separately
-      if (rank >= 1 && (rank <= 5 || suit.name !== 'Unknown')) {
-        const cardImagesIndex = `NoPip-${suit.name}-${rank}`;
-        cardImages.set(cardImagesIndex, cloneCanvas(cvs));
+      // The "Unknown" suit does not have pips
+      // (it is a white suit that is used for cards that are clued with rank)
+      // The "unknown rank" card of a suit does not have pips
+      // (the pip is shown through a separate object that is not "baked" into the card image)
+      if (suit.name !== 'Unknown' && rank !== UNKNOWN_CARD_RANK) {
+        drawSuitPip(ctx, rank, suit, colorblindMode, false);
+        drawSuitPip(ctx2, rank, suit, colorblindMode, true);
       }
 
-      if (suit.name !== 'Unknown') {
-        drawSuitPips(ctx, rank, suit, colorblindMode);
-      }
+      const cardImagesIndex = `card-${suit.name}-${rank}`;
+      cardImages.set(cardImagesIndex, cvs);
 
-      // "Card-Unknown" images would be identical to "NoPip-Unknown" images
-      if (suit.name !== 'Unknown') {
-        const cardImagesIndex = `Card-${suit.name}-${rank}`;
-        cardImages.set(cardImagesIndex, cvs);
+      if (rank !== STACK_BASE_RANK && rank !== UNKNOWN_CARD_RANK) {
+        const cardImagesIndex2 = `revealed-${suit.name}-${rank}`;
+        cardImages.set(cardImagesIndex2, cvs2);
       }
     }
   }
 
-  cardImages.set(`NoPip-Unknown-${UNKNOWN_CARD_RANK}`, makeUnknownCard());
-  cardImages.set('deck-back', makeDeckBack(variant));
+  // Unknown 6 is a card that is completely unknown
+  // This is a special case; we want to render completely unknown cards as a blank gray card
+  // (instead of a blank white card)
+  cardImages.set('card-Unknown-6', makeUnknownCard());
+
+  // Additionally, create an image for the deck back
+  // This is similar to the Unknown 6 card, except it has pips for each suit
+  cardImages.set('deck', makeDeckBack(variant));
 
   return cardImages;
 };
@@ -152,116 +119,94 @@ const cloneCanvas = (oldCvs: HTMLCanvasElement) => {
   const newCvs = document.createElement('canvas');
   newCvs.width = oldCvs.width;
   newCvs.height = oldCvs.height;
+
   const ctx = newCvs.getContext('2d');
   if (ctx === null) {
     throw new Error('Failed to get the context for a new canvas element.');
   }
   ctx.drawImage(oldCvs, 0, 0);
+
   return newCvs;
 };
 
-const drawSuitPips = (
+const drawRank = (
   ctx: CanvasRenderingContext2D,
   rank: number,
   suit: Suit,
   colorblindMode: boolean,
+  styleNumbers: boolean,
+  centered: boolean,
+) => {
+  let textYPos;
+  let rankLabel = rank.toString();
+  if (rank === START_CARD_RANK) {
+    rankLabel = 'S';
+  }
+  let fontSize;
+  if (colorblindMode) {
+    rankLabel += suit.abbreviation;
+    fontSize = 68;
+    textYPos = 83;
+  } else {
+    fontSize = 96;
+    textYPos = 110;
+  }
+  if (centered) {
+    fontSize *= 1.5;
+    textYPos *= 2.45;
+  }
+
+  ctx.font = `bold ${fontSize}pt Arial`;
+
+  // Draw the rank on the top left
+  ctx.save();
+  if (styleNumbers && !colorblindMode) {
+    drawStylizedRank(ctx, rank);
+    ctx.restore();
+    ctx.fill();
+    ctx.stroke();
+  } else {
+    drawText(ctx, textYPos, rankLabel);
+  }
+  ctx.restore();
+};
+
+const drawSuitPip = (
+  ctx: CanvasRenderingContext2D,
+  rank: number,
+  suit: Suit,
+  colorblindMode: boolean,
+  centered: boolean,
 ) => {
   const scale = 0.4;
 
-  // The middle for card 1
-  if (rank === 1) {
-    ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.scale(scale * 1.8, scale * 1.8);
-    drawPip(ctx, suit, true);
-    ctx.restore();
-  }
-
-  // Top and bottom for card 2
-  if (rank === 2) {
-    const symbolYPos = colorblindMode ? 60 : 90;
-    ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.translate(0, -symbolYPos);
-    ctx.scale(scale * 1.4, scale * 1.4);
-    drawPip(ctx, suit, true);
-    ctx.restore();
-
-    ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.translate(0, symbolYPos);
-    ctx.scale(scale * 1.4, scale * 1.4);
-    ctx.rotate(Math.PI);
-    drawPip(ctx, suit, true);
-    ctx.restore();
-  }
-
-  // Top and bottom for cards 3, 4, 5
-  if (rank >= 3 && rank <= 5) {
-    const symbolYPos = colorblindMode ? 80 : 120;
-    ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.translate(0, -symbolYPos);
-    ctx.scale(scale, scale);
-    drawPip(ctx, suit, true);
-    ctx.restore();
-
-    ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.translate(0, symbolYPos);
-    ctx.scale(scale, scale);
-    ctx.rotate(Math.PI);
-    drawPip(ctx, suit, true);
-    ctx.restore();
-  }
-
-  // Left and right for cards 4 and 5
-  if (rank === 4 || rank === 5) {
-    ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.translate(-90, 0);
-    ctx.scale(scale, scale);
-    drawPip(ctx, suit, true);
-    ctx.restore();
-
-    ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.translate(90, 0);
-    ctx.scale(scale, scale);
-    ctx.rotate(Math.PI);
-    drawPip(ctx, suit, true);
-    ctx.restore();
-  }
-
-  // Size, position, and alpha adjustment for the central icon on 3 and 5
-  if (rank === 3 || rank === 5) {
-    ctx.globalAlpha = 1;
-    ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.scale(scale * 1.2, scale * 1.2);
-    drawPip(ctx, suit, true);
-    ctx.restore();
-  }
-
-  // Size, position, and alpha adjustment for the central icon on stack base
+  ctx.save();
+  ctx.translate(CARD_W / 2, CARD_H / 2);
   if (rank === 0) {
+    // For stack bases, draw a big pip in the center
     ctx.globalAlpha = 1;
-    ctx.save();
-    ctx.translate(CARD_W / 2, CARD_H / 2);
     ctx.scale(scale * 2.5, scale * 2.5);
-    drawPip(ctx, suit, true);
-    ctx.restore();
+  } else {
+    // Draw the pip next to the rank in the top-left hand corner
+    ctx.globalAlpha = 1;
+    let symbolYPos;
+    if (centered) {
+      symbolYPos = 0;
+    } else if (colorblindMode) {
+      symbolYPos = 80;
+    } else {
+      symbolYPos = 138;
+    }
+    if (centered) {
+      ctx.translate(50, -symbolYPos);
+      ctx.scale(scale * 2.75, scale * 2.75);
+    } else {
+      ctx.translate(0, -symbolYPos);
+      ctx.scale(scale * 1.8, scale * 1.8);
+    }
   }
-
-  // Unknown rank, so draw large faint suit
-  if (rank === 6) {
-    ctx.save();
-    ctx.globalAlpha = colorblindMode ? 0.4 : 0.1;
-    ctx.translate(CARD_W / 2, CARD_H / 2);
-    ctx.scale(scale * 3, scale * 3);
-    drawPip(ctx, suit, true);
-    ctx.restore();
-  }
+  drawPip(ctx, suit, true);
+  ctx.restore();
 };
 
 const makeUnknownCard = () => {
@@ -311,7 +256,7 @@ const makeDeckBack = (variant: Variant) => {
 
     ctx.save();
     ctx.translate(x, y);
-    drawPip(ctx, suit, true, '#444444'); // Pips on the back of the deck should be gray
+    drawPip(ctx, suit, true, false, '#444444'); // Pips on the back of the deck should be gray
     ctx.restore();
   }
   ctx.scale(1 / sf, 1 / sf);
@@ -399,26 +344,6 @@ const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Color[])
   // Move up and left diagonally
   ctx.lineTo(CARD_W - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2));
   ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
-  ctx.fillStyle = clueColor2.fill;
-  drawShape(ctx);
-
-  // Draw the first half of the bottom-left triangle
-  ctx.beginPath();
-  ctx.moveTo(borderSize, CARD_H - borderSize); // Start at the bottom right-hand corner
-  ctx.lineTo(borderSize, CARD_H - borderSize - triangleSize); // Move up
-  // Move right and down diagonally
-  ctx.lineTo(borderSize + (triangleSize / 2), CARD_H - borderSize - (triangleSize / 2));
-  ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
-  ctx.fillStyle = clueColor1.fill;
-  drawShape(ctx);
-
-  // Draw the second half of the bottom-left triangle
-  ctx.beginPath();
-  ctx.moveTo(borderSize, CARD_H - borderSize); // Start at the bottom right-hand corner
-  ctx.lineTo(borderSize + triangleSize, CARD_H - borderSize); // Move right
-  // Move left and up diagonally
-  ctx.lineTo(borderSize + (triangleSize / 2), CARD_H - borderSize - (triangleSize / 2));
-  ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
   ctx.fillStyle = clueColor2.fill;
   drawShape(ctx);
 

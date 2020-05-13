@@ -22,7 +22,7 @@ export default class Deck extends Konva.Group {
       y: 0,
       width: this.width(),
       height: this.height(),
-      image: globals.cardImages.get('deck-back')!,
+      image: globals.cardImages.get('deck')!,
     });
     this.add(this.cardBack);
     this.cardBack.on('dragend', this.dragEnd);

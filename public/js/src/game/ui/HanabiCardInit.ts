@@ -6,6 +6,7 @@ import { CARD_H, CARD_W, START_CARD_RANK } from '../../constants';
 import * as arrows from './arrows';
 import CardLayout from './CardLayout';
 import drawPip from './drawPip';
+import FitText from './FitText';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import HanabiCardClick from './HanabiCardClick';
@@ -36,16 +37,17 @@ export function image(this: HanabiCard) {
   this.add(this.bare);
 }
 
+const borderCornerRadius = 6;
+const borderStrokeWidth = 16;
+
 export function border(this: HanabiCard) {
   // The card will get a border when it becomes clued
   this.cluedBorder = new Konva.Rect({
-    x: 3,
-    y: 3,
-    width: CARD_W - 6,
-    height: CARD_H - 6,
-    cornerRadius: 6,
-    strokeWidth: 16,
-    stroke: globals.lobby.settings.colorblindMode ? 'black' : 'orange',
+    width: CARD_W,
+    height: CARD_H,
+    cornerRadius: borderCornerRadius,
+    strokeWidth: borderStrokeWidth,
+    stroke: '#0d0d0d', // Off-black
     visible: false,
     listening: false,
   });
@@ -53,12 +55,10 @@ export function border(this: HanabiCard) {
 
   // The card will get a special border if the player tells us that it is chop moved
   this.chopMoveBorder = new Konva.Rect({
-    x: 3,
-    y: 3,
-    width: CARD_W - 6,
-    height: CARD_H - 6,
-    cornerRadius: 6,
-    strokeWidth: 16,
+    width: CARD_W,
+    height: CARD_H,
+    cornerRadius: borderCornerRadius,
+    strokeWidth: borderStrokeWidth,
     stroke: '#fffce6', // White with a yellow tint
     visible: false,
     listening: false,
@@ -67,18 +67,54 @@ export function border(this: HanabiCard) {
 
   // The card will get a special border if the player tells us that it is finessed
   this.finesseBorder = new Konva.Rect({
-    x: 3,
-    y: 3,
-    width: CARD_W - 6,
-    height: CARD_H - 6,
-    cornerRadius: 6,
-    strokeWidth: 16,
+    width: CARD_W,
+    height: CARD_H,
+    cornerRadius: borderCornerRadius,
+    strokeWidth: borderStrokeWidth,
     stroke: 'aqua',
     visible: false,
     listening: false,
   });
   this.add(this.finesseBorder);
 }
+
+const firstRow = Math.floor(0.5 * CARD_H);
+const secondRow = Math.floor(0.65 * CARD_H);
+const pipLocations = [
+  // 3 suit
+  [
+    { x: Math.floor(0.375 * CARD_W), y: firstRow },
+    { x: Math.floor(0.625 * CARD_W), y: firstRow },
+    { x: Math.floor(0.5 * CARD_W), y: secondRow },
+  ],
+
+  // 4 suit
+  [
+    { x: Math.floor(0.375 * CARD_W), y: firstRow },
+    { x: Math.floor(0.625 * CARD_W), y: firstRow },
+    { x: Math.floor(0.375 * CARD_W), y: secondRow },
+    { x: Math.floor(0.625 * CARD_W), y: secondRow },
+  ],
+
+  // 5 suit
+  [
+    { x: Math.floor(0.25 * CARD_W), y: firstRow },
+    { x: Math.floor(0.5 * CARD_W), y: firstRow },
+    { x: Math.floor(0.75 * CARD_W), y: firstRow },
+    { x: Math.floor(0.375 * CARD_W), y: secondRow },
+    { x: Math.floor(0.625 * CARD_W), y: secondRow },
+  ],
+
+  // 6 suit
+  [
+    { x: Math.floor(0.25 * CARD_W), y: firstRow },
+    { x: Math.floor(0.5 * CARD_W), y: firstRow },
+    { x: Math.floor(0.75 * CARD_W), y: firstRow },
+    { x: Math.floor(0.25 * CARD_W), y: secondRow },
+    { x: Math.floor(0.5 * CARD_W), y: secondRow },
+    { x: Math.floor(0.75 * CARD_W), y: secondRow },
+  ],
+];
 
 export function pips(this: HanabiCard) {
   // Initialize the suit pips (colored shapes) on the back of the card,
@@ -99,20 +135,14 @@ export function pips(this: HanabiCard) {
   for (let i = 0; i < suits.length; i++) {
     const suit = suits[i];
 
-    // Set the pip at the middle of the card
-    const x = Math.floor(CARD_W * 0.5);
-    const y = Math.floor(CARD_H * 0.5);
+    // The locations for a 3 suit variant are at index 0
+    const { x, y } = pipLocations[suits.length - 3][i];
+
     const scale = { // Scale numbers are magic
       x: 0.4,
       y: 0.4,
     };
-    // Transform polar to Cartesian coordinates
-    const offsetBase = CARD_W * 0.7;
-    const offsetTrig = ((-i / suits.length) + 0.25) * Math.PI * 2;
-    const offset = {
-      x: Math.floor(offsetBase * Math.cos(offsetTrig)),
-      y: Math.floor(offsetBase * Math.sin(offsetTrig)),
-    };
+
     let { fill } = suit;
     if (suit.fill === 'multi') {
       fill = '';
@@ -122,12 +152,9 @@ export function pips(this: HanabiCard) {
       x,
       y,
       scale,
-      offset,
       fill,
-      stroke: 'black',
-      strokeWidth: 5,
-      sceneFunc: (ctx: any) => { // Konva.Context does not exist for some reason
-        drawPip(ctx, suit, false);
+      sceneFunc: (ctx: any) => {
+        drawPip(ctx, suit, false, true);
       },
       listening: false,
     });
@@ -166,7 +193,6 @@ export function pips(this: HanabiCard) {
       x,
       y,
       scale,
-      offset,
       fill: 'black',
       stroke: 'black',
       opacity: 0.8,
@@ -183,6 +209,14 @@ export function pips(this: HanabiCard) {
     this.suitPips.add(suitPipX);
     this.suitPipsXMap.set(suit, suitPipX);
   }
+
+  this.suitIndicator = new Konva.Shape({
+    x: 0.5 * CARD_W,
+    y: 0.57 * CARD_H,
+    visible: false,
+    listening: false,
+  });
+  this.add(this.suitIndicator);
 
   // Initialize the rank pips, which are black squares along the bottom of the card
   this.rankPips = new Konva.Group({
@@ -245,6 +279,29 @@ export function pips(this: HanabiCard) {
     this.rankPips.add(rankPipX);
     this.rankPipsXMap.set(rank, rankPipX);
   }
+
+  this.rankIndicator = new FitText({
+    x: 0,
+    y: 0.76 * CARD_H,
+    width: CARD_W,
+    fontSize: 0.225 * CARD_H,
+    fontFamily: 'Arial',
+    fontStyle: 'bold',
+    align: 'center',
+    fill: '#cccccc',
+    stroke: 'black',
+    strokeWidth: 4,
+    shadowColor: 'black',
+    shadowBlur: 10,
+    shadowOffset: {
+      x: 0,
+      y: 0,
+    },
+    shadowOpacity: 0.9,
+    visible: false,
+    listening: false,
+  });
+  this.add((this.rankIndicator as any));
 }
 
 export function note(this: HanabiCard) {
