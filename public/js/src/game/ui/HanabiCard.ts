@@ -543,7 +543,7 @@ export default class HanabiCard extends Konva.Group {
       const clueRank = clue.value as number;
       // ranksRemoved keeps track of ranks removed for normal suits touched by their own rank
       // This allows for proper checking of possibilities to cross out suit pips
-      // For pink/brown suits no rank pips can be removed, which is rectified later
+      // We handle suits with special ranks later
       if (globals.variant.rankCluesTouchNothing) {
         // Some variants have rank clues touch no cards
         // If this is the case, we cannot remove any rank pips from the card
