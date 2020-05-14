@@ -62,7 +62,7 @@ func restart() {
 		}
 
 		tablePath := path.Join(tablesPath, strconv.Itoa(t.ID)+".json")
-		if err := ioutil.WriteFile(tablePath, tableJSON, 0644); err != nil {
+		if err := ioutil.WriteFile(tablePath, tableJSON, 0600); err != nil {
 			logger.Error("Failed to write the table "+strconv.Itoa(t.ID)+" to "+
 				"\""+tablePath+"\":", err)
 			return

@@ -28,6 +28,16 @@ var (
 		"n/a",
 		"n/a",
 	}
+	debugUsernames = []string{
+		"test",
+		"test1",
+		"test2",
+		"test3",
+		"test4",
+		"test5",
+		"test6",
+		"test7",
+	}
 )
 
 func characterInit() {
@@ -106,14 +116,7 @@ func characterGenerate(g *Game) {
 		p.CharacterMetadata = -1
 		p.CharacterMetadata2 = -1
 
-		if p.Name == "test" ||
-			p.Name == "test1" ||
-			p.Name == "test2" ||
-			p.Name == "test3" ||
-			p.Name == "test4" ||
-			p.Name == "test5" ||
-			p.Name == "test6" {
-
+		if stringInSlice(p.Name, debugUsernames) {
 			// Hard-code some character assignments for testing purposes
 			p.Character = debugCharacters[i]
 		} else {
