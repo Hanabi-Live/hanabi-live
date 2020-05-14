@@ -145,6 +145,7 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
   if (args[0].startsWith('/')) {
     let command = args.shift();
     command = command!.substring(1); // Remove the forward slash
+    command = command.toLowerCase();
 
     if (command === 'pm' || command === 'w' || command === 'whisper' || command === 'msg') {
       // Validate that the format of the command is correct
