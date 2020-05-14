@@ -112,17 +112,6 @@ func commandTableRestart(s *Session, d *CommandData) {
 		Restart
 	*/
 
-	// Add a message to the chat that it was restarted
-	chatServerSend("The game has been restarted.", "table"+strconv.Itoa(t.ID))
-
-	// If a user has read all of the chat thus far,
-	// mark that they have also read the "restarted" message, since it is superfluous
-	for k, v := range t.ChatRead {
-		if v == len(t.Chat)-1 {
-			t.ChatRead[k] = len(t.Chat)
-		}
-	}
-
 	// Before the table is deleted, make a copy of the chat, if any
 	oldChat := make([]*TableChatMessage, len(t.Chat))
 	copy(oldChat, t.Chat)
@@ -216,5 +205,16 @@ func commandTableRestart(s *Session, d *CommandData) {
 		commandTableSpectate(s2, &CommandData{
 			TableID: t2.ID,
 		})
+	}
+
+	// Add a message to the chat to indicate that the game was restarted
+	chatServerSend("The game has been restarted.", "table"+strconv.Itoa(t2.ID))
+
+	// If a user has read all of the chat thus far,
+	// mark that they have also read the "restarted" message, since it is superfluous
+	for k, v := range t2.ChatRead {
+		if v == len(t2.Chat)-1 {
+			t2.ChatRead[k] = len(t2.Chat)
+		}
 	}
 }
