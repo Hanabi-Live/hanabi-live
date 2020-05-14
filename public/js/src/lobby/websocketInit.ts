@@ -43,8 +43,15 @@ interface FriendsData {
 }
 commands.set('friends', (data: FriendsData) => {
   globals.friends = data.friends;
-  usersDraw.draw();
-  tablesDraw();
+  if (globals.currentScreen === 'lobby' || globals.currentScreen === 'pregame') {
+    usersDraw.draw();
+  }
+  if (globals.currentScreen === 'lobby') {
+    tablesDraw();
+  }
+  if (globals.currentScreen === 'pregame') {
+    pregame.draw();
+  }
 });
 
 commands.set('game', (data: Game) => {

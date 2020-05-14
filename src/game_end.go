@@ -2,10 +2,15 @@ package main
 
 import (
 	"errors"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+)
+
+var (
+	seedRegexp = regexp.MustCompile(`p\dv\d+s(\d+)`)
 )
 
 func (g *Game) End() {
@@ -441,7 +446,14 @@ func (g *Game) AnnounceGameResult() {
 			msg += bibleThump + " "
 		}
 	}
-	msg += "(id: " + strconv.Itoa(g.ID) + ", seed: " + g.Seed + ")"
+	msg += "(id: " + strconv.Itoa(g.ID) + ", "
+	// Instead of displaying the full seed (e.g. "p2v0s1"), only communicate the final number suffix
+	match := seedRegexp.FindStringSubmatch(g.Seed)
+	if match == nil {
+		logger.Error("Failed to parse the seed when ending game " + strconv.Itoa(g.ID))
+		return
+	}
+	msg += "seed: " + match[1] + ")"
 
 	commandChat(nil, &CommandData{
 		Server: true,
@@ -554,10 +566,12 @@ func (t *Table) ConvertToSharedReplay() {
 
 		// Send them the database ID
 		type IDMessage struct {
-			ID int `json:"id"`
+			TableID int `json:"tableID"`
+			ID      int `json:"id"`
 		}
 		sp.Session.Emit("databaseID", &IDMessage{
-			ID: g.ID,
+			TableID: t.ID,
+			ID:      g.ID,
 		})
 	}
 

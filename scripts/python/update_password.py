@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# (the "dotenv" module does not work in Python 2)
 
+# The "dotenv" module does not work in Python 2
 import sys
 if sys.version_info < (3, 0):
-    print("This script requires Python 3.x.")
+    print('This script requires Python 3.x.')
     sys.exit(1)
 
 # Imports
@@ -41,10 +41,10 @@ if len(username) == 0:
     sys.exit(1)
 
 # Check to see if the user exists
-cur = conn.cursor()
-cur.execute('SELECT COUNT(id) FROM users WHERE username = %s', (username,))
-row = cur.fetchone()
-cur.close()
+cursor = conn.cursor()
+cursor.execute('SELECT COUNT(id) FROM users WHERE username = %s', (username, ))
+row = cursor.fetchone()
+cursor.close()
 count = row[0]
 if count == 0:
     print('That user does not exist in the database.')
@@ -57,9 +57,11 @@ if len(password_hash) == 0:
     sys.exit(1)
 
 # Update the password hash
-cur = conn.cursor()
-cur.execute('UPDATE users SET (password_hash, old_password_hash) = (%s, NULL) WHERE username = %s', (password_hash, username))
-cur.close()
+cursor = conn.cursor()
+cursor.execute(
+    'UPDATE users SET (password_hash, old_password_hash) = (%s, NULL) WHERE username = %s',
+    (password_hash, username))
+cursor.close()
 conn.commit()
 conn.close()
 

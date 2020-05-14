@@ -7,15 +7,24 @@ import (
 
 // /help
 func chatHelp(s *Session, d *CommandData, t *Table) {
-	msg := "You can see the list of chat commands here: "
-	msg += "https://github.com/Zamiell/hanabi-live/blob/master/docs/CHAT_COMMANDS.md"
+	msg := "You can see the list of chat commands here: " +
+		"https://github.com/Zamiell/hanabi-live/blob/master/docs/CHAT_COMMANDS.md"
 	chatServerSend(msg, d.Room)
 }
 
 // /rules
 func chatRules(s *Session, d *CommandData, t *Table) {
-	msg := "Please follow the Hanabi Live community guidelines: "
-	msg += "https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md"
+	msg := "Please follow the Hanabi Live community guidelines: " +
+		"https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md"
+	chatServerSend(msg, d.Room)
+}
+
+// /new
+func chatNew(s *Session, d *CommandData, t *Table) {
+	msg := "If you are looking to \"get into\" Hanabi and spend a lot of time to play with " +
+		"experienced players, the Hyphen-ated group is always looking for more members. " +
+		"To start with, please read the beginners guide: " +
+		"https://github.com/Zamiell/hanabi-conventions/blob/master/Beginner.md"
 	chatServerSend(msg, d.Room)
 }
 

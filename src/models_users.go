@@ -47,6 +47,7 @@ func (*Users) Get(username string) (bool, User, error) {
 			password_hash,
 			old_password_hash
 		FROM users
+		/* This will be a case-insensitive search by default, which is what we want */
 		WHERE username = $1
 	`, username).Scan(
 		&user.ID,

@@ -86,7 +86,6 @@ export const showClueUIAndEnableDragging = () => {
     globals.elements.clueArea!.show();
     if (globals.elements.yourTurn !== null && !globals.hypothetical) {
       globals.elements.yourTurn.show();
-      globals.elements.yourTurnTween!.play();
     }
     globals.elements.currentPlayerArea!.hide();
 
@@ -175,7 +174,6 @@ export const hideClueUIAndDisableDragging = () => {
   globals.elements.clueAreaDisabled!.hide();
   if (globals.elements.yourTurn !== null) {
     globals.elements.yourTurn.hide();
-    globals.elements.yourTurnTween!.pause();
   }
   globals.elements.currentPlayerArea!.hide();
   globals.elements.premoveCancelButton!.hide();

@@ -648,8 +648,8 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: string[])
 export default (
   ctx: CanvasRenderingContext2D,
   suit: Suit,
-  shadow: boolean,
-  fill?: string,
+  shadow?: boolean,
+  customFill?: string,
 ) => {
   // Each suit has a shape defined in the "suits.json" file (as the 'pip' property)
   const shapeFunction = shapeFunctions.get(suit.pip);
@@ -662,15 +662,14 @@ export default (
     ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
   }
 
-  if (fill) {
+  if (customFill) {
     // The parent function has specified a custom fill color
-    ctx.fillStyle = fill;
+    ctx.fillStyle = customFill;
     shapeFunction(ctx);
     ctx.fill();
   } else if (suit.fill === 'multi') {
-    // Rainbow and omni cards have a multiple color fill
-    // which is passed as an array to the drawing function
-    // The drawing function will handle the filling
+    // Rainbow and omni cards have a multiple color fill which is passed as an array to the drawing
+    // function; the drawing function will handle the filling
     shapeFunction(ctx, suit.fillColors);
   } else {
     // All other suits have a solid fill
@@ -680,7 +679,7 @@ export default (
   }
 
   // Draw a black border around the shape
-  ctx.lineWidth = fill ? 8 : 5;
+  ctx.lineWidth = customFill ? 8 : 5;
   if (shadow) {
     ctx.shadowColor = 'rgba(0, 0, 0, 0)';
   }

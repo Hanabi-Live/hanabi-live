@@ -59,6 +59,13 @@ func commandAction(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that it is not a replay
+	if t.Replay {
+		s.Warning("You cannot perform a game action in a shared replay.")
+		g.InvalidActionOccurred = true
+		return
+	}
+
 	// Validate that they are in the game
 	i := t.GetPlayerIndexFromID(s.UserID())
 	if i == -1 {
@@ -70,13 +77,6 @@ func commandAction(s *Session, d *CommandData) {
 	// Validate that it is this player's turn
 	if g.ActivePlayer != i && d.Type != actionTypeGameOver {
 		s.Warning("It is not your turn, so you cannot perform an action.")
-		g.InvalidActionOccurred = true
-		return
-	}
-
-	// Validate that it is not a replay
-	if t.Replay {
-		s.Warning("You cannot perform a game action in a shared replay.")
 		g.InvalidActionOccurred = true
 		return
 	}
@@ -132,7 +132,7 @@ func commandAction(s *Session, d *CommandData) {
 	characterPostAction(d, g, p)
 
 	// Send a message about the current status
-	t.NotifyStatus(g.DoubleDiscard)
+	t.NotifyStatus()
 
 	// Adjust the timer for the player that just took their turn
 	// (if the game is over now due to a player running out of time, we don't need to adjust the
@@ -222,7 +222,7 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Send the "yourTurn" message to the next player
-	nps.NotifyYourTurn()
+	nps.NotifyYourTurn(t)
 
 	// Send everyone new clock values
 	t.NotifyTime()

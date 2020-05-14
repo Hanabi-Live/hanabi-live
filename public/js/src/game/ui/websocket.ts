@@ -623,7 +623,9 @@ commands.set('replayTurn', (data: ReplayTurnData) => {
             // Going into the future by 2 or more turns should always be fast
             || globals.sharedReplayTurn - oldTurn > 2
     );
-    replay.goto(globals.sharedReplayTurn, animateFast);
+    // We need "force" to be true here in case we are refreshing the page in the middle of a
+    // hypothetical
+    replay.goto(globals.sharedReplayTurn, animateFast, true);
 
     if (globals.sharedReplayLoading) {
       globals.sharedReplayLoading = false;

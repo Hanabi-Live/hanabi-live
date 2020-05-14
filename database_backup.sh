@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Redirect all output to syslog
+# https://www.urbanautomaton.com/blog/2014/09/09/redirecting-bash-script-output-to-syslog/
+exec 1> >(logger -s -t $(basename $0)) 2>&1
+
 # Get the directory of this script
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"

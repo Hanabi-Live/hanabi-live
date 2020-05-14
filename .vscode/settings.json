@@ -39,4 +39,13 @@
   "go.lintFlags": [
       "--fast",
   ],
+
+  // Use "yapf" to automatically format Python files
+  // https://github.com/google/yapf
+  "python.formatting.provider": "yapf",
+
+  // Automatically run the "yapf" formatter when a Python file is saved
+  "[python]": {
+    "editor.formatOnSave": true,
+  }
 }

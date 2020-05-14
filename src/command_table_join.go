@@ -54,6 +54,12 @@ func commandTableJoin(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that it is not a replay
+	if t.Replay {
+		s.Warning("You can not join a replay.")
+		return
+	}
+
 	// Validate that they entered the correct password
 	if t.PasswordHash != "" {
 		if match, err := argon2id.ComparePasswordAndHash(d.Password, t.PasswordHash); err != nil {

@@ -33,6 +33,12 @@ func commandTableReattend(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that it is not a replay
+	if t.Replay {
+		s.Warning("You can not reattend a replay.")
+		return
+	}
+
 	/*
 		Reattend
 	*/

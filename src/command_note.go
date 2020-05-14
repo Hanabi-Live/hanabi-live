@@ -36,6 +36,12 @@ func commandNote(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that it is not a replay
+	if t.Replay {
+		s.Warning("You can not send a note in a replay.")
+		return
+	}
+
 	// Validate that they are in the game
 	i := t.GetPlayerIndexFromID(s.UserID())
 	j := t.GetSpectatorIndexFromID(s.UserID())

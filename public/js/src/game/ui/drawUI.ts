@@ -193,16 +193,17 @@ const drawActionLog = () => {
     actionLogValues = {
       x: 0.01,
       y: 0.01,
+      w: 0.4,
       h: 0.25,
     };
   } else {
     actionLogValues = {
       x: 0.2,
       y: 0.235,
+      w: 0.4,
       h: 0.098,
     };
   }
-  actionLogValues.w = 0.4;
 
   const actionLogGroup = new Konva.Group({
     x: actionLogValues.x * winW,
@@ -214,7 +215,7 @@ const drawActionLog = () => {
   const actionLogRect = new Konva.Rect({
     x: 0,
     y: 0,
-    width: actionLogValues.w * winW,
+    width: actionLogValues.w! * winW,
     height: actionLogValues.h! * winH,
     fill: 'black',
     opacity: 0.3,
@@ -254,7 +255,7 @@ const drawActionLog = () => {
     shadowOpacity: 0.9,
     x: 0.01 * winW,
     y: 0.003 * winH,
-    width: (actionLogValues.w - 0.02) * winW,
+    width: (actionLogValues.w! - 0.02) * winW,
     height: (actionLogValues.h! - 0.003) * winH,
   }, maxLines);
   actionLogGroup.add(globals.elements.actionLog as any);
@@ -1110,27 +1111,11 @@ const drawYourTurn = () => {
     y: 0.003 * winH,
     fontSize: 0.034 * winH,
     fontFamily: 'Verdana',
-    fill: LABEL_COLOR,
+    fill: 'yellow',
     align: 'center',
     text: 'Your\nTurn',
   });
   globals.elements.yourTurn.add(text);
-
-  globals.elements.yourTurnTween = new Konva.Tween({
-    node: text,
-    fill: 'yellow',
-    duration: 2,
-    onFinish: () => {
-      if (globals.elements.yourTurnTween !== null) {
-        globals.elements.yourTurnTween.reverse();
-      }
-    },
-    onReset: () => {
-      if (globals.elements.yourTurnTween !== null) {
-        globals.elements.yourTurnTween.play();
-      }
-    },
-  });
 };
 
 const drawClueLog = () => {
@@ -1742,19 +1727,26 @@ const drawPreplayArea = () => {
 };
 
 const drawHypotheticalArea = () => {
+  const hypoValues = {
+    x: actionLogValues.x,
+    y: clueAreaValues.y + 0.06,
+    w: actionLogValues.w,
+    h: 0.05,
+  };
+
   // The "Hypothetical" circle that shows whether or not we are currently in a hypothetical
   globals.elements.hypoCircle = new Konva.Group({
-    x: clueAreaValues.x * winW,
-    y: clueAreaValues.y * winH,
+    x: hypoValues.x * winW,
+    y: hypoValues.y * winH,
     visible: false,
   });
   globals.layers.UI.add(globals.elements.hypoCircle);
 
   const circle = new Konva.Ellipse({
-    x: (clueAreaValues.w! * 0.5) * winW,
-    y: 0.105 * winH,
-    radiusX: clueAreaValues.w! * 0.4 * winW,
-    radiusY: 0.05 * winH,
+    x: (hypoValues.w! * 0.5) * winW,
+    y: (hypoValues.h * 0.5) * winW,
+    radiusX: (hypoValues.w! * 0.5) * winW,
+    radiusY: hypoValues.h * winH,
     fill: 'black',
     opacity: 0.5,
     stroke: 'black',
@@ -1762,16 +1754,11 @@ const drawHypotheticalArea = () => {
   });
   globals.elements.hypoCircle.add(circle);
 
-  const hypoValues = {
-    y: 0.075,
-    w: clueAreaValues.w! * 0.6,
-  };
   const text = new FitText({
+    y: (hypoValues.h * 0.4) * winH,
     name: 'text',
-    x: ((clueAreaValues.w! * 0.5) - (hypoValues.w * 0.5)) * winW,
-    y: 0.075 * winH,
-    width: hypoValues.w * winW,
-    fontSize: 0.5 * winH,
+    width: hypoValues.w! * winW,
+    fontSize: 0.06 * winH,
     fontFamily: 'Verdana',
     fill: LABEL_COLOR,
     align: 'center',

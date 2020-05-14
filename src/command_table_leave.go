@@ -32,6 +32,12 @@ func commandTableLeave(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that it is not a replay
+	if t.Replay {
+		s.Warning("You can not leave a replay. (You must unattend it.)")
+		return
+	}
+
 	// Validate that they are at the table
 	i := t.GetPlayerIndexFromID(s.UserID())
 	if i == -1 {
