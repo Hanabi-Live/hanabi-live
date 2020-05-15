@@ -203,10 +203,22 @@ func debugPrint() {
 	}
 	logger.Debug("    discordLastAtHere:", discordLastAtHere)
 	logger.Debug("---------------------------------------------------------------")
+}
 
+func debugFunction() {
 	/*
 		updateAllUserStats()
 		updateAllVariantStats()
+	*/
+
+	if err := models.Users.CheckDuplicateUsernames(); err != nil {
+		logger.Error("Failed to check for duplicate usernames:", err)
+	}
+
+	/*
+		if err := models.Users.PopulateNormalizedUsernames(); err != nil {
+			logger.Error("Failed to populate normalized usernames:", err)
+		}
 	*/
 }
 

@@ -20,12 +20,23 @@ SET client_min_messages TO WARNING;
 DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE users (
     id                   SERIAL       PRIMARY KEY,
+    username             TEXT         NOT NULL  UNIQUE,
     /*
-     * CITEXT is case-insensitive text; we want users to be case-insensitive unique
-     * (e.g. it should not be possible for both "Alice" and "alice" to exist)
+     * PostgreSQL is not case-sensitive unique by default,
+     * meaning that it will allow a username of "Alice" and "alice" to exist
+     * Furthermore, because of Unicode, it would be possible for "Αlice" with a Greek letter A
+     * (0x391) and "Alice" with a normal A (0x41) to exist
+     * To guard against users impersonating each other & phishing attacks, we also store a
+     * normalized version of the username that is converted to ASCII with the go-unidecode library
+     * and then lower-cased
+     * Importantly, we must verify that all new usernames are unique in code before adding them to
+     * the database
      */
-    username             CITEXT       NOT NULL  UNIQUE,
-    /* TODO set "password_hash" to NOT NULL once password migration is complete for all users */
+    normalized_username  TEXT         NOT NULL  UNIQUE,
+    /*
+     * TODO set "password_hash" to NOT NULL in April 2022; passwords not set at that time can be
+     * manually reset by an administrator if needed
+     */
     password_hash        TEXT         NULL, /* An Argon2id hash */
     old_password_hash    TEXT         NULL, /* A SHA-256 hash */
     last_ip              TEXT         NOT NULL,

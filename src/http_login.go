@@ -12,6 +12,7 @@ import (
 	"github.com/alexedwards/argon2id"
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/mozillazg/go-unidecode"
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -106,10 +107,6 @@ func httpLogin(c *gin.Context) {
 		return
 	}
 
-	// Normalize the username to prevent errors with Unicode
-	// https://blog.golang.org/normalization
-	username = norm.NFKC.String(username)
-
 	// Trim whitespace from both sides of the username
 	username = strings.TrimSpace(username)
 
@@ -180,8 +177,22 @@ func httpLogin(c *gin.Context) {
 		return
 	}
 
+	// Validate that the username does not have two or more consecutive diacritics (accents)
+	// This prevents the attack where usernames can have a lot of diacritics and cause overflow
+	// into sections above and below the text
+	if hasConsecutiveDiacritics(username) {
+		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+			"\"" + username + "\", but it has two or more consecutive diacritics in it.")
+		http.Error(
+			w,
+			"Usernames cannot contain two or more consecutive diacritics.",
+			http.StatusUnauthorized,
+		)
+		return
+	}
+
 	// Validate that the username is not reserved
-	usernameWithNoSpaces := strings.Replace(username, " ", "", -1)
+	usernameWithNoSpaces := strings.ReplaceAll(username, " ", "")
 	usernameWithNoSpacesLowercase := strings.ToLower(usernameWithNoSpaces)
 	if usernameWithNoSpacesLowercase == "hanabilive" {
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
@@ -195,7 +206,7 @@ func httpLogin(c *gin.Context) {
 	}
 
 	// Validate that the version is correct
-	// (we want to explicitly disallow clients who are running old versions of the code)
+	// We want to explicitly disallow clients who are running old versions of the code
 	// But make an exception for bots, who can just use the string of "bot"
 	if version != "bot" {
 		var versionNum int
@@ -332,6 +343,28 @@ func httpLogin(c *gin.Context) {
 			return
 		}
 	} else {
+		// Check to see if any other users have a normalized version of this username
+		// This prevents username-spoofing attacks
+		// e.g. "alice" trying to impersonate "Alice"
+		// e.g. "Αlice" with a Greek letter A (0x391) trying to impersonate "Alice"
+		normalizedUsername := strings.ToLower(unidecode.Unidecode(user.Username))
+		if normalizedExists, err := models.Users.NormalizedUsernameExists(
+			normalizedUsername,
+		); err != nil {
+			logger.Error("Failed to check for normalized password uniqueness for "+
+				"\""+username+"\":", err)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		} else if normalizedExists {
+			http.Error(w, "That username is too similar to an existing user. "+
+				"Please choose a different one.", http.StatusUnauthorized)
+			return
+		}
+
 		// Create an Argon2id hash of the plain-text password
 		var passwordHash string
 		if v, err := argon2id.CreateHash(password, argon2id.DefaultParams); err != nil {
@@ -348,7 +381,12 @@ func httpLogin(c *gin.Context) {
 		}
 
 		// Create the new user in the database
-		if v, err := models.Users.Insert(username, passwordHash, ip); err != nil {
+		if v, err := models.Users.Insert(
+			username,
+			normalizedUsername,
+			passwordHash,
+			ip,
+		); err != nil {
 			logger.Error("Failed to insert user \""+username+"\":", err)
 			http.Error(
 				w,
@@ -381,4 +419,29 @@ func httpLogin(c *gin.Context) {
 
 	// Next, the client will attempt to esbalish a WebSocket connection,
 	// which is handled in "httpWS.go"
+}
+
+func hasConsecutiveDiacritics(s string) bool {
+	// First, normalize with Normalization Form Canonical Decomposition (NFD) so that diacritics
+	// are seprated from other characters
+	// https://en.wikipedia.org/wiki/Unicode_equivalence
+	// https://blog.golang.org/normalization
+	normalizedString := norm.NFD.String(s)
+
+	contiguousDiacriticCount := 0
+	for _, r := range normalizedString {
+		// "Mn" stands for nonspacing mark, e.g. a diacritic
+		// https://www.compart.com/en/unicode/category/Mn
+		// From: https://stackoverflow.com/questions/26722450/remove-diacritics-using-go
+		if unicode.Is(unicode.Mn, r) {
+			contiguousDiacriticCount++
+			if contiguousDiacriticCount >= 2 {
+				return true
+			}
+		} else {
+			contiguousDiacriticCount = 0
+		}
+	}
+
+	return false
 }

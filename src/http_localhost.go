@@ -51,8 +51,12 @@ func httpLocalhostInit() {
 	httpRouter.GET("/uptime", httpUptime)
 	httpRouter.GET("/timeLeft", httpTimeLeft)
 	httpRouter.GET("/clearEmptyTables", httpClearEmptyTables)
-	httpRouter.GET("/debug", func(c *gin.Context) {
+	httpRouter.GET("/print", func(c *gin.Context) {
 		debugPrint()
+		c.String(http.StatusOK, "success\n")
+	})
+	httpRouter.GET("/debug", func(c *gin.Context) {
+		debugFunction()
 		c.String(http.StatusOK, "success\n")
 	})
 

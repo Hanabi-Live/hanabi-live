@@ -56,8 +56,6 @@ If you want to install less stuff on your computer, you can alternatively follow
   * Enter the password for the "postgres" user that you created in the previous step.
   * `CREATE DATABASE hanabi;`
   * `\c hanabi`
-  * `CREATE EXTENSION IF NOT EXISTS citext;` <br />
-  (this [allows "UNIQUE" constraints to be case-insensitive](http://shuber.io/case-insensitive-unique-constraints-in-postgres/) if needed)
   * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
   (replace "1234567890" with a secure password)
   * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
@@ -125,8 +123,6 @@ If you want to install less stuff on your computer, you can alternatively follow
   * Enter a secure password for the postgres user. (This is the "master" account that has access to all databases.)
   * `CREATE DATABASE hanabi;`
   * `\c hanabi`
-  * `CREATE EXTENSION IF NOT EXISTS citext;` <br />
-  (this [allows "UNIQUE" constraints to be case-insensitive](http://shuber.io/case-insensitive-unique-constraints-in-postgres/) if needed)
   * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
   (replace "1234567890" with a secure password)
   * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
@@ -190,13 +186,11 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `export GOPATH=$HOME/go && echo 'export GOPATH=$HOME/go' >> ~/.profile`
   * `export PATH=$PATH:$GOPATH/bin && echo 'export PATH=$PATH:$GOPATH/bin' >> ~/.profile`
 * Install [PostgreSQL](https://www.postgresql.org/), create a new database, and set up a database user:
-  * `sudo apt install postgresql postgresql-contrib -y` <br />
+  * `sudo apt install postgresql -y` <br />
   * `sudo -u postgres psql` <br />
   (on Linux, there is no default password; you must connect through the "postgres" operating system account)
   * `CREATE DATABASE hanabi;`
   * `\c hanabi`
-  * `CREATE EXTENSION IF NOT EXISTS citext;` <br />
-  (this [allows "UNIQUE" constraints to be case-insensitive](http://shuber.io/case-insensitive-unique-constraints-in-postgres/) if needed)
   * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
   (replace "1234567890" with a secure password)
   * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`

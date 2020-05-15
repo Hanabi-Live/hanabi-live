@@ -3,9 +3,13 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v4"
+	"github.com/mozillazg/go-unidecode"
 )
 
 type Users struct{}
@@ -17,17 +21,22 @@ type User struct {
 	OldPasswordHash sql.NullString
 }
 
-func (*Users) Insert(username string, passwordHash string, lastIP string) (User, error) {
+func (*Users) Insert(
+	username string,
+	normalizedUsername string,
+	passwordHash string,
+	lastIP string,
+) (User, error) {
 	var user User
 
 	// https://www.postgresql.org/docs/9.5/dml-returning.html
 	// https://github.com/jackc/pgx/issues/411
 	var id int
 	if err := db.QueryRow(context.Background(), `
-		INSERT INTO users (username, password_hash, last_ip)
-		VALUES ($1, $2, $3)
+		INSERT INTO users (username, normalized_username, password_hash, last_ip)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id
-	`, username, passwordHash, lastIP).Scan(&id); err != nil {
+	`, username, normalizedUsername, passwordHash, lastIP).Scan(&id); err != nil {
 		return user, err
 	}
 
@@ -47,7 +56,6 @@ func (*Users) Get(username string) (bool, User, error) {
 			password_hash,
 			old_password_hash
 		FROM users
-		/* This will be a case-insensitive search by default, which is what we want */
 		WHERE username = $1
 	`, username).Scan(
 		&user.ID,
@@ -93,6 +101,22 @@ func (*Users) GetDatetimeCreated(userID int) (time.Time, error) {
 	return datetimeCreated, err
 }
 
+func (*Users) NormalizedUsernameExists(normalizedUsername string) (bool, error) {
+	var count int
+	if err := db.QueryRow(context.Background(), `
+		SELECT COUNT(id)
+		FROM users
+		WHERE normalized_username = $1
+	`, normalizedUsername).Scan(&count); err != nil {
+		return false, err
+	} else if count != 0 && count != 1 {
+		return false, errors.New("more than one user matches a username of " +
+			"\"" + normalizedUsername + "\"")
+	}
+
+	return count == 1, nil
+}
+
 func (*Users) Update(userID int, lastIP string) error {
 	_, err := db.Exec(context.Background(), `
 		UPDATE users
@@ -114,4 +138,83 @@ func (*Users) UpdatePassword(userID int, passwordHash string) error {
 		WHERE id = $2
 	`, passwordHash, userID)
 	return err
+}
+
+func (Users) CheckDuplicateUsernames() error {
+	rows, err := db.Query(context.Background(), `
+		SELECT id, username
+		FROM users
+		ORDER BY id
+	`)
+
+	users := make([]User, 0)
+	for rows.Next() {
+		var user User
+		if err2 := rows.Scan(&user.ID, &user.Username); err2 != nil {
+			return err2
+		}
+		users = append(users, user)
+	}
+
+	if rows.Err() != nil {
+		return err
+	}
+	rows.Close()
+
+	usernameMap := make(map[string]string)
+	userIDMap := make(map[string]int)
+	for _, user := range users {
+		normalizedUsername := strings.ToLower(unidecode.Unidecode(user.Username))
+
+		if duplicateUsername, ok := usernameMap[normalizedUsername]; ok {
+			logger.Error("User " + strconv.Itoa(user.ID) + " with username " +
+				"\"" + user.Username + "\" " + "contains a duplicate username with " +
+				"\"" + duplicateUsername + "\", " + strconv.Itoa(userIDMap[normalizedUsername]))
+		} else {
+			usernameMap[normalizedUsername] = user.Username
+			userIDMap[normalizedUsername] = user.ID
+		}
+	}
+
+	return nil
+}
+
+func (Users) PopulateNormalizedUsernames() error {
+	logger.Debug("Populating normalized usernames...")
+
+	rows, err := db.Query(context.Background(), `
+		SELECT id, username
+		FROM users
+		ORDER BY id
+	`)
+
+	users := make([]User, 0)
+	for rows.Next() {
+		var user User
+		if err2 := rows.Scan(&user.ID, &user.Username); err2 != nil {
+			return err2
+		}
+		users = append(users, user)
+	}
+
+	if rows.Err() != nil {
+		return err
+	}
+	rows.Close()
+
+	for _, user := range users {
+		normalizedUsername := strings.ToLower(unidecode.Unidecode(user.Username))
+
+		if _, err := db.Exec(context.Background(), `
+			UPDATE users
+			SET normalized_username = $1
+			WHERE id = $2
+		`, normalizedUsername, user.ID); err != nil {
+			return err
+		}
+	}
+
+	logger.Debug("Completed normalized username population.")
+
+	return nil
 }

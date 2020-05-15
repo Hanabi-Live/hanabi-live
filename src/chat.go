@@ -70,8 +70,8 @@ func chatFillMentions(msg string) string {
 		}
 		discordID := match[1]
 		username := discordGetNickname(discordID)
-		msg = strings.Replace(msg, "&lt;@"+discordID+"&gt;", "@"+username, -1)
-		msg = strings.Replace(msg, "&lt;@!"+discordID+"&gt;", "@"+username, -1)
+		msg = strings.ReplaceAll(msg, "&lt;@"+discordID+"&gt;", "@"+username)
+		msg = strings.ReplaceAll(msg, "&lt;@!"+discordID+"&gt;", "@"+username)
 	}
 	return msg
 }
@@ -90,7 +90,7 @@ func chatFillChannels(msg string) string {
 		}
 		discordID := match[1]
 		channel := discordGetChannel(discordID)
-		msg = strings.Replace(msg, "&lt;#"+discordID+"&gt;", "#"+channel, -1)
+		msg = strings.ReplaceAll(msg, "&lt;#"+discordID+"&gt;", "#"+channel)
 	}
 	return msg
 }

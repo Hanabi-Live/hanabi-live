@@ -147,8 +147,8 @@ func commandChat(s *Session, d *CommandData) {
 		// (the bot has permissions to perform these actions in the Discord server,
 		// so we need to escape them to prevent abuse from lobby users)
 		if !d.Server {
-			rawMsg = strings.Replace(rawMsg, "@everyone", "AtEveryone", -1)
-			rawMsg = strings.Replace(rawMsg, "@here", "AtHere", -1)
+			rawMsg = strings.ReplaceAll(rawMsg, "@everyone", "AtEveryone")
+			rawMsg = strings.ReplaceAll(rawMsg, "@here", "AtHere")
 		}
 
 		// We use "rawMsg" instead of "d.Msg" because we want to send the unsanitized message
