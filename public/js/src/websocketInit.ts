@@ -20,6 +20,7 @@ export default () => {
   const domain = $('#domain').html();
   if (window.location.hostname !== domain) {
     modals.errorShow(`You are supposed to connect to Hanabi Live using the URL of: ${domain}`);
+    return;
   }
 
   // Prepare the URL of the WebSocket server
