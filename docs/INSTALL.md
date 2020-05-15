@@ -165,7 +165,7 @@ If you want to install less stuff on your computer, you can alternatively follow
 
 ## Installation for Production (Linux)
 
-These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments may be needed if you are on a different flavor of Linux. Alternatively, you can follow the instructions for [Installation (Docker)](#installation-docker), although this is not recommended.
+These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may be needed if you are on a different flavor of Linux. Alternatively, you can follow the instructions for [Installation (Docker)](#installation-docker), although this is not recommended.
 
 * Make sure the package manager is up to date:
   * `sudo apt update`
@@ -176,15 +176,8 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `git config --global user.email "your@email.com"`
   * `git config --global pull.rebase true` <br />
   (so that Git automatically rebases when pulling)
-* Install and configure [Golang](https://golang.org/):
-  * `sudo apt install software-properties-common -y`
-  * `sudo add-apt-repository ppa:longsleep/golang-backports` <br />
-  (if we do not use the custom repository, the package manager will install a version of Golang that is very old)
-  * `sudo apt update`
-  * `sudo apt install golang-go -y`
-  * `mkdir "$HOME/go"`
-  * `export GOPATH=$HOME/go && echo 'export GOPATH=$HOME/go' >> ~/.profile`
-  * `export PATH=$PATH:$GOPATH/bin && echo 'export PATH=$PATH:$GOPATH/bin' >> ~/.profile`
+* Install [Golang](https://golang.org/):
+  * `sudo apt install golang -y`
 * Install [PostgreSQL](https://www.postgresql.org/), create a new database, and set up a database user:
   * `sudo apt install postgresql -y` <br />
   * `sudo -u postgres psql` <br />
