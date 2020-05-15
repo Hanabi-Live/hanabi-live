@@ -99,10 +99,8 @@ module.exports = {
 };
 
 if (
-  process.env.SENTRY_DSN !== ''
-  && process.env.TRAVIS !== 'true'
-  && process.platform !== 'win32'
-  && process.platform !== 'darwin'
+  process.env.TRAVIS !== 'true'
+  && process.env.SENTRY_AUTH_TOKEN !== ''
 ) {
   if (typeof module.exports.plugins === 'undefined') {
     throw new Error('There are no existing plugins to append to.');
