@@ -134,13 +134,6 @@ func commandChat(s *Session, d *CommandData) {
 		}
 	}
 
-	// Send the chat message to the Discord "#general" channel if we are replicating a message
-	to := discordLobbyChannel
-	if d.Spam {
-		// Send spammy messages to a separate channel
-		to = discordBotChannel
-	}
-
 	// Don't send Discord messages that we are already replicating
 	if !d.Discord {
 		// Scrub "@here" and "@everyone" from user messages
@@ -154,7 +147,7 @@ func commandChat(s *Session, d *CommandData) {
 		// We use "rawMsg" instead of "d.Msg" because we want to send the unsanitized message
 		// The bluemonday library is intended for HTML rendering,
 		// and Discord can handle any special characters
-		discordSend(to, d.Username, rawMsg)
+		discordSend(discordLobbyChannel, d.Username, rawMsg)
 	}
 
 	// Check for commands

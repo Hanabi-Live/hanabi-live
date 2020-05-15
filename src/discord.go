@@ -100,7 +100,6 @@ func discordConnect() {
 		Msg:    "The server has successfully started at: " + getCurrentTimestamp(),
 		Room:   "lobby",
 		Server: true,
-		Spam:   true,
 	})
 }
 

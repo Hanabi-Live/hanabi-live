@@ -81,7 +81,6 @@ func restart() {
 		Msg:    "The server went down for a restart at: " + getCurrentTimestamp(),
 		Room:   "lobby",
 		Server: true,
-		Spam:   true,
 	})
 
 	execute("restart.sh", projectPath)

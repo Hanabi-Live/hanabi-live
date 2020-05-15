@@ -73,7 +73,6 @@ type CommandData struct {
 	Username string `json:"-"` // Used to mark the username of a chat message
 	Discord  bool   `json:"-"` // Used to mark if a chat message origined from Discord
 	Server   bool   `json:"-"` // Used to mark if the server generated the chat message
-	Spam     bool   `json:"-"` // True if it should go to the "bot" channel
 	// True if this is a chat message that should only go to Discord
 	OnlyDiscord          bool   `json:"-"`
 	DiscordID            string `json:"-"` // Used when echoing a message from Discord to the lobby

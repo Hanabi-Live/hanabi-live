@@ -250,11 +250,6 @@ This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
 
 This assumes that your domain names are "hanabi.live" and "www.hanabi.live". It also assumes that you installed the server to "/root/hanabi-live". Adjust if needed.
 
-* `sudo apt update`
-* `sudo apt install software-properties-common -y`
-* `sudo add-apt-repository universe`
-* `sudo add-apt-repository ppa:certbot/certbot`
-* `sudo apt update`
 * `sudo apt install certbot -y`
 * `certbot certonly --standalone -d hanabi.live -d www.hanabi.live` <br />
   (this creates "/etc/letsencrypt/live/hanabi.live/")
@@ -275,8 +270,8 @@ This assumes that your domain names are "hanabi.live" and "www.hanabi.live". It 
 This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the below commands and edit the contents of the three Supervisor files.
 
 * Install Supervisor:
-  * `sudo apt install python-pip -y`
-  * `pip install supervisor`
+  * `sudo apt install python3-pip -y`
+  * `pip3 install supervisor`
   * `mkdir -p /etc/supervisor/conf.d`
   * `mkdir -p /var/log/supervisor`
 * Copy the configuration files:

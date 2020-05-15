@@ -121,7 +121,6 @@ func shutdownImmediate() {
 		Msg:    "The server successfully shut down at: " + getCurrentTimestamp(),
 		Room:   "lobby",
 		Server: true,
-		Spam:   true,
 	})
 
 	execute("stop.sh", projectPath)

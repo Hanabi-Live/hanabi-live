@@ -89,8 +89,4 @@ const (
 	chatCommandNotInGameFail = "You can only perform this command while in a game."
 	chatCommandStartedFail   = "The game is already started, so you cannot use that command."
 	chatCommandNotOwnerFail  = "Only the table owner can use that command."
-
-	// Discord emotes
-	pogChamp   = "<:PogChamp:254683883033853954>"
-	bibleThump = "<:BibleThump:254683882601840641>"
 )
