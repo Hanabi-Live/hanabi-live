@@ -209,17 +209,29 @@ const goToTurnAndIndicateCard = (turn: number, order: number) => {
 
 // Morphing cards allows for creation of hypothetical situations
 const clickMorph = (order: number) => {
-  const card = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3", "45")');
-  if (card === null) {
+  const cardText = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3", "45")');
+  if (cardText === null) {
     return;
   }
-  if (card.length !== 2) {
+
+  if (cardText === 'blank') {
+    // Don't bother with all of the text parsing below
+    hypothetical.sendHypoAction({
+      type: 'reveal',
+      order,
+      suit: -1,
+      rank: -1,
+    });
+    return;
+  }
+
+  if (cardText.length !== 2) {
     window.alert('You entered an invalid card.');
     return;
   }
 
   // Parse the suit
-  const suitLetter = card[0];
+  const suitLetter = cardText[0];
   let suit = null;
   for (const variantSuit of globals.variant.suits) {
     if (suitLetter.toLowerCase() === variantSuit.abbreviation.toLowerCase()) {
@@ -227,7 +239,7 @@ const clickMorph = (order: number) => {
     }
   }
   if (suit === null) {
-    const suitNumber = parseInt(card[0], 10);
+    const suitNumber = parseInt(cardText[0], 10);
     if (Number.isNaN(suitNumber)) {
       let msg = `The letter "${suitLetter}" does nto corresponds to a suit.\n`;
       const abbreviations = globals.variant.suits.map(
@@ -240,7 +252,7 @@ const clickMorph = (order: number) => {
 
     // They are using a number to represent the suit
     if (suitNumber < 1 || suitNumber > globals.variant.suits.length) {
-      window.alert(`The suit number of "${card[0]}" is not valid.`);
+      window.alert(`The suit number of "${cardText[0]}" is not valid.`);
       return;
     }
 
@@ -250,13 +262,13 @@ const clickMorph = (order: number) => {
   suit = suitToMsgSuit(suit, globals.variant);
 
   // Parse the rank
-  const rank = parseInt(card[1], 10);
+  const rank = parseInt(cardText[1], 10);
   if (Number.isNaN(rank)) {
-    window.alert(`The rank of "${card[1]}" is not a number.`);
+    window.alert(`The rank of "${cardText[1]}" is not a number.`);
     return;
   }
   if (rank < 0 || rank > 7) {
-    window.alert(`The rank of "${card[1]}" must be between 0 and 7.`);
+    window.alert(`The rank of "${cardText[1]}" must be between 0 and 7.`);
     return;
   }
 

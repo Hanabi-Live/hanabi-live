@@ -33,6 +33,7 @@ export default class HanabiCard extends Konva.Group {
   holder: number | null = null;
   suit: Suit | null = null;
   rank: number | null = null;
+  blank: boolean = false;
   // The suit corresponding to the note written on the card, if any
   noteSuit: Suit | null = null;
   // The rank corresponding to the note written on the card, if any
@@ -258,8 +259,11 @@ export default class HanabiCard extends Konva.Group {
     // Set the name
     // (setting "this.bareName" will automatically update how the card appears the next time that
     // the "card" layer is drawn)
-    if (
-      // A "blank" note overrides everything
+    if (this.blank) {
+      // The "blank" property is set when the card should appear blank no matter what
+      this.bareName = 'deck-back';
+    } else if (
+      // A "blank" note means that the user wants to force the card to appear blank
       this.noteBlank
       && !this.empathy
       && !this.isPlayed
@@ -284,8 +288,7 @@ export default class HanabiCard extends Konva.Group {
 
     // Show or hide the pips
     if (
-      this.bareName === 'known-trash'
-      || globals.lobby.settings.realLifeMode
+      globals.lobby.settings.realLifeMode
       || globals.variant.name.startsWith('Cow & Pig')
       || globals.variant.name.startsWith('Duck')
     ) {

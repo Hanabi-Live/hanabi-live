@@ -525,13 +525,22 @@ interface RevealMessage {
 }
 actionFunctions.set('reveal', (data: RevealMessage) => {
   // This is the reveal for hypotheticals
-  // The code here is copied from the "websocket.ts" file
+  // The code here is mostly copied from the "websocket.ts" file
   let card = globals.deck[data.order];
   if (!card) {
     card = globals.stackBases[data.order - globals.deck.length];
   }
+  if (!card) {
+    throw new Error('Failed to get the card in the "reveal" command.');
+  }
 
-  card.reveal(data.suit, data.rank);
+  if (data.suit === -1 && data.rank === -1) {
+    card.blank = true;
+    card.setBareImage();
+  } else {
+    card.reveal(data.suit, data.rank);
+  }
+
   globals.layers.card.batchDraw();
 });
 

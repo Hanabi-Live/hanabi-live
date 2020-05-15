@@ -664,6 +664,9 @@ commands.set('reveal', (data: RevealData) => {
   if (!card) {
     card = globals.stackBases[data.order - globals.deck.length];
   }
+  if (!card) {
+    throw new Error('Failed to get the card in the "reveal" command.');
+  }
 
   card.reveal(data.suit, data.rank);
   globals.layers.card.batchDraw();

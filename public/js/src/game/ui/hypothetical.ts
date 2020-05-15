@@ -113,6 +113,13 @@ export const end = () => {
   }
   globals.layers.UI.batchDraw();
 
+  // In case we blanked out any cards in the hypothetical,
+  // unset the "blank" property of all cards
+  for (const card of globals.deck) {
+    card.blank = false;
+  }
+  globals.layers.card.batchDraw();
+
   globals.hypoActions = [];
 
   // The "replay.goto()" function will do nothing if we are already at the target turn,

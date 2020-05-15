@@ -233,6 +233,33 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
 
 <br />
 
+#### Install as a service (optional)
+
+This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the below commands and edit the contents of the three Supervisor files.
+
+* Install Supervisor:
+  * `sudo apt install python3-pip -y`
+  * `pip3 install supervisor`
+  * `mkdir -p /etc/supervisor/conf.d`
+  * `mkdir -p /var/log/supervisor`
+* Copy the configuration files:
+  * `cp "/root/hanabi-live/install/supervisor/supervisord.conf" "/etc/supervisor/supervisord.conf"`
+  * `cp "/root/hanabi-live/install/supervisor/hanabi-live.conf" "/etc/supervisor/conf.d/hanabi-live.conf"`
+  * `cp "/root/hanabi-live/install/supervisor/supervisord.service" "/etc/systemd/system/supervisord.service"`
+* Start it:
+  * `systemctl daemon-reload`
+  * `systemctl start supervisord`
+* Load the new configuration:
+  * `supervisorctl reload`
+
+To manage the service:
+
+* Start it: `supervisorctl start hanabi-live`
+* Stop it: `supervisorctl stop hanabi-live`
+* Restart it: `supervisorctl restart hanabi-live`
+
+<br />
+
 #### Set up Automated Database Backups (optional)
 
 This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
@@ -265,6 +292,21 @@ This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
 
 <br />
 
+#### Set up Sentry (optional)
+
+* `vim ~/.sentryclirc`
+
+```
+[auth]
+token=[insert your token here]
+
+[defaults]
+org=hanabi-live
+project=hanabi-live-client
+```
+
+<br />
+
 #### Install HTTPS (optional)
 
 This assumes that your domain names are "hanabi.live" and "www.hanabi.live". It also assumes that you installed the server to "/root/hanabi-live". Adjust if needed.
@@ -281,33 +323,6 @@ This assumes that your domain names are "hanabi.live" and "www.hanabi.live". It 
 # Every day, keep the Let's Encrypt certificate up to date
 0 0 * * * /root/hanabi-live/renew_cert.sh
 ```
-
-<br />
-
-#### Install as a service (optional)
-
-This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the below commands and edit the contents of the three Supervisor files.
-
-* Install Supervisor:
-  * `sudo apt install python3-pip -y`
-  * `pip3 install supervisor`
-  * `mkdir -p /etc/supervisor/conf.d`
-  * `mkdir -p /var/log/supervisor`
-* Copy the configuration files:
-  * `cp "/root/hanabi-live/install/supervisor/supervisord.conf" "/etc/supervisor/supervisord.conf"`
-  * `cp "/root/hanabi-live/install/supervisor/hanabi-live.conf" "/etc/supervisor/conf.d/hanabi-live.conf"`
-  * `cp "/root/hanabi-live/install/supervisor/supervisord.service" "/etc/systemd/system/supervisord.service"`
-* Start it:
-  * `systemctl daemon-reload`
-  * `systemctl start supervisord`
-* Load the new configuration:
-  * `supervisorctl reload`
-
-To manage the service:
-
-* Start it: `supervisorctl start hanabi-live`
-* Stop it: `supervisorctl stop hanabi-live`
-* Restart it: `supervisorctl restart hanabi-live`
 
 <br />
 
