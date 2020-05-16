@@ -14,7 +14,6 @@ var (
 	discordToken          string
 	discordListenChannels []string
 	discordLobbyChannel   string
-	discordBotChannel     string
 	discordLastAtHere     time.Time
 	discordBotID          string
 	discordGuildID        string
@@ -43,12 +42,6 @@ func discordInit() {
 	discordLobbyChannel = os.Getenv("DISCORD_LOBBY_CHANNEL_ID")
 	if len(discordLobbyChannel) == 0 {
 		logger.Info("The \"DISCORD_LOBBY_CHANNEL_ID\" environment variable is blank; " +
-			"aborting Discord initialization.")
-		return
-	}
-	discordBotChannel = os.Getenv("DISCORD_BOT_CHANNEL_ID")
-	if len(discordBotChannel) == 0 {
-		logger.Info("The \"DISCORD_BOT_CHANNEL_ID\" environment variable is blank; " +
 			"aborting Discord initialization.")
 		return
 	}

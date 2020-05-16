@@ -117,7 +117,6 @@ DB_NAME="` + dbName + `"
 ` + writeOptionalVariable("DISCORD_TOKEN") + `
 ` + writeOptionalVariable("DISCORD_LISTEN_CHANNEL_IDS") + `
 ` + writeOptionalVariable("DISCORD_LOBBY_CHANNEL_ID") + `
-` + writeOptionalVariable("DISCORD_BOT_CHANNEL_ID") + `
 
 ` + writeOptionalVariable("GA_TRACKING_ID") + `
 ` + writeOptionalVariable("SENTRY_DSN") + `
