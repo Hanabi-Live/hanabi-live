@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"os"
+	"strings"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -61,8 +62,19 @@ func modelsInit() (*Models, error) {
 	}
 
 	// Initialize the database
-	url := "postgres://" + dbUser + ":" + dbPass + "@" + dbHost + ":" + dbPort + "/" + dbName
-	if v, err := pgx.Connect(context.Background(), url); err != nil {
+	// The DSN string format is documented at:
+	// https://godoc.org/github.com/jackc/pgconn#ParseConfig
+	dsnArray := []string{
+		"host=" + dbHost,
+		"port=" + dbPort,
+		"user=" + dbUser,
+		"pass=" + dbPass,
+		"dbname=" + dbName,
+		// Needed for PgBouncer; see https://github.com/jackc/pgx/issues/650
+		"statement_cache_mode=describe",
+	}
+	dsn := strings.Join(dsnArray, " ")
+	if v, err := pgx.Connect(context.Background(), dsn); err != nil {
 		return nil, err
 	} else {
 		db = v
