@@ -4,8 +4,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/microcosm-cc/bluemonday"
 )
 
 // commandChatPM is sent when a user sends a private message
@@ -22,30 +20,28 @@ func commandChatPM(s *Session, d *CommandData) {
 	*/
 
 	// Check to see if their IP has been muted
-	if s.Muted() {
+	if s != nil && s.Muted() {
 		s.Warning("You have been muted by an administrator.")
 		return
 	}
 
-	// Validate the message
-	if d.Msg == "" {
-		s.Warning("You cannot send a blank message.")
+	// Sanitize and validate the chat message
+	if v, valid := sanitizeChatInput(s, d.Msg); !valid {
 		return
+	} else {
+		d.Msg = v
 	}
 
-	// Truncate long messages
-	if len(d.Msg) > maxChatLength {
-		d.Msg = d.Msg[0 : maxChatLength-1]
-	}
-
-	// Validate the recipient
-	if d.Recipient == "" {
-		s.Warning("You cannot send a private message to a blank recipient.")
+	// Sanitize and validate the private message recipient
+	if v, valid := sanitizeChatInput(s, d.Recipient); !valid {
 		return
+	} else {
+		d.Recipient = v
 	}
 
 	// Validate that they are not sending a private message to themselves
-	if strings.EqualFold(d.Recipient, s.Username()) {
+	normalizedUsername := normalizeUsername(d.Recipient)
+	if normalizedUsername == normalizeUsername(s.Username()) {
 		s.Warning("You cannot send a private message to yourself.")
 		return
 	}
@@ -53,7 +49,7 @@ func commandChatPM(s *Session, d *CommandData) {
 	// Validate that the recipient is online
 	var recipientSession *Session
 	for _, s2 := range sessions {
-		if strings.EqualFold(s2.Username(), d.Recipient) {
+		if normalizeUsername(s2.Username()) == normalizedUsername {
 			recipientSession = s2
 			break
 		}
@@ -104,8 +100,7 @@ func commandChatPM(s *Session, d *CommandData) {
 
 	// Sanitize the message using the bluemonday library to stop
 	// various attacks against other players
-	sp := bluemonday.StrictPolicy()
-	d.Msg = sp.Sanitize(d.Msg)
+	d.Msg = bluemondayStrictPolicy.Sanitize(d.Msg)
 
 	/*
 		Private message
