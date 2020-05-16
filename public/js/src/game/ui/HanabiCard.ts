@@ -48,6 +48,7 @@ export default class HanabiCard extends Konva.Group {
   possibleSuits: Suit[] = [];
   possibleRanks: number[] = [];
   possibleCards: Map<string, number> = new Map();
+  identityDetermined: boolean = false;
   tweening: boolean = false;
   empathy: boolean = false;
   doMisplayAnimation: boolean = false;
@@ -118,6 +119,7 @@ export default class HanabiCard extends Konva.Group {
     this.possibleRanks = globals.variant.ranks.slice();
     // Possible cards (based on both clues given and cards seen) are also tracked separately
     this.possibleCards = new Map(globals.cardsMap); // Start by cloning the "globals.cardsMap"
+    this.identityDetermined = false;
     this.tweening = false;
     this.empathy = false;
     this.doMisplayAnimation = false;
@@ -139,7 +141,8 @@ export default class HanabiCard extends Konva.Group {
     this.turnPlayed = -1;
     this.isMisplayed = false;
 
-    this.listening(true); // Some variants disable listening on cards
+    // Some variants disable listening on cards
+    this.listening(true);
 
     this.hideBorders();
     if (!globals.replay && !globals.spectating) {
@@ -358,10 +361,11 @@ export default class HanabiCard extends Konva.Group {
   // This card was touched by a positive or negative clue,
   // so remove pips and possibilities from the card
   applyClue(clue: Clue, positive: boolean) {
-    const wasFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
-    if (wasFullyKnown) {
+    // If the card is already identified, additional clues would tell us nothing
+    if (this.identityDetermined) {
       return;
     }
+
     // Mark all turns that this card is positively clued
     if (positive) {
       // We add one because the "clue" action comes before the "turn" action
@@ -668,6 +672,32 @@ export default class HanabiCard extends Konva.Group {
       }
     }
 
+    // Remove suit pips, if any
+    for (const suit of suitsRemoved) {
+      // Hide the suit pips
+      this.suitPipsMap.get(suit)!.hide();
+      this.suitPipsXMap.get(suit)!.hide();
+
+      // Remove any card possibilities for this suit
+      if (possibilitiesCheck()) {
+        for (const rank of globals.variant.ranks) {
+          this.removePossibility(suit, rank, true);
+        }
+      }
+
+      if (suit.allClueRanks || suit.noClueRanks) {
+        // Mark to retroactively apply rank clues when we return from this function
+        this.reapplyRankClues = true;
+      }
+    }
+    if (this.possibleSuits.length === 1) {
+      // We have discovered the true suit of the card
+      [this.suit] = this.possibleSuits;
+      globals.learnedCards[this.order].suit = this.suit;
+      this.suitPipsMap.get(this.suit)!.hide();
+      this.suitPips!.hide();
+    }
+
     // Remove rank pips, if any
     for (const rank of ranksRemoved) {
       // Hide the rank pips
@@ -695,49 +725,16 @@ export default class HanabiCard extends Konva.Group {
       }
     }
     if (this.possibleRanks.length === 1) {
+      // We have discovered the true rank of the card
       [this.rank] = this.possibleRanks;
-
-      // Don't record the rank or hide the pips if the card is unclued
-      if (this.holder === null || this.isClued()) {
-        globals.learnedCards[this.order].rank = this.rank;
-        this.rankPipsMap.get(this.rank)!.hide();
-        this.rankPips!.hide();
-      }
-    }
-
-    // Remove suit pips, if any
-    for (const suit of suitsRemoved) {
-      // Hide the suit pips
-      this.suitPipsMap.get(suit)!.hide();
-      this.suitPipsXMap.get(suit)!.hide();
-
-      // Remove any card possibilities for this suit
-      if (possibilitiesCheck()) {
-        for (const rank of globals.variant.ranks) {
-          this.removePossibility(suit, rank, true);
-        }
-      }
-
-      if (suit.allClueRanks || suit.noClueRanks) {
-        // Mark to retroactively apply rank clues when we return from this function
-        this.reapplyRankClues = true;
-      }
-    }
-    if (this.possibleSuits.length === 1) {
-      [this.suit] = this.possibleSuits;
-
-      // Don't record the suit or hide the pips if the card is unclued
-      // (but clued cards can be played or discarded, so account for that)
-      if (this.isClued() || this.holder === null) {
-        globals.learnedCards[this.order].suit = this.suit;
-        this.suitPipsMap.get(this.suit)!.hide();
-        this.suitPips!.hide();
-      }
+      globals.learnedCards[this.order].rank = this.rank;
+      this.rankPips!.hide();
     }
 
     // Handle if this is the first time that the card is fully revealed to the holder
     const isFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
-    if (isFullyKnown && !wasFullyKnown) {
+    if (isFullyKnown && !this.identityDetermined) {
+      this.identityDetermined = true;
       this.updatePossibilitiesOnOtherCards(this.suit!, this.rank!);
     }
   }
@@ -844,7 +841,8 @@ export default class HanabiCard extends Konva.Group {
 
     // If the card was already fully-clued,
     // we already updated the possibilities for it on other cards
-    if (this.possibleSuits.length > 1 || this.possibleRanks.length > 1) {
+    if (!this.identityDetermined) {
+      this.identityDetermined = true;
       this.updatePossibilitiesOnOtherCards(suit, rank);
     }
 
