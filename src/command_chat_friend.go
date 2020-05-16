@@ -1,7 +1,6 @@
 package main
 
 import (
-	"strings"
 	"time"
 )
 
@@ -38,8 +37,11 @@ func friend(s *Session, d *CommandData, add bool) {
 		return
 	}
 
+	// Normalize the username
+	normalizedUsername := normalizeUsername(d.Name)
+
 	// Validate that they did not target themselves
-	if strings.EqualFold(d.Name, s.Username()) {
+	if normalizedUsername == normalizeUsername(s.Username()) {
 		var verb string
 		if add {
 			verb = "friend"
@@ -52,8 +54,11 @@ func friend(s *Session, d *CommandData, add bool) {
 
 	// Validate that this person exists in the database
 	var friend User
-	if exists, v, err := models.Users.Get(d.Name); err != nil {
-		logger.Error("Failed to validate that \""+d.Name+"\" exists in the database:", err)
+	if exists, v, err := models.Users.GetUserFromNormalizedUsername(
+		normalizedUsername,
+	); err != nil {
+		logger.Error("Failed to validate that \""+normalizedUsername+"\" exists in the "+
+			"database:", err)
 		s.Error(defaultErrorMsg)
 		return
 	} else if !exists {
