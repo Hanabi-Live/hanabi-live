@@ -10,6 +10,14 @@ const webpack = require('webpack');
 
 // Constants
 const outputPath = path.join(__dirname, 'webpack_output');
+const inTravis = (
+  typeof process.env.TRAVIS !== 'undefined'
+  && process.env.TRAVIS === 'true'
+);
+const sentryTokenIsSet = (
+  typeof process.env.SENTRY_AUTH_TOKEN !== 'undefined'
+  && process.env.SENTRY_AUTH_TOKEN !== ''
+);
 
 // Read environment variables
 dotenv.config({
@@ -104,7 +112,7 @@ module.exports = {
   devtool: 'source-map',
 };
 
-if (process.env.TRAVIS !== 'true' && process.env.SENTRY_AUTH_TOKEN !== '') {
+if (!inTravis && sentryTokenIsSet) {
   if (typeof module.exports.plugins === 'undefined') {
     throw new Error('There are no existing plugins to append to.');
   }
