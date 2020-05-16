@@ -13,8 +13,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/mozillazg/go-unidecode"
+	"golang.org/x/text/unicode/norm"
 )
 
 // From: https://stackoverflow.com/questions/47341278/how-to-format-a-duration-in-golang
@@ -79,6 +81,31 @@ func getVersion() int {
 	} else {
 		return v
 	}
+}
+
+func hasConsecutiveDiacritics(s string) bool {
+	// First, normalize with Normalization Form Canonical Decomposition (NFD) so that diacritics
+	// are seprated from other characters
+	// https://en.wikipedia.org/wiki/Unicode_equivalence
+	// https://blog.golang.org/normalization
+	normalizedString := norm.NFD.String(s)
+
+	contiguousDiacriticCount := 0
+	for _, r := range normalizedString {
+		// "Mn" stands for nonspacing mark, e.g. a diacritic
+		// https://www.compart.com/en/unicode/category/Mn
+		// From: https://stackoverflow.com/questions/26722450/remove-diacritics-using-go
+		if unicode.Is(unicode.Mn, r) {
+			contiguousDiacriticCount++
+			if contiguousDiacriticCount >= 2 {
+				return true
+			}
+		} else {
+			contiguousDiacriticCount = 0
+		}
+	}
+
+	return false
 }
 
 func intInSlice(a int, slice []int) bool {

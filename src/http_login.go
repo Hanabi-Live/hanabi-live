@@ -12,7 +12,6 @@ import (
 	"github.com/alexedwards/argon2id"
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/text/unicode/norm"
 )
 
 const (
@@ -424,29 +423,4 @@ func httpLogin(c *gin.Context) {
 
 	// Next, the client will attempt to esbalish a WebSocket connection,
 	// which is handled in "httpWS.go"
-}
-
-func hasConsecutiveDiacritics(s string) bool {
-	// First, normalize with Normalization Form Canonical Decomposition (NFD) so that diacritics
-	// are seprated from other characters
-	// https://en.wikipedia.org/wiki/Unicode_equivalence
-	// https://blog.golang.org/normalization
-	normalizedString := norm.NFD.String(s)
-
-	contiguousDiacriticCount := 0
-	for _, r := range normalizedString {
-		// "Mn" stands for nonspacing mark, e.g. a diacritic
-		// https://www.compart.com/en/unicode/category/Mn
-		// From: https://stackoverflow.com/questions/26722450/remove-diacritics-using-go
-		if unicode.Is(unicode.Mn, r) {
-			contiguousDiacriticCount++
-			if contiguousDiacriticCount >= 2 {
-				return true
-			}
-		} else {
-			contiguousDiacriticCount = 0
-		}
-	}
-
-	return false
 }

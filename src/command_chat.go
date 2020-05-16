@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/microcosm-cc/bluemonday"
 )
@@ -53,7 +54,16 @@ func commandChat(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate the message
+	// Truncate long messages
+	// (we do this first to prevent wasting CPU cycles on validating extremely long messages)
+	if len(d.Msg) > maxChatLength {
+		d.Msg = d.Msg[0 : maxChatLength-1]
+	}
+
+	// Trim whitespace from both sides of the message
+	d.Msg = strings.TrimSpace(d.Msg)
+
+	// Validate blank messages
 	if d.Msg == "" {
 		if s != nil {
 			s.Warning("You cannot send a blank message.")
@@ -61,10 +71,32 @@ func commandChat(s *Session, d *CommandData) {
 		return
 	}
 
-	// Truncate long messages
-	if len(d.Msg) > maxChatLength {
-		d.Msg = d.Msg[0 : maxChatLength-1]
+	// Validate that the message does not contain any whitespace
+	// (other than a normal space character)
+	for _, letter := range d.Msg {
+		if unicode.IsSpace(letter) && letter != ' ' {
+			s.Warning("Chat messages must not contain any whitespace characters " +
+				"(other than a normal space).")
+			return
+		}
 	}
+
+	// Validate that the message does not have two or more consecutive diacritics (accents)
+	// This prevents the attack where messages can have a lot of diacritics and cause overflow
+	// into sections above and below the text
+	if hasConsecutiveDiacritics(d.Msg) {
+		s.Warning("Usernames cannot contain two or more consecutive diacritics.")
+		return
+	}
+
+	// Before we sanitize the message, make a copy first,
+	// since we do not want to send HTML-escaped text to Discord
+	rawMsg := d.Msg
+
+	// Sanitize the message using the bluemonday library
+	// to stop various attacks against other players
+	sp := bluemonday.StrictPolicy()
+	d.Msg = sp.Sanitize(d.Msg)
 
 	// Validate the room
 	if d.Room != "lobby" && !strings.HasPrefix(d.Room, "table") {
@@ -73,12 +105,6 @@ func commandChat(s *Session, d *CommandData) {
 		}
 		return
 	}
-
-	// Sanitize the message using the bluemonday library to stop
-	// various attacks against other players
-	rawMsg := d.Msg
-	sp := bluemonday.StrictPolicy()
-	d.Msg = sp.Sanitize(d.Msg)
 
 	/*
 		Chat
