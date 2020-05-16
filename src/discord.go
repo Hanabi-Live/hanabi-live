@@ -348,7 +348,28 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 		// They specified an ID and a turn
 		msg := "<https://hanabi.live/replay/" + strconv.Itoa(id) + "/" + strconv.Itoa(turn) + ">"
 		discordSend(m.ChannelID, "", msg)
+		return
+	}
 
+	if command == "badquestion" {
+		msg := "Your question is not specific enough. In order to properly answer it, we need to " +
+			"know the amount of players in the game, all of the cards in all of the hands, the " +
+			"amount of current clues, and so forth. Please type out a full Alice and Bob story " +
+			"in the style of the reference document. (e.g. " +
+			"<https://github.com/Zamiell/hanabi-conventions/blob/master/" +
+			"Reference.md#the-reverse-finesse>)"
+		discordSend(m.ChannelID, "", msg)
+		return
+	}
+
+	if command == "2pquestion" {
+		msg := "This channel is mostly for asking clarification questions about the Hyphen-ated " +
+			"conventions. In 2-player games, this doesn't really apply, because you can just " +
+			"play with your teammate in the exact way that you want without having to ask " +
+			"anybody else. Furthermore, the Hyphen-ated group typically only plays 3-6 player " +
+			"games, as 2-player games are considered to be much more trivial. Please ask " +
+			"2-player questions sparingly."
+		discordSend(m.ChannelID, "", msg)
 		return
 	}
 }

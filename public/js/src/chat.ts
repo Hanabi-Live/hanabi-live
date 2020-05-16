@@ -141,6 +141,8 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
   globals.typedChatHistoryIndex = -1;
 
   // Check for chat commands
+  // Each chat command should also have an error handler in "chat_command.go"
+  // (in case someone tries to use the command from Discord)
   const args = msg.split(' ');
   if (args[0].startsWith('/')) {
     let command = args.shift();

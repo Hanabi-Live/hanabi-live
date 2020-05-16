@@ -82,11 +82,12 @@ const (
 	discordAtHereTimeout = time.Hour * 2
 
 	// Common error messages
-	defaultErrorMsg          = "Something went wrong. Please contact an administrator."
-	createGameFail           = "Failed to create the game. Please contact an administrator."
-	startGameFail            = "Failed to start the game. Please contact an administrator."
-	initGameFail             = "Failed to initialize the game. Please contact an administrator."
-	chatCommandNotInGameFail = "You can only perform this command while in a game."
-	chatCommandStartedFail   = "The game is already started, so you cannot use that command."
-	chatCommandNotOwnerFail  = "Only the table owner can use that command."
+	defaultErrorMsg           = "Something went wrong. Please contact an administrator."
+	createGameFail            = "Failed to create the game. Please contact an administrator."
+	startGameFail             = "Failed to start the game. Please contact an administrator."
+	initGameFail              = "Failed to initialize the game. Please contact an administrator."
+	chatCommandNotInLobbyFail = "You can only perform this command from the lobby."
+	chatCommandNotInGameFail  = "You can only perform this command while in a game."
+	chatCommandStartedFail    = "The game is already started, so you cannot use that command."
+	chatCommandNotOwnerFail   = "Only the table owner can use that command."
 )
