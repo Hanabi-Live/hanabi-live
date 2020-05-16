@@ -361,8 +361,11 @@ export default class HanabiCard extends Konva.Group {
   // This card was touched by a positive or negative clue,
   // so remove pips and possibilities from the card
   applyClue(clue: Clue, positive: boolean) {
-    // If the card is already identified, additional clues would tell us nothing
-    if (this.identityDetermined) {
+    // If the card is already fully revealed from clues, then additional clues would tell us nothing
+    // We don't check for "this.identityDetermined" here because we still need to calculate the
+    // effects of clues on cards in other people's hands that we already know the true identity of
+    const wasFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
+    if (wasFullyKnown) {
       return;
     }
 
@@ -733,7 +736,7 @@ export default class HanabiCard extends Konva.Group {
 
     // Handle if this is the first time that the card is fully revealed to the holder
     const isFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
-    if (isFullyKnown && !this.identityDetermined) {
+    if (isFullyKnown && !wasFullyKnown) {
       this.identityDetermined = true;
       this.updatePossibilitiesOnOtherCards(this.suit!, this.rank!);
     }
