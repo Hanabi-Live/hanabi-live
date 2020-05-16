@@ -475,6 +475,9 @@ export const add = (data: ChatMessage, fast: boolean) => {
   } else {
     line += data.msg;
   }
+  if (data.server && line.includes('[Server Notice]')) {
+    line = line.replace('[Server Notice]', '<span class="red">[Server Notice]</span>');
+  }
   line += '</span><br />';
 
   // Find out if we should automatically scroll down after adding the new line of chat
