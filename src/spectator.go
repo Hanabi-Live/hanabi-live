@@ -5,7 +5,7 @@ import (
 )
 
 type Spectator struct {
-	ID        int
+	ID        int // This is equal to the database ID for the user
 	Name      string
 	Session   *Session
 	Typing    bool

@@ -139,6 +139,7 @@ func (t *Table) CheckIdle() {
 			// They might be in the process of reconnecting,
 			// so make a fake session that will represent them
 			s = newFakeSession(sp.ID, sp.Name)
+			logger.Info("Created a new fake session in the \"CheckIdle()\" function.")
 		}
 		commandTableUnattend(s, &CommandData{
 			TableID: t.ID,
@@ -215,6 +216,7 @@ func (t *Table) GetOwnerSession() *Session {
 				// They might be in the process of reconnecting,
 				// so make a fake session that will represent them
 				s = newFakeSession(p.ID, p.Name)
+				logger.Info("Created a new fake session in the \"GetOwnerSession()\" function.")
 			}
 			break
 		}
@@ -223,6 +225,7 @@ func (t *Table) GetOwnerSession() *Session {
 	if s == nil {
 		logger.Error("Failed to find the owner for table " + strconv.Itoa(t.ID) + ".")
 		s = newFakeSession(-1, "Unknown")
+		logger.Info("Created a new fake session in the \"GetOwnerSession()\" function.")
 	}
 
 	return s

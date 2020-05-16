@@ -343,7 +343,7 @@ func httpLogin(c *gin.Context) {
 		}
 	} else {
 		// Check to see if any other users have a normalized version of this username
-		// This prevents username-spoofing attacks
+		// This prevents username-spoofing attacks and homoglyph usage
 		// e.g. "alice" trying to impersonate "Alice"
 		// e.g. "Alicé" trying to impersonate "Alice"
 		// e.g. "Αlice" with a Greek letter A (0x391) trying to impersonate "Alice"

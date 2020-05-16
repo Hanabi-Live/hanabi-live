@@ -24,7 +24,9 @@ func restart() {
 	defer commandMutex.Unlock()
 
 	logger.Info("Serializing the tables...")
-	serializeTables()
+	if !serializeTables() {
+		return
+	}
 
 	for _, s := range sessions {
 		s.Error("The server is going down momentarily to load a new version of the code. " +
@@ -45,10 +47,13 @@ func restart() {
 	select {}
 }
 
-func serializeTables() {
+func serializeTables() bool {
 	for _, t := range tables {
+		logger.Info("Serializing table:", t.ID)
+
 		// Only serialize ongoing games
 		if !t.Running || t.Replay {
+			logger.Info("Skipping due to it being unstarted or a replay.")
 			continue
 		}
 
@@ -60,6 +65,7 @@ func serializeTables() {
 				// They might be in the process of reconnecting,
 				// so make a fake session that will represent them
 				s = newFakeSession(sp.ID, sp.Name)
+				logger.Info("Created a new fake session in the \"serializeTables()\" function.")
 			} else {
 				// Boot them from the game
 				s.Emit("boot", nil)
@@ -68,17 +74,26 @@ func serializeTables() {
 				TableID: t.ID,
 			})
 		}
+		if len(t.Spectators) > 0 {
+			logger.Error("The size of the spectators slice is " + strconv.Itoa(len(t.Spectators)) +
+				", even after booting all of the spectators. Manually emptying the slice.")
+			t.Spectators = make([]*Spectator, 0)
+		}
 
-		// First, set all the session to nil, since it is not necessary to serialize those
+		// Set all the player sessions to nil, since it is not necessary to serialize those
 		for _, p := range t.Players {
 			p.Session = nil
 			p.Present = false
 		}
 
+		// "t.Game.Table" and "t.Game.Options" are circular references;
+		// we do not have to unset them because we have specified `json:"-"` on their fields,
+		// so the JSON encoder will ignore them
+
 		var tableJSON []byte
 		if v, err := json.Marshal(t); err != nil {
 			logger.Error("Failed to marshal table "+strconv.Itoa(t.ID)+":", err)
-			return
+			return false
 		} else {
 			tableJSON = v
 		}
@@ -87,7 +102,9 @@ func serializeTables() {
 		if err := ioutil.WriteFile(tablePath, tableJSON, 0600); err != nil {
 			logger.Error("Failed to write the table "+strconv.Itoa(t.ID)+" to "+
 				"\""+tablePath+"\":", err)
-			return
+			return false
 		}
 	}
+
+	return true
 }

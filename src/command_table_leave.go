@@ -86,6 +86,7 @@ func commandTableLeave(s *Session, d *CommandData) {
 				// They might be in the process of reconnecting,
 				// so make a fake session that will represent them
 				s2 = newFakeSession(p.ID, p.Name)
+				logger.Info("Created a new fake session in the \"commandTableLeave()\" function.")
 			}
 			commandTableLeave(s2, &CommandData{
 				TableID: t.ID,
