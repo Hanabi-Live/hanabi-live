@@ -5,11 +5,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 var (
-	db     *pgx.Conn
+	db     *pgxpool.Pool
 	dbName string
 )
 
@@ -42,8 +42,7 @@ func modelsInit() (*Models, error) {
 	}
 	dbPort := os.Getenv("DB_PORT")
 	if len(dbPort) == 0 {
-		// 5432 is the default port for PostgreSQL
-		dbPort = "5432"
+		dbPort = "5432" // This is the default port for PostgreSQL
 	}
 	dbUser := os.Getenv("DB_USER")
 	if len(dbUser) == 0 {
@@ -68,13 +67,15 @@ func modelsInit() (*Models, error) {
 		"host=" + dbHost,
 		"port=" + dbPort,
 		"user=" + dbUser,
-		"pass=" + dbPass,
+		"password=" + dbPass,
 		"dbname=" + dbName,
-		// Needed for PgBouncer; see https://github.com/jackc/pgx/issues/650
-		"statement_cache_mode=describe",
 	}
 	dsn := strings.Join(dsnArray, " ")
-	if v, err := pgx.Connect(context.Background(), dsn); err != nil {
+
+	// We use "pgxpool.Connect()" instead of "pgx.Connect()" because the vanilla driver is not safe
+	// for concurrent connections (unlike the other Golang SQL drivers)
+	// https://github.com/jackc/pgx/wiki/Getting-started-with-pgx
+	if v, err := pgxpool.Connect(context.Background(), dsn); err != nil {
 		return nil, err
 	} else {
 		db = v
@@ -86,7 +87,5 @@ func modelsInit() (*Models, error) {
 
 // Close exposes the ability to close the underlying database connection
 func (*Models) Close() {
-	if err := db.Close(context.Background()); err != nil {
-		logger.Fatal("Failed to close the database connection:", err)
-	}
+	db.Close()
 }

@@ -206,12 +206,6 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
   * If you do not already have an SSH keypair, then use the following command to clone the repository via HTTPS:
     * `git clone https://github.com/Zamiell/hanabi-live.git`
   * `cd hanabi-live`
-* Install [PgBouncer](https://www.pgbouncer.org/):
-  * `sudo apt install pgbouncer -y`
-  * `mv /etc/pgbouncer/pgbouncer.ini /etc/pgbouncer/pgbouncer.ini.backup`
-  * `cp install/pgbouncer/pgbouncer.ini /etc/pgbouncer/pgbouncer.ini`
-  * `cp install/pgbouncer/userlist.txt /etc/pgbouncer/userlist.txt`
-  * `systemctl restart pgbouncer`
 * Install the project dependencies:
   * `./install/install_dependencies.sh`
 * Set up environment variables:
