@@ -24,6 +24,28 @@ func restart() {
 	defer commandMutex.Unlock()
 
 	logger.Info("Serializing the tables...")
+	serializeTables()
+	logger.Info("Finished writing all tables to disk. Restarting...")
+
+	for _, s := range sessions {
+		s.Error("The server is going down momentarily to load a new version of the code. " +
+			"If you are currently playing a game, all of the progress should be saved. " +
+			"Please wait a few seconds and then refresh the page.")
+	}
+
+	commandChat(nil, &CommandData{
+		Msg:    "The server went down for a restart at: " + getCurrentTimestamp(),
+		Room:   "lobby",
+		Server: true,
+	})
+
+	execute("restart.sh", projectPath)
+
+	// Block until the process is killed so that no more moves can be submitted
+	select {}
+}
+
+func serializeTables() {
 	for _, t := range tables {
 		// Only serialize ongoing games
 		if !t.Running || t.Replay {
@@ -68,23 +90,4 @@ func restart() {
 			return
 		}
 	}
-
-	logger.Info("Finished writing all tables to disk. Restarting...")
-
-	for _, s := range sessions {
-		s.Error("The server is going down momentarily to load a new version of the code. " +
-			"If you are currently playing a game, all of the progress should be saved. " +
-			"Please wait a few seconds and then refresh the page.")
-	}
-
-	commandChat(nil, &CommandData{
-		Msg:    "The server went down for a restart at: " + getCurrentTimestamp(),
-		Room:   "lobby",
-		Server: true,
-	})
-
-	execute("restart.sh", projectPath)
-
-	// Block until the process is killed so that no more moves can be submitted
-	select {}
 }
