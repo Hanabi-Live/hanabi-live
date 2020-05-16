@@ -34,21 +34,7 @@ const tablesDraw = () => {
     for (let i = 1; i <= 5; i++) {
       const tableIDsOfThisType: number[] = [];
       for (const [id, table] of globals.tableMap) {
-        let hasFriends = false;
-        for (const player of table.players) {
-          if (globals.friends.includes(player)) {
-            hasFriends = true;
-            break;
-          }
-        }
-        if (!hasFriends) {
-          for (const spectator of table.spectators) {
-            if (globals.friends.includes(spectator)) {
-              hasFriends = true;
-              break;
-            }
-          }
-        }
+        const hasFriends = doesTableHaveFriends(table);
         if ((friends && !hasFriends) || (!friends && hasFriends)) {
           continue;
         }
@@ -206,4 +192,20 @@ const tableReattendButton = (table: Table) => () => {
   globals.conn!.send('tableReattend', {
     tableID: table.id,
   });
+};
+
+const doesTableHaveFriends = (table: Table) => {
+  for (const player of table.players) {
+    if (globals.friends.includes(player)) {
+      return true;
+    }
+  }
+
+  for (const spectator of table.spectators) {
+    if (globals.friends.includes(spectator)) {
+      return true;
+    }
+  }
+
+  return false;
 };
