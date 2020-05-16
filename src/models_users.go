@@ -180,8 +180,6 @@ func (Users) CheckDuplicateUsernames() error {
 }
 
 func (Users) PopulateNormalizedUsernames() error {
-	logger.Debug("Populating normalized usernames...")
-
 	rows, err := db.Query(context.Background(), `
 		SELECT id, username
 		FROM users
@@ -213,8 +211,6 @@ func (Users) PopulateNormalizedUsernames() error {
 			return err
 		}
 	}
-
-	logger.Debug("Completed normalized username population.")
 
 	return nil
 }

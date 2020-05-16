@@ -347,7 +347,12 @@ func httpLogin(c *gin.Context) {
 		// This prevents username-spoofing attacks
 		// e.g. "alice" trying to impersonate "Alice"
 		// e.g. "Αlice" with a Greek letter A (0x391) trying to impersonate "Alice"
-		normalizedUsername := strings.ToLower(unidecode.Unidecode(user.Username))
+		normalizedUsername := strings.ToLower(unidecode.Unidecode(username))
+		if normalizedUsername == "" {
+			http.Error(w, "That username cannot be transliterated to ASCII. Please try using a "+
+				"simpler username or try using less special characters.", http.StatusUnauthorized)
+			return
+		}
 		if normalizedExists, err := models.Users.NormalizedUsernameExists(
 			normalizedUsername,
 		); err != nil {
