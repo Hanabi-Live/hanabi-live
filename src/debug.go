@@ -219,9 +219,11 @@ func debugFunction() {
 		}
 	*/
 
-	if err := models.Users.PopulateNormalizedUsernames(); err != nil {
-		logger.Error("Failed to populate normalized usernames:", err)
-	}
+	/*
+		if err := models.Users.PopulateNormalizedUsernames(); err != nil {
+			logger.Error("Failed to populate normalized usernames:", err)
+		}
+	*/
 
 	logger.Debug("Debug function(s) complete.")
 }
