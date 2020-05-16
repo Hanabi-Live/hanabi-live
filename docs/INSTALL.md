@@ -292,21 +292,6 @@ This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
 
 <br />
 
-#### Set up Sentry (optional)
-
-* `vim ~/.sentryclirc`
-
-```
-[auth]
-token=[insert your token here]
-
-[defaults]
-org=hanabi-live
-project=hanabi-live-client
-```
-
-<br />
-
 #### Install HTTPS (optional)
 
 This assumes that your domain names are "hanabi.live" and "www.hanabi.live". It also assumes that you installed the server to "/root/hanabi-live". Adjust if needed.

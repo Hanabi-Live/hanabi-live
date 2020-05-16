@@ -1,10 +1,15 @@
 // It is possible for the Webpack configuration to be written in TypeScript,
 // but this will not work with the full range of options in "tsconfig.json"
+
+// Imports
 const SentryWebpackPlugin = require('@sentry/webpack-plugin');
 const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
+
+// Constants
+const outputPath = path.join(__dirname, 'webpack_output');
 
 // Read environment variables
 dotenv.config({
@@ -21,13 +26,12 @@ const version = fs.readFileSync(versionPath).toString().trim();
 // Constants
 const filename = `main.${version}.min.js`;
 
-// Clear out the "dist" subdirectory, as it might contain old JavaScript bundles and old source maps
+// Clear out the output subdirectory, as it might contain old JavaScript bundles and old source maps
 if (!process.env.WEBPACK_DEV_SERVER) {
-  const distPath = path.join(__dirname, 'dist');
-  if (fs.existsSync(distPath)) {
-    const files = fs.readdirSync(distPath);
+  if (fs.existsSync(outputPath)) {
+    const files = fs.readdirSync(outputPath);
     for (const file of files) {
-      fs.unlinkSync(path.join(distPath, file));
+      fs.unlinkSync(path.join(outputPath, file));
     }
   }
 }
@@ -38,10 +42,12 @@ module.exports = {
 
   // Where to put the bundled file
   output: {
-    // By default, Webpack will output the file to a "dist" subdirectory,
-    // which is fine for our purposes
-    // However, we want to include the version number inside of the file name so that browsers will
-    // be forced to retrieve the latest version (and not use a cached older version)
+    // By default, Webpack will output the file to a "dist" subdirectory
+    path: outputPath,
+    // (after WebPack is complete, a script will move the files to the "bundles" subdirectory)
+
+    // We want to include the version number inside of the file name so that browsers will be forced
+    // to retrieve the latest version (and not use a cached older version)
     filename,
   },
 
@@ -98,10 +104,7 @@ module.exports = {
   devtool: 'source-map',
 };
 
-if (
-  process.env.TRAVIS !== 'true'
-  && process.env.SENTRY_AUTH_TOKEN !== ''
-) {
+if (process.env.TRAVIS !== 'true' && process.env.SENTRY_AUTH_TOKEN !== '') {
   if (typeof module.exports.plugins === 'undefined') {
     throw new Error('There are no existing plugins to append to.');
   }
@@ -112,7 +115,7 @@ if (
     // (we don't want to upload anything in a development or testing environment)
     new SentryWebpackPlugin({
       // This must be the directory containing the source file and the source map
-      include: path.join(__dirname, 'dist'),
+      include: outputPath,
       release: version,
     }),
   );

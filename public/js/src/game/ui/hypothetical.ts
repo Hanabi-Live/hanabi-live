@@ -118,7 +118,6 @@ export const end = () => {
   for (const card of globals.deck) {
     card.blank = false;
   }
-  globals.layers.card.batchDraw();
 
   globals.hypoActions = [];
 

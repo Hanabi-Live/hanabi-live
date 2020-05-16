@@ -176,7 +176,7 @@
             <h3><i class="fas fa-tools"></i>&nbsp; Maintenance</h3>
             <p>
               A new version of Hanabi Live has been released and the server is in the process of
-              building the new client, which usually takes a minute or two. Please wait.
+              loading the new client, which should only take a second or two. Please wait.
             </p>
             <img id="login-ajax" src="/public/img/ajax.gif">
           </section>
@@ -1243,6 +1243,6 @@
 <script type="text/javascript" src="/public/js/compiling.js"></script>
 {{else}}
 <!-- All of the JavaScript is bundled into one file with Webpack -->
-<script type="text/javascript" src="/public/js/dist/main.{{.Version}}.min.js"></script>
+<script type="text/javascript" src="/public/js/bundles/main.{{.Version}}.min.js"></script>
 {{end}}
 {{end}}

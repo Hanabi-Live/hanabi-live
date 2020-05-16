@@ -59,7 +59,12 @@ func main() {
 	}
 
 	// Check to see if the version file exists
-	versionPath = path.Join(dataPath, "version.json")
+	// Note that there are two different version files:
+	// 1) ./public/js/src/data/version.json
+	// 2) ./public/js/bundles/version.json
+	// The former is for "baking" the version into the JavaScript client
+	// The later is to inform the server about the latest already-compiled client version
+	versionPath = path.Join(projectPath, "public", "js", "bundles", "version.json")
 	if _, err := os.Stat(versionPath); os.IsNotExist(err) {
 		logger.Fatal("The \"" + versionPath + "\" file does not exist. " +
 			"Did you run the \"install_dependencies.sh\" script before running the server? " +
