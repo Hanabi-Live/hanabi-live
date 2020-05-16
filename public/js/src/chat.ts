@@ -440,15 +440,12 @@ export const add = (data: ChatMessage, fast: boolean) => {
   }
 
   // Automatically generate links from any URLs that are present in the message
-  // (but make an exception for messages from the server that start with "[")
-  if (!data.server || !data.msg.startsWith('[')) {
-    data.msg = linkifyHtml(data.msg, {
-      target: '_blank',
-      attributes: {
-        rel: 'noopener noreferrer',
-      },
-    });
-  }
+  data.msg = linkifyHtml(data.msg, {
+    target: '_blank',
+    attributes: {
+      rel: 'noopener noreferrer',
+    },
+  });
 
   // Convert emotes to images
   data.msg = fillDiscordEmotes(data.msg);
