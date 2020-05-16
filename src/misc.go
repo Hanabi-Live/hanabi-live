@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/mozillazg/go-unidecode"
 )
 
 // From: https://stackoverflow.com/questions/47341278/how-to-format-a-duration-in-golang
@@ -102,6 +104,12 @@ func max(x, y int) int {
 		return x
 	}
 	return y
+}
+
+func normalizeUsername(username string) string {
+	// First, we transliterate the username to pure ASCII
+	// Second, we lowercase it
+	return strings.ToLower(unidecode.Unidecode(username))
 }
 
 func secondsToDurationString(seconds int) (string, error) {

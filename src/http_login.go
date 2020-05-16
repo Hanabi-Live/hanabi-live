@@ -12,7 +12,6 @@ import (
 	"github.com/alexedwards/argon2id"
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/mozillazg/go-unidecode"
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -346,8 +345,9 @@ func httpLogin(c *gin.Context) {
 		// Check to see if any other users have a normalized version of this username
 		// This prevents username-spoofing attacks
 		// e.g. "alice" trying to impersonate "Alice"
+		// e.g. "Alicé" trying to impersonate "Alice"
 		// e.g. "Αlice" with a Greek letter A (0x391) trying to impersonate "Alice"
-		normalizedUsername := strings.ToLower(unidecode.Unidecode(username))
+		normalizedUsername := normalizeUsername(username)
 		if normalizedUsername == "" {
 			http.Error(w, "That username cannot be transliterated to ASCII. Please try using a "+
 				"simpler username or try using less special characters.", http.StatusUnauthorized)

@@ -25,7 +25,6 @@ func restart() {
 
 	logger.Info("Serializing the tables...")
 	serializeTables()
-	logger.Info("Finished writing all tables to disk. Restarting...")
 
 	for _, s := range sessions {
 		s.Error("The server is going down momentarily to load a new version of the code. " +
@@ -39,6 +38,7 @@ func restart() {
 		Server: true,
 	})
 
+	logger.Info("Finished writing all tables to disk. Restarting...")
 	execute("restart.sh", projectPath)
 
 	// Block until the process is killed so that no more moves can be submitted

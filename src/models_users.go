@@ -4,12 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v4"
-	"github.com/mozillazg/go-unidecode"
 )
 
 type Users struct{}
@@ -62,6 +59,26 @@ func (*Users) Get(username string) (bool, User, error) {
 		&user.Username,
 		&user.PasswordHash,
 		&user.OldPasswordHash,
+	); err == pgx.ErrNoRows {
+		return false, user, nil
+	} else if err != nil {
+		return false, user, err
+	}
+
+	return true, user, nil
+}
+
+func (*Users) GetUserFromNormalizedUsername(normalizedUsername string) (bool, User, error) {
+	var user User
+	if err := db.QueryRow(context.Background(), `
+		SELECT
+			id,
+			username
+		FROM users
+		WHERE normalized_username = $1
+	`, normalizedUsername).Scan(
+		&user.ID,
+		&user.Username,
 	); err == pgx.ErrNoRows {
 		return false, user, nil
 	} else if err != nil {
@@ -138,79 +155,4 @@ func (*Users) UpdatePassword(userID int, passwordHash string) error {
 		WHERE id = $2
 	`, passwordHash, userID)
 	return err
-}
-
-func (Users) CheckDuplicateUsernames() error {
-	rows, err := db.Query(context.Background(), `
-		SELECT id, username
-		FROM users
-		ORDER BY id
-	`)
-
-	users := make([]User, 0)
-	for rows.Next() {
-		var user User
-		if err2 := rows.Scan(&user.ID, &user.Username); err2 != nil {
-			return err2
-		}
-		users = append(users, user)
-	}
-
-	if rows.Err() != nil {
-		return err
-	}
-	rows.Close()
-
-	usernameMap := make(map[string]string)
-	userIDMap := make(map[string]int)
-	for _, user := range users {
-		normalizedUsername := strings.ToLower(unidecode.Unidecode(user.Username))
-
-		if duplicateUsername, ok := usernameMap[normalizedUsername]; ok {
-			logger.Error("User " + strconv.Itoa(user.ID) + " with username " +
-				"\"" + user.Username + "\" " + "contains a duplicate username with " +
-				"\"" + duplicateUsername + "\", " + strconv.Itoa(userIDMap[normalizedUsername]))
-		} else {
-			usernameMap[normalizedUsername] = user.Username
-			userIDMap[normalizedUsername] = user.ID
-		}
-	}
-
-	return nil
-}
-
-func (Users) PopulateNormalizedUsernames() error {
-	rows, err := db.Query(context.Background(), `
-		SELECT id, username
-		FROM users
-		ORDER BY id
-	`)
-
-	users := make([]User, 0)
-	for rows.Next() {
-		var user User
-		if err2 := rows.Scan(&user.ID, &user.Username); err2 != nil {
-			return err2
-		}
-		users = append(users, user)
-	}
-
-	if rows.Err() != nil {
-		return err
-	}
-	rows.Close()
-
-	for _, user := range users {
-		normalizedUsername := strings.ToLower(unidecode.Unidecode(user.Username))
-
-		if _, err := db.Exec(context.Background(), `
-			UPDATE users
-			SET normalized_username = $1
-			WHERE id = $2
-		`, normalizedUsername, user.ID); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

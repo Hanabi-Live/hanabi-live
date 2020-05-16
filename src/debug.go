@@ -206,23 +206,15 @@ func debugPrint() {
 }
 
 func debugFunction() {
+	// Lock the command mutex for the duration of the function to ensure synchronous execution
+	commandMutex.Lock()
+	defer commandMutex.Unlock()
+
 	logger.Debug("Executing debug function(s).")
 
 	/*
 		updateAllUserStats()
 		updateAllVariantStats()
-	*/
-
-	/*
-		if err := models.Users.CheckDuplicateUsernames(); err != nil {
-			logger.Error("Failed to check for duplicate usernames:", err)
-		}
-	*/
-
-	/*
-		if err := models.Users.PopulateNormalizedUsernames(); err != nil {
-			logger.Error("Failed to populate normalized usernames:", err)
-		}
 	*/
 
 	logger.Debug("Debug function(s) complete.")
