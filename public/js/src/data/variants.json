@@ -15188,15 +15188,6 @@
     ],
     "showSuitNames": true
   },
-  "Very Ambiguous (3 Suits)": {
-    "id": 287,
-    "suits": [
-      "Sky VA",
-      "Berry VA",
-      "Navy VA"
-    ],
-    "showSuitNames": true
-  },
   "Extremely Ambiguous (6 Suits)": {
     "id": 288,
     "suits": [
@@ -15227,6 +15218,15 @@
       "Sapphire EA",
       "Sky EA",
       "Berry EA"
+    ],
+    "showSuitNames": true
+  },
+  "Extremely Ambiguous (3 Suits)": {
+    "id": 287,
+    "suits": [
+      "Sky VA",
+      "Berry VA",
+      "Navy VA"
     ],
     "showSuitNames": true
   },
