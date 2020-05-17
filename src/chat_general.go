@@ -152,7 +152,7 @@ func chatUptime(s *Session, d *CommandData, t *Table) {
 	var uptime string
 	if v, err := getUptime(); err != nil {
 		logger.Error("Failed to get the uptime:", err)
-		chatServerSend(defaultErrorMsg, d.Room)
+		chatServerSend(DefaultErrorMsg, d.Room)
 		return
 	} else {
 		uptime = v
@@ -179,7 +179,7 @@ func chatTimeLeft(s *Session, d *CommandData, t *Table) {
 	var timeLeft string
 	if v, err := getTimeLeft(); err != nil {
 		logger.Error("Failed to get the time left:", err)
-		chatServerSend(defaultErrorMsg, d.Room)
+		chatServerSend(DefaultErrorMsg, d.Room)
 		return
 	} else {
 		timeLeft = v
@@ -193,7 +193,7 @@ func getTimeLeft() (string, error) {
 		return "The server is not scheduled to restart any time soon.", nil
 	}
 
-	timeLeft := shutdownTimeout - time.Since(datetimeShutdownInit)
+	timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit)
 	timeLeftSeconds := int(timeLeft.Seconds())
 	var durationString string
 	if v, err := secondsToDurationString(timeLeftSeconds); err != nil {

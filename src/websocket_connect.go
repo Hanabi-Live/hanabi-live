@@ -47,7 +47,7 @@ func websocketConnect(ms *melody.Session) {
 	var totalGames int
 	if v, err := models.Games.GetUserNumGames(s.UserID(), true); err != nil {
 		logger.Error("Failed to get the number of games played for user \""+s.Username()+"\":", err)
-		s.Error(defaultErrorMsg)
+		s.Error(DefaultErrorMsg)
 		return
 	} else {
 		totalGames = v
@@ -57,7 +57,7 @@ func websocketConnect(ms *melody.Session) {
 	var settings Settings
 	if v, err := models.UserSettings.Get(s.UserID()); err != nil {
 		logger.Error("Failed to get the settings for user \""+s.Username()+"\":", err)
-		s.Error(defaultErrorMsg)
+		s.Error(DefaultErrorMsg)
 		return
 	} else {
 		settings = v
@@ -67,7 +67,7 @@ func websocketConnect(ms *melody.Session) {
 	var friends []string
 	if v, err := models.UserFriends.GetAll(s.UserID()); err != nil {
 		logger.Error("Failed to get the friends for user \""+s.Username()+"\":", err)
-		s.Error(defaultErrorMsg)
+		s.Error(DefaultErrorMsg)
 		return
 	} else {
 		friends = v
@@ -77,7 +77,7 @@ func websocketConnect(ms *melody.Session) {
 	var datetimeCreated time.Time
 	if v, err := models.Users.GetDatetimeCreated(s.UserID()); err != nil {
 		logger.Error("Failed to get the join date for user \""+s.Username()+"\":", err)
-		s.Error(defaultErrorMsg)
+		s.Error(DefaultErrorMsg)
 		return
 	} else {
 		datetimeCreated = v
@@ -176,13 +176,13 @@ func websocketConnect(ms *melody.Session) {
 		exists = false
 	} else if err != nil {
 		logger.Error("Failed to check if the \""+motdPath+"\" file exists:", err)
-		s.Error(defaultErrorMsg)
+		s.Error(DefaultErrorMsg)
 		exists = false
 	}
 	if exists {
 		if fileContents, err := ioutil.ReadFile(motdPath); err != nil {
 			logger.Error("Failed to read the \""+motdPath+"\" file:", err)
-			s.Error(defaultErrorMsg)
+			s.Error(DefaultErrorMsg)
 		} else {
 			motd := string(fileContents)
 			motd = strings.TrimSpace(motd)
@@ -203,7 +203,7 @@ func websocketConnect(ms *melody.Session) {
 	var history []*GameHistory
 	if v, err := models.Games.GetUserHistory(s.UserID(), 0, 10, false); err != nil {
 		logger.Error("Failed to get the history for user \""+s.Username()+"\":", err)
-		s.Error(defaultErrorMsg)
+		s.Error(DefaultErrorMsg)
 		return
 	} else {
 		history = v

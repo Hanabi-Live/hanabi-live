@@ -59,7 +59,7 @@ func friend(s *Session, d *CommandData, add bool) {
 	); err != nil {
 		logger.Error("Failed to validate that \""+normalizedUsername+"\" exists in the "+
 			"database:", err)
-		s.Error(defaultErrorMsg)
+		s.Error(DefaultErrorMsg)
 		return
 	} else if !exists {
 		s.Warning("The username of \"" + d.Name + "\" does not exist in the database.")
@@ -72,7 +72,7 @@ func friend(s *Session, d *CommandData, add bool) {
 	var friendIDs []int
 	if v, err := models.UserFriends.GetAllIDs(s.UserID()); err != nil {
 		logger.Error("Failed to get the friend IDs for user \""+s.Username()+"\":", err)
-		s.Error(defaultErrorMsg)
+		s.Error(DefaultErrorMsg)
 		return
 	} else {
 		friendIDs = v
@@ -89,7 +89,7 @@ func friend(s *Session, d *CommandData, add bool) {
 		// Add the friend
 		if err := models.UserFriends.Insert(s.UserID(), friend.ID); err != nil {
 			logger.Error("Failed to insert a new friend for user \""+s.Username()+"\":", err)
-			s.Error(defaultErrorMsg)
+			s.Error(DefaultErrorMsg)
 			return
 		}
 
@@ -104,7 +104,7 @@ func friend(s *Session, d *CommandData, add bool) {
 		// Remove the friend
 		if err := models.UserFriends.Delete(s.UserID(), friend.ID); err != nil {
 			logger.Error("Failed to delete a friend for user \""+s.Username()+"\":", err)
-			s.Error(defaultErrorMsg)
+			s.Error(DefaultErrorMsg)
 			return
 		}
 
@@ -115,7 +115,7 @@ func friend(s *Session, d *CommandData, add bool) {
 	var friends []string
 	if v, err := models.UserFriends.GetAll(s.UserID()); err != nil {
 		logger.Error("Failed to get the friends for user \""+s.Username()+"\":", err)
-		s.Error(defaultErrorMsg)
+		s.Error(DefaultErrorMsg)
 		return
 	} else {
 		friends = v

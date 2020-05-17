@@ -7,22 +7,18 @@ import (
 	"time"
 )
 
-const (
-	notFromDiscordErrorMessage = "You can only perform this command from the Hanabi Discord server."
-)
-
 // /here
 func chatHere(s *Session, d *CommandData, t *Table) {
 	// Validate that this is coming from a Discord user
 	if d.DiscordID == "" {
-		chatServerSend(notFromDiscordErrorMessage, d.Room)
+		chatServerSend(ChatCommandNotDiscordFail, d.Room)
 		return
 	}
 
 	// Check to see if enough time has passed from the last @here
 	msg := ""
-	if time.Since(discordLastAtHere) < discordAtHereTimeout {
-		timeCanPingAgain := discordLastAtHere.Add(discordAtHereTimeout)
+	if time.Since(discordLastAtHere) < DiscordAtHereTimeout {
+		timeCanPingAgain := discordLastAtHere.Add(DiscordAtHereTimeout)
 		minutesLeft := int(math.Ceil(time.Until(timeCanPingAgain).Minutes()))
 		msg += "In order to prevent spam, you need to wait "
 		if minutesLeft == 1 {
@@ -70,7 +66,7 @@ func chatHere(s *Session, d *CommandData, t *Table) {
 func chatLast(s *Session, d *CommandData, t *Table) {
 	// Validate that this is coming from a Discord user
 	if d.DiscordID == "" {
-		chatServerSend(notFromDiscordErrorMessage, d.Room)
+		chatServerSend(ChatCommandNotDiscordFail, d.Room)
 		return
 	}
 
@@ -84,7 +80,7 @@ func chatLast(s *Session, d *CommandData, t *Table) {
 func chatNext(s *Session, d *CommandData, t *Table) {
 	// Validate that this is coming from a Discord user
 	if d.DiscordID == "" {
-		chatServerSend(notFromDiscordErrorMessage, d.Room)
+		chatServerSend(ChatCommandNotDiscordFail, d.Room)
 		return
 	}
 
@@ -95,7 +91,7 @@ func chatNext(s *Session, d *CommandData, t *Table) {
 func chatUnnext(s *Session, d *CommandData, t *Table) {
 	// Validate that this is coming from a Discord user
 	if d.DiscordID == "" {
-		chatServerSend(notFromDiscordErrorMessage, d.Room)
+		chatServerSend(ChatCommandNotDiscordFail, d.Room)
 		return
 	}
 
@@ -106,7 +102,7 @@ func chatUnnext(s *Session, d *CommandData, t *Table) {
 func chatList(s *Session, d *CommandData, t *Table) {
 	// Validate that this is coming from a Discord user
 	if d.DiscordID == "" {
-		chatServerSend(notFromDiscordErrorMessage, d.Room)
+		chatServerSend(ChatCommandNotDiscordFail, d.Room)
 		return
 	}
 

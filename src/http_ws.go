@@ -153,7 +153,7 @@ func httpWS(c *gin.Context) {
 	keys["userID"] = userID
 	keys["username"] = username
 	keys["muted"] = muted
-	keys["status"] = statusLobby // By default, the user is in the lobby
+	keys["status"] = StatusLobby // By default, the user is in the lobby
 	keys["inactive"] = false
 	keys["fakeUser"] = false
 	keys["rateLimitAllowance"] = rateLimitRate

@@ -121,7 +121,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 
 	// If the game was terminated or did not finish, then the deck order will not be appended yet
 	// (which is normally done in the "Game.End()" function)
-	if g.EndCondition == endConditionInProgress {
+	if g.EndCondition == EndConditionInProgress {
 		g.End() // This will only append the deck order and then return early
 	}
 
@@ -154,7 +154,7 @@ func validateDatabase(s *Session, d *CommandData) bool {
 	// Check to see if the game exists in the database
 	if exists, err := models.Games.Exists(d.GameID); err != nil {
 		logger.Error("Failed to check to see if game "+strconv.Itoa(d.GameID)+" exists:", err)
-		s.Error(initGameFail)
+		s.Error(InitGameFail)
 		return false
 	} else if !exists {
 		s.Warning("Game #" + strconv.Itoa(d.GameID) + " does not exist in the database.")
@@ -191,7 +191,7 @@ func validateJSON(s *Session, d *CommandData) bool {
 
 	// Validate actions
 	for i, action := range d.GameJSON.Actions {
-		if action.Type == actionTypePlay || action.Type == actionTypeDiscard {
+		if action.Type == ActionTypePlay || action.Type == ActionTypeDiscard {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Deck)-1 {
 				s.Warning("Action at index " + strconv.Itoa(i) +
 					" is a play or discard with an invalid target (card order) of " +
@@ -204,21 +204,21 @@ func validateJSON(s *Session, d *CommandData) bool {
 					", which is nonsensical.")
 				return false
 			}
-		} else if action.Type == actionTypeColorClue || action.Type == actionTypeRankClue {
+		} else if action.Type == ActionTypeColorClue || action.Type == ActionTypeRankClue {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Players)-1 {
 				s.Warning("Action at index " + strconv.Itoa(i) +
 					" is a clue with an invalid target (player index) of " +
 					strconv.Itoa(action.Target) + ".")
 				return false
 			}
-			if action.Type == actionTypeColorClue {
+			if action.Type == ActionTypeColorClue {
 				if action.Value < 0 || action.Value > len(variant.ClueColors) {
 					s.Warning("Action at index " + strconv.Itoa(i) +
 						" is a color clue with an invalid value of " +
 						strconv.Itoa(action.Value) + ".")
 					return false
 				}
-			} else if action.Type == actionTypeRankClue {
+			} else if action.Type == ActionTypeRankClue {
 				if action.Value < 1 || action.Value > 5 {
 					s.Warning("Action at index " + strconv.Itoa(i) +
 						" is a rank clue with an invalid value of " +
@@ -226,7 +226,7 @@ func validateJSON(s *Session, d *CommandData) bool {
 					return false
 				}
 			}
-		} else if action.Type == actionTypeGameOver {
+		} else if action.Type == ActionTypeGameOver {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Players)-1 {
 				s.Warning("Action at index " + strconv.Itoa(i) +
 					" is a game over with an invalid target (player index) of " +
@@ -301,7 +301,7 @@ func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 	if v, err := models.Games.GetOptions(d.GameID); err != nil {
 		logger.Error("Failed to get the options from the database for game "+
 			strconv.Itoa(d.GameID)+":", err)
-		s.Error(initGameFail)
+		s.Error(InitGameFail)
 		return false
 	} else {
 		options = v
@@ -312,7 +312,7 @@ func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 	if v, ok := variantsID[options.Variant]; !ok {
 		logger.Error("Failed to find a definition for variant " +
 			strconv.Itoa(options.Variant) + ".")
-		s.Error(initGameFail)
+		s.Error(InitGameFail)
 		return false
 	} else {
 		variant = v
@@ -344,7 +344,7 @@ func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 	if v, err := models.Games.GetPlayerNames(d.GameID); err != nil {
 		logger.Error("Failed to get the player names from the database for game "+
 			strconv.Itoa(d.GameID)+":", err)
-		s.Error(initGameFail)
+		s.Error(InitGameFail)
 		return false
 	} else {
 		playerNames = v
@@ -438,7 +438,7 @@ func newFakeSession(id int, name string) *Session {
 	keys["username"] = name
 	keys["admin"] = false
 	keys["firstTimeUser"] = false
-	keys["status"] = statusPlaying
+	keys["status"] = StatusPlaying
 	keys["fakeUser"] = true
 
 	return &Session{
@@ -457,7 +457,7 @@ func applyNotesToPlayers(s *Session, d *CommandData, g *Game) bool {
 		if v, err := models.Games.GetNotes(d.GameID, len(g.Players), noteSize); err != nil {
 			logger.Error("Failed to get the notes from the database "+
 				"for game "+strconv.Itoa(d.GameID)+":", err)
-			s.Error(initGameFail)
+			s.Error(InitGameFail)
 			return false
 		} else {
 			notes = v
@@ -494,7 +494,7 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 		if v, err := models.GameActions.GetAll(d.GameID); err != nil {
 			logger.Error("Failed to get the actions from the database "+
 				"for game "+strconv.Itoa(d.GameID)+":", err)
-			s.Error(initGameFail)
+			s.Error(InitGameFail)
 			return false
 		} else {
 			actions = v
@@ -517,7 +517,7 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 
 		p := t.Players[g.ActivePlayer]
 
-		if action.Type == actionTypeGameOver && action.Value == endConditionTerminated {
+		if action.Type == ActionTypeGameOver && action.Value == EndConditionTerminated {
 			// Terminations do not flow through the "commandAction()" function,
 			// so this is a special case
 			// (this is because any player can terminate the game, even if it is not their turn)

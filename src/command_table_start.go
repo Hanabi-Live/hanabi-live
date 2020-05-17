@@ -54,7 +54,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		if numPlayers, err := models.Games.GetNumPlayers(t.Options.DatabaseID); err != nil {
 			logger.Error("Failed to get the number of players in game "+
 				strconv.Itoa(t.Options.DatabaseID)+":", err)
-			s.Error(startGameFail)
+			s.Error(StartGameFail)
 			return
 		} else if len(t.Players) != numPlayers {
 			s.Warning("You currently have " + strconv.Itoa(len(t.Players)) + " players but game " +
@@ -107,7 +107,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		if v, err := models.Games.GetSeed(t.Options.DatabaseID); err != nil {
 			logger.Error("Failed to get the seed for game "+
 				"\""+strconv.Itoa(t.Options.DatabaseID)+"\":", err)
-			s.Error(startGameFail)
+			s.Error(StartGameFail)
 			return
 		} else {
 			g.Seed = v
@@ -130,7 +130,7 @@ func commandTableStart(s *Session, d *CommandData) {
 			var seeds []string
 			if v, err := models.Games.GetPlayerSeeds(p.ID); err != nil {
 				logger.Error("Failed to get the past seeds for \""+s.Username()+"\":", err)
-				s.Error(startGameFail)
+				s.Error(StartGameFail)
 				return
 			} else {
 				seeds = v
@@ -285,7 +285,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		// Set the status for all of the users in the game
 		for _, p := range t.Players {
 			if p.Session != nil {
-				p.Session.Set("status", statusPlaying)
+				p.Session.Set("status", StatusPlaying)
 				notifyAllUser(p.Session)
 			}
 		}

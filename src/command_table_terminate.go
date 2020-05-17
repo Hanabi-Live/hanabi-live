@@ -64,7 +64,7 @@ func terminate(t *Table, username string, endPlayerIndex int) {
 
 	// We want to set the end condition before advancing the turn to ensure that
 	// no active player will show
-	g.EndCondition = endConditionTerminated
+	g.EndCondition = EndConditionTerminated
 	g.EndPlayer = endPlayerIndex
 
 	// Add a text message for the termination

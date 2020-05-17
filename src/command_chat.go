@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	maxChatLength = 300
+	MaxChatLength       = 300
+	MaxChatLengthServer = 600
 )
 
 var (
@@ -56,7 +57,7 @@ func commandChat(s *Session, d *CommandData) {
 	}
 
 	// Sanitize and validate the chat message
-	if v, valid := sanitizeChatInput(s, d.Msg); !valid {
+	if v, valid := sanitizeChatInput(s, d.Msg, d.Server); !valid {
 		return
 	} else {
 		d.Msg = v
@@ -246,11 +247,15 @@ func commandChatTable(s *Session, d *CommandData) {
 	}
 }
 
-func sanitizeChatInput(s *Session, msg string) (string, bool) {
+func sanitizeChatInput(s *Session, msg string, server bool) (string, bool) {
 	// Truncate long messages
 	// (we do this first to prevent wasting CPU cycles on validating extremely long messages)
-	if len(msg) > maxChatLength {
-		msg = msg[0 : maxChatLength-1]
+	maxLength := MaxChatLength
+	if server {
+		maxLength = MaxChatLengthServer
+	}
+	if len(msg) > maxLength {
+		msg = msg[0 : maxLength-1]
 	}
 
 	// Trim whitespace from both sides of the message

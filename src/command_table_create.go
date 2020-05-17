@@ -149,7 +149,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 			if exists, err := models.Games.Exists(databaseID); err != nil {
 				logger.Error("Failed to check to see if game "+
 					strconv.Itoa(databaseID)+" exists:", err)
-				s.Error(createGameFail)
+				s.Error(CreateGameFail)
 				return
 			} else if !exists {
 				s.Warning("That game ID does not exist in the database.")
@@ -162,7 +162,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 			if v, err := models.Games.GetNumTurns(databaseID); err != nil {
 				logger.Error("Failed to get the number of turns from the database for game "+
 					strconv.Itoa(databaseID)+":", err)
-				s.Error(initGameFail)
+				s.Error(InitGameFail)
 				return
 			} else {
 				numTurns = v
@@ -177,7 +177,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 			if v, err := models.Games.GetOptions(databaseID); err != nil {
 				logger.Error("Failed to get the variant from the database for game "+
 					strconv.Itoa(databaseID)+":", err)
-				s.Error(initGameFail)
+				s.Error(InitGameFail)
 				return
 			} else {
 				// The variant is submitted to the server as a name
@@ -216,7 +216,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 			var lines []string
 			if v, err := ioutil.ReadFile(filePath); err != nil {
 				logger.Error("Failed to read \""+filePath+"\":", err)
-				s.Error(createGameFail)
+				s.Error(CreateGameFail)
 				return
 			} else {
 				lines = strings.Split(string(v), "\n")
@@ -330,7 +330,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 		// Create an Argon2id hash of the plain-text password
 		if v, err := argon2id.CreateHash(d.Password, argon2id.DefaultParams); err != nil {
 			logger.Error("Failed to create a hash from the submitted table password:", err)
-			s.Error(createGameFail)
+			s.Error(CreateGameFail)
 			return
 		} else {
 			passwordHash = v
@@ -378,7 +378,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 
 	// If the server is shutting down / restarting soon, warn the players
 	if shuttingDown {
-		timeLeft := shutdownTimeout - time.Since(datetimeShutdownInit)
+		timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit)
 		minutesLeft := int(timeLeft.Minutes())
 
 		msg := "The server is shutting down in " + strconv.Itoa(minutesLeft) + " minutes. " +

@@ -3,7 +3,7 @@ package main
 // /badhere
 func chatBadHere(s *Session, d *CommandData, t *Table) {
 	if t != nil {
-		chatServerSend(chatCommandNotInLobbyFail, d.Room)
+		chatServerSend(ChatCommandNotInLobbyFail, d.Room)
 		return
 	}
 
@@ -19,7 +19,7 @@ func chatBadHere(s *Session, d *CommandData, t *Table) {
 // /wrongchannel
 func chatWrongChannel(s *Session, d *CommandData, t *Table) {
 	if t != nil {
-		chatServerSend(chatCommandNotInLobbyFail, d.Room)
+		chatServerSend(ChatCommandNotInLobbyFail, d.Room)
 		return
 	}
 

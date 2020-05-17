@@ -13,7 +13,7 @@ func (g *Game) End() {
 	t := g.Table
 
 	t.DatetimeFinished = time.Now()
-	if g.EndCondition > endConditionNormal {
+	if g.EndCondition > EndConditionNormal {
 		g.Score = 0
 	}
 	logger.Info(t.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
@@ -149,7 +149,7 @@ func (g *Game) End() {
 	// after the game is converted)
 	for _, p := range t.Players {
 		if p.Session != nil {
-			p.Session.Set("status", statusLobby)
+			p.Session.Set("status", StatusLobby)
 			notifyAllUser(p.Session)
 		}
 	}
@@ -284,23 +284,23 @@ func (g *Game) WriteDatabase() error {
 
 	// If the game ended in a special way, we also need to insert an "game over" action
 	var gameOverAction *GameAction
-	if g.EndCondition == endConditionTimeout {
+	if g.EndCondition == EndConditionTimeout {
 		gameOverAction = &GameAction{
-			Type:   actionTypeGameOver,
+			Type:   ActionTypeGameOver,
 			Target: g.EndPlayer,
-			Value:  endConditionTimeout,
+			Value:  EndConditionTimeout,
 		}
-	} else if g.EndCondition == endConditionTerminated {
+	} else if g.EndCondition == EndConditionTerminated {
 		gameOverAction = &GameAction{
-			Type:   actionTypeGameOver,
+			Type:   ActionTypeGameOver,
 			Target: g.EndPlayer,
-			Value:  endConditionTerminated,
+			Value:  EndConditionTerminated,
 		}
-	} else if g.EndCondition == endConditionIdleTimeout {
+	} else if g.EndCondition == EndConditionIdleTimeout {
 		gameOverAction = &GameAction{
-			Type:   actionTypeGameOver,
+			Type:   ActionTypeGameOver,
 			Target: 0,
-			Value:  endConditionIdleTimeout,
+			Value:  EndConditionIdleTimeout,
 		}
 	}
 	if gameOverAction != nil {
@@ -428,7 +428,7 @@ func (t *Table) ConvertToSharedReplay() {
 
 		// If this game was ended due to idleness,
 		// skip conversion so that the shared replay gets deleted below
-		if g.EndCondition == endConditionIdleTimeout {
+		if g.EndCondition == EndConditionIdleTimeout {
 			logger.Info("Skipped converting " + p.Name + " to a spectator " +
 				"since the game ended due to idleness.")
 			continue
@@ -484,7 +484,7 @@ func (t *Table) ConvertToSharedReplay() {
 	for _, sp := range t.Spectators {
 		// Reset everyone's status (both players and spectators are now spectators)
 		if sp.Session != nil {
-			sp.Session.Set("status", statusSharedReplay)
+			sp.Session.Set("status", StatusSharedReplay)
 			notifyAllUser(sp.Session)
 		}
 

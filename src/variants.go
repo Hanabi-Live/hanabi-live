@@ -209,7 +209,7 @@ func variantsInit() {
 func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 	variant := variants[variantName]
 
-	if clue.Type == clueTypeColor {
+	if clue.Type == ClueTypeColor {
 		if variant.ColorCluesTouchNothing {
 			return false
 		}
@@ -244,7 +244,7 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 		return stringInSlice(clueColor, cardColors)
 	}
 
-	if clue.Type == clueTypeRank {
+	if clue.Type == ClueTypeRank {
 		if variant.RankCluesTouchNothing {
 			return false
 		}

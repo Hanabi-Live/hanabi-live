@@ -73,9 +73,9 @@ func commandTableReattend(s *Session, d *CommandData) {
 	if s != nil {
 		var status int
 		if t.Running {
-			status = statusPlaying
+			status = StatusPlaying
 		} else {
-			status = statusPregame
+			status = StatusPregame
 		}
 		s.Set("status", status)
 		notifyAllUser(s)

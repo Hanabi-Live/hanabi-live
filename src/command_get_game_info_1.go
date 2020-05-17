@@ -134,9 +134,9 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		Names:        names,
 		Variant:      t.Options.Variant,
 		Seat:         seat,
-		Spectating:   s.Status() == statusSpectating,
-		Replay:       s.Status() == statusReplay || s.Status() == statusSharedReplay,
-		SharedReplay: s.Status() == statusSharedReplay,
+		Spectating:   !t.Replay && j != -1,
+		Replay:       t.Replay,
+		SharedReplay: t.Replay && t.Visible,
 		DatabaseID:   g.ID,
 
 		// Optional settings
