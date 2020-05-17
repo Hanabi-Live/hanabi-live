@@ -5,26 +5,26 @@
     "fill": "#cccccc"
   },
   "Red": {
-    "pip": "hanabi_red"
+    "pip": "hanabiRed"
   },
   "Yellow": {
-    "pip": "hanabi_yellow"
+    "pip": "hanabiYellow"
   },
   "Green": {
-    "pip": "hanabi_green"
+    "pip": "hanabiGreen"
   },
   "Blue": {
-    "pip": "hanabi_blue"
+    "pip": "hanabiBlue"
   },
   "Purple": {
-    "pip": "hanabi_white"
+    "pip": "hanabiWhite"
   },
   "Teal": {
-    "pip": "hanabi_alt_white"
+    "pip": "hanabiAltWhite"
   },
   "Black": {
     "oneOfEach": true,
-    "pip": "hanabi_alt_blue"
+    "pip": "hanabiAltBlue"
   },
   "Rainbow": {
     "abbreviation": "M",
@@ -72,7 +72,7 @@
     "noClueColors": true,
     "noClueRanks": true,
     "fill": "#ffffff",
-    "pip": "empty_set"
+    "pip": "emptySet"
   },
   "Dark Rainbow": {
     "abbreviation": "M",
@@ -137,7 +137,7 @@
     "noClueRanks": true,
     "fill": "#a6a6a6",
     "oneOfEach": true,
-    "pip": "empty_set"
+    "pip": "emptySet"
   },
   "Muddy Rainbow": {
     "abbreviation": "M",
@@ -188,42 +188,42 @@
       "Red"
     ],
     "fill": "#e60000",
-    "pip": "hanabi_red"
+    "pip": "hanabiRed"
   },
   "Mahogany": {
     "clueColors": [
       "Red"
     ],
     "fill": "#660000",
-    "pip": "hanabi_white"
+    "pip": "hanabiWhite"
   },
   "Lime": {
     "clueColors": [
       "Green"
     ],
     "fill": "#1aff1a",
-    "pip": "hanabi_yellow"
+    "pip": "hanabiYellow"
   },
   "Forest": {
     "clueColors": [
       "Green"
     ],
     "fill": "#008000",
-    "pip": "hanabi_green"
+    "pip": "hanabiGreen"
   },
   "Sky": {
     "clueColors": [
       "Blue"
     ],
     "fill": "#1a66ff",
-    "pip": "hanabi_blue"
+    "pip": "hanabiBlue"
   },
   "Navy": {
     "clueColors": [
       "Blue"
     ],
     "fill": "#002b80",
-    "pip": "hanabi_alt_white"
+    "pip": "hanabiAltWhite"
   },
   "Tomato VA": {
     "clueColors": [
@@ -231,14 +231,14 @@
     ],
     "fill": "#ff1a1a",
     "name": "Tomato",
-    "pip": "hanabi_green"
+    "pip": "hanabiGreen"
   },
   "Ruby VA": {
     "clueColors": [
       "Red"
     ],
     "name": "Ruby",
-    "pip": "hanabi_red"
+    "pip": "hanabiRed"
   },
   "Mahogany VA": {
     "clueColors": [
@@ -246,7 +246,7 @@
     ],
     "fill": "#330000",
     "name": "Mahogany",
-    "pip": "hanabi_white"
+    "pip": "hanabiWhite"
   },
   "Sky VA": {
     "clueColors": [
@@ -254,14 +254,14 @@
     ],
     "fill": "#4d88ff",
     "name": "Sky",
-    "pip": "hanabi_blue"
+    "pip": "hanabiBlue"
   },
   "Berry VA": {
     "clueColors": [
       "Blue"
     ],
     "name": "Berry",
-    "pip": "hanabi_alt_white"
+    "pip": "hanabiAltWhite"
   },
   "Navy VA": {
     "clueColors": [
@@ -269,7 +269,7 @@
     ],
     "fill": "#001a4d",
     "name": "Navy",
-    "pip": "hanabi_yellow"
+    "pip": "hanabiYellow"
   },
   "Ice EA": {
     "clueColors": [
@@ -277,7 +277,7 @@
     ],
     "fill": "#e6eeff",
     "name": "Ice",
-    "pip": "hanabi_blue"
+    "pip": "hanabiBlue"
   },
   "Sapphire EA": {
     "clueColors": [
@@ -285,7 +285,7 @@
     ],
     "fill": "#99bbff",
     "name": "Sapphire",
-    "pip": "hanabi_alt_white"
+    "pip": "hanabiAltWhite"
   },
   "Sky EA": {
     "clueColors": [
@@ -293,14 +293,14 @@
     ],
     "fill": "#3377ff",
     "name": "Sky",
-    "pip": "hanabi_yellow"
+    "pip": "hanabiYellow"
   },
   "Berry EA": {
     "clueColors": [
       "Blue"
     ],
     "name": "Berry",
-    "pip": "hanabi_green"
+    "pip": "hanabiGreen"
   },
   "Navy EA": {
     "clueColors": [
@@ -308,7 +308,7 @@
     ],
     "fill": "#002266",
     "name": "Navy",
-    "pip": "hanabi_red"
+    "pip": "hanabiRed"
   },
   "Ocean EA": {
     "clueColors": [
@@ -316,7 +316,7 @@
     ],
     "fill": "#00091a",
     "name": "Ocean",
-    "pip": "hanabi_white"
+    "pip": "hanabiWhite"
   },
   "Orange D": {
     "clueColors": [
@@ -325,7 +325,7 @@
     ],
     "fill": "#ff8800",
     "name": "Orange",
-    "pip": "hanabi_alt_white"
+    "pip": "hanabiAltWhite"
   },
   "Purple D": {
     "clueColors": [
@@ -333,7 +333,7 @@
       "Blue"
     ],
     "name": "Purple",
-    "pip": "hanabi_white"
+    "pip": "hanabiWhite"
   },
   "Mahogany D": {
     "clueColors": [
@@ -342,7 +342,7 @@
     ],
     "fill": "#660016",
     "name": "Mahogany",
-    "pip": "hanabi_red"
+    "pip": "hanabiRed"
   },
   "Green D": {
     "clueColors": [
@@ -350,7 +350,7 @@
       "Blue"
     ],
     "name": "Green",
-    "pip": "hanabi_green"
+    "pip": "hanabiGreen"
   },
   "Tan D": {
     "clueColors": [
@@ -359,7 +359,7 @@
     ],
     "fill": "#999900",
     "name": "Tan",
-    "pip": "hanabi_yellow"
+    "pip": "hanabiYellow"
   },
   "Navy D": {
     "clueColors": [
@@ -368,7 +368,7 @@
     ],
     "fill": "#000066",
     "name": "Navy",
-    "pip": "hanabi_blue"
+    "pip": "hanabiBlue"
   },
   "Orange D2": {
     "clueColors": [
@@ -377,7 +377,7 @@
     ],
     "fill": "#ff8800",
     "name": "Orange",
-    "pip": "hanabi_red"
+    "pip": "hanabiRed"
   },
   "Lime D": {
     "clueColors": [
@@ -386,7 +386,7 @@
     ],
     "fill": "#80c000",
     "name": "Lime",
-    "pip": "hanabi_yellow"
+    "pip": "hanabiYellow"
   },
   "Teal D": {
     "clueColors": [
@@ -394,7 +394,7 @@
       "Blue"
     ],
     "name": "Teal",
-    "pip": "hanabi_green"
+    "pip": "hanabiGreen"
   },
   "Indigo D": {
     "clueColors": [
@@ -403,7 +403,7 @@
     ],
     "fill": "#1a0082",
     "name": "Indigo",
-    "pip": "hanabi_blue"
+    "pip": "hanabiBlue"
   },
   "Cardinal D": {
     "clueColors": [
@@ -412,7 +412,7 @@
     ],
     "fill": "#810735",
     "name": "Cardinal",
-    "pip": "hanabi_white"
+    "pip": "hanabiWhite"
   },
   "Tangelo AD": {
     "clueColors": [
@@ -421,7 +421,7 @@
     ],
     "fill": "#ffac4d",
     "name": "Tangelo",
-    "pip": "hanabi_red"
+    "pip": "hanabiRed"
   },
   "Peach AD": {
     "clueColors": [
@@ -430,7 +430,7 @@
     ],
     "fill": "#b35f00",
     "name": "Peach",
-    "pip": "hanabi_alt_white"
+    "pip": "hanabiAltWhite"
   },
   "Orchid AD": {
     "clueColors": [
@@ -439,7 +439,7 @@
     ],
     "fill": "#8c1aff",
     "name": "Orchid",
-    "pip": "hanabi_blue"
+    "pip": "hanabiBlue"
   },
   "Violet AD": {
     "clueColors": [
@@ -448,7 +448,7 @@
     ],
     "fill": "#400080",
     "name": "Violet",
-    "pip": "hanabi_white"
+    "pip": "hanabiWhite"
   },
   "Lime AD": {
     "clueColors": [
@@ -457,7 +457,7 @@
     ],
     "fill": "#1aff1a",
     "name": "Lime",
-    "pip": "hanabi_yellow"
+    "pip": "hanabiYellow"
   },
   "Forest AD": {
     "clueColors": [
@@ -466,6 +466,6 @@
     ],
     "fill": "#008000",
     "name": "Forest",
-    "pip": "hanabi_green"
+    "pip": "hanabiGreen"
   }
 }
