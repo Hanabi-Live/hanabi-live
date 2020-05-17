@@ -125,7 +125,7 @@ func commandTableStart(s *Session, d *CommandData) {
 	} else {
 		// This is a normal game with a random seed / a random deck
 		// Get a list of all the seeds that these players have played before
-		seedMap := make(map[string]bool)
+		seedMap := make(map[string]struct{})
 		for _, p := range t.Players {
 			var seeds []string
 			if v, err := models.Games.GetPlayerSeeds(p.ID); err != nil {
@@ -137,7 +137,7 @@ func commandTableStart(s *Session, d *CommandData) {
 			}
 
 			for _, v := range seeds {
-				seedMap[v] = true
+				seedMap[v] = struct{}{}
 			}
 		}
 
@@ -147,7 +147,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		for looking {
 			seedNum++
 			g.Seed = seedPrefix + strconv.Itoa(seedNum)
-			if !seedMap[g.Seed] {
+			if _, ok := seedMap[g.Seed]; ok {
 				looking = false
 			}
 		}

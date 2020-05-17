@@ -72,8 +72,8 @@ func variantsInit() {
 		return
 	}
 
-	uniqueNameMap := make(map[string]bool)
-	uniqueIDMap := make(map[int]bool)
+	uniqueNameMap := make(map[string]struct{})
+	uniqueIDMap := make(map[int]struct{})
 	variants = make(map[string]*Variant)
 	variantsID = make(map[int]string)
 	for name, variant := range JSONVariants {
@@ -82,7 +82,7 @@ func variantsInit() {
 			logger.Fatal("There are two variants with the name of \"" + name + "\".")
 			return
 		}
-		uniqueNameMap[name] = true
+		uniqueNameMap[name] = struct{}{}
 
 		// Validate that all of the ID's are unique
 		if _, ok := uniqueIDMap[variant.ID]; ok {
@@ -90,7 +90,7 @@ func variantsInit() {
 				"\"" + strconv.Itoa(variant.ID) + "\".")
 			return
 		}
-		uniqueIDMap[variant.ID] = true
+		uniqueIDMap[variant.ID] = struct{}{}
 
 		// Validate that there is at least one suit
 		if len(variant.Suits) < 1 {

@@ -56,8 +56,8 @@ func characterInit() {
 		return
 	}
 
-	uniqueNameMap := make(map[string]bool)
-	uniqueIDMap := make(map[int]bool)
+	uniqueNameMap := make(map[string]struct{})
+	uniqueIDMap := make(map[int]struct{})
 	characterNames = make([]string, 0)
 	charactersID = make(map[int]string)
 	for name, character := range characters {
@@ -66,7 +66,7 @@ func characterInit() {
 			logger.Fatal("There are two characters with the name of \"" + name + "\".")
 			return
 		}
-		uniqueNameMap[name] = true
+		uniqueNameMap[name] = struct{}{}
 
 		// Validate that all of the ID's are unique
 		if _, ok := uniqueIDMap[character.ID]; ok {
@@ -74,7 +74,7 @@ func characterInit() {
 				"\"" + strconv.Itoa(character.ID) + "\".")
 			return
 		}
-		uniqueIDMap[character.ID] = true
+		uniqueIDMap[character.ID] = struct{}{}
 
 		// Create an array with every character name
 		// (so that later we have the ability to get a random character)

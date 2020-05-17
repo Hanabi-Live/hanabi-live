@@ -23,7 +23,7 @@ func (*UserFriends) Delete(userID int, friendID int) error {
 	return err
 }
 
-func (*UserFriends) GetAll(userID int) ([]string, error) {
+func (*UserFriends) GetAllUsernames(userID int) ([]string, error) {
 	rows, err := db.Query(context.Background(), `
 		SELECT users.username
 		FROM user_friends
@@ -48,26 +48,26 @@ func (*UserFriends) GetAll(userID int) ([]string, error) {
 	return friends, nil
 }
 
-func (*UserFriends) GetAllIDs(userID int) ([]int, error) {
+func (*UserFriends) GetMap(userID int) (map[int]struct{}, error) {
 	rows, err := db.Query(context.Background(), `
 		SELECT friend_id
 		FROM user_friends
 		WHERE user_id = $1
 	`, userID)
 
-	friendIDs := make([]int, 0)
+	friendMap := make(map[int]struct{})
 	for rows.Next() {
 		var friendID int
 		if err2 := rows.Scan(&friendID); err2 != nil {
-			return friendIDs, err2
+			return friendMap, err2
 		}
-		friendIDs = append(friendIDs, friendID)
+		friendMap[friendID] = struct{}{}
 	}
 
 	if rows.Err() != nil {
-		return friendIDs, err
+		return friendMap, err
 	}
 	rows.Close()
 
-	return friendIDs, nil
+	return friendMap, nil
 }

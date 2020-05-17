@@ -1,4 +1,5 @@
 // Functions to return session values
+// Session values are created in "http_ws.go"
 
 package main
 
@@ -73,6 +74,34 @@ func (s *Session) Status() int {
 		return -1
 	} else {
 		return v.(int)
+	}
+}
+
+func (s *Session) Friends() map[int]struct{} {
+	if s == nil {
+		logger.Error("The \"Friends\" method was called for a nil session.")
+		return make(map[int]struct{})
+	}
+
+	if v, exists := s.Get("friends"); !exists {
+		logger.Error("Failed to get \"friends\" from a session.")
+		return make(map[int]struct{})
+	} else {
+		return v.(map[int]struct{})
+	}
+}
+
+func (s *Session) ReverseFriends() map[int]struct{} {
+	if s == nil {
+		logger.Error("The \"ReverseFriends\" method was called for a nil session.")
+		return make(map[int]struct{})
+	}
+
+	if v, exists := s.Get("reverseFriends"); !exists {
+		logger.Error("Failed to get \"reverseFriends\" from a session.")
+		return make(map[int]struct{})
+	} else {
+		return v.(map[int]struct{})
 	}
 }
 

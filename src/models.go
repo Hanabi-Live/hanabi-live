@@ -27,6 +27,7 @@ type Models struct {
 	MutedIPs
 	Users
 	UserFriends
+	UserReverseFriends
 	UserSettings
 	UserStats
 	VariantStats

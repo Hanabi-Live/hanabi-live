@@ -17,7 +17,7 @@ type Table struct {
 	Spectators []*Spectator
 	// We also keep track of spectators who have disconnected
 	// so that we can automatically put them back into the shared replay
-	DisconSpectators map[int]bool
+	DisconSpectators map[int]struct{}
 
 	// This is the user ID of the person who started the table
 	// or the current leader of the shared replay
@@ -86,7 +86,7 @@ func NewTable(name string, owner int) *Table {
 
 		Players:          make([]*Player, 0),
 		Spectators:       make([]*Spectator, 0),
-		DisconSpectators: make(map[int]bool),
+		DisconSpectators: make(map[int]struct{}),
 
 		Owner:   owner,
 		Visible: true, // Tables are visible by default

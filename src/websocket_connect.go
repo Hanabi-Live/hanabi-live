@@ -65,7 +65,7 @@ func websocketConnect(ms *melody.Session) {
 
 	// Get their friends from the database
 	var friends []string
-	if v, err := models.UserFriends.GetAll(s.UserID()); err != nil {
+	if v, err := models.UserFriends.GetAllUsernames(s.UserID()); err != nil {
 		logger.Error("Failed to get the friends for user \""+s.Username()+"\":", err)
 		s.Error(DefaultErrorMsg)
 		return
