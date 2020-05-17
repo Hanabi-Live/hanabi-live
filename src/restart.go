@@ -16,7 +16,7 @@ func restart() {
 	// (but executing Bash scripts will not work on Windows)
 	if runtime.GOOS != "windows" {
 		logger.Info("Building the client...")
-		execute("build_client.sh", projectPath)
+		executeScript("build_client.sh")
 	}
 
 	// Lock the command mutex to prevent any more moves from being submitted
@@ -41,7 +41,7 @@ func restart() {
 	})
 
 	logger.Info("Finished writing all tables to disk. Restarting...")
-	execute("restart.sh", projectPath)
+	executeScript("restart.sh")
 
 	// Block until the process is killed so that no more moves can be submitted
 	select {}

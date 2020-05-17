@@ -123,7 +123,7 @@ func shutdownImmediate() {
 		Server: true,
 	})
 
-	execute("stop.sh", projectPath)
+	executeScript("stop.sh")
 
 	// Block until the process is killed so that no more moves can be submitted
 	select {}
