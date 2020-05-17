@@ -3238,7 +3238,8 @@
       "Purple",
       "Teal"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones (5 Suits)": {
     "id": 169,
@@ -3249,7 +3250,8 @@
       "Blue",
       "Purple"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones (4 Suits)": {
     "id": 170,
@@ -3259,7 +3261,8 @@
       "Green",
       "Blue"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones (3 Suits)": {
     "id": 171,
@@ -3268,7 +3271,8 @@
       "Green",
       "Blue"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Rainbow (6 Suits)": {
     "id": 294,
@@ -3280,7 +3284,8 @@
       "Purple",
       "Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Rainbow (5 Suits)": {
     "id": 295,
@@ -3291,7 +3296,8 @@
       "Blue",
       "Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Rainbow (4 Suits)": {
     "id": 296,
@@ -3301,7 +3307,8 @@
       "Blue",
       "Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Rainbow (3 Suits)": {
     "id": 297,
@@ -3310,7 +3317,8 @@
       "Blue",
       "Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Pink (6 Suits)": {
     "id": 172,
@@ -3322,7 +3330,8 @@
       "Purple",
       "Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Pink (5 Suits)": {
     "id": 173,
@@ -3333,7 +3342,8 @@
       "Blue",
       "Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Pink (4 Suits)": {
     "id": 174,
@@ -3343,7 +3353,8 @@
       "Blue",
       "Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Pink (3 Suits)": {
     "id": 175,
@@ -3352,7 +3363,8 @@
       "Blue",
       "Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & White (6 Suits)": {
     "id": 298,
@@ -3364,7 +3376,8 @@
       "Purple",
       "White"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & White (5 Suits)": {
     "id": 299,
@@ -3375,7 +3388,8 @@
       "Blue",
       "White"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & White (4 Suits)": {
     "id": 300,
@@ -3385,7 +3399,8 @@
       "Blue",
       "White"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & White (3 Suits)": {
     "id": 301,
@@ -3394,7 +3409,8 @@
       "Blue",
       "White"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Brown (6 Suits)": {
     "id": 302,
@@ -3406,7 +3422,8 @@
       "Purple",
       "Brown"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Brown (5 Suits)": {
     "id": 303,
@@ -3417,7 +3434,8 @@
       "Blue",
       "Brown"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Brown (4 Suits)": {
     "id": 304,
@@ -3427,7 +3445,8 @@
       "Blue",
       "Brown"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Brown (3 Suits)": {
     "id": 305,
@@ -3436,7 +3455,8 @@
       "Blue",
       "Brown"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Omni (6 Suits)": {
     "id": 306,
@@ -3448,7 +3468,8 @@
       "Purple",
       "Omni"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Omni (5 Suits)": {
     "id": 307,
@@ -3459,7 +3480,8 @@
       "Blue",
       "Omni"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Omni (4 Suits)": {
     "id": 308,
@@ -3469,7 +3491,8 @@
       "Blue",
       "Omni"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Omni (3 Suits)": {
     "id": 309,
@@ -3478,7 +3501,8 @@
       "Blue",
       "Omni"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Null (6 Suits)": {
     "id": 310,
@@ -3490,7 +3514,8 @@
       "Purple",
       "Null"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Null (5 Suits)": {
     "id": 311,
@@ -3501,7 +3526,8 @@
       "Blue",
       "Null"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Null (4 Suits)": {
     "id": 312,
@@ -3511,7 +3537,8 @@
       "Blue",
       "Null"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Null (3 Suits)": {
     "id": 313,
@@ -3520,7 +3547,8 @@
       "Blue",
       "Null"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Muddy Rainbow (6 Suits)": {
     "id": 867,
@@ -3532,7 +3560,8 @@
       "Purple",
       "Muddy Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Muddy Rainbow (5 Suits)": {
     "id": 868,
@@ -3543,7 +3572,8 @@
       "Blue",
       "Muddy Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Muddy Rainbow (4 Suits)": {
     "id": 869,
@@ -3553,7 +3583,8 @@
       "Blue",
       "Muddy Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Muddy Rainbow (3 Suits)": {
     "id": 870,
@@ -3562,7 +3593,8 @@
       "Blue",
       "Muddy Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Light Pink (6 Suits)": {
     "id": 871,
@@ -3574,7 +3606,8 @@
       "Purple",
       "Light Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Light Pink (5 Suits)": {
     "id": 872,
@@ -3585,7 +3618,8 @@
       "Blue",
       "Light Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Light Pink (4 Suits)": {
     "id": 873,
@@ -3595,7 +3629,8 @@
       "Blue",
       "Light Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Light Pink (3 Suits)": {
     "id": 874,
@@ -3604,7 +3639,8 @@
       "Blue",
       "Light Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Dark Rainbow (6 Suits)": {
     "id": 314,
@@ -3616,7 +3652,8 @@
       "Purple",
       "Dark Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Dark Rainbow (5 Suits)": {
     "id": 315,
@@ -3627,7 +3664,8 @@
       "Blue",
       "Dark Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Dark Pink (6 Suits)": {
     "id": 316,
@@ -3639,7 +3677,8 @@
       "Purple",
       "Dark Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Dark Pink (5 Suits)": {
     "id": 317,
@@ -3650,7 +3689,8 @@
       "Blue",
       "Dark Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Gray (6 Suits)": {
     "id": 318,
@@ -3662,7 +3702,8 @@
       "Purple",
       "Gray"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Gray (5 Suits)": {
     "id": 319,
@@ -3673,7 +3714,8 @@
       "Blue",
       "Gray"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Dark Brown (6 Suits)": {
     "id": 320,
@@ -3685,7 +3727,8 @@
       "Purple",
       "Dark Brown"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Dark Brown (5 Suits)": {
     "id": 321,
@@ -3696,7 +3739,8 @@
       "Blue",
       "Dark Brown"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Dark Omni (6 Suits)": {
     "id": 322,
@@ -3708,7 +3752,8 @@
       "Purple",
       "Dark Omni"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Dark Omni (5 Suits)": {
     "id": 323,
@@ -3719,7 +3764,8 @@
       "Blue",
       "Dark Omni"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Dark Null (6 Suits)": {
     "id": 324,
@@ -3731,7 +3777,8 @@
       "Purple",
       "Dark Null"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Dark Null (5 Suits)": {
     "id": 325,
@@ -3742,7 +3789,8 @@
       "Blue",
       "Dark Null"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Cocoa Rainbow (6 Suits)": {
     "id": 875,
@@ -3754,7 +3802,8 @@
       "Purple",
       "Cocoa Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Cocoa Rainbow (5 Suits)": {
     "id": 876,
@@ -3765,7 +3814,8 @@
       "Blue",
       "Cocoa Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Gray Pink (6 Suits)": {
     "id": 877,
@@ -3777,7 +3827,8 @@
       "Purple",
       "Gray Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Rainbow-Ones & Gray Pink (5 Suits)": {
     "id": 878,
@@ -3788,7 +3839,8 @@
       "Blue",
       "Gray Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true
   },
   "Pink-Ones (6 Suits)": {
     "id": 326,
@@ -3806,7 +3858,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones (5 Suits)": {
     "id": 327,
@@ -3823,7 +3876,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones (4 Suits)": {
     "id": 328,
@@ -3839,7 +3893,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones (3 Suits)": {
     "id": 329,
@@ -3854,7 +3909,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Rainbow (6 Suits)": {
     "id": 330,
@@ -3872,7 +3928,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Rainbow (5 Suits)": {
     "id": 331,
@@ -3889,7 +3946,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Rainbow (4 Suits)": {
     "id": 332,
@@ -3905,7 +3963,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Rainbow (3 Suits)": {
     "id": 333,
@@ -3920,7 +3979,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Pink (6 Suits)": {
     "id": 334,
@@ -3938,7 +3998,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Pink (5 Suits)": {
     "id": 335,
@@ -3955,7 +4016,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Pink (4 Suits)": {
     "id": 336,
@@ -3971,7 +4033,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Pink (3 Suits)": {
     "id": 337,
@@ -3986,7 +4049,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & White (6 Suits)": {
     "id": 338,
@@ -4004,7 +4068,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & White (5 Suits)": {
     "id": 339,
@@ -4021,7 +4086,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & White (4 Suits)": {
     "id": 340,
@@ -4037,7 +4103,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & White (3 Suits)": {
     "id": 341,
@@ -4052,7 +4119,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Brown (6 Suits)": {
     "id": 342,
@@ -4070,7 +4138,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Brown (5 Suits)": {
     "id": 343,
@@ -4087,7 +4156,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Brown (4 Suits)": {
     "id": 344,
@@ -4103,7 +4173,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Brown (3 Suits)": {
     "id": 345,
@@ -4118,7 +4189,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Omni (6 Suits)": {
     "id": 346,
@@ -4136,7 +4208,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Omni (5 Suits)": {
     "id": 347,
@@ -4153,7 +4226,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Omni (4 Suits)": {
     "id": 348,
@@ -4169,7 +4243,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Omni (3 Suits)": {
     "id": 349,
@@ -4184,7 +4259,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Null (6 Suits)": {
     "id": 350,
@@ -4202,7 +4278,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Null (5 Suits)": {
     "id": 351,
@@ -4219,7 +4296,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Null (4 Suits)": {
     "id": 352,
@@ -4235,7 +4313,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Null (3 Suits)": {
     "id": 353,
@@ -4250,7 +4329,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Muddy Rainbow (6 Suits)": {
     "id": 879,
@@ -4268,7 +4348,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Muddy Rainbow (5 Suits)": {
     "id": 880,
@@ -4285,7 +4366,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Muddy Rainbow (4 Suits)": {
     "id": 881,
@@ -4301,7 +4383,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Muddy Rainbow (3 Suits)": {
     "id": 882,
@@ -4316,7 +4399,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Light Pink (6 Suits)": {
     "id": 883,
@@ -4334,7 +4418,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Light Pink (5 Suits)": {
     "id": 884,
@@ -4351,7 +4436,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Light Pink (4 Suits)": {
     "id": 885,
@@ -4367,7 +4453,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Light Pink (3 Suits)": {
     "id": 886,
@@ -4382,7 +4469,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Dark Rainbow (6 Suits)": {
     "id": 354,
@@ -4400,7 +4488,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Dark Rainbow (5 Suits)": {
     "id": 355,
@@ -4417,7 +4506,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Dark Pink (6 Suits)": {
     "id": 356,
@@ -4435,7 +4525,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Dark Pink (5 Suits)": {
     "id": 357,
@@ -4452,7 +4543,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Gray (6 Suits)": {
     "id": 358,
@@ -4470,7 +4562,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Gray (5 Suits)": {
     "id": 359,
@@ -4487,7 +4580,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Dark Brown (6 Suits)": {
     "id": 360,
@@ -4505,7 +4599,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Dark Brown (5 Suits)": {
     "id": 361,
@@ -4522,7 +4617,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Dark Omni (6 Suits)": {
     "id": 362,
@@ -4540,7 +4636,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Dark Omni (5 Suits)": {
     "id": 363,
@@ -4557,7 +4654,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Dark Null (6 Suits)": {
     "id": 364,
@@ -4575,7 +4673,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Dark Null (5 Suits)": {
     "id": 365,
@@ -4592,7 +4691,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Cocoa Rainbow (6 Suits)": {
     "id": 887,
@@ -4610,7 +4710,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Cocoa Rainbow (5 Suits)": {
     "id": 888,
@@ -4627,7 +4728,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Gray Pink (6 Suits)": {
     "id": 889,
@@ -4645,7 +4747,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "Pink-Ones & Gray Pink (5 Suits)": {
     "id": 890,
@@ -4662,7 +4765,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true
   },
   "White-Ones (6 Suits)": {
     "id": 366,
@@ -4674,7 +4778,8 @@
       "Purple",
       "Teal"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones (5 Suits)": {
     "id": 367,
@@ -4685,7 +4790,8 @@
       "Blue",
       "Purple"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones (4 Suits)": {
     "id": 368,
@@ -4695,7 +4801,8 @@
       "Green",
       "Blue"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones (3 Suits)": {
     "id": 369,
@@ -4704,7 +4811,8 @@
       "Green",
       "Blue"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Rainbow (6 Suits)": {
     "id": 370,
@@ -4716,7 +4824,8 @@
       "Purple",
       "Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Rainbow (5 Suits)": {
     "id": 371,
@@ -4727,7 +4836,8 @@
       "Blue",
       "Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Rainbow (4 Suits)": {
     "id": 372,
@@ -4737,7 +4847,8 @@
       "Blue",
       "Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Rainbow (3 Suits)": {
     "id": 373,
@@ -4746,7 +4857,8 @@
       "Blue",
       "Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Pink (6 Suits)": {
     "id": 374,
@@ -4758,7 +4870,8 @@
       "Purple",
       "Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Pink (5 Suits)": {
     "id": 375,
@@ -4769,7 +4882,8 @@
       "Blue",
       "Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Pink (4 Suits)": {
     "id": 376,
@@ -4779,7 +4893,8 @@
       "Blue",
       "Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Pink (3 Suits)": {
     "id": 377,
@@ -4788,7 +4903,8 @@
       "Blue",
       "Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & White (6 Suits)": {
     "id": 378,
@@ -4800,7 +4916,8 @@
       "Purple",
       "White"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & White (5 Suits)": {
     "id": 379,
@@ -4811,7 +4928,8 @@
       "Blue",
       "White"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & White (4 Suits)": {
     "id": 380,
@@ -4821,7 +4939,8 @@
       "Blue",
       "White"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & White (3 Suits)": {
     "id": 381,
@@ -4830,7 +4949,8 @@
       "Blue",
       "White"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Brown (6 Suits)": {
     "id": 382,
@@ -4842,7 +4962,8 @@
       "Purple",
       "Brown"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Brown (5 Suits)": {
     "id": 383,
@@ -4853,7 +4974,8 @@
       "Blue",
       "Brown"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Brown (4 Suits)": {
     "id": 384,
@@ -4863,7 +4985,8 @@
       "Blue",
       "Brown"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Brown (3 Suits)": {
     "id": 385,
@@ -4872,7 +4995,8 @@
       "Blue",
       "Brown"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Omni (6 Suits)": {
     "id": 386,
@@ -4884,7 +5008,8 @@
       "Purple",
       "Omni"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Omni (5 Suits)": {
     "id": 387,
@@ -4895,7 +5020,8 @@
       "Blue",
       "Omni"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Omni (4 Suits)": {
     "id": 388,
@@ -4905,7 +5031,8 @@
       "Blue",
       "Omni"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Omni (3 Suits)": {
     "id": 389,
@@ -4914,7 +5041,8 @@
       "Blue",
       "Omni"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Null (6 Suits)": {
     "id": 390,
@@ -4926,7 +5054,8 @@
       "Purple",
       "Null"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Null (5 Suits)": {
     "id": 391,
@@ -4937,7 +5066,8 @@
       "Blue",
       "Null"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Null (4 Suits)": {
     "id": 392,
@@ -4947,7 +5077,8 @@
       "Blue",
       "Null"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Null (3 Suits)": {
     "id": 393,
@@ -4956,7 +5087,8 @@
       "Blue",
       "Null"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Muddy Rainbow (6 Suits)": {
     "id": 891,
@@ -4968,7 +5100,8 @@
       "Purple",
       "Muddy Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Muddy Rainbow (5 Suits)": {
     "id": 892,
@@ -4979,7 +5112,8 @@
       "Blue",
       "Muddy Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Muddy Rainbow (4 Suits)": {
     "id": 893,
@@ -4989,7 +5123,8 @@
       "Blue",
       "Muddy Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Muddy Rainbow (3 Suits)": {
     "id": 894,
@@ -4998,7 +5133,8 @@
       "Blue",
       "Muddy Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Light Pink (6 Suits)": {
     "id": 895,
@@ -5010,7 +5146,8 @@
       "Purple",
       "Light Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Light Pink (5 Suits)": {
     "id": 896,
@@ -5021,7 +5158,8 @@
       "Blue",
       "Light Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Light Pink (4 Suits)": {
     "id": 897,
@@ -5031,7 +5169,8 @@
       "Blue",
       "Light Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Light Pink (3 Suits)": {
     "id": 898,
@@ -5040,7 +5179,8 @@
       "Blue",
       "Light Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Dark Rainbow (6 Suits)": {
     "id": 394,
@@ -5052,7 +5192,8 @@
       "Purple",
       "Dark Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Dark Rainbow (5 Suits)": {
     "id": 395,
@@ -5063,7 +5204,8 @@
       "Blue",
       "Dark Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Dark Pink (6 Suits)": {
     "id": 396,
@@ -5075,7 +5217,8 @@
       "Purple",
       "Dark Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Dark Pink (5 Suits)": {
     "id": 397,
@@ -5086,7 +5229,8 @@
       "Blue",
       "Dark Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Gray (6 Suits)": {
     "id": 398,
@@ -5098,7 +5242,8 @@
       "Purple",
       "Gray"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Gray (5 Suits)": {
     "id": 399,
@@ -5109,7 +5254,8 @@
       "Blue",
       "Gray"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Dark Brown (6 Suits)": {
     "id": 400,
@@ -5121,7 +5267,8 @@
       "Purple",
       "Dark Brown"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Dark Brown (5 Suits)": {
     "id": 401,
@@ -5132,7 +5279,8 @@
       "Blue",
       "Dark Brown"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Dark Omni (6 Suits)": {
     "id": 402,
@@ -5144,7 +5292,8 @@
       "Purple",
       "Dark Omni"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Dark Omni (5 Suits)": {
     "id": 403,
@@ -5155,7 +5304,8 @@
       "Blue",
       "Dark Omni"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Dark Null (6 Suits)": {
     "id": 404,
@@ -5167,7 +5317,8 @@
       "Purple",
       "Dark Null"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Dark Null (5 Suits)": {
     "id": 405,
@@ -5178,7 +5329,8 @@
       "Blue",
       "Dark Null"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Cocoa Rainbow (6 Suits)": {
     "id": 899,
@@ -5190,7 +5342,8 @@
       "Purple",
       "Cocoa Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Cocoa Rainbow (5 Suits)": {
     "id": 900,
@@ -5201,7 +5354,8 @@
       "Blue",
       "Cocoa Rainbow"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Gray Pink (6 Suits)": {
     "id": 901,
@@ -5213,7 +5367,8 @@
       "Purple",
       "Gray Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "White-Ones & Gray Pink (5 Suits)": {
     "id": 902,
@@ -5224,7 +5379,8 @@
       "Blue",
       "Gray Pink"
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true
   },
   "Brown-Ones (6 Suits)": {
     "id": 406,
@@ -5242,7 +5398,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones (5 Suits)": {
     "id": 407,
@@ -5259,7 +5416,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones (4 Suits)": {
     "id": 408,
@@ -5275,7 +5433,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones (3 Suits)": {
     "id": 409,
@@ -5290,7 +5449,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Rainbow (6 Suits)": {
     "id": 410,
@@ -5308,7 +5468,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Rainbow (5 Suits)": {
     "id": 411,
@@ -5325,7 +5486,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Rainbow (4 Suits)": {
     "id": 412,
@@ -5341,7 +5503,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Rainbow (3 Suits)": {
     "id": 413,
@@ -5356,7 +5519,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Pink (6 Suits)": {
     "id": 414,
@@ -5374,7 +5538,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Pink (5 Suits)": {
     "id": 415,
@@ -5391,7 +5556,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Pink (4 Suits)": {
     "id": 416,
@@ -5407,7 +5573,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Pink (3 Suits)": {
     "id": 417,
@@ -5422,7 +5589,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & White (6 Suits)": {
     "id": 418,
@@ -5440,7 +5608,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & White (5 Suits)": {
     "id": 419,
@@ -5457,7 +5626,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & White (4 Suits)": {
     "id": 420,
@@ -5473,7 +5643,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & White (3 Suits)": {
     "id": 421,
@@ -5488,7 +5659,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Brown (6 Suits)": {
     "id": 422,
@@ -5506,7 +5678,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Brown (5 Suits)": {
     "id": 423,
@@ -5523,7 +5696,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Brown (4 Suits)": {
     "id": 424,
@@ -5539,7 +5713,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Brown (3 Suits)": {
     "id": 425,
@@ -5554,7 +5729,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Omni (6 Suits)": {
     "id": 426,
@@ -5572,7 +5748,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Omni (5 Suits)": {
     "id": 427,
@@ -5589,7 +5766,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Omni (4 Suits)": {
     "id": 428,
@@ -5605,7 +5783,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Omni (3 Suits)": {
     "id": 429,
@@ -5620,7 +5799,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Null (6 Suits)": {
     "id": 430,
@@ -5638,7 +5818,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Null (5 Suits)": {
     "id": 431,
@@ -5655,7 +5836,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Null (4 Suits)": {
     "id": 432,
@@ -5671,7 +5853,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Null (3 Suits)": {
     "id": 433,
@@ -5686,7 +5869,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Muddy Rainbow (6 Suits)": {
     "id": 903,
@@ -5704,7 +5888,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Muddy Rainbow (5 Suits)": {
     "id": 904,
@@ -5721,7 +5906,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Muddy Rainbow (4 Suits)": {
     "id": 905,
@@ -5737,7 +5923,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Muddy Rainbow (3 Suits)": {
     "id": 906,
@@ -5752,7 +5939,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Light Pink (6 Suits)": {
     "id": 907,
@@ -5770,7 +5958,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Light Pink (5 Suits)": {
     "id": 908,
@@ -5787,7 +5976,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Light Pink (4 Suits)": {
     "id": 909,
@@ -5803,7 +5993,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Light Pink (3 Suits)": {
     "id": 910,
@@ -5818,7 +6009,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Dark Rainbow (6 Suits)": {
     "id": 434,
@@ -5836,7 +6028,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Dark Rainbow (5 Suits)": {
     "id": 435,
@@ -5853,7 +6046,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Dark Pink (6 Suits)": {
     "id": 436,
@@ -5871,7 +6065,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Dark Pink (5 Suits)": {
     "id": 437,
@@ -5888,7 +6083,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Gray (6 Suits)": {
     "id": 438,
@@ -5906,7 +6102,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Gray (5 Suits)": {
     "id": 439,
@@ -5923,7 +6120,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Dark Brown (6 Suits)": {
     "id": 440,
@@ -5941,7 +6139,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Dark Brown (5 Suits)": {
     "id": 441,
@@ -5958,7 +6157,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Dark Omni (6 Suits)": {
     "id": 442,
@@ -5976,7 +6176,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Dark Omni (5 Suits)": {
     "id": 443,
@@ -5993,7 +6194,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Dark Null (6 Suits)": {
     "id": 444,
@@ -6011,7 +6213,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Dark Null (5 Suits)": {
     "id": 445,
@@ -6028,7 +6231,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Cocoa Rainbow (6 Suits)": {
     "id": 911,
@@ -6046,7 +6250,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Cocoa Rainbow (5 Suits)": {
     "id": 912,
@@ -6063,7 +6268,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Gray Pink (6 Suits)": {
     "id": 913,
@@ -6081,7 +6287,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Brown-Ones & Gray Pink (5 Suits)": {
     "id": 914,
@@ -6098,7 +6305,8 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueRanks": true
   },
   "Omni-Ones (6 Suits)": {
     "id": 446,
@@ -6116,7 +6324,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones (5 Suits)": {
     "id": 447,
@@ -6133,7 +6343,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones (4 Suits)": {
     "id": 448,
@@ -6149,7 +6361,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones (3 Suits)": {
     "id": 449,
@@ -6164,7 +6378,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Rainbow (6 Suits)": {
     "id": 450,
@@ -6182,7 +6398,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Rainbow (5 Suits)": {
     "id": 451,
@@ -6199,7 +6417,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Rainbow (4 Suits)": {
     "id": 452,
@@ -6215,7 +6435,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Rainbow (3 Suits)": {
     "id": 453,
@@ -6230,7 +6452,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Pink (6 Suits)": {
     "id": 454,
@@ -6248,7 +6472,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Pink (5 Suits)": {
     "id": 455,
@@ -6265,7 +6491,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Pink (4 Suits)": {
     "id": 456,
@@ -6281,7 +6509,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Pink (3 Suits)": {
     "id": 457,
@@ -6296,7 +6526,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & White (6 Suits)": {
     "id": 458,
@@ -6314,7 +6546,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & White (5 Suits)": {
     "id": 459,
@@ -6331,7 +6565,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & White (4 Suits)": {
     "id": 460,
@@ -6347,7 +6583,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & White (3 Suits)": {
     "id": 461,
@@ -6362,7 +6600,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Brown (6 Suits)": {
     "id": 462,
@@ -6380,7 +6620,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Brown (5 Suits)": {
     "id": 463,
@@ -6397,7 +6639,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Brown (4 Suits)": {
     "id": 464,
@@ -6413,7 +6657,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Brown (3 Suits)": {
     "id": 465,
@@ -6428,7 +6674,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Omni (6 Suits)": {
     "id": 466,
@@ -6446,7 +6694,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Omni (5 Suits)": {
     "id": 467,
@@ -6463,7 +6713,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Omni (4 Suits)": {
     "id": 468,
@@ -6479,7 +6731,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Omni (3 Suits)": {
     "id": 469,
@@ -6494,7 +6748,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Null (6 Suits)": {
     "id": 470,
@@ -6512,7 +6768,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Null (5 Suits)": {
     "id": 471,
@@ -6529,7 +6787,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Null (4 Suits)": {
     "id": 472,
@@ -6545,7 +6805,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Null (3 Suits)": {
     "id": 473,
@@ -6560,7 +6822,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Muddy Rainbow (6 Suits)": {
     "id": 915,
@@ -6578,7 +6842,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Muddy Rainbow (5 Suits)": {
     "id": 916,
@@ -6595,7 +6861,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Muddy Rainbow (4 Suits)": {
     "id": 917,
@@ -6611,7 +6879,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Muddy Rainbow (3 Suits)": {
     "id": 918,
@@ -6626,7 +6896,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Light Pink (6 Suits)": {
     "id": 919,
@@ -6644,7 +6916,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Light Pink (5 Suits)": {
     "id": 920,
@@ -6661,7 +6935,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Light Pink (4 Suits)": {
     "id": 921,
@@ -6677,7 +6953,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Light Pink (3 Suits)": {
     "id": 922,
@@ -6692,7 +6970,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Dark Rainbow (6 Suits)": {
     "id": 474,
@@ -6710,7 +6990,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Dark Rainbow (5 Suits)": {
     "id": 475,
@@ -6727,7 +7009,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Dark Pink (6 Suits)": {
     "id": 476,
@@ -6745,7 +7029,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Dark Pink (5 Suits)": {
     "id": 477,
@@ -6762,7 +7048,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Gray (6 Suits)": {
     "id": 478,
@@ -6780,7 +7068,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Gray (5 Suits)": {
     "id": 479,
@@ -6797,7 +7087,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Dark Brown (6 Suits)": {
     "id": 480,
@@ -6815,7 +7107,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Dark Brown (5 Suits)": {
     "id": 481,
@@ -6832,7 +7126,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Dark Omni (6 Suits)": {
     "id": 482,
@@ -6850,7 +7146,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Dark Omni (5 Suits)": {
     "id": 483,
@@ -6867,7 +7165,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Dark Null (6 Suits)": {
     "id": 484,
@@ -6885,7 +7185,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Dark Null (5 Suits)": {
     "id": 485,
@@ -6902,7 +7204,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Cocoa Rainbow (6 Suits)": {
     "id": 923,
@@ -6920,7 +7224,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Cocoa Rainbow (5 Suits)": {
     "id": 924,
@@ -6937,7 +7243,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Gray Pink (6 Suits)": {
     "id": 925,
@@ -6955,7 +7263,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Ones & Gray Pink (5 Suits)": {
     "id": 926,
@@ -6972,7 +7282,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Null-Ones (6 Suits)": {
     "id": 486,
@@ -6990,7 +7302,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones (5 Suits)": {
     "id": 487,
@@ -7007,7 +7321,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones (4 Suits)": {
     "id": 488,
@@ -7023,7 +7339,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones (3 Suits)": {
     "id": 489,
@@ -7038,7 +7356,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Rainbow (6 Suits)": {
     "id": 490,
@@ -7056,7 +7376,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Rainbow (5 Suits)": {
     "id": 491,
@@ -7073,7 +7395,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Rainbow (4 Suits)": {
     "id": 492,
@@ -7089,7 +7413,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Rainbow (3 Suits)": {
     "id": 493,
@@ -7104,7 +7430,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Pink (6 Suits)": {
     "id": 494,
@@ -7122,7 +7450,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Pink (5 Suits)": {
     "id": 495,
@@ -7139,7 +7469,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Pink (4 Suits)": {
     "id": 496,
@@ -7155,7 +7487,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Pink (3 Suits)": {
     "id": 497,
@@ -7170,7 +7504,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & White (6 Suits)": {
     "id": 498,
@@ -7188,7 +7524,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & White (5 Suits)": {
     "id": 499,
@@ -7205,7 +7543,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & White (4 Suits)": {
     "id": 500,
@@ -7221,7 +7561,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & White (3 Suits)": {
     "id": 501,
@@ -7236,7 +7578,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Brown (6 Suits)": {
     "id": 502,
@@ -7254,7 +7598,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Brown (5 Suits)": {
     "id": 503,
@@ -7271,7 +7617,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Brown (4 Suits)": {
     "id": 504,
@@ -7287,7 +7635,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Brown (3 Suits)": {
     "id": 505,
@@ -7302,7 +7652,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Omni (6 Suits)": {
     "id": 506,
@@ -7320,7 +7672,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Omni (5 Suits)": {
     "id": 507,
@@ -7337,7 +7691,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Omni (4 Suits)": {
     "id": 508,
@@ -7353,7 +7709,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Omni (3 Suits)": {
     "id": 509,
@@ -7368,7 +7726,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Null (6 Suits)": {
     "id": 510,
@@ -7386,7 +7746,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Null (5 Suits)": {
     "id": 511,
@@ -7403,7 +7765,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Null (4 Suits)": {
     "id": 512,
@@ -7419,7 +7783,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Null (3 Suits)": {
     "id": 513,
@@ -7434,7 +7800,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Muddy Rainbow (6 Suits)": {
     "id": 927,
@@ -7452,7 +7820,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Muddy Rainbow (5 Suits)": {
     "id": 928,
@@ -7469,7 +7839,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Muddy Rainbow (4 Suits)": {
     "id": 929,
@@ -7485,7 +7857,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Muddy Rainbow (3 Suits)": {
     "id": 930,
@@ -7500,7 +7874,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Light Pink (6 Suits)": {
     "id": 931,
@@ -7518,7 +7894,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Light Pink (5 Suits)": {
     "id": 932,
@@ -7535,7 +7913,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Light Pink (4 Suits)": {
     "id": 933,
@@ -7551,7 +7931,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Light Pink (3 Suits)": {
     "id": 934,
@@ -7566,7 +7948,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Dark Rainbow (6 Suits)": {
     "id": 514,
@@ -7584,7 +7968,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Dark Rainbow (5 Suits)": {
     "id": 515,
@@ -7601,7 +7987,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Dark Pink (6 Suits)": {
     "id": 516,
@@ -7619,7 +8007,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Dark Pink (5 Suits)": {
     "id": 517,
@@ -7636,7 +8026,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Gray (6 Suits)": {
     "id": 518,
@@ -7654,7 +8046,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Gray (5 Suits)": {
     "id": 519,
@@ -7671,7 +8065,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Dark Brown (6 Suits)": {
     "id": 520,
@@ -7689,7 +8085,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Dark Brown (5 Suits)": {
     "id": 521,
@@ -7706,7 +8104,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Dark Omni (6 Suits)": {
     "id": 522,
@@ -7724,7 +8124,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Dark Omni (5 Suits)": {
     "id": 523,
@@ -7741,7 +8143,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Dark Null (6 Suits)": {
     "id": 524,
@@ -7759,7 +8163,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Dark Null (5 Suits)": {
     "id": 525,
@@ -7776,7 +8182,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Cocoa Rainbow (6 Suits)": {
     "id": 935,
@@ -7794,7 +8202,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Cocoa Rainbow (5 Suits)": {
     "id": 936,
@@ -7811,7 +8221,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Gray Pink (6 Suits)": {
     "id": 937,
@@ -7829,7 +8241,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Ones & Gray Pink (5 Suits)": {
     "id": 938,
@@ -7846,7 +8260,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones (6 Suits)": {
     "id": 1011,
@@ -7864,7 +8280,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones (5 Suits)": {
     "id": 1012,
@@ -7881,7 +8299,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones (4 Suits)": {
     "id": 1013,
@@ -7897,7 +8317,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones (3 Suits)": {
     "id": 1014,
@@ -7912,7 +8334,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Rainbow (6 Suits)": {
     "id": 1015,
@@ -7930,7 +8354,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Rainbow (5 Suits)": {
     "id": 1016,
@@ -7947,7 +8373,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Rainbow (4 Suits)": {
     "id": 1017,
@@ -7963,7 +8391,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Rainbow (3 Suits)": {
     "id": 1018,
@@ -7978,7 +8408,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Pink (6 Suits)": {
     "id": 1019,
@@ -7996,7 +8428,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Pink (5 Suits)": {
     "id": 1020,
@@ -8013,7 +8447,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Pink (4 Suits)": {
     "id": 1021,
@@ -8029,7 +8465,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Pink (3 Suits)": {
     "id": 1022,
@@ -8044,7 +8482,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & White (6 Suits)": {
     "id": 1023,
@@ -8062,7 +8502,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & White (5 Suits)": {
     "id": 1024,
@@ -8079,7 +8521,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & White (4 Suits)": {
     "id": 1025,
@@ -8095,7 +8539,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & White (3 Suits)": {
     "id": 1026,
@@ -8110,7 +8556,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Brown (6 Suits)": {
     "id": 1027,
@@ -8128,7 +8576,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Brown (5 Suits)": {
     "id": 1028,
@@ -8145,7 +8595,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Brown (4 Suits)": {
     "id": 1029,
@@ -8161,7 +8613,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Brown (3 Suits)": {
     "id": 1030,
@@ -8176,7 +8630,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Omni (6 Suits)": {
     "id": 1031,
@@ -8194,7 +8650,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Omni (5 Suits)": {
     "id": 1032,
@@ -8211,7 +8669,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Omni (4 Suits)": {
     "id": 1033,
@@ -8227,7 +8687,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Omni (3 Suits)": {
     "id": 1034,
@@ -8242,7 +8704,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Null (6 Suits)": {
     "id": 1035,
@@ -8260,7 +8724,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Null (5 Suits)": {
     "id": 1036,
@@ -8277,7 +8743,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Null (4 Suits)": {
     "id": 1037,
@@ -8293,7 +8761,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Null (3 Suits)": {
     "id": 1038,
@@ -8308,7 +8778,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Muddy Rainbow (6 Suits)": {
     "id": 1039,
@@ -8326,7 +8798,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Muddy Rainbow (5 Suits)": {
     "id": 1040,
@@ -8343,7 +8817,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Muddy Rainbow (4 Suits)": {
     "id": 1041,
@@ -8359,7 +8835,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Muddy Rainbow (3 Suits)": {
     "id": 1042,
@@ -8374,7 +8852,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Light Pink (6 Suits)": {
     "id": 1043,
@@ -8392,7 +8872,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Light Pink (5 Suits)": {
     "id": 1044,
@@ -8409,7 +8891,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Light Pink (4 Suits)": {
     "id": 1045,
@@ -8425,7 +8909,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Light Pink (3 Suits)": {
     "id": 1046,
@@ -8440,7 +8926,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Dark Rainbow (6 Suits)": {
     "id": 1047,
@@ -8458,7 +8946,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Dark Rainbow (5 Suits)": {
     "id": 1048,
@@ -8475,7 +8965,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Dark Pink (6 Suits)": {
     "id": 1049,
@@ -8493,7 +8985,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Dark Pink (5 Suits)": {
     "id": 1050,
@@ -8510,7 +9004,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Gray (6 Suits)": {
     "id": 1051,
@@ -8528,7 +9024,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Gray (5 Suits)": {
     "id": 1052,
@@ -8545,7 +9043,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Dark Brown (6 Suits)": {
     "id": 1053,
@@ -8563,7 +9063,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Dark Brown (5 Suits)": {
     "id": 1054,
@@ -8580,7 +9082,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Dark Omni (6 Suits)": {
     "id": 1055,
@@ -8598,7 +9102,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Dark Omni (5 Suits)": {
     "id": 1056,
@@ -8615,7 +9121,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Dark Null (6 Suits)": {
     "id": 1057,
@@ -8633,7 +9141,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Dark Null (5 Suits)": {
     "id": 1058,
@@ -8650,7 +9160,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Cocoa Rainbow (6 Suits)": {
     "id": 1059,
@@ -8668,7 +9180,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Cocoa Rainbow (5 Suits)": {
     "id": 1060,
@@ -8685,7 +9199,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Gray Pink (6 Suits)": {
     "id": 1061,
@@ -8703,7 +9219,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Ones & Gray Pink (5 Suits)": {
     "id": 1062,
@@ -8720,7 +9238,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Light-Pink-Ones (6 Suits)": {
     "id": 1063,
@@ -8738,7 +9258,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones (5 Suits)": {
     "id": 1064,
@@ -8755,7 +9277,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones (4 Suits)": {
     "id": 1065,
@@ -8771,7 +9295,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones (3 Suits)": {
     "id": 1066,
@@ -8786,7 +9312,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Rainbow (6 Suits)": {
     "id": 1067,
@@ -8804,7 +9332,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Rainbow (5 Suits)": {
     "id": 1068,
@@ -8821,7 +9351,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Rainbow (4 Suits)": {
     "id": 1069,
@@ -8837,7 +9369,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Rainbow (3 Suits)": {
     "id": 1070,
@@ -8852,7 +9386,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Pink (6 Suits)": {
     "id": 1071,
@@ -8870,7 +9406,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Pink (5 Suits)": {
     "id": 1072,
@@ -8887,7 +9425,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Pink (4 Suits)": {
     "id": 1073,
@@ -8903,7 +9443,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Pink (3 Suits)": {
     "id": 1074,
@@ -8918,7 +9460,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & White (6 Suits)": {
     "id": 1075,
@@ -8936,7 +9480,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & White (5 Suits)": {
     "id": 1076,
@@ -8953,7 +9499,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & White (4 Suits)": {
     "id": 1077,
@@ -8969,7 +9517,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & White (3 Suits)": {
     "id": 1078,
@@ -8984,7 +9534,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Brown (6 Suits)": {
     "id": 1079,
@@ -9002,7 +9554,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Brown (5 Suits)": {
     "id": 1080,
@@ -9019,7 +9573,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Brown (4 Suits)": {
     "id": 1081,
@@ -9035,7 +9591,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Brown (3 Suits)": {
     "id": 1082,
@@ -9050,7 +9608,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Omni (6 Suits)": {
     "id": 1083,
@@ -9068,7 +9628,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Omni (5 Suits)": {
     "id": 1084,
@@ -9085,7 +9647,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Omni (4 Suits)": {
     "id": 1085,
@@ -9101,7 +9665,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Omni (3 Suits)": {
     "id": 1086,
@@ -9116,7 +9682,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Null (6 Suits)": {
     "id": 1087,
@@ -9134,7 +9702,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Null (5 Suits)": {
     "id": 1088,
@@ -9151,7 +9721,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Null (4 Suits)": {
     "id": 1089,
@@ -9167,7 +9739,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Null (3 Suits)": {
     "id": 1090,
@@ -9182,7 +9756,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Muddy Rainbow (6 Suits)": {
     "id": 1091,
@@ -9200,7 +9776,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Muddy Rainbow (5 Suits)": {
     "id": 1092,
@@ -9217,7 +9795,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Muddy Rainbow (4 Suits)": {
     "id": 1093,
@@ -9233,7 +9813,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Muddy Rainbow (3 Suits)": {
     "id": 1094,
@@ -9248,7 +9830,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Light Pink (6 Suits)": {
     "id": 1095,
@@ -9266,7 +9850,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Light Pink (5 Suits)": {
     "id": 1096,
@@ -9283,7 +9869,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Light Pink (4 Suits)": {
     "id": 1097,
@@ -9299,7 +9887,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Light Pink (3 Suits)": {
     "id": 1098,
@@ -9314,7 +9904,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Dark Rainbow (6 Suits)": {
     "id": 1099,
@@ -9332,7 +9924,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Dark Rainbow (5 Suits)": {
     "id": 1100,
@@ -9349,7 +9943,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Dark Pink (6 Suits)": {
     "id": 1101,
@@ -9367,7 +9963,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Dark Pink (5 Suits)": {
     "id": 1102,
@@ -9384,7 +9982,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Gray (6 Suits)": {
     "id": 1103,
@@ -9402,7 +10002,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Gray (5 Suits)": {
     "id": 1104,
@@ -9419,7 +10021,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Dark Brown (6 Suits)": {
     "id": 1105,
@@ -9437,7 +10041,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Dark Brown (5 Suits)": {
     "id": 1106,
@@ -9454,7 +10060,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Dark Omni (6 Suits)": {
     "id": 1107,
@@ -9472,7 +10080,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Dark Omni (5 Suits)": {
     "id": 1108,
@@ -9489,7 +10099,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Dark Null (6 Suits)": {
     "id": 1109,
@@ -9507,7 +10119,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Dark Null (5 Suits)": {
     "id": 1110,
@@ -9524,7 +10138,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Cocoa Rainbow (6 Suits)": {
     "id": 1111,
@@ -9542,7 +10158,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Cocoa Rainbow (5 Suits)": {
     "id": 1112,
@@ -9559,7 +10177,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Gray Pink (6 Suits)": {
     "id": 1113,
@@ -9577,7 +10197,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Ones & Gray Pink (5 Suits)": {
     "id": 1114,
@@ -9594,7 +10216,9 @@
       4,
       5
     ],
-    "specialRank": 1
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Rainbow-Fives (6 Suits)": {
     "id": 526,
@@ -9606,7 +10230,8 @@
       "Purple",
       "Teal"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives (5 Suits)": {
     "id": 527,
@@ -9617,7 +10242,8 @@
       "Blue",
       "Purple"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives (4 Suits)": {
     "id": 528,
@@ -9627,7 +10253,8 @@
       "Green",
       "Blue"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives (3 Suits)": {
     "id": 529,
@@ -9636,7 +10263,8 @@
       "Green",
       "Blue"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Rainbow (6 Suits)": {
     "id": 530,
@@ -9648,7 +10276,8 @@
       "Purple",
       "Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Rainbow (5 Suits)": {
     "id": 531,
@@ -9659,7 +10288,8 @@
       "Blue",
       "Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Rainbow (4 Suits)": {
     "id": 532,
@@ -9669,7 +10299,8 @@
       "Blue",
       "Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Rainbow (3 Suits)": {
     "id": 533,
@@ -9678,7 +10309,8 @@
       "Blue",
       "Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Pink (6 Suits)": {
     "id": 534,
@@ -9690,7 +10322,8 @@
       "Purple",
       "Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Pink (5 Suits)": {
     "id": 535,
@@ -9701,7 +10334,8 @@
       "Blue",
       "Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Pink (4 Suits)": {
     "id": 536,
@@ -9711,7 +10345,8 @@
       "Blue",
       "Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Pink (3 Suits)": {
     "id": 537,
@@ -9720,7 +10355,8 @@
       "Blue",
       "Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & White (6 Suits)": {
     "id": 538,
@@ -9732,7 +10368,8 @@
       "Purple",
       "White"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & White (5 Suits)": {
     "id": 539,
@@ -9743,7 +10380,8 @@
       "Blue",
       "White"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & White (4 Suits)": {
     "id": 540,
@@ -9753,7 +10391,8 @@
       "Blue",
       "White"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & White (3 Suits)": {
     "id": 541,
@@ -9762,7 +10401,8 @@
       "Blue",
       "White"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Brown (6 Suits)": {
     "id": 542,
@@ -9774,7 +10414,8 @@
       "Purple",
       "Brown"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Brown (5 Suits)": {
     "id": 543,
@@ -9785,7 +10426,8 @@
       "Blue",
       "Brown"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Brown (4 Suits)": {
     "id": 544,
@@ -9795,7 +10437,8 @@
       "Blue",
       "Brown"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Brown (3 Suits)": {
     "id": 545,
@@ -9804,7 +10447,8 @@
       "Blue",
       "Brown"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Omni (6 Suits)": {
     "id": 546,
@@ -9816,7 +10460,8 @@
       "Purple",
       "Omni"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Omni (5 Suits)": {
     "id": 547,
@@ -9827,7 +10472,8 @@
       "Blue",
       "Omni"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Omni (4 Suits)": {
     "id": 548,
@@ -9837,7 +10483,8 @@
       "Blue",
       "Omni"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Omni (3 Suits)": {
     "id": 549,
@@ -9846,7 +10493,8 @@
       "Blue",
       "Omni"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Null (6 Suits)": {
     "id": 550,
@@ -9858,7 +10506,8 @@
       "Purple",
       "Null"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Null (5 Suits)": {
     "id": 551,
@@ -9869,7 +10518,8 @@
       "Blue",
       "Null"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Null (4 Suits)": {
     "id": 552,
@@ -9879,7 +10529,8 @@
       "Blue",
       "Null"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Null (3 Suits)": {
     "id": 553,
@@ -9888,7 +10539,8 @@
       "Blue",
       "Null"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Muddy Rainbow (6 Suits)": {
     "id": 939,
@@ -9900,7 +10552,8 @@
       "Purple",
       "Muddy Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Muddy Rainbow (5 Suits)": {
     "id": 940,
@@ -9911,7 +10564,8 @@
       "Blue",
       "Muddy Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Muddy Rainbow (4 Suits)": {
     "id": 941,
@@ -9921,7 +10575,8 @@
       "Blue",
       "Muddy Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Muddy Rainbow (3 Suits)": {
     "id": 942,
@@ -9930,7 +10585,8 @@
       "Blue",
       "Muddy Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Light Pink (6 Suits)": {
     "id": 943,
@@ -9942,7 +10598,8 @@
       "Purple",
       "Light Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Light Pink (5 Suits)": {
     "id": 944,
@@ -9953,7 +10610,8 @@
       "Blue",
       "Light Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Light Pink (4 Suits)": {
     "id": 945,
@@ -9963,7 +10621,8 @@
       "Blue",
       "Light Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Light Pink (3 Suits)": {
     "id": 946,
@@ -9972,7 +10631,8 @@
       "Blue",
       "Light Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Dark Rainbow (6 Suits)": {
     "id": 554,
@@ -9984,7 +10644,8 @@
       "Purple",
       "Dark Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Dark Rainbow (5 Suits)": {
     "id": 555,
@@ -9995,7 +10656,8 @@
       "Blue",
       "Dark Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Dark Pink (6 Suits)": {
     "id": 556,
@@ -10007,7 +10669,8 @@
       "Purple",
       "Dark Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Dark Pink (5 Suits)": {
     "id": 557,
@@ -10018,7 +10681,8 @@
       "Blue",
       "Dark Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Gray (6 Suits)": {
     "id": 558,
@@ -10030,7 +10694,8 @@
       "Purple",
       "Gray"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Gray (5 Suits)": {
     "id": 559,
@@ -10041,7 +10706,8 @@
       "Blue",
       "Gray"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Dark Brown (6 Suits)": {
     "id": 560,
@@ -10053,7 +10719,8 @@
       "Purple",
       "Dark Brown"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Dark Brown (5 Suits)": {
     "id": 561,
@@ -10064,7 +10731,8 @@
       "Blue",
       "Dark Brown"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Dark Omni (6 Suits)": {
     "id": 562,
@@ -10076,7 +10744,8 @@
       "Purple",
       "Dark Omni"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Dark Omni (5 Suits)": {
     "id": 563,
@@ -10087,7 +10756,8 @@
       "Blue",
       "Dark Omni"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Dark Null (6 Suits)": {
     "id": 564,
@@ -10099,7 +10769,8 @@
       "Purple",
       "Dark Null"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Dark Null (5 Suits)": {
     "id": 565,
@@ -10110,7 +10781,8 @@
       "Blue",
       "Dark Null"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Cocoa Rainbow (6 Suits)": {
     "id": 947,
@@ -10122,7 +10794,8 @@
       "Purple",
       "Cocoa Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Cocoa Rainbow (5 Suits)": {
     "id": 948,
@@ -10133,7 +10806,8 @@
       "Blue",
       "Cocoa Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Gray Pink (6 Suits)": {
     "id": 949,
@@ -10145,7 +10819,8 @@
       "Purple",
       "Gray Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Rainbow-Fives & Gray Pink (5 Suits)": {
     "id": 950,
@@ -10156,7 +10831,8 @@
       "Blue",
       "Gray Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true
   },
   "Pink-Fives (6 Suits)": {
     "id": 45,
@@ -10174,7 +10850,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives (5 Suits)": {
     "id": 46,
@@ -10191,7 +10868,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives (4 Suits)": {
     "id": 49,
@@ -10207,7 +10885,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives (3 Suits)": {
     "id": 50,
@@ -10222,7 +10901,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Rainbow (6 Suits)": {
     "id": 39,
@@ -10240,7 +10920,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Rainbow (5 Suits)": {
     "id": 14,
@@ -10257,7 +10938,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Rainbow (4 Suits)": {
     "id": 47,
@@ -10273,7 +10955,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Rainbow (3 Suits)": {
     "id": 48,
@@ -10288,7 +10971,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Pink (6 Suits)": {
     "id": 566,
@@ -10306,7 +10990,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Pink (5 Suits)": {
     "id": 567,
@@ -10323,7 +11008,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Pink (4 Suits)": {
     "id": 568,
@@ -10339,7 +11025,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Pink (3 Suits)": {
     "id": 569,
@@ -10354,7 +11041,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & White (6 Suits)": {
     "id": 570,
@@ -10372,7 +11060,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & White (5 Suits)": {
     "id": 571,
@@ -10389,7 +11078,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & White (4 Suits)": {
     "id": 572,
@@ -10405,7 +11095,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & White (3 Suits)": {
     "id": 573,
@@ -10420,7 +11111,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Brown (6 Suits)": {
     "id": 574,
@@ -10438,7 +11130,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Brown (5 Suits)": {
     "id": 575,
@@ -10455,7 +11148,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Brown (4 Suits)": {
     "id": 576,
@@ -10471,7 +11165,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Brown (3 Suits)": {
     "id": 577,
@@ -10486,7 +11181,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Omni (6 Suits)": {
     "id": 578,
@@ -10504,7 +11200,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Omni (5 Suits)": {
     "id": 579,
@@ -10521,7 +11218,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Omni (4 Suits)": {
     "id": 580,
@@ -10537,7 +11235,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Omni (3 Suits)": {
     "id": 581,
@@ -10552,7 +11251,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Null (6 Suits)": {
     "id": 582,
@@ -10570,7 +11270,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Null (5 Suits)": {
     "id": 583,
@@ -10587,7 +11288,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Null (4 Suits)": {
     "id": 584,
@@ -10603,7 +11305,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Null (3 Suits)": {
     "id": 585,
@@ -10618,7 +11321,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Muddy Rainbow (6 Suits)": {
     "id": 951,
@@ -10636,7 +11340,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Muddy Rainbow (5 Suits)": {
     "id": 952,
@@ -10653,7 +11358,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Muddy Rainbow (4 Suits)": {
     "id": 953,
@@ -10669,7 +11375,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Muddy Rainbow (3 Suits)": {
     "id": 954,
@@ -10684,7 +11391,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Light Pink (6 Suits)": {
     "id": 955,
@@ -10702,7 +11410,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Light Pink (5 Suits)": {
     "id": 956,
@@ -10719,7 +11428,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Light Pink (4 Suits)": {
     "id": 957,
@@ -10735,7 +11445,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Light Pink (3 Suits)": {
     "id": 958,
@@ -10750,7 +11461,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Dark Rainbow (6 Suits)": {
     "id": 586,
@@ -10768,7 +11480,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Dark Rainbow (5 Suits)": {
     "id": 587,
@@ -10785,7 +11498,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Dark Pink (6 Suits)": {
     "id": 588,
@@ -10803,7 +11517,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Dark Pink (5 Suits)": {
     "id": 589,
@@ -10820,7 +11535,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Gray (6 Suits)": {
     "id": 590,
@@ -10838,7 +11554,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Gray (5 Suits)": {
     "id": 591,
@@ -10855,7 +11572,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Dark Brown (6 Suits)": {
     "id": 592,
@@ -10873,7 +11591,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Dark Brown (5 Suits)": {
     "id": 593,
@@ -10890,7 +11609,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Dark Omni (6 Suits)": {
     "id": 594,
@@ -10908,7 +11628,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Dark Omni (5 Suits)": {
     "id": 595,
@@ -10925,7 +11646,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Dark Null (6 Suits)": {
     "id": 596,
@@ -10943,7 +11665,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Dark Null (5 Suits)": {
     "id": 597,
@@ -10960,7 +11683,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Cocoa Rainbow (6 Suits)": {
     "id": 959,
@@ -10978,7 +11702,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Cocoa Rainbow (5 Suits)": {
     "id": 960,
@@ -10995,7 +11720,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Gray Pink (6 Suits)": {
     "id": 961,
@@ -11013,7 +11739,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "Pink-Fives & Gray Pink (5 Suits)": {
     "id": 962,
@@ -11030,7 +11757,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true
   },
   "White-Fives (6 Suits)": {
     "id": 598,
@@ -11042,7 +11770,8 @@
       "Purple",
       "Teal"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives (5 Suits)": {
     "id": 599,
@@ -11053,7 +11782,8 @@
       "Blue",
       "Purple"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives (4 Suits)": {
     "id": 600,
@@ -11063,7 +11793,8 @@
       "Green",
       "Blue"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives (3 Suits)": {
     "id": 601,
@@ -11072,7 +11803,8 @@
       "Green",
       "Blue"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Rainbow (6 Suits)": {
     "id": 602,
@@ -11084,7 +11816,8 @@
       "Purple",
       "Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Rainbow (5 Suits)": {
     "id": 603,
@@ -11095,7 +11828,8 @@
       "Blue",
       "Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Rainbow (4 Suits)": {
     "id": 604,
@@ -11105,7 +11839,8 @@
       "Blue",
       "Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Rainbow (3 Suits)": {
     "id": 605,
@@ -11114,7 +11849,8 @@
       "Blue",
       "Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Pink (6 Suits)": {
     "id": 606,
@@ -11126,7 +11862,8 @@
       "Purple",
       "Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Pink (5 Suits)": {
     "id": 607,
@@ -11137,7 +11874,8 @@
       "Blue",
       "Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Pink (4 Suits)": {
     "id": 608,
@@ -11147,7 +11885,8 @@
       "Blue",
       "Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Pink (3 Suits)": {
     "id": 609,
@@ -11156,7 +11895,8 @@
       "Blue",
       "Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & White (6 Suits)": {
     "id": 610,
@@ -11168,7 +11908,8 @@
       "Purple",
       "White"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & White (5 Suits)": {
     "id": 611,
@@ -11179,7 +11920,8 @@
       "Blue",
       "White"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & White (4 Suits)": {
     "id": 612,
@@ -11189,7 +11931,8 @@
       "Blue",
       "White"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & White (3 Suits)": {
     "id": 613,
@@ -11198,7 +11941,8 @@
       "Blue",
       "White"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Brown (6 Suits)": {
     "id": 614,
@@ -11210,7 +11954,8 @@
       "Purple",
       "Brown"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Brown (5 Suits)": {
     "id": 615,
@@ -11221,7 +11966,8 @@
       "Blue",
       "Brown"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Brown (4 Suits)": {
     "id": 616,
@@ -11231,7 +11977,8 @@
       "Blue",
       "Brown"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Brown (3 Suits)": {
     "id": 617,
@@ -11240,7 +11987,8 @@
       "Blue",
       "Brown"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Omni (6 Suits)": {
     "id": 618,
@@ -11252,7 +12000,8 @@
       "Purple",
       "Omni"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Omni (5 Suits)": {
     "id": 619,
@@ -11263,7 +12012,8 @@
       "Blue",
       "Omni"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Omni (4 Suits)": {
     "id": 620,
@@ -11273,7 +12023,8 @@
       "Blue",
       "Omni"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Omni (3 Suits)": {
     "id": 621,
@@ -11282,7 +12033,8 @@
       "Blue",
       "Omni"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Null (6 Suits)": {
     "id": 622,
@@ -11294,7 +12046,8 @@
       "Purple",
       "Null"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Null (5 Suits)": {
     "id": 623,
@@ -11305,7 +12058,8 @@
       "Blue",
       "Null"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Null (4 Suits)": {
     "id": 624,
@@ -11315,7 +12069,8 @@
       "Blue",
       "Null"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Null (3 Suits)": {
     "id": 625,
@@ -11324,7 +12079,8 @@
       "Blue",
       "Null"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Muddy Rainbow (6 Suits)": {
     "id": 963,
@@ -11336,7 +12092,8 @@
       "Purple",
       "Muddy Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Muddy Rainbow (5 Suits)": {
     "id": 964,
@@ -11347,7 +12104,8 @@
       "Blue",
       "Muddy Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Muddy Rainbow (4 Suits)": {
     "id": 965,
@@ -11357,7 +12115,8 @@
       "Blue",
       "Muddy Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Muddy Rainbow (3 Suits)": {
     "id": 966,
@@ -11366,7 +12125,8 @@
       "Blue",
       "Muddy Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Light Pink (6 Suits)": {
     "id": 967,
@@ -11378,7 +12138,8 @@
       "Purple",
       "Light Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Light Pink (5 Suits)": {
     "id": 968,
@@ -11389,7 +12150,8 @@
       "Blue",
       "Light Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Light Pink (4 Suits)": {
     "id": 969,
@@ -11399,7 +12161,8 @@
       "Blue",
       "Light Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Light Pink (3 Suits)": {
     "id": 970,
@@ -11408,7 +12171,8 @@
       "Blue",
       "Light Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Dark Rainbow (6 Suits)": {
     "id": 626,
@@ -11420,7 +12184,8 @@
       "Purple",
       "Dark Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Dark Rainbow (5 Suits)": {
     "id": 627,
@@ -11431,7 +12196,8 @@
       "Blue",
       "Dark Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Dark Pink (6 Suits)": {
     "id": 628,
@@ -11443,7 +12209,8 @@
       "Purple",
       "Dark Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Dark Pink (5 Suits)": {
     "id": 629,
@@ -11454,7 +12221,8 @@
       "Blue",
       "Dark Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Gray (6 Suits)": {
     "id": 630,
@@ -11466,7 +12234,8 @@
       "Purple",
       "Gray"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Gray (5 Suits)": {
     "id": 631,
@@ -11477,7 +12246,8 @@
       "Blue",
       "Gray"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Dark Brown (6 Suits)": {
     "id": 632,
@@ -11489,7 +12259,8 @@
       "Purple",
       "Dark Brown"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Dark Brown (5 Suits)": {
     "id": 633,
@@ -11500,7 +12271,8 @@
       "Blue",
       "Dark Brown"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Dark Omni (6 Suits)": {
     "id": 634,
@@ -11512,7 +12284,8 @@
       "Purple",
       "Dark Omni"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Dark Omni (5 Suits)": {
     "id": 635,
@@ -11523,7 +12296,8 @@
       "Blue",
       "Dark Omni"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Dark Null (6 Suits)": {
     "id": 636,
@@ -11535,7 +12309,8 @@
       "Purple",
       "Dark Null"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Dark Null (5 Suits)": {
     "id": 637,
@@ -11546,7 +12321,8 @@
       "Blue",
       "Dark Null"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Cocoa Rainbow (6 Suits)": {
     "id": 971,
@@ -11558,7 +12334,8 @@
       "Purple",
       "Cocoa Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Cocoa Rainbow (5 Suits)": {
     "id": 972,
@@ -11569,7 +12346,8 @@
       "Blue",
       "Cocoa Rainbow"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Gray Pink (6 Suits)": {
     "id": 973,
@@ -11581,7 +12359,8 @@
       "Purple",
       "Gray Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "White-Fives & Gray Pink (5 Suits)": {
     "id": 974,
@@ -11592,7 +12371,8 @@
       "Blue",
       "Gray Pink"
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true
   },
   "Brown-Fives (6 Suits)": {
     "id": 638,
@@ -11610,7 +12390,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives (5 Suits)": {
     "id": 639,
@@ -11627,7 +12408,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives (4 Suits)": {
     "id": 640,
@@ -11643,7 +12425,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives (3 Suits)": {
     "id": 641,
@@ -11658,7 +12441,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Rainbow (6 Suits)": {
     "id": 642,
@@ -11676,7 +12460,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Rainbow (5 Suits)": {
     "id": 643,
@@ -11693,7 +12478,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Rainbow (4 Suits)": {
     "id": 644,
@@ -11709,7 +12495,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Rainbow (3 Suits)": {
     "id": 645,
@@ -11724,7 +12511,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Pink (6 Suits)": {
     "id": 646,
@@ -11742,7 +12530,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Pink (5 Suits)": {
     "id": 647,
@@ -11759,7 +12548,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Pink (4 Suits)": {
     "id": 648,
@@ -11775,7 +12565,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Pink (3 Suits)": {
     "id": 649,
@@ -11790,7 +12581,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & White (6 Suits)": {
     "id": 650,
@@ -11808,7 +12600,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & White (5 Suits)": {
     "id": 651,
@@ -11825,7 +12618,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & White (4 Suits)": {
     "id": 652,
@@ -11841,7 +12635,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & White (3 Suits)": {
     "id": 653,
@@ -11856,7 +12651,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Brown (6 Suits)": {
     "id": 654,
@@ -11874,7 +12670,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Brown (5 Suits)": {
     "id": 655,
@@ -11891,7 +12688,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Brown (4 Suits)": {
     "id": 656,
@@ -11907,7 +12705,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Brown (3 Suits)": {
     "id": 657,
@@ -11922,7 +12721,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Omni (6 Suits)": {
     "id": 658,
@@ -11940,7 +12740,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Omni (5 Suits)": {
     "id": 659,
@@ -11957,7 +12758,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Omni (4 Suits)": {
     "id": 660,
@@ -11973,7 +12775,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Omni (3 Suits)": {
     "id": 661,
@@ -11988,7 +12791,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Null (6 Suits)": {
     "id": 662,
@@ -12006,7 +12810,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Null (5 Suits)": {
     "id": 663,
@@ -12023,7 +12828,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Null (4 Suits)": {
     "id": 664,
@@ -12039,7 +12845,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Null (3 Suits)": {
     "id": 665,
@@ -12054,7 +12861,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Muddy Rainbow (6 Suits)": {
     "id": 975,
@@ -12072,7 +12880,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Muddy Rainbow (5 Suits)": {
     "id": 976,
@@ -12089,7 +12898,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Muddy Rainbow (4 Suits)": {
     "id": 977,
@@ -12105,7 +12915,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Muddy Rainbow (3 Suits)": {
     "id": 978,
@@ -12120,7 +12931,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Light Pink (6 Suits)": {
     "id": 979,
@@ -12138,7 +12950,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Light Pink (5 Suits)": {
     "id": 980,
@@ -12155,7 +12968,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Light Pink (4 Suits)": {
     "id": 981,
@@ -12171,7 +12985,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Light Pink (3 Suits)": {
     "id": 982,
@@ -12186,7 +13001,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Dark Rainbow (6 Suits)": {
     "id": 666,
@@ -12204,7 +13020,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Dark Rainbow (5 Suits)": {
     "id": 667,
@@ -12221,7 +13038,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Dark Pink (6 Suits)": {
     "id": 668,
@@ -12239,7 +13057,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Dark Pink (5 Suits)": {
     "id": 669,
@@ -12256,7 +13075,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Gray (6 Suits)": {
     "id": 670,
@@ -12274,7 +13094,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Gray (5 Suits)": {
     "id": 671,
@@ -12291,7 +13112,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Dark Brown (6 Suits)": {
     "id": 672,
@@ -12309,7 +13131,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Dark Brown (5 Suits)": {
     "id": 673,
@@ -12326,7 +13149,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Dark Omni (6 Suits)": {
     "id": 674,
@@ -12344,7 +13168,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Dark Omni (5 Suits)": {
     "id": 675,
@@ -12361,7 +13186,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Dark Null (6 Suits)": {
     "id": 676,
@@ -12379,7 +13205,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Dark Null (5 Suits)": {
     "id": 677,
@@ -12396,7 +13223,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Cocoa Rainbow (6 Suits)": {
     "id": 983,
@@ -12414,7 +13242,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Cocoa Rainbow (5 Suits)": {
     "id": 984,
@@ -12431,7 +13260,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Gray Pink (6 Suits)": {
     "id": 985,
@@ -12449,7 +13279,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Brown-Fives & Gray Pink (5 Suits)": {
     "id": 986,
@@ -12466,7 +13297,8 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueRanks": true
   },
   "Omni-Fives (6 Suits)": {
     "id": 678,
@@ -12484,7 +13316,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives (5 Suits)": {
     "id": 679,
@@ -12501,7 +13335,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives (4 Suits)": {
     "id": 680,
@@ -12517,7 +13353,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives (3 Suits)": {
     "id": 681,
@@ -12532,7 +13370,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Rainbow (6 Suits)": {
     "id": 682,
@@ -12550,7 +13390,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Rainbow (5 Suits)": {
     "id": 683,
@@ -12567,7 +13409,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Rainbow (4 Suits)": {
     "id": 684,
@@ -12583,7 +13427,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Rainbow (3 Suits)": {
     "id": 685,
@@ -12598,7 +13444,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Pink (6 Suits)": {
     "id": 686,
@@ -12616,7 +13464,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Pink (5 Suits)": {
     "id": 687,
@@ -12633,7 +13483,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Pink (4 Suits)": {
     "id": 688,
@@ -12649,7 +13501,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Pink (3 Suits)": {
     "id": 689,
@@ -12664,7 +13518,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & White (6 Suits)": {
     "id": 690,
@@ -12682,7 +13538,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & White (5 Suits)": {
     "id": 691,
@@ -12699,7 +13557,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & White (4 Suits)": {
     "id": 692,
@@ -12715,7 +13575,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & White (3 Suits)": {
     "id": 693,
@@ -12730,7 +13592,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Brown (6 Suits)": {
     "id": 694,
@@ -12748,7 +13612,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Brown (5 Suits)": {
     "id": 695,
@@ -12765,7 +13631,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Brown (4 Suits)": {
     "id": 696,
@@ -12781,7 +13649,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Brown (3 Suits)": {
     "id": 697,
@@ -12796,7 +13666,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Omni (6 Suits)": {
     "id": 698,
@@ -12814,7 +13686,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Omni (5 Suits)": {
     "id": 699,
@@ -12831,7 +13705,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Omni (4 Suits)": {
     "id": 700,
@@ -12847,7 +13723,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Omni (3 Suits)": {
     "id": 701,
@@ -12862,7 +13740,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Null (6 Suits)": {
     "id": 702,
@@ -12880,7 +13760,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Null (5 Suits)": {
     "id": 703,
@@ -12897,7 +13779,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Null (4 Suits)": {
     "id": 704,
@@ -12913,7 +13797,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Null (3 Suits)": {
     "id": 705,
@@ -12928,7 +13814,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Muddy Rainbow (6 Suits)": {
     "id": 987,
@@ -12946,7 +13834,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Muddy Rainbow (5 Suits)": {
     "id": 988,
@@ -12963,7 +13853,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Muddy Rainbow (4 Suits)": {
     "id": 989,
@@ -12979,7 +13871,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Muddy Rainbow (3 Suits)": {
     "id": 990,
@@ -12994,7 +13888,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Light Pink (6 Suits)": {
     "id": 991,
@@ -13012,7 +13908,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Light Pink (5 Suits)": {
     "id": 992,
@@ -13029,7 +13927,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Light Pink (4 Suits)": {
     "id": 993,
@@ -13045,7 +13945,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Light Pink (3 Suits)": {
     "id": 994,
@@ -13060,7 +13962,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Dark Rainbow (6 Suits)": {
     "id": 706,
@@ -13078,7 +13982,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Dark Rainbow (5 Suits)": {
     "id": 707,
@@ -13095,7 +14001,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Dark Pink (6 Suits)": {
     "id": 708,
@@ -13113,7 +14021,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Dark Pink (5 Suits)": {
     "id": 709,
@@ -13130,7 +14040,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Gray (6 Suits)": {
     "id": 710,
@@ -13148,7 +14060,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Gray (5 Suits)": {
     "id": 711,
@@ -13165,7 +14079,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Dark Brown (6 Suits)": {
     "id": 712,
@@ -13183,7 +14099,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Dark Brown (5 Suits)": {
     "id": 713,
@@ -13200,7 +14118,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Dark Omni (6 Suits)": {
     "id": 714,
@@ -13218,7 +14138,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Dark Omni (5 Suits)": {
     "id": 715,
@@ -13235,7 +14157,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Dark Null (6 Suits)": {
     "id": 716,
@@ -13253,7 +14177,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Dark Null (5 Suits)": {
     "id": 717,
@@ -13270,7 +14196,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Cocoa Rainbow (6 Suits)": {
     "id": 995,
@@ -13288,7 +14216,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Cocoa Rainbow (5 Suits)": {
     "id": 996,
@@ -13305,7 +14235,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Gray Pink (6 Suits)": {
     "id": 997,
@@ -13323,7 +14255,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Omni-Fives & Gray Pink (5 Suits)": {
     "id": 998,
@@ -13340,7 +14274,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true
   },
   "Null-Fives (6 Suits)": {
     "id": 718,
@@ -13358,7 +14294,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives (5 Suits)": {
     "id": 719,
@@ -13375,7 +14313,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives (4 Suits)": {
     "id": 720,
@@ -13391,7 +14331,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives (3 Suits)": {
     "id": 721,
@@ -13406,7 +14348,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Rainbow (6 Suits)": {
     "id": 722,
@@ -13424,7 +14368,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Rainbow (5 Suits)": {
     "id": 723,
@@ -13441,7 +14387,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Rainbow (4 Suits)": {
     "id": 724,
@@ -13457,7 +14405,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Rainbow (3 Suits)": {
     "id": 725,
@@ -13472,7 +14422,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Pink (6 Suits)": {
     "id": 726,
@@ -13490,7 +14442,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Pink (5 Suits)": {
     "id": 727,
@@ -13507,7 +14461,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Pink (4 Suits)": {
     "id": 728,
@@ -13523,7 +14479,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Pink (3 Suits)": {
     "id": 729,
@@ -13538,7 +14496,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & White (6 Suits)": {
     "id": 730,
@@ -13556,7 +14516,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & White (5 Suits)": {
     "id": 731,
@@ -13573,7 +14535,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & White (4 Suits)": {
     "id": 732,
@@ -13589,7 +14553,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & White (3 Suits)": {
     "id": 733,
@@ -13604,7 +14570,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Brown (6 Suits)": {
     "id": 734,
@@ -13622,7 +14590,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Brown (5 Suits)": {
     "id": 735,
@@ -13639,7 +14609,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Brown (4 Suits)": {
     "id": 736,
@@ -13655,7 +14627,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Brown (3 Suits)": {
     "id": 737,
@@ -13670,7 +14644,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Omni (6 Suits)": {
     "id": 738,
@@ -13688,7 +14664,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Omni (5 Suits)": {
     "id": 739,
@@ -13705,7 +14683,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Omni (4 Suits)": {
     "id": 740,
@@ -13721,7 +14701,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Omni (3 Suits)": {
     "id": 741,
@@ -13736,7 +14718,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Null (6 Suits)": {
     "id": 742,
@@ -13754,7 +14738,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Null (5 Suits)": {
     "id": 743,
@@ -13771,7 +14757,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Null (4 Suits)": {
     "id": 744,
@@ -13787,7 +14775,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Null (3 Suits)": {
     "id": 745,
@@ -13802,7 +14792,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Muddy Rainbow (6 Suits)": {
     "id": 999,
@@ -13820,7 +14812,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Muddy Rainbow (5 Suits)": {
     "id": 1000,
@@ -13837,7 +14831,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Muddy Rainbow (4 Suits)": {
     "id": 1001,
@@ -13853,7 +14849,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Muddy Rainbow (3 Suits)": {
     "id": 1002,
@@ -13868,7 +14866,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Light Pink (6 Suits)": {
     "id": 1003,
@@ -13886,7 +14886,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Light Pink (5 Suits)": {
     "id": 1004,
@@ -13903,7 +14905,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Light Pink (4 Suits)": {
     "id": 1005,
@@ -13919,7 +14923,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Light Pink (3 Suits)": {
     "id": 1006,
@@ -13934,7 +14940,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Dark Rainbow (6 Suits)": {
     "id": 746,
@@ -13952,7 +14960,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Dark Rainbow (5 Suits)": {
     "id": 747,
@@ -13969,7 +14979,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Dark Pink (6 Suits)": {
     "id": 748,
@@ -13987,7 +14999,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Dark Pink (5 Suits)": {
     "id": 749,
@@ -14004,7 +15018,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Gray (6 Suits)": {
     "id": 750,
@@ -14022,7 +15038,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Gray (5 Suits)": {
     "id": 751,
@@ -14039,7 +15057,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Dark Brown (6 Suits)": {
     "id": 752,
@@ -14057,7 +15077,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Dark Brown (5 Suits)": {
     "id": 753,
@@ -14074,7 +15096,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Dark Omni (6 Suits)": {
     "id": 754,
@@ -14092,7 +15116,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Dark Omni (5 Suits)": {
     "id": 755,
@@ -14109,7 +15135,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Dark Null (6 Suits)": {
     "id": 756,
@@ -14127,7 +15155,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Dark Null (5 Suits)": {
     "id": 757,
@@ -14144,7 +15174,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Cocoa Rainbow (6 Suits)": {
     "id": 1007,
@@ -14162,7 +15194,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Cocoa Rainbow (5 Suits)": {
     "id": 1008,
@@ -14179,7 +15213,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Gray Pink (6 Suits)": {
     "id": 1009,
@@ -14197,7 +15233,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Null-Fives & Gray Pink (5 Suits)": {
     "id": 1010,
@@ -14214,7 +15252,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives (6 Suits)": {
     "id": 1115,
@@ -14232,7 +15272,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives (5 Suits)": {
     "id": 1116,
@@ -14249,7 +15291,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives (4 Suits)": {
     "id": 1117,
@@ -14265,7 +15309,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives (3 Suits)": {
     "id": 1118,
@@ -14280,7 +15326,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Rainbow (6 Suits)": {
     "id": 1119,
@@ -14298,7 +15346,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Rainbow (5 Suits)": {
     "id": 1120,
@@ -14315,7 +15365,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Rainbow (4 Suits)": {
     "id": 1121,
@@ -14331,7 +15383,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Rainbow (3 Suits)": {
     "id": 1122,
@@ -14346,7 +15400,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Pink (6 Suits)": {
     "id": 1123,
@@ -14364,7 +15420,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Pink (5 Suits)": {
     "id": 1124,
@@ -14381,7 +15439,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Pink (4 Suits)": {
     "id": 1125,
@@ -14397,7 +15457,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Pink (3 Suits)": {
     "id": 1126,
@@ -14412,7 +15474,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & White (6 Suits)": {
     "id": 1127,
@@ -14430,7 +15494,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & White (5 Suits)": {
     "id": 1128,
@@ -14447,7 +15513,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & White (4 Suits)": {
     "id": 1129,
@@ -14463,7 +15531,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & White (3 Suits)": {
     "id": 1130,
@@ -14478,7 +15548,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Brown (6 Suits)": {
     "id": 1131,
@@ -14496,7 +15568,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Brown (5 Suits)": {
     "id": 1132,
@@ -14513,7 +15587,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Brown (4 Suits)": {
     "id": 1133,
@@ -14529,7 +15605,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Brown (3 Suits)": {
     "id": 1134,
@@ -14544,7 +15622,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Omni (6 Suits)": {
     "id": 1135,
@@ -14562,7 +15642,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Omni (5 Suits)": {
     "id": 1136,
@@ -14579,7 +15661,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Omni (4 Suits)": {
     "id": 1137,
@@ -14595,7 +15679,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Omni (3 Suits)": {
     "id": 1138,
@@ -14610,7 +15696,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Null (6 Suits)": {
     "id": 1139,
@@ -14628,7 +15716,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Null (5 Suits)": {
     "id": 1140,
@@ -14645,7 +15735,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Null (4 Suits)": {
     "id": 1141,
@@ -14661,7 +15753,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Null (3 Suits)": {
     "id": 1142,
@@ -14676,7 +15770,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Muddy Rainbow (6 Suits)": {
     "id": 1143,
@@ -14694,7 +15790,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Muddy Rainbow (5 Suits)": {
     "id": 1144,
@@ -14711,7 +15809,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Muddy Rainbow (4 Suits)": {
     "id": 1145,
@@ -14727,7 +15827,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Muddy Rainbow (3 Suits)": {
     "id": 1146,
@@ -14742,7 +15844,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Light Pink (6 Suits)": {
     "id": 1147,
@@ -14760,7 +15864,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Light Pink (5 Suits)": {
     "id": 1148,
@@ -14777,7 +15883,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Light Pink (4 Suits)": {
     "id": 1149,
@@ -14793,7 +15901,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Light Pink (3 Suits)": {
     "id": 1150,
@@ -14808,7 +15918,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Dark Rainbow (6 Suits)": {
     "id": 1151,
@@ -14826,7 +15938,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Dark Rainbow (5 Suits)": {
     "id": 1152,
@@ -14843,7 +15957,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Dark Pink (6 Suits)": {
     "id": 1153,
@@ -14861,7 +15977,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Dark Pink (5 Suits)": {
     "id": 1154,
@@ -14878,7 +15996,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Gray (6 Suits)": {
     "id": 1155,
@@ -14896,7 +16016,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Gray (5 Suits)": {
     "id": 1156,
@@ -14913,7 +16035,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Dark Brown (6 Suits)": {
     "id": 1157,
@@ -14931,7 +16055,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Dark Brown (5 Suits)": {
     "id": 1158,
@@ -14948,7 +16074,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Dark Omni (6 Suits)": {
     "id": 1159,
@@ -14966,7 +16094,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Dark Omni (5 Suits)": {
     "id": 1160,
@@ -14983,7 +16113,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Dark Null (6 Suits)": {
     "id": 1161,
@@ -15001,7 +16133,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Dark Null (5 Suits)": {
     "id": 1162,
@@ -15018,7 +16152,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Cocoa Rainbow (6 Suits)": {
     "id": 1163,
@@ -15036,7 +16172,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Cocoa Rainbow (5 Suits)": {
     "id": 1164,
@@ -15053,7 +16191,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Gray Pink (6 Suits)": {
     "id": 1165,
@@ -15071,7 +16211,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Muddy-Rainbow-Fives & Gray Pink (5 Suits)": {
     "id": 1166,
@@ -15088,7 +16230,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true
   },
   "Light-Pink-Fives (6 Suits)": {
     "id": 1167,
@@ -15106,7 +16250,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives (5 Suits)": {
     "id": 1168,
@@ -15123,7 +16269,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives (4 Suits)": {
     "id": 1169,
@@ -15139,7 +16287,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives (3 Suits)": {
     "id": 1170,
@@ -15154,7 +16304,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Rainbow (6 Suits)": {
     "id": 1171,
@@ -15172,7 +16324,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Rainbow (5 Suits)": {
     "id": 1172,
@@ -15189,7 +16343,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Rainbow (4 Suits)": {
     "id": 1173,
@@ -15205,7 +16361,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Rainbow (3 Suits)": {
     "id": 1174,
@@ -15220,7 +16378,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Pink (6 Suits)": {
     "id": 1175,
@@ -15238,7 +16398,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Pink (5 Suits)": {
     "id": 1176,
@@ -15255,7 +16417,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Pink (4 Suits)": {
     "id": 1177,
@@ -15271,7 +16435,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Pink (3 Suits)": {
     "id": 1178,
@@ -15286,7 +16452,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & White (6 Suits)": {
     "id": 1179,
@@ -15304,7 +16472,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & White (5 Suits)": {
     "id": 1180,
@@ -15321,7 +16491,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & White (4 Suits)": {
     "id": 1181,
@@ -15337,7 +16509,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & White (3 Suits)": {
     "id": 1182,
@@ -15352,7 +16526,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Brown (6 Suits)": {
     "id": 1183,
@@ -15370,7 +16546,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Brown (5 Suits)": {
     "id": 1184,
@@ -15387,7 +16565,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Brown (4 Suits)": {
     "id": 1185,
@@ -15403,7 +16583,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Brown (3 Suits)": {
     "id": 1186,
@@ -15418,7 +16600,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Omni (6 Suits)": {
     "id": 1187,
@@ -15436,7 +16620,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Omni (5 Suits)": {
     "id": 1188,
@@ -15453,7 +16639,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Omni (4 Suits)": {
     "id": 1189,
@@ -15469,7 +16657,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Omni (3 Suits)": {
     "id": 1190,
@@ -15484,7 +16674,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Null (6 Suits)": {
     "id": 1191,
@@ -15502,7 +16694,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Null (5 Suits)": {
     "id": 1192,
@@ -15519,7 +16713,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Null (4 Suits)": {
     "id": 1193,
@@ -15535,7 +16731,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Null (3 Suits)": {
     "id": 1194,
@@ -15550,7 +16748,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Muddy Rainbow (6 Suits)": {
     "id": 1195,
@@ -15568,7 +16768,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Muddy Rainbow (5 Suits)": {
     "id": 1196,
@@ -15585,7 +16787,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Muddy Rainbow (4 Suits)": {
     "id": 1197,
@@ -15601,7 +16805,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Muddy Rainbow (3 Suits)": {
     "id": 1198,
@@ -15616,7 +16822,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Light Pink (6 Suits)": {
     "id": 1199,
@@ -15634,7 +16842,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Light Pink (5 Suits)": {
     "id": 1200,
@@ -15651,7 +16861,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Light Pink (4 Suits)": {
     "id": 1201,
@@ -15667,7 +16879,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Light Pink (3 Suits)": {
     "id": 1202,
@@ -15682,7 +16896,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Dark Rainbow (6 Suits)": {
     "id": 1203,
@@ -15700,7 +16916,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Dark Rainbow (5 Suits)": {
     "id": 1204,
@@ -15717,7 +16935,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Dark Pink (6 Suits)": {
     "id": 1205,
@@ -15735,7 +16955,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Dark Pink (5 Suits)": {
     "id": 1206,
@@ -15752,7 +16974,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Gray (6 Suits)": {
     "id": 1207,
@@ -15770,7 +16994,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Gray (5 Suits)": {
     "id": 1208,
@@ -15787,7 +17013,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Dark Brown (6 Suits)": {
     "id": 1209,
@@ -15805,7 +17033,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Dark Brown (5 Suits)": {
     "id": 1210,
@@ -15822,7 +17052,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Dark Omni (6 Suits)": {
     "id": 1211,
@@ -15840,7 +17072,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Dark Omni (5 Suits)": {
     "id": 1212,
@@ -15857,7 +17091,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Dark Null (6 Suits)": {
     "id": 1213,
@@ -15875,7 +17111,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Dark Null (5 Suits)": {
     "id": 1214,
@@ -15892,7 +17130,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Cocoa Rainbow (6 Suits)": {
     "id": 1215,
@@ -15910,7 +17150,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Cocoa Rainbow (5 Suits)": {
     "id": 1216,
@@ -15927,7 +17169,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Gray Pink (6 Suits)": {
     "id": 1217,
@@ -15945,7 +17189,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Light-Pink-Fives & Gray Pink (5 Suits)": {
     "id": 1218,
@@ -15962,7 +17208,9 @@
       3,
       4
     ],
-    "specialRank": 5
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true
   },
   "Ambiguous (6 Suits)": {
     "id": 8,
