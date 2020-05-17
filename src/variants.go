@@ -25,6 +25,12 @@ type JSONVariant struct {
 	ClueRanks              *[]int    `json:"clueRanks"`
 	ColorCluesTouchNothing bool
 	RankCluesTouchNothing  bool
+
+	SpecialRank          int  `json:"specialRank"` // For e.g. Rainbow-Ones
+	SpecialAllClueColors bool `json:"specialAllClueColors"`
+	SpecialAllClueRanks  bool `json:"specialAllClueRanks"`
+	SpecialNoClueColors  bool `json:"specialNoClueColors"`
+	SpecialNoClueRanks   bool `json:"specialNoClueRanks"`
 }
 
 type Variant struct {
