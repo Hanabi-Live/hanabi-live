@@ -252,7 +252,7 @@ func validateJSON(s *Session, d *CommandData) bool {
 				" has an invalid suit number of " + strconv.Itoa(card.Suit) + ".")
 			return false
 		}
-		if (card.Rank < 1 || card.Rank > 5) && card.Rank != startCardRank {
+		if (card.Rank < 1 || card.Rank > 5) && card.Rank != StartCardRank {
 			s.Warning("The card at index " + strconv.Itoa(i) +
 				" has an invalid rank number of " + strconv.Itoa(card.Rank) + ".")
 			return false

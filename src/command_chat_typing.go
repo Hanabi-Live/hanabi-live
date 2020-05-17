@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	typingDelay = 2 * time.Second
+	TypingDelay = 2 * time.Second
 )
 
 // commandChatTyping is sent when the user types something into a chat box
@@ -79,7 +79,7 @@ func commandChatTyping(s *Session, d *CommandData) {
 }
 
 func commandChatTypingCheckStopped(t *Table, userID int) {
-	time.Sleep(typingDelay)
+	time.Sleep(TypingDelay)
 	commandMutex.Lock()
 	defer commandMutex.Unlock()
 
@@ -110,7 +110,7 @@ func commandChatTypingCheckStopped(t *Table, userID int) {
 		if !sp.Typing {
 			return
 		}
-		if time.Since(sp.LastTyped) >= typingDelay {
+		if time.Since(sp.LastTyped) >= TypingDelay {
 			sp.Typing = false
 			name = sp.Name
 		}
@@ -120,7 +120,7 @@ func commandChatTypingCheckStopped(t *Table, userID int) {
 		if !p.Typing {
 			return
 		}
-		if time.Since(p.LastTyped) >= typingDelay {
+		if time.Since(p.LastTyped) >= TypingDelay {
 			p.Typing = false
 			name = p.Name
 		}

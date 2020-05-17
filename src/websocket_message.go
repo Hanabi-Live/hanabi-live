@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	rateLimitRate = float64(100) // Number of messages sent
-	rateLimitPer  = float64(2)   // Per seconds
+	RateLimitRate = float64(100) // Number of messages sent
+	RateLimitPer  = float64(2)   // Per seconds
 )
 
 // websocketMessage is fired every time a WebSocket user sends a message to the server
@@ -47,9 +47,9 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 		timePassed := now.Sub(s.RateLimitLastCheck()).Seconds()
 		s.Set("rateLimitLastCheck", now)
 
-		newRateLimitAllowance := s.RateLimitAllowance() + timePassed*(rateLimitRate/rateLimitPer)
-		if newRateLimitAllowance > rateLimitRate {
-			newRateLimitAllowance = rateLimitRate
+		newRateLimitAllowance := s.RateLimitAllowance() + timePassed*(RateLimitRate/RateLimitPer)
+		if newRateLimitAllowance > RateLimitRate {
+			newRateLimitAllowance = RateLimitRate
 		}
 
 		if newRateLimitAllowance < 1 {

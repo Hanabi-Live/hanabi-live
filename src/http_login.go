@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	minUsernameLength = 2
-	maxUsernameLength = 15
+	MinUsernameLength = 2
+	MaxUsernameLength = 15
 )
 
 // httpLogin handles part 1 of 2 for login authentication
@@ -124,26 +124,26 @@ func httpLogin(c *gin.Context) {
 	}
 
 	// Validate that the username is not excessively short
-	if len(username) < minUsernameLength {
+	if len(username) < MinUsernameLength {
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
-			"\"" + username + "\", but it is shorter than " + strconv.Itoa(minUsernameLength) +
+			"\"" + username + "\", but it is shorter than " + strconv.Itoa(MinUsernameLength) +
 			" characters.")
 		http.Error(
 			w,
-			"Usernames must be "+strconv.Itoa(minUsernameLength)+" characters or more.",
+			"Usernames must be "+strconv.Itoa(MinUsernameLength)+" characters or more.",
 			http.StatusUnauthorized,
 		)
 		return
 	}
 
 	// Validate that the username is not excessively long
-	if len(username) > maxUsernameLength {
+	if len(username) > MaxUsernameLength {
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
-			"\"" + username + "\", but it is longer than " + strconv.Itoa(maxUsernameLength) +
+			"\"" + username + "\", but it is longer than " + strconv.Itoa(MaxUsernameLength) +
 			" characters.")
 		http.Error(
 			w,
-			"Usernames must be "+strconv.Itoa(maxUsernameLength)+" characters or less.",
+			"Usernames must be "+strconv.Itoa(MaxUsernameLength)+" characters or less.",
 			http.StatusUnauthorized,
 		)
 		return

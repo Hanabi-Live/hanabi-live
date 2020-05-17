@@ -36,7 +36,7 @@ func (g *Game) InitDeck() {
 				}
 			} else if rank == 5 {
 				amountToAdd = 1
-			} else if rank == startCardRank {
+			} else if rank == StartCardRank {
 				amountToAdd = 1
 			} else {
 				amountToAdd = 2

@@ -116,7 +116,7 @@ func variantsInit() {
 		if strings.HasPrefix(name, "Up or Down") {
 			// The "Up or Down" variants have START cards
 			// ("startCardRank" is defined in the "variantUpOrDown.go" file)
-			variantRanks = append(variantRanks, startCardRank)
+			variantRanks = append(variantRanks, StartCardRank)
 		}
 
 		// Validate or derive the clue colors (the colors available to clue in this variant)

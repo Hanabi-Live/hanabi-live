@@ -14,7 +14,7 @@ import (
 
 const (
 	// The maximum number of characters that a game name can be
-	maxGameNameLength = 45
+	MaxGameNameLength = 45
 )
 
 var (
@@ -68,9 +68,9 @@ func commandTableCreate(s *Session, d *CommandData) {
 	}
 
 	// Validate that the game name is not excessively long
-	if len(d.Name) > maxGameNameLength {
+	if len(d.Name) > MaxGameNameLength {
 		s.Warning("You cannot have a game name be longer than " +
-			strconv.Itoa(maxGameNameLength) + " characters.")
+			strconv.Itoa(MaxGameNameLength) + " characters.")
 		return
 	}
 

@@ -107,7 +107,7 @@ func (s *Session) FakeUser() bool {
 func (s *Session) RateLimitAllowance() float64 {
 	if s == nil {
 		logger.Error("The \"RateLimitAllowance\" method was called for a nil session.")
-		return rateLimitRate
+		return RateLimitRate
 	}
 
 	if v, exists := s.Get("rateLimitAllowance"); !exists {

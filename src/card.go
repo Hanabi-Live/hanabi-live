@@ -33,7 +33,7 @@ func NewCard(suit int, rank int) *Card {
 func (c *Card) Name(g *Game) string {
 	name := variants[g.Options.Variant].Suits[c.Suit].Name // The name of the suit that this card is
 	name += " "
-	if c.Rank == startCardRank {
+	if c.Rank == StartCardRank {
 		name += "START"
 	} else {
 		name += strconv.Itoa(c.Rank)

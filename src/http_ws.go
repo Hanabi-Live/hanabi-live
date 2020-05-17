@@ -156,7 +156,7 @@ func httpWS(c *gin.Context) {
 	keys["status"] = StatusLobby // By default, the user is in the lobby
 	keys["inactive"] = false
 	keys["fakeUser"] = false
-	keys["rateLimitAllowance"] = rateLimitRate
+	keys["rateLimitAllowance"] = RateLimitRate
 	keys["rateLimitLastCheck"] = time.Now()
 	keys["banned"] = false
 

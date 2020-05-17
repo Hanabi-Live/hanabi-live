@@ -13,7 +13,7 @@ const (
 	// When sending the in-game chat history,
 	// only send the last X messages to prevent clients from becoming overloaded
 	// (in case someone maliciously spams a lot of messages)
-	chatLimit = 1000
+	ChatLimit = 1000
 )
 
 var (
@@ -146,8 +146,8 @@ func chatSendPastFromDatabase(s *Session, room string, count int) bool {
 func chatSendPastFromTable(s *Session, t *Table) {
 	chatList := make([]*ChatMessage, 0)
 	i := 0
-	if len(t.Chat) > chatLimit {
-		i = len(t.Chat) - chatLimit
+	if len(t.Chat) > ChatLimit {
+		i = len(t.Chat) - ChatLimit
 	}
 	for ; i < len(t.Chat); i++ {
 		// We have to convert the *GameChatMessage to a *ChatMessage
