@@ -1,23 +1,31 @@
 package main
 
 import (
-	"strconv"
+	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
-// commandHistoryGetDeals is sent when the user clicks on the "Compare Scores" button
-//
-// Example data:
-// {
-//   gameID: 15103,
-// }
-func commandHistoryGetDeals(s *Session, d *CommandData) {
+func httpDeals(c *gin.Context) {
+	// Local variables
+	w := c.Writer
+
+	// Parse the seed from the URL
+	seed := c.Param("seed")
+	if seed == "" {
+		http.Error(w, "Error: You must specify the seed.", http.StatusNotFound)
+		return
+	}
+
 	var historyListDatabase []*GameHistory
-	if v, err := models.Games.GetAllDealsFromGameID(d.GameID); err != nil {
-		logger.Error("Failed to get the deals from the database for game "+
-			strconv.Itoa(d.GameID)+":", err)
-		s.Error("Failed to get the deals for game " + strconv.Itoa(d.GameID) + ". " +
-			"Please contact an administrator.")
+	if v, err := models.Games.GetAllDealsFromSeed(seed); err != nil {
+		logger.Error("Failed to get the deals from the database for seed \""+seed+"\":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
 		return
 	} else {
 		historyListDatabase = v
@@ -41,5 +49,6 @@ func commandHistoryGetDeals(s *Session, d *CommandData) {
 			Seed:        g.Seed,
 		})
 	}
-	s.Emit("gameHistoryOtherScores", &historyList)
+
+	c.JSON(http.StatusOK, historyList)
 }

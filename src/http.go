@@ -166,10 +166,14 @@ func httpInit() {
 	httpRouter.GET("/stats", httpStats)
 	httpRouter.GET("/variant/:id", httpVariant)
 	httpRouter.GET("/videos", httpVideos)
-	httpRouter.GET("/export", httpExport)
-	httpRouter.GET("/export/:game", httpExport)
 	httpRouter.GET("/password-reset", httpPasswordReset)
 	httpRouter.POST("/password-reset", httpPasswordResetPost)
+
+	// Path handlers for bots, developers, researchers, etc.
+	httpRouter.GET("/export", httpExport)
+	httpRouter.GET("/export/:game", httpExport)
+	httpRouter.GET("/deals", httpDeals)
+	httpRouter.GET("/deals/:seed", httpDeals)
 
 	// Other
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
