@@ -202,8 +202,7 @@ export default class HanabiCard extends Konva.Group {
     let suitToShow;
     if (this.empathy) {
       // If we are in Empathy mode, only show the suit if there is only one possibility left
-      // and the card has one or more clues on it
-      if (this.possibleSuits.length === 1 && this.isClued()) {
+      if (this.possibleSuits.length === 1) {
         [suitToShow] = this.possibleSuits;
       } else {
         suitToShow = SUITS.get('Unknown');
@@ -233,8 +232,7 @@ export default class HanabiCard extends Konva.Group {
     let rankToShow;
     if (this.empathy) {
       // If we are in Empathy mode, only show the rank if there is only one possibility left
-      // and the card has one or more clues on it
-      if (this.possibleRanks.length === 1 && this.isClued()) {
+      if (this.possibleRanks.length === 1) {
         [rankToShow] = this.possibleRanks;
       } else {
         rankToShow = 6;
