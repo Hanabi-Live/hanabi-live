@@ -92,8 +92,8 @@ export default class HanabiCard extends Konva.Group {
     this.x(CARD_W / 2);
     this.y(CARD_H / 2);
     this.offset({
-      x: CARD_W / 2,
-      y: CARD_H / 2,
+      x: 0.5 * CARD_W,
+      y: 0.5 * CARD_H,
     });
 
     // Most class variables are defined below in the "refresh()" function
@@ -144,7 +144,7 @@ export default class HanabiCard extends Konva.Group {
     // Some variants disable listening on cards
     this.listening(true);
 
-    this.hideBorders();
+    this.setClued(false);
     if (!globals.replay && !globals.spectating) {
       // If it has a "chop move" note on it, we want to keep the chop move border turned on
       if (this.noteChopMoved) {
@@ -184,14 +184,16 @@ export default class HanabiCard extends Konva.Group {
     this.setBareImage();
   }
 
-  isClued() {
-    return this.numPositiveClues > 0;
-  }
-
-  hideBorders() {
-    this.cluedBorder!.hide();
+  setClued(clued: boolean) {
     this.chopMoveBorder!.hide();
     this.finesseBorder!.hide();
+    const offset = clued ? 0.6 : 0.5;
+    this.offsetY(offset * CARD_H);
+    this.cluedBorder!.visible(clued);
+  }
+
+  isClued() {
+    return this.numPositiveClues > 0;
   }
 
   setBareImage() {

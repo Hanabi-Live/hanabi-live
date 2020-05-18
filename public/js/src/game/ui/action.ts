@@ -82,8 +82,7 @@ actionFunctions.set('clue', (data: ActionClue) => {
 
     arrows.set(i, card, data.giver, clue);
 
-    card.hideBorders();
-    card.cluedBorder!.show();
+    card.setClued(true);
     if (
       !globals.lobby.settings.realLifeMode
       && !globals.variant.name.startsWith('Cow & Pig')
@@ -193,7 +192,7 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
 
   card.reveal(data.which.suit, data.which.rank);
   card.removeFromParent();
-  card.hideBorders();
+  card.setClued(false);
 
   if (card.isMisplayed && !globals.animateFast && !globals.speedrun) {
     // If this card was misplayed,
@@ -343,7 +342,7 @@ actionFunctions.set('play', (data: ActionPlay) => {
 
   card.reveal(data.which.suit, data.which.rank);
   card.removeFromParent();
-  card.hideBorders();
+  card.setClued(false);
   card.animateToPlayStacks();
 
   // The fact that this card was played could make some other cards useless
