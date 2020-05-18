@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"path"
 	"strconv"
+	"strings"
 )
 
 type Character struct {
@@ -225,8 +226,8 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *GameP
 	}
 
 	if p.Character == "Genius" { // 24
-		if d.Type != ActionTypeColorClue {
-			s.Warning("You are " + p.Character + ", so you must now give a color clue.")
+		if d.Type != ActionTypeRankClue {
+			s.Warning("You are " + p.Character + ", so you must now give a rank clue.")
 			return true
 		}
 
@@ -369,13 +370,16 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 	} else if p.Character == "Genius" && // 24
 		p.CharacterMetadata == -1 {
 
-		if g.ClueTokens < 2 {
+		if g.ClueTokens < 2 ||
+			(strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens < 4) {
+
 			s.Warning("You are " + p.Character + ", so there needs to be at least " +
 				"two clues available for you to give a clue.")
 			return true
 		}
-		if clue.Type != ClueTypeRank {
-			s.Warning("You are " + p.Character + ", so you must give a rank clue first.")
+
+		if clue.Type != ClueTypeColor {
+			s.Warning("You are " + p.Character + ", so you must give a color clue first.")
 			return true
 		}
 	}
