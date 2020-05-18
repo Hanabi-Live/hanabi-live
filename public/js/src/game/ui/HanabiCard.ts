@@ -1164,7 +1164,7 @@ export default class HanabiCard extends Konva.Group {
 
     // If we wrote a card identity note and all the possibilities for that note have been
     // eliminated, unmorph the card
-    if (suit === this.noteSuit && rank === this.noteRank && cardsLeft === 0) {
+    if ((suit === this.noteSuit || rank === this.noteRank) && cardsLeft === 0) {
       this.noteSuit = null;
       this.noteRank = null;
       this.setBareImage();
