@@ -62,6 +62,9 @@ sleep 1
 cp "$DIR/public/js/webpack_output/main.$VERSION.min.js" "$DIR/public/js/bundles/"
 cp "$DIR/public/js/webpack_output/main.$VERSION.min.js.map" "$DIR/public/js/bundles/"
 echo "$VERSION" > "$DIR/public/js/bundles/version.json"
+# In addition to the numerical version (e.g. the number of commits),
+# it is also handy to have the exact git commit hash for the current build
+echo $(git rev-parse HEAD) > "$DIR/public/js/bundles/git-revision"
 rm -f "$COMPILING_FILE"
 
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
