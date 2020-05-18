@@ -324,7 +324,7 @@ commands.set('noteListPlayer', (data: NoteListPlayerData) => {
   notes.setAllCardIndicators();
 
   // Check for special notes
-  for (let i = 0; i < globals.indexOfLastDrawnCard; i++) {
+  for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
     const card = globals.deck[i];
     notes.checkSpecialNote(card);
   }

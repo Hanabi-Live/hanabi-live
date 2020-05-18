@@ -68,9 +68,9 @@ export default class HanabiCard extends Konva.Group {
   isMisplayed: boolean = false;
 
   bare: Konva.Image | null = null;
-  cluedBorder: Konva.Rect | null = null;
-  chopMoveBorder: Konva.Rect | null = null;
-  finesseBorder: Konva.Rect | null = null;
+  cluedBorder: Konva.Group | null = null;
+  chopMoveBorder: Konva.Group | null = null;
+  finesseBorder: Konva.Group | null = null;
   suitPips: Konva.Group | null = null;
   suitPipsMap: Map<Suit, Konva.Shape> = new Map();
   suitPipsXMap: Map<Suit, Konva.Shape> = new Map();

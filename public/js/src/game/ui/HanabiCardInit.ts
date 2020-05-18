@@ -37,43 +37,94 @@ export function image(this: HanabiCard) {
 }
 
 const borderCornerRadius = 6;
-const borderStrokeWidth = 16;
+const borderStrokeWidth = 20;
+const borderStrokeWidthInside = borderStrokeWidth * 0.6;
+const borderOffset = 2;
+const borderOutsideColor = '#0d0d0d'; // Off-black
 
 export function border(this: HanabiCard) {
   // The card will get a border when it becomes clued
-  this.cluedBorder = new Konva.Rect({
-    width: CARD_W,
-    height: CARD_H,
-    cornerRadius: borderCornerRadius,
-    strokeWidth: borderStrokeWidth,
-    stroke: globals.lobby.settings.colorblindMode ? '#0d0d0d' : 'orange', // Off-black
+  this.cluedBorder = new Konva.Group({
     visible: false,
     listening: false,
   });
+
+  const cluedBorderOutside = new Konva.Rect({
+    width: CARD_W - borderOffset,
+    height: CARD_H - borderOffset,
+    cornerRadius: borderCornerRadius,
+    strokeWidth: borderStrokeWidth,
+    stroke: borderOutsideColor,
+    listening: false,
+  });
+
+  const cluedBorderInside = new Konva.Rect({
+    width: CARD_W - borderOffset,
+    height: CARD_H - borderOffset,
+    cornerRadius: borderCornerRadius,
+    strokeWidth: borderStrokeWidthInside,
+    stroke: 'orange',
+    listening: false,
+  });
+
+  this.cluedBorder.add(cluedBorderOutside);
+  this.cluedBorder.add(cluedBorderInside);
   this.add(this.cluedBorder);
 
   // The card will get a special border if the player tells us that it is chop moved
-  this.chopMoveBorder = new Konva.Rect({
-    width: CARD_W,
-    height: CARD_H,
-    cornerRadius: borderCornerRadius,
-    strokeWidth: borderStrokeWidth,
-    stroke: '#fffce6', // White with a yellow tint
+  this.chopMoveBorder = new Konva.Group({
     visible: false,
     listening: false,
   });
+
+  const chopMoveBorderOutside = new Konva.Rect({
+    width: CARD_W - borderOffset,
+    height: CARD_H - borderOffset,
+    cornerRadius: borderCornerRadius,
+    strokeWidth: borderStrokeWidth,
+    stroke: borderOutsideColor,
+    listening: false,
+  });
+
+  const chopMoveBorderInside = new Konva.Rect({
+    width: CARD_W - borderOffset,
+    height: CARD_H - borderOffset,
+    cornerRadius: borderCornerRadius,
+    strokeWidth: borderStrokeWidthInside,
+    stroke: '#fffce6', // White with a yellow tint
+    listening: false,
+  });
+
+  this.chopMoveBorder.add(chopMoveBorderOutside);
+  this.chopMoveBorder.add(chopMoveBorderInside);
   this.add(this.chopMoveBorder);
 
   // The card will get a special border if the player tells us that it is finessed
-  this.finesseBorder = new Konva.Rect({
-    width: CARD_W,
-    height: CARD_H,
-    cornerRadius: borderCornerRadius,
-    strokeWidth: borderStrokeWidth,
-    stroke: 'aqua',
+  this.finesseBorder = new Konva.Group({
     visible: false,
     listening: false,
   });
+
+  const finesseBorderOutside = new Konva.Rect({
+    width: CARD_W - borderOffset,
+    height: CARD_H - borderOffset,
+    cornerRadius: borderCornerRadius,
+    strokeWidth: borderStrokeWidth,
+    stroke: borderOutsideColor,
+    listening: false,
+  });
+
+  const finesseBorderInside = new Konva.Rect({
+    width: CARD_W - borderOffset,
+    height: CARD_H - borderOffset,
+    cornerRadius: borderCornerRadius,
+    strokeWidth: borderStrokeWidthInside,
+    stroke: 'aqua',
+    listening: false,
+  });
+
+  this.finesseBorder.add(finesseBorderOutside);
+  this.finesseBorder.add(finesseBorderInside);
   this.add(this.finesseBorder);
 }
 
@@ -437,7 +488,7 @@ export function possibilities(this: HanabiCard) {
   }
 
   // We want to remove all of the currently seen cards from the list of possibilities
-  for (let i = 0; i < globals.indexOfLastDrawnCard; i++) {
+  for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
     const card = globals.deck[i];
 
     // Don't do anything if this is one of our unknown cards
