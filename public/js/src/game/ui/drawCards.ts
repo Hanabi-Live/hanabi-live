@@ -33,8 +33,8 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
     // Rank 6 is a card of unknown rank
     // Rank 7 is a "START" card (in the "Up or Down" variants)
     for (let rank = 0; rank <= 7; rank++) {
-      // We only need unknown cards for 1 through 5
-      if (suit.name === 'Unknown' && (rank === 0 || rank >= 6)) {
+      // We need unknown cards for 1, 2, 3, 4, 5, and the "START" card
+      if (suit.name === 'Unknown' && rank !== 0 && rank !== 6) {
         continue;
       }
 
