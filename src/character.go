@@ -459,7 +459,7 @@ func characterCheckDiscard(s *Session, g *Game, p *GamePlayer) bool {
 			"odd number of clues available.")
 		return true
 	} else if p.Character == "Wasteful" && // 23
-		(g.ClueTokens >= 2 ||
+		((!strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens >= 2) ||
 			(strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens >= 4)) {
 
 		s.Warning("You are " + p.Character + ", so you cannot discard if there are " +
