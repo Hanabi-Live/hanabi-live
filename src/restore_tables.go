@@ -13,6 +13,7 @@ import (
 )
 
 // restoreTables recreates tables that were ongoing at the time of the last server restart
+// Tables were serialized to flat files in the "tablesPath" directory
 func restoreTables() {
 	var files []os.FileInfo
 	if v, err := ioutil.ReadDir(tablesPath); err != nil {

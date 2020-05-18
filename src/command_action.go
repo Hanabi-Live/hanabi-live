@@ -12,11 +12,11 @@ var (
 
 func actionsFunctionsInit() {
 	actionFunctions = map[int]func(*Session, *CommandData, *Game, *GamePlayer) bool{
-		actionTypePlay:      commandActionPlay,
-		actionTypeDiscard:   commandActionDiscard,
-		actionTypeColorClue: commandActionClue,
-		actionTypeRankClue:  commandActionClue,
-		actionTypeGameOver:  commandActionGameOver,
+		ActionTypePlay:      commandActionPlay,
+		ActionTypeDiscard:   commandActionDiscard,
+		ActionTypeColorClue: commandActionClue,
+		ActionTypeRankClue:  commandActionClue,
+		ActionTypeGameOver:  commandActionGameOver,
 	}
 }
 
@@ -75,7 +75,7 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Validate that it is this player's turn
-	if g.ActivePlayer != i && d.Type != actionTypeGameOver {
+	if g.ActivePlayer != i && d.Type != ActionTypeGameOver {
 		s.Warning("It is not your turn, so you cannot perform an action.")
 		g.InvalidActionOccurred = true
 		return
@@ -113,7 +113,7 @@ func commandAction(s *Session, d *CommandData) {
 
 	// Start the idle timeout
 	// (but don't update the idle variable if we are ending the game)
-	if d.Type != actionTypeGameOver {
+	if d.Type != ActionTypeGameOver {
 		go t.CheckIdle()
 	}
 
@@ -137,7 +137,7 @@ func commandAction(s *Session, d *CommandData) {
 	// Adjust the timer for the player that just took their turn
 	// (if the game is over now due to a player running out of time, we don't need to adjust the
 	// timer because we already set it to 0 in the "checkTimer" function)
-	if d.Type != actionTypeGameOver {
+	if d.Type != ActionTypeGameOver {
 		p.Time -= time.Since(g.DatetimeTurnBegin)
 		// (in non-timed games,
 		// "Time" will decrement into negative numbers to show how much time they are taking)
@@ -182,7 +182,7 @@ func commandAction(s *Session, d *CommandData) {
 	// Check for end game states
 	if g.CheckEnd() {
 		var text string
-		if g.EndCondition > endConditionNormal {
+		if g.EndCondition > EndConditionNormal {
 			text = "Players lose!"
 		} else {
 			text = "Players score " + strconv.Itoa(g.Score) + " points."
@@ -200,23 +200,23 @@ func commandAction(s *Session, d *CommandData) {
 	// so that it is combined with the final action
 	t.NotifyTurn()
 
-	if g.EndCondition == endConditionInProgress {
+	if g.EndCondition == EndConditionInProgress {
 		logger.Info(t.GetName() + " It is now " + np.Name + "'s turn.")
-	} else if g.EndCondition == endConditionNormal {
+	} else if g.EndCondition == EndConditionNormal {
 		if g.Score == variants[g.Options.Variant].MaxScore {
 			g.Sound = "finished_perfect"
 		} else {
 			// The players did got get a perfect score, but they did not strike out either
 			g.Sound = "finished_success"
 		}
-	} else if g.EndCondition > endConditionNormal {
+	} else if g.EndCondition > EndConditionNormal {
 		g.Sound = "finished_fail"
 	}
 
 	// Tell every client to play a sound as a notification for the action taken
 	t.NotifySound()
 
-	if g.EndCondition > endConditionInProgress {
+	if g.EndCondition > EndConditionInProgress {
 		g.End()
 		return
 	}
@@ -283,12 +283,12 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 
 	// Validate that the team is not at the maximum amount of clues
 	// (the client should enforce this, but do a check just in case)
-	clueLimit := maxClueNum
+	clueLimit := MaxClueNum
 	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
 		clueLimit *= 2
 	}
 	if g.ClueTokens == clueLimit {
-		s.Warning("You cannot discard while the team has " + strconv.Itoa(maxClueNum) +
+		s.Warning("You cannot discard while the team has " + strconv.Itoa(MaxClueNum) +
 			" clues.")
 		g.InvalidActionOccurred = true
 		return false
@@ -346,14 +346,14 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 	clue := NewClue(d)
 
 	// Validate the clue value
-	if clue.Type == clueTypeColor {
+	if clue.Type == ClueTypeColor {
 		if clue.Value < 0 || clue.Value > len(variants[g.Options.Variant].ClueColors)-1 {
 			s.Warning("You cannot give a color clue with a value of " +
 				"\"" + strconv.Itoa(clue.Value) + "\".")
 			g.InvalidActionOccurred = true
 			return false
 		}
-	} else if clue.Type == clueTypeRank {
+	} else if clue.Type == ClueTypeRank {
 		if !intInSlice(clue.Value, variants[g.Options.Variant].ClueRanks) {
 			s.Warning("You cannot give a rank clue with a value of " +
 				"\"" + strconv.Itoa(clue.Value) + "\".")
@@ -394,9 +394,9 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 		// Make an exception if they have the optional setting for "Empty Clues" turned on
 		!g.Options.EmptyClues &&
 		// Make an exception for variants where color clues are always allowed
-		(!variants[g.Options.Variant].ColorCluesTouchNothing || clue.Type != clueTypeColor) &&
+		(!variants[g.Options.Variant].ColorCluesTouchNothing || clue.Type != ClueTypeColor) &&
 		// Make an exception for variants where rank clues are always allowed
-		(!variants[g.Options.Variant].RankCluesTouchNothing || clue.Type != clueTypeRank) &&
+		(!variants[g.Options.Variant].RankCluesTouchNothing || clue.Type != ClueTypeRank) &&
 		// Make an exception for certain characters
 		!characterEmptyClueAllowed(d, g, p) {
 
@@ -424,8 +424,8 @@ func commandActionGameOver(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 	// end an ongoing game
 	// The value will correspond to the end condition (see "endCondition" in "constants.go")
 	// Validate the value
-	if d.Value != endConditionTimeout &&
-		d.Value != endConditionIdleTimeout {
+	if d.Value != EndConditionTimeout &&
+		d.Value != EndConditionIdleTimeout {
 
 		s.Warning("That is not a valid value for the game over action.")
 		g.InvalidActionOccurred = true
@@ -437,9 +437,9 @@ func commandActionGameOver(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 	g.EndPlayer = g.ActivePlayer
 
 	var text string
-	if d.Value == endConditionTimeout {
+	if d.Value == EndConditionTimeout {
 		text = p.Name + " ran out of time!"
-	} else if d.Value == endConditionIdleTimeout {
+	} else if d.Value == EndConditionIdleTimeout {
 		text = "Players were idle for too long."
 	}
 	g.Actions = append(g.Actions, ActionText{

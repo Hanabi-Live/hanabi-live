@@ -108,24 +108,13 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
       return false;
     }
 
-    if (
-    // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
-      (globals.variant.name.includes('Rainbow-Ones') && card.rank === 1)
-      || (globals.variant.name.includes('Omni-Ones') && card.rank === 1)
-      || (globals.variant.name.includes('Rainbow-Fives') && card.rank === 5)
-      || (globals.variant.name.includes('Omni-Fives') && card.rank === 5)
-    ) {
-      return true;
-    }
-    if (
-      (globals.variant.name.includes('White-Ones') && card.rank === 1)
-      || (globals.variant.name.includes('Null-Ones') && card.rank === 1)
-      || (globals.variant.name.includes('Light-Pink-Ones') && card.rank === 1)
-      || (globals.variant.name.includes('White-Fives') && card.rank === 5)
-      || (globals.variant.name.includes('Null-Fives') && card.rank === 5)
-      || (globals.variant.name.includes('Light-Pink-Fives') && card.rank === 5)
-    ) {
-      return false;
+    if (card.rank === globals.variant.specialRank) {
+      if (globals.variant.specialAllClueColors) {
+        return true;
+      }
+      if (globals.variant.specialNoClueColors) {
+        return false;
+      }
     }
 
     return card.suit.clueColors.includes(clue.value as Color);
@@ -143,24 +132,13 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
       return false;
     }
 
-    if (
-    // Checking for "Pink-" also checks for "Light-Pink-"
-      (globals.variant.name.includes('Pink-Ones') && card.rank === 1)
-      || (globals.variant.name.includes('Omni-Ones') && card.rank === 1)
-      || (globals.variant.name.includes('Pink-Fives') && card.rank === 5)
-      || (globals.variant.name.includes('Omni-Fives') && card.rank === 5)
-    ) {
-      return true;
-    }
-    if (
-      (globals.variant.name.includes('Brown-Ones') && card.rank === 1)
-      || (globals.variant.name.includes('Null-Ones') && card.rank === 1)
-      || (globals.variant.name.includes('Muddy-Rainbow-Ones') && card.rank === 1)
-      || (globals.variant.name.includes('Brown-Fives') && card.rank === 5)
-      || (globals.variant.name.includes('Null-Fives') && card.rank === 5)
-      || (globals.variant.name.includes('Muddy-Rainbow-Fives') && card.rank === 5)
-    ) {
-      return false;
+    if (card.rank === globals.variant.specialRank) {
+      if (globals.variant.specialAllClueRanks) {
+        return true;
+      }
+      if (globals.variant.specialNoClueRanks) {
+        return false;
+      }
     }
 
     return clue.value === card.rank;

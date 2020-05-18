@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	numRandomWords = 3
+	NumRandomWords = 3
 )
 
 // commandGetName is sent when the user makes a new game
@@ -23,7 +23,7 @@ func commandGetName(s *Session, d *CommandData) {
 
 func getName() string {
 	words := make([]string, 0)
-	for len(words) < numRandomWords {
+	for len(words) < NumRandomWords {
 		i := getRandom(0, len(wordList)-1)
 		word := wordList[i]
 

@@ -2,8 +2,8 @@ package main
 
 import (
 	"strconv"
-
-	"github.com/microcosm-cc/bluemonday"
+	"strings"
+	"unicode"
 )
 
 // commandNote is sent when the user writes a note
@@ -17,6 +17,7 @@ import (
 func commandNote(s *Session, d *CommandData) {
 	/*
 		Validate
+		(some code is copied from the "sanitizeChatInput()" function)
 	*/
 
 	// Validate that the table exists
@@ -50,10 +51,36 @@ func commandNote(s *Session, d *CommandData) {
 		return
 	}
 
+	// Truncate long notes
+	// (we do this first to prevent wasting CPU cycles on validating extremely long notes)
+	if len(d.Note) > MaxChatLength {
+		d.Note = d.Note[0 : MaxChatLength-1]
+	}
+
+	// Trim whitespace from both sides of the note
+	d.Note = strings.TrimSpace(d.Note)
+
+	// Validate that the note does not contain any whitespace
+	// (other than a normal space character)
+	for _, letter := range d.Note {
+		if unicode.IsSpace(letter) && letter != ' ' {
+			s.Warning("Notes must not contain any whitespace characters " +
+				"(other than a normal space).")
+			return
+		}
+	}
+
+	// Validate that the note does not have two or more consecutive diacritics (accents)
+	// This prevents the attack where notes can have a lot of diacritics and cause overflow
+	// into sections above and below the text
+	if hasConsecutiveDiacritics(d.Note) {
+		s.Warning("Notes cannot contain two or more consecutive diacritics.")
+		return
+	}
+
 	// Sanitize the message using the bluemonday library to stop
 	// various attacks against other players
-	policy := bluemonday.StrictPolicy()
-	d.Note = policy.Sanitize(d.Note)
+	d.Note = bluemondayStrictPolicy.Sanitize(d.Note)
 
 	/*
 		Note

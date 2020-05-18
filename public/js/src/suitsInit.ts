@@ -4,18 +4,18 @@ import suitsJSON from './data/suits.json';
 import Suit from './Suit';
 
 type SuitJSON = {
-  name?: string,
-  abbreviation?: string,
-  clueColors?: string[],
-  fill?: string,
-  fillColors?: string[],
-  oneOfEach?: boolean,
-  pip: string,
+  name?: string;
+  abbreviation?: string;
+  clueColors?: string[];
+  fill?: string;
+  fillColors?: string[];
+  oneOfEach?: boolean;
+  pip: string;
 
-  allClueColors?: boolean,
-  allClueRanks?: boolean,
-  noClueColors?: boolean,
-  noClueRanks?: boolean,
+  allClueColors?: boolean;
+  allClueRanks?: boolean;
+  noClueColors?: boolean;
+  noClueRanks?: boolean;
 };
 type SuitEntryIterable = Iterable<[string, SuitJSON]>;
 

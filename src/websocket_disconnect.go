@@ -57,7 +57,7 @@ func websocketDisconnect2(s *Session) {
 		if t.GetSpectatorIndexFromID(s.UserID()) != -1 {
 			logger.Info(t.GetName() + "Ejecting spectator \"" + s.Username() + "\" " +
 				"since they disconnected.")
-			t.DisconSpectators[s.UserID()] = true
+			t.DisconSpectators[s.UserID()] = struct{}{}
 			commandTableUnattend(s, &CommandData{
 				TableID: t.ID,
 			})

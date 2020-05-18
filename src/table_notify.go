@@ -187,7 +187,7 @@ func (t *Table) NotifyStatus() {
 func (t *Table) NotifyTurn() {
 	g := t.Game
 	who := g.ActivePlayer
-	if g.EndCondition > endConditionInProgress {
+	if g.EndCondition > EndConditionInProgress {
 		who = -1
 	}
 	g.Actions = append(g.Actions, ActionTurn{

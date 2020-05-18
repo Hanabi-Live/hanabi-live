@@ -64,7 +64,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 	if t.PasswordHash != "" {
 		if match, err := argon2id.ComparePasswordAndHash(d.Password, t.PasswordHash); err != nil {
 			logger.Error("Failed to compare the submitted password to the Argon2 hash:", err)
-			s.Error(defaultErrorMsg)
+			s.Error(DefaultErrorMsg)
 			return
 		} else if !match {
 			s.Warning("That is not the correct password for this game.")
@@ -117,7 +117,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 
 	// Set their status
 	if s != nil {
-		s.Set("status", statusPregame)
+		s.Set("status", StatusPregame)
 		notifyAllUser(s)
 	}
 

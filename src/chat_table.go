@@ -13,17 +13,17 @@ import (
 // /changevariant [variant]
 func chatChangeVariant(s *Session, d *CommandData, t *Table) {
 	if d.Room == "lobby" {
-		chatServerSend(chatCommandNotInGameFail, d.Room)
+		chatServerSend(ChatCommandNotInGameFail, d.Room)
 		return
 	}
 
 	if t.Running {
-		chatServerSend(chatCommandStartedFail, d.Room)
+		chatServerSend(ChatCommandStartedFail, d.Room)
 		return
 	}
 
 	if s.UserID() != t.Owner {
-		chatServerSend(chatCommandNotOwnerFail, d.Room)
+		chatServerSend(ChatCommandNotOwnerFail, d.Room)
 		return
 	}
 
@@ -85,7 +85,7 @@ func chatS6(s *Session, d *CommandData, t *Table) {
 // /startin [minutes]
 func chatStartIn(s *Session, d *CommandData, t *Table) {
 	if d.Room == "lobby" {
-		chatServerSend(chatCommandNotInGameFail, d.Room)
+		chatServerSend(ChatCommandNotInGameFail, d.Room)
 		return
 	}
 
@@ -95,7 +95,7 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 	}
 
 	if s.UserID() != t.Owner {
-		chatServerSend(chatCommandNotOwnerFail, d.Room)
+		chatServerSend(ChatCommandNotOwnerFail, d.Room)
 		return
 	}
 
@@ -131,7 +131,7 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 // /findvariant
 func chatFindVariant(s *Session, d *CommandData, t *Table) {
 	if d.Room == "lobby" {
-		chatServerSend(chatCommandNotInGameFail, d.Room)
+		chatServerSend(ChatCommandNotInGameFail, d.Room)
 		return
 	}
 
@@ -160,7 +160,7 @@ func chatFindVariant(s *Session, d *CommandData, t *Table) {
 		if v, err := models.UserStats.GetAll(userID); err != nil {
 			logger.Error("Failed to get all of the variant-specific stats for player ID "+
 				strconv.Itoa(userID)+":", err)
-			chatServerSend(defaultErrorMsg, d.Room)
+			chatServerSend(DefaultErrorMsg, d.Room)
 			return
 		} else {
 			statsMaps = append(statsMaps, v)
@@ -204,7 +204,7 @@ func chatFindVariant(s *Session, d *CommandData, t *Table) {
 // /pause
 func chatPause(s *Session, d *CommandData, t *Table) {
 	if d.Room == "lobby" {
-		chatServerSend(chatCommandNotInGameFail, d.Room)
+		chatServerSend(ChatCommandNotInGameFail, d.Room)
 		return
 	}
 
@@ -222,7 +222,7 @@ func chatPause(s *Session, d *CommandData, t *Table) {
 // /unpause
 func chatUnpause(s *Session, d *CommandData, t *Table) {
 	if d.Room == "lobby" {
-		chatServerSend(chatCommandNotInGameFail, d.Room)
+		chatServerSend(ChatCommandNotInGameFail, d.Room)
 		return
 	}
 
@@ -240,7 +240,7 @@ func chatUnpause(s *Session, d *CommandData, t *Table) {
 // /lastmove
 func chatLastMove(s *Session, d *CommandData, t *Table) {
 	if d.Room == "lobby" {
-		chatServerSend(chatCommandNotInGameFail, d.Room)
+		chatServerSend(ChatCommandNotInGameFail, d.Room)
 		return
 	}
 
@@ -261,17 +261,17 @@ func chatLastMove(s *Session, d *CommandData, t *Table) {
 
 func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
 	if t == nil {
-		chatServerSend(chatCommandNotInGameFail, d.Room)
+		chatServerSend(ChatCommandNotInGameFail, d.Room)
 		return
 	}
 
 	if t.Running {
-		chatServerSend(chatCommandStartedFail, d.Room)
+		chatServerSend(ChatCommandStartedFail, d.Room)
 		return
 	}
 
 	if s.UserID() != t.Owner {
-		chatServerSend(chatCommandNotOwnerFail, d.Room)
+		chatServerSend(ChatCommandNotOwnerFail, d.Room)
 		return
 	}
 

@@ -37,14 +37,14 @@ func suitsInit() {
 		return
 	}
 
-	uniqueNameMap := make(map[string]bool)
+	uniqueNameMap := make(map[string]struct{})
 	for name, suit := range suits {
 		// Validate that all of the names are unique
 		if _, ok := uniqueNameMap[name]; ok {
 			logger.Fatal("There are two suits with the name of \"" + name + "\".")
 			return
 		}
-		uniqueNameMap[name] = true
+		uniqueNameMap[name] = struct{}{}
 
 		// Validate the suit name
 		if suit.Name == "" {

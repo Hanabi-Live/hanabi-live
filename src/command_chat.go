@@ -5,16 +5,19 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/microcosm-cc/bluemonday"
 )
 
 const (
-	maxChatLength = 300
+	MaxChatLength       = 300
+	MaxChatLengthServer = 600
 )
 
 var (
-	lobbyRoomRegExp = regexp.MustCompile(`table(\d+)`)
+	bluemondayStrictPolicy = bluemonday.StrictPolicy()
+	lobbyRoomRegExp        = regexp.MustCompile(`table(\d+)`)
 )
 
 // commandChat is sent when the user presses enter after typing a text message
@@ -53,18 +56,20 @@ func commandChat(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate the message
-	if d.Msg == "" {
-		if s != nil {
-			s.Warning("You cannot send a blank message.")
-		}
+	// Sanitize and validate the chat message
+	if v, valid := sanitizeChatInput(s, d.Msg, d.Server); !valid {
 		return
+	} else {
+		d.Msg = v
 	}
 
-	// Truncate long messages
-	if len(d.Msg) > maxChatLength {
-		d.Msg = d.Msg[0 : maxChatLength-1]
-	}
+	// Make a copy of the message before we HTML-escape it,
+	// because we do not want to send HTML-escaped text to Discord
+	rawMsg := d.Msg
+
+	// Sanitize the message using the bluemonday library
+	// to stop various attacks against other players
+	d.Msg = bluemondayStrictPolicy.Sanitize(d.Msg)
 
 	// Validate the room
 	if d.Room != "lobby" && !strings.HasPrefix(d.Room, "table") {
@@ -73,12 +78,6 @@ func commandChat(s *Session, d *CommandData) {
 		}
 		return
 	}
-
-	// Sanitize the message using the bluemonday library to stop
-	// various attacks against other players
-	rawMsg := d.Msg
-	sp := bluemonday.StrictPolicy()
-	d.Msg = sp.Sanitize(d.Msg)
 
 	/*
 		Chat
@@ -134,27 +133,20 @@ func commandChat(s *Session, d *CommandData) {
 		}
 	}
 
-	// Send the chat message to the Discord "#general" channel if we are replicating a message
-	to := discordLobbyChannel
-	if d.Spam {
-		// Send spammy messages to a separate channel
-		to = discordBotChannel
-	}
-
 	// Don't send Discord messages that we are already replicating
 	if !d.Discord {
 		// Scrub "@here" and "@everyone" from user messages
 		// (the bot has permissions to perform these actions in the Discord server,
 		// so we need to escape them to prevent abuse from lobby users)
 		if !d.Server {
-			rawMsg = strings.Replace(rawMsg, "@everyone", "AtEveryone", -1)
-			rawMsg = strings.Replace(rawMsg, "@here", "AtHere", -1)
+			rawMsg = strings.ReplaceAll(rawMsg, "@everyone", "AtEveryone")
+			rawMsg = strings.ReplaceAll(rawMsg, "@here", "AtHere")
 		}
 
 		// We use "rawMsg" instead of "d.Msg" because we want to send the unsanitized message
 		// The bluemonday library is intended for HTML rendering,
 		// and Discord can handle any special characters
-		discordSend(to, d.Username, rawMsg)
+		discordSend(discordLobbyChannel, d.Username, rawMsg)
 	}
 
 	// Check for commands
@@ -253,4 +245,47 @@ func commandChatTable(s *Session, d *CommandData) {
 			p.Typing = false
 		}
 	}
+}
+
+func sanitizeChatInput(s *Session, msg string, server bool) (string, bool) {
+	// Truncate long messages
+	// (we do this first to prevent wasting CPU cycles on validating extremely long messages)
+	maxLength := MaxChatLength
+	if server {
+		maxLength = MaxChatLengthServer
+	}
+	if len(msg) > maxLength {
+		msg = msg[0 : maxLength-1]
+	}
+
+	// Trim whitespace from both sides of the message
+	msg = strings.TrimSpace(msg)
+
+	// Validate blank messages
+	if msg == "" {
+		if s != nil {
+			s.Warning("Chat messages must not be blank.")
+		}
+		return msg, false
+	}
+
+	// Validate that the message does not contain any whitespace
+	// (other than a normal space character)
+	for _, letter := range msg {
+		if unicode.IsSpace(letter) && letter != ' ' {
+			s.Warning("Chat messages must not contain any whitespace characters " +
+				"(other than a normal space).")
+			return msg, false
+		}
+	}
+
+	// Validate that the message does not have two or more consecutive diacritics (accents)
+	// This prevents the attack where messages can have a lot of diacritics and cause overflow
+	// into sections above and below the text
+	if hasConsecutiveDiacritics(msg) {
+		s.Warning("Chat messages cannot contain two or more consecutive diacritics.")
+		return msg, false
+	}
+
+	return msg, true
 }

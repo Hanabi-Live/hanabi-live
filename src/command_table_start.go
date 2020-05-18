@@ -3,6 +3,7 @@ package main
 import (
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -54,7 +55,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		if numPlayers, err := models.Games.GetNumPlayers(t.Options.DatabaseID); err != nil {
 			logger.Error("Failed to get the number of players in game "+
 				strconv.Itoa(t.Options.DatabaseID)+":", err)
-			s.Error(startGameFail)
+			s.Error(StartGameFail)
 			return
 		} else if len(t.Players) != numPlayers {
 			s.Warning("You currently have " + strconv.Itoa(len(t.Players)) + " players but game " +
@@ -107,7 +108,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		if v, err := models.Games.GetSeed(t.Options.DatabaseID); err != nil {
 			logger.Error("Failed to get the seed for game "+
 				"\""+strconv.Itoa(t.Options.DatabaseID)+"\":", err)
-			s.Error(startGameFail)
+			s.Error(StartGameFail)
 			return
 		} else {
 			g.Seed = v
@@ -118,26 +119,36 @@ func commandTableStart(s *Session, d *CommandData) {
 		// (e.g. playing a deal with a specific seed)
 		g.Seed = seedPrefix + t.Options.SetSeedSuffix
 	} else if t.Options.CustomDeck != nil {
-		// This is a game with a custom (preset) deck, so just set the seed to 0
-		g.Seed = "0"
+		// This is a replay of a game from JSON or
+		// a custom game created with the "!deal" prefix
+		dealPrefix := "!deal "
+		if strings.HasPrefix(t.Name, dealPrefix) {
+			// This is a "!deal" game
+			// Set the seed equal to the file name
+			g.Seed = strings.TrimPrefix(t.Name, dealPrefix)
+		} else {
+			// This is a replay of a game from JSON
+			// Set the seed equal to "JSON"
+			g.Seed = "JSON"
+		}
 		shuffleDeck = false
 		shufflePlayers = false
 	} else {
 		// This is a normal game with a random seed / a random deck
 		// Get a list of all the seeds that these players have played before
-		seedMap := make(map[string]bool)
+		seedMap := make(map[string]struct{})
 		for _, p := range t.Players {
 			var seeds []string
 			if v, err := models.Games.GetPlayerSeeds(p.ID); err != nil {
 				logger.Error("Failed to get the past seeds for \""+s.Username()+"\":", err)
-				s.Error(startGameFail)
+				s.Error(StartGameFail)
 				return
 			} else {
 				seeds = v
 			}
 
 			for _, v := range seeds {
-				seedMap[v] = true
+				seedMap[v] = struct{}{}
 			}
 		}
 
@@ -147,7 +158,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		for looking {
 			seedNum++
 			g.Seed = seedPrefix + strconv.Itoa(seedNum)
-			if !seedMap[g.Seed] {
+			if _, ok := seedMap[g.Seed]; ok {
 				looking = false
 			}
 		}
@@ -285,7 +296,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		// Set the status for all of the users in the game
 		for _, p := range t.Players {
 			if p.Session != nil {
-				p.Session.Set("status", statusPlaying)
+				p.Session.Set("status", StatusPlaying)
 				notifyAllUser(p.Session)
 			}
 		}

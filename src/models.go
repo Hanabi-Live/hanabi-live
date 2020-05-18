@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"os"
+	"strings"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 var (
-	db     *pgx.Conn
+	db     *pgxpool.Pool
 	dbName string
 )
 
@@ -26,6 +27,7 @@ type Models struct {
 	MutedIPs
 	Users
 	UserFriends
+	UserReverseFriends
 	UserSettings
 	UserStats
 	VariantStats
@@ -41,8 +43,7 @@ func modelsInit() (*Models, error) {
 	}
 	dbPort := os.Getenv("DB_PORT")
 	if len(dbPort) == 0 {
-		// 5432 is the default port for PostgreSQL
-		dbPort = "5432"
+		dbPort = "5432" // This is the default port for PostgreSQL
 	}
 	dbUser := os.Getenv("DB_USER")
 	if len(dbUser) == 0 {
@@ -61,8 +62,21 @@ func modelsInit() (*Models, error) {
 	}
 
 	// Initialize the database
-	url := "postgres://" + dbUser + ":" + dbPass + "@" + dbHost + ":" + dbPort + "/" + dbName
-	if v, err := pgx.Connect(context.Background(), url); err != nil {
+	// The DSN string format is documented at:
+	// https://godoc.org/github.com/jackc/pgconn#ParseConfig
+	dsnArray := []string{
+		"host=" + dbHost,
+		"port=" + dbPort,
+		"user=" + dbUser,
+		"password=" + dbPass,
+		"dbname=" + dbName,
+	}
+	dsn := strings.Join(dsnArray, " ")
+
+	// We use "pgxpool.Connect()" instead of "pgx.Connect()" because the vanilla driver is not safe
+	// for concurrent connections (unlike the other Golang SQL drivers)
+	// https://github.com/jackc/pgx/wiki/Getting-started-with-pgx
+	if v, err := pgxpool.Connect(context.Background(), dsn); err != nil {
 		return nil, err
 	} else {
 		db = v
@@ -74,7 +88,5 @@ func modelsInit() (*Models, error) {
 
 // Close exposes the ability to close the underlying database connection
 func (*Models) Close() {
-	if err := db.Close(context.Background()); err != nil {
-		logger.Fatal("Failed to close the database connection:", err)
-	}
+	db.Close()
 }

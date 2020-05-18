@@ -12,12 +12,11 @@ import (
 	"github.com/alexedwards/argon2id"
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/text/unicode/norm"
 )
 
 const (
-	minUsernameLength = 2
-	maxUsernameLength = 15
+	MinUsernameLength = 2
+	MaxUsernameLength = 15
 )
 
 // httpLogin handles part 1 of 2 for login authentication
@@ -106,10 +105,6 @@ func httpLogin(c *gin.Context) {
 		return
 	}
 
-	// Normalize the username to prevent errors with Unicode
-	// https://blog.golang.org/normalization
-	username = norm.NFKC.String(username)
-
 	// Trim whitespace from both sides of the username
 	username = strings.TrimSpace(username)
 
@@ -129,26 +124,26 @@ func httpLogin(c *gin.Context) {
 	}
 
 	// Validate that the username is not excessively short
-	if len(username) < minUsernameLength {
+	if len(username) < MinUsernameLength {
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
-			"\"" + username + "\", but it is shorter than " + strconv.Itoa(minUsernameLength) +
+			"\"" + username + "\", but it is shorter than " + strconv.Itoa(MinUsernameLength) +
 			" characters.")
 		http.Error(
 			w,
-			"Usernames must be "+strconv.Itoa(minUsernameLength)+" characters or more.",
+			"Usernames must be "+strconv.Itoa(MinUsernameLength)+" characters or more.",
 			http.StatusUnauthorized,
 		)
 		return
 	}
 
 	// Validate that the username is not excessively long
-	if len(username) > maxUsernameLength {
+	if len(username) > MaxUsernameLength {
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
-			"\"" + username + "\", but it is longer than " + strconv.Itoa(maxUsernameLength) +
+			"\"" + username + "\", but it is longer than " + strconv.Itoa(MaxUsernameLength) +
 			" characters.")
 		http.Error(
 			w,
-			"Usernames must be "+strconv.Itoa(maxUsernameLength)+" characters or less.",
+			"Usernames must be "+strconv.Itoa(MaxUsernameLength)+" characters or less.",
 			http.StatusUnauthorized,
 		)
 		return
@@ -180,8 +175,22 @@ func httpLogin(c *gin.Context) {
 		return
 	}
 
+	// Validate that the username does not have two or more consecutive diacritics (accents)
+	// This prevents the attack where usernames can have a lot of diacritics and cause overflow
+	// into sections above and below the text
+	if hasConsecutiveDiacritics(username) {
+		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
+			"\"" + username + "\", but it has two or more consecutive diacritics in it.")
+		http.Error(
+			w,
+			"Usernames cannot contain two or more consecutive diacritics.",
+			http.StatusUnauthorized,
+		)
+		return
+	}
+
 	// Validate that the username is not reserved
-	usernameWithNoSpaces := strings.Replace(username, " ", "", -1)
+	usernameWithNoSpaces := strings.ReplaceAll(username, " ", "")
 	usernameWithNoSpacesLowercase := strings.ToLower(usernameWithNoSpaces)
 	if usernameWithNoSpacesLowercase == "hanabilive" {
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
@@ -195,7 +204,7 @@ func httpLogin(c *gin.Context) {
 	}
 
 	// Validate that the version is correct
-	// (we want to explicitly disallow clients who are running old versions of the code)
+	// We want to explicitly disallow clients who are running old versions of the code
 	// But make an exception for bots, who can just use the string of "bot"
 	if version != "bot" {
 		var versionNum int
@@ -332,6 +341,34 @@ func httpLogin(c *gin.Context) {
 			return
 		}
 	} else {
+		// Check to see if any other users have a normalized version of this username
+		// This prevents username-spoofing attacks and homoglyph usage
+		// e.g. "alice" trying to impersonate "Alice"
+		// e.g. "Alicé" trying to impersonate "Alice"
+		// e.g. "Αlice" with a Greek letter A (0x391) trying to impersonate "Alice"
+		normalizedUsername := normalizeUsername(username)
+		if normalizedUsername == "" {
+			http.Error(w, "That username cannot be transliterated to ASCII. Please try using a "+
+				"simpler username or try using less special characters.", http.StatusUnauthorized)
+			return
+		}
+		if normalizedExists, err := models.Users.NormalizedUsernameExists(
+			normalizedUsername,
+		); err != nil {
+			logger.Error("Failed to check for normalized password uniqueness for "+
+				"\""+username+"\":", err)
+			http.Error(
+				w,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			)
+			return
+		} else if normalizedExists {
+			http.Error(w, "That username is too similar to an existing user. "+
+				"Please choose a different one.", http.StatusUnauthorized)
+			return
+		}
+
 		// Create an Argon2id hash of the plain-text password
 		var passwordHash string
 		if v, err := argon2id.CreateHash(password, argon2id.DefaultParams); err != nil {
@@ -348,7 +385,12 @@ func httpLogin(c *gin.Context) {
 		}
 
 		// Create the new user in the database
-		if v, err := models.Users.Insert(username, passwordHash, ip); err != nil {
+		if v, err := models.Users.Insert(
+			username,
+			normalizedUsername,
+			passwordHash,
+			ip,
+		); err != nil {
 			logger.Error("Failed to insert user \""+username+"\":", err)
 			http.Error(
 				w,

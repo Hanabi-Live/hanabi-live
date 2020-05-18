@@ -33,6 +33,7 @@ export default class HanabiCard extends Konva.Group {
   holder: number | null = null;
   suit: Suit | null = null;
   rank: number | null = null;
+  blank: boolean = false;
   // The suit corresponding to the note written on the card, if any
   noteSuit: Suit | null = null;
   // The rank corresponding to the note written on the card, if any
@@ -47,6 +48,7 @@ export default class HanabiCard extends Konva.Group {
   possibleSuits: Suit[] = [];
   possibleRanks: number[] = [];
   possibleCards: Map<string, number> = new Map();
+  identityDetermined: boolean = false;
   tweening: boolean = false;
   empathy: boolean = false;
   doMisplayAnimation: boolean = false;
@@ -117,6 +119,7 @@ export default class HanabiCard extends Konva.Group {
     this.possibleRanks = globals.variant.ranks.slice();
     // Possible cards (based on both clues given and cards seen) are also tracked separately
     this.possibleCards = new Map(globals.cardsMap); // Start by cloning the "globals.cardsMap"
+    this.identityDetermined = false;
     this.tweening = false;
     this.empathy = false;
     this.doMisplayAnimation = false;
@@ -138,7 +141,8 @@ export default class HanabiCard extends Konva.Group {
     this.turnPlayed = -1;
     this.isMisplayed = false;
 
-    this.listening(true); // Some variants disable listening on cards
+    // Some variants disable listening on cards
+    this.listening(true);
 
     this.hideBorders();
     if (!globals.replay && !globals.spectating) {
@@ -198,8 +202,7 @@ export default class HanabiCard extends Konva.Group {
     let suitToShow;
     if (this.empathy) {
       // If we are in Empathy mode, only show the suit if there is only one possibility left
-      // and the card has one or more clues on it
-      if (this.possibleSuits.length === 1 && this.isClued()) {
+      if (this.possibleSuits.length === 1) {
         [suitToShow] = this.possibleSuits;
       } else {
         suitToShow = SUITS.get('Unknown');
@@ -229,8 +232,7 @@ export default class HanabiCard extends Konva.Group {
     let rankToShow;
     if (this.empathy) {
       // If we are in Empathy mode, only show the rank if there is only one possibility left
-      // and the card has one or more clues on it
-      if (this.possibleRanks.length === 1 && this.isClued()) {
+      if (this.possibleRanks.length === 1) {
         [rankToShow] = this.possibleRanks;
       } else {
         rankToShow = 6;
@@ -258,8 +260,11 @@ export default class HanabiCard extends Konva.Group {
     // Set the name
     // (setting "this.bareName" will automatically update how the card appears the next time that
     // the "card" layer is drawn)
-    if (
-      // A "blank" note overrides everything
+    if (this.blank) {
+      // The "blank" property is set when the card should appear blank no matter what
+      this.bareName = 'deck-back';
+    } else if (
+      // A "blank" note means that the user wants to force the card to appear blank
       this.noteBlank
       && !this.empathy
       && !this.isPlayed
@@ -284,8 +289,7 @@ export default class HanabiCard extends Konva.Group {
 
     // Show or hide the pips
     if (
-      this.bareName === 'known-trash'
-      || globals.lobby.settings.realLifeMode
+      globals.lobby.settings.realLifeMode
       || globals.variant.name.startsWith('Cow & Pig')
       || globals.variant.name.startsWith('Duck')
     ) {
@@ -355,10 +359,14 @@ export default class HanabiCard extends Konva.Group {
   // This card was touched by a positive or negative clue,
   // so remove pips and possibilities from the card
   applyClue(clue: Clue, positive: boolean) {
+    // If the card is already fully revealed from clues, then additional clues would tell us nothing
+    // We don't check for "this.identityDetermined" here because we still need to calculate the
+    // effects of clues on cards in other people's hands that we already know the true identity of
     const wasFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
     if (wasFullyKnown) {
       return;
     }
+
     // Mark all turns that this card is positively clued
     if (positive) {
       // We add one because the "clue" action comes before the "turn" action
@@ -390,16 +398,11 @@ export default class HanabiCard extends Konva.Group {
         // If this is the case, we cannot remove any suit pips from the card
       } else if (
         positive
-        && (
-          // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
-          (globals.variant.name.includes('Rainbow-Ones') && this.possibleRanks.includes(1))
-          || (globals.variant.name.includes('Omni-Ones') && this.possibleRanks.includes(1))
-          || (globals.variant.name.includes('Rainbow-Fives') && this.possibleRanks.includes(5))
-          || (globals.variant.name.includes('Omni-Fives') && this.possibleRanks.includes(5))
-        )
+        && this.possibleRanks.includes(globals.variant.specialRank)
+        && globals.variant.specialAllClueColors
       ) {
-        // In some variants, 1's or 5's are touched by all colors
-        // So if this is a positive color clue,
+        // Some variants have specific ranks touched by all colors
+        // If this is the case, and this is a positive color clue,
         // we cannot remove any color pips from the card
         // An exception to this is special suits touched by no colors
         suitsRemoved = filterInPlace(
@@ -408,17 +411,11 @@ export default class HanabiCard extends Konva.Group {
         );
       } else if (
         !positive
-        && (
-          (globals.variant.name.includes('White-Ones') && this.possibleRanks.includes(1))
-          || (globals.variant.name.includes('Null-Ones') && this.possibleRanks.includes(1))
-          || (globals.variant.name.includes('Light-Pink-Ones') && this.possibleRanks.includes(1))
-          || (globals.variant.name.includes('White-Fives') && this.possibleRanks.includes(5))
-          || (globals.variant.name.includes('Null-Fives') && this.possibleRanks.includes(5))
-          || (globals.variant.name.includes('Light-Pink-Fives') && this.possibleRanks.includes(5))
-        )
+        && this.possibleRanks.includes(globals.variant.specialRank)
+        && globals.variant.specialNoClueColors
       ) {
-        // In some variants, 1's or 5's are not touched by any colors
-        // So if this is a negative color clue,
+        // Some variants have specific ranks touched by no colors
+        // If this is the case, and this is a negative color clue,
         // we cannot remove any color pips from the card
         // An exception to this is special suits touched by all colors
         suitsRemoved = filterInPlace(
@@ -437,106 +434,47 @@ export default class HanabiCard extends Konva.Group {
         );
       }
 
-      // Handle special ones and fives
-      if (
-        // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
-        globals.variant.name.includes('Rainbow-Ones')
-        || globals.variant.name.includes('Omni-Ones')
-      ) {
-        if (positive) {
-          if (
-            this.positiveColorClues.length >= 2
-            && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0
-          ) {
-            // Two positive color clues should "fill in" a 1
-            // (that cannot be a mult-color suit)
+      // Handle special ranks
+      if (globals.variant.specialRank !== -1) {
+        if (globals.variant.specialAllClueColors) {
+          if (positive) {
+            if (
+              this.positiveColorClues.length >= 2
+              && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0
+            ) {
+              // Two positive color clues should "fill in" a special rank that is touched by all
+              // color clues (that cannot be a mult-color suit)
+              ranksRemoved = filterInPlace(
+                this.possibleRanks,
+                (rank: number) => rank === globals.variant.specialRank,
+              );
+            }
+          } else if (this.possibleSuits.filter((suit) => suit.noClueColors).length === 0) {
+            // Negative color means that the card cannot be the special rank
+            // (as long as the card cannot be a suit that is never touched by color clues)
             ranksRemoved = filterInPlace(
               this.possibleRanks,
-              (rank: number) => rank === 1,
+              (rank: number) => rank !== globals.variant.specialRank,
             );
+          } else if (this.rank === globals.variant.specialRank) {
+            // Negative color to a known special rank means that we can remove all suits
+            // other that the ones that are never touched by color clues
+            const moreSuitsRemoved = filterInPlace(
+              this.possibleSuits,
+              (suit: Suit) => suit.noClueColors,
+            );
+            suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
+            suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
           }
-        } else if (this.possibleSuits.filter((suit) => suit.noClueColors).length === 0) {
-          // Negative color means that the card cannot be a 1
-          // (as long as the card cannot be a suit that is never touched by color clues)
-          ranksRemoved = filterInPlace(
-            this.possibleRanks,
-            (rank: number) => rank !== 1,
-          );
-        } else if (this.rank === 1) {
-          // Negative color to a known 1 means that we can remove all suits
-          // other that the ones that are never touched by color clues
-          const moreSuitsRemoved = filterInPlace(
-            this.possibleSuits,
-            (suit: Suit) => suit.noClueColors,
-          );
-          suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
-
-          // Remove any duplicates
-          // https://medium.com/dailyjs/how-to-remove-array-duplicates-in-es6-5daa8789641c
-          suitsRemoved = suitsRemoved.filter((suit, index) => suitsRemoved.indexOf(suit) === index);
-        }
-      } else if (
-        // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
-        globals.variant.name.includes('Rainbow-Fives')
-        || globals.variant.name.includes('Omni-Fives')
-      ) {
-        if (positive) {
-          if (
-            this.positiveColorClues.length >= 2
-            && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0
-          ) {
-            // Two positive color clues should "fill in" a 5
-            // (that cannot be a mult-color suit)
+        } else if (globals.variant.specialNoClueColors) {
+          if (positive && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0) {
+            // Positive color means that the card cannot be a special rank
+            // (as long as the card cannot be a suit that is always touched by color clues)
             ranksRemoved = filterInPlace(
               this.possibleRanks,
-              (rank: number) => rank === 5,
+              (rank: number) => rank !== globals.variant.specialRank,
             );
           }
-        } else if (this.possibleSuits.filter((suit) => suit.noClueColors).length === 0) {
-          // Negative color means that the card cannot be a 5
-          // (as long as the card cannot be a suit that is never touched by color clues)
-          ranksRemoved = filterInPlace(
-            this.possibleRanks,
-            (rank: number) => rank !== 5,
-          );
-        } else if (this.rank === 5) {
-          // Negative color to a known 5 means that we can remove all suits
-          // other that the ones that are never touched by color clues
-          const moreSuitsRemoved = filterInPlace(
-            this.possibleSuits,
-            (suit: Suit) => suit.noClueColors,
-          );
-          suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
-
-          // Remove any duplicates
-          // https://medium.com/dailyjs/how-to-remove-array-duplicates-in-es6-5daa8789641c
-          suitsRemoved = suitsRemoved.filter((suit, index) => suitsRemoved.indexOf(suit) === index);
-        }
-      } else if (
-        globals.variant.name.includes('White-Ones')
-        || globals.variant.name.includes('Null-Ones')
-        || globals.variant.name.includes('Light-Pink-Ones')
-      ) {
-        if (positive && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0) {
-          // Positive color means that the card cannot be a 1
-          // (as long as the card cannot be a suit that is always touched by color clues)
-          ranksRemoved = filterInPlace(
-            this.possibleRanks,
-            (rank: number) => rank !== 1,
-          );
-        }
-      } else if (
-        globals.variant.name.includes('White-Fives')
-        || globals.variant.name.includes('Null-Fives')
-        || globals.variant.name.includes('Light-Pink-Fives')
-      ) {
-        if (positive && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0) {
-          // Positive color means that the card cannot be a 5
-          // (as long as the card cannot be a suit that is always touched by color clues)
-          ranksRemoved = filterInPlace(
-            this.possibleRanks,
-            (rank: number) => rank !== 5,
-          );
         }
       }
     } else if (clue.type === CLUE_TYPE.RANK) {
@@ -548,48 +486,20 @@ export default class HanabiCard extends Konva.Group {
         // Some variants have rank clues touch no cards
         // If this is the case, we cannot remove any rank pips from the card
       } else if (
-        (
-          // Checking for "Pink-" also checks for "Light-Pink-"
-          globals.variant.name.includes('Pink-Ones')
-          || globals.variant.name.includes('Omni-Ones')
-        ) && this.possibleRanks.includes(1)
+        this.possibleRanks.includes(globals.variant.specialRank)
+        && globals.variant.specialAllClueRanks
       ) {
-        // In some variants, the 1 of every suit is touched by all rank clues
+        // Some variants have specific ranks touched by all rank clues
         ranksRemoved = this.possibleRanks.filter(
-          (rank: number) => (rank === clueRank || rank === 1) !== positive,
+          (rank: number) => (rank === clueRank || rank === globals.variant.specialRank) !== positive, // eslint-disable-line max-len
         );
       } else if (
-        (
-          // Checking for "Pink-" also checks for "Light-Pink-"
-          globals.variant.name.includes('Pink-Fives')
-          || globals.variant.name.includes('Omni-Fives')
-        ) && this.possibleRanks.includes(5)
+        this.possibleRanks.includes(globals.variant.specialRank)
+        && globals.variant.specialNoClueRanks
       ) {
-        // In some variants, the 5 of every suit is touched by all rank clues
+        // Some variants have specific ranks touched by no rank clues
         ranksRemoved = this.possibleRanks.filter(
-          (rank: number) => (rank === clueRank || rank === 5) !== positive,
-        );
-      } else if (
-        (
-          globals.variant.name.includes('Brown-Ones')
-          || globals.variant.name.includes('Null-Ones')
-          || globals.variant.name.includes('Muddy-Rainbow-Ones')
-        ) && this.possibleRanks.includes(1)
-      ) {
-        // In some variants, the 1 of every suit is not touched by any rank clues
-        ranksRemoved = this.possibleRanks.filter(
-          (rank: number) => (rank === clueRank && rank !== 1) !== positive,
-        );
-      } else if (
-        (
-          globals.variant.name.includes('Brown-Fives')
-          || globals.variant.name.includes('Null-Fives')
-          || globals.variant.name.includes('Muddy-Rainbow-Fives')
-        ) && this.possibleRanks.includes(5)
-      ) {
-        // In some variants, the 5 of every suit is not touched by any rank clues
-        ranksRemoved = this.possibleRanks.filter(
-          (rank: number) => (rank === clueRank && rank !== 5) !== positive,
+          (rank: number) => (rank === clueRank && rank !== globals.variant.specialRank) !== positive, // eslint-disable-line max-len
         );
       } else {
         // The default case (e.g. No Variant)
@@ -614,21 +524,22 @@ export default class HanabiCard extends Konva.Group {
         );
       }
 
-      // Also handle the special case where two positive rank clues should
-      // "fill in" a card of a multi-rank suit
+      // Handle the special case where two positive rank clues should "fill in" a card of a
+      // multi-rank suit
       if (
         positive
         && this.positiveRankClues.length >= 2
-        && !(globals.variant.name.includes('Pink-Ones') && this.possibleRanks.includes(1))
-        && !(globals.variant.name.includes('Omni-Ones') && this.possibleRanks.includes(1))
-        && !(globals.variant.name.includes('Pink-Fives') && this.possibleRanks.includes(5))
-        && !(globals.variant.name.includes('Omni-Fives') && this.possibleRanks.includes(5))
+        && !(
+          this.possibleRanks.includes(globals.variant.specialRank)
+          && globals.variant.specialAllClueRanks
+        )
       ) {
         const moreSuitsRemoved = filterInPlace(
           this.possibleSuits,
           (suit: Suit) => suit.allClueRanks,
         );
         suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
+        suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
       }
 
       // If the rank of the card is not known yet,
@@ -665,43 +576,6 @@ export default class HanabiCard extends Konva.Group {
       }
     }
 
-    // Remove rank pips, if any
-    for (const rank of ranksRemoved) {
-      // Hide the rank pips
-      this.rankPipsMap.get(rank)!.hide();
-      this.rankPipsXMap.get(rank)!.hide();
-
-      if (
-        // Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
-        // Checking for "Pink-" also checks for "Light-Pink-"
-        (globals.variant.name.includes('Rainbow-Ones') && rank === 1)
-        || (globals.variant.name.includes('Pink-Ones') && rank === 1)
-        || (globals.variant.name.includes('White-Ones') && rank === 1)
-        || (globals.variant.name.includes('Brown-Ones') && rank === 1)
-        || (globals.variant.name.includes('Omni-Ones') && rank === 1)
-        || (globals.variant.name.includes('Null-Ones') && rank === 1)
-        || (globals.variant.name.includes('Rainbow-Fives') && rank === 5)
-        || (globals.variant.name.includes('Pink-Fives') && rank === 5)
-        || (globals.variant.name.includes('White-Fives') && rank === 5)
-        || (globals.variant.name.includes('Brown-Fives') && rank === 5)
-        || (globals.variant.name.includes('Omni-Fives') && rank === 5)
-        || (globals.variant.name.includes('Null-Fives') && rank === 5)
-      ) {
-        // Mark to retroactively apply color clues when we return from this function
-        this.reapplyColorClues = true;
-      }
-    }
-    if (this.possibleRanks.length === 1) {
-      [this.rank] = this.possibleRanks;
-
-      // Don't record the rank or hide the pips if the card is unclued
-      if (this.holder === null || this.isClued()) {
-        globals.learnedCards[this.order].rank = this.rank;
-        this.rankPipsMap.get(this.rank)!.hide();
-        this.rankPips!.hide();
-      }
-    }
-
     // Remove suit pips, if any
     for (const suit of suitsRemoved) {
       // Hide the suit pips
@@ -721,20 +595,38 @@ export default class HanabiCard extends Konva.Group {
       }
     }
     if (this.possibleSuits.length === 1) {
+      // We have discovered the true suit of the card
       [this.suit] = this.possibleSuits;
+      globals.learnedCards[this.order].suit = this.suit;
+      this.suitPipsMap.get(this.suit)!.hide();
+      this.suitPips!.hide();
+    }
 
-      // Don't record the suit or hide the pips if the card is unclued
-      // (but clued cards can be played or discarded, so account for that)
-      if (this.isClued() || this.holder === null) {
-        globals.learnedCards[this.order].suit = this.suit;
-        this.suitPipsMap.get(this.suit)!.hide();
-        this.suitPips!.hide();
+    // Remove rank pips, if any
+    for (const rank of ranksRemoved) {
+      // Hide the rank pips
+      this.rankPipsMap.get(rank)!.hide();
+      this.rankPipsXMap.get(rank)!.hide();
+
+      if (
+        rank === globals.variant.specialRank
+        && (globals.variant.specialAllClueColors || globals.variant.specialNoClueColors)
+      ) {
+        // Mark to retroactively apply color clues when we return from this function
+        this.reapplyColorClues = true;
       }
+    }
+    if (this.possibleRanks.length === 1) {
+      // We have discovered the true rank of the card
+      [this.rank] = this.possibleRanks;
+      globals.learnedCards[this.order].rank = this.rank;
+      this.rankPips!.hide();
     }
 
     // Handle if this is the first time that the card is fully revealed to the holder
     const isFullyKnown = this.possibleSuits.length === 1 && this.possibleRanks.length === 1;
     if (isFullyKnown && !wasFullyKnown) {
+      this.identityDetermined = true;
       this.updatePossibilitiesOnOtherCards(this.suit!, this.rank!);
     }
   }
@@ -841,7 +733,8 @@ export default class HanabiCard extends Konva.Group {
 
     // If the card was already fully-clued,
     // we already updated the possibilities for it on other cards
-    if (this.possibleSuits.length > 1 || this.possibleRanks.length > 1) {
+    if (!this.identityDetermined) {
+      this.identityDetermined = true;
       this.updatePossibilitiesOnOtherCards(suit, rank);
     }
 
@@ -1278,6 +1171,11 @@ const filterInPlace = (values: any[], predicate: (value: any) => boolean) => {
   }
   return removed;
 };
+
+// From: https://medium.com/dailyjs/how-to-remove-array-duplicates-in-es6-5daa8789641c
+const removeDuplicatesFromArray = (array: any[]) => array.filter(
+  (item, index) => array.indexOf(item) === index,
+);
 
 // getSpecificCardNum returns the total cards in the deck of the specified suit and rank
 // as well as how many of those that have been already discarded

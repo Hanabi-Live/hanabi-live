@@ -1745,7 +1745,7 @@ const drawHypotheticalArea = () => {
   const circle = new Konva.Ellipse({
     x: (hypoValues.w! * 0.5) * winW,
     y: (hypoValues.h * 0.5) * winW,
-    radiusX: (hypoValues.w! * 0.5) * winW,
+    radiusX: (hypoValues.w! * 0.4) * winW,
     radiusY: hypoValues.h * winH,
     fill: 'black',
     opacity: 0.5,

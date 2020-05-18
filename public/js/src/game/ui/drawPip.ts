@@ -6,7 +6,7 @@ const shapeFunctions: Map<string, (
 ) => void> = new Map();
 const sf = 3; // Scale factor
 
-shapeFunctions.set('hanabi_red', (ctx: CanvasRenderingContext2D) => {
+shapeFunctions.set('hanabiRed', (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
   ctx.scale(sf, sf);
   ctx.translate(-40.903844, -80.253155);
@@ -22,7 +22,7 @@ shapeFunctions.set('hanabi_red', (ctx: CanvasRenderingContext2D) => {
   ctx.closePath();
 });
 
-shapeFunctions.set('hanabi_yellow', (ctx: CanvasRenderingContext2D) => {
+shapeFunctions.set('hanabiYellow', (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
   ctx.scale(sf, sf);
   ctx.translate(-58.029065, -70.265748);
@@ -50,7 +50,7 @@ shapeFunctions.set('hanabi_yellow', (ctx: CanvasRenderingContext2D) => {
   ctx.closePath();
 });
 
-shapeFunctions.set('hanabi_green', (ctx: CanvasRenderingContext2D) => {
+shapeFunctions.set('hanabiGreen', (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
   ctx.scale(sf, sf);
   ctx.translate(-37.891880, -52.702171);
@@ -83,7 +83,7 @@ shapeFunctions.set('hanabi_green', (ctx: CanvasRenderingContext2D) => {
   ctx.closePath();
 });
 
-shapeFunctions.set('hanabi_blue', (ctx: CanvasRenderingContext2D) => {
+shapeFunctions.set('hanabiBlue', (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
   ctx.scale(sf, sf);
   ctx.translate(-99.694341, -76.779331);
@@ -106,7 +106,7 @@ shapeFunctions.set('hanabi_blue', (ctx: CanvasRenderingContext2D) => {
   ctx.closePath();
 });
 
-shapeFunctions.set('hanabi_white', (ctx: CanvasRenderingContext2D) => {
+shapeFunctions.set('hanabiWhite', (ctx: CanvasRenderingContext2D) => {
   ctx.scale(0.25, 0.25);
   ctx.beginPath();
   ctx.scale(sf, sf);
@@ -143,7 +143,7 @@ shapeFunctions.set('hanabi_white', (ctx: CanvasRenderingContext2D) => {
   ctx.scale(4, 4);
 });
 
-shapeFunctions.set('hanabi_alt_white', (ctx: CanvasRenderingContext2D) => {
+shapeFunctions.set('hanabiAltWhite', (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
   ctx.scale(sf, sf);
   ctx.translate(-74.155390, -82.208377);
@@ -192,7 +192,7 @@ shapeFunctions.set('hanabi_alt_white', (ctx: CanvasRenderingContext2D) => {
   ctx.closePath();
 });
 
-shapeFunctions.set('hanabi_alt_blue', (ctx: CanvasRenderingContext2D) => {
+shapeFunctions.set('hanabiAltBlue', (ctx: CanvasRenderingContext2D) => {
   ctx.beginPath();
   ctx.scale(sf, sf);
   ctx.translate(-110.389020, -72.869975);
@@ -360,7 +360,7 @@ shapeFunctions.set('kanji', (ctx: CanvasRenderingContext2D) => {
   ctx.closePath();
 });
 
-shapeFunctions.set('empty_set', (ctx: CanvasRenderingContext2D) => {
+shapeFunctions.set('emptySet', (ctx: CanvasRenderingContext2D) => {
   ctx.scale(2 / 7, 2 / 7);
   ctx.beginPath();
   ctx.scale(sf, sf);

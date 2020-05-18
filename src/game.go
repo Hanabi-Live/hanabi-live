@@ -82,7 +82,7 @@ func NewGame(t *Table) *Game {
 		Stacks:            make([]int, len(variants[t.Options.Variant].Suits)),
 		StackDirections:   make([]int, len(variants[t.Options.Variant].Suits)),
 		DatetimeTurnBegin: time.Now(),
-		ClueTokens:        maxClueNum,
+		ClueTokens:        MaxClueNum,
 		MaxScore:          len(variants[t.Options.Variant].Suits) * 5,
 		LastClueTypeGiven: -1,
 		Actions:           make([]interface{}, 0),
@@ -120,7 +120,7 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 	defer commandMutex.Unlock()
 
 	// Check to see if the game ended already
-	if g.EndCondition > endConditionInProgress {
+	if g.EndCondition > EndConditionInProgress {
 		return
 	}
 
@@ -150,13 +150,14 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 		// They might be in the process of reconnecting,
 		// so make a fake session that will represent them
 		s = newFakeSession(p.ID, p.Name)
+		logger.Info("Created a new fake session in the \"CheckTimer()\" function.")
 	}
 
 	// End the game
 	commandAction(s, &CommandData{
 		TableID: t.ID,
-		Type:    actionTypeGameOver,
-		Value:   endConditionTimeout,
+		Type:    ActionTypeGameOver,
+		Value:   EndConditionTimeout,
 	})
 }
 
@@ -165,19 +166,19 @@ func (g *Game) CheckEnd() bool {
 	t := g.Table
 
 	// Check to see if one of the players ran out of time
-	if g.EndCondition == endConditionTimeout {
+	if g.EndCondition == EndConditionTimeout {
 		return true
 	}
 
 	// Check to see if the game ended to idleness
-	if g.EndCondition == endConditionIdleTimeout {
+	if g.EndCondition == EndConditionIdleTimeout {
 		return true
 	}
 
 	// Check for 3 strikes
 	if g.Strikes == 3 {
 		logger.Info(t.GetName() + "3 strike maximum reached; ending the game.")
-		g.EndCondition = endConditionStrikeout
+		g.EndCondition = EndConditionStrikeout
 		return true
 	}
 
@@ -185,20 +186,20 @@ func (g *Game) CheckEnd() bool {
 	// (which is initiated after the last card is played from the deck)
 	if g.Turn == g.EndTurn {
 		logger.Info(t.GetName() + "Final turn reached; ending the game.")
-		g.EndCondition = endConditionNormal
+		g.EndCondition = EndConditionNormal
 		return true
 	}
 
 	// Check to see if the maximum score has been reached
 	if g.Score == g.MaxScore {
 		logger.Info(t.GetName() + "Maximum score reached; ending the game.")
-		g.EndCondition = endConditionNormal
+		g.EndCondition = EndConditionNormal
 		return true
 	}
 
 	// In a speedrun, check to see if a perfect score can still be achieved
 	if g.Options.Speedrun && g.GetMaxScore() < variants[g.Options.Variant].MaxScore {
-		g.EndCondition = endConditionSpeedrunFail
+		g.EndCondition = EndConditionSpeedrunFail
 		return true
 	}
 
@@ -231,7 +232,7 @@ func (g *Game) CheckEnd() bool {
 
 	// If we got this far, nothing can be played
 	logger.Info(t.GetName() + "No remaining cards can be played; ending the game.")
-	g.EndCondition = endConditionNormal
+	g.EndCondition = EndConditionNormal
 	return true
 }
 

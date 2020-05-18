@@ -28,8 +28,8 @@ type TemplateData struct {
 
 const (
 	// The name supplied to the Gin session middleware can be any arbitrary string
-	httpSessionName    = "hanabi.sid"
-	httpSessionTimeout = 60 * 60 * 24 * 365 // 1 year in seconds
+	HTTPSessionName    = "hanabi.sid"
+	HTTPSessionTimeout = 60 * 60 * 24 * 365 // 1 year in seconds
 )
 
 var (
@@ -100,7 +100,7 @@ func httpInit() {
 		// After getting a cookie via "/login", the client will immediately
 		// establish a WebSocket connection via "/ws", so the cookie only needs
 		// to exist for that time frame
-		MaxAge: httpSessionTimeout, // In seconds
+		MaxAge: HTTPSessionTimeout, // In seconds
 		// Only send the cookie over HTTPS:
 		// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
 		Secure: true,
@@ -117,7 +117,7 @@ func httpInit() {
 	httpSessionStore.Options(options)
 
 	// Attach the sessions middleware
-	httpRouter.Use(gsessions.Sessions(httpSessionName, httpSessionStore))
+	httpRouter.Use(gsessions.Sessions(HTTPSessionName, httpSessionStore))
 
 	// Initialize Google Analytics
 	if len(GATrackingID) > 0 {
@@ -166,10 +166,14 @@ func httpInit() {
 	httpRouter.GET("/stats", httpStats)
 	httpRouter.GET("/variant/:id", httpVariant)
 	httpRouter.GET("/videos", httpVideos)
-	httpRouter.GET("/export", httpExport)
-	httpRouter.GET("/export/:game", httpExport)
 	httpRouter.GET("/password-reset", httpPasswordReset)
 	httpRouter.POST("/password-reset", httpPasswordResetPost)
+
+	// Path handlers for bots, developers, researchers, etc.
+	httpRouter.GET("/export", httpExport)
+	httpRouter.GET("/export/:game", httpExport)
+	httpRouter.GET("/deals", httpDeals)
+	httpRouter.GET("/deals/:seed", httpDeals)
 
 	// Other
 	httpRouter.Static("/public", path.Join(projectPath, "public"))

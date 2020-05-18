@@ -13,12 +13,18 @@ linters:
     - gocritic
     # gocyclo complains about having large functions
     - gocyclo
+    # We do not use conventional Golang comments
+    - godot
+    # goerr113 complains about creating new static errors
+    - goerr113
     # gofmt is not needed because we are running goimports (which is a superset of gofmt)
     - gofmt
     # gomnd complains about common numbers
     - gomnd
     # We do not care about making structs take less memory
-    - maligned 
+    - maligned
+    # nestif complains about some harmless nested if statements
+    - nestif
     # We use some unused parameters for command function uniformity
     - unparam
     # WSL requires excessive newlines around if statements

@@ -154,8 +154,8 @@ func debugPrint() {
 		if t.DisconSpectators == nil {
 			logger.Debug("      [DisconSpectators is nil; this should never happen]")
 		} else {
-			for k, v := range t.DisconSpectators { // This is a map[int]*bool
-				logger.Debug("        User ID: " + strconv.Itoa(k) + " - " + strconv.FormatBool(v))
+			for k := range t.DisconSpectators { // This is a map[int]struct{}
+				logger.Debug("        User ID: " + strconv.Itoa(k))
 			}
 			if len(t.DisconSpectators) == 0 {
 				logger.Debug("        [no disconnected spectators]")
@@ -203,11 +203,21 @@ func debugPrint() {
 	}
 	logger.Debug("    discordLastAtHere:", discordLastAtHere)
 	logger.Debug("---------------------------------------------------------------")
+}
+
+func debugFunction() {
+	// Lock the command mutex for the duration of the function to ensure synchronous execution
+	commandMutex.Lock()
+	defer commandMutex.Unlock()
+
+	logger.Debug("Executing debug function(s).")
 
 	/*
 		updateAllUserStats()
 		updateAllVariantStats()
 	*/
+
+	logger.Debug("Debug function(s) complete.")
 }
 
 /*

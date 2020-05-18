@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/jackc/pgx/v4"
@@ -17,17 +18,22 @@ type User struct {
 	OldPasswordHash sql.NullString
 }
 
-func (*Users) Insert(username string, passwordHash string, lastIP string) (User, error) {
+func (*Users) Insert(
+	username string,
+	normalizedUsername string,
+	passwordHash string,
+	lastIP string,
+) (User, error) {
 	var user User
 
 	// https://www.postgresql.org/docs/9.5/dml-returning.html
 	// https://github.com/jackc/pgx/issues/411
 	var id int
 	if err := db.QueryRow(context.Background(), `
-		INSERT INTO users (username, password_hash, last_ip)
-		VALUES ($1, $2, $3)
+		INSERT INTO users (username, normalized_username, password_hash, last_ip)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id
-	`, username, passwordHash, lastIP).Scan(&id); err != nil {
+	`, username, normalizedUsername, passwordHash, lastIP).Scan(&id); err != nil {
 		return user, err
 	}
 
@@ -47,13 +53,32 @@ func (*Users) Get(username string) (bool, User, error) {
 			password_hash,
 			old_password_hash
 		FROM users
-		/* This will be a case-insensitive search by default, which is what we want */
 		WHERE username = $1
 	`, username).Scan(
 		&user.ID,
 		&user.Username,
 		&user.PasswordHash,
 		&user.OldPasswordHash,
+	); err == pgx.ErrNoRows {
+		return false, user, nil
+	} else if err != nil {
+		return false, user, err
+	}
+
+	return true, user, nil
+}
+
+func (*Users) GetUserFromNormalizedUsername(normalizedUsername string) (bool, User, error) {
+	var user User
+	if err := db.QueryRow(context.Background(), `
+		SELECT
+			id,
+			username
+		FROM users
+		WHERE normalized_username = $1
+	`, normalizedUsername).Scan(
+		&user.ID,
+		&user.Username,
 	); err == pgx.ErrNoRows {
 		return false, user, nil
 	} else if err != nil {
@@ -91,6 +116,22 @@ func (*Users) GetDatetimeCreated(userID int) (time.Time, error) {
 		WHERE id = $1
 	`, userID).Scan(&datetimeCreated)
 	return datetimeCreated, err
+}
+
+func (*Users) NormalizedUsernameExists(normalizedUsername string) (bool, error) {
+	var count int
+	if err := db.QueryRow(context.Background(), `
+		SELECT COUNT(id)
+		FROM users
+		WHERE normalized_username = $1
+	`, normalizedUsername).Scan(&count); err != nil {
+		return false, err
+	} else if count != 0 && count != 1 {
+		return false, errors.New("more than one user matches a username of " +
+			"\"" + normalizedUsername + "\"")
+	}
+
+	return count == 1, nil
 }
 
 func (*Users) Update(userID int, lastIP string) error {

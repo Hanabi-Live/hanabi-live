@@ -5,16 +5,21 @@ import Suit from './Suit';
 import Variant from './Variant';
 
 type VariantJSON = {
-  id: number,
-  suits: string[],
+  id: number;
+  suits: string[];
 
-  clueColors?: string[],
-  clueRanks?: number[],
-  colorCluesTouchNothing?: boolean,
+  clueColors?: string[];
+  clueRanks?: number[];
+  colorCluesTouchNothing?: boolean;
+  rankCluesTouchNothing?: boolean;
+  specialRank?: number;
+  specialAllClueColors?: boolean;
+  specialAllClueRanks?: boolean;
+  specialNoClueColors?: boolean;
+  specialNoClueRanks?: boolean;
 
-  rankCluesTouchNothing?: boolean,
-  showSuitNames?: boolean,
-  spacing?: boolean,
+  showSuitNames?: boolean;
+  spacing?: boolean;
 };
 type VariantEntryIterable = Iterable<[string, VariantJSON]>;
 
@@ -130,6 +135,56 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
     }
     const rankCluesTouchNothing: boolean = variantJSON.rankCluesTouchNothing || false;
 
+    // Validate the "specialRank" property (e.g. for "Rainbow-Ones")
+    // If it is not specified, assume -1 (e.g. there are no special ranks)
+    if (
+      Object.hasOwnProperty.call(variantJSON, 'specialRank')
+      && (variantJSON.specialRank! < 1 || variantJSON!.specialRank! > 5)
+    ) {
+      throw new Error(`The "specialRank" property for the variant "${variantName}" must be set to true.`);
+    }
+    const specialRank: number = variantJSON.specialRank || -1;
+
+    // Validate the "specialAllClueColors" property
+    // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
+    if (
+      Object.hasOwnProperty.call(variantJSON, 'specialAllClueColors')
+      && variantJSON.specialAllClueColors !== true
+    ) {
+      throw new Error(`The "specialAllClueColors" property for the variant "${variantName}" must be set to true.`);
+    }
+    const specialAllClueColors: boolean = variantJSON.specialAllClueColors || false;
+
+    // Validate the "specialAllClueRanks" property
+    // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
+    if (
+      Object.hasOwnProperty.call(variantJSON, 'specialAllClueRanks')
+      && variantJSON.specialAllClueRanks !== true
+    ) {
+      throw new Error(`The "specialAllClueRanks" property for the variant "${variantName}" must be set to true.`);
+    }
+    const specialAllClueRanks: boolean = variantJSON.specialAllClueRanks || false;
+
+    // Validate the "specialNoClueColors" property
+    // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
+    if (
+      Object.hasOwnProperty.call(variantJSON, 'specialNoClueColors')
+      && variantJSON.specialNoClueColors !== true
+    ) {
+      throw new Error(`The "specialNoClueColors" property for the variant "${variantName}" must be set to true.`);
+    }
+    const specialNoClueColors: boolean = variantJSON.specialNoClueColors || false;
+
+    // Validate the "specialNoClueRanks" property
+    // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
+    if (
+      Object.hasOwnProperty.call(variantJSON, 'specialNoClueRanks')
+      && variantJSON.specialNoClueRanks !== true
+    ) {
+      throw new Error(`The "specialNoClueRanks" property for the variant "${variantName}" must be set to true.`);
+    }
+    const specialNoClueRanks: boolean = variantJSON.specialNoClueRanks || false;
+
     // Validate the "showSuitNames" property
     // If it is not specified, assume that we are not showing the suit names
     if (
@@ -168,6 +223,11 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
       clueRanks,
       colorCluesTouchNothing,
       rankCluesTouchNothing,
+      specialRank,
+      specialAllClueColors,
+      specialAllClueRanks,
+      specialNoClueColors,
+      specialNoClueRanks,
       showSuitNames,
       spacing,
       maxScore,

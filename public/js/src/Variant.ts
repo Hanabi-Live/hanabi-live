@@ -12,6 +12,12 @@ export default interface Variant {
   readonly clueRanks: number[];
   readonly colorCluesTouchNothing: boolean;
   readonly rankCluesTouchNothing: boolean;
+  readonly specialRank: number;
+  readonly specialAllClueColors: boolean;
+  readonly specialAllClueRanks: boolean;
+  readonly specialNoClueColors: boolean;
+  readonly specialNoClueRanks: boolean;
+
   readonly showSuitNames: boolean;
   readonly spacing: boolean;
   readonly maxScore: number;

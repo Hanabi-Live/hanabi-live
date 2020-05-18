@@ -13,8 +13,7 @@ var (
 	// We keep track of all WebSocket sessions
 	sessions = make(map[int]*Session)
 
-	// The WebSocket server needs to processes one action at a time;
-	// otherwise, there would be chaos
+	// The WebSocket server needs to processes one action at a time; otherwise, there would be chaos
 	commandMutex = new(sync.Mutex)
 )
 

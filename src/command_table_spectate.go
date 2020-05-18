@@ -93,12 +93,12 @@ func commandTableSpectate(s *Session, d *CommandData) {
 	t.NotifySpectators() // Update the in-game spectator list
 
 	// Set their status
-	status := statusSpectating
+	status := StatusSpectating
 	if t.Replay {
 		if t.Visible {
-			status = statusSharedReplay
+			status = StatusSharedReplay
 		} else {
-			status = statusReplay
+			status = StatusReplay
 		}
 	}
 	if s != nil {

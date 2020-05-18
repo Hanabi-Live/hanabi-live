@@ -28,6 +28,10 @@ func chatCommandInit() {
 	chatCommandMap["uptime"] = chatUptime
 	chatCommandMap["timeleft"] = chatTimeLeft
 
+	// Undocumented info commands (that work only in the lobby)
+	chatCommandMap["badhere"] = chatBadHere
+	chatCommandMap["wrongchannel"] = chatWrongChannel
+
 	// Table-only commands
 	chatCommandMap["changevariant"] = chatChangeVariant
 	chatCommandMap["s"] = chatS

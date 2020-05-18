@@ -24,7 +24,6 @@ services:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
       - DISCORD_LISTEN_CHANNEL_IDS=${DISCORD_LISTEN_CHANNEL_IDS}
       - DISCORD_LOBBY_CHANNEL_ID=${DISCORD_LOBBY_CHANNEL_ID}
-      - DISCORD_BOT_CHANNEL_ID=${DISCORD_BOT_CHANNEL_ID}
       - GA_TRACKING_ID=${GA_TRACKING_ID}
 
       # the database host and port are taken from the other service

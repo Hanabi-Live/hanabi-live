@@ -312,17 +312,20 @@ actionFunctions.set('draw', (data: ActionDraw) => {
 
   // If this card is known,
   // then remove it from the card possibilities for the players who see this card
-  if (suit && rank && possibilitiesCheck()) {
-    for (let i = 0; i < globals.elements.playerHands.length; i++) {
-      if (i === holder) {
-        // We can't update the player who drew this card,
-        // because they do not know what it is yet
-        continue;
-      }
-      const hand = globals.elements.playerHands[i];
-      for (const layoutChild of hand.children.toArray()) {
-        const handCard = layoutChild.children[0];
-        handCard.removePossibility(suit, rank, false);
+  if (suit && rank) {
+    card.identityDetermined = true;
+    if (possibilitiesCheck()) {
+      for (let i = 0; i < globals.elements.playerHands.length; i++) {
+        if (i === holder) {
+          // We can't update the player who drew this card,
+          // because they do not know what it is yet
+          continue;
+        }
+        const hand = globals.elements.playerHands[i];
+        for (const layoutChild of hand.children.toArray()) {
+          const handCard = layoutChild.children[0];
+          handCard.removePossibility(suit, rank, false);
+        }
       }
     }
   }
@@ -525,13 +528,22 @@ interface RevealMessage {
 }
 actionFunctions.set('reveal', (data: RevealMessage) => {
   // This is the reveal for hypotheticals
-  // The code here is copied from the "websocket.ts" file
+  // The code here is mostly copied from the "websocket.ts" file
   let card = globals.deck[data.order];
   if (!card) {
     card = globals.stackBases[data.order - globals.deck.length];
   }
+  if (!card) {
+    throw new Error('Failed to get the card in the "reveal" command.');
+  }
 
-  card.reveal(data.suit, data.rank);
+  if (data.suit === -1 && data.rank === -1) {
+    card.blank = true;
+    card.setBareImage();
+  } else {
+    card.reveal(data.suit, data.rank);
+  }
+
   globals.layers.card.batchDraw();
 });
 

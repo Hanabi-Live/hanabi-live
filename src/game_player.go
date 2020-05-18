@@ -47,10 +47,10 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	// Add the action to the action log
 	// (in the future, we will delete GameActions and only keep track of GameActions2)
 	var actionType int
-	if clue.Type == clueTypeColor {
-		actionType = actionTypeColorClue
-	} else if clue.Type == clueTypeRank {
-		actionType = actionTypeRankClue
+	if clue.Type == ClueTypeColor {
+		actionType = ActionTypeColorClue
+	} else if clue.Type == ClueTypeRank {
+		actionType = ActionTypeRankClue
 	}
 	g.Actions2 = append(g.Actions2, &GameAction{
 		Type:   actionType,
@@ -100,9 +100,9 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	}
 	text += words[len(cardsTouched)] + " "
 
-	if clue.Type == clueTypeColor {
+	if clue.Type == ClueTypeColor {
 		text += variants[g.Options.Variant].ClueColors[clue.Value]
-	} else if clue.Type == clueTypeRank {
+	} else if clue.Type == ClueTypeRank {
 		text += strconv.Itoa(clue.Value)
 	}
 	if len(cardsTouched) != 1 {
@@ -122,10 +122,10 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 
 		text = p.Name + " "
 		if strings.HasPrefix(g.Options.Variant, "Cow & Pig") {
-			if clue.Type == clueTypeColor {
+			if clue.Type == ClueTypeColor {
 				text += "moos"
 				g.Sound = "moo"
-			} else if clue.Type == clueTypeRank {
+			} else if clue.Type == ClueTypeRank {
 				text += "oinks"
 				g.Sound = "oink"
 			}
@@ -186,7 +186,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	// Add the action to the action log
 	// (in the future, we will delete GameActions and only keep track of GameActions2)
 	g.Actions2 = append(g.Actions2, &GameAction{
-		Type:   actionTypePlay,
+		Type:   ActionTypePlay,
 		Target: c.Order,
 	})
 
@@ -312,7 +312,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	// Handle custom variants that do not play in order from 1 to 5
 	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
 		extraClue = (c.Rank == 5 || c.Rank == 1) &&
-			g.StackDirections[c.Suit] == stackDirectionFinished
+			g.StackDirections[c.Suit] == StackDirectionFinished
 	}
 
 	if extraClue {
@@ -322,7 +322,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 		}
 
 		// The extra clue is wasted if the team is at the maximum amount of clues already
-		clueLimit := maxClueNum
+		clueLimit := MaxClueNum
 		if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
 			clueLimit *= 2
 		}
@@ -367,7 +367,7 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 	if !c.Failed {
 		// If this is a failed play, then we already added the action in the "PlayCard()"" function
 		g.Actions2 = append(g.Actions2, &GameAction{
-			Type:   actionTypeDiscard,
+			Type:   ActionTypeDiscard,
 			Target: c.Order,
 		})
 	}

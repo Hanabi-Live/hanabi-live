@@ -46,15 +46,7 @@ if uname -a | grep -v MINGW64 >/dev/null 2>&1; then
   fi
 fi
 
-# Upload it to Google Drive
-# Steps to install:
-# 1) go get github.com/prasmussen/gdrive
-# 2) mkdir ~/.gdrive
-# 3) https://console.cloud.google.com/iam-admin/serviceaccounts?project=hanabi-live&folder=&organizationId=&supportedpurview=project
-# 4) Actions --> Create key --> JSON --> Create
-# 5) vim ~/.gdrive/hanabi-live-c3373cecaf32.json
-# 6) Paste it in
-# References: https://github.com/gdrive-org/gdrive/issues/533
+# Upload it to Google Drive (see "INSTALL.md")
 if command -v gdrive > /dev/null; then
   if [[ ! -z $GOOGLE_DRIVE_SERVICE_ACCOUNT ]]; then
     gdrive upload "$BACKUPS_DIR/$FILENAME.gz" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY"

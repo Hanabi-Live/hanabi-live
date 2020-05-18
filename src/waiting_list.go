@@ -43,7 +43,7 @@ func waitingListAdd(s *Session, d *CommandData) {
 	for _, waiter := range waitingList {
 		if waiter.DiscordMention == discordMention {
 			// Update their expiry time
-			waiter.DatetimeExpired = time.Now().Add(idleWaitingListTimeout)
+			waiter.DatetimeExpired = time.Now().Add(IdleWaitingListTimeout)
 
 			// Let them know
 			chatServerSend(d.Username+", you are already on the waiting list.", d.Room)
@@ -55,7 +55,7 @@ func waitingListAdd(s *Session, d *CommandData) {
 	waiter := &Waiter{
 		Username:        d.Username,
 		DiscordMention:  discordMention,
-		DatetimeExpired: time.Now().Add(idleWaitingListTimeout),
+		DatetimeExpired: time.Now().Add(IdleWaitingListTimeout),
 	}
 	if err := models.DiscordWaiters.Insert(waiter); err != nil {
 		msg := "Failed to insert the waiter into the database: " + err.Error()

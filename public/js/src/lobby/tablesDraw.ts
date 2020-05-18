@@ -23,39 +23,27 @@ const tablesDraw = () => {
   $('#lobby-games-table-container').show();
 
   // We want the tables to be drawn in a certain order:
-  // 1) Tables that you are currently in
-  // 2) Unstarted tables
-  // 3) Unstarted & password-protected tables
-  // 4) Ongoing tables
-  // 5) Shared replays
-  // Furthermore, we want tables with one or more of our friends to be drawn above all other tables
+  // 1) Tables that we are currently in
+  // 2) Tables our friends are currently in
+  // 3) Unstarted tables
+  // 4) Unstarted & password-protected tables
+  // 5) Ongoing tables
+  // 6) Shared replays
   let sortedTableIDs: number[] = [];
   for (const friends of [true, false]) {
     for (let i = 1; i <= 5; i++) {
       const tableIDsOfThisType: number[] = [];
       for (const [id, table] of globals.tableMap) {
-        let hasFriends = false;
-        for (const player of table.players) {
-          if (globals.friends.includes(player)) {
-            hasFriends = true;
-            break;
-          }
+        if (friends && i === 1 && table.joined && !table.sharedReplay) {
+          tableIDsOfThisType.push(id);
         }
-        if (!hasFriends) {
-          for (const spectator of table.spectators) {
-            if (globals.friends.includes(spectator)) {
-              hasFriends = true;
-              break;
-            }
-          }
-        }
+
+        const hasFriends = tableHasFriends(table);
         if ((friends && !hasFriends) || (!friends && hasFriends)) {
           continue;
         }
 
-        if (i === 1 && table.joined && !table.sharedReplay) {
-          tableIDsOfThisType.push(id);
-        } else if (i === 2 && !table.running && !table.passwordProtected && !table.joined) {
+        if (i === 2 && !table.running && !table.passwordProtected && !table.joined) {
           tableIDsOfThisType.push(id);
         } else if (i === 3 && !table.running && table.passwordProtected && !table.joined) {
           tableIDsOfThisType.push(id);
@@ -206,4 +194,20 @@ const tableReattendButton = (table: Table) => () => {
   globals.conn!.send('tableReattend', {
     tableID: table.id,
   });
+};
+
+const tableHasFriends = (table: Table) => {
+  for (const player of table.players) {
+    if (globals.friends.includes(player)) {
+      return true;
+    }
+  }
+
+  for (const spectator of table.spectators) {
+    if (globals.friends.includes(spectator)) {
+      return true;
+    }
+  }
+
+  return false;
 };

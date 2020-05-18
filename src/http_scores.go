@@ -43,21 +43,19 @@ func httpScores(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	// Lock the command mutex for the duration of the function
-	// (since we only have one database connection and it is not safe for concurrent uses)
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
-
 	// Parse the player name from the URL
 	player := c.Param("player")
 	if player == "" {
 		http.Error(w, "Error: You must specify a player.", http.StatusNotFound)
 		return
 	}
+	normalizedUsername := normalizeUsername(player)
 
 	// Check if the player exists
 	var user User
-	if exists, v, err := models.Users.Get(player); err != nil {
+	if exists, v, err := models.Users.GetUserFromNormalizedUsername(
+		normalizedUsername,
+	); err != nil {
 		logger.Error("Failed to check to see if player \""+player+"\" exists:", err)
 		http.Error(
 			w,

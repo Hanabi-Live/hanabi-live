@@ -5,6 +5,7 @@ package main // In Go, executable commands must always use package main
 import (
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -20,12 +21,12 @@ var (
 	versionPath string
 	tablesPath  string
 
-	logger          *Logger
-	startingVersion int
-	usingSentry     bool
-	models          *Models
-	datetimeStarted time.Time
-	tables          = make(map[int]*Table) // Defined in "table.go"
+	logger           *Logger
+	gitCommitOnStart string
+	usingSentry      bool
+	models           *Models
+	datetimeStarted  time.Time
+	tables           = make(map[int]*Table) // Defined in "table.go"
 	// For storing all of the random words (used for random table names)
 	wordList = make([]string, 0)
 )
@@ -59,7 +60,12 @@ func main() {
 	}
 
 	// Check to see if the version file exists
-	versionPath = path.Join(dataPath, "version.json")
+	// Note that there are two different version files:
+	// 1) ./public/js/src/data/version.json
+	// 2) ./public/js/bundles/version.json
+	// The former is for "baking" the version into the JavaScript client
+	// The later is to inform the server about the latest already-compiled client version
+	versionPath = path.Join(projectPath, "public", "js", "bundles", "version.json")
 	if _, err := os.Stat(versionPath); os.IsNotExist(err) {
 		logger.Fatal("The \"" + versionPath + "\" file does not exist. " +
 			"Did you run the \"install_dependencies.sh\" script before running the server? " +
@@ -81,9 +87,16 @@ func main() {
 		return
 	}
 
-	// Record the version of the code that corresponds to when the Golang code was compiled
-	// (this is useful since it is possible to update the client without restarting the server)
-	startingVersion = getVersion()
+	// Record the commit that corresponds with when the Golang code was compiled
+	// (this is useful to know what version of the server is running,
+	// since it is possible to update the client without restarting the server)
+	cmd := exec.Command("git", "rev-parse", "HEAD")
+	if stdout, err := cmd.Output(); err != nil {
+		logger.Fatal("Failed to perform a \"git rev-parse HEAD\":", err)
+		return
+	} else {
+		gitCommitOnStart = string(stdout)
+	}
 
 	// Check to see if the ".env" file exists
 	envPath := path.Join(projectPath, ".env")

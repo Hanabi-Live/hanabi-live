@@ -13,6 +13,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
+
+	"github.com/mozillazg/go-unidecode"
+	"golang.org/x/text/unicode/norm"
 )
 
 // From: https://stackoverflow.com/questions/47341278/how-to-format-a-duration-in-golang
@@ -23,18 +27,24 @@ func durationToString(d time.Duration) string {
 	return fmt.Sprintf("%02d:%02d", m, s)
 }
 
-func execute(script string, cwd string) {
-	cmd := exec.Command(path.Join(cwd, script)) // nolint:gosec
-	cmd.Dir = cwd
-	if output, err := cmd.CombinedOutput(); err != nil {
+func executeScript(script string) string {
+	cmd := exec.Command(path.Join(projectPath, script)) // nolint:gosec
+	cmd.Dir = projectPath
+	output, err := cmd.CombinedOutput()
+	if err != nil {
 		logger.Error("Failed to execute \""+script+"\":", err)
 		if string(output) != "" {
 			logger.Error("Output is as follows:")
 			logger.Error(string(output))
 		}
 	} else {
-		logger.Info("\""+script+"\" completed:", string(output))
+		logger.Info("\"" + script + "\" completed.")
+		if string(output) != "" {
+			logger.Info("Output is as follows:")
+			logger.Info(string(output))
+		}
 	}
+	return string(output)
 }
 
 func formatTimestampUnix(datetime time.Time) string {
@@ -79,6 +89,31 @@ func getVersion() int {
 	}
 }
 
+func hasConsecutiveDiacritics(s string) bool {
+	// First, normalize with Normalization Form Canonical Decomposition (NFD) so that diacritics
+	// are seprated from other characters
+	// https://en.wikipedia.org/wiki/Unicode_equivalence
+	// https://blog.golang.org/normalization
+	normalizedString := norm.NFD.String(s)
+
+	contiguousDiacriticCount := 0
+	for _, r := range normalizedString {
+		// "Mn" stands for nonspacing mark, e.g. a diacritic
+		// https://www.compart.com/en/unicode/category/Mn
+		// From: https://stackoverflow.com/questions/26722450/remove-diacritics-using-go
+		if unicode.Is(unicode.Mn, r) {
+			contiguousDiacriticCount++
+			if contiguousDiacriticCount >= 2 {
+				return true
+			}
+		} else {
+			contiguousDiacriticCount = 0
+		}
+	}
+
+	return false
+}
+
 func intInSlice(a int, slice []int) bool {
 	for _, b := range slice {
 		if b == a {
@@ -102,6 +137,12 @@ func max(x, y int) int {
 		return x
 	}
 	return y
+}
+
+func normalizeUsername(username string) string {
+	// First, we transliterate the username to pure ASCII
+	// Second, we lowercase it
+	return strings.ToLower(unidecode.Unidecode(username))
 }
 
 func secondsToDurationString(seconds int) (string, error) {

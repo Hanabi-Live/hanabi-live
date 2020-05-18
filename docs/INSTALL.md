@@ -56,8 +56,6 @@ If you want to install less stuff on your computer, you can alternatively follow
   * Enter the password for the "postgres" user that you created in the previous step.
   * `CREATE DATABASE hanabi;`
   * `\c hanabi`
-  * `CREATE EXTENSION IF NOT EXISTS citext;` <br />
-  (this [allows "UNIQUE" constraints to be case-insensitive](http://shuber.io/case-insensitive-unique-constraints-in-postgres/) if needed)
   * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
   (replace "1234567890" with a secure password)
   * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
@@ -125,8 +123,6 @@ If you want to install less stuff on your computer, you can alternatively follow
   * Enter a secure password for the postgres user. (This is the "master" account that has access to all databases.)
   * `CREATE DATABASE hanabi;`
   * `\c hanabi`
-  * `CREATE EXTENSION IF NOT EXISTS citext;` <br />
-  (this [allows "UNIQUE" constraints to be case-insensitive](http://shuber.io/case-insensitive-unique-constraints-in-postgres/) if needed)
   * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
   (replace "1234567890" with a secure password)
   * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
@@ -169,7 +165,7 @@ If you want to install less stuff on your computer, you can alternatively follow
 
 ## Installation for Production (Linux)
 
-These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments may be needed if you are on a different flavor of Linux. Alternatively, you can follow the instructions for [Installation (Docker)](#installation-docker), although this is not recommended.
+These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may be needed if you are on a different flavor of Linux. Alternatively, you can follow the instructions for [Installation (Docker)](#installation-docker), although this is not recommended.
 
 * Make sure the package manager is up to date:
   * `sudo apt update`
@@ -180,23 +176,14 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
   * `git config --global user.email "your@email.com"`
   * `git config --global pull.rebase true` <br />
   (so that Git automatically rebases when pulling)
-* Install and configure [Golang](https://golang.org/):
-  * `sudo apt install software-properties-common -y`
-  * `sudo add-apt-repository ppa:longsleep/golang-backports` <br />
-  (if we do not use the custom repository, the package manager will install a version of Golang that is very old)
-  * `sudo apt update`
-  * `sudo apt install golang-go -y`
-  * `mkdir "$HOME/go"`
-  * `export GOPATH=$HOME/go && echo 'export GOPATH=$HOME/go' >> ~/.profile`
-  * `export PATH=$PATH:$GOPATH/bin && echo 'export PATH=$PATH:$GOPATH/bin' >> ~/.profile`
+* Install [Golang](https://golang.org/):
+  * `sudo apt install golang -y`
 * Install [PostgreSQL](https://www.postgresql.org/), create a new database, and set up a database user:
-  * `sudo apt install postgresql postgresql-contrib -y` <br />
+  * `sudo apt install postgresql -y` <br />
   * `sudo -u postgres psql` <br />
   (on Linux, there is no default password; you must connect through the "postgres" operating system account)
   * `CREATE DATABASE hanabi;`
   * `\c hanabi`
-  * `CREATE EXTENSION IF NOT EXISTS citext;` <br />
-  (this [allows "UNIQUE" constraints to be case-insensitive](http://shuber.io/case-insensitive-unique-constraints-in-postgres/) if needed)
   * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />
   (replace "1234567890" with a secure password)
   * `GRANT ALL PRIVILEGES ON DATABASE hanabi TO hanabiuser;`
@@ -239,47 +226,11 @@ These instructions assume you are running Ubuntu 18.04.1 LTS. Some adjustments m
 * `sudo iptables -A INPUT -p tcp --dport http -j ACCEPT`
 * `sudo iptables -A INPUT -p tcp --dport https -j ACCEPT`
 * `sudo iptables -A INPUT -p tcp --dport 8080 -j ACCEPT`
+* `sudo iptables -A INPUT -p tcp --dport 6432 -s localhost -j ACCEPT`
 * `sudo iptables -A INPUT -p tcp --dport 5432 -s localhost -j ACCEPT`
 * `sudo iptables -A INPUT -p tcp --dport 8081 -s localhost -j ACCEPT`
 * `sudo iptables -A INPUT -j DROP`
 * `sudo iptables-save > /etc/iptables/rules.v4`
-
-<br />
-
-#### Set up Automated Database Backups (optional)
-
-This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
-
-* `crontab -e`
-
-```
-# Every day, backup the "hanabi" database
-0 0 * * * /root/hanabi-live/database_backup.sh
-```
-
-<br />
-
-#### Install HTTPS (optional)
-
-This assumes that your domain names are "hanabi.live" and "www.hanabi.live". It also assumes that you installed the server to "/root/hanabi-live". Adjust if needed.
-
-* `sudo apt update`
-* `sudo apt install software-properties-common -y`
-* `sudo add-apt-repository universe`
-* `sudo add-apt-repository ppa:certbot/certbot`
-* `sudo apt update`
-* `sudo apt install certbot -y`
-* `certbot certonly --standalone -d hanabi.live -d www.hanabi.live` <br />
-  (this creates "/etc/letsencrypt/live/hanabi.live/")
-* In the `.env` file:
-  * Set `TLS_CERT_FILE` to: `/etc/letsencrypt/live/hanabi.live/fullchain.pem`
-  * Set `TLS_KEY_FILE` to: `/etc/letsencrypt/live/hanabi.live/privkey.pem`
-* `crontab -e`
-
-```
-# Every day, keep the Let's Encrypt certificate up to date
-0 0 * * * /root/hanabi-live/renew_cert.sh
-```
 
 <br />
 
@@ -288,8 +239,8 @@ This assumes that your domain names are "hanabi.live" and "www.hanabi.live". It 
 This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the below commands and edit the contents of the three Supervisor files.
 
 * Install Supervisor:
-  * `sudo apt install python-pip -y`
-  * `pip install supervisor`
+  * `sudo apt install python3-pip -y`
+  * `pip3 install supervisor`
   * `mkdir -p /etc/supervisor/conf.d`
   * `mkdir -p /var/log/supervisor`
 * Copy the configuration files:
@@ -307,6 +258,57 @@ To manage the service:
 * Start it: `supervisorctl start hanabi-live`
 * Stop it: `supervisorctl stop hanabi-live`
 * Restart it: `supervisorctl restart hanabi-live`
+
+<br />
+
+#### Set up Automated Database Backups (optional)
+
+This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
+
+* `crontab -e`
+
+```
+# Every day, backup the "hanabi" database
+0 0 * * * /root/hanabi-live/database_backup.sh
+```
+
+<br />
+
+#### Set up Secondary Automated Database Backups to Google Drive (optional)
+
+This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
+
+* Download and compile [gdrive](https://github.com/gdrive-org/gdrive):
+  * `go get github.com/prasmussen/gdrive`
+* Add it to the path:
+  * `export PATH="$PATH:/root/go/bin" && echo >> "~/.bashrc" && echo 'export PATH="$PATH:/root/go/bin"' >> "~/.bashrc"`
+* Go to the [Google Drive service account project page](https://console.cloud.google.com/iam-admin/serviceaccounts?project=hanabi-live&folder=&organizationId=&supportedpurview=project).
+  * If you are starting fresh, you will have to create a new Google Drive account, create a new service account, and create a new project. For more information, see [this GitHub issue](https://github.com/gdrive-org/gdrive/issues/533).
+* Actions --> Create key --> JSON --> Create
+* `mkdir -p "~/.gdrive"`
+* `vim ~/.gdrive/hanabi-live-c3373cecaf32.json`
+  * Paste it in.
+* `vim /root/hanabi-live/.env`
+  * Fill in the "GOOGLE_DRIVE_SERVICE_ACCOUNT" and "GOOGLE_DRIVE_PARENT_DIRECTORY" fields.
+
+<br />
+
+#### Install HTTPS (optional)
+
+This assumes that your domain names are "hanabi.live" and "www.hanabi.live". It also assumes that you installed the server to "/root/hanabi-live". Adjust if needed.
+
+* `sudo apt install certbot -y`
+* `certbot certonly --standalone -d hanabi.live -d www.hanabi.live` <br />
+  (this creates "/etc/letsencrypt/live/hanabi.live/")
+* In the `.env` file:
+  * Set `TLS_CERT_FILE` to: `/etc/letsencrypt/live/hanabi.live/fullchain.pem`
+  * Set `TLS_KEY_FILE` to: `/etc/letsencrypt/live/hanabi.live/privkey.pem`
+* `crontab -e`
+
+```
+# Every day, keep the Let's Encrypt certificate up to date
+0 0 * * * /root/hanabi-live/renew_cert.sh
+```
 
 <br />
 

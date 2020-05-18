@@ -63,7 +63,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 	go t.CheckIdle()
 
 	// Send the message to everyone else
-	if d.Type == replayActionTypeTurn {
+	if d.Type == ReplayActionTypeTurn {
 		// A turn change
 		g.Turn = d.Turn
 		for _, sp := range t.Spectators {
@@ -91,7 +91,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 			t.Progress = progress
 			notifyAllTableProgress(t)
 		}
-	} else if d.Type == replayActionTypeArrow {
+	} else if d.Type == ReplayActionTypeArrow {
 		// A card arrow indication
 		for _, sp := range t.Spectators {
 			type ReplayIndicatorMessage struct {
@@ -101,7 +101,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 				Order: d.Order,
 			})
 		}
-	} else if d.Type == replayActionTypeLeaderTransfer {
+	} else if d.Type == ReplayActionTypeLeaderTransfer {
 		// Validate that the person that they are passing off the leader to actually exists
 		// in the game
 		newLeaderID := -1
@@ -130,7 +130,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 		for _, sp := range t.Spectators {
 			sp.Session.NotifyReplayLeader(t, true)
 		}
-	} else if d.Type == replayActionTypeSound {
+	} else if d.Type == ReplayActionTypeSound {
 		// A sound effect
 		for _, sp := range t.Spectators {
 			type ReplaySoundMessage struct {
@@ -140,7 +140,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 				Sound: d.Sound,
 			})
 		}
-	} else if d.Type == replayActionTypeHypoStart {
+	} else if d.Type == ReplayActionTypeHypoStart {
 		if g.Hypothetical {
 			s.Warning("You are already in a hypothetical, so you cannot start a new one.")
 			return
@@ -151,7 +151,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 		for _, sp := range t.Spectators {
 			sp.Session.Emit("hypoStart", nil)
 		}
-	} else if d.Type == replayActionTypeHypoEnd {
+	} else if d.Type == ReplayActionTypeHypoEnd {
 		if !g.Hypothetical {
 			s.Warning("You are not in a hypothetical, so you cannot end one.")
 			return
@@ -163,7 +163,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 		for _, sp := range t.Spectators {
 			sp.Session.Emit("hypoEnd", nil)
 		}
-	} else if d.Type == replayActionTypeHypoAction {
+	} else if d.Type == ReplayActionTypeHypoAction {
 		// Validate that the submitted action is not empty
 		if d.ActionJSON == "" {
 			s.Warning("The action JSON cannot be blank.")
@@ -182,7 +182,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 		for _, sp := range t.Spectators {
 			sp.Session.Emit("hypoAction", d.ActionJSON)
 		}
-	} else if d.Type == replayActionTypeHypoBack {
+	} else if d.Type == ReplayActionTypeHypoBack {
 		// The replay leader wants to go back one turn in the hypothetical
 		if len(g.HypoActions) == 0 {
 			return

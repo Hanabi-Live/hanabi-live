@@ -141,10 +141,13 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
   globals.typedChatHistoryIndex = -1;
 
   // Check for chat commands
+  // Each chat command should also have an error handler in "chat_command.go"
+  // (in case someone tries to use the command from Discord)
   const args = msg.split(' ');
   if (args[0].startsWith('/')) {
     let command = args.shift();
     command = command!.substring(1); // Remove the forward slash
+    command = command.toLowerCase();
 
     if (command === 'pm' || command === 'w' || command === 'whisper' || command === 'msg') {
       // Validate that the format of the command is correct
@@ -439,15 +442,12 @@ export const add = (data: ChatMessage, fast: boolean) => {
   }
 
   // Automatically generate links from any URLs that are present in the message
-  // (but make an exception for messages from the server that start with "[")
-  if (!data.server || !data.msg.startsWith('[')) {
-    data.msg = linkifyHtml(data.msg, {
-      target: '_blank',
-      attributes: {
-        rel: 'noopener noreferrer',
-      },
-    });
-  }
+  data.msg = linkifyHtml(data.msg, {
+    target: '_blank',
+    attributes: {
+      rel: 'noopener noreferrer',
+    },
+  });
 
   // Convert emotes to images
   data.msg = fillDiscordEmotes(data.msg);
@@ -476,6 +476,9 @@ export const add = (data: ChatMessage, fast: boolean) => {
     line += data.msg;
   } else {
     line += data.msg;
+  }
+  if (data.server && line.includes('[Server Notice]')) {
+    line = line.replace('[Server Notice]', '<span class="red">[Server Notice]</span>');
   }
   line += '</span><br />';
 

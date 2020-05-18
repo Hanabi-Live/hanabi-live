@@ -8,12 +8,12 @@ import (
 // i.e. statusLobby = 0, statusPregame = 1, etc.
 
 const (
-	statusLobby = iota
-	statusPregame
-	statusPlaying
-	statusSpectating
-	statusReplay
-	statusSharedReplay
+	StatusLobby = iota
+	StatusPregame
+	StatusPlaying
+	StatusSpectating
+	StatusReplay
+	StatusSharedReplay
 )
 
 var (
@@ -28,37 +28,37 @@ var (
 )
 
 const (
-	actionTypePlay = iota
-	actionTypeDiscard
-	actionTypeColorClue
-	actionTypeRankClue
-	actionTypeGameOver
+	ActionTypePlay = iota
+	ActionTypeDiscard
+	ActionTypeColorClue
+	ActionTypeRankClue
+	ActionTypeGameOver
 )
 
 const (
-	clueTypeColor = iota
-	clueTypeRank
+	ClueTypeColor = iota
+	ClueTypeRank
 )
 
 const (
-	endConditionInProgress = iota
-	endConditionNormal
-	endConditionStrikeout
-	endConditionTimeout
-	endConditionTerminated
-	endConditionSpeedrunFail
-	endConditionIdleTimeout
+	EndConditionInProgress = iota
+	EndConditionNormal
+	EndConditionStrikeout
+	EndConditionTimeout
+	EndConditionTerminated
+	EndConditionSpeedrunFail
+	EndConditionIdleTimeout
 )
 
 const (
-	replayActionTypeTurn  = iota // Changing the shared turn
-	replayActionTypeArrow        // Highlighting a card with an indicator arrow
-	replayActionTypeLeaderTransfer
-	replayActionTypeSound      // Play one of the arbitrary sound effects included on the server
-	replayActionTypeHypoStart  // Start a hypothetical line
-	replayActionTypeHypoEnd    // End a hypothetical line
-	replayActionTypeHypoAction // Perform a move in the hypothetical
-	replayActionTypeHypoBack   // Go back one turn in the hypothetical
+	ReplayActionTypeTurn  = iota // Changing the shared turn
+	ReplayActionTypeArrow        // Highlighting a card with an indicator arrow
+	ReplayActionTypeLeaderTransfer
+	ReplayActionTypeSound      // Play one of the arbitrary sound effects included on the server
+	ReplayActionTypeHypoStart  // Start a hypothetical line
+	ReplayActionTypeHypoEnd    // End a hypothetical line
+	ReplayActionTypeHypoAction // Perform a move in the hypothetical
+	ReplayActionTypeHypoBack   // Go back one turn in the hypothetical
 )
 
 var (
@@ -69,28 +69,26 @@ var (
 
 const (
 	// The maximum amount of clues (and the amount of clues that players start the game with)
-	maxClueNum = 8
+	MaxClueNum = 8
 
 	// The amount of time that someone can be on the waiting list
-	idleWaitingListTimeout = time.Hour * 8
+	IdleWaitingListTimeout = time.Hour * 8
 
 	// The amount of time that players have to finish their game once
 	// a server shutdown or restart is initiated
-	shutdownTimeout = time.Minute * 30
+	ShutdownTimeout = time.Minute * 30
 
 	// The amount of time in between allowed @here Discord alerts
-	discordAtHereTimeout = time.Hour * 2
+	DiscordAtHereTimeout = time.Hour * 2
 
 	// Common error messages
-	defaultErrorMsg          = "Something went wrong. Please contact an administrator."
-	createGameFail           = "Failed to create the game. Please contact an administrator."
-	startGameFail            = "Failed to start the game. Please contact an administrator."
-	initGameFail             = "Failed to initialize the game. Please contact an administrator."
-	chatCommandNotInGameFail = "You can only perform this command while in a game."
-	chatCommandStartedFail   = "The game is already started, so you cannot use that command."
-	chatCommandNotOwnerFail  = "Only the table owner can use that command."
-
-	// Discord emotes
-	pogChamp   = "<:PogChamp:254683883033853954>"
-	bibleThump = "<:BibleThump:254683882601840641>"
+	DefaultErrorMsg           = "Something went wrong. Please contact an administrator."
+	CreateGameFail            = "Failed to create the game. Please contact an administrator."
+	StartGameFail             = "Failed to start the game. Please contact an administrator."
+	InitGameFail              = "Failed to initialize the game. Please contact an administrator."
+	ChatCommandNotInLobbyFail = "You can only perform this command from the lobby."
+	ChatCommandNotInGameFail  = "You can only perform this command while in a game."
+	ChatCommandStartedFail    = "The game is already started, so you cannot use that command."
+	ChatCommandNotOwnerFail   = "Only the table owner can use that command."
+	ChatCommandNotDiscordFail = "You can only perform this command from the Hanabi Discord server."
 )

@@ -291,7 +291,7 @@ func (*Games) GetNumSimilar(seed string) (int, error) {
 	return count, nil
 }
 
-func (*Games) GetAllDeals(databaseID int) ([]*GameHistory, error) {
+func (*Games) GetAllDealsFromGameID(databaseID int) ([]*GameHistory, error) {
 	rows, err := db.Query(context.Background(), `
 		SELECT
 			id,
@@ -308,6 +308,56 @@ func (*Games) GetAllDeals(databaseID int) ([]*GameHistory, error) {
 		WHERE seed = (SELECT seed FROM games WHERE id = $1)
 		ORDER BY id
 	`, databaseID)
+
+	games := make([]*GameHistory, 0)
+	for rows.Next() {
+		var game GameHistory
+		var playerNames string
+		if err2 := rows.Scan(
+			&game.ID,
+			&game.Score,
+			&playerNames,
+			&game.DatetimeFinished,
+			&game.Seed,
+		); err2 != nil {
+			return nil, err2
+		}
+
+		// The players come from the database in a random order
+		// (since we did not include an "ORDER BY" keyword)
+		// Alphabetize the players
+		playerNamesSlice := strings.Split(playerNames, ", ")
+		sort.Strings(playerNamesSlice)
+		game.PlayerNames = strings.Join(playerNamesSlice, ", ")
+
+		games = append(games, &game)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+	rows.Close()
+
+	return games, nil
+}
+
+func (*Games) GetAllDealsFromSeed(seed string) ([]*GameHistory, error) {
+	rows, err := db.Query(context.Background(), `
+		SELECT
+			id,
+			score,
+			(
+				SELECT STRING_AGG(users.username, ', ')
+				FROM game_participants
+					JOIN users ON users.id = game_participants.user_id
+				WHERE game_participants.game_id = games.id
+			) AS player_names,
+			datetime_finished,
+			seed
+		FROM games
+		WHERE seed = $1
+		ORDER BY id
+	`, seed)
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {

@@ -17,7 +17,7 @@ type Table struct {
 	Spectators []*Spectator
 	// We also keep track of spectators who have disconnected
 	// so that we can automatically put them back into the shared replay
-	DisconSpectators map[int]bool
+	DisconSpectators map[int]struct{}
 
 	// This is the user ID of the person who started the table
 	// or the current leader of the shared replay
@@ -86,7 +86,7 @@ func NewTable(name string, owner int) *Table {
 
 		Players:          make([]*Player, 0),
 		Spectators:       make([]*Spectator, 0),
-		DisconSpectators: make(map[int]bool),
+		DisconSpectators: make(map[int]struct{}),
 
 		Owner:   owner,
 		Visible: true, // Tables are visible by default
@@ -139,6 +139,7 @@ func (t *Table) CheckIdle() {
 			// They might be in the process of reconnecting,
 			// so make a fake session that will represent them
 			s = newFakeSession(sp.ID, sp.Name)
+			logger.Info("Created a new fake session in the \"CheckIdle()\" function.")
 		}
 		commandTableUnattend(s, &CommandData{
 			TableID: t.ID,
@@ -157,8 +158,8 @@ func (t *Table) CheckIdle() {
 		// (this will put everyone in a non-shared replay of the idle game)
 		commandAction(s, &CommandData{
 			TableID: t.ID,
-			Type:    actionTypeGameOver,
-			Value:   endConditionIdleTimeout,
+			Type:    ActionTypeGameOver,
+			Value:   EndConditionIdleTimeout,
 		})
 	} else {
 		// We need to end a game that hasn't started yet
@@ -215,6 +216,7 @@ func (t *Table) GetOwnerSession() *Session {
 				// They might be in the process of reconnecting,
 				// so make a fake session that will represent them
 				s = newFakeSession(p.ID, p.Name)
+				logger.Info("Created a new fake session in the \"GetOwnerSession()\" function.")
 			}
 			break
 		}
@@ -223,6 +225,7 @@ func (t *Table) GetOwnerSession() *Session {
 	if s == nil {
 		logger.Error("Failed to find the owner for table " + strconv.Itoa(t.ID) + ".")
 		s = newFakeSession(-1, "Unknown")
+		logger.Info("Created a new fake session in the \"GetOwnerSession()\" function.")
 	}
 
 	return s

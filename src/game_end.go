@@ -2,15 +2,10 @@ package main
 
 import (
 	"errors"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
-)
-
-var (
-	seedRegexp = regexp.MustCompile(`p\dv\d+s(\d+)`)
 )
 
 func (g *Game) End() {
@@ -18,7 +13,7 @@ func (g *Game) End() {
 	t := g.Table
 
 	t.DatetimeFinished = time.Now()
-	if g.EndCondition > endConditionNormal {
+	if g.EndCondition > EndConditionNormal {
 		g.Score = 0
 	}
 	logger.Info(t.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
@@ -154,7 +149,7 @@ func (g *Game) End() {
 	// after the game is converted)
 	for _, p := range t.Players {
 		if p.Session != nil {
-			p.Session.Set("status", statusLobby)
+			p.Session.Set("status", StatusLobby)
 			notifyAllUser(p.Session)
 		}
 	}
@@ -192,9 +187,6 @@ func (g *Game) End() {
 		// The second argument tells the client to increment the total number of games played
 		p.Session.NotifyGameHistory(h, true)
 	}
-
-	// Send a chat message with the game result and players
-	g.AnnounceGameResult()
 
 	// All games are automatically converted to shared replays after they finish
 	// (unless all the players are in the lobby / disconnected, or if the game ended to idleness)
@@ -292,23 +284,23 @@ func (g *Game) WriteDatabase() error {
 
 	// If the game ended in a special way, we also need to insert an "game over" action
 	var gameOverAction *GameAction
-	if g.EndCondition == endConditionTimeout {
+	if g.EndCondition == EndConditionTimeout {
 		gameOverAction = &GameAction{
-			Type:   actionTypeGameOver,
+			Type:   ActionTypeGameOver,
 			Target: g.EndPlayer,
-			Value:  endConditionTimeout,
+			Value:  EndConditionTimeout,
 		}
-	} else if g.EndCondition == endConditionTerminated {
+	} else if g.EndCondition == EndConditionTerminated {
 		gameOverAction = &GameAction{
-			Type:   actionTypeGameOver,
+			Type:   ActionTypeGameOver,
 			Target: g.EndPlayer,
-			Value:  endConditionTerminated,
+			Value:  EndConditionTerminated,
 		}
-	} else if g.EndCondition == endConditionIdleTimeout {
+	} else if g.EndCondition == EndConditionIdleTimeout {
 		gameOverAction = &GameAction{
-			Type:   actionTypeGameOver,
+			Type:   ActionTypeGameOver,
 			Target: 0,
-			Value:  endConditionIdleTimeout,
+			Value:  EndConditionIdleTimeout,
 		}
 	}
 	if gameOverAction != nil {
@@ -405,68 +397,6 @@ func (g *Game) WriteDatabase() error {
 	return nil
 }
 
-func (g *Game) AnnounceGameResult() {
-	// Local variables
-	t := g.Table
-
-	// Don't announce the results of test games
-	if t.Name == "test game" {
-		return
-	}
-
-	// Make the list of names
-	playerList := make([]string, 0)
-	for _, p := range g.Players {
-		playerList = append(playerList, p.Name)
-	}
-	msg := "[" + strings.Join(playerList, ", ") + "] "
-	if g.EndCondition == endConditionTerminated {
-		msg += "terminated"
-	} else {
-		msg += "finished"
-	}
-	msg += " a"
-	firstLetter := strings.ToLower(g.Options.Variant)[0]
-	if firstLetter == 'a' ||
-		firstLetter == 'e' ||
-		firstLetter == 'i' ||
-		firstLetter == 'o' ||
-		firstLetter == 'u' {
-
-		msg += "n"
-	}
-	msg += " " + g.Options.Variant + " game"
-	if g.EndCondition == endConditionTerminated {
-		msg += ". "
-	} else {
-		msg += " with a score of " + strconv.Itoa(g.Score) + ". "
-		if g.Score == variants[g.Options.Variant].MaxScore {
-			msg += pogChamp + " "
-		} else if g.Score == 0 {
-			msg += bibleThump + " "
-		}
-	}
-	msg += "(id: " + strconv.Itoa(g.ID) + ", "
-	// Instead of displaying the full seed (e.g. "p2v0s1"), only communicate the final number suffix
-	match := seedRegexp.FindStringSubmatch(g.Seed)
-	if match == nil {
-		logger.Error("Failed to parse the seed when ending game " + strconv.Itoa(g.ID))
-		return
-	}
-	msg += "seed: " + match[1] + ")"
-
-	commandChat(nil, &CommandData{
-		Server: true,
-		Msg:    msg,
-		Room:   "lobby",
-		// Speedrun announcements do not get sent to the lobby to avoid spam
-		// (they will still go to the #hanabi-live-bot channel though so that it is easy to find the
-		// game ID of a perfect game afterward)
-		Spam:        true,
-		OnlyDiscord: g.Options.Speedrun,
-	})
-}
-
 func (t *Table) ConvertToSharedReplay() {
 	g := t.Game
 
@@ -498,7 +428,7 @@ func (t *Table) ConvertToSharedReplay() {
 
 		// If this game was ended due to idleness,
 		// skip conversion so that the shared replay gets deleted below
-		if g.EndCondition == endConditionIdleTimeout {
+		if g.EndCondition == EndConditionIdleTimeout {
 			logger.Info("Skipped converting " + p.Name + " to a spectator " +
 				"since the game ended due to idleness.")
 			continue
@@ -554,7 +484,7 @@ func (t *Table) ConvertToSharedReplay() {
 	for _, sp := range t.Spectators {
 		// Reset everyone's status (both players and spectators are now spectators)
 		if sp.Session != nil {
-			sp.Session.Set("status", statusSharedReplay)
+			sp.Session.Set("status", StatusSharedReplay)
 			notifyAllUser(sp.Session)
 		}
 

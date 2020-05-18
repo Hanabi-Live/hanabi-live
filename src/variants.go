@@ -25,6 +25,11 @@ type JSONVariant struct {
 	ClueRanks              *[]int    `json:"clueRanks"`
 	ColorCluesTouchNothing bool
 	RankCluesTouchNothing  bool
+	SpecialRank            int  `json:"specialRank"` // For e.g. Rainbow-Ones
+	SpecialAllClueColors   bool `json:"specialAllClueColors"`
+	SpecialAllClueRanks    bool `json:"specialAllClueRanks"`
+	SpecialNoClueColors    bool `json:"specialNoClueColors"`
+	SpecialNoClueRanks     bool `json:"specialNoClueRanks"`
 }
 
 type Variant struct {
@@ -38,6 +43,11 @@ type Variant struct {
 	ClueRanks              []int
 	ColorCluesTouchNothing bool
 	RankCluesTouchNothing  bool
+	SpecialRank            int // For e.g. Rainbow-Ones
+	SpecialAllClueColors   bool
+	SpecialAllClueRanks    bool
+	SpecialNoClueColors    bool
+	SpecialNoClueRanks     bool
 	MaxScore               int
 }
 
@@ -72,8 +82,8 @@ func variantsInit() {
 		return
 	}
 
-	uniqueNameMap := make(map[string]bool)
-	uniqueIDMap := make(map[int]bool)
+	uniqueNameMap := make(map[string]struct{})
+	uniqueIDMap := make(map[int]struct{})
 	variants = make(map[string]*Variant)
 	variantsID = make(map[int]string)
 	for name, variant := range JSONVariants {
@@ -82,7 +92,7 @@ func variantsInit() {
 			logger.Fatal("There are two variants with the name of \"" + name + "\".")
 			return
 		}
-		uniqueNameMap[name] = true
+		uniqueNameMap[name] = struct{}{}
 
 		// Validate that all of the ID's are unique
 		if _, ok := uniqueIDMap[variant.ID]; ok {
@@ -90,7 +100,7 @@ func variantsInit() {
 				"\"" + strconv.Itoa(variant.ID) + "\".")
 			return
 		}
-		uniqueIDMap[variant.ID] = true
+		uniqueIDMap[variant.ID] = struct{}{}
 
 		// Validate that there is at least one suit
 		if len(variant.Suits) < 1 {
@@ -116,7 +126,7 @@ func variantsInit() {
 		if strings.HasPrefix(name, "Up or Down") {
 			// The "Up or Down" variants have START cards
 			// ("startCardRank" is defined in the "variantUpOrDown.go" file)
-			variantRanks = append(variantRanks, startCardRank)
+			variantRanks = append(variantRanks, StartCardRank)
 		}
 
 		// Validate or derive the clue colors (the colors available to clue in this variant)
@@ -156,6 +166,12 @@ func variantsInit() {
 			clueRanks = &[]int{1, 2, 3, 4, 5}
 		}
 
+		// The default value of "SpecialRank" is -1, not 0
+		specialRank := variant.SpecialRank
+		if specialRank == 0 {
+			specialRank = -1
+		}
+
 		// Convert the JSON variant into a variant object and store it in the map
 		variants[name] = &Variant{
 			Name:                   name,
@@ -166,6 +182,11 @@ func variantsInit() {
 			ClueRanks:              *clueRanks,
 			ColorCluesTouchNothing: variant.ColorCluesTouchNothing,
 			RankCluesTouchNothing:  variant.RankCluesTouchNothing,
+			SpecialRank:            specialRank,
+			SpecialAllClueColors:   variant.SpecialAllClueColors,
+			SpecialAllClueRanks:    variant.SpecialAllClueRanks,
+			SpecialNoClueColors:    variant.SpecialNoClueColors,
+			SpecialNoClueRanks:     variant.SpecialNoClueRanks,
 			MaxScore:               len(variantSuits) * 5,
 			// (we assume that there are 5 points per stack)
 		}
@@ -209,7 +230,7 @@ func variantsInit() {
 func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 	variant := variants[variantName]
 
-	if clue.Type == clueTypeColor {
+	if clue.Type == ClueTypeColor {
 		if variant.ColorCluesTouchNothing {
 			return false
 		}
@@ -221,22 +242,13 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			return false
 		}
 
-		// Checking for "Rainbow-" also checks for "Muddy-Rainbow-"
-		if (strings.Contains(variantName, "Rainbow-Ones") && card.Rank == 1) ||
-			(strings.Contains(variantName, "Omni-Ones") && card.Rank == 1) ||
-			(strings.Contains(variantName, "Rainbow-Fives") && card.Rank == 5) ||
-			(strings.Contains(variantName, "Omni-Fives") && card.Rank == 5) {
-
-			return true
-		}
-		if (strings.Contains(variantName, "White-Ones") && card.Rank == 1) ||
-			(strings.Contains(variantName, "Null-Ones") && card.Rank == 1) ||
-			(strings.Contains(variantName, "Light-Pink-Ones") && card.Rank == 1) ||
-			(strings.Contains(variantName, "White-Fives") && card.Rank == 5) ||
-			(strings.Contains(variantName, "Null-Fives") && card.Rank == 5) ||
-			(strings.Contains(variantName, "Light-Pink-Fives") && card.Rank == 5) {
-
-			return false
+		if variant.SpecialRank == card.Rank {
+			if variant.SpecialAllClueColors {
+				return true
+			}
+			if variant.SpecialNoClueColors {
+				return false
+			}
 		}
 
 		clueColor := variant.ClueColors[clue.Value]
@@ -244,7 +256,7 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 		return stringInSlice(clueColor, cardColors)
 	}
 
-	if clue.Type == clueTypeRank {
+	if clue.Type == ClueTypeRank {
 		if variant.RankCluesTouchNothing {
 			return false
 		}
@@ -256,22 +268,13 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			return false
 		}
 
-		// Checking for "Pink-" also checks for "Light-Pink-"
-		if (strings.Contains(variantName, "Pink-Ones") && card.Rank == 1) ||
-			(strings.Contains(variantName, "Omni-Ones") && card.Rank == 1) ||
-			(strings.Contains(variantName, "Pink-Fives") && card.Rank == 5) ||
-			(strings.Contains(variantName, "Omni-Fives") && card.Rank == 5) {
-
-			return true
-		}
-		if (strings.Contains(variantName, "Brown-Ones") && card.Rank == 1) ||
-			(strings.Contains(variantName, "Null-Ones") && card.Rank == 1) ||
-			(strings.Contains(variantName, "Muddy-Rainbow-Ones") && card.Rank == 1) ||
-			(strings.Contains(variantName, "Brown-Fives") && card.Rank == 5) ||
-			(strings.Contains(variantName, "Null-Fives") && card.Rank == 5) ||
-			(strings.Contains(variantName, "Muddy-Rainbow-Fives") && card.Rank == 5) {
-
-			return false
+		if variant.SpecialRank == card.Rank {
+			if variant.SpecialAllClueRanks {
+				return true
+			}
+			if variant.SpecialNoClueRanks {
+				return false
+			}
 		}
 
 		return clue.Value == card.Rank

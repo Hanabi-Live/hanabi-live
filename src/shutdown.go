@@ -22,7 +22,7 @@ func shutdown() {
 	} else {
 		// Notify the lobby and all ongoing tables
 		notifyAllShutdown()
-		numMinutes := strconv.Itoa(int(shutdownTimeout.Minutes()))
+		numMinutes := strconv.Itoa(int(ShutdownTimeout.Minutes()))
 		chatServerSendAll("The server will shutdown in " + numMinutes + " minutes or " +
 			"when all ongoing games have finished, whichever comes first.")
 		go shutdownXMinutesLeft(5)
@@ -32,7 +32,7 @@ func shutdown() {
 }
 
 func shutdownXMinutesLeft(minutesLeft int) {
-	time.Sleep(shutdownTimeout - time.Duration(minutesLeft)*time.Minute)
+	time.Sleep(ShutdownTimeout - time.Duration(minutesLeft)*time.Minute)
 
 	// Do nothing if the shutdown was canceled
 	if !shuttingDown {
@@ -68,7 +68,7 @@ func shutdownWait() {
 			break
 		}
 
-		if countActiveTables() > 0 && time.Since(datetimeShutdownInit) >= shutdownTimeout {
+		if countActiveTables() > 0 && time.Since(datetimeShutdownInit) >= ShutdownTimeout {
 			// It has been a long time since the server shutdown/restart was initiated,
 			// so automatically terminate any remaining ongoing games
 			for _, t := range tables {
@@ -121,10 +121,9 @@ func shutdownImmediate() {
 		Msg:    "The server successfully shut down at: " + getCurrentTimestamp(),
 		Room:   "lobby",
 		Server: true,
-		Spam:   true,
 	})
 
-	execute("stop.sh", projectPath)
+	executeScript("stop.sh")
 
 	// Block until the process is killed so that no more moves can be submitted
 	select {}
@@ -141,7 +140,7 @@ func checkImminenntShutdown(s *Session) bool {
 		return false
 	}
 
-	timeLeft := shutdownTimeout - time.Since(datetimeShutdownInit)
+	timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit)
 	minutesLeft := int(timeLeft.Minutes())
 	if minutesLeft <= 5 {
 		msg := "The server is shutting down "

@@ -41,14 +41,8 @@ func httpWS(c *gin.Context) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		logger.Error("Failed to parse the IP address in the WebSocket function:", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		deleteCookie(c)
-		commandMutex.Unlock()
+		msg := "Failed to parse the IP address in the WebSocket function:"
+		httpWSError(msg, err, c)
 		return
 	} else {
 		ip = v
@@ -56,14 +50,8 @@ func httpWS(c *gin.Context) {
 
 	// Check to see if their IP is banned
 	if banned, err := models.BannedIPs.Check(ip); err != nil {
-		logger.Error("Failed to check to see if the IP \""+ip+"\" is banned:", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		deleteCookie(c)
-		commandMutex.Unlock()
+		msg := "Failed to check to see if the IP \"" + ip + "\" is banned:"
+		httpWSError(msg, err, c)
 		return
 	} else if banned {
 		logger.Info("IP \"" + ip + "\" tried to establish a WebSocket connection, " +
@@ -82,14 +70,8 @@ func httpWS(c *gin.Context) {
 	// Check to see if their IP is muted
 	var muted bool
 	if v, err := models.MutedIPs.Check(ip); err != nil {
-		logger.Error("Failed to check to see if the IP \""+ip+"\" is muted:", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		deleteCookie(c)
-		commandMutex.Unlock()
+		msg := "Failed to check to see if the IP \"" + ip + "\" is muted:"
+		httpWSError(msg, err, c)
 		return
 	} else {
 		muted = v
@@ -131,17 +113,29 @@ func httpWS(c *gin.Context) {
 		commandMutex.Unlock()
 		return
 	} else if err != nil {
-		logger.Error("Failed to get the username for user "+strconv.Itoa(userID)+":", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		deleteCookie(c)
-		commandMutex.Unlock()
+		msg := "Failed to get the username for user " + strconv.Itoa(userID) + ":"
+		httpWSError(msg, err, c)
 		return
 	} else {
 		username = v
+	}
+
+	// Get their friends and reverse friends
+	var friendsMap map[int]struct{}
+	if v, err := models.UserFriends.GetMap(userID); err != nil {
+		msg := "Failed to get the friend map for user \"" + username + "\":"
+		httpWSError(msg, err, c)
+		return
+	} else {
+		friendsMap = v
+	}
+	var reverseFriendsMap map[int]struct{}
+	if v, err := models.UserReverseFriends.GetMap(userID); err != nil {
+		msg := "Failed to get the reverse friend map for user \"" + username + "\":"
+		httpWSError(msg, err, c)
+		return
+	} else {
+		reverseFriendsMap = v
 	}
 
 	// If they got this far, they are a valid user
@@ -153,10 +147,12 @@ func httpWS(c *gin.Context) {
 	keys["userID"] = userID
 	keys["username"] = username
 	keys["muted"] = muted
-	keys["status"] = statusLobby // By default, the user is in the lobby
+	keys["status"] = StatusLobby // By default, the user is in the lobby
+	keys["friends"] = friendsMap
+	keys["reverseFriends"] = reverseFriendsMap
 	keys["inactive"] = false
 	keys["fakeUser"] = false
-	keys["rateLimitAllowance"] = rateLimitRate
+	keys["rateLimitAllowance"] = RateLimitRate
 	keys["rateLimitLastCheck"] = time.Now()
 	keys["banned"] = false
 
@@ -165,6 +161,7 @@ func httpWS(c *gin.Context) {
 	// further initialization is performed there
 	commandMutex.Unlock() // We will acquire the lock again in the "websocketConnect()" function
 	if err := m.HandleRequestWithKeys(w, r, keys); err != nil {
+		// We don't use "httpWSError()" since we do not want to unlock the command mutex
 		logger.Error("Failed to establish the WebSocket connection for user \""+username+"\":", err)
 		http.Error(
 			w,
@@ -174,4 +171,18 @@ func httpWS(c *gin.Context) {
 		deleteCookie(c)
 		return
 	}
+}
+
+func httpWSError(msg string, err error, c *gin.Context) {
+	// Local variables
+	w := c.Writer
+
+	logger.Error(msg, err)
+	http.Error(
+		w,
+		http.StatusText(http.StatusInternalServerError),
+		http.StatusInternalServerError,
+	)
+	deleteCookie(c)
+	commandMutex.Unlock()
 }
