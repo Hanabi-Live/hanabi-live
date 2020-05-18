@@ -51,6 +51,10 @@ if [[ -z $GOOGLE_DRIVE_SERVICE_ACCOUNT ]]; then
   echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_SERVICE_ACCOUNT\" is not set in the \".env\" file."
   exit 0
 fi
+if [[ -z $GOOGLE_DRIVE_PARENT_DIRECTORY ]]; then
+  echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_PARENT_DIRECTORY\" is not set in the \".env\" file."
+  exit 0
+fi
 if command -v "gdrive" > /dev/null; then
   GDRIVE_PATH="gdrive"
 else
