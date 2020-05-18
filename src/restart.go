@@ -23,7 +23,7 @@ func restart() {
 	commandMutex.Lock()
 	defer commandMutex.Unlock()
 
-	logger.Info("Serializing the tables...")
+	logger.Info("Serializing the tables and writing all tables to disk...")
 	if !serializeTables() {
 		return
 	}
@@ -40,8 +40,13 @@ func restart() {
 		Server: true,
 	})
 
-	logger.Info("Finished writing all tables to disk. Restarting...")
-	executeScript("restart.sh")
+	logger.Info("Finished writing all tables to disk.")
+	if runtime.GOOS != "windows" {
+		logger.Info("Restarting...")
+		executeScript("restart.sh")
+	} else {
+		logger.Info("Manually kill the server now.")
+	}
 
 	// Block until the process is killed so that no more moves can be submitted
 	select {}
