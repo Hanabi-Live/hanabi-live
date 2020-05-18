@@ -187,8 +187,16 @@ export default class HanabiCard extends Konva.Group {
   setClued(clued: boolean) {
     this.chopMoveBorder!.hide();
     this.finesseBorder!.hide();
-    const offset = clued ? 0.6 : 0.5;
-    this.offsetY(offset * CARD_H);
+    this.offsetY(0.5 * CARD_H);
+    if (
+      clued
+      && (
+        !globals.lobby.settings.keldonMode
+        || (this.holder === globals.playerUs && !globals.replay)
+      )
+    ) {
+      this.offsetY(0.6 * CARD_H);
+    }
     this.cluedBorder!.visible(clued);
   }
 
