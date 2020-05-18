@@ -80,9 +80,10 @@ func serializeTables() bool {
 			})
 		}
 		if len(t.Spectators) > 0 {
-			logger.Error("The size of the spectators slice is " + strconv.Itoa(len(t.Spectators)) +
-				", even after booting all of the spectators. Manually emptying the slice.")
 			t.Spectators = make([]*Spectator, 0)
+		}
+		if len(t.DisconSpectators) > 0 {
+			t.DisconSpectators = make(map[int]struct{})
 		}
 
 		// Set all the player sessions to nil, since it is not necessary to serialize those

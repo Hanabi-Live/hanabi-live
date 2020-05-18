@@ -139,7 +139,10 @@ func commandTableStart(s *Session, d *CommandData) {
 		seedMap := make(map[string]struct{})
 		for _, p := range t.Players {
 			var seeds []string
-			if v, err := models.Games.GetPlayerSeeds(p.ID); err != nil {
+			if v, err := models.Games.GetPlayerSeeds(
+				p.ID,
+				variants[g.Options.Variant].ID,
+			); err != nil {
 				logger.Error("Failed to get the past seeds for \""+s.Username()+"\":", err)
 				s.Error(StartGameFail)
 				return
@@ -147,18 +150,19 @@ func commandTableStart(s *Session, d *CommandData) {
 				seeds = v
 			}
 
-			for _, v := range seeds {
-				seedMap[v] = struct{}{}
+			for _, seed := range seeds {
+				seedMap[seed] = struct{}{}
 			}
 		}
 
+		logger.Debug(seedMap)
 		// Find a seed that no-one has played before
 		seedNum := 0
 		looking := true
 		for looking {
 			seedNum++
 			g.Seed = seedPrefix + strconv.Itoa(seedNum)
-			if _, ok := seedMap[g.Seed]; ok {
+			if _, ok := seedMap[g.Seed]; !ok {
 				looking = false
 			}
 		}

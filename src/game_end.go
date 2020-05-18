@@ -416,7 +416,7 @@ func (t *Table) ConvertToSharedReplay() {
 		if !p.Present {
 			logger.Info("Skipped converting " + p.Name +
 				" to a spectator since they are not present.")
-			if p.ID == t.Owner && p.Session.IsClosed() {
+			if p.ID == t.Owner && (p.Session == nil || p.Session.IsClosed()) {
 				// We don't want to pass the replay leader away if they are still in the lobby
 				// (as opposed to being offline)
 				ownerOffline = true
