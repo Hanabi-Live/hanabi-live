@@ -110,7 +110,7 @@ const tablesDraw = () => {
     } else {
       status = 'Not Started';
     }
-    if (status !== 'Not Started') {
+    if (status !== 'Not Started' && tableHasFriends(table)) {
       status += ` (<span id="status-${table.id}">${table.progress}</span>%)`;
     }
     $('<td>').html(status).appendTo(row);

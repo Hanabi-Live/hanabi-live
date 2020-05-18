@@ -337,7 +337,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	oldProgress := t.Progress
 	if progress != oldProgress {
 		t.Progress = progress
-		notifyAllTableProgress(t)
+		t.NotifyProgress()
 	}
 
 	// In some variants, playing a card has the potential to reduce the maximum score

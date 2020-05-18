@@ -89,7 +89,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 		oldProgress := t.Progress
 		if progress != oldProgress {
 			t.Progress = progress
-			notifyAllTableProgress(t)
+			t.NotifyProgress()
 		}
 	} else if d.Type == ReplayActionTypeArrow {
 		// A card arrow indication

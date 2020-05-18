@@ -310,6 +310,35 @@ func (t *Table) NotifySpectatorsNote(order int) {
 	}
 }
 
+func (t *Table) NotifyProgress() {
+	if !t.Visible {
+		return
+	}
+
+	// We do not want to notify everyone, as that would constitute a lot of spam
+	// (e.g. everyone getting progress updates for every table)
+	// Only send the progress to users that have players or spectators in this table on their
+	// friends list
+	notifyMap := make(map[int]struct{})
+	if !t.Replay {
+		for _, p := range t.Players {
+			for userID := range p.Session.ReverseFriends() {
+				notifyMap[userID] = struct{}{}
+			}
+		}
+	}
+	for _, sp := range t.Spectators {
+		for userID := range sp.Session.ReverseFriends() {
+			notifyMap[userID] = struct{}{}
+		}
+	}
+	for userID := range notifyMap {
+		if s, ok := sessions[userID]; ok {
+			s.NotifyTableProgress(t)
+		}
+	}
+}
+
 // NotifyBoot boots the people in a game or shared replay back to the lobby screen
 func (t *Table) NotifyBoot() {
 	if !t.Replay {

@@ -28,14 +28,6 @@ func notifyAllTable(t *Table) {
 	}
 }
 
-func notifyAllTableProgress(t *Table) {
-	if t.Visible {
-		for _, s := range sessions {
-			s.NotifyTableProgress(t)
-		}
-	}
-}
-
 func notifyAllTableGone(t *Table) {
 	if t.Visible {
 		for _, s := range sessions {
