@@ -542,6 +542,22 @@ export default class HanabiCard extends Konva.Group {
         suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
       }
 
+      // Handle the special case where all negative rank clues should "fill in" a card of a
+      // rank-less suit
+      if (
+        !positive
+        && this.negativeRankClues.length === globals.variant.ranks.length
+        // We know that any special rank can be given as a rank clue
+        // so there is no need to have a separate check for special variants
+      ) {
+        const moreSuitsRemoved = filterInPlace(
+          this.possibleSuits,
+          (suit: Suit) => suit.noClueRanks,
+        );
+        suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
+        suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
+      }
+
       // If the rank of the card is not known yet,
       // change the rank pip that corresponds with this number to signify a positive clue
       if (positive) {
