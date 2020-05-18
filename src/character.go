@@ -186,8 +186,8 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *GamePlayer)
 		p.CharacterMetadata != -1 &&
 		(d.Type != ActionTypeColorClue && d.Type != ActionTypeRankClue) {
 
-		s.Warning("You are " + p.Character + ", so you must continue to clue cards until " +
-			"one of them is played or discarded.")
+		s.Warning("You are " + p.Character + ", so you must continue to clue the same card until " +
+			"it is played or discarded.")
 		return true
 	} else if p.Character == "Impulsive" && // 17
 		p.CharacterMetadata == 0 &&
@@ -348,24 +348,18 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 	} else if p.Character == "Insistent" && // 13
 		p.CharacterMetadata != -1 {
 
-		if d.Target != p.CharacterMetadata {
-			s.Warning("You are " + p.Character + ", so you must continue to clue cards until " +
-				"one of them is played or discarded.")
-			return true
-		}
-
 		cardsTouched := p2.FindCardsTouchedByClue(clue)
-		touchedInsistentCards := false
+		touchedInsistentCard := false
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			if c.InsistentTouched {
-				touchedInsistentCards = true
+				touchedInsistentCard = true
 				break
 			}
 		}
-		if !touchedInsistentCards {
-			s.Warning("You are " + p.Character + ", so you must continue to clue cards until " +
-				"one of them is played or discarded.")
+		if !touchedInsistentCard {
+			s.Warning("You are " + p.Character + ", so you must continue to clue a card until it " +
+				"is played or discarded.")
 			return true
 		}
 	} else if p.Character == "Genius" && // 24
@@ -487,6 +481,7 @@ func characterPostClue(d *CommandData, g *Game, p *GamePlayer) {
 			c := g.Deck[order]
 			c.InsistentTouched = true
 		}
+		p.CharacterMetadata = 0 // 0 means that the "Insistent" state is activated
 	}
 
 	if p2.Character == "Vindictive" { // 9
@@ -510,9 +505,7 @@ func characterPostRemoveCard(g *Game, p *GamePlayer, c *Card) {
 	}
 
 	for _, c2 := range p.Hand {
-		if c2.InsistentTouched {
-			c2.InsistentTouched = false
-		}
+		c2.InsistentTouched = false
 	}
 
 	// Find the "Insistent" player and reset their state so that
@@ -637,7 +630,7 @@ func characterCheckSoftlock(g *Game, p *GamePlayer) {
 
 	if g.ClueTokens == 0 &&
 		(p.Character == "Vindictive" || // 9
-			p.Character == "Insistent") { // 13
+			(p.Character == "Insistent" && p.CharacterMetadata == 0)) { // 13
 
 		g.Strikes = 3
 
