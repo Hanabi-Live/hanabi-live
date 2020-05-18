@@ -547,8 +547,9 @@ export default class HanabiCard extends Konva.Group {
       if (
         !positive
         && this.negativeRankClues.length === globals.variant.ranks.length
-        // We know that any specialRank can be given as a rank clue
-        // so there is no need to have a check for special-ones
+        && 
+        // We know that any special rank can be given as a rank clue
+        // so there is no need to have a separate check for special variants
       ) {
         const moreSuitsRemoved = filterInPlace(
           this.possibleSuits,
