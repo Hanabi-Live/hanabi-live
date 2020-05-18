@@ -235,22 +235,6 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *GameP
 				"the same player.")
 			return true
 		}
-	} else if p.Character == "Synesthetic" { // 25
-		if d.Type != ActionTypeColorClue {
-			s.Warning("You are " + p.Character + ", so you must now give a color clue.")
-			return true
-		}
-
-		if d.Target != p.CharacterMetadata {
-			s.Warning("You are " + p.Character + ", so you must give the second clue to " +
-				"the same player.")
-			return true
-		}
-
-		if d.Value != p.CharacterMetadata2 {
-			s.Warning("You are " + p.Character + ", so you must give the matching color clue.")
-			return true
-		}
 	} else if p.Character == "Panicky" && // 26
 		d.Type != ActionTypeDiscard {
 
@@ -393,22 +377,6 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		if clue.Type != ClueTypeRank {
 			s.Warning("You are " + p.Character + ", so you must give a rank clue first.")
 			return true
-		}
-	} else if p.Character == "Synesthetic" && // 25
-		p.CharacterMetadata == -1 {
-
-		if clue.Type != ClueTypeRank {
-			s.Warning("You are " + p.Character + ", so you must give a rank clue first.")
-			return true
-		}
-
-		if !g.Options.EmptyClues {
-			cardsTouched := p2.FindCardsTouchedByClue(clue)
-			if len(cardsTouched) == 0 {
-				s.Warning("You are " + p.Character + ", so both versions of the clue must touch " +
-					"at least 1 card in the hand.")
-				return true
-			}
 		}
 	}
 
@@ -568,11 +536,6 @@ func characterPostAction(d *CommandData, g *Game, p *GamePlayer) {
 		} else {
 			p.CharacterMetadata = -1
 		}
-	} else if p.Character == "Synesthetic" { // 25
-		// The first clue given should not cost a clue
-		if p.CharacterMetadata == -1 {
-			g.ClueTokens++
-		}
 	} else if p.Character == "Contrarian" { // 27
 		g.TurnsInverted = !g.TurnsInverted
 	}
@@ -590,9 +553,6 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 		return false
 	}
 
-	// Convert the incoming data to a clue object
-	clue := NewClue(d)
-
 	if p.Character == "Genius" && // 24
 		d.Type == ActionTypeRankClue {
 
@@ -603,20 +563,6 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 			return true
 		}
 		p.CharacterMetadata = -1
-		return false
-	} else if p.Character == "Synesthetic" && // 25
-		d.Type == ActionTypeRankClue {
-
-		// Must clue both a number and a color of the same value (uses 1 clue)
-		// The clue target is stored in "p.CharacterMetadata"
-		// The value of the clue is stored in "p.CharacterMetadata2"
-		if p.CharacterMetadata == -1 {
-			p.CharacterMetadata = d.Target
-			p.CharacterMetadata2 = clue.Value - 1
-			return true
-		}
-		p.CharacterMetadata = -1
-		p.CharacterMetadata2 = -1
 		return false
 	} else if p.Character == "Panicky" && // 26
 		d.Type == ActionTypeDiscard {

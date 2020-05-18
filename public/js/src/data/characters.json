@@ -123,13 +123,8 @@
   },
   "Genius": {
     "id": 24,
-    "description": "Must clue both a number and a color (uses 2 clues)",
+    "description": "Must clue both a color and a number (uses 2 clues)",
     "emoji": "🧠"
-  },
-  "Synesthetic": {
-    "id": 25,
-    "description": "Must clue both a number and a color of the same value (uses 1 clue)",
-    "emoji": "🎨"
   },
   "Panicky": {
     "id": 26,
