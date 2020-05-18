@@ -159,7 +159,7 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Increment the turn
-	// (but don't increment it if we are on a characters that takes two turns in a row)
+	// (but don't increment it if we are on a characters that take two turns in a row)
 	if !characterNeedsToTakeSecondTurn(d, g, p) {
 		g.Turn++
 		if g.TurnsInverted {

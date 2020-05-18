@@ -22,7 +22,7 @@ var (
 	characterNames  []string
 	charactersID    map[int]string
 	debugCharacters = []string{
-		"Quacker",
+		"Genius",
 		"n/a",
 		"n/a",
 		"n/a",
@@ -327,7 +327,8 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 			return true
 		}
 	} else if p.Character == "Miser" && // 10
-		g.ClueTokens < 4 {
+		(g.ClueTokens < 4 ||
+			(strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens < 8)) {
 
 		s.Warning("You are " + p.Character + ", so you cannot give a clue unless " +
 			"there are 4 or more clues available.")
@@ -458,7 +459,8 @@ func characterCheckDiscard(s *Session, g *Game, p *GamePlayer) bool {
 			"odd number of clues available.")
 		return true
 	} else if p.Character == "Wasteful" && // 23
-		g.ClueTokens >= 2 {
+		(g.ClueTokens >= 2 ||
+			(strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens >= 4)) {
 
 		s.Warning("You are " + p.Character + ", so you cannot discard if there are " +
 			"2 or more clues available.")
@@ -557,24 +559,24 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 		return false
 	}
 
-	if p.Character == "Genius" && // 24
-		d.Type == ActionTypeRankClue {
-
-		// Must clue both a number and a color (uses 2 clues)
+	if p.Character == "Genius" { // 24
+		// Must clue both a color and a number (uses 2 clues)
 		// The clue target is stored in "p.CharacterMetadata"
-		if p.CharacterMetadata == -1 {
+		if d.Type == ActionTypeColorClue {
 			p.CharacterMetadata = d.Target
 			return true
+		} else if d.Type == ActionTypeRankClue {
+			p.CharacterMetadata = -1
+			return false
 		}
-		p.CharacterMetadata = -1
-		return false
 	} else if p.Character == "Panicky" && // 26
 		d.Type == ActionTypeDiscard {
 
 		// After discarding, discards again if there are 4 clues or less
 		// "p.CharacterMetadata" represents the state, which alternates between -1 and 0
 		if p.CharacterMetadata == -1 &&
-			g.ClueTokens <= 4 {
+			(g.ClueTokens <= 4 ||
+				(strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens <= 8)) {
 
 			p.CharacterMetadata = 0
 			return true
