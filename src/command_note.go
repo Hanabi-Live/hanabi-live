@@ -57,18 +57,16 @@ func commandNote(s *Session, d *CommandData) {
 		d.Note = d.Note[0 : MaxChatLength-1]
 	}
 
-	// Trim whitespace from both sides of the note
-	d.Note = strings.TrimSpace(d.Note)
-
-	// Validate that the note does not contain any whitespace
-	// (other than a normal space character)
-	for _, letter := range d.Note {
+	// Replace any whitespace that is not a space with a space
+	msg2 := d.Note
+	for _, letter := range msg2 {
 		if unicode.IsSpace(letter) && letter != ' ' {
-			s.Warning("Notes must not contain any whitespace characters " +
-				"(other than a normal space).")
-			return
+			d.Note = strings.ReplaceAll(d.Note, string(letter), " ")
 		}
 	}
+
+	// Trim whitespace from both sides of the note
+	d.Note = strings.TrimSpace(d.Note)
 
 	// Validate that the note does not have two or more consecutive diacritics (accents)
 	// This prevents the attack where notes can have a lot of diacritics and cause overflow

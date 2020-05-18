@@ -258,6 +258,14 @@ func sanitizeChatInput(s *Session, msg string, server bool) (string, bool) {
 		msg = msg[0 : maxLength-1]
 	}
 
+	// Replace any whitespace that is not a space with a space
+	msg2 := msg
+	for _, letter := range msg2 {
+		if unicode.IsSpace(letter) && letter != ' ' {
+			msg = strings.ReplaceAll(msg, string(letter), " ")
+		}
+	}
+
 	// Trim whitespace from both sides of the message
 	msg = strings.TrimSpace(msg)
 
@@ -267,16 +275,6 @@ func sanitizeChatInput(s *Session, msg string, server bool) (string, bool) {
 			s.Warning("Chat messages must not be blank.")
 		}
 		return msg, false
-	}
-
-	// Validate that the message does not contain any whitespace
-	// (other than a normal space character)
-	for _, letter := range msg {
-		if unicode.IsSpace(letter) && letter != ' ' {
-			s.Warning("Chat messages must not contain any whitespace characters " +
-				"(other than a normal space).")
-			return msg, false
-		}
 	}
 
 	// Validate that the message does not have two or more consecutive diacritics (accents)

@@ -155,7 +155,6 @@ func commandTableStart(s *Session, d *CommandData) {
 			}
 		}
 
-		logger.Debug(seedMap)
 		// Find a seed that no-one has played before
 		seedNum := 0
 		looking := true
