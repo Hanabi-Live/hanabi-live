@@ -67,7 +67,7 @@ export default (winW: number, winH: number) => {
   const handPosBGA: any = {};
   const handPosBGAValues = {
     x: 0.44,
-    y: 0.04,
+    y: 0.03,
     w: 0.34,
     h: 0.16,
     spacing: 0.24,
@@ -85,11 +85,13 @@ export default (winW: number, winH: number) => {
       handW -= 0.07;
     }
     if (i === 5) {
-      handY -= 0.03;
-      handSpacing -= 0.042;
+      // There is not enough room for 5 hands to fit on the screen,
+      // so we need to reduce the size of the cards and the spacing
+      handH -= 0.02;
+      handSpacing -= 0.045;
     } else if (i === 6) {
-      handY -= 0.03;
-      handH -= 0.034;
+      handY -= 0.005;
+      handH -= 0.045;
       handSpacing -= 0.075;
     }
 
@@ -167,7 +169,7 @@ export default (winW: number, winH: number) => {
     }
   }
 
-  // This is the position for the player name frames
+  // This is the position for the player name frames in Keldon mode
   // This cannot be algorithmically derived from the hand positions
   const namePosValues = {
     h: 0.02,
@@ -269,8 +271,12 @@ export default (winW: number, winH: number) => {
   const namePosBGA: HandConfig[][] = [];
   for (let i = 2; i <= 6; i++) {
     let { y } = namePosBGAMod;
-    if (i === 6) {
-      y -= 0.035;
+    if (i === 5) {
+      // Matches the "handH" reduction above
+      y -= 0.02;
+    } else if (i === 6) {
+      // Matches the "handH" reduction above
+      y -= 0.045;
     }
     namePosBGA[i] = [];
     for (let j = 0; j < i; j++) {
