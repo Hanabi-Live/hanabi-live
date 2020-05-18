@@ -47,12 +47,20 @@ if uname -a | grep -v MINGW64 >/dev/null 2>&1; then
 fi
 
 # Upload it to Google Drive (see "INSTALL.md")
-if command -v gdrive > /dev/null; then
-  if [[ ! -z $GOOGLE_DRIVE_SERVICE_ACCOUNT ]]; then
-    gdrive upload "$BACKUPS_DIR/$FILENAME.gz" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY"
-  else
-    echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_SERVICE_ACCOUNT\" is not set in the \".env\" file."
-  fi
-else
-  echo "Skipping upload to Google Drive since the \"gdrive\" binary is not found."
+if [[ -z $GOOGLE_DRIVE_SERVICE_ACCOUNT ]]; then
+  echo "Skipping upload to Google Drive since \"GOOGLE_DRIVE_SERVICE_ACCOUNT\" is not set in the \".env\" file."
+  exit 0
 fi
+if command -v "gdrive" > /dev/null; then
+  GDRIVE_PATH="gdrive"
+else
+  GDRIVE_ROOT_PATH="/root/go/bin/gdrive"
+  if [[ -f $GDRIVE_ROOT_PATH ]]; then
+    GDRIVE_PATH=$GDRIVE_ROOT_PATH
+  fi
+fi
+if [[ -z $GDRIVE_PATH ]]; then
+  echo "Skipping upload to Google Drive since the \"gdrive\" binary is not found."
+  exit 1
+fi
+$GDRIVE_PATH upload "$BACKUPS_DIR/$FILENAME.gz" --service-account "$GOOGLE_DRIVE_SERVICE_ACCOUNT" --parent "$GOOGLE_DRIVE_PARENT_DIRECTORY"
