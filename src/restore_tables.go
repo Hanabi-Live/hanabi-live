@@ -83,4 +83,10 @@ func restoreTables() {
 
 	// (we do not need to adjust the "newTableID" variable because
 	// we have logic to not allow duplicate game IDs)
+
+	if len(tables) == 1 {
+		logger.Info("Restored " + strconv.Itoa(len(tables)) + " table.")
+	} else if len(tables) >= 2 {
+		logger.Info("Restored " + strconv.Itoa(len(tables)) + " tables.")
+	}
 }
