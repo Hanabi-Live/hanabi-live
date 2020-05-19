@@ -1,11 +1,13 @@
 // Imports
 import Konva from 'konva';
+import FitText from './FitText';
 import globals from './globals';
 import MultiFitText from './MultiFitText';
 
 export default class FullActionLog extends Konva.Group {
   logText: MultiFitText;
   logNumbers: MultiFitText;
+  playerLogEmptyMessage: FitText;
   playerLogs: MultiFitText[] = [];
   playerLogNumbers: MultiFitText[] = [];
 
@@ -62,6 +64,22 @@ export default class FullActionLog extends Konva.Group {
     this.logNumbers = new MultiFitText(numbersOptions, maxLines);
     this.add(this.logNumbers as any);
 
+    // The text displayed when the selected player hasn't taken any actions
+    // FIXME: style well
+    const emptyMessageOptions = {
+      fontSize: 0.025 * winH,
+      fontFamily: 'Verdana',
+      fill: 'white',
+      x: 0.04 * winW,
+      y: 0.01 * winH,
+      width: 0.35 * winW,
+      height: 0.94 * winH,
+    };
+    this.playerLogEmptyMessage = new FitText(emptyMessageOptions);
+    this.playerLogEmptyMessage.fitText("That player hasn't moved.");
+    this.playerLogEmptyMessage.hide();
+    this.add(this.playerLogEmptyMessage as any);
+
     for (let i = 0; i < globals.playerNames.length; i++) {
       const playerLog = new MultiFitText(textOptions, maxLines);
       playerLog.hide();
@@ -102,8 +120,12 @@ export default class FullActionLog extends Konva.Group {
     }
     this.logText.hide();
     this.logNumbers.hide();
-    this.playerLogs[playerIndex].show();
-    this.playerLogNumbers[playerIndex].show();
+    if (this.playerLogs[playerIndex].isEmpty()) {
+      this.playerLogEmptyMessage.show();
+    } else {
+      this.playerLogs[playerIndex].show();
+      this.playerLogNumbers[playerIndex].show();
+    }
 
     this.show();
 
@@ -118,6 +140,7 @@ export default class FullActionLog extends Konva.Group {
         throw new Error('The "stageFade" element was not initialized.');
       }
       globals.elements.stageFade.off('click tap');
+      this.playerLogEmptyMessage.hide();
       this.playerLogs[playerIndex].hide();
       this.playerLogNumbers[playerIndex].hide();
 
