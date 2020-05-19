@@ -629,8 +629,9 @@ func characterCheckSoftlock(g *Game, p *GamePlayer) {
 	}
 
 	if g.ClueTokens == 0 &&
+		p.CharacterMetadata == 0 && // The character's "special ability" is currently enabled
 		(p.Character == "Vindictive" || // 9
-			(p.Character == "Insistent" && p.CharacterMetadata == 0)) { // 13
+			p.Character == "Insistent") { // 13
 
 		g.Strikes = 3
 
