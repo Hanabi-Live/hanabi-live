@@ -1,3 +1,9 @@
+import sys
+if sys.version_info < (3, 0):
+    print('This script requires Python 3.x.')
+    sys.exit(1)
+
+# Imports
 import json
 import os
 import sys
@@ -642,7 +648,7 @@ def main():
                 'suits': variant_suits[suit_num - 1] + [suit_name],
                 'showSuitNames': True,
             }
-    '''
+
     # Check for missing variants
     missing = False
     for key in old_variants.keys():
@@ -668,19 +674,17 @@ def main():
 
         # Move the variant
         print_database_queries(oldID, newID)
-    '''
 
     with open('variants_new.json', 'w') as variants_file:
         json.dump(variants, variants_file, indent=2, separators=(',', ': '))
+    print()
     print('Completed.')
 
     # Additionally, create a "variants.txt" file with the names of all of the variants
     variants_txt_path = os.path.join(data_path, 'variants.txt')
     contents = ''
-    i = 1
     for variant_name in variants.keys():
-        contents += str(i) + '. ' + variant_name + '\n'
-        i += 1
+        contents += variant_name + '\n'
     with open(variants_txt_path, 'w') as variants_file:
         variants_file.write(contents)
 
@@ -688,15 +692,15 @@ def main():
 def print_database_queries(oldID, newID):
     print(
         'UPDATE user_stats SET variant = ' + str(oldID) + ' WHERE variant = ' +
-        str(newID)
+        str(newID) + ';'
     )
     print(
         'UPDATE games SET variant = ' + str(oldID) + ' WHERE variant = ' +
-        str(newID)
+        str(newID) + ';'
     )
     print(
         'UPDATE variant_stats SET variant = ' + str(oldID) +
-        ' WHERE variant = ' + str(newID)
+        ' WHERE variant = ' + str(newID) + ';'
     )
 
 
