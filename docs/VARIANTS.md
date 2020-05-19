@@ -103,8 +103,8 @@ One of each card per suit (e.g. 5 in total):
 
 * One of the suits is replaced with a "dark" version of a special suit.
   * Gray is the "dark" version of white.
-  * Cocoa Rainbow is the "dark" version of muddy rainbow.
-  * Gray is the "dark" version of light pink.
+  * Cocoa rainbow is the "dark" version of muddy rainbow.
+  * Gray pink is the "dark" version of light pink.
 * There is only one of each dark card in the deck, which means that every dark card is "critical".
 
 ### Special Suit Combinations (e.g. Black & Rainbow)
