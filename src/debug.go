@@ -217,6 +217,30 @@ func debugFunction() {
 		updateAllVariantStats()
 	*/
 
+	// Get all game IDs
+	var ids []int
+	if v, err := models.Games.GetAllIDs(); err != nil {
+		logger.Fatal("Failed to get all of the game IDs:", err)
+		return
+	} else {
+		ids = v
+	}
+
+	for _, id := range ids {
+		s := newFakeSession(1, "Server")
+		commandReplayCreate(s, &CommandData{
+			Source:     "id",
+			GameID:     id,
+			Visibility: "solo",
+		})
+		commandTableUnattend(s, &CommandData{
+			TableID: newTableID,
+		})
+	}
+
+	logger.Debug("FUCKED IDS:")
+	logger.Debug(fuckedIDs)
+
 	logger.Debug("Debug function(s) complete.")
 }
 

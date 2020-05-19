@@ -811,3 +811,27 @@ func (*Games) GetVariantStats(variant int) (Stats, error) {
 
 	return stats, nil
 }
+
+func (*Games) GetAllIDs() ([]int, error) {
+	rows, err := db.Query(context.Background(), `
+		SELECT id
+		FROM games
+		ORDER BY id
+	`)
+
+	ids := make([]int, 0)
+	for rows.Next() {
+		var id int
+		if err2 := rows.Scan(&id); err2 != nil {
+			return ids, err2
+		}
+		ids = append(ids, id)
+	}
+
+	if rows.Err() != nil {
+		return ids, err
+	}
+	rows.Close()
+
+	return ids, nil
+}

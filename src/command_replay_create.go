@@ -554,9 +554,14 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 					" was not valid. Skipping all subsequent actions. " +
 					"Please report this error to an administrator.")
 			}
+			fuckedIDs = append(fuckedIDs, d.GameID)
 			break
 		}
 	}
 
 	return true
 }
+
+var (
+	fuckedIDs = make([]int, 0)
+)
