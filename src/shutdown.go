@@ -1,6 +1,7 @@
 package main
 
 import (
+	"runtime"
 	"strconv"
 	"time"
 )
@@ -123,7 +124,13 @@ func shutdownImmediate() {
 		Server: true,
 	})
 
-	executeScript("stop.sh")
+	if runtime.GOOS != "windows" {
+		if err := executeScript("stop.sh"); err != nil {
+			logger.Error("Failed to execute the \"stop.sh\" script:", err)
+		}
+	} else {
+		logger.Info("Manually kill the server now.")
+	}
 
 	// Block until the process is killed so that no more moves can be submitted
 	select {}

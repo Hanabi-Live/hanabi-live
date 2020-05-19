@@ -27,24 +27,26 @@ func durationToString(d time.Duration) string {
 	return fmt.Sprintf("%02d:%02d", m, s)
 }
 
-func executeScript(script string) string {
+func executeScript(script string) error {
 	cmd := exec.Command(path.Join(projectPath, script)) // nolint:gosec
 	cmd.Dir = projectPath
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		// The "cmd.CombinedOutput()" function will throw an error if the return code is not equal
+		// to 0
 		logger.Error("Failed to execute \""+script+"\":", err)
 		if string(output) != "" {
 			logger.Error("Output is as follows:")
 			logger.Error(string(output))
 		}
-	} else {
-		logger.Info("\"" + script + "\" completed.")
-		if string(output) != "" {
-			logger.Info("Output is as follows:")
-			logger.Info(string(output))
-		}
+		return err
 	}
-	return string(output)
+	logger.Info("\"" + script + "\" completed.")
+	if string(output) != "" {
+		logger.Info("Output is as follows:")
+		logger.Info(string(output))
+	}
+	return nil
 }
 
 func formatTimestampUnix(datetime time.Time) string {
