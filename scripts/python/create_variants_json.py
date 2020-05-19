@@ -691,16 +691,16 @@ def main():
 
 def print_database_queries(oldID, newID):
     print(
-        'UPDATE user_stats SET variant = ' + str(oldID) + ' WHERE variant = ' +
-        str(newID) + ';'
+        'UPDATE user_stats SET variant = ' + str(newID) + ' WHERE variant = ' +
+        str(oldID) + ';'
     )
     print(
-        'UPDATE games SET variant = ' + str(oldID) + ' WHERE variant = ' +
-        str(newID) + ';'
+        'UPDATE games SET variant = ' + str(newID) + ' WHERE variant = ' +
+        str(oldID) + ';'
     )
     print(
-        'UPDATE variant_stats SET variant = ' + str(oldID) +
-        ' WHERE variant = ' + str(newID) + ';'
+        'UPDATE variant_stats SET variant = ' + str(newID) +
+        ' WHERE variant = ' + str(oldID) + ';'
     )
 
 
