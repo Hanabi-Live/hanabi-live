@@ -95,7 +95,7 @@ func main() {
 		logger.Fatal("Failed to perform a \"git rev-parse HEAD\":", err)
 		return
 	} else {
-		gitCommitOnStart = string(stdout)
+		gitCommitOnStart = strings.TrimSpace(string(stdout))
 	}
 
 	// Check to see if the ".env" file exists
