@@ -1,3 +1,4 @@
+
 // Imports
 import Konva from 'konva';
 import FitText from './FitText';
@@ -65,7 +66,6 @@ export default class FullActionLog extends Konva.Group {
     this.add(this.logNumbers as any);
 
     // The text displayed when the selected player hasn't taken any actions
-    // FIXME: style well
     const emptyMessageOptions = {
       fontSize: 0.025 * winH,
       fontFamily: 'Verdana',
@@ -76,7 +76,7 @@ export default class FullActionLog extends Konva.Group {
       height: 0.94 * winH,
     };
     this.playerLogEmptyMessage = new FitText(emptyMessageOptions);
-    this.playerLogEmptyMessage.fitText('This player has not taken any actions yet.');
+    this.playerLogEmptyMessage.fitText("This player has not taken any actions yet.");
     this.playerLogEmptyMessage.hide();
     this.add(this.playerLogEmptyMessage as any);
 
