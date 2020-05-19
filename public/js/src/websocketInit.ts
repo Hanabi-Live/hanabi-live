@@ -81,6 +81,7 @@ const initCommands = () => {
     firstTimeUser: boolean;
     settings: any;
     friends: string[];
+    atOngoingTable: boolean;
     shuttingDown: boolean;
     maintenanceMode: boolean;
   }
@@ -105,6 +106,12 @@ const initCommands = () => {
 
     // Disable custom path functionality for first time users
     if (data.firstTimeUser) {
+      return;
+    }
+
+    // If we are currently in an ongoing game or are reconnecting to a shared replay,
+    // then do not automatically go into another replay
+    if (data.atOngoingTable) {
       return;
     }
 

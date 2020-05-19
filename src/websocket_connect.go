@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -84,6 +85,49 @@ func websocketConnect(ms *melody.Session) {
 	}
 	firstTimeUser := time.Since(datetimeCreated) < 10*time.Second
 
+	// Check to see if they are currently playing in an ongoing game
+	playingInOngoingGame := -1
+	for _, t := range tables {
+		if t.Replay {
+			continue
+		}
+
+		for _, p := range t.Players {
+			if p.Name != s.Username() {
+				continue
+			}
+
+			// Update the player object with the new socket
+			p.Session = s
+
+			playingInOngoingGame = t.ID
+			break
+		}
+	}
+
+	// Check to see if they are were spectating in a shared replay before they disconnected
+	// (games that they are playing in take priority over shared replays)
+	spectatingInOngoingReplay := -1
+	if playingInOngoingGame == -1 {
+		for _, t := range tables {
+			if !t.Replay {
+				continue
+			}
+
+			for id := range t.DisconSpectators {
+				if id != s.UserID() {
+					continue
+				}
+
+				// Mark that this player is no longer disconnected
+				delete(t.DisconSpectators, s.UserID())
+
+				spectatingInOngoingReplay = t.ID
+				break
+			}
+		}
+	}
+
 	// Send an initial message that contains information about who they are and
 	// the current state of the server
 	type WelcomeMessage struct {
@@ -94,6 +138,7 @@ func websocketConnect(ms *melody.Session) {
 		FirstTimeUser        bool      `json:"firstTimeUser"`
 		Settings             Settings  `json:"settings"`
 		Friends              []string  `json:"friends"`
+		AtOngoingTable       bool      `json:"atOngoingTable"`
 		ShuttingDown         bool      `json:"shuttingDown"`
 		DatetimeShutdownInit time.Time `json:"datetimeShutdownInit"`
 		MaintenanceMode      bool      `json:"maintenanceMode"`
@@ -118,6 +163,9 @@ func websocketConnect(ms *melody.Session) {
 		// transition between computers
 		Settings: settings,
 		Friends:  friends,
+
+		// Warn the user if they rejoining an ongoing game or shared replay
+		AtOngoingTable: playingInOngoingGame != -1 || spectatingInOngoingReplay != -1,
 
 		// Also let the user know if the server is currently restarting or shutting down
 		ShuttingDown:         shuttingDown,
@@ -211,52 +259,23 @@ func websocketConnect(ms *melody.Session) {
 	history = historyFillVariants(history)
 	s.NotifyGameHistory(history, false)
 
-	// First, check to see if this user was in any existing games
-	for _, t := range tables {
-		if t.Replay {
-			continue
-		}
-
-		for _, p := range t.Players {
-			if p.Name != s.Username() {
-				continue
-			}
-
-			// Update the player object with the new socket
-			p.Session = s
-
-			// Add the player back to the game
-			logger.Info(t.GetName() + "Automatically reattending player \"" + s.Username() + "\".")
-			commandTableReattend(s, &CommandData{
-				TableID: t.ID,
-			})
-
-			// If the user happens to be in both a game and a replay, then ignore the replay
-			return
-		}
+	// If they are playing in an ongoing game, join it
+	if playingInOngoingGame != -1 {
+		logger.Info("Automatically reattending player \"" + s.Username() + "\" " +
+			"to table " + strconv.Itoa(playingInOngoingGame) + ".")
+		commandTableReattend(s, &CommandData{
+			TableID: playingInOngoingGame,
+		})
+		return
 	}
 
-	// Second, check to see if this user was in any existing shared replays
-	for _, t := range tables {
-		if !t.Replay {
-			continue
-		}
-
-		for id := range t.DisconSpectators {
-			if id == s.UserID() {
-				delete(t.DisconSpectators, s.UserID())
-
-				// Add the player back to the shared replay
-				logger.Info(t.GetName() + "Automatically re-spectating player " +
-					"\"" + s.Username() + "\".")
-				// This function does not care what their current game and/or status is
-				commandTableSpectate(s, &CommandData{
-					TableID: t.ID,
-				})
-
-				// We can return here because the player can only be in one shared replay at a time
-				return
-			}
-		}
+	// If they were spectating an ongoing shared replay, join it
+	if spectatingInOngoingReplay != -1 {
+		logger.Info("Automatically re-spectating player " + "\"" + s.Username() + "\" " +
+			"to table " + strconv.Itoa(spectatingInOngoingReplay) + ".")
+		commandTableSpectate(s, &CommandData{
+			TableID: spectatingInOngoingReplay,
+		})
+		return
 	}
 }
