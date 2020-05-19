@@ -2,8 +2,9 @@ import json
 import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-variants_json_path = os.path.join(dir_path, '..', '..', 'public', 'js', 'src',
-                                  'data', 'variants.json')
+variants_json_path = os.path.join(
+    dir_path, '..', '..', 'public', 'js', 'src', 'data', 'variants.json'
+)
 
 with open(variants_json_path, 'r') as variants_file:
     variants_string = variants_file.read()

@@ -8,7 +8,6 @@ if sys.version_info < (3, 0):
 
 # Imports
 import os
-import confusables
 import dotenv
 import psycopg2
 
@@ -54,7 +53,8 @@ for user in users:
     cursor = conn.cursor()
     cursor.execute(
         'SELECT COUNT(game_id) FROM game_participants WHERE user_id = %s',
-        (user[0], ))
+        (user[0], )
+    )
     row = cursor.fetchone()
     cursor.close()
     num_games = row[0]

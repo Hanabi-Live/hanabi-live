@@ -43,9 +43,12 @@
   // Use "yapf" to automatically format Python files
   // https://github.com/google/yapf
   "python.formatting.provider": "yapf",
+  "python.formatting.yapfArgs": ["--style", "{DEDENT_CLOSING_BRACKETS: true}"],
 
   // Automatically run the "yapf" formatter when a Python file is saved
   "[python]": {
     "editor.formatOnSave": true,
-  }
+  },
+  "python.linting.pylintEnabled": true,
+  "python.linting.enabled": true
 }

@@ -23,12 +23,14 @@
     "pip": "hanabiAltWhite"
   },
   "Black": {
+    "createVariants": true,
     "oneOfEach": true,
     "pip": "hanabiAltBlue"
   },
   "Rainbow": {
     "abbreviation": "M",
     "allClueColors": true,
+    "createVariants": true,
     "fill": "multi",
     "fillColors": [
       "#ff0000",
@@ -41,20 +43,24 @@
   },
   "Pink": {
     "allClueRanks": true,
+    "createVariants": true,
     "pip": "hashtag"
   },
   "White": {
-    "noClueColors": true,
+    "createVariants": true,
     "fill": "#d9d9d9",
+    "noClueColors": true,
     "pip": "moon"
   },
   "Brown": {
+    "createVariants": true,
     "noClueRanks": true,
     "pip": "kanji"
   },
   "Omni": {
     "allClueColors": true,
     "allClueRanks": true,
+    "createVariants": true,
     "fill": "multi",
     "fillColors": [
       "#ffffff",
@@ -69,14 +75,39 @@
   },
   "Null": {
     "abbreviation": "U",
+    "createVariants": true,
     "noClueColors": true,
     "noClueRanks": true,
     "fill": "#ffffff",
     "pip": "emptySet"
   },
+  "Muddy Rainbow": {
+    "abbreviation": "M",
+    "allClueColors": true,
+    "createVariants": true,
+    "noClueRanks": true,
+    "fill": "multi",
+    "fillColors": [
+      "#bb4321",
+      "#bb8021",
+      "#808000",
+      "#8080ff",
+      "#500030"
+    ],
+    "pip": "rainbow"
+  },
+  "Light Pink": {
+    "abbreviation": "I",
+    "allClueRanks": true,
+    "createVariants": true,
+    "fill": "#ffbbdd",
+    "noClueColors": true,
+    "pip": "hashtag"
+  },
   "Dark Rainbow": {
     "abbreviation": "M",
     "allClueColors": true,
+    "createVariants": true,
     "fill": "multi",
     "fillColors": [
       "#a00000",
@@ -93,6 +124,7 @@
     "clueColors": [
       "Pink"
     ],
+    "createVariants": true,
     "allClueRanks": true,
     "fill": "#800040",
     "oneOfEach": true,
@@ -100,6 +132,7 @@
   },
   "Gray": {
     "abbreviation": "A",
+    "createVariants": true,
     "noClueColors": true,
     "fill": "#555555",
     "oneOfEach": true,
@@ -109,6 +142,7 @@
     "clueColors": [
       "Brown"
     ],
+    "createVariants": true,
     "noClueRanks": true,
     "fill": "#271a0c",
     "oneOfEach": true,
@@ -118,6 +152,7 @@
     "abbreviation": "O",
     "allClueColors": true,
     "allClueRanks": true,
+    "createVariants": true,
     "fill": "multi",
     "fillColors": [
       "#000000",
@@ -133,37 +168,17 @@
   },
   "Dark Null": {
     "abbreviation": "U",
+    "createVariants": true,
     "noClueColors": true,
     "noClueRanks": true,
     "fill": "#a6a6a6",
     "oneOfEach": true,
     "pip": "emptySet"
   },
-  "Muddy Rainbow": {
-    "abbreviation": "M",
-    "allClueColors": true,
-    "noClueRanks": true,
-    "fill": "multi",
-    "fillColors": [
-      "#bb4321",
-      "#bb8021",
-      "#808000",
-      "#8080ff",
-      "#500030"
-    ],
-    "pip": "rainbow"
-  },
-  "Light Pink": {
-    "abbreviation": "I",
-    "noClueColors": true,
-    "allClueRanks": true,
-    "fill": "#ffbbdd",
-    "pip": "hashtag"
-  },
   "Cocoa Rainbow": {
     "abbreviation": "M",
     "allClueColors": true,
-    "noClueRanks": true,
+    "createVariants": true,
     "fill": "multi",
     "fillColors": [
       "#662211",
@@ -172,14 +187,16 @@
       "#404080",
       "#280018"
     ],
+    "noClueRanks": true,
     "oneOfEach": true,
     "pip": "rainbow"
   },
   "Gray Pink": {
     "abbreviation": "I",
-    "noClueColors": true,
     "allClueRanks": true,
+    "createVariants": true,
     "fill": "#b05080",
+    "noClueColors": true,
     "oneOfEach": true,
     "pip": "hashtag"
   },
