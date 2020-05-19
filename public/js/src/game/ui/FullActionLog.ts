@@ -76,7 +76,7 @@ export default class FullActionLog extends Konva.Group {
       height: 0.94 * winH,
     };
     this.playerLogEmptyMessage = new FitText(emptyMessageOptions);
-    this.playerLogEmptyMessage.fitText("That player hasn't moved.");
+    this.playerLogEmptyMessage.fitText('This player has not taken any actions yet.');
     this.playerLogEmptyMessage.hide();
     this.add(this.playerLogEmptyMessage as any);
 
