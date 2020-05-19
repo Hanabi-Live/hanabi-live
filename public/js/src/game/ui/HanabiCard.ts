@@ -603,19 +603,28 @@ export default class HanabiCard extends Konva.Group {
     }
 
     // Remove suit pips, if any
-    for (const suit of suitsRemoved) {
+    for (const suitRemoved of suitsRemoved) {
       // Hide the suit pips
-      this.suitPipsMap.get(suit)!.hide();
-      this.suitPipsXMap.get(suit)!.hide();
+      this.suitPipsMap.get(suitRemoved)!.hide();
+      this.suitPipsXMap.get(suitRemoved)!.hide();
 
       // Remove any card possibilities for this suit
       if (possibilitiesCheck()) {
         for (const rank of globals.variant.ranks) {
-          this.removePossibility(suit, rank, true);
+          this.removePossibility(suitRemoved, rank, true);
         }
       }
 
-      if (suit.allClueRanks || suit.noClueRanks) {
+      // Check for note impossibilities
+      // e.g. a note of "r" is now impossible because we know that it is not a red card
+      if (this.noteSuit === suitRemoved && this.noteRank === null) {
+        this.noteSuit = null;
+        this.noteRank = null;
+        this.setBareImage();
+        globals.layers.card.batchDraw();
+      }
+
+      if (suitRemoved.allClueRanks || suitRemoved.noClueRanks) {
         // Mark to retroactively apply rank clues when we return from this function
         this.reapplyRankClues = true;
       }
@@ -629,13 +638,29 @@ export default class HanabiCard extends Konva.Group {
     }
 
     // Remove rank pips, if any
-    for (const rank of ranksRemoved) {
+    for (const rankRemoved of ranksRemoved) {
       // Hide the rank pips
-      this.rankPipsMap.get(rank)!.hide();
-      this.rankPipsXMap.get(rank)!.hide();
+      this.rankPipsMap.get(rankRemoved)!.hide();
+      this.rankPipsXMap.get(rankRemoved)!.hide();
+
+      // Remove any card possibilities for this rank
+      if (possibilitiesCheck()) {
+        for (const suit of globals.variant.suits) {
+          this.removePossibility(suit, rankRemoved, true);
+        }
+      }
+
+      // Check for note impossibilities
+      // e.g. a note of "1" is now impossible because we know that it is not a 1
+      if (this.noteSuit === null && this.noteRank !== this.rank) {
+        this.noteSuit = null;
+        this.noteRank = null;
+        this.setBareImage();
+        globals.layers.card.batchDraw();
+      }
 
       if (
-        rank === globals.variant.specialRank
+        rankRemoved === globals.variant.specialRank
         && (globals.variant.specialAllClueColors || globals.variant.specialNoClueColors)
       ) {
         // Mark to retroactively apply color clues when we return from this function
@@ -1172,7 +1197,10 @@ export default class HanabiCard extends Konva.Group {
 
     // If we wrote a card identity note and all the possibilities for that note have been
     // eliminated, unmorph the card
-    if ((suit === this.noteSuit || rank === this.noteRank) && cardsLeft === 0) {
+    // e.g. a note of "r1" is now impossible because red 1 has 0 cards left
+    // The case of removing a wrong note of "r" or "1" is handled in the "HanabiCard.applyClue()"
+    // function
+    if (this.noteSuit === suit && this.noteRank === rank && cardsLeft === 0) {
       this.noteSuit = null;
       this.noteRank = null;
       this.setBareImage();
