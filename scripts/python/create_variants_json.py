@@ -661,6 +661,7 @@ def main():
     # If we changed any variant IDs, we need to update the database
     # Print out database transition statements to copy-paste
     placeholder_modifier = 10000  # There are less than 1500 variants as of May 2020
+    ids_to_move_back = []
     for key in variants.keys():
         newID = variants[key]['id']
         oldID = old_variants[key]['id']
@@ -670,6 +671,7 @@ def main():
         # Move the existing variant at the destination ID to a temporary position
         placeholder_id = placeholder_modifier + newID
         old_variants[key]['id'] = placeholder_id
+        ids_to_move_back.append(placeholder_id)
         print_database_queries(newID, placeholder_id)
 
         # Move the variant

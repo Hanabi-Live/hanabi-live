@@ -226,7 +226,11 @@ func debugFunction() {
 		ids = v
 	}
 
-	for _, id := range ids {
+	for i, id := range ids {
+		if i > 1000 {
+			break
+		}
+		logger.Debug("XXXXX GAME:", id)
 		s := newFakeSession(1, "Server")
 		commandReplayCreate(s, &CommandData{
 			Source:     "id",
