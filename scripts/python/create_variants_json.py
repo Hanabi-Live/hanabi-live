@@ -8,8 +8,6 @@ import json
 import os
 import sys
 
-# TODO run this and check for variants > 2000
-
 
 def main():
     # Read the old "variants.json" file and the "suits.json" file
@@ -499,6 +497,7 @@ def main():
             'suits': variant_suits[suit_num],
             'colorCluesTouchNothing': True,
         }
+        variant_id += 1
     for suit_num in [6, 5, 4, 3]:
         variant_name = 'Number Blind (' + str(suit_num) + ' Suits)'
         variants[variant_name] = {
@@ -506,6 +505,7 @@ def main():
             'suits': variant_suits[suit_num],
             'rankCluesTouchNothing': True,
         }
+        variant_id += 1
     for suit_num in [6, 5, 4, 3]:
         variant_name = 'Totally Blind (' + str(suit_num) + ' Suits)'
         variants[variant_name] = {
@@ -514,6 +514,7 @@ def main():
             'colorCluesTouchNothing': True,
             'rankCluesTouchNothing': True,
         }
+        variant_id += 1
 
     # Add mute variants
     for suit_num in [6, 5, 4, 3]:
@@ -523,6 +524,7 @@ def main():
             'suits': variant_suits[suit_num],
             'clueColors': [],
         }
+        variant_id += 1
     for suit_num in [6, 5, 4, 3]:
         variant_name = 'Number Mute (' + str(suit_num) + ' Suits)'
         variants[variant_name] = {
@@ -530,6 +532,7 @@ def main():
             'suits': variant_suits[suit_num],
             'clueRanks': [],
         }
+        variant_id += 1
 
     # Add "Alternating Clues" variants
     for suit_num in [6, 5, 4, 3]:
@@ -538,6 +541,7 @@ def main():
             'id': variant_id,
             'suits': variant_suits[suit_num],
         }
+        variant_id += 1
     for [suit_name, suit] in suits.items():
         if not suit['createVariants']:
             continue
@@ -559,6 +563,7 @@ def main():
                 'id': variant_id,
                 'suits': variant_suits[suit_num - 1] + [suit_name],
             }
+            variant_id += 1
 
     # Add "Clue Starved" variants
     for suit_num in [6, 5]:  # 4 suits and 3 suits would be too difficult
@@ -567,6 +572,7 @@ def main():
             'id': variant_id,
             'suits': variant_suits[suit_num],
         }
+        variant_id += 1
     for [suit_name, suit] in suits.items():
         if not suit['createVariants']:
             continue
@@ -582,6 +588,7 @@ def main():
                 'id': variant_id,
                 'suits': variant_suits[suit_num - 1] + [suit_name],
             }
+            variant_id += 1
 
     # Add "Cow & Pig" variants
     for suit_num in [6, 5, 4, 3]:
@@ -590,6 +597,7 @@ def main():
             'id': variant_id,
             'suits': variant_suits[suit_num],
         }
+        variant_id += 1
 
     # Add "Duck" variants
     for suit_num in [6, 5, 4, 3]:
@@ -598,6 +606,7 @@ def main():
             'id': variant_id,
             'suits': variant_suits[suit_num],
         }
+        variant_id += 1
 
     # Add "Throw It in a Hole" variants
     for suit_num in [6, 5, 4]:  # 3 suits would be too difficult
@@ -606,6 +615,7 @@ def main():
             'id': variant_id,
             'suits': variant_suits[suit_num],
         }
+        variant_id += 1
     for [suit_name, suit] in suits.items():
         if not suit['createVariants']:
             continue
@@ -622,6 +632,7 @@ def main():
                 'id': variant_id,
                 'suits': variant_suits[suit_num - 1] + [suit_name],
             }
+            variant_id += 1
 
     # Add "Up or Down" variants
     for suit_num in [6, 5]:  # 4 suits and 3 suits would be too difficult
@@ -631,6 +642,7 @@ def main():
             'suits': variant_suits[suit_num],
             'showSuitNames': True,
         }
+        variant_id += 1
     for [suit_name, suit] in suits.items():
         if not suit['createVariants']:
             continue
@@ -648,6 +660,7 @@ def main():
                 'suits': variant_suits[suit_num - 1] + [suit_name],
                 'showSuitNames': True,
             }
+            variant_id += 1
 
     # Check for missing variants
     missing = False
@@ -661,49 +674,50 @@ def main():
     # If we changed any variant IDs, we need to update the database
     # Print out database transition statements to copy-paste
     placeholder_modifier = 10000  # There are less than 1500 variants as of May 2020
-    ids_to_move_back = []
+
     for key in variants.keys():
-        newID = variants[key]['id']
-        oldID = old_variants[key]['id']
-        if newID == oldID:
+        new_id = variants[key]['id']
+        old_id = old_variants[key]['id']
+        if new_id == old_id:
             continue
 
-        # Move the existing variant at the destination ID to a temporary position
-        placeholder_id = placeholder_modifier + newID
-        old_variants[key]['id'] = placeholder_id
-        ids_to_move_back.append(placeholder_id)
-        print_database_queries(newID, placeholder_id)
-
         # Move the variant
-        print_database_queries(oldID, newID)
+        placerholder_id = new_id + placeholder_modifier
+        print_database_queries(new_id, placerholder_id)
+        old_variants[key]['id'] = placerholder_id
+        print_database_queries(old_id, new_id)
 
-    with open('variants_new.json', 'w') as variants_file:
-        json.dump(variants, variants_file, indent=2, separators=(',', ': '))
-    print()
-    print('Completed.')
+    print('/* Now moving back all the leftovers */')
+
+    for key in variants.keys():
+        new_id = variants[key]['id']
+        old_id = old_variants[key]['id']
+        if old_id > placeholder_modifier:
+            print_database_queries(old_id, new_id)
 
     # Additionally, create a "variants.txt" file with the names of all of the variants
     variants_txt_path = os.path.join(data_path, 'variants.txt')
     contents = ''
     for variant_name in variants.keys():
         contents += variant_name + '\n'
-    with open(variants_txt_path, 'w') as variants_file:
+    with open(variants_txt_path, 'w', newline='\n') as variants_file:
         variants_file.write(contents)
 
 
-def print_database_queries(oldID, newID):
+def print_database_queries(old_id, new_id):
     print(
-        'UPDATE user_stats SET variant = ' + str(newID) + ' WHERE variant = ' +
-        str(oldID) + ';'
+        'UPDATE user_stats SET variant = ' + str(new_id) +
+        ' WHERE variant = ' + str(old_id) + ';'
     )
     print(
-        'UPDATE games SET variant = ' + str(newID) + ' WHERE variant = ' +
-        str(oldID) + ';'
+        'UPDATE games SET variant = ' + str(new_id) + ' WHERE variant = ' +
+        str(old_id) + ';'
     )
     print(
-        'UPDATE variant_stats SET variant = ' + str(newID) +
-        ' WHERE variant = ' + str(oldID) + ';'
+        'UPDATE variant_stats SET variant = ' + str(new_id) +
+        ' WHERE variant = ' + str(old_id) + ';'
     )
+    print()
 
 
 # From: https://stackoverflow.com/questions/12410242/python-capitalize-first-letter-only
