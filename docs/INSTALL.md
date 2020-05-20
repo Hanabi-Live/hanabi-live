@@ -43,8 +43,7 @@ If you want to install less stuff on your computer, you can alternatively follow
   * `git config --global pull.rebase true` <br />
   (so that Git automatically rebases when pulling)
 * Install [PostgreSQL](https://www.postgresql.org/):
-  * `choco install postgresql -y --params '/Password:1234567890'` <br />
-  (replace "1234567890" with a more secure password, or remove the `--params '/Password 1234567890'` if you want it to generate a random password, which will be displayed in the post-installation output)
+  * Manually download it and install it. (Don't use `choco`, because the package is bugged.)
 * Make it so that PostgreSQL only listens on localhost instead of on all interfaces:
   * `notepad "C:\Program Files\PostgreSQL\12\data\postgresql.conf"`
     * Add a "#" in front of the "listen_addresses" line.
