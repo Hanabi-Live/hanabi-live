@@ -76,6 +76,12 @@
 * This is useful for storing contextual information about a card for later.
 * Notes can also be written during an in-game replay as a way to track the card as it moves throughout your hand.
 * If the note matches the name of a card (e.g. "red 1", "r1", etc.), the card face will change to match. (The card face will automatically be deactivated if a clue is received that falsifies the note.) If this is undesired, append a question mark to the end of your note (e.g. "r1?").
+  * Black is abbreviated as "k".
+  * Rainbow, muddy rainbow, and cocoa rainbow are abbreviated as "m".
+  * Pink, light pink, and gray pink are abbreviated as "i".
+  * Brown is abbreviated as "n".
+  * The "dark" suits are abbreviated the same as their normal counterparts.
+  * Gray is abbreviated as "a".
 * Since notes are tracked by the server, players can switch computers mid-game and keep any notes written.
 * Notes are saved in the database and will persist into the replay.
 * Everyone's notes are combined and shown to spectators, which is fun to see.
