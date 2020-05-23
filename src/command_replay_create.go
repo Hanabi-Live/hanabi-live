@@ -3,6 +3,7 @@ package main
 import (
 	"strconv"
 	"strings"
+	"time"
 
 	melody "gopkg.in/olahol/melody.v1"
 )
@@ -436,10 +437,15 @@ func newFakeSession(id int, name string) *Session {
 	keys["sessionID"] = id
 	keys["userID"] = id
 	keys["username"] = name
-	keys["admin"] = false
-	keys["firstTimeUser"] = false
-	keys["status"] = StatusPlaying
+	keys["muted"] = false
+	keys["status"] = StatusLobby
+	keys["friends"] = new(map[int]struct{})
+	keys["reverseFriends"] = new(map[int]struct{})
+	keys["inactive"] = false
 	keys["fakeUser"] = true
+	keys["rateLimitAllowance"] = RateLimitRate
+	keys["rateLimitLastCheck"] = time.Now()
+	keys["banned"] = false
 
 	return &Session{
 		&melody.Session{

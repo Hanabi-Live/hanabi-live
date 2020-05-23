@@ -140,6 +140,7 @@ func httpWS(c *gin.Context) {
 
 	// If they got this far, they are a valid user
 	// Transfer the values from the login cookie into WebSocket session variables
+	// New keys added here should also be added to the "newFakeSesssion()" function
 	keys := make(map[string]interface{})
 	// This is independent of the user and used for disconnection purposes
 	keys["sessionID"] = sessionID
