@@ -314,6 +314,8 @@ export default class HanabiCard extends Konva.Group {
     this.trashcan!.visible((
       this.noteKnownTrash
       && !this.empathy
+      && !this.isPlayed
+      && !this.isDiscarded
       && !globals.replay
       && !globals.spectating
     ));
@@ -322,6 +324,8 @@ export default class HanabiCard extends Konva.Group {
     this.wrench!.visible((
       this.noteNeedsFix
       && !this.empathy
+      && !this.isPlayed
+      && !this.isDiscarded
       && !globals.replay
       && !globals.spectating
     ));
