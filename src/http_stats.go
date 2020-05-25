@@ -111,7 +111,7 @@ func httpStats(c *gin.Context) {
 	variantStatsList := make([]VariantStatsData, 0)
 	for _, name := range variantsList {
 		variant := variants[name]
-		maxScore := 5 * len(variant.Suits)
+		maxScore := len(variant.Suits) * PointsPerSuit
 		variantStats := VariantStatsData{
 			ID:   variant.ID,
 			Name: name,

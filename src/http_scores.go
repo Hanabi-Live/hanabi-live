@@ -155,7 +155,7 @@ func httpScores(c *gin.Context) {
 	variantStatsList := make([]UserVariantStats, 0)
 	for _, name := range variantsList {
 		variant := variants[name]
-		maxScore := 5 * len(variant.Suits)
+		maxScore := len(variant.Suits) * PointsPerSuit
 		variantStats := UserVariantStats{
 			ID:       variant.ID,
 			Name:     name,

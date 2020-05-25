@@ -71,6 +71,13 @@ const (
 	// The maximum amount of clues (and the amount of clues that players start the game with)
 	MaxClueNum = 8
 
+	// The maximum amount of strikes/misplays allowed before the game ends
+	MaxStrikeNum = 3
+
+	// Currently, in all variants, you get 5 points per suit/stack,
+	// but this may not always be the case
+	PointsPerSuit = 5
+
 	// The amount of time that someone can be on the waiting list
 	IdleWaitingListTimeout = time.Hour * 8
 

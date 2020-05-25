@@ -83,7 +83,7 @@ func NewGame(t *Table) *Game {
 		StackDirections:   make([]int, len(variants[t.Options.Variant].Suits)),
 		DatetimeTurnBegin: time.Now(),
 		ClueTokens:        MaxClueNum,
-		MaxScore:          len(variants[t.Options.Variant].Suits) * 5,
+		MaxScore:          len(variants[t.Options.Variant].Suits) * PointsPerSuit,
 		LastClueTypeGiven: -1,
 		Actions:           make([]interface{}, 0),
 		Actions2:          make([]*GameAction, 0),
@@ -176,7 +176,7 @@ func (g *Game) CheckEnd() bool {
 	}
 
 	// Check for 3 strikes
-	if g.Strikes == 3 {
+	if g.Strikes == MaxStrikeNum {
 		logger.Info(t.GetName() + "3 strike maximum reached; ending the game.")
 		g.EndCondition = EndConditionStrikeout
 		return true

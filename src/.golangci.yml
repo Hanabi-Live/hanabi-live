@@ -1,13 +1,13 @@
 linters:
   enable-all: true
   disable:
-    # We use many long functions
+    # We use long functions
     - funlen
-    # We use many globals in the code base
+    # We use globals in the code base
     - gochecknoglobals
     # gocognit complains about having large functions
     - gocognit
-    # goconst complains about some common strings
+    # goconst complains about common strings
     - goconst
     # gocritic complains about needing to make case statements
     - gocritic
@@ -19,7 +19,7 @@ linters:
     - goerr113
     # gofmt is not needed because we are running goimports (which is a superset of gofmt)
     - gofmt
-    # gomnd complains about common numbers
+    # gomnd complains about magic numbers
     - gomnd
     # We do not care about making structs take less memory
     - maligned
