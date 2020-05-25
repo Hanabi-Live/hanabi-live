@@ -144,7 +144,7 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
     && !globals.replay
     && !globals.spectating
   ) {
-    card.appendNote('[f]');
+    card.appendNote('f');
     return;
   }
 
@@ -158,7 +158,7 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
     && !globals.replay
     && !globals.spectating
   ) {
-    card.appendNote('[cm]');
+    card.appendNote('cm');
     return;
   }
 

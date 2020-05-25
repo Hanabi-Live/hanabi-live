@@ -179,7 +179,7 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
     && !event.altKey
     && !event.metaKey
   ) {
-    card.appendNote('[f]');
+    card.appendNote('f');
     return;
   }
 
@@ -191,6 +191,6 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
     && event.altKey
     && !event.metaKey
   ) {
-    card.appendNote('[cm]');
+    card.appendNote('cm');
   }
 };
