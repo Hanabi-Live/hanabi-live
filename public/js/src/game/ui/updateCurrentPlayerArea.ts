@@ -13,11 +13,11 @@ export default () => {
     // Don't show it if we are in a solo/shared replay
     // or if we happen to have the in-game replay open
     !globals.inReplay
-        // Don't show it if the clue UI is there
-        && (!globals.ourTurn || globals.clues === 0)
-        // Don't show it if the premove button is there
-        && !globals.elements.premoveCancelButton!.visible()
-        && globals.currentPlayerIndex !== -1, // Don't show it if this is the end of the game
+    // Don't show it if the clue UI is there
+    && (!globals.ourTurn || globals.clues === 0)
+    // Don't show it if the premove button is there
+    && !globals.elements.premoveCancelButton!.visible()
+    && globals.currentPlayerIndex !== -1, // Don't show it if this is the end of the game
   );
 
   if (globals.currentPlayerIndex === -1) {

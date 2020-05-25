@@ -331,7 +331,7 @@ export const backOneTurn = () => {
   }
   globals.elements.hypoBackButton!.visible((
     globals.amSharedReplayLeader
-        && globals.hypoActions.length > 0
+    && globals.hypoActions.length > 0
   ));
 
   // Reset to the turn where the hypothetical started

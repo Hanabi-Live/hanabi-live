@@ -43,18 +43,22 @@ export const checkLegal = () => {
   // By default, only enable the "Give Clue" button if the clue "touched"
   // one or more cards in the hand
   const enabled = touchedAtLeastOneCard
-        // Make an exception if they have the optional setting for "Empty Clues" turned on
-        || globals.emptyClues
-        // Make an exception for variants where color clues are always allowed
-        || (globals.variant.colorCluesTouchNothing && clueButton.clue.type === CLUE_TYPE.COLOR)
-        // Make an exception for variants where number clues are always allowed
-        || (globals.variant.rankCluesTouchNothing && clueButton.clue.type === CLUE_TYPE.RANK)
-        // Make an exception for certain characters
-        || (globals.characterAssignments[globals.playerUs] === 'Blind Spot'
-            && who === (globals.playerUs + 1) % globals.playerNames.length)
-        || (globals.characterAssignments[globals.playerUs] === 'Oblivious'
-            && who === (globals.playerUs - 1 + globals.playerNames.length)
-            % globals.playerNames.length);
+    // Make an exception if they have the optional setting for "Empty Clues" turned on
+    || globals.emptyClues
+    // Make an exception for variants where color clues are always allowed
+    || (globals.variant.colorCluesTouchNothing && clueButton.clue.type === CLUE_TYPE.COLOR)
+    // Make an exception for variants where number clues are always allowed
+    || (globals.variant.rankCluesTouchNothing && clueButton.clue.type === CLUE_TYPE.RANK)
+    // Make an exception for certain characters
+    || (
+      globals.characterAssignments[globals.playerUs] === 'Blind Spot'
+      && who === (globals.playerUs + 1) % globals.playerNames.length
+    )
+    || (
+      globals.characterAssignments[globals.playerUs] === 'Oblivious'
+      && who === (globals.playerUs - 1 + globals.playerNames.length)
+        % globals.playerNames.length
+    );
 
   globals.elements.giveClueButton!.setEnabled(enabled);
 };

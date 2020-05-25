@@ -618,10 +618,10 @@ commands.set('replayTurn', (data: ReplayTurnData) => {
     const animateFast = (
       // First loading into a shared replay should always be fast
       globals.sharedReplayLoading
-            // Rewinding should always be fast
-            || globals.sharedReplayTurn < oldTurn
-            // Going into the future by 2 or more turns should always be fast
-            || globals.sharedReplayTurn - oldTurn > 2
+      // Rewinding should always be fast
+      || globals.sharedReplayTurn < oldTurn
+      // Going into the future by 2 or more turns should always be fast
+      || globals.sharedReplayTurn - oldTurn > 2
     );
     // We need "force" to be true here in case we are refreshing the page in the middle of a
     // hypothetical

@@ -8,9 +8,9 @@ export const init = () => {
     const rect = el.getBoundingClientRect();
     return (
       rect.top < 0 // Above the top
-          || rect.bottom > window.innerHeight // Below the bottom
-          || rect.left < 0 // Left of the left edge
-          || rect.right > window.innerWidth // Right of the right edge
+      || rect.bottom > window.innerHeight // Below the bottom
+      || rect.left < 0 // Left of the left edge
+      || rect.right > window.innerWidth // Right of the right edge
     );
   };
 };

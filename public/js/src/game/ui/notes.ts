@@ -87,17 +87,17 @@ export const checkSpecialNote = (card: HanabiCard) => {
   // Feature 2 - Give the card a special border if it is chop moved
   card.chopMoveBorder!.visible((
     card.noteChopMoved
-        && !card.cluedBorder!.visible()
-        && !globals.replay
-        && !globals.spectating
+    && !card.cluedBorder!.visible()
+    && !globals.replay
+    && !globals.spectating
   ));
 
   // Feature 3 - Give the card a special border if it is finessed
   card.finesseBorder!.visible((
     card.noteFinessed
-        && !card.cluedBorder!.visible()
-        && !globals.replay
-        && !globals.spectating
+    && !card.cluedBorder!.visible()
+    && !globals.replay
+    && !globals.spectating
   ));
 
   globals.layers.card.batchDraw();
@@ -107,47 +107,49 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
   // First, check to see if this card should be marked with certain properties
   card.noteKnownTrash = (
     note === 'kt'
-        || fullNote.includes('[kt]')
-        || note === 'trash'
-        || fullNote.includes('[trash]')
-        || note === 'stale'
-        || fullNote.includes('[stale]')
-        || note === 'bad'
-        || fullNote.includes('[bad]')
+    || fullNote.includes('[kt]')
+    || note === 'trash'
+    || fullNote.includes('[trash]')
+    || note === 'stale'
+    || fullNote.includes('[stale]')
+    || note === 'bad'
+    || fullNote.includes('[bad]')
   );
   card.noteNeedsFix = (
     note === 'fixme'
-        || fullNote.includes('[fixme]')
+    || fullNote.includes('[fixme]')
   );
   card.noteChopMoved = (
     note === 'cm'
-        || fullNote.includes('[cm]')
-        || note === '5cm'
-        || fullNote.includes('[5cm]')
-        || note === 'e5cm'
-        || fullNote.includes('[e5cm]')
-        || note === 'tcm'
-        || fullNote.includes('[tcm]')
-        || note === 'tccm'
-        || fullNote.includes('[tccm]')
-        || note === 'sdcm'
-        || fullNote.includes('[sdcm]')
-        || note === 'sbpcm'
-        || fullNote.includes('[sbpcm]')
-        || note === 'ocm'
-        || fullNote.includes('[ocm]')
-        || note === 'tocm'
-        || fullNote.includes('[tocm]')
+    || fullNote.includes('[cm]')
+    || note === '5cm'
+    || fullNote.includes('[5cm]')
+    || note === 'e5cm'
+    || fullNote.includes('[e5cm]')
+    || note === 'tcm'
+    || fullNote.includes('[tcm]')
+    || note === 'tccm'
+    || fullNote.includes('[tccm]')
+    || note === 'sdcm'
+    || fullNote.includes('[sdcm]')
+    || note === 'sbpcm'
+    || fullNote.includes('[sbpcm]')
+    || note === 'ocm'
+    || fullNote.includes('[ocm]')
+    || note === 'tocm'
+    || fullNote.includes('[tocm]')
   );
   card.noteFinessed = (
     note === 'f'
-        || fullNote.includes('[f]')
-        || note === 'pf'
-        || fullNote.includes('[pf]')
+    || fullNote.includes('[f]')
+    || note === 'pf'
+    || fullNote.includes('[pf]')
+    || note === 'gd'
+    || fullNote.includes('[gd]')
   );
   card.noteBlank = (
     note === 'blank'
-        || fullNote.includes('[blank]')
+    || fullNote.includes('[blank]')
   );
 
   // Second, check the contents of the note right of the right-most pipe

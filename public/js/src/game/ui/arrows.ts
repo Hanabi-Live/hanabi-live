@@ -242,10 +242,7 @@ export const toggle = (element: any) => {
   }
 
   const arrow = globals.elements.arrows[0];
-  const show = (
-    arrow.pointingTo !== element
-        || arrow.base.fill() !== ARROW_COLOR.HIGHLIGHT
-  );
+  const show = arrow.pointingTo !== element || arrow.base.fill() !== ARROW_COLOR.HIGHLIGHT;
   hideAll();
   if (show) {
     set(0, element, null, null);

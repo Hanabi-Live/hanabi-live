@@ -379,9 +379,9 @@ export function empathy(this: HanabiCard) {
       || (event.evt.ctrlKey && !globals.speedrun && !globals.lobby.settings.speedrunMode)
       || (
         !event.evt.ctrlKey
-          && (globals.speedrun || globals.lobby.settings.speedrunMode)
-          && !globals.replay
-          && !globals.spectating
+        && (globals.speedrun || globals.lobby.settings.speedrunMode)
+        && !globals.replay
+        && !globals.spectating
       )
       || event.evt.shiftKey
       || event.evt.altKey
