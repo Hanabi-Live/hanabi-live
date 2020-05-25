@@ -40,7 +40,7 @@ func commandChatTyping(s *Session, d *CommandData) {
 	}
 	if t.Replay && j == -1 {
 		s.Warning("You are not spectating replay " + strconv.Itoa(t.ID) + ", " +
-			"so you cannot areport that you are typing in the chat.")
+			"so you cannot report that you are typing in the chat.")
 		return
 	}
 

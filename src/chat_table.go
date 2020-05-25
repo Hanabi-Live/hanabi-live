@@ -118,8 +118,7 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 	timeToWait := time.Duration(minutesToWait) * time.Minute
 	timeToStart := time.Now().Add(timeToWait)
 	t.DatetimePlannedStart = timeToStart
-	announcement := "The game will automatically start in " + strconv.Itoa(minutesToWait) +
-		" minute"
+	announcement := "The game will automatically start in " + strconv.Itoa(minutesToWait) + " minute"
 	if minutesToWait != 1 {
 		announcement += "s"
 	}
@@ -149,8 +148,8 @@ func chatFindVariant(s *Session, d *CommandData, t *Table) {
 	}
 
 	if len(userIDs) < 2 || len(userIDs) > 6 {
-		chatServerSend("You can only perform this command if the game or shared replay has "+
-			"between 2 and 6 players.", d.Room)
+		msg := "You can only perform this command if the game or shared replay has between 2 and 6 players."
+		chatServerSend(msg, d.Room)
 		return
 	}
 
@@ -281,8 +280,8 @@ func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
 		})
 	} else {
 		t.AutomaticStart = numPlayers
-		chatServerSend("The game will start as soon as "+strconv.Itoa(numPlayers)+
-			" players have joined.", d.Room)
+		msg := "The game will start as soon as " + strconv.Itoa(numPlayers) + " players have joined."
+		chatServerSend(msg, d.Room)
 	}
 }
 

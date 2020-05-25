@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/alexedwards/argon2id"
@@ -36,10 +37,12 @@ func commandTableJoin(s *Session, d *CommandData) {
 	}
 
 	// Validate that the player is not joined to another table
-	if t2 := s.GetJoinedTable(); t2 != nil {
-		s.Warning("You cannot join more than one table at a time. " +
-			"Terminate your old game before joining a new one.")
-		return
+	if !strings.HasPrefix(s.Username(), "Bot-") {
+		if t2 := s.GetJoinedTable(); t2 != nil {
+			s.Warning("You cannot join more than one table at a time. " +
+				"Terminate your old game before joining a new one.")
+			return
+		}
 	}
 
 	// Validate that this table does not already have 6 players
@@ -167,8 +170,8 @@ func commandTableJoin(s *Session, d *CommandData) {
 			}
 		}
 
-		logger.Error("Failed to find the owner of the game when attempting to " +
-			"automatically start it.")
+		msg := "Failed to find the owner of the game when attempting to automatically start it."
+		logger.Error(msg)
 		return
 	}
 

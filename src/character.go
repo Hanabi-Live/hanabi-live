@@ -179,36 +179,36 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *GamePlayer)
 		p.CharacterMetadata == 0 &&
 		(d.Type != ActionTypeColorClue && d.Type != ActionTypeRankClue) {
 
-		s.Warning("You are " + p.Character + ", so you must give a clue if you have been given " +
-			"a clue on this go-around.")
+		s.Warning("You are " + p.Character + ", " +
+			"so you must give a clue if you have been given a clue on this go-around.")
 		return true
 	} else if p.Character == "Insistent" && // 13
 		p.CharacterMetadata != -1 &&
 		(d.Type != ActionTypeColorClue && d.Type != ActionTypeRankClue) {
 
-		s.Warning("You are " + p.Character + ", so you must continue to clue the same card until " +
-			"it is played or discarded.")
+		s.Warning("You are " + p.Character + ", " +
+			"so you must continue to clue the same card until it is played or discarded.")
 		return true
 	} else if p.Character == "Impulsive" && // 17
 		p.CharacterMetadata == 0 &&
 		(d.Type != ActionTypePlay ||
 			d.Target != p.Hand[len(p.Hand)-1].Order) {
 
-		s.Warning("You are " + p.Character + ", so you must play your slot 1 card " +
-			"after it has been clued.")
+		s.Warning("You are " + p.Character + ", " +
+			"so you must play your slot 1 card after it has been clued.")
 		return true
 	} else if p.Character == "Indolent" && // 18
 		d.Type == ActionTypePlay &&
 		p.CharacterMetadata == 0 {
 
-		s.Warning("You are " + p.Character + ", so you cannot play a card if you played one in " +
-			"the last round.")
+		s.Warning("You are " + p.Character + ", " +
+			"so you cannot play a card if you played one in the last round.")
 		return true
 	} else if p.Character == "Stubborn" && // 28
 		d.Type == p.CharacterMetadata {
 
-		s.Warning("You are " + p.Character + ", so you cannot perform the same kind of action " +
-			"that the previous player did.")
+		s.Warning("You are " + p.Character + ", " +
+			"so you cannot perform the same kind of action that the previous player did.")
 		return true
 	}
 
@@ -232,15 +232,15 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *GameP
 		}
 
 		if d.Target != p.CharacterMetadata {
-			s.Warning("You are " + p.Character + ", so you must give the second clue to " +
-				"the same player.")
+			s.Warning("You are " + p.Character + ", " +
+				"so you must give the second clue to the same player.")
 			return true
 		}
 	} else if p.Character == "Panicky" && // 26
 		d.Type != ActionTypeDiscard {
 
-		s.Warning("You are " + p.Character + ", so you must discard again since there are " +
-			"4 or less clues available.")
+		s.Warning("You are " + p.Character + ", " +
+			"so you must discard again since there are 4 or less clues available.")
 		return true
 	}
 
@@ -273,8 +273,8 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			if c.Suit == p.CharacterMetadata {
-				s.Warning("You are " + p.Character + ", so you cannot give clues that " +
-					"touch a specific suit.")
+				s.Warning("You are " + p.Character + ", " +
+					"so you cannot give clues that touch a specific suit.")
 				return true
 			}
 		}
@@ -283,16 +283,17 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
 			if c.Rank == p.CharacterMetadata {
-				s.Warning("You are " + p.Character + ", so you cannot give clues that touch " +
-					"cards with a rank of " + strconv.Itoa(p.CharacterMetadata) + ".")
+				s.Warning("You are " + p.Character + ", " +
+					"so you cannot give clues that touch cards with a rank of " +
+					strconv.Itoa(p.CharacterMetadata) + ".")
 				return true
 			}
 		}
 	} else if p.Character == "Conservative" && // 4
 		len(p2.FindCardsTouchedByClue(clue)) != 1 {
 
-		s.Warning("You are " + p.Character + ", so you can only give clues that touch " +
-			"a single card.")
+		s.Warning("You are " + p.Character + ", " +
+			"so you can only give clues that touch a single card.")
 		return true
 	} else if p.Character == "Greedy" && // 5
 		len(p2.FindCardsTouchedByClue(clue)) < 2 {
@@ -305,8 +306,8 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 			(clue.Type == ClueTypeColor &&
 				(clue.Value+1)%2 == 0)) {
 
-		s.Warning("You are " + p.Character + ", so you can only clue odd numbers or " +
-			"clues that touch odd amounts of cards.")
+		s.Warning("You are " + p.Character + ", " +
+			"so you can only clue odd numbers or clues that touch odd amounts of cards.")
 		return true
 	} else if p.Character == "Spiteful" { // 7
 		leftIndex := p.Index + 1
@@ -330,15 +331,15 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		(g.ClueTokens < 4 ||
 			(strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens < 8)) {
 
-		s.Warning("You are " + p.Character + ", so you cannot give a clue unless " +
-			"there are 4 or more clues available.")
+		s.Warning("You are " + p.Character + ", " +
+			"so you cannot give a clue unless there are 4 or more clues available.")
 		return true
 	} else if p.Character == "Compulsive" && // 11
 		!p2.IsFirstCardTouchedByClue(clue) &&
 		!p2.IsLastCardTouchedByClue(clue) {
 
-		s.Warning("You are " + p.Character + ", so you can only give a clue if it touches either " +
-			"the newest or oldest card in a hand.")
+		s.Warning("You are " + p.Character + ", " +
+			"so you can only give a clue if it touches either the newest or oldest card in a hand.")
 		return true
 	} else if p.Character == "Mood Swings" && // 12
 		p.CharacterMetadata == clue.Type {
@@ -358,8 +359,8 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 			}
 		}
 		if !touchedInsistentCard {
-			s.Warning("You are " + p.Character + ", so you must continue to clue a card until it " +
-				"is played or discarded.")
+			s.Warning("You are " + p.Character + ", " +
+				"so you must continue to clue a card until it is played or discarded.")
 			return true
 		}
 	} else if p.Character == "Genius" && // 24
@@ -368,8 +369,8 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		if g.ClueTokens < 2 ||
 			(strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens < 4) {
 
-			s.Warning("You are " + p.Character + ", so there needs to be at least " +
-				"two clues available for you to give a clue.")
+			s.Warning("You are " + p.Character + ", " +
+				"so there needs to be at least two clues available for you to give a clue.")
 			return true
 		}
 
@@ -383,8 +384,7 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		clue.Type == ClueTypeRank &&
 		(clue.Value == 2 || clue.Value == 5) {
 
-		s.Warning("You cannot give a number 2 or number 5 clue to a " + p2.Character +
-			" character.")
+		s.Warning("You cannot give a number 2 or number 5 clue to a " + p2.Character + " character.")
 		return true
 	} else if p2.Character == "Color-Blind" && // 15
 		clue.Type == ClueTypeColor {
@@ -443,21 +443,21 @@ func characterCheckDiscard(s *Session, g *Game, p *GamePlayer) bool {
 	if p.Character == "Anxious" && // 21
 		g.ClueTokens%2 == 0 { // Even amount of clues
 
-		s.Warning("You are " + p.Character + ", so you cannot discard when there is an " +
-			"even number of clues available.")
+		s.Warning("You are " + p.Character + ", " +
+			"so you cannot discard when there is an even number of clues available.")
 		return true
 	} else if p.Character == "Traumatized" && // 22
 		g.ClueTokens%2 == 1 { // Odd amount of clues
 
-		s.Warning("You are " + p.Character + ", so you cannot discard when there is an " +
-			"odd number of clues available.")
+		s.Warning("You are " + p.Character + ", " +
+			"so you cannot discard when there is an odd number of clues available.")
 		return true
 	} else if p.Character == "Wasteful" && // 23
 		((!strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens >= 2) ||
 			(strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens >= 4)) {
 
-		s.Warning("You are " + p.Character + ", so you cannot discard if there are " +
-			"2 or more clues available.")
+		s.Warning("You are " + p.Character + ", " +
+			"so you cannot discard if there are 2 or more clues available.")
 		return true
 	}
 

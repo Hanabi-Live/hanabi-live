@@ -109,7 +109,7 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 	// Unmarshal the JSON (this code is taken from Golem)
 	var d *CommandData
 	if err := json.Unmarshal(jsonData, &d); err != nil {
-		logger.Error("User \"" + s.Username() + "\" sent an command of " +
+		logger.Error("User \"" + s.Username() + "\" sent a command of " +
 			"\"" + command + "\" with invalid data: " + string(jsonData))
 		return
 	}

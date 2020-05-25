@@ -57,8 +57,8 @@ func friend(s *Session, d *CommandData, add bool) {
 	if exists, v, err := models.Users.GetUserFromNormalizedUsername(
 		normalizedUsername,
 	); err != nil {
-		logger.Error("Failed to validate that \""+normalizedUsername+"\" exists in the "+
-			"database:", err)
+		logger.Error("Failed to validate that \""+normalizedUsername+"\" "+
+			"exists in the database:", err)
 		s.Error(DefaultErrorMsg)
 		return
 	} else if !exists {

@@ -182,8 +182,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		// Log the deal (so that it can be distributed to others if necessary)
 		logger.Info("--------------------------------------------------")
 		logger.Info("Deal for seed: " + g.Seed + " (from top to bottom)")
-		logger.Info("(cards are dealt to a player until their hand fills up before " +
-			"moving on to the next one)")
+		logger.Info("(cards are dealt to a player until their hand fills up before moving on to the next one)")
 		for i, c := range g.Deck {
 			logger.Info(strconv.Itoa(i+1) + ") " + c.Name(g))
 		}

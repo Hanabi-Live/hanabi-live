@@ -569,7 +569,6 @@ func (*Games) GetPlayerSeeds(userID int, variantID int) ([]string, error) {
 }
 
 func (*Games) GetNotes(databaseID int, numPlayers int, noteSize int) ([][]string, error) {
-	// nolint:lll
 	rows, err := db.Query(context.Background(), `
 		SELECT
 			game_participants.seat AS seat,

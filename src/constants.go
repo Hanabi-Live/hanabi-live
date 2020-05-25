@@ -88,6 +88,11 @@ const (
 	// The amount of time in between allowed @here Discord alerts
 	DiscordAtHereTimeout = time.Hour * 2
 
+	// We want to validate string inputs for too many consecutive diacritics
+	// This prevents the attack where messages can have a lot of diacritics and cause overflow
+	// into sections above and below the text
+	ConsecutiveDiacriticsAllowed = 3
+
 	// Common error messages
 	DefaultErrorMsg           = "Something went wrong. Please contact an administrator."
 	CreateGameFail            = "Failed to create the game. Please contact an administrator."

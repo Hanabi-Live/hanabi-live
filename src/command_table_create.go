@@ -56,10 +56,12 @@ func commandTableCreate(s *Session, d *CommandData) {
 	}
 
 	// Validate that the player is not joined to another table
-	if t2 := s.GetJoinedTable(); t2 != nil {
-		s.Warning("You cannot join more than one table at a time. " +
-			"Terminate your old game before joining a new one.")
-		return
+	if !strings.HasPrefix(s.Username(), "Bot-") {
+		if t2 := s.GetJoinedTable(); t2 != nil {
+			s.Warning("You cannot join more than one table at a time. " +
+				"Terminate your old game before joining a new one.")
+			return
+		}
 	}
 
 	// Make a default game name if they did not provide one
@@ -77,8 +79,8 @@ func commandTableCreate(s *Session, d *CommandData) {
 	// Validate that the game name does not contain any special characters
 	// (this mitigates XSS-style attacks)
 	if !isAlphanumericSpacesSafeSpecialCharacters(d.Name) {
-		s.Warning("Game names can only contain English letters, numbers, spaces, hyphens, " +
-			"and exclamation marks.")
+		msg := "Game names can only contain English letters, numbers, spaces, hyphens, underscores, and exclamation marks."
+		s.Warning(msg)
 		return
 	}
 
@@ -147,8 +149,8 @@ func commandTableCreate(s *Session, d *CommandData) {
 
 			// Check to see if the game ID exists on the server
 			if exists, err := models.Games.Exists(databaseID); err != nil {
-				logger.Error("Failed to check to see if game "+
-					strconv.Itoa(databaseID)+" exists:", err)
+				logger.Error("Failed to check to see if game "+strconv.Itoa(databaseID)+
+					" exists:", err)
 				s.Error(CreateGameFail)
 				return
 			} else if !exists {
@@ -272,8 +274,8 @@ func commandTableCreate(s *Session, d *CommandData) {
 				})
 			}
 		} else {
-			s.Warning("You cannot start a game with an exclamation mark unless " +
-				"you are trying to use a specific game creation command.")
+			msg := "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command."
+			s.Warning(msg)
 			return
 		}
 	}
@@ -287,23 +289,19 @@ func commandTableCreate(s *Session, d *CommandData) {
 	// Validate that the time controls are sane
 	if d.Timed {
 		if d.BaseTime <= 0 {
-			s.Warning("\"" + strconv.Itoa(d.BaseTime) + "\" is too small of a value for " +
-				"\"Base Time\".")
+			s.Warning("\"" + strconv.Itoa(d.BaseTime) + "\" is too small of a value for \"Base Time\".")
 			return
 		}
 		if d.BaseTime > 604800 { // 1 week in seconds
-			s.Warning("\"" + strconv.Itoa(d.BaseTime) + "\" is too large of a value for " +
-				"\"Base Time\".")
+			s.Warning("\"" + strconv.Itoa(d.BaseTime) + "\" is too large of a value for \"Base Time\".")
 			return
 		}
 		if d.TimePerTurn <= 0 {
-			s.Warning("\"" + strconv.Itoa(d.TimePerTurn) + "\" is too small of a value for " +
-				"\"Time per Turn\".")
+			s.Warning("\"" + strconv.Itoa(d.TimePerTurn) + "\" is too small of a value for \"Time per Turn\".")
 			return
 		}
 		if d.TimePerTurn > 86400 { // 1 day in seconds
-			s.Warning("\"" + strconv.Itoa(d.TimePerTurn) + "\" is too large of a value for " +
-				"\"Time per Turn\".")
+			s.Warning("\"" + strconv.Itoa(d.TimePerTurn) + "\" is too large of a value for \"Time per Turn\".")
 			return
 		}
 	}

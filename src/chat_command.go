@@ -91,6 +91,6 @@ func chatCommand(s *Session, d *CommandData, t *Table) {
 }
 
 func chatCommandWebsiteOnly(s *Session, d *CommandData, t *Table) {
-	chatServerSend("You cannot perform that command from Discord; "+
-		"please use the website instead.", d.Room)
+	msg := "You cannot perform that command from Discord; please use the website instead."
+	chatServerSend(msg, d.Room)
 }

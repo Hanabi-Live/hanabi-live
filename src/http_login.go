@@ -109,14 +109,13 @@ func httpLogin(c *gin.Context) {
 	username = strings.TrimSpace(username)
 
 	// Validate that the username does not contain any whitespace
-	// (other than a normal space character)
 	for _, letter := range username {
-		if unicode.IsSpace(letter) && letter != ' ' {
+		if unicode.IsSpace(letter) {
 			logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
-				"\"" + username + "\", but it contained illegal whitespace.")
+				"\"" + username + "\", but it contained whitespace.")
 			http.Error(
 				w,
-				"Usernames must not contain any whitespace characters (other than a normal space).",
+				"Usernames must not contain any whitespace characters.",
 				http.StatusUnauthorized,
 			)
 			return
@@ -156,8 +155,7 @@ func httpLogin(c *gin.Context) {
 			"\"" + username + "\", but it has illegal special characters in it.")
 		http.Error(
 			w,
-			"Usernames must not contain any special characters other than "+
-				"underscores, hyphens, and periods.",
+			"Usernames must not contain any special characters other than underscores, hyphens, and periods.",
 			http.StatusUnauthorized,
 		)
 		return
@@ -175,12 +173,12 @@ func httpLogin(c *gin.Context) {
 		return
 	}
 
-	// Validate that the username does not have two or more consecutive diacritics (accents)
-	// This prevents the attack where usernames can have a lot of diacritics and cause overflow
-	// into sections above and below the text
-	if hasConsecutiveDiacritics(username) {
+	// Validate that the username does not contain an unreasonable amount of consecutive diacritics
+	// (accents)
+	if numConsecutiveDiacritics(username) > ConsecutiveDiacriticsAllowed {
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
-			"\"" + username + "\", but it has two or more consecutive diacritics in it.")
+			"\"" + username + "\", but it has " + strconv.Itoa(ConsecutiveDiacriticsAllowed) +
+			" or more consecutive diacritics in it.")
 		http.Error(
 			w,
 			"Usernames cannot contain two or more consecutive diacritics.",
@@ -190,9 +188,7 @@ func httpLogin(c *gin.Context) {
 	}
 
 	// Validate that the username is not reserved
-	usernameWithNoSpaces := strings.ReplaceAll(username, " ", "")
-	usernameWithNoSpacesLowercase := strings.ToLower(usernameWithNoSpaces)
-	if usernameWithNoSpacesLowercase == "hanabilive" {
+	if strings.ToLower(username) == "hanabilive" {
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
 			"\"" + username + "\", but that username is reserved.")
 		http.Error(
@@ -223,14 +219,17 @@ func httpLogin(c *gin.Context) {
 		currentVersion := getVersion()
 		if versionNum != currentVersion {
 			logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
-				"\"" + username + "\" and a version of \"" + version + "\", but this is an old " +
-				"version. (The current version is " + strconv.Itoa(currentVersion) + ".)")
+				"\"" + username + "\" and a version of \"" + version + "\", " +
+				"but this is an old version. " +
+				"(The current version is " + strconv.Itoa(currentVersion) + ".)")
 			http.Error(
 				w,
 				"You are running an outdated version of the Hanabi client code.<br />"+
 					"(You are on <strong>v"+version+"</strong> and "+
 					"the latest is <strong>v"+strconv.Itoa(currentVersion)+"</strong>.)<br />"+
-					"Please perform a hard-refresh to get the latest version.<br />"+
+					"Please perform a "+
+					"<a href=\"https://www.getfilecloud.com/blog/2015/03/tech-tip-how-to-do-hard-refresh-in-browsers/\">"+
+					"hard-refresh</a> to get the latest version.<br />"+
 					"(Note that a hard-refresh is different from a normal refresh.)<br />"+
 					"On Windows, the hotkey for this is: <code>Ctrl + Shift + R</code><br />"+
 					"On MacOS, the hotkey for this is: <code>Command + Shift + R</code>",
@@ -348,8 +347,12 @@ func httpLogin(c *gin.Context) {
 		// e.g. "Αlice" with a Greek letter A (0x391) trying to impersonate "Alice"
 		normalizedUsername := normalizeUsername(username)
 		if normalizedUsername == "" {
-			http.Error(w, "That username cannot be transliterated to ASCII. Please try using a "+
-				"simpler username or try using less special characters.", http.StatusUnauthorized)
+			http.Error(
+				w,
+				"That username cannot be transliterated to ASCII. "+
+					"Please try using a simpler username or try using less special characters.",
+				http.StatusUnauthorized,
+			)
 			return
 		}
 		if normalizedExists, err := models.Users.NormalizedUsernameExists(

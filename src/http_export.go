@@ -117,8 +117,8 @@ func httpExport(c *gin.Context) {
 	// Get the actions from the database
 	var actions []*GameAction
 	if v, err := models.GameActions.GetAll(gameID); err != nil {
-		logger.Error("Failed to get the actions from the database "+
-			"for game "+strconv.Itoa(gameID)+":", err)
+		logger.Error("Failed to get the actions from the database for game "+
+			strconv.Itoa(gameID)+":", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -134,8 +134,8 @@ func httpExport(c *gin.Context) {
 	noteSize := variant.GetDeckSize() + len(variant.Suits)
 	var notes [][]string
 	if v, err := models.Games.GetNotes(gameID, len(dbPlayers), noteSize); err != nil {
-		logger.Error("Failed to get the notes from the database "+
-			"for game "+strconv.Itoa(gameID)+":", err)
+		logger.Error("Failed to get the notes from the database for game "+
+			strconv.Itoa(gameID)+":", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

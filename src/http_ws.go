@@ -102,8 +102,9 @@ func httpWS(c *gin.Context) {
 		// e.g. an "orphaned" user
 		// This can happen in situations where a test user was deleted, for example
 		// Delete their cookie and force them to relogin
-		logger.Info("User from \"" + ip + "\" tried to login with a cookie for an orphaned user " +
-			"ID of " + strconv.Itoa(userID) + ". Deleting their cookie.")
+		logger.Info("User from \"" + ip + "\" " +
+			"tried to login with a cookie with an orphaned user ID of " + strconv.Itoa(userID) + ". " +
+			"Deleting their cookie.")
 		http.Error(
 			w,
 			http.StatusText(http.StatusUnauthorized),

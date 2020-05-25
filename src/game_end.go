@@ -416,8 +416,6 @@ func (t *Table) ConvertToSharedReplay() {
 		// Skip offline players and players in the lobby;
 		// if they re-login, then they will just stay in the lobby
 		if !p.Present {
-			logger.Info("Skipped converting " + p.Name +
-				" to a spectator since they are not present.")
 			if p.ID == t.Owner && (p.Session == nil || p.Session.IsClosed()) {
 				// We don't want to pass the replay leader away if they are still in the lobby
 				// (as opposed to being offline)
@@ -431,8 +429,6 @@ func (t *Table) ConvertToSharedReplay() {
 		// If this game was ended due to idleness,
 		// skip conversion so that the shared replay gets deleted below
 		if g.EndCondition == EndConditionIdleTimeout {
-			logger.Info("Skipped converting " + p.Name + " to a spectator " +
-				"since the game ended due to idleness.")
 			continue
 		}
 

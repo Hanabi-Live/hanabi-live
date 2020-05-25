@@ -91,31 +91,6 @@ func getVersion() int {
 	}
 }
 
-func hasConsecutiveDiacritics(s string) bool {
-	// First, normalize with Normalization Form Canonical Decomposition (NFD) so that diacritics
-	// are seprated from other characters
-	// https://en.wikipedia.org/wiki/Unicode_equivalence
-	// https://blog.golang.org/normalization
-	normalizedString := norm.NFD.String(s)
-
-	contiguousDiacriticCount := 0
-	for _, r := range normalizedString {
-		// "Mn" stands for nonspacing mark, e.g. a diacritic
-		// https://www.compart.com/en/unicode/category/Mn
-		// From: https://stackoverflow.com/questions/26722450/remove-diacritics-using-go
-		if unicode.Is(unicode.Mn, r) {
-			contiguousDiacriticCount++
-			if contiguousDiacriticCount >= 2 {
-				return true
-			}
-		} else {
-			contiguousDiacriticCount = 0
-		}
-	}
-
-	return false
-}
-
 func intInSlice(a int, slice []int) bool {
 	for _, b := range slice {
 		if b == a {
@@ -127,7 +102,7 @@ func intInSlice(a int, slice []int) bool {
 
 // From: https://stackoverflow.com/questions/38554353/
 var isAlphanumeric = regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString
-var isAlphanumericSpacesSafeSpecialCharacters = regexp.MustCompile(`^[a-zA-Z0-9 !-]+$`).MatchString
+var isAlphanumericSpacesSafeSpecialCharacters = regexp.MustCompile(`^[a-zA-Z0-9 !-_]+$`).MatchString
 
 // From: https://gist.github.com/stoewer/fbe273b711e6a06315d19552dd4d33e6
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
@@ -145,6 +120,32 @@ func normalizeUsername(username string) string {
 	// First, we transliterate the username to pure ASCII
 	// Second, we lowercase it
 	return strings.ToLower(unidecode.Unidecode(username))
+}
+
+func numConsecutiveDiacritics(s string) int {
+	// First, normalize with Normalization Form Canonical Decomposition (NFD) so that diacritics
+	// are seprated from other characters
+	// https://en.wikipedia.org/wiki/Unicode_equivalence
+	// https://blog.golang.org/normalization
+	normalizedString := norm.NFD.String(s)
+
+	consecutiveDiacriticCount := 0
+	maxConsecutive := 0
+	for _, r := range normalizedString {
+		// "Mn" stands for nonspacing mark, e.g. a diacritic
+		// https://www.compart.com/en/unicode/category/Mn
+		// From: https://stackoverflow.com/questions/26722450/remove-diacritics-using-go
+		if unicode.Is(unicode.Mn, r) {
+			consecutiveDiacriticCount++
+			if consecutiveDiacriticCount > maxConsecutive {
+				maxConsecutive = consecutiveDiacriticCount
+			}
+		} else {
+			consecutiveDiacriticCount = 0
+		}
+	}
+
+	return maxConsecutive
 }
 
 func secondsToDurationString(seconds int) (string, error) {

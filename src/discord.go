@@ -49,8 +49,7 @@ func discordInit() {
 	// Get the last time a "@here" ping was sent
 	var timeAsString string
 	if v, err := models.Metadata.Get("discord_last_at_here"); err != nil {
-		logger.Fatal("Failed to retrieve the \"discord_last_at_here\" "+
-			"value from the database:", err)
+		logger.Fatal("Failed to retrieve the \"discord_last_at_here\" value from the database:", err)
 		return
 	} else {
 		timeAsString = v
@@ -352,23 +351,13 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 	}
 
 	if command == "badquestion" {
-		msg := "Your question is not specific enough. In order to properly answer it, we need to " +
-			"know the amount of players in the game, all of the cards in all of the hands, the " +
-			"amount of current clues, and so forth. Please type out a full Alice and Bob story " +
-			"in the style of the reference document. (e.g. " +
-			"<https://github.com/Zamiell/hanabi-conventions/blob/master/" +
-			"Reference.md#the-reverse-finesse>)"
+		msg := "Your question is not specific enough. In order to properly answer it, we need to know the amount of players in the game, all of the cards in all of the hands, the amount of current clues, and so forth. Please type out a full Alice and Bob story in the style of the reference document. (e.g. <https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#the-reverse-finesse>)"
 		discordSend(m.ChannelID, "", msg)
 		return
 	}
 
 	if command == "2pquestion" {
-		msg := "This channel is mostly for asking clarification questions about the Hyphen-ated " +
-			"conventions. In 2-player games, this doesn't really apply, because you can just " +
-			"play with your teammate in the exact way that you want without having to ask " +
-			"anybody else. Furthermore, the Hyphen-ated group typically only plays 3-6 player " +
-			"games, as 2-player games are considered to be much more trivial. Please ask " +
-			"2-player questions sparingly."
+		msg := "Ask questions about 2-player games in the #2-player channel."
 		discordSend(m.ChannelID, "", msg)
 		return
 	}

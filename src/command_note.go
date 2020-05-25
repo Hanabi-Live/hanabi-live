@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 // commandNote is sent when the user writes a note
@@ -57,6 +58,12 @@ func commandNote(s *Session, d *CommandData) {
 		d.Note = d.Note[0 : MaxChatLength-1]
 	}
 
+	// Check for valid UTF8
+	if !utf8.Valid([]byte(d.Note)) {
+		s.Warning("Notes must be valid UTF8.")
+		return
+	}
+
 	// Replace any whitespace that is not a space with a space
 	msg2 := d.Note
 	for _, letter := range msg2 {
@@ -68,11 +75,11 @@ func commandNote(s *Session, d *CommandData) {
 	// Trim whitespace from both sides of the note
 	d.Note = strings.TrimSpace(d.Note)
 
-	// Validate that the note does not have two or more consecutive diacritics (accents)
-	// This prevents the attack where notes can have a lot of diacritics and cause overflow
-	// into sections above and below the text
-	if hasConsecutiveDiacritics(d.Note) {
-		s.Warning("Notes cannot contain two or more consecutive diacritics.")
+	// Validate that the note does not contain an unreasonable amount of consecutive diacritics
+	// (accents)
+	if numConsecutiveDiacritics(d.Note) > ConsecutiveDiacriticsAllowed {
+		s.Warning("Notes cannot contain more than " + strconv.Itoa(ConsecutiveDiacriticsAllowed) +
+			" consecutive diacritics.")
 		return
 	}
 

@@ -16,16 +16,16 @@ func shutdown() {
 	datetimeShutdownInit = time.Now()
 
 	numGames := countActiveTables()
-	logger.Info("Initiating a graceful server shutdown " +
-		"(with " + strconv.Itoa(numGames) + " active games).")
+	logger.Info("Initiating a graceful server shutdown (with " + strconv.Itoa(numGames) +
+		" active games).")
 	if numGames == 0 {
 		shutdownImmediate()
 	} else {
 		// Notify the lobby and all ongoing tables
 		notifyAllShutdown()
 		numMinutes := strconv.Itoa(int(ShutdownTimeout.Minutes()))
-		chatServerSendAll("The server will shutdown in " + numMinutes + " minutes or " +
-			"when all ongoing games have finished, whichever comes first.")
+		chatServerSendAll("The server will shutdown in " + numMinutes +
+			" minutes or when all ongoing games have finished, whichever comes first.")
 		go shutdownXMinutesLeft(5)
 		go shutdownXMinutesLeft(10)
 		go shutdownWait()
@@ -114,8 +114,8 @@ func shutdownImmediate() {
 	defer commandMutex.Unlock()
 
 	for _, s := range sessions {
-		s.Error("The server is going down for scheduled maintenance. The server might be " +
-			"down for a while; please see the Discord server for more specific updates.")
+		s.Error("The server is going down for scheduled maintenance. " +
+			"The server might be down for a while; please see the Discord server for more specific updates.")
 	}
 
 	commandChat(nil, &CommandData{

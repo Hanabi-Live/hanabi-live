@@ -46,8 +46,7 @@ func (t *Table) NotifyChatTyping(name string, typing bool) {
 // This is only called in situations where the game has not started yet
 func (t *Table) NotifyPlayerChange() {
 	if t.Running {
-		logger.Error("The \"NotifyPlayerChange()\" function was called on a game that " +
-			"has already started.")
+		logger.Error("The \"NotifyPlayerChange()\" function was called on a game that has already started.")
 		return
 	}
 
@@ -119,8 +118,7 @@ func (t *Table) NotifyPlayerChange() {
 // This is never called in replays
 func (t *Table) NotifyConnected() {
 	if !t.Running {
-		logger.Error("The \"NotifyConnected()\" function was called on a game that " +
-			"has not started yet.")
+		logger.Error("The \"NotifyConnected()\" function was called on a game that has not started yet.")
 		return
 	}
 
