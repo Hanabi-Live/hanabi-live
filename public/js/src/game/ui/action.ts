@@ -565,6 +565,14 @@ actionFunctions.set('turn', (data: ActionTurn) => {
   // Update the current player in the middle of the screen
   updateCurrentPlayerArea();
 
+  // Show the black rectangle over the hand that signifies that it is their turn
+  if (globals.currentPlayerIndex !== -1) {
+    for (const rect of globals.elements.playerHandTurnRects) {
+      rect.hide();
+    }
+    globals.elements.playerHandTurnRects[globals.currentPlayerIndex].show();
+  }
+
   // If there are no cards left in the deck, update the "Turns left: #" label
   if (globals.deckSize === 0) {
     if (globals.endTurn === null) {

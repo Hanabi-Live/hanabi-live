@@ -67,7 +67,7 @@ export default (winW: number, winH: number) => {
   // so they do not have to be hard coded
   const handPosBGA: any = {};
   const handPosBGAValues = {
-    x: 0.44,
+    x: 0.435,
     y: 0.03,
     w: 0.34,
     h: 0.16,
@@ -263,28 +263,73 @@ export default (winW: number, winH: number) => {
     }
 
     let playerHandPos = handPos;
+    let playerNamePos = namePos;
     if (!globals.lobby.settings.keldonMode) {
       playerHandPos = handPosBGA;
+      playerNamePos = namePosBGA;
     }
 
+    const handValues = {
+      x: playerHandPos[numPlayers][j].x,
+      y: playerHandPos[numPlayers][j].y,
+      w: playerHandPos[numPlayers][j].w!,
+      h: playerHandPos[numPlayers][j].h!,
+      rot: playerHandPos[numPlayers][j].rot,
+    };
     globals.elements.playerHands[i] = new CardLayout({
-      x: playerHandPos[numPlayers][j].x * winW,
-      y: playerHandPos[numPlayers][j].y * winH,
-      width: playerHandPos[numPlayers][j].w! * winW,
-      height: playerHandPos[numPlayers][j].h! * winH,
-      rotation: playerHandPos[numPlayers][j].rot,
+      x: handValues.x * winW,
+      y: handValues.y * winH,
+      width: handValues.w * winW,
+      height: handValues.h * winH,
+      rotation: handValues.rot,
       align: 'center',
       reverse: isHandReversed(j),
       listening: true,
     });
     globals.layers.card.add(globals.elements.playerHands[i] as any);
 
-    drawShades(winW, winH, numPlayers, j);
-
-    let playerNamePos = namePos;
-    if (!globals.lobby.settings.keldonMode) {
-      playerNamePos = namePosBGA;
+    const turnRectValues = {
+      // The black box should always be as wide as the name frame
+      x: playerNamePos[numPlayers][j].x,
+      y: handValues.y,
+      w: playerNamePos[numPlayers][j].w! * 1.04,
+      h: handValues.h * 1.34,
+      offsetX: handValues.w * 0.02,
+      offsetY: handValues.h * 0.12,
+    };
+    if (globals.lobby.settings.keldonMode) {
+      turnRectValues.x = handValues.x;
+      turnRectValues.w = handValues.w;
+      turnRectValues.h = handValues.h * 1.2;
+      turnRectValues.offsetX = 0;
+      turnRectValues.offsetY = handValues.h * 0.1;
+      if (numPlayers === 5) {
+        turnRectValues.w += handValues.w * 0.03;
+        turnRectValues.offsetX += handValues.w * 0.015;
+      }
+    } else if (numPlayers === 6) {
+      turnRectValues.h += 0.005;
     }
+    const turnRect = new Konva.Rect({
+      x: turnRectValues.x * winW,
+      y: turnRectValues.y * winH,
+      width: turnRectValues.w * winW,
+      height: turnRectValues.h * winH,
+      offset: {
+        x: turnRectValues.offsetX * winW,
+        y: turnRectValues.offsetY * winH,
+      },
+      fill: 'black',
+      cornerRadius: turnRectValues.h * 0.1 * winH,
+      rotation: handValues.rot,
+      opacity: 0.5,
+      visible: false,
+    });
+    globals.layers.UI.add(turnRect);
+    globals.elements.playerHandTurnRects.push(turnRect);
+
+    // drawShades(winW, winH, numPlayers, j);
+
     globals.elements.nameFrames[i] = new NameFrame({
       x: playerNamePos[numPlayers][j].x * winW,
       y: playerNamePos[numPlayers][j].y * winH,
@@ -299,6 +344,7 @@ export default (winW: number, winH: number) => {
   }
 };
 
+/*
 // Draw the faded shade that shows where the "new" side of the hand is
 // (but don't bother drawing it in BGA mode since all the hands face the same way)
 const drawShades = (winW: number, winH: number, numPlayers: number, playerIndex: number) => {
@@ -373,6 +419,7 @@ const drawShades = (winW: number, winH: number, numPlayers: number, playerIndex:
 
   globals.layers.UI.add(rect);
 };
+*/
 
 // Draw the "Detrimental Character Assignments" icon and tooltip
 const drawDetrimentalCharacters = (

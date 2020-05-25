@@ -29,23 +29,6 @@ export default class CardLayout extends Konva.Group {
       throw new Error('A height was not defined for a CardLayout.');
     }
 
-    /*
-    const turnRect = new Konva.Rect({
-      x: config.x,
-      y: config.y,
-      width: config.width * 1.06,
-      height: config.height * 1.08,
-      offset: {
-        x: config.width * 0.03,
-        y: config.height * 0.04,
-      },
-      fill: 'black',
-      cornerRadius: config.height * 0.01,
-      rotation: config.rotation,
-    });
-    globals.layers.UI.add(turnRect);
-    */
-
     // Debug rectangle (uncomment to show the size of the hand)
     /*
     const debugRect = new Konva.Rect({

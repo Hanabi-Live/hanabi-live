@@ -32,6 +32,9 @@ module.exports = {
   // We modify the linting rules from the base for some specific things
   // (listed in alphabetical order)
   rules: {
+    // Temp rules until airbnb-typescript can be updated
+    '@typescript-eslint/camelcase': 'off',
+
     // This allows code to be structured in a more logical order
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/variables.js#L42
     '@typescript-eslint/no-use-before-define': ['off'],
