@@ -267,7 +267,8 @@ func (g *Game) WriteDatabase() error {
 			if err := models.GameParticipantNotes.Insert(p.ID, g.ID, j, note); err != nil {
 				logger.Error("Failed to insert the row for note #"+strconv.Itoa(j)+
 					" for game participant #"+strconv.Itoa(i)+":", err)
-				return err
+				// Do not return on failed note insertion,
+				// since it should not affect subsequent operations
 			}
 		}
 	}
@@ -315,7 +316,8 @@ func (g *Game) WriteDatabase() error {
 		room := "table" + strconv.Itoa(t.ID)
 		if err := models.ChatLog.Insert(chatMsg.UserID, chatMsg.Msg, room); err != nil {
 			logger.Error("Failed to insert a chat message into the database:", err)
-			return err
+			// Do not return on failed chat insertion,
+			// since it should not affect subsequent operations
 		}
 	}
 
@@ -325,7 +327,7 @@ func (g *Game) WriteDatabase() error {
 		var stats UserStatsRow
 		if v, err := models.UserStats.Get(p.ID, variants[g.Options.Variant].ID); err != nil {
 			logger.Error("Failed to get the stats for user "+p.Name+":", err)
-			return err
+			continue
 		} else {
 			stats = v
 		}
@@ -357,7 +359,7 @@ func (g *Game) WriteDatabase() error {
 		// we still want to update their average score and strikeout rate)
 		if err := models.UserStats.Update(p.ID, variants[g.Options.Variant].ID, stats); err != nil {
 			logger.Error("Failed to update the stats for user "+p.Name+":", err)
-			return err
+			continue
 		}
 	}
 
