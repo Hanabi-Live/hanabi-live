@@ -698,7 +698,9 @@ commands.set('spectators', (data: SpectatorsData) => {
     // Build the string that shows all the names
     let nameEntries = '';
     for (const name of data.names) {
-      if (globals.lobby.friends.includes(name)) {
+      if (name === globals.lobby.username) {
+        nameEntries += `<li><span class="name-me">${name}</span></li>`;
+      } else if (globals.lobby.friends.includes(name)) {
         nameEntries += `<li><span class="friend">${name}</span></li>`;
       } else {
         nameEntries += `<li>${name}</li>`;

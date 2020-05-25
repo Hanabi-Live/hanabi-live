@@ -77,17 +77,21 @@ const drawUser = (
   const status = user.status;
 
   let nameColumn = `<span id="online-users-${id}">`;
+  if (username === globals.username) {
+    nameColumn += '<strong>';
+  }
   nameColumn += `<a href="/scores/${username}" `;
-  if (friend) {
+  if (username === globals.username) {
+    nameColumn += 'class="name-me" ';
+  } else if (friend) {
     nameColumn += 'class="friend" ';
   }
   nameColumn += 'target="_blank" rel="noopener noreferrer">';
-  if (username === globals.username) {
-    nameColumn += `<strong><span class="name-me">${username}</span></strong>`;
-  } else {
-    nameColumn += username;
-  }
+  nameColumn += username;
   nameColumn += '</a>';
+  if (username === globals.username) {
+    nameColumn += '</strong>';
+  }
   nameColumn += `<span id="online-users-${id}-zzz" class="hidden"> &nbsp;💤</span>`;
   nameColumn += '</span>';
 

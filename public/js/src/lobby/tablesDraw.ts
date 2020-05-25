@@ -142,7 +142,9 @@ const tablesDraw = () => {
     // Column 7 - Players
     const playersArray: string[] = [];
     for (const player of table.players) {
-      if (globals.friends.includes(player)) {
+      if (player === globals.username) {
+        playersArray.push(`<span class="name-me">${player}</span>`);
+      } else if (globals.friends.includes(player)) {
         playersArray.push(`<span class="friend">${player}</span>`);
       } else {
         playersArray.push(player);

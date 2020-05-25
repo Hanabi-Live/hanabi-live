@@ -223,7 +223,9 @@ export const draw = () => {
     div.show();
 
     html = '<p class="margin0 padding0p5"><strong>';
-    if (globals.friends.includes(player.name)) {
+    if (player.name === globals.username) {
+      html += `<span class="name-me">${player.name}</span>`;
+    } else if (globals.friends.includes(player.name)) {
       html += `<span class="friend">${player.name}</span>`;
     } else {
       html += player.name;

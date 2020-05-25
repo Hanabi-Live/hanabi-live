@@ -76,7 +76,6 @@ a {
 
 .name-me {
   color: #e69500;
-  text-decoration: underline; /* This is needed or else the underline will be blue */
 }
 
 .friend {
