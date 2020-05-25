@@ -183,9 +183,6 @@ func main() {
 	// Initialize chat commands (in "chatCommand.go")
 	chatCommandInit()
 
-	// Load the current speedrun records (in "speedrun.go")
-	speedrunInit()
-
 	// Record the time that the server started
 	datetimeStarted = time.Now()
 

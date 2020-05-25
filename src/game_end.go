@@ -66,53 +66,6 @@ func (g *Game) End() {
 	t.NotifyGameAction()
 	logger.Info(t.GetName() + text)
 
-	// In speedruns, send a text message to show how close to the record they got
-	if g.Options.Speedrun &&
-		len(g.Players) != 6 && // 6-player games are not official
-		stringInSlice(g.Options.Variant, officialSpeedrunVariants) {
-
-		seconds := int(totalTime.Seconds())
-		fastestTime := fastestTimes[g.Options.Variant][len(g.Players)]
-		text := ""
-		if seconds == fastestTime {
-			text = "You tied the world record!"
-		} else if seconds > fastestTime {
-			// Only bother showing how close the players came
-			// if they were within 60 seconds of the world record
-			diff := seconds - fastestTime
-			if diff <= 60 {
-				text = "You were slower than the world record by " +
-					strconv.Itoa(diff) + " seconds."
-			}
-		} else if seconds < fastestTime && g.Score == variants[g.Options.Variant].MaxScore {
-			// Update the new fastest time
-			fastestTimes[g.Options.Variant][len(g.Players)] = seconds
-
-			g.Sound = "new_record"
-			t.NotifySound()
-
-			diff := fastestTime - seconds
-			text = "You beat the best time by " + strconv.Itoa(diff) + " seconds!"
-			g.Actions = append(g.Actions, ActionText{
-				Type: "text",
-				Text: text,
-			})
-			t.NotifyGameAction()
-			logger.Info(t.GetName() + text)
-
-			text = "Congratulations on a new world record!"
-		}
-
-		if text != "" {
-			g.Actions = append(g.Actions, ActionText{
-				Type: "text",
-				Text: text,
-			})
-			t.NotifyGameAction()
-			logger.Info(t.GetName() + text)
-		}
-	}
-
 	// Advance a turn so that the finishing times are separated from the final action of the game
 	g.Turn++
 	t.NotifyTurn()
