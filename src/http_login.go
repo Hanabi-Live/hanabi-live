@@ -115,7 +115,7 @@ func httpLogin(c *gin.Context) {
 				"\"" + username + "\", but it contained whitespace.")
 			http.Error(
 				w,
-				"Usernames must not contain any whitespace characters.",
+				"Usernames cannot contain any whitespace characters.",
 				http.StatusUnauthorized,
 			)
 			return

@@ -64,22 +64,45 @@ func commandTableCreate(s *Session, d *CommandData) {
 		}
 	}
 
+	// Truncate long table names
+	// (we do this first to prevent wasting CPU cycles on validating extremely long table names)
+	if len(d.Name) > MaxGameNameLength {
+		d.Name = d.Name[0 : MaxGameNameLength-1]
+	}
+
+	// Trim whitespace from both sides of the message
+	d.Name = strings.TrimSpace(d.Name)
+
 	// Make a default game name if they did not provide one
 	if len(d.Name) == 0 {
 		d.Name = s.Username() + "'s game"
 	}
 
-	// Validate that the game name is not excessively long
-	if len(d.Name) > MaxGameNameLength {
-		s.Warning("You cannot have a game name be longer than " +
-			strconv.Itoa(MaxGameNameLength) + " characters.")
+	// Check for non-ASCII characters
+	if !isPrintableASCII(d.Name) {
+		s.Warning("Game names can only contain ASCII characters.")
 		return
 	}
 
 	// Validate that the game name does not contain any special characters
-	// (this mitigates XSS-style attacks)
+	// (this mitigates XSS attacks)
 	if !isAlphanumericSpacesSafeSpecialCharacters(d.Name) {
-		msg := "Game names can only contain English letters, numbers, spaces, hyphens, underscores, and exclamation marks."
+		msg := "Game names can only contain English letters, numbers, spaces, " +
+			"<code>!</code>, " +
+			"<code>@</code>, " +
+			"<code>#</code>, " +
+			"<code>$</code>, " +
+			"<code>-</code>, " +
+			"<code>_</code>, " +
+			"<code>=</code>, " +
+			"<code>+</code>, " +
+			"<code>;</code>, " +
+			"<code>:</code>, " +
+			"<code>'</code>, " +
+			"<code>\"</code>, " +
+			"<code>,</code>, " +
+			"<code>.</code>, " +
+			"and <code>?</code>."
 		s.Warning(msg)
 		return
 	}
