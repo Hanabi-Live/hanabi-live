@@ -170,8 +170,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 			}
 		}
 
-		msg := "Failed to find the owner of the game when attempting to automatically start it."
-		logger.Error(msg)
+		logger.Error("Failed to find the owner of the game when attempting to automatically start it.")
 		return
 	}
 

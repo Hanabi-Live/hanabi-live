@@ -188,7 +188,8 @@ func httpLogin(c *gin.Context) {
 	}
 
 	// Validate that the username is not reserved
-	if strings.ToLower(username) == "hanabilive" {
+	normalizedUsername := normalizeUsername(username)
+	if normalizedUsername == "hanabilive" {
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
 			"\"" + username + "\", but that username is reserved.")
 		http.Error(
@@ -345,7 +346,6 @@ func httpLogin(c *gin.Context) {
 		// e.g. "alice" trying to impersonate "Alice"
 		// e.g. "Alicé" trying to impersonate "Alice"
 		// e.g. "Αlice" with a Greek letter A (0x391) trying to impersonate "Alice"
-		normalizedUsername := normalizeUsername(username)
 		if normalizedUsername == "" {
 			http.Error(
 				w,
