@@ -439,8 +439,8 @@ func newFakeSession(id int, name string) *Session {
 	keys["username"] = name
 	keys["muted"] = false
 	keys["status"] = StatusLobby
-	keys["friends"] = new(map[int]struct{})
-	keys["reverseFriends"] = new(map[int]struct{})
+	keys["friends"] = make(map[int]struct{})
+	keys["reverseFriends"] = make(map[int]struct{})
 	keys["inactive"] = false
 	keys["fakeUser"] = true
 	keys["rateLimitAllowance"] = RateLimitRate
