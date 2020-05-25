@@ -691,7 +691,7 @@ const drawDeck = () => {
     width: deckValues.w! * winW,
     height: deckValues.h! * winH,
     stroke: 'yellow',
-    cornerRadius: 6,
+    cornerRadius: 0.01 * winH,
     strokeWidth: 10,
     visible: false,
   });
