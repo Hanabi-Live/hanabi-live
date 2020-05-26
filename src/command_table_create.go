@@ -59,7 +59,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 	if !strings.HasPrefix(s.Username(), "Bot-") {
 		if t2 := s.GetJoinedTable(); t2 != nil {
 			s.Warning("You cannot join more than one table at a time. " +
-				"Terminate your old game before joining a new one.")
+				"Terminate your other game before creating a new one.")
 			return
 		}
 	}

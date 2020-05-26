@@ -76,7 +76,7 @@ func (s *Session) GetJoinedTable() *Table {
 		}
 
 		for _, p := range t.Players {
-			if p.Name == s.Username() {
+			if p.ID == s.UserID() {
 				return t
 			}
 		}
