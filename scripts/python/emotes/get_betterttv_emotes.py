@@ -1,3 +1,5 @@
+# Note that the "D:" should be handled separately because file names cannot have a colon on Windows
+
 # Imports
 import json
 import os
