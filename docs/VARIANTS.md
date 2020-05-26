@@ -99,6 +99,15 @@ One of each card per suit (e.g. 5 in total):
 * All rank clues will "touch" the light pink suit.
 * No color clues will "touch" the light pink suit.
 
+### Reversed
+
+* One of the suits is replaced with a reversed suit.
+* Two 1's are removed from that suit.
+* Two 5's are added to that suit.
+* That suit must be completed in reverse (5, 4, 3, 2, 1). 
+* This suit can also be a White (colorless), Black (one of each card) or Rainbow (all color clues) suit.
+* The White Reversed (6 Suits) variant is an official variant introduced with [Hanabi Grands Feux](https://www.cocktailgames.com/jeu/hanabi-grands-feux/) under the name "Poudre Noire" (Black Powder).
+
 ### Dark Rainbow / Dark Pink / Gray / Dark Brown / Dark Omni / Dark Null / Cocoa Rainbow / Gray Pink
 
 * One of the suits is replaced with a "dark" version of a special suit.

@@ -3,7 +3,6 @@ package main
 import (
 	"hash/crc64"
 	"math/rand"
-	"strings"
 )
 
 func (g *Game) InitDeck() {
@@ -31,11 +30,14 @@ func (g *Game) InitDeck() {
 			var amountToAdd int
 			if rank == 1 {
 				amountToAdd = 3
-				if strings.HasPrefix(g.Options.Variant, "Up or Down") {
+				if variants[g.Options.Variant].IsUpOrDown() || suitObject.Reversed {
 					amountToAdd = 1
 				}
 			} else if rank == 5 {
 				amountToAdd = 1
+				if suitObject.Reversed {
+					amountToAdd = 3
+				}
 			} else if rank == StartCardRank {
 				amountToAdd = 1
 			} else {

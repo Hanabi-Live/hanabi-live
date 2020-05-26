@@ -197,9 +197,9 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 
 	// Find out if this successfully plays
 	var failed bool
-	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-		// In the "Up or Down" variants, cards do not play in order
-		failed = variantUpOrDownPlay(g, c)
+	if variants[g.Options.Variant].HasReversedSuits() {
+		// In the "Up or Down" and "Reversed" variants, cards might not play in order
+		failed = variantReversiblePlay(g, c)
 	} else {
 		failed = c.Rank != g.Stacks[c.Suit]+1
 	}
@@ -310,7 +310,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	extraClue := c.Rank == 5
 
 	// Handle custom variants that do not play in order from 1 to 5
-	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
+	if variants[g.Options.Variant].HasReversedSuits() {
 		extraClue = (c.Rank == 5 || c.Rank == 1) &&
 			g.StackDirections[c.Suit] == StackDirectionFinished
 	}

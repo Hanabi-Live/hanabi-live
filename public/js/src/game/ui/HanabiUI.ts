@@ -18,6 +18,7 @@ import pause from './pause';
 import * as stats from './stats';
 import * as timer from './timer';
 import * as turn from './turn';
+import { isUpOrDown } from './variants/Reversible';
 
 export default class HanabiUI {
   globals: Globals;
@@ -199,11 +200,14 @@ const initCardsMap = () => {
       let amountToAdd = 2;
       if (rank === 1) {
         amountToAdd = 3;
-        if (globals.variant.name.startsWith('Up or Down')) {
+        if (isUpOrDown() || suit.reversed) {
           amountToAdd = 1;
         }
       } else if (rank === 5) {
         amountToAdd = 1;
+        if (suit.reversed) {
+          amountToAdd = 3;
+        }
       }
       if (suit.oneOfEach) {
         amountToAdd = 1;

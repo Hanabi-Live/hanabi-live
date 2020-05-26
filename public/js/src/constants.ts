@@ -54,7 +54,7 @@ export const REPLAY_ARROW_ORDER = {
   EFFICIENCY: -4,
   MIN_EFFICIENCY: -5,
 };
-export const STACK_DIRECTION = { // Used in the "Up or Down" variants
+export const STACK_DIRECTION = { // Used in the "Up or Down" and "Reversed" variants
   UNDECIDED: 0,
   UP: 1,
   DOWN: 2,

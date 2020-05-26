@@ -32,6 +32,7 @@ import possibilitiesCheck from './possibilitiesCheck';
 import * as stats from './stats';
 import strikeRecord from './strikeRecord';
 import updateCurrentPlayerArea from './updateCurrentPlayerArea';
+import { hasReversedSuits } from './variants/Reversible';
 
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list that was sent upon loading a new
@@ -387,9 +388,9 @@ actionFunctions.set('reorder', (data: ActionReorder) => {
 });
 
 actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
-  // Update the stack directions (only in "Up or Down" variants)
+  // Update the stack directions (only in "Up or Down" and "Reversed" variants)
   globals.stackDirections = data.directions;
-  if (globals.variant.name.startsWith('Up or Down')) {
+  if (hasReversedSuits()) {
     for (let i = 0; i < globals.stackDirections.length; i++) {
       const direction = globals.stackDirections[i];
       let text;

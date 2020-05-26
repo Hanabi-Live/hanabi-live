@@ -2,7 +2,6 @@ package main
 
 import (
 	"strconv"
-	"strings"
 )
 
 type Card struct {
@@ -55,8 +54,8 @@ func (c *Card) NeedsToBePlayed(g *Game) bool {
 	}
 
 	// Determining if the card needs to be played in the "Up or Down" variants is more complicated
-	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-		return variantUpOrDownNeedsToBePlayed(g, c)
+	if variants[g.Options.Variant].HasReversedSuits() {
+		return variantReversibleNeedsToBePlayed(g, c)
 	}
 
 	// Second, check to see if it is still possible to play this card

@@ -1,9 +1,5 @@
 package main
 
-import (
-	"strings"
-)
-
 /*
 	Notifications for both before and during a game
 */
@@ -166,8 +162,8 @@ func (t *Table) NotifyStatus() {
 	})
 	t.NotifyGameAction()
 
-	// If we are playing an "Up or Down" variant, we also need to send the stack directions
-	if strings.HasPrefix(t.Options.Variant, "Up or Down") {
+	// If we are playing a "Reversed" or "Up or Down" variant, we also need to send the stack directions
+	if variants[g.Options.Variant].HasReversedSuits() {
 		// Since StackDirections is a slice, it will be stored as a pointer
 		// (unlike the primitive values that we used for the ActionStatus message above)
 		// So, make a copy to preserve the stack directions for this exact moment in time

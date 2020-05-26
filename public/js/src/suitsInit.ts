@@ -11,6 +11,7 @@ type SuitJSON = {
   fillColors?: string[];
   oneOfEach?: boolean;
   pip: string;
+  reversed?: boolean;
 
   allClueColors?: boolean;
   allClueRanks?: boolean;
@@ -148,6 +149,13 @@ export default (COLORS: Map<string, Color>) => {
       throw new Error(`Failed to find the pip for the "${suitName}" suit.`);
     }
 
+    // Validate the "reversed" property
+    // If it is not specified, the suit is not reversed (i.e. played from 1 to 5 as normal)
+    if (Object.hasOwnProperty.call(suitJSON, 'reversed') && suitJSON.reversed !== true) {
+      throw new Error(`The "reversed" property for the suit "${suitName}" must be set to true.`);
+    }
+    const reversed: boolean = suitJSON.reversed || false;
+
     // Add it to the map
     const suit: Suit = {
       name,
@@ -158,6 +166,7 @@ export default (COLORS: Map<string, Color>) => {
       fillColors,
       oneOfEach,
       pip,
+      reversed,
 
       allClueColors,
       allClueRanks,

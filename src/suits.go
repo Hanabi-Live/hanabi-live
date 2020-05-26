@@ -15,6 +15,7 @@ type Suit struct {
 	Abbreviation string   `json:"abbreviation"`
 	ClueColors   []string `json:"clueColors"`
 	OneOfEach    bool     `json:"oneOfEach"`
+	Reversed     bool     `json:"reversed"`
 
 	AllClueColors bool `json:"allClueColors"`
 	AllClueRanks  bool `json:"allClueRanks"`
