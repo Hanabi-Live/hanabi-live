@@ -143,6 +143,6 @@ func ban(s *Session) {
 		return
 	}
 
-	logoutUser(s.Username())
+	logoutUser(s.UserID())
 	logger.Info("Successfully banned user \"" + s.Username() + "\" from IP address \"" + ip + "\".")
 }

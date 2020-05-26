@@ -118,17 +118,17 @@ func httpLocalhostUserAction(c *gin.Context) {
 	}
 }
 
-func logoutUser(username string) {
-	for _, s := range sessions {
-		if s.Username() != username {
-			continue
-		}
-
+func logoutUser(userID int) {
+	if s, ok := sessions[userID]; !ok {
+		logger.Info("Attempted to manually log out user " + strconv.Itoa(userID) + ", " +
+			"but they were not online.")
+	} else {
 		if err := s.Close(); err != nil {
-			logger.Info("Attempted to manually close a WebSocket connection, but it failed.")
+			logger.Info("Failed to manually close the WebSocket session for user "+
+				strconv.Itoa(userID)+":", err)
 		} else {
-			logger.Info("Successfully terminated a WebSocket connection.")
+			logger.Info("Successfully terminated the WebSocket session for user " +
+				strconv.Itoa(userID) + ".")
 		}
-		return
 	}
 }

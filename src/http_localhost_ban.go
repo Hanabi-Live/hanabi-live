@@ -36,7 +36,7 @@ func httpLocalhostBan(c *gin.Context, username string, ip string, userID int) {
 		return
 	}
 
-	logoutUser(username)
+	logoutUser(userID)
 
 	c.String(http.StatusOK, "success\n")
 }
