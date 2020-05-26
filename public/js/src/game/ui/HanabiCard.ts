@@ -22,7 +22,7 @@ import NoteIndicator from './NoteIndicator';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
 import RankPip from './RankPip';
-import * as Reversible from './variants/Reversible';
+import * as reversible from './variants/reversible';
 
 export default class HanabiCard extends Konva.Group {
   // Mark the object type for use elsewhere in the code
@@ -983,8 +983,8 @@ export default class HanabiCard extends Konva.Group {
 
     // Determining if the card needs to be played in the "Up or Down" variants
     // is more complicated
-    if (Reversible.hasReversedSuits()) {
-      return Reversible.needsToBePlayed(this);
+    if (reversible.hasReversedSuits()) {
+      return reversible.needsToBePlayed(this);
     }
 
     // Second, check to see if it is still possible to play this card
@@ -1003,8 +1003,8 @@ export default class HanabiCard extends Konva.Group {
 
   isPotentiallyPlayable() {
     // Calculating this in an Up or Down variant is more complicated
-    if (Reversible.hasReversedSuits()) {
-      return Reversible.isPotentiallyPlayable(this);
+    if (reversible.hasReversedSuits()) {
+      return reversible.isPotentiallyPlayable(this);
     }
 
     let potentiallyPlayable = false;
@@ -1092,7 +1092,7 @@ export const getSpecificCardNum = (suit: Suit, rank: number) => {
   let total = 0;
   if (rank === 1) {
     total = 3;
-    if (Reversible.isUpOrDown() || suit.reversed) {
+    if (reversible.isUpOrDown() || suit.reversed) {
       total = 1;
     }
   } else if (rank === 5) {

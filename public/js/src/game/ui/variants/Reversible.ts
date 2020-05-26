@@ -10,12 +10,12 @@ import { suitToMsgSuit } from '../convert';
 import globals from '../globals';
 import HanabiCard, { getSpecificCardNum } from '../HanabiCard';
 
+export const isUpOrDown = () => globals.variant.name.startsWith('Up or Down');
+
 export const hasReversedSuits = () => {
   const suits = globals.variant.suits;
-  return suits.filter((s) => s.reversed).length > 0;
+  return isUpOrDown() || suits.filter((s) => s.reversed).length > 0;
 };
-
-export const isUpOrDown = () => globals.variant.name.startsWith('Up or Down');
 
 // needsToBePlayed returns true if this card still needs to be played
 // in order to get the maximum score (taking into account the stack direction)
@@ -171,7 +171,7 @@ export const isPotentiallyPlayable = (card : HanabiCard) => {
       }
     } else if (globals.stackDirections[i] === STACK_DIRECTION.DOWN) {
       let nextRankNeeded = lastPlayedRank - 1;
-      if (!isUpOrDown && lastPlayedRank === 0) {
+      if (!isUpOrDown() && lastPlayedRank === 0) {
         // Reversed stacks start with 5, except in "Up or Down"
         nextRankNeeded = 5;
       }

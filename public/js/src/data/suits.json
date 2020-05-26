@@ -493,49 +493,5 @@
     "clueColors": [
       "Teal"
     ]
-  },
-  "Dark Reversed": {
-    "createVariants": true,
-    "reversed": true,
-    "oneOfEach": true,
-    "pip": "hashtag",
-    "clueColors": [
-      "Black"
-    ]
-  },
-  "White Reversed": {
-    "createVariants": true,
-    "fill": "#d9d9d9",
-    "reversed": true,
-    "noClueColors": true,
-    "pip": "hashtag"
-  },
-  "Rainbow Reversed": {
-    "createVariants": true,
-    "reversed": true,
-    "allClueColors": true,
-    "pip": "hashtag",
-    "fill": "multi",
-    "fillColors": [
-      "#ff0000",
-      "#ffff00",
-      "#02ec00",
-      "#0037ff",
-      "#8000ff"
-    ]
-  },
-  "Dark Rainbow Reversed": {
-    "createVariants": true,
-    "reversed": true,
-    "allClueColors": true,
-    "pip": "hashtag",
-    "fill": "multi",
-    "fillColors": [
-      "#a00000",
-      "#a0a000",
-      "#00a000",
-      "#0000a0",
-      "#5000a0"
-    ]
   }
 }

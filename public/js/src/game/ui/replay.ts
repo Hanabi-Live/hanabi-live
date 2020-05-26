@@ -10,7 +10,7 @@ import LayoutChild from './LayoutChild';
 import Shuttle from './Shuttle';
 import * as stats from './stats';
 import * as turn from './turn';
-import { hasReversedSuits, isUpOrDown } from './variants/Reversible';
+import * as reversible from './variants/reversible';
 
 // ---------------------
 // Main replay functions
@@ -198,7 +198,7 @@ const reset = () => {
 
     // Reverse the stack direction of reversed suits, except on the "Up or Down" variant
     // that uses the "UNDECIDED" direction.
-    if (hasReversedSuits() && !isUpOrDown()) {
+    if (reversible.hasReversedSuits() && !reversible.isUpOrDown()) {
       globals.stackDirections[i] = suit.reversed ? STACK_DIRECTION.DOWN : STACK_DIRECTION.UP;
     }
   }

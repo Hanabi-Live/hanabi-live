@@ -19404,5 +19404,47 @@
       "Light Pink"
     ],
     "showSuitNames": true
+  },
+  "Reversed (6 Suits)": {
+    "id": 1342,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Reversed"
+    ],
+    "showSuitNames": true
+  },
+  "Reversed (5 Suits)": {
+    "id": 1343,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Reversed"
+    ],
+    "showSuitNames": true
+  },
+  "Reversed (4 Suits)": {
+    "id": 1344,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Reversed"
+    ],
+    "showSuitNames": true
+  },
+  "Reversed (3 Suits)": {
+    "id": 1345,
+    "suits": [
+      "Red",
+      "Blue",
+      "Reversed"
+    ],
+    "showSuitNames": true
   }
 }
