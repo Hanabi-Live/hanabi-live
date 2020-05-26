@@ -293,9 +293,9 @@ export default (winW: number, winH: number) => {
       x: playerNamePos[numPlayers][j].x,
       y: handValues.y,
       w: playerNamePos[numPlayers][j].w! * 1.04,
-      h: handValues.h * 1.34,
+      h: handValues.h * 1.38,
       offsetX: handValues.w * 0.02,
-      offsetY: handValues.h * 0.12,
+      offsetY: handValues.h * 0.14,
     };
     if (globals.lobby.settings.keldonMode) {
       turnRectValues.x = handValues.x;
