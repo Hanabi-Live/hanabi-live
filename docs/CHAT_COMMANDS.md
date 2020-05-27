@@ -11,7 +11,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | /help                    | Get the link to this page
 | /discord                 | Get the link for the [Hanabi Discord server](https://discord.gg/FADvkJp)
 | /rules                   | Get the link for the [Hanabi Community Guidelines](https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md)
-| /new                     | Displays a stock message for new users, encouraging them to join the Discord server
+| /new                     | Displays a stock message for new users, encouraging them to join the Hyphen-ated group
 | /replay [game ID] [turn] | Generate a link to a replay so that you can share it with others
 | /random [min] [max]      | Get a random number
 | /uptime                  | Get how long the server has been online
@@ -27,6 +27,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | /r [msg]              | Reply to a private message
 | /friend [username]    | Add someone to your friends list
 | /unfriend [username]  | Remove someone from your friends list
+| /friends              | Show a list of all your friends
 
 <br />
 
