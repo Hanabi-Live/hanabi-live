@@ -139,6 +139,7 @@
     "pip": "moon"
   },
   "Dark Brown": {
+    "abbreviation": "N",
     "clueColors": [
       "Brown"
     ],
