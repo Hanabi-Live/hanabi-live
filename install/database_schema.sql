@@ -199,6 +199,13 @@ CREATE TABLE game_actions (
     PRIMARY KEY (game_id, turn)
 );
 
+DROP TABLE IF EXISTS game_tags CASCADE;
+CREATE TABLE game_tags (
+    game_id  INTEGER  NOT NULL,
+    tag      TEXT     NOT NULL,
+    CONSTRAINT game_tags_unique UNIQUE (game_id, tag)
+);
+
 DROP TABLE IF EXISTS variant_stats CASCADE;
 CREATE TABLE variant_stats (
     /* Equal to the variant ID (found in "variants.go") */
