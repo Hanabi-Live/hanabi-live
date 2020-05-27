@@ -115,6 +115,16 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 		minutesToWait = v
 	}
 
+	if minutesToWait < 1 {
+		chatServerSend("The minutes to wait must be equal to or greater than 1.", d.Room)
+		return
+	}
+
+	if minutesToWait > 10 {
+		chatServerSend("The minutes to wait cannot be greater than 10.", d.Room)
+		return
+	}
+
 	timeToWait := time.Duration(minutesToWait) * time.Minute
 	timeToStart := time.Now().Add(timeToWait)
 	t.DatetimePlannedStart = timeToStart
