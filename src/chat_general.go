@@ -21,7 +21,7 @@ func chatRules(s *Session, d *CommandData, t *Table) {
 
 // /new
 func chatNew(s *Session, d *CommandData, t *Table) {
-	msg := "If you are looking to \"get into\" Hanabi and spend a lot of time to play with experienced players, the Hyphen-ated group is always looking for more members. To start with, please read the beginners guide: " +
+	msg := "If you are looking to \"get into\" Hanabi and spend a lot of time to play with experienced players, the Hyphen-ated group is always looking for more members. To start with, please read the beginners guide, which goes over how we play and how to join our next game: " +
 		"https://github.com/Zamiell/hanabi-conventions/blob/master/Beginner.md"
 	chatServerSend(msg, d.Room)
 }
