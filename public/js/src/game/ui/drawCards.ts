@@ -99,22 +99,24 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
         cardImages.set(cardImagesIndex, cloneCanvas(cvs));
 
         // Draw the rank on the bottom right
-        ctx.save();
-        ctx.translate(CARD_W, CARD_H);
-        ctx.rotate(Math.PI);
-        if (styleNumbers && !colorblindMode) {
-          drawStylizedRank(ctx, rank);
+        if (!variant.name.startsWith('Up or Down')) {
+          ctx.save();
+          ctx.translate(CARD_W, CARD_H);
+          ctx.rotate(Math.PI);
+          if (styleNumbers && !colorblindMode) {
+            drawStylizedRank(ctx, rank);
+            ctx.restore();
+            ctx.translate(CARD_W, CARD_H);
+            ctx.rotate(Math.PI);
+            ctx.fill();
+            ctx.stroke();
+            ctx.translate(CARD_W, CARD_H);
+            ctx.rotate(Math.PI);
+          } else {
+            drawText(ctx, textYPos, rankLabel);
+          }
           ctx.restore();
-          ctx.translate(CARD_W, CARD_H);
-          ctx.rotate(Math.PI);
-          ctx.fill();
-          ctx.stroke();
-          ctx.translate(CARD_W, CARD_H);
-          ctx.rotate(Math.PI);
-        } else {
-          drawText(ctx, textYPos, rankLabel);
         }
-        ctx.restore();
       }
 
       // The "Unknown" suit does not have pips

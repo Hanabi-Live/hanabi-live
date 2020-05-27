@@ -81,6 +81,8 @@ export default class HanabiCard extends Konva.Group {
   tooltipName: string = '';
   trashcan: Konva.Image | null = null;
   wrench: Konva.Image | null = null;
+  arrow: Konva.Group | null = null;
+  arrowBase: Konva.Arrow | null = null;
 
   constructor(config: Konva.ContainerConfig) {
     super(config);
@@ -102,13 +104,13 @@ export default class HanabiCard extends Konva.Group {
 
     // Initialize various elements/features of the card
     HanabiCardInit.image.call(this);
-    HanabiCardInit.border.call(this);
+    HanabiCardInit.borders.call(this);
     HanabiCardInit.pips.call(this);
     HanabiCardInit.note.call(this);
     HanabiCardInit.empathy.call(this);
     HanabiCardInit.click.call(this);
-    HanabiCardInit.trashcan.call(this);
-    HanabiCardInit.wrench.call(this);
+    HanabiCardInit.fadedImages.call(this);
+    HanabiCardInit.directionArrow.call(this);
   }
 
   // Erase all of the data on the card to make it like it was freshly drawn
@@ -329,6 +331,16 @@ export default class HanabiCard extends Konva.Group {
       && !globals.replay
       && !globals.spectating
     ));
+
+    // Show or hide the direction arrow (for specific variants)
+    if (globals.variant.name.startsWith('Up or Down') && this.suit !== null) {
+      const suitIndex = globals.variant.suits.indexOf(this.suit);
+      const direction = globals.stackDirections[suitIndex];
+      this.arrow!.visible((
+        (direction === STACK_DIRECTION.UP || direction === STACK_DIRECTION.DOWN)
+        && !this.empathy
+      ));
+    }
 
     this.setFade();
   }

@@ -408,6 +408,31 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
       if (!globals.animateFast) {
         globals.layers.UI.batchDraw();
       }
+
+      const suit = globals.variant.suits[i];
+      for (const card of globals.deck) {
+        if (card.suit === suit) {
+          if (
+            direction === STACK_DIRECTION.UP
+            || direction === STACK_DIRECTION.DOWN
+          ) {
+            card.arrow!.visible(true);
+            card.arrow!.rotation(direction === STACK_DIRECTION.UP ? 180 : 0);
+            card.arrowBase!.stroke(suit.fill);
+            if (suit.fill === 'multi') {
+              // We can't use a fill gradiant because the "fill" is actually a big stroke
+              // (the Konva arrow object is not a shape, but instead a very thick line)
+              // Instead, just use the the first gradiant color
+              card.arrowBase!.stroke(suit.fillColors[0]);
+            }
+          } else if (
+            direction === STACK_DIRECTION.UNDECIDED
+            || direction === STACK_DIRECTION.FINISHED
+          ) {
+            card.arrow!.visible(false);
+          }
+        }
+      }
     }
   }
 });
