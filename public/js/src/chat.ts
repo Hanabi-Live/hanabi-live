@@ -209,7 +209,7 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
       return;
     }
 
-    if (command === 'friends') {
+    if (command === 'friends' || command === 'friendlist') {
       let friendsMsg;
       if (globals.friends.length === 0) {
         friendsMsg = 'Currently, you do not have any friends on your friends list.';
