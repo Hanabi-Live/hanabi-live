@@ -9,14 +9,14 @@
 1. [Basic How-To](#basic-how-to)
 2. [Major Features](#major-features)
 3. [Notes](#notes)
-3. [Custom Game Options](#custom-game-options)
-4. [Other Options](#other-options)
-5. [Sounds](#sounds)
-6. [Keyboard Shortcuts](#keyboard-shortcuts)
-7. [Similar Deals and Competitive Play](#similar-deals-and-competitive-play)
-8. [Chat](#chat)
-9. [Friends](#friends)
-10. [Research & Bots](#research--bots)
+4. [Custom Game Options](#custom-game-options)
+5. [Other Options](#other-options)
+6. [Sounds](#sounds)
+7. [Keyboard Shortcuts](#keyboard-shortcuts)
+8. [Similar Deals and Competitive Play](#similar-deals-and-competitive-play)
+9. [Chat](#chat)
+10. [Friends](#friends)
+11. [Research & Bots](#research--bots)
 
 <br />
 
@@ -144,6 +144,8 @@
 <br />
 
 ## Notes
+
+### Basic Description
 
 * When in the middle of an ongoing game, players can right-click on any card to add a note to it. Afterward, by hovering over a card, a tooltip will appear with the written note.
 * This is useful for storing contextual information about a card for later.
