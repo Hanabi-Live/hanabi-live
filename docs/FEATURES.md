@@ -8,6 +8,7 @@
 
 1. [Basic How-To](#basic-how-to)
 2. [Major Features](#major-features)
+3. [Notes](#notes)
 3. [Custom Game Options](#custom-game-options)
 4. [Other Options](#other-options)
 5. [Sounds](#sounds)
@@ -69,31 +70,6 @@
 * A clue log is shown in the top-right-hand corner.
 * When the cursor is hovering over a card, the positive clues that have touched the card will turn white and the negative clues that have touched the card will turn red.
 * You can click on an entry in the clue log to go to the turn when the clue was given.
-
-#### Notes
-
-* Players can right-click on any card to add a note to it. Afterward, by hovering over a card, a tooltip will appear with the written note.
-* This is useful for storing contextual information about a card for later.
-* Notes can also be written during an in-game replay as a way to track the card as it moves throughout your hand.
-* If the note matches the name of a card (e.g. "red 1", "r1", etc.), the card face will change to match. (The card face will automatically be deactivated if a clue is received that falsifies the note.) If this is undesired, append a question mark to the end of your note (e.g. "r1?").
-  * Black is abbreviated as "k".
-  * Rainbow, muddy rainbow, and cocoa rainbow are abbreviated as "m".
-  * Pink, light pink, and gray pink are abbreviated as "i".
-  * Brown is abbreviated as "n".
-  * The "dark" suits are abbreviated the same as their normal counterparts.
-  * Gray is abbreviated as "a".
-* Since notes are tracked by the server, players can switch computers mid-game and keep any notes written.
-* Notes are saved in the database and will persist into the replay.
-* Everyone's notes are combined and shown to spectators, which is fun to see.
-* There are also some keyboard shortcuts for making notes:
-  * Shift + Right-click --> f
-    * "f" is a common abbreviation for "this card is *Finessed*".
-    * This will also draw a special border around the card.
-  * Alt + Right-click --> cm
-    * "cm" is a common abbreviation for "this card is *Chop Moved*".
-    * This will also draw a special border around the card.
-  * Ctrl + Shift + Right-click --> [previously entered note]
-    * If you need to put the same note on multiple cards, enter the note on the first card, and then use this hotkey on the rest of the cards.
 
 #### Spectators
 
@@ -164,6 +140,50 @@
 #### 6-Player Games
 
 * Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to do.
+
+<br />
+
+## Notes
+
+* When in the middle of an ongoing game, players can right-click on any card to add a note to it. Afterward, by hovering over a card, a tooltip will appear with the written note.
+* This is useful for storing contextual information about a card for later.
+* Notes can also be written during an in-game replay as a way to track the card as it moves throughout your hand.
+* Since notes are tracked by the server, players can switch computers mid-game and keep any notes written.
+* Notes are saved in the database and will persist into the replay.
+* Everyone's notes are combined and shown to spectators, which is fun to see.
+
+### Card Identity Notes
+
+* If the note matches the name of a card (e.g. "red 1", "r1", etc.), the card face will change to match. (The card face will automatically be deactivated if a clue is received that falsifies the note.) If this is undesired, append a question mark to the end of your note (e.g. "r1?").
+  * Black is abbreviated as "k".
+  * Rainbow, muddy rainbow, and cocoa rainbow are abbreviated as "m".
+  * Pink, light pink, and gray pink are abbreviated as "i".
+  * Brown is abbreviated as "n".
+  * The "dark" suits are abbreviated the same as their normal counterparts.
+  * Gray is abbreviated as "a".
+
+### Special Note Borders
+
+* A note of "f" can be written to indicate that the card is "Finessed". This will draw a special border around the card.
+* A note of "cm" can be written to indicate that the card is "Chop Moved". This will draw a special border around the card.
+
+### Special Note Images
+
+* A note of "kt", "trash", "stale", or "bad" can be written to indicate that the card is "Trash". This will draw a special image on the card.
+* A note of "fixme" can be be written to indicate that the card needs to be given a "fix clue" at some point in the future. This will draw a special image on the card.
+* A note of "blank" can be written on a card to completely blank it out.
+
+### Note Shortcuts
+
+* There are also some keyboard shortcuts for making notes:
+  * Shift + Right-click --> f
+    * "f" is a common abbreviation for "this card is *Finessed*".
+    * This will also draw a special border around the card.
+  * Alt + Right-click --> cm
+    * "cm" is a common abbreviation for "this card is *Chop Moved*".
+    * This will also draw a special border around the card.
+  * Ctrl + Shift + Right-click --> [previously entered note]
+    * If you need to put the same note on multiple cards, enter the note on the first card, and then use this hotkey on the rest of the cards.
 
 <br />
 
