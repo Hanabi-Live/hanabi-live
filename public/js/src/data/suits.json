@@ -485,13 +485,5 @@
     "fill": "#008000",
     "name": "Forest",
     "pip": "hanabiGreen"
-  },
-  "Reversed": {
-    "createVariants": true,
-    "reversed": true,
-    "pip": "hashtag",
-    "clueColors": [
-      "Teal"
-    ]
   }
 }

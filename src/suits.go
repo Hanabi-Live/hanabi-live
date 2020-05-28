@@ -34,7 +34,7 @@ func suitsInit() {
 		contents = v
 	}
 	if err := json.Unmarshal(contents, &suits); err != nil {
-		logger.Fatal("Failed to convert the suits file to JSON:", err)
+		logger.Fatal("Failed to convert the suits file from JSON:", err)
 		return
 	}
 
@@ -92,4 +92,12 @@ func suitsInit() {
 			}
 		}
 	}
+
+	// Add reversed versions of all suits
+	for name, suit := range suits {
+		suitRev := *suit
+		suitRev.Reversed = true
+		suits[name+"-Reversed"] = &suitRev
+	}
+
 }

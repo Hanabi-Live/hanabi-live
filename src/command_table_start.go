@@ -95,6 +95,9 @@ func commandTableStart(s *Session, d *CommandData) {
 	// Start the idle timeout
 	go t.CheckIdle()
 
+	// Record the stack directions
+	t.NotifyStackDirections()
+
 	g.InitDeck()
 
 	// Handle setting the seed
@@ -237,9 +240,6 @@ func commandTableStart(s *Session, d *CommandData) {
 		}
 	}
 
-	// Record the initial status of the game
-	t.NotifyStatus()
-
 	// Deal the cards
 	handSize := g.GetHandSize()
 	for _, p := range g.Players {
@@ -247,6 +247,9 @@ func commandTableStart(s *Session, d *CommandData) {
 			p.DrawCard()
 		}
 	}
+
+	// Record the initial status of the game
+	t.NotifyStatus()
 
 	// Show who goes first
 	// (this must be sent before the "turn" message

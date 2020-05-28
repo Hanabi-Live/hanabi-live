@@ -66,6 +66,8 @@ export const START_CARD_RANK = 7;
 export const MAX_CLUE_NUM = 8;
 export const SHUTDOWN_TIMEOUT = 30; // In minutes
 
+export const SUIT_REVERSED_SUFFIX = '-Reversed';
+
 const COLORS = colorsInit();
 const SUITS = suitsInit(COLORS);
 const VARIANTS = variantsInit(COLORS, SUITS, START_CARD_RANK);

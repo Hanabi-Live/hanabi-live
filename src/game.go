@@ -101,7 +101,7 @@ func NewGame(t *Table) *Game {
 
 	// Reverse the stack direction of reversed suits, except on the "Up or Down" variant
 	// that uses the "Undecided" direction.
-	v := variants[g.Options.Variant]
+	v := variants[t.Options.Variant]
 	if v.HasReversedSuits() && !v.IsUpOrDown() {
 		for i, s := range v.Suits {
 			if s.Reversed {

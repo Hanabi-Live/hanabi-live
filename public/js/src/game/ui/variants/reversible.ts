@@ -17,6 +17,17 @@ export const hasReversedSuits = () => {
   return isUpOrDown() || suits.filter((s) => s.reversed).length > 0;
 };
 
+export const shouldShowArrow = (direction: number) => {
+  if (!hasReversedSuits()) {
+    return false;
+  }
+
+  // The arrow should be shown when the suit is reversed, or
+  // whenever it's determined in "Up or Down"
+  return (direction === STACK_DIRECTION.DOWN)
+      || (direction === STACK_DIRECTION.UP && isUpOrDown());
+};
+
 // needsToBePlayed returns true if this card still needs to be played
 // in order to get the maximum score (taking into account the stack direction)
 // (before getting here, we already checked to see if the card has already been played)

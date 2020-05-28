@@ -14,6 +14,7 @@ import Suit from '../../Suit';
 import Variant from '../../Variant';
 import drawPip from './drawPip';
 import drawStylizedRank from './drawStylizedRank';
+import * as reversible from './variants/reversible';
 
 // This function returns an object containing all of the drawn cards images (on individual canvases)
 export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean) => {
@@ -99,7 +100,7 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
         cardImages.set(cardImagesIndex, cloneCanvas(cvs));
 
         // Draw the rank on the bottom right
-        if (!variant.name.startsWith('Up or Down')) {
+        if (!reversible.hasReversedSuits()) {
           ctx.save();
           ctx.translate(CARD_W, CARD_H);
           ctx.rotate(Math.PI);

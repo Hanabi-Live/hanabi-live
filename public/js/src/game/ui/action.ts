@@ -397,9 +397,9 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
       if (direction === STACK_DIRECTION.UNDECIDED) {
         text = '';
       } else if (direction === STACK_DIRECTION.UP) {
-        text = 'Up';
+        text = reversible.isUpOrDown() ? 'Up' : '';
       } else if (direction === STACK_DIRECTION.DOWN) {
-        text = 'Down';
+        text = reversible.isUpOrDown() ? 'Down' : 'Reversed';
       } else if (direction === STACK_DIRECTION.FINISHED) {
         text = 'Finished';
       } else {
@@ -413,10 +413,7 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
       const suit = globals.variant.suits[i];
       for (const card of globals.deck) {
         if (card.suit === suit) {
-          if (
-            direction === STACK_DIRECTION.UP
-            || direction === STACK_DIRECTION.DOWN
-          ) {
+          if (!card.empathy && reversible.shouldShowArrow(direction)) {
             card.arrow!.visible(true);
             card.arrow!.rotation(direction === STACK_DIRECTION.UP ? 180 : 0);
             card.arrowBase!.stroke(suit.fill);
@@ -426,10 +423,7 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
               // Instead, just use the the first gradiant color
               card.arrowBase!.stroke(suit.fillColors[0]);
             }
-          } else if (
-            direction === STACK_DIRECTION.UNDECIDED
-            || direction === STACK_DIRECTION.FINISHED
-          ) {
+          } else {
             card.arrow!.visible(false);
           }
         }

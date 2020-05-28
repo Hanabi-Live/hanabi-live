@@ -189,7 +189,7 @@ const loadingFinishedCallback = () => {
 
 const initCardsMap = () => {
   for (const suit of globals.variant.suits) {
-    if (globals.variant.name.startsWith('Up or Down')) {
+    if (reversible.isUpOrDown()) {
       // 6 is an unknown rank, so we use 7 to represent a "START" card
       const key = `${suit.name}7`;
       globals.cardsMap.set(key, 1);

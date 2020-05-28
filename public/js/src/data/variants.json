@@ -19413,7 +19413,7 @@
       "Green",
       "Blue",
       "Purple",
-      "Reversed"
+      "Teal-Reversed"
     ],
     "showSuitNames": true
   },
@@ -19424,7 +19424,7 @@
       "Yellow",
       "Green",
       "Blue",
-      "Reversed"
+      "Purple-Reversed"
     ],
     "showSuitNames": true
   },
@@ -19432,9 +19432,9 @@
     "id": 1344,
     "suits": [
       "Red",
+      "Yellow",
       "Green",
-      "Blue",
-      "Reversed"
+      "Blue-Reversed"
     ],
     "showSuitNames": true
   },
@@ -19442,8 +19442,8 @@
     "id": 1345,
     "suits": [
       "Red",
-      "Blue",
-      "Reversed"
+      "Green",
+      "Blue-Reversed"
     ],
     "showSuitNames": true
   }

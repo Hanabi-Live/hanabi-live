@@ -1,5 +1,6 @@
 // Imports
 import Color from './Color';
+import { SUIT_REVERSED_SUFFIX } from './constants';
 import suitsJSON from './data/suits.json';
 import Suit from './Suit';
 
@@ -174,6 +175,27 @@ export default (COLORS: Map<string, Color>) => {
       noClueRanks,
     };
     SUITS.set(suitName, suit);
+
+    // If the suit is not reversed, also add the reversed version of it
+    if (!reversed) {
+      const suitReversed: Suit = {
+        name,
+        abbreviation,
+        clueColors,
+        fill,
+        fillColorblind,
+        fillColors,
+        oneOfEach,
+        pip,
+        reversed: true,
+
+        allClueColors,
+        allClueRanks,
+        noClueColors,
+        noClueRanks,
+      };
+      SUITS.set(suitName + SUIT_REVERSED_SUFFIX, suitReversed);
+    }
   }
 
   return SUITS;
