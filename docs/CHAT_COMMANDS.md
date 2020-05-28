@@ -56,11 +56,13 @@ If you need general help with the website, then read the [features page](FEATURE
 
 ### Game commands
 
-| Command   | Description
-| --------- | -----------
-| /pause    | Pause the game (can be done on any turn)
-| /unpause  | Unpause the game
-| /lastmove | Show long how it has been since the last move
+| Command    | Description
+| ---------- | -----------
+| /pause     | Pause the game (can be done on any turn)
+| /unpause   | Unpause the game
+| /lastmove  | Show long how it has been since the last move
+| /tag [tag] | Tag this game with a word or phrase so that you can find it later
+| /tags      | Show all of the tags for this game
 
 <br />
 

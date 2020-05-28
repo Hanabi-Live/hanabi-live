@@ -120,5 +120,9 @@ func commandInit() {
 	commandMap["action"] = commandAction
 	commandMap["note"] = commandNote
 	commandMap["pause"] = commandPause
+	commandMap["tag"] = commandTag
+	commandMap["tags"] = commandTags
+	commandMap["taglist"] = commandTags
+	// commandMap["tagsearch"] = commandTags
 	commandMap["replayAction"] = commandReplayAction
 }

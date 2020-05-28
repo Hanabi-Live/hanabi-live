@@ -9,13 +9,12 @@ export default chatCommands;
 
 // /changevariant [variant]
 chatCommands.set('changevariant', (_room: string, args: string[]) => {
-  const variant = args.join(' ');
-
   if (globals.tableID === -1) {
     modals.warningShow('You are not currently at a table, so you cannot use that command.');
     return;
   }
 
+  const variant = args.join(' ');
   globals.conn!.send('tableChangeVariant', {
     tableID: globals.tableID,
     variant,
@@ -106,6 +105,32 @@ chatCommands.set('pm', pm);
 chatCommands.set('w', pm);
 chatCommands.set('whisper', pm);
 chatCommands.set('msg', pm);
+
+// /tag [tag]
+chatCommands.set('tag', (_room: string, args: string[]) => {
+  if (globals.tableID === -1) {
+    modals.warningShow('You are not currently at a table, so you cannot use that command.');
+    return;
+  }
+
+  const tag = args.join(' ');
+  globals.conn!.send('tags', {
+    tableID: globals.tableID,
+    msg: tag,
+  });
+});
+
+// /tags
+chatCommands.set('tags', () => {
+  if (globals.tableID === -1) {
+    modals.warningShow('You are not currently at a table, so you cannot use that command.');
+    return;
+  }
+
+  globals.conn!.send('tags', {
+    tableID: globals.tableID,
+  });
+});
 
 // /unfriend [username]
 chatCommands.set('unfriend', (_room: string, args: string[]) => {

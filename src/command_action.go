@@ -55,7 +55,7 @@ func commandAction(s *Session, d *CommandData) {
 
 	// Validate that the game has started
 	if !t.Running {
-		s.Warning("The game for table " + strconv.Itoa(tableID) + " has not started yet.")
+		s.Warning(ChatCommandNotStartedFail)
 		return
 	}
 

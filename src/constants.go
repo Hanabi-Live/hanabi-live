@@ -101,6 +101,7 @@ const (
 	ChatCommandNotInLobbyFail = "You can only perform this command from the lobby."
 	ChatCommandNotInGameFail  = "You can only perform this command while in a game."
 	ChatCommandStartedFail    = "The game is already started, so you cannot use that command."
+	ChatCommandNotStartedFail = "The game has not started yet, so you cannot use that command."
 	ChatCommandNotOwnerFail   = "Only the table owner can use that command."
 	ChatCommandNotDiscordFail = "You can only perform this command from the Hanabi Discord server."
 )
