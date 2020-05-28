@@ -99,5 +99,4 @@ func suitsInit() {
 		suitRev.Reversed = true
 		suits[name+"-Reversed"] = &suitRev
 	}
-
 }
