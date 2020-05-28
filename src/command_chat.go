@@ -147,6 +147,8 @@ func commandChat(s *Session, d *CommandData) {
 		// We use "rawMsg" instead of "d.Msg" because we want to send the unsanitized message
 		// The bluemonday library is intended for HTML rendering,
 		// and Discord can handle any special characters
+		// Furthermore, replace some HTML-escaped symbols with their real counterparts
+		rawMsg = strings.ReplaceAll(rawMsg, "&amp;", "&")
 		discordSend(discordLobbyChannel, d.Username, rawMsg)
 	}
 
