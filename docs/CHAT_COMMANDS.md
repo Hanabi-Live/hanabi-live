@@ -34,24 +34,32 @@ If you need general help with the website, then read the [features page](FEATURE
 
 ### Pre-game commands (table-owner-only)
 
-| Command                  | Description
-| ------------------------ |------------
-| /changevariant [variant] | Change the variant of the current game
-| /s                       | Automatically start the game when the next person joins
-| /s2                      | Automatically start the game when it has 2 players
-| /s3                      | Automatically start the game when it has 3 players
-| /s4                      | Automatically start the game when it has 4 players
-| /s5                      | Automatically start the game when it has 5 players
-| /s6                      | Automatically start the game when it has 6 players
-| /startin [minutes]       | Automatically start the game in the provided amount of minutes
+| Command               | Description
+| --------------------- |------------
+| /setvariant [variant] | Change the variant of the current game
+| /s                    | Automatically start the game when the next person joins
+| /s2                   | Automatically start the game when it has 2 players
+| /s3                   | Automatically start the game when it has 3 players
+| /s4                   | Automatically start the game when it has 4 players
+| /s5                   | Automatically start the game when it has 5 players
+| /s6                   | Automatically start the game when it has 6 players
+| /startin [minutes]    | Automatically start the game in the provided amount of minutes
 
 <br />
 
 ### Pre-game or game commands
 
 | Command      | Description
-| -------------|------------
+| ------------ |------------
 | /findvariant | Find a random variant that everyone needs the max score in
+
+<br />
+
+### Pre-game or game commands (table-owner-only)
+
+| Command  | Description
+| -------- |------------
+| /setlead | Change the owner of the game (or the leader if it is a shared replay)
 
 <br />
 

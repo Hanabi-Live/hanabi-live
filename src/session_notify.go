@@ -152,11 +152,12 @@ func (s *Session) NotifyGameHistory(historyListDatabase []*GameHistory, incremen
 	type GameHistoryMessage struct {
 		ID                int       `json:"id"`
 		NumPlayers        int       `json:"numPlayers"`
-		NumSimilar        int       `json:"numSimilar"`
-		PlayerNames       string    `json:"playerNames"`
+		Variant           string    `json:"variant"`
+		Seed              string    `json:"seed"`
 		Score             int       `json:"score"`
 		DatetimeFinished  time.Time `json:"datetime"`
-		Variant           string    `json:"variant"`
+		NumSimilar        int       `json:"numSimilar"`
+		PlayerNames       string    `json:"playerNames"`
 		IncrementNumGames bool      `json:"incrementNumGames"`
 	}
 	historyList := make([]*GameHistoryMessage, 0)
@@ -164,11 +165,12 @@ func (s *Session) NotifyGameHistory(historyListDatabase []*GameHistory, incremen
 		historyList = append(historyList, &GameHistoryMessage{
 			ID:                g.ID,
 			NumPlayers:        g.NumPlayers,
-			NumSimilar:        g.NumSimilar,
-			PlayerNames:       g.PlayerNames,
+			Variant:           g.Variant,
+			Seed:              g.Seed,
 			Score:             g.Score,
 			DatetimeFinished:  g.DatetimeFinished,
-			Variant:           g.Variant,
+			NumSimilar:        g.NumSimilar,
+			PlayerNames:       g.PlayerNames,
 			IncrementNumGames: incrementNumGames,
 		})
 	}

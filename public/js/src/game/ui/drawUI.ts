@@ -6,7 +6,6 @@ import {
   ACTION,
   CLUE_TYPE,
   LABEL_COLOR,
-  REPLAY_ACTION_TYPE,
   REPLAY_ARROW_ORDER,
   STACK_BASE_RANK,
 } from '../../constants';
@@ -1072,9 +1071,8 @@ const drawSharedReplay = () => {
       return;
     }
 
-    globals.lobby.conn!.send('replayAction', {
+    globals.lobby.conn!.send('setLeader', {
       tableID: globals.lobby.tableID,
-      type: REPLAY_ACTION_TYPE.LEADER_TRANSFER,
       name: selectedSpectator,
     });
   });

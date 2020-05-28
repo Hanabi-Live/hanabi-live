@@ -101,35 +101,6 @@ func commandReplayAction(s *Session, d *CommandData) {
 				Order: d.Order,
 			})
 		}
-	} else if d.Type == ReplayActionTypeLeaderTransfer {
-		// Validate that the person that they are passing off the leader to actually exists
-		// in the game
-		newLeaderID := -1
-		for _, sp := range t.Spectators {
-			if sp.Name == d.Name {
-				newLeaderID = sp.ID
-				break
-			}
-		}
-		if newLeaderID == -1 {
-			s.Error("That is an invalid username to pass leadership to.")
-			return
-		}
-
-		// Validate that they are not already the replay leader
-		if t.Owner == newLeaderID {
-			s.Error("You cannot pass leadership to yourself.")
-			return
-		}
-
-		// Mark them as the new replay leader
-		t.Owner = newLeaderID
-
-		// Tell everyone about the new leader
-		// (which will enable the replay controls for the leader)
-		for _, sp := range t.Spectators {
-			sp.Session.NotifyReplayLeader(t, true)
-		}
 	} else if d.Type == ReplayActionTypeSound {
 		// A sound effect
 		for _, sp := range t.Spectators {

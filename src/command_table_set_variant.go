@@ -4,14 +4,14 @@ import (
 	"strconv"
 )
 
-// commandChangeVariant is sent when a user types the "/changevariant [variant]" command
+// commandTableSetVariant is sent when a user types the "/setvariant [variant]" command
 //
 // Example data:
 // {
 //   tableID: 123,
 //   variant: 'Black & Rainbow (6 Suit)',
 // }
-func commandChangeVariant(s *Session, d *CommandData) {
+func commandTableSetVariant(s *Session, d *CommandData) {
 	// Validate that the table exists
 	tableID := d.TableID
 	var t *Table
@@ -33,7 +33,7 @@ func commandChangeVariant(s *Session, d *CommandData) {
 	}
 
 	if len(d.Variant) == 0 {
-		s.Warning("You must specify the variant. (e.g. \"/changevariant Black & Rainbow (6 Suits)\")")
+		s.Warning("You must specify the variant. (e.g. \"/setvariant Black & Rainbow (6 Suits)\")")
 		return
 	}
 

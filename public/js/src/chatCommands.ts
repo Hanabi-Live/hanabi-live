@@ -7,20 +7,6 @@ import * as modals from './modals';
 const chatCommands = new Map();
 export default chatCommands;
 
-// /changevariant [variant]
-chatCommands.set('changevariant', (_room: string, args: string[]) => {
-  if (globals.tableID === -1) {
-    modals.warningShow('You are not currently at a table, so you cannot use that command.');
-    return;
-  }
-
-  const variant = args.join(' ');
-  globals.conn!.send('tableChangeVariant', {
-    tableID: globals.tableID,
-    variant,
-  });
-});
-
 // /friend [username]
 chatCommands.set('friend', (_room: string, args: string[]) => {
   // Validate that the format of the command is correct
@@ -105,6 +91,42 @@ chatCommands.set('pm', pm);
 chatCommands.set('w', pm);
 chatCommands.set('whisper', pm);
 chatCommands.set('msg', pm);
+
+// /setleader [username]
+const setLeader = (_room: string, args: string[]) => {
+  if (globals.tableID === -1) {
+    modals.warningShow('You are not currently at a table, so you cannot use that command.');
+    return;
+  }
+
+  const username = args.join(' ');
+  globals.conn!.send('tableSetLeader', {
+    tableID: globals.tableID,
+    name: username,
+  });
+};
+chatCommands.set('setleader', setLeader);
+chatCommands.set('setlead', setLeader);
+chatCommands.set('setowner', setLeader);
+chatCommands.set('chnageleader', setLeader);
+chatCommands.set('changelead', setLeader);
+chatCommands.set('changeowner', setLeader);
+
+// /setvariant [variant]
+const setVariant = (_room: string, args: string[]) => {
+  if (globals.tableID === -1) {
+    modals.warningShow('You are not currently at a table, so you cannot use that command.');
+    return;
+  }
+
+  const variant = args.join(' ');
+  globals.conn!.send('tableSetVariant', {
+    tableID: globals.tableID,
+    variant,
+  });
+};
+chatCommands.set('setvariant', setVariant);
+chatCommands.set('changevariant', setVariant);
 
 // /tag [tag]
 chatCommands.set('tag', (_room: string, args: string[]) => {

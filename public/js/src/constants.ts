@@ -40,12 +40,11 @@ export const CLUE_TYPE = {
 export const REPLAY_ACTION_TYPE = {
   TURN: 0,
   ARROW: 1,
-  LEADER_TRANSFER: 2,
-  SOUND: 3,
-  HYPO_START: 4,
-  HYPO_END: 5,
-  HYPO_ACTION: 6,
-  HYPO_BACK: 7,
+  SOUND: 2,
+  HYPO_START: 3,
+  HYPO_END: 4,
+  HYPO_ACTION: 5,
+  HYPO_BACK: 6,
 };
 export const REPLAY_ARROW_ORDER = {
   DECK: -1,
