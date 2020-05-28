@@ -401,7 +401,7 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
       } else if (direction === STACK_DIRECTION.DOWN) {
         text = reversible.isUpOrDown() ? 'Down' : 'Reversed';
       } else if (direction === STACK_DIRECTION.FINISHED) {
-        text = 'Finished';
+        text = reversible.isUpOrDown() ? 'Finished' : 'Reversed';
       } else {
         text = 'Unknown';
       }
