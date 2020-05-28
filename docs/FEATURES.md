@@ -145,7 +145,7 @@
 
 ## Notes
 
-### Basic Description
+#### Basic Description
 
 * When in the middle of an ongoing game, players can right-click on any card to add a note to it. Afterward, by hovering over a card, a tooltip will appear with the written note.
 * This is useful for storing contextual information about a card for later.
@@ -154,7 +154,7 @@
 * Notes are saved in the database and will persist into the replay.
 * Everyone's notes are combined and shown to spectators, which is fun to see.
 
-### Card Identity Notes
+#### Card Identity Notes
 
 * If the note matches the name of a card (e.g. "red 1", "r1", etc.), the card face will change to match. (The card face will automatically be deactivated if a clue is received that falsifies the note.) If this is undesired, append a question mark to the end of your note (e.g. "r1?").
   * Black is abbreviated as "k".
@@ -164,18 +164,18 @@
   * The "dark" suits are abbreviated the same as their normal counterparts.
   * Gray is abbreviated as "a".
 
-### Special Note Borders
+#### Special Note Borders
 
 * A note of "f" can be written to indicate that the card is "Finessed". This will draw a special border around the card.
 * A note of "cm" can be written to indicate that the card is "Chop Moved". This will draw a special border around the card.
 
-### Special Note Images
+#### Special Note Images
 
 * A note of "kt", "trash", "stale", or "bad" can be written to indicate that the card is "Trash". This will draw a special image on the card.
 * A note of "fixme" can be be written to indicate that the card needs to be given a "fix clue" at some point in the future. This will draw a special image on the card.
 * A note of "blank" can be written on a card to completely blank it out.
 
-### Note Shortcuts
+#### Note Shortcuts
 
 * There are also some keyboard shortcuts for making notes:
   * Shift + Right-click --> f
