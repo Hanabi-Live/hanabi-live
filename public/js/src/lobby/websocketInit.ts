@@ -57,8 +57,8 @@ commands.set('friends', (data: FriendsData) => {
 commands.set('game', (data: Game) => {
   globals.game = data;
 
-  // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
-  globals.game.baseTime *= 1000;
+  // The timeBase and timePerTurn come in seconds, so convert them to milliseconds
+  globals.game.timeBase *= 1000;
   globals.game.timePerTurn *= 1000;
 
   pregame.draw();
@@ -122,8 +122,8 @@ commands.set('table', (data: Table) => {
 });
 
 const tableSet = (data: Table) => {
-  // The baseTime and timePerTurn come in seconds, so convert them to milliseconds
-  data.baseTime *= 1000;
+  // The timebase and timePerTurn come in seconds, so convert them to milliseconds
+  data.timeBase *= 1000;
   data.timePerTurn *= 1000;
 
   globals.tableMap.set(data.id, data);

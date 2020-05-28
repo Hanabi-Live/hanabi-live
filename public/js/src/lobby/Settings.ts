@@ -14,7 +14,7 @@ export default class Settings {
   hyphenatedConventions: boolean = false;
   createTableVariant: string = 'No Variant';
   createTableTimed: boolean = false;
-  createTableBaseTimeMinutes: number = 2;
+  createTableTimeBaseMinutes: number = 2;
   createTableTimePerTurnSeconds: number = 10;
   createTableSpeedrun: boolean = false;
   createTableCardCycle: boolean = false;

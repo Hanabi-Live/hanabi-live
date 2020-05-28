@@ -18,7 +18,7 @@ func commandHistoryGet(s *Session, d *CommandData) {
 		return
 	}
 
-	// Send the user's entire game history
+	// Get the history for the range that they specified
 	var history []*GameHistory
 	if v, err := models.Games.GetUserHistory(s.UserID(), d.Offset, d.Amount, false); err != nil {
 		logger.Error("Failed to get the history for user \""+s.Username()+"\":", err)
@@ -26,5 +26,6 @@ func commandHistoryGet(s *Session, d *CommandData) {
 	} else {
 		history = v
 	}
-	s.NotifyGameHistory(history, false)
+
+	s.Emit("gameHistory", &history)
 }

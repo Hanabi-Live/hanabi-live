@@ -66,7 +66,7 @@ type TableMessage struct {
 	Running           bool     `json:"running"`
 	Variant           string   `json:"variant"`
 	Timed             bool     `json:"timed"`
-	BaseTime          int      `json:"baseTime"`
+	TimeBase          int      `json:"timeBase"`
 	TimePerTurn       int      `json:"timePerTurn"`
 	SharedReplay      bool     `json:"sharedReplay"`
 	Progress          int      `json:"progress"`
@@ -106,7 +106,7 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		Running:           t.Running,
 		Variant:           t.Options.Variant,
 		Timed:             t.Options.Timed,
-		BaseTime:          t.Options.BaseTime,
+		TimeBase:          t.Options.TimeBase,
 		TimePerTurn:       t.Options.TimePerTurn,
 		SharedReplay:      t.Replay,
 		Progress:          t.Progress,
@@ -145,36 +145,6 @@ func (s *Session) NotifyChatTyping(name string, typing bool) {
 		Name:   name,
 		Typing: typing,
 	})
-}
-
-// NotifyGameHistory will send a user a subset of their past games
-func (s *Session) NotifyGameHistory(historyListDatabase []*GameHistory, incrementNumGames bool) {
-	type GameHistoryMessage struct {
-		ID                int       `json:"id"`
-		NumPlayers        int       `json:"numPlayers"`
-		Variant           string    `json:"variant"`
-		Seed              string    `json:"seed"`
-		Score             int       `json:"score"`
-		DatetimeFinished  time.Time `json:"datetime"`
-		NumSimilar        int       `json:"numSimilar"`
-		PlayerNames       string    `json:"playerNames"`
-		IncrementNumGames bool      `json:"incrementNumGames"`
-	}
-	historyList := make([]*GameHistoryMessage, 0)
-	for _, g := range historyListDatabase {
-		historyList = append(historyList, &GameHistoryMessage{
-			ID:                g.ID,
-			NumPlayers:        g.NumPlayers,
-			Variant:           g.Variant,
-			Seed:              g.Seed,
-			Score:             g.Score,
-			DatetimeFinished:  g.DatetimeFinished,
-			NumSimilar:        g.NumSimilar,
-			PlayerNames:       g.PlayerNames,
-			IncrementNumGames: incrementNumGames,
-		})
-	}
-	s.Emit("gameHistory", &historyList)
 }
 
 func (s *Session) NotifyTableStart(t *Table) {

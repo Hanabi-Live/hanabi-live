@@ -161,7 +161,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 		Name:                 newTableName,
 		Variant:              t.Options.Variant,
 		Timed:                t.Options.Timed,
-		BaseTime:             t.Options.BaseTime,
+		TimeBase:             t.Options.TimeBase,
 		TimePerTurn:          t.Options.TimePerTurn,
 		Speedrun:             t.Options.Speedrun,
 		CardCycle:            t.Options.CardCycle,

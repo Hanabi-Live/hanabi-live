@@ -180,7 +180,7 @@ interface InitData {
 
   // Optional settings
   timed: boolean;
-  baseTime: number;
+  timeBase: number;
   timePerTurn: number;
   speedrun: boolean;
   cardCycle: boolean;
@@ -220,7 +220,7 @@ commands.set('init', (data: InitData) => {
 
   // Optional settings
   globals.timed = data.timed;
-  globals.baseTime = data.baseTime;
+  globals.timeBase = data.timeBase;
   globals.timePerTurn = data.timePerTurn;
   globals.speedrun = data.speedrun;
   globals.cardCycle = data.cardCycle;

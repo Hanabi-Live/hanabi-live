@@ -6,7 +6,7 @@ type Options struct {
 	StartingPlayer       int // Legacy field for games prior to April 2020
 	Variant              string
 	Timed                bool
-	BaseTime             int
+	TimeBase             int
 	TimePerTurn          int
 	Speedrun             bool
 	CardCycle            bool
@@ -30,7 +30,7 @@ type Options struct {
 type OptionsJSON struct {
 	Variant              *string `json:"variant,omitempty"`
 	Timed                *bool   `json:"timed,omitempty"`
-	BaseTime             *int    `json:"baseTime,omitempty"`
+	TimeBase             *int    `json:"timeBase,omitempty"`
 	TimePerTurn          *int    `json:"timePerTurn,omitempty"`
 	Speedrun             *bool   `json:"speedrun,omitempty"`
 	CardCycle            *bool   `json:"cardCycle,omitempty"`

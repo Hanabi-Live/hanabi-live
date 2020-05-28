@@ -130,25 +130,26 @@ func (*Games) Exists(databaseID int) (bool, error) {
 }
 
 type GameHistory struct {
-	ID                   int
-	NumPlayers           int
-	Variant              string
-	Timed                bool
-	TimeBase             int
-	TimePerTurn          int
-	Speedrun             bool
-	CardCycle            bool
-	DeckPlays            bool
-	EmptyClues           bool
-	CharacterAssignments bool
-	Seed                 string
-	Score                int
-	NumTurns             int
-	EndCondition         int
-	DatetimeStarted      time.Time
-	DatetimeFinished     time.Time
-	NumSimilar           int
-	PlayerNames          string
+	ID                   int       `json:"id"`
+	NumPlayers           int       `json:"numPlayers"`
+	Variant              string    `json:"variant"`
+	Timed                bool      `json:"timed"`
+	TimeBase             int       `json:"timeBase"`
+	TimePerTurn          int       `json:"timePerTurn"`
+	Speedrun             bool      `json:"speedrun"`
+	CardCycle            bool      `json:"cardCycle"`
+	DeckPlays            bool      `json:"deckPlays"`
+	EmptyClues           bool      `json:"emptyClues"`
+	CharacterAssignments bool      `json:"characterAssignments"`
+	Seed                 string    `json:"seed"`
+	Score                int       `json:"score"`
+	NumTurns             int       `json:"numTurns"`
+	EndCondition         int       `json:"endCondition"`
+	DatetimeStarted      time.Time `json:"datetimeStarted"`
+	DatetimeFinished     time.Time `json:"datetimeFinished"`
+	NumSimilar           int       `json:"numSimilar"`
+	PlayerNames          string    `json:"playerNames"`
+	IncrementNumGames    bool      `json:"incrementNumGames"`
 }
 
 func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*GameHistory, error) {
@@ -456,7 +457,7 @@ type DBOptions struct {
 	StartingPlayer       int // Legacy field for games prior to April 2020
 	Variant              int
 	Timed                bool
-	BaseTime             int
+	TimeBase             int
 	TimePerTurn          int
 	Speedrun             bool
 	CardCycle            bool
@@ -485,7 +486,7 @@ func (*Games) GetOptions(databaseID int) (DBOptions, error) {
 		&options.StartingPlayer,
 		&options.Variant,
 		&options.Timed,
-		&options.BaseTime,
+		&options.TimeBase,
 		&options.TimePerTurn,
 		&options.Speedrun,
 		&options.CardCycle,

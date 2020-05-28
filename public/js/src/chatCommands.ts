@@ -143,7 +143,7 @@ chatCommands.set('tag', (_room: string, args: string[]) => {
 });
 
 // /tags
-chatCommands.set('tags', () => {
+const tags = () => {
   if (globals.tableID === -1) {
     modals.warningShow('You are not currently at a table, so you cannot use that command.');
     return;
@@ -152,7 +152,9 @@ chatCommands.set('tags', () => {
   globals.conn!.send('tags', {
     tableID: globals.tableID,
   });
-});
+};
+chatCommands.set('tags', tags);
+chatCommands.set('taglist', tags);
 
 // /unfriend [username]
 chatCommands.set('unfriend', (_room: string, args: string[]) => {

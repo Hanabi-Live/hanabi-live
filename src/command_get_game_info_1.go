@@ -109,7 +109,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 
 		// Optional settings
 		Timed                bool     `json:"timed"`
-		BaseTime             int      `json:"baseTime"`
+		TimeBase             int      `json:"timeBase"`
 		TimePerTurn          int      `json:"timePerTurn"`
 		Speedrun             bool     `json:"speedrun"`
 		CardCycle            bool     `json:"cardCycle"`
@@ -141,7 +141,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 
 		// Optional settings
 		Timed:                t.Options.Timed,
-		BaseTime:             t.Options.BaseTime,
+		TimeBase:             t.Options.TimeBase,
 		TimePerTurn:          t.Options.TimePerTurn,
 		Speedrun:             t.Options.Speedrun,
 		CardCycle:            t.Options.CardCycle,

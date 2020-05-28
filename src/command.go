@@ -18,7 +18,7 @@ type CommandData struct {
 	Password             string `json:"password"`
 	Variant              string `json:"variant"`
 	Timed                bool   `json:"timed"`
-	BaseTime             int    `json:"baseTime"`    // In seconds
+	TimeBase             int    `json:"timeBase"`    // In seconds
 	TimePerTurn          int    `json:"timePerTurn"` // In seconds
 	Speedrun             bool   `json:"speedrun"`
 	CardCycle            bool   `json:"cardCycle"`

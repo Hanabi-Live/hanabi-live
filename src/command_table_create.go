@@ -28,7 +28,7 @@ var (
 //   name: 'my new table',
 //   variant: 'No Variant',
 //   timed: true,
-//   baseTime: 120,
+//   timeBase: 120,
 //   timePerTurn: 20,
 //   speedrun: false,
 //   cardCycle: false,
@@ -209,7 +209,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 				// but stored in the database as an integer
 				d.Variant = variantsID[v.Variant]
 				d.Timed = v.Timed
-				d.BaseTime = v.BaseTime
+				d.TimeBase = v.TimeBase
 				d.TimePerTurn = v.TimePerTurn
 				d.Speedrun = v.Speedrun
 				d.CardCycle = v.CardCycle
@@ -311,12 +311,12 @@ func commandTableCreate(s *Session, d *CommandData) {
 
 	// Validate that the time controls are sane
 	if d.Timed {
-		if d.BaseTime <= 0 {
-			s.Warning("\"" + strconv.Itoa(d.BaseTime) + "\" is too small of a value for \"Base Time\".")
+		if d.TimeBase <= 0 {
+			s.Warning("\"" + strconv.Itoa(d.TimeBase) + "\" is too small of a value for \"Base Time\".")
 			return
 		}
-		if d.BaseTime > 604800 { // 1 week in seconds
-			s.Warning("\"" + strconv.Itoa(d.BaseTime) + "\" is too large of a value for \"Base Time\".")
+		if d.TimeBase > 604800 { // 1 week in seconds
+			s.Warning("\"" + strconv.Itoa(d.TimeBase) + "\" is too large of a value for \"Base Time\".")
 			return
 		}
 		if d.TimePerTurn <= 0 {
@@ -331,14 +331,14 @@ func commandTableCreate(s *Session, d *CommandData) {
 
 	// Validate that there can be no time controls if this is not a timed game
 	if !d.Timed {
-		d.BaseTime = 0
+		d.TimeBase = 0
 		d.TimePerTurn = 0
 	}
 
 	// Validate that a speedrun cannot be timed
 	if d.Speedrun {
 		d.Timed = false
-		d.BaseTime = 0
+		d.TimeBase = 0
 		d.TimePerTurn = 0
 	}
 
@@ -364,7 +364,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 	t.Options = &Options{
 		Variant:              d.Variant,
 		Timed:                d.Timed,
-		BaseTime:             d.BaseTime,
+		TimeBase:             d.TimeBase,
 		TimePerTurn:          d.TimePerTurn,
 		Speedrun:             d.Speedrun,
 		CardCycle:            d.CardCycle,

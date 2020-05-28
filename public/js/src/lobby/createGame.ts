@@ -159,8 +159,8 @@ const secondVariantDropdownInit = () => {
 
 const submit = () => {
   // We need to mutate some values before sending them to the server
-  const baseTimeMinutes = parseFloat(getTextbox('createTableBaseTimeMinutes'));
-  const baseTime = Math.round(baseTimeMinutes * 60); // The server expects this in seconds
+  const timeBaseMinutes = parseFloat(getTextbox('createTableTimeBaseMinutes'));
+  const timeBase = Math.round(timeBaseMinutes * 60); // The server expects this in seconds
   const timePerTurnSeconds = getTextbox('createTableTimePerTurnSeconds');
   const timePerTurn = parseInt(timePerTurnSeconds, 10); // The server expects this in seconds
 
@@ -176,7 +176,7 @@ const submit = () => {
     name: $('#createTableName').val(), // We don't bother to store the table name
     variant: getVariant('createTableVariant'), // This is a hidden span field
     timed: getCheckbox('createTableTimed'),
-    baseTime,
+    timeBase,
     timePerTurn,
     speedrun: getCheckbox('createTableSpeedrun'),
     cardCycle: getCheckbox('createTableCardCycle'),

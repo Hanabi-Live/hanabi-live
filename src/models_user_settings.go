@@ -24,7 +24,7 @@ type Settings struct {
 	HyphenatedConventions           bool    `json:"hyphenatedConventions"`
 	CreateTableVariant              string  `json:"createTableVariant"`
 	CreateTableTimed                bool    `json:"createTableTimed"`
-	CreateTableBaseTimeMinutes      float64 `json:"createTableBaseTimeMinutes"`
+	CreateTableTimeBaseMinutes      float64 `json:"createTableTimeBaseMinutes"`
 	CreateTableTimePerTurnSeconds   int     `json:"createTableTimePerTurnSeconds"`
 	CreateTableSpeedrun             bool    `json:"createTableSpeedrun"`
 	CreateTableCardCycle            bool    `json:"createTableCardCycle"`
@@ -41,7 +41,7 @@ var (
 		SoundTimer:                    true,
 		Volume:                        50,
 		CreateTableVariant:            "No Variant",
-		CreateTableBaseTimeMinutes:    2,
+		CreateTableTimeBaseMinutes:    2,
 		CreateTableTimePerTurnSeconds: 20,
 	}
 )
@@ -66,7 +66,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 			hyphenated_conventions,
 			create_table_variant,
 			create_table_timed,
-			create_table_base_time_minutes,
+			create_table_time_base_minutes,
 			create_table_time_per_turn_seconds,
 			create_table_speedrun,
 			create_table_card_cycle,
@@ -92,7 +92,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		&settings.HyphenatedConventions,
 		&settings.CreateTableVariant,
 		&settings.CreateTableTimed,
-		&settings.CreateTableBaseTimeMinutes,
+		&settings.CreateTableTimeBaseMinutes,
 		&settings.CreateTableTimePerTurnSeconds,
 		&settings.CreateTableSpeedrun,
 		&settings.CreateTableCardCycle,

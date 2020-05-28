@@ -324,7 +324,7 @@ func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 		StartingPlayer:       options.StartingPlayer, // Legacy field for games prior to April 2020
 		Variant:              variant,
 		Timed:                options.Timed,
-		BaseTime:             options.BaseTime,
+		TimeBase:             options.TimeBase,
 		TimePerTurn:          options.TimePerTurn,
 		Speedrun:             options.Speedrun,
 		CardCycle:            options.CardCycle,
@@ -364,9 +364,9 @@ func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 	if d.GameJSON.Options.Timed != nil {
 		timed = *d.GameJSON.Options.Timed
 	}
-	baseTime := 0
+	timeBase := 0
 	if d.GameJSON.Options.Timed != nil {
-		baseTime = *d.GameJSON.Options.BaseTime
+		timeBase = *d.GameJSON.Options.TimeBase
 	}
 	timePerTurn := 0
 	if d.GameJSON.Options.TimePerTurn != nil {
@@ -398,7 +398,7 @@ func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 	t.Options = &Options{
 		Variant:              *d.GameJSON.Options.Variant,
 		Timed:                timed,
-		BaseTime:             baseTime,
+		TimeBase:             timeBase,
 		TimePerTurn:          timePerTurn,
 		Speedrun:             speedrun,
 		CardCycle:            cardCycle,

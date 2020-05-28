@@ -63,7 +63,7 @@ CREATE TABLE user_settings (
     volume                              SMALLINT  NOT NULL  DEFAULT 50,
     create_table_variant                TEXT      NOT NULL  DEFAULT 'No Variant',
     create_table_timed                  BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_base_time_minutes      FLOAT     NOT NULL  DEFAULT 2,
+    create_table_time_base_minutes      FLOAT     NOT NULL  DEFAULT 2,
     create_table_time_per_turn_seconds  INTEGER   NOT NULL  DEFAULT 20,
     create_table_speedrun               BOOLEAN   NOT NULL  DEFAULT FALSE,
     create_table_card_cycle             BOOLEAN   NOT NULL  DEFAULT FALSE,

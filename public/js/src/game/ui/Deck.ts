@@ -160,7 +160,7 @@ export default class Deck extends Konva.Group {
     if (globals.timed) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-clock"></i></span>';
       content += '&nbsp; Timed: ';
-      content += timerFormatter(globals.baseTime * 1000);
+      content += timerFormatter(globals.timeBase * 1000);
       content += ' + ';
       content += timerFormatter(globals.timePerTurn * 1000);
       content += '</li>';

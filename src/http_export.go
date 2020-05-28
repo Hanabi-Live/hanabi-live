@@ -185,7 +185,7 @@ func httpExport(c *gin.Context) {
 	}
 	if options.Timed {
 		optionsJSON.Timed = &options.Timed
-		optionsJSON.BaseTime = &options.BaseTime
+		optionsJSON.TimeBase = &options.TimeBase
 		optionsJSON.TimePerTurn = &options.TimePerTurn
 		allDefaultOptions = false
 	}

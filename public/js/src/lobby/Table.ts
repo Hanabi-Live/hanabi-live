@@ -8,7 +8,7 @@ export default interface Table {
   running: boolean;
   variant: string; // e.g. "No Variant"
   timed: boolean;
-  baseTime: number;
+  timeBase: number;
   timePerTurn: number;
   ourTurn: boolean;
   sharedReplay: boolean;

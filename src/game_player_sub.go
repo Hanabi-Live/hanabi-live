@@ -25,7 +25,7 @@ func (p *GamePlayer) GetChopIndex() int {
 
 func (p *GamePlayer) InitTime(options *Options) {
 	if options.Timed {
-		p.Time = time.Duration(options.BaseTime) * time.Second
+		p.Time = time.Duration(options.TimeBase) * time.Second
 	} else {
 		// In non-timed games, start each player with 0 "time left"
 		// It will decrement into negative numbers to show how much time they are taking

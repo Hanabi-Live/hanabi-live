@@ -105,7 +105,7 @@ export const draw = () => {
   if (globals.game.timed) {
     html += '<li><i id="lobby-pregame-options-timer" class="fas fa-clock" ';
     html += 'data-tooltip-content="#pregame-tooltip-timer"></i>&nbsp; (';
-    html += misc.timerFormatter(globals.game.baseTime);
+    html += misc.timerFormatter(globals.game.timeBase);
     html += ' + ';
     html += misc.timerFormatter(globals.game.timePerTurn);
     html += ')</li>';

@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +17,7 @@ func httpDeals(c *gin.Context) {
 		return
 	}
 
-	var historyListDatabase []*GameHistory
+	var gameHistoryList []*GameHistory
 	if v, err := models.Games.GetAllDealsFromSeed(seed); err != nil {
 		logger.Error("Failed to get the deals from the database for seed \""+seed+"\":", err)
 		http.Error(
@@ -28,26 +27,8 @@ func httpDeals(c *gin.Context) {
 		)
 		return
 	} else {
-		historyListDatabase = v
+		gameHistoryList = v
 	}
 
-	type GameHistoryOtherScoresMessage struct {
-		ID          int       `json:"id"`
-		Score       int       `json:"score"`
-		PlayerNames string    `json:"playerNames"`
-		Datetime    time.Time `json:"datetime"`
-		Seed        string    `json:"seed"`
-	}
-	historyList := make([]*GameHistoryOtherScoresMessage, 0)
-	for _, g := range historyListDatabase {
-		historyList = append(historyList, &GameHistoryOtherScoresMessage{
-			ID:          g.ID,
-			Score:       g.Score,
-			PlayerNames: g.PlayerNames,
-			Datetime:    g.DatetimeFinished,
-			Seed:        g.Seed,
-		})
-	}
-
-	c.JSON(http.StatusOK, historyList)
+	c.JSON(http.StatusOK, gameHistoryList)
 }

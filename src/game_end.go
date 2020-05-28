@@ -131,19 +131,31 @@ func (g *Game) End() {
 	}
 	sort.Strings(playerNamesSlice)
 	playerNames := strings.Join(playerNamesSlice, ", ")
-	h := make([]*GameHistory, 0)
-	h = append(h, &GameHistory{
-		ID:               g.ID, // Recorded in the "WriteDatabase()" function above
-		NumPlayers:       len(g.Players),
-		NumSimilar:       numSimilar,
-		Score:            g.Score,
-		DatetimeFinished: t.DatetimeFinished,
-		Variant:          g.Options.Variant,
-		PlayerNames:      playerNames,
+	gameHistoryList := make([]*GameHistory, 0)
+	gameHistoryList = append(gameHistoryList, &GameHistory{
+		ID:                   g.ID, // Recorded in the "WriteDatabase()" function above
+		NumPlayers:           len(g.Players),
+		Variant:              g.Options.Variant,
+		Timed:                g.Options.Timed,
+		TimeBase:             g.Options.TimeBase,
+		TimePerTurn:          g.Options.TimePerTurn,
+		Speedrun:             g.Options.Speedrun,
+		CardCycle:            g.Options.CardCycle,
+		DeckPlays:            g.Options.DeckPlays,
+		EmptyClues:           g.Options.EmptyClues,
+		CharacterAssignments: g.Options.CharacterAssignments,
+		Seed:                 g.Seed,
+		Score:                g.Score,
+		NumTurns:             g.Turn,
+		EndCondition:         g.EndCondition,
+		DatetimeStarted:      t.DatetimeStarted,
+		DatetimeFinished:     t.DatetimeFinished,
+		NumSimilar:           numSimilar,
+		PlayerNames:          playerNames,
+		IncrementNumGames:    true,
 	})
 	for _, p := range t.Players {
-		// The second argument tells the client to increment the total number of games played
-		p.Session.NotifyGameHistory(h, true)
+		p.Session.Emit("gameHistory", &gameHistoryList)
 	}
 
 	// Send a chat message with the game result and players
@@ -172,7 +184,7 @@ func (g *Game) WriteDatabase() error {
 		Owner:                t.Owner,
 		Variant:              variants[g.Options.Variant].ID,
 		Timed:                g.Options.Timed,
-		TimeBase:             g.Options.BaseTime,
+		TimeBase:             g.Options.TimeBase,
 		TimePerTurn:          g.Options.TimePerTurn,
 		Speedrun:             g.Options.Speedrun,
 		CardCycle:            g.Options.CardCycle,

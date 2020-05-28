@@ -4,7 +4,7 @@ export default interface Game {
   players: Player[];
   variant: string;
   timed: boolean;
-  baseTime: number;
+  timeBase: number;
   timePerTurn: number;
   speedrun: boolean;
   cardCycle: boolean;

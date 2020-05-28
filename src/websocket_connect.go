@@ -248,15 +248,15 @@ func websocketConnect(ms *melody.Session) {
 
 	// Send the user's game history
 	// (only the last 10 games to prevent wasted bandwidth)
-	var history []*GameHistory
+	var gameHistoryList []*GameHistory
 	if v, err := models.Games.GetUserHistory(s.UserID(), 0, 10, false); err != nil {
 		logger.Error("Failed to get the history for user \""+s.Username()+"\":", err)
 		s.Error(DefaultErrorMsg)
 		return
 	} else {
-		history = v
+		gameHistoryList = v
 	}
-	s.NotifyGameHistory(history, false)
+	s.Emit("gameHistory", &gameHistoryList)
 
 	// If they are playing in an ongoing game, join it
 	if playingInOngoingGame != -1 {

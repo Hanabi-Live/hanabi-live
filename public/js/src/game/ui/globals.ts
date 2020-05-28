@@ -36,7 +36,7 @@ export class Globals {
   // Optional game settings
   // (sent in the "init" message)
   timed: boolean = false;
-  baseTime: number = 0;
+  timeBase: number = 0;
   timePerTurn: number = 0;
   speedrun: boolean = false;
   cardCycle: boolean = false;
@@ -160,7 +160,7 @@ export class Globals {
     this.sharedReplay = false;
     this.databaseID = 0;
     this.timed = false;
-    this.baseTime = 0;
+    this.timeBase = 0;
     this.timePerTurn = 0;
     this.speedrun = false;
     this.cardCycle = false;
