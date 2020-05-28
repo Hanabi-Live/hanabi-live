@@ -369,8 +369,7 @@ func httpLogin(c *gin.Context) {
 		} else if normalizedExists {
 			http.Error(
 				w,
-				"That username is too similar to the existing user of "+
-					"\""+similarUsername+"\". Please choose a different one.",
+				"That username is too similar to the existing user of "+"\""+similarUsername+"\". If you are sure that this is your username, then please check to make sure that you are capitalized your username correctly. If you are logging on for the first time, then please choose a different username.",
 				http.StatusUnauthorized,
 			)
 			return
