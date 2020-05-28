@@ -355,7 +355,7 @@ func httpLogin(c *gin.Context) {
 			)
 			return
 		}
-		if normalizedExists, err := models.Users.NormalizedUsernameExists(
+		if normalizedExists, similarUsername, err := models.Users.NormalizedUsernameExists(
 			normalizedUsername,
 		); err != nil {
 			logger.Error("Failed to check for normalized password uniqueness for "+
@@ -367,8 +367,12 @@ func httpLogin(c *gin.Context) {
 			)
 			return
 		} else if normalizedExists {
-			http.Error(w, "That username is too similar to an existing user. "+
-				"Please choose a different one.", http.StatusUnauthorized)
+			http.Error(
+				w,
+				"That username is too similar to the existing user of "+
+					"\""+similarUsername+"\". Please choose a different one.",
+				http.StatusUnauthorized,
+			)
 			return
 		}
 

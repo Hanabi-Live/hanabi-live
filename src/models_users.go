@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"time"
 
 	"github.com/jackc/pgx/v4"
@@ -118,20 +117,19 @@ func (*Users) GetDatetimeCreated(userID int) (time.Time, error) {
 	return datetimeCreated, err
 }
 
-func (*Users) NormalizedUsernameExists(normalizedUsername string) (bool, error) {
-	var count int
+func (*Users) NormalizedUsernameExists(normalizedUsername string) (bool, string, error) {
+	var similarUsername string
 	if err := db.QueryRow(context.Background(), `
-		SELECT COUNT(id)
+		SELECT username
 		FROM users
 		WHERE normalized_username = $1
-	`, normalizedUsername).Scan(&count); err != nil {
-		return false, err
-	} else if count != 0 && count != 1 {
-		return false, errors.New("more than one user matches a username of " +
-			"\"" + normalizedUsername + "\"")
+	`, normalizedUsername).Scan(&similarUsername); err == pgx.ErrNoRows {
+		return false, "", nil
+	} else if err != nil {
+		return false, "", err
 	}
 
-	return count == 1, nil
+	return true, similarUsername, nil
 }
 
 func (*Users) Update(userID int, lastIP string) error {
