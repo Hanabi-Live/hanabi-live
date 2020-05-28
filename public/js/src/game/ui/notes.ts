@@ -122,6 +122,8 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
   card.noteChopMoved = (
     note === 'cm'
     || fullNote.includes('[cm]')
+    || note === 'chop move'
+    || fullNote.includes('[chop move]')
     || note === '5cm'
     || fullNote.includes('[5cm]')
     || note === 'e5cm'
