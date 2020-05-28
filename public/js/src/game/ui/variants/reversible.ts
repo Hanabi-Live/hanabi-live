@@ -24,8 +24,10 @@ export const shouldShowArrow = (direction: number) => {
 
   // The arrow should be shown when the suit is reversed, or
   // whenever it's determined in "Up or Down"
-  return (direction === STACK_DIRECTION.DOWN)
-      || (direction === STACK_DIRECTION.UP && isUpOrDown());
+  return (
+    direction === STACK_DIRECTION.DOWN
+    || (direction === STACK_DIRECTION.UP && isUpOrDown())
+  );
 };
 
 // needsToBePlayed returns true if this card still needs to be played
