@@ -100,7 +100,7 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
         cardImages.set(cardImagesIndex, cloneCanvas(cvs));
 
         // Draw the rank on the bottom right
-        if (!reversible.hasReversedSuits()) {
+        if (!reversible.isUpOrDown() && !suit.reversed) {
           ctx.save();
           ctx.translate(CARD_W, CARD_H);
           ctx.rotate(Math.PI);
