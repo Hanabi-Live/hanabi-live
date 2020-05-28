@@ -2,55 +2,12 @@ package main
 
 import (
 	"strconv"
-	"strings"
 	"time"
 )
 
 /*
 	Pregame chat commands
 */
-
-// /changevariant [variant]
-func chatChangeVariant(s *Session, d *CommandData, t *Table) {
-	if d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
-		return
-	}
-
-	if t.Running {
-		chatServerSend(ChatCommandStartedFail, d.Room)
-		return
-	}
-
-	if s.UserID() != t.Owner {
-		chatServerSend(ChatCommandNotOwnerFail, d.Room)
-		return
-	}
-
-	// If the user did not specify the amount of minutes, assume 1
-	if len(d.Args) == 0 {
-		chatServerSend(
-			"You must specify the variant. (e.g. \"/changevariant Rainbow (6 Suits)\")",
-			d.Room,
-		)
-		return
-	}
-
-	variantName := strings.Join(d.Args, " ")
-	if _, ok := variants[variantName]; !ok {
-		chatServerSend("The variant of \""+variantName+"\" does not exist.", d.Room)
-		return
-	}
-	t.Options.Variant = variantName
-	chatServerSend("The variant has been changed to: "+variantName, d.Room)
-
-	// Update the variant in the table list for everyone in the lobby
-	notifyAllTable(t)
-
-	// Even though no-one has joined or left the game,
-	// this function will update the display of the variant on the client
-	t.NotifyPlayerChange()
-}
 
 // /s
 func chatS(s *Session, d *CommandData, t *Table) {

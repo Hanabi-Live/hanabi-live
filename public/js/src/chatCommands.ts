@@ -7,6 +7,22 @@ import * as modals from './modals';
 const chatCommands = new Map();
 export default chatCommands;
 
+// /changevariant [variant]
+chatCommands.set('changevariant', (_room: string, args: string[]) => {
+  const variant = args.join(' ');
+
+  if (globals.tableID === -1) {
+    modals.warningShow('You are not currently at a table, so you cannot use that command.');
+    return;
+  }
+
+  globals.conn!.send('tableChangeVariant', {
+    tableID: globals.tableID,
+    variant,
+  });
+});
+
+// /friend [username]
 chatCommands.set('friend', (_room: string, args: string[]) => {
   // Validate that the format of the command is correct
   if (args.length < 1) {
@@ -25,6 +41,7 @@ chatCommands.set('friend', (_room: string, args: string[]) => {
   });
 });
 
+// /friends
 const friends = (room: string) => {
   let friendsMsg;
   if (globals.friends.length === 0) {
@@ -45,6 +62,7 @@ chatCommands.set('friends', friends);
 chatCommands.set('friendlist', friends);
 chatCommands.set('friendslist', friends);
 
+// /pm [username] [msg]
 const pm = (room: string, args: string[]) => {
   // Validate that the format of the command is correct
   if (args.length < 2) {
@@ -89,6 +107,7 @@ chatCommands.set('w', pm);
 chatCommands.set('whisper', pm);
 chatCommands.set('msg', pm);
 
+// /unfriend [username]
 chatCommands.set('unfriend', (_room: string, args: string[]) => {
   // Validate that the format of the command is correct
   if (args.length < 1) {
@@ -107,6 +126,7 @@ chatCommands.set('unfriend', (_room: string, args: string[]) => {
   });
 });
 
+// /version
 chatCommands.set('version', (room: string) => {
   chat.add({
     msg: `You are running version <strong>${globals.version}</strong> of the Hanabi Live client.`,
@@ -118,6 +138,7 @@ chatCommands.set('version', (room: string) => {
   }, false);
 });
 
+// /warning
 chatCommands.set('warning', (_room: string, args: string[]) => {
   let warning = args.join(' ');
   if (warning === '') {
