@@ -239,10 +239,9 @@ One of each card per suit (e.g. 5 in total):
 ### Reversed
 
 * One of the suits is replaced with a reversed suit.
-* Two 1's are removed from that suit.
-* Two 5's are added to that suit.
-* That suit must be completed in reverse (5, 4, 3, 2, 1). 
-* This suit can also be a White (colorless), Black (one of each card) or Rainbow (all color clues) suit.
+* The reversed suit must be played in the opposite order (e.g. 5, 4, 3, 2, 1).
+* Two 1's are removed from the reversed suit.
+* Two 5's are added to the reversed suit.
 * The White Reversed (6 Suits) variant is an official variant introduced with [Hanabi Grands Feux](https://www.cocktailgames.com/jeu/hanabi-grands-feux/) under the name "Poudre Noire" (Black Powder).
 
 ### Up or Down
