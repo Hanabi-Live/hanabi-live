@@ -57,9 +57,9 @@ If you need general help with the website, then read the [features page](FEATURE
 
 ### Pre-game or game commands (table-owner-only)
 
-| Command  | Description
-| -------- |------------
-| /setlead | Change the owner of the game (or the leader if it is a shared replay)
+| Command    | Description
+| ---------- |------------
+| /setleader | Change the owner of the game (or the leader if it is a shared replay)
 
 <br />
 
