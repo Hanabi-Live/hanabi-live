@@ -164,11 +164,13 @@ func httpWS(c *gin.Context) {
 	commandMutex.Unlock() // We will acquire the lock again in the "websocketConnect()" function
 	if err := m.HandleRequestWithKeys(w, r, keys); err != nil {
 		// We don't use "httpWSError()" since we do not want to unlock the command mutex
-		logger.Error("Failed to establish the WebSocket connection for user \""+username+"\":", err)
+		// We use "logger.Info()" instead of "logger.Error()" because WebSocket establishment can
+		// fail for mundane reasons (e.g. internet dropping)
+		logger.Info("Failed to establish the WebSocket connection for user \""+username+"\":", err)
 		http.Error(
 			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
+			http.StatusText(http.StatusBadRequest),
+			http.StatusBadRequest,
 		)
 		deleteCookie(c)
 		return
