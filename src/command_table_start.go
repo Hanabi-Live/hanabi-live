@@ -95,6 +95,9 @@ func commandTableStart(s *Session, d *CommandData) {
 	// Start the idle timeout
 	go t.CheckIdle()
 
+	// Record the stack directions
+	t.NotifyStackDirections()
+
 	g.InitDeck()
 
 	// Handle setting the seed

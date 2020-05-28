@@ -54,7 +54,7 @@ export const REPLAY_ARROW_ORDER = {
   EFFICIENCY: -4,
   MIN_EFFICIENCY: -5,
 };
-export const STACK_DIRECTION = { // Used in the "Up or Down" variants
+export const STACK_DIRECTION = { // Used in the "Up or Down" and "Reversed" variants
   UNDECIDED: 0,
   UP: 1,
   DOWN: 2,
@@ -65,6 +65,8 @@ export const UNKNOWN_CARD_RANK = 6;
 export const START_CARD_RANK = 7;
 export const MAX_CLUE_NUM = 8;
 export const SHUTDOWN_TIMEOUT = 30; // In minutes
+
+export const SUIT_REVERSED_SUFFIX = '-Reversed';
 
 const COLORS = colorsInit();
 const SUITS = suitsInit(COLORS);

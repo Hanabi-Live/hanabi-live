@@ -18,6 +18,7 @@ import pause from './pause';
 import * as stats from './stats';
 import * as timer from './timer';
 import * as turn from './turn';
+import * as reversible from './variants/reversible';
 
 export default class HanabiUI {
   globals: Globals;
@@ -188,7 +189,7 @@ const loadingFinishedCallback = () => {
 
 const initCardsMap = () => {
   for (const suit of globals.variant.suits) {
-    if (globals.variant.name.startsWith('Up or Down')) {
+    if (reversible.isUpOrDown()) {
       // 6 is an unknown rank, so we use 7 to represent a "START" card
       const key = `${suit.name}7`;
       globals.cardsMap.set(key, 1);
@@ -199,11 +200,14 @@ const initCardsMap = () => {
       let amountToAdd = 2;
       if (rank === 1) {
         amountToAdd = 3;
-        if (globals.variant.name.startsWith('Up or Down')) {
+        if (reversible.isUpOrDown() || suit.reversed) {
           amountToAdd = 1;
         }
       } else if (rank === 5) {
         amountToAdd = 1;
+        if (suit.reversed) {
+          amountToAdd = 3;
+        }
       }
       if (suit.oneOfEach) {
         amountToAdd = 1;

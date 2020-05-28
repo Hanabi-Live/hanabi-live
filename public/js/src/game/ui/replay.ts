@@ -2,7 +2,7 @@
 
 // Imports
 import Konva from 'konva';
-import { MAX_CLUE_NUM, REPLAY_ACTION_TYPE } from '../../constants';
+import { MAX_CLUE_NUM, REPLAY_ACTION_TYPE, STACK_DIRECTION } from '../../constants';
 import action from './action';
 import fadeCheck from './fadeCheck';
 import globals from './globals';
@@ -10,6 +10,7 @@ import LayoutChild from './LayoutChild';
 import Shuttle from './Shuttle';
 import * as stats from './stats';
 import * as turn from './turn';
+import * as reversible from './variants/reversible';
 
 // ---------------------
 // Main replay functions
@@ -194,6 +195,12 @@ const reset = () => {
     playStack.addChild(stackBaseLayoutChild as any);
     stackBaseLayoutChild.visible(true);
     // (the stack base might have been hidden if there was a card on top of it)
+
+    // Reverse the stack direction of reversed suits, except on the "Up or Down" variant
+    // that uses the "UNDECIDED" direction.
+    if (reversible.hasReversedSuits() && !reversible.isUpOrDown()) {
+      globals.stackDirections[i] = suit.reversed ? STACK_DIRECTION.DOWN : STACK_DIRECTION.UP;
+    }
   }
 
   // Remove all of the cards from the discard stacks

@@ -45,6 +45,7 @@ import StrikeX from './StrikeX';
 import * as timer from './timer';
 import TimerDisplay from './TimerDisplay';
 import * as tooltips from './tooltips';
+import * as reversible from './variants/reversible';
 
 interface Values {
   x: number;
@@ -357,7 +358,7 @@ const drawPlayStacks = () => {
         const colorList = suit.clueColors.map((color) => color.abbreviation).join('/');
         text += ` [${colorList}]`;
       }
-      if (globals.variant.name.startsWith('Up or Down')) {
+      if (reversible.isUpOrDown()) {
         text = '';
       }
 

@@ -10,6 +10,7 @@ export default interface Suit {
   readonly fillColors: string[];
   readonly oneOfEach: boolean;
   readonly pip: string;
+  readonly reversed: boolean;
 
   readonly allClueColors: boolean;
   readonly noClueColors: boolean;

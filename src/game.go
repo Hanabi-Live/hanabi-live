@@ -99,6 +99,19 @@ func NewGame(t *Table) *Game {
 		g.ClueTokens *= 2
 	}
 
+	// Reverse the stack direction of reversed suits, except on the "Up or Down" variant
+	// that uses the "Undecided" direction.
+	v := variants[t.Options.Variant]
+	if v.HasReversedSuits() && !v.IsUpOrDown() {
+		for i, s := range v.Suits {
+			if s.Reversed {
+				g.StackDirections[i] = StackDirectionDown
+			} else {
+				g.StackDirections[i] = StackDirectionUp
+			}
+		}
+	}
+
 	// Also, attach this new Game object to the parent table
 	g.Table.Game = g
 
@@ -204,10 +217,10 @@ func (g *Game) CheckEnd() bool {
 	}
 
 	// Check to see if there are any cards remaining that can be played on the stacks
-	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
+	if variants[g.Options.Variant].HasReversedSuits() {
 		// Searching for the next card is much more complicated if we are playing an "Up or Down"
-		// variant, so the logic for this is stored in a separate file
-		if !variantUpOrDownCheckAllDead(g) {
+		// or "Reversed" variant, so the logic for this is stored in a separate file
+		if !variantReversibleCheckAllDead(g) {
 			return false
 		}
 	} else {
@@ -261,9 +274,10 @@ func (g *Game) GetHandSize() int {
 // GetMaxScore calculates what the maximum score is,
 // accounting for stacks that cannot be completed due to discarded cards
 func (g *Game) GetMaxScore() int {
-	// Getting the maximum score is much more complicated if we are playing a "Up or Down" variant
-	if strings.HasPrefix(g.Options.Variant, "Up or Down") {
-		return variantUpOrDownGetMaxScore(g)
+	// Getting the maximum score is much more complicated if we are playing a
+	// "Up or Down" or "Reversed" variant
+	if variants[g.Options.Variant].HasReversedSuits() {
+		return variantReversibleGetMaxScore(g)
 	}
 
 	maxScore := 0

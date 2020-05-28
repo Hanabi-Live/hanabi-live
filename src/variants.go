@@ -51,6 +51,23 @@ type Variant struct {
 	MaxScore               int
 }
 
+func (v *Variant) IsUpOrDown() bool {
+	return strings.HasPrefix(v.Name, "Up or Down")
+}
+
+func (v *Variant) HasReversedSuits() bool {
+	if v.IsUpOrDown() {
+		return true
+	}
+
+	for _, s := range v.Suits {
+		if s.Reversed {
+			return true
+		}
+	}
+	return false
+}
+
 func (v *Variant) GetDeckSize() int {
 	deckSize := 0
 	for _, s := range v.Suits {
@@ -60,7 +77,7 @@ func (v *Variant) GetDeckSize() int {
 			deckSize += 10
 		}
 	}
-	if strings.HasPrefix(v.Name, "Up or Down") {
+	if v.IsUpOrDown() {
 		deckSize -= len(v.Suits)
 	}
 	return deckSize

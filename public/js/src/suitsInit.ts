@@ -1,5 +1,6 @@
 // Imports
 import Color from './Color';
+import { SUIT_REVERSED_SUFFIX } from './constants';
 import suitsJSON from './data/suits.json';
 import Suit from './Suit';
 
@@ -11,6 +12,7 @@ type SuitJSON = {
   fillColors?: string[];
   oneOfEach?: boolean;
   pip: string;
+  reversed?: boolean;
 
   allClueColors?: boolean;
   allClueRanks?: boolean;
@@ -148,6 +150,13 @@ export default (COLORS: Map<string, Color>) => {
       throw new Error(`Failed to find the pip for the "${suitName}" suit.`);
     }
 
+    // Validate the "reversed" property
+    // If it is not specified, the suit is not reversed (i.e. played from 1 to 5 as normal)
+    if (Object.hasOwnProperty.call(suitJSON, 'reversed') && suitJSON.reversed !== true) {
+      throw new Error(`The "reversed" property for the suit "${suitName}" must be set to true.`);
+    }
+    const reversed: boolean = suitJSON.reversed || false;
+
     // Add it to the map
     const suit: Suit = {
       name,
@@ -158,6 +167,7 @@ export default (COLORS: Map<string, Color>) => {
       fillColors,
       oneOfEach,
       pip,
+      reversed,
 
       allClueColors,
       allClueRanks,
@@ -165,6 +175,27 @@ export default (COLORS: Map<string, Color>) => {
       noClueRanks,
     };
     SUITS.set(suitName, suit);
+
+    // If the suit is not reversed, also add the reversed version of it
+    if (!reversed) {
+      const suitReversed: Suit = {
+        name,
+        abbreviation,
+        clueColors,
+        fill,
+        fillColorblind,
+        fillColors,
+        oneOfEach,
+        pip,
+        reversed: true,
+
+        allClueColors,
+        allClueRanks,
+        noClueColors,
+        noClueRanks,
+      };
+      SUITS.set(suitName + SUIT_REVERSED_SUFFIX, suitReversed);
+    }
   }
 
   return SUITS;

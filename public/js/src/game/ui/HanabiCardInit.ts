@@ -14,6 +14,7 @@ import NoteIndicator from './NoteIndicator';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
 import RankPip from './RankPip';
+import * as reversible from './variants/reversible';
 
 export function image(this: HanabiCard) {
   // Create the "bare" card image, which is the main card grahpic
@@ -531,7 +532,7 @@ export function fadedImages(this: HanabiCard) {
 }
 
 export function directionArrow(this: HanabiCard) {
-  if (!globals.variant.name.startsWith('Up or Down')) {
+  if (!reversible.hasReversedSuits()) {
     return;
   }
 

@@ -40,8 +40,8 @@ def main():
             suit['createVariants'] = False
         if 'oneOfEach' not in suit:
             suit['oneOfEach'] = False
-        if 'oneOfEach' not in suit:
-            suit['oneOfEach'] = False
+        if 'reversed' not in suit:
+            suit['reversed'] = False
         if 'allClueColors' not in suit:
             suit['allClueColors'] = False
         if 'allClueRanks' not in suit:
@@ -131,6 +131,11 @@ def main():
                 and suit['noClueColors'] == suit2['noClueColors']
                 and suit['noClueRanks'] == suit2['noClueRanks']
             ):
+                continue
+                
+            # It would be too difficult to have a variant with two reversed suits
+            # TODO Test and see if it's actually too difficult
+            if suit['reversed'] and suit2['reversed']:
                 continue
 
             if (
@@ -645,6 +650,9 @@ def main():
         variant_id += 1
     for [suit_name, suit] in suits.items():
         if not suit['createVariants']:
+            continue
+
+        if suit['reversed']: # Reversed doesn't work with Up or Down
             continue
 
         if suit['oneOfEach']:
