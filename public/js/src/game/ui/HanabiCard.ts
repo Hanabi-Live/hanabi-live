@@ -339,14 +339,36 @@ export default class HanabiCard extends Konva.Group {
 
   setDirectionArrow() {
     // Show or hide the direction arrow (for specific variants)
-    if (!reversible.hasReversedSuits() || this.suit === null || this.rank === 0) {
+    if (
+      this.suit === null
+      || this.rank === 0
+      || (!this.suit.reversed && !reversible.isUpOrDown())
+    ) {
       return;
     }
 
     const suitIndex = globals.variant.suits.indexOf(this.suit);
     const direction = globals.stackDirections[suitIndex];
+
+    let shouldShowArrow;
+    if (reversible.isUpOrDown()) {
+      // In "Up or Down" variants, the arrow should be shown when the stack direction is determined
+      // (and the arrow should be cleared when the stack is finished)
+      shouldShowArrow = (
+        direction === STACK_DIRECTION.UP
+        || direction === STACK_DIRECTION.DOWN
+      );
+    } else if (this.suit.reversed) {
+      // In variants with a reversed suit, the arrow should always be shown on the reversed suit
+      shouldShowArrow = true;
+    } else {
+      throw new Error('The "setDirectionArrow()" function encountered an impossible situation.');
+    }
+
     const visible = (
-      reversible.shouldShowArrow(direction)
+      shouldShowArrow
+      // As an exception, arrows should not show if we are using empathy and they have not
+      // discovered the true suit of the card yet
       && (!this.empathy || this.possibleSuits.length === 1)
     );
     this.arrow!.visible(visible);
@@ -1005,8 +1027,8 @@ export default class HanabiCard extends Konva.Group {
       }
     }
 
-    // Determining if the card needs to be played in the "Up or Down" variants
-    // is more complicated
+    // Determining if the card needs to be played in variants with reversed suits is more
+    // complicated
     if (reversible.hasReversedSuits()) {
       return reversible.needsToBePlayed(this);
     }

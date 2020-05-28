@@ -388,33 +388,47 @@ actionFunctions.set('reorder', (data: ActionReorder) => {
 });
 
 actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
-  // Update the stack directions (only in "Up or Down" and "Reversed" variants)
-  globals.stackDirections = data.directions;
-  if (reversible.hasReversedSuits()) {
-    for (let i = 0; i < globals.stackDirections.length; i++) {
-      const direction = globals.stackDirections[i];
-      let text;
-      if (direction === STACK_DIRECTION.UNDECIDED) {
-        text = '';
-      } else if (direction === STACK_DIRECTION.UP) {
-        text = reversible.isUpOrDown() ? 'Up' : '';
-      } else if (direction === STACK_DIRECTION.DOWN) {
-        text = reversible.isUpOrDown() ? 'Down' : 'Reversed';
-      } else if (direction === STACK_DIRECTION.FINISHED) {
-        text = reversible.isUpOrDown() ? 'Finished' : 'Reversed';
-      } else {
-        text = 'Unknown';
-      }
-      globals.elements.suitLabelTexts[i].fitText(text);
-      if (!globals.animateFast) {
-        globals.layers.UI.batchDraw();
-      }
+  if (!reversible.hasReversedSuits()) {
+    return;
+  }
 
-      const suit = globals.variant.suits[i];
-      for (const card of globals.deck) {
-        if (card.suit === suit) {
-          card.setDirectionArrow();
-        }
+  // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants)
+  const oldStackDirectionse = globals.stackDirections.slice(); // Make a copy of the array
+  globals.stackDirections = data.directions;
+  for (let i = 0; i < globals.stackDirections.length; i++) {
+    const stackDirection = globals.stackDirections[i];
+    if (stackDirection === oldStackDirectionse[i]) {
+      continue;
+    }
+
+    const suit = globals.variant.suits[i];
+    let text;
+    if (stackDirection === STACK_DIRECTION.UNDECIDED) {
+      text = '';
+    } else if (stackDirection === STACK_DIRECTION.UP) {
+      text = reversible.isUpOrDown() ? 'Up' : '';
+    } else if (stackDirection === STACK_DIRECTION.DOWN) {
+      text = reversible.isUpOrDown() ? 'Down' : 'Reversed';
+    } else if (stackDirection === STACK_DIRECTION.FINISHED) {
+      if (reversible.isUpOrDown()) {
+        text = 'Finished';
+      } else if (suit.reversed) {
+        text = 'Reversed';
+      } else {
+        text = '';
+      }
+    } else {
+      text = 'Unknown';
+    }
+
+    globals.elements.suitLabelTexts[i].fitText(text);
+    if (!globals.animateFast) {
+      globals.layers.UI.batchDraw();
+    }
+
+    for (const card of globals.deck) {
+      if (card.suit === suit) {
+        card.setDirectionArrow();
       }
     }
   }
