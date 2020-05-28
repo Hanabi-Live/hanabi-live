@@ -2,10 +2,15 @@ package main
 
 import (
 	"errors"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+)
+
+var (
+	seedRegexp = regexp.MustCompile(`p\dv\d+s(\d+)`)
 )
 
 func (g *Game) End() {
@@ -139,6 +144,18 @@ func (g *Game) End() {
 	for _, p := range t.Players {
 		// The second argument tells the client to increment the total number of games played
 		p.Session.NotifyGameHistory(h, true)
+	}
+
+	// Send a chat message with the game result and players
+	// (but only to the reverse friends of the players in the game in order to prevent spam)
+	announcement := g.GetAnnouncementString()
+	for _, s := range t.GetNotifySessions() {
+		s.Emit("chat", &ChatMessage{
+			Msg:      announcement,
+			Server:   true,
+			Datetime: time.Now(),
+			Room:     "lobby",
+		})
 	}
 
 	// All games are automatically converted to shared replays after they finish
@@ -350,6 +367,46 @@ func (g *Game) WriteDatabase() error {
 
 	logger.Info("Finished database actions for game " + strconv.Itoa(t.ID) + ".")
 	return nil
+}
+
+func (g *Game) GetAnnouncementString() string {
+	// Make the list of names
+	playerList := make([]string, 0)
+	for _, p := range g.Players {
+		playerList = append(playerList, p.Name)
+	}
+	msg := "[" + strings.Join(playerList, ", ") + "] "
+	if g.EndCondition == EndConditionTerminated {
+		msg += "terminated"
+	} else {
+		msg += "finished"
+	}
+	msg += " a"
+	firstLetter := strings.ToLower(g.Options.Variant)[0]
+	if firstLetter == 'a' ||
+		firstLetter == 'e' ||
+		firstLetter == 'i' ||
+		firstLetter == 'o' ||
+		firstLetter == 'u' {
+
+		msg += "n"
+	}
+	msg += " " + g.Options.Variant + " game"
+	if g.EndCondition == EndConditionTerminated {
+		msg += ". "
+	} else {
+		msg += " with a score of " + strconv.Itoa(g.Score) + ". "
+	}
+	msg += "(id: " + strconv.Itoa(g.ID) + ", "
+	// Instead of displaying the full seed (e.g. "p2v0s1"), only communicate the final number suffix
+	match := seedRegexp.FindStringSubmatch(g.Seed)
+	if match == nil {
+		logger.Error("Failed to parse the seed when ending game " + strconv.Itoa(g.ID))
+		return ""
+	}
+	msg += "seed: " + match[1] + ")"
+
+	return msg
 }
 
 func (t *Table) ConvertToSharedReplay() {

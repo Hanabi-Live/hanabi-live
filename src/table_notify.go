@@ -323,35 +323,8 @@ func (t *Table) NotifyProgress() {
 		return
 	}
 
-	// We do not want to notify everyone, as that would constitute a lot of spam
-	// (e.g. everyone getting progress updates for every table)
-	// Only send the progress to:
-	// 1) players who are currently in the game
-	// 2) users that have players or spectators in this table on their friends list
-	notifyMap := make(map[int]struct{})
-	if !t.Replay {
-		for _, p := range t.Players {
-			if p.Session == nil {
-				continue
-			}
-			notifyMap[p.ID] = struct{}{}
-			for userID := range p.Session.ReverseFriends() {
-				notifyMap[userID] = struct{}{}
-			}
-		}
-	}
-	for _, sp := range t.Spectators {
-		if sp.Session == nil {
-			continue
-		}
-		for userID := range sp.Session.ReverseFriends() {
-			notifyMap[userID] = struct{}{}
-		}
-	}
-	for userID := range notifyMap {
-		if s, ok := sessions[userID]; ok {
-			s.NotifyTableProgress(t)
-		}
+	for _, s := range t.GetNotifySessions() {
+		s.NotifyTableProgress(t)
 	}
 }
 

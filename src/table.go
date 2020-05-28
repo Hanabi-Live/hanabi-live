@@ -230,3 +230,46 @@ func (t *Table) GetOwnerSession() *Session {
 
 	return s
 }
+
+// Get a list of online user sessions that should be notified about actions and other important
+// eventss from this table
+// We do not want to notify everyone about every table, as that would constitute a lot of spam
+// Only notify:
+// 1) players who are currently in the game
+// 2) users that have players or spectators in this table on their friends list
+func (t *Table) GetNotifySessions() []*Session {
+	// First, make a map that contains a list of every relevant user
+	notifyMap := make(map[int]struct{})
+
+	if !t.Replay {
+		for _, p := range t.Players {
+			if p.Session == nil {
+				continue
+			}
+			notifyMap[p.ID] = struct{}{}
+			for userID := range p.Session.ReverseFriends() {
+				notifyMap[userID] = struct{}{}
+			}
+		}
+	}
+
+	for _, sp := range t.Spectators {
+		if sp.Session == nil {
+			continue
+		}
+		notifyMap[sp.ID] = struct{}{}
+		for userID := range sp.Session.ReverseFriends() {
+			notifyMap[userID] = struct{}{}
+		}
+	}
+
+	// Go through the map and build a list of users that happen to be currently online
+	notifySessions := make([]*Session, 0)
+	for userID := range notifyMap {
+		if s, ok := sessions[userID]; ok {
+			notifySessions = append(notifySessions, s)
+		}
+	}
+
+	return notifySessions
+}
