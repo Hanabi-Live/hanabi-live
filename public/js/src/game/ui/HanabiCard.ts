@@ -10,6 +10,7 @@ import {
   CARD_W,
   CLUE_TYPE,
   STACK_BASE_RANK,
+  STACK_DIRECTION,
   START_CARD_RANK,
   SUITS,
 } from '../../constants';
@@ -332,14 +333,40 @@ export default class HanabiCard extends Konva.Group {
       && !globals.spectating
     ));
 
+    this.setDirectionArrow();
+    this.setFade();
+  }
+
+  setDirectionArrow() {
     // Show or hide the direction arrow (for specific variants)
-    if (reversible.hasReversedSuits() && this.suit !== null && this.rank !== 0) {
-      const suitIndex = globals.variant.suits.indexOf(this.suit);
-      const direction = globals.stackDirections[suitIndex];
-      this.arrow!.visible(!this.empathy && reversible.shouldShowArrow(direction));
+    if (!reversible.hasReversedSuits() || this.suit === null || this.rank === 0) {
+      return;
     }
 
-    this.setFade();
+    const suitIndex = globals.variant.suits.indexOf(this.suit);
+    const direction = globals.stackDirections[suitIndex];
+    const visible = (
+      reversible.shouldShowArrow(direction)
+      && (!this.empathy || this.possibleSuits.length === 1)
+    );
+    this.arrow!.visible(visible);
+    if (!visible) {
+      return;
+    }
+
+    this.arrow!.rotation(direction === STACK_DIRECTION.UP ? 180 : 0);
+    this.arrowBase!.stroke(this.suit!.fill);
+    if (this.suit.fill === 'multi') {
+      // We can't use a fill gradiant because the "fill" is actually a big stroke
+      // (the Konva arrow object is not a shape, but instead a very thick line)
+      // Instead, just use the the first gradiant color
+      this.arrowBase!.stroke(this.suit.fillColors[0]);
+    }
+    if (this.rankPips!.visible()) {
+      (this.arrow! as any).setMiddleRight();
+    } else {
+      (this.arrow! as any).setBottomRight();
+    }
   }
 
   // Fade this card if it is useless, fully revealed, and still in a player's hand

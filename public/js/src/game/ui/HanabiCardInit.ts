@@ -136,14 +136,20 @@ export function directionArrow(this: HanabiCard) {
 
   this.arrow = new Konva.Group({
     x: 0.815 * CARD_W,
-    y: 0.79 * CARD_H,
+    visible: false,
     offset: {
       x: 0,
       y: 0.14 * CARD_H,
     },
-    visible: false,
   });
   this.add(this.arrow);
+
+  (this.arrow as any).setBottomRight = () => {
+    this.arrow!.y(0.79 * CARD_H);
+  };
+  (this.arrow as any).setMiddleRight = () => {
+    this.arrow!.y(0.5 * CARD_H);
+  };
 
   const arrowHeight = 0.25;
   const pointerLength = 0.05 * CARD_W;

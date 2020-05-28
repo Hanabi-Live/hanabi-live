@@ -413,19 +413,7 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
       const suit = globals.variant.suits[i];
       for (const card of globals.deck) {
         if (card.suit === suit) {
-          if (!card.empathy && reversible.shouldShowArrow(direction)) {
-            card.arrow!.visible(true);
-            card.arrow!.rotation(direction === STACK_DIRECTION.UP ? 180 : 0);
-            card.arrowBase!.stroke(suit.fill);
-            if (suit.fill === 'multi') {
-              // We can't use a fill gradiant because the "fill" is actually a big stroke
-              // (the Konva arrow object is not a shape, but instead a very thick line)
-              // Instead, just use the the first gradiant color
-              card.arrowBase!.stroke(suit.fillColors[0]);
-            }
-          } else {
-            card.arrow!.visible(false);
-          }
+          card.setDirectionArrow();
         }
       }
     }
