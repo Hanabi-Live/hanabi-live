@@ -16,7 +16,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | /random [min] [max]      | Get a random number
 | /uptime                  | Get how long the server has been online
 | /timeleft                | Get how much time is left before the server shuts down
-| /shrug                   | ¯\_(ツ)_/¯
+| /shrug                   | ¯\\_(ツ)_/¯
 
 <br />
 
