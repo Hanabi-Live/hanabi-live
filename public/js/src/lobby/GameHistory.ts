@@ -4,7 +4,7 @@ export default interface GameHistory {
   numSimilar: number;
   playerNames: string;
   score: number;
-  datetime: number;
+  datetimeFinished: number;
   variant: string;
   seed: string;
   incrementNumGames: boolean;

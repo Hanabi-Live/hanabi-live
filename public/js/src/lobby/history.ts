@@ -99,7 +99,7 @@ export const draw = () => {
     $('<td>').html(playerNames).appendTo(row);
 
     // Column 6 - Date Played
-    const datePlayed = dateTimeFormatter.format(new Date(gameData.datetime));
+    const datePlayed = dateTimeFormatter.format(new Date(gameData.datetimeFinished));
     $('<td>').html(datePlayed).appendTo(row);
 
     // Column 7 - Watch Replay
@@ -234,7 +234,7 @@ export const drawOtherScores = (data: GameHistory[]) => {
     $('<td>').html(playerNames).appendTo(row);
 
     // Column 4 - Date Played
-    let datePlayed = dateTimeFormatter.format(new Date(gameData.datetime));
+    let datePlayed = dateTimeFormatter.format(new Date(gameData.datetimeFinished));
     if (ourGame) {
       datePlayed = `<strong>${datePlayed}</strong>`;
     }
