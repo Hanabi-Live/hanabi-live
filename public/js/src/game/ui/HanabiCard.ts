@@ -333,7 +333,7 @@ export default class HanabiCard extends Konva.Group {
     ));
 
     // Show or hide the direction arrow (for specific variants)
-    if (globals.variant.name.startsWith('Up or Down') && this.suit !== null) {
+    if (globals.variant.name.startsWith('Up or Down') && this.suit !== null && this.rank !== 0) {
       const suitIndex = globals.variant.suits.indexOf(this.suit);
       const direction = globals.stackDirections[suitIndex];
       this.arrow!.visible((
