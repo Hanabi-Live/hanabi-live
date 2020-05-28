@@ -68,9 +68,15 @@ const input = function input(this: HTMLElement, event: JQuery.Event) {
     }
   }
 
-  // Check for a PM reply
+  // /r - A PM reply
   if (text === '/r ' && globals.lastPM !== '') {
     element.val(`/pm ${globals.lastPM} `);
+    return;
+  }
+
+  // /shrug
+  if (text === '/shrug') {
+    element.val('¯\\_(ツ)_/¯');
     return;
   }
 
