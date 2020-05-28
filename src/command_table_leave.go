@@ -52,16 +52,6 @@ func commandTableLeave(s *Session, d *CommandData) {
 	logger.Info(t.GetName() + "User \"" + s.Username() + "\" left. " +
 		"(There are now " + strconv.Itoa(len(t.Players)-1) + " players.)")
 
-	// If they were typing, remove the message
-	t.NotifyChatTyping(s.Username(), false)
-
-	// If there is an automatic start countdown, cancel it
-	if !t.DatetimePlannedStart.IsZero() {
-		t.DatetimePlannedStart = time.Time{} // Assign a zero value
-		room := "table" + strconv.Itoa(t.ID)
-		chatServerSend("Automatic game start has been canceled.", room)
-	}
-
 	// Remove the player
 	t.Players = append(t.Players[:i], t.Players[i+1:]...)
 	notifyAllTable(t)
@@ -75,6 +65,16 @@ func commandTableLeave(s *Session, d *CommandData) {
 
 	// Make the client switch screens to show the base lobby
 	s.Emit("left", nil)
+
+	// If they were typing, remove the message
+	t.NotifyChatTyping(s.Username(), false)
+
+	// If there is an automatic start countdown, cancel it
+	if !t.DatetimePlannedStart.IsZero() {
+		t.DatetimePlannedStart = time.Time{} // Assign a zero value
+		room := "table" + strconv.Itoa(t.ID)
+		chatServerSend("Automatic game start has been canceled.", room)
+	}
 
 	// Force everyone else to leave if it was the owner that left
 	if s.UserID() == t.Owner && len(t.Players) > 0 {
