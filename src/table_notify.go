@@ -328,6 +328,9 @@ func (t *Table) NotifyProgress() {
 	notifyMap := make(map[int]struct{})
 	if !t.Replay {
 		for _, p := range t.Players {
+			if p.Session == nil {
+				continue
+			}
 			notifyMap[p.ID] = struct{}{}
 			for userID := range p.Session.ReverseFriends() {
 				notifyMap[userID] = struct{}{}
@@ -335,6 +338,9 @@ func (t *Table) NotifyProgress() {
 		}
 	}
 	for _, sp := range t.Spectators {
+		if sp.Session == nil {
+			continue
+		}
 		for userID := range sp.Session.ReverseFriends() {
 			notifyMap[userID] = struct{}{}
 		}
