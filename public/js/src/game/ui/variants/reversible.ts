@@ -22,12 +22,14 @@ export const shouldShowArrow = (direction: number) => {
     return false;
   }
 
-  // The arrow should be shown when the suit is reversed, or
-  // whenever it's determined in "Up or Down"
-  return (
-    direction === STACK_DIRECTION.DOWN
-    || (direction === STACK_DIRECTION.UP && isUpOrDown())
-  );
+  if (isUpOrDown()) {
+    // In "Up or Down" variants, the arrow should be shown when the stack direction is determined
+    // (and the arrow should be cleared when the stack is finished)
+    return direction === STACK_DIRECTION.UP || direction === STACK_DIRECTION.DOWN;
+  }
+
+  // In variants with a reversed suit, the arrow should always be shown on the reversed suit
+  return direction === STACK_DIRECTION.DOWN || direction === STACK_DIRECTION.FINISHED;
 };
 
 // needsToBePlayed returns true if this card still needs to be played
