@@ -105,12 +105,12 @@ export default class HanabiCard extends Konva.Group {
     // Initialize various elements/features of the card
     HanabiCardInit.image.call(this);
     HanabiCardInit.borders.call(this);
+    HanabiCardInit.directionArrow.call(this);
     HanabiCardInit.pips.call(this);
     HanabiCardInit.note.call(this);
     HanabiCardInit.empathy.call(this);
     HanabiCardInit.click.call(this);
     HanabiCardInit.fadedImages.call(this);
-    HanabiCardInit.directionArrow.call(this);
   }
 
   // Erase all of the data on the card to make it like it was freshly drawn

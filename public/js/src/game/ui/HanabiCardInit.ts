@@ -129,6 +129,69 @@ export function borders(this: HanabiCard) {
   this.add(this.finesseBorder);
 }
 
+export function directionArrow(this: HanabiCard) {
+  if (!reversible.hasReversedSuits()) {
+    return;
+  }
+
+  this.arrow = new Konva.Group({
+    x: 0.815 * CARD_W,
+    y: 0.79 * CARD_H,
+    offset: {
+      x: 0,
+      y: 0.14 * CARD_H,
+    },
+    visible: false,
+  });
+  this.add(this.arrow);
+
+  const arrowHeight = 0.25;
+  const pointerLength = 0.05 * CARD_W;
+
+  const border = new Konva.Arrow({
+    points: [
+      0,
+      0,
+      0,
+      arrowHeight * CARD_H,
+    ],
+    pointerLength,
+    pointerWidth: pointerLength * 1.5,
+    fill: 'black',
+    stroke: 'black',
+    strokeWidth: pointerLength * 2,
+  });
+  this.arrow.add(border);
+
+  const edge = new Konva.Line({
+    points: [
+      0 - pointerLength,
+      0,
+      0 + pointerLength,
+      0,
+    ],
+    fill: 'black',
+    stroke: 'black',
+    strokeWidth: pointerLength * 0.75,
+  });
+  this.arrow.add(edge);
+
+  this.arrowBase = new Konva.Arrow({
+    points: [
+      0,
+      0,
+      0,
+      arrowHeight * CARD_H,
+    ],
+    pointerLength,
+    pointerWidth: pointerLength * 1.5,
+    fill: 'white',
+    stroke: 'white', // This should match the color of the suit; it will be manually set later on
+    strokeWidth: pointerLength * 1.25,
+  });
+  this.arrow.add(this.arrowBase);
+}
+
 export function pips(this: HanabiCard) {
   // Initialize the suit pips (colored shapes) on the back of the card,
   // which will be removed one by one as the card gains negative information
@@ -529,69 +592,6 @@ export function fadedImages(this: HanabiCard) {
     visible: false,
   });
   this.add(this.wrench);
-}
-
-export function directionArrow(this: HanabiCard) {
-  if (!reversible.hasReversedSuits()) {
-    return;
-  }
-
-  this.arrow = new Konva.Group({
-    x: 0.815 * CARD_W,
-    y: 0.77 * CARD_H,
-    offset: {
-      x: 0,
-      y: 0.16 * CARD_H,
-    },
-    visible: false,
-  });
-  this.add(this.arrow);
-
-  const arrowHeight = 0.27;
-  const pointerLength = 0.05 * CARD_W;
-
-  const border = new Konva.Arrow({
-    points: [
-      0,
-      0,
-      0,
-      arrowHeight * CARD_H,
-    ],
-    pointerLength,
-    pointerWidth: pointerLength * 1.5,
-    fill: 'black',
-    stroke: 'black',
-    strokeWidth: pointerLength * 2,
-  });
-  this.arrow.add(border);
-
-  const edge = new Konva.Line({
-    points: [
-      0 - pointerLength,
-      0,
-      0 + pointerLength,
-      0,
-    ],
-    fill: 'black',
-    stroke: 'black',
-    strokeWidth: pointerLength * 0.75,
-  });
-  this.arrow.add(edge);
-
-  this.arrowBase = new Konva.Arrow({
-    points: [
-      0,
-      0,
-      0,
-      arrowHeight * CARD_H,
-    ],
-    pointerLength,
-    pointerWidth: pointerLength * 1.5,
-    fill: 'white',
-    stroke: 'white', // This should match the color of the suit; it will be manually set later on
-    strokeWidth: pointerLength * 1.25,
-  });
-  this.arrow.add(this.arrowBase);
 }
 
 const scaleCardImage = (
