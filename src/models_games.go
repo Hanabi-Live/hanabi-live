@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"sort"
 	"strconv"
 	"strings"
@@ -129,15 +130,25 @@ func (*Games) Exists(databaseID int) (bool, error) {
 }
 
 type GameHistory struct {
-	ID               int
-	NumPlayers       int
-	Score            int
-	VariantNum       int
-	Variant          string
-	PlayerNames      string
-	DatetimeFinished time.Time
-	Seed             string
-	NumSimilar       int
+	ID                   int
+	NumPlayers           int
+	Variant              string
+	Timed                bool
+	TimeBase             int
+	TimePerTurn          int
+	Speedrun             bool
+	CardCycle            bool
+	DeckPlays            bool
+	EmptyClues           bool
+	CharacterAssignments bool
+	Seed                 string
+	Score                int
+	NumTurns             int
+	EndCondition         int
+	DatetimeStarted      time.Time
+	DatetimeFinished     time.Time
+	NumSimilar           int
+	PlayerNames          string
 }
 
 func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*GameHistory, error) {
@@ -147,10 +158,10 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 		SELECT
 			games1.id,
 			games1.num_players,
-			games1.score,
 			games1.variant,
-			games1.datetime_finished,
 			games1.seed,
+			games1.score,
+			games1.datetime_finished,
 			(
 				SELECT COUNT(games2.id)
 				FROM games AS games2
@@ -176,18 +187,26 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
 		var game GameHistory
+		var variantID int
 		var playerNames string
 		if err2 := rows.Scan(
 			&game.ID,
 			&game.NumPlayers,
-			&game.Score,
-			&game.VariantNum,
-			&game.DatetimeFinished,
+			&variantID,
 			&game.Seed,
+			&game.Score,
+			&game.DatetimeFinished,
 			&game.NumSimilar,
 			&playerNames,
 		); err2 != nil {
 			return nil, err2
+		}
+
+		// Get the name of the variant that corresponds to the variant ID
+		if variantName, ok := variantsID[variantID]; !ok {
+			return nil, errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
+		} else {
+			game.Variant = variantName
 		}
 
 		// The players come from the database in a random order
@@ -213,15 +232,15 @@ func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error)
 		SELECT
 			id,
 			num_players,
-			score,
 			variant,
+			score,
+			datetime_finished,
 			(
 				SELECT STRING_AGG(users.username, ', ')
 				FROM game_participants
 					JOIN users ON users.id = game_participants.user_id
 				WHERE game_participants.game_id = games.id
-			) AS player_names,
-			datetime_finished
+			) AS player_names
 		FROM games
 		WHERE variant = $1
 		ORDER BY id DESC
@@ -231,16 +250,24 @@ func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error)
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
 		var game GameHistory
+		var variantID int
 		var playerNames string
 		if err2 := rows.Scan(
 			&game.ID,
 			&game.NumPlayers,
+			&variantID,
 			&game.Score,
-			&game.VariantNum,
-			&playerNames,
 			&game.DatetimeFinished,
+			&playerNames,
 		); err2 != nil {
 			return nil, err2
+		}
+
+		// Get the name of the variant that corresponds to the variant ID
+		if variantName, ok := variantsID[variantID]; !ok {
+			return nil, errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
+		} else {
+			game.Variant = variantName
 		}
 
 		// The players come from the database in a random order
@@ -295,15 +322,15 @@ func (*Games) GetAllDealsFromGameID(databaseID int) ([]*GameHistory, error) {
 	rows, err := db.Query(context.Background(), `
 		SELECT
 			id,
+			seed,
 			score,
+			datetime_finished,
 			(
 				SELECT STRING_AGG(users.username, ', ')
 				FROM game_participants
 					JOIN users ON users.id = game_participants.user_id
 				WHERE game_participants.game_id = games.id
-			) AS player_names,
-			datetime_finished,
-			seed
+			) AS player_names
 		FROM games
 		WHERE seed = (SELECT seed FROM games WHERE id = $1)
 		ORDER BY id
@@ -315,10 +342,10 @@ func (*Games) GetAllDealsFromGameID(databaseID int) ([]*GameHistory, error) {
 		var playerNames string
 		if err2 := rows.Scan(
 			&game.ID,
-			&game.Score,
-			&playerNames,
-			&game.DatetimeFinished,
 			&game.Seed,
+			&game.Score,
+			&game.DatetimeFinished,
+			&playerNames,
 		); err2 != nil {
 			return nil, err2
 		}
@@ -345,15 +372,28 @@ func (*Games) GetAllDealsFromSeed(seed string) ([]*GameHistory, error) {
 	rows, err := db.Query(context.Background(), `
 		SELECT
 			id,
+			num_players,
+			variant,
+			timed,
+			time_base,
+			time_per_turn,
+			speedrun,
+			card_cycle,
+			deck_plays,
+			empty_clues,
+			character_assignments,
+			seed,
 			score,
+			num_turns,
+			end_condition,
+			datetime_started,
+			datetime_finished,
 			(
 				SELECT STRING_AGG(users.username, ', ')
 				FROM game_participants
 					JOIN users ON users.id = game_participants.user_id
 				WHERE game_participants.game_id = games.id
-			) AS player_names,
-			datetime_finished,
-			seed
+			) AS player_names
 		FROM games
 		WHERE seed = $1
 		ORDER BY id
@@ -362,15 +402,36 @@ func (*Games) GetAllDealsFromSeed(seed string) ([]*GameHistory, error) {
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
 		var game GameHistory
+		var variantID int
 		var playerNames string
 		if err2 := rows.Scan(
 			&game.ID,
-			&game.Score,
-			&playerNames,
-			&game.DatetimeFinished,
+			&game.NumPlayers,
+			&variantID,
+			&game.Timed,
+			&game.TimeBase,
+			&game.TimePerTurn,
+			&game.Speedrun,
+			&game.CardCycle,
+			&game.DeckPlays,
+			&game.EmptyClues,
+			&game.CharacterAssignments,
 			&game.Seed,
+			&game.Score,
+			&game.NumTurns,
+			&game.EndCondition,
+			&game.DatetimeStarted,
+			&game.DatetimeFinished,
+			&playerNames,
 		); err2 != nil {
 			return nil, err2
+		}
+
+		// Get the name of the variant that corresponds to the variant ID
+		if variantName, ok := variantsID[variantID]; !ok {
+			return nil, errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
+		} else {
+			game.Variant = variantName
 		}
 
 		// The players come from the database in a random order

@@ -30,7 +30,6 @@ func httpDeals(c *gin.Context) {
 	} else {
 		historyListDatabase = v
 	}
-	historyListDatabase = historyFillVariants(historyListDatabase)
 
 	type GameHistoryOtherScoresMessage struct {
 		ID          int       `json:"id"`

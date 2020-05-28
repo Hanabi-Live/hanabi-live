@@ -57,7 +57,6 @@ func httpHistory(c *gin.Context) {
 	} else {
 		history = v
 	}
-	history = historyFillVariants(history)
 
 	data := HistoryData{
 		Title:   "History",

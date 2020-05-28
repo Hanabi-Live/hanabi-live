@@ -256,7 +256,6 @@ func websocketConnect(ms *melody.Session) {
 	} else {
 		history = v
 	}
-	history = historyFillVariants(history)
 	s.NotifyGameHistory(history, false)
 
 	// If they are playing in an ongoing game, join it

@@ -26,6 +26,5 @@ func commandHistoryGet(s *Session, d *CommandData) {
 	} else {
 		history = v
 	}
-	history = historyFillVariants(history)
 	s.NotifyGameHistory(history, false)
 }
