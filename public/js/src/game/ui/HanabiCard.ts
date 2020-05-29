@@ -84,6 +84,7 @@ export default class HanabiCard extends Konva.Group {
   wrench: Konva.Image | null = null;
   arrow: Konva.Group | null = null;
   arrowBase: Konva.Arrow | null = null;
+  criticalIndicator: Konva.Image | null = null;
 
   constructor(config: Konva.ContainerConfig) {
     super(config);
@@ -112,6 +113,7 @@ export default class HanabiCard extends Konva.Group {
     HanabiCardInit.empathy.call(this);
     HanabiCardInit.click.call(this);
     HanabiCardInit.fadedImages.call(this);
+    HanabiCardInit.criticalIndicator.call(this);
   }
 
   // Erase all of the data on the card to make it like it was freshly drawn
@@ -331,6 +333,14 @@ export default class HanabiCard extends Konva.Group {
       && !this.isDiscarded
       && !globals.replay
       && !globals.spectating
+    ));
+
+    // Show or hide the critical indicator
+    this.criticalIndicator!.visible((
+      this.isCritical()
+      && !this.empathy
+      && !this.isPlayed
+      && !this.isDiscarded
     ));
 
     this.setDirectionArrow();
@@ -1004,9 +1014,14 @@ export default class HanabiCard extends Konva.Group {
       || this.rank === null
       || this.isPlayed
       || this.isDiscarded
-      || this.needsToBePlayed()
+      || !this.needsToBePlayed()
     ) {
       return false;
+    }
+
+    // "Up or Down" has some special cases for critical cards
+    if (reversible.hasReversedSuits()) {
+      return reversible.isCardCritical(this);
     }
 
     const num = getSpecificCardNum(this.suit, this.rank);

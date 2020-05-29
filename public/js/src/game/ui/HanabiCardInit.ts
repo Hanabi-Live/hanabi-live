@@ -435,6 +435,41 @@ export function note(this: HanabiCard) {
   });
 }
 
+export function criticalIndicator(this: HanabiCard) {
+  // Define the critical indicator image
+  const critX = 0.77;
+  const critY = 0.04;
+  const size = 0.2 * CARD_W;
+  this.criticalIndicator = new Konva.Image({
+    x: critX * CARD_W,
+    // If the cards have triangles on the corners that show the color composition,
+    // the images will overlap
+    // Thus, we move it downwards if this is the case
+    y: (globals.variant.offsetCornerElements ? critY + 0.1 : critY) * CARD_H,
+    align: 'center',
+    image: globals.ImageLoader!.get('critical')!,
+    width: size,
+    height: size,
+    rotation: 180,
+    shadowColor: 'black',
+    shadowBlur: 10,
+    shadowOffset: {
+      x: 0,
+      y: 0,
+    },
+    shadowOpacity: 0.9,
+    visible: false,
+    listening: false,
+  });
+  this.criticalIndicator.scale({
+    x: -1,
+    y: -1,
+  });
+  this.add(this.criticalIndicator);
+
+  // TODO: Tooltip
+}
+
 // In a game, click on a teammate's hand to it show as it would to that teammate
 // (or show your own hand as it should appear without any identity notes on it)
 // (or, in a replay, show the hand as it appeared at that moment in time)

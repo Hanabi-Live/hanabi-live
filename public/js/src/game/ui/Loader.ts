@@ -11,6 +11,7 @@ export default class Loader {
 
     const fileIDs = [
       'crown',
+      'critical',
       'eyes',
       'home',
       'note',
