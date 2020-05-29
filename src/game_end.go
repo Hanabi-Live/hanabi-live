@@ -158,18 +158,6 @@ func (g *Game) End() {
 		p.Session.Emit("gameHistory", &gameHistoryList)
 	}
 
-	// Send a chat message with the game result and players
-	// (but only to the reverse friends of the players in the game in order to prevent spam)
-	announcement := g.GetAnnouncementString()
-	for _, s := range t.GetNotifySessions() {
-		s.Emit("chat", &ChatMessage{
-			Msg:      announcement,
-			Server:   true,
-			Datetime: time.Now(),
-			Room:     "lobby",
-		})
-	}
-
 	// All games are automatically converted to shared replays after they finish
 	// (unless all the players are in the lobby / disconnected, or if the game ended to idleness)
 	t.ConvertToSharedReplay()
