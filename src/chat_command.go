@@ -48,7 +48,6 @@ func chatCommandInit() {
 	// Table-only commands (game only)
 	chatCommandMap["pause"] = chatPause
 	chatCommandMap["unpause"] = chatUnpause
-	chatCommandMap["lastmove"] = chatLastMove
 
 	// Table-only commands (replay only)
 	chatCommandMap["tags"] = chatTags
