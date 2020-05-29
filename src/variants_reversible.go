@@ -1,4 +1,5 @@
-// Helper functions for variants where suits may have a different direction than up
+// Helper functions for variants where suits have a non-standard playing direction
+// (e.g. 5 --> 4 --> 3 --> 2 --> 1)
 // Currently used for "Up Or Down" and "Reversed" variants
 
 package main

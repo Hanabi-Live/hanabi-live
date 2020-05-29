@@ -132,9 +132,8 @@ def main():
                 and suit['noClueRanks'] == suit2['noClueRanks']
             ):
                 continue
-                
+
             # It would be too difficult to have a variant with two reversed suits
-            # TODO Test and see if it's actually too difficult
             if suit['reversed'] and suit2['reversed']:
                 continue
 
@@ -652,7 +651,7 @@ def main():
         if not suit['createVariants']:
             continue
 
-        if suit['reversed']: # Reversed doesn't work with Up or Down
+        if suit['reversed']:  # Reversed doesn't work with Up or Down
             continue
 
         if suit['oneOfEach']:
