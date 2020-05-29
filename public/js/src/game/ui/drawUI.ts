@@ -1071,7 +1071,7 @@ const drawSharedReplay = () => {
       return;
     }
 
-    globals.lobby.conn!.send('setLeader', {
+    globals.lobby.conn!.send('tableSetLeader', {
       tableID: globals.lobby.tableID,
       name: selectedSpectator,
     });

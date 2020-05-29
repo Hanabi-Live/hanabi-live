@@ -4,7 +4,8 @@ import (
 	"strconv"
 )
 
-// commandTableSetLeader is sent when a user types the "/setleader [username]" command
+// commandTableSetLeader is sent when a user right-clicks on the crown
+// or types the "/setleader [username]" command
 //
 // Example data:
 // {
