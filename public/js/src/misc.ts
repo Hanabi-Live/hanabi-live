@@ -36,6 +36,12 @@ export const copyStringToClipboard = (str: string) => {
   document.body.removeChild(el); // Remove temporary element
 };
 
+export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
 export const getRandomNumber = (
   min: number,
   max: number,
@@ -43,6 +49,18 @@ export const getRandomNumber = (
 
 // From: https://stackoverflow.com/questions/61526746
 export const isKeyOf = <T>(p: PropertyKey, target: T): p is keyof T => p in target;
+
+export const millisecondsToClockString = (milliseconds: number) => {
+  const seconds = Math.ceil(milliseconds / 1000);
+  return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
+};
+
+const pad2 = (num: number) => {
+  if (num < 10) {
+    return `0${num}`;
+  }
+  return `${num}`;
+};
 
 export const timerFormatter = (milliseconds: number) => {
   if (!milliseconds) {

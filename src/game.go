@@ -8,8 +8,17 @@ import (
 
 type Game struct {
 	// This corresponds to the database ID of the game
-	// or 0 if it is an ongoing game that has not been written to the database yet
+	// It will be 0 in an ongoing game that has not been written to the database yet
 	ID int
+
+	// This corresponds to the database field of "datetime_started"
+	// It will be equal to "Table.DatetimeStarted" in an ongoing game that has not been written to
+	// the database yet
+	DatetimeStarted time.Time
+
+	// This corresponds to the database field of "datetime_finished"
+	// It will be blank in an ongoing game that has not been written to the database yet
+	DatetimeFinished time.Time
 
 	// This is a reference to the parent object; every game must have a parent Table object
 	Table *Table `json:"-"` // Skip circular references when encoding

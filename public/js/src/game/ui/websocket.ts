@@ -126,6 +126,11 @@ commands.set('gameOver', () => {
   globals.elements.lobbyButtonSmall!.hide();
   globals.elements.lobbyButtonBig!.show();
 
+  // Re-draw the deck tooltip
+  // (it will show more information when you are in a replay)
+  globals.datetimeFinished = new Date();
+  globals.elements.deck!.initTooltip();
+
   // Turn off the "Throw It in a Hole" UI
   if (globals.variant.name.startsWith('Throw It in a Hole')) {
     globals.elements.scoreNumberLabel!.text(globals.score.toString());
@@ -178,6 +183,8 @@ interface InitData {
   sharedReplay: boolean;
   databaseID: number;
   seed: string;
+  datetimeStarted: Date;
+  datetimeFinished: Date;
 
   // Optional settings
   timed: boolean;
@@ -219,6 +226,8 @@ commands.set('init', (data: InitData) => {
   globals.sharedReplay = data.sharedReplay;
   globals.databaseID = data.databaseID; // 0 if this is an ongoing game
   globals.seed = data.seed;
+  globals.datetimeStarted = data.datetimeStarted;
+  globals.datetimeFinished = data.datetimeFinished;
 
   // Optional settings
   globals.timed = data.timed;

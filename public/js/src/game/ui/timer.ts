@@ -1,6 +1,7 @@
 // Functions for timed games (and the timer that ticks up in untimed games)
 
 // Imports
+import * as misc from '../../misc';
 import ClockData from './ClockData';
 import globals from './globals';
 import TimerDisplay from './TimerDisplay';
@@ -43,7 +44,7 @@ export const update = (data: ClockData) => {
       // Invert it to show how much time each player is taking
       time *= -1;
     }
-    globals.elements.timer1.setTimerText(millisecondsToTimeDisplay(time));
+    globals.elements.timer1.setTimerText(misc.millisecondsToClockString(time));
   }
 
   const ourTurn = globals.activeIndex === globals.playerUs && !globals.spectating;
@@ -54,7 +55,7 @@ export const update = (data: ClockData) => {
       // Invert it to show how much time each player is taking
       time *= -1;
     }
-    globals.elements.timer2.setTimerText(millisecondsToTimeDisplay(time));
+    globals.elements.timer2.setTimerText(misc.millisecondsToClockString(time));
     globals.elements.timer2.setLabelText(globals.playerNames[globals.activeIndex]);
   }
 
@@ -110,7 +111,7 @@ function setTickingDownTime(timer: TimerDisplay) {
     // Invert it to show how much time each player is taking
     millisecondsLeft *= -1;
   }
-  const displayString = millisecondsToTimeDisplay(millisecondsLeft);
+  const displayString = misc.millisecondsToClockString(millisecondsLeft);
 
   // Update display
   timer.setTimerText(displayString);
@@ -155,7 +156,7 @@ function setTickingDownTimeTooltip(i: number) {
     content += 'taken';
   }
   content += ':<br /><strong>';
-  content += millisecondsToTimeDisplay(time);
+  content += misc.millisecondsToClockString(time);
   content += '</strong>';
   $(`#tooltip-player-${i}`).tooltipster('instance').content(content);
 }
@@ -177,19 +178,7 @@ const setTickingDownTimeCPTooltip = () => {
   time += globals.timeTaken;
 
   let content = 'Time taken on this turn:<br /><strong>';
-  content += millisecondsToTimeDisplay(time);
+  content += misc.millisecondsToClockString(time);
   content += '</strong>';
   $('#tooltip-time-taken').tooltipster('instance').content(content);
-};
-
-const millisecondsToTimeDisplay = (milliseconds: number) => {
-  const seconds = Math.ceil(milliseconds / 1000);
-  return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
-};
-
-const pad2 = (num: number) => {
-  if (num < 10) {
-    return `0${num}`;
-  }
-  return `${num}`;
 };

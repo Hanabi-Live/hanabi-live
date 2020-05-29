@@ -33,6 +33,8 @@ export class Globals {
   sharedReplay: boolean = false;
   databaseID: number = 0;
   seed: string = '';
+  datetimeStarted: Date = new Date();
+  datetimeFinished: Date = new Date();
 
   // Optional game settings
   // (sent in the "init" message)
@@ -161,6 +163,8 @@ export class Globals {
     this.sharedReplay = false;
     this.databaseID = 0;
     this.seed = '';
+    this.datetimeStarted = new Date();
+    this.datetimeFinished = new Date();
     this.timed = false;
     this.timeBase = 0;
     this.timePerTurn = 0;

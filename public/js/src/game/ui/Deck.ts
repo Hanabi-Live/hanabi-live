@@ -2,6 +2,7 @@
 import Konva from 'konva';
 import { ACTION, REPLAY_ARROW_ORDER, TOOLTIP_DELAY } from '../../constants';
 import { timerFormatter } from '../../misc';
+import * as misc from '../../misc';
 import * as arrows from './arrows';
 import globals from './globals';
 import * as tooltips from './tooltips';
@@ -155,8 +156,23 @@ export default class Deck extends Konva.Group {
     content += '<strong>Game Info:</strong>';
     content += '<ul class="game-tooltips-ul">';
 
-    content += '<li><span class="game-tooltips-icon"><i class="fas fa-seedling"></i></span>';
-    content += `&nbsp; Seed: &nbsp;<strong>${globals.seed}</strong></li>`;
+    if (globals.replay) {
+      const formattedDatetimeFinished = misc.dateTimeFormatter.format(
+        new Date(globals.datetimeFinished),
+      );
+      content += '<li><span class="game-tooltips-icon"><i class="fas fa-calendar"></i></span>';
+      content += `&nbsp; Date Played: &nbsp;<strong>${formattedDatetimeFinished}</strong></li>`;
+
+      const startedDate = new Date(globals.datetimeStarted);
+      const finishedDate = new Date(globals.datetimeFinished);
+      const elapsedMilliseconds = finishedDate.getTime() - startedDate.getTime();
+      const clockString = misc.millisecondsToClockString(elapsedMilliseconds);
+      content += '<li><span class="game-tooltips-icon"><i class="fas fa-stopwatch"></i></span>';
+      content += `&nbsp; Game Length: &nbsp;<strong>${clockString}</strong></li>`;
+
+      content += '<li><span class="game-tooltips-icon"><i class="fas fa-seedling"></i></span>';
+      content += `&nbsp; Seed: &nbsp;<strong>${globals.seed}</strong></li>`;
+    }
 
     content += '<li><span class="game-tooltips-icon"><i class="fas fa-rainbow"></i></span>';
     content += `&nbsp; Variant: &nbsp;<strong>${globals.variant.name}</strong></li>`;

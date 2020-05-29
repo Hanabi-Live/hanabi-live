@@ -18,7 +18,6 @@ type Games struct{}
 type GameRow struct {
 	Name       string
 	NumPlayers int
-	Owner      int
 	// This corresponds to the numerial ID of the variant listed in the "variants.go" file
 	Variant              int
 	Timed                bool
@@ -33,7 +32,6 @@ type GameRow struct {
 	Score                int
 	NumTurns             int
 	EndCondition         int
-	DatetimeCreated      time.Time
 	DatetimeStarted      time.Time
 	DatetimeFinished     time.Time
 }
@@ -48,7 +46,6 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 			INSERT INTO games (
 				name,
 				num_players,
-				owner,
 				variant,
 				timed,
 				time_base,
@@ -62,7 +59,6 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 				score,
 				num_turns,
 				end_condition,
-				datetime_created,
 				datetime_started,
 				datetime_finished
 			) VALUES (
@@ -82,15 +78,12 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 				$14,
 				$15,
 				$16,
-				$17,
-				$18,
-				$19
+				$17
 			)
 			RETURNING id
 		`,
 		gameRow.Name,
 		gameRow.NumPlayers,
-		gameRow.Owner,
 		gameRow.Variant,
 		gameRow.Timed,
 		gameRow.TimeBase,
@@ -104,7 +97,6 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 		gameRow.Score,
 		gameRow.NumTurns,
 		gameRow.EndCondition,
-		gameRow.DatetimeCreated,
 		gameRow.DatetimeStarted,
 		gameRow.DatetimeFinished,
 	).Scan(&id); err != nil {

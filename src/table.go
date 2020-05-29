@@ -36,11 +36,9 @@ type Table struct {
 	DatetimeCreated      time.Time
 	DatetimeLastJoined   time.Time
 	DatetimePlannedStart time.Time
-	DatetimeStarted      time.Time
 	// This is updated any time a player interacts with the game / replay
 	// (used to determine when a game is idle)
 	DatetimeLastAction time.Time
-	DatetimeFinished   time.Time
 
 	// All of the game state is contained within the "Game" object
 	Game *Game

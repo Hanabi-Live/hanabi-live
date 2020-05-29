@@ -14,8 +14,8 @@ export default interface GameHistory {
   score: number;
   numTurns: number;
   endCondition: number;
-  datetimeStarted: number;
-  datetimeFinished: number;
+  datetimeStarted: Date;
+  datetimeFinished: Date;
   numSimilar: number;
   playerNames: string;
   incrementNumGames: boolean;

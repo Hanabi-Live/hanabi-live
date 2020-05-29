@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"time"
 )
 
 // commandGetGameInfo1 provides some high-level information about the game
@@ -98,15 +99,17 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 	// Give them an "init" message
 	type InitMessage struct {
 		// Game settings
-		TableID      int      `json:"tableID"`
-		Names        []string `json:"names"`
-		Variant      string   `json:"variant"`
-		Seat         int      `json:"seat"`
-		Spectating   bool     `json:"spectating"`
-		Replay       bool     `json:"replay"`
-		SharedReplay bool     `json:"sharedReplay"`
-		DatabaseID   int      `json:"databaseID"`
-		Seed         string   `json:"seed"`
+		TableID          int       `json:"tableID"`
+		Names            []string  `json:"names"`
+		Variant          string    `json:"variant"`
+		Seat             int       `json:"seat"`
+		Spectating       bool      `json:"spectating"`
+		Replay           bool      `json:"replay"`
+		SharedReplay     bool      `json:"sharedReplay"`
+		DatabaseID       int       `json:"databaseID"`
+		Seed             string    `json:"seed"`
+		DatetimeStarted  time.Time `json:"datetimeStarted"`
+		DatetimeFinished time.Time `json:"datetimeFinished"`
 
 		// Optional settings
 		Timed                bool     `json:"timed"`
@@ -131,15 +134,17 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 
 	s.Emit("init", &InitMessage{
 		// Game settings
-		TableID:      t.ID, // The client needs to know the table ID for chat to work properly
-		Names:        names,
-		Variant:      t.Options.Variant,
-		Seat:         seat,
-		Spectating:   !t.Replay && j != -1,
-		Replay:       t.Replay,
-		SharedReplay: t.Replay && t.Visible,
-		DatabaseID:   g.ID,
-		Seed:         g.Seed,
+		TableID:          t.ID, // The client needs to know the table ID for chat to work properly
+		Names:            names,
+		Variant:          t.Options.Variant,
+		Seat:             seat,
+		Spectating:       !t.Replay && j != -1,
+		Replay:           t.Replay,
+		SharedReplay:     t.Replay && t.Visible,
+		DatabaseID:       g.ID,
+		Seed:             g.Seed,
+		DatetimeStarted:  g.DatetimeStarted,
+		DatetimeFinished: g.DatetimeFinished,
 
 		// Optional settings
 		Timed:                t.Options.Timed,

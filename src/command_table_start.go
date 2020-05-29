@@ -266,7 +266,7 @@ func commandTableStart(s *Session, d *CommandData) {
 
 	// Now that all of the initial game actions have been performed, mark that the game has started
 	t.Running = true
-	t.DatetimeStarted = time.Now()
+	g.DatetimeStarted = time.Now()
 
 	// If we are replaying an existing game up to a certain point,
 	// emulate all of the actions until turn N

@@ -121,7 +121,6 @@ CREATE TABLE games (
     id                     SERIAL       PRIMARY KEY,
     name                   TEXT         NOT NULL,
     num_players            SMALLINT     NOT NULL,
-    owner                  INTEGER      NOT NULL,
     /*
      * By default, the starting player is always at index (seat) 0
      * This field is only needed for legacy games before April 2020
@@ -142,7 +141,6 @@ CREATE TABLE games (
     num_turns              SMALLINT     NOT NULL,
     /* See the "endCondition" values in "constants.go" */
     end_condition          SMALLINT     NOT NULL,
-    datetime_created       TIMESTAMPTZ  NOT NULL,
     datetime_started       TIMESTAMPTZ  NOT NULL,
     datetime_finished      TIMESTAMPTZ  NOT NULL,
     FOREIGN KEY (owner) REFERENCES users (id) ON DELETE CASCADE

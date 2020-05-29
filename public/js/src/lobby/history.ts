@@ -3,6 +3,7 @@
 // Imports
 import { VARIANTS } from '../constants';
 import globals from '../globals';
+import * as misc from '../misc';
 import GameHistory from './GameHistory';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
@@ -99,7 +100,7 @@ export const draw = () => {
     $('<td>').html(playerNames).appendTo(row);
 
     // Column 6 - Date Played
-    const datePlayed = dateTimeFormatter.format(new Date(gameData.datetimeFinished));
+    const datePlayed = misc.dateTimeFormatter.format(new Date(gameData.datetimeFinished));
     $('<td>').html(datePlayed).appendTo(row);
 
     // Column 7 - Watch Replay
@@ -234,7 +235,7 @@ export const drawOtherScores = (data: GameHistory[]) => {
     $('<td>').html(playerNames).appendTo(row);
 
     // Column 4 - Date Played
-    let datePlayed = dateTimeFormatter.format(new Date(gameData.datetimeFinished));
+    let datePlayed = misc.dateTimeFormatter.format(new Date(gameData.datetimeFinished));
     if (ourGame) {
       datePlayed = `<strong>${datePlayed}</strong>`;
     }
@@ -265,9 +266,3 @@ export const drawOtherScores = (data: GameHistory[]) => {
     row.appendTo(tbody);
   }
 };
-
-const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-});

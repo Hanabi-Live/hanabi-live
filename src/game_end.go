@@ -17,7 +17,7 @@ func (g *Game) End() {
 	// Local variables
 	t := g.Table
 
-	t.DatetimeFinished = time.Now()
+	g.DatetimeFinished = time.Now()
 	if g.EndCondition > EndConditionNormal {
 		g.Score = 0
 	}
@@ -62,7 +62,7 @@ func (g *Game) End() {
 	}
 
 	// Send a text message showing how much time the game took in total
-	totalTime := t.DatetimeFinished.Sub(t.DatetimeStarted)
+	totalTime := g.DatetimeFinished.Sub(g.DatetimeStarted)
 	text := "The total game duration was: " + durationToString(totalTime)
 	g.Actions = append(g.Actions, ActionText{
 		Type: "text",
@@ -148,8 +148,8 @@ func (g *Game) End() {
 		Score:                g.Score,
 		NumTurns:             g.Turn,
 		EndCondition:         g.EndCondition,
-		DatetimeStarted:      t.DatetimeStarted,
-		DatetimeFinished:     t.DatetimeFinished,
+		DatetimeStarted:      g.DatetimeStarted,
+		DatetimeFinished:     g.DatetimeFinished,
 		NumSimilar:           numSimilar,
 		PlayerNames:          playerNames,
 		IncrementNumGames:    true,
@@ -181,7 +181,6 @@ func (g *Game) WriteDatabase() error {
 	row := GameRow{
 		Name:                 t.Name,
 		NumPlayers:           len(g.Players),
-		Owner:                t.Owner,
 		Variant:              variants[g.Options.Variant].ID,
 		Timed:                g.Options.Timed,
 		TimeBase:             g.Options.TimeBase,
@@ -195,9 +194,8 @@ func (g *Game) WriteDatabase() error {
 		Score:                g.Score,
 		NumTurns:             g.Turn,
 		EndCondition:         g.EndCondition,
-		DatetimeCreated:      t.DatetimeCreated,
-		DatetimeStarted:      t.DatetimeStarted,
-		DatetimeFinished:     t.DatetimeFinished,
+		DatetimeStarted:      g.DatetimeStarted,
+		DatetimeFinished:     g.DatetimeFinished,
 	}
 	if v, err := models.Games.Insert(row); err != nil {
 		logger.Error("Failed to insert the game row:", err)
