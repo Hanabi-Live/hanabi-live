@@ -32,7 +32,7 @@ func chatCommandInit() {
 	chatCommandMap["badhere"] = chatBadHere
 	chatCommandMap["wrongchannel"] = chatWrongChannel
 
-	// Table-only commands
+	// Table-only commands (pregame only, table owner only)
 	chatCommandMap["s"] = chatS
 	chatCommandMap["s2"] = chatS2
 	chatCommandMap["s3"] = chatS3
@@ -40,11 +40,19 @@ func chatCommandInit() {
 	chatCommandMap["s5"] = chatS5
 	chatCommandMap["s6"] = chatS6
 	chatCommandMap["startin"] = chatStartIn
+
+	// Table-only commands (pregame or game)
+	chatCommandMap["findvariant"] = chatFindVariant
+	chatCommandMap["randomvariant"] = chatFindVariant
+
+	// Table-only commands (game only)
 	chatCommandMap["pause"] = chatPause
 	chatCommandMap["unpause"] = chatUnpause
 	chatCommandMap["lastmove"] = chatLastMove
-	chatCommandMap["findvariant"] = chatFindVariant
-	chatCommandMap["randomvariant"] = chatFindVariant
+
+	// Table-only commands (replay only)
+	chatCommandMap["tags"] = chatTags
+	chatCommandMap["taglist"] = chatTags
 
 	// Discord-only commands
 	chatCommandMap["here"] = chatHere

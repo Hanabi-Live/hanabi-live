@@ -23,6 +23,7 @@ type Models struct {
 	GameParticipantNotes
 	GameParticipants
 	Games
+	GameTags
 	Metadata
 	MutedIPs
 	Users

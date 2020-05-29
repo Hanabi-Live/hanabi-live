@@ -105,7 +105,7 @@ func httpLogin(c *gin.Context) {
 		return
 	}
 
-	// Trim whitespace from both sides of the username
+	// Trim whitespace from both sides
 	username = strings.TrimSpace(username)
 
 	// Validate that the username does not contain any whitespace
@@ -155,7 +155,7 @@ func httpLogin(c *gin.Context) {
 			"\"" + username + "\", but it has illegal special characters in it.")
 		http.Error(
 			w,
-			"Usernames must not contain any special characters other than underscores, hyphens, and periods.",
+			"Usernames cannot contain any special characters other than underscores, hyphens, and periods.",
 			http.StatusUnauthorized,
 		)
 		return
@@ -167,7 +167,7 @@ func httpLogin(c *gin.Context) {
 			"\"" + username + "\", but it has emojis in it.")
 		http.Error(
 			w,
-			"Usernames must not contain any emojis.",
+			"Usernames cannot contain any emojis.",
 			http.StatusUnauthorized,
 		)
 		return
@@ -188,7 +188,7 @@ func httpLogin(c *gin.Context) {
 	}
 
 	// Validate that the username is not reserved
-	normalizedUsername := normalizeUsername(username)
+	normalizedUsername := normalizeString(username)
 	if normalizedUsername == "hanabilive" {
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
 			"\"" + username + "\", but that username is reserved.")

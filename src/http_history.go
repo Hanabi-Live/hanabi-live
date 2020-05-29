@@ -23,7 +23,7 @@ func httpHistory(c *gin.Context) {
 		http.Error(w, "Error: You must specify a player.", http.StatusNotFound)
 		return
 	}
-	normalizedUsername := normalizeUsername(player)
+	normalizedUsername := normalizeString(player)
 
 	// Check if the player exists
 	var user User

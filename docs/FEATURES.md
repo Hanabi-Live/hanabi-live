@@ -16,7 +16,8 @@
 8. [Similar Deals and Competitive Play](#similar-deals-and-competitive-play)
 9. [Chat](#chat)
 10. [Friends](#friends)
-11. [Research & Bots](#research--bots)
+11. [Tags](#tags)
+12. [Research & Bots](#research--bots)
 
 <br />
 
@@ -361,6 +362,18 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 * When there are a lot of users online and a lot of games going on, it can be cumbersome to find the people you care about. The website supports adding specific people to your friends list with the `/friend` command.
 * Your friends will be listed alphabetically at the top of the user list.
 * Games that contain one or more of your friends will be sorted at the top of the games list.
+
+<br />
+
+## Tags
+
+* Attaching notes to cards is useful for keeping track of things in the middle of a game. But what if you want to put a note on an entire game? That's where tags come in.
+* By using the `/tag [tag]` command, you can attach arbitrary notes to a specific game so that you can more-easily find it later.
+* For example, if you performed a massive *Quadruple Finesse*, then you could do a `/tag Quadruple Finesse`.
+* You can have an unlimited amount of tags per game. Anyone can add a tag to a game, regardless of whether they played in it or not. Everyone's tags are shared.
+* You can add tags during an ongoing game. The server will not reveal what the tag is to the other players (in order to avoid leaking information about the game).
+* Tags added during a replay will echo the everyone in the replay.
+* You can use the `/tagsearch [tag]` command to search through all games for a specific tag.
 
 <br />
 

@@ -94,6 +94,10 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 	go startIn(t, timeToWait, timeToStart)
 }
 
+/*
+	Pregame or game chat commands
+*/
+
 // /findvariant
 func chatFindVariant(s *Session, d *CommandData, t *Table) {
 	if d.Room == "lobby" {
@@ -161,64 +165,6 @@ func chatFindVariant(s *Session, d *CommandData, t *Table) {
 	msg := "Here is a random variant that everyone needs the " +
 		strconv.Itoa(len(userIDs)) + "-player max score in: " + randomVariant
 	chatServerSend(msg, d.Room)
-}
-
-/*
-	Game chat commands
-*/
-
-// /pause
-func chatPause(s *Session, d *CommandData, t *Table) {
-	if d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
-		return
-	}
-
-	if !t.Running {
-		chatServerSend("The game is not yet started, so you cannot use that command.", d.Room)
-		return
-	}
-
-	commandPause(s, &CommandData{
-		TableID: t.ID,
-		Setting: "pause",
-	})
-}
-
-// /unpause
-func chatUnpause(s *Session, d *CommandData, t *Table) {
-	if d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
-		return
-	}
-
-	if !t.Running {
-		chatServerSend("The game is not yet started, so you cannot use that command.", d.Room)
-		return
-	}
-
-	commandPause(s, &CommandData{
-		TableID: t.ID,
-		Setting: "unpause",
-	})
-}
-
-// /lastmove
-func chatLastMove(s *Session, d *CommandData, t *Table) {
-	if d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
-		return
-	}
-
-	if !t.Running {
-		chatServerSend("The game is not yet started, so you cannot use that command.", d.Room)
-		return
-	}
-
-	g := t.Game
-	secondsSinceLastMove := time.Since(g.DatetimeTurnBegin)
-	durationString := durationToString(secondsSinceLastMove)
-	chatServerSend("Time since the last move: "+durationString, d.Room)
 }
 
 /*

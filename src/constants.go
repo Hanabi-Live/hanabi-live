@@ -99,6 +99,7 @@ const (
 	InitGameFail              = "Failed to initialize the game. Please contact an administrator."
 	ChatCommandNotInLobbyFail = "You can only perform this command from the lobby."
 	ChatCommandNotInGameFail  = "You can only perform this command while in a game."
+	ChatCommandNotReplayFail  = "You can only perform this command while in a replay."
 	ChatCommandStartedFail    = "The game is already started, so you cannot use that command."
 	ChatCommandNotStartedFail = "The game has not started yet, so you cannot use that command."
 	ChatCommandNotOwnerFail   = "Only the table owner can use that command."

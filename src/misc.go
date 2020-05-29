@@ -126,10 +126,10 @@ func max(x, y int) int {
 	return y
 }
 
-func normalizeUsername(username string) string {
-	// First, we transliterate the username to pure ASCII
+func normalizeString(str string) string {
+	// First, we transliterate the string to pure ASCII
 	// Second, we lowercase it
-	return strings.ToLower(unidecode.Unidecode(username))
+	return strings.ToLower(unidecode.Unidecode(str))
 }
 
 func numConsecutiveDiacritics(s string) int {

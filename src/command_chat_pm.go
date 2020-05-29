@@ -40,8 +40,8 @@ func commandChatPM(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are not sending a private message to themselves
-	normalizedUsername := normalizeUsername(d.Recipient)
-	if normalizedUsername == normalizeUsername(s.Username()) {
+	normalizedUsername := normalizeString(d.Recipient)
+	if normalizedUsername == normalizeString(s.Username()) {
 		s.Warning("You cannot send a private message to yourself.")
 		return
 	}
@@ -49,7 +49,7 @@ func commandChatPM(s *Session, d *CommandData) {
 	// Validate that the recipient is online
 	var recipientSession *Session
 	for _, s2 := range sessions {
-		if normalizeUsername(s2.Username()) == normalizedUsername {
+		if normalizeString(s2.Username()) == normalizedUsername {
 			recipientSession = s2
 			break
 		}

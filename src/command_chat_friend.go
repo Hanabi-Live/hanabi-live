@@ -38,10 +38,10 @@ func friend(s *Session, d *CommandData, add bool) {
 	}
 
 	// Normalize the username
-	normalizedUsername := normalizeUsername(d.Name)
+	normalizedUsername := normalizeString(d.Name)
 
 	// Validate that they did not target themselves
-	if normalizedUsername == normalizeUsername(s.Username()) {
+	if normalizedUsername == normalizeString(s.Username()) {
 		var verb string
 		if add {
 			verb = "friend"

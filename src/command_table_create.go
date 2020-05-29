@@ -70,7 +70,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 		d.Name = d.Name[0 : MaxGameNameLength-1]
 	}
 
-	// Trim whitespace from both sides of the message
+	// Trim whitespace from both sides
 	d.Name = strings.TrimSpace(d.Name)
 
 	// Make a default game name if they did not provide one

@@ -55,7 +55,7 @@ If you need general help with the website, then read the [features page](FEATURE
 
 <br />
 
-### Pre-game or game commands (table-owner-only)
+### Pre-game, game, and replay commands (table-owner-only)
 
 | Command    | Description
 | ---------- |------------
@@ -70,8 +70,22 @@ If you need general help with the website, then read the [features page](FEATURE
 | /pause     | Pause the game (can be done on any turn)
 | /unpause   | Unpause the game
 | /lastmove  | Show long how it has been since the last move
+
+<br />
+
+### Game or replay commands
+
+| Command    | Description
+| ---------- | -----------
 | /tag [tag] | Tag this game with a word or phrase so that you can find it later
-| /tags      | Show all of the tags for this game
+
+<br />
+
+### Replay commands
+
+| Command | Description
+| ------- | -----------
+| /tags   | Show all of the tags for this game
 
 <br />
 

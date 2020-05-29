@@ -19,7 +19,7 @@ func commandSetting(s *Session, d *CommandData) {
 
 	// Validate the setting name
 	if d.Name == "" {
-		s.Warning("The settings name must not be blank.")
+		s.Warning("The settings name cannot be blank.")
 		return
 	}
 	settings := reflect.ValueOf(Settings{})

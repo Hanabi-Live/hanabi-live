@@ -60,7 +60,7 @@ func commandNote(s *Session, d *CommandData) {
 
 	// Check for valid UTF8
 	if !utf8.Valid([]byte(d.Note)) {
-		s.Warning("Notes must be valid UTF8.")
+		s.Warning("Notes must contain valid UTF8 characters.")
 		return
 	}
 
@@ -72,7 +72,7 @@ func commandNote(s *Session, d *CommandData) {
 		}
 	}
 
-	// Trim whitespace from both sides of the note
+	// Trim whitespace from both sides
 	d.Note = strings.TrimSpace(d.Note)
 
 	// Validate that the note does not contain an unreasonable amount of consecutive diacritics

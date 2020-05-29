@@ -70,6 +70,9 @@ type Game struct {
 	// Hypothetical-related fields
 	Hypothetical bool // Whether or not we are in a post-game hypothetical
 	HypoActions  []string
+
+	// Keep track of user-defined tags; they will be written to the database upon game completion
+	Tags map[string]struct{}
 }
 
 func NewGame(t *Table) *Game {
@@ -90,6 +93,7 @@ func NewGame(t *Table) *Game {
 		EndTurn:           -1,
 
 		HypoActions: make([]string, 0),
+		Tags:        make(map[string]struct{}),
 	}
 
 	if strings.HasPrefix(t.Options.Variant, "Clue Starved") {

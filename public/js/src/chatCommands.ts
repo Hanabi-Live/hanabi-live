@@ -136,25 +136,21 @@ chatCommands.set('tag', (_room: string, args: string[]) => {
   }
 
   const tag = args.join(' ');
-  globals.conn!.send('tags', {
+  globals.conn!.send('tag', {
     tableID: globals.tableID,
     msg: tag,
   });
 });
 
-// /tags
-const tags = () => {
-  if (globals.tableID === -1) {
-    modals.warningShow('You are not currently at a table, so you cannot use that command.');
-    return;
-  }
+// /tagsearch
+chatCommands.set('tagsearch', (room: string, args: string[]) => {
+  const tag = args.join(' ');
 
-  globals.conn!.send('tags', {
-    tableID: globals.tableID,
+  globals.conn!.send('tagsearch', {
+    msg: tag,
+    room,
   });
-};
-chatCommands.set('tags', tags);
-chatCommands.set('taglist', tags);
+});
 
 // /unfriend [username]
 chatCommands.set('unfriend', (_room: string, args: string[]) => {

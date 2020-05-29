@@ -38,10 +38,10 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 	}
 
 	// Normalize the username
-	normalizedUsername := normalizeUsername(d.Name)
+	normalizedUsername := normalizeString(d.Name)
 
 	// Validate that they did not target themselves
-	if normalizedUsername == normalizeUsername(s.Username()) {
+	if normalizedUsername == normalizeString(s.Username()) {
 		s.Warning("You cannot pass leadership to yourself.")
 		return
 	}
@@ -52,7 +52,7 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 	var newLeaderIndex int
 	if t.Replay {
 		for _, sp := range t.Spectators {
-			if normalizeUsername(sp.Name) == normalizedUsername {
+			if normalizeString(sp.Name) == normalizedUsername {
 				newLeaderID = sp.ID
 				newLeaderUsername = sp.Name
 				break
@@ -60,7 +60,7 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 		}
 	} else {
 		for i, p := range t.Players {
-			if normalizeUsername(p.Name) == normalizedUsername {
+			if normalizeString(p.Name) == normalizedUsername {
 				newLeaderID = p.ID
 				newLeaderUsername = p.Name
 				newLeaderIndex = i

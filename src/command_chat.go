@@ -264,7 +264,7 @@ func sanitizeChatInput(s *Session, msg string, server bool) (string, bool) {
 	// Check for valid UTF8
 	if !utf8.Valid([]byte(msg)) {
 		if s != nil {
-			s.Warning("Chat messages must be valid UTF8.")
+			s.Warning("Chat messages must contain valid UTF8 characters.")
 		}
 		return msg, false
 	}
@@ -277,13 +277,13 @@ func sanitizeChatInput(s *Session, msg string, server bool) (string, bool) {
 		}
 	}
 
-	// Trim whitespace from both sides of the message
+	// Trim whitespace from both sides
 	msg = strings.TrimSpace(msg)
 
 	// Validate blank messages
 	if msg == "" {
 		if s != nil {
-			s.Warning("Chat messages must not be blank.")
+			s.Warning("Chat messages cannot be blank.")
 		}
 		return msg, false
 	}

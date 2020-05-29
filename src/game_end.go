@@ -293,12 +293,21 @@ func (g *Game) WriteDatabase() error {
 		}
 	}
 
-	// Next, we insert rows for each chat message
+	// Next, we insert rows for each chat message (if any)
 	for _, chatMsg := range t.Chat {
 		room := "table" + strconv.Itoa(t.ID)
 		if err := models.ChatLog.Insert(chatMsg.UserID, chatMsg.Msg, room); err != nil {
 			logger.Error("Failed to insert a chat message into the database:", err)
 			// Do not return on failed chat insertion,
+			// since it should not affect subsequent operations
+		}
+	}
+
+	// Next, we insert rows for each tag (if any)
+	for tag := range g.Tags {
+		if err := models.GameTags.Insert(g.ID, tag); err != nil {
+			logger.Error("Failed to insert a tag into the database:", err)
+			// Do not return on failed tag insertion,
 			// since it should not affect subsequent operations
 		}
 	}
