@@ -152,8 +152,12 @@ export default class Deck extends Konva.Group {
     let content = '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> ';
     content += '&nbsp;This is the deck, which shows the number of cards remaining.</span>';
     content += '<br /><br />';
-    content += '<strong>Game Options:</strong>';
+    content += '<strong>Game Info:</strong>';
     content += '<ul class="game-tooltips-ul">';
+
+    content += '<li><span class="game-tooltips-icon"><i class="fas fa-seedling"></i></span>';
+    content += `&nbsp; Seed: &nbsp;<strong>${globals.seed}</strong></li>`;
+
     content += '<li><span class="game-tooltips-icon"><i class="fas fa-rainbow"></i></span>';
     content += `&nbsp; Variant: &nbsp;<strong>${globals.variant.name}</strong></li>`;
 

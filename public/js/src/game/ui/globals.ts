@@ -32,6 +32,7 @@ export class Globals {
   replay: boolean = false;
   sharedReplay: boolean = false;
   databaseID: number = 0;
+  seed: string = '';
 
   // Optional game settings
   // (sent in the "init" message)
@@ -159,6 +160,7 @@ export class Globals {
     this.replay = false;
     this.sharedReplay = false;
     this.databaseID = 0;
+    this.seed = '';
     this.timed = false;
     this.timeBase = 0;
     this.timePerTurn = 0;

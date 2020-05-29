@@ -177,6 +177,7 @@ interface InitData {
   replay: boolean;
   sharedReplay: boolean;
   databaseID: number;
+  seed: string;
 
   // Optional settings
   timed: boolean;
@@ -217,6 +218,7 @@ commands.set('init', (data: InitData) => {
   globals.replay = data.replay;
   globals.sharedReplay = data.sharedReplay;
   globals.databaseID = data.databaseID; // 0 if this is an ongoing game
+  globals.seed = data.seed;
 
   // Optional settings
   globals.timed = data.timed;

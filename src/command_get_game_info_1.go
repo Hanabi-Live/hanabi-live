@@ -106,6 +106,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		Replay       bool     `json:"replay"`
 		SharedReplay bool     `json:"sharedReplay"`
 		DatabaseID   int      `json:"databaseID"`
+		Seed         string   `json:"seed"`
 
 		// Optional settings
 		Timed                bool     `json:"timed"`
@@ -138,6 +139,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		Replay:       t.Replay,
 		SharedReplay: t.Replay && t.Visible,
 		DatabaseID:   g.ID,
+		Seed:         g.Seed,
 
 		// Optional settings
 		Timed:                t.Options.Timed,
