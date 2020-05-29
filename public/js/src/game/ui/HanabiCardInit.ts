@@ -366,15 +366,15 @@ export function pips(this: HanabiCard) {
 
 export function note(this: HanabiCard) {
   // Define the note indicator image
-  const noteX = 0.78;
-  const noteY = 0.03;
+  const noteX = 0.05;
+  const noteY = 0.8;
   const size = 0.2 * CARD_W;
   this.noteIndicator = new NoteIndicator({
-    x: noteX * CARD_W,
+    x: (globals.variant.offsetCornerElements ? noteX + 0.05 : noteX) * CARD_W,
     // If the cards have triangles on the corners that show the color composition,
     // the images will overlap
     // Thus, we move it downwards if this is the case
-    y: (globals.variant.offsetCornerElements ? noteY + 0.1 : noteY) * CARD_H,
+    y: (globals.variant.offsetCornerElements ? noteY - 0.05 : noteY) * CARD_H,
     align: 'center',
     image: globals.ImageLoader!.get('note')!,
     width: size,
@@ -437,15 +437,15 @@ export function note(this: HanabiCard) {
 
 export function criticalIndicator(this: HanabiCard) {
   // Define the critical indicator image
-  const critX = 0.77;
+  const critX = 0.75;
   const critY = 0.04;
   const size = 0.2 * CARD_W;
   this.criticalIndicator = new Konva.Image({
-    x: critX * CARD_W,
+    x: (globals.variant.offsetCornerElements ? critX - 0.05 : critX) * CARD_W,
     // If the cards have triangles on the corners that show the color composition,
     // the images will overlap
     // Thus, we move it downwards if this is the case
-    y: (globals.variant.offsetCornerElements ? critY + 0.1 : critY) * CARD_H,
+    y: (globals.variant.offsetCornerElements ? critY + 0.05 : critY) * CARD_H,
     align: 'center',
     image: globals.ImageLoader!.get('critical')!,
     width: size,

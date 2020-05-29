@@ -335,16 +335,9 @@ export default class HanabiCard extends Konva.Group {
       && !globals.spectating
     ));
 
-    // Show or hide the critical indicator
-    this.criticalIndicator!.visible((
-      this.isCritical()
-      && !this.empathy
-      && !this.isPlayed
-      && !this.isDiscarded
-    ));
-
     this.setDirectionArrow();
     this.setFade();
+    this.setCritical();
   }
 
   setDirectionArrow() {
@@ -436,6 +429,19 @@ export default class HanabiCard extends Konva.Group {
     }
 
     this.opacity(newOpacity);
+  }
+
+  // Show an indicator if this card is critical, unclued, unmarked, and still in a player's hand
+  setCritical() {
+    this.criticalIndicator!.visible((
+      this.isCritical()
+      && !this.empathy
+      && !globals.lobby.settings.realLifeMode
+      && !this.isPlayed
+      && !this.isDiscarded
+      && !this.isClued()
+      && !this.noteBlank
+    ));
   }
 
   // This card was touched by a positive or negative clue,
@@ -1012,6 +1018,7 @@ export default class HanabiCard extends Konva.Group {
     if (
       this.suit === null
       || this.rank === null
+      || this.rank === 0 // Base
       || this.isPlayed
       || this.isDiscarded
       || !this.needsToBePlayed()

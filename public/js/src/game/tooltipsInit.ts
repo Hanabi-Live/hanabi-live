@@ -19,7 +19,6 @@ export default () => {
   // Initialize some basic tooltips
   const tooltips = [
     'chat',
-    'critical',
     'deck',
     'discard',
     'efficiency',
