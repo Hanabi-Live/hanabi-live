@@ -4,7 +4,7 @@
 import Konva from 'konva';
 import { MAX_CLUE_NUM, REPLAY_ACTION_TYPE, STACK_DIRECTION } from '../../constants';
 import action from './action';
-import fadeCheck from './fadeCheck';
+import cardStatusCheck from './cardStatusCheck';
 import globals from './globals';
 import LayoutChild from './LayoutChild';
 import Shuttle from './Shuttle';
@@ -138,7 +138,7 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
     }
   }
 
-  fadeCheck();
+  cardStatusCheck();
   globals.animateFast = false;
   globals.elements.actionLog!.refreshText();
   globals.elements.fullActionLog!.refreshText();

@@ -10,9 +10,9 @@ import {
 } from '../../constants';
 import action from './action';
 import { Action } from './actions';
+import cardStatusCheck from './cardStatusCheck';
 import { getTouchedCardsFromClue } from './clues';
 import { suitToMsgSuit } from './convert';
-import fadeCheck from './fadeCheck';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
@@ -74,7 +74,7 @@ export const playThroughPastActions = () => {
     for (const actionMessage of globals.hypoActions) {
       action(actionMessage);
     }
-    fadeCheck();
+    cardStatusCheck();
     globals.animateFast = false;
     globals.elements.actionLog!.refreshText();
     globals.elements.fullActionLog!.refreshText();

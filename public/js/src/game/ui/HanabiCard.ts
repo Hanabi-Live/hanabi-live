@@ -84,6 +84,7 @@ export default class HanabiCard extends Konva.Group {
   wrench: Konva.Image | null = null;
   arrow: Konva.Group | null = null;
   arrowBase: Konva.Arrow | null = null;
+  criticalIndicator: Konva.Image | null = null;
 
   constructor(config: Konva.ContainerConfig) {
     super(config);
@@ -112,6 +113,7 @@ export default class HanabiCard extends Konva.Group {
     HanabiCardInit.empathy.call(this);
     HanabiCardInit.click.call(this);
     HanabiCardInit.fadedImages.call(this);
+    HanabiCardInit.criticalIndicator.call(this);
   }
 
   // Erase all of the data on the card to make it like it was freshly drawn
@@ -335,6 +337,7 @@ export default class HanabiCard extends Konva.Group {
 
     this.setDirectionArrow();
     this.setFade();
+    this.setCritical();
   }
 
   setDirectionArrow() {
@@ -426,6 +429,19 @@ export default class HanabiCard extends Konva.Group {
     }
 
     this.opacity(newOpacity);
+  }
+
+  // Show an indicator if this card is critical, unclued, unmarked, and still in a player's hand
+  setCritical() {
+    this.criticalIndicator!.visible((
+      this.isCritical()
+      && !this.empathy
+      && !globals.lobby.settings.realLifeMode
+      && !this.isPlayed
+      && !this.isDiscarded
+      && !this.isClued()
+      && !this.noteBlank
+    ));
   }
 
   // This card was touched by a positive or negative clue,
@@ -1002,11 +1018,17 @@ export default class HanabiCard extends Konva.Group {
     if (
       this.suit === null
       || this.rank === null
+      || this.rank === 0 // Base
       || this.isPlayed
       || this.isDiscarded
-      || this.needsToBePlayed()
+      || !this.needsToBePlayed()
     ) {
       return false;
+    }
+
+    // "Up or Down" has some special cases for critical cards
+    if (reversible.hasReversedSuits()) {
+      return reversible.isCardCritical(this);
     }
 
     const num = getSpecificCardNum(this.suit, this.rank);

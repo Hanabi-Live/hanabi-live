@@ -191,3 +191,28 @@ export const isPotentiallyPlayable = (card : HanabiCard) => {
 
   return potentiallyPlayable;
 };
+
+export const isCardCritical = (card : HanabiCard) : boolean => {
+  const num = getSpecificCardNum(card.suit!, card.rank!);
+  const critical = num.total === num.discarded + 1;
+
+  if (!isUpOrDown()) {
+    return critical;
+  }
+
+  // On "Up or Down", Start is only critical if all 1's and 5's are discarded
+  if (card.rank === START_CARD_RANK) {
+    const num1 = getSpecificCardNum(card.suit!, 1);
+    const num5 = getSpecificCardNum(card.suit!, 5);
+    return critical && (num1.total === num1.discarded || num5.total === num5.discarded);
+  }
+
+  // On "Up or Down", 1's and 5's are only critical if Start is discarded
+  if (card.rank === 1 || card.rank === 5) {
+    const numStart = getSpecificCardNum(card.suit!, START_CARD_RANK);
+    return critical && (numStart.total === numStart.discarded);
+  }
+
+  // Default case
+  return critical;
+};

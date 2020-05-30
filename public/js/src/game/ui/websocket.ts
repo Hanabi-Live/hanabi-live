@@ -5,8 +5,8 @@ import { CLUE_TYPE, REPLAY_ARROW_ORDER, VARIANTS } from '../../constants';
 import * as sentry from '../../sentry';
 import action from './action';
 import * as arrows from './arrows';
+import cardStatusCheck from './cardStatusCheck';
 import ClockData from './ClockData';
-import fadeCheck from './fadeCheck';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as notes from './notes';
@@ -464,7 +464,7 @@ commands.set('gameActionList', (data: GameActionListData) => {
     replay.goto(turnNum, true);
   }
 
-  fadeCheck();
+  cardStatusCheck();
   globals.layers.card.batchDraw();
   globals.layers.UI.batchDraw();
   globals.loading = false;

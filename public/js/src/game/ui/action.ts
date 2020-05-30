@@ -22,9 +22,9 @@ import {
   ActionTurn,
 } from './actions';
 import * as arrows from './arrows';
+import cardStatusCheck from './cardStatusCheck';
 import ClueEntry from './ClueEntry';
 import { msgClueToClue, msgSuitToSuit } from './convert';
-import fadeCheck from './fadeCheck';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
@@ -204,8 +204,8 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
     card.animateToDiscardPile();
   }
 
-  // The fact that this card was discarded could make some other cards useless
-  fadeCheck();
+  // The fact that this card was discarded could make some other cards useless or critical
+  cardStatusCheck();
 
   if (card.isClued()) {
     stats.updateEfficiency(-1);
@@ -346,8 +346,8 @@ actionFunctions.set('play', (data: ActionPlay) => {
   card.setClued(false);
   card.animateToPlayStacks();
 
-  // The fact that this card was played could make some other cards useless
-  fadeCheck();
+  // The fact that this card was played could make some other cards useless or critical
+  cardStatusCheck();
 
   if (!card.isClued()) {
     stats.updateEfficiency(1);
