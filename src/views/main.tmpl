@@ -86,9 +86,23 @@
         </li>
         <li>&nbsp;</li>
         <li>
+          <a id="nav-buttons-history-show-friends" class="button">
+            <i class="fas fa-heart nav-icon"></i>
+            Show History of Friends
+          </a>
+        </li>
+        <li>
           <a id="nav-buttons-history-return" class="button">
             <i class="fas fa-home nav-icon"></i>
             <span class="nav-hotkey-indicator">R</span>eturn to Lobby
+          </a>
+        </li>
+      </ul>
+      <ul id="nav-buttons-history-friends" class="hidden">
+        <li>
+          <a id="nav-buttons-history-friends-return" class="button">
+            <i class="fas fa-history nav-icon"></i>
+            <span class="nav-hotkey-indicator">R</span>eturn to History
           </a>
         </li>
       </ul>
@@ -577,7 +591,7 @@
       <div class="col-12">
         <!-- The history table (all played games) -->
         <section id="lobby-history" class="box">
-          <h3 id="lobby-history-no" class="align-center">No game history. Play some games!</h3>
+          <h3 id="lobby-history-no" class="align-center"></h3>
           <div id="lobby-history-table-container" class="hidden lobby-table-container">
             <table class="alt">
               <thead>
@@ -604,7 +618,7 @@
               <a id="lobby-history-show-all" href="/history" target="_blank"
               rel="noopener noreferrer">
                 <!-- The correct link is set in "lobby/websocketInit.ts" -->
-                <button class="button align-center">
+                <button id="lobby-history-show-all-button" class="button align-center">
                   <i class="fas fa-history"></i>&nbsp;
                   All History
                 </button>

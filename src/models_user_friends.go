@@ -48,6 +48,9 @@ func (*UserFriends) GetAllUsernames(userID int) ([]string, error) {
 	return friends, nil
 }
 
+// GetMap composes a map that represents all of this user's friends
+// We use a map to represent the friends instead of a slice because it is faster to check for the
+// existience of a friend in a map than to interate through a slice
 func (*UserFriends) GetMap(userID int) (map[int]struct{}, error) {
 	rows, err := db.Query(context.Background(), `
 		SELECT friend_id

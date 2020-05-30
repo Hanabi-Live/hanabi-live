@@ -144,7 +144,12 @@ type GameHistory struct {
 	IncrementNumGames    bool      `json:"incrementNumGames"`
 }
 
-func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*GameHistory, error) {
+func (*Games) GetUserHistory(
+	userID int,
+	offset int,
+	amount int,
+	all bool,
+) ([]*GameHistory, error) {
 	// We rename "games" to "games1" and "game_participants" to "game_participants1" so that the
 	// subquery can access their values (otherwise, the table names would conflict)
 	SQLString := `
@@ -176,6 +181,92 @@ func (*Games) GetUserHistory(userID int, offset int, amount int, all bool) ([]*G
 	}
 
 	rows, err := db.Query(context.Background(), SQLString, userID)
+
+	games := make([]*GameHistory, 0)
+	for rows.Next() {
+		var game GameHistory
+		var variantID int
+		var playerNames string
+		if err2 := rows.Scan(
+			&game.ID,
+			&game.NumPlayers,
+			&variantID,
+			&game.Seed,
+			&game.Score,
+			&game.DatetimeFinished,
+			&game.NumSimilar,
+			&playerNames,
+		); err2 != nil {
+			return nil, err2
+		}
+
+		// Get the name of the variant that corresponds to the variant ID
+		if variantName, ok := variantsID[variantID]; !ok {
+			return nil, errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
+		} else {
+			game.Variant = variantName
+		}
+
+		// The players come from the database in a random order
+		// (since we did not include an "ORDER BY" keyword)
+		// Alphabetize the players
+		playerNamesSlice := strings.Split(playerNames, ", ")
+		sort.Strings(playerNamesSlice)
+		game.PlayerNames = strings.Join(playerNamesSlice, ", ")
+
+		games = append(games, &game)
+	}
+
+	if rows.Err() != nil {
+		return nil, err
+	}
+	rows.Close()
+
+	return games, nil
+}
+
+func (*Games) GetFriendsHistory(
+	friends map[int]struct{},
+	offset int,
+	amount int,
+	all bool,
+) ([]*GameHistory, error) {
+	// We rename "games" to "games1" and "game_participants" to "game_participants1" so that the
+	// subquery can access their values (otherwise, the table names would conflict)
+	SQLString := `
+		SELECT
+			DISTINCT ON (games1.id)
+			games1.id,
+			games1.num_players,
+			games1.variant,
+			games1.seed,
+			games1.score,
+			games1.datetime_finished,
+			(
+				SELECT COUNT(games2.id)
+				FROM games AS games2
+				WHERE games2.seed = games1.seed
+			) AS num_similar,
+			(
+				SELECT STRING_AGG(users.username, ', ')
+				FROM game_participants AS game_participants2
+					JOIN users ON users.id = game_participants2.user_id
+				WHERE game_participants2.game_id = games1.id
+			) AS player_names
+		FROM games AS games1
+			JOIN game_participants AS game_participants1 ON games1.id = game_participants1.game_id
+		WHERE
+	`
+	for friendID := range friends {
+		SQLString += "game_participants1.user_id = " + strconv.Itoa(friendID) + " OR "
+	}
+	SQLString = strings.TrimSuffix(SQLString, "OR ")
+	SQLString += "ORDER BY games1.id DESC"
+	if !all {
+		SQLString += " LIMIT " + strconv.Itoa(amount) + " OFFSET " + strconv.Itoa(offset)
+	}
+
+	rows, err := db.Query(context.Background(), SQLString)
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {

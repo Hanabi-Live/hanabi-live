@@ -78,7 +78,7 @@ commands.set('gameHistory', (dataArray: GameHistory[]) => {
   // we clicked on the "Show More History" button
   if (globals.showMoreHistoryClicked) {
     globals.showMoreHistoryClicked = false;
-    history.draw();
+    history.draw(false);
   }
 
   const shownGames = Object.keys(globals.history).length;
@@ -87,7 +87,20 @@ commands.set('gameHistory', (dataArray: GameHistory[]) => {
   if (shownGames === globals.totalGames) {
     $('#lobby-history-show-more').hide();
   }
-  $('#lobby-history-show-all').attr('href', `/history/${globals.username}`);
+});
+
+commands.set('gameHistoryFriends', (dataArray: GameHistory[]) => {
+  // data will be an array of all of the games that our friends have previously played
+  for (const data of dataArray) {
+    globals.historyFriends[data.id] = data;
+  }
+
+  // The server sent us more games because
+  // we clicked on the "Show More History" button
+  if (globals.showMoreHistoryClicked) {
+    globals.showMoreHistoryClicked = false;
+    history.draw(true);
+  }
 });
 
 commands.set('gameHistoryOtherScores', (data: GameHistory[]) => {

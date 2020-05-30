@@ -4,6 +4,7 @@
 import { VARIANTS } from '../constants';
 import globals from '../globals';
 import * as misc from '../misc';
+import Variant from '../Variant';
 import GameHistory from './GameHistory';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
@@ -12,8 +13,19 @@ import * as usersDraw from './usersDraw';
 export const init = () => {
   $('#lobby-history-show-more').on('click', () => {
     globals.showMoreHistoryClicked = true;
-    globals.conn!.send('historyGet', {
-      offset: Object.keys(globals.history).length,
+    let command: string;
+    let offset: number;
+    if (globals.currentScreen === 'history') {
+      command = 'historyGet';
+      offset = Object.keys(globals.history).length;
+    } else if (globals.currentScreen === 'historyFriends') {
+      command = 'historyFriendsGet';
+      offset = Object.keys(globals.historyFriends).length;
+    } else {
+      return;
+    }
+    globals.conn!.send(command, {
+      offset,
       amount: 10,
     });
   });
@@ -21,12 +33,26 @@ export const init = () => {
 
 export const show = () => {
   globals.currentScreen = 'history';
+
   $('#lobby-history').show();
   $('#lobby-top-half').hide();
   $('#lobby-separator').hide();
   $('#lobby-bottom-half').hide();
+
+  // Update the nav
   nav.show('history');
-  draw();
+  if (globals.friends.length === 0) {
+    $('#nav-buttons-history-show-friends').hide();
+  } else {
+    $('#nav-buttons-history-show-friends').show();
+  }
+
+  // It might be hidden if we are returning from the "Show History of Friends" view
+  $('#lobby-history-show-all').show();
+  $('#lobby-history-show-all').attr('href', `/history/${globals.username}`);
+
+  // Draw the history table
+  draw(false);
 };
 
 export const hide = () => {
@@ -42,18 +68,28 @@ export const hide = () => {
   nav.show('games');
 };
 
-export const draw = () => {
+export const draw = (friends: boolean) => {
   const tbody = $('#lobby-history-table-tbody');
 
   // Clear all of the existing rows
   tbody.html('');
 
   // JavaScript keys come as strings, so we need to convert them to integers
-  const ids = Object.keys(globals.history).map((i) => parseInt(i, 10));
+  let ids: number[];
+  if (!friends) {
+    ids = Object.keys(globals.history).map((i) => parseInt(i, 10));
+  } else {
+    ids = Object.keys(globals.historyFriends).map((i) => parseInt(i, 10));
+  }
 
   // Handle if the user has no history
   if (ids.length === 0) {
     $('#lobby-history-no').show();
+    if (!friends) {
+      $('#lobby-history-no').html('No game history. Play some games!');
+    } else {
+      $('#lobby-history-no').html('None of your friends have played any games yet.');
+    }
     $('#lobby-history').addClass('align-center-v');
     $('#lobby-history-table-container').hide();
     return;
@@ -70,7 +106,12 @@ export const draw = () => {
 
   // Add all of the history
   for (let i = 0; i < ids.length; i++) {
-    const gameData = globals.history[ids[i]];
+    let gameData;
+    if (!friends) {
+      gameData = globals.history[ids[i]];
+    } else {
+      gameData = globals.historyFriends[ids[i]];
+    }
     const variant = VARIANTS.get(gameData.variant);
     if (!variant) {
       throw new Error(`Failed to get the "${gameData.variant}" variant.`);
@@ -173,6 +214,20 @@ const makeOtherScoresButton = (id: number, gameCount: number) => {
   return button;
 };
 
+export const showFriends = () => {
+  globals.currentScreen = 'historyFriends';
+  nav.show('history-friends');
+  $('#lobby-history-show-all').hide();
+  draw(true);
+};
+
+export const hideFriends = () => {
+  globals.currentScreen = 'history';
+  nav.show('history');
+  $('#lobby-history-show-all').show();
+  draw(false);
+};
+
 export const showOtherScores = () => {
   globals.currentScreen = 'historyOtherScores';
   $('#lobby-history').hide();
@@ -194,14 +249,21 @@ export const drawOtherScores = (data: GameHistory[]) => {
   tbody.html('');
 
   // The game played by the user will also include its variant
-  const variant = data
-    .filter((g) => g.id in globals.history)
-    .map((g) => globals.history[g.id].variant)
-    .map((v) => VARIANTS.get(v))[0];
-
-  // The game played by the user might not have been sent by the server yet
+  let variant: Variant | undefined;
+  if (globals.currentScreen === 'history') {
+    variant = data
+      .filter((g) => g.id in globals.history)
+      .map((g) => globals.history[g.id].variant)
+      .map((v) => VARIANTS.get(v))[0];
+  } else if (globals.currentScreen === 'historyFriends') {
+    variant = data
+      .filter((g) => g.id in globals.historyFriends)
+      .map((g) => globals.historyFriends[g.id].variant)
+      .map((v) => VARIANTS.get(v))[0];
+  } else {
+    return;
+  }
   if (variant === undefined) {
-    // If not, the variant is not known yet, so defer drawing
     return;
   }
 

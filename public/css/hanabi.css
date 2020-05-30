@@ -63,6 +63,11 @@ input[type="radio"] + label:before,
   margin-top: 0;
 }
 
+.button {
+  /* Disable the ugly black border that appears when we click on a button */
+  outline: none;
+}
+
 .row {
   border-bottom: 0;
 }
@@ -573,10 +578,6 @@ input::-webkit-calendar-picker-indicator {
   background: #ddd;
   border: none;
   border-radius: 3px;
-}
-
-#settings-volume-test {
-  outline: none;
 }
 
 /*

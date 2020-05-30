@@ -49,9 +49,8 @@ export const hide = () => {
 
   $('#game').hide(); // We can't fade this out as it will overlap
   $('#page-wrapper').fadeIn(FADE_TIME, () => {
-    // Also account that we could be going back to the history screen
-    // or the history details screen
-    // (if we entered a solo replay from the history screen / history details screen)
+    // Also account that we could be going back to one of the history screens
+    // (we could have entered a solo replay from one of the history screens)
     if ($('#lobby-history').is(':visible')) {
       globals.currentScreen = 'history';
     } else if ($('#lobby-history-other-scores').is(':visible')) {

@@ -113,6 +113,7 @@ func commandInit() {
 	commandMap["getName"] = commandGetName
 	commandMap["historyGetDeals"] = commandHistoryGetDeals
 	commandMap["historyGet"] = commandHistoryGet
+	commandMap["historyFriendsGet"] = commandHistoryFriendsGet
 	commandMap["replayCreate"] = commandReplayCreate
 	commandMap["tagsearch"] = commandTagSearch
 

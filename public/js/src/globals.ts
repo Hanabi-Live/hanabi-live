@@ -11,7 +11,15 @@ import Settings from './lobby/Settings';
 import Table from './lobby/Table';
 import User from './lobby/User';
 
-type screen = 'login' | 'lobby' | 'pregame' | 'game' | 'history' | 'historyOtherScores';
+type screen = (
+  'login'
+  | 'lobby'
+  | 'pregame'
+  | 'game'
+  | 'history'
+  | 'historyFriends'
+  | 'historyOtherScores'
+);
 
 export class Globals {
   // The "version.json" file is filled in dynamically by the "build_client.sh" script
@@ -35,6 +43,8 @@ export class Globals {
   userMap: Map<number, User> = new Map(); // Keys are IDs
   tableMap: Map<number, Table> = new Map(); // Keys are IDs
   history: GameHistory[] = [];
+  historyFriends: GameHistory[] = [];
+  totalGamesFriends: number = 0;
 
   lastPM: string = '';
   datetimeLastChatInput: number = new Date().getTime();

@@ -66,9 +66,19 @@ export const init = () => {
     });
   });
 
+  // The "Show History of Friends" button (from the "History" screen)
+  $('#nav-buttons-history-show-friends').on('click', () => {
+    history.showFriends();
+  });
+
   // The "Return to Lobby" button (from the "History" screen)
   $('#nav-buttons-history-return').on('click', () => {
     history.hide();
+  });
+
+  // The "Return to History" button (from the "History of Friends" screen)
+  $('#nav-buttons-history-friends-return').on('click', () => {
+    history.hideFriends();
   });
 
   // The "Return to History" button (from the "History Details" screen)
@@ -144,6 +154,7 @@ export const show = (target: string) => {
     'games',
     'pregame',
     'history',
+    'history-friends',
     'history-other-scores',
   ];
   for (const navType of navTypes) {
