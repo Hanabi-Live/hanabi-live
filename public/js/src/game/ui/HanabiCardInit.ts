@@ -466,8 +466,6 @@ export function criticalIndicator(this: HanabiCard) {
     y: -1,
   });
   this.add(this.criticalIndicator);
-
-  // TODO: Tooltip
 }
 
 // In a game, click on a teammate's hand to it show as it would to that teammate
