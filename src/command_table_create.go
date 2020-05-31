@@ -98,8 +98,6 @@ func commandTableCreate(s *Session, d *CommandData) {
 			"<code>+</code>, " +
 			"<code>;</code>, " +
 			"<code>:</code>, " +
-			"<code>'</code>, " +
-			"<code>\"</code>, " +
 			"<code>,</code>, " +
 			"<code>.</code>, " +
 			"and <code>?</code>."

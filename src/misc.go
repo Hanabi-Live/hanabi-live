@@ -112,7 +112,7 @@ func isPrintableASCII(s string) bool {
 
 // From: https://stackoverflow.com/questions/38554353/how-to-check-if-a-string-only-contains-alphabetic-characters-in-go
 var isAlphanumeric = regexp.MustCompile(`^[a-zA-Z0-9]+$`).MatchString
-var isAlphanumericSpacesSafeSpecialCharacters = regexp.MustCompile(`^[a-zA-Z0-9 !@#$\-_=\+;:'",\.\?]+$`).MatchString
+var isAlphanumericSpacesSafeSpecialCharacters = regexp.MustCompile(`^[a-zA-Z0-9 !@#$\-_=\+;:,\.\?]+$`).MatchString
 
 // From: https://gist.github.com/stoewer/fbe273b711e6a06315d19552dd4d33e6
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
