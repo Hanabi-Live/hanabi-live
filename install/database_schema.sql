@@ -142,8 +142,7 @@ CREATE TABLE games (
     /* See the "endCondition" values in "constants.go" */
     end_condition          SMALLINT     NOT NULL,
     datetime_started       TIMESTAMPTZ  NOT NULL,
-    datetime_finished      TIMESTAMPTZ  NOT NULL,
-    FOREIGN KEY (owner) REFERENCES users (id) ON DELETE CASCADE
+    datetime_finished      TIMESTAMPTZ  NOT NULL
 );
 CREATE INDEX games_index_num_players ON games (num_players);
 CREATE INDEX games_index_variant     ON games (variant);
