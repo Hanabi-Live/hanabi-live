@@ -314,7 +314,6 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   // If this card is known,
   // then remove it from the card possibilities for the players who see this card
   if (suit && rank) {
-    card.identityDetermined = true;
     if (possibilitiesCheck()) {
       for (let i = 0; i < globals.elements.playerHands.length; i++) {
         if (i === holder) {
