@@ -42,14 +42,34 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 		return
 	}
 
+	// First, change the variant
 	t.Options.Variant = d.Variant
-	room := "table" + strconv.Itoa(tableID)
-	chatServerSend(s.Username()+" has changed the variant to: "+d.Variant, room)
+
+	// Update the variant-specific stats for each player at the table
+	for _, p := range t.Players {
+		var variantStats UserStatsRow
+		if v, err := models.UserStats.Get(s.UserID(), variants[t.Options.Variant].ID); err != nil {
+			logger.Error("Failed to get the stats for player \""+s.Username()+"\" "+
+				"for variant "+strconv.Itoa(variants[t.Options.Variant].ID)+":", err)
+			s.Error(DefaultErrorMsg)
+			return
+		} else {
+			variantStats = v
+		}
+
+		p.Stats = PregameStats{
+			NumGames: p.Stats.NumGames,
+			Variant:  variantStats,
+		}
+	}
+
+	// Even though no-one has joined or left the game, this function will update the display of the
+	// variant on the client and refresh all of the variant-specific stats
+	t.NotifyPlayerChange()
 
 	// Update the variant in the table list for everyone in the lobby
 	notifyAllTable(t)
 
-	// Even though no-one has joined or left the game,
-	// this function will update the display of the variant on the client
-	t.NotifyPlayerChange()
+	room := "table" + strconv.Itoa(tableID)
+	chatServerSend(s.Username()+" has changed the variant to: "+d.Variant, room)
 }
