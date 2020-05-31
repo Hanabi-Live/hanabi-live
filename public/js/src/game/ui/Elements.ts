@@ -58,6 +58,7 @@ export default class Elements {
   turnNumberLabel: Konva.Text | null = null;
   scoreNumberLabel: Konva.Text | null = null;
   maxScoreNumberLabel: Konva.Text | null = null;
+  playsNumberLabel: Konva.Text | null = null;
   cluesNumberLabel: Konva.Text | null = null;
   cluesNumberLabelPulse: Konva.Tween | null = null;
   strikeXs: StrikeX[] = [];

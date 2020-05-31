@@ -170,6 +170,7 @@ const reset = () => {
   globals.cardsGotten = 0;
   globals.cluesSpentPlusStrikes = 0;
   globals.stackDirections = [0, 0, 0, 0, 0];
+  globals.numCardsPlayed = 0;
 
   // Reset various UI elements
   globals.postAnimationLayout = null;

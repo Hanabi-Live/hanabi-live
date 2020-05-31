@@ -778,6 +778,7 @@ const drawScoreArea = () => {
     text: 'Score',
     x: labelX * winW,
     y: 0.045 * winH,
+    visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
   });
   globals.elements.scoreArea.add(scoreTextLabel);
 
@@ -785,6 +786,7 @@ const drawScoreArea = () => {
     text: '0',
     x: (labelX + labelSpacing) * winW,
     y: 0.045 * winH,
+    visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
   });
   globals.elements.scoreArea.add(globals.elements.scoreNumberLabel!);
 
@@ -796,6 +798,22 @@ const drawScoreArea = () => {
     visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
   });
   globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel!);
+
+  const playsTextLabel = basicTextLabel.clone({
+    text: 'Plays',
+    x: labelX * winW,
+    y: 0.045 * winH,
+    visible: globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay,
+  });
+  globals.elements.scoreArea.add(playsTextLabel);
+
+  globals.elements.playsNumberLabel = basicNumberLabel.clone({
+    text: '0',
+    x: (labelX + labelSpacing) * winW,
+    y: 0.045 * winH,
+    visible: globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay,
+  });
+  globals.elements.scoreArea.add(globals.elements.playsNumberLabel!);
 
   const cluesTextLabel = basicTextLabel.clone({
     text: 'Clues',

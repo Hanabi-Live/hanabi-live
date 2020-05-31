@@ -337,6 +337,8 @@ actionFunctions.set('play', (data: ActionPlay) => {
 
   card.isPlayed = true;
   card.turnPlayed = globals.turn;
+  globals.numCardsPlayed += 1;
+  globals.elements.playsNumberLabel!.text(globals.numCardsPlayed.toString());
 
   // Clear all visible arrows when a new move occurs
   arrows.hideAll();
@@ -477,9 +479,6 @@ actionFunctions.set('status', (data: ActionStatus) => {
   // Update the score (in the bottom-right-hand corner)
   const scoreLabel = globals.elements.scoreNumberLabel!;
   scoreLabel.text(globals.score.toString());
-  if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
-    scoreLabel.text('?');
-  }
 
   // Reposition the maximum score
   const maxScoreLabel = globals.elements.maxScoreNumberLabel!;

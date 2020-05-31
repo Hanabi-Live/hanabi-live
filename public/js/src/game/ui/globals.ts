@@ -67,6 +67,7 @@ export class Globals {
   cardsGotten: number = 0;
   cluesSpentPlusStrikes: number = 0;
   stackDirections: number[] = [];
+  numCardsPlayed: number = 0; // For "Throw It in a Hole" variants
 
   // UI elements
   ImageLoader: Loader | null = null;
@@ -190,6 +191,7 @@ export class Globals {
     this.cardsGotten = 0;
     this.cluesSpentPlusStrikes = 0;
     this.stackDirections = [];
+    this.numCardsPlayed = 0;
     this.ImageLoader = null;
     this.stage = new Konva.Stage({ container: 'game' });
     this.layers = new Layers();
