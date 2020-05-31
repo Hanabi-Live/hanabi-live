@@ -440,8 +440,8 @@ export default class HanabiCard extends Konva.Group {
       && !this.isPlayed
       && !this.isDiscarded
       && !this.isClued()
-      && !this.chopMoveBorder!.visible
-      && !this.finesseBorder!.visible
+      && !this.chopMoveBorder!.visible()
+      && !this.finesseBorder!.visible()
       && !this.noteBlank
     ));
   }
