@@ -251,7 +251,8 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   // players, then suit and rank will be still be null for the cards that were dealt to us
   // Since we are in a shared replay, this is a mistake, because we should have full knowledge of
   // what the card is (from the "deckOrder" message that is sent at the end of the game)
-  if (globals.deckOrder.length !== 0) {
+  // The exception is when we are in a hypothetical and "hypoRevealed" is turned off
+  if (globals.deckOrder.length !== 0 && (!globals.hypothetical || globals.hypoRevealed)) {
     if (suit === null) {
       const suitNum = globals.deckOrder[order].suit;
       suit = msgSuitToSuit(suitNum, globals.variant);

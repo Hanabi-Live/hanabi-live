@@ -100,7 +100,7 @@ export class Globals {
   sharedReplayLoading: boolean = false; // This is used to not animate cards when loading in
   hypothetical: boolean = false; // Whether or not we are in a hypothetical
   hypoActions: any[] = []; // An array of the actions in the current hypothetical
-  hypoHidden: boolean = true; // Whether or not drawn cards should be hidden
+  hypoRevealed: boolean = true; // Whether or not drawn cards should be revealed when drawn
 
   // Notes feature
   ourNotes: string[] = []; // Indexed by card order
@@ -216,7 +216,7 @@ export class Globals {
     this.sharedReplayLoading = true;
     this.hypothetical = false;
     this.hypoActions = [];
-    this.hypoHidden = true;
+    this.hypoRevealed = true;
     this.ourNotes = [];
     this.allNotes = [];
     this.editingNote = null;

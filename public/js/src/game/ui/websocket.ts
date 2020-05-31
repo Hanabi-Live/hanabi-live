@@ -166,6 +166,17 @@ commands.set('hypoEnd', () => {
   }
 });
 
+interface HypoRevealedData {
+  hypoRevealed: boolean;
+}
+commands.set('hypoRevealed', (data: HypoRevealedData) => {
+  globals.hypoRevealed = data.hypoRevealed;
+
+  const text = globals.hypoRevealed ? 'Hidden' : 'Revealed';
+  globals.elements.toggleRevealedButton!.setMiddleText(text);
+  globals.layers.UI.batchDraw();
+});
+
 commands.set('hypoStart', () => {
   if (!globals.amSharedReplayLeader) {
     hypothetical.start();
@@ -200,7 +211,7 @@ interface InitData {
   // Hypothetical settings
   hypothetical: boolean;
   hypoActions: string[];
-  hypoHidden: boolean;
+  hypoRevealed: boolean;
 
   // Other features
   paused: boolean;
@@ -247,7 +258,7 @@ commands.set('init', (data: InitData) => {
   for (let i = 0; i < globals.hypoActions.length; i++) {
     globals.hypoActions[i] = JSON.parse(globals.hypoActions[i]);
   }
-  globals.hypoHidden = data.hypoHidden;
+  globals.hypoRevealed = data.hypoRevealed;
 
   // Other features
   globals.paused = data.paused;

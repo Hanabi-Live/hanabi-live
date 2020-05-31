@@ -3,6 +3,7 @@ import Konva from 'konva';
 import Suit from '../../Suit';
 import Arrow from './Arrow';
 import Button from './Button';
+import Button2 from './Button2';
 import ButtonGroup from './ButtonGroup';
 import CardLayout from './CardLayout';
 import ClickArea from './ClickArea';
@@ -98,6 +99,7 @@ export default class Elements {
   enterHypoButton: Button | null = null;
   hypoCircle: Konva.Group | null = null;
   hypoBackButton: Button | null = null;
+  toggleRevealedButton: Button2 | null = null;
 
   // The pause screen
   pauseArea: Konva.Group | null = null;

@@ -14,6 +14,7 @@ import Arrow from './Arrow';
 import * as arrows from './arrows';
 import backToLobby from './backToLobby';
 import Button from './Button';
+import Button2 from './Button2';
 import ButtonGroup from './ButtonGroup';
 import CardLayout from './CardLayout';
 import ClickArea from './ClickArea';
@@ -1786,11 +1787,11 @@ const drawHypotheticalArea = () => {
   // The "Back 1 Turn" button
   const hypoBackButtonValues = {
     x: spectatorsLabelValues.x + 0.04,
-    y: bottomLeftButtonValues.y + bottomLeftButtonValues.h! + 0.01, // Same as the "Chat" button
+    y: bottomLeftButtonValues.y,
   };
   if (globals.lobby.settings.keldonMode) {
     hypoBackButtonValues.x = clueAreaValues.x + 0.38;
-    hypoBackButtonValues.y = clueAreaValues.y + 0.08;
+    hypoBackButtonValues.y = clueAreaValues.y + 0.035;
   }
   globals.elements.hypoBackButton = new Button({
     x: hypoBackButtonValues.x * winW,
@@ -1803,17 +1804,25 @@ const drawHypotheticalArea = () => {
   globals.elements.hypoBackButton.on('click tap', hypothetical.sendBackOneTurn);
   globals.layers.UI.add(globals.elements.hypoBackButton as any);
 
-  // The "Toggle Unknown" button
-  globals.elements.hypoBackButton = new Button({
+  // The "Toggle Hidden" button
+  const toggleHiddenButtonValues = {
+    y: bottomLeftButtonValues.y + bottomLeftButtonValues.h! + 0.01, // Same as the "Chat" button
+  };
+  if (globals.lobby.settings.keldonMode) {
+    toggleHiddenButtonValues.y = clueAreaValues.y + 0.1;
+  }
+  globals.elements.toggleRevealedButton = new Button2({
     x: hypoBackButtonValues.x * winW,
-    y: (hypoBackButtonValues.y + 0.1) * winH,
+    y: toggleHiddenButtonValues.y * winH,
     width: 0.07 * winW,
-    height: 0.0563 * winH,
-    text: 'Toggle Unknown',
+    height: 0.1226 * winH,
+    text: 'Toggle',
+    text2: globals.hypoRevealed ? 'Hidden' : 'Revealed',
+    text3: 'Cards',
     visible: false,
   });
-  globals.elements.hypoBackButton.on('click tap', hypothetical.toggleUnknown);
-  globals.layers.UI.add(globals.elements.hypoBackButton as any);
+  globals.elements.toggleRevealedButton.on('click tap', hypothetical.toggleRevealed);
+  globals.layers.UI.add(globals.elements.toggleRevealedButton as any);
 };
 
 const drawPauseArea = () => {

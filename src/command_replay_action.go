@@ -14,14 +14,14 @@ var (
 
 func replayActionsFunctionsInit() {
 	replayActionFunctions = map[int]func(*Session, *CommandData, *Table){
-		ReplayActionTypeTurn:         commandReplayActionTurn,
-		ReplayActionTypeArrow:        commandReplayActionArrow,
-		ReplayActionTypeSound:        commandReplayActionSound,
-		ReplayActionTypeHypoStart:    commandReplayActionHypoStart,
-		ReplayActionTypeHypoEnd:      commandReplayActionHypoEnd,
-		ReplayActionTypeHypoAction:   commandReplayActionHypoAction,
-		ReplayActionTypeHypoBack:     commandReplayActionHypoBack,
-		ReplayActionTypeToggleHidden: commandReplayActionToggleHidden,
+		ReplayActionTypeTurn:           commandReplayActionTurn,
+		ReplayActionTypeArrow:          commandReplayActionArrow,
+		ReplayActionTypeSound:          commandReplayActionSound,
+		ReplayActionTypeHypoStart:      commandReplayActionHypoStart,
+		ReplayActionTypeHypoEnd:        commandReplayActionHypoEnd,
+		ReplayActionTypeHypoAction:     commandReplayActionHypoAction,
+		ReplayActionTypeHypoBack:       commandReplayActionHypoBack,
+		ReplayActionTypeToggleRevealed: commandReplayActionToggleRevealed,
 	}
 }
 
@@ -229,5 +229,17 @@ func commandReplayActionHypoBack(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionToggleHidden(s *Session, d *CommandData, t *Table) {
+func commandReplayActionToggleRevealed(s *Session, d *CommandData, t *Table) {
+	// Local variables
+	g := t.Game
+
+	g.HypoRevealed = !g.HypoRevealed
+	for _, sp := range t.Spectators {
+		type ReplayHypoRevealedMessage struct {
+			HypoRevealed bool `json:"hypoRevealed"`
+		}
+		sp.Session.Emit("hypoRevealed", &ReplayHypoRevealedMessage{
+			HypoRevealed: g.HypoRevealed,
+		})
+	}
 }

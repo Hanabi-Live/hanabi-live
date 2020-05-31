@@ -57,6 +57,7 @@ export const show = () => {
     globals.elements.restartButton!.visible(false);
     globals.elements.endHypotheticalButton!.visible(true);
     globals.elements.hypoBackButton!.visible(globals.hypoActions.length > 0);
+    globals.elements.toggleRevealedButton!.visible(true);
   } else {
     globals.elements.hypoCircle!.visible(true);
   }
@@ -104,6 +105,7 @@ export const end = () => {
     globals.elements.restartButton!.show();
     globals.elements.endHypotheticalButton!.hide();
     globals.elements.hypoBackButton!.hide();
+    globals.elements.toggleRevealedButton!.hide();
 
     // Furthermore, disable dragging and get rid of the clue UI
     disableDragOnAllHands();
@@ -258,8 +260,8 @@ export const send = (hypoAction: Action) => {
       sendHypoAction({
         type: 'draw',
         order: nextCardOrder,
-        rank: nextCard.rank,
-        suit: nextCard.suit,
+        rank: globals.hypoRevealed ? nextCard.rank : -1,
+        suit: globals.hypoRevealed ? nextCard.suit : -1,
         who: globals.currentPlayerIndex,
       });
     }
@@ -382,10 +384,9 @@ const cycleHand = () => {
   });
 };
 
-export const toggleUnknown = () => {
+export const toggleRevealed = () => {
   globals.lobby.conn!.send('replayAction', {
     tableID: globals.lobby.tableID,
-    type: REPLAY_ACTION_TYPE.HYPO_ACTION,
-    actionJSON: JSON.stringify(hypoAction),
+    type: REPLAY_ACTION_TYPE.HYPO_TOGGLE_REVEALED,
   });
 };

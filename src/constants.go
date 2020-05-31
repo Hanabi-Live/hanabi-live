@@ -66,7 +66,7 @@ const (
 	// Go back one turn in the hypothetical
 	ReplayActionTypeHypoBack
 	// Toggle whether or not drawn cards should be hidden (true by default)
-	ReplayActionTypeToggleHidden
+	ReplayActionTypeToggleRevealed
 )
 
 var (

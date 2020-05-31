@@ -45,7 +45,7 @@ export const REPLAY_ACTION_TYPE = {
   HYPO_END: 4,
   HYPO_ACTION: 5,
   HYPO_BACK: 6,
-  HYPO_TOGGLE_HIDDEN: 7,
+  HYPO_TOGGLE_REVEALED: 7,
 };
 export const REPLAY_ARROW_ORDER = {
   DECK: -1,

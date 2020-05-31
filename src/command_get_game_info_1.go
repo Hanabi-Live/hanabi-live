@@ -125,7 +125,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		// Hypothetical settings
 		Hypothetical bool     `json:"hypothetical"`
 		HypoActions  []string `json:"hypoActions"`
-		HypoHidden   bool     `json:"hypoHidden"`
+		HypoRevealed bool     `json:"hypoRevealed"`
 
 		// Other features
 		Paused      bool   `json:"paused"`
@@ -161,7 +161,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		// Hypothetical settings
 		Hypothetical: g.Hypothetical,
 		HypoActions:  g.HypoActions,
-		HypoHidden:   g.HypoHidden,
+		HypoRevealed: g.HypoRevealed,
 
 		// Other features
 		Paused:      g.Paused,
