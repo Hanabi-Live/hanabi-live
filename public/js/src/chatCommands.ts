@@ -142,11 +142,25 @@ chatCommands.set('tag', (_room: string, args: string[]) => {
   });
 });
 
+// /tagdelete [tag]
+chatCommands.set('tagdelete', (_room: string, args: string[]) => {
+  if (globals.tableID === -1) {
+    modals.warningShow('You are not currently at a table, so you cannot use that command.');
+    return;
+  }
+
+  const tag = args.join(' ');
+  globals.conn!.send('tagDelete', {
+    tableID: globals.tableID,
+    msg: tag,
+  });
+});
+
 // /tagsearch
 chatCommands.set('tagsearch', (room: string, args: string[]) => {
   const tag = args.join(' ');
 
-  globals.conn!.send('tagsearch', {
+  globals.conn!.send('tagSearch', {
     msg: tag,
     room,
   });

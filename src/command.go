@@ -115,12 +115,13 @@ func commandInit() {
 	commandMap["historyGet"] = commandHistoryGet
 	commandMap["historyFriendsGet"] = commandHistoryFriendsGet
 	commandMap["replayCreate"] = commandReplayCreate
-	commandMap["tagsearch"] = commandTagSearch
+	commandMap["tagSearch"] = commandTagSearch
 
 	// Game and replay commands
 	commandMap["getGameInfo1"] = commandGetGameInfo1
 	commandMap["getGameInfo2"] = commandGetGameInfo2
 	commandMap["tag"] = commandTag
+	commandMap["tagDelete"] = commandTagDelete
 
 	// Game commands
 	commandMap["action"] = commandAction
