@@ -67,6 +67,11 @@ echo "$VERSION" > "$DIR/public/js/bundles/version.json"
 echo $(git rev-parse HEAD) > "$DIR/public/js/bundles/git-revision"
 rm -f "$COMPILING_FILE"
 
+# Clean up old files in the "bundles" directory
+cd "$DIR/public/js/bundles"
+ls | grep -v "main.$VERSION" | grep -v version.json | grep -v git-revision | xargs rm
+cd "$DIR/public/js"
+
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
 # to end-users
 echo "Packing the CSS using Grunt..."
