@@ -44,6 +44,7 @@ export default class HanabiCard extends Konva.Group {
   noteChopMoved: boolean = false;
   noteFinessed: boolean = false;
   noteBlank: boolean = false;
+  noteUnclued: boolean = false;
 
   // The following are the variables that are refreshed
   possibleSuits: Suit[] = [];
@@ -149,7 +150,7 @@ export default class HanabiCard extends Konva.Group {
     // Some variants disable listening on cards
     this.listening(true);
 
-    this.setClued(false);
+    this.setClued();
     if (!globals.replay && !globals.spectating) {
       // If it has a "chop move" note on it, we want to keep the chop move border turned on
       if (this.noteChopMoved) {
@@ -189,12 +190,20 @@ export default class HanabiCard extends Konva.Group {
     this.setBareImage();
   }
 
-  setClued(clued: boolean) {
-    this.chopMoveBorder!.hide();
-    this.finesseBorder!.hide();
-    this.offsetY(0.5 * CARD_H);
+  setClued() {
+    const isClued = (
+      this.numPositiveClues > 0
+      && !this.isPlayed
+      && !this.isDiscarded
+      && !this.noteUnclued
+    );
+
+    // When cards are clued,
+    // they should raise up a little bit to make it clear that they are touched
+    // However, don't do this for other people's hands in Keldon mode
+    this.offsetY(0.5 * CARD_H); // The default offset
     if (
-      clued
+      isClued
       && (
         !globals.lobby.settings.keldonMode
         || (this.holder === globals.playerUs && !globals.replay)
@@ -202,7 +211,12 @@ export default class HanabiCard extends Konva.Group {
     ) {
       this.offsetY(0.6 * CARD_H);
     }
-    this.cluedBorder!.visible(clued);
+
+    this.cluedBorder!.visible(isClued);
+
+    // Remove all special borders when a card is clued, played, discarded
+    this.chopMoveBorder!.hide();
+    this.finesseBorder!.hide();
   }
 
   isClued() {

@@ -153,6 +153,11 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
     note === 'blank'
     || fullNote.includes('[blank]')
   );
+  card.noteUnclued = (
+    note === 'unclued'
+    || fullNote.includes('[unclued]')
+  );
+  card.setClued();
 
   // Second, check the contents of the note right of the right-most pipe
   card.noteSuit = null;

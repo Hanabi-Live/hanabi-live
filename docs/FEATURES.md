@@ -170,11 +170,12 @@
 * A note of "f" can be written to indicate that the card is "Finessed". This will draw a special border around the card.
 * A note of "cm" can be written to indicate that the card is "Chop Moved". This will draw a special border around the card.
 
-#### Special Note Images
+#### Other Special Notes
 
 * A note of "kt", "trash", "stale", or "bad" can be written to indicate that the card is "Trash". This will draw a special image on the card.
 * A note of "fixme" can be be written to indicate that the card needs to be given a "fix clue" at some point in the future. This will draw a special image on the card.
-* A note of "blank" can be written on a card to completely blank it out.
+* A note of "blank" can be written on a card to make it look like the deck back.
+* A note of "unclued" can be written to manually remove the border that normally appears around a card when it is touched by one or more clues.
 
 #### Note Shortcuts
 
