@@ -238,6 +238,9 @@ export const send = (hypoAction: Action) => {
       || type === 'discard'
     ) {
       globals.clues += 1;
+      if (globals.variant.name.startsWith('Clue Starved')) {
+        globals.clues -= 0.5;
+      }
     }
 
     // Text
@@ -265,7 +268,7 @@ export const send = (hypoAction: Action) => {
   // Status
   sendHypoAction({
     type: 'status',
-    clues: globals.clues,
+    clues: globals.variant.name.startsWith('Clue Starved') ? globals.clues * 2 : globals.clues,
     doubleDiscard: false,
     score: globals.score,
     maxScore: globals.maxScore,
