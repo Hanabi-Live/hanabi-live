@@ -169,7 +169,13 @@ export default class Deck extends Konva.Group {
       const clockString = misc.millisecondsToClockString(elapsedMilliseconds);
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-stopwatch"></i></span>';
       content += `&nbsp; Game Length: &nbsp;<strong>${clockString}</strong></li>`;
+    }
 
+    const currentTable = globals.lobby.tableMap.get(globals.lobby.tableID);
+    if (typeof currentTable === 'undefined') {
+      throw new Error('Failed to find the current table in the "initTooltip()" function.');
+    }
+    if (globals.replay || currentTable.name.startsWith('!seed ')) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-seedling"></i></span>';
       content += `&nbsp; Seed: &nbsp;<strong>${globals.seed}</strong></li>`;
     }
