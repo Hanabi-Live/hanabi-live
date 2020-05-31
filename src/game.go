@@ -79,6 +79,7 @@ type Game struct {
 	// Hypothetical-related fields
 	Hypothetical bool // Whether or not we are in a post-game hypothetical
 	HypoActions  []string
+	HypoHidden   bool // Whether or not drawn cards should be hidden (true by default)
 
 	// Keep track of user-defined tags; they will be written to the database upon game completion
 	Tags map[string]struct{}
@@ -102,6 +103,7 @@ func NewGame(t *Table) *Game {
 		EndTurn:           -1,
 
 		HypoActions: make([]string, 0),
+		HypoHidden:  true,
 		Tags:        make(map[string]struct{}),
 	}
 

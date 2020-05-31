@@ -158,6 +158,9 @@ func main() {
 	// Initialize the action functions command map (in "command_action.go")
 	actionsFunctionsInit()
 
+	// Initialize the replay action functions command map (in "command_replay_action.go")
+	replayActionsFunctionsInit()
+
 	// Initialize "Detrimental Character Assignments" (in "characters.go")
 	characterInit()
 

@@ -8,8 +8,22 @@ import (
 )
 
 var (
-	actionTypeTurnRegExp = regexp.MustCompile(`"type":\s*"turn"`)
+	replayActionFunctions map[int]func(*Session, *CommandData, *Table)
+	actionTypeTurnRegExp  = regexp.MustCompile(`"type":\s*"turn"`)
 )
+
+func replayActionsFunctionsInit() {
+	replayActionFunctions = map[int]func(*Session, *CommandData, *Table){
+		ReplayActionTypeTurn:         commandReplayActionTurn,
+		ReplayActionTypeArrow:        commandReplayActionArrow,
+		ReplayActionTypeSound:        commandReplayActionSound,
+		ReplayActionTypeHypoStart:    commandReplayActionHypoStart,
+		ReplayActionTypeHypoEnd:      commandReplayActionHypoEnd,
+		ReplayActionTypeHypoAction:   commandReplayActionHypoAction,
+		ReplayActionTypeHypoBack:     commandReplayActionHypoBack,
+		ReplayActionTypeToggleHidden: commandReplayActionToggleHidden,
+	}
+}
 
 // commandReplayAction is sent when the user performs an action in a shared replay
 //
@@ -34,7 +48,6 @@ func commandReplayAction(s *Session, d *CommandData) {
 	} else {
 		t = v
 	}
-	g := t.Game
 
 	// Validate that this is a shared replay
 	if !t.Replay || !t.Visible {
@@ -44,8 +57,8 @@ func commandReplayAction(s *Session, d *CommandData) {
 	}
 
 	// Validate that this person is spectating the shared replay
-	i := t.GetSpectatorIndexFromID(s.UserID())
-	if i < -1 {
+	j := t.GetSpectatorIndexFromID(s.UserID())
+	if j < -1 {
 		s.Warning("You are not in shared replay " + strconv.Itoa(tableID) + ".")
 	}
 
@@ -62,124 +75,159 @@ func commandReplayAction(s *Session, d *CommandData) {
 	// Start the idle timeout
 	go t.CheckIdle()
 
-	// Send the message to everyone else
-	if d.Type == ReplayActionTypeTurn {
-		// A turn change
-		g.Turn = d.Turn
-		for _, sp := range t.Spectators {
-			type ReplayTurnMessage struct {
-				Turn int `json:"turn"`
-			}
-			sp.Session.Emit("replayTurn", &ReplayTurnMessage{
-				Turn: d.Turn,
-			})
-		}
-
-		// Update the progress
-		progressFloat := float64(g.Turn) / float64(g.EndTurn) * 100 // In percent
-		progress := int(math.Round(progressFloat))
-		if progress > 100 {
-			// It is possible to go past the last turn,
-			// since an extra turn is appended to the end of every game with timing information
-			progress = 100
-		} else if progress < 0 {
-			// This can happen if the maximum turn is 0
-			progress = 0
-		}
-		oldProgress := t.Progress
-		if progress != oldProgress {
-			t.Progress = progress
-			t.NotifyProgress()
-		}
-	} else if d.Type == ReplayActionTypeArrow {
-		// A card arrow indication
-		for _, sp := range t.Spectators {
-			type ReplayIndicatorMessage struct {
-				Order int `json:"order"`
-			}
-			sp.Session.Emit("replayIndicator", &ReplayIndicatorMessage{
-				Order: d.Order,
-			})
-		}
-	} else if d.Type == ReplayActionTypeSound {
-		// A sound effect
-		for _, sp := range t.Spectators {
-			type ReplaySoundMessage struct {
-				Sound string `json:"sound"`
-			}
-			sp.Session.Emit("replaySound", &ReplaySoundMessage{
-				Sound: d.Sound,
-			})
-		}
-	} else if d.Type == ReplayActionTypeHypoStart {
-		if g.Hypothetical {
-			s.Warning("You are already in a hypothetical, so you cannot start a new one.")
-			return
-		}
-
-		// Start a hypothetical line
-		g.Hypothetical = true
-		for _, sp := range t.Spectators {
-			sp.Session.Emit("hypoStart", nil)
-		}
-	} else if d.Type == ReplayActionTypeHypoEnd {
-		if !g.Hypothetical {
-			s.Warning("You are not in a hypothetical, so you cannot end one.")
-			return
-		}
-
-		// End a hypothetical line
-		g.Hypothetical = false
-		g.HypoActions = make([]string, 0)
-		for _, sp := range t.Spectators {
-			sp.Session.Emit("hypoEnd", nil)
-		}
-	} else if d.Type == ReplayActionTypeHypoAction {
-		// Validate that the submitted action is not empty
-		if d.ActionJSON == "" {
-			s.Warning("The action JSON cannot be blank.")
-			return
-		}
-
-		// Test to see if it is valid JSON
-		var js json.RawMessage
-		if json.Unmarshal([]byte(d.ActionJSON), &js) != nil {
-			s.Warning("That is not a valid JSON object.")
-			return
-		}
-
-		// Perform a move in the hypothetical
-		g.HypoActions = append(g.HypoActions, d.ActionJSON)
-		for _, sp := range t.Spectators {
-			sp.Session.Emit("hypoAction", d.ActionJSON)
-		}
-	} else if d.Type == ReplayActionTypeHypoBack {
-		// The replay leader wants to go back one turn in the hypothetical
-		if len(g.HypoActions) == 0 {
-			return
-		}
-
-		// Starting from the end,
-		// remove hypothetical actions until we get to the 2nd to last "turn" action
-		for {
-			// Delete the final element in the slice
-			g.HypoActions = g.HypoActions[:len(g.HypoActions)-1]
-			if len(g.HypoActions) == 0 {
-				break
-			}
-
-			lastActionString := g.HypoActions[len(g.HypoActions)-1]
-			match := actionTypeTurnRegExp.FindStringSubmatch(lastActionString)
-			if match != nil {
-				break
-			}
-		}
-
-		for _, sp := range t.Spectators {
-			sp.Session.Emit("hypoBack", nil)
-		}
+	// Do different tasks depending on the action
+	if replayActionFunction, ok := replayActionFunctions[d.Type]; ok {
+		replayActionFunction(s, d, t)
 	} else {
-		s.Error("That is an invalid type of shared replay action.")
+		s.Warning("That is not a valid replay action type.")
 		return
 	}
+}
+
+func commandReplayActionTurn(s *Session, d *CommandData, t *Table) {
+	// Local variables
+	g := t.Game
+
+	// Change the turn
+	g.Turn = d.Turn
+	for _, sp := range t.Spectators {
+		type ReplayTurnMessage struct {
+			Turn int `json:"turn"`
+		}
+		sp.Session.Emit("replayTurn", &ReplayTurnMessage{
+			Turn: d.Turn,
+		})
+	}
+
+	// Update the progress
+	progressFloat := float64(g.Turn) / float64(g.EndTurn) * 100 // In percent
+	progress := int(math.Round(progressFloat))
+	if progress > 100 {
+		// It is possible to go past the last turn,
+		// since an extra turn is appended to the end of every game with timing information
+		progress = 100
+	} else if progress < 0 {
+		// This can happen if the maximum turn is 0
+		progress = 0
+	}
+	oldProgress := t.Progress
+	if progress != oldProgress {
+		t.Progress = progress
+		t.NotifyProgress()
+	}
+}
+
+func commandReplayActionArrow(s *Session, d *CommandData, t *Table) {
+	// Display an arrow to indicate a specific card that the shared replay leader wants to draw
+	// attention to
+	for _, sp := range t.Spectators {
+		type ReplayIndicatorMessage struct {
+			Order int `json:"order"`
+		}
+		sp.Session.Emit("replayIndicator", &ReplayIndicatorMessage{
+			Order: d.Order,
+		})
+	}
+}
+
+func commandReplayActionSound(s *Session, d *CommandData, t *Table) {
+	// Play a sound effect
+	for _, sp := range t.Spectators {
+		type ReplaySoundMessage struct {
+			Sound string `json:"sound"`
+		}
+		sp.Session.Emit("replaySound", &ReplaySoundMessage{
+			Sound: d.Sound,
+		})
+	}
+}
+
+func commandReplayActionHypoStart(s *Session, d *CommandData, t *Table) {
+	// Local variables
+	g := t.Game
+
+	if g.Hypothetical {
+		s.Warning("You are already in a hypothetical, so you cannot start a new one.")
+		return
+	}
+
+	// Start a hypothetical line
+	g.Hypothetical = true
+	for _, sp := range t.Spectators {
+		sp.Session.Emit("hypoStart", nil)
+	}
+}
+
+func commandReplayActionHypoEnd(s *Session, d *CommandData, t *Table) {
+	// Local variables
+	g := t.Game
+
+	if !g.Hypothetical {
+		s.Warning("You are not in a hypothetical, so you cannot end one.")
+		return
+	}
+
+	// End a hypothetical line
+	g.Hypothetical = false
+	g.HypoActions = make([]string, 0)
+	for _, sp := range t.Spectators {
+		sp.Session.Emit("hypoEnd", nil)
+	}
+}
+
+func commandReplayActionHypoAction(s *Session, d *CommandData, t *Table) {
+	// Local variables
+	g := t.Game
+
+	// Validate that the submitted action is not empty
+	if d.ActionJSON == "" {
+		s.Warning("The action JSON cannot be blank.")
+		return
+	}
+
+	// Test to see if it is valid JSON
+	var js json.RawMessage
+	if json.Unmarshal([]byte(d.ActionJSON), &js) != nil {
+		s.Warning("That is not a valid JSON object.")
+		return
+	}
+
+	// Perform a move in the hypothetical
+	g.HypoActions = append(g.HypoActions, d.ActionJSON)
+	for _, sp := range t.Spectators {
+		sp.Session.Emit("hypoAction", d.ActionJSON)
+	}
+}
+
+func commandReplayActionHypoBack(s *Session, d *CommandData, t *Table) {
+	// Local variables
+	g := t.Game
+
+	// The replay leader wants to go back one turn in the hypothetical
+	if len(g.HypoActions) == 0 {
+		return
+	}
+
+	// Starting from the end,
+	// remove hypothetical actions until we get to the 2nd to last "turn" action
+	for {
+		// Delete the final element in the slice
+		g.HypoActions = g.HypoActions[:len(g.HypoActions)-1]
+		if len(g.HypoActions) == 0 {
+			break
+		}
+
+		lastActionString := g.HypoActions[len(g.HypoActions)-1]
+		match := actionTypeTurnRegExp.FindStringSubmatch(lastActionString)
+		if match != nil {
+			break
+		}
+	}
+
+	for _, sp := range t.Spectators {
+		sp.Session.Emit("hypoBack", nil)
+	}
+}
+
+func commandReplayActionToggleHidden(s *Session, d *CommandData, t *Table) {
 }

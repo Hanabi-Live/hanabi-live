@@ -1802,6 +1802,18 @@ const drawHypotheticalArea = () => {
   });
   globals.elements.hypoBackButton.on('click tap', hypothetical.sendBackOneTurn);
   globals.layers.UI.add(globals.elements.hypoBackButton as any);
+
+  // The "Toggle Unknown" button
+  globals.elements.hypoBackButton = new Button({
+    x: hypoBackButtonValues.x * winW,
+    y: (hypoBackButtonValues.y + 0.1) * winH,
+    width: 0.07 * winW,
+    height: 0.0563 * winH,
+    text: 'Toggle Unknown',
+    visible: false,
+  });
+  globals.elements.hypoBackButton.on('click tap', hypothetical.toggleUnknown);
+  globals.layers.UI.add(globals.elements.hypoBackButton as any);
 };
 
 const drawPauseArea = () => {

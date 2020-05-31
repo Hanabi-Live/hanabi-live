@@ -35,8 +35,8 @@ func commandTableRestart(s *Session, d *CommandData) {
 	}
 
 	// Validate that this person is spectating the shared replay
-	i := t.GetSpectatorIndexFromID(s.UserID())
-	if i < -1 {
+	j := t.GetSpectatorIndexFromID(s.UserID())
+	if j < -1 {
 		s.Warning("You are not in shared replay " + strconv.Itoa(tableID) + ".")
 	}
 

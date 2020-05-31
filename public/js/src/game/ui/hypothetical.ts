@@ -381,3 +381,11 @@ const cycleHand = () => {
     handOrder: cardOrders,
   });
 };
+
+export const toggleUnknown = () => {
+  globals.lobby.conn!.send('replayAction', {
+    tableID: globals.lobby.tableID,
+    type: REPLAY_ACTION_TYPE.HYPO_ACTION,
+    actionJSON: JSON.stringify(hypoAction),
+  });
+};

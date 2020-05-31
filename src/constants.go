@@ -51,13 +51,22 @@ const (
 )
 
 const (
-	ReplayActionTypeTurn       = iota // Changing the shared turn
-	ReplayActionTypeArrow             // Highlighting a card with an indicator arrow
-	ReplayActionTypeSound             // Play one of the arbitrary sound effects included on the server
-	ReplayActionTypeHypoStart         // Start a hypothetical line
-	ReplayActionTypeHypoEnd           // End a hypothetical line
-	ReplayActionTypeHypoAction        // Perform a move in the hypothetical
-	ReplayActionTypeHypoBack          // Go back one turn in the hypothetical
+	// Changing the shared turn
+	ReplayActionTypeTurn = iota
+	// Highlighting a card with an indicator arrow
+	ReplayActionTypeArrow
+	// Play one of the arbitrary sound effects included on the server
+	ReplayActionTypeSound
+	// Start a hypothetical line
+	ReplayActionTypeHypoStart
+	// End a hypothetical line
+	ReplayActionTypeHypoEnd
+	// Perform a move in the hypothetical
+	ReplayActionTypeHypoAction
+	// Go back one turn in the hypothetical
+	ReplayActionTypeHypoBack
+	// Toggle whether or not drawn cards should be hidden (true by default)
+	ReplayActionTypeToggleHidden
 )
 
 var (

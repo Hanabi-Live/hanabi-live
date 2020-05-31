@@ -200,6 +200,7 @@ interface InitData {
   // Hypothetical settings
   hypothetical: boolean;
   hypoActions: string[];
+  hypoHidden: boolean;
 
   // Other features
   paused: boolean;
@@ -246,6 +247,7 @@ commands.set('init', (data: InitData) => {
   for (let i = 0; i < globals.hypoActions.length; i++) {
     globals.hypoActions[i] = JSON.parse(globals.hypoActions[i]);
   }
+  globals.hypoHidden = data.hypoHidden;
 
   // Other features
   globals.paused = data.paused;
