@@ -69,10 +69,14 @@ rm -f "$COMPILING_FILE"
 
 # Clean up old files in the "bundles" directory
 cd "$DIR/public/js/bundles"
+echo GETTING HERE 1
 OLD_BUNDLES=$(ls | grep -v "main.$VERSION" | grep -v version.json | grep -v git-revision)
+echo GETTING HERE 2
 if [[ $OLD_BUNDLES ]]; then
+  echo GETTING HERE 3
   echo $OLD_BUNDLES | xargs rm
 fi
+echo GETTING HERE 4
 cd "$DIR/public/js"
 
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
