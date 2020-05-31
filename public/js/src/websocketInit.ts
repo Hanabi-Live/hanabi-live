@@ -153,6 +153,43 @@ const initCommands = () => {
         });
       }, 10);
     }
+
+    // Automatically create a table if we are using a "/create-table" URL
+    if (
+      window.location.pathname === '/create-table'
+      || window.location.pathname === '/dev/create-table'
+    ) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const name = urlParams.get('name') || globals.randomName;
+      const variant = urlParams.get('variant') || 'No Variant';
+      const timed = urlParams.get('timed') === 'true';
+      const timeBaseString = urlParams.get('timeBase') || '120';
+      const timeBase = parseInt(timeBaseString, 10);
+      const timePerTurnString = urlParams.get('timePerTurn') || '20';
+      const timePerTurn = parseInt(timePerTurnString, 10);
+      const speedrun = urlParams.get('speedrun') === 'true';
+      const cardCycle = urlParams.get('cardCycle') === 'true';
+      const deckPlays = urlParams.get('deckPlays') === 'true';
+      const emptyClues = urlParams.get('emptyClues') === 'true';
+      const characterAssignments = urlParams.get('characterAssignments') === 'true';
+      const password = urlParams.get('password') || '';
+
+      setTimeout(() => {
+        globals.conn!.send('tableCreate', {
+          name,
+          variant,
+          timed,
+          timeBase,
+          timePerTurn,
+          speedrun,
+          cardCycle,
+          deckPlays,
+          emptyClues,
+          characterAssignments,
+          password,
+        });
+      }, 10);
+    }
   });
 
   // Received by the client when a new chat message arrives

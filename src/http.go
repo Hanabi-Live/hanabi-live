@@ -138,11 +138,12 @@ func httpInit() {
 	httpRouter.GET("/shared-replay", httpMain)
 	httpRouter.GET("/shared-replay/:gameID", httpMain)
 	httpRouter.GET("/shared-replay/:gameID/:turn", httpMain)
+	httpRouter.GET("/create-table", httpMain)
 	httpRouter.GET("/test", httpMain)
 	httpRouter.GET("/test/:testNum", httpMain)
 
 	// Path handlers (for development)
-	// ("/dev" is the same as "/" but uses unbundled JavaScript/CSS)
+	// ("/dev" is the same as "/" but uses webpack-dev-server to serve JavaScript)
 	httpRouter.GET("/dev", httpMain)
 	httpRouter.GET("/dev/replay", httpMain)
 	httpRouter.GET("/dev/replay/:gameID", httpMain)
@@ -150,6 +151,7 @@ func httpInit() {
 	httpRouter.GET("/dev/shared-replay", httpMain)
 	httpRouter.GET("/dev/shared-replay/:gameID", httpMain)
 	httpRouter.GET("/dev/shared-replay/:gameID/:turn", httpMain)
+	httpRouter.GET("/dev/create-table", httpMain)
 	httpRouter.GET("/dev/test", httpMain)
 	httpRouter.GET("/dev/test/:testNum", httpMain)
 	httpRouter.GET("/dev2", httpMain) // Used for testing the new Phaser client
