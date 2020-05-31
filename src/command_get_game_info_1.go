@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -108,6 +109,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		SharedReplay     bool      `json:"sharedReplay"`
 		DatabaseID       int       `json:"databaseID"`
 		Seed             string    `json:"seed"`
+		Seeded           bool      `json:"seeded"`
 		DatetimeStarted  time.Time `json:"datetimeStarted"`
 		DatetimeFinished time.Time `json:"datetimeFinished"`
 
@@ -144,6 +146,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		SharedReplay:     t.Replay && t.Visible,
 		DatabaseID:       g.ID,
 		Seed:             g.Seed,
+		Seeded:           strings.HasPrefix(t.Name, "!seed "),
 		DatetimeStarted:  g.DatetimeStarted,
 		DatetimeFinished: g.DatetimeFinished,
 

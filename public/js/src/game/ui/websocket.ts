@@ -194,6 +194,7 @@ interface InitData {
   sharedReplay: boolean;
   databaseID: number;
   seed: string;
+  seeded: boolean;
   datetimeStarted: Date;
   datetimeFinished: Date;
 
@@ -238,6 +239,7 @@ commands.set('init', (data: InitData) => {
   globals.sharedReplay = data.sharedReplay;
   globals.databaseID = data.databaseID; // 0 if this is an ongoing game
   globals.seed = data.seed;
+  globals.seeded = data.seeded; // If playing a table started with the "!seed" prefix
   globals.datetimeStarted = data.datetimeStarted;
   globals.datetimeFinished = data.datetimeFinished;
 

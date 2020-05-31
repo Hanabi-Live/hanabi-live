@@ -33,6 +33,7 @@ export class Globals {
   sharedReplay: boolean = false;
   databaseID: number = 0;
   seed: string = '';
+  seeded: boolean = false;
   datetimeStarted: Date = new Date();
   datetimeFinished: Date = new Date();
 
