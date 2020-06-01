@@ -159,24 +159,15 @@ func (g *Game) WriteDatabase() error {
 	t := g.Table
 
 	row := GameRow{
-		Name:                  t.Name,
-		NumPlayers:            len(g.Players),
-		Variant:               variants[g.Options.Variant].ID,
-		Timed:                 g.Options.Timed,
-		TimeBase:              g.Options.TimeBase,
-		TimePerTurn:           g.Options.TimePerTurn,
-		Speedrun:              g.Options.Speedrun,
-		CardCycle:             g.Options.CardCycle,
-		DeckPlays:             g.Options.DeckPlays,
-		EmptyClues:            g.Options.EmptyClues,
-		AllOrNothing:          g.Options.AllOrNothing,
-		DetrimentalCharacters: g.Options.DetrimentalCharacters,
-		Seed:                  g.Seed,
-		Score:                 g.Score,
-		NumTurns:              g.Turn,
-		EndCondition:          g.EndCondition,
-		DatetimeStarted:       g.DatetimeStarted,
-		DatetimeFinished:      g.DatetimeFinished,
+		Name:             t.Name,
+		NumPlayers:       len(g.Players),
+		Options:          g.Options,
+		Seed:             g.Seed,
+		Score:            g.Score,
+		NumTurns:         g.Turn,
+		EndCondition:     g.EndCondition,
+		DatetimeStarted:  g.DatetimeStarted,
+		DatetimeFinished: g.DatetimeFinished,
 	}
 	if v, err := models.Games.Insert(row); err != nil {
 		logger.Error("Failed to insert the game row:", err)

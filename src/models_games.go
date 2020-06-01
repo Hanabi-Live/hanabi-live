@@ -13,28 +13,18 @@ import (
 
 type Games struct{}
 
-// GameRow mirrors the "games" table row
+// GameRow roughly mirrors the "games" table row
 // (it contains a subset of the information in the Game struct)
 type GameRow struct {
-	Name       string
-	NumPlayers int
-	// This corresponds to the numerial ID of the variant listed in the "variants.go" file
-	Variant               int
-	Timed                 bool
-	TimeBase              int
-	TimePerTurn           int
-	Speedrun              bool
-	CardCycle             bool
-	DeckPlays             bool
-	EmptyClues            bool
-	AllOrNothing          bool
-	DetrimentalCharacters bool
-	Seed                  string
-	Score                 int
-	NumTurns              int
-	EndCondition          int
-	DatetimeStarted       time.Time
-	DatetimeFinished      time.Time
+	Name             string
+	NumPlayers       int
+	Options          *Options
+	Seed             string
+	Score            int
+	NumTurns         int
+	EndCondition     int
+	DatetimeStarted  time.Time
+	DatetimeFinished time.Time
 }
 
 func (*Games) Insert(gameRow GameRow) (int, error) {
@@ -87,16 +77,18 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 		`,
 		gameRow.Name,
 		gameRow.NumPlayers,
-		gameRow.Variant,
-		gameRow.Timed,
-		gameRow.TimeBase,
-		gameRow.TimePerTurn,
-		gameRow.Speedrun,
-		gameRow.CardCycle,
-		gameRow.DeckPlays,
-		gameRow.EmptyClues,
-		gameRow.AllOrNothing,
-		gameRow.DetrimentalCharacters,
+		// In the Options struct, the variant is stored as a string,
+		// but it needs to be stored in the database as an integer
+		variants[gameRow.Options.Variant].ID,
+		gameRow.Options.Timed,
+		gameRow.Options.TimeBase,
+		gameRow.Options.TimePerTurn,
+		gameRow.Options.Speedrun,
+		gameRow.Options.CardCycle,
+		gameRow.Options.DeckPlays,
+		gameRow.Options.EmptyClues,
+		gameRow.Options.AllOrNothing,
+		gameRow.Options.DetrimentalCharacters,
 		gameRow.Seed,
 		gameRow.Score,
 		gameRow.NumTurns,
