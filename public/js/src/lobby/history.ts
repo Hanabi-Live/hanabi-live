@@ -206,6 +206,7 @@ const makeOtherScoresButton = (id: number, gameCount: number) => {
     button.on('click', () => {
       globals.conn!.send('historyGetDeals', {
         gameID: id,
+        friends: globals.currentScreen === 'historyFriends',
       });
       showOtherScores();
     });
@@ -242,7 +243,26 @@ export const hideOtherScores = () => {
   nav.show('history');
 };
 
-export const drawOtherScores = (data: GameHistory[]) => {
+export const hideOtherScoresToFriends = () => {
+  globals.currentScreen = 'historyFriends';
+  $('#lobby-history').show();
+  $('#lobby-history-other-scores').hide();
+  nav.show('history-friends');
+};
+
+export const drawOtherScores = (games: GameHistory[], friends: boolean) => {
+  // Define the functionality of the "Return to History" button
+  console.log(friends);
+  if (!friends) {
+    $('#nav-buttons-history-other-scores-return').on('click', () => {
+      hideOtherScores();
+    });
+  } else {
+    $('#nav-buttons-history-other-scores-return').on('click', () => {
+      hideOtherScoresToFriends();
+    });
+  }
+
   const tbody = $('#lobby-history-other-scores-table-tbody');
 
   // Clear all of the existing rows
@@ -250,13 +270,13 @@ export const drawOtherScores = (data: GameHistory[]) => {
 
   // The game played by the user will also include its variant
   let variant: Variant | undefined;
-  if (globals.currentScreen === 'history') {
-    variant = data
+  if (!friends) {
+    variant = games
       .filter((g) => g.id in globals.history)
       .map((g) => globals.history[g.id].options.variant)
       .map((v) => VARIANTS.get(v))[0];
-  } else if (globals.currentScreen === 'historyFriends') {
-    variant = data
+  } else if (friends) {
+    variant = games
       .filter((g) => g.id in globals.historyFriends)
       .map((g) => globals.historyFriends[g.id].options.variant)
       .map((v) => VARIANTS.get(v))[0];
@@ -268,7 +288,7 @@ export const drawOtherScores = (data: GameHistory[]) => {
   }
 
   // Add all of the games
-  for (const gameData of data) {
+  for (const gameData of games) {
     // Find out if this game was played by us
     const playerNamesArray = gameData.playerNames.split(', ');
     const ourGame = playerNamesArray.includes(globals.username);

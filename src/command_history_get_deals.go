@@ -22,5 +22,12 @@ func commandHistoryGetDeals(s *Session, d *CommandData) {
 		gameHistoryList = v
 	}
 
-	s.Emit("gameHistoryOtherScores", &gameHistoryList)
+	type GameHistoryOtherScoresMessage struct {
+		Games   []*GameHistory `json:"games"`
+		Friends bool           `json:"friends"`
+	}
+	s.Emit("gameHistoryOtherScores", &GameHistoryOtherScoresMessage{
+		Games:   gameHistoryList,
+		Friends: d.Friends,
+	})
 }

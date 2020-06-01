@@ -103,8 +103,12 @@ commands.set('gameHistoryFriends', (dataArray: GameHistory[]) => {
   }
 });
 
-commands.set('gameHistoryOtherScores', (data: GameHistory[]) => {
-  history.drawOtherScores(data);
+interface GameHistoryOtherScoresData {
+  games: GameHistory[],
+  friends: boolean,
+}
+commands.set('gameHistoryOtherScores', (data: GameHistoryOtherScoresData) => {
+  history.drawOtherScores(data.games, data.friends);
 });
 
 commands.set('left', () => {

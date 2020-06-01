@@ -82,9 +82,7 @@ export const init = () => {
   });
 
   // The "Return to History" button (from the "History Details" screen)
-  $('#nav-buttons-history-other-scores-return').on('click', () => {
-    history.hideOtherScores();
-  });
+  // (initialized in the "history.drawOtherScores()" function)
 };
 
 const initTooltips = () => {

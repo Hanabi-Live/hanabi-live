@@ -48,6 +48,9 @@ type CommandData struct {
 	Offset int `json:"offset"`
 	Amount int `json:"amount"`
 
+	// historyGetDeals
+	Friends bool `json:"friends"`
+
 	// hypoAction
 	ActionJSON string `json:"actionJSON"`
 
