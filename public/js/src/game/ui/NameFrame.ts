@@ -75,18 +75,38 @@ export default class NameFrame extends Konva.Group {
         } else if (globals.replay) {
           // In a replay, right-clicking on a name frame reloads the page and shifts the
           // seat (so that you can view the game from a specific player's perspective)
-          if (globals.spectators.length === 1) {
-            // Shifting perspectives will not work if we are the only player in the
-            // replay, since going back to the lobby will automatically end the replay
-            const msg = 'Due to technical limitations, you cannot shift your perspective if you are the only person in a replay.';
+          if (!globals.sharedReplay || globals.spectators.length === 1) {
+            if (globals.databaseID === 0) {
+              const msg = 'Due to technical limitations, you cannot shift your perspective if you are the only person in a JSON replay.';
+              setTimeout(() => {
+                // Show the warning modal in a callback so that the right-click context menu does
+                // not show up (otherwise, the right-click would be passed through to the non-game
+                // part of the page)
+                modals.warningShow(msg);
+              }, 0);
+              return;
+            }
+
+            // We are the only person in this replay,
+            // so going back to the lobby will automatically end it
+            // So, leave the replay and create a new one
+            // (while specifying the player to view the perspective from)
             setTimeout(() => {
-              // Show the warning modal in a callback so that the right-click context
-              // menu does not show up (otherwise, the right-click would be passed
-              // through to the non-game part of the page)
-              modals.warningShow(msg);
-            }, 0);
+              globals.lobby.conn!.send('replayCreate', {
+                source: 'id',
+                gameID: globals.databaseID,
+                visibility: globals.sharedReplay ? 'shared' : 'solo',
+                player: username,
+              });
+            }, 20);
+            backToLobby();
             return;
           }
+
+          // We are not the only person in this replay,
+          // so going back to the lobby will not automatically end it
+          // So, go back to the lobby and re-spectate the current shared replay
+          // (while specifying the player to view the perspective from)
           setTimeout(() => {
             globals.lobby.conn!.send('tableSpectate', {
               tableID: globals.lobby.tableID,

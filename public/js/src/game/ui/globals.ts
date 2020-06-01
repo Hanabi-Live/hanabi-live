@@ -30,7 +30,7 @@ export class Globals {
   variant: Variant = VARIANTS.get('No Variant')!;
   playerUs: number = -1;
   spectating: boolean = false;
-  replay: boolean = false;
+  replay: boolean = false; // True if in a solo replay or a shared replay
   sharedReplay: boolean = false;
   databaseID: number = 0;
   seed: string = '';
