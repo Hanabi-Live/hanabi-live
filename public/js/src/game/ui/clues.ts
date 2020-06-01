@@ -1,6 +1,6 @@
 // Imports
 import Color from '../../Color';
-import { ACTION, CLUE_TYPE } from '../../constants';
+import { ClueType, ActionType } from '../../constants';
 import * as arrows from './arrows';
 import Clue from './Clue';
 import ColorButton from './ColorButton';
@@ -46,9 +46,9 @@ export const checkLegal = () => {
     // Make an exception if they have the optional setting for "Empty Clues" turned on
     || globals.options.emptyClues
     // Make an exception for variants where color clues are always allowed
-    || (globals.variant.colorCluesTouchNothing && clueButton.clue.type === CLUE_TYPE.COLOR)
+    || (globals.variant.colorCluesTouchNothing && clueButton.clue.type === ClueType.Color)
     // Make an exception for variants where number clues are always allowed
-    || (globals.variant.rankCluesTouchNothing && clueButton.clue.type === CLUE_TYPE.RANK)
+    || (globals.variant.rankCluesTouchNothing && clueButton.clue.type === ClueType.Rank)
     // Make an exception for certain characters
     || (
       globals.characterAssignments[globals.playerUs] === 'Blind Spot'
@@ -100,7 +100,7 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
     return false;
   }
 
-  if (clue.type === CLUE_TYPE.COLOR) {
+  if (clue.type === ClueType.Color) {
     if (globals.variant.colorCluesTouchNothing) {
       return false;
     }
@@ -124,7 +124,7 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
     return card.suit.clueColors.includes(clue.value as Color);
   }
 
-  if (clue.type === CLUE_TYPE.RANK) {
+  if (clue.type === ClueType.Rank) {
     if (globals.variant.rankCluesTouchNothing) {
       return false;
     }
@@ -174,13 +174,13 @@ export const give = () => {
     return;
   }
 
-  let type: number;
-  let value: number;
-  if (clueButton.clue.type === CLUE_TYPE.COLOR) {
-    type = ACTION.COLOR_CLUE;
+  let type: ActionType;
+  let value: ClueType;
+  if (clueButton.clue.type === ClueType.Color) {
+    type = ActionType.ColorClue;
     value = colorToMsgColor((clueButton.clue.value as Color), globals.variant);
-  } else if (clueButton.clue.type === CLUE_TYPE.RANK) {
-    type = ACTION.RANK_CLUE;
+  } else if (clueButton.clue.type === ClueType.Rank) {
+    type = ActionType.RankClue;
     value = (clueButton.clue.value as number);
   } else {
     throw new Error('The clue button has an invalid clue type.');

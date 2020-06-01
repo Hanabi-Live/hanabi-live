@@ -3,7 +3,7 @@
 
 // Imports
 import Color from '../../Color';
-import { CLUE_TYPE } from '../../constants';
+import { ClueType } from '../../constants';
 import Suit from '../../Suit';
 import Variant from '../../Variant';
 import Clue from './Clue';
@@ -14,9 +14,9 @@ import MsgClue from './MsgClue';
 // On the server, the color is a simple integer mapping
 export const msgClueToClue = (msgClue: MsgClue, variant: Variant) => {
   let clueValue;
-  if (msgClue.type === CLUE_TYPE.COLOR) {
+  if (msgClue.type === ClueType.Color) {
     clueValue = variant.clueColors[msgClue.value]; // This is a Color object
-  } else if (msgClue.type === CLUE_TYPE.RANK) {
+  } else if (msgClue.type === ClueType.Rank) {
     clueValue = msgClue.value;
   } else {
     throw new Error('Unknown clue type given to the "msgClueToClue()" function.');

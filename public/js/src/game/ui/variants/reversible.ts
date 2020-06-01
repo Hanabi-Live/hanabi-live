@@ -3,7 +3,7 @@
 
 import {
   STACK_BASE_RANK,
-  STACK_DIRECTION,
+  StackDirection,
   START_CARD_RANK,
 } from '../../../constants';
 import { suitToMsgSuit } from '../convert';
@@ -23,7 +23,7 @@ export const hasReversedSuits = () => {
 export const needsToBePlayed = (card: HanabiCard) => {
   // First, check to see if the stack is already finished
   const suit = suitToMsgSuit(card.suit!, globals.variant);
-  if (globals.stackDirections[suit] === STACK_DIRECTION.FINISHED) {
+  if (globals.stackDirections[suit] === StackDirection.Finished) {
     return false;
   }
 
@@ -42,12 +42,12 @@ export const needsToBePlayed = (card: HanabiCard) => {
 
     if (card.rank === 1) {
     // 1's do not need to be played if the stack is going up
-      if (globals.stackDirections[suit] === STACK_DIRECTION.UP) {
+      if (globals.stackDirections[suit] === StackDirection.Up) {
         return false;
       }
     } else if (card.rank === 5) {
     // 5's do not need to be played if the stack is going down
-      if (globals.stackDirections[suit] === STACK_DIRECTION.DOWN) {
+      if (globals.stackDirections[suit] === StackDirection.Down) {
         return false;
       }
     } else if (card.rank === START_CARD_RANK) {
@@ -77,7 +77,7 @@ const isDead = (card: HanabiCard) => {
 
   // Start by handling the easy cases of up and down
   const suit = suitToMsgSuit(card.suit!, globals.variant);
-  if (globals.stackDirections[suit] === STACK_DIRECTION.UP) {
+  if (globals.stackDirections[suit] === StackDirection.Up) {
     for (let rank = isUpOrDown() ? 2 : 1; rank < card.rank!; rank++) {
       if (allDiscarded.get(rank)) {
         return true;
@@ -85,7 +85,7 @@ const isDead = (card: HanabiCard) => {
     }
     return false;
   }
-  if (globals.stackDirections[suit] === STACK_DIRECTION.DOWN) {
+  if (globals.stackDirections[suit] === StackDirection.Down) {
     for (let rank = isUpOrDown() ? 4 : 5; rank > card.rank!; rank--) {
       if (allDiscarded.get(rank)) {
         return true;
@@ -127,7 +127,7 @@ export const isPotentiallyPlayable = (card : HanabiCard) => {
     const playStack = globals.elements.playStacks.get(suit)!;
     const lastPlayedRank = playStack.getLastPlayedRank();
 
-    if (globals.stackDirections[i] === STACK_DIRECTION.UNDECIDED) {
+    if (globals.stackDirections[i] === StackDirection.Undecided) {
       if (lastPlayedRank === STACK_BASE_RANK) {
         // The "START" card has not been played
         for (const rank of [START_CARD_RANK, 1, 5]) {
@@ -159,7 +159,7 @@ export const isPotentiallyPlayable = (card : HanabiCard) => {
           break;
         }
       }
-    } else if (globals.stackDirections[i] === STACK_DIRECTION.UP) {
+    } else if (globals.stackDirections[i] === StackDirection.Up) {
       const nextRankNeeded = lastPlayedRank + 1;
       const count = card.possibleCards.get(`${suit.name}${nextRankNeeded}`);
       if (typeof count === 'undefined') {
@@ -169,7 +169,7 @@ export const isPotentiallyPlayable = (card : HanabiCard) => {
         potentiallyPlayable = true;
         break;
       }
-    } else if (globals.stackDirections[i] === STACK_DIRECTION.DOWN) {
+    } else if (globals.stackDirections[i] === StackDirection.Down) {
       let nextRankNeeded = lastPlayedRank - 1;
       if (!isUpOrDown() && lastPlayedRank === 0) {
         // Reversed stacks start with 5, except in "Up or Down"
@@ -183,7 +183,7 @@ export const isPotentiallyPlayable = (card : HanabiCard) => {
         potentiallyPlayable = true;
         break;
       }
-    } else if (globals.stackDirections[i] === STACK_DIRECTION.FINISHED) {
+    } else if (globals.stackDirections[i] === StackDirection.Finished) {
       // Nothing can play on this stack because it is finished
       continue;
     }

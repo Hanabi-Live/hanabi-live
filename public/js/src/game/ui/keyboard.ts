@@ -1,7 +1,7 @@
 // Functions for handling all of the keyboard shortcuts
 
 // Imports
-import { ACTION, REPLAY_ACTION_TYPE, MAX_CLUE_NUM } from '../../constants';
+import { ActionType, ReplayActionType, MAX_CLUE_NUM } from '../../constants';
 import { copyStringToClipboard } from '../../misc';
 import backToLobby from './backToLobby';
 import * as clues from './clues';
@@ -241,7 +241,7 @@ const sharedReplaySendSound = (sound: string) => {
   // Send it
   globals.lobby.conn!.send('replayAction', {
     tableID: globals.lobby.tableID,
-    type: REPLAY_ACTION_TYPE.SOUND,
+    type: ReplayActionType.Sound,
     sound,
   });
 };
@@ -263,7 +263,7 @@ const performAction = (playAction = true) => {
     return;
   }
 
-  let type = playAction ? ACTION.PLAY : ACTION.DISCARD;
+  let type = playAction ? ActionType.Play : ActionType.Discard;
   let target = cardOrder;
 
   if (cardOrder === 'deck') {
@@ -271,7 +271,7 @@ const performAction = (playAction = true) => {
       return;
     }
 
-    type = ACTION.PLAY;
+    type = ActionType.Play;
     target = globals.deck.length - 1;
   }
 

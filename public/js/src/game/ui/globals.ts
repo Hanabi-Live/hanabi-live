@@ -3,18 +3,18 @@
 
 // Imports
 import Konva from 'konva';
-import { VARIANTS } from '../../constants';
+import { VARIANTS, StackDirection } from '../../constants';
 import { Globals as LobbyGlobals } from '../../globals';
 import Variant from '../../Variant';
 import { GameExports } from '../main';
 import Options from '../Options';
-import { Action } from './actions';
+import { ClientAction } from './actions';
 import Elements from './Elements';
 import HanabiCard from './HanabiCard';
 import Layers from './Layers';
 import LearnedCard from './LearnedCard';
 import Loader from './Loader';
-import SimpleCard from './SimpleCard';
+import { SimpleCard } from './SimpleCard';
 import SpectatorNote from './SpectatorNote';
 import State from './State';
 
@@ -64,7 +64,7 @@ export class Globals {
   clues: number = 0;
   cardsGotten: number = 0;
   cluesSpentPlusStrikes: number = 0;
-  stackDirections: number[] = [];
+  stackDirections: StackDirection[] = [];
   numCardsPlayed: number = 0; // For "Throw It in a Hole" variants
 
   // UI elements
@@ -124,7 +124,7 @@ export class Globals {
   lastTimerUpdateTimeMS: number = 0;
 
   // Pre-move feature
-  queuedAction: Action | null = null;
+  queuedAction: ClientAction | null = null;
   preCluedCardOrder: number | null = null;
 
   // Pause feature

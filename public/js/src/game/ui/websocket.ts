@@ -1,7 +1,7 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things
 
 // Imports
-import { CLUE_TYPE, REPLAY_ARROW_ORDER, VARIANTS } from '../../constants';
+import { ClueType, ReplayArrowOrder, VARIANTS } from '../../constants';
 import * as sentry from '../../sentry';
 import Options from '../Options';
 import action from './action';
@@ -392,14 +392,14 @@ const processNewAction = (actionMessage: any) => {
       globals.elements.replayButton!.setEnabled(true);
     }
   } else if (actionMessage.type === 'clue' && globals.variant.name.startsWith('Alternating Clues')) {
-    if (actionMessage.clue.type === CLUE_TYPE.COLOR) {
+    if (actionMessage.clue.type === ClueType.Color) {
       for (const button of globals.elements.colorClueButtons) {
         button.hide();
       }
       for (const button of globals.elements.rankClueButtons) {
         button.show();
       }
-    } else if (actionMessage.clue.type === CLUE_TYPE.RANK) {
+    } else if (actionMessage.clue.type === ClueType.Rank) {
       for (const button of globals.elements.colorClueButtons) {
         button.show();
       }
@@ -492,9 +492,9 @@ commands.set('pause', (data: PauseData) => {
 });
 
 // This is used in shared replays to highlight a specific card (or UI element)
-interface ReplayIndicatorData {
-  order: number;
-}
+type ReplayIndicatorData = {
+  order: ReplayArrowOrder;
+};
 commands.set('replayIndicator', (data: ReplayIndicatorData) => {
   if (globals.loading) {
     // We have not loaded everything yet, so don't bother with shared replay features
@@ -527,15 +527,15 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
     arrows.toggle(card);
   } else { // Some other UI element
     let element;
-    if (data.order === REPLAY_ARROW_ORDER.DECK) {
+    if (data.order === ReplayArrowOrder.Deck) {
       element = globals.elements.deck;
-    } else if (data.order === REPLAY_ARROW_ORDER.CLUES) {
+    } else if (data.order === ReplayArrowOrder.Clues) {
       element = globals.elements.cluesNumberLabel;
-    } else if (data.order === REPLAY_ARROW_ORDER.PACE) {
+    } else if (data.order === ReplayArrowOrder.Pace) {
       element = globals.elements.paceNumberLabel;
-    } else if (data.order === REPLAY_ARROW_ORDER.EFFICIENCY) {
+    } else if (data.order === ReplayArrowOrder.Efficiency) {
       element = globals.elements.efficiencyNumberLabel;
-    } else if (data.order === REPLAY_ARROW_ORDER.MIN_EFFICIENCY) {
+    } else if (data.order === ReplayArrowOrder.MinEfficiency) {
       element = globals.elements.efficiencyNumberLabelMinNeeded;
     } else {
       return;
@@ -546,10 +546,10 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
 });
 
 // This is used in shared replays to specify who the leader is
-interface ReplayLeaderData {
+type ReplayLeaderData = {
   name: string;
   playAnimation: boolean;
-}
+};
 commands.set('replayLeader', (data: ReplayLeaderData) => {
   // Store who the shared replay leader is
   globals.sharedReplayLeader = data.name;
