@@ -20,9 +20,9 @@ type UserStatsRow struct {
 	NumStrikeouts int          `json:"numStrikeouts"`
 }
 type BestScore struct {
-	NumPlayers int `json:"numPlayers"`
-	Score      int `json:"score"`
-	Modifier   int `json:"modifier"` // (see the stats section in "gameEnd.go")
+	NumPlayers int     `json:"numPlayers"`
+	Score      int     `json:"score"`
+	Modifier   Bitmask `json:"modifier"` // (see the stats section in "gameEnd.go")
 }
 
 func NewUserStatsRow() UserStatsRow {
@@ -289,12 +289,12 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 			stats := NewUserStatsRow()
 			for numPlayers := 2; numPlayers <= 6; numPlayers++ {
 				overallBestScore := 0
-				overallBestScoreMod := 0
+				var overallBestScoreMod Bitmask
 
 				// Go through each modifier
-				for modifier := 0; modifier <= 3; modifier++ {
+				var modifier Bitmask
+				for modifier = 0; modifier <= 7; modifier++ {
 					// Get the score for this player count and modifier
-					var bestScore int
 					SQLString := `
 						/*
 						 * We enclose this query in an "COALESCE" so that it defaults to 0
@@ -308,27 +308,29 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 							AND games.variant = $2
 							AND games.num_players = $3
 					`
-					if modifier == 0 {
-						SQLString += `
-							AND games.deck_plays = FALSE
-							AND games.empty_clues = FALSE
-						`
-					} else if modifier == 1 {
-						SQLString += `
-							AND games.deck_plays = TRUE
-							AND games.empty_clues = FALSE
-						`
-					} else if modifier == 2 {
-						SQLString += `
-							AND games.deck_plays = FALSE
-							AND games.empty_clues = TRUE
-						`
-					} else if modifier == 3 {
-						SQLString += `
-							AND games.deck_plays = TRUE
-							AND games.empty_clues = TRUE
-						`
+
+					SQLString += "AND games.deck_plays = "
+					if modifier.HasFlag(ScoreModifierDeckPlays) {
+						SQLString += "TRUE "
+					} else {
+						SQLString += "FALSE "
 					}
+
+					SQLString += "AND games.empty_clues = "
+					if modifier.HasFlag(ScoreModifierEmptyClues) {
+						SQLString += "TRUE "
+					} else {
+						SQLString += "FALSE "
+					}
+
+					SQLString += "AND games.all_or_nothing = "
+					if modifier.HasFlag(ScoreModifierAllOrNothing) {
+						SQLString += "TRUE "
+					} else {
+						SQLString += "FALSE "
+					}
+
+					var bestScore int
 					if err := db.QueryRow(
 						context.Background(),
 						SQLString,

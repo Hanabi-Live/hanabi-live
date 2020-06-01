@@ -1,15 +1,10 @@
+// Imports
+import Options from '../game/Options';
+
 export default interface GameHistory {
   id: number;
   numPlayers: number;
-  variant: string;
-  timed: boolean;
-  timeBase: number;
-  timePerTurn: number;
-  speedrun: boolean;
-  cardCycle: boolean;
-  deckPlays: boolean;
-  emptyClues: boolean;
-  characterAssignments: boolean;
+  options: Options;
   seed: string;
   score: number;
   numTurns: number;

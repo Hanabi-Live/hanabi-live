@@ -298,47 +298,21 @@ func validateJSON(s *Session, d *CommandData) bool {
 
 func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 	// Get the options from the database
-	var options DBOptions
 	if v, err := models.Games.GetOptions(d.GameID); err != nil {
 		logger.Error("Failed to get the options from the database for game "+
 			strconv.Itoa(d.GameID)+":", err)
 		s.Error(InitGameFail)
 		return false
 	} else {
-		options = v
+		t.Options = v
 	}
 
-	// Validate that the variant exists
-	var variant string
-	if v, ok := variantsID[options.Variant]; !ok {
-		logger.Error("Failed to find a definition for variant " +
-			strconv.Itoa(options.Variant) + ".")
-		s.Error(InitGameFail)
-		return false
-	} else {
-		variant = v
-	}
+	// We need to mark that the game should not be written to the database
+	t.ExtraOptions.Replay = true
 
-	// Store the options on the table
-	t.Options = &Options{
-		StartingPlayer:       options.StartingPlayer, // Legacy field for games prior to April 2020
-		Variant:              variant,
-		Timed:                options.Timed,
-		TimeBase:             options.TimeBase,
-		TimePerTurn:          options.TimePerTurn,
-		Speedrun:             options.Speedrun,
-		CardCycle:            options.CardCycle,
-		DeckPlays:            options.DeckPlays,
-		EmptyClues:           options.EmptyClues,
-		CharacterAssignments: options.CharacterAssignments,
-
-		// We need to mark that the game should not be written to the database
-		Replay: true,
-
-		// We need to reference the database ID for the game later on when the game starts in order
-		// to look up the seed for the game and the character assignments, if any
-		DatabaseID: d.GameID,
-	}
+	// We need to reference the database ID for the game later on when the game starts in order
+	// to look up the seed for the game and the character assignments, if any
+	t.ExtraOptions.DatabaseID = d.GameID
 
 	// Get the players from the database
 	var playerNames []string
@@ -388,24 +362,30 @@ func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 	if d.GameJSON.Options.EmptyClues != nil {
 		emptyClues = *d.GameJSON.Options.EmptyClues
 	}
-	characterAssignments := false
-	if d.GameJSON.Options.CharacterAssignments != nil {
-		characterAssignments = *d.GameJSON.Options.CharacterAssignments
+	allOrNothing := false
+	if d.GameJSON.Options.AllOrNothing != nil {
+		allOrNothing = *d.GameJSON.Options.AllOrNothing
+	}
+	detrimentalCharacters := false
+	if d.GameJSON.Options.DetrimentalCharacters != nil {
+		detrimentalCharacters = *d.GameJSON.Options.DetrimentalCharacters
 	}
 
 	// Store the options on the table
 	// (the variant was already validated in the "validateJSON()" function)
 	t.Options = &Options{
-		Variant:              *d.GameJSON.Options.Variant,
-		Timed:                timed,
-		TimeBase:             timeBase,
-		TimePerTurn:          timePerTurn,
-		Speedrun:             speedrun,
-		CardCycle:            cardCycle,
-		DeckPlays:            deckPlays,
-		EmptyClues:           emptyClues,
-		CharacterAssignments: characterAssignments,
-
+		Variant:               *d.GameJSON.Options.Variant,
+		Timed:                 timed,
+		TimeBase:              timeBase,
+		TimePerTurn:           timePerTurn,
+		Speedrun:              speedrun,
+		CardCycle:             cardCycle,
+		DeckPlays:             deckPlays,
+		EmptyClues:            emptyClues,
+		AllOrNothing:          allOrNothing,
+		DetrimentalCharacters: detrimentalCharacters,
+	}
+	t.ExtraOptions = &ExtraOptions{
 		Replay:     true, // We need to mark that the game should not be written to the database
 		CustomDeck: d.GameJSON.Deck,
 	}
@@ -516,7 +496,7 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 
 	// Make the appropriate moves in the game to match what is listed in the database
 	for i, action := range actions {
-		if t.Options.SetReplay && t.Options.SetReplayTurn == i {
+		if t.ExtraOptions.SetReplay && t.ExtraOptions.SetReplayTurn == i {
 			// This is a "!replay" game and we have reached the intended turn
 			break
 		}

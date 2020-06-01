@@ -230,6 +230,7 @@ func (vs *VariantStats) UpdateAll(highestVariantID int, maxScores []int) error {
 					AND num_players = $2
 					AND games.deck_plays = FALSE
 					AND games.empty_clues = FALSE
+					AND games.all_or_nothing = FALSE
 			`, variant, numPlayers).Scan(&bestScore); err != nil {
 				return err
 			}

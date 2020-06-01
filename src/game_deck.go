@@ -8,8 +8,8 @@ import (
 func (g *Game) InitDeck() {
 	// If a custom deck was provided along with the game options,
 	// then we can simply add every card to the deck as specified
-	if g.Options.CustomDeck != nil {
-		for _, card := range g.Options.CustomDeck {
+	if g.ExtraOptions.CustomDeck != nil {
+		for _, card := range g.ExtraOptions.CustomDeck {
 			g.Deck = append(g.Deck, NewCard(card.Suit, card.Rank))
 		}
 		return

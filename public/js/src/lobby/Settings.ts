@@ -1,3 +1,5 @@
+// These are per-user settings that are changed from the main lobby screen
+// (in the "Settings" button tooltip)
 export default class Settings {
   desktopNotification: boolean = false;
   soundMove: boolean = true;
@@ -20,6 +22,7 @@ export default class Settings {
   createTableCardCycle: boolean = false;
   createTableDeckPlays: boolean = false;
   createTableEmptyClues: boolean = false;
-  createTableCharacterAssignments: boolean = false;
+  createTableAllOrNothing: boolean = false;
+  createTableDetrimentalCharacters: boolean = false;
   createTableAlertWaiters: boolean = false;
 }

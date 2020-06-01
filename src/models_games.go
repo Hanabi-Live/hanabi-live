@@ -19,21 +19,22 @@ type GameRow struct {
 	Name       string
 	NumPlayers int
 	// This corresponds to the numerial ID of the variant listed in the "variants.go" file
-	Variant              int
-	Timed                bool
-	TimeBase             int
-	TimePerTurn          int
-	Speedrun             bool
-	CardCycle            bool
-	DeckPlays            bool
-	EmptyClues           bool
-	CharacterAssignments bool
-	Seed                 string
-	Score                int
-	NumTurns             int
-	EndCondition         int
-	DatetimeStarted      time.Time
-	DatetimeFinished     time.Time
+	Variant               int
+	Timed                 bool
+	TimeBase              int
+	TimePerTurn           int
+	Speedrun              bool
+	CardCycle             bool
+	DeckPlays             bool
+	EmptyClues            bool
+	AllOrNothing          bool
+	DetrimentalCharacters bool
+	Seed                  string
+	Score                 int
+	NumTurns              int
+	EndCondition          int
+	DatetimeStarted       time.Time
+	DatetimeFinished      time.Time
 }
 
 func (*Games) Insert(gameRow GameRow) (int, error) {
@@ -54,7 +55,8 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 				card_cycle,
 				deck_plays,
 				empty_clues,
-				character_assignments,
+				all_or_nothing,
+				detrimental_characters,
 				seed,
 				score,
 				num_turns,
@@ -78,7 +80,8 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 				$14,
 				$15,
 				$16,
-				$17
+				$17,
+				$18
 			)
 			RETURNING id
 		`,
@@ -92,7 +95,8 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 		gameRow.CardCycle,
 		gameRow.DeckPlays,
 		gameRow.EmptyClues,
-		gameRow.CharacterAssignments,
+		gameRow.AllOrNothing,
+		gameRow.DetrimentalCharacters,
 		gameRow.Seed,
 		gameRow.Score,
 		gameRow.NumTurns,
@@ -122,26 +126,18 @@ func (*Games) Exists(databaseID int) (bool, error) {
 }
 
 type GameHistory struct {
-	ID                   int       `json:"id"`
-	NumPlayers           int       `json:"numPlayers"`
-	Variant              string    `json:"variant"`
-	Timed                bool      `json:"timed"`
-	TimeBase             int       `json:"timeBase"`
-	TimePerTurn          int       `json:"timePerTurn"`
-	Speedrun             bool      `json:"speedrun"`
-	CardCycle            bool      `json:"cardCycle"`
-	DeckPlays            bool      `json:"deckPlays"`
-	EmptyClues           bool      `json:"emptyClues"`
-	CharacterAssignments bool      `json:"characterAssignments"`
-	Seed                 string    `json:"seed"`
-	Score                int       `json:"score"`
-	NumTurns             int       `json:"numTurns"`
-	EndCondition         int       `json:"endCondition"`
-	DatetimeStarted      time.Time `json:"datetimeStarted"`
-	DatetimeFinished     time.Time `json:"datetimeFinished"`
-	NumSimilar           int       `json:"numSimilar"`
-	PlayerNames          string    `json:"playerNames"`
-	IncrementNumGames    bool      `json:"incrementNumGames"`
+	ID                int       `json:"id"`
+	NumPlayers        int       `json:"numPlayers"`
+	Options           *Options  `json:"options"`
+	Seed              string    `json:"seed"`
+	Score             int       `json:"score"`
+	NumTurns          int       `json:"numTurns"`
+	EndCondition      int       `json:"endCondition"`
+	DatetimeStarted   time.Time `json:"datetimeStarted"`
+	DatetimeFinished  time.Time `json:"datetimeFinished"`
+	NumSimilar        int       `json:"numSimilar"`
+	PlayerNames       string    `json:"playerNames"`
+	IncrementNumGames bool      `json:"incrementNumGames"`
 }
 
 func (*Games) GetUserHistory(
@@ -184,17 +180,19 @@ func (*Games) GetUserHistory(
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
-		var game GameHistory
+		gameHistory := GameHistory{
+			Options: &Options{},
+		}
 		var variantID int
 		var playerNames string
 		if err2 := rows.Scan(
-			&game.ID,
-			&game.NumPlayers,
+			&gameHistory.ID,
+			&gameHistory.NumPlayers,
 			&variantID,
-			&game.Seed,
-			&game.Score,
-			&game.DatetimeFinished,
-			&game.NumSimilar,
+			&gameHistory.Seed,
+			&gameHistory.Score,
+			&gameHistory.DatetimeFinished,
+			&gameHistory.NumSimilar,
 			&playerNames,
 		); err2 != nil {
 			return nil, err2
@@ -204,7 +202,7 @@ func (*Games) GetUserHistory(
 		if variantName, ok := variantsID[variantID]; !ok {
 			return nil, errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
 		} else {
-			game.Variant = variantName
+			gameHistory.Options.Variant = variantName
 		}
 
 		// The players come from the database in a random order
@@ -212,9 +210,9 @@ func (*Games) GetUserHistory(
 		// Alphabetize the players
 		playerNamesSlice := strings.Split(playerNames, ", ")
 		sort.Strings(playerNamesSlice)
-		game.PlayerNames = strings.Join(playerNamesSlice, ", ")
+		gameHistory.PlayerNames = strings.Join(playerNamesSlice, ", ")
 
-		games = append(games, &game)
+		games = append(games, &gameHistory)
 	}
 
 	if rows.Err() != nil {
@@ -270,17 +268,19 @@ func (*Games) GetFriendsHistory(
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
-		var game GameHistory
+		gameHistory := GameHistory{
+			Options: &Options{},
+		}
 		var variantID int
 		var playerNames string
 		if err2 := rows.Scan(
-			&game.ID,
-			&game.NumPlayers,
+			&gameHistory.ID,
+			&gameHistory.NumPlayers,
 			&variantID,
-			&game.Seed,
-			&game.Score,
-			&game.DatetimeFinished,
-			&game.NumSimilar,
+			&gameHistory.Seed,
+			&gameHistory.Score,
+			&gameHistory.DatetimeFinished,
+			&gameHistory.NumSimilar,
 			&playerNames,
 		); err2 != nil {
 			return nil, err2
@@ -290,7 +290,7 @@ func (*Games) GetFriendsHistory(
 		if variantName, ok := variantsID[variantID]; !ok {
 			return nil, errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
 		} else {
-			game.Variant = variantName
+			gameHistory.Options.Variant = variantName
 		}
 
 		// The players come from the database in a random order
@@ -298,9 +298,9 @@ func (*Games) GetFriendsHistory(
 		// Alphabetize the players
 		playerNamesSlice := strings.Split(playerNames, ", ")
 		sort.Strings(playerNamesSlice)
-		game.PlayerNames = strings.Join(playerNamesSlice, ", ")
+		gameHistory.PlayerNames = strings.Join(playerNamesSlice, ", ")
 
-		games = append(games, &game)
+		games = append(games, &gameHistory)
 	}
 
 	if rows.Err() != nil {
@@ -333,15 +333,17 @@ func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error)
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
-		var game GameHistory
+		gameHistory := GameHistory{
+			Options: &Options{},
+		}
 		var variantID int
 		var playerNames string
 		if err2 := rows.Scan(
-			&game.ID,
-			&game.NumPlayers,
+			&gameHistory.ID,
+			&gameHistory.NumPlayers,
 			&variantID,
-			&game.Score,
-			&game.DatetimeFinished,
+			&gameHistory.Score,
+			&gameHistory.DatetimeFinished,
 			&playerNames,
 		); err2 != nil {
 			return nil, err2
@@ -351,7 +353,7 @@ func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error)
 		if variantName, ok := variantsID[variantID]; !ok {
 			return nil, errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
 		} else {
-			game.Variant = variantName
+			gameHistory.Options.Variant = variantName
 		}
 
 		// The players come from the database in a random order
@@ -359,9 +361,9 @@ func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error)
 		// Alphabetize the players
 		playerNamesSlice := strings.Split(playerNames, ", ")
 		sort.Strings(playerNamesSlice)
-		game.PlayerNames = strings.Join(playerNamesSlice, ", ")
+		gameHistory.PlayerNames = strings.Join(playerNamesSlice, ", ")
 
-		games = append(games, &game)
+		games = append(games, &gameHistory)
 	}
 
 	if rows.Err() != nil {
@@ -422,13 +424,15 @@ func (*Games) GetAllDealsFromGameID(databaseID int) ([]*GameHistory, error) {
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
-		var game GameHistory
+		gameHistory := GameHistory{
+			Options: &Options{},
+		}
 		var playerNames string
 		if err2 := rows.Scan(
-			&game.ID,
-			&game.Seed,
-			&game.Score,
-			&game.DatetimeFinished,
+			&gameHistory.ID,
+			&gameHistory.Seed,
+			&gameHistory.Score,
+			&gameHistory.DatetimeFinished,
 			&playerNames,
 		); err2 != nil {
 			return nil, err2
@@ -439,9 +443,9 @@ func (*Games) GetAllDealsFromGameID(databaseID int) ([]*GameHistory, error) {
 		// Alphabetize the players
 		playerNamesSlice := strings.Split(playerNames, ", ")
 		sort.Strings(playerNamesSlice)
-		game.PlayerNames = strings.Join(playerNamesSlice, ", ")
+		gameHistory.PlayerNames = strings.Join(playerNamesSlice, ", ")
 
-		games = append(games, &game)
+		games = append(games, &gameHistory)
 	}
 
 	if rows.Err() != nil {
@@ -465,7 +469,8 @@ func (*Games) GetAllDealsFromSeed(seed string) ([]*GameHistory, error) {
 			card_cycle,
 			deck_plays,
 			empty_clues,
-			character_assignments,
+			all_or_nothing,
+			detrimental_characters,
 			seed,
 			score,
 			num_turns,
@@ -492,14 +497,15 @@ func (*Games) GetAllDealsFromSeed(seed string) ([]*GameHistory, error) {
 			&game.ID,
 			&game.NumPlayers,
 			&variantID,
-			&game.Timed,
-			&game.TimeBase,
-			&game.TimePerTurn,
-			&game.Speedrun,
-			&game.CardCycle,
-			&game.DeckPlays,
-			&game.EmptyClues,
-			&game.CharacterAssignments,
+			&game.Options.Timed,
+			&game.Options.TimeBase,
+			&game.Options.TimePerTurn,
+			&game.Options.Speedrun,
+			&game.Options.CardCycle,
+			&game.Options.DeckPlays,
+			&game.Options.EmptyClues,
+			&game.Options.AllOrNothing,
+			&game.Options.DetrimentalCharacters,
 			&game.Seed,
 			&game.Score,
 			&game.NumTurns,
@@ -515,7 +521,7 @@ func (*Games) GetAllDealsFromSeed(seed string) ([]*GameHistory, error) {
 		if variantName, ok := variantsID[variantID]; !ok {
 			return nil, errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
 		} else {
-			game.Variant = variantName
+			game.Options.Variant = variantName
 		}
 
 		// The players come from the database in a random order
@@ -536,22 +542,10 @@ func (*Games) GetAllDealsFromSeed(seed string) ([]*GameHistory, error) {
 	return games, nil
 }
 
-type DBOptions struct {
-	StartingPlayer       int // Legacy field for games prior to April 2020
-	Variant              int
-	Timed                bool
-	TimeBase             int
-	TimePerTurn          int
-	Speedrun             bool
-	CardCycle            bool
-	DeckPlays            bool
-	EmptyClues           bool
-	CharacterAssignments bool
-}
-
-func (*Games) GetOptions(databaseID int) (DBOptions, error) {
-	var options DBOptions
-	err := db.QueryRow(context.Background(), `
+func (*Games) GetOptions(databaseID int) (*Options, error) {
+	var options Options
+	var variantID int
+	if err := db.QueryRow(context.Background(), `
 		SELECT
 			starting_player,
 			variant,
@@ -562,12 +556,13 @@ func (*Games) GetOptions(databaseID int) (DBOptions, error) {
 			card_cycle,
 			deck_plays,
 			empty_clues,
-			character_assignments
+			all_or_nothing,
+			detrimental_characters
 		FROM games
 		WHERE games.id = $1
 	`, databaseID).Scan(
 		&options.StartingPlayer,
-		&options.Variant,
+		&variantID,
 		&options.Timed,
 		&options.TimeBase,
 		&options.TimePerTurn,
@@ -575,9 +570,21 @@ func (*Games) GetOptions(databaseID int) (DBOptions, error) {
 		&options.CardCycle,
 		&options.DeckPlays,
 		&options.EmptyClues,
-		&options.CharacterAssignments,
-	)
-	return options, err
+		&options.AllOrNothing,
+		&options.DetrimentalCharacters,
+	); err != nil {
+		return &options, err
+	}
+
+	// Validate that the variant exists
+	if v, ok := variantsID[variantID]; !ok {
+		err := errors.New("failed to find a definition for variant " + strconv.Itoa(variantID))
+		return &options, err
+	} else {
+		options.Variant = v
+	}
+
+	return &options, nil
 }
 
 func (*Games) GetNumPlayers(databaseID int) (int, error) {

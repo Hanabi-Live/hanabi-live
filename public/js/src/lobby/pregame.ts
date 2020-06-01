@@ -92,7 +92,7 @@ export const draw = () => {
 
   // Update the information on the left-hand side of the screen
   $('#lobby-pregame-name').text(globals.game.name);
-  $('#lobby-pregame-variant').text(globals.game.variant);
+  $('#lobby-pregame-variant').text(globals.game.options.variant);
 
   const optionsTitle = $('#lobby-pregame-options-title');
   optionsTitle.text('Options:');
@@ -102,12 +102,12 @@ export const draw = () => {
   // then they will fail to initialize properly on the second viewing
   let html = '';
 
-  if (globals.game.timed) {
+  if (globals.game.options.timed) {
     html += '<li><i id="lobby-pregame-options-timer" class="fas fa-clock" ';
     html += 'data-tooltip-content="#pregame-tooltip-timer"></i>&nbsp; (';
-    html += misc.timerFormatter(globals.game.timeBase);
+    html += misc.timerFormatter(globals.game.options.timeBase);
     html += ' + ';
-    html += misc.timerFormatter(globals.game.timePerTurn);
+    html += misc.timerFormatter(globals.game.options.timePerTurn);
     html += ')</li>';
     html += `
       <div class="hidden">
@@ -118,7 +118,7 @@ export const draw = () => {
     `;
   }
 
-  if (globals.game.speedrun) {
+  if (globals.game.options.speedrun) {
     html += '<li><i id="lobby-pregame-options-speedrun" class="fas fa-running" ';
     html += 'data-tooltip-content="#pregame-tooltip-speedrun"></i></li>';
     html += `
@@ -130,7 +130,7 @@ export const draw = () => {
     `;
   }
 
-  if (globals.game.cardCycle) {
+  if (globals.game.options.cardCycle) {
     html += '<li><i id="lobby-pregame-options-card-cycle" class="fas fa-sync-alt" ';
     html += 'style="position: relative; left: 0.2em;" ';
     html += 'data-tooltip-content="#pregame-tooltip-card-cycle"></i></li>';
@@ -143,7 +143,7 @@ export const draw = () => {
     `;
   }
 
-  if (globals.game.deckPlays) {
+  if (globals.game.options.deckPlays) {
     html += '<li><i id="lobby-pregame-options-deck-plays" class="fas fa-blind" ';
     html += 'style="position: relative; left: 0.2em;" ';
     html += 'data-tooltip-content="#pregame-tooltip-deck-plays"></i></li>';
@@ -156,7 +156,7 @@ export const draw = () => {
     `;
   }
 
-  if (globals.game.emptyClues) {
+  if (globals.game.options.emptyClues) {
     html += '<li><i id="lobby-pregame-options-empty-clues" class="fas fa-expand" ';
     html += 'data-tooltip-content="#pregame-tooltip-empty-clues"></i></li>';
     html += `
@@ -168,7 +168,19 @@ export const draw = () => {
     `;
   }
 
-  if (globals.game.characterAssignments) {
+  if (globals.game.options.allOrNothing) {
+    html += '<li><i id="lobby-pregame-options-empty-clues" class="fas fa-layer-group" ';
+    html += 'data-tooltip-content="#pregame-tooltip-all-or-nothing"></i></li>';
+    html += `
+      <div class="hidden">
+        <div id="pregame-tooltip-all-or-nothing" class="lobby-pregame-tooltip-icon">
+          The <strong>All or Nothing</strong> option is enabled.
+        </div>
+      </div>
+    `;
+  }
+
+  if (globals.game.options.detrimentalCharacters) {
     html += '<li><span id="lobby-pregame-options-characters" ';
     html += 'style="position: relative; right: 0.2em;" ';
     html += 'data-tooltip-content="#pregame-tooltip-characters">🤔</span></li>';
@@ -318,9 +330,9 @@ export const draw = () => {
       <div class="hidden">
         <div id="lobby-pregame-player-${i + 1}-tooltip" class="lobby-pregame-tooltip">
     `;
-    const variant = VARIANTS.get(globals.game.variant);
+    const variant = VARIANTS.get(globals.game.options.variant);
     if (!variant) {
-      throw new Error(`Failed to get the "${globals.game.variant}" variant.`);
+      throw new Error(`Failed to get the "${globals.game.options.variant}" variant.`);
     }
     const { maxScore } = variant;
     for (let j = 2; j <= 6; j++) {

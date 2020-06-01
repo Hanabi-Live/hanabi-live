@@ -14,18 +14,10 @@ type CommandData struct {
 	Recipient string `json:"recipient"`
 
 	// tableCreate
-	Name                 string `json:"name"`
-	Password             string `json:"password"`
-	Variant              string `json:"variant"`
-	Timed                bool   `json:"timed"`
-	TimeBase             int    `json:"timeBase"`    // In seconds
-	TimePerTurn          int    `json:"timePerTurn"` // In seconds
-	Speedrun             bool   `json:"speedrun"`
-	CardCycle            bool   `json:"cardCycle"`
-	DeckPlays            bool   `json:"deckPlays"`
-	EmptyClues           bool   `json:"emptyClues"`
-	CharacterAssignments bool   `json:"characterAssignments"`
-	AlertWaiters         bool   `json:"alertWaiters"`
+	Name         string   `json:"name"`
+	Password     string   `json:"password"`
+	Options      *Options `json:"options"`
+	AlertWaiters bool     `json:"alertWaiters"`
 
 	// action
 	Type   int `json:"type"`

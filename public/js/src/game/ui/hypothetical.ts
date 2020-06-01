@@ -348,7 +348,7 @@ export const backOneTurn = () => {
 };
 
 const cycleHand = () => {
-  if (!globals.cardCycle) {
+  if (!globals.options.cardCycle) {
     return;
   }
 

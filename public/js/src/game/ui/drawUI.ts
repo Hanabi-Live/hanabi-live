@@ -488,7 +488,7 @@ const drawBottomLeftButtons = () => {
   globals.layers.UI.add(restartButton as any);
   restartButton.on('click tap', () => {
     if (
-      globals.speedrun
+      globals.options.speedrun
       || debug.amTestUser(globals.lobby.username)
       || globals.lobby.totalGames >= 1000
       || window.confirm('Are you sure you want to restart the game?')
@@ -586,7 +586,7 @@ const drawBottomLeftButtons = () => {
   globals.layers.UI.add(killButton as any);
   killButton.on('click tap', () => {
     if (
-      globals.speedrun
+      globals.options.speedrun
       || debug.amTestUser(globals.lobby.username)
       || globals.lobby.totalGames >= 1000
       || window.confirm('Are you sure you want to terminate the game?')
@@ -1346,7 +1346,7 @@ const drawTimers = () => {
 
   // We don't want the timer to show in replays or untimed games
   // (unless they have the optional setting turned on)
-  if (globals.replay || (!globals.timed && !globals.lobby.settings.showTimerInUntimed)) {
+  if (globals.replay || (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed)) {
     return;
   }
 
@@ -1398,7 +1398,7 @@ const drawTimers = () => {
   globals.elements.timer1.on('click', (event) => {
     if (
       event.evt.which !== 3 // Right-click
-      || !globals.timed // We don't need to pause if this is not a timed game
+      || !globals.options.timed // We don't need to pause if this is not a timed game
       || globals.paused // We don't need to pause if the game is already paused
     ) {
       return;
@@ -1440,7 +1440,7 @@ const drawTimers = () => {
     listening: true,
   });
   globals.layers.timer.add(globals.elements.timer2 as any);
-  if (globals.timed) {
+  if (globals.options.timed) {
     globals.elements.timer2.tooltipName = 'time-taken';
     // (the content will be updated in the "setTickingDownTimeCPTooltip()" function)
     tooltips.init(globals.elements.timer2, true, false);

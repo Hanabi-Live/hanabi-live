@@ -7,6 +7,7 @@ import { VARIANTS } from '../../constants';
 import { Globals as LobbyGlobals } from '../../globals';
 import Variant from '../../Variant';
 import { GameExports } from '../main';
+import Options from '../Options';
 import { Action } from './actions';
 import Elements from './Elements';
 import HanabiCard from './HanabiCard';
@@ -39,13 +40,9 @@ export class Globals {
 
   // Optional game settings
   // (sent in the "init" message)
-  timed: boolean = false;
-  timeBase: number = 0;
-  timePerTurn: number = 0;
-  speedrun: boolean = false;
-  cardCycle: boolean = false;
-  deckPlays: boolean = false;
-  emptyClues: boolean = false;
+  options: Options = new Options();
+
+  // Character settings
   characterAssignments: string[] = [];
   characterMetadata: number[] = [];
   characterRememberedCards: SimpleCard[] = [];
@@ -168,13 +165,7 @@ export class Globals {
     this.seed = '';
     this.datetimeStarted = new Date();
     this.datetimeFinished = new Date();
-    this.timed = false;
-    this.timeBase = 0;
-    this.timePerTurn = 0;
-    this.speedrun = false;
-    this.cardCycle = false;
-    this.deckPlays = false;
-    this.emptyClues = false;
+    this.options = new Options();
     this.characterAssignments = [];
     this.characterMetadata = [];
     this.characterRememberedCards = [];

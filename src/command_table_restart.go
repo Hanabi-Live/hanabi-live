@@ -158,17 +158,9 @@ func commandTableRestart(s *Session, d *CommandData) {
 	// The shared replay should now be deleted, since all of the players have left
 	// Now, emulate the game owner creating a new game
 	commandTableCreate(s, &CommandData{
-		Name:                 newTableName,
-		Variant:              t.Options.Variant,
-		Timed:                t.Options.Timed,
-		TimeBase:             t.Options.TimeBase,
-		TimePerTurn:          t.Options.TimePerTurn,
-		Speedrun:             t.Options.Speedrun,
-		CardCycle:            t.Options.CardCycle,
-		DeckPlays:            t.Options.DeckPlays,
-		EmptyClues:           t.Options.EmptyClues,
-		CharacterAssignments: t.Options.CharacterAssignments,
-		AlertWaiters:         t.AlertWaiters,
+		Name:         newTableName,
+		Options:      t.Options,
+		AlertWaiters: t.AlertWaiters,
 	})
 
 	// Find the table ID for the new game

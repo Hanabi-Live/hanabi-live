@@ -3,6 +3,7 @@
 // Imports
 import { CLUE_TYPE, REPLAY_ARROW_ORDER, VARIANTS } from '../../constants';
 import * as sentry from '../../sentry';
+import Options from '../Options';
 import action from './action';
 import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
@@ -187,7 +188,6 @@ interface InitData {
   // Game settings
   tableID: number;
   names: string[];
-  variant: string;
   seat: number;
   spectating: boolean;
   replay: boolean;
@@ -199,13 +199,9 @@ interface InitData {
   datetimeFinished: Date;
 
   // Optional settings
-  timed: boolean;
-  timeBase: number;
-  timePerTurn: number;
-  speedrun: boolean;
-  cardCycle: boolean;
-  deckPlays: boolean;
-  emptyClues: boolean;
+  options: Options;
+
+  // Character settings
   characterAssignments: string[];
   characterMetadata: number[];
 
@@ -227,12 +223,6 @@ commands.set('init', (data: InitData) => {
   // Game settings
   globals.lobby.tableID = data.tableID; // Equal to the table ID on the server
   globals.playerNames = data.names;
-  const variant = VARIANTS.get(data.variant);
-  if (typeof variant === 'undefined') {
-    throw new Error(`The "init" command was sent with an invalid variant name of "${data.variant}".`);
-  } else {
-    globals.variant = variant;
-  }
   globals.playerUs = data.seat; // 0 if a spectator or a replay of a game that we were not in
   globals.spectating = data.spectating;
   globals.replay = data.replay;
@@ -244,13 +234,17 @@ commands.set('init', (data: InitData) => {
   globals.datetimeFinished = data.datetimeFinished;
 
   // Optional settings
-  globals.timed = data.timed;
-  globals.timeBase = data.timeBase;
-  globals.timePerTurn = data.timePerTurn;
-  globals.speedrun = data.speedrun;
-  globals.cardCycle = data.cardCycle;
-  globals.deckPlays = data.deckPlays;
-  globals.emptyClues = data.emptyClues;
+  globals.options = data.options;
+
+  // Set the variant
+  const variant = VARIANTS.get(globals.options.variant);
+  if (typeof variant === 'undefined') {
+    throw new Error(`The "init" command was sent with an invalid variant name of "${globals.options.variant}".`);
+  } else {
+    globals.variant = variant;
+  }
+
+  // Character settings
   globals.characterAssignments = data.characterAssignments;
   globals.characterMetadata = data.characterMetadata;
 

@@ -106,7 +106,7 @@ export const showClueUIAndEnableDragging = () => {
     !globals.lobby.settings.speedrunPreplay
     // This is unnecessary if this a speedrun,
     // as clicking on cards takes priority over dragging cards
-    && !globals.speedrun
+    && !globals.options.speedrun
     // In hypotheticals, setting cards to be draggable is handled elsewhere
     && !globals.hypothetical
   ) {
@@ -120,7 +120,7 @@ export const showClueUIAndEnableDragging = () => {
     }
   }
 
-  if (globals.deckPlays) {
+  if (globals.options.deckPlays) {
     globals.elements.deck!.cardBack.draggable(globals.deckSize === 1);
     globals.elements.deckPlayAvailableLabel!.visible(globals.deckSize === 1);
 

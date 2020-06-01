@@ -58,8 +58,8 @@ commands.set('game', (data: Game) => {
   globals.game = data;
 
   // The timeBase and timePerTurn come in seconds, so convert them to milliseconds
-  globals.game.timeBase *= 1000;
-  globals.game.timePerTurn *= 1000;
+  globals.game.options.timeBase *= 1000;
+  globals.game.options.timePerTurn *= 1000;
 
   pregame.draw();
 });

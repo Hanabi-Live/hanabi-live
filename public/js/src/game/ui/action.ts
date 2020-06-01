@@ -195,7 +195,7 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
   card.removeFromParent();
   card.setClued();
 
-  if (card.isMisplayed && !globals.animateFast && !globals.speedrun) {
+  if (card.isMisplayed && !globals.animateFast && !globals.options.speedrun) {
     // If this card was misplayed,
     // it will automatically tween to the discard pile after reaching the play stacks
     card.doMisplayAnimation = true;

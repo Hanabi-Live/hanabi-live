@@ -76,6 +76,12 @@ var (
 )
 
 const (
+	ScoreModifierDeckPlays Bitmask = 1 << iota // e.g. 1, 2, 4, and so forth
+	ScoreModifierEmptyClues
+	ScoreModifierAllOrNothing
+)
+
+const (
 	// The maximum amount of clues (and the amount of clues that players start the game with)
 	MaxClueNum = 8
 

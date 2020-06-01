@@ -1,16 +1,11 @@
+// Imports
+import Options from '../game/Options';
+
 export default interface Game {
   name: string;
   owner: number;
   players: Player[];
-  variant: string;
-  timed: boolean;
-  timeBase: number;
-  timePerTurn: number;
-  speedrun: boolean;
-  cardCycle: boolean;
-  deckPlays: boolean;
-  emptyClues: boolean;
-  characterAssignments: boolean;
+  options: Options;
   passwordProtected: boolean;
 }
 

@@ -478,10 +478,10 @@ export function empathy(this: HanabiCard) {
       // Disable Empathy if a modifier key is pressed
       // (unless we are in a speedrun,
       // because then Empathy is mapped to Ctrl + left click)
-      || (event.evt.ctrlKey && !globals.speedrun && !globals.lobby.settings.speedrunMode)
+      || (event.evt.ctrlKey && !globals.options.speedrun && !globals.lobby.settings.speedrunMode)
       || (
         !event.evt.ctrlKey
-        && (globals.speedrun || globals.lobby.settings.speedrunMode)
+        && (globals.options.speedrun || globals.lobby.settings.speedrunMode)
         && !globals.replay
         && !globals.spectating
       )

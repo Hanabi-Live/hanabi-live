@@ -44,7 +44,7 @@ export const checkLegal = () => {
   // one or more cards in the hand
   const enabled = touchedAtLeastOneCard
     // Make an exception if they have the optional setting for "Empty Clues" turned on
-    || globals.emptyClues
+    || globals.options.emptyClues
     // Make an exception for variants where color clues are always allowed
     || (globals.variant.colorCluesTouchNothing && clueButton.clue.type === CLUE_TYPE.COLOR)
     // Make an exception for variants where number clues are always allowed

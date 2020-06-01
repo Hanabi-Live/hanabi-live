@@ -412,7 +412,7 @@ export default class HanabiCard extends Konva.Group {
   setFade() {
     if (
       globals.lobby.settings.realLifeMode
-      || globals.speedrun
+      || globals.options.speedrun
       || globals.variant.name.startsWith('Throw It in a Hole')
     ) {
       return;

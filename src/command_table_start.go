@@ -50,16 +50,16 @@ func commandTableStart(s *Session, d *CommandData) {
 	}
 
 	// Validate extra things for "!replay" games
-	if t.Options.SetReplay {
+	if t.ExtraOptions.SetReplay {
 		// Validate that the right amount of players is in the game
-		if numPlayers, err := models.Games.GetNumPlayers(t.Options.DatabaseID); err != nil {
+		if numPlayers, err := models.Games.GetNumPlayers(t.ExtraOptions.DatabaseID); err != nil {
 			logger.Error("Failed to get the number of players in game "+
-				strconv.Itoa(t.Options.DatabaseID)+":", err)
+				strconv.Itoa(t.ExtraOptions.DatabaseID)+":", err)
 			s.Error(StartGameFail)
 			return
 		} else if len(t.Players) != numPlayers {
 			s.Warning("You currently have " + strconv.Itoa(len(t.Players)) + " players but game " +
-				strconv.Itoa(t.Options.DatabaseID) + " needs " + strconv.Itoa(numPlayers) +
+				strconv.Itoa(t.ExtraOptions.DatabaseID) + " needs " + strconv.Itoa(numPlayers) +
 				" players.")
 			return
 		}
@@ -105,23 +105,23 @@ func commandTableStart(s *Session, d *CommandData) {
 	shufflePlayers := true
 	seedPrefix := "p" + strconv.Itoa(len(t.Players)) + // e.g. p2v0s
 		"v" + strconv.Itoa(variants[t.Options.Variant].ID) + "s"
-	if t.Options.DatabaseID != 0 {
+	if t.ExtraOptions.DatabaseID != 0 {
 		// This is a replay of a game from the database or
 		// a custom game created with the "!replay" prefix
-		if v, err := models.Games.GetSeed(t.Options.DatabaseID); err != nil {
+		if v, err := models.Games.GetSeed(t.ExtraOptions.DatabaseID); err != nil {
 			logger.Error("Failed to get the seed for game "+
-				"\""+strconv.Itoa(t.Options.DatabaseID)+"\":", err)
+				"\""+strconv.Itoa(t.ExtraOptions.DatabaseID)+"\":", err)
 			s.Error(StartGameFail)
 			return
 		} else {
 			g.Seed = v
 		}
 		shufflePlayers = false
-	} else if t.Options.SetSeedSuffix != "" {
+	} else if t.ExtraOptions.SetSeedSuffix != "" {
 		// This is a custom game created with the "!seed" prefix
 		// (e.g. playing a deal with a specific seed)
-		g.Seed = seedPrefix + t.Options.SetSeedSuffix
-	} else if t.Options.CustomDeck != nil {
+		g.Seed = seedPrefix + t.ExtraOptions.SetSeedSuffix
+	} else if t.ExtraOptions.CustomDeck != nil {
 		// This is a replay of a game from JSON or
 		// a custom game created with the "!deal" prefix
 		dealPrefix := "!deal "
@@ -270,9 +270,9 @@ func commandTableStart(s *Session, d *CommandData) {
 
 	// If we are replaying an existing game up to a certain point,
 	// emulate all of the actions until turn N
-	if t.Options.SetReplay {
+	if t.ExtraOptions.SetReplay {
 		d.Source = "id"
-		d.GameID = t.Options.DatabaseID
+		d.GameID = t.ExtraOptions.DatabaseID
 		if !emulateActions(s, d, t) {
 			return
 		}
@@ -293,7 +293,7 @@ func commandTableStart(s *Session, d *CommandData) {
 	}
 
 	// If we are emulating actions, we do not have to tell anyone about the table yet
-	if !t.Options.Replay {
+	if !t.ExtraOptions.Replay {
 		// Let everyone know that the game has started, which will turn the
 		// "Join Game" button into "Spectate"
 		notifyAllTable(t)
