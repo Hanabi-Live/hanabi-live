@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -192,9 +191,9 @@ func (*Games) GetUserHistory(userID int, offset int, amount int) ([]*GameHistory
 
 		// The players come from the database in a random order
 		// (since we did not include an "ORDER BY" keyword)
-		// Alphabetize the players
+		// Alphabetize the players (case-insensitive)
 		playerNames := strings.Split(playerNamesString, ", ")
-		sort.Strings(playerNames)
+		playerNames = sortStringsCaseInsensitive(playerNames)
 		gameHistory.PlayerNames = playerNames
 
 		games = append(games, &gameHistory)
@@ -271,9 +270,9 @@ func (*Games) GetMultiUserHistory(userIDs []int) ([]*GameHistory, error) {
 
 		// The players come from the database in a random order
 		// (since we did not include an "ORDER BY" keyword)
-		// Alphabetize the players
+		// Alphabetize the players (case-insensitive)
 		playerNames := strings.Split(playerNamesString, ", ")
-		sort.Strings(playerNames)
+		playerNames = sortStringsCaseInsensitive(playerNames)
 		gameHistory.PlayerNames = playerNames
 
 		games = append(games, &gameHistory)
@@ -361,9 +360,9 @@ func (*Games) GetFriendsHistory(
 
 		// The players come from the database in a random order
 		// (since we did not include an "ORDER BY" keyword)
-		// Alphabetize the players
+		// Alphabetize the players (case-insensitive)
 		playerNames := strings.Split(playerNamesString, ", ")
-		sort.Strings(playerNames)
+		playerNames = sortStringsCaseInsensitive(playerNames)
 		gameHistory.PlayerNames = playerNames
 
 		games = append(games, &gameHistory)
@@ -424,9 +423,9 @@ func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error)
 
 		// The players come from the database in a random order
 		// (since we did not include an "ORDER BY" keyword)
-		// Alphabetize the players
+		// Alphabetize the players (case-insensitive)
 		playerNames := strings.Split(playerNamesString, ", ")
-		sort.Strings(playerNames)
+		playerNames = sortStringsCaseInsensitive(playerNames)
 		gameHistory.PlayerNames = playerNames
 
 		games = append(games, &gameHistory)
@@ -506,9 +505,9 @@ func (*Games) GetAllDealsFromGameID(databaseID int) ([]*GameHistory, error) {
 
 		// The players come from the database in a random order
 		// (since we did not include an "ORDER BY" keyword)
-		// Alphabetize the players
+		// Alphabetize the players (case-insensitive)
 		playerNames := strings.Split(playerNamesString, ", ")
-		sort.Strings(playerNames)
+		playerNames = sortStringsCaseInsensitive(playerNames)
 		gameHistory.PlayerNames = playerNames
 
 		games = append(games, &gameHistory)
@@ -592,9 +591,9 @@ func (*Games) GetAllDealsFromSeed(seed string) ([]*GameHistory, error) {
 
 		// The players come from the database in a random order
 		// (since we did not include an "ORDER BY" keyword)
-		// Alphabetize the players
+		// Alphabetize the players (case-insensitive)
 		playerNames := strings.Split(playerNamesString, ", ")
-		sort.Strings(playerNames)
+		playerNames = sortStringsCaseInsensitive(playerNames)
 		gameHistory.PlayerNames = playerNames
 
 		games = append(games, &gameHistory)

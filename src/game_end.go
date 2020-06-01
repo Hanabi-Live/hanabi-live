@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -129,7 +128,7 @@ func (g *Game) End() {
 	for _, p := range t.Players {
 		playerNames = append(playerNames, p.Name)
 	}
-	sort.Strings(playerNames)
+	sortStringsCaseInsensitive(playerNames)
 	gameHistoryList := make([]*GameHistory, 0)
 	gameHistoryList = append(gameHistoryList, &GameHistory{
 		ID:                g.ID, // Recorded in the "WriteDatabase()" function above

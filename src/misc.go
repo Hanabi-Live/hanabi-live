@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -232,6 +233,14 @@ func stringInSlice(a string, slice []string) bool {
 		}
 	}
 	return false
+}
+
+// From: https://stackoverflow.com/questions/51997276/how-one-can-do-case-insensitive-sorting-using-sort-strings-in-golang
+func sortStringsCaseInsensitive(slice []string) []string {
+	sort.Slice(slice, func(i, j int) bool {
+		return strings.ToLower(slice[i]) < strings.ToLower(slice[j])
+	})
+	return slice
 }
 
 func toSnakeCase(str string) string {

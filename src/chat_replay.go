@@ -35,6 +35,8 @@ func chatTags(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
+	// We don't have to worry about doing a case-insensitive sort since all the tags should be
+	// lowercase
 	sort.Strings(tags)
 
 	chatServerSend("The list of tags for this game are as follows:", d.Room)
