@@ -684,6 +684,17 @@ func (*Games) GetSeed(databaseID int) (string, error) {
 	return seed, err
 }
 
+func (*Games) GetDatetimes(databaseID int) (time.Time, time.Time, error) {
+	var datetimeStarted time.Time
+	var datetimeFinished time.Time
+	err := db.QueryRow(context.Background(), `
+		SELECT datetime_started, datetime_finished
+		FROM games
+		WHERE games.id = $1
+	`, databaseID).Scan(&datetimeStarted, &datetimeFinished)
+	return datetimeStarted, datetimeFinished, err
+}
+
 type DBPlayer struct {
 	ID                  int
 	Name                string
@@ -821,29 +832,6 @@ func (*Games) GetNotes(databaseID int, numPlayers int, noteSize int) ([][]string
 	rows.Close()
 
 	return allPlayersNotes, nil
-}
-
-func (*Games) GetFastestTime(variant int, numPlayers int, maxScore int) (int, error) {
-	var seconds int
-	if err := db.QueryRow(context.Background(), `
-		SELECT
-			CAST((
-				EXTRACT(EPOCH FROM datetime_finished) -
-				EXTRACT(EPOCH FROM datetime_started)
-			) AS INTEGER) AS datetime_elapsed
-		FROM games
-		WHERE variant = $1
-			AND num_players = $2
-			AND score = $3
-		ORDER BY datetime_elapsed
-		LIMIT 1
-	`, variant, numPlayers, maxScore).Scan(&seconds); err == pgx.ErrNoRows {
-		return 10 * 60, nil // Default to 10 minutes
-	} else if err != nil {
-		return seconds, err
-	}
-
-	return seconds, nil
 }
 
 type Stats struct {

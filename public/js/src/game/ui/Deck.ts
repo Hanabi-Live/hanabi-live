@@ -156,7 +156,7 @@ export default class Deck extends Konva.Group {
     content += '<strong>Game Info:</strong>';
     content += '<ul class="game-tooltips-ul">';
 
-    if (globals.replay) {
+    if (globals.replay && globals.databaseID !== 0) { // Disable this row in JSON replays
       const formattedDatetimeFinished = misc.dateTimeFormatter.format(
         new Date(globals.datetimeFinished),
       );
@@ -173,7 +173,12 @@ export default class Deck extends Konva.Group {
 
     if (globals.replay || globals.seeded) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-seedling"></i></span>';
-      content += `&nbsp; Seed: &nbsp;<strong>${globals.seed}</strong></li>`;
+      const seed = globals.seed === 'JSON' ? 'n/a' : globals.seed;
+      content += `&nbsp; Seed: &nbsp;<strong>${seed}</strong>`;
+      if (globals.seed === 'JSON') {
+        content += ' (JSON game)';
+      }
+      content += '</li>';
     }
 
     content += '<li><span class="game-tooltips-icon"><i class="fas fa-rainbow"></i></span>';

@@ -138,6 +138,19 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	g.Turn = 0 // We want to start viewing the replay at the beginning, not the end
 	t.Progress = 0
 
+	if d.Source == "id" {
+		// Fill in the DatetimeStarted and DatetimeFinished" values from the database
+		if v1, v2, err := models.Games.GetDatetimes(g.ID); err != nil {
+			logger.Error("Failed to get the datetimes for game \""+strconv.Itoa(g.ID)+"\":", err)
+			s.Error(InitGameFail)
+			delete(tables, t.ID)
+			return
+		} else {
+			g.DatetimeStarted = v1
+			g.DatetimeFinished = v2
+		}
+	}
+
 	// Join the user to the new replay
 	d.TableID = t.ID
 	commandTableSpectate(s, d)
