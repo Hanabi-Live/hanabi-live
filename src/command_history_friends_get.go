@@ -20,7 +20,7 @@ func commandHistoryFriendsGet(s *Session, d *CommandData) {
 	}
 
 	// Get the history for the range that they specified
-	var history []*GameHistory
+	var gameHistoryList []*GameHistory
 	if v, err := models.Games.GetFriendsHistory(
 		s.UserID(),
 		s.Friends(),
@@ -31,8 +31,8 @@ func commandHistoryFriendsGet(s *Session, d *CommandData) {
 		logger.Error("Failed to get the history for the friends of user \""+s.Username()+"\":", err)
 		return
 	} else {
-		history = v
+		gameHistoryList = v
 	}
 
-	s.Emit("gameHistoryFriends", &history)
+	s.Emit("gameHistoryFriends", &gameHistoryList)
 }

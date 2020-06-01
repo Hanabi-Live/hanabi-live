@@ -45,7 +45,7 @@ func httpHistory(c *gin.Context) {
 	}
 
 	// Get the player's entire game history
-	var history []*GameHistory
+	var gameHistoryList []*GameHistory
 	if v, err := models.Games.GetUserHistory(user.ID, 0, 0, true); err != nil {
 		logger.Error("Failed to get the history for player \""+user.Username+"\":", err)
 		http.Error(
@@ -55,14 +55,14 @@ func httpHistory(c *gin.Context) {
 		)
 		return
 	} else {
-		history = v
+		gameHistoryList = v
 	}
 
 	data := HistoryData{
 		Title:   "History",
 		Dev:     false,
 		Name:    user.Username,
-		History: history,
+		History: gameHistoryList,
 	}
 	httpServeTemplate(w, data, "profile", "history")
 }

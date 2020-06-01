@@ -307,7 +307,7 @@ func (t *Table) NotifyProgress() {
 		return
 	}
 
-	for _, s := range t.GetNotifySessions() {
+	for _, s := range t.GetNotifySessions(false) {
 		s.NotifyTableProgress(t)
 	}
 }

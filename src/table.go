@@ -239,7 +239,7 @@ func (t *Table) GetOwnerSession() *Session {
 // Only notify:
 // 1) players who are currently in the game
 // 2) users that have players or spectators in this table on their friends list
-func (t *Table) GetNotifySessions() []*Session {
+func (t *Table) GetNotifySessions(excludePlayers bool) []*Session {
 	// First, make a map that contains a list of every relevant user
 	notifyMap := make(map[int]struct{})
 
@@ -262,6 +262,14 @@ func (t *Table) GetNotifySessions() []*Session {
 		notifyMap[sp.ID] = struct{}{}
 		for userID := range sp.Session.ReverseFriends() {
 			notifyMap[userID] = struct{}{}
+		}
+	}
+
+	// In some situations, we need to only notify the reverse friends;
+	// including the players would mean that the players get duplicate messages
+	if excludePlayers {
+		for _, p := range t.Players {
+			delete(notifyMap, p.ID)
 		}
 	}
 

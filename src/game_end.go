@@ -150,6 +150,11 @@ func (g *Game) End() {
 		p.Session.Emit("gameHistory", &gameHistoryList)
 	}
 
+	// Also send the history to the reverse friends
+	for _, s := range t.GetNotifySessions(true) {
+		s.Emit("gameHistoryFriends", &gameHistoryList)
+	}
+
 	// All games are automatically converted to shared replays after they finish
 	// (unless all the players are in the lobby / disconnected, or if the game ended to idleness)
 	t.ConvertToSharedReplay()
