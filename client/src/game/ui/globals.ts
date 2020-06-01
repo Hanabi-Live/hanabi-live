@@ -8,7 +8,7 @@ import { Globals as LobbyGlobals } from '../../globals';
 import Variant from '../../Variant';
 import { GameExports } from '../main';
 import Options from '../Options';
-import { ClientAction } from './actions';
+import { ClientAction, Action } from './actions';
 import Elements from './Elements';
 import HanabiCard from './HanabiCard';
 import Layers from './Layers';
@@ -78,7 +78,7 @@ export class Globals {
 
   // Replay feature
   inReplay: boolean = false; // Whether or not the replay controls are currently showing
-  replayLog: any[] = []; // Contains all of the "action" messages for the game
+  replayLog: Action[] = []; // Contains all of the "action" messages for the game
   replayPos: number = 0; // The current index of the "globals.replayLog" array
   replayTurn: number = 0; // The current game turn
   replayMax: number = 0; // The maximum turn recorded so fast
@@ -97,7 +97,7 @@ export class Globals {
   useSharedTurns: boolean = false;
   sharedReplayLoading: boolean = false; // This is used to not animate cards when loading in
   hypothetical: boolean = false; // Whether or not we are in a hypothetical
-  hypoActions: any[] = []; // An array of the actions in the current hypothetical
+  hypoActions: Action[] = []; // An array of the actions in the current hypothetical
   hypoRevealed: boolean = true; // Whether or not drawn cards should be revealed when drawn
 
   // Notes feature
@@ -143,8 +143,6 @@ export class Globals {
   // State information
   state: State = new State(); // The current state
   states: State[] = []; // The state for each turn
-  // We also keep track of the strikes outside of the state object so that we can show a faded X
-  strikes: StateStrike[] = [];
   deckOrder: SimpleCard[] = []; // Sent when the game ends
 
   // We provide a method to reset every class variable to its initial value
@@ -232,20 +230,12 @@ export class Globals {
     this.chatUnread = 0;
     this.state = new State();
     this.states = [];
-    this.strikes = [];
     this.deckOrder = [];
   }
 }
 
 const globals = new Globals();
 export default globals;
-
-// TODO move this somewhere, probably to a separate file
-// Eventually this should be part of the state object
-interface StateStrike {
-  order: number;
-  turn: number;
-}
 
 // Also make it available to the window so that we can access global variables
 // from the JavaScript console (for debugging purposes)
