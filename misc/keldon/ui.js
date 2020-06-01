@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 "use strict";
 
 function HanabiUI(lobby)
