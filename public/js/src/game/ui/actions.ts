@@ -17,81 +17,81 @@ export type Action =
   | ActionDeckOrder;
 
 // Action is a message sent to the server that represents the in-game action that we just took
-export type ClientAction = {
+export interface ClientAction {
   type: ActionType;
   target: number;
   value?: number;
-};
+}
 
-export type ActionDraw = {
+export interface ActionDraw {
   type: 'draw';
   who: number;
   rank: number;
   suit: number;
   order: number;
-};
+}
 
-export type ActionStatus = {
+export interface ActionStatus {
   type: 'status';
   clues: number;
   score: number;
   maxScore: number;
   doubleDiscard: boolean;
-};
+}
 
-export type ActionStackDirections = {
+export interface ActionStackDirections {
   type: 'stackDirections';
   directions: number[];
-};
+}
 
-export type ActionText = {
+export interface ActionText {
   type: 'text';
   text: string;
-};
+}
 
-export type ActionTurn = {
+export interface ActionTurn {
   type: 'turn';
   num: number;
   who: number;
-};
+}
 
-export type ActionClue = {
+export interface ActionClue {
   type: 'clue';
   clue: MsgClue;
   giver: number;
   list: number[];
   target: number;
   turn: number;
-};
+}
 
-export type ActionPlay = {
+export interface ActionPlay {
   type: 'play';
   which: Which;
-};
+}
 
-export type ActionDiscard = {
+export interface ActionDiscard {
   type: 'discard';
   failed: boolean;
   which: Which;
-};
+}
 
-export type ActionReorder = {
+export interface ActionReorder {
   type: 'reorder';
   target: number;
   handOrder: number[];
-};
+}
 
-export type ActionStrike = {
+export interface ActionStrike {
   type: 'strike';
   num: number; // 1 for the first strike, 2 for the second strike, etc.
   order: number; // The order of the card that was misplayed
   turn: number;
-};
+}
 
-export type ActionDeckOrder = {
+export interface ActionDeckOrder {
   type: 'deckOrder';
   deck: SimpleCard[];
-};
+}
 
 type Which = {
   index: number;

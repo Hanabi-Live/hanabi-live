@@ -21,12 +21,12 @@ import PlayerButton from './PlayerButton';
 import * as replay from './replay';
 import * as turn from './turn';
 
-export type ActionReveal = {
+export interface ActionReveal {
   type: 'reveal';
   suit: number;
   rank: number;
   order: number;
-};
+}
 
 export type ActionIncludingHypothetical = ClientAction | Action | ActionReveal;
 
