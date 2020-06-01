@@ -125,12 +125,11 @@ func (g *Game) End() {
 	} else {
 		numSimilar = v
 	}
-	playerNamesSlice := make([]string, 0)
+	playerNames := make([]string, 0)
 	for _, p := range t.Players {
-		playerNamesSlice = append(playerNamesSlice, p.Name)
+		playerNames = append(playerNames, p.Name)
 	}
-	sort.Strings(playerNamesSlice)
-	playerNames := strings.Join(playerNamesSlice, ", ")
+	sort.Strings(playerNames)
 	gameHistoryList := make([]*GameHistory, 0)
 	gameHistoryList = append(gameHistoryList, &GameHistory{
 		ID:                g.ID, // Recorded in the "WriteDatabase()" function above

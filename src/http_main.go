@@ -30,10 +30,10 @@ func httpMain(c *gin.Context) {
 
 	data := TemplateData{
 		Title:     "Main",
-		Dev:       strings.HasPrefix(c.FullPath(), "/dev"),
 		Domain:    domain,
 		Version:   getVersion(),
 		Compiling: compiling,
+		Dev:       strings.HasPrefix(c.FullPath(), "/dev"),
 	}
 	httpServeTemplate(w, data, "main")
 }

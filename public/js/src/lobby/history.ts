@@ -134,11 +134,10 @@ export const draw = (friends: boolean) => {
 
     // Column 5 - Other Players
     // Remove our name from the list of players
-    const playerNamesArray = gameData.playerNames.split(', ');
-    const ourIndex = playerNamesArray.indexOf(globals.username);
-    playerNamesArray.splice(ourIndex, 1);
-    const playerNames = playerNamesArray.join(', ');
-    $('<td>').html(playerNames).appendTo(row);
+    const ourIndex = gameData.playerNames.indexOf(globals.username);
+    const playerNamesWithoutUs = gameData.playerNames.slice().splice(ourIndex, 1);
+    const playerNamesWithoutUsString = playerNamesWithoutUs.join(', ');
+    $('<td>').html(playerNamesWithoutUsString).appendTo(row);
 
     // Column 6 - Date Played
     const datePlayed = misc.dateTimeFormatter.format(new Date(gameData.datetimeFinished));
@@ -290,8 +289,7 @@ export const drawOtherScores = (games: GameHistory[], friends: boolean) => {
   // Add all of the games
   for (const gameData of games) {
     // Find out if this game was played by us
-    const playerNamesArray = gameData.playerNames.split(', ');
-    const ourGame = playerNamesArray.includes(globals.username);
+    const ourGame = gameData.playerNames.includes(globals.username);
 
     const row = $('<tr>');
 
@@ -310,11 +308,11 @@ export const drawOtherScores = (games: GameHistory[], friends: boolean) => {
     $('<td>').html(score).appendTo(row);
 
     // Column 3 - Players
-    let playerNames = gameData.playerNames;
+    let playerNamesString = gameData.playerNames.join(', ');
     if (ourGame) {
-      playerNames = `<strong>${playerNames}</strong>`;
+      playerNamesString = `<strong>${playerNamesString}</strong>`;
     }
-    $('<td>').html(playerNames).appendTo(row);
+    $('<td>').html(playerNamesString).appendTo(row);
 
     // Column 4 - Date Played
     let datePlayed = misc.dateTimeFormatter.format(new Date(gameData.datetimeFinished));

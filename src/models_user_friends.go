@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"sort"
+	"strings"
 )
 
 type UserFriends struct{}
@@ -39,6 +41,12 @@ func (*UserFriends) GetAllUsernames(userID int) ([]string, error) {
 		}
 		friends = append(friends, friend)
 	}
+
+	// Alphabetize the friends (case-insensitive)
+	// https://stackoverflow.com/questions/51997276/how-one-can-do-case-insensitive-sorting-using-sort-strings-in-golang
+	sort.Slice(friends, func(i, j int) bool {
+		return strings.ToLower(friends[i]) < strings.ToLower(friends[j])
+	})
 
 	if rows.Err() != nil {
 		return friends, err

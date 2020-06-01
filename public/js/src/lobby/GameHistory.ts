@@ -12,6 +12,6 @@ export default interface GameHistory {
   datetimeStarted: Date;
   datetimeFinished: Date;
   numSimilar: number;
-  playerNames: string;
+  playerNames: string[];
   incrementNumGames: boolean;
 }

@@ -94,7 +94,12 @@
                     <td><a href="/replay/{{.ID}}">{{.ID}}</a></td>
                     <td>{{.NumPlayers}}</td>
                     <td>{{.Score}}</td>
-                    <td>{{.PlayerNames}}</td>
+                    <td>
+                      <!-- From: https://stackoverflow.com/questions/21305865/golang-separating-items-with-comma-in-template -->
+                      <a href="/history/{{range $index2, $results2 := .PlayerNames}}{{if $index2}}/{{end}}{{$results2}}{{end}}">
+                        {{range $index2, $results2 := .PlayerNames}}{{if $index2}}, {{end}}{{$results2}}{{end}}
+                      </a>
+                    </td>
                     <td>{{.DatetimeFinished}}</td>
                   </tr>
                 {{- end -}}

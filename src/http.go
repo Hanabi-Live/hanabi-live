@@ -23,7 +23,6 @@ type TemplateData struct {
 	Version   int
 	Compiling bool // True if we are currently recompiling the TypeScript client
 	Dev       bool
-	Name      string // Used for the profile
 }
 
 const (
@@ -162,7 +161,12 @@ func httpInit() {
 	httpRouter.GET("/profile", httpScores) // "/profile" is an alias for "/scores"
 	httpRouter.GET("/profile/:player", httpScores)
 	httpRouter.GET("/history", httpHistory)
-	httpRouter.GET("/history/:player", httpHistory)
+	httpRouter.GET("/history/:player1", httpHistory)
+	httpRouter.GET("/history/:player1/:player2", httpHistory)
+	httpRouter.GET("/history/:player1/:player2/:player3", httpHistory)
+	httpRouter.GET("/history/:player1/:player2/:player3/:player4", httpHistory)
+	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5", httpHistory)
+	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5/:player6", httpHistory)
 	httpRouter.GET("/missing-scores", httpScores)
 	httpRouter.GET("/missing-scores/:player", httpScores)
 	httpRouter.GET("/stats", httpStats)
