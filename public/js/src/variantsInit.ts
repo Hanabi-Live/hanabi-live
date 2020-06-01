@@ -4,7 +4,7 @@ import variantsJSON from './data/variants.json';
 import Suit from './Suit';
 import Variant from './Variant';
 
-type VariantJSON = {
+interface VariantJSON {
   id: number;
   suits: string[];
 
@@ -20,7 +20,7 @@ type VariantJSON = {
 
   showSuitNames?: boolean;
   spacing?: boolean;
-};
+}
 type VariantEntryIterable = Iterable<[string, VariantJSON]>;
 
 export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD_RANK: number) => {

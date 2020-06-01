@@ -4,7 +4,7 @@ import { SUIT_REVERSED_SUFFIX } from './constants';
 import suitsJSON from './data/suits.json';
 import Suit from './Suit';
 
-type SuitJSON = {
+interface SuitJSON {
   name?: string;
   abbreviation?: string;
   clueColors?: string[];
@@ -18,7 +18,7 @@ type SuitJSON = {
   allClueRanks?: boolean;
   noClueColors?: boolean;
   noClueRanks?: boolean;
-};
+}
 type SuitEntryIterable = Iterable<[string, SuitJSON]>;
 
 export default (COLORS: Map<string, Color>) => {

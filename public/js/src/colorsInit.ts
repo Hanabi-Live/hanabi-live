@@ -2,11 +2,11 @@
 import Color from './Color';
 import colorsJSON from './data/colors.json';
 
-type ColorJSON = {
+interface ColorJSON {
   fill: string;
   fillColorblind?: string;
   abbreviation?: string;
-};
+}
 type ColorEntryIterable = Iterable<[string, ColorJSON]>;
 
 export default () => {

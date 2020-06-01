@@ -16,22 +16,22 @@ export default class State {
   clues: StateClue[] = [];
 }
 
-type StateCard = {
+interface StateCard {
   suit: number;
   rank: number;
   clues: StateCardClue[];
-};
+}
 
-type StateClue = {
+interface StateClue {
   type: number;
   value: number;
   giver: number;
   target: number;
   turn: number;
-};
+}
 
-type StateCardClue = {
+interface StateCardClue {
   type: number;
   value: number;
   positive: boolean;
-};
+}

@@ -93,9 +93,9 @@ export interface ActionDeckOrder {
   deck: SimpleCard[];
 }
 
-type Which = {
+interface Which {
   index: number;
   suit: number;
   rank: number;
   order: number;
-};
+}

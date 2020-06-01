@@ -492,9 +492,9 @@ commands.set('pause', (data: PauseData) => {
 });
 
 // This is used in shared replays to highlight a specific card (or UI element)
-type ReplayIndicatorData = {
+interface ReplayIndicatorData {
   order: ReplayArrowOrder;
-};
+}
 commands.set('replayIndicator', (data: ReplayIndicatorData) => {
   if (globals.loading) {
     // We have not loaded everything yet, so don't bother with shared replay features
@@ -546,10 +546,10 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
 });
 
 // This is used in shared replays to specify who the leader is
-type ReplayLeaderData = {
+interface ReplayLeaderData {
   name: string;
   playAnimation: boolean;
-};
+}
 commands.set('replayLeader', (data: ReplayLeaderData) => {
   // Store who the shared replay leader is
   globals.sharedReplayLeader = data.name;
