@@ -178,16 +178,18 @@ const initCommands = () => {
       setTimeout(() => {
         globals.conn!.send('tableCreate', {
           name,
-          variant,
-          timed,
-          timeBase,
-          timePerTurn,
-          speedrun,
-          cardCycle,
-          deckPlays,
-          emptyClues,
-          allOrNothing,
-          detrimentalCharacters,
+          options: {
+            variant,
+            timed,
+            timeBase,
+            timePerTurn,
+            speedrun,
+            cardCycle,
+            deckPlays,
+            emptyClues,
+            allOrNothing,
+            detrimentalCharacters,
+          },
           password,
         });
       }, 10);
