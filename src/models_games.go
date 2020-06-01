@@ -216,6 +216,7 @@ func (*Games) GetUserHistory(
 }
 
 func (*Games) GetFriendsHistory(
+	userID int,
 	friends map[int]struct{},
 	offset int,
 	amount int,
@@ -245,18 +246,19 @@ func (*Games) GetFriendsHistory(
 			) AS player_names
 		FROM games AS games1
 			JOIN game_participants AS game_participants1 ON games1.id = game_participants1.game_id
-		WHERE
+		WHERE game_participants1.user_id != $1 AND (
 	`
 	for friendID := range friends {
 		SQLString += "game_participants1.user_id = " + strconv.Itoa(friendID) + " OR "
 	}
 	SQLString = strings.TrimSuffix(SQLString, "OR ")
+	SQLString += ") "
 	SQLString += "ORDER BY games1.id DESC"
 	if !all {
 		SQLString += " LIMIT " + strconv.Itoa(amount) + " OFFSET " + strconv.Itoa(offset)
 	}
 
-	rows, err := db.Query(context.Background(), SQLString)
+	rows, err := db.Query(context.Background(), SQLString, userID)
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
