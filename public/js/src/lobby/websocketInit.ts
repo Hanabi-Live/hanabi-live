@@ -58,8 +58,8 @@ commands.set('game', (data: Game) => {
   globals.game = data;
 
   // The timeBase and timePerTurn come in seconds, so convert them to milliseconds
-  globals.game.timeBase *= 1000;
-  globals.game.timePerTurn *= 1000;
+  globals.game.options.timeBase *= 1000;
+  globals.game.options.timePerTurn *= 1000;
 
   pregame.draw();
 });
@@ -103,8 +103,12 @@ commands.set('gameHistoryFriends', (dataArray: GameHistory[]) => {
   }
 });
 
-commands.set('gameHistoryOtherScores', (data: GameHistory[]) => {
-  history.drawOtherScores(data);
+interface GameHistoryOtherScoresData {
+  games: GameHistory[],
+  friends: boolean,
+}
+commands.set('gameHistoryOtherScores', (data: GameHistoryOtherScoresData) => {
+  history.drawOtherScores(data.games, data.friends);
 });
 
 commands.set('left', () => {

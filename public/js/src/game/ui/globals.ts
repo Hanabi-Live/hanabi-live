@@ -3,17 +3,18 @@
 
 // Imports
 import Konva from 'konva';
-import { VARIANTS } from '../../constants';
+import { VARIANTS, StackDirection } from '../../constants';
 import { Globals as LobbyGlobals } from '../../globals';
 import Variant from '../../Variant';
 import { GameExports } from '../main';
-import { Action } from './actions';
+import Options from '../Options';
+import { ClientAction } from './actions';
 import Elements from './Elements';
 import HanabiCard from './HanabiCard';
 import Layers from './Layers';
 import LearnedCard from './LearnedCard';
 import Loader from './Loader';
-import SimpleCard from './SimpleCard';
+import { SimpleCard } from './SimpleCard';
 import SpectatorNote from './SpectatorNote';
 import State from './State';
 
@@ -29,7 +30,7 @@ export class Globals {
   variant: Variant = VARIANTS.get('No Variant')!;
   playerUs: number = -1;
   spectating: boolean = false;
-  replay: boolean = false;
+  replay: boolean = false; // True if in a solo replay or a shared replay
   sharedReplay: boolean = false;
   databaseID: number = 0;
   seed: string = '';
@@ -39,13 +40,9 @@ export class Globals {
 
   // Optional game settings
   // (sent in the "init" message)
-  timed: boolean = false;
-  timeBase: number = 0;
-  timePerTurn: number = 0;
-  speedrun: boolean = false;
-  cardCycle: boolean = false;
-  deckPlays: boolean = false;
-  emptyClues: boolean = false;
+  options: Options = new Options();
+
+  // Character settings
   characterAssignments: string[] = [];
   characterMetadata: number[] = [];
   characterRememberedCards: SimpleCard[] = [];
@@ -67,7 +64,7 @@ export class Globals {
   clues: number = 0;
   cardsGotten: number = 0;
   cluesSpentPlusStrikes: number = 0;
-  stackDirections: number[] = [];
+  stackDirections: StackDirection[] = [];
   numCardsPlayed: number = 0; // For "Throw It in a Hole" variants
 
   // UI elements
@@ -127,7 +124,7 @@ export class Globals {
   lastTimerUpdateTimeMS: number = 0;
 
   // Pre-move feature
-  queuedAction: Action | null = null;
+  queuedAction: ClientAction | null = null;
   preCluedCardOrder: number | null = null;
 
   // Pause feature
@@ -168,13 +165,7 @@ export class Globals {
     this.seed = '';
     this.datetimeStarted = new Date();
     this.datetimeFinished = new Date();
-    this.timed = false;
-    this.timeBase = 0;
-    this.timePerTurn = 0;
-    this.speedrun = false;
-    this.cardCycle = false;
-    this.deckPlays = false;
-    this.emptyClues = false;
+    this.options = new Options();
     this.characterAssignments = [];
     this.characterMetadata = [];
     this.characterRememberedCards = [];

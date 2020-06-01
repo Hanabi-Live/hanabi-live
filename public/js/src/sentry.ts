@@ -29,6 +29,9 @@ const ignoreErrors = [
   'The fetching process for the media resource was aborted by the user agent at the user\'s request.',
   'The play method is not allowed by the user agent or the platform in the current context, possibly because the user denied permission.',
   'The request is not allowed by the user agent or the platform in the current context, possibly because the user denied permission.',
+
+  // https://stackoverflow.com/questions/49384120/resizeobserver-loop-limit-exceeded
+  'ResizeObserver loop limit exceeded',
 ];
 
 export const setUserContext = (userID: number, username: string) => {

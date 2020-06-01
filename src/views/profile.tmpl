@@ -22,8 +22,15 @@
     <div class="row uniform 100%">
       <div class="col-12">
         <section class="box">
-          <h2 class="align-center">{{.Name}}'s Profile</h2>
+          <h2 class="align-center">
+            {{if .NamesTitle}}
+              Game History for {{.NamesTitle}}
+            {{else}}
+              {{.Name}}'s Profile
+            {{end}}
+          </h2>
 
+          {{if not .NamesTitle}}
           <div>
             <ul class="actions fit">
               <li>
@@ -37,6 +44,7 @@
               </li>
             </ul>
           </div>
+          {{end}}
 
           {{template "profile" .}}
         </section>

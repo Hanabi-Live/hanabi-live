@@ -63,7 +63,7 @@ func httpExport(c *gin.Context) {
 	}
 
 	// Get the options from the database
-	var options DBOptions
+	var options *Options
 	if v, err := models.Games.GetOptions(gameID); err != nil {
 		logger.Error("Failed to get the options from the database for game "+
 			strconv.Itoa(gameID)+":", err)
@@ -96,10 +96,9 @@ func httpExport(c *gin.Context) {
 
 	// Make a deck and shuffle it
 	g := &Game{
-		Options: &Options{
-			Variant: variantsID[options.Variant],
-		},
-		Seed: seed,
+		Options:      options,
+		ExtraOptions: &ExtraOptions{},
+		Seed:         seed,
 	}
 	g.InitDeck()
 	g.InitSeed()
@@ -164,7 +163,7 @@ func httpExport(c *gin.Context) {
 	// If this was a game with the "Detrimental Characters" option turned on,
 	// make a list of the characters for each player
 	var playerCharacters []*CharacterJSON
-	if options.CharacterAssignments {
+	if options.DetrimentalCharacters {
 		playerCharacters = make([]*CharacterJSON, 0)
 		for _, p := range dbPlayers {
 			playerCharacters = append(playerCharacters, &CharacterJSON{
@@ -179,7 +178,7 @@ func httpExport(c *gin.Context) {
 	// so that they are not added to the JSON object)
 	optionsJSON := &OptionsJSON{}
 	allDefaultOptions := true
-	if options.Variant != 0 {
+	if options.Variant != "No Variant" {
 		optionsJSON.Variant = &variant.Name
 		allDefaultOptions = false
 	}
@@ -205,8 +204,12 @@ func httpExport(c *gin.Context) {
 		optionsJSON.EmptyClues = &options.EmptyClues
 		allDefaultOptions = false
 	}
-	if options.CharacterAssignments {
-		optionsJSON.CharacterAssignments = &options.CharacterAssignments
+	if options.AllOrNothing {
+		optionsJSON.AllOrNothing = &options.AllOrNothing
+		allDefaultOptions = false
+	}
+	if options.DetrimentalCharacters {
+		optionsJSON.DetrimentalCharacters = &options.DetrimentalCharacters
 		allDefaultOptions = false
 	}
 	if allDefaultOptions {

@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -39,7 +38,7 @@ func (g *Game) End() {
 	t.NotifyGameAction()
 
 	// There will be no times associated with a replay, so don't bother with the rest of the code
-	if g.Options.Replay {
+	if g.ExtraOptions.Replay {
 		return
 	}
 
@@ -125,37 +124,33 @@ func (g *Game) End() {
 	} else {
 		numSimilar = v
 	}
-	playerNamesSlice := make([]string, 0)
+	playerNames := make([]string, 0)
 	for _, p := range t.Players {
-		playerNamesSlice = append(playerNamesSlice, p.Name)
+		playerNames = append(playerNames, p.Name)
 	}
-	sort.Strings(playerNamesSlice)
-	playerNames := strings.Join(playerNamesSlice, ", ")
+	sortStringsCaseInsensitive(playerNames)
 	gameHistoryList := make([]*GameHistory, 0)
 	gameHistoryList = append(gameHistoryList, &GameHistory{
-		ID:                   g.ID, // Recorded in the "WriteDatabase()" function above
-		NumPlayers:           len(g.Players),
-		Variant:              g.Options.Variant,
-		Timed:                g.Options.Timed,
-		TimeBase:             g.Options.TimeBase,
-		TimePerTurn:          g.Options.TimePerTurn,
-		Speedrun:             g.Options.Speedrun,
-		CardCycle:            g.Options.CardCycle,
-		DeckPlays:            g.Options.DeckPlays,
-		EmptyClues:           g.Options.EmptyClues,
-		CharacterAssignments: g.Options.CharacterAssignments,
-		Seed:                 g.Seed,
-		Score:                g.Score,
-		NumTurns:             g.Turn,
-		EndCondition:         g.EndCondition,
-		DatetimeStarted:      g.DatetimeStarted,
-		DatetimeFinished:     g.DatetimeFinished,
-		NumSimilar:           numSimilar,
-		PlayerNames:          playerNames,
-		IncrementNumGames:    true,
+		ID:                g.ID, // Recorded in the "WriteDatabase()" function above
+		NumPlayers:        len(g.Players),
+		Options:           g.Options,
+		Seed:              g.Seed,
+		Score:             g.Score,
+		NumTurns:          g.Turn,
+		EndCondition:      g.EndCondition,
+		DatetimeStarted:   g.DatetimeStarted,
+		DatetimeFinished:  g.DatetimeFinished,
+		NumSimilar:        numSimilar,
+		PlayerNames:       playerNames,
+		IncrementNumGames: true,
 	})
 	for _, p := range t.Players {
 		p.Session.Emit("gameHistory", &gameHistoryList)
+	}
+
+	// Also send the history to the reverse friends
+	for _, s := range t.GetNotifySessions(true) {
+		s.Emit("gameHistoryFriends", &gameHistoryList)
 	}
 
 	// All games are automatically converted to shared replays after they finish
@@ -167,23 +162,15 @@ func (g *Game) WriteDatabase() error {
 	t := g.Table
 
 	row := GameRow{
-		Name:                 t.Name,
-		NumPlayers:           len(g.Players),
-		Variant:              variants[g.Options.Variant].ID,
-		Timed:                g.Options.Timed,
-		TimeBase:             g.Options.TimeBase,
-		TimePerTurn:          g.Options.TimePerTurn,
-		Speedrun:             g.Options.Speedrun,
-		CardCycle:            g.Options.CardCycle,
-		DeckPlays:            g.Options.DeckPlays,
-		EmptyClues:           g.Options.EmptyClues,
-		CharacterAssignments: g.Options.CharacterAssignments,
-		Seed:                 g.Seed,
-		Score:                g.Score,
-		NumTurns:             g.Turn,
-		EndCondition:         g.EndCondition,
-		DatetimeStarted:      g.DatetimeStarted,
-		DatetimeFinished:     g.DatetimeFinished,
+		Name:             t.Name,
+		NumPlayers:       len(g.Players),
+		Options:          g.Options,
+		Seed:             g.Seed,
+		Score:            g.Score,
+		NumTurns:         g.Turn,
+		EndCondition:     g.EndCondition,
+		DatetimeStarted:  g.DatetimeStarted,
+		DatetimeFinished: g.DatetimeFinished,
 	}
 	if v, err := models.Games.Insert(row); err != nil {
 		logger.Error("Failed to insert the game row:", err)
@@ -197,7 +184,7 @@ func (g *Game) WriteDatabase() error {
 		p := t.Players[gp.Index]
 
 		characterID := 0
-		if t.Options.CharacterAssignments {
+		if t.Options.DetrimentalCharacters {
 			if gp.Character == "n/a" {
 				characterID = -1
 			} else {
@@ -298,6 +285,19 @@ func (g *Game) WriteDatabase() error {
 		}
 	}
 
+	// Compute the integer modifier for this game,
+	// corresponding to the "ScoreModifier" constants in "constants.go"
+	var modifier Bitmask
+	if g.Options.DeckPlays {
+		modifier.AddFlag(ScoreModifierDeckPlays)
+	}
+	if g.Options.EmptyClues {
+		modifier.AddFlag(ScoreModifierEmptyClues)
+	}
+	if g.Options.AllOrNothing {
+		modifier.AddFlag(ScoreModifierAllOrNothing)
+	}
+
 	// Update the variant-specific stats for each player
 	for _, p := range t.Players {
 		// Get their current best scores
@@ -307,19 +307,6 @@ func (g *Game) WriteDatabase() error {
 			continue
 		} else {
 			stats = v
-		}
-
-		// Compute the integer modifier for this game
-		// 0 if no extra options
-		// 1 if deck play
-		// 2 if empty clues
-		// 3 if both
-		modifier := 0
-		if g.Options.DeckPlays {
-			modifier++
-		}
-		if g.Options.EmptyClues {
-			modifier += 2
 		}
 
 		// 2-player is at index 0, 3-player is at index 1, etc.
@@ -351,7 +338,7 @@ func (g *Game) WriteDatabase() error {
 	}
 
 	// If the game was played with no modifiers, update the stats
-	if !g.Options.DeckPlays && !g.Options.EmptyClues {
+	if modifier == 0 {
 		// 2-player is at index 0, 3-player is at index 1, etc.
 		bestScore := stats.BestScores[len(g.Players)-2]
 		if g.Score > bestScore.Score {

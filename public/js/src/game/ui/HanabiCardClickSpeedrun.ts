@@ -3,10 +3,10 @@
 // Imports
 import Color from '../../Color';
 import {
-  ACTION,
   MAX_CLUE_NUM,
   STACK_BASE_RANK,
   START_CARD_RANK,
+  ActionType,
 } from '../../constants';
 import ColorButton from './ColorButton';
 import { colorToMsgColor } from './convert';
@@ -20,7 +20,7 @@ export default function HanabiCardClickSpeedrun(this: HanabiCard, event: any) {
   // (but don't use the speedrunning behavior if we are in a
   // solo replay / shared replay / spectating / clicking on the stack base)
   if (
-    (!globals.speedrun && !globals.lobby.settings.speedrunMode)
+    (!globals.options.speedrun && !globals.lobby.settings.speedrunMode)
     || globals.replay
     || globals.spectating
     || this.rank === STACK_BASE_RANK
@@ -61,7 +61,7 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
     && !event.metaKey
   ) {
     turn.end({
-      type: ACTION.PLAY,
+      type: ActionType.Play,
       target: card.order,
     });
     return;
@@ -110,7 +110,7 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
     }
 
     turn.end({
-      type: ACTION.COLOR_CLUE,
+      type: ActionType.ColorClue,
       target: card.holder,
       value: colorToMsgColor(clueColor, globals.variant),
     });
@@ -131,7 +131,7 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
       return;
     }
     turn.end({
-      type: ACTION.DISCARD,
+      type: ActionType.Discard,
       target: card.order,
     });
     return;
@@ -153,7 +153,7 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
     globals.preCluedCardOrder = card.order;
 
     turn.end({
-      type: ACTION.RANK_CLUE,
+      type: ActionType.RankClue,
       target: card.holder,
       value: card.rank,
     });

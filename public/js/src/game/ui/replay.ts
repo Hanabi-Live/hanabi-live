@@ -2,7 +2,7 @@
 
 // Imports
 import Konva from 'konva';
-import { MAX_CLUE_NUM, REPLAY_ACTION_TYPE, STACK_DIRECTION } from '../../constants';
+import { MAX_CLUE_NUM, ReplayActionType, StackDirection } from '../../constants';
 import action from './action';
 import cardStatusCheck from './cardStatusCheck';
 import globals from './globals';
@@ -200,7 +200,7 @@ const reset = () => {
     // Reverse the stack direction of reversed suits, except on the "Up or Down" variant
     // that uses the "UNDECIDED" direction.
     if (reversible.hasReversedSuits() && !reversible.isUpOrDown()) {
-      globals.stackDirections[i] = suit.reversed ? STACK_DIRECTION.DOWN : STACK_DIRECTION.UP;
+      globals.stackDirections[i] = suit.reversed ? StackDirection.Down : StackDirection.Up;
     }
   }
 
@@ -476,7 +476,7 @@ const shareCurrentTurn = (targetTurn: number) => {
 
   globals.lobby.conn!.send('replayAction', {
     tableID: globals.lobby.tableID,
-    type: REPLAY_ACTION_TYPE.TURN,
+    type: ReplayActionType.Turn,
     turn: targetTurn,
   });
   globals.sharedReplayTurn = targetTurn;

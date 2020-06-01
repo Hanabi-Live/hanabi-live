@@ -1,6 +1,6 @@
 // Imports
 import Konva from 'konva';
-import { ACTION, REPLAY_ARROW_ORDER, TOOLTIP_DELAY } from '../../constants';
+import { ReplayArrowOrder, TOOLTIP_DELAY, ActionType } from '../../constants';
 import { timerFormatter } from '../../misc';
 import * as misc from '../../misc';
 import * as arrows from './arrows';
@@ -47,7 +47,7 @@ export default class Deck extends Konva.Group {
     this.add(this.numLeftText);
 
     this.on('click', (event) => {
-      arrows.click(event, REPLAY_ARROW_ORDER.DECK, this);
+      arrows.click(event, ReplayArrowOrder.Deck, this);
     });
 
     this.initTooltip();
@@ -105,7 +105,7 @@ export default class Deck extends Konva.Group {
 
       globals.lobby.conn!.send('action', {
         tableID: globals.lobby.tableID,
-        type: ACTION.PLAY,
+        type: ActionType.Play,
         target: globals.deck.length - 1,
       });
 
@@ -156,7 +156,7 @@ export default class Deck extends Konva.Group {
     content += '<strong>Game Info:</strong>';
     content += '<ul class="game-tooltips-ul">';
 
-    if (globals.replay) {
+    if (globals.replay && globals.databaseID !== 0) { // Disable this row in JSON replays
       const formattedDatetimeFinished = misc.dateTimeFormatter.format(
         new Date(globals.datetimeFinished),
       );
@@ -173,44 +173,54 @@ export default class Deck extends Konva.Group {
 
     if (globals.replay || globals.seeded) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-seedling"></i></span>';
-      content += `&nbsp; Seed: &nbsp;<strong>${globals.seed}</strong></li>`;
+      const seed = globals.seed === 'JSON' ? 'n/a' : globals.seed;
+      content += `&nbsp; Seed: &nbsp;<strong>${seed}</strong>`;
+      if (globals.seed === 'JSON') {
+        content += ' (JSON game)';
+      }
+      content += '</li>';
     }
 
     content += '<li><span class="game-tooltips-icon"><i class="fas fa-rainbow"></i></span>';
     content += `&nbsp; Variant: &nbsp;<strong>${globals.variant.name}</strong></li>`;
 
-    if (globals.timed) {
+    if (globals.options.timed) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-clock"></i></span>';
       content += '&nbsp; Timed: ';
-      content += timerFormatter(globals.timeBase * 1000);
+      content += timerFormatter(globals.options.timeBase * 1000);
       content += ' + ';
-      content += timerFormatter(globals.timePerTurn * 1000);
+      content += timerFormatter(globals.options.timePerTurn * 1000);
       content += '</li>';
     }
 
-    if (globals.speedrun) {
+    if (globals.options.speedrun) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-running"></i></span>';
       content += '&nbsp; Speedrun</li>';
     }
 
-    if (globals.cardCycle) {
+    if (globals.options.cardCycle) {
       content += '<li><span class="game-tooltips-icon">';
       content += '<i class="fas fa-sync-alt" style="position: relative; left: 0.2em;"></i></span>';
       content += '&nbsp; Card Cycling</li>';
     }
 
-    if (globals.deckPlays) {
+    if (globals.options.deckPlays) {
       content += '<li><span class="game-tooltips-icon">';
       content += '<i class="fas fa-blind" style="position: relative; left: 0.2em;"></i></span>';
       content += '&nbsp; Bottom-Deck Blind Plays</li>';
     }
 
-    if (globals.emptyClues) {
+    if (globals.options.emptyClues) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-expand"></i></span>';
       content += '&nbsp; Empty Clues</li>';
     }
 
-    if (globals.characterAssignments.length > 0) {
+    if (globals.options.allOrNothing) {
+      content += '<li><span class="game-tooltips-icon"><i class="fas fa-layer-group"></i></span>';
+      content += '&nbsp; All or Nothing</li>';
+    }
+
+    if (globals.options.detrimentalCharacters) {
       content += '<li><span class="game-tooltips-icon">';
       content += '<span style="position: relative; right: 0.4em;">🤔</span></span>';
       content += '&nbsp; Detrimental Characters</li>';

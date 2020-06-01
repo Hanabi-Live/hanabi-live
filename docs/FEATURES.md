@@ -68,7 +68,7 @@
 
 #### Critical Indicator
 
-A "❗" icon will appear on cards that are "critical", meaning that there is only one copy of that card left.
+A "❗" icon will appear on cards that are "critical". (Critical cards are cards that have not been played yet and have only one copy remaining.)
 
 #### Clue Log
 
@@ -239,6 +239,15 @@ A "❗" icon will appear on cards that are "critical", meaning that there is onl
 * By default, it is not possible to give an "empty" clue, which is a clue that touches 0 cards.
 * Each game has the option to allow empty clues.
 * More information on the history of empty clues can be found in the [Hyphen-ated conventions repository](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Empty_Clues.md#history).
+
+#### All or Nothing
+
+* Each game has the option to play it as "All or Nothing", which changes the rules.
+* In this mode, the game does not end when the final card is drawn, allowing players to continue playing as normal until all of the stacks are completed.
+* The game immediately ends with a score of 0 if the team gets 3 strikes, as per normal.
+* The game immediately ends with a score of 0 if a "critical" card is discarded. (Critical cards are cards that have not been played yet and have only one copy remaining.)
+* The game immediately ends with a score of 0 if a player has no cards in their hand and no clue tokens are available.
+* (This is the fourth [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants).)
 
 #### Detrimental Character Assignments
 

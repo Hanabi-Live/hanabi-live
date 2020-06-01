@@ -47,30 +47,31 @@ CREATE TABLE users (
 /* Any default settings must also be applied to the "userSettings.go" file */
 DROP TABLE IF EXISTS user_settings CASCADE;
 CREATE TABLE user_settings (
-    user_id                             INTEGER   NOT NULL,
-    desktop_notification                BOOLEAN   NOT NULL  DEFAULT FALSE,
-    sound_move                          BOOLEAN   NOT NULL  DEFAULT TRUE,
-    sound_timer                         BOOLEAN   NOT NULL  DEFAULT TRUE,
-    keldon_mode                         BOOLEAN   NOT NULL  DEFAULT FALSE,
-    colorblind_mode                     BOOLEAN   NOT NULL  DEFAULT FALSE,
-    real_life_mode                      BOOLEAN   NOT NULL  DEFAULT FALSE,
-    reverse_hands                       BOOLEAN   NOT NULL  DEFAULT FALSE,
-    style_numbers                       BOOLEAN   NOT NULL  DEFAULT FALSE,
-    show_timer_in_untimed               BOOLEAN   NOT NULL  DEFAULT FALSE,
-    speedrun_preplay                    BOOLEAN   NOT NULL  DEFAULT FALSE,
-    speedrun_mode                       BOOLEAN   NOT NULL  DEFAULT FALSE,
-    hyphenated_conventions              BOOLEAN   NOT NULL  DEFAULT FALSE,
-    volume                              SMALLINT  NOT NULL  DEFAULT 50,
-    create_table_variant                TEXT      NOT NULL  DEFAULT 'No Variant',
-    create_table_timed                  BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_time_base_minutes      FLOAT     NOT NULL  DEFAULT 2,
-    create_table_time_per_turn_seconds  INTEGER   NOT NULL  DEFAULT 20,
-    create_table_speedrun               BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_card_cycle             BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_deck_plays             BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_empty_clues            BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_character_assignments  BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_alert_waiters          BOOLEAN   NOT NULL  DEFAULT FALSE,
+    user_id                              INTEGER   NOT NULL,
+    desktop_notification                 BOOLEAN   NOT NULL  DEFAULT FALSE,
+    sound_move                           BOOLEAN   NOT NULL  DEFAULT TRUE,
+    sound_timer                          BOOLEAN   NOT NULL  DEFAULT TRUE,
+    keldon_mode                          BOOLEAN   NOT NULL  DEFAULT FALSE,
+    colorblind_mode                      BOOLEAN   NOT NULL  DEFAULT FALSE,
+    real_life_mode                       BOOLEAN   NOT NULL  DEFAULT FALSE,
+    reverse_hands                        BOOLEAN   NOT NULL  DEFAULT FALSE,
+    style_numbers                        BOOLEAN   NOT NULL  DEFAULT FALSE,
+    show_timer_in_untimed                BOOLEAN   NOT NULL  DEFAULT FALSE,
+    speedrun_preplay                     BOOLEAN   NOT NULL  DEFAULT FALSE,
+    speedrun_mode                        BOOLEAN   NOT NULL  DEFAULT FALSE,
+    hyphenated_conventions               BOOLEAN   NOT NULL  DEFAULT FALSE,
+    volume                               SMALLINT  NOT NULL  DEFAULT 50,
+    create_table_variant                 TEXT      NOT NULL  DEFAULT 'No Variant',
+    create_table_timed                   BOOLEAN   NOT NULL  DEFAULT FALSE,
+    create_table_time_base_minutes       FLOAT     NOT NULL  DEFAULT 2,
+    create_table_time_per_turn_seconds   INTEGER   NOT NULL  DEFAULT 20,
+    create_table_speedrun                BOOLEAN   NOT NULL  DEFAULT FALSE,
+    create_table_card_cycle              BOOLEAN   NOT NULL  DEFAULT FALSE,
+    create_table_deck_plays              BOOLEAN   NOT NULL  DEFAULT FALSE,
+    create_table_empty_clues             BOOLEAN   NOT NULL  DEFAULT FALSE,
+    create_table_all_or_nothing          BOOLEAN   NOT NULL  DEFAULT FALSE,
+    create_table_detrimental_characters  BOOLEAN   NOT NULL  DEFAULT FALSE,
+    create_table_alert_waiters           BOOLEAN   NOT NULL  DEFAULT FALSE,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
@@ -118,31 +119,32 @@ CREATE TABLE user_reverse_friends (
 
 DROP TABLE IF EXISTS games CASCADE;
 CREATE TABLE games (
-    id                     SERIAL       PRIMARY KEY,
-    name                   TEXT         NOT NULL,
-    num_players            SMALLINT     NOT NULL,
+    id                      SERIAL       PRIMARY KEY,
+    name                    TEXT         NOT NULL,
+    num_players             SMALLINT     NOT NULL,
     /*
      * By default, the starting player is always at index (seat) 0
      * This field is only needed for legacy games before April 2020
      */
-    starting_player        SMALLINT     NOT NULL  DEFAULT 0,
+    starting_player         SMALLINT     NOT NULL  DEFAULT 0,
     /* Equal to the variant ID (found in "variants.json") */
-    variant                SMALLINT     NOT NULL,
-    timed                  BOOLEAN      NOT NULL,
-    time_base              INTEGER      NOT NULL, /* in seconds */
-    time_per_turn          INTEGER      NOT NULL, /* in seconds */
-    speedrun               BOOLEAN      NOT NULL,
-    card_cycle             BOOLEAN      NOT NULL,
-    deck_plays             BOOLEAN      NOT NULL,
-    empty_clues            BOOLEAN      NOT NULL,
-    character_assignments  BOOLEAN      NOT NULL,
-    seed                   TEXT         NOT NULL, /* e.g. "p2v0s1" */
-    score                  SMALLINT     NOT NULL,
-    num_turns              SMALLINT     NOT NULL,
+    variant                 SMALLINT     NOT NULL,
+    timed                   BOOLEAN      NOT NULL,
+    time_base               INTEGER      NOT NULL, /* in seconds */
+    time_per_turn           INTEGER      NOT NULL, /* in seconds */
+    speedrun                BOOLEAN      NOT NULL,
+    card_cycle              BOOLEAN      NOT NULL,
+    deck_plays              BOOLEAN      NOT NULL,
+    empty_clues             BOOLEAN      NOT NULL,
+    all_or_nothing          BOOLEAN      NOT NULL,
+    detrimental_characters  BOOLEAN      NOT NULL,
+    seed                    TEXT         NOT NULL, /* e.g. "p2v0s1" */
+    score                   SMALLINT     NOT NULL,
+    num_turns               SMALLINT     NOT NULL,
     /* See the "endCondition" values in "constants.go" */
-    end_condition          SMALLINT     NOT NULL,
-    datetime_started       TIMESTAMPTZ  NOT NULL,
-    datetime_finished      TIMESTAMPTZ  NOT NULL
+    end_condition           SMALLINT     NOT NULL,
+    datetime_started        TIMESTAMPTZ  NOT NULL,
+    datetime_finished       TIMESTAMPTZ  NOT NULL
 );
 CREATE INDEX games_index_num_players ON games (num_players);
 CREATE INDEX games_index_variant     ON games (variant);

@@ -9,29 +9,30 @@ import (
 type UserSettings struct{}
 
 type Settings struct {
-	DesktopNotification             bool    `json:"desktopNotification"`
-	SoundMove                       bool    `json:"soundMove"`
-	SoundTimer                      bool    `json:"soundTimer"`
-	KeldonMode                      bool    `json:"keldonMode"`
-	ColorblindMode                  bool    `json:"colorblindMode"`
-	RealLifeMode                    bool    `json:"realLifeMode"`
-	ReverseHands                    bool    `json:"reverseHands"`
-	StyleNumbers                    bool    `json:"styleNumbers"`
-	ShowTimerInUntimed              bool    `json:"showTimerInUntimed"`
-	Volume                          int     `json:"volume"`
-	SpeedrunPreplay                 bool    `json:"speedrunPreplay"`
-	SpeedrunMode                    bool    `json:"speedrunMode"`
-	HyphenatedConventions           bool    `json:"hyphenatedConventions"`
-	CreateTableVariant              string  `json:"createTableVariant"`
-	CreateTableTimed                bool    `json:"createTableTimed"`
-	CreateTableTimeBaseMinutes      float64 `json:"createTableTimeBaseMinutes"`
-	CreateTableTimePerTurnSeconds   int     `json:"createTableTimePerTurnSeconds"`
-	CreateTableSpeedrun             bool    `json:"createTableSpeedrun"`
-	CreateTableCardCycle            bool    `json:"createTableCardCycle"`
-	CreateTableDeckPlays            bool    `json:"createTableDeckPlays"`
-	CreateTableEmptyClues           bool    `json:"createTableEmptyClues"`
-	CreateTableCharacterAssignments bool    `json:"createTableCharacterAssignments"`
-	CreateTableAlertWaiters         bool    `json:"createTableAlertWaiters"`
+	DesktopNotification              bool    `json:"desktopNotification"`
+	SoundMove                        bool    `json:"soundMove"`
+	SoundTimer                       bool    `json:"soundTimer"`
+	KeldonMode                       bool    `json:"keldonMode"`
+	ColorblindMode                   bool    `json:"colorblindMode"`
+	RealLifeMode                     bool    `json:"realLifeMode"`
+	ReverseHands                     bool    `json:"reverseHands"`
+	StyleNumbers                     bool    `json:"styleNumbers"`
+	ShowTimerInUntimed               bool    `json:"showTimerInUntimed"`
+	Volume                           int     `json:"volume"`
+	SpeedrunPreplay                  bool    `json:"speedrunPreplay"`
+	SpeedrunMode                     bool    `json:"speedrunMode"`
+	HyphenatedConventions            bool    `json:"hyphenatedConventions"`
+	CreateTableVariant               string  `json:"createTableVariant"`
+	CreateTableTimed                 bool    `json:"createTableTimed"`
+	CreateTableTimeBaseMinutes       float64 `json:"createTableTimeBaseMinutes"`
+	CreateTableTimePerTurnSeconds    int     `json:"createTableTimePerTurnSeconds"`
+	CreateTableSpeedrun              bool    `json:"createTableSpeedrun"`
+	CreateTableCardCycle             bool    `json:"createTableCardCycle"`
+	CreateTableDeckPlays             bool    `json:"createTableDeckPlays"`
+	CreateTableEmptyClues            bool    `json:"createTableEmptyClues"`
+	CreateTableAllOrNothing          bool    `json:"createTableAllOrNothing"`
+	CreateTableDetrimentalCharacters bool    `json:"createTableDetrimentalCharacters"`
+	CreateTableAlertWaiters          bool    `json:"createTableAlertWaiters"`
 }
 
 var (
@@ -72,7 +73,8 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 			create_table_card_cycle,
 			create_table_deck_plays,
 			create_table_empty_clues,
-			create_table_character_assignments,
+			create_table_all_or_nothing,
+			create_table_detrimental_characters,
 			create_table_alert_waiters
 		FROM user_settings
 		WHERE user_id = $1
@@ -98,7 +100,8 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		&settings.CreateTableCardCycle,
 		&settings.CreateTableDeckPlays,
 		&settings.CreateTableEmptyClues,
-		&settings.CreateTableCharacterAssignments,
+		&settings.CreateTableAllOrNothing,
+		&settings.CreateTableDetrimentalCharacters,
 		&settings.CreateTableAlertWaiters,
 	); err == pgx.ErrNoRows {
 		return defaultSettings, nil

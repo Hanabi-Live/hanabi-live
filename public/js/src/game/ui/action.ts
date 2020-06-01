@@ -4,10 +4,10 @@
 import Konva from 'konva';
 import {
   CARD_W,
-  CLUE_TYPE,
+  ClueType,
   LABEL_COLOR,
   MAX_CLUE_NUM,
-  STACK_DIRECTION,
+  StackDirection,
 } from '../../constants';
 import {
   ActionClue,
@@ -20,6 +20,7 @@ import {
   ActionStrike,
   ActionText,
   ActionTurn,
+  Action,
 } from './actions';
 import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
@@ -27,6 +28,7 @@ import ClueEntry from './ClueEntry';
 import { msgClueToClue, msgSuitToSuit } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
+import { ActionIncludingHypothetical, ActionReveal } from './hypothetical';
 import LayoutChild from './LayoutChild';
 import possibilitiesCheck from './possibilitiesCheck';
 import * as stats from './stats';
@@ -37,7 +39,7 @@ import * as reversible from './variants/reversible';
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list that was sent upon loading a new
 // game/replay)
-export default (data: any) => {
+export default (data: Action) => {
   // If a user is editing a note and an action in the game happens,
   // mark to make the tooltip go away as soon as they are finished editing the note
   if (globals.editingNote !== null) {
@@ -58,7 +60,7 @@ export default (data: any) => {
 };
 
 // Define a command handler map
-const actionFunctions = new Map();
+const actionFunctions = new Map<ActionIncludingHypothetical['type'], any>();
 
 actionFunctions.set('clue', (data: ActionClue) => {
   // The clue comes from the server as an integer, so convert it to an object
@@ -130,18 +132,18 @@ actionFunctions.set('clue', (data: ActionClue) => {
 
   // Add an entry to the clue log
   let clueName;
-  if (data.clue.type === CLUE_TYPE.COLOR) {
+  if (data.clue.type === ClueType.Color) {
     if (typeof clue.value === 'number') {
       throw new Error('The value of a color clue was a number.');
     }
     clueName = clue.value.name;
-  } else if (data.clue.type === CLUE_TYPE.RANK) {
+  } else if (data.clue.type === ClueType.Rank) {
     clueName = clue.value.toString();
   }
   if (globals.variant.name.startsWith('Cow & Pig')) {
-    if (data.clue.type === CLUE_TYPE.COLOR) {
+    if (data.clue.type === ClueType.Color) {
       clueName = 'Moo';
-    } else if (data.clue.type === CLUE_TYPE.RANK) {
+    } else if (data.clue.type === ClueType.Rank) {
       clueName = 'Oink';
     }
   } else if (
@@ -195,7 +197,7 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
   card.removeFromParent();
   card.setClued();
 
-  if (card.isMisplayed && !globals.animateFast && !globals.speedrun) {
+  if (card.isMisplayed && !globals.animateFast && !globals.options.speedrun) {
     // If this card was misplayed,
     // it will automatically tween to the discard pile after reaching the play stacks
     card.doMisplayAnimation = true;
@@ -395,23 +397,23 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
   }
 
   // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants)
-  const oldStackDirectionse = globals.stackDirections.slice(); // Make a copy of the array
+  const oldStackDirections = globals.stackDirections.slice(); // Make a copy of the array
   globals.stackDirections = data.directions;
   for (let i = 0; i < globals.stackDirections.length; i++) {
     const stackDirection = globals.stackDirections[i];
-    if (stackDirection === oldStackDirectionse[i]) {
+    if (stackDirection === oldStackDirections[i]) {
       continue;
     }
 
     const suit = globals.variant.suits[i];
     let text;
-    if (stackDirection === STACK_DIRECTION.UNDECIDED) {
+    if (stackDirection === StackDirection.Undecided) {
       text = '';
-    } else if (stackDirection === STACK_DIRECTION.UP) {
+    } else if (stackDirection === StackDirection.Up) {
       text = reversible.isUpOrDown() ? 'Up' : '';
-    } else if (stackDirection === STACK_DIRECTION.DOWN) {
+    } else if (stackDirection === StackDirection.Down) {
       text = reversible.isUpOrDown() ? 'Down' : 'Reversed';
-    } else if (stackDirection === STACK_DIRECTION.FINISHED) {
+    } else if (stackDirection === StackDirection.Finished) {
       if (reversible.isUpOrDown()) {
         text = 'Finished';
       } else if (suit.reversed) {
@@ -541,12 +543,7 @@ actionFunctions.set('text', (data: ActionText) => {
   }
 });
 
-interface RevealMessage {
-  suit: number;
-  rank: number;
-  order: number;
-}
-actionFunctions.set('reveal', (data: RevealMessage) => {
+actionFunctions.set('reveal', (data: ActionReveal) => {
   // This is the reveal for hypotheticals
   // The code here is mostly copied from the "websocket.ts" file
   let card = globals.deck[data.order];

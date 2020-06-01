@@ -3,7 +3,7 @@
 
 // Imports
 import Konva from 'konva';
-import { ACTION, MAX_CLUE_NUM } from '../../constants';
+import { ActionType, MAX_CLUE_NUM } from '../../constants';
 import * as sounds from '../../sounds';
 import CardLayout from './CardLayout';
 import globals from './globals';
@@ -61,7 +61,7 @@ export default class LayoutChild extends Konva.Group {
       // If it is not our turn, then the card does not need to be draggable yet
       // (unless we have the "Enable pre-playing cards" feature enabled)
       (!globals.ourTurn && !globals.lobby.settings.speedrunPreplay)
-      || globals.speedrun // Cards should never be draggable while speedrunning
+      || globals.options.speedrun // Cards should never be draggable while speedrunning
       || card.holder !== globals.playerUs // Only our cards should be draggable
       || card.isPlayed // Cards on the stacks should not be draggable
       || card.isDiscarded // Cards in the discard pile should not be draggable
@@ -112,7 +112,7 @@ export default class LayoutChild extends Konva.Group {
     // (but disable this in speedruns and certain variants)
     if (
       draggedTo === 'playArea'
-      && !globals.speedrun
+      && !globals.options.speedrun
       && !globals.variant.name.startsWith('Throw It in a Hole')
       && globals.ourTurn // Don't use warnings for preplays
       && !card.isPotentiallyPlayable()
@@ -136,7 +136,7 @@ export default class LayoutChild extends Konva.Group {
     }
 
     turn.end({
-      type: draggedTo === 'playArea' ? ACTION.PLAY : ACTION.DISCARD,
+      type: draggedTo === 'playArea' ? ActionType.Play : ActionType.Discard,
       target: card.order,
     });
   }

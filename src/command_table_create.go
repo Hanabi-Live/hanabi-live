@@ -26,15 +26,18 @@ var (
 // Example data:
 // {
 //   name: 'my new table',
-//   variant: 'No Variant',
-//   timed: true,
-//   timeBase: 120,
-//   timePerTurn: 20,
-//   speedrun: false,
-//   cardCycle: false,
-//   deckPlays: false,
-//   emptyClues: false,
-//   characterAssignments: false,
+//   options: {
+//     variant: 'No Variant',
+//     timed: true,
+//     timeBase: 120,
+//     timePerTurn: 20,
+//     speedrun: false,
+//     cardCycle: false,
+//     deckPlays: false,
+//     emptyClues: false,
+//     allOrNothing: false,
+//     detrimentalCharacters: false,
+//   },
 //   password: 'super_secret',
 //   alertWaiters: false,
 // }
@@ -111,6 +114,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 	setReplay := false
 	databaseID := 0
 	setReplayTurn := 0
+	var setReplayOptions *Options
 
 	// Hande special game option creation
 	if strings.HasPrefix(d.Name, "!") {
@@ -203,17 +207,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 				s.Error(InitGameFail)
 				return
 			} else {
-				// The variant is submitted to the server as a name
-				// but stored in the database as an integer
-				d.Variant = variantsID[v.Variant]
-				d.Timed = v.Timed
-				d.TimeBase = v.TimeBase
-				d.TimePerTurn = v.TimePerTurn
-				d.Speedrun = v.Speedrun
-				d.CardCycle = v.CardCycle
-				d.DeckPlays = v.DeckPlays
-				d.EmptyClues = v.EmptyClues
-				d.CharacterAssignments = v.CharacterAssignments
+				setReplayOptions = v
 			}
 
 			setReplay = true
@@ -301,43 +295,48 @@ func commandTableCreate(s *Session, d *CommandData) {
 		}
 	}
 
+	// Validate that they send the options object
+	if d.Options == nil {
+		d.Options = &Options{}
+	}
+
 	// Validate that the variant name is valid
-	if _, ok := variants[d.Variant]; !ok {
-		s.Warning("\"" + d.Variant + "\" is not a valid variant.")
+	if _, ok := variants[d.Options.Variant]; !ok {
+		s.Warning("\"" + d.Options.Variant + "\" is not a valid variant.")
 		return
 	}
 
 	// Validate that the time controls are sane
-	if d.Timed {
-		if d.TimeBase <= 0 {
-			s.Warning("\"" + strconv.Itoa(d.TimeBase) + "\" is too small of a value for \"Base Time\".")
+	if d.Options.Timed {
+		if d.Options.TimeBase <= 0 {
+			s.Warning("\"" + strconv.Itoa(d.Options.TimeBase) + "\" is too small of a value for \"Base Time\".")
 			return
 		}
-		if d.TimeBase > 604800 { // 1 week in seconds
-			s.Warning("\"" + strconv.Itoa(d.TimeBase) + "\" is too large of a value for \"Base Time\".")
+		if d.Options.TimeBase > 604800 { // 1 week in seconds
+			s.Warning("\"" + strconv.Itoa(d.Options.TimeBase) + "\" is too large of a value for \"Base Time\".")
 			return
 		}
-		if d.TimePerTurn <= 0 {
-			s.Warning("\"" + strconv.Itoa(d.TimePerTurn) + "\" is too small of a value for \"Time per Turn\".")
+		if d.Options.TimePerTurn <= 0 {
+			s.Warning("\"" + strconv.Itoa(d.Options.TimePerTurn) + "\" is too small of a value for \"Time per Turn\".")
 			return
 		}
-		if d.TimePerTurn > 86400 { // 1 day in seconds
-			s.Warning("\"" + strconv.Itoa(d.TimePerTurn) + "\" is too large of a value for \"Time per Turn\".")
+		if d.Options.TimePerTurn > 86400 { // 1 day in seconds
+			s.Warning("\"" + strconv.Itoa(d.Options.TimePerTurn) + "\" is too large of a value for \"Time per Turn\".")
 			return
 		}
 	}
 
 	// Validate that there can be no time controls if this is not a timed game
-	if !d.Timed {
-		d.TimeBase = 0
-		d.TimePerTurn = 0
+	if !d.Options.Timed {
+		d.Options.TimeBase = 0
+		d.Options.TimePerTurn = 0
 	}
 
 	// Validate that a speedrun cannot be timed
-	if d.Speedrun {
-		d.Timed = false
-		d.TimeBase = 0
-		d.TimePerTurn = 0
+	if d.Options.Speedrun {
+		d.Options.Timed = false
+		d.Options.TimeBase = 0
+		d.Options.TimePerTurn = 0
 	}
 
 	/*
@@ -359,17 +358,12 @@ func commandTableCreate(s *Session, d *CommandData) {
 	t := NewTable(d.Name, s.UserID())
 	t.PasswordHash = passwordHash
 	t.AlertWaiters = d.AlertWaiters
-	t.Options = &Options{
-		Variant:              d.Variant,
-		Timed:                d.Timed,
-		TimeBase:             d.TimeBase,
-		TimePerTurn:          d.TimePerTurn,
-		Speedrun:             d.Speedrun,
-		CardCycle:            d.CardCycle,
-		DeckPlays:            d.DeckPlays,
-		EmptyClues:           d.EmptyClues,
-		CharacterAssignments: d.CharacterAssignments,
-
+	if setReplayOptions == nil {
+		t.Options = d.Options
+	} else {
+		t.Options = setReplayOptions
+	}
+	t.ExtraOptions = &ExtraOptions{
 		CustomDeck:    customDeck,
 		SetSeedSuffix: setSeedSuffix,
 		SetReplay:     setReplay,

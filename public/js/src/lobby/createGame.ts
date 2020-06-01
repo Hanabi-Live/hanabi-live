@@ -174,15 +174,18 @@ const submit = () => {
 
   globals.conn!.send('tableCreate', {
     name: $('#createTableName').val(), // We don't bother to store the table name
-    variant: getVariant('createTableVariant'), // This is a hidden span field
-    timed: getCheckbox('createTableTimed'),
-    timeBase,
-    timePerTurn,
-    speedrun: getCheckbox('createTableSpeedrun'),
-    cardCycle: getCheckbox('createTableCardCycle'),
-    deckPlays: getCheckbox('createTableDeckPlays'),
-    emptyClues: getCheckbox('createTableEmptyClues'),
-    characterAssignments: getCheckbox('createTableCharacterAssignments'),
+    options: {
+      variant: getVariant('createTableVariant'), // This is a hidden span field
+      timed: getCheckbox('createTableTimed'),
+      timeBase,
+      timePerTurn,
+      speedrun: getCheckbox('createTableSpeedrun'),
+      cardCycle: getCheckbox('createTableCardCycle'),
+      deckPlays: getCheckbox('createTableDeckPlays'),
+      emptyClues: getCheckbox('createTableEmptyClues'),
+      // allOrNothing: getCheckbox('createTableAllOrNothing'),
+      detrimentalCharacters: getCheckbox('createTableDetrimentalCharacters'),
+    },
     password,
     alertWaiters: getCheckbox('createTableAlertWaiters'),
   });

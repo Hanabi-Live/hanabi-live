@@ -39,6 +39,7 @@ func (*UserFriends) GetAllUsernames(userID int) ([]string, error) {
 		}
 		friends = append(friends, friend)
 	}
+	friends = sortStringsCaseInsensitive(friends)
 
 	if rows.Err() != nil {
 		return friends, err

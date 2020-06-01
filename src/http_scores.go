@@ -14,6 +14,7 @@ type ProfileData struct {
 	Dev   bool
 
 	Name                       string
+	NamesTitle                 string // Used on the "History" page
 	DateJoined                 string
 	NumGames                   int
 	TimePlayed                 string

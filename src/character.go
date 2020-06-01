@@ -88,18 +88,18 @@ func characterInit() {
 }
 
 func characterGenerate(g *Game) {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return
 	}
 
 	// If this is a replay of a game from the database (or a "!replay" game),
 	// use the character selections from the database instead of generating new random ones
-	if g.Options.DatabaseID != 0 {
+	if g.ExtraOptions.DatabaseID != 0 {
 		// Get the players from the database
 		var dbPlayers []*DBPlayer
-		if v, err := models.Games.GetPlayers(g.Options.DatabaseID); err != nil {
+		if v, err := models.Games.GetPlayers(g.ExtraOptions.DatabaseID); err != nil {
 			logger.Error("Failed to get the players from the database for game "+
-				strconv.Itoa(g.Options.DatabaseID)+":", err)
+				strconv.Itoa(g.ExtraOptions.DatabaseID)+":", err)
 			return
 		} else {
 			dbPlayers = v
@@ -171,7 +171,7 @@ func characterGenerate(g *Game) {
 
 // characterValidateAction returns true if validation fails
 func characterValidateAction(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return false
 	}
 
@@ -217,7 +217,7 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *GamePlayer)
 
 // characterValidateSecondAction returns true if validation fails
 func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return false
 	}
 
@@ -249,7 +249,7 @@ func characterValidateSecondAction(s *Session, d *CommandData, g *Game, p *GameP
 
 // characterValidateClue returns true if validation fails
 func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return false
 	}
 
@@ -398,7 +398,7 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 
 // characterCheckPlay returns true if the card cannot be played
 func characterCheckPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return false
 	}
 
@@ -414,7 +414,7 @@ func characterCheckPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool
 
 // characterCheckMisplay returns true if the card should misplay
 func characterCheckMisplay(g *Game, p *GamePlayer, c *Card) bool {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return false
 	}
 
@@ -436,7 +436,7 @@ func characterCheckMisplay(g *Game, p *GamePlayer, c *Card) bool {
 
 // characterCheckDiscard returns true if the player cannot currently discard
 func characterCheckDiscard(s *Session, g *Game, p *GamePlayer) bool {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return false
 	}
 
@@ -465,7 +465,7 @@ func characterCheckDiscard(s *Session, g *Game, p *GamePlayer) bool {
 }
 
 func characterPostClue(d *CommandData, g *Game, p *GamePlayer) {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return
 	}
 
@@ -496,7 +496,7 @@ func characterPostClue(d *CommandData, g *Game, p *GamePlayer) {
 }
 
 func characterPostRemoveCard(g *Game, p *GamePlayer, c *Card) {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return
 	}
 
@@ -519,7 +519,7 @@ func characterPostRemoveCard(g *Game, p *GamePlayer, c *Card) {
 }
 
 func characterPostAction(d *CommandData, g *Game, p *GamePlayer) {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return
 	}
 
@@ -548,7 +548,7 @@ func characterPostAction(d *CommandData, g *Game, p *GamePlayer) {
 }
 
 func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return false
 	}
 
@@ -583,7 +583,7 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 }
 
 func characterShuffle(g *Game, p *GamePlayer) {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return
 	}
 
@@ -593,7 +593,7 @@ func characterShuffle(g *Game, p *GamePlayer) {
 }
 
 func characterHideCard(a *ActionDraw, g *Game, p *GamePlayer) bool {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return false
 	}
 
@@ -607,7 +607,7 @@ func characterHideCard(a *ActionDraw, g *Game, p *GamePlayer) bool {
 }
 
 func characterAdjustEndTurn(g *Game) {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return
 	}
 
@@ -624,7 +624,7 @@ func characterCheckSoftlock(g *Game, p *GamePlayer) {
 	// Local variables
 	t := g.Table
 
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return
 	}
 
@@ -645,7 +645,7 @@ func characterCheckSoftlock(g *Game, p *GamePlayer) {
 }
 
 func characterEmptyClueAllowed(d *CommandData, g *Game, p *GamePlayer) bool {
-	if !g.Options.CharacterAssignments {
+	if !g.Options.DetrimentalCharacters {
 		return false
 	}
 

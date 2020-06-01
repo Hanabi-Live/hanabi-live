@@ -73,34 +73,18 @@ func (t *Table) NotifyPlayerChange() {
 
 		// Second, send information about the game and the players in one big message
 		type GameMessage struct {
-			Name                 string               `json:"name"`
-			Owner                int                  `json:"owner"`
-			Players              []*GamePlayerMessage `json:"players"`
-			Variant              string               `json:"variant"`
-			Timed                bool                 `json:"timed"`
-			TimeBase             int                  `json:"timeBase"`
-			TimePerTurn          int                  `json:"timePerTurn"`
-			Speedrun             bool                 `json:"speedrun"`
-			CardCycle            bool                 `json:"cardCycle"`
-			DeckPlays            bool                 `json:"deckPlays"`
-			EmptyClues           bool                 `json:"emptyClues"`
-			CharacterAssignments bool                 `json:"characterAssignments"`
-			PasswordProtected    bool                 `json:"passwordProtected"`
+			Name              string               `json:"name"`
+			Owner             int                  `json:"owner"`
+			Players           []*GamePlayerMessage `json:"players"`
+			Options           *Options             `json:"options"`
+			PasswordProtected bool                 `json:"passwordProtected"`
 		}
 		p.Session.Emit("game", &GameMessage{
-			Name:                 t.Name,
-			Owner:                t.Owner,
-			Players:              gamePlayers,
-			Variant:              t.Options.Variant,
-			Timed:                t.Options.Timed,
-			TimeBase:             t.Options.TimeBase,
-			TimePerTurn:          t.Options.TimePerTurn,
-			Speedrun:             t.Options.Speedrun,
-			CardCycle:            t.Options.CardCycle,
-			DeckPlays:            t.Options.DeckPlays,
-			EmptyClues:           t.Options.EmptyClues,
-			CharacterAssignments: t.Options.CharacterAssignments,
-			PasswordProtected:    t.PasswordHash != "",
+			Name:              t.Name,
+			Owner:             t.Owner,
+			Players:           gamePlayers,
+			Options:           t.Options,
+			PasswordProtected: t.PasswordHash != "",
 		})
 	}
 }
@@ -323,7 +307,7 @@ func (t *Table) NotifyProgress() {
 		return
 	}
 
-	for _, s := range t.GetNotifySessions() {
+	for _, s := range t.GetNotifySessions(false) {
 		s.NotifyTableProgress(t)
 	}
 }

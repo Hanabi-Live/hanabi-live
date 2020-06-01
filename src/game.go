@@ -23,7 +23,8 @@ type Game struct {
 	// This is a reference to the parent object; every game must have a parent Table object
 	Table *Table `json:"-"` // Skip circular references when encoding
 	// This is a reference to the Options field of the Table object (for convenience purposes)
-	Options *Options `json:"-"` // Skip circular references when encoding
+	Options      *Options      `json:"-"` // Skip circular references when encoding
+	ExtraOptions *ExtraOptions `json:"-"` // Skip circular references when encoding
 
 	// Game state related fields
 	Players []*GamePlayer
@@ -87,8 +88,9 @@ type Game struct {
 
 func NewGame(t *Table) *Game {
 	g := &Game{
-		Table:   t,
-		Options: t.Options,
+		Table:        t,
+		Options:      t.Options,
+		ExtraOptions: t.ExtraOptions,
 
 		Players:           make([]*GamePlayer, 0),
 		Deck:              make([]*Card, 0),

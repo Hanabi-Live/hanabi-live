@@ -4,7 +4,7 @@
 import globals from './globals';
 
 export default () => {
-  if (!globals.timed || globals.replay) {
+  if (!globals.options.timed || globals.replay) {
     return;
   }
 

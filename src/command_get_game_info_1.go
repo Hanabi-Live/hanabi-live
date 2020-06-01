@@ -64,7 +64,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 	// Create a list of the "Detrimental Character Assignments", if enabled
 	characterAssignments := make([]string, 0)
 	characterMetadata := make([]int, 0)
-	if t.Options.CharacterAssignments {
+	if t.Options.DetrimentalCharacters {
 		for _, p := range g.Players {
 			characterAssignments = append(characterAssignments, p.Character)
 			characterMetadata = append(characterMetadata, p.CharacterMetadata)
@@ -113,14 +113,10 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		DatetimeStarted  time.Time `json:"datetimeStarted"`
 		DatetimeFinished time.Time `json:"datetimeFinished"`
 
-		// Optional settings
-		Timed                bool     `json:"timed"`
-		TimeBase             int      `json:"timeBase"`
-		TimePerTurn          int      `json:"timePerTurn"`
-		Speedrun             bool     `json:"speedrun"`
-		CardCycle            bool     `json:"cardCycle"`
-		DeckPlays            bool     `json:"deckPlays"`
-		EmptyClues           bool     `json:"emptyClues"`
+		// Game options
+		Options *Options `json:"options"`
+
+		// Character settings
 		CharacterAssignments []string `json:"characterAssignments"`
 		CharacterMetadata    []int    `json:"characterMetadata"`
 
@@ -139,7 +135,6 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		// Game settings
 		TableID:          t.ID, // The client needs to know the table ID for chat to work properly
 		Names:            names,
-		Variant:          t.Options.Variant,
 		Seat:             seat,
 		Spectating:       !t.Replay && j != -1,
 		Replay:           t.Replay,
@@ -151,13 +146,9 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		DatetimeFinished: g.DatetimeFinished,
 
 		// Optional settings
-		Timed:                t.Options.Timed,
-		TimeBase:             t.Options.TimeBase,
-		TimePerTurn:          t.Options.TimePerTurn,
-		Speedrun:             t.Options.Speedrun,
-		CardCycle:            t.Options.CardCycle,
-		DeckPlays:            t.Options.DeckPlays,
-		EmptyClues:           t.Options.EmptyClues,
+		Options: t.Options,
+
+		// Character settings
 		CharacterAssignments: characterAssignments,
 		CharacterMetadata:    characterMetadata,
 

@@ -434,7 +434,7 @@ const drawDetrimentalCharacters = (
     playerNamePos = namePosBGA;
   }
 
-  if (globals.characterAssignments.length > 0) {
+  if (globals.options.detrimentalCharacters) {
     let character = CHARACTERS.get(globals.characterAssignments[i]);
     if (globals.characterAssignments[i] === 'n/a') {
       // A "n/a" character may be assigned when debugging

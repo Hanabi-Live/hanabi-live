@@ -1,7 +1,7 @@
 // Imports
-import { ACTION, MAX_CLUE_NUM } from '../../constants';
+import { ActionType, MAX_CLUE_NUM } from '../../constants';
 import * as notifications from '../../notifications';
-import { Action } from './actions';
+import { ClientAction } from './actions';
 import * as arrows from './arrows';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
@@ -26,8 +26,8 @@ export const begin = () => {
     globals.layers.UI.batchDraw();
 
     if (
-      globals.queuedAction.type === ACTION.COLOR_CLUE
-      || globals.queuedAction.type === ACTION.RANK_CLUE
+      globals.queuedAction.type === ActionType.ColorClue
+      || globals.queuedAction.type === ActionType.RankClue
     ) {
       // Prevent pre-cluing if the team is now at 0 clues
       if (globals.clues === 0) {
@@ -45,7 +45,7 @@ export const begin = () => {
     }
 
     // Prevent discarding if the team is at the maximum amount of clues
-    if (globals.queuedAction.type === ACTION.DISCARD && globals.clues === MAX_CLUE_NUM) {
+    if (globals.queuedAction.type === ActionType.Discard && globals.clues === MAX_CLUE_NUM) {
       return;
     }
 
@@ -106,7 +106,7 @@ export const showClueUIAndEnableDragging = () => {
     !globals.lobby.settings.speedrunPreplay
     // This is unnecessary if this a speedrun,
     // as clicking on cards takes priority over dragging cards
-    && !globals.speedrun
+    && !globals.options.speedrun
     // In hypotheticals, setting cards to be draggable is handled elsewhere
     && !globals.hypothetical
   ) {
@@ -120,7 +120,7 @@ export const showClueUIAndEnableDragging = () => {
     }
   }
 
-  if (globals.deckPlays) {
+  if (globals.options.deckPlays) {
     globals.elements.deck!.cardBack.draggable(globals.deckSize === 1);
     globals.elements.deckPlayAvailableLabel!.visible(globals.deckSize === 1);
 
@@ -133,7 +133,7 @@ export const showClueUIAndEnableDragging = () => {
   globals.layers.UI.batchDraw();
 };
 
-export const end = (actionObject: Action) => {
+export const end = (actionObject: ClientAction) => {
   if (globals.hypothetical) {
     hypothetical.send(actionObject);
     hideClueUIAndDisableDragging();
@@ -152,13 +152,13 @@ export const end = (actionObject: Action) => {
   } else {
     globals.queuedAction = actionObject;
     let text = 'Cancel Pre-';
-    if (globals.queuedAction.type === ACTION.PLAY) {
+    if (globals.queuedAction.type === ActionType.Play) {
       text += 'Play';
-    } else if (globals.queuedAction.type === ACTION.DISCARD) {
+    } else if (globals.queuedAction.type === ActionType.Discard) {
       text += 'Discard';
     } else if (
-      globals.queuedAction.type === ACTION.COLOR_CLUE
-      || globals.queuedAction.type === ACTION.RANK_CLUE
+      globals.queuedAction.type === ActionType.ColorClue
+      || globals.queuedAction.type === ActionType.RankClue
     ) {
       text += 'Clue';
     }

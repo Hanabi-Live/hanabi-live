@@ -5,9 +5,10 @@
 import Konva from 'konva';
 import {
   ARROW_COLOR,
-  CLUE_TYPE,
-  REPLAY_ACTION_TYPE,
+  ClueType,
+  ReplayActionType,
   STACK_BASE_RANK,
+  ReplayArrowOrder,
 } from '../../constants';
 import Arrow from './Arrow';
 import Clue from './Clue';
@@ -98,7 +99,7 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
       arrow.circle.hide();
     } else {
       arrow.circle.show();
-      if (clue.type === CLUE_TYPE.COLOR) {
+      if (clue.type === ClueType.Color) {
         arrow.text.hide();
 
         // The circle for color clues should have a black border and a fill matching the color
@@ -112,7 +113,7 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
           }
           arrow.circle.fill(clue.value.fill);
         }
-      } else if (clue.type === CLUE_TYPE.RANK) {
+      } else if (clue.type === ClueType.Rank) {
         let text = clue.value.toString();
         if (globals.variant.name.startsWith('Cow & Pig')) {
           text = '#';
@@ -209,7 +210,7 @@ const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, tur
   }).play();
 };
 
-export const click = (event: any, order: number, element: any) => {
+export const click = (event: any, order: ReplayArrowOrder, element: any) => {
   if (
     event.evt.which === 3 // Right-click
     && globals.sharedReplay
@@ -220,10 +221,10 @@ export const click = (event: any, order: number, element: any) => {
   }
 };
 
-export const send = (order: number, element: any) => {
+export const send = (order: ReplayArrowOrder, element: any) => {
   globals.lobby.conn!.send('replayAction', {
     tableID: globals.lobby.tableID,
-    type: REPLAY_ACTION_TYPE.ARROW,
+    type: ReplayActionType.Arrow,
     order,
   });
 

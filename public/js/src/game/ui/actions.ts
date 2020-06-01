@@ -1,16 +1,30 @@
 // Imports
+import { ActionType } from '../../constants';
 import MsgClue from './MsgClue';
-import SimpleCard from './SimpleCard';
+import { SimpleCard } from './SimpleCard';
+
+export type Action =
+  | ActionDraw
+  | ActionStatus
+  | ActionStackDirections
+  | ActionText
+  | ActionTurn
+  | ActionClue
+  | ActionPlay
+  | ActionDiscard
+  | ActionReorder
+  | ActionStrike
+  | ActionDeckOrder;
 
 // Action is a message sent to the server that represents the in-game action that we just took
-export interface Action {
-  type: number;
+export interface ClientAction {
+  type: ActionType;
   target: number;
   value?: number;
 }
 
 export interface ActionDraw {
-  type: string;
+  type: 'draw';
   who: number;
   rank: number;
   suit: number;
@@ -18,7 +32,7 @@ export interface ActionDraw {
 }
 
 export interface ActionStatus {
-  type: string;
+  type: 'status';
   clues: number;
   score: number;
   maxScore: number;
@@ -26,23 +40,23 @@ export interface ActionStatus {
 }
 
 export interface ActionStackDirections {
-  type: string;
+  type: 'stackDirections';
   directions: number[];
 }
 
 export interface ActionText {
-  type: string;
+  type: 'text';
   text: string;
 }
 
 export interface ActionTurn {
-  type: string;
+  type: 'turn';
   num: number;
   who: number;
 }
 
 export interface ActionClue {
-  type: string;
+  type: 'clue';
   clue: MsgClue;
   giver: number;
   list: number[];
@@ -51,31 +65,31 @@ export interface ActionClue {
 }
 
 export interface ActionPlay {
-  type: string;
+  type: 'play';
   which: Which;
 }
 
 export interface ActionDiscard {
-  type: string;
+  type: 'discard';
   failed: boolean;
   which: Which;
 }
 
 export interface ActionReorder {
-  type: string;
+  type: 'reorder';
   target: number;
   handOrder: number[];
 }
 
 export interface ActionStrike {
-  type: string;
+  type: 'strike';
   num: number; // 1 for the first strike, 2 for the second strike, etc.
   order: number; // The order of the card that was misplayed
   turn: number;
 }
 
 export interface ActionDeckOrder {
-  type: string;
+  type: 'deckOrder';
   deck: SimpleCard[];
 }
 

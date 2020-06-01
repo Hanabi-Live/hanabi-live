@@ -3,13 +3,13 @@
 
 // Imports
 import {
-  ACTION,
-  CLUE_TYPE,
-  REPLAY_ACTION_TYPE,
+  ActionType,
+  ClueType,
+  ReplayActionType,
   MAX_CLUE_NUM,
 } from '../../constants';
 import action from './action';
-import { Action } from './actions';
+import { Action, ClientAction } from './actions';
 import cardStatusCheck from './cardStatusCheck';
 import { getTouchedCardsFromClue } from './clues';
 import { suitToMsgSuit } from './convert';
@@ -21,6 +21,15 @@ import PlayerButton from './PlayerButton';
 import * as replay from './replay';
 import * as turn from './turn';
 
+export interface ActionReveal {
+  type: 'reveal';
+  suit: number;
+  rank: number;
+  order: number;
+}
+
+export type ActionIncludingHypothetical = ClientAction | Action | ActionReveal;
+
 export const start = () => {
   if (globals.hypothetical) {
     return;
@@ -30,7 +39,7 @@ export const start = () => {
   if (globals.amSharedReplayLeader) {
     globals.lobby.conn!.send('replayAction', {
       tableID: globals.lobby.tableID,
-      type: REPLAY_ACTION_TYPE.HYPO_START,
+      type: ReplayActionType.HypoStart,
     });
   }
 
@@ -99,7 +108,7 @@ export const end = () => {
   if (globals.amSharedReplayLeader) {
     globals.lobby.conn!.send('replayAction', {
       tableID: globals.lobby.tableID,
-      type: REPLAY_ACTION_TYPE.HYPO_END,
+      type: ReplayActionType.HypoEnd,
     });
 
     globals.elements.restartButton!.show();
@@ -161,15 +170,15 @@ export const beginTurn = () => {
   }
 };
 
-export const send = (hypoAction: Action) => {
+export const send = (hypoAction: ClientAction) => {
   let type = '';
-  if (hypoAction.type === ACTION.PLAY) {
+  if (hypoAction.type === ActionType.Play) {
     type = 'play';
-  } else if (hypoAction.type === ACTION.DISCARD) {
+  } else if (hypoAction.type === ActionType.Discard) {
     type = 'discard';
   } else if (
-    hypoAction.type === ACTION.COLOR_CLUE
-    || hypoAction.type === ACTION.RANK_CLUE
+    hypoAction.type === ActionType.ColorClue
+    || hypoAction.type === ActionType.RankClue
   ) {
     type = 'clue';
   }
@@ -180,10 +189,10 @@ export const send = (hypoAction: Action) => {
       throw new Error('The hypothetical action was a clue but it did not include a value.');
     }
     let clue;
-    if (hypoAction.type === ACTION.COLOR_CLUE) {
-      clue = new MsgClue(CLUE_TYPE.COLOR, hypoAction.value);
-    } else if (hypoAction.type === ACTION.RANK_CLUE) {
-      clue = new MsgClue(CLUE_TYPE.RANK, hypoAction.value);
+    if (hypoAction.type === ActionType.ColorClue) {
+      clue = new MsgClue(ClueType.Color, hypoAction.value);
+    } else if (hypoAction.type === ActionType.RankClue) {
+      clue = new MsgClue(ClueType.Rank, hypoAction.value);
     } else {
       throw new Error('The hypothetical action had an invalid clue type.');
     }
@@ -204,9 +213,9 @@ export const send = (hypoAction: Action) => {
     const words = ['zero', 'one', 'two', 'three', 'four', 'five'];
     text += `${words[list.length]} `;
 
-    if (clue.type === CLUE_TYPE.COLOR) {
+    if (clue.type === ClueType.Color) {
       text += globals.variant.clueColors[clue.value].name;
-    } else if (clue.type === CLUE_TYPE.RANK) {
+    } else if (clue.type === ClueType.Rank) {
       text += clue.value;
     }
     if (list.length !== 1) {
@@ -228,9 +237,10 @@ export const send = (hypoAction: Action) => {
       which: {
         index: globals.currentPlayerIndex,
         order: hypoAction.target,
-        rank: card.rank,
+        rank: card.rank!,
         suit: suitToMsgSuit(card.suit!, globals.variant),
       },
+      failed: false,
     });
     if (type === 'play') {
       globals.score += 1;
@@ -289,10 +299,10 @@ export const send = (hypoAction: Action) => {
   });
 };
 
-export const sendHypoAction = (hypoAction: any) => {
+export const sendHypoAction = (hypoAction: ActionIncludingHypothetical) => {
   globals.lobby.conn!.send('replayAction', {
     tableID: globals.lobby.tableID,
-    type: REPLAY_ACTION_TYPE.HYPO_ACTION,
+    type: ReplayActionType.HypoAction,
     actionJSON: JSON.stringify(hypoAction),
   });
 };
@@ -313,7 +323,7 @@ export const sendBackOneTurn = () => {
 
   globals.lobby.conn!.send('replayAction', {
     tableID: globals.lobby.tableID,
-    type: REPLAY_ACTION_TYPE.HYPO_BACK,
+    type: ReplayActionType.HypoBack,
   });
 };
 
@@ -348,7 +358,7 @@ export const backOneTurn = () => {
 };
 
 const cycleHand = () => {
-  if (!globals.cardCycle) {
+  if (!globals.options.cardCycle) {
     return;
   }
 
@@ -387,6 +397,6 @@ const cycleHand = () => {
 export const toggleRevealed = () => {
   globals.lobby.conn!.send('replayAction', {
     tableID: globals.lobby.tableID,
-    type: REPLAY_ACTION_TYPE.HYPO_TOGGLE_REVEALED,
+    type: ReplayActionType.HypoToggleRevealed,
   });
 };

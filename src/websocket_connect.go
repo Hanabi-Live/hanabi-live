@@ -249,7 +249,7 @@ func websocketConnect(ms *melody.Session) {
 	// Send the user's game history
 	// (but only the last 10 games to prevent wasted bandwidth)
 	var gameHistoryList []*GameHistory
-	if v, err := models.Games.GetUserHistory(s.UserID(), 0, 10, false); err != nil {
+	if v, err := models.Games.GetUserHistory(s.UserID(), 0, 10); err != nil {
 		logger.Error("Failed to get the history for user \""+s.Username()+"\":", err)
 		s.Error(DefaultErrorMsg)
 		return
@@ -262,7 +262,13 @@ func websocketConnect(ms *melody.Session) {
 	// (but only the last 10 games to prevent wasted bandwidth)
 	if len(friends) > 0 {
 		var gameHistoryFriendsList []*GameHistory
-		if v, err := models.Games.GetFriendsHistory(s.Friends(), 0, 10, false); err != nil {
+		if v, err := models.Games.GetFriendsHistory(
+			s.UserID(),
+			s.Friends(),
+			0,
+			10,
+			false,
+		); err != nil {
 			logger.Error("Failed to get the history for the friends of user \""+s.Username()+"\":", err)
 			s.Error(DefaultErrorMsg)
 			return

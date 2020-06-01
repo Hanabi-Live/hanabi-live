@@ -171,21 +171,25 @@ const initCommands = () => {
       const cardCycle = urlParams.get('cardCycle') === 'true';
       const deckPlays = urlParams.get('deckPlays') === 'true';
       const emptyClues = urlParams.get('emptyClues') === 'true';
-      const characterAssignments = urlParams.get('characterAssignments') === 'true';
+      const allOrNothing = urlParams.get('allOrNothing') === 'true';
+      const detrimentalCharacters = urlParams.get('detrimentalCharacters') === 'true';
       const password = urlParams.get('password') || '';
 
       setTimeout(() => {
         globals.conn!.send('tableCreate', {
           name,
-          variant,
-          timed,
-          timeBase,
-          timePerTurn,
-          speedrun,
-          cardCycle,
-          deckPlays,
-          emptyClues,
-          characterAssignments,
+          options: {
+            variant,
+            timed,
+            timeBase,
+            timePerTurn,
+            speedrun,
+            cardCycle,
+            deckPlays,
+            emptyClues,
+            allOrNothing,
+            detrimentalCharacters,
+          },
           password,
         });
       }, 10);
