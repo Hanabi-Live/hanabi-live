@@ -397,6 +397,6 @@ const cycleHand = () => {
 export const toggleRevealed = () => {
   globals.lobby.conn!.send('replayAction', {
     tableID: globals.lobby.tableID,
-    type: REPLAY_ACTION_TYPE.HYPO_TOGGLE_REVEALED,
+    type: ReplayActionType.HypoToggleRevealed,
   });
 };
