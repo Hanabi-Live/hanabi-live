@@ -6,14 +6,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func httpDeals(c *gin.Context) {
+func httpSeed(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
 	// Parse the seed from the URL
 	seed := c.Param("seed")
 	if seed == "" {
-		http.Error(w, "Error: You must specify the seed.", http.StatusNotFound)
+		http.Error(w, "Error: You must specify a seed.", http.StatusNotFound)
 		return
 	}
 
@@ -31,5 +31,12 @@ func httpDeals(c *gin.Context) {
 		gameHistoryList = v
 	}
 
-	c.JSON(http.StatusOK, gameHistoryList)
+	data := HistoryData{
+		Title:        "History",
+		Dev:          false,
+		History:      gameHistoryList,
+		NamesTitle:   "seed: " + seed,
+		SpecificSeed: true,
+	}
+	httpServeTemplate(w, data, "profile", "history")
 }

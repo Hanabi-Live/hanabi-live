@@ -9,11 +9,12 @@ import (
 )
 
 type HistoryData struct {
-	Title      string
-	Dev        bool
-	Name       string
-	NamesTitle string
-	History    []*GameHistory
+	Title        string
+	Dev          bool
+	Name         string
+	NamesTitle   string
+	History      []*GameHistory
+	SpecificSeed bool
 }
 
 func httpHistory(c *gin.Context) {

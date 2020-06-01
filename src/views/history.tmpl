@@ -1,11 +1,17 @@
 {{define "profile"}}
 
+<h3 class="align-center">
 {{ $length := len .History }}
 {{if eq $length 0}}
-<ul>
-  <li>No games played.</li>
-</ul>
+  No games played.
 {{else}}
+  Total games: {{$length}}
+{{end}}
+</h3>
+
+{{if gt $length 0}}
+<br />
+
 <table>
   <thead>
     <tr>
@@ -15,7 +21,7 @@
       <th>Variant</th>
       <th>Date</th>
       <th>Other Players</th>
-      <th>Other Scores</th>
+      {{if not .SpecificSeed}}<th>Other Scores</th>{{end}}
     </tr>
   </thead>
   <tbody>
@@ -32,7 +38,7 @@
             {{range $index2, $results2 := .PlayerNames}}{{if $index2}}, {{end}}{{$results2}}{{end}}
           </a>
         </td>
-        <td>{{.NumSimilar}}</td>
+        {{if not $.SpecificSeed}}<td><a href="/seed/{{.Seed}}">{{.NumSimilar}}</a></td>{{end}}
       </tr>
     {{- end -}}
   </tbody>

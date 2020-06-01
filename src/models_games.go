@@ -555,7 +555,9 @@ func (*Games) GetAllDealsFromSeed(seed string) ([]*GameHistory, error) {
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
-		var gameHistory GameHistory
+		gameHistory := GameHistory{
+			Options: &Options{},
+		}
 		var variantID int
 		var playerNamesString string
 		if err2 := rows.Scan(
