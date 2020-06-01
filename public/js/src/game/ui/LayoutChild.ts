@@ -3,7 +3,7 @@
 
 // Imports
 import Konva from 'konva';
-import { ACTION, MAX_CLUE_NUM } from '../../constants';
+import { ActionType, MAX_CLUE_NUM } from '../../constants';
 import * as sounds from '../../sounds';
 import CardLayout from './CardLayout';
 import globals from './globals';
@@ -136,7 +136,7 @@ export default class LayoutChild extends Konva.Group {
     }
 
     turn.end({
-      type: draggedTo === 'playArea' ? ACTION.PLAY : ACTION.DISCARD,
+      type: draggedTo === 'playArea' ? ActionType.Play : ActionType.Discard,
       target: card.order,
     });
   }

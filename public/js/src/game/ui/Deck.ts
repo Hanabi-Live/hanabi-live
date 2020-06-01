@@ -1,6 +1,6 @@
 // Imports
 import Konva from 'konva';
-import { ACTION, REPLAY_ARROW_ORDER, TOOLTIP_DELAY } from '../../constants';
+import { ReplayArrowOrder, TOOLTIP_DELAY, ActionType } from '../../constants';
 import { timerFormatter } from '../../misc';
 import * as misc from '../../misc';
 import * as arrows from './arrows';
@@ -47,7 +47,7 @@ export default class Deck extends Konva.Group {
     this.add(this.numLeftText);
 
     this.on('click', (event) => {
-      arrows.click(event, REPLAY_ARROW_ORDER.DECK, this);
+      arrows.click(event, ReplayArrowOrder.Deck, this);
     });
 
     this.initTooltip();
@@ -105,7 +105,7 @@ export default class Deck extends Konva.Group {
 
       globals.lobby.conn!.send('action', {
         tableID: globals.lobby.tableID,
-        type: ACTION.PLAY,
+        type: ActionType.Play,
         target: globals.deck.length - 1,
       });
 

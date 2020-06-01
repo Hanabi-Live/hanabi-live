@@ -1,87 +1,101 @@
 // Imports
+import { ActionType } from '../../constants';
 import MsgClue from './MsgClue';
-import SimpleCard from './SimpleCard';
+import { SimpleCard } from './SimpleCard';
+
+export type Action =
+  | ActionDraw
+  | ActionStatus
+  | ActionStackDirections
+  | ActionText
+  | ActionTurn
+  | ActionClue
+  | ActionPlay
+  | ActionDiscard
+  | ActionReorder
+  | ActionStrike
+  | ActionDeckOrder;
 
 // Action is a message sent to the server that represents the in-game action that we just took
-export interface Action {
-  type: number;
+export type ClientAction = {
+  type: ActionType;
   target: number;
   value?: number;
-}
+};
 
-export interface ActionDraw {
-  type: string;
+export type ActionDraw = {
+  type: 'draw';
   who: number;
   rank: number;
   suit: number;
   order: number;
-}
+};
 
-export interface ActionStatus {
-  type: string;
+export type ActionStatus = {
+  type: 'status';
   clues: number;
   score: number;
   maxScore: number;
   doubleDiscard: boolean;
-}
+};
 
-export interface ActionStackDirections {
-  type: string;
+export type ActionStackDirections = {
+  type: 'stackDirections';
   directions: number[];
-}
+};
 
-export interface ActionText {
-  type: string;
+export type ActionText = {
+  type: 'text';
   text: string;
-}
+};
 
-export interface ActionTurn {
-  type: string;
+export type ActionTurn = {
+  type: 'turn';
   num: number;
   who: number;
-}
+};
 
-export interface ActionClue {
-  type: string;
+export type ActionClue = {
+  type: 'clue';
   clue: MsgClue;
   giver: number;
   list: number[];
   target: number;
   turn: number;
-}
+};
 
-export interface ActionPlay {
-  type: string;
+export type ActionPlay = {
+  type: 'play';
   which: Which;
-}
+};
 
-export interface ActionDiscard {
-  type: string;
+export type ActionDiscard = {
+  type: 'discard';
   failed: boolean;
   which: Which;
-}
+};
 
-export interface ActionReorder {
-  type: string;
+export type ActionReorder = {
+  type: 'reorder';
   target: number;
   handOrder: number[];
-}
+};
 
-export interface ActionStrike {
-  type: string;
+export type ActionStrike = {
+  type: 'strike';
   num: number; // 1 for the first strike, 2 for the second strike, etc.
   order: number; // The order of the card that was misplayed
   turn: number;
-}
+};
 
-export interface ActionDeckOrder {
-  type: string;
+export type ActionDeckOrder = {
+  type: 'deckOrder';
   deck: SimpleCard[];
-}
+};
 
-interface Which {
+type Which = {
   index: number;
   suit: number;
   rank: number;
   order: number;
-}
+};

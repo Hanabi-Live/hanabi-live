@@ -3,11 +3,11 @@
 // Imports
 import Konva from 'konva';
 import {
-  ACTION,
-  CLUE_TYPE,
+  ClueType,
   LABEL_COLOR,
-  REPLAY_ARROW_ORDER,
+  ReplayArrowOrder,
   STACK_BASE_RANK,
+  ActionType,
 } from '../../constants';
 import * as debug from '../../debug';
 import Arrow from './Arrow';
@@ -834,10 +834,10 @@ const drawScoreArea = () => {
   globals.elements.cluesNumberLabel = cluesNumberLabel;
 
   cluesTextLabel.on('click', (event: Konva.KonvaPointerEvent) => {
-    arrows.click(event, REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
+    arrows.click(event, ReplayArrowOrder.Clues, cluesNumberLabel);
   });
   cluesNumberLabel.on('click', (event: Konva.KonvaPointerEvent) => {
-    arrows.click(event, REPLAY_ARROW_ORDER.CLUES, cluesNumberLabel);
+    arrows.click(event, ReplayArrowOrder.Clues, cluesNumberLabel);
   });
 
   // Add an animation to signify that discarding at 8 clues is illegal
@@ -1205,10 +1205,10 @@ const drawStatistics = () => {
   globals.elements.paceNumberLabel = paceNumberLabel;
 
   paceTextLabel.on('click', (event: Konva.KonvaPointerEvent) => {
-    arrows.click(event, REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
+    arrows.click(event, ReplayArrowOrder.Pace, paceNumberLabel);
   });
   paceNumberLabel.on('click', (event: Konva.KonvaPointerEvent) => {
-    arrows.click(event, REPLAY_ARROW_ORDER.PACE, paceNumberLabel);
+    arrows.click(event, ReplayArrowOrder.Pace, paceNumberLabel);
   });
 
   const efficiencyTextLabel = basicTextLabel.clone({
@@ -1244,10 +1244,10 @@ const drawStatistics = () => {
   globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
 
   efficiencyTextLabel.on('click', (event: Konva.KonvaPointerEvent) => {
-    arrows.click(event, REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
+    arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
   });
   efficiencyNumberLabel.on('click', (event: Konva.KonvaPointerEvent) => {
-    arrows.click(event, REPLAY_ARROW_ORDER.EFFICIENCY, efficiencyNumberLabel);
+    arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
   });
 
   const minEfficiency = stats.getMinEfficiency();
@@ -1265,7 +1265,7 @@ const drawStatistics = () => {
   efficiencyNumberLabelMinNeeded.on('click', (event: Konva.KonvaPointerEvent) => {
     arrows.click(
       event,
-      REPLAY_ARROW_ORDER.MIN_EFFICIENCY,
+      ReplayArrowOrder.MinEfficiency,
       efficiencyNumberLabelMinNeeded,
     );
   });
@@ -1573,7 +1573,7 @@ const drawClueArea = () => {
       height: buttonH * winH,
       color: color.fill,
       text: color.abbreviation,
-      clue: new Clue(CLUE_TYPE.COLOR, color),
+      clue: new Clue(ClueType.Color, color),
     }, matchingSuit);
 
     globals.elements.clueTypeButtonGroup!.add(button as any);
@@ -1596,7 +1596,7 @@ const drawClueArea = () => {
       width: buttonW * winW,
       height: buttonH * winH,
       number: rank,
-      clue: new Clue(CLUE_TYPE.RANK, rank),
+      clue: new Clue(ClueType.Rank, rank),
     });
 
     globals.elements.clueTypeButtonGroup!.add(button as any);
@@ -1736,7 +1736,8 @@ const drawPreplayArea = () => {
     }
 
     // If we dragged a card, we have to put the card back in the hand
-    if (globals.queuedAction.type === ACTION.PLAY || globals.queuedAction.type === ACTION.DISCARD) {
+    if (globals.queuedAction.type === ActionType.Play
+      || globals.queuedAction.type === ActionType.Discard) {
       globals.elements.playerHands[globals.playerUs].doLayout();
     }
 

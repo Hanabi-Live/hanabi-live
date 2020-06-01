@@ -1,4 +1,4 @@
-export default interface SimpleCard {
+export type SimpleCard = {
   suit: number;
   rank: number;
-}
+};

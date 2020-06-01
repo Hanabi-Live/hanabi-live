@@ -8,9 +8,9 @@ import {
   CARD_FADE,
   CARD_H,
   CARD_W,
-  CLUE_TYPE,
+  ClueType,
   STACK_BASE_RANK,
-  STACK_DIRECTION,
+  StackDirection,
   START_CARD_RANK,
   SUITS,
 } from '../../constants';
@@ -372,8 +372,8 @@ export default class HanabiCard extends Konva.Group {
       // In "Up or Down" variants, the arrow should be shown when the stack direction is determined
       // (and the arrow should be cleared when the stack is finished)
       shouldShowArrow = (
-        direction === STACK_DIRECTION.UP
-        || direction === STACK_DIRECTION.DOWN
+        direction === StackDirection.Up
+        || direction === StackDirection.Down
       );
     } else if (this.suit.reversed) {
       // In variants with a reversed suit, the arrow should always be shown on the reversed suit
@@ -393,7 +393,7 @@ export default class HanabiCard extends Konva.Group {
       return;
     }
 
-    this.arrow!.rotation(direction === STACK_DIRECTION.UP ? 180 : 0);
+    this.arrow!.rotation(direction === StackDirection.Up ? 180 : 0);
     this.arrowBase!.stroke(this.suit!.fill);
     if (this.suit.fill === 'multi') {
       // We can't use a fill gradiant because the "fill" is actually a big stroke
@@ -475,13 +475,13 @@ export default class HanabiCard extends Konva.Group {
     }
 
     // Record unique clues that touch the card for later
-    if (clue.type === CLUE_TYPE.COLOR) {
+    if (clue.type === ClueType.Color) {
       if (positive && !this.positiveColorClues.includes(clue.value as Color)) {
         this.positiveColorClues.push(clue.value as Color);
       } else if (!positive && !this.negativeColorClues.includes(clue.value as Color)) {
         this.negativeColorClues.push(clue.value as Color);
       }
-    } else if (clue.type === CLUE_TYPE.RANK) {
+    } else if (clue.type === ClueType.Rank) {
       if (positive && !this.positiveRankClues.includes(clue.value as number)) {
         this.positiveRankClues.push(clue.value as number);
       } else if (!positive && !this.negativeRankClues.includes(clue.value as number)) {
@@ -492,7 +492,7 @@ export default class HanabiCard extends Konva.Group {
     // Find out if we can remove some rank pips or suit pips from this clue
     let ranksRemoved: number[] = [];
     let suitsRemoved: Suit[] = [];
-    if (clue.type === CLUE_TYPE.COLOR) {
+    if (clue.type === ClueType.Color) {
       const clueColor = clue.value as Color;
       if (globals.variant.colorCluesTouchNothing) {
         // Some variants have color clues touch no cards
@@ -578,7 +578,7 @@ export default class HanabiCard extends Konva.Group {
           }
         }
       }
-    } else if (clue.type === CLUE_TYPE.RANK) {
+    } else if (clue.type === ClueType.Rank) {
       const clueRank = clue.value as number;
       // ranksRemoved keeps track of ranks removed for normal suits touched by their own rank
       // This allows for proper checking of possibilities to cross out suit pips
@@ -785,10 +785,10 @@ export default class HanabiCard extends Konva.Group {
     this.positiveColorClues = [];
     this.negativeColorClues = [];
     for (const color of positiveColorClues) {
-      this.applyClue(new Clue(CLUE_TYPE.COLOR, color), true);
+      this.applyClue(new Clue(ClueType.Color, color), true);
     }
     for (const color of negativeColorClues) {
-      this.applyClue(new Clue(CLUE_TYPE.COLOR, color), false);
+      this.applyClue(new Clue(ClueType.Color, color), false);
     }
   }
 
@@ -804,10 +804,10 @@ export default class HanabiCard extends Konva.Group {
     this.positiveRankClues = [];
     this.negativeRankClues = [];
     for (const rank of positiveRankClues) {
-      this.applyClue(new Clue(CLUE_TYPE.RANK, rank), true);
+      this.applyClue(new Clue(ClueType.Rank, rank), true);
     }
     for (const rank of negativeRankClues) {
-      this.applyClue(new Clue(CLUE_TYPE.RANK, rank), false);
+      this.applyClue(new Clue(ClueType.Rank, rank), false);
     }
   }
 
