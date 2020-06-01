@@ -163,7 +163,7 @@ function setTickingDownTimeTooltip(i: number) {
 
 const setTickingDownTimeCPTooltip = () => {
   // This tooltip is disabled in non-timed games
-  if (!globals.options.timed) {
+  if (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed) {
     return;
   }
 

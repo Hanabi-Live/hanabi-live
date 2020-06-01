@@ -1440,7 +1440,7 @@ const drawTimers = () => {
     listening: true,
   });
   globals.layers.timer.add(globals.elements.timer2 as any);
-  if (globals.options.timed) {
+  if (globals.options.timed || globals.lobby.settings.showTimerInUntimed) {
     globals.elements.timer2.tooltipName = 'time-taken';
     // (the content will be updated in the "setTickingDownTimeCPTooltip()" function)
     tooltips.init(globals.elements.timer2, true, false);
