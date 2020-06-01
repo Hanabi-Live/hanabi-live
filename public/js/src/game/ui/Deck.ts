@@ -171,11 +171,7 @@ export default class Deck extends Konva.Group {
       content += `&nbsp; Game Length: &nbsp;<strong>${clockString}</strong></li>`;
     }
 
-    const currentTable = globals.lobby.tableMap.get(globals.lobby.tableID);
-    if (typeof currentTable === 'undefined') {
-      throw new Error('Failed to find the current table in the "initTooltip()" function.');
-    }
-    if (globals.replay || currentTable.name.startsWith('!seed ')) {
+    if (globals.replay || globals.seeded) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-seedling"></i></span>';
       content += `&nbsp; Seed: &nbsp;<strong>${globals.seed}</strong></li>`;
     }

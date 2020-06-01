@@ -66,6 +66,10 @@
 * The pips and boxes will automatically disappear as positive clues and negative clues "touch" the card.
 * The pips and boxes will automatically be crossed out if all the particular cards for that suit/rank are visible.
 
+#### Critical Indicator
+
+A "❗" icon will appear on cards that are "critical", meaning that there is only one copy of that card left.
+
 #### Clue Log
 
 * A clue log is shown in the top-right-hand corner.
