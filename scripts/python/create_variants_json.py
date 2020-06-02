@@ -13,9 +13,6 @@ import json
 import os
 import sys
 
-# Variables
-highest_variant_id = 0
-
 
 def main():
     global old_variants
@@ -553,6 +550,16 @@ def main():
                 "suits": variant_suits[suit_num - 1] + [suit_name],
             }
 
+    # Add "Reversed" variants (the normal ones without any special suits)
+    for suit_num in [6, 5, 4, 3]:
+        variant_name = "Reversed (" + str(suit_num) + " Suits)"
+        reversed_variant_suits = variant_suits[suit_num].copy()
+        reversed_variant_suits[-1] += "-Reversed"
+        variants[variant_name] = {
+            "id": get_variant_id(variant_name),
+            "suits": reversed_variant_suits,
+        }
+
     # Add "Up or Down" variants
     for suit_num in [6, 5]:  # 4 suits and 3 suits would be too difficult
         variant_name = "Up or Down (" + str(suit_num) + " Suits)"
@@ -590,6 +597,11 @@ def main():
             print("Missing variant: " + key)
     if missing:
         sys.exit(1)
+
+    # Write out the new "variant.json" file
+    with open(variants_path, "w", newline="\n") as new_variants_file:
+        json.dump(variants, new_variants_file, indent=2, separators=(",", ": "))
+    print('Wrote a new variants.json" file.')
 
     # Additionally, create a "variants.txt" file with the names of all of the variants
     variants_txt_path = os.path.join(data_path, "variants.txt")
