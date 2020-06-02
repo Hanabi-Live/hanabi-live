@@ -242,7 +242,7 @@ One of each card per suit (e.g. 5 in total):
 * The reversed suit must be played in the opposite order (e.g. 5, 4, 3, 2, 1).
 * Two 1's are removed from the reversed suit.
 * Two 5's are added to the reversed suit.
-* The White Reversed (6 Suits) variant is an official variant introduced with [Hanabi Grands Feux](https://www.cocktailgames.com/jeu/hanabi-grands-feux/) under the name "Poudre Noire" (Black Powder).
+* The "White Reversed (6 Suits)" variant is an official variant introduced with [Hanabi Grands Feux](https://www.cocktailgames.com/jeu/hanabi-grands-feux/) under the name "Poudre Noire" (Black Powder).
 
 ### Up or Down
 

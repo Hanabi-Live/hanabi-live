@@ -93,10 +93,10 @@ func suitsInit() {
 		}
 	}
 
-	// Add reversed versions of all suits
+	// For every suit, add a reversed version of that suit
 	for name, suit := range suits {
-		suitRev := *suit
-		suitRev.Reversed = true
-		suits[name+"-Reversed"] = &suitRev
+		suitReversed := *suit
+		suitReversed.Reversed = true
+		suits[name+SuitReversedSuffix] = &suitReversed
 	}
 }

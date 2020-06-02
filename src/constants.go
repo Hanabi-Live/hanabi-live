@@ -99,6 +99,9 @@ const (
 	// a server shutdown or restart is initiated
 	ShutdownTimeout = time.Minute * 30
 
+	// A "reversed" version of every suit exists
+	SuitReversedSuffix = " Reversed"
+
 	// The amount of time in between allowed @here Discord alerts
 	DiscordAtHereTimeout = time.Hour * 2
 

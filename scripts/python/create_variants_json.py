@@ -92,11 +92,11 @@ def main():
         "suits": variant_suits[6],
     }
     variants["4 Suits"] = {
-        "id": old_variants["4 Suits"]["id"],
+        "id": get_variant_id("4 Suits"),
         "suits": variant_suits[4],
     }
     variants["3 Suits"] = {
-        "id": old_variants["3 Suits"]["id"],
+        "id": get_variant_id("3 Suits"),
         "suits": variant_suits[3],
     }
 
@@ -116,7 +116,7 @@ def main():
             variant_name = suit_name + " (" + str(suit_num) + " Suits)"
             computed_variant_suits = variant_suits[suit_num - 1] + [suit_name]
             variants[variant_name] = {
-                "id": old_variants[variant_name]["id"],
+                "id": get_variant_id(variant_name),
                 "suits": computed_variant_suits,
             }
 
@@ -173,7 +173,7 @@ def main():
                 computed_variant_suits.append(suit_name)
                 computed_variant_suits.append(suit_name2)
                 variants[variant_name] = {
-                    "id": old_variants[variant_name]["id"],
+                    "id": get_variant_id(variant_name),
                     "suits": computed_variant_suits,
                 }
 
@@ -200,7 +200,7 @@ def main():
                 )
                 computed_variant_suits = variant_suits[suit_num].copy()
                 variants[variant_name] = {
-                    "id": old_variants[variant_name]["id"],
+                    "id": get_variant_id(variant_name),
                     "suits": computed_variant_suits,
                     "specialRank": special_rank,
                 }
@@ -245,7 +245,7 @@ def main():
                     )
                     computed_variant_suits = variant_suits[suit_num - 1] + [suit_name2]
                     variants[variant_name] = {
-                        "id": old_variants[variant_name]["id"],
+                        "id": get_variant_id(variant_name),
                         "suits": computed_variant_suits,
                         "specialRank": special_rank,
                     }
@@ -269,7 +269,7 @@ def main():
     # Add "Ambiguous" variants
     # TODO add all special suits
     variants["Ambiguous (6 Suits)"] = {
-        "id": old_variants["Ambiguous (6 Suits)"]["id"],
+        "id": get_variant_id("Ambiguous (6 Suits)"),
         "suits": ["Tomato", "Mahogany", "Lime", "Forest", "Sky", "Navy",],
         "showSuitNames": True,
     }
@@ -280,24 +280,24 @@ def main():
         "Navy",
     ]
     variants["Ambiguous (4 Suits)"] = {
-        "id": old_variants["Ambiguous (4 Suits)"]["id"],
+        "id": get_variant_id("Ambiguous (4 Suits)"),
         "suits": amibuous_suits,
         "showSuitNames": True,
     }
     variants["Ambiguous & Rainbow (5 Suits)"] = {
-        "id": old_variants["Ambiguous & Rainbow (5 Suits)"]["id"],
+        "id": get_variant_id("Ambiguous & Rainbow (5 Suits)"),
         "suits": amibuous_suits + ["Rainbow"],
         "showSuitNames": True,
     }
     variants["Ambiguous & White (5 Suits)"] = {
-        "id": old_variants["Ambiguous & White (5 Suits)"]["id"],
+        "id": get_variant_id("Ambiguous & White (5 Suits)"),
         "suits": amibuous_suits + ["White"],
         "showSuitNames": True,
     }
 
     # Add "Very Ambiguous" variants
     variants["Very Ambiguous (6 Suits)"] = {
-        "id": old_variants["Very Ambiguous (6 Suits)"]["id"],
+        "id": get_variant_id("Very Ambiguous (6 Suits)"),
         "suits": [
             "Tomato VA",
             "Ruby VA",
@@ -325,22 +325,22 @@ def main():
     extremely_ambiguous_suits[5] = extremely_ambiguous_suits[4] + ["Navy EA"]
     extremely_ambiguous_suits[6] = extremely_ambiguous_suits[5] + ["Ocean EA"]
     variants["Extremely Ambiguous (6 Suits)"] = {
-        "id": old_variants["Extremely Ambiguous (6 Suits)"]["id"],
+        "id": get_variant_id("Extremely Ambiguous (6 Suits)"),
         "suits": extremely_ambiguous_suits[6],
         "showSuitNames": True,
     }
     variants["Extremely Ambiguous (5 Suits)"] = {
-        "id": old_variants["Extremely Ambiguous (5 Suits)"]["id"],
+        "id": get_variant_id("Extremely Ambiguous (5 Suits)"),
         "suits": extremely_ambiguous_suits[5],
         "showSuitNames": True,
     }
     variants["Extremely Ambiguous (4 Suits)"] = {
-        "id": old_variants["Extremely Ambiguous (4 Suits)"]["id"],
+        "id": get_variant_id("Extremely Ambiguous (4 Suits)"),
         "suits": extremely_ambiguous_suits[4],
         "showSuitNames": True,
     }
     variants["Extremely Ambiguous (3 Suits)"] = {
-        "id": old_variants["Extremely Ambiguous (3 Suits)"]["id"],
+        "id": get_variant_id("Extremely Ambiguous (3 Suits)"),
         "suits": extremely_ambiguous_suits[3],
         "showSuitNames": True,
     }
@@ -554,11 +554,32 @@ def main():
     for suit_num in [6, 5, 4, 3]:
         variant_name = "Reversed (" + str(suit_num) + " Suits)"
         reversed_variant_suits = variant_suits[suit_num].copy()
-        reversed_variant_suits[-1] += "-Reversed"
+        reversed_variant_suits[-1] += " Reversed"
         variants[variant_name] = {
             "id": get_variant_id(variant_name),
             "suits": reversed_variant_suits,
         }
+
+    # Add "Reversed" variants for each special suit
+    for [suit_name, suit] in suits.items():
+        # We only want to create variants for certain suits
+        # (e.g. "Red" does not get its own variants because it is a basic suit)
+        if not suit["createVariants"]:
+            continue
+
+        suit_name = suit_name + " Reversed"
+        for suit_num in [6, 5, 4, 3]:
+            # It would be too difficult to have a 4 suit variant or a 3 suits variant with a
+            # one-of-each suit
+            if (suit_num == 4 or suit_num == 3) and suit["oneOfEach"]:
+                continue
+
+            variant_name = suit_name + " (" + str(suit_num) + " Suits)"
+            computed_variant_suits = variant_suits[suit_num - 1] + [suit_name]
+            variants[variant_name] = {
+                "id": get_variant_id(variant_name),
+                "suits": computed_variant_suits,
+            }
 
     # Add "Up or Down" variants
     for suit_num in [6, 5]:  # 4 suits and 3 suits would be too difficult
