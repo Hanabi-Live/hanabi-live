@@ -95,6 +95,11 @@ func httpHistory(c *gin.Context) {
 		gameHistoryList = v
 	}
 
+	if _, ok := c.Request.URL.Query()["api"]; ok {
+		c.JSON(http.StatusOK, gameHistoryList)
+		return
+	}
+
 	data := HistoryData{
 		Title:   "History",
 		Dev:     false,

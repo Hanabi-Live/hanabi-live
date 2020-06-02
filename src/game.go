@@ -84,7 +84,7 @@ type Game struct {
 	HypoRevealed bool // Whether or not drawn cards should be revealed (false by default)
 
 	// Keep track of user-defined tags; they will be written to the database upon game completion
-	Tags map[string]int // Keys are the tags, values are the user ID
+	Tags map[string]int // Keys are the tags, values are the user ID that created it
 }
 
 func NewGame(t *Table) *Game {

@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -46,7 +45,7 @@ func httpSeed(c *gin.Context) {
 		gameHistoryList = v
 	}
 
-	if strings.HasSuffix(c.Request.URL.String(), "/api") {
+	if _, ok := c.Request.URL.Query()["api"]; ok {
 		c.JSON(http.StatusOK, gameHistoryList)
 		return
 	}
