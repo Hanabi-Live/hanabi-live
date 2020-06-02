@@ -11,7 +11,7 @@ export default interface GameHistory {
   endCondition: number;
   datetimeStarted: Date;
   datetimeFinished: Date;
-  numSimilar: number;
+  numGamesOnThisSeed: number;
   playerNames: string[];
   incrementNumGames: boolean;
 }

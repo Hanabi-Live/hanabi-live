@@ -2,26 +2,33 @@ package main
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
-func httpSeed(c *gin.Context) {
+func httpTag(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	// Parse the seed from the URL
-	seed := c.Param("seed")
-	if seed == "" {
-		http.Error(w, "Error: You must specify a seed.", http.StatusNotFound)
+	// Parse the tag from the URL
+	tag := c.Param("tag")
+	if tag == "" {
+		http.Error(w, "Error: You must specify a tag.", http.StatusNotFound)
 		return
 	}
 
-	// Get all games played on this seed
+	// Sanitize, validate, and normalize the tag
+	if v, err := sanitizeTag(tag); err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	} else {
+		tag = v
+	}
+
+	// Get the game IDs that match this tag
 	var gameIDs []int
-	if v, err := models.Games.GetGameIDsSeed(seed); err != nil {
-		logger.Error("Failed to get the game IDs from the database for seed \""+seed+"\":", err)
+	if v, err := models.GameTags.Search(tag); err != nil {
+		logger.Error("Failed to search for games matching a tag of \""+tag+"\":", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -46,17 +53,11 @@ func httpSeed(c *gin.Context) {
 		gameHistoryList = v
 	}
 
-	if strings.HasSuffix(c.Request.URL.String(), "/api") {
-		c.JSON(http.StatusOK, gameHistoryList)
-		return
-	}
-
 	data := HistoryData{
-		Title:        "History",
-		Dev:          false,
-		History:      gameHistoryList,
-		NamesTitle:   "seed: " + seed,
-		SpecificSeed: true,
+		Title:      "History",
+		Dev:        false,
+		NamesTitle: "Games With a Tag of: " + tag,
+		History:    gameHistoryList,
 	}
 	httpServeTemplate(w, data, "profile", "history")
 }

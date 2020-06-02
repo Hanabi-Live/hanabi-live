@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -36,8 +37,9 @@ func commandTag(s *Session, d *CommandData) {
 		return
 	}
 
-	// Sanitize and validate the tag
-	if v, valid := sanitizeTag(s, d.Msg); !valid {
+	// Sanitize, validate, and normalize the tag
+	if v, err := sanitizeTag(d.Msg); err != nil {
+		s.Warning(err.Error())
 		return
 	} else {
 		d.Msg = v
@@ -46,7 +48,7 @@ func commandTag(s *Session, d *CommandData) {
 	if !t.Replay {
 		// Store the tag temporarily until the game ends,
 		// at which point we will write it to the database
-		g.Tags[d.Msg] = struct{}{}
+		g.Tags[d.Msg] = s.UserID()
 
 		// Send them an acknowledgement via private message to avoid spoiling information about the
 		// ongoing game
@@ -79,7 +81,7 @@ func commandTag(s *Session, d *CommandData) {
 	}
 
 	// Add it to the database
-	if err := models.GameTags.Insert(g.ID, d.Msg); err != nil {
+	if err := models.GameTags.Insert(g.ID, s.UserID(), d.Msg); err != nil {
 		logger.Error("Failed to insert a tag for game ID "+strconv.Itoa(g.ID)+":", err)
 		s.Error(DefaultErrorMsg)
 		return
@@ -90,17 +92,15 @@ func commandTag(s *Session, d *CommandData) {
 	chatServerSend(msg, room)
 }
 
-func sanitizeTag(s *Session, tag string) (string, bool) {
+func sanitizeTag(tag string) (string, error) {
 	// Validate tag length
 	if len(tag) > MaxTagLength {
-		s.Warning("Tags cannot be longer than " + strconv.Itoa(MaxTagLength) + " characters.")
-		return tag, false
+		return tag, errors.New("Tags cannot be longer than " + strconv.Itoa(MaxTagLength) + " characters.")
 	}
 
 	// Check for valid UTF8
 	if !utf8.Valid([]byte(tag)) {
-		s.Warning("Tags must contain valid UTF8 characters.")
-		return tag, false
+		return tag, errors.New("Tags must contain valid UTF8 characters.") // nolint: golint, stylecheck
 	}
 
 	// Replace any whitespace that is not a space with a space
@@ -116,9 +116,8 @@ func sanitizeTag(s *Session, tag string) (string, bool) {
 
 	// Validate blank tags
 	if tag == "" {
-		s.Warning("Tags cannot be blank.")
-		return tag, false
+		return tag, errors.New("Tags cannot be blank.") // nolint: golint, stylecheck
 	}
 
-	return normalizeString(tag), true
+	return normalizeString(tag), nil
 }

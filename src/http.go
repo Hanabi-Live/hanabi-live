@@ -169,9 +169,14 @@ func httpInit() {
 	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5/:player6", httpHistory)
 	httpRouter.GET("/missing-scores", httpScores)
 	httpRouter.GET("/missing-scores/:player", httpScores)
+	httpRouter.GET("/seed", httpSeed)
 	httpRouter.GET("/seed/:seed", httpSeed) // Display all games played on a given seed
+	httpRouter.GET("/seed/:seed/api", httpSeed)
 	httpRouter.GET("/stats", httpStats)
+	httpRouter.GET("/variant", httpVariant)
 	httpRouter.GET("/variant/:id", httpVariant)
+	httpRouter.GET("/tag", httpTag)
+	httpRouter.GET("/tag/:tag", httpTag)
 	httpRouter.GET("/videos", httpVideos)
 	httpRouter.GET("/password-reset", httpPasswordReset)
 	httpRouter.POST("/password-reset", httpPasswordResetPost)
@@ -179,8 +184,7 @@ func httpInit() {
 	// Path handlers for bots, developers, researchers, etc.
 	httpRouter.GET("/export", httpExport)
 	httpRouter.GET("/export/:game", httpExport)
-	httpRouter.GET("/deals", httpDeals)
-	httpRouter.GET("/deals/:seed", httpDeals)
+	// ("/seed/:seed/api" is also a JSON-endpoint)
 
 	// Other
 	httpRouter.Static("/public", path.Join(projectPath, "public"))

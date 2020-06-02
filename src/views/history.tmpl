@@ -20,7 +20,7 @@
       <th>Score</th>
       <th>Variant</th>
       <th>Date</th>
-      <th>Other Players</th>
+      <th>Players</th>
       {{if not .SpecificSeed}}<th>Other Scores</th>{{end}}
     </tr>
   </thead>
@@ -38,7 +38,7 @@
             {{range $index2, $results2 := .PlayerNames}}{{if $index2}}, {{end}}{{$results2}}{{end}}
           </a>
         </td>
-        {{if not $.SpecificSeed}}<td><a href="/seed/{{.Seed}}">{{.NumSimilar}}</a></td>{{end}}
+        {{if not $.SpecificSeed}}<td><a href="/seed/{{.Seed}}">{{.NumGamesOnThisSeed}}</a></td>{{end}}
       </tr>
     {{- end -}}
   </tbody>

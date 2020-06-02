@@ -19,16 +19,24 @@ func commandHistoryFriendsGet(s *Session, d *CommandData) {
 		return
 	}
 
-	// Get the history for the range that they specified
-	var gameHistoryList []*GameHistory
-	if v, err := models.Games.GetFriendsHistory(
+	// Get the list of friend game IDs for the range that they specified
+	var gameIDs []int
+	if v, err := models.Games.GetGameIDsFriends(
 		s.UserID(),
 		s.Friends(),
 		d.Offset,
 		d.Amount,
-		false,
 	); err != nil {
-		logger.Error("Failed to get the history for the friends of user \""+s.Username()+"\":", err)
+		logger.Error("Failed to get the friend game IDs for user \""+s.Username()+"\":", err)
+		return
+	} else {
+		gameIDs = v
+	}
+
+	// Get the history for these game IDs
+	var gameHistoryList []*GameHistory
+	if v, err := models.Games.GetHistory(gameIDs); err != nil {
+		logger.Error("Failed to get the history:", err)
 		return
 	} else {
 		gameHistoryList = v

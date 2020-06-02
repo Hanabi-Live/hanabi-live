@@ -153,7 +153,11 @@ export const draw = (friends: boolean) => {
     $('<td>').html(shareReplayButton as any).appendTo(row);
 
     // Column 9 - Other Scores
-    const otherScoresButton = makeOtherScoresButton(ids[i], gameData.numSimilar);
+    const otherScoresButton = makeOtherScoresButton(
+      ids[i],
+      gameData.seed,
+      gameData.numGamesOnThisSeed,
+    );
     $('<td>').html(otherScoresButton as any).appendTo(row);
 
     row.appendTo(tbody);
@@ -196,7 +200,7 @@ const makeReplayButton = (id: number, visibility: string) => {
   return button;
 };
 
-const makeOtherScoresButton = (id: number, gameCount: number) => {
+const makeOtherScoresButton = (id: number, seed: string, gameCount: number) => {
   const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
   button.html(`<i class="fas fa-chart-bar lobby-button-icon"></i>&nbsp; ${gameCount - 1}`);
   button.attr('id', `history-other-scores-${id}`);
@@ -204,8 +208,8 @@ const makeOtherScoresButton = (id: number, gameCount: number) => {
     button.addClass('disabled');
   } else {
     button.on('click', () => {
-      globals.conn!.send('historyGetDeals', {
-        gameID: id,
+      globals.conn!.send('historyGetSeed', {
+        seed,
         friends: globals.currentScreen === 'historyFriends',
       });
       showOtherScores();
@@ -218,6 +222,7 @@ const makeOtherScoresButton = (id: number, gameCount: number) => {
 export const showFriends = () => {
   globals.currentScreen = 'historyFriends';
   nav.show('history-friends');
+  $('#lobby-history-table-players').html('Players');
   $('#lobby-history-show-all').hide();
   draw(true);
 };
@@ -225,6 +230,7 @@ export const showFriends = () => {
 export const hideFriends = () => {
   globals.currentScreen = 'history';
   nav.show('history');
+  $('#lobby-history-table-players').html('Other Players');
   $('#lobby-history-show-all').show();
   draw(false);
 };

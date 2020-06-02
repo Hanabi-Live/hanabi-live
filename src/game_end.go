@@ -117,12 +117,12 @@ func (g *Game) End() {
 	}
 
 	// Send a "gameHistory" message to all the players in the game
-	var numSimilar int
-	if v, err := models.Games.GetNumSimilar(g.Seed); err != nil {
+	var numGamesOnThisSeed int
+	if v, err := models.Games.GetNumGamesOnThisSeed(g.Seed); err != nil {
 		logger.Error("Failed to get the number of games on seed "+g.Seed+":", err)
 		return
 	} else {
-		numSimilar = v
+		numGamesOnThisSeed = v
 	}
 	playerNames := make([]string, 0)
 	for _, p := range t.Players {
@@ -131,18 +131,18 @@ func (g *Game) End() {
 	sortStringsCaseInsensitive(playerNames)
 	gameHistoryList := make([]*GameHistory, 0)
 	gameHistoryList = append(gameHistoryList, &GameHistory{
-		ID:                g.ID, // Recorded in the "WriteDatabase()" function above
-		NumPlayers:        len(g.Players),
-		Options:           g.Options,
-		Seed:              g.Seed,
-		Score:             g.Score,
-		NumTurns:          g.Turn,
-		EndCondition:      g.EndCondition,
-		DatetimeStarted:   g.DatetimeStarted,
-		DatetimeFinished:  g.DatetimeFinished,
-		NumSimilar:        numSimilar,
-		PlayerNames:       playerNames,
-		IncrementNumGames: true,
+		ID:                 g.ID, // Recorded in the "WriteDatabase()" function above
+		NumPlayers:         len(g.Players),
+		Options:            g.Options,
+		Seed:               g.Seed,
+		Score:              g.Score,
+		NumTurns:           g.Turn,
+		EndCondition:       g.EndCondition,
+		DatetimeStarted:    g.DatetimeStarted,
+		DatetimeFinished:   g.DatetimeFinished,
+		NumGamesOnThisSeed: numGamesOnThisSeed,
+		PlayerNames:        playerNames,
+		IncrementNumGames:  true,
 	})
 	for _, p := range t.Players {
 		p.Session.Emit("gameHistory", &gameHistoryList)
@@ -277,8 +277,8 @@ func (g *Game) WriteDatabase() error {
 	}
 
 	// Next, we insert rows for each tag (if any)
-	for tag := range g.Tags {
-		if err := models.GameTags.Insert(g.ID, tag); err != nil {
+	for tag, userID := range g.Tags {
+		if err := models.GameTags.Insert(g.ID, userID, tag); err != nil {
 			logger.Error("Failed to insert a tag into the database:", err)
 			// Do not return on failed tag insertion,
 			// since it should not affect subsequent operations
