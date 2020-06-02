@@ -135,8 +135,9 @@ export const draw = (friends: boolean) => {
     // Column 5 - Other Players
     // Remove our name from the list of players
     const ourIndex = gameData.playerNames.indexOf(globals.username);
-    const playerNamesWithoutUs = gameData.playerNames.slice().splice(ourIndex, 1);
-    const playerNamesWithoutUsString = playerNamesWithoutUs.join(', ');
+    const playerNames = gameData.playerNames.slice();
+    playerNames.splice(ourIndex, 1);
+    const playerNamesWithoutUsString = playerNames.join(', ');
     $('<td>').html(playerNamesWithoutUsString).appendTo(row);
 
     // Column 6 - Date Played
