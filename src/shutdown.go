@@ -24,8 +24,7 @@ func shutdown() {
 		// Notify the lobby and all ongoing tables
 		notifyAllShutdown()
 		numMinutes := strconv.Itoa(int(ShutdownTimeout.Minutes()))
-		chatServerSendAll("The server will shutdown in " + numMinutes +
-			" minutes or when all ongoing games have finished, whichever comes first.")
+		chatServerSendAll("The server will shutdown in " + numMinutes + " minutes.")
 		go shutdownXMinutesLeft(5)
 		go shutdownXMinutesLeft(10)
 		go shutdownWait()

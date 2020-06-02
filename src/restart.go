@@ -103,7 +103,7 @@ func serializeTables() bool {
 			p.Present = false
 		}
 
-		// "t.Game.Table" and "t.Game.Options" are circular references;
+		// "t.Game.Table", "t.Game.Options", and "t.Game.ExtraOptions" are circular references;
 		// we do not have to unset them because we have specified `json:"-"` on their fields,
 		// so the JSON encoder will ignore them
 

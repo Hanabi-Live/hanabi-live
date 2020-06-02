@@ -48,20 +48,15 @@ type CommandData struct {
 	Offset int `json:"offset"`
 	Amount int `json:"amount"`
 
-	// historyGetDeals
-	Friends bool `json:"friends"`
+	// historyGetSeed
+	Seed    string `json:"seed"`
+	Friends bool   `json:"friends"`
 
 	// hypoAction
 	ActionJSON string `json:"actionJSON"`
 
 	// inactive
 	Inactive bool `json:"inactive"`
-
-	// clientError
-	Message string `json:"message"`
-	URL     string `json:"url"`
-	LineNum int    `json:"lineno"`
-	ColNum  int    `json:"colno"`
 
 	// Used internally
 	// (a tag of "-" means that the JSON encoder will ignore the field)
@@ -106,7 +101,7 @@ func commandInit() {
 	commandMap["chatUnfriend"] = commandChatUnfriend
 	commandMap["inactive"] = commandInactive
 	commandMap["getName"] = commandGetName
-	commandMap["historyGetDeals"] = commandHistoryGetDeals
+	commandMap["historyGetSeed"] = commandHistoryGetSeed
 	commandMap["historyGet"] = commandHistoryGet
 	commandMap["historyFriendsGet"] = commandHistoryFriendsGet
 	commandMap["replayCreate"] = commandReplayCreate

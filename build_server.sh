@@ -19,3 +19,4 @@ if [[ $? -ne 0 ]]; then
   echo "$REPO - Go compilation failed!"
   exit 1
 fi
+echo "$REPO - Go compilation succeeded."

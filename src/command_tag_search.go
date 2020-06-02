@@ -13,8 +13,9 @@ import (
 //   msg: 'inverted priority finesse',
 // }
 func commandTagSearch(s *Session, d *CommandData) {
-	// Sanitize and validate the tag
-	if v, valid := sanitizeTag(s, d.Msg); !valid {
+	// Sanitize, validate, and normalize the tag
+	if v, err := sanitizeTag(d.Msg); err != nil {
+		s.Warning(err.Error())
 		return
 	} else {
 		d.Msg = v

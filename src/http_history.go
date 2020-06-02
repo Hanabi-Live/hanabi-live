@@ -66,11 +66,25 @@ func httpHistory(c *gin.Context) {
 		playerNames = append(playerNames, user.Username)
 	}
 
-	// Get the entire game history for this player (or set of players)
-	var gameHistoryList []*GameHistory
-	if v, err := models.Games.GetMultiUserHistory(playerIDs); err != nil {
-		logger.Error("Failed to get the history for the players of "+
+	// Get the game IDs for this player (or set of players)
+	var gameIDs []int
+	if v, err := models.Games.GetGameIDsMultiUser(playerIDs); err != nil {
+		logger.Error("Failed to get the game IDs for the players of "+
 			"\""+strings.Join(playerNames, ", ")+"\":", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else {
+		gameIDs = v
+	}
+
+	// Get the games corresponding to these IDs
+	var gameHistoryList []*GameHistory
+	if v, err := models.Games.GetHistory(gameIDs); err != nil {
+		logger.Error("Failed to get the games from the database:", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -81,6 +95,11 @@ func httpHistory(c *gin.Context) {
 		gameHistoryList = v
 	}
 
+	if _, ok := c.Request.URL.Query()["api"]; ok {
+		c.JSON(http.StatusOK, gameHistoryList)
+		return
+	}
+
 	data := HistoryData{
 		Title:   "History",
 		Dev:     false,
@@ -88,7 +107,7 @@ func httpHistory(c *gin.Context) {
 		History: gameHistoryList,
 	}
 	if len(playerNames) > 1 {
-		data.NamesTitle = "[" + strings.Join(playerNames, ", ") + "]"
+		data.NamesTitle = "Game History for [" + strings.Join(playerNames, ", ") + "]"
 	}
 	httpServeTemplate(w, data, "profile", "history")
 }

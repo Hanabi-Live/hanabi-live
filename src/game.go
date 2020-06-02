@@ -25,6 +25,7 @@ type Game struct {
 	// This is a reference to the Options field of the Table object (for convenience purposes)
 	Options      *Options      `json:"-"` // Skip circular references when encoding
 	ExtraOptions *ExtraOptions `json:"-"` // Skip circular references when encoding
+	// (circular references must also be restored in the "restoreTables()" function)
 
 	// Game state related fields
 	Players []*GamePlayer
@@ -83,7 +84,7 @@ type Game struct {
 	HypoRevealed bool // Whether or not drawn cards should be revealed (false by default)
 
 	// Keep track of user-defined tags; they will be written to the database upon game completion
-	Tags map[string]struct{}
+	Tags map[string]int // Keys are the tags, values are the user ID that created it
 }
 
 func NewGame(t *Table) *Game {
@@ -105,7 +106,7 @@ func NewGame(t *Table) *Game {
 		EndTurn:           -1,
 
 		HypoActions: make([]string, 0),
-		Tags:        make(map[string]struct{}),
+		Tags:        make(map[string]int),
 	}
 
 	if strings.HasPrefix(t.Options.Variant, "Clue Starved") {

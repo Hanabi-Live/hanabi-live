@@ -141,9 +141,9 @@ func httpVariant(c *gin.Context) {
 	}
 
 	// Get recent games played on this variant
-	var recentGames []*GameHistory
-	if v, err := models.Games.GetVariantHistory(variantID, 50); err != nil {
-		logger.Error("Failed to get recent games for variant "+strconv.Itoa(variantID)+":", err)
+	var gameIDs []int
+	if v, err := models.Games.GetGameIDsVariant(variantID, 50); err != nil {
+		logger.Error("Failed to get the game IDs for variant "+strconv.Itoa(variantID)+":", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),
@@ -151,7 +151,21 @@ func httpVariant(c *gin.Context) {
 		)
 		return
 	} else {
-		recentGames = v
+		gameIDs = v
+	}
+
+	// Get the games corresponding to these IDs
+	var gameHistoryList []*GameHistory
+	if v, err := models.Games.GetHistory(gameIDs); err != nil {
+		logger.Error("Failed to get the games from the database:", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return
+	} else {
+		gameHistoryList = v
 	}
 
 	data := VariantData{
@@ -171,7 +185,7 @@ func httpVariant(c *gin.Context) {
 		NumStrikeouts:      variantStats.NumStrikeouts,
 		StrikeoutRate:      strikeoutRate,
 
-		RecentGames: recentGames,
+		RecentGames: gameHistoryList,
 	}
 
 	httpServeTemplate(w, data, "variant")

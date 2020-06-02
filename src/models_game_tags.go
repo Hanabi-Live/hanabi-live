@@ -6,10 +6,10 @@ import (
 
 type GameTags struct{}
 
-func (*GameTags) Insert(gameID int, tag string) error {
+func (*GameTags) Insert(gameID int, userID int, tag string) error {
 	_, err := db.Exec(context.Background(), `
-		INSERT INTO game_tags (game_id, tag)
-		VALUES ($1, $2)
+		INSERT INTO game_tags (game_id, user_id, tag)
+		VALUES ($1, $2, $3)
 	`, gameID, tag)
 	return err
 }

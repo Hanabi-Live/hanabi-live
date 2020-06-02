@@ -404,4 +404,10 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 * This is useful for researchers and bot-makers because you can take one of the games that your bot plays and then plug it into Hanabi Live in order to more-easily see what kinds of strategies that it is doing.
 * It is also possible to program a bot to play on the website with other players. Unlike other websites such as [lichess.org](https://lichess.org/), there is no bot-specific API. Bots must connect to the WebSocket server and send messages in exactly the same way that a real player would. A reference bot implementation can be found [here](https://github.com/Zamiell/hanabi-live-bot).
 
+### JSON Endpoints
+
+* `/history/[username]?api` - Provides the history for Alice.
+* `/seed/[seed]?api` - Provides all games played on the specified seed.
+* `/export/[game ID]` - Provides the data for an arbitrary game from the database.
+
 <br />

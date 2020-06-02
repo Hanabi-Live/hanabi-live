@@ -18,10 +18,21 @@ func commandHistoryGet(s *Session, d *CommandData) {
 		return
 	}
 
-	// Get the history for the range that they specified
+	// Get the list of game IDs for the range that they specified
+	var gameIDs []int
+	if v, err := models.Games.GetGameIDsUser(s.UserID(), d.Offset, d.Amount); err != nil {
+		logger.Error("Failed to get the game IDs for user \""+s.Username()+"\":", err)
+		s.Error(DefaultErrorMsg)
+		return
+	} else {
+		gameIDs = v
+	}
+
+	// Get the history for these game IDs
 	var gameHistoryList []*GameHistory
-	if v, err := models.Games.GetUserHistory(s.UserID(), d.Offset, d.Amount); err != nil {
-		logger.Error("Failed to get the history for user \""+s.Username()+"\":", err)
+	if v, err := models.Games.GetHistory(gameIDs); err != nil {
+		logger.Error("Failed to get the history:", err)
+		s.Error(DefaultErrorMsg)
 		return
 	} else {
 		gameHistoryList = v

@@ -67,6 +67,8 @@ let bottomLeftButtonValues: Values;
 let deckValues: Values;
 let scoreAreaValues: Values;
 let clueAreaValues: Values;
+let finalColorButtonValues: Values;
+let finalRankButtonValues: Values;
 let clueLogValues: Values;
 let spectatorsLabelValues: Values;
 
@@ -1576,6 +1578,12 @@ const drawClueArea = () => {
       clue: new Clue(ClueType.Color, color),
     }, matchingSuit);
 
+    // Also store the X and Y coordinates of the slot to the right of this button for later
+    finalColorButtonValues = {
+      x: colorX + ((i + 1) * (buttonW + buttonXSpacing)),
+      y: colorY,
+    };
+
     globals.elements.clueTypeButtonGroup!.add(button as any);
     globals.elements.clueTypeButtonGroup!.addList(button);
     globals.elements.colorClueButtons.push(button);
@@ -1598,6 +1606,12 @@ const drawClueArea = () => {
       number: rank,
       clue: new Clue(ClueType.Rank, rank),
     });
+
+    // Also store the X and Y coordinates of the slot to the right of this button for later
+    finalRankButtonValues = {
+      x: rankX + ((i + 1) * (buttonW + buttonXSpacing)),
+      y: rankY,
+    };
 
     globals.elements.clueTypeButtonGroup!.add(button as any);
     globals.elements.clueTypeButtonGroup!.addList(button);
@@ -1791,8 +1805,12 @@ const drawHypotheticalArea = () => {
     y: bottomLeftButtonValues.y,
   };
   if (globals.lobby.settings.keldonMode) {
-    hypoBackButtonValues.x = clueAreaValues.x + 0.38;
-    hypoBackButtonValues.y = clueAreaValues.y + 0.035;
+    if (finalColorButtonValues.x > finalRankButtonValues.x) {
+      hypoBackButtonValues.x = clueAreaValues.x + finalColorButtonValues.x;
+    } else {
+      hypoBackButtonValues.x = clueAreaValues.x + finalRankButtonValues.x;
+    }
+    hypoBackButtonValues.y = clueAreaValues.y + finalColorButtonValues.y + 0.008;
   }
   globals.elements.hypoBackButton = new Button({
     x: hypoBackButtonValues.x * winW,
@@ -1805,15 +1823,13 @@ const drawHypotheticalArea = () => {
   globals.elements.hypoBackButton.on('click tap', hypothetical.sendBackOneTurn);
   globals.layers.UI.add(globals.elements.hypoBackButton as any);
 
-  // The "Toggle Hidden" button
+  // The "Toggle Revealed Cards" / "Toggle Hidden Cards" button
   const toggleHiddenButtonValues = {
-    y: bottomLeftButtonValues.y + bottomLeftButtonValues.h! + 0.01, // Same as the "Chat" button
+    x: hypoBackButtonValues.x,
+    y: hypoBackButtonValues.y + 0.0663,
   };
-  if (globals.lobby.settings.keldonMode) {
-    toggleHiddenButtonValues.y = clueAreaValues.y + 0.1;
-  }
   globals.elements.toggleRevealedButton = new Button2({
-    x: hypoBackButtonValues.x * winW,
+    x: toggleHiddenButtonValues.x * winW,
     y: toggleHiddenButtonValues.y * winH,
     width: 0.07 * winW,
     height: 0.1226 * winH,

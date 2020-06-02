@@ -47,6 +47,7 @@ func restoreTables() {
 		g := t.Game
 		g.Table = t
 		g.Options = t.Options
+		g.ExtraOptions = t.ExtraOptions
 		for _, gp := range g.Players {
 			gp.Game = g
 		}

@@ -117,441 +117,64 @@ func (*Games) Exists(databaseID int) (bool, error) {
 }
 
 type GameHistory struct {
-	ID                int       `json:"id"`
-	NumPlayers        int       `json:"numPlayers"`
-	Options           *Options  `json:"options"`
-	Seed              string    `json:"seed"`
-	Score             int       `json:"score"`
-	NumTurns          int       `json:"numTurns"`
-	EndCondition      int       `json:"endCondition"`
-	DatetimeStarted   time.Time `json:"datetimeStarted"`
-	DatetimeFinished  time.Time `json:"datetimeFinished"`
-	NumSimilar        int       `json:"numSimilar"`
-	PlayerNames       []string  `json:"playerNames"`
-	IncrementNumGames bool      `json:"incrementNumGames"`
+	ID                 int       `json:"id"`
+	NumPlayers         int       `json:"numPlayers"`
+	Options            *Options  `json:"options"`
+	Seed               string    `json:"seed"`
+	Score              int       `json:"score"`
+	NumTurns           int       `json:"numTurns"`
+	EndCondition       int       `json:"endCondition"`
+	DatetimeStarted    time.Time `json:"datetimeStarted"`
+	DatetimeFinished   time.Time `json:"datetimeFinished"`
+	NumGamesOnThisSeed int       `json:"numGamesOnThisSeed"`
+	PlayerNames        []string  `json:"playerNames"`
+	IncrementNumGames  bool      `json:"incrementNumGames"`
 }
 
-func (*Games) GetUserHistory(userID int, offset int, amount int) ([]*GameHistory, error) {
-	// We rename "games" to "games1" and "game_participants" to "game_participants1" so that the
-	// subquery can access their values (otherwise, the table names would conflict)
+func (*Games) GetHistory(gameIDs []int) ([]*GameHistory, error) {
+	// We rename "games" to "games1" so that the subquery can access their values
+	// (otherwise, the table names would conflict)
 	SQLString := `
 		SELECT
 			games1.id,
 			games1.num_players,
 			games1.variant,
+			games1.timed,
+			games1.time_base,
+			games1.time_per_turn,
+			games1.speedrun,
+			games1.card_cycle,
+			games1.deck_plays,
+			games1.empty_clues,
+			games1.all_or_nothing,
+			games1.detrimental_characters,
 			games1.seed,
 			games1.score,
+			games1.num_turns,
+			games1.end_condition,
+			games1.datetime_started,
 			games1.datetime_finished,
 			(
 				SELECT COUNT(games2.id)
 				FROM games AS games2
 				WHERE games2.seed = games1.seed
-			) AS num_similar,
-			(
-				SELECT STRING_AGG(users.username, ', ')
-				FROM game_participants AS game_participants2
-					JOIN users ON users.id = game_participants2.user_id
-				WHERE game_participants2.game_id = games1.id
-			) AS player_names
-		FROM games AS games1
-			JOIN game_participants AS game_participants1 ON games1.id = game_participants1.game_id
-		WHERE game_participants1.user_id = $1
-		ORDER BY games1.id DESC
-	`
-	SQLString += "LIMIT " + strconv.Itoa(amount) + " OFFSET " + strconv.Itoa(offset)
-
-	rows, err := db.Query(context.Background(), SQLString, userID)
-
-	games := make([]*GameHistory, 0)
-	for rows.Next() {
-		gameHistory := GameHistory{
-			Options: &Options{},
-		}
-		var variantID int
-		var playerNamesString string
-		if err2 := rows.Scan(
-			&gameHistory.ID,
-			&gameHistory.NumPlayers,
-			&variantID,
-			&gameHistory.Seed,
-			&gameHistory.Score,
-			&gameHistory.DatetimeFinished,
-			&gameHistory.NumSimilar,
-			&playerNamesString,
-		); err2 != nil {
-			return nil, err2
-		}
-
-		// Get the name of the variant that corresponds to the variant ID
-		if variantName, ok := variantsID[variantID]; !ok {
-			return nil, errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
-		} else {
-			gameHistory.Options.Variant = variantName
-		}
-
-		// The players come from the database in a random order
-		// (since we did not include an "ORDER BY" keyword)
-		// Alphabetize the players (case-insensitive)
-		playerNames := strings.Split(playerNamesString, ", ")
-		playerNames = sortStringsCaseInsensitive(playerNames)
-		gameHistory.PlayerNames = playerNames
-
-		games = append(games, &gameHistory)
-	}
-
-	if rows.Err() != nil {
-		return nil, err
-	}
-	rows.Close()
-
-	return games, nil
-}
-
-func (*Games) GetMultiUserHistory(userIDs []int) ([]*GameHistory, error) {
-	// We rename "games" to "games1" and "game_participants" to "game_participants1" so that the
-	// subquery can access their values (otherwise, the table names would conflict)
-	SQLString := `
-		SELECT
-			DISTINCT ON (games1.id)
-			games1.id,
-			games1.num_players,
-			games1.variant,
-			games1.seed,
-			games1.score,
-			games1.datetime_finished,
-			(
-				SELECT COUNT(games2.id)
-				FROM games AS games2
-				WHERE games2.seed = games1.seed
-			) AS num_similar,
-			(
-				SELECT STRING_AGG(users.username, ', ')
-				FROM game_participants AS game_participants2
-					JOIN users ON users.id = game_participants2.user_id
-				WHERE game_participants2.game_id = games1.id
-			) AS player_names
-		FROM games AS games1
-	`
-	for _, id := range userIDs {
-		SQLString += "JOIN game_participants AS player" + strconv.Itoa(id) + "_games "
-		SQLString += "ON games1.id = player" + strconv.Itoa(id) + "_games.game_id "
-		SQLString += "AND player" + strconv.Itoa(id) + "_games.user_id = " + strconv.Itoa(id) + " "
-	}
-	SQLString += "ORDER BY games1.id DESC"
-
-	rows, err := db.Query(context.Background(), SQLString)
-
-	games := make([]*GameHistory, 0)
-	for rows.Next() {
-		gameHistory := GameHistory{
-			Options: &Options{},
-		}
-		var variantID int
-		var playerNamesString string
-		if err2 := rows.Scan(
-			&gameHistory.ID,
-			&gameHistory.NumPlayers,
-			&variantID,
-			&gameHistory.Seed,
-			&gameHistory.Score,
-			&gameHistory.DatetimeFinished,
-			&gameHistory.NumSimilar,
-			&playerNamesString,
-		); err2 != nil {
-			return nil, err2
-		}
-
-		// Get the name of the variant that corresponds to the variant ID
-		if variantName, ok := variantsID[variantID]; !ok {
-			return nil, errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
-		} else {
-			gameHistory.Options.Variant = variantName
-		}
-
-		// The players come from the database in a random order
-		// (since we did not include an "ORDER BY" keyword)
-		// Alphabetize the players (case-insensitive)
-		playerNames := strings.Split(playerNamesString, ", ")
-		playerNames = sortStringsCaseInsensitive(playerNames)
-		gameHistory.PlayerNames = playerNames
-
-		games = append(games, &gameHistory)
-	}
-
-	if rows.Err() != nil {
-		return nil, err
-	}
-	rows.Close()
-
-	return games, nil
-}
-
-func (*Games) GetFriendsHistory(
-	userID int,
-	friends map[int]struct{},
-	offset int,
-	amount int,
-	all bool,
-) ([]*GameHistory, error) {
-	// We rename "games" to "games1" and "game_participants" to "game_participants1" so that the
-	// subquery can access their values (otherwise, the table names would conflict)
-	SQLString := `
-		SELECT
-			DISTINCT ON (games1.id)
-			games1.id,
-			games1.num_players,
-			games1.variant,
-			games1.seed,
-			games1.score,
-			games1.datetime_finished,
-			(
-				SELECT COUNT(games2.id)
-				FROM games AS games2
-				WHERE games2.seed = games1.seed
-			) AS num_similar,
-			(
-				SELECT STRING_AGG(users.username, ', ')
-				FROM game_participants AS game_participants2
-					JOIN users ON users.id = game_participants2.user_id
-				WHERE game_participants2.game_id = games1.id
-			) AS player_names
-		FROM games AS games1
-			JOIN game_participants AS game_participants1 ON games1.id = game_participants1.game_id
-		WHERE game_participants1.user_id != $1 AND (
-	`
-	for friendID := range friends {
-		SQLString += "game_participants1.user_id = " + strconv.Itoa(friendID) + " OR "
-	}
-	SQLString = strings.TrimSuffix(SQLString, "OR ")
-	SQLString += ") "
-	SQLString += "ORDER BY games1.id DESC"
-	if !all {
-		SQLString += " LIMIT " + strconv.Itoa(amount) + " OFFSET " + strconv.Itoa(offset)
-	}
-
-	rows, err := db.Query(context.Background(), SQLString, userID)
-
-	games := make([]*GameHistory, 0)
-	for rows.Next() {
-		gameHistory := GameHistory{
-			Options: &Options{},
-		}
-		var variantID int
-		var playerNamesString string
-		if err2 := rows.Scan(
-			&gameHistory.ID,
-			&gameHistory.NumPlayers,
-			&variantID,
-			&gameHistory.Seed,
-			&gameHistory.Score,
-			&gameHistory.DatetimeFinished,
-			&gameHistory.NumSimilar,
-			&playerNamesString,
-		); err2 != nil {
-			return nil, err2
-		}
-
-		// Get the name of the variant that corresponds to the variant ID
-		if variantName, ok := variantsID[variantID]; !ok {
-			return nil, errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
-		} else {
-			gameHistory.Options.Variant = variantName
-		}
-
-		// The players come from the database in a random order
-		// (since we did not include an "ORDER BY" keyword)
-		// Alphabetize the players (case-insensitive)
-		playerNames := strings.Split(playerNamesString, ", ")
-		playerNames = sortStringsCaseInsensitive(playerNames)
-		gameHistory.PlayerNames = playerNames
-
-		games = append(games, &gameHistory)
-	}
-
-	if rows.Err() != nil {
-		return nil, err
-	}
-	rows.Close()
-
-	return games, nil
-}
-
-func (*Games) GetVariantHistory(variant int, amount int) ([]*GameHistory, error) {
-	rows, err := db.Query(context.Background(), `
-		SELECT
-			id,
-			num_players,
-			variant,
-			score,
-			datetime_finished,
+			) AS num_games_on_this_seed,
 			(
 				SELECT STRING_AGG(users.username, ', ')
 				FROM game_participants
 					JOIN users ON users.id = game_participants.user_id
-				WHERE game_participants.game_id = games.id
+				WHERE game_participants.game_id = games1.id
 			) AS player_names
-		FROM games
-		WHERE variant = $1
-		ORDER BY id DESC
-		LIMIT $2
-	`, variant, amount)
-
-	games := make([]*GameHistory, 0)
-	for rows.Next() {
-		gameHistory := GameHistory{
-			Options: &Options{},
-		}
-		var variantID int
-		var playerNamesString string
-		if err2 := rows.Scan(
-			&gameHistory.ID,
-			&gameHistory.NumPlayers,
-			&variantID,
-			&gameHistory.Score,
-			&gameHistory.DatetimeFinished,
-			&playerNamesString,
-		); err2 != nil {
-			return nil, err2
-		}
-
-		// Get the name of the variant that corresponds to the variant ID
-		if variantName, ok := variantsID[variantID]; !ok {
-			return nil, errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
-		} else {
-			gameHistory.Options.Variant = variantName
-		}
-
-		// The players come from the database in a random order
-		// (since we did not include an "ORDER BY" keyword)
-		// Alphabetize the players (case-insensitive)
-		playerNames := strings.Split(playerNamesString, ", ")
-		playerNames = sortStringsCaseInsensitive(playerNames)
-		gameHistory.PlayerNames = playerNames
-
-		games = append(games, &gameHistory)
-	}
-
-	if rows.Err() != nil {
-		return nil, err
-	}
-	rows.Close()
-
-	return games, nil
-}
-
-func (*Games) GetUserNumGames(userID int, includeSpeedrun bool) (int, error) {
-	SQLString := `
-		SELECT COUNT(games.id)
-		FROM games
-			JOIN game_participants ON games.id = game_participants.game_id
-		WHERE game_participants.user_id = $1
+		FROM games AS games1
+		/*
+		 * We must use the ANY operator for matching an array of game IDs:
+		 * https://github.com/jackc/pgx/issues/334
+		 */
+		WHERE games1.id = ANY($1)
+		ORDER BY games1.id DESC /* We always return the games in decending order */
 	`
-	if !includeSpeedrun {
-		SQLString += "AND games.speedrun = FALSE"
-	}
-	var count int
-	if err := db.QueryRow(context.Background(), SQLString, userID).Scan(&count); err != nil {
-		return 0, err
-	}
-	return count, nil
-}
 
-func (*Games) GetNumSimilar(seed string) (int, error) {
-	var count int
-	if err := db.QueryRow(context.Background(), `
-		SELECT COUNT(id) AS num_similar
-		FROM games
-		WHERE seed = $1
-	`, seed).Scan(&count); err != nil {
-		return 0, err
-	}
-
-	return count, nil
-}
-
-func (*Games) GetAllDealsFromGameID(databaseID int) ([]*GameHistory, error) {
-	rows, err := db.Query(context.Background(), `
-		SELECT
-			id,
-			seed,
-			score,
-			datetime_finished,
-			(
-				SELECT STRING_AGG(users.username, ', ')
-				FROM game_participants
-					JOIN users ON users.id = game_participants.user_id
-				WHERE game_participants.game_id = games.id
-			) AS player_names
-		FROM games
-		WHERE seed = (SELECT seed FROM games WHERE id = $1)
-		ORDER BY id
-	`, databaseID)
-
-	games := make([]*GameHistory, 0)
-	for rows.Next() {
-		gameHistory := GameHistory{
-			Options: &Options{},
-		}
-		var playerNamesString string
-		if err2 := rows.Scan(
-			&gameHistory.ID,
-			&gameHistory.Seed,
-			&gameHistory.Score,
-			&gameHistory.DatetimeFinished,
-			&playerNamesString,
-		); err2 != nil {
-			return nil, err2
-		}
-
-		// The players come from the database in a random order
-		// (since we did not include an "ORDER BY" keyword)
-		// Alphabetize the players (case-insensitive)
-		playerNames := strings.Split(playerNamesString, ", ")
-		playerNames = sortStringsCaseInsensitive(playerNames)
-		gameHistory.PlayerNames = playerNames
-
-		games = append(games, &gameHistory)
-	}
-
-	if rows.Err() != nil {
-		return nil, err
-	}
-	rows.Close()
-
-	return games, nil
-}
-
-func (*Games) GetAllDealsFromSeed(seed string) ([]*GameHistory, error) {
-	rows, err := db.Query(context.Background(), `
-		SELECT
-			id,
-			num_players,
-			variant,
-			timed,
-			time_base,
-			time_per_turn,
-			speedrun,
-			card_cycle,
-			deck_plays,
-			empty_clues,
-			all_or_nothing,
-			detrimental_characters,
-			seed,
-			score,
-			num_turns,
-			end_condition,
-			datetime_started,
-			datetime_finished,
-			(
-				SELECT STRING_AGG(users.username, ', ')
-				FROM game_participants
-					JOIN users ON users.id = game_participants.user_id
-				WHERE game_participants.game_id = games.id
-			) AS player_names
-		FROM games
-		WHERE seed = $1
-		ORDER BY id
-	`, seed)
+	rows, err := db.Query(context.Background(), SQLString, gameIDs)
 
 	games := make([]*GameHistory, 0)
 	for rows.Next() {
@@ -579,6 +202,7 @@ func (*Games) GetAllDealsFromSeed(seed string) ([]*GameHistory, error) {
 			&gameHistory.EndCondition,
 			&gameHistory.DatetimeStarted,
 			&gameHistory.DatetimeFinished,
+			&gameHistory.NumGamesOnThisSeed,
 			&playerNamesString,
 		); err2 != nil {
 			return nil, err2
@@ -607,6 +231,191 @@ func (*Games) GetAllDealsFromSeed(seed string) ([]*GameHistory, error) {
 	rows.Close()
 
 	return games, nil
+}
+
+func (*Games) GetGameIDsUser(userID int, offset int, amount int) ([]int, error) {
+	SQLString := `
+		SELECT games.id
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+		WHERE game_participants.user_id = $1
+		/* We must get the results in decending order for the limit to work properly */
+		ORDER BY games.id DESC
+	`
+	SQLString += "LIMIT " + strconv.Itoa(amount) + " OFFSET " + strconv.Itoa(offset)
+
+	rows, err := db.Query(context.Background(), SQLString, userID)
+
+	gameIDs := make([]int, 0)
+	for rows.Next() {
+		var gameID int
+		if err2 := rows.Scan(&gameID); err2 != nil {
+			return gameIDs, err2
+		}
+		gameIDs = append(gameIDs, gameID)
+	}
+
+	if rows.Err() != nil {
+		return gameIDs, err
+	}
+	rows.Close()
+
+	return gameIDs, nil
+}
+
+func (*Games) GetGameIDsSeed(seed string) ([]int, error) {
+	SQLString := `
+		SELECT id
+		FROM games
+		WHERE seed = $1
+	`
+
+	rows, err := db.Query(context.Background(), SQLString, seed)
+
+	gameIDs := make([]int, 0)
+	for rows.Next() {
+		var gameID int
+		if err2 := rows.Scan(&gameID); err2 != nil {
+			return gameIDs, err2
+		}
+		gameIDs = append(gameIDs, gameID)
+	}
+
+	if rows.Err() != nil {
+		return gameIDs, err
+	}
+	rows.Close()
+
+	return gameIDs, nil
+}
+
+func (*Games) GetGameIDsFriends(
+	userID int,
+	friends map[int]struct{},
+	offset int,
+	amount int,
+) ([]int, error) {
+	SQLString := `
+		SELECT DISTINCT games.id
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+		WHERE game_participants.user_id != $1 AND (`
+	for friendID := range friends {
+		SQLString += "game_participants.user_id = " + strconv.Itoa(friendID) + " OR "
+	}
+	SQLString = strings.TrimSuffix(SQLString, "OR ")
+	SQLString += ") "
+	// We must get the results in decending order for the limit to work properly
+	SQLString += "ORDER BY games.id DESC "
+	SQLString += "LIMIT " + strconv.Itoa(amount) + " OFFSET " + strconv.Itoa(offset)
+	logger.Debug(SQLString)
+
+	rows, err := db.Query(context.Background(), SQLString, userID)
+
+	gameIDs := make([]int, 0)
+	for rows.Next() {
+		var gameID int
+		if err2 := rows.Scan(&gameID); err2 != nil {
+			return gameIDs, err2
+		}
+		gameIDs = append(gameIDs, gameID)
+	}
+
+	if rows.Err() != nil {
+		return gameIDs, err
+	}
+	rows.Close()
+
+	return gameIDs, nil
+}
+
+func (*Games) GetGameIDsMultiUser(userIDs []int) ([]int, error) {
+	SQLString := `
+		SELECT DISTINCT games.id
+		FROM games
+	`
+	for _, id := range userIDs {
+		SQLString += "JOIN game_participants AS player" + strconv.Itoa(id) + "_games "
+		SQLString += "ON games.id = player" + strconv.Itoa(id) + "_games.game_id "
+		SQLString += "AND player" + strconv.Itoa(id) + "_games.user_id = " + strconv.Itoa(id) + " "
+	}
+
+	rows, err := db.Query(context.Background(), SQLString)
+
+	gameIDs := make([]int, 0)
+	for rows.Next() {
+		var gameID int
+		if err2 := rows.Scan(&gameID); err2 != nil {
+			return gameIDs, err2
+		}
+		gameIDs = append(gameIDs, gameID)
+	}
+
+	if rows.Err() != nil {
+		return gameIDs, err
+	}
+	rows.Close()
+
+	return gameIDs, nil
+}
+
+func (*Games) GetGameIDsVariant(variant int, amount int) ([]int, error) {
+	SQLString := `
+		SELECT id
+		FROM games
+		WHERE variant = $1
+		/* We must get the results in decending order for the limit to work properly */
+		ORDER BY id DESC
+		LIMIT $2
+	`
+
+	rows, err := db.Query(context.Background(), SQLString, variant, amount)
+
+	gameIDs := make([]int, 0)
+	for rows.Next() {
+		var gameID int
+		if err2 := rows.Scan(&gameID); err2 != nil {
+			return gameIDs, err2
+		}
+		gameIDs = append(gameIDs, gameID)
+	}
+
+	if rows.Err() != nil {
+		return gameIDs, err
+	}
+	rows.Close()
+
+	return gameIDs, nil
+}
+
+func (*Games) GetUserNumGames(userID int, includeSpeedrun bool) (int, error) {
+	SQLString := `
+		SELECT COUNT(games.id)
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+		WHERE game_participants.user_id = $1
+	`
+	if !includeSpeedrun {
+		SQLString += "AND games.speedrun = FALSE"
+	}
+	var count int
+	if err := db.QueryRow(context.Background(), SQLString, userID).Scan(&count); err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (*Games) GetNumGamesOnThisSeed(seed string) (int, error) {
+	var count int
+	if err := db.QueryRow(context.Background(), `
+		SELECT COUNT(id)
+		FROM games
+		WHERE seed = $1
+	`, seed).Scan(&count); err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func (*Games) GetOptions(databaseID int) (*Options, error) {

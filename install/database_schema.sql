@@ -201,7 +201,10 @@ CREATE TABLE game_actions (
 DROP TABLE IF EXISTS game_tags CASCADE;
 CREATE TABLE game_tags (
     game_id  INTEGER  NOT NULL,
+    user_id  INTEGER  NOT NULL,
     tag      TEXT     NOT NULL,
+    FOREIGN KEY (game_id) REFERENCES games (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT game_tags_unique UNIQUE (game_id, tag)
 );
 
