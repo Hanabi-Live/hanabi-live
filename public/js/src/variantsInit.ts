@@ -193,7 +193,15 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
     ) {
       throw new Error(`The "showSuitNames" property for the variant "${variantName}" must be set to true.`);
     }
-    const showSuitNames: boolean = variantJSON.showSuitNames || false;
+    let showSuitNames: boolean = variantJSON.showSuitNames || false;
+
+    // Always set "showSuitNames" to true if it has one or more reversed suits
+    for (const suit of suits) {
+      if (suit.reversed) {
+        showSuitNames = true;
+        break;
+      }
+    }
 
     // Validate the "spacing" property
     // If it is not specified, assume that there is no spacing
