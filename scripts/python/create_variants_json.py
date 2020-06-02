@@ -601,6 +601,8 @@ def main():
     # Write out the new "variant.json" file
     with open(variants_path, "w", newline="\n") as new_variants_file:
         json.dump(variants, new_variants_file, indent=2, separators=(",", ": "))
+        new_variants_file.write("\n")
+
     print('Wrote a new variants.json" file.')
 
     # Additionally, create a "variants.txt" file with the names of all of the variants
@@ -608,8 +610,8 @@ def main():
     contents = ""
     for variant_name in variants.keys():
         contents += variant_name + "\n"
-    with open(variants_txt_path, "w", newline="\n") as variants_file:
-        variants_file.write(contents)
+    with open(variants_txt_path, "w", newline="\n") as variants_txt_file:
+        variants_txt_file.write(contents + "\n")
 
 
 def get_variant_id(variant_name):
