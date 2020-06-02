@@ -494,10 +494,35 @@ export default class HanabiCard extends Konva.Group {
     let suitsRemoved: Suit[] = [];
     if (clue.type === ClueType.Color) {
       const clueColor = clue.value as Color;
+      // suitsRemoved keeps track of suits removed for normal ranks
+      // This allows for proper checking of possibilities to cross out rank pips
+      // We handle special ranks later
       if (globals.variant.colorCluesTouchNothing) {
         // Some variants have color clues touch no cards
         // If this is the case, we cannot remove any suit pips from the card
-      } else if (
+      } else {
+        // The default case (e.g. No Variant)
+        // Remove all possibilities that do not include this color
+        suitsRemoved = this.possibleSuits.filter(
+          (suit: Suit) => (
+            suit.clueColors.includes(clueColor)
+            || suit.allClueColors
+          ) !== positive,
+        );
+      }
+
+      if (possibilitiesCheck()) {
+        for (const rank of this.possibleRanks) {
+          // We can remove possibilities for normal ranks
+          if (rank !== globals.variant.specialRank) {
+            for (const suit of suitsRemoved) {
+              this.removePossibility(suit, rank, true);
+            }
+          }
+        }
+      }
+
+      if (
         positive
         && this.possibleRanks.includes(globals.variant.specialRank)
         && globals.variant.specialAllClueColors
@@ -524,15 +549,8 @@ export default class HanabiCard extends Konva.Group {
           (suit: Suit) => !suit.allClueColors,
         );
       } else {
-        // The default case (e.g. No Variant)
-        // Remove all possibilities that do not include this color
-        suitsRemoved = filterInPlace(
-          this.possibleSuits,
-          (suit: Suit) => (
-            suit.clueColors.includes(clueColor)
-            || suit.allClueColors
-          ) === positive,
-        );
+        // We can safely remove the suits from possible suits
+        filterInPlace(this.possibleSuits, (suit: Suit) => suitsRemoved.indexOf(suit) === -1);
       }
 
       // Handle special ranks
