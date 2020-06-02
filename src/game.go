@@ -25,6 +25,7 @@ type Game struct {
 	// This is a reference to the Options field of the Table object (for convenience purposes)
 	Options      *Options      `json:"-"` // Skip circular references when encoding
 	ExtraOptions *ExtraOptions `json:"-"` // Skip circular references when encoding
+	// (circular references must also be restored in the "restoreTables()" function)
 
 	// Game state related fields
 	Players []*GamePlayer
