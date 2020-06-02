@@ -13,6 +13,9 @@ import json
 import os
 import sys
 
+# Constants
+SUIT_REVERSED_SUFFIX = " Reversed"
+
 
 def main():
     global old_variants
@@ -554,7 +557,7 @@ def main():
     for suit_num in [6, 5, 4, 3]:
         variant_name = "Reversed (" + str(suit_num) + " Suits)"
         reversed_variant_suits = variant_suits[suit_num].copy()
-        reversed_variant_suits[-1] += " Reversed"
+        reversed_variant_suits[-1] += SUIT_REVERSED_SUFFIX
         variants[variant_name] = {
             "id": get_variant_id(variant_name),
             "suits": reversed_variant_suits,
@@ -567,7 +570,7 @@ def main():
         if not suit["createVariants"]:
             continue
 
-        suit_name = suit_name + " Reversed"
+        suit_name = suit_name + SUIT_REVERSED_SUFFIX
         for suit_num in [6, 5, 4, 3]:
             # It would be too difficult to have a 4 suit variant or a 3 suits variant with a
             # one-of-each suit
