@@ -237,20 +237,8 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
 
 This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the below commands and edit the contents of the three Supervisor files.
 
-* Install Supervisor:
-  * `sudo apt install python3-pip -y`
-  * `pip3 install supervisor`
-  * `mkdir -p /etc/supervisor/conf.d`
-  * `mkdir -p /var/log/supervisor`
-* Copy the configuration files:
-  * `cp "/root/hanabi-live/install/supervisor/supervisord.conf" "/etc/supervisor/supervisord.conf"`
-  * `cp "/root/hanabi-live/install/supervisor/hanabi-live.conf" "/etc/supervisor/conf.d/hanabi-live.conf"`
-  * `cp "/root/hanabi-live/install/supervisor/supervisord.service" "/etc/systemd/system/supervisord.service"`
-* Start it:
-  * `systemctl daemon-reload`
-  * `systemctl start supervisord`
-* Load the new configuration:
-  * `supervisorctl reload`
+* Install Supervisor and install the Hanabi Live service:
+  * `./install/install_supervisor.sh`
 
 To manage the service:
 

@@ -13,11 +13,11 @@ if [[ ! -f "$DIR/../.env" ]]; then
 fi
 
 # Build the server, which will automatically install the Golang dependencies
-"$DIR/../build_server.sh"
+"$DIR/../server/build_server.sh"
 
 # Install the JavaScript/TypeScript dependencies and build the client
 cd "$DIR/../client"
 npm install
-"$DIR/../build_client.sh"
+"$DIR/../client/build_client.sh"
 
 echo "Successfully installed dependencies."

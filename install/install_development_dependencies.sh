@@ -14,10 +14,11 @@ code --install-extension "dbaeumer.vscode-eslint" # For TypeScript
 # Install the Golang linter
 # (it is not recommended to install this with "go get")
 # https://github.com/golangci/golangci-lint#install
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.24.0
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
 
 # Install the TypeScript linter
-cd "$DIR/../public/js"
+# https://www.npmjs.com/package/eslint-config-airbnb
+cd "$DIR/../client"
 npx install-peerdeps --dev eslint-config-airbnb-base
 
 echo "Successfully installed development dependencies."
