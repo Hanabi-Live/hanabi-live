@@ -15,6 +15,9 @@ import * as modals from './modals';
 const emojiMap = new Map();
 const emoteList: string[] = [];
 let chatLineNum = 1;
+let tabCompleteCounter: number = 0;
+let tabCompleteIndex: number = 0;
+let tabCompleteWordList: string[] = [];
 
 export const init = () => {
   $('#lobby-chat-input').on('input', input);
@@ -252,7 +255,7 @@ export const tab = (element: JQuery<HTMLElement>) => {
     tempEmote1 = tempEmote2;
   }
 
-  if (globals.tabCompleteCounter === 0) {
+  if (tabCompleteCounter === 0) {
     // This is the first time we are pressing tab
     let message = element.val();
     if (typeof message !== 'string') {
@@ -260,17 +263,17 @@ export const tab = (element: JQuery<HTMLElement>) => {
     }
     message = message.trim();
 
-    globals.tabCompleteWordList = message.split(' ');
-    const messageEnd = globals.tabCompleteWordList[globals.tabCompleteWordList.length - 1];
+    tabCompleteWordList = message.split(' ');
+    const messageEnd = tabCompleteWordList[tabCompleteWordList.length - 1];
     for (let i = 0; i < tabList.length; i++) {
       const tabWord = tabList[i];
       const temp = tabWord.slice(0, messageEnd.length).toLowerCase();
       if (temp === messageEnd.toLowerCase()) {
-        globals.tabCompleteIndex = i;
-        globals.tabCompleteCounter += 1;
+        tabCompleteIndex = i;
+        tabCompleteCounter += 1;
         let newMessage = '';
-        for (let j = 0; j < globals.tabCompleteWordList.length - 1; j++) {
-          newMessage += globals.tabCompleteWordList[j];
+        for (let j = 0; j < tabCompleteWordList.length - 1; j++) {
+          newMessage += tabCompleteWordList[j];
           newMessage += ' ';
         }
         newMessage += tabWord;
@@ -281,28 +284,28 @@ export const tab = (element: JQuery<HTMLElement>) => {
   } else {
     // We have already pressed tab once, so we need to cycle through the rest of the
     // autocompletion words
-    let index = globals.tabCompleteCounter + globals.tabCompleteIndex;
-    const messageEnd = globals.tabCompleteWordList[globals.tabCompleteWordList.length - 1];
-    if (globals.tabCompleteCounter >= tabList.length) {
-      globals.tabCompleteCounter = 0;
+    let index = tabCompleteCounter + tabCompleteIndex;
+    const messageEnd = tabCompleteWordList[tabCompleteWordList.length - 1];
+    if (tabCompleteCounter >= tabList.length) {
+      tabCompleteCounter = 0;
       element.val(messageEnd);
-      index = globals.tabCompleteCounter + globals.tabCompleteIndex;
+      index = tabCompleteCounter + tabCompleteIndex;
     }
     const tempSlice = tabList[index].slice(0, messageEnd.length).toLowerCase();
     if (tempSlice === messageEnd.toLowerCase()) {
-      globals.tabCompleteCounter += 1;
+      tabCompleteCounter += 1;
       let newMessage = '';
-      for (let i = 0; i < globals.tabCompleteWordList.length - 1; i++) {
-        newMessage += globals.tabCompleteWordList[i];
+      for (let i = 0; i < tabCompleteWordList.length - 1; i++) {
+        newMessage += tabCompleteWordList[i];
         newMessage += ' ';
       }
       newMessage += tabList[index];
       element.val(newMessage);
     } else {
-      globals.tabCompleteCounter = 0;
+      tabCompleteCounter = 0;
       let newMessage = '';
-      for (let i = 0; i < globals.tabCompleteWordList.length - 1; i++) {
-        newMessage += globals.tabCompleteWordList[i];
+      for (let i = 0; i < tabCompleteWordList.length - 1; i++) {
+        newMessage += tabCompleteWordList[i];
         newMessage += ' ';
       }
       newMessage += messageEnd;

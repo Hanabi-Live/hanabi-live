@@ -50,9 +50,6 @@ export class Globals {
   datetimeLastChatInput: number = new Date().getTime();
   typedChatHistory: string[] = [];
   typedChatHistoryIndex = 0;
-  tabCompleteCounter: number = 0;
-  tabCompleteIndex: number = 0;
-  tabCompleteWordList: string[] = [];
   peopleTyping: string[] = [];
 
   showMoreHistoryClicked: boolean = false;
