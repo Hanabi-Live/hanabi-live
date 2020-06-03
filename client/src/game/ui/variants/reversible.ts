@@ -200,19 +200,38 @@ export const isCardCritical = (card : HanabiCard) : boolean => {
     return critical;
   }
 
-  // On "Up or Down", Start is only critical if all 1's and 5's are discarded
+  if (!critical) {
+    // There are more copies of this card, so no worries
+    return false;
+  }
+
+  const suit = suitToMsgSuit(card.suit!, globals.variant);
+  const direction = globals.stackDirections[suit];
+
+  // Start is only critical if all 1's and 5's are discarded
+  // and the stack didn't start
   if (card.rank === START_CARD_RANK) {
     const num1 = getSpecificCardNum(card.suit!, 1);
     const num5 = getSpecificCardNum(card.suit!, 5);
-    return critical && (num1.total === num1.discarded || num5.total === num5.discarded);
+    return direction === StackDirection.Undecided
+      && (num1.total === num1.discarded || num5.total === num5.discarded);
   }
 
-  // On "Up or Down", 1's and 5's are only critical if Start is discarded
-  if (card.rank === 1 || card.rank === 5) {
+  // 1's and 5's are only critical to begin if Start is discarded
+  if ((card.rank === 1 || card.rank === 5) && direction === StackDirection.Undecided) {
     const numStart = getSpecificCardNum(card.suit!, START_CARD_RANK);
-    return critical && (numStart.total === numStart.discarded);
+    return numStart.total === numStart.discarded;
   }
 
-  // Default case
-  return critical;
+  // 1's and 5's are critical to end if the direction requires them in the end
+  if (card.rank === 1) {
+    return direction === StackDirection.Down;
+  }
+
+  if (card.rank === 5) {
+    return direction === StackDirection.Up;
+  }
+
+  // Default case: all other ranks
+  return true;
 };
