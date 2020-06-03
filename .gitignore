@@ -13,7 +13,7 @@ hanabi-live.exe
 compiling_client
 
 # The message of the day
-motd.txt
+motd.txt*
 
 # The version file will change automatically with every commit
 /data/version.json
