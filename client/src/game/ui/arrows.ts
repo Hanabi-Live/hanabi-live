@@ -10,8 +10,10 @@ import {
   STACK_BASE_RANK,
   ReplayArrowOrder,
 } from '../../constants';
+import Suit from '../../Suit';
 import Arrow from './Arrow';
 import Clue from './Clue';
+import drawPip from './drawPip';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 
@@ -108,10 +110,29 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
           // The specific clue color is hidden in "Cow & Pig" variants
           arrow.circle.fill('white');
         } else {
-          if (typeof clue.value === 'number') {
+          const clueColor = clue.value;
+          if (typeof clueColor === 'number') {
             throw new Error('The clue value was a number for a color clue.');
           }
-          arrow.circle.fill(clue.value.fill);
+          arrow.circle.fill(clueColor.fill);
+
+          // Additionally, draw the suit pip in colorblind mode
+          if (globals.lobby.settings.colorblindMode) {
+            if (typeof clue.value === 'number') {
+              throw new Error('The clue value was a number for a color clue.');
+            }
+            const matchingSuits = globals.variant.suits.filter(
+              (suit: Suit) => (suit.clueColors.includes(clueColor)),
+            );
+            if (matchingSuits.length === 1) {
+              arrow.suitPip!.sceneFunc((ctx: any) => {
+                drawPip(ctx, matchingSuits[0]);
+              });
+              arrow.suitPip!.visible(true);
+            } else {
+              arrow.suitPip!.visible(false);
+            }
+          }
         }
       } else if (clue.type === ClueType.Rank) {
         let text = clue.value.toString();
@@ -124,6 +145,10 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
         // The circle for number clues should have a white border and a black fill
         arrow.circle.stroke('white');
         arrow.circle.fill('black');
+
+        if (globals.lobby.settings.colorblindMode) {
+          arrow.suitPip!.visible(false);
+        }
       }
     }
   }
