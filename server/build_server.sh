@@ -6,6 +6,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Get the name of the repository
 # https://stackoverflow.com/questions/23162299/how-to-get-the-last-part-of-dirname-in-bash/23162553
+REPO="$(dirname "$DIR")"
 REPO="$(basename "$DIR")"
 
 # For non-interactive shells,
@@ -13,8 +14,8 @@ REPO="$(basename "$DIR")"
 export HOME=/root
 
 # Recompile the Golang code and restart the service
-cd "$DIR/server"
-go build -o "$DIR/$REPO"
+cd "$DIR/src"
+go build -o "$DIR/../$REPO"
 if [[ $? -ne 0 ]]; then
   echo "$REPO - Go compilation failed!"
   exit 1
