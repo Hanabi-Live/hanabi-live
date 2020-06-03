@@ -11,7 +11,10 @@ REPO="$(basename "$DIR")"
 
 # For non-interactive shells,
 # $HOME must be specified or it will result in a cache error when compiling the Go code
-export HOME=/root
+# However, this will cause Travis to break
+if [[ -z $CI ]]; then
+  export HOME=/root
+fi
 
 # Recompile the Golang code and restart the service
 cd "$DIR/src"

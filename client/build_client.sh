@@ -42,7 +42,7 @@ if ! command -v npx > /dev/null; then
   export PATH=$NPM_BIN_DIR:$PATH
 fi
 
-cd "$DIR/client"
+cd "$DIR"
 
 # The client is written in TypeScript and spread out across many files
 # We need to pack it into one JavaScript file before sending it to end-users
@@ -53,28 +53,30 @@ echo
 
 # Create a file that informs the server that the compiled JavaScript will not be available for the
 # next few milliseconds or so
-COMPILING_FILE="$DIR/compiling_client"
+COMPILING_FILE="$DIR/../compiling_client"
 touch "$COMPILING_FILE"
 
-# We don't want to serve files directly out of the "webpack_output" directory because that would
+# We don't want to serve files directly out of the WebPack output directory because that would
 # cause website downtime during client compilation; the Golang server will look at the "bundles"
 # directory to see what the latest version of the client is
-cp "$DIR/client/webpack_output/main.$VERSION.min.js" "$DIR/public/js/bundles/"
-cp "$DIR/client/webpack_output/main.$VERSION.min.js.map" "$DIR/public/js/bundles/"
-echo "$VERSION" > "$DIR/public/js/bundles/version.txt"
+$WEBPACK_OUTPUT_DIR="$DIR/webpack_output"
+$BUNDLES_DIR="$DIR/../public/js/bundles"
+cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js" "$BUNDLES_DIR/"
+cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js.map" "$BUNDLES_DIR/"
+echo "$VERSION" > "$BUNDLES_DIR/version.txt"
 # In addition to the numerical version (e.g. the number of commits),
 # it is also handy to have the exact git commit hash for the current build
-echo $(git rev-parse HEAD) > "$DIR/public/js/bundles/git-revision.txt"
+echo $(git rev-parse HEAD) > "$DIR/../public/js/bundles/git-revision.txt"
 rm -f "$COMPILING_FILE"
 
 # Clean up old files in the "bundles" directory
-cd "$DIR/public/js/bundles"
+cd "$DIR/../public/js/bundles"
 if [[ $(ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git-revision.txt) ]]; then
   ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git-revision.txt | xargs rm
   # (we don't use an environment variable to store the results because it will cause the script to
   # stop execution in the case where there are no results)
 fi
-cd "$DIR/client"
+cd "$DIR"
 
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
 # to end-users
