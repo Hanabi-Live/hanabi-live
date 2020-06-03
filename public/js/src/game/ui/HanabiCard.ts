@@ -511,7 +511,12 @@ export default class HanabiCard extends Konva.Group {
         );
       }
 
-      if (possibilitiesCheck()) {
+      if (
+        possibilitiesCheck()
+        && (globals.variant.specialAllClueColors || globals.variant.specialNoClueColors)
+      ) {
+        // We only need to run this early possibility removal for variants with special ranks
+        // touched by all or no color clues
         for (const rank of this.possibleRanks) {
           // We can remove possibilities for normal ranks
           if (rank !== globals.variant.specialRank) {
@@ -568,13 +573,6 @@ export default class HanabiCard extends Konva.Group {
                 (rank: number) => rank === globals.variant.specialRank,
               );
             }
-          } else if (this.possibleSuits.filter((suit) => suit.noClueColors).length === 0) {
-            // Negative color means that the card cannot be the special rank
-            // (as long as the card cannot be a suit that is never touched by color clues)
-            ranksRemoved = filterInPlace(
-              this.possibleRanks,
-              (rank: number) => rank !== globals.variant.specialRank,
-            );
           } else if (this.rank === globals.variant.specialRank) {
             // Negative color to a known special rank means that we can remove all suits
             // other that the ones that are never touched by color clues
@@ -584,15 +582,49 @@ export default class HanabiCard extends Konva.Group {
             );
             suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
             suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
-          }
-        } else if (globals.variant.specialNoClueColors) {
-          if (positive && this.possibleSuits.filter((suit) => suit.allClueColors).length === 0) {
-            // Positive color means that the card cannot be a special rank
-            // (as long as the card cannot be a suit that is always touched by color clues)
+          } else if (this.possibleSuits.filter((suit) => suit.noClueColors).length === 0) {
+            // Negative color means that the card cannot be the special rank
+            // (as long as the card cannot be a suit that is never touched by color clues)
             ranksRemoved = filterInPlace(
               this.possibleRanks,
               (rank: number) => rank !== globals.variant.specialRank,
             );
+          } else if (possibilitiesCheck()) {
+            // If there is a suit never touched by color clues, we can still remove
+            // possibilities for other suits on the special rank
+            for (const suit of this.possibleSuits) {
+              if (!suit.noClueColors) {
+                this.removePossibility(suit, globals.variant.specialRank, true);
+              }
+            }
+          }
+        } else if (globals.variant.specialNoClueColors) {
+          if (positive) {
+            if (this.possibleSuits.filter((suit) => suit.allClueColors).length === 0) {
+              // Positive color means that the card cannot be a special rank
+              // (as long as the card cannot be a suit that is always touched by color clues)
+              ranksRemoved = filterInPlace(
+                this.possibleRanks,
+                (rank: number) => rank !== globals.variant.specialRank,
+              );
+            } else if (possibilitiesCheck()) {
+              // If there is a suit always touched by color clues, we can still remove
+              // possibilities for other suits on the special rank
+              for (const suit of this.possibleSuits) {
+                if (!suit.allClueColors) {
+                  this.removePossibility(suit, globals.variant.specialRank, true);
+                }
+              }
+            }
+          } else if (this.negativeColorClues.length === globals.variant.clueColors.length) {
+            if (this.possibleSuits.filter((suit) => suit.noClueColors).length === 0) {
+              // All negative colors means that the card must be the special rank
+              // (as long as it cannot be a suit that is never touched by color clues)
+              ranksRemoved = filterInPlace(
+                this.possibleRanks,
+                (rank: number) => rank === globals.variant.specialRank,
+              );
+            }
           }
         }
       }
