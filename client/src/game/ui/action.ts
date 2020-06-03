@@ -598,10 +598,10 @@ actionFunctions.set('turn', (data: ActionTurn) => {
     }
     let numTurnsLeft = globals.endTurn - globals.turn;
 
-    // The game is artificially extended by a turn in order to
-    // show the times separately from the final action, so account for this
-    if (globals.turn === globals.replayMax && globals.replay) {
-      numTurnsLeft += 1;
+    // Also account for the fact that in non-replays,
+    // an extra turn is sent to show the times separately from the final action
+    if (numTurnsLeft < 0) {
+      numTurnsLeft = 0;
     }
 
     globals.elements.deckTurnsRemainingLabel2!.text(`left: ${numTurnsLeft}`);
