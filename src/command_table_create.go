@@ -295,9 +295,11 @@ func commandTableCreate(s *Session, d *CommandData) {
 		}
 	}
 
-	// Validate that they send the options object
+	// Validate that they sent the options object
 	if d.Options == nil {
-		d.Options = &Options{}
+		d.Options = &Options{
+			Variant: "No Variant",
+		}
 	}
 
 	// Validate that the variant name is valid

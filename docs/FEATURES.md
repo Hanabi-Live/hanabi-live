@@ -406,8 +406,10 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 
 ### JSON Endpoints
 
-* `/history/[username]?api` - Provides the history for Alice.
-* `/seed/[seed]?api` - Provides all games played on the specified seed.
+* `/history/[username]?api` - Provides all of the games played by a user.
+* `/history/[username1]/[username2]?api` - Provides all of the games played in by both users.
+* `/history/[username1]/[username2]/[username3]?api` - Provides all of the games played in by all three users, and so forth.
+* `/seed/[seed]?api` - Provides all of the games played on the specified seed.
 * `/export/[game ID]` - Provides the data for an arbitrary game from the database.
 
 <br />
