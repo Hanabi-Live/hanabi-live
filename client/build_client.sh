@@ -59,8 +59,8 @@ touch "$COMPILING_FILE"
 # We don't want to serve files directly out of the WebPack output directory because that would
 # cause website downtime during client compilation; the Golang server will look at the "bundles"
 # directory to see what the latest version of the client is
-$WEBPACK_OUTPUT_DIR="$DIR/webpack_output"
-$BUNDLES_DIR="$DIR/../public/js/bundles"
+WEBPACK_OUTPUT_DIR="$DIR/webpack_output"
+BUNDLES_DIR="$DIR/../public/js/bundles"
 cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js" "$BUNDLES_DIR/"
 cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js.map" "$BUNDLES_DIR/"
 echo "$VERSION" > "$BUNDLES_DIR/version.txt"

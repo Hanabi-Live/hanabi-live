@@ -7,11 +7,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # Get the name of the repository
 # https://stackoverflow.com/questions/23162299/how-to-get-the-last-part-of-dirname-in-bash/23162553
 REPO="$(dirname "$DIR")"
-REPO="$(basename "$DIR")"
+REPO="$(basename "$REPO")"
 
-# For non-interactive shells,
+# For non-interactive shells (e.g. the server running this script to build itself),
 # $HOME must be specified or it will result in a cache error when compiling the Go code
-# However, this will cause Travis to break
+# (but don't do this in Travis, since doing this will cause it to break)
 if [[ -z $CI ]]; then
   export HOME=/root
 fi
