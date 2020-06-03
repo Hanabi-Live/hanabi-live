@@ -300,9 +300,9 @@ export default (winW: number, winH: number) => {
     if (globals.lobby.settings.keldonMode) {
       turnRectValues.x = handValues.x;
       turnRectValues.w = handValues.w;
-      turnRectValues.h = handValues.h * 1.2;
+      turnRectValues.h = handValues.h * 1.1;
       turnRectValues.offsetX = 0;
-      turnRectValues.offsetY = handValues.h * 0.1;
+      turnRectValues.offsetY = handValues.h * 0.05;
       if (numPlayers === 5) {
         turnRectValues.w += handValues.w * 0.03;
         turnRectValues.offsetX += handValues.w * 0.015;
