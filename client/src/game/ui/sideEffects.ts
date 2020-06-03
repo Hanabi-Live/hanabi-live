@@ -21,7 +21,7 @@ export const changeClues = (clues: number) => {
     } else {
       globals.elements.cluesNumberLabel!.fill(LABEL_COLOR);
     }
-    globals.elements.noClueBorder!.visible(globals.clues === 0);
+    globals.elements.noClueBorder!.visible(clues === 0);
 
     if (clues === MAX_CLUE_NUM) {
       // Show the red border around the discard pile
