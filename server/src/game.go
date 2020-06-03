@@ -233,16 +233,17 @@ func (g *Game) CheckEnd() bool {
 		return true
 	}
 
-	// In an AllOrNothing game, check to see if a maximum score could be reached
+	// In an "All or Nothing" game, check to see if a maximum score can still be reached
 	if g.Options.AllOrNothing && g.GetMaxScore() < variants[g.Options.Variant].MaxScore {
 		logger.Info(t.GetName() + "Impossible to get an AllOrNothing perfect score; ending the game.")
 		g.EndCondition = EndConditionStrikeout
 		return true
 	}
 
-	// In an AllOrNothing game, the next player must have cards or available clues
+	// In an "All or Nothing game",
+	// handle the case where a player would handle to discard without any cards in their hand
 	if g.Options.AllOrNothing && len(g.Players[g.ActivePlayer].Hand) == 0 && g.ClueTokens == 0 {
-		logger.Info(t.GetName() + "Next player ran out of moves and clues; ending the game.")
+		logger.Info(t.GetName() + "The current player has no cards and no clue tokens; ending the game.")
 		g.EndCondition = EndConditionStrikeout
 		return true
 	}
