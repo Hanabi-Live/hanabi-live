@@ -10,14 +10,13 @@ matrix:
         - node
       before_script:
         # Install the JavaScript tooling (TypeScript, Webpack, ESLint, etc.)
-        - echo Installing NPM modules...
+        - echo "Installing NPM modules..."
         - cd client
         - npm install
-        - cd ..
       script:
-        - echo Building the client...
+        - echo "Building the client..."
         - ./build_client.sh
-        - echo Linting the client code...
+        - echo "Linting the client code..."
         - ./lint_client.sh
 
     - language: go
@@ -30,12 +29,13 @@ matrix:
       before_script:
         # Install the Go linter
         # https://github.com/golangci/golangci-lint
-        - echo Installing golangci-lint (the Go linter)...
+        - echo "Installing golangci-lint (the Go linter)..."
+        - cd server
         - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
       script:
-        - echo Building the server...
+        - echo "Building the server..."
         - ./build_server.sh
-        - echo Linting the server code...
+        - echo "Linting the server code..."
         - ./lint_server.sh
 
 notifications:
