@@ -44,6 +44,8 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 				card_cycle,
 				deck_plays,
 				empty_clues,
+				one_extra_card,
+				one_less_card,
 				all_or_nothing,
 				detrimental_characters,
 				seed,
@@ -70,7 +72,9 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 				$15,
 				$16,
 				$17,
-				$18
+				$18,
+				$19,
+				$20
 			)
 			RETURNING id
 		`,
@@ -86,6 +90,8 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 		gameRow.Options.CardCycle,
 		gameRow.Options.DeckPlays,
 		gameRow.Options.EmptyClues,
+		gameRow.Options.OneExtraCard,
+		gameRow.Options.OneLessCard,
 		gameRow.Options.AllOrNothing,
 		gameRow.Options.DetrimentalCharacters,
 		gameRow.Seed,
@@ -194,6 +200,8 @@ func (*Games) GetHistory(gameIDs []int) ([]*GameHistory, error) {
 			&gameHistory.Options.CardCycle,
 			&gameHistory.Options.DeckPlays,
 			&gameHistory.Options.EmptyClues,
+			&gameHistory.Options.OneExtraCard,
+			&gameHistory.Options.OneLessCard,
 			&gameHistory.Options.AllOrNothing,
 			&gameHistory.Options.DetrimentalCharacters,
 			&gameHistory.Seed,
@@ -431,6 +439,8 @@ func (*Games) GetOptions(databaseID int) (*Options, error) {
 			card_cycle,
 			deck_plays,
 			empty_clues,
+			one_extra_card,
+			one_less_card,
 			all_or_nothing,
 			detrimental_characters
 		FROM games
@@ -445,6 +455,8 @@ func (*Games) GetOptions(databaseID int) (*Options, error) {
 		&options.CardCycle,
 		&options.DeckPlays,
 		&options.EmptyClues,
+		&options.OneExtraCard,
+		&options.OneLessCard,
 		&options.AllOrNothing,
 		&options.DetrimentalCharacters,
 	); err != nil {

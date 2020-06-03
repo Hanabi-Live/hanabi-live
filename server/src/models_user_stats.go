@@ -19,21 +19,55 @@ type UserStatsRow struct {
 	AverageScore  float64      `json:"averageScore"`
 	NumStrikeouts int          `json:"numStrikeouts"`
 }
-type BestScore struct {
-	NumPlayers int     `json:"numPlayers"`
-	Score      int     `json:"score"`
-	Modifier   Bitmask `json:"modifier"` // (see the stats section in "gameEnd.go")
-}
 
 func NewUserStatsRow() UserStatsRow {
-	var stats UserStatsRow
-	stats.BestScores = make([]*BestScore, 5) // From 2 to 6 players
-	for i := range stats.BestScores {
-		// This will not work if written as "for i, bestScore :="
-		stats.BestScores[i] = new(BestScore)
-		stats.BestScores[i].NumPlayers = i + 2
+	return UserStatsRow{
+		BestScores: NewBestScores(),
 	}
-	return stats
+}
+
+type BestScore struct {
+	NumPlayers   int     `json:"numPlayers"`
+	Score        int     `json:"score"`
+	Modifier     Bitmask `json:"modifier"` // (see the stats section in "gameEnd.go")
+	DeckPlays    bool    `json:"deckPlays"`
+	EmptyClues   bool    `json:"emptyClues"`
+	OneExtraCard bool    `json:"oneExtraCard"`
+	OneLessCard  bool    `json:"oneLessCard"`
+	AllOrNothing bool    `json:"allOrNothing"`
+}
+
+func NewBestScores() []*BestScore {
+	bestScores := make([]*BestScore, 5) // From 2 to 6 players
+	for i := range bestScores {
+		// This will not work if written as "for i, bestScore :="
+		bestScores[i] = &BestScore{}
+		bestScores[i].NumPlayers = i + 2
+	}
+	return bestScores
+}
+
+func FillBestScores(bestScores []*BestScore) {
+	// The modifiers are stored as a bitmask in the database,
+	// so use the bitmask to set the boolean values
+	for i := range bestScores {
+		modifier := bestScores[i].Modifier
+		if modifier.HasFlag(ScoreModifierDeckPlays) {
+			bestScores[i].DeckPlays = true
+		}
+		if modifier.HasFlag(ScoreModifierEmptyClues) {
+			bestScores[i].EmptyClues = true
+		}
+		if modifier.HasFlag(ScoreModifierOneExtraCard) {
+			bestScores[i].OneExtraCard = true
+		}
+		if modifier.HasFlag(ScoreModifierOneLessCard) {
+			bestScores[i].OneLessCard = true
+		}
+		if modifier.HasFlag(ScoreModifierAllOrNothing) {
+			bestScores[i].AllOrNothing = true
+		}
+	}
 }
 
 func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
@@ -79,6 +113,8 @@ func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
 		return stats, err
 	}
 
+	FillBestScores(stats.BestScores)
+
 	return stats, nil
 }
 
@@ -108,9 +144,8 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 	// Go through the stats for each variant
 	statsMap := make(map[int]UserStatsRow)
 	for rows.Next() {
-		stats := NewUserStatsRow()
-
 		var variant int
+		stats := NewUserStatsRow()
 		if err2 := rows.Scan(
 			&variant,
 			&stats.NumGames,
@@ -129,6 +164,8 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 		); err2 != nil {
 			return nil, err2
 		}
+
+		FillBestScores(stats.BestScores)
 
 		statsMap[variant] = stats
 	}
@@ -318,6 +355,20 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 
 					SQLString += "AND games.empty_clues = "
 					if modifier.HasFlag(ScoreModifierEmptyClues) {
+						SQLString += "TRUE "
+					} else {
+						SQLString += "FALSE "
+					}
+
+					SQLString += "AND games.one_extra_card = "
+					if modifier.HasFlag(ScoreModifierOneExtraCard) {
+						SQLString += "TRUE "
+					} else {
+						SQLString += "FALSE "
+					}
+
+					SQLString += "AND games.one_less_card = "
+					if modifier.HasFlag(ScoreModifierOneLessCard) {
 						SQLString += "TRUE "
 					} else {
 						SQLString += "FALSE "

@@ -208,6 +208,14 @@ func httpExport(c *gin.Context) {
 		optionsJSON.EmptyClues = &options.EmptyClues
 		allDefaultOptions = false
 	}
+	if options.OneExtraCard {
+		optionsJSON.OneExtraCard = &options.OneExtraCard
+		allDefaultOptions = false
+	}
+	if options.OneLessCard {
+		optionsJSON.OneLessCard = &options.OneLessCard
+		allDefaultOptions = false
+	}
 	if options.AllOrNothing {
 		optionsJSON.AllOrNothing = &options.AllOrNothing
 		allDefaultOptions = false

@@ -99,6 +99,7 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 */
 
 // /findvariant
+// This function does not consider modifiers (e.g. "Empty Clues")
 func chatFindVariant(s *Session, d *CommandData, t *Table) {
 	if d.Room == "lobby" {
 		chatServerSend(ChatCommandNotInGameFail, d.Room)

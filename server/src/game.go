@@ -286,10 +286,21 @@ func (g *Game) CheckEnd() bool {
 */
 
 func (g *Game) GetHandSize() int {
+	handSize := g.GetHandSizeForNormalGame()
+	if g.Options.OneExtraCard {
+		handSize++
+	}
+	if g.Options.OneLessCard {
+		handSize--
+	}
+	return handSize
+}
+
+func (g *Game) GetHandSizeForNormalGame() int {
 	// Local variables
 	t := g.Table
-
 	numPlayers := len(g.Players)
+
 	if numPlayers == 2 || numPlayers == 3 {
 		return 5
 	} else if numPlayers == 4 || numPlayers == 5 {
@@ -298,9 +309,9 @@ func (g *Game) GetHandSize() int {
 		return 3
 	}
 
-	logger.Fatal("Failed to get the hand size for " + strconv.Itoa(numPlayers) +
+	logger.Error("Failed to get the hand size for " + strconv.Itoa(numPlayers) +
 		" players for game: " + t.Name)
-	return -1
+	return 4
 }
 
 // GetMaxScore calculates what the maximum score is,

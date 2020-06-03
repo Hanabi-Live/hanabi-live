@@ -171,6 +171,8 @@ const initCommands = () => {
       const cardCycle = urlParams.get('cardCycle') === 'true';
       const deckPlays = urlParams.get('deckPlays') === 'true';
       const emptyClues = urlParams.get('emptyClues') === 'true';
+      const oneExtraCard = urlParams.get('oneExtraCard') === 'true';
+      const oneLessCard = urlParams.get('oneLessCard') === 'true';
       const allOrNothing = urlParams.get('allOrNothing') === 'true';
       const detrimentalCharacters = urlParams.get('detrimentalCharacters') === 'true';
       const password = urlParams.get('password') || '';
@@ -187,6 +189,8 @@ const initCommands = () => {
             cardCycle,
             deckPlays,
             emptyClues,
+            oneExtraCard,
+            oneLessCard,
             allOrNothing,
             detrimentalCharacters,
           },

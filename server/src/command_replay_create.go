@@ -379,6 +379,14 @@ func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 	if d.GameJSON.Options.EmptyClues != nil {
 		emptyClues = *d.GameJSON.Options.EmptyClues
 	}
+	oneExtraCard := false
+	if d.GameJSON.Options.OneExtraCard != nil {
+		oneExtraCard = *d.GameJSON.Options.OneExtraCard
+	}
+	oneLessCard := false
+	if d.GameJSON.Options.OneLessCard != nil {
+		oneLessCard = *d.GameJSON.Options.OneLessCard
+	}
 	allOrNothing := false
 	if d.GameJSON.Options.AllOrNothing != nil {
 		allOrNothing = *d.GameJSON.Options.AllOrNothing
@@ -400,6 +408,8 @@ func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 		CardCycle:             cardCycle,
 		DeckPlays:             deckPlays,
 		EmptyClues:            emptyClues,
+		OneExtraCard:          oneExtraCard,
+		OneLessCard:           oneLessCard,
 		AllOrNothing:          allOrNothing,
 		DetrimentalCharacters: detrimentalCharacters,
 	}

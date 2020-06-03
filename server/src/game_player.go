@@ -477,6 +477,7 @@ func (p *GamePlayer) DrawCard() {
 	}
 
 	// Check to see if that was the last card drawn
+	// (in "All or Nothing" games, the game goes on until all the cards are played)
 	if g.DeckIndex >= len(g.Deck) && !g.Options.AllOrNothing {
 		// Mark the turn upon which the game will end
 		g.EndTurn = g.Turn + len(g.Players) + 1

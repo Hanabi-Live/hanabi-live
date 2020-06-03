@@ -53,14 +53,23 @@
               {{.Score}} / {{$results.MaxScore}}
               {{if eq .Score $results.MaxScore}}
                 </strong> &nbsp;
+                <!--
+                  Since only one modifier tooltip will show,
+                  we order modifiers in order of severity
+                  (e.g. by how much they make the game easier)
+                -->
                 {{if eq .Modifier 0}}
                   <i class="fas fa-check score-modifier green"></i>
-                {{else if eq .Modifier 1}}
-                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays"></i>
-                {{else if eq .Modifier 2}}
+                {{else if .AllOrNothing }}
+                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-allornothing"></i>
+                {{else if .OneExtraCard }}
+                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-oneextracard"></i>
+                {{else if .OneLessCard }}
+                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-onelesscard"></i>
+                {{else if .EmptyClues }}
                   <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-emptyclues"></i>
-                {{else if eq .Modifier 3}}
-                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays-emptyclues"></i>
+                {{else if .DeckPlays }}
+                  <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays"></i>
                 {{end}}
               {{end}}
             </td>

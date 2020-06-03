@@ -28,15 +28,7 @@ var (
 //   name: 'my new table',
 //   options: {
 //     variant: 'No Variant',
-//     timed: true,
-//     timeBase: 120,
-//     timePerTurn: 20,
-//     speedrun: false,
-//     cardCycle: false,
-//     deckPlays: false,
-//     emptyClues: false,
-//     allOrNothing: false,
-//     detrimentalCharacters: false,
+//     [other options omitted; see "Options.ts"]
 //   },
 //   password: 'super_secret',
 //   alertWaiters: false,
@@ -339,6 +331,13 @@ func commandTableCreate(s *Session, d *CommandData) {
 		d.Options.Timed = false
 		d.Options.TimeBase = 0
 		d.Options.TimePerTurn = 0
+	}
+
+	// Validate that they did not send both the "One Extra Card" and the "One Less Card" option at
+	// the same time (they effectively cancel each other out)
+	if d.Options.OneExtraCard && d.Options.OneLessCard {
+		d.Options.OneExtraCard = false
+		d.Options.OneLessCard = false
 	}
 
 	/*

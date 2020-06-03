@@ -98,7 +98,7 @@ func httpScores(c *gin.Context) {
 	}
 	dateJoined := profileStats.DateJoined.Format("January 2" + suffix + ", 2006")
 
-	// It will only be valid if they have played a non-speedrun game
+	// Only show their normal time if they have played a non-speedrun game
 	timePlayed := ""
 	if profileStats.TimePlayed != 0 {
 		if v, err := secondsToDurationString(profileStats.TimePlayed); err != nil {
@@ -116,7 +116,7 @@ func httpScores(c *gin.Context) {
 		}
 	}
 
-	// It will only be valid if they have played a speedrun game
+	// Only show their speedrun time if they have played a speedrun game
 	timePlayedSpeedrun := ""
 	if profileStats.TimePlayedSpeedrun != 0 {
 		if v, err := secondsToDurationString(profileStats.TimePlayedSpeedrun); err != nil {
@@ -193,16 +193,8 @@ func httpScores(c *gin.Context) {
 			}
 		} else {
 			// They have not played any games in this particular variant,
-			// so initialize the best scores object with zero values
-
-			// The following is copied from the "NewUserStatsRow()" function
-			variantStats.BestScores = make([]*BestScore, 5) // From 2 to 6 players
-			for i := range variantStats.BestScores {
-				// This will not work if written as "for i, bestScore :="
-				variantStats.BestScores[i] = new(BestScore)
-				variantStats.BestScores[i].NumPlayers = i + 2
-			}
-
+			// so initialize the stats object with zero values
+			variantStats.BestScores = NewBestScores()
 			variantStats.AverageScore = "-"
 			variantStats.StrikeoutRate = "-"
 		}

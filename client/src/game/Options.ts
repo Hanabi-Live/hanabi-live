@@ -7,6 +7,8 @@ export default class Options {
   cardCycle: boolean = false;
   deckPlays: boolean = false;
   emptyClues: boolean = false;
+  oneExtraCard: boolean = false;
+  oneLessCard: boolean = false;
   allOrNothing: boolean = false;
   detrimentalCharacters: boolean = false;
 }

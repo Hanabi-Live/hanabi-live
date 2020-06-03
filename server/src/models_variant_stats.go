@@ -18,14 +18,9 @@ type VariantStatsRow struct {
 }
 
 func NewVariantStatsRow() VariantStatsRow {
-	var stats VariantStatsRow
-	stats.BestScores = make([]*BestScore, 5) // From 2 to 6 players
-	for i := range stats.BestScores {
-		// This will not work if written as "for i, bestScore :="
-		stats.BestScores[i] = new(BestScore)
-		stats.BestScores[i].NumPlayers = i + 2
+	return VariantStatsRow{
+		BestScores: NewBestScores(),
 	}
-	return stats
 }
 
 func (*VariantStats) Get(variant int) (VariantStatsRow, error) {

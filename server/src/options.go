@@ -13,6 +13,8 @@ type Options struct {
 	CardCycle             bool   `json:"cardCycle"`
 	DeckPlays             bool   `json:"deckPlays"`
 	EmptyClues            bool   `json:"emptyClues"`
+	OneExtraCard          bool   `json:"oneExtraCard"`
+	OneLessCard           bool   `json:"oneLessCard"`
 	AllOrNothing          bool   `json:"allOrNothing"`
 	DetrimentalCharacters bool   `json:"detrimentalCharacters"`
 }
@@ -44,6 +46,8 @@ type OptionsJSON struct {
 	CardCycle             *bool   `json:"cardCycle,omitempty"`
 	DeckPlays             *bool   `json:"deckPlays,omitempty"`
 	EmptyClues            *bool   `json:"emptyClues,omitempty"`
+	OneExtraCard          *bool   `json:"oneExtraCard,omitempty"`
+	OneLessCard           *bool   `json:"oneLessCard,omitempty"`
 	AllOrNothing          *bool   `json:"allOrNothing,omitempty"`
 	DetrimentalCharacters *bool   `json:"detrimentalCharacters,omitempty"`
 }

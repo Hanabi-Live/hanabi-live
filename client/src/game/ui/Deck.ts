@@ -221,6 +221,16 @@ export default class Deck extends Konva.Group {
       content += '&nbsp; Empty Clues</li>';
     }
 
+    if (globals.options.oneExtraCard) {
+      content += '<li><span class="game-tooltips-icon"><i class="fas fa-plus-circle"></i></span>';
+      content += '&nbsp; One Extra Card</li>';
+    }
+
+    if (globals.options.oneLessCard) {
+      content += '<li><span class="game-tooltips-icon"><i class="fas fa-minus-circle"></i></span>';
+      content += '&nbsp; One Less Card</li>';
+    }
+
     if (globals.options.allOrNothing) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-layer-group"></i></span>';
       content += '&nbsp; All or Nothing</li>';

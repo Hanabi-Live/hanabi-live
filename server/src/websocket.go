@@ -14,7 +14,7 @@ var (
 	sessions = make(map[int]*Session)
 
 	// The WebSocket server needs to processes one action at a time; otherwise, there would be chaos
-	commandMutex = new(sync.Mutex)
+	commandMutex = sync.Mutex{}
 )
 
 func websocketInit() {

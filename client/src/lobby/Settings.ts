@@ -22,6 +22,8 @@ export default class Settings {
   createTableCardCycle: boolean = false;
   createTableDeckPlays: boolean = false;
   createTableEmptyClues: boolean = false;
+  createTableOneExtraCard: boolean = false;
+  createTableOneLessCard: boolean = false;
   createTableAllOrNothing: boolean = false;
   createTableDetrimentalCharacters: boolean = false;
   createTableAlertWaiters: boolean = false;

@@ -151,15 +151,8 @@ func httpStats(c *gin.Context) {
 			}
 		} else {
 			// There have been no games played in this particular variant,
-			// so initialize the best scores object with zero values
-			// The following is copied from the "NewVariantStatsRow()" function
-			variantStats.BestScores = make([]*BestScore, 5) // From 2 to 6 players
-			for i := range variantStats.BestScores {
-				// This will not work if written as "for i, bestScore :="
-				variantStats.BestScores[i] = new(BestScore)
-				variantStats.BestScores[i].NumPlayers = i + 2
-			}
-
+			// so initialize the stats object with zero values
+			variantStats.BestScores = NewBestScores()
 			variantStats.AverageScore = "-"
 			variantStats.StrikeoutRate = "-"
 		}

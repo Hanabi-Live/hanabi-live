@@ -145,6 +145,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 #### 6-Player Games
 
 * Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to do.
+* In 6-player games, only three cards are dealt to each player at the beginning of the game.
 
 <br />
 
@@ -239,6 +240,16 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 * By default, it is not possible to give an "empty" clue, which is a clue that touches 0 cards.
 * Each game has the option to allow empty clues.
 * More information on the history of empty clues can be found in the [Hyphen-ated conventions repository](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Empty_Clues.md#history).
+
+#### One Extra Card
+
+* Each game has the option to play with one extra card dealt to each player at the start of the game.
+* This can make the game easier with a low amount of players, but make the game harder with a high amount of players.
+
+#### One Less Card
+
+* Each game has the option to play with one less card dealt to each player at the start of the game.
+* This can make the game easier with a high amount of players, but make the game harder with a low amount of players.
 
 #### All or Nothing
 

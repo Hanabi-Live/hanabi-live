@@ -168,6 +168,30 @@ export const draw = () => {
     `;
   }
 
+  if (globals.game.options.oneExtraCard) {
+    html += '<li><i id="lobby-pregame-options-one-extra-card" class="fas fa-plus-circle" ';
+    html += 'data-tooltip-content="#pregame-tooltip-one-extra-card"></i></li>';
+    html += `
+      <div class="hidden">
+        <div id="pregame-tooltip-one-extra-card" class="lobby-pregame-tooltip-icon">
+          The <strong>One Extra Card</strong> option is enabled.
+        </div>
+      </div>
+    `;
+  }
+
+  if (globals.game.options.oneLessCard) {
+    html += '<li><i id="lobby-pregame-options-one-less-card" class="fas fa-minus-circle" ';
+    html += 'data-tooltip-content="#pregame-tooltip-one-less-card"></i></li>';
+    html += `
+      <div class="hidden">
+        <div id="pregame-tooltip-one-less-card" class="lobby-pregame-tooltip-icon">
+          The <strong>One Less Card</strong> option is enabled.
+        </div>
+      </div>
+    `;
+  }
+
   if (globals.game.options.allOrNothing) {
     html += '<li><i id="lobby-pregame-options-empty-clues" class="fas fa-layer-group" ';
     html += 'data-tooltip-content="#pregame-tooltip-all-or-nothing"></i></li>';
@@ -217,6 +241,9 @@ export const draw = () => {
   $('#lobby-pregame-options-card-cycle').tooltipster(tooltipOptions);
   $('#lobby-pregame-options-deck-plays').tooltipster(tooltipOptions);
   $('#lobby-pregame-options-empty-clues').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-one-extra-card').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-one-less-card').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-all-or-nothing').tooltipster(tooltipOptions);
   $('#lobby-pregame-options-characters').tooltipster(tooltipOptions);
   $('#lobby-pregame-options-password').tooltipster(tooltipOptions);
 

@@ -183,6 +183,8 @@ const submit = () => {
       cardCycle: getCheckbox('createTableCardCycle'),
       deckPlays: getCheckbox('createTableDeckPlays'),
       emptyClues: getCheckbox('createTableEmptyClues'),
+      oneExtraCard: getCheckbox('createTableOneExtraCard'),
+      oneLessCard: getCheckbox('createTableOneLessCard'),
       allOrNothing: getCheckbox('createTableAllOrNothing'),
       detrimentalCharacters: getCheckbox('createTableDetrimentalCharacters'),
     },

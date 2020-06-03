@@ -288,6 +288,12 @@ func (g *Game) WriteDatabase() error {
 	if g.Options.EmptyClues {
 		modifier.AddFlag(ScoreModifierEmptyClues)
 	}
+	if g.Options.OneExtraCard {
+		modifier.AddFlag(ScoreModifierOneExtraCard)
+	}
+	if g.Options.OneLessCard {
+		modifier.AddFlag(ScoreModifierOneLessCard)
+	}
 	if g.Options.AllOrNothing {
 		modifier.AddFlag(ScoreModifierAllOrNothing)
 	}
@@ -295,16 +301,16 @@ func (g *Game) WriteDatabase() error {
 	// Update the variant-specific stats for each player
 	for _, p := range t.Players {
 		// Get their current best scores
-		var stats UserStatsRow
+		var userStats UserStatsRow
 		if v, err := models.UserStats.Get(p.ID, variants[g.Options.Variant].ID); err != nil {
 			logger.Error("Failed to get the stats for user "+p.Name+":", err)
 			continue
 		} else {
-			stats = v
+			userStats = v
 		}
 
 		// 2-player is at index 0, 3-player is at index 1, etc.
-		bestScore := stats.BestScores[len(g.Players)-2]
+		bestScore := userStats.BestScores[len(g.Players)-2]
 		if g.Score > bestScore.Score ||
 			(g.Score == bestScore.Score && modifier < bestScore.Modifier) {
 
@@ -315,26 +321,30 @@ func (g *Game) WriteDatabase() error {
 		// Update their stats
 		// (even if they did not get a new best score,
 		// we still want to update their average score and strikeout rate)
-		if err := models.UserStats.Update(p.ID, variants[g.Options.Variant].ID, stats); err != nil {
+		if err := models.UserStats.Update(
+			p.ID,
+			variants[g.Options.Variant].ID,
+			userStats,
+		); err != nil {
 			logger.Error("Failed to update the stats for user "+p.Name+":", err)
 			continue
 		}
 	}
 
 	// Get the current stats for this variant
-	var stats VariantStatsRow
+	var variantStats VariantStatsRow
 	if v, err := models.VariantStats.Get(variants[g.Options.Variant].ID); err != nil {
 		logger.Error("Failed to get the stats for variant "+
 			strconv.Itoa(variants[g.Options.Variant].ID)+":", err)
 		return err
 	} else {
-		stats = v
+		variantStats = v
 	}
 
-	// If the game was played with no modifiers, update the stats
+	// If the game was played with no modifiers, update the stats for this variant
 	if modifier == 0 {
 		// 2-player is at index 0, 3-player is at index 1, etc.
-		bestScore := stats.BestScores[len(g.Players)-2]
+		bestScore := variantStats.BestScores[len(g.Players)-2]
 		if g.Score > bestScore.Score {
 			bestScore.Score = g.Score
 		}
@@ -346,7 +356,7 @@ func (g *Game) WriteDatabase() error {
 	if err := models.VariantStats.Update(
 		variants[g.Options.Variant].ID,
 		variants[g.Options.Variant].MaxScore,
-		stats,
+		variantStats,
 	); err != nil {
 		logger.Error("Failed to update the stats for variant "+
 			strconv.Itoa(variants[g.Options.Variant].ID)+":", err)

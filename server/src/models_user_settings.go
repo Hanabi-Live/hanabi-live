@@ -30,6 +30,8 @@ type Settings struct {
 	CreateTableCardCycle             bool    `json:"createTableCardCycle"`
 	CreateTableDeckPlays             bool    `json:"createTableDeckPlays"`
 	CreateTableEmptyClues            bool    `json:"createTableEmptyClues"`
+	CreateTableOneExtraCard          bool    `json:"createTableOneExtraCard"`
+	CreateTableOneLessCard           bool    `json:"createTableOneLessCard"`
 	CreateTableAllOrNothing          bool    `json:"createTableAllOrNothing"`
 	CreateTableDetrimentalCharacters bool    `json:"createTableDetrimentalCharacters"`
 	CreateTableAlertWaiters          bool    `json:"createTableAlertWaiters"`
@@ -73,6 +75,8 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 			create_table_card_cycle,
 			create_table_deck_plays,
 			create_table_empty_clues,
+			create_table_one_extra_card,
+			create_table_one_less_card,
 			create_table_all_or_nothing,
 			create_table_detrimental_characters,
 			create_table_alert_waiters
@@ -100,6 +104,8 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		&settings.CreateTableCardCycle,
 		&settings.CreateTableDeckPlays,
 		&settings.CreateTableEmptyClues,
+		&settings.CreateTableOneExtraCard,
+		&settings.CreateTableOneLessCard,
 		&settings.CreateTableAllOrNothing,
 		&settings.CreateTableDetrimentalCharacters,
 		&settings.CreateTableAlertWaiters,
