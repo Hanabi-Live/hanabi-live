@@ -8,12 +8,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # https://stackoverflow.com/questions/23162299/how-to-get-the-last-part-of-dirname-in-bash/23162553
 REPO="$(basename "$DIR")"
 
-# Recompile the Golang code and start the service
-cd "$DIR/server"
-go build -o "$DIR/$REPO"
-if [[ $? -eq 0 ]]; then
-  # The build was successful; restart the server
-  supervisorctl start "$REPO"
-else
-  echo "$REPO - Go compilation failed!"
+"$DIR/server/build_server.sh"
+if [[ $? -ne 0 ]]; then
+  exit 1
 fi
+supervisorctl start "$REPO"
