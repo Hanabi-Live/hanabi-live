@@ -129,6 +129,9 @@ export const end = () => {
   for (const card of globals.deck) {
     card.blank = false;
   }
+  for (const card of globals.stackBases) {
+    card.blank = false;
+  }
 
   globals.hypoActions = [];
 
