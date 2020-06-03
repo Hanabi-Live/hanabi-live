@@ -9,7 +9,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 REPO="$(basename "$DIR")"
 
 # Recompile the Golang code and start the service
-cd "$DIR/src"
+cd "$DIR/server"
 go build -o "$DIR/$REPO"
 if [[ $? -eq 0 ]]; then
   # The build was successful; restart the server

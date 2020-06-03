@@ -1,6 +1,6 @@
 // Imports
+import variantsJSON from '../../data/variants.json';
 import Color from './Color';
-import variantsJSON from './data/variants.json';
 import Suit from './Suit';
 import Variant from './Variant';
 

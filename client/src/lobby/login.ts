@@ -1,8 +1,8 @@
 // The initial login page
 
 // Imports
+import version from '../../../data/version.json';
 import { FADE_TIME } from '../constants';
-import version from '../data/version.json';
 import globals from '../globals';
 import websocketInit from '../websocketInit';
 import * as nav from './nav';

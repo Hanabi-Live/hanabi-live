@@ -13,7 +13,7 @@ REPO="$(basename "$DIR")"
 export HOME=/root
 
 # Recompile the Golang code and restart the service
-cd "$DIR/src"
+cd "$DIR/server"
 go build -o "$DIR/$REPO"
 if [[ $? -ne 0 ]]; then
   echo "$REPO - Go compilation failed!"

@@ -23,7 +23,7 @@ def main():
 
     # Read the old "variants.json" file and the "suits.json" file
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    data_path = os.path.join(dir_path, "..", "..", "public", "js", "src", "data")
+    data_path = os.path.join(dir_path, "..", "..", "data")
     suits_path = os.path.join(data_path, "suits.json")
     variants_path = os.path.join(data_path, "variants.json")
 

@@ -3,11 +3,11 @@
 
 // Imports
 import linkifyHtml from 'linkifyjs/html';
+import emojis from '../../data/emojis.json';
+import emoteCategories from '../../data/emotes.json';
 import chatCommands from './chatCommands';
 import ChatMessage from './ChatMessage';
 import { FADE_TIME } from './constants';
-import emojis from './data/emojis.json';
-import emoteCategories from './data/emotes.json';
 import globals from './globals';
 import * as modals from './modals';
 

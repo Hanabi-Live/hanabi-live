@@ -2,7 +2,7 @@
 
 // Imports
 import * as Sentry from '@sentry/browser';
-import version from './data/version.json';
+import version from '../../data/version.json';
 
 export const init = () => {
   if (!useSentry()) {

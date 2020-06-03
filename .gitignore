@@ -1,6 +1,5 @@
-# -----------------
-# Hanabi Live stuff
-# -----------------
+# MacOS artifacts
+.DS_Store
 
 # Contains secrets
 .env
@@ -15,25 +14,5 @@ compiling_client
 # The message of the day
 motd.txt
 
-# MacOS artifacts
-.DS_Store
-
-# MySQL data from Docker
-mysql_data
-
-# --------------------------
-# GitHub .gitignore Template
-# --------------------------
-
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-
-# Test binary, build with `go test -c`
-*.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
+# The version file will change automatically with every commit
+/data/version.json

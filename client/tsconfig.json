@@ -59,7 +59,6 @@
     "./src/**/*.ts",
 
     // These files are not intended to be compiled, but we include them to suppress ESLint warnings
-    "./compiling.js",
     "./Gruntfile.js",
     "./webpack.config.js",
   ],

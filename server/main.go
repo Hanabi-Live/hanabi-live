@@ -49,7 +49,7 @@ func main() {
 	}
 
 	// Check to see if the data path exists
-	dataPath = path.Join(projectPath, "public", "js", "src", "data")
+	dataPath = path.Join(projectPath, "data")
 	if _, err := os.Stat(dataPath); os.IsNotExist(err) {
 		logger.Fatal("The data path of \"" + dataPath + "\" does not exist. " +
 			"This directory should always exist; please try re-cloning the repository.")
@@ -60,12 +60,8 @@ func main() {
 	}
 
 	// Check to see if the version file exists
-	// Note that there are two different version files:
-	// 1) ./public/js/src/data/version.json
-	// 2) ./public/js/bundles/version.json
-	// The former is for "baking" the version into the JavaScript client
-	// The later is to inform the server about the latest already-compiled client version
-	versionPath = path.Join(projectPath, "public", "js", "bundles", "version.json")
+	// (which informs us about what the version the client is currently compiled at)
+	versionPath = path.Join(projectPath, "public", "js", "bundles", "version.txt")
 	if _, err := os.Stat(versionPath); os.IsNotExist(err) {
 		logger.Fatal("The \"" + versionPath + "\" file does not exist. " +
 			"Did you run the \"install_dependencies.sh\" script before running the server? " +
@@ -165,7 +161,7 @@ func main() {
 	characterInit()
 
 	// Initialize the word list
-	wordListPath := path.Join(projectPath, "src", "assets", "word_list.txt")
+	wordListPath := path.Join(dataPath, "word_list.txt")
 	if v, err := ioutil.ReadFile(wordListPath); err != nil {
 		logger.Fatal("Failed to read the \""+wordListPath+"\" file:", err)
 		return

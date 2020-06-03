@@ -3,7 +3,3 @@
 
 # We don't need to include the converted TypeScript --> Javascript files
 /webpack_output
-/bundles
-
-# Ignore the version number, which will change automatically with every commit
-/src/data/version.json

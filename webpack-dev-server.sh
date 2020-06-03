@@ -10,5 +10,5 @@ if [[ -z $WEBPACK_DEV_SERVER_PORT ]]; then
   WEBPACK_DEV_SERVER_PORT=8080
 fi
 
-cd "$DIR/public/js"
+cd "$DIR/client"
 npx webpack-dev-server --port $WEBPACK_DEV_SERVER_PORT

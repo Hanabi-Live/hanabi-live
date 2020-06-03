@@ -5,6 +5,21 @@
 # https://stackoverflow.com/questions/27644586/how-to-set-up-travis-ci-with-multiple-languages
 matrix:
   include:
+    - language: node_js
+      node_js:
+        - node
+      before_script:
+        # Install the JavaScript tooling (TypeScript, Webpack, ESLint, etc.)
+        - echo Installing NPM modules...
+        - cd client
+        - npm install
+        - cd ..
+      script:
+        - echo Building the client...
+        - ./build_client.sh
+        - echo Linting the client code...
+        - ./lint_client.sh
+
     - language: go
       go:
         # This will automatically choose the latest released Go version
@@ -15,59 +30,13 @@ matrix:
       before_script:
         # Install the Go linter
         # https://github.com/golangci/golangci-lint
-        - echo Installing the Go linter...
+        - echo Installing golangci-lint (the Go linter)...
         - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
-        # Go to the Go source code
-        - cd src
       script:
-        # Compile the Go code
-        - echo Compiling the Go code...
-        - go build -v
-        # Run the Golang linter
-        - ./lint.sh
-
-    - language: node_js
-      node_js:
-        - node
-      before_script:
-        # Install the JavaScript tooling (TypeScript, Webpack, etc.)
-        - cd public/js
-        - npm install
-      script:
-        # Run Webpack
-        # (which compiles the TypeScript to JavaScript and packs everything into one file)
-        # (we want to do this before linting so that the "version.json" file is created)
-        - ../../build_client.sh
-        # Run ESLint (the TypeScript linter)
-        - npm run-script lint
-
-    # (commented out because it fails)
-    # a docker image "smoketest"
-    # it builds the production docker image and checks if it responds with a HTTP 200
-    #- language: minimal
-    #  services:
-    #    - docker
-    #  install:
-    #    - docker pull golang:stretch
-    #    - docker pull node:stretch
-    #    - docker pull alpine:latest
-    #    - docker-compose pull
-    #  script:
-    #    # setup the environment
-    #    - cd docker
-    #    - cp .env_template .env
-
-    #    # build the image and then start it in the background
-    #    - docker-compose build
-    #    - docker-compose up &
-
-    #    # wait for everything to come up
-    #    - sleep 60
-
-    #    # check that / returns HTTP 200
-    #    - curl -s --fail --show-error http://localhost:8080/ > /dev/null
-    #  after_script:
-    #    - docker-compose down
+        - echo Building the server...
+        - ./build_server.sh
+        - echo Linting the server code...
+        - ./lint_server.sh
 
 notifications:
   email:

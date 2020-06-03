@@ -1,6 +1,6 @@
 // Imports
+import colorsJSON from '../../data/colors.json';
 import Color from './Color';
-import colorsJSON from './data/colors.json';
 
 interface ColorJSON {
   fill: string;

@@ -257,7 +257,7 @@ func httpInit() {
 // httpServeTemplate combines a standard HTML header with the body for a specific page
 // (we want the same HTML header for all pages)
 func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...string) {
-	viewsPath := path.Join(projectPath, "src", "views")
+	viewsPath := path.Join(projectPath, "server", "views")
 	layoutPath := path.Join(viewsPath, "layout.tmpl")
 
 	// Turn the slice of file names into a slice of full paths

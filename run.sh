@@ -11,7 +11,7 @@ REPO="$(basename "$DIR")"
 # Use "go build" to create a new binary
 # We explicitly do not use "go run ." because on Windows,
 # Windows Firewall will pop up a new alert every time we want to re-run the server
-cd "$DIR/src"
+cd "$DIR/server"
 go build -o "$DIR/$REPO"
 if [[ $? -eq 0 ]]; then
   # The build was successful; run the server

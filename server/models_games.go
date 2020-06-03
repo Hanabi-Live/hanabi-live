@@ -308,7 +308,6 @@ func (*Games) GetGameIDsFriends(
 	// We must get the results in decending order for the limit to work properly
 	SQLString += "ORDER BY games.id DESC "
 	SQLString += "LIMIT " + strconv.Itoa(amount) + " OFFSET " + strconv.Itoa(offset)
-	logger.Debug(SQLString)
 
 	rows, err := db.Query(context.Background(), SQLString, userID)
 

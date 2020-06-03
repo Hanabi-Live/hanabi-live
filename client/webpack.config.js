@@ -21,11 +21,11 @@ const sentryTokenIsSet = (
 
 // Read environment variables
 dotenv.config({
-  path: path.join(__dirname, '..', '..', '.env'),
+  path: path.join(__dirname, '..', '.env'),
 });
 
 // Read the version
-const versionPath = path.join(__dirname, 'src', 'data', 'version.json');
+const versionPath = path.join(__dirname, '..', 'data', 'version.json');
 if (!fs.existsSync(versionPath)) {
   throw new Error(`The version.json file does not exist at "${versionPath}".`);
 }
