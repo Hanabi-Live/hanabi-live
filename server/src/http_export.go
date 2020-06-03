@@ -178,6 +178,10 @@ func httpExport(c *gin.Context) {
 	// so that they are not added to the JSON object)
 	optionsJSON := &OptionsJSON{}
 	allDefaultOptions := true
+	if options.StartingPlayer != 0 {
+		optionsJSON.StartingPlayer = &options.StartingPlayer
+		allDefaultOptions = false
+	}
 	if options.Variant != "No Variant" {
 		optionsJSON.Variant = &variant.Name
 		allDefaultOptions = false

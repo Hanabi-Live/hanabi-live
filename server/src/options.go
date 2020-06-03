@@ -35,6 +35,7 @@ type ExtraOptions struct {
 
 // To minimize JSON output, we need to use pointers to each option instead of the normal type
 type OptionsJSON struct {
+	StartingPlayer        *int    `json:"startingPlayer,omitempty"`
 	Variant               *string `json:"variant,omitempty"`
 	Timed                 *bool   `json:"timed,omitempty"`
 	TimeBase              *int    `json:"timeBase,omitempty"`

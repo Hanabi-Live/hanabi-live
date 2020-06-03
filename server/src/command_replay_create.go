@@ -347,6 +347,10 @@ func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 	// In order to avoid "runtime error: invalid memory address or nil pointer dereference",
 	// we must explicitly check to see if all pointers exist
+	startingPlayer := 0
+	if d.GameJSON.Options.StartingPlayer != nil {
+		startingPlayer = *d.GameJSON.Options.StartingPlayer
+	}
 	timed := false
 	if d.GameJSON.Options.Timed != nil {
 		timed = *d.GameJSON.Options.Timed
@@ -387,6 +391,7 @@ func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 	// Store the options on the table
 	// (the variant was already validated in the "validateJSON()" function)
 	t.Options = &Options{
+		StartingPlayer:        startingPlayer,
 		Variant:               *d.GameJSON.Options.Variant,
 		Timed:                 timed,
 		TimeBase:              timeBase,
