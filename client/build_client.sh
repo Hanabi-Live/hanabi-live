@@ -15,7 +15,7 @@ SECONDS=0
 # This is "baked" into the JavaScript bundle and self-reported when connecting to the server so that
 # the server can deny clients on old versions of the code
 VERSION=$(git rev-list --count HEAD)
-echo "$VERSION" > "$DIR/data/version.json"
+echo "$VERSION" > "$DIR/../data/version.json"
 
 # If we need to, add the NPM directory to the path
 # (the Golang process will execute this script during a graceful restart and it will not have it in
