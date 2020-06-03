@@ -19,6 +19,7 @@ import LayoutChild from './LayoutChild';
 import MsgClue from './MsgClue';
 import PlayerButton from './PlayerButton';
 import * as replay from './replay';
+import * as sideEffects from './sideEffects';
 import * as turn from './turn';
 
 export interface ActionReveal {
@@ -249,6 +250,7 @@ export const send = (hypoAction: ClientAction) => {
       globals.score += 1;
     }
     if (
+      // BUG: Playing a 1 won't get a clue with Reversed/Up or Down
       (type === 'play' && card.rank === 5 && globals.clues < MAX_CLUE_NUM)
       || type === 'discard'
     ) {
@@ -283,7 +285,6 @@ export const send = (hypoAction: ClientAction) => {
   // Status
   sendHypoAction({
     type: 'status',
-    clues: globals.variant.name.startsWith('Clue Starved') ? globals.clues * 2 : globals.clues,
     doubleDiscard: false,
     score: globals.score,
     maxScore: globals.maxScore,
@@ -300,6 +301,11 @@ export const send = (hypoAction: ClientAction) => {
     num: globals.turn,
     who: globals.currentPlayerIndex,
   });
+
+  // Side effects
+  // TODO: use real state changes instead of
+  // short-circuiting game logic.
+  sideEffects.changeClues(globals.clues);
 };
 
 export const sendHypoAction = (hypoAction: ActionIncludingHypothetical) => {

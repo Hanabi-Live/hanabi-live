@@ -5,6 +5,7 @@ import { ClueType, ReplayArrowOrder, VARIANTS } from '../../constants';
 import * as sentry from '../../sentry';
 import Options from '../Options';
 import action from './action';
+import { Action } from './actions';
 import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
 import ClockData from './ClockData';
@@ -21,7 +22,8 @@ import * as timer from './timer';
 import * as turn from './turn';
 
 // Define a command handler map
-const commands = new Map();
+type CommandAction = (data: any) => void;
+const commands = new Map<string, CommandAction>();
 export default commands;
 
 // Received when it is our turn
@@ -250,9 +252,9 @@ commands.set('init', (data: InitData) => {
 
   // Hypothetical settings
   globals.hypothetical = data.hypothetical;
-  globals.hypoActions = data.hypoActions;
+  globals.hypoActions = [];
   for (let i = 0; i < globals.hypoActions.length; i++) {
-    globals.hypoActions[i] = JSON.parse(globals.hypoActions[i]);
+    globals.hypoActions[i] = JSON.parse(data.hypoActions[i]);
   }
   globals.hypoRevealed = data.hypoRevealed;
 
@@ -358,13 +360,13 @@ commands.set('noteListPlayer', (data: NoteListPlayerData) => {
 // Used when the game state changes
 interface GameActionData {
   tableID: number,
-  action: any,
+  action: Action,
 }
 commands.set('gameAction', (data: GameActionData) => {
   processNewAction(data.action);
 });
 
-const processNewAction = (actionMessage: any) => {
+const processNewAction = (actionMessage: Action) => {
   // Update the state table
   const stateChangeFunction = stateChange.get(actionMessage.type);
   if (typeof stateChangeFunction !== 'undefined') {
