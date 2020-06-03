@@ -511,7 +511,12 @@ export default class HanabiCard extends Konva.Group {
         );
       }
 
-      if (possibilitiesCheck()) {
+      if (
+        possibilitiesCheck()
+        && (globals.variant.specialAllClueColors || globals.variant.specialNoClueColors)
+      ) {
+        // We only need to run this early possibility removal for variants with special ranks
+        // touched by all or no color clues
         for (const rank of this.possibleRanks) {
           // We can remove possibilities for normal ranks
           if (rank !== globals.variant.specialRank) {
