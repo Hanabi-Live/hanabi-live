@@ -443,7 +443,8 @@ actionFunctions.set('status', (data: ActionStatus) => {
   globals.maxScore = data.maxScore;
 
   // Update double discards
-  if (globals.clues !== MAX_CLUE_NUM
+  if (
+    globals.clues !== MAX_CLUE_NUM
     && data.doubleDiscard
     && globals.lobby.settings.hyphenatedConventions) {
     // Show a yellow border around the discard pile

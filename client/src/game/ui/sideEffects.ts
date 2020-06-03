@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { MAX_CLUE_NUM, LABEL_COLOR } from '../../constants';
 import globals from './globals';
 import State from './State';
