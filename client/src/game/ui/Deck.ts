@@ -71,8 +71,10 @@ export default class Deck extends Konva.Group {
       h = 0.15;
     }
     this.numLeftText.y(h * this.height());
-    globals.elements.deckTurnsRemainingLabel1!.visible(count === 0);
-    globals.elements.deckTurnsRemainingLabel2!.visible(count === 0);
+    globals.elements.deckTurnsRemainingLabel1!.visible(count === 0
+      && !globals.options.allOrNothing);
+    globals.elements.deckTurnsRemainingLabel2!.visible(count === 0
+      && !globals.options.allOrNothing);
 
     // If the game ID is showing,
     // we want to center the deck count between it and the other labels
