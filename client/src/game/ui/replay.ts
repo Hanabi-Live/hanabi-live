@@ -192,10 +192,17 @@ const reset = () => {
   for (let i = 0; i < globals.variant.suits.length; i++) {
     const suit = globals.variant.suits[i];
     const playStack = globals.elements.playStacks.get(suit)!;
-    const stackBaseLayoutChild = globals.stackBases[i].parent!;
+    const stackBase = globals.stackBases[i];
+    const stackBaseLayoutChild = stackBase.parent!;
     playStack.addChild(stackBaseLayoutChild as any);
+
+    // The stack base might have been hidden if there was a card on top of it
     stackBaseLayoutChild.visible(true);
-    // (the stack base might have been hidden if there was a card on top of it)
+
+    // The stack base might have been morphed
+    if (stackBase.rank !== 0 || stackBase.suit !== globals.variant.suits[i]) {
+      stackBase.reveal(i, 0);
+    }
 
     // Reverse the stack direction of reversed suits, except on the "Up or Down" variant
     // that uses the "UNDECIDED" direction.
