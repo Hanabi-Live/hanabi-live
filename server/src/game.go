@@ -212,6 +212,27 @@ func (g *Game) CheckEnd() bool {
 		return true
 	}
 
+	// In a speedrun, check to see if a perfect score can still be achieved
+	if g.Options.Speedrun && g.MaxScore < variants[g.Options.Variant].MaxScore {
+		g.EndCondition = EndConditionSpeedrunFail
+		return true
+	}
+
+	// In an "All or Nothing" game, check to see if a maximum score can still be reached
+	if g.Options.AllOrNothing && g.MaxScore < variants[g.Options.Variant].MaxScore {
+		logger.Info(t.GetName() + "A perfect score is impossible in an \"All or Nothing\" game; ending the game.")
+		g.EndCondition = EndConditionStrikeout
+		return true
+	}
+
+	// In an "All or Nothing game",
+	// handle the case where a player would handle to discard without any cards in their hand
+	if g.Options.AllOrNothing && len(g.Players[g.ActivePlayer].Hand) == 0 && g.ClueTokens == 0 {
+		logger.Info(t.GetName() + "The current player has no cards and no clue tokens; ending the game.")
+		g.EndCondition = EndConditionStrikeout
+		return true
+	}
+
 	// Check to see if the final go-around has completed
 	// (which is initiated after the last card is played from the deck)
 	if g.Turn == g.EndTurn {
@@ -224,27 +245,6 @@ func (g *Game) CheckEnd() bool {
 	if g.Score == g.MaxScore {
 		logger.Info(t.GetName() + "Maximum score reached; ending the game.")
 		g.EndCondition = EndConditionNormal
-		return true
-	}
-
-	// In a speedrun, check to see if a perfect score can still be achieved
-	if g.Options.Speedrun && g.GetMaxScore() < variants[g.Options.Variant].MaxScore {
-		g.EndCondition = EndConditionSpeedrunFail
-		return true
-	}
-
-	// In an "All or Nothing" game, check to see if a maximum score can still be reached
-	if g.Options.AllOrNothing && g.GetMaxScore() < variants[g.Options.Variant].MaxScore {
-		logger.Info(t.GetName() + "Impossible to get an AllOrNothing perfect score; ending the game.")
-		g.EndCondition = EndConditionStrikeout
-		return true
-	}
-
-	// In an "All or Nothing game",
-	// handle the case where a player would handle to discard without any cards in their hand
-	if g.Options.AllOrNothing && len(g.Players[g.ActivePlayer].Hand) == 0 && g.ClueTokens == 0 {
-		logger.Info(t.GetName() + "The current player has no cards and no clue tokens; ending the game.")
-		g.EndCondition = EndConditionStrikeout
 		return true
 	}
 
