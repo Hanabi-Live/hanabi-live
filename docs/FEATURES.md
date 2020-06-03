@@ -145,7 +145,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 #### 6-Player Games
 
 * Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to do.
-* In 6-player games, only three cards are dealt to each player at the beginning of the game.
+* In 6-player games, only three cards are dealt to each player.
 
 <br />
 

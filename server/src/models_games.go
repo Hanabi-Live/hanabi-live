@@ -152,6 +152,8 @@ func (*Games) GetHistory(gameIDs []int) ([]*GameHistory, error) {
 			games1.card_cycle,
 			games1.deck_plays,
 			games1.empty_clues,
+			games1.one_extra_card,
+			games1.one_less_card,
 			games1.all_or_nothing,
 			games1.detrimental_characters,
 			games1.seed,

@@ -98,7 +98,7 @@ func httpScores(c *gin.Context) {
 	}
 	dateJoined := profileStats.DateJoined.Format("January 2" + suffix + ", 2006")
 
-	// Only show their normal time if they have played a non-speedrun game
+	// Only show their normal time if they have played one or more non-speedrun games
 	timePlayed := ""
 	if profileStats.TimePlayed != 0 {
 		if v, err := secondsToDurationString(profileStats.TimePlayed); err != nil {
@@ -116,7 +116,7 @@ func httpScores(c *gin.Context) {
 		}
 	}
 
-	// Only show their speedrun time if they have played a speedrun game
+	// Only show their speedrun time if they have played one or more speedrun games
 	timePlayedSpeedrun := ""
 	if profileStats.TimePlayedSpeedrun != 0 {
 		if v, err := secondsToDurationString(profileStats.TimePlayedSpeedrun); err != nil {

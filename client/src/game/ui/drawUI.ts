@@ -1335,7 +1335,7 @@ const drawDiscardArea = () => {
 };
 
 const drawArrows = () => {
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 6; i++) {
     const arrow = new Arrow(winW, winH);
     globals.layers.arrow.add(arrow as any);
     globals.elements.arrows.push(arrow);
