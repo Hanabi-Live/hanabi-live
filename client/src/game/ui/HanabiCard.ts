@@ -573,7 +573,7 @@ export default class HanabiCard extends Konva.Group {
                 (rank: number) => rank === globals.variant.specialRank,
               );
             }
-          } else if (this.rank === globals.variant.specialRank) {
+          } else if (this.possibleRanks.length === 1 && this.rank === globals.variant.specialRank) {
             // Negative color to a known special rank means that we can remove all suits
             // other that the ones that are never touched by color clues
             const moreSuitsRemoved = filterInPlace(
