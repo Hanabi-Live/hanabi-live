@@ -449,7 +449,7 @@ export default class HanabiCard extends Konva.Group {
   setCritical() {
     this.criticalIndicator!.visible((
       this.isCritical()
-      && !this.empathy
+      && (!this.empathy || this.identityDetermined)
       && !globals.lobby.settings.realLifeMode
       && !this.isPlayed
       && !this.isDiscarded
