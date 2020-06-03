@@ -189,12 +189,32 @@ func httpInit() {
 	httpRouter.StaticFile("/favicon.ico", path.Join(projectPath, "public", "img", "favicon.png"))
 
 	if useTLS {
+		// Create the LetsEncrypt directory structure
+		// (CertBot will look for data in "/.well-known/acme-challenge/####")
+		letsEncryptPath := path.Join(projectPath, "letsencrypt")
+		wellKnownPath := path.Join(letsEncryptPath, ".well-known")
+		acmeChallengePath := path.Join(wellKnownPath, "acme-challenge")
+		if _, err := os.Stat(letsEncryptPath); os.IsNotExist(err) {
+			if err := os.MkdirAll(acmeChallengePath, 0755); err != nil {
+				logger.Fatal("Failed to create the \""+acmeChallengePath+"\" directory:", err)
+			}
+		}
+		if _, err := os.Stat(wellKnownPath); os.IsNotExist(err) {
+			if err := os.MkdirAll(acmeChallengePath, 0755); err != nil {
+				logger.Fatal("Failed to create the \""+acmeChallengePath+"\" directory:", err)
+			}
+		}
+		if _, err := os.Stat(acmeChallengePath); os.IsNotExist(err) {
+			if err := os.MkdirAll(acmeChallengePath, 0755); err != nil {
+				logger.Fatal("Failed to create the \""+acmeChallengePath+"\" directory:", err)
+			}
+		}
+
 		// We want all HTTP requests to be redirected to HTTPS
 		// (but make an exception for Let's Encrypt)
 		// The Gin router is using the default serve mux,
 		// so we need to create a new fresh one for the HTTP handler
 		HTTPServeMux := http.NewServeMux()
-		letsEncryptPath := path.Join(projectPath, "letsencrypt")
 		HTTPServeMux.Handle(
 			"/.well-known/acme-challenge/",
 			http.FileServer(http.FileSystem(http.Dir(letsEncryptPath))),

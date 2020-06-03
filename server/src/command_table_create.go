@@ -224,7 +224,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 			}
 
 			// Check to see if the file exists on the server
-			filePath := path.Join(projectPath, "specific-deals", args[0]+".txt")
+			filePath := path.Join(dataPath, "specific-deals", args[0]+".txt")
 			if _, err := os.Stat(filePath); err != nil {
 				s.Warning("That preset deal does not exist on the server.")
 				return

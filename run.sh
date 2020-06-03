@@ -12,15 +12,9 @@ REPO="$(basename "$DIR")"
 # (if it does not exist, Supervisor will fail to start the service)
 mkdir -p "$DIR/logs"
 
-# Use "go build" to create a new binary
-# We explicitly do not use "go run ." because on Windows,
-# Windows Firewall will pop up a new alert every time we want to re-run the server
-cd "$DIR/server"
-go build -o "$DIR/$REPO"
-if [[ $? -eq 0 ]]; then
-  # The build was successful; run the server
-  cd "$DIR"
-  "$DIR/$REPO"
-else
-  echo "$REPO - Go compilation failed!"
+"$DIR/server/build_server.sh"
+if [[ $? -ne 0 ]]; then
+  exit 1
 fi
+cd "$DIR"
+"$DIR/$REPO"

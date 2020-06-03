@@ -7,6 +7,7 @@
 # The compiled binary
 hanabi-live
 hanabi-live~
+hanabi-live.exe
 
 # Temporary files
 compiling_client
@@ -16,3 +17,8 @@ motd.txt
 
 # The version file will change automatically with every commit
 /data/version.json
+
+# Various directories
+backups
+letsencrypt
+logs
