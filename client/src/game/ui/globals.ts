@@ -89,6 +89,7 @@ export class Globals {
   // In replays, we can show information about a card that was not known at the time,
   // but is known now; these are cards we have "learned"
   learnedCards: LearnedCard[] = [];
+  deckOrder: SimpleCard[] = []; // Sent when the game ends
 
   // Shared replay feature
   sharedReplayLeader: string = ''; // Equal to the username of the leader
@@ -143,7 +144,6 @@ export class Globals {
   // State information
   state: State = new State(); // The current state
   states: State[] = []; // The state for each turn
-  deckOrder: SimpleCard[] = []; // Sent when the game ends
 
   // We provide a method to reset every class variable to its initial value
   // This is called when the user goes into a new game

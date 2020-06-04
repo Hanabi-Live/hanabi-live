@@ -1,6 +1,7 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things
 
 // Imports
+import * as _ from 'lodash';
 import { ClueType, ReplayArrowOrder, VARIANTS } from '../../constants';
 import * as sentry from '../../sentry';
 import Options from '../Options';
@@ -370,13 +371,16 @@ const processNewAction = (actionMessage: Action) => {
   // Update the state table
   const stateChangeFunction = stateChange.get(actionMessage.type);
   if (typeof stateChangeFunction !== 'undefined') {
-    stateChangeFunction(actionMessage);
+    globals.state = stateChangeFunction(globals.state, actionMessage);
   }
 
-  // We need to save this game state change for the purposes of the in-game replay
+  // TEMP: We need to save this game state change for the purposes of the in-game replay
   globals.replayLog.push(actionMessage);
 
   if (actionMessage.type === 'turn') {
+    // Make a copy of the current state and store it in the state table
+    globals.states[actionMessage.num] = _.cloneDeep(globals.state);
+
     // Keep track of whether it is our turn or not
     globals.ourTurn = actionMessage.who === globals.playerUs && !globals.spectating;
 

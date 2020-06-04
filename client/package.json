@@ -34,11 +34,13 @@
     "@sentry/browser": "^5.16.0",
     "@types/jquery": "^3.3.38",
     "@types/linkifyjs": "^2.1.3",
+    "@types/lodash": "^4.14.155",
     "@types/tooltipster": "0.0.30",
     "interactjs": "^1.9.19",
     "jquery": "^3.5.1",
     "konva": "3.4.1",
     "linkifyjs": "^2.1.9",
+    "lodash": "^4.17.15",
     "phaser": "^3.23.0",
     "tooltipster": "^4.2.7"
   }
