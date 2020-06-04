@@ -15,13 +15,13 @@ func restart() {
 	// total amount of downtime (but executing Bash scripts will not work on Windows)
 	if runtime.GOOS != "windows" {
 		logger.Info("Building the client...")
-		if err := executeScript("build_client.sh"); err != nil {
+		if err := executeScript("client/build_client.sh"); err != nil {
 			logger.Error("Failed to execute the \"build_client.sh\" script:", err)
 			return
 		}
 
 		logger.Info("Building the server...")
-		if err := executeScript("build_server.sh"); err != nil {
+		if err := executeScript("server/build_server.sh"); err != nil {
 			logger.Error("Failed to execute the \"build_server.sh\" script:", err)
 			return
 		}
