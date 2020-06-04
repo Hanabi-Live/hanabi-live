@@ -188,7 +188,7 @@ func chatTimeLeft(s *Session, d *CommandData, t *Table) {
 
 func getTimeLeft() (string, error) {
 	if !shuttingDown {
-		return "The server is not scheduled to restart any time soon.", nil
+		return "The server is not scheduled to shutdown any time soon.", nil
 	}
 
 	timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit)
@@ -200,5 +200,5 @@ func getTimeLeft() (string, error) {
 		durationString = v
 	}
 
-	return "Time left until server restart: " + durationString, nil
+	return "Time left until server shutdown: " + durationString, nil
 }
