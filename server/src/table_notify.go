@@ -139,6 +139,7 @@ func (t *Table) NotifyStatus() {
 	g := t.Game
 	g.Actions = append(g.Actions, ActionStatus{
 		Type:          "status",
+		Clues:         g.ClueTokens,
 		Score:         g.Score,
 		MaxScore:      g.MaxScore,
 		DoubleDiscard: g.DoubleDiscard,

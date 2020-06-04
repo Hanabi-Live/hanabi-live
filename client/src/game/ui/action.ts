@@ -30,6 +30,7 @@ import HanabiCard from './HanabiCard';
 import { ActionIncludingHypothetical, ActionReveal } from './hypothetical';
 import LayoutChild from './LayoutChild';
 import possibilitiesCheck from './possibilitiesCheck';
+import * as sideEffects from './sideEffects';
 import * as stats from './stats';
 import strikeRecord from './strikeRecord';
 import updateCurrentPlayerArea from './updateCurrentPlayerArea';
@@ -439,12 +440,22 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
 
 actionFunctions.set('status', (data: ActionStatus) => {
   // Update internal state variables
+  globals.clues = data.clues;
+  if (globals.variant.name.startsWith('Clue Starved')) {
+    // In "Clue Starved" variants, 1 clue is represented on the server by 2
+    // Thus, in order to get the "real" clue count, we have to divide by 2
+    globals.clues /= 2;
+  }
+
+  sideEffects.changeClues(globals.clues);
+
   globals.score = data.score;
   globals.maxScore = data.maxScore;
 
   // Update double discards
   if (
-    globals.clues !== MAX_CLUE_NUM
+    !globals.lobby.settings.realLifeMode
+    && globals.clues !== MAX_CLUE_NUM
     && data.doubleDiscard
     && globals.lobby.settings.hyphenatedConventions) {
     // Show a yellow border around the discard pile
