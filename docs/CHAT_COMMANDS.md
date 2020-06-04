@@ -13,7 +13,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | /rules                   | Get the link for the [Hanabi Community Guidelines](https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md)
 | /new                     | Displays a stock message for new users, encouraging them to join the Hyphen-ated group
 | /replay [game ID] [turn] | Generate a link to a replay so that you can share it with others
-| /random [min] [max]      | Get a random number
+| /random [min] [max]      | Get a random integer
 | /uptime                  | Get how long the server has been online
 | /timeleft                | Get how much time is left before the server shuts down
 | /shrug                   | ¯\\_(ツ)_/¯
