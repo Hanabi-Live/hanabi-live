@@ -267,7 +267,7 @@ export const before = () => {
     const timeLeft = shutdownTimeoutMilliseconds - elapsedTime;
     const minutesLeft = new Date(timeLeft).getMinutes();
     if (minutesLeft > 5) {
-      let msg = 'The server is shutting down in ';
+      let msg = 'The server is shutting down ';
       if (minutesLeft <= 0) {
         msg += 'momentarily';
       } else if (minutesLeft === 1) {
