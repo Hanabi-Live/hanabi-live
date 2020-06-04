@@ -46,6 +46,7 @@ func httpLocalhostInit() {
 	httpRouter.GET("/saveTables", httpLocalhostSaveTables)
 	httpRouter.POST("/sendWarning", httpLocalhostUserAction)
 	httpRouter.POST("/sendError", httpLocalhostUserAction)
+	httpRouter.POST("/serialize", httpLocalhostSerialize)
 	httpRouter.GET("/shutdown", httpLocalhostShutdown)
 	httpRouter.GET("/timeLeft", httpLocalhostTimeLeft)
 	httpRouter.GET("/uptime", httpLocalhostUptime)
