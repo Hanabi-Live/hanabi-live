@@ -52,7 +52,7 @@ If you want to install less stuff on your computer, you can alternatively follow
 * Create a new database and set up a database user:
   * `refreshenv`
   * `psql -U postgres`
-  * Enter the password for the "postgres" user that you created in the previous step.
+  * Enter the password for the "postgres" user that you created during the installation wizard.
   * `CREATE DATABASE hanabi;`
   * `\c hanabi`
   * `CREATE USER hanabiuser WITH PASSWORD '1234567890';` <br />

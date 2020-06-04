@@ -69,6 +69,8 @@ CREATE TABLE user_settings (
     create_table_card_cycle              BOOLEAN   NOT NULL  DEFAULT FALSE,
     create_table_deck_plays              BOOLEAN   NOT NULL  DEFAULT FALSE,
     create_table_empty_clues             BOOLEAN   NOT NULL  DEFAULT FALSE,
+    create_table_one_extra_card          BOOLEAN   NOT NULL  DEFAULT FALSE,
+    create_table_one_less_card           BOOLEAN   NOT NULL  DEFAULT FALSE,
     create_table_all_or_nothing          BOOLEAN   NOT NULL  DEFAULT FALSE,
     create_table_detrimental_characters  BOOLEAN   NOT NULL  DEFAULT FALSE,
     create_table_alert_waiters           BOOLEAN   NOT NULL  DEFAULT FALSE,
@@ -136,6 +138,8 @@ CREATE TABLE games (
     card_cycle              BOOLEAN      NOT NULL,
     deck_plays              BOOLEAN      NOT NULL,
     empty_clues             BOOLEAN      NOT NULL,
+    one_extra_card          BOOLEAN      NOT NULL,
+    one_less_card           BOOLEAN      NOT NULL,
     all_or_nothing          BOOLEAN      NOT NULL,
     detrimental_characters  BOOLEAN      NOT NULL,
     seed                    TEXT         NOT NULL, /* e.g. "p2v0s1" */
