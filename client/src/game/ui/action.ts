@@ -20,7 +20,6 @@ import {
   ActionText,
   ActionTurn,
   Action,
-  ActionDeckOrder,
 } from './actions';
 import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
@@ -602,10 +601,4 @@ actionFunctions.set('turn', (data: ActionTurn) => {
   if (!globals.animateFast) {
     globals.layers.UI.batchDraw();
   }
-});
-
-// The game is over and the server gave us a list of every card in the deck
-// {deck: [{suit: 0, rank: 1}, {suit: 2, rank: 2}, ...], type: "deckOrder", }
-actionFunctions.set('deckOrder', (data: ActionDeckOrder) => {
-  globals.deckOrder = data.deck;
 });

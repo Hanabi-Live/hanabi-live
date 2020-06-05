@@ -3,9 +3,9 @@
 // handle state transitions)
 
 // Imports
-import * as _ from 'lodash';
 import {
   ActionClue,
+  ActionDeckOrder,
   ActionDiscard,
   ActionDraw,
   ActionPlay,
@@ -16,19 +16,17 @@ import {
 } from './actions';
 import globals from './globals';
 import { ActionIncludingHypothetical } from './hypothetical';
-import State from './State';
 
 // Define a command handler map
-type StateChangeFunction = (prev: State, data: any) => State;
+type StateChangeFunction = (data: any) => void;
 const stateChangeFunctions = new Map<ActionIncludingHypothetical['type'], StateChangeFunction>();
 export default stateChangeFunctions;
 
 // A player just gave a clue
 // {clue: {type: 0, value: 1}, giver: 1, list: [11], target: 2, turn: 0, type: "clue"}
-stateChangeFunctions.set('clue', (prev: State, data: ActionClue) => {
-  const state = _.cloneDeep(prev);
-  state.clueTokens -= 1;
-  state.clues.push({
+stateChangeFunctions.set('clue', (data: ActionClue) => {
+  globals.state.clueTokens -= 1;
+  globals.state.clues.push({
     type: data.clue.type,
     value: data.clue.value,
     giver: data.giver,
@@ -36,10 +34,10 @@ stateChangeFunctions.set('clue', (prev: State, data: ActionClue) => {
     turn: data.turn,
   });
 
-  const hand = state.hands[data.target];
+  const hand = globals.state.hands[data.target];
   if (hand) {
     for (const order of hand) {
-      const card = state.deck[order];
+      const card = globals.state.deck[order];
       card.clues.push({
         type: data.clue.type,
         value: data.clue.value,
@@ -47,19 +45,24 @@ stateChangeFunctions.set('clue', (prev: State, data: ActionClue) => {
       });
     }
   } else {
-    throw new Error(`Failed to get "state.hands[]" with an index of ${data.target}.`);
+    throw new Error(`Failed to get "globals.state.hands[]" with an index of ${data.target}.`);
   }
 
-  return state;
+  // TODO: Side effects
+  // sideEffects.changeClues(globals.state.clueTokens);
+});
+
+// The game is over and the server gave us a list of every card in the deck
+// {deck: [{suit: 0, rank: 1}, {suit: 2, rank: 2}, ...], type: "deckOrder", }
+stateChangeFunctions.set('deckOrder', (data: ActionDeckOrder) => {
+  globals.deckOrder = data.deck;
 });
 
 // A player just discarded a card
 // {failed: false, type: "discard", which: {index: 0, order: 4, rank: 1, suit: 2}}
-stateChangeFunctions.set('discard', (prev: State, data: ActionDiscard) => {
-  const state = _.cloneDeep(prev);
-
+stateChangeFunctions.set('discard', (data: ActionDiscard) => {
   // Reveal all cards discarded
-  const card = state.deck[data.which.order];
+  const card = globals.state.deck[data.which.order];
   if (!card) {
     throw new Error(`Failed to get the card for index ${data.which.order}.`);
   }
@@ -67,48 +70,41 @@ stateChangeFunctions.set('discard', (prev: State, data: ActionDiscard) => {
   card.rank = data.which.rank;
 
   // Remove it from the hand
-  const hand = state.hands[data.which.index];
+  const hand = globals.state.hands[data.which.index];
   const handIndex = hand.indexOf(data.which.order);
   if (handIndex !== -1) {
     hand.splice(handIndex, 1);
   }
 
   // Add it to the discard stacks
-  state.discardStacks[card.suit].push(data.which.order);
+  globals.state.discardStacks[card.suit].push(data.which.order);
 
   if (!data.failed) {
-    state.clueTokens = gainClue(state.clueTokens);
+    gainClue();
   }
-
-  return state;
 });
 
 // A player just drew a card from the deck
 // {order: 0, rank: 1, suit: 4, type: "draw", who: 0}
-stateChangeFunctions.set('draw', (prev: State, data: ActionDraw) => {
-  const state = _.cloneDeep(prev);
-  state.deckSize -= 1;
-  state.deck[data.order] = {
+stateChangeFunctions.set('draw', (data: ActionDraw) => {
+  globals.state.deckSize -= 1;
+  globals.state.deck[data.order] = {
     suit: data.suit,
     rank: data.rank,
     clues: [],
   };
-  const hand = state.hands[data.who];
+  const hand = globals.state.hands[data.who];
   if (hand) {
     hand.push(data.order);
   }
-
-  return state;
 });
 
 // A player just played a card
 // {type: "play", which: {index: 0, order: 4, rank: 1, suit: 2}}
 // (index is the player index)
-stateChangeFunctions.set('play', (prev: State, data: ActionPlay) => {
-  const state = _.cloneDeep(prev);
-
+stateChangeFunctions.set('play', (data: ActionPlay) => {
   // Reveal all cards played
-  const card = state.deck[data.which.order];
+  const card = globals.state.deck[data.which.order];
   if (!card) {
     throw new Error(`Failed to get the card for index ${data.which.order}.`);
   }
@@ -116,81 +112,68 @@ stateChangeFunctions.set('play', (prev: State, data: ActionPlay) => {
   card.rank = data.which.rank;
 
   // Remove it from the hand
-  const hand = state.hands[data.which.index];
+  const hand = globals.state.hands[data.which.index];
   const handIndex = hand.indexOf(data.which.order);
   if (handIndex !== -1) {
     hand.splice(handIndex, 1);
   }
 
   // Add it to the play stacks
-  state.playStacks[card.suit].push(data.which.order);
-
-  // Get points
-  state.score += 1;
+  globals.state.playStacks[card.suit].push(data.which.order);
 
   // Get clues if the stack is complete
-  if (state.playStacks[card.suit].length === 5) {
-    state.clueTokens = gainClue(state.clueTokens);
+  if (globals.state.playStacks[card.suit].length === 5) {
+    gainClue();
   }
-
-  return state;
 });
 
 // An action has been taken, so there may be a change to game state variables
 // {clues: 5, doubleDiscard: false, maxScore: 24, score: 18, type: "status"}
-stateChangeFunctions.set('status', (prev: State, data: ActionStatus) => {
-  const state = _.clone(prev);
+stateChangeFunctions.set('status', (data: ActionStatus) => {
+  globals.state.doubleDiscard = data.doubleDiscard;
+  globals.state.maxScore = data.maxScore;
+  globals.state.score = data.score;
 
-  state.doubleDiscard = data.doubleDiscard;
-  state.maxScore = data.maxScore;
-
-  // TEMP: At this point, check the local state matches the server
-  if (data.score !== state.score) {
-    console.warn('The scores from client and server don\'t match. '
-    + `Client = ${state.score}, Server = ${data.score}`);
-  }
-
-  if (data.clues !== state.clueTokens) {
+  // At this point, check the local state matches the server
+  if (data.clues !== globals.state.clueTokens) {
     console.warn('The clues from client and server don\'t match. '
-    + `Client = ${state.clueTokens}, Server = ${data.clues}`);
+    + `Client = ${globals.state.clueTokens}, Server = ${data.clues}`);
   }
-
-  return state;
 });
 
 // A player failed to play a card
 // {num: 1, order: 24, turn: 32, type: "strike"}
-stateChangeFunctions.set('strike', (prev: State, data: ActionStrike) => {
-  const state = _.clone(prev);
-  state.strikes = [...prev.strikes, {
+stateChangeFunctions.set('strike', (data: ActionStrike) => {
+  globals.state.strikes.push({
     order: data.order,
     turn: data.turn,
-  }];
-  return state;
+  });
 });
 
 // A line of text was recieved from the server
 // {text: "Razgovor plays Black 2 from slot #1", type: "text"}
-stateChangeFunctions.set('text', (prev: State, data: ActionText) => {
-  const state = _.clone(prev);
-  state.log = [...prev.log, data.text];
-  return state;
+stateChangeFunctions.set('text', (data: ActionText) => {
+  globals.state.log.push(data.text);
 });
 
 // It is now a new turn
 // {num: 0, type: "turn", who: 1}
-stateChangeFunctions.set('turn', (prev: State, data: ActionTurn) => {
-  const state = _.clone(prev);
-  state.currentPlayerIndex = data.who;
-  return state;
+stateChangeFunctions.set('turn', (data: ActionTurn) => {
+  globals.state.currentPlayerIndex = data.who;
+
+  // TODO: Update the UI to match state
+  // sideEffects.updateToState(globals.state);
+
+  // Make a copy of the current state and store it in the state table
+  globals.states[data.num] = JSON.parse(JSON.stringify(globals.state));
 });
 
 // Gain a clue by discarding or finishing a stack
-const gainClue = (clueTokens: number) => {
-  // TODO: for this function to be pure, it shouldn't depend on globals
+const gainClue = () => {
   if (globals.variant.name.startsWith('Clue Starved')) {
     // In "Clue Starved" variants, each discard gives only half a clue.
-    return clueTokens + 0.5;
+    globals.state.clueTokens += 0.5;
+  } else {
+    globals.state.clueTokens += 1;
   }
-  return clueTokens + 1;
 };
