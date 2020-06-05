@@ -5,6 +5,7 @@ import Konva from 'konva';
 import {
   CARD_W,
   ClueType,
+  LABEL_COLOR,
   MAX_CLUE_NUM,
   StackDirection,
 } from '../../constants';
@@ -439,19 +440,42 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
 
 actionFunctions.set('status', (data: ActionStatus) => {
   // Update internal state variables
+  globals.clues = data.clues;
+  if (globals.variant.name.startsWith('Clue Starved')) {
+    // In "Clue Starved" variants, 1 clue is represented on the server by 2
+    // Thus, in order to get the "real" clue count, we have to divide by 2
+    globals.clues /= 2;
+  }
   globals.score = data.score;
   globals.maxScore = data.maxScore;
 
-  // Update double discards
-  if (
-    globals.clues !== MAX_CLUE_NUM
-    && data.doubleDiscard
-    && globals.lobby.settings.hyphenatedConventions) {
-    // Show a yellow border around the discard pile
-    // (to reinforce that this is a "Double Discard" situation)
-    globals.elements.noDoubleDiscardBorder!.show();
-  } else {
-    globals.elements.noDoubleDiscardBorder!.hide();
+  // Update the number of clues in the bottom-right hand corner of the screen
+  globals.elements.cluesNumberLabel!.text(globals.clues.toString());
+
+  if (!globals.lobby.settings.realLifeMode) {
+    if (globals.clues === 0) {
+      globals.elements.cluesNumberLabel!.fill('red');
+    } else if (globals.clues === 1) {
+      globals.elements.cluesNumberLabel!.fill('yellow');
+    } else {
+      globals.elements.cluesNumberLabel!.fill(LABEL_COLOR);
+    }
+    globals.elements.noClueBorder!.visible(globals.clues === 0);
+
+    if (globals.clues === MAX_CLUE_NUM) {
+      // Show the red border around the discard pile
+      // (to reinforce that the current player cannot discard)
+      globals.elements.noDiscardBorder!.show();
+      globals.elements.noDoubleDiscardBorder!.hide();
+    } else if (data.doubleDiscard && globals.lobby.settings.hyphenatedConventions) {
+      // Show a yellow border around the discard pile
+      // (to reinforce that this is a "Double Discard" situation)
+      globals.elements.noDiscardBorder!.hide();
+      globals.elements.noDoubleDiscardBorder!.show();
+    } else {
+      globals.elements.noDiscardBorder!.hide();
+      globals.elements.noDoubleDiscardBorder!.hide();
+    }
   }
 
   // Update the score (in the bottom-right-hand corner)

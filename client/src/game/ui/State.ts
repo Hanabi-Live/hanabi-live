@@ -1,14 +1,12 @@
-import { MAX_CLUE_NUM } from '../../constants';
-
 export default class State {
-  log: string[] = []; // TODO set to action log message object
+  log: any[] = []; // TODO set to action log message object
   deck: StateCard[] = [];
   deckSize: number = 0;
   score: number = 0;
   maxScore: number = 0;
-  clueTokens: number = MAX_CLUE_NUM;
+  clueTokens: number = 8;
   doubleDiscard: boolean = false;
-  strikes: StateStrike[] = [];
+  strikes: number = 0;
   pace: number = 0;
   currentPlayerIndex: number = 0;
   hands: number[][] = [];
@@ -22,11 +20,6 @@ interface StateCard {
   suit: number;
   rank: number;
   clues: StateCardClue[];
-}
-
-interface StateStrike {
-  order: number;
-  turn: number;
 }
 
 interface StateClue {

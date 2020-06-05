@@ -2,14 +2,12 @@
 
 // Imports
 import Konva from 'konva';
-import { ReplayActionType, StackDirection } from '../../constants';
+import { MAX_CLUE_NUM, ReplayActionType, StackDirection } from '../../constants';
 import action from './action';
 import cardStatusCheck from './cardStatusCheck';
 import globals from './globals';
 import LayoutChild from './LayoutChild';
 import Shuttle from './Shuttle';
-import * as sideEffects from './sideEffects';
-import State from './State';
 import * as stats from './stats';
 import * as turn from './turn';
 import * as reversible from './variants/reversible';
@@ -140,10 +138,6 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
     }
   }
 
-  // Rehydrate state
-  globals.state = globals.states[globals.replayTurn];
-  sideEffects.updateToState(globals.state);
-
   cardStatusCheck();
   globals.animateFast = false;
   globals.elements.actionLog!.refreshText();
@@ -172,12 +166,11 @@ const reset = () => {
   // "globals.indexOfLastDrawnCard" is set in every "draw" command
   globals.score = 0;
   globals.maxScore = globals.variant.maxScore;
+  globals.clues = MAX_CLUE_NUM;
   globals.cardsGotten = 0;
   globals.cluesSpentPlusStrikes = 0;
   globals.stackDirections = [0, 0, 0, 0, 0];
   globals.numCardsPlayed = 0;
-  globals.state = new State();
-  globals.clues = globals.state.clueTokens;
 
   // Reset various UI elements
   globals.postAnimationLayout = null;

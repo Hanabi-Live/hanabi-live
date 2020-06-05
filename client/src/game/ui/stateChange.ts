@@ -15,12 +15,9 @@ import {
   ActionTurn,
 } from './actions';
 import globals from './globals';
-import { ActionIncludingHypothetical } from './hypothetical';
-import * as sideEffects from './sideEffects';
 
 // Define a command handler map
-type StateChangeFunction = (data: any) => void;
-const stateChangeFunctions = new Map<ActionIncludingHypothetical['type'], StateChangeFunction>();
+const stateChangeFunctions = new Map();
 export default stateChangeFunctions;
 
 // A player just gave a clue
@@ -48,9 +45,6 @@ stateChangeFunctions.set('clue', (data: ActionClue) => {
   } else {
     throw new Error(`Failed to get "globals.state.hands[]" with an index of ${data.target}.`);
   }
-
-  // Side effects
-  sideEffects.changeClues(globals.state.clueTokens);
 });
 
 // The game is over and the server gave us a list of every card in the deck
@@ -79,10 +73,6 @@ stateChangeFunctions.set('discard', (data: ActionDiscard) => {
 
   // Add it to the discard stacks
   globals.state.discardStacks[card.suit].push(data.which.order);
-
-  if (!data.failed) {
-    gainClue();
-  }
 });
 
 // A player just drew a card from the deck
@@ -121,16 +111,12 @@ stateChangeFunctions.set('play', (data: ActionPlay) => {
 
   // Add it to the play stacks
   globals.state.playStacks[card.suit].push(data.which.order);
-
-  // Get clues if the stack is complete
-  if (globals.state.playStacks[card.suit].length === 5) {
-    gainClue();
-  }
 });
 
 // An action has been taken, so there may be a change to game state variables
 // {clues: 5, doubleDiscard: false, maxScore: 24, score: 18, type: "status"}
 stateChangeFunctions.set('status', (data: ActionStatus) => {
+  globals.state.clueTokens = data.clues;
   globals.state.doubleDiscard = data.doubleDiscard;
   globals.state.maxScore = data.maxScore;
   globals.state.score = data.score;
@@ -139,10 +125,14 @@ stateChangeFunctions.set('status', (data: ActionStatus) => {
 // A player failed to play a card
 // {num: 1, order: 24, turn: 32, type: "strike"}
 stateChangeFunctions.set('strike', (data: ActionStrike) => {
-  globals.state.strikes.push({
+  globals.state.strikes = data.num;
+  const i = data.num - 1;
+
+  // We also keep track of the strikes outside of the state object so that we can show a faded X
+  globals.strikes[i] = {
     order: data.order,
     turn: data.turn,
-  });
+  };
 });
 
 // A line of text was recieved from the server
@@ -159,13 +149,3 @@ stateChangeFunctions.set('turn', (data: ActionTurn) => {
   // Make a copy of the current state and store it in the state table
   globals.states[data.num] = JSON.parse(JSON.stringify(globals.state));
 });
-
-// Gain a clue by discarding or finishing a stack
-const gainClue = () => {
-  if (globals.variant.name.startsWith('Clue Starved')) {
-    // In "Clue Starved" variants, each discard gives only half a clue.
-    globals.state.clueTokens += 0.5;
-  } else {
-    globals.state.clueTokens += 1;
-  }
-};
