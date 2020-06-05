@@ -16,6 +16,7 @@ import {
 } from './actions';
 import globals from './globals';
 import { ActionIncludingHypothetical } from './hypothetical';
+import * as sideEffects from './sideEffects';
 
 // Define a command handler map
 type StateChangeFunction = (data: any) => void;
@@ -48,8 +49,8 @@ stateChangeFunctions.set('clue', (data: ActionClue) => {
     throw new Error(`Failed to get "globals.state.hands[]" with an index of ${data.target}.`);
   }
 
-  // TODO: Side effects
-  // sideEffects.changeClues(globals.state.clueTokens);
+  // Side effects
+  sideEffects.changeClues(globals.state.clueTokens);
 });
 
 // The game is over and the server gave us a list of every card in the deck
@@ -133,12 +134,6 @@ stateChangeFunctions.set('status', (data: ActionStatus) => {
   globals.state.doubleDiscard = data.doubleDiscard;
   globals.state.maxScore = data.maxScore;
   globals.state.score = data.score;
-
-  // At this point, check the local state matches the server
-  if (data.clues !== globals.state.clueTokens) {
-    console.warn('The clues from client and server don\'t match. '
-    + `Client = ${globals.state.clueTokens}, Server = ${data.clues}`);
-  }
 });
 
 // A player failed to play a card
@@ -161,8 +156,8 @@ stateChangeFunctions.set('text', (data: ActionText) => {
 stateChangeFunctions.set('turn', (data: ActionTurn) => {
   globals.state.currentPlayerIndex = data.who;
 
-  // TODO: Update the UI to match state
-  // sideEffects.updateToState(globals.state);
+  // Update the UI to match state
+  sideEffects.updateToState(globals.state);
 
   // Make a copy of the current state and store it in the state table
   globals.states[data.num] = JSON.parse(JSON.stringify(globals.state));

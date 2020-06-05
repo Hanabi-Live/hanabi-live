@@ -33,7 +33,6 @@ export interface ActionDraw {
 
 export interface ActionStatus {
   type: 'status';
-  clues: number;
   score: number;
   maxScore: number;
   doubleDiscard: boolean;

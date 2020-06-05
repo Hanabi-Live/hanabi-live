@@ -12,7 +12,6 @@ type ActionDraw struct {
 }
 type ActionStatus struct {
 	Type          string `json:"type"`
-	Clues         int    `json:"clues"`
 	Score         int    `json:"score"`
 	MaxScore      int    `json:"maxScore"`
 	DoubleDiscard bool   `json:"doubleDiscard"`

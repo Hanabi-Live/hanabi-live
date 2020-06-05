@@ -2,12 +2,13 @@
 
 // Imports
 import Konva from 'konva';
-import { ReplayActionType, StackDirection, MAX_CLUE_NUM } from '../../constants';
+import { ReplayActionType, StackDirection } from '../../constants';
 import action from './action';
 import cardStatusCheck from './cardStatusCheck';
 import globals from './globals';
 import LayoutChild from './LayoutChild';
 import Shuttle from './Shuttle';
+import * as sideEffects from './sideEffects';
 import State from './State';
 import * as stats from './stats';
 import * as turn from './turn';
@@ -141,8 +142,7 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
 
   // Rehydrate state
   globals.state = globals.states[globals.replayTurn];
-  // TODO: Update the UI to match state
-  // sideEffects.updateToState(globals.state);
+  sideEffects.updateToState(globals.state);
 
   cardStatusCheck();
   globals.animateFast = false;
@@ -177,7 +177,7 @@ const reset = () => {
   globals.stackDirections = [0, 0, 0, 0, 0];
   globals.numCardsPlayed = 0;
   globals.state = new State();
-  globals.clues = MAX_CLUE_NUM;
+  globals.clues = globals.state.clueTokens;
 
   // Reset various UI elements
   globals.postAnimationLayout = null;
