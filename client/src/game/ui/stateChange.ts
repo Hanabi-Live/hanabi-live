@@ -156,9 +156,6 @@ stateChangeFunctions.set('text', (data: ActionText) => {
 stateChangeFunctions.set('turn', (data: ActionTurn) => {
   globals.state.currentPlayerIndex = data.who;
 
-  // Update the UI to match state
-  sideEffects.updateToState(globals.state);
-
   // Make a copy of the current state and store it in the state table
   globals.states[data.num] = JSON.parse(JSON.stringify(globals.state));
 });
