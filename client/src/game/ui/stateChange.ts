@@ -7,7 +7,6 @@ import * as _ from 'lodash';
 import { MAX_CLUE_NUM } from '../../constants';
 import {
   ActionClue,
-  ActionDeckOrder,
   ActionDiscard,
   ActionDraw,
   ActionPlay,
@@ -15,6 +14,7 @@ import {
   ActionStrike,
   ActionText,
   ActionTurn,
+  ActionDeckOrder,
 } from './actions';
 import globals from './globals';
 import { ActionIncludingHypothetical } from './hypothetical';
@@ -49,8 +49,7 @@ stateChangeFunctions.set('clue', (prev: State, data: ActionClue) => {
       });
     }
   } else {
-    console.error(`Failed to get "state.hands[]" with an index of ${data.target}.`);
-    return state;
+    throw new Error(`Failed to get "state.hands[]" with an index of ${data.target}.`);
   }
 
   return state;
