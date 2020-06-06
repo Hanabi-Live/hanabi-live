@@ -378,13 +378,8 @@ const processNewAction = (actionMessage: Action) => {
   globals.replayLog.push(actionMessage);
 
   if (actionMessage.type === 'turn') {
-    if (
-      !globals.inReplay // Unless we are in an in-game replay
-      && !globals.gameOver // Unless it is the miscellaneous data sent at the end of a game
-    ) {
-      // Make a copy of the current state and store it in the state table
-      globals.states[actionMessage.num] = _.cloneDeep(globals.state);
-    }
+    // Make a copy of the current state and store it in the state table
+    globals.states[actionMessage.num] = _.cloneDeep(globals.state);
 
     // Keep track of whether it is our turn or not
     globals.ourTurn = actionMessage.who === globals.playerUs && !globals.spectating;
