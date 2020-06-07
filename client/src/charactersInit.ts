@@ -1,6 +1,6 @@
 // Imports
 import charactersJSON from '../../data/characters.json';
-import Character from './Character';
+import Character from './game/types/Character';
 
 export default () => {
   const CHARACTERS: Map<string, Character> = new Map();

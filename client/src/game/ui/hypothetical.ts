@@ -2,21 +2,19 @@
 // to see what will happen
 
 // Imports
-import {
-  ActionType,
-  ClueType,
-  ReplayActionType,
-  MAX_CLUE_NUM,
-} from '../../constants';
+import { Action } from '../types/actions';
+import { ActionType, ClientAction } from '../types/ClientAction';
+import ClueType from '../types/ClueType';
+import { MAX_CLUE_NUM } from '../types/constants';
+import MsgClue from '../types/MsgClue';
+import ReplayActionType from '../types/ReplayActionType';
 import action from './action';
-import { Action, ClientAction } from './actions';
 import cardStatusCheck from './cardStatusCheck';
 import { getTouchedCardsFromClue } from './clues';
 import { suitToMsgSuit } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
-import MsgClue from './MsgClue';
 import PlayerButton from './PlayerButton';
 import * as replay from './replay';
 import * as turn from './turn';

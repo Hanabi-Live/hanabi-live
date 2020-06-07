@@ -1,4 +1,4 @@
-import Suit from '../../Suit';
+import Suit from '../types/Suit';
 
 const shapeFunctions: Map<string, (
   ctx: CanvasRenderingContext2D,

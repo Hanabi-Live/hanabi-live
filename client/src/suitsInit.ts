@@ -1,8 +1,8 @@
 // Imports
 import suitsJSON from '../../data/suits.json';
-import Color from './Color';
 import { SUIT_REVERSED_SUFFIX } from './constants';
-import Suit from './Suit';
+import Color from './game/types/Color';
+import Suit from './game/types/Suit';
 
 interface SuitJSON {
   name?: string;

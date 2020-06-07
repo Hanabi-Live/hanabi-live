@@ -1,17 +1,15 @@
 // The Hanabi card grahpics are various HTML5 canvas drawings
 
 // Imports
-import Color from '../../Color';
 import {
   CARD_H,
   CARD_W,
-  STACK_BASE_RANK,
-  START_CARD_RANK,
   SUITS,
-  UNKNOWN_CARD_RANK,
 } from '../../constants';
-import Suit from '../../Suit';
-import Variant from '../../Variant';
+import Color from '../types/Color';
+import { STACK_BASE_RANK, UNKNOWN_CARD_RANK, START_CARD_RANK } from '../types/constants';
+import Suit from '../types/Suit';
+import Variant from '../types/Variant';
 import drawPip from './drawPip';
 import drawStylizedRank from './drawStylizedRank';
 import * as reversible from './variants/reversible';

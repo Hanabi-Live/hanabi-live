@@ -1,7 +1,7 @@
 // Click functions for the HanabiCard object
 
 // Imports
-import { STACK_BASE_RANK } from '../../constants';
+import { STACK_BASE_RANK } from '../types/constants';
 import * as arrows from './arrows';
 import { suitToMsgSuit } from './convert';
 import globals from './globals';

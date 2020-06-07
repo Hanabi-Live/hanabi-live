@@ -4,7 +4,6 @@
 
 // Imports
 import * as _ from 'lodash';
-import { MAX_CLUE_NUM } from '../../constants';
 import {
   ActionClue,
   ActionDeckOrder,
@@ -15,10 +14,11 @@ import {
   ActionStrike,
   ActionText,
   ActionTurn,
-} from './actions';
+} from '../types/actions';
+import { MAX_CLUE_NUM } from '../types/constants';
+import State from '../types/State';
 import globals from './globals';
 import { ActionIncludingHypothetical } from './hypothetical';
-import State from './State';
 
 // Define a command handler map
 type StateChangeFunction = (prev: State, data: any) => State;

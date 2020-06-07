@@ -1,6 +1,6 @@
 // Imports
 import Konva from 'konva';
-import Suit from '../../Suit';
+import Suit from '../types/Suit';
 import Arrow from './Arrow';
 import Button from './Button';
 import Button2 from './Button2';

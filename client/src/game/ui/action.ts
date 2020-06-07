@@ -4,12 +4,10 @@
 import Konva from 'konva';
 import {
   CARD_W,
-  ClueType,
   LABEL_COLOR,
-  MAX_CLUE_NUM,
-  StackDirection,
 } from '../../constants';
 import {
+  Action,
   ActionClue,
   ActionDiscard,
   ActionDraw,
@@ -20,8 +18,10 @@ import {
   ActionStrike,
   ActionText,
   ActionTurn,
-  Action,
-} from './actions';
+} from '../types/actions';
+import ClueType from '../types/ClueType';
+import { MAX_CLUE_NUM } from '../types/constants';
+import StackDirection from '../types/StackDirection';
 import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
 import ClueEntry from './ClueEntry';

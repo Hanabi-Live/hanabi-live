@@ -3,20 +3,23 @@
 
 // Imports
 import Konva from 'konva';
-import { VARIANTS, StackDirection } from '../../constants';
+import { VARIANTS } from '../../constants';
 import { Globals as LobbyGlobals } from '../../globals';
-import Variant from '../../Variant';
 import { GameExports } from '../main';
-import Options from '../Options';
-import { ClientAction, Action } from './actions';
+import { Action } from '../types/actions';
+import { ClientAction } from '../types/ClientAction';
+import { DEFAULT_VARIANT_NAME } from '../types/constants';
+import Options from '../types/Options';
+import { SimpleCard } from '../types/SimpleCard';
+import StackDirection from '../types/StackDirection';
+import State from '../types/State';
+import Variant from '../types/Variant';
 import Elements from './Elements';
 import HanabiCard from './HanabiCard';
 import Layers from './Layers';
 import LearnedCard from './LearnedCard';
 import Loader from './Loader';
-import { SimpleCard } from './SimpleCard';
 import SpectatorNote from './SpectatorNote';
-import State from './State';
 
 export class Globals {
   // Objects sent upon UI initialization
@@ -27,7 +30,7 @@ export class Globals {
   // Game settings
   // (sent in the "init" message)
   playerNames: string[] = [];
-  variant: Variant = VARIANTS.get('No Variant')!;
+  variant: Variant = VARIANTS.get(DEFAULT_VARIANT_NAME)!;
   playerUs: number = -1;
   spectating: boolean = false;
   replay: boolean = false; // True if in a solo replay or a shared replay
@@ -154,7 +157,7 @@ export class Globals {
     this.game = null;
     this.loading = true;
     this.playerNames = [];
-    this.variant = VARIANTS.get('No Variant')!;
+    this.variant = VARIANTS.get(DEFAULT_VARIANT_NAME)!;
     this.playerUs = -1;
     this.spectating = false;
     this.replay = false;

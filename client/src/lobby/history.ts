@@ -2,9 +2,9 @@
 
 // Imports
 import { VARIANTS } from '../constants';
+import Variant from '../game/types/Variant';
 import globals from '../globals';
 import * as misc from '../misc';
-import Variant from '../Variant';
 import GameHistory from './GameHistory';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';

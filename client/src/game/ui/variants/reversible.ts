@@ -3,9 +3,9 @@
 
 import {
   STACK_BASE_RANK,
-  StackDirection,
   START_CARD_RANK,
-} from '../../../constants';
+} from '../../types/constants';
+import StackDirection from '../../types/StackDirection';
 import { suitToMsgSuit } from '../convert';
 import globals from '../globals';
 import HanabiCard, { getSpecificCardNum } from '../HanabiCard';

@@ -1,13 +1,13 @@
 // Speedrun click functions for the HanabiCard object
 
 // Imports
-import Color from '../../Color';
+import { ActionType } from '../types/ClientAction';
+import Color from '../types/Color';
 import {
   MAX_CLUE_NUM,
   STACK_BASE_RANK,
   START_CARD_RANK,
-  ActionType,
-} from '../../constants';
+} from '../types/constants';
 import ColorButton from './ColorButton';
 import { colorToMsgColor } from './convert';
 import globals from './globals';

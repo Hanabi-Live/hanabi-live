@@ -1,5 +1,7 @@
+import { DEFAULT_VARIANT_NAME } from './constants';
+
 export default class Options {
-  variant: string = 'No Variant';
+  variant: string = DEFAULT_VARIANT_NAME;
   timed: boolean = false;
   timeBase: number = 0;
   timePerTurn: number = 0;

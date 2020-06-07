@@ -1,7 +1,7 @@
 // Imports
 import Konva from 'konva';
-import Suit from '../../Suit';
-import Clue from './Clue';
+import Clue from '../types/Clue';
+import Suit from '../types/Suit';
 import drawPip from './drawPip';
 import globals from './globals';
 

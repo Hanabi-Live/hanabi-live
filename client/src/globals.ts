@@ -3,8 +3,8 @@
 // Imports
 import version from '../../data/version.json';
 import Connection from './Connection';
+import State from './game/types/State';
 import HanabiUI from './game/ui/HanabiUI';
-import State from './game/ui/State';
 import Game from './lobby/Game';
 import GameHistory from './lobby/GameHistory';
 import Settings from './lobby/Settings';

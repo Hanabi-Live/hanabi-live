@@ -4,9 +4,10 @@
 
 // Imports
 import Konva from 'konva';
-import { LABEL_COLOR, STACK_BASE_RANK } from '../../constants';
+import { LABEL_COLOR } from '../../constants';
 import { Globals as LobbyGlobals } from '../../globals';
 import { GameExports } from '../main';
+import { STACK_BASE_RANK } from '../types/constants';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
 import globals, { Globals } from './globals';

@@ -3,13 +3,14 @@
 // Imports
 import Konva from 'konva';
 import {
-  ClueType,
   LABEL_COLOR,
-  ReplayArrowOrder,
-  STACK_BASE_RANK,
-  ActionType,
 } from '../../constants';
 import * as debug from '../../debug';
+import { ActionType } from '../types/ClientAction';
+import Clue from '../types/Clue';
+import ClueType from '../types/ClueType';
+import { STACK_BASE_RANK } from '../types/constants';
+import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import Arrow from './Arrow';
 import * as arrows from './arrows';
 import backToLobby from './backToLobby';
@@ -18,7 +19,6 @@ import Button2 from './Button2';
 import ButtonGroup from './ButtonGroup';
 import CardLayout from './CardLayout';
 import ClickArea from './ClickArea';
-import Clue from './Clue';
 import ClueLog from './ClueLog';
 import * as clues from './clues';
 import ColorButton from './ColorButton';
