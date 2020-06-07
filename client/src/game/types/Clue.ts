@@ -1,6 +1,6 @@
 // Imports
-import Color from '../../Color';
-import { ClueType } from '../../constants';
+import ClueType from './ClueType';
+import Color from './Color';
 
 export default class Clue {
   type: ClueType;

@@ -1,8 +1,10 @@
 // Functions for handling all of the keyboard shortcuts
 
 // Imports
-import { ActionType, ReplayActionType, MAX_CLUE_NUM } from '../../constants';
 import { copyStringToClipboard } from '../../misc';
+import { ActionType } from '../types/ClientAction';
+import { MAX_CLUE_NUM } from '../types/constants';
+import ReplayActionType from '../types/ReplayActionType';
 import backToLobby from './backToLobby';
 import * as clues from './clues';
 import globals from './globals';

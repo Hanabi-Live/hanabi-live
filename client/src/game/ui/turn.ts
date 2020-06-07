@@ -1,7 +1,7 @@
 // Imports
-import { ActionType, MAX_CLUE_NUM } from '../../constants';
 import * as notifications from '../../notifications';
-import { ClientAction } from './actions';
+import { ActionType, ClientAction } from '../types/ClientAction';
+import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import globals from './globals';
 import * as hypothetical from './hypothetical';

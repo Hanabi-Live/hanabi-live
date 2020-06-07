@@ -1,8 +1,8 @@
 // Imports
 import variantsJSON from '../../data/variants.json';
-import Color from './Color';
-import Suit from './Suit';
-import Variant from './Variant';
+import Color from './game/types/Color';
+import Suit from './game/types/Suit';
+import Variant from './game/types/Variant';
 
 interface VariantJSON {
   id: number;

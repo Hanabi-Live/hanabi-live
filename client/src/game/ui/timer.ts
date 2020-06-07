@@ -2,9 +2,14 @@
 
 // Imports
 import * as misc from '../../misc';
-import ClockData from './ClockData';
 import globals from './globals';
 import TimerDisplay from './TimerDisplay';
+
+export interface ClockData {
+  times: number[];
+  active: number;
+  timeTaken: number;
+}
 
 // This function handles the "clock" WebSocket command
 // It is sent at the beginning of every turn

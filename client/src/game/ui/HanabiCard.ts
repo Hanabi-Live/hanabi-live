@@ -3,19 +3,18 @@
 
 // Imports
 import Konva from 'konva';
-import Color from '../../Color';
 import {
   CARD_FADE,
   CARD_H,
   CARD_W,
-  ClueType,
-  STACK_BASE_RANK,
-  StackDirection,
-  START_CARD_RANK,
   SUITS,
 } from '../../constants';
-import Suit from '../../Suit';
-import Clue from './Clue';
+import Clue from '../types/Clue';
+import ClueType from '../types/ClueType';
+import Color from '../types/Color';
+import { STACK_BASE_RANK, START_CARD_RANK } from '../types/constants';
+import StackDirection from '../types/StackDirection';
+import Suit from '../types/Suit';
 import { msgSuitToSuit } from './convert';
 import globals from './globals';
 import * as HanabiCardInit from './HanabiCardInit';

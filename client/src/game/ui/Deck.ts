@@ -1,8 +1,10 @@
 // Imports
 import Konva from 'konva';
-import { ReplayArrowOrder, TOOLTIP_DELAY, ActionType } from '../../constants';
+import { TOOLTIP_DELAY } from '../../constants';
 import { timerFormatter } from '../../misc';
 import * as misc from '../../misc';
+import { ActionType } from '../types/ClientAction';
+import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import * as arrows from './arrows';
 import globals from './globals';
 import * as tooltips from './tooltips';

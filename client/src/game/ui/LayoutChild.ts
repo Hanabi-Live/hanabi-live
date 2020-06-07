@@ -3,8 +3,9 @@
 
 // Imports
 import Konva from 'konva';
-import { ActionType, MAX_CLUE_NUM } from '../../constants';
 import * as sounds from '../../sounds';
+import { ActionType } from '../types/ClientAction';
+import { MAX_CLUE_NUM } from '../types/constants';
 import CardLayout from './CardLayout';
 import globals from './globals';
 import HanabiCard from './HanabiCard';

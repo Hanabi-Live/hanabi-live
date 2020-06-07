@@ -2,14 +2,15 @@
 
 // Imports
 import * as _ from 'lodash';
-import { ClueType, ReplayArrowOrder, VARIANTS } from '../../constants';
+import { VARIANTS } from '../../constants';
 import * as sentry from '../../sentry';
-import Options from '../Options';
+import { Action } from '../types/actions';
+import ClueType from '../types/ClueType';
+import Options from '../types/Options';
+import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import action from './action';
-import { Action } from './actions';
 import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
-import ClockData from './ClockData';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as notes from './notes';
@@ -40,7 +41,7 @@ commands.set('boot', () => {
 
 // Updates the clocks to show how much time people are taking
 // or how much time people have left
-commands.set('clock', (data: ClockData) => {
+commands.set('clock', (data: timer.ClockData) => {
   if (globals.loading) {
     // We have not loaded everything yet
     return;

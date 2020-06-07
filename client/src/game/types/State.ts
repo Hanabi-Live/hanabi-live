@@ -1,4 +1,4 @@
-import { MAX_CLUE_NUM } from '../../constants';
+import { MAX_CLUE_NUM } from './constants';
 
 export default class State {
   log: string[] = []; // TODO set to action log message object

@@ -6,6 +6,7 @@ import * as chat from './chat';
 import ChatMessage from './ChatMessage';
 import Connection from './Connection';
 import * as gameChat from './game/chat';
+import { DEFAULT_VARIANT_NAME } from './game/types/constants';
 import gameWebsocketInit from './game/websocketInit';
 import globals from './globals';
 import * as lobbyLogin from './lobby/login';
@@ -161,7 +162,7 @@ const initCommands = () => {
     ) {
       const urlParams = new URLSearchParams(window.location.search);
       const name = urlParams.get('name') || globals.randomName;
-      const variant = urlParams.get('variant') || 'No Variant';
+      const variant = urlParams.get('variant') || DEFAULT_VARIANT_NAME;
       const timed = urlParams.get('timed') === 'true';
       const timeBaseString = urlParams.get('timeBase') || '120';
       const timeBase = parseInt(timeBaseString, 10);

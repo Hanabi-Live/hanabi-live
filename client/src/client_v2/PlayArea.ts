@@ -1,7 +1,7 @@
 // Imports
 import Phaser from 'phaser';
 import { CARD_H, CARD_W, PLAY_AREA_PADDING } from '../constants';
-import Suit from '../Suit';
+import Suit from '../game/types/Suit';
 import HanabiCard from './HanabiCard';
 import * as utils from './utils';
 

@@ -1,8 +1,9 @@
 // Functions for the stats on the middle-right-hand side of the game screen
 
 // Imports
-import { LABEL_COLOR, MAX_CLUE_NUM } from '../../constants';
-import Variant from '../../Variant';
+import { LABEL_COLOR } from '../../constants';
+import { MAX_CLUE_NUM } from '../types/constants';
+import Variant from '../types/Variant';
 import globals from './globals';
 
 export const updatePace = () => {

@@ -2,12 +2,12 @@
 // vice versa
 
 // Imports
-import Color from '../../Color';
-import { ClueType } from '../../constants';
-import Suit from '../../Suit';
-import Variant from '../../Variant';
-import Clue from './Clue';
-import MsgClue from './MsgClue';
+import Clue from '../types/Clue';
+import ClueType from '../types/ClueType';
+import Color from '../types/Color';
+import MsgClue from '../types/MsgClue';
+import Suit from '../types/Suit';
+import Variant from '../types/Variant';
 
 // Convert a clue from the format used by the server to the format used by the client
 // On the client, the color is a rich object

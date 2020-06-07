@@ -1,6 +1,7 @@
 // Imports
 import Konva from 'konva';
-import { LABEL_COLOR, MAX_CLUE_NUM } from '../../constants';
+import { LABEL_COLOR } from '../../constants';
+import { MAX_CLUE_NUM } from '../types/constants';
 import globals from './globals';
 
 // Set the "Current Player" area up for this specific turn

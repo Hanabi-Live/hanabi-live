@@ -2,7 +2,9 @@
 
 // Imports
 import Konva from 'konva';
-import { ReplayActionType, StackDirection, MAX_CLUE_NUM } from '../../constants';
+import { MAX_CLUE_NUM } from '../types/constants';
+import ReplayActionType from '../types/ReplayActionType';
+import StackDirection from '../types/StackDirection';
 import action from './action';
 import cardStatusCheck from './cardStatusCheck';
 import globals from './globals';

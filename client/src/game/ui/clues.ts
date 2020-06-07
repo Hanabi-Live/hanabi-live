@@ -1,13 +1,14 @@
 // Imports
-import Color from '../../Color';
-import { ClueType, ActionType } from '../../constants';
+import { ActionType } from '../types/ClientAction';
+import Clue from '../types/Clue';
+import ClueType from '../types/ClueType';
+import Color from '../types/Color';
+import MsgClue from '../types/MsgClue';
 import * as arrows from './arrows';
-import Clue from './Clue';
 import ColorButton from './ColorButton';
 import { colorToMsgColor, msgClueToClue } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
-import MsgClue from './MsgClue';
 import PlayerButton from './PlayerButton';
 import RankButton from './RankButton';
 import * as turn from './turn';

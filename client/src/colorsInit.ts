@@ -1,6 +1,6 @@
 // Imports
 import colorsJSON from '../../data/colors.json';
-import Color from './Color';
+import Color from './game/types/Color';
 
 interface ColorJSON {
   fill: string;

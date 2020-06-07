@@ -3,16 +3,17 @@
 
 // Imports
 import Konva from 'konva';
+import { KonvaEventObject } from 'konva/types/Node';
 import {
   ARROW_COLOR,
-  ClueType,
-  ReplayActionType,
-  STACK_BASE_RANK,
-  ReplayArrowOrder,
 } from '../../constants';
-import Suit from '../../Suit';
+import Clue from '../types/Clue';
+import ClueType from '../types/ClueType';
+import { STACK_BASE_RANK } from '../types/constants';
+import ReplayActionType from '../types/ReplayActionType';
+import ReplayArrowOrder from '../types/ReplayArrowOrder';
+import Suit from '../types/Suit';
 import Arrow from './Arrow';
-import Clue from './Clue';
 import drawPip from './drawPip';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
@@ -235,9 +236,13 @@ const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, tur
   }).play();
 };
 
-export const click = (event: any, order: ReplayArrowOrder, element: any) => {
+export const click = (
+  event: KonvaEventObject<MouseEvent>,
+  order: ReplayArrowOrder,
+  element: any,
+) => {
   if (
-    event.evt.which === 3 // Right-click
+    event.evt.button === 3 // Right-click
     && globals.sharedReplay
     && globals.amSharedReplayLeader
     && globals.useSharedTurns
