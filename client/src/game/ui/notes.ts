@@ -146,7 +146,7 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
     || fullNote.includes('[f]')
     || note === 'pf'
     || fullNote.includes('[hf]')
-    || note === 'hd'
+    || note === 'hf'
     || fullNote.includes('[pf]')
     || note === 'gd'
     || fullNote.includes('[gd]')
