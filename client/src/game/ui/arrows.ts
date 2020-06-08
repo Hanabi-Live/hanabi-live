@@ -242,7 +242,7 @@ export const click = (
   element: any,
 ) => {
   if (
-    event.evt.button === 3 // Right-click
+    event.evt.which === 3 // Right-click
     && globals.sharedReplay
     && globals.amSharedReplayLeader
     && globals.useSharedTurns
