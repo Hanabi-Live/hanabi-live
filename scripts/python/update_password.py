@@ -47,6 +47,13 @@ if count == 0:
     print("That user does not exist in the database.")
     sys.exit(1)
 
+# Display the last IP address of the user
+cursor = conn.cursor()
+cursor.execute("SELECT last_ip FROM users WHERE username = %s", (username,))
+row = cursor.fetchone()
+cursor.close()
+print("Their last IP address is:", row[0])
+
 # Prompt for the password hash
 password_hash = input("Enter the password hash: ")
 if len(password_hash) == 0:
