@@ -16,7 +16,7 @@ if [[ -z $CI ]]; then
   export HOME=/root
 fi
 
-# Recompile the Golang code and restart the service
+# Compile the Golang code
 cd "$DIR/src"
 go build -o "$DIR/../$REPO"
 if [[ $? -ne 0 ]]; then
