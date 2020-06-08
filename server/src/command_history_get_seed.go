@@ -19,8 +19,8 @@ func commandHistoryGetSeed(s *Session, d *CommandData) {
 	}
 
 	// Validate that it does not have any special characters
-	if !isAlphanumeric(d.Seed) {
-		s.Warning("Seeds can only contain letters and numbers.")
+	if !isAlphanumericHyphen(d.Seed) {
+		s.Warning("Seeds can only contain letters, numbers, and hyphens.")
 		return
 	}
 
