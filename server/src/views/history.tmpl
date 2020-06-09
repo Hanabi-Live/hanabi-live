@@ -12,6 +12,27 @@
 {{if gt $length 0}}
 <br />
 
+<ul id="filter-players" class="horizontal">
+  <li>
+    <div class="create-game-icon">
+        <i class="fas fa-users" style="position: relative; top: 1px;"></i>
+    </div>
+    Filter by # of Players
+  </li>
+  <li>
+    <select id="filter-by-players">
+      <option value="all">All</option>
+      <option value="2">2-Players</option>
+      <option value="3">3-Players</option>
+      <option value="4">4-Players</option>
+      <option value="5">5-Players</option>
+      <option value="6">6-Players</option>
+    </select>
+  </li>
+</ul>
+
+<br /><br /><br />
+
 <table>
   <thead>
     <tr>
@@ -26,7 +47,7 @@
   </thead>
   <tbody>
     {{range $index, $results := .History}}
-      <tr>
+      <tr class="history-row-{{.NumPlayers}}">
         <td><a href="/replay/{{.ID}}">{{.ID}}</a></td>
         <td>{{.NumPlayers}}</td>
         <td>{{.Score}}</td>

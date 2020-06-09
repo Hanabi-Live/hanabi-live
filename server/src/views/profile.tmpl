@@ -97,8 +97,10 @@
       for (let i = 2; i <= 6; i++) {
         if (numPlayersSelected === i.toString() || numPlayersSelected === 'all') {
           $(`.missing-scores-row-${i}`).show();
+          $(`.history-row-${i}`).show();
         } else {
           $(`.missing-scores-row-${i}`).hide();
+          $(`.history-row-${i}`).hide();
         }
       }
     });
