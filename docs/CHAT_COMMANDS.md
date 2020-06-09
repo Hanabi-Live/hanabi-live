@@ -6,18 +6,20 @@ If you need general help with the website, then read the [features page](FEATURE
 
 ### General commands (that work everywhere):
 
-| Command                  | Description
-| ------------------------ | -----------
-| /help                    | Get the link to this page
-| /discord                 | Get the link for the [Hanabi Discord server](https://discord.gg/FADvkJp)
-| /rules                   | Get the link for the [Hanabi Community Guidelines](https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md)
-| /new                     | Displays a stock message for new users, encouraging them to join the Hyphen-ated group
-| /replay [game ID] [turn] | Generate a link to a replay so that you can share it with others
-| /random [min] [max]      | Get a random integer
-| /playerinfo (usernames)  | Gets stats for users, defaulting to the players in the current game
-| /uptime                  | Get how long the server has been online
-| /timeleft                | Get how much time is left before the server shuts down
-| /shrug                   | ¯\\_(ツ)_/¯
+| Command                             | Description
+| ----------------------------------- | -----------
+| /help                               | Get the link to this page
+| /discord                            | Get the link for the [Hanabi Discord server](https://discord.gg/FADvkJp)
+| /rules                              | Get the link for the [Hanabi Community Guidelines](https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md)
+| /new                                | Displays a stock message for new users, encouraging them to join the Hyphen-ated group
+| /replay [game ID] [turn]            | Generate a link to a replay so that you can share it with others
+| /playerinfo                         | Get the number of games played for all the players in the current game
+| /playerinfo [username]              | Get the number of games played for a specific player
+| /playerinfo [username1] [username2] | Get the number of games played for a list of players
+| /random [min] [max]                 | Get a random integer
+| /uptime                             | Get how long the server has been online
+| /timeleft                           | Get how much time is left before the server shuts down
+| /shrug                              | ¯\\_(ツ)_/¯
 
 <br />
 
