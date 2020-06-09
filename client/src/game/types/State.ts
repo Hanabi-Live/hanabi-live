@@ -3,8 +3,8 @@ import { MAX_CLUE_NUM, DEFAULT_VARIANT_NAME } from './constants';
 import Variant from './Variant';
 
 export default class State {
-  // Using a string instead of struct to keep this object as flat as possible
-  // since it's cloned often.
+  // Using a string instead of an object to keep this object as flat as possible since it is cloned
+  // often
   variantName: Variant['name'] = DEFAULT_VARIANT_NAME;
   log: string[] = []; // TODO set to action log message object
   deck: StateCard[] = [];
