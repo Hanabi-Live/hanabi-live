@@ -3,7 +3,8 @@
 
 // Imports
 import Phaser from 'phaser';
-import { CARD_H, CARD_W, SUITS } from '../constants';
+import { CARD_H, CARD_W } from '../constants';
+import { SUITS } from '../game/data/gameData';
 import Suit from '../game/types/Suit';
 
 export default class HanabiCard extends Phaser.GameObjects.Container {

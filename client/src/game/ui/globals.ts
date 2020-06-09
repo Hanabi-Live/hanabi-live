@@ -3,8 +3,8 @@
 
 // Imports
 import Konva from 'konva';
-import { VARIANTS } from '../../constants';
 import { Globals as LobbyGlobals } from '../../globals';
+import { VARIANTS } from '../data/gameData';
 import { GameExports } from '../main';
 import { Action } from '../types/actions';
 import { ClientAction } from '../types/ClientAction';
@@ -145,7 +145,7 @@ export class Globals {
   chatUnread: number = 0;
 
   // State information
-  state: State = new State(); // The current state
+  state: State = new State(this.variant, this.playerNames.length); // The current state
   states: State[] = []; // The state for each turn
 
   // We provide a method to reset every class variable to its initial value
@@ -231,7 +231,7 @@ export class Globals {
     this.UIClickTime = 0;
     this.spectators = [];
     this.chatUnread = 0;
-    this.state = new State();
+    this.state = new State(this.variant, this.playerNames.length);
     this.states = [];
     this.deckOrder = [];
   }

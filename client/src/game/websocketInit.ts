@@ -2,8 +2,8 @@
 
 // Imports
 import phaserInit from '../client_v2/phaserInit';
-import { VARIANTS } from '../constants';
 import globals from '../globals';
+import { VARIANTS } from './data/gameData';
 import drawCards from './ui/drawCards';
 import websocket from './ui/websocket';
 

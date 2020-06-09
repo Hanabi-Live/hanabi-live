@@ -169,7 +169,7 @@ const loadingFinishedCallback = () => {
   // Construct a list of all of the cards in the deck
   initCardsMap();
 
-  // Build all of the reusuable card objects
+  // Build all of the reusable card objects
   initCards();
 
   // Draw the user interface

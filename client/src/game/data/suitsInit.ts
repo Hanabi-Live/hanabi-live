@@ -1,8 +1,9 @@
 // Imports
-import suitsJSON from '../../data/suits.json';
-import { SUIT_REVERSED_SUFFIX } from './constants';
-import Color from './game/types/Color';
-import Suit from './game/types/Suit';
+import suitsJSON from '../../../../data/suits.json';
+import Color from '../types/Color';
+import Suit from '../types/Suit';
+
+const SUIT_REVERSED_SUFFIX = ' Reversed';
 
 interface SuitJSON {
   name?: string;
@@ -19,7 +20,7 @@ interface SuitJSON {
   noClueColors?: boolean;
   noClueRanks?: boolean;
 }
-type SuitEntryIterable = Iterable<[string, SuitJSON]>;
+type SuitEntryIterable = Iterable<[keyof (typeof suitsJSON), SuitJSON]>;
 
 export default (COLORS: Map<string, Color>) => {
   const SUITS: Map<string, Suit> = new Map();

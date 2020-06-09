@@ -2,7 +2,7 @@
 
 // Imports
 import * as chat from '../chat';
-import { VARIANTS } from '../constants';
+import { VARIANTS } from '../game/data/gameData';
 import globals from '../globals';
 import * as misc from '../misc';
 import * as nav from './nav';

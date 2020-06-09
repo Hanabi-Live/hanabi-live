@@ -1,13 +1,13 @@
 // Imports
-import colorsJSON from '../../data/colors.json';
-import Color from './game/types/Color';
+import colorsJSON from '../../../../data/colors.json';
+import Color from '../types/Color';
 
 interface ColorJSON {
   fill: string;
   fillColorblind?: string;
   abbreviation?: string;
 }
-type ColorEntryIterable = Iterable<[string, ColorJSON]>;
+type ColorEntryIterable = Iterable<[keyof (typeof colorsJSON), ColorJSON]>;
 
 export default () => {
   const COLORS: Map<string, Color> = new Map();

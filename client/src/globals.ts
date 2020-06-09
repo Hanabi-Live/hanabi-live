@@ -3,7 +3,6 @@
 // Imports
 import version from '../../data/version.json';
 import Connection from './Connection';
-import State from './game/types/State';
 import HanabiUI from './game/ui/HanabiUI';
 import Game from './lobby/Game';
 import GameHistory from './lobby/GameHistory';
@@ -73,7 +72,6 @@ export class Globals {
   // TODO convert to an Init object
   init: any | null = null; // Equal to the data from the "init" command
   // ui: null, // The various graphics objects used, initialized in the "commands.init()" function
-  state: State = new State(); // Variables relating to the current game state
 }
 
 const globals = new Globals();

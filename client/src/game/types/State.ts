@@ -1,6 +1,11 @@
-import { MAX_CLUE_NUM } from './constants';
+import * as stats from '../ui/stats';
+import { MAX_CLUE_NUM, DEFAULT_VARIANT_NAME } from './constants';
+import Variant from './Variant';
 
 export default class State {
+  // Using a string instead of struct to keep this object as flat as possible
+  // since it's cloned often.
+  variantName: Variant['name'] = DEFAULT_VARIANT_NAME;
   log: string[] = []; // TODO set to action log message object
   deck: StateCard[] = [];
   deckSize: number = 0;
@@ -16,6 +21,20 @@ export default class State {
   playStacksDirections: number[] = [];
   discardStacks: number[][] = [];
   clues: StateClue[] = [];
+
+  constructor(variant: Variant, playerCount: number) {
+    this.variantName = variant.name;
+
+    this.deckSize = stats.getTotalCardsInTheDeck(variant);
+    this.maxScore = variant.maxScore;
+    for (let i = 0; i < playerCount; i++) {
+      this.hands.push([]);
+    }
+    for (let i = 0; i < variant.suits.length; i++) {
+      this.playStacks.push([]);
+      this.discardStacks.push([]);
+    }
+  }
 }
 
 interface StateCard {

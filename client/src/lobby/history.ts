@@ -1,7 +1,7 @@
 // The screens that show past games and other scores
 
 // Imports
-import { VARIANTS } from '../constants';
+import { VARIANTS } from '../game/data/gameData';
 import Variant from '../game/types/Variant';
 import globals from '../globals';
 import * as misc from '../misc';

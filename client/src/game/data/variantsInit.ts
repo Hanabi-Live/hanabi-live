@@ -1,8 +1,8 @@
 // Imports
-import variantsJSON from '../../data/variants.json';
-import Color from './game/types/Color';
-import Suit from './game/types/Suit';
-import Variant from './game/types/Variant';
+import variantsJSON from '../../../../data/variants.json';
+import Color from '../types/Color';
+import Suit from '../types/Suit';
+import Variant from '../types/Variant';
 
 interface VariantJSON {
   id: number;
@@ -21,7 +21,7 @@ interface VariantJSON {
   showSuitNames?: boolean;
   spacing?: boolean;
 }
-type VariantEntryIterable = Iterable<[string, VariantJSON]>;
+type VariantEntryIterable = Iterable<[keyof (typeof variantsJSON), VariantJSON]>;
 
 export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD_RANK: number) => {
   const VARIANTS: Map<string, Variant> = new Map();

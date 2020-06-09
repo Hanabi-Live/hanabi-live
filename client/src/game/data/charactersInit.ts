@@ -1,11 +1,20 @@
 // Imports
-import charactersJSON from '../../data/characters.json';
-import Character from './game/types/Character';
+import charactersJSON from '../../../../data/characters.json';
+import Character from '../types/Character';
+
+interface CharacterJSON {
+  id: number;
+  description: string;
+  emoji: string;
+  not2P?: boolean;
+}
+type CharacterEntryIterable = Iterable<[keyof (typeof charactersJSON), CharacterJSON]>;
 
 export default () => {
   const CHARACTERS: Map<string, Character> = new Map();
 
-  for (const [characterName, characterJSON] of Object.entries(charactersJSON)) {
+  const characters = Object.entries(charactersJSON) as CharacterEntryIterable;
+  for (const [characterName, characterJSON] of characters) {
     // Validate the name
     const name: string = characterName;
     if (name === '') {

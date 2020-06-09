@@ -1,8 +1,9 @@
 // The "Create Game" nav button
 
 // Imports
-import { FADE_TIME, SHUTDOWN_TIMEOUT, VARIANTS } from '../constants';
+import { FADE_TIME, SHUTDOWN_TIMEOUT } from '../constants';
 import * as debug from '../debug';
+import { VARIANTS } from '../game/data/gameData';
 import globals from '../globals';
 import * as misc from '../misc';
 import * as modals from '../modals';
