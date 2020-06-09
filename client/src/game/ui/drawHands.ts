@@ -1,6 +1,6 @@
 // Imports
 import Konva from 'konva';
-import { CHARACTERS } from '../../constants';
+import { CHARACTERS } from '../data/gameData';
 import CardLayout from './CardLayout';
 import globals from './globals';
 import NameFrame from './NameFrame';

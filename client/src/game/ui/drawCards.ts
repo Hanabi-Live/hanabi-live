@@ -4,8 +4,8 @@
 import {
   CARD_H,
   CARD_W,
-  SUITS,
 } from '../../constants';
+import { SUITS } from '../data/gameData';
 import Color from '../types/Color';
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK, START_CARD_RANK } from '../types/constants';
 import Suit from '../types/Suit';
@@ -33,7 +33,7 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
     // Rank 7 is a "START" card (in the "Up or Down" variants)
     for (let rank = 0; rank <= 7; rank++) {
       // We need unknown cards for 1, 2, 3, 4, 5, and the "START" card
-      if (suit.name === 'Unknown' && (rank === 0 || rank === 6)) {
+      if (suit.name === 'Unknown' && (rank === STACK_BASE_RANK || rank === UNKNOWN_CARD_RANK)) {
         continue;
       }
 

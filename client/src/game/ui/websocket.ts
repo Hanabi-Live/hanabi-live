@@ -1,13 +1,14 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things
 
 // Imports
-import * as _ from 'lodash';
-import { VARIANTS } from '../../constants';
 import * as sentry from '../../sentry';
+import { VARIANTS } from '../data/gameData';
+import stateReducer from '../stateReducer';
 import { Action } from '../types/actions';
 import ClueType from '../types/ClueType';
 import Options from '../types/Options';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
+import State from '../types/State';
 import action from './action';
 import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
@@ -17,8 +18,6 @@ import * as notes from './notes';
 import pause from './pause';
 import * as replay from './replay';
 import SpectatorNote from './SpectatorNote';
-import stateChange from './stateChange';
-import * as stats from './stats';
 import strikeRecord from './strikeRecord';
 import * as timer from './timer';
 import * as turn from './turn';
@@ -248,6 +247,8 @@ commands.set('init', (data: InitData) => {
     globals.variant = variant;
   }
 
+  globals.state = new State(variant, globals.playerNames.length);
+
   // Character settings
   globals.characterAssignments = data.characterAssignments;
   globals.characterMetadata = data.characterMetadata;
@@ -369,18 +370,15 @@ commands.set('gameAction', (data: GameActionData) => {
 });
 
 const processNewAction = (actionMessage: Action) => {
-  // Update the state table
-  const stateChangeFunction = stateChange.get(actionMessage.type);
-  if (typeof stateChangeFunction !== 'undefined') {
-    globals.state = stateChangeFunction(globals.state, actionMessage);
-  }
+  // Update the game state
+  globals.state = stateReducer(globals.state, actionMessage);
 
   // TEMP: We need to save this game state change for the purposes of the in-game replay
   globals.replayLog.push(actionMessage);
 
   if (actionMessage.type === 'turn') {
     // Make a copy of the current state and store it in the state table
-    globals.states[actionMessage.num] = _.cloneDeep(globals.state);
+    globals.states[actionMessage.num] = globals.state;
 
     // Keep track of whether it is our turn or not
     globals.ourTurn = actionMessage.who === globals.playerUs && !globals.spectating;
@@ -414,6 +412,10 @@ const processNewAction = (actionMessage: Action) => {
         button.hide();
       }
     }
+  } else if (actionMessage.type === 'deckOrder') {
+    // The game is over and the server gave us a list of every card in the deck
+    // {deck: [{suit: 0, rank: 1}, {suit: 2, rank: 2}, ...], type: "deckOrder", }
+    globals.deckOrder = actionMessage.deck;
   }
 
   // Now that it is recorded, change the actual drawn game state
@@ -438,17 +440,6 @@ interface GameActionListData {
   list: any[],
 }
 commands.set('gameActionList', (data: GameActionListData) => {
-  // Initialize the state table
-  globals.state.deckSize = stats.getTotalCardsInTheDeck(globals.variant);
-  globals.state.maxScore = globals.variant.maxScore;
-  for (let i = 0; i < globals.playerNames.length; i++) {
-    globals.state.hands.push([]);
-  }
-  for (let i = 0; i < globals.variant.suits.length; i++) {
-    globals.state.playStacks.push([]);
-    globals.state.discardStacks.push([]);
-  }
-
   // Play through all of the turns
   for (const actionMessage of data.list) {
     processNewAction(actionMessage);

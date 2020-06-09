@@ -1,11 +1,4 @@
-// Suit definitions, variant definitions, character definitions, and so forth
-
-// Imports
-import charactersInit from './charactersInit';
-import colorsInit from './colorsInit';
-import { START_CARD_RANK } from './game/types/constants';
-import suitsInit from './suitsInit';
-import variantsInit from './variantsInit';
+// Constants used thoughout the app
 
 // Define the default qualities of a card
 export const CARD_W = 286;
@@ -28,16 +21,3 @@ export const ARROW_COLOR = {
 export const FADE_TIME = 350; // In milliseconds
 
 export const SHUTDOWN_TIMEOUT = 30; // In minutes
-export const SUIT_REVERSED_SUFFIX = ' Reversed';
-
-// Objects representing JSON files
-const COLORS = colorsInit();
-const SUITS = suitsInit(COLORS);
-const VARIANTS = variantsInit(COLORS, SUITS, START_CARD_RANK);
-const CHARACTERS = charactersInit();
-export {
-  COLORS,
-  SUITS,
-  VARIANTS,
-  CHARACTERS,
-};

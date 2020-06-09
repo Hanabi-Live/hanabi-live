@@ -7,12 +7,12 @@ import {
   CARD_FADE,
   CARD_H,
   CARD_W,
-  SUITS,
 } from '../../constants';
+import { SUITS } from '../data/gameData';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
 import Color from '../types/Color';
-import { STACK_BASE_RANK, START_CARD_RANK } from '../types/constants';
+import { STACK_BASE_RANK, START_CARD_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
 import StackDirection from '../types/StackDirection';
 import Suit from '../types/Suit';
 import { msgSuitToSuit } from './convert';
@@ -325,7 +325,7 @@ export default class HanabiCard extends Konva.Group {
       this.rankPips!.hide();
     } else {
       this.suitPips!.visible(suitToShow!.name === 'Unknown');
-      this.rankPips!.visible(rankToShow === 6);
+      this.rankPips!.visible(rankToShow === UNKNOWN_CARD_RANK);
     }
 
     // Show or hide the "trash" image
