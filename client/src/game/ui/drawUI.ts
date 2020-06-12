@@ -6,6 +6,8 @@ import {
   LABEL_COLOR,
 } from '../../constants';
 import * as debug from '../../debug';
+import * as deck from '../rules/deck';
+import * as stats from '../rules/stats';
 import { ActionType } from '../types/ClientAction';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
@@ -39,7 +41,6 @@ import PlayStack from './PlayStack';
 import RankButton from './RankButton';
 import RectWithTooltip from './RectWithTooltip';
 import * as replay from './replay';
-import * as stats from './stats';
 import StrikeSquare from './StrikeSquare';
 import StrikeX from './StrikeX';
 import * as timer from './timer';
@@ -340,7 +341,7 @@ const drawPlayStacks = () => {
     // Add the stack base to the play stack
     const stackBase = new HanabiCard({
       // Stack bases use card orders after the final card in the deck
-      order: stats.getTotalCardsInTheDeck(globals.variant) + i,
+      order: deck.totalCards(globals.variant) + i,
     });
     globals.stackBases.push(stackBase);
     stackBase.refresh();
@@ -1252,7 +1253,7 @@ const drawStatistics = () => {
     arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
   });
 
-  const minEfficiency = stats.getMinEfficiency();
+  const minEfficiency = stats.minEfficiency(globals.variant, globals.playerNames.length);
   const efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
     text: minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places
     x: 0.918 * winW,

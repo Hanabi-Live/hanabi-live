@@ -1,18 +1,8 @@
+/* eslint-disable import/prefer-default-export */
+// Functions related to clues: gaining clues, giving clues, applying clues
+
 import { MAX_CLUE_NUM } from '../types/constants';
 import Variant from '../types/Variant';
-
-export function getTotalCardsInTheDeck(variant: Variant) {
-  let totalCardsInTheDeck = 0;
-  for (const suit of variant.suits) {
-    totalCardsInTheDeck += 10;
-    if (suit.oneOfEach) {
-      totalCardsInTheDeck -= 5;
-    } else if (variant.name.startsWith('Up or Down')) {
-      totalCardsInTheDeck -= 1;
-    }
-  }
-  return totalCardsInTheDeck;
-}
 
 // Gain a clue by discarding or finishing a stack
 export function gainClue(variant: Variant, clueTokens: number) {

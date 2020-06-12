@@ -1,10 +1,10 @@
 // Imports
 import Konva from 'konva';
 import { CHARACTERS } from '../data/gameData';
+import * as hand from '../rules/hand';
 import CardLayout from './CardLayout';
 import globals from './globals';
 import NameFrame from './NameFrame';
-import * as stats from './stats';
 import TextWithTooltip from './TextWithTooltip';
 import * as tooltips from './tooltips';
 
@@ -225,7 +225,7 @@ export default (winW: number, winH: number) => {
     x: -0.01,
     y: 0.17,
   };
-  const numCardsPerHand = stats.getNumCardsPerHand();
+  const numCardsPerHand = hand.cardsPerHand(globals.playerNames.length);
   for (let i = 2; i <= 6; i++) {
     let { y } = namePosBGAMod;
     if (i === 5) {

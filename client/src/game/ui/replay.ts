@@ -2,6 +2,7 @@
 
 // Imports
 import Konva from 'konva';
+import * as deck from '../rules/deck';
 import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import StackDirection from '../types/StackDirection';
@@ -10,7 +11,6 @@ import cardStatusCheck from './cardStatusCheck';
 import globals from './globals';
 import LayoutChild from './LayoutChild';
 import Shuttle from './Shuttle';
-import * as stats from './stats';
 import * as turn from './turn';
 import * as reversible from './variants/reversible';
 
@@ -164,7 +164,7 @@ const reset = () => {
   // Reset some game state variables
   globals.turn = 0;
   // "globals.currentPlayerIndex" is set in every "turn" command
-  globals.deckSize = stats.getTotalCardsInTheDeck(globals.variant);
+  globals.deckSize = deck.totalCards(globals.variant);
   // "globals.indexOfLastDrawnCard" is set in every "draw" command
   globals.score = 0;
   globals.maxScore = globals.variant.maxScore;

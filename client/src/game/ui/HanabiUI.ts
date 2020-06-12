@@ -7,6 +7,7 @@ import Konva from 'konva';
 import { LABEL_COLOR } from '../../constants';
 import { Globals as LobbyGlobals } from '../../globals';
 import { GameExports } from '../main';
+import * as deck from '../rules/deck';
 import { STACK_BASE_RANK } from '../types/constants';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
@@ -16,7 +17,6 @@ import * as keyboard from './keyboard';
 import LayoutChild from './LayoutChild';
 import Loader from './Loader';
 import pause from './pause';
-import * as stats from './stats';
 import * as timer from './timer';
 import * as turn from './turn';
 import * as reversible from './variants/reversible';
@@ -221,7 +221,7 @@ const initCardsMap = () => {
 };
 
 const initCards = () => {
-  globals.deckSize = stats.getTotalCardsInTheDeck(globals.variant);
+  globals.deckSize = deck.totalCards(globals.variant);
   for (let order = 0; order < globals.deckSize; order++) {
     // Create the "learned" card object
     // (this must be done before creating the HanabiCard object)
