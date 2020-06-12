@@ -23,5 +23,5 @@ test('totalCards for Up or Down (5 Suits) is 45', () => {
 });
 
 test('totalCards for Up or Down (6 Suits) is 54', () => {
-    expect(totalCards(VARIANTS.get('Up or Down (6 Suits)')!)).toBe(54);
-  });
+  expect(totalCards(VARIANTS.get('Up or Down (6 Suits)')!)).toBe(54);
+});
