@@ -377,7 +377,7 @@ const processNewAction = (actionMessage: Action) => {
   globals.replayLog.push(actionMessage);
 
   if (actionMessage.type === 'turn') {
-    // Make a copy of the current state and store it in the state table
+    // Store the current state in the state table to enable replays
     globals.states[actionMessage.num] = globals.state;
 
     // Keep track of whether it is our turn or not

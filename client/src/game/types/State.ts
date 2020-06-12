@@ -1,4 +1,4 @@
-import * as stats from '../ui/stats';
+import * as deck from '../rules/deck';
 import { MAX_CLUE_NUM, DEFAULT_VARIANT_NAME } from './constants';
 import Variant from './Variant';
 
@@ -25,7 +25,7 @@ export default class State {
   constructor(variant: Variant, playerCount: number) {
     this.variantName = variant.name;
 
-    this.deckSize = stats.getTotalCardsInTheDeck(variant);
+    this.deckSize = deck.totalCards(variant);
     this.maxScore = variant.maxScore;
     for (let i = 0; i < playerCount; i++) {
       this.hands.push([]);

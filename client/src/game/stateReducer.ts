@@ -5,9 +5,9 @@
 // Imports
 import * as _ from 'lodash';
 import { VARIANTS } from './data/gameData';
+import * as clues from './rules/clues';
 import { Action } from './types/actions';
 import State from './types/State';
-import { gainClue } from './variants/variantUtils';
 
 export default function stateReducer(prev: State, action: Action) {
   switch (action.type) {
@@ -67,7 +67,7 @@ export default function stateReducer(prev: State, action: Action) {
       state.discardStacks[card.suit].push(action.which.order);
 
       if (!action.failed) {
-        state.clueTokens = gainClue(VARIANTS.get(state.variantName)!, state.clueTokens);
+        state.clueTokens = clues.gainClue(VARIANTS.get(state.variantName)!, state.clueTokens);
       }
 
       return state;
@@ -121,7 +121,7 @@ export default function stateReducer(prev: State, action: Action) {
 
       // Get clues if the stack is complete
       if (state.playStacks[card.suit].length === 5) {
-        state.clueTokens = gainClue(VARIANTS.get(state.variantName)!, state.clueTokens);
+        state.clueTokens = clues.gainClue(VARIANTS.get(state.variantName)!, state.clueTokens);
       }
 
       return state;
