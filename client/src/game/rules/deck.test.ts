@@ -2,26 +2,31 @@ import { VARIANTS } from '../data/gameData';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import { totalCards } from './deck';
 
-test('totalCards for 5 suits is 50', () => {
+test('totalCards for No Variant is 50', () => {
   expect(totalCards(VARIANTS.get(DEFAULT_VARIANT_NAME)!)).toBe(50);
 });
 
-test('totalCards for 6 suits is 60', () => {
-  expect(totalCards(VARIANTS.get('6 Suits')!)).toBe(60);
+test.each`
+suits | cards
+${3}  | ${30}
+${4}  | ${40}
+${6}  | ${60}
+`('totalCards for $suits suits is $cards', ({ suits, cards }) => {
+  expect(totalCards(VARIANTS.get(`${suits} Suits`)!)).toBe(cards);
 });
 
-test('totalCards for Black (5 Suits) is 45', () => {
-  expect(totalCards(VARIANTS.get('Black (5 Suits)')!)).toBe(45);
+test.each`
+suits | cards
+${5}  | ${45}
+${6}  | ${55}
+`('totalCards for Black ($suits suits) is $cards', ({ suits, cards }) => {
+  expect(totalCards(VARIANTS.get(`Black (${suits} Suits)`)!)).toBe(cards);
 });
 
-test('totalCards for Black (6 Suits) is 55', () => {
-  expect(totalCards(VARIANTS.get('Black (6 Suits)')!)).toBe(55);
-});
-
-test('totalCards for Up or Down (5 Suits) is 45', () => {
-  expect(totalCards(VARIANTS.get('Up or Down (5 Suits)')!)).toBe(45);
-});
-
-test('totalCards for Up or Down (6 Suits) is 54', () => {
-  expect(totalCards(VARIANTS.get('Up or Down (6 Suits)')!)).toBe(54);
+test.each`
+suits | cards
+${5}  | ${45}
+${6}  | ${54}
+`('totalCards for Up or Down ($suits suits) is $cards', ({ suits, cards }) => {
+  expect(totalCards(VARIANTS.get(`Up or Down (${suits} Suits)`)!)).toBe(cards);
 });
