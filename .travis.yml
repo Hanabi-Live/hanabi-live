@@ -18,6 +18,8 @@ matrix:
         - ./build_client.sh
         - echo "Linting the client code..."
         - ./lint_client.sh
+        - echo "Running tests..."
+        - npm test
 
     - language: go
       go:
