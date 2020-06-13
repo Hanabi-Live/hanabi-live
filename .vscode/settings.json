@@ -49,5 +49,8 @@
     "editor.formatOnSave": true,
   },
   "python.linting.pylintEnabled": true,
-  "python.linting.enabled": true
+  "python.linting.enabled": true,
+  "search.exclude": {
+    "**/*.min.js*": true
+  }
 }

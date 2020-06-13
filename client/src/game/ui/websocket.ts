@@ -179,6 +179,15 @@ commands.set('hypoRevealed', (data: HypoRevealedData) => {
   const text = globals.hypoRevealed ? 'Hidden' : 'Revealed';
   globals.elements.toggleRevealedButton!.setMiddleText(text);
   globals.layers.UI.batchDraw();
+
+  // Redraw the cards drawn after the hypothetical started
+  if (globals.hypoFirstDrawnIndex) {
+    for (let i = globals.hypoFirstDrawnIndex; i < globals.deckOrder.length; i++) {
+      globals.deck[i].replayRedraw();
+    }
+  }
+
+  globals.layers.card.batchDraw();
 });
 
 commands.set('hypoStart', () => {

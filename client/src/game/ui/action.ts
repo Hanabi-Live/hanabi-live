@@ -245,19 +245,22 @@ actionFunctions.set('draw', (data: ActionDraw) => {
     }
   }
 
-  // If we are in a shared replay that was converted from a game in which we were one of the
-  // players, then suit and rank will be still be null for the cards that were dealt to us
-  // Since we are in a shared replay, this is a mistake, because we should have full knowledge of
-  // what the card is (from the "deckOrder" message that is sent at the end of the game)
-  // The exception is when we are in a hypothetical and "hypoRevealed" is turned off
-  if (globals.deckOrder.length !== 0 && (!globals.hypothetical || globals.hypoRevealed)) {
-    if (suit === null) {
-      const suitNum = globals.deckOrder[order].suit;
-      suit = msgSuitToSuit(suitNum, globals.variant);
-    }
-    if (rank === null) {
-      rank = globals.deckOrder[order].rank;
-    }
+  // Set hypoFirstDrawnIndex if this is the first card we drew in the hypothetical
+  // Note this must happen before replayRedraw()
+  // This value is bugged in the case when someone joins a hypothetical in progress
+  if (globals.hypothetical && !globals.hypoFirstDrawnIndex) {
+    globals.hypoFirstDrawnIndex = order;
+  }
+
+  if (globals.deckOrder.length !== 0) {
+    // If we are in a shared replay that was converted from a game in which we were one of the
+    // players, then suit and rank will be still be null for the cards that were dealt to us
+    // Since we are in a shared replay, this is a mistake, because we should have full knowledge of
+    // what the card is (from the "deckOrder" message that is sent at the end of the game)
+    const card = globals.deck[order];
+    card.replayRedraw();
+    suit = card.state.suit;
+    rank = card.state.rank;
   }
 
   // Remove one card from the deck
