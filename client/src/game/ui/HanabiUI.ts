@@ -8,6 +8,7 @@ import { LABEL_COLOR } from '../../constants';
 import { Globals as LobbyGlobals } from '../../globals';
 import { GameExports } from '../main';
 import * as deck from '../rules/deck';
+import * as variant from '../rules/variant';
 import { STACK_BASE_RANK } from '../types/constants';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
@@ -19,7 +20,6 @@ import Loader from './Loader';
 import pause from './pause';
 import * as timer from './timer';
 import * as turn from './turn';
-import * as reversible from './variants/reversible';
 
 export default class HanabiUI {
   globals: Globals;
@@ -190,7 +190,7 @@ const loadingFinishedCallback = () => {
 
 const initCardsMap = () => {
   for (const suit of globals.variant.suits) {
-    if (reversible.isUpOrDown()) {
+    if (variant.isUpOrDown(globals.variant)) {
       // 6 is an unknown rank, so we use 7 to represent a "START" card
       const key = `${suit.name}7`;
       globals.cardsMap.set(key, 1);
@@ -201,7 +201,7 @@ const initCardsMap = () => {
       let amountToAdd = 2;
       if (rank === 1) {
         amountToAdd = 3;
-        if (reversible.isUpOrDown() || suit.reversed) {
+        if (variant.isUpOrDown(globals.variant) || suit.reversed) {
           amountToAdd = 1;
         }
       } else if (rank === 5) {

@@ -6,13 +6,13 @@ import {
   CARD_W,
 } from '../../constants';
 import { SUITS } from '../data/gameData';
+import * as variantRules from '../rules/variant';
 import Color from '../types/Color';
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK, START_CARD_RANK } from '../types/constants';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
 import drawPip from './drawPip';
 import drawStylizedRank from './drawStylizedRank';
-import * as reversible from './variants/reversible';
 
 // This function returns an object containing all of the drawn cards images (on individual canvases)
 export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean) => {
@@ -98,7 +98,7 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
         cardImages.set(cardImagesIndex, cloneCanvas(cvs));
 
         // Draw the rank on the bottom right
-        if (!reversible.isUpOrDown() && !suit.reversed) {
+        if (!variantRules.isUpOrDown(variant) && !suit.reversed) {
           ctx.save();
           ctx.translate(CARD_W, CARD_H);
           ctx.rotate(Math.PI);

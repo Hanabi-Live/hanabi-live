@@ -1,4 +1,5 @@
 // Imports
+import CardState from '../types/CardState';
 import { ActionType } from '../types/ClientAction';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
@@ -8,7 +9,6 @@ import * as arrows from './arrows';
 import ColorButton from './ColorButton';
 import { colorToMsgColor, msgClueToClue } from './convert';
 import globals from './globals';
-import { CardState } from './HanabiCard';
 import PlayerButton from './PlayerButton';
 import RankButton from './RankButton';
 import * as turn from './turn';

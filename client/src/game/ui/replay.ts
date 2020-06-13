@@ -3,6 +3,7 @@
 // Imports
 import Konva from 'konva';
 import * as deck from '../rules/deck';
+import * as variant from '../rules/variant';
 import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import StackDirection from '../types/StackDirection';
@@ -12,7 +13,6 @@ import globals from './globals';
 import LayoutChild from './LayoutChild';
 import Shuttle from './Shuttle';
 import * as turn from './turn';
-import * as reversible from './variants/reversible';
 
 // ---------------------
 // Main replay functions
@@ -208,7 +208,7 @@ const reset = () => {
 
     // Reverse the stack direction of reversed suits, except on the "Up or Down" variant
     // that uses the "UNDECIDED" direction.
-    if (reversible.hasReversedSuits() && !reversible.isUpOrDown()) {
+    if (variant.hasReversedSuits(globals.variant) && !variant.isUpOrDown(globals.variant)) {
       globals.stackDirections[i] = suit.reversed ? StackDirection.Down : StackDirection.Up;
     }
   }

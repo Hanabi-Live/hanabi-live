@@ -1,6 +1,8 @@
 // Helper methods for variants where suits may have a different direction than up
 // Currently used for "Up Or Down" and "Reversed" variants
 
+import * as variant from '../../rules/variant';
+import CardState from '../../types/CardState';
 import {
   STACK_BASE_RANK,
   START_CARD_RANK,
@@ -8,14 +10,7 @@ import {
 import StackDirection from '../../types/StackDirection';
 import { suitToMsgSuit } from '../convert';
 import globals from '../globals';
-import { getSpecificCardNum, CardState } from '../HanabiCard';
-
-export const isUpOrDown = () => globals.variant.name.startsWith('Up or Down');
-
-export const hasReversedSuits = () => {
-  const suits = globals.variant.suits;
-  return isUpOrDown() || suits.filter((s) => s.reversed).length > 0;
-};
+import { getSpecificCardNum } from '../HanabiCard';
 
 // needsToBePlayed returns true if this card still needs to be played
 // in order to get the maximum score (taking into account the stack direction)
@@ -34,7 +29,7 @@ export const needsToBePlayed = (cardState: CardState) => {
   }
 
   // The "Up or Down" variants have specific requirements to start the pile
-  if (isUpOrDown()) {
+  if (variant.isUpOrDown(globals.variant)) {
     // All 2's, 3's, and 4's must be played
     if (cardState.rank === 2 || cardState.rank === 3 || cardState.rank === 4) {
       return true;
@@ -78,7 +73,7 @@ const isDead = (cardState: CardState) => {
   // Start by handling the easy cases of up and down
   const suit = suitToMsgSuit(cardState.suit!, globals.variant);
   if (globals.stackDirections[suit] === StackDirection.Up) {
-    for (let rank = isUpOrDown() ? 2 : 1; rank < cardState.rank!; rank++) {
+    for (let rank = variant.isUpOrDown(globals.variant) ? 2 : 1; rank < cardState.rank!; rank++) {
       if (allDiscarded.get(rank)) {
         return true;
       }
@@ -86,7 +81,7 @@ const isDead = (cardState: CardState) => {
     return false;
   }
   if (globals.stackDirections[suit] === StackDirection.Down) {
-    for (let rank = isUpOrDown() ? 4 : 5; rank > cardState.rank!; rank--) {
+    for (let rank = variant.isUpOrDown(globals.variant) ? 4 : 5; rank > cardState.rank!; rank--) {
       if (allDiscarded.get(rank)) {
         return true;
       }
@@ -94,7 +89,7 @@ const isDead = (cardState: CardState) => {
     return false;
   }
 
-  if (!isUpOrDown()) {
+  if (!variant.isUpOrDown(globals.variant)) {
     throw new Error('A stack in a "Reversed" variant must always have a defined direction (up or down).');
   }
 
@@ -171,7 +166,7 @@ export const isPotentiallyPlayable = (cardState : CardState) => {
       }
     } else if (globals.stackDirections[i] === StackDirection.Down) {
       let nextRankNeeded = lastPlayedRank - 1;
-      if (!isUpOrDown() && lastPlayedRank === 0) {
+      if (!variant.isUpOrDown(globals.variant) && lastPlayedRank === 0) {
         // Reversed stacks start with 5, except in "Up or Down"
         nextRankNeeded = 5;
       }
@@ -196,7 +191,7 @@ export const isCardCritical = (cardState : CardState) : boolean => {
   const num = getSpecificCardNum(cardState.suit!, cardState.rank!);
   const critical = num.total === num.discarded + 1;
 
-  if (!isUpOrDown()) {
+  if (!variant.isUpOrDown(globals.variant)) {
     return critical;
   }
 

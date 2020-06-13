@@ -6,6 +6,7 @@ import {
   CARD_W,
   LABEL_COLOR,
 } from '../../constants';
+import * as variant from '../rules/variant';
 import {
   Action,
   ActionClue,
@@ -34,7 +35,6 @@ import possibilitiesCheck from './possibilitiesCheck';
 import * as stats from './stats';
 import strikeRecord from './strikeRecord';
 import updateCurrentPlayerArea from './updateCurrentPlayerArea';
-import * as reversible from './variants/reversible';
 
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list that was sent upon loading a new
@@ -121,8 +121,6 @@ actionFunctions.set('clue', (data: ActionClue) => {
         )
       ) {
         card.applyClue(clue, false);
-        card.checkReapplyRankClues();
-        card.checkReapplyColorClues();
         card.setBareImage();
       }
     }
@@ -390,7 +388,7 @@ actionFunctions.set('reorder', (data: ActionReorder) => {
 });
 
 actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
-  if (!reversible.hasReversedSuits()) {
+  if (!variant.hasReversedSuits(globals.variant)) {
     return;
   }
 
@@ -408,11 +406,11 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
     if (stackDirection === StackDirection.Undecided) {
       text = '';
     } else if (stackDirection === StackDirection.Up) {
-      text = reversible.isUpOrDown() ? 'Up' : '';
+      text = variant.isUpOrDown(globals.variant) ? 'Up' : '';
     } else if (stackDirection === StackDirection.Down) {
-      text = reversible.isUpOrDown() ? 'Down' : 'Reversed';
+      text = variant.isUpOrDown(globals.variant) ? 'Down' : 'Reversed';
     } else if (stackDirection === StackDirection.Finished) {
-      if (reversible.isUpOrDown()) {
+      if (variant.isUpOrDown(globals.variant)) {
         text = 'Finished';
       } else if (suit.reversed) {
         text = 'Reversed';

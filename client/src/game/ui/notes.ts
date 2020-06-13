@@ -1,8 +1,9 @@
 // Users can right-click cards to record information on them
 
 // Imports
+import CardState from '../types/CardState';
 import globals from './globals';
-import HanabiCard, { CardState } from './HanabiCard';
+import HanabiCard from './HanabiCard';
 
 // Get the contents of the note tooltip
 const get = (order: number, our: boolean) => {

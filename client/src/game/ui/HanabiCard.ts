@@ -10,6 +10,8 @@ import {
   CARD_W,
 } from '../../constants';
 import { SUITS } from '../data/gameData';
+import * as variant from '../rules/variant';
+import CardState, { cardInitialState } from '../types/CardState';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
 import Color from '../types/Color';
@@ -24,75 +26,6 @@ import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
 import RankPip from './RankPip';
 import * as reversible from './variants/reversible';
-
-export interface CardState {
-  order: number;
-  // The index of the player that holds this card (or null if played/discarded)
-  holder: number | null;
-  suit: Suit | null;
-  rank: number | null;
-  blank: boolean;
-  // The suit corresponding to the note written on the card, if any
-  noteSuit: Suit | null;
-  // The rank corresponding to the note written on the card, if any
-  noteRank: number | null;
-  noteKnownTrash: boolean;
-  noteNeedsFix: boolean;
-  noteChopMoved: boolean;
-  noteFinessed: boolean;
-  noteBlank: boolean;
-  noteUnclued: boolean;
-
-  // The following are the variables that are refreshed
-  possibleSuits: Suit[];
-  possibleRanks: number[];
-  possibleCards: Map<string, number>;
-  identityDetermined: boolean;
-  numPositiveClues: number;
-  positiveColorClues: Color[];
-  negativeColorClues: Color[];
-  positiveRankClues: number[];
-  negativeRankClues: number[];
-  turnsClued: number[];
-  turnDrawn: number;
-  isDiscarded: boolean;
-  turnDiscarded: number;
-  isPlayed: boolean;
-  turnPlayed: number;
-  isMisplayed: boolean;
-}
-
-const cardInitialState = (order: number) : CardState => ({
-  order,
-  holder: null,
-  suit: null,
-  rank: null,
-  blank: false,
-  noteSuit: null,
-  noteRank: null,
-  noteKnownTrash: false,
-  noteNeedsFix: false,
-  noteChopMoved: false,
-  noteFinessed: false,
-  noteBlank: false,
-  noteUnclued: false,
-  possibleSuits: [],
-  possibleRanks: [],
-  possibleCards: new Map(),
-  identityDetermined: false,
-  numPositiveClues: 0,
-  positiveColorClues: [],
-  negativeColorClues: [],
-  positiveRankClues: [],
-  negativeRankClues: [],
-  turnsClued: [],
-  turnDrawn: -1,
-  isDiscarded: false,
-  turnDiscarded: -1,
-  isPlayed: false,
-  turnPlayed: -1,
-  isMisplayed: false,
-});
 
 export default class HanabiCard extends Konva.Group {
   // Mark the object type for use elsewhere in the code
@@ -392,7 +325,7 @@ export default class HanabiCard extends Konva.Group {
     if (
       this.state.suit === null
       || this.state.rank === 0
-      || (!this.state.suit.reversed && !reversible.isUpOrDown())
+      || (!this.state.suit.reversed && !variant.isUpOrDown(globals.variant))
     ) {
       return;
     }
@@ -401,7 +334,7 @@ export default class HanabiCard extends Konva.Group {
     const direction = globals.stackDirections[suitIndex];
 
     let shouldShowArrow;
-    if (reversible.isUpOrDown()) {
+    if (variant.isUpOrDown(globals.variant)) {
       // In "Up or Down" variants, the arrow should be shown when the stack direction is determined
       // (and the arrow should be cleared when the stack is finished)
       shouldShowArrow = (
@@ -1130,7 +1063,7 @@ export default class HanabiCard extends Konva.Group {
     }
 
     // "Up or Down" has some special cases for critical cards
-    if (reversible.hasReversedSuits()) {
+    if (variant.hasReversedSuits(globals.variant)) {
       return reversible.isCardCritical(this.state);
     }
 
@@ -1158,7 +1091,7 @@ export default class HanabiCard extends Konva.Group {
 
     // Determining if the card needs to be played in variants with reversed suits is more
     // complicated
-    if (reversible.hasReversedSuits()) {
+    if (variant.hasReversedSuits(globals.variant)) {
       return reversible.needsToBePlayed(this.state);
     }
 
@@ -1178,7 +1111,7 @@ export default class HanabiCard extends Konva.Group {
 
   isPotentiallyPlayable() {
     // Calculating this in an Up or Down variant is more complicated
-    if (reversible.hasReversedSuits()) {
+    if (variant.hasReversedSuits(globals.variant)) {
       return reversible.isPotentiallyPlayable(this.state);
     }
 
@@ -1267,7 +1200,7 @@ export const getSpecificCardNum = (suit: Suit, rank: number) => {
   let total = 0;
   if (rank === 1) {
     total = 3;
-    if (reversible.isUpOrDown() || suit.reversed) {
+    if (variant.isUpOrDown(globals.variant) || suit.reversed) {
       total = 1;
     }
   } else if (rank === 5) {

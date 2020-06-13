@@ -3,6 +3,7 @@
 // Imports
 import Konva from 'konva';
 import { CARD_H, CARD_W } from '../../constants';
+import * as variant from '../rules/variant';
 import { START_CARD_RANK } from '../types/constants';
 import * as arrows from './arrows';
 import CardLayout from './CardLayout';
@@ -15,7 +16,6 @@ import NoteIndicator from './NoteIndicator';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
 import RankPip from './RankPip';
-import * as reversible from './variants/reversible';
 
 export function image(this: HanabiCard) {
   // Create the "bare" card image, which is the main card grahpic
@@ -131,7 +131,7 @@ export function borders(this: HanabiCard) {
 }
 
 export function directionArrow(this: HanabiCard) {
-  if (!reversible.hasReversedSuits()) {
+  if (!variant.hasReversedSuits(globals.variant)) {
     return;
   }
 
