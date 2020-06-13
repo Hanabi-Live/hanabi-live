@@ -888,9 +888,10 @@ export default class HanabiCard extends Konva.Group {
   }
 
   // This card was either played or discarded (or revealed at the end of the game)
-  reveal(msgSuit: number, rank: number) {
+  reveal(msgSuit: number, msgRank: number) {
     // Local variables
-    const suit = msgSuitToSuit(msgSuit, globals.variant);
+    const suit = msgSuit === -1 ? null : msgSuitToSuit(msgSuit, globals.variant);
+    const rank = msgRank === -1 ? null : msgRank;
 
     // Set the true suit/rank on the card
     this.state.suit = suit;
@@ -903,7 +904,7 @@ export default class HanabiCard extends Konva.Group {
 
     // If the card was already fully-clued,
     // we already updated the possibilities for it on other cards
-    if (!this.state.identityDetermined) {
+    if (suit && rank && this.state.holder && !this.state.identityDetermined) {
       this.state.identityDetermined = true;
       this.updatePossibilitiesOnOtherCards(suit, rank);
     }
@@ -916,6 +917,36 @@ export default class HanabiCard extends Konva.Group {
 
     // Redraw the card
     this.setBareImage();
+  }
+
+  // We need to redraw this card's suit and rank in a shared replay or hypothetical
+  // based on deckOrder and hypoRevealed
+  replayRedraw() {
+    if (globals.deckOrder.length === 0) {
+      return;
+    }
+    const suitNum = globals.deckOrder[this.state.order].suit;
+    const trueSuit = msgSuitToSuit(suitNum, globals.variant);
+    const trueRank = globals.deckOrder[this.state.order].rank;
+
+    if (
+      // If we are in a hypothetical and "hypoRevealed" is turned off
+      // and this card was drawn from the deck since the hypothetical started
+      globals.hypothetical
+      && !globals.hypoRevealed
+      && globals.hypoFirstDrawnIndex
+      && this.state.order >= globals.hypoFirstDrawnIndex
+    ) {
+      if (this.state.suit === trueSuit && this.state.rank === trueRank) {
+        // We need to hide this card unless it was morphed from its real identity
+        // -1 is used for null suits and ranks
+        this.reveal(-1, -1);
+      }
+    } else if (this.state.suit === null || this.state.rank === null) {
+      // Otherwise, we should make sure to fill in information from deckOrder
+      // unless this card is fully known, possibly morphed
+      this.reveal(suitNum, trueRank);
+    }
   }
 
   private updatePossibilitiesOnOtherCards(suit: Suit, rank: number) {

@@ -133,6 +133,8 @@ export const end = () => {
 
   globals.hypoActions = [];
 
+  globals.hypoFirstDrawnIndex = 0;
+
   // The "replay.goto()" function will do nothing if we are already at the target turn,
   // so set the current replay turn to the end of the game to force it to draw/compute the
   // game from the beginning

@@ -103,6 +103,7 @@ export class Globals {
   hypothetical: boolean = false; // Whether or not we are in a hypothetical
   hypoActions: Action[] = []; // An array of the actions in the current hypothetical
   hypoRevealed: boolean = true; // Whether or not drawn cards should be revealed when drawn
+  hypoFirstDrawnIndex: number = 0; // The index of the first card drawn in a hypothetical
 
   // Notes feature
   ourNotes: string[] = []; // Indexed by card order
