@@ -3,6 +3,7 @@
 // Imports
 import Konva from 'konva';
 import * as deck from '../rules/deck';
+import * as variant from '../rules/variant';
 import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import StackDirection from '../types/StackDirection';
@@ -12,7 +13,6 @@ import globals from './globals';
 import LayoutChild from './LayoutChild';
 import Shuttle from './Shuttle';
 import * as turn from './turn';
-import * as reversible from './variants/reversible';
 
 // ---------------------
 // Main replay functions
@@ -202,13 +202,13 @@ const reset = () => {
     stackBaseLayoutChild.visible(true);
 
     // The stack base might have been morphed
-    if (stackBase.rank !== 0 || stackBase.suit !== globals.variant.suits[i]) {
+    if (stackBase.state.rank !== 0 || stackBase.state.suit !== globals.variant.suits[i]) {
       stackBase.reveal(i, 0);
     }
 
     // Reverse the stack direction of reversed suits, except on the "Up or Down" variant
     // that uses the "UNDECIDED" direction.
-    if (reversible.hasReversedSuits() && !reversible.isUpOrDown()) {
+    if (variant.hasReversedSuits(globals.variant) && !variant.isUpOrDown(globals.variant)) {
       globals.stackDirections[i] = suit.reversed ? StackDirection.Down : StackDirection.Up;
     }
   }
@@ -236,9 +236,9 @@ const reset = () => {
     if (child.tween) {
       child.tween.destroy();
     }
-    card.holder = null;
-    card.suit = null;
-    card.rank = null;
+    card.state.holder = null;
+    card.state.suit = null;
+    card.state.rank = null;
   }
 
   // Reset the arrows

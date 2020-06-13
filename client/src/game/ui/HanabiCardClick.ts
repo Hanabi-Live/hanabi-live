@@ -43,7 +43,7 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
     event.ctrlKey // No actions in this function use modifiers other than Alt
     || event.shiftKey
     || event.metaKey
-    || card.rank === STACK_BASE_RANK // Disable clicking on the stack base
+    || card.state.rank === STACK_BASE_RANK // Disable clicking on the stack base
     || globals.hypothetical // No replay actions should happen in a hypothetical
   ) {
     return;
@@ -53,22 +53,22 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
     // Alt + clicking a card goes to the turn it was drawn
     // (we want to go to the turn before it is drawn, tween the card being drawn,
     // and then indicate the card)
-    const turnBeforeDrawn = card.turnDrawn === 0 ? 0 : card.turnDrawn - 1;
+    const turnBeforeDrawn = card.state.turnDrawn === 0 ? 0 : card.state.turnDrawn - 1;
     goToTurn(turnBeforeDrawn, true);
-    goToTurn(card.turnDrawn, false);
-    goToTurnAndIndicateCard(card.turnDrawn, card.order);
-  } else if (card.isPlayed) {
+    goToTurn(card.state.turnDrawn, false);
+    goToTurnAndIndicateCard(card.state.turnDrawn, card.state.order);
+  } else if (card.state.isPlayed) {
     // Clicking on played cards goes to the turn immediately before they were played
-    goToTurnAndIndicateCard(card.turnPlayed, card.order);
-  } else if (card.isDiscarded) {
+    goToTurnAndIndicateCard(card.state.turnPlayed, card.state.order);
+  } else if (card.state.isDiscarded) {
     // Clicking on discarded cards goes to the turn immediately before they were discarded
-    goToTurnAndIndicateCard(card.turnDiscarded, card.order);
+    goToTurnAndIndicateCard(card.state.turnDiscarded, card.state.order);
   }
 };
 
 const clickMiddle = (card: HanabiCard, event: PointerEvent) => {
   // Disable this for the stack base
-  if (card.rank === STACK_BASE_RANK) {
+  if (card.state.rank === STACK_BASE_RANK) {
     return;
   }
 
@@ -78,10 +78,10 @@ const clickMiddle = (card: HanabiCard, event: PointerEvent) => {
   }
 
   // Middle clicking on a card goes to a turn it was first clued
-  if (card.turnsClued.length === 0) {
+  if (card.state.turnsClued.length === 0) {
     return;
   }
-  goToTurn(card.turnsClued[0], true);
+  goToTurn(card.state.turnsClued[0], true);
 };
 
 const clickRight = (card: HanabiCard, event: PointerEvent) => {
@@ -97,7 +97,7 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
     && event.altKey
     && !event.metaKey
   ) {
-    clickMorph(card.order);
+    clickMorph(card.state.order);
     return;
   }
 
@@ -111,13 +111,13 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
     && globals.amSharedReplayLeader
     && globals.useSharedTurns
   ) {
-    arrows.send(card.order, card);
+    arrows.send(card.state.order, card);
     return;
   }
 
   // Right-click in a solo replay just displays what card order (in the deck) that it is
   if (globals.replay && !globals.sharedReplay) {
-    console.log(`This card's order is: ${card.order}`);
+    console.log(`This card's order is: ${card.state.order}`);
   }
 
   // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered

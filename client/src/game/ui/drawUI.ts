@@ -8,6 +8,7 @@ import {
 import * as debug from '../../debug';
 import * as deck from '../rules/deck';
 import * as stats from '../rules/stats';
+import * as variant from '../rules/variant';
 import { ActionType } from '../types/ClientAction';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
@@ -46,7 +47,6 @@ import StrikeX from './StrikeX';
 import * as timer from './timer';
 import TimerDisplay from './TimerDisplay';
 import * as tooltips from './tooltips';
-import * as reversible from './variants/reversible';
 
 interface Values {
   x: number;
@@ -345,8 +345,8 @@ const drawPlayStacks = () => {
     });
     globals.stackBases.push(stackBase);
     stackBase.refresh();
-    stackBase.suit = suit;
-    stackBase.rank = STACK_BASE_RANK;
+    stackBase.state.suit = suit;
+    stackBase.state.rank = STACK_BASE_RANK;
 
     // Create the LayoutChild that will be the parent of the stack base
     const child = new LayoutChild();
@@ -361,7 +361,7 @@ const drawPlayStacks = () => {
         const colorList = suit.clueColors.map((color) => color.abbreviation).join('/');
         text += ` [${colorList}]`;
       }
-      if (reversible.isUpOrDown()) {
+      if (variant.isUpOrDown(globals.variant)) {
         text = '';
       }
 
