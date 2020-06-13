@@ -34,7 +34,6 @@ export default class HanabiCard extends Konva.Group {
   bareName: string = '';
 
   tweening: boolean = false;
-  empathy: boolean = false;
   doMisplayAnimation: boolean = false;
 
   bare: Konva.Image | null = null;
@@ -54,6 +53,8 @@ export default class HanabiCard extends Konva.Group {
   arrow: Konva.Group | null = null;
   arrowBase: Konva.Arrow | null = null;
   criticalIndicator: Konva.Image | null = null;
+
+  private empathy: boolean = false;
 
   constructor(config: Konva.ContainerConfig) {
     super(config);
@@ -429,8 +430,10 @@ export default class HanabiCard extends Konva.Group {
     // If the card is already fully revealed from clues, then additional clues would tell us nothing
     // We don't check for "this.identityDetermined" here because we still need to calculate the
     // effects of clues on cards in other people's hands that we already know the true identity of
-    const wasFullyKnown = this.state.possibleSuits.length === 1
-                          && this.state.possibleRanks.length === 1;
+    const wasFullyKnown = (
+      this.state.possibleSuits.length === 1
+      && this.state.possibleRanks.length === 1
+    );
     if (wasFullyKnown) {
       return;
     }
@@ -790,8 +793,10 @@ export default class HanabiCard extends Konva.Group {
     }
 
     // Handle if this is the first time that the card is fully revealed to the holder
-    const isFullyKnown = this.state.possibleSuits.length === 1
-                         && this.state.possibleRanks.length === 1;
+    const isFullyKnown = (
+      this.state.possibleSuits.length === 1
+      && this.state.possibleRanks.length === 1
+    );
     if (isFullyKnown && !wasFullyKnown) {
       this.state.identityDetermined = true;
       this.updatePossibilitiesOnOtherCards(this.state.suit!, this.state.rank!);
@@ -835,7 +840,7 @@ export default class HanabiCard extends Konva.Group {
   }
 
   // Check to see if we can put an X over this suit pip or this rank pip
-  checkPipPossibilities(suit: Suit, rank: number) {
+  private checkPipPossibilities(suit: Suit, rank: number) {
     // First, check to see if there are any possibilities remaining for this suit
     let suitPossible = false;
     for (const rank2 of globals.variant.ranks) {
@@ -913,7 +918,7 @@ export default class HanabiCard extends Konva.Group {
     this.setBareImage();
   }
 
-  updatePossibilitiesOnOtherCards(suit: Suit, rank: number) {
+  private updatePossibilitiesOnOtherCards(suit: Suit, rank: number) {
     if (!possibilitiesCheck()) {
       return;
     }
@@ -1050,7 +1055,7 @@ export default class HanabiCard extends Konva.Group {
     return -1;
   }
 
-  isCritical() {
+  private isCritical() {
     if (
       this.state.suit === null
       || this.state.rank === null
@@ -1074,7 +1079,7 @@ export default class HanabiCard extends Konva.Group {
   // needsToBePlayed returns true if the card is not yet played
   // and is still needed to be played in order to get the maximum score
   // (this mirrors the server function in "card.go")
-  needsToBePlayed() {
+  private needsToBePlayed() {
     // First, check to see if a copy of this card has already been played
     for (const card of globals.deck) {
       if (card.state.order === this.state.order) {
