@@ -259,8 +259,8 @@ actionFunctions.set('draw', (data: ActionDraw) => {
     // what the card is (from the "deckOrder" message that is sent at the end of the game)
     const card = globals.deck[order];
     card.replayRedraw();
-    suit = card.suit;
-    rank = card.rank;
+    suit = card.state.suit;
+    rank = card.state.rank;
   }
 
   // Remove one card from the deck
