@@ -202,7 +202,7 @@ const reset = () => {
     stackBaseLayoutChild.visible(true);
 
     // The stack base might have been morphed
-    if (stackBase.rank !== 0 || stackBase.suit !== globals.variant.suits[i]) {
+    if (stackBase.state.rank !== 0 || stackBase.state.suit !== globals.variant.suits[i]) {
       stackBase.reveal(i, 0);
     }
 
@@ -236,9 +236,9 @@ const reset = () => {
     if (child.tween) {
       child.tween.destroy();
     }
-    card.holder = null;
-    card.suit = null;
-    card.rank = null;
+    card.state.holder = null;
+    card.state.suit = null;
+    card.state.rank = null;
   }
 
   // Reset the arrows

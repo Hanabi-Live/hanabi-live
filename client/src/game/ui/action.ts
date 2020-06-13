@@ -81,7 +81,7 @@ actionFunctions.set('clue', (data: ActionClue) => {
       stats.updateEfficiency(0);
     }
 
-    card.numPositiveClues += 1;
+    card.state.numPositiveClues += 1;
 
     arrows.set(i, card, data.giver, clue);
 
@@ -92,13 +92,11 @@ actionFunctions.set('clue', (data: ActionClue) => {
       && !globals.variant.name.startsWith('Duck')
       && !(
         globals.characterAssignments[data.giver!] === 'Quacker'
-        && card.holder === globals.playerUs
+        && card.state.holder === globals.playerUs
         && !globals.replay
       )
     ) {
       card.applyClue(clue, true);
-      card.checkReapplyRankClues();
-      card.checkReapplyColorClues();
       card.setBareImage();
     }
   }
@@ -186,9 +184,9 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
   // Local variables
   const card = globals.deck[data.which.order];
 
-  card.isDiscarded = true;
-  card.turnDiscarded = globals.turn;
-  card.isMisplayed = data.failed;
+  card.state.isDiscarded = true;
+  card.state.turnDiscarded = globals.turn;
+  card.state.isMisplayed = data.failed;
 
   // Clear all visible arrows when a new move occurs
   arrows.hideAll();
@@ -197,7 +195,7 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
   card.removeFromParent();
   card.setClued();
 
-  if (card.isMisplayed && !globals.animateFast && !globals.options.speedrun) {
+  if (card.state.isMisplayed && !globals.animateFast && !globals.options.speedrun) {
     // If this card was misplayed,
     // it will automatically tween to the discard pile after reaching the play stacks
     card.doMisplayAnimation = true;
@@ -242,7 +240,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
     const hand = globals.elements.playerHands[holder];
     for (const layoutChild of hand.children.toArray()) {
       const card: HanabiCard = layoutChild.children[0];
-      const rememberedCard = globals.characterRememberedCards[card.order];
+      const rememberedCard = globals.characterRememberedCards[card.state.order];
       if (rememberedCard) {
         card.reveal(rememberedCard.suit, rememberedCard.rank);
       }
@@ -283,9 +281,9 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   // So, since this card was just drawn, refresh all the variables on the card
   // (this is necessary because we might be rewinding in a replay)
   const card = globals.deck[order];
-  card.holder = holder;
-  card.suit = suit; // This will be null if we don't know the suit
-  card.rank = rank; // This will be null if we don't know the rank
+  card.state.holder = holder;
+  card.state.suit = suit; // This will be null if we don't know the suit
+  card.state.rank = rank; // This will be null if we don't know the rank
   card.refresh();
   if (suit && rank) {
     // Hide the pips if we have full knowledge of the suit / rank
@@ -337,8 +335,8 @@ actionFunctions.set('play', (data: ActionPlay) => {
   // Local variables
   const card = globals.deck[data.which.order];
 
-  card.isPlayed = true;
-  card.turnPlayed = globals.turn;
+  card.state.isPlayed = true;
+  card.state.turnPlayed = globals.turn;
   globals.numCardsPlayed += 1;
   globals.elements.playsNumberLabel!.text(globals.numCardsPlayed.toString());
 
@@ -370,7 +368,7 @@ actionFunctions.set('reorder', (data: ActionReorder) => {
   const currentCardOrders: number[] = [];
   for (const layoutChild of hand.children.toArray() as LayoutChild[]) {
     const card = layoutChild.children[0] as unknown as HanabiCard;
-    currentCardOrders.push(card.order);
+    currentCardOrders.push(card.state.order);
   }
 
   for (let i = 0; i < data.handOrder.length; i++) {
@@ -431,7 +429,7 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
     }
 
     for (const card of globals.deck) {
-      if (card.suit === suit) {
+      if (card.state.suit === suit) {
         card.setDirectionArrow();
       }
     }
@@ -555,7 +553,7 @@ actionFunctions.set('reveal', (data: ActionReveal) => {
   }
 
   if (data.suit === -1 && data.rank === -1) {
-    card.blank = true;
+    card.state.blank = true;
     card.setBareImage();
   } else {
     card.reveal(data.suit, data.rank);

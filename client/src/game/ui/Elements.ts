@@ -26,7 +26,7 @@ export default class Elements {
   // The main screen
   stageFade: Konva.Rect | null = null;
   playArea: ClickArea | null = null;
-  playStacks: Map<Suit | string, PlayStack> = new Map();
+  playStacks: Map<Suit | 'hole', PlayStack> = new Map();
   suitLabelTexts: FitText[] = [];
   discardArea: ClickArea | null = null;
   discardStacks: Map<Suit, CardLayout> = new Map();

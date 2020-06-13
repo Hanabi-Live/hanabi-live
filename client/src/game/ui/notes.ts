@@ -2,7 +2,7 @@
 
 // Imports
 import globals from './globals';
-import HanabiCard from './HanabiCard';
+import HanabiCard, { CardState } from './HanabiCard';
 
 // Get the contents of the note tooltip
 const get = (order: number, our: boolean) => {
@@ -64,7 +64,7 @@ export const set = (order: number, note: string) => {
 };
 
 export const checkSpecialNote = (card: HanabiCard) => {
-  let note = globals.ourNotes[card.order];
+  let note = globals.ourNotes[card.state.order];
   note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
   note = note.trim(); // Remove all leading and trailing whitespace
   const fullNote = note;
@@ -78,7 +78,7 @@ export const checkSpecialNote = (card: HanabiCard) => {
   }
 
   checkNoteIdentity(card, note, fullNote);
-  checkNoteImpossibility(card);
+  checkNoteImpossibility(card.state);
 
   // Feature 1 - Morph the card if it has an "exact" card note
   // (or clear the bare image if the note was deleted/changed)
@@ -86,7 +86,7 @@ export const checkSpecialNote = (card: HanabiCard) => {
 
   // Feature 2 - Give the card a special border if it is chop moved
   card.chopMoveBorder!.visible((
-    card.noteChopMoved
+    card.state.noteChopMoved
     && !card.cluedBorder!.visible()
     && !globals.replay
     && !globals.spectating
@@ -94,7 +94,7 @@ export const checkSpecialNote = (card: HanabiCard) => {
 
   // Feature 3 - Give the card a special border if it is finessed
   card.finesseBorder!.visible((
-    card.noteFinessed
+    card.state.noteFinessed
     && !card.cluedBorder!.visible()
     && !globals.replay
     && !globals.spectating
@@ -105,7 +105,7 @@ export const checkSpecialNote = (card: HanabiCard) => {
 
 const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => {
   // First, check to see if this card should be marked with certain properties
-  card.noteKnownTrash = (
+  card.state.noteKnownTrash = (
     note === 'kt'
     || fullNote.includes('[kt]')
     || note === 'trash'
@@ -115,11 +115,11 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
     || note === 'bad'
     || fullNote.includes('[bad]')
   );
-  card.noteNeedsFix = (
+  card.state.noteNeedsFix = (
     note === 'fixme'
     || fullNote.includes('[fixme]')
   );
-  card.noteChopMoved = (
+  card.state.noteChopMoved = (
     note === 'cm'
     || fullNote.includes('[cm]')
     || note === 'chop move'
@@ -141,7 +141,7 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
     || note === 'tocm'
     || fullNote.includes('[tocm]')
   );
-  card.noteFinessed = (
+  card.state.noteFinessed = (
     note === 'f'
     || fullNote.includes('[f]')
     || note === 'pf'
@@ -151,29 +151,29 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
     || note === 'gd'
     || fullNote.includes('[gd]')
   );
-  card.noteBlank = (
+  card.state.noteBlank = (
     note === 'blank'
     || fullNote.includes('[blank]')
   );
-  card.noteUnclued = (
+  card.state.noteUnclued = (
     note === 'unclued'
     || fullNote.includes('[unclued]')
   );
   card.setClued();
 
   // Second, check the contents of the note right of the right-most pipe
-  card.noteSuit = null;
-  card.noteRank = null;
+  card.state.noteSuit = null;
+  card.state.noteRank = null;
   for (const rank of globals.variant.ranks) {
     if (note === rank.toString()) {
-      card.noteSuit = null;
-      card.noteRank = rank;
+      card.state.noteSuit = null;
+      card.state.noteRank = rank;
       return;
     }
     for (const suit of globals.variant.suits) {
       if (note === suit.abbreviation.toLowerCase()) {
-        card.noteSuit = suit;
-        card.noteRank = null;
+        card.state.noteSuit = suit;
+        card.state.noteRank = null;
         return;
       }
       if (
@@ -184,8 +184,8 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
         || note === `${rank}${suit.name.toLowerCase()}` // e.g. "1blue" or "1Blue" or "1BLUE"
         || note === `${rank} ${suit.name.toLowerCase()}` // e.g. "1 blue" or "1 Blue" or "1 BLUE"
       ) {
-        card.noteSuit = suit;
-        card.noteRank = rank;
+        card.state.noteSuit = suit;
+        card.state.noteRank = rank;
         return;
       }
     }
@@ -195,14 +195,14 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
   // (players can use square brackets to force a note identity)
   for (const rank of globals.variant.ranks) {
     if (fullNote.includes(`[${rank}]`)) {
-      card.noteSuit = null;
-      card.noteRank = rank;
+      card.state.noteSuit = null;
+      card.state.noteRank = rank;
       return;
     }
     for (const suit of globals.variant.suits) {
       if (fullNote.includes(`[${suit.abbreviation.toLowerCase()}]`)) {
-        card.noteSuit = suit;
-        card.noteRank = null;
+        card.state.noteSuit = suit;
+        card.state.noteRank = null;
         return;
       }
       if (
@@ -213,63 +213,63 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
         || fullNote.includes(`[${rank}${suit.name.toLowerCase()}]`) // e.g. "1blue" or "1Blue" or "1BLUE"
         || fullNote.includes(`[${rank} ${suit.name.toLowerCase()}]`) // e.g. "1 blue" or "1 Blue" or "1 BLUE"
       ) {
-        card.noteSuit = suit;
-        card.noteRank = rank;
+        card.state.noteSuit = suit;
+        card.state.noteRank = rank;
         return;
       }
     }
   }
 };
 
-const checkNoteImpossibility = (card: HanabiCard) => {
+const checkNoteImpossibility = (cardState: CardState) => {
   // Validate that the note does not contain an impossibility
-  if (card.noteSuit !== null && card.noteRank === null) {
+  if (cardState.noteSuit !== null && cardState.noteRank === null) {
     // Only the suit was specified
     // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
     let suitPossible = false;
-    for (const rank of card.possibleRanks) {
-      const count = card.possibleCards.get(`${card.noteSuit.name}${rank}`);
+    for (const rank of cardState.possibleRanks) {
+      const count = cardState.possibleCards.get(`${cardState.noteSuit.name}${rank}`);
       if (typeof count === 'undefined') {
-        throw new Error(`The card of "${card.noteSuit.name}${rank}" does not exist in the possibleCards map.`);
+        throw new Error(`The card of "${cardState.noteSuit.name}${rank}" does not exist in the possibleCards map.`);
       }
       if (count > 0) {
         suitPossible = true;
         break;
       }
     }
-    if (!suitPossible && card.holder === globals.playerUs) {
-      window.alert(`That card cannot possibly be ${card.noteSuit.name.toLowerCase()}.`);
-      card.noteSuit = null;
+    if (!suitPossible && cardState.holder === globals.playerUs) {
+      window.alert(`That card cannot possibly be ${cardState.noteSuit.name.toLowerCase()}.`);
+      cardState.noteSuit = null;
       return;
     }
   }
-  if (card.noteSuit === null && card.noteRank !== null) {
+  if (cardState.noteSuit === null && cardState.noteRank !== null) {
     // Only the rank was specified
     // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
     let rankPossible = false;
-    for (const suit of card.possibleSuits) {
-      const count = card.possibleCards.get(`${suit.name}${card.noteRank}`);
+    for (const suit of cardState.possibleSuits) {
+      const count = cardState.possibleCards.get(`${suit.name}${cardState.noteRank}`);
       if (typeof count === 'undefined') {
-        throw new Error(`The card of "${suit.name}${card.noteRank}" does not exist in the possibleCards map.`);
+        throw new Error(`The card of "${suit.name}${cardState.noteRank}" does not exist in the possibleCards map.`);
       }
       if (count > 0) {
         rankPossible = true;
         break;
       }
     }
-    if (!rankPossible && card.holder === globals.playerUs) {
-      window.alert(`That card cannot possibly be a ${card.noteRank}.`);
-      card.noteRank = null;
+    if (!rankPossible && cardState.holder === globals.playerUs) {
+      window.alert(`That card cannot possibly be a ${cardState.noteRank}.`);
+      cardState.noteRank = null;
       return;
     }
   }
-  if (card.noteSuit !== null && card.noteRank !== null) {
+  if (cardState.noteSuit !== null && cardState.noteRank !== null) {
     // Both the suit and the rank were specified
-    const mapIndex = `${card.noteSuit.name}${card.noteRank}`;
-    if (card.possibleCards.get(mapIndex) === 0 && card.holder === globals.playerUs) {
-      window.alert(`That card cannot possibly be a ${card.noteSuit.name.toLowerCase()} ${card.noteRank}.`);
-      card.noteSuit = null;
-      card.noteRank = null;
+    const mapIndex = `${cardState.noteSuit.name}${cardState.noteRank}`;
+    if (cardState.possibleCards.get(mapIndex) === 0 && cardState.holder === globals.playerUs) {
+      window.alert(`That card cannot possibly be a ${cardState.noteSuit.name.toLowerCase()} ${cardState.noteRank}.`);
+      cardState.noteSuit = null;
+      cardState.noteRank = null;
     }
   }
 };
@@ -278,7 +278,7 @@ export const update = (card: HanabiCard) => {
   // Update the tooltip
   const tooltip = $(`#tooltip-${card.tooltipName}`);
   const tooltipInstance = tooltip.tooltipster('instance');
-  const note = get(card.order, false);
+  const note = get(card.state.order, false);
   tooltipInstance.content(note);
   if (note.length === 0) {
     tooltip.tooltipster('close');
@@ -320,7 +320,7 @@ export const show = (card: HanabiCard) => {
   // If there is an clue arrow showing, it will overlap with the tooltip arrow,
   // so move it over to the right a little bit
   for (const arrow of globals.elements.arrows) {
-    if (arrow.pointingTo === card.order) {
+    if (arrow.pointingTo === card.state.order) {
       posX = pos.x + ((card.width() * card.parent!.scale().x / 2) / 2.5);
       break;
     }
@@ -329,7 +329,7 @@ export const show = (card: HanabiCard) => {
   // Update the tooltip and open it
   tooltip.css('left', posX);
   tooltip.css('top', posY);
-  const note = get(card.order, false);
+  const note = get(card.state.order, false);
   tooltipInstance.content(note);
   tooltip.tooltipster('open');
 };
@@ -347,7 +347,7 @@ export const openEditTooltip = (card: HanabiCard) => {
 
     // If we are right clicking the card that we were already editing,
     // then just close the existing tooltip and don't do anything else
-    if (card.order === globals.editingNote) {
+    if (card.state.order === globals.editingNote) {
       globals.editingNote = null;
       return;
     }
@@ -355,8 +355,8 @@ export const openEditTooltip = (card: HanabiCard) => {
 
   show(card);
 
-  globals.editingNote = card.order;
-  const note = get(card.order, true);
+  globals.editingNote = card.state.order;
+  const note = get(card.state.order, true);
   const tooltip = $(`#tooltip-${card.tooltipName}`);
   const tooltipInstance = tooltip.tooltipster('instance');
   tooltipInstance.content(`<input id="tooltip-${card.tooltipName}-input" type="text" value="${note}"/>`);
@@ -372,7 +372,7 @@ export const openEditTooltip = (card: HanabiCard) => {
     let newNote;
     if (keyEvent.key === 'Escape') {
       // Use the existing note, if any
-      newNote = get(card.order, true);
+      newNote = get(card.state.order, true);
     } else if (keyEvent.key === 'Enter') {
       // Get the value of the input box
       const element = $(`#tooltip-${card.tooltipName}-input`);
@@ -388,7 +388,7 @@ export const openEditTooltip = (card: HanabiCard) => {
       // (to be thorough, the server will also perform this validation)
       newNote = stripHTMLtags(newNote);
 
-      set(card.order, newNote);
+      set(card.state.order, newNote);
     }
 
     // Check to see if an event happened while we were editing this note
@@ -418,10 +418,10 @@ export const setAllCardIndicators = () => {
   // to avoid race conditions where we can get the "noteList"
   // before the "actionList" is finished processing
   for (const card of globals.deck) {
-    setCardIndicator(card.order);
+    setCardIndicator(card.state.order);
   }
   for (const stackBase of globals.stackBases) {
-    setCardIndicator(stackBase.order);
+    setCardIndicator(stackBase.state.order);
   }
 };
 

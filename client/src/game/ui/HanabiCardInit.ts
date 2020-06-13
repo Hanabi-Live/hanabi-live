@@ -388,7 +388,7 @@ export function note(this: HanabiCard) {
       y: 0,
     },
     shadowOpacity: 0.9,
-    visible: notes.shouldShowIndicator(this.order),
+    visible: notes.shouldShowIndicator(this.state.order),
     listening: false,
   });
   this.noteIndicator.scale({
@@ -400,7 +400,7 @@ export function note(this: HanabiCard) {
   // If the user mouses over the card, show a tooltip that contains the note
   // (we don't use the "tooltip.init()" function because we need the extra conditions in the
   // "mousemove" event)
-  this.tooltipName = `card-${this.order}`;
+  this.tooltipName = `card-${this.state.order}`;
   this.on('mousemove', function cardMouseMove(this: HanabiCard) {
     // Don't do anything if there is not a note on this card
     if (!this.noteIndicator!.visible()) {
@@ -490,10 +490,10 @@ export function empathy(this: HanabiCard) {
       || event.evt.altKey
       || event.evt.metaKey
       || this.tweening // Disable Empathy if the card is tweening
-      || this.isPlayed // Clicking on a played card goes to the turn that it was played
+      || this.state.isPlayed // Clicking on a played card goes to the turn that it was played
       // Clicking on a discarded card goes to the turn that it was discarded
-      || this.isDiscarded
-      || this.order > globals.deck.length - 1 // Disable empathy for the stack bases
+      || this.state.isDiscarded
+      || this.state.order > globals.deck.length - 1 // Disable empathy for the stack bases
     ) {
       return;
     }
@@ -514,7 +514,7 @@ export function empathy(this: HanabiCard) {
 
   const setEmpathyOnHand = (enabled: boolean) => {
     // Disable Empathy for the stack bases
-    if (this.order > globals.deck.length - 1) {
+    if (this.state.order > globals.deck.length - 1) {
       return;
     }
 
@@ -595,7 +595,7 @@ export function possibilities(this: HanabiCard) {
     const card = globals.deck[i];
 
     // Don't do anything if this is one of our unknown cards
-    if (card.suit === null || card.rank === null) {
+    if (card.state.suit === null || card.state.rank === null) {
       continue;
     }
 
@@ -603,13 +603,13 @@ export function possibilities(this: HanabiCard) {
     // then we cannot remove it from the list of possibilities
     // (because they do not know what it is yet)
     if (
-      card.holder === this.holder
-      && (card.possibleSuits.length > 1 || card.possibleRanks.length > 1)
+      card.state.holder === this.state.holder
+      && (card.state.possibleSuits.length > 1 || card.state.possibleRanks.length > 1)
     ) {
       continue;
     }
 
-    this.removePossibility(card.suit, card.rank, false);
+    this.removePossibility(card.state.suit, card.state.rank, false);
   }
 }
 

@@ -125,10 +125,10 @@ export const end = () => {
   // In case we blanked out any cards in the hypothetical,
   // unset the "blank" property of all cards
   for (const card of globals.deck) {
-    card.blank = false;
+    card.state.blank = false;
   }
   for (const card of globals.stackBases) {
-    card.blank = false;
+    card.state.blank = false;
   }
 
   globals.hypoActions = [];
@@ -238,8 +238,8 @@ export const send = (hypoAction: ClientAction) => {
       which: {
         index: globals.currentPlayerIndex,
         order: hypoAction.target,
-        rank: card.rank!,
-        suit: suitToMsgSuit(card.suit!, globals.variant),
+        rank: card.state.rank!,
+        suit: suitToMsgSuit(card.state.suit!, globals.variant),
       },
       failed: false,
     });
@@ -247,7 +247,7 @@ export const send = (hypoAction: ClientAction) => {
       globals.score += 1;
     }
     if (
-      (type === 'play' && card.rank === 5 && globals.clues < MAX_CLUE_NUM)
+      (type === 'play' && card.state.rank === 5 && globals.clues < MAX_CLUE_NUM)
       || type === 'discard'
     ) {
       globals.clues += 1;
@@ -258,7 +258,7 @@ export const send = (hypoAction: ClientAction) => {
 
     // Text
     let text = `${globals.playerNames[globals.currentPlayerIndex]} ${type}s `;
-    text += `${card.suit!.name} ${card.rank} from slot #${card.getSlotNum()}`;
+    text += `${card.state.suit!.name} ${card.state.rank} from slot #${card.getSlotNum()}`;
     sendHypoAction({
       type: 'text',
       text,
@@ -377,12 +377,12 @@ const cycleHand = () => {
   const cardOrders: number[] = [];
   for (const layoutChild of layoutChilds) {
     const card = layoutChild.children[0] as unknown as HanabiCard;
-    cardOrders.push(card.order);
+    cardOrders.push(card.state.order);
   }
 
   // Remove the chop card
   const chopCard = layoutChilds[chopIndex].children[0] as unknown as HanabiCard;
-  const chopCardOrder = chopCard.order;
+  const chopCardOrder = chopCard.state.order;
   cardOrders.splice(chopIndex, 1);
 
   // Add it to the end (the left-most position)

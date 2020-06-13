@@ -345,8 +345,8 @@ const drawPlayStacks = () => {
     });
     globals.stackBases.push(stackBase);
     stackBase.refresh();
-    stackBase.suit = suit;
-    stackBase.rank = STACK_BASE_RANK;
+    stackBase.state.suit = suit;
+    stackBase.state.rank = STACK_BASE_RANK;
 
     // Create the LayoutChild that will be the parent of the stack base
     const child = new LayoutChild();

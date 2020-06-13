@@ -46,7 +46,7 @@ export default class LayoutChild extends Konva.Group {
 
     // First, handle the special case of a hypothetical
     if (globals.hypothetical) {
-      if (globals.amSharedReplayLeader && globals.currentPlayerIndex === card.holder) {
+      if (globals.amSharedReplayLeader && globals.currentPlayerIndex === card.state.holder) {
         this.draggable(true);
         this.on('dragstart', this.dragStart);
         this.on('dragend', this.dragEnd);
@@ -63,9 +63,9 @@ export default class LayoutChild extends Konva.Group {
       // (unless we have the "Enable pre-playing cards" feature enabled)
       (!globals.ourTurn && !globals.lobby.settings.speedrunPreplay)
       || globals.options.speedrun // Cards should never be draggable while speedrunning
-      || card.holder !== globals.playerUs // Only our cards should be draggable
-      || card.isPlayed // Cards on the stacks should not be draggable
-      || card.isDiscarded // Cards in the discard pile should not be draggable
+      || card.state.holder !== globals.playerUs // Only our cards should be draggable
+      || card.state.isPlayed // Cards on the stacks should not be draggable
+      || card.state.isDiscarded // Cards in the discard pile should not be draggable
       || globals.replay // Cards should not be draggable in solo or shared replays
       // Cards should not be draggable if we are spectating an ongoing game
       || globals.spectating
@@ -138,7 +138,7 @@ export default class LayoutChild extends Konva.Group {
 
     turn.end({
       type: draggedTo === 'playArea' ? ActionType.Play : ActionType.Discard,
-      target: card.order,
+      target: card.state.order,
     });
   }
 }

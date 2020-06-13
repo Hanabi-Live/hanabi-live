@@ -23,7 +23,7 @@ export default function HanabiCardClickSpeedrun(this: HanabiCard, event: any) {
     (!globals.options.speedrun && !globals.lobby.settings.speedrunMode)
     || globals.replay
     || globals.spectating
-    || this.rank === STACK_BASE_RANK
+    || this.state.rank === STACK_BASE_RANK
   ) {
     return;
   }
@@ -38,8 +38,8 @@ export default function HanabiCardClickSpeedrun(this: HanabiCard, event: any) {
   // However, we do not want to allow clicking on the first card in the hand
   // (as it is sliding in from the deck)
     (this.tweening && this.parent.index === this.parent.parent.children.length - 1)
-    || this.isPlayed // Do nothing if we accidentally clicked on a played card
-    || this.isDiscarded // Do nothing if we accidentally clicked on a discarded card
+    || this.state.isPlayed // Do nothing if we accidentally clicked on a played card
+    || this.state.isDiscarded // Do nothing if we accidentally clicked on a discarded card
   ) {
     return;
   }
@@ -54,7 +54,7 @@ export default function HanabiCardClickSpeedrun(this: HanabiCard, event: any) {
 const clickLeft = (card: HanabiCard, event: PointerEvent) => {
   // Left-clicking on cards in our own hand is a play action
   if (
-    card.holder === globals.playerUs
+    card.state.holder === globals.playerUs
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
@@ -62,7 +62,7 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
   ) {
     turn.end({
       type: ActionType.Play,
-      target: card.order,
+      target: card.state.order,
     });
     return;
   }
@@ -70,16 +70,16 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
   // Left-clicking on cards in other people's hands is a color clue action
   // (but if we are holding Ctrl, then we are using Empathy)
   if (
-    card.holder !== globals.playerUs
-    && card.holder !== null
-    && card.suit !== null
+    card.state.holder !== globals.playerUs
+    && card.state.holder !== null
+    && card.state.suit !== null
     && globals.clues !== 0
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
   ) {
-    globals.preCluedCardOrder = card.order;
+    globals.preCluedCardOrder = card.state.order;
 
     // A card may be cluable by more than one color,
     // so we need to figure out which color to use
@@ -89,29 +89,29 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
     if (clueButton === null) {
       // They have not clicked on a clue color button yet,
       // so assume that they want to use the first possible color of the card
-      clueColor = card.suit.clueColors[0];
+      clueColor = card.state.suit.clueColors[0];
     } else if (typeof clueButton.clue.value === 'number') {
       // They have clicked on a number clue button,
       // so assume that they want to use the first possible color of the card
-      clueColor = card.suit.clueColors[0];
+      clueColor = card.state.suit.clueColors[0];
     } else {
       // They have clicked on a color button, so assume that they want to use that color
       clueColor = clueButton.clue.value;
 
       // See if this is a valid color for the clicked card
-      const clueColorIndex = card.suit.clueColors.findIndex(
+      const clueColorIndex = card.state.suit.clueColors.findIndex(
         (cardColor: Color) => cardColor === clueColor,
       );
       if (clueColorIndex === -1) {
         // It is not possible to clue this color to this card,
         // so default to using the first valid color
-        clueColor = card.suit.clueColors[0];
+        clueColor = card.state.suit.clueColors[0];
       }
     }
 
     turn.end({
       type: ActionType.ColorClue,
-      target: card.holder,
+      target: card.state.holder,
       value: colorToMsgColor(clueColor, globals.variant),
     });
   }
@@ -120,7 +120,7 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
 const clickRight = (card: HanabiCard, event: PointerEvent) => {
   // Right-clicking on cards in our own hand is a discard action
   if (
-    card.holder === globals.playerUs
+    card.state.holder === globals.playerUs
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
@@ -132,30 +132,30 @@ const clickRight = (card: HanabiCard, event: PointerEvent) => {
     }
     turn.end({
       type: ActionType.Discard,
-      target: card.order,
+      target: card.state.order,
     });
     return;
   }
 
   // Right-clicking on cards in other people's hands is a rank clue action
   if (
-    card.holder !== globals.playerUs
-    && card.holder !== null
-    && card.rank !== null
+    card.state.holder !== globals.playerUs
+    && card.state.holder !== null
+    && card.state.rank !== null
     // It is not possible to clue a Start Card with a rank clue
-    && card.rank !== START_CARD_RANK
+    && card.state.rank !== START_CARD_RANK
     && globals.clues !== 0
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
   ) {
-    globals.preCluedCardOrder = card.order;
+    globals.preCluedCardOrder = card.state.order;
 
     turn.end({
       type: ActionType.RankClue,
-      target: card.holder,
-      value: card.rank,
+      target: card.state.holder,
+      value: card.state.rank,
     });
     return;
   }

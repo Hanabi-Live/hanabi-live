@@ -39,7 +39,7 @@ export const begin = () => {
         throw new Error('"globals.preCluedCardOrder" was null in the "turn.begin()" function.');
       }
       const card = globals.deck[globals.preCluedCardOrder];
-      if (card.isPlayed || card.isDiscarded) {
+      if (card.state.isPlayed || card.state.isDiscarded) {
         return;
       }
     }

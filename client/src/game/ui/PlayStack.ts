@@ -22,7 +22,7 @@ export default class PlayStack extends Konva.Group {
     for (const node of this.children.toArray() as LayoutChild[]) {
       const scale = lh / node.height();
       const card = node.children[0] as unknown as HanabiCard;
-      const stackBase = card.rank === STACK_BASE_RANK;
+      const stackBase = card.state.rank === STACK_BASE_RANK;
       const opacity = (
         // Hide cards in "Throw It in a Hole" variants
         globals.variant.name.startsWith('Throw It in a Hole')
@@ -57,7 +57,7 @@ export default class PlayStack extends Konva.Group {
             if (!node || !card || !card.parent) {
               return;
             }
-            if (card.isMisplayed && card.parent.parent) {
+            if (card.state.isMisplayed && card.parent.parent) {
               // If the card is misplayed, then tween it to the discard pile
               // We check for "card.parent.parent" to fix the bug where
               // the tween will still finish if the user goes backward in a replay

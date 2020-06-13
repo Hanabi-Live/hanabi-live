@@ -8,7 +8,7 @@ import * as arrows from './arrows';
 import ColorButton from './ColorButton';
 import { colorToMsgColor, msgClueToClue } from './convert';
 import globals from './globals';
-import HanabiCard from './HanabiCard';
+import { CardState } from './HanabiCard';
 import PlayerButton from './PlayerButton';
 import RankButton from './RankButton';
 import * as turn from './turn';
@@ -95,9 +95,9 @@ export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
 };
 
 // This mirrors the function in "variants.go"
-const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
+const variantIsCardTouched = (clue: Clue, cardState: CardState) => {
   // Some detrimental characters are not able to see other people's hands
-  if (card.suit === null) {
+  if (cardState.suit === null) {
     return false;
   }
 
@@ -106,14 +106,14 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
       return false;
     }
 
-    if (card.suit.allClueColors) {
+    if (cardState.suit.allClueColors) {
       return true;
     }
-    if (card.suit.noClueColors) {
+    if (cardState.suit.noClueColors) {
       return false;
     }
 
-    if (card.rank === globals.variant.specialRank) {
+    if (cardState.rank === globals.variant.specialRank) {
       if (globals.variant.specialAllClueColors) {
         return true;
       }
@@ -122,7 +122,7 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
       }
     }
 
-    return card.suit.clueColors.includes(clue.value as Color);
+    return cardState.suit.clueColors.includes(clue.value as Color);
   }
 
   if (clue.type === ClueType.Rank) {
@@ -130,14 +130,14 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
       return false;
     }
 
-    if (card.suit.allClueRanks) {
+    if (cardState.suit.allClueRanks) {
       return true;
     }
-    if (card.suit.noClueRanks) {
+    if (cardState.suit.noClueRanks) {
       return false;
     }
 
-    if (card.rank === globals.variant.specialRank) {
+    if (cardState.rank === globals.variant.specialRank) {
       if (globals.variant.specialAllClueRanks) {
         return true;
       }
@@ -146,7 +146,7 @@ const variantIsCardTouched = (clue: Clue, card: HanabiCard) => {
       }
     }
 
-    return clue.value === card.rank;
+    return clue.value === cardState.rank;
   }
 
   return false;
