@@ -1019,7 +1019,11 @@ export default class HanabiCard extends Konva.Group {
       this.listening(false);
     } else {
       // The act of adding it will automatically tween the card
-      const playStack = globals.elements.playStacks.get(this.state.suit!)!;
+      const playStack = globals.elements.playStacks.get(this.state.suit!);
+      if (!playStack) {
+        // We might have played a hidden card in a hypothetical
+        return;
+      }
       playStack.addChild(this.parent as any);
 
       // We also want to move this stack to the top so that
@@ -1030,7 +1034,11 @@ export default class HanabiCard extends Konva.Group {
 
   animateToDiscardPile() {
     // We add a LayoutChild to a CardLayout
-    const discardStack = globals.elements.discardStacks.get(this.state.suit!)!;
+    const discardStack = globals.elements.discardStacks.get(this.state.suit!);
+    if (!discardStack) {
+      // We might have discarded a hidden card in a hypothetical
+      return;
+    }
     discardStack.addChild(this.parent as any);
 
     // We need to bring the discarded card to the top so that when it tweens to the discard
