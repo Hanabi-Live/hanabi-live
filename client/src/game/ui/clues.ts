@@ -9,6 +9,7 @@ import * as arrows from './arrows';
 import ColorButton from './ColorButton';
 import { colorToMsgColor, msgClueToClue } from './convert';
 import globals from './globals';
+import HanabiCard from './HanabiCard';
 import PlayerButton from './PlayerButton';
 import RankButton from './RankButton';
 import * as turn from './turn';
@@ -71,8 +72,8 @@ const showClueMatch = (target: number, clue: Clue) => {
   const hand = globals.elements.playerHands[target].children;
   for (let i = 0; i < hand.length; i++) {
     const child = globals.elements.playerHands[target].children[i];
-    const card = child.children[0];
-    if (variantIsCardTouched(clue, card)) {
+    const card: HanabiCard = child.children[0];
+    if (variantIsCardTouched(clue, card.state)) {
       touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue);
     }
@@ -85,9 +86,9 @@ export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
   const hand = globals.elements.playerHands[target];
   const cardsTouched: number[] = []; // An array of the card orders
   for (const child of hand.children.toArray()) {
-    const card = child.children[0];
-    if (variantIsCardTouched(msgClueToClue(clue, globals.variant), card)) {
-      cardsTouched.push(card.order);
+    const card: HanabiCard = child.children[0];
+    if (variantIsCardTouched(msgClueToClue(clue, globals.variant), card.state)) {
+      cardsTouched.push(card.state.order);
     }
   }
 
