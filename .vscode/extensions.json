@@ -2,7 +2,7 @@
 // https://go.microsoft.com/fwlink/?LinkId=827846
 {
   "recommendations": [
-    "ms-vscode.Go",
+    "golang.go",
     "ms-python.python",
     "dbaeumer.vscode-eslint",
   ],
