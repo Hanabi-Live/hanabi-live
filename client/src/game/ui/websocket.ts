@@ -150,6 +150,7 @@ commands.set('hypoAction', (data: string) => {
   // We need to save this game state change for the purposes of the in-game hypothetical
   globals.hypoActions.push(actionMessage);
 
+  hypothetical.setHypoFirstDrawnIndex(actionMessage);
   action(actionMessage);
 
   if (actionMessage.type === 'turn') {
@@ -265,7 +266,7 @@ commands.set('init', (data: InitData) => {
   // Hypothetical settings
   globals.hypothetical = data.hypothetical;
   globals.hypoActions = [];
-  for (let i = 0; i < globals.hypoActions.length; i++) {
+  for (let i = 0; i < data.hypoActions.length; i++) {
     globals.hypoActions[i] = JSON.parse(data.hypoActions[i]);
   }
   globals.hypoRevealed = data.hypoRevealed;
@@ -672,7 +673,7 @@ commands.set('replayTurn', (data: ReplayTurnData) => {
   }
 
   if (globals.hypothetical) {
-    // It is normally impossible to receive a "relpayTurn" message while in a hypothetical
+    // It is normally impossible to receive a "replayTurn" message while in a hypothetical
     // Thus, this must be the initial "replayTurn" message that occurs when the client is first
     // loading
     // We need to "catch up" to everyone else and play all of the existing hypothetical actions

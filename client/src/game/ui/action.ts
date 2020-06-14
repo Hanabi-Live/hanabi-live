@@ -245,13 +245,6 @@ actionFunctions.set('draw', (data: ActionDraw) => {
     }
   }
 
-  // Set hypoFirstDrawnIndex if this is the first card we drew in the hypothetical
-  // Note this must happen before replayRedraw()
-  // This value is bugged in the case when someone joins a hypothetical in progress
-  if (globals.hypothetical && !globals.hypoFirstDrawnIndex) {
-    globals.hypoFirstDrawnIndex = order;
-  }
-
   if (globals.deckOrder.length !== 0) {
     // If we are in a shared replay that was converted from a game in which we were one of the
     // players, then suit and rank will be still be null for the cards that were dealt to us
