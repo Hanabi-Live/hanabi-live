@@ -80,6 +80,7 @@ export const playThroughPastActions = () => {
     // This is a mini-version of what happens in the "replay.goto()" function
     globals.animateFast = true;
     for (const actionMessage of globals.hypoActions) {
+      setHypoFirstDrawnIndex(actionMessage);
       action(actionMessage);
     }
     cardStatusCheck();
@@ -402,4 +403,12 @@ export const toggleRevealed = () => {
     tableID: globals.lobby.tableID,
     type: ReplayActionType.HypoToggleRevealed,
   });
+};
+
+export const setHypoFirstDrawnIndex = (actionMessage: Action) => {
+  // Set hypoFirstDrawnIndex if this is the first card we drew in the hypothetical
+  // This check should only run if the draw action is a hypoAction
+  if (actionMessage.type === 'draw' && globals.hypothetical && !globals.hypoFirstDrawnIndex) {
+    globals.hypoFirstDrawnIndex = actionMessage.order;
+  }
 };
