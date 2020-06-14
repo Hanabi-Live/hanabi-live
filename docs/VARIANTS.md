@@ -259,4 +259,4 @@ One of each card per suit (e.g. 5 in total):
 
 ## Full Variant Listing
 
-* See [this page](https://github.com/Zamiell/hanabi-live/blob/master/public/js/src/data/variants.txt).
+* See [this page](/data/variants.txt).
