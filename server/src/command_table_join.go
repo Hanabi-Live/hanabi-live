@@ -75,6 +75,12 @@ func commandTableJoin(s *Session, d *CommandData) {
 		}
 	}
 
+	// Validate that they have not been previously kicked from this game
+	if _, ok := t.KickedPlayers[s.UserID()]; ok {
+		s.Warning("You cannot join a game that you have been kicked from.")
+		return
+	}
+
 	/*
 		Join
 	*/

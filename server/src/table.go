@@ -15,6 +15,9 @@ type Table struct {
 
 	Players    []*Player
 	Spectators []*Spectator
+	// We keep track of players who have been kicked from the game
+	// so that we can prevent them from rejoining
+	KickedPlayers map[int]struct{}
 	// We also keep track of spectators who have disconnected
 	// so that we can automatically put them back into the shared replay
 	DisconSpectators map[int]struct{}
@@ -85,6 +88,7 @@ func NewTable(name string, owner int) *Table {
 
 		Players:          make([]*Player, 0),
 		Spectators:       make([]*Spectator, 0),
+		KickedPlayers:    make(map[int]struct{}),
 		DisconSpectators: make(map[int]struct{}),
 
 		Owner:   owner,

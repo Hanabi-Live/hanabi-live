@@ -47,7 +47,7 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 	}
 
 	if t.Running {
-		chatServerSend("chatCommandNotStartedFail", d.Room)
+		chatServerSend(ChatCommandNotStartedFail, d.Room)
 		return
 	}
 
@@ -92,6 +92,61 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 	announcement += "."
 	chatServerSend(announcement, d.Room)
 	go startIn(t, timeToWait, timeToStart)
+}
+
+func chatKick(s *Session, d *CommandData, t *Table) {
+	if d.Room == "lobby" {
+		chatServerSend(ChatCommandNotInGameFail, d.Room)
+		return
+	}
+
+	if t.Running {
+		chatServerSend(ChatCommandNotStartedFail, d.Room)
+		return
+	}
+
+	if s.UserID() != t.Owner {
+		chatServerSend(ChatCommandNotOwnerFail, d.Room)
+		return
+	}
+
+	if len(d.Args) != 1 {
+		chatServerSend("The format of the /kick command is: /kick [username]", d.Room)
+		return
+	}
+
+	// Check to make sure that they are not targeting themself
+	normalizedUsername := normalizeString(d.Args[0])
+	if normalizedUsername == normalizeString(s.Username()) {
+		chatServerSend("You cannot kick yourself.", d.Room)
+		return
+	}
+
+	// Check to see if this person is in the game
+	for _, p := range t.Players {
+		if normalizedUsername == normalizeString(p.Name) {
+			// Record this player's user ID so that they cannot rejoin the table afterward
+			t.KickedPlayers[p.ID] = struct{}{}
+
+			// Remove them from the table
+			s2 := p.Session
+			if s2 == nil {
+				// A player's session should never be nil
+				// They might be in the process of reconnecting,
+				// so make a fake session that will represent them
+				s2 = newFakeSession(p.ID, p.Name)
+				logger.Info("Created a new fake session in the \"chatKick()\" function.")
+			}
+			commandTableLeave(s2, &CommandData{
+				TableID: t.ID,
+			})
+
+			chatServerSend("Successfully kicked \""+d.Args[0]+"\" from the game.", d.Room)
+			return
+		}
+	}
+
+	chatServerSend("\""+d.Args[0]+"\" is not joined to this game.", d.Room)
 }
 
 /*

@@ -40,6 +40,7 @@ func chatCommandInit() {
 	chatCommandMap["s5"] = chatS5
 	chatCommandMap["s6"] = chatS6
 	chatCommandMap["startin"] = chatStartIn
+	chatCommandMap["kick"] = chatKick
 
 	// Table-only commands (pregame or game)
 	chatCommandMap["findvariant"] = chatFindVariant

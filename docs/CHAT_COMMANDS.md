@@ -47,6 +47,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | /s5                   | Automatically start the game when it has 5 players
 | /s6                   | Automatically start the game when it has 6 players
 | /startin [minutes]    | Automatically start the game in the provided amount of minutes
+| /kick [username]      | Remove a player from the table
 
 <br />
 
