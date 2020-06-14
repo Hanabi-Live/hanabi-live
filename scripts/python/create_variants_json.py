@@ -19,7 +19,7 @@ SUIT_REVERSED_SUFFIX = " Reversed"
 
 def main():
     global old_variants
-    global highest_variant_id
+    global current_variant_id
 
     # Read the old "variants.json" file and the "suits.json" file
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -37,7 +37,6 @@ def main():
 
     # Validate that the old variants file has unique ID numbers for every variant
     old_variant_id_map = {}
-    highest_variant_id = 0
     for [variant_name, variant] in old_variants.items():
         if "id" not in variant:
             print('The variant of "' + variant_name + '" does not have an "id" field.')
@@ -49,18 +48,12 @@ def main():
         # Track that we have "seen" this ID
         old_variant_id_map[variant["id"]] = True
 
-        # Keep track of the highest variant ID
-        if variant["id"] > highest_variant_id:
-            highest_variant_id = variant["id"]
-
     # Add default values for each suit
     for suit in suits.values():
         if "createVariants" not in suit:
             suit["createVariants"] = False
         if "oneOfEach" not in suit:
             suit["oneOfEach"] = False
-        if "reversed" not in suit:
-            suit["reversed"] = False
         if "allClueColors" not in suit:
             suit["allClueColors"] = False
         if "allClueRanks" not in suit:
@@ -72,6 +65,7 @@ def main():
 
     # Start to build all of the variants
     variants = {}
+    current_variant_id = -1
 
     # First, start with the basic variants
     variant_suits = {}
@@ -266,33 +260,47 @@ def main():
                         variants[variant_name]["clueRanks"] = clue_ranks
 
     # Add "Ambiguous" variants
-    # TODO add all special suits
+    red_ambiguous_suits = ["Tomato", "Mahogany"]
+    green_ambiguous_suits = ["Lime", "Forest"]
+    blue_ambiguous_suits = ["Sky", "Navy"]
+    ambiguous_suits = {}
+    ambiguous_suits[2] = red_ambiguous_suits.copy()
+    ambiguous_suits[4] = red_ambiguous_suits + blue_ambiguous_suits
+    ambiguous_suits[6] = (
+        red_ambiguous_suits + green_ambiguous_suits + blue_ambiguous_suits
+    )
     variants["Ambiguous (6 Suits)"] = {
         "id": get_variant_id("Ambiguous (6 Suits)"),
-        "suits": ["Tomato", "Mahogany", "Lime", "Forest", "Sky", "Navy",],
+        "suits": ambiguous_suits[6],
         "showSuitNames": True,
     }
-    ambiguous_suits = [
-        "Tomato",
-        "Mahogany",
-        "Sky",
-        "Navy",
-    ]
     variants["Ambiguous (4 Suits)"] = {
         "id": get_variant_id("Ambiguous (4 Suits)"),
-        "suits": ambiguous_suits,
+        "suits": ambiguous_suits[4],
         "showSuitNames": True,
     }
-    variants["Ambiguous & Rainbow (5 Suits)"] = {
-        "id": get_variant_id("Ambiguous & Rainbow (5 Suits)"),
-        "suits": ambiguous_suits + ["Rainbow"],
-        "showSuitNames": True,
-    }
-    variants["Ambiguous & White (5 Suits)"] = {
-        "id": get_variant_id("Ambiguous & White (5 Suits)"),
-        "suits": ambiguous_suits + ["White"],
-        "showSuitNames": True,
-    }
+    for [suit_name, suit] in suits.items():
+        if not suit["createVariants"]:
+            continue
+
+        for suit_num in [4, 2]:
+            incremented_suit_num = suit_num + 1
+
+            # It would be too difficult to have a 3 suits variant with a one-of-each suit
+            if incremented_suit_num == 3 and suit["oneOfEach"]:
+                continue
+
+            variant_name = (
+                "Ambiguous & "
+                + suit_name
+                + " ("
+                + str(incremented_suit_num)
+                + " Suits)"
+            )
+            variants[variant_name] = {
+                "id": get_variant_id(variant_name),
+                "suits": ambiguous_suits[suit_num] + [suit_name],
+            }
 
     # Add "Very Ambiguous" variants
     variants["Very Ambiguous (6 Suits)"] = {
@@ -343,40 +351,79 @@ def main():
         "suits": extremely_ambiguous_suits[3],
         "showSuitNames": True,
     }
+    for [suit_name, suit] in suits.items():
+        if not suit["createVariants"]:
+            continue
+
+        for suit_num in [5, 4, 3]:
+            incremented_suit_num = suit_num + 1
+
+            # It would be too difficult to have a 4 suit variant with a one-of-each suit
+            if incremented_suit_num == 4 and suit["oneOfEach"]:
+                continue
+
+            variant_name = (
+                "Extremely Ambiguous & "
+                + suit_name
+                + " ("
+                + str(incremented_suit_num)
+                + " Suits)"
+            )
+            variants[variant_name] = {
+                "id": get_variant_id(variant_name),
+                "suits": extremely_ambiguous_suits[suit_num] + [suit_name],
+            }
 
     # Add "Dual-Color" variants
+    dual_color_suits = {}
+    dual_color_suits[3] = ["Orange D2", "Purple D", "Green D"]
+    dual_color_suits[5] = ["Orange D2", "Lime D", "Teal D", "Indigo D", "Cardinal D"]
+    dual_color_suits[6] = [
+        "Orange D",
+        "Purple D",
+        "Mahogany D",
+        "Green D",
+        "Tan D",
+        "Navy D",
+    ]
     variants["Dual-Color (6 Suits)"] = {
         "id": get_variant_id("Dual-Color (6 Suits)"),
-        "suits": ["Orange D", "Purple D", "Mahogany D", "Green D", "Tan D", "Navy D",],
+        "suits": dual_color_suits[6],
         "showSuitNames": True,
     }
     variants["Dual-Color (5 Suits)"] = {
         "id": get_variant_id("Dual-Color (5 Suits)"),
-        "suits": ["Orange D2", "Lime D", "Teal D", "Indigo D", "Cardinal D",],
+        "suits": dual_color_suits[5],
         "showSuitNames": True,
     }
     variants["Dual-Color (3 Suits)"] = {
         "id": get_variant_id("Dual-Color (3 Suits)"),
-        "suits": ["Orange D2", "Purple D", "Green D",],
+        "suits": dual_color_suits[3],
         "showSuitNames": True,
     }
-    variants["Dual-Color & Rainbow (6 Suits)"] = {
-        "id": get_variant_id("Dual-Color & Rainbow (6 Suits)"),
-        "suits": [
-            "Orange D2",
-            "Lime D",
-            "Teal D",
-            "Indigo D",
-            "Cardinal D",
-            "Rainbow",
-        ],
-        "showSuitNames": True,
-    }
-    variants["Dual-Color & Rainbow (4 Suits)"] = {
-        "id": get_variant_id("Dual-Color & Rainbow (4 Suits)"),
-        "suits": ["Orange D2", "Purple D", "Green D", "Rainbow",],
-        "showSuitNames": True,
-    }
+    for [suit_name, suit] in suits.items():
+        if not suit["createVariants"]:
+            continue
+
+        for suit_num in [5, 3]:
+            incremented_suit_num = suit_num + 1
+
+            # It would be too difficult to have a 4 suit variant with a one-of-each suit
+            if incremented_suit_num == 4 and suit["oneOfEach"]:
+                continue
+
+            variant_name = (
+                "Dual-Color & "
+                + suit_name
+                + " ("
+                + str(incremented_suit_num)
+                + " Suits)"
+            )
+            variants[variant_name] = {
+                "id": get_variant_id(variant_name),
+                "suits": dual_color_suits[suit_num] + [suit_name],
+                "showSuitNames": True,
+            }
 
     # Add "Special Mix (5 Suits)"
     variants["Special Mix (5 Suits)"] = {
@@ -466,10 +513,6 @@ def main():
         }
     for [suit_name, suit] in suits.items():
         if not suit["createVariants"]:
-            continue
-
-        if suit_name != "Black" and suit["oneOfEach"]:
-            # TODO remove this once the variant.jsons are synced
             continue
 
         for suit_num in [6, 5, 4, 3]:
@@ -596,11 +639,8 @@ def main():
         if not suit["createVariants"]:
             continue
 
-        if suit["reversed"]:  # Reversed doesn't work with Up or Down
-            continue
-
         if suit["oneOfEach"]:
-            # TODO remove this once the variant.jsons are synced
+            # A one of each suit in combination with Up or Down would be too difficult
             continue
 
         for suit_num in [6, 5]:  # 4 suits and 3 suits would be too difficult
@@ -640,13 +680,21 @@ def main():
 
 def get_variant_id(variant_name):
     global old_variants
-    global highest_variant_id
+    global current_variant_id
 
     if variant_name in old_variants:
         return old_variants[variant_name]["id"]
 
-    highest_variant_id += 1
-    return highest_variant_id
+    # Find the lowest unused variant ID
+    while True:
+        current_variant_id += 1
+        found = False
+        for variant in old_variants.values():
+            if variant["id"] == current_variant_id:
+                found = True
+                break
+        if not found:
+            return current_variant_id
 
 
 # From: https://stackoverflow.com/questions/12410242/python-capitalize-first-letter-only
