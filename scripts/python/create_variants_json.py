@@ -146,10 +146,6 @@ def main():
             ):
                 continue
 
-            # It would be too difficult to have a variant with two reversed suits
-            if suit["reversed"] and suit2["reversed"]:
-                continue
-
             if (
                 suit_name + suit_name2 in combination_map
                 or suit_name2 + suit_name in combination_map
@@ -553,7 +549,7 @@ def main():
                 "suits": variant_suits[suit_num - 1] + [suit_name],
             }
 
-    # Add "Reversed" variants (the normal ones without any special suits)
+    # Add "Reversed" variants (the "Teal" version without any special suits)
     for suit_num in [6, 5, 4, 3]:
         variant_name = "Reversed (" + str(suit_num) + " Suits)"
         reversed_variant_suits = variant_suits[suit_num].copy()
@@ -568,6 +564,10 @@ def main():
         # We only want to create variants for certain suits
         # (e.g. "Red" does not get its own variants because it is a basic suit)
         if not suit["createVariants"]:
+            continue
+
+        # Reversed suits with rank attributes would be identical to the normal versions
+        if suit["allClueRanks"] or suit["noClueRanks"]:
             continue
 
         suit_name = suit_name + SUIT_REVERSED_SUFFIX
