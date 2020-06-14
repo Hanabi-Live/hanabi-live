@@ -122,7 +122,9 @@ const setVariant = (_room: string, args: string[]) => {
   const variant = args.join(' ');
   globals.conn!.send('tableSetVariant', {
     tableID: globals.tableID,
-    variant,
+    options: {
+      variant,
+    },
   });
 };
 chatCommands.set('setvariant', setVariant);
