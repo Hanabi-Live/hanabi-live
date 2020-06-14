@@ -167,7 +167,7 @@ export default class CardLayout extends Konva.Group {
 
   isLocked() {
     for (const layoutChild of this.children.toArray()) {
-      const card = layoutChild.children[0];
+      const card: HanabiCard = layoutChild.children[0];
       if (!card.isClued()) {
         return false;
       }

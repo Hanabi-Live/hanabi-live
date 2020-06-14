@@ -105,8 +105,8 @@ actionFunctions.set('clue', (data: ActionClue) => {
   for (let i = 0; i < globals.elements.playerHands[data.target].children.length; i++) {
     const child = globals.elements.playerHands[data.target].children[i];
 
-    const card = child.children[0];
-    const { order } = card;
+    const card: HanabiCard = child.children[0];
+    const order = card.state.order;
 
     if (data.list.indexOf(order) < 0) {
       negativeList.push(order);
@@ -116,7 +116,7 @@ actionFunctions.set('clue', (data: ActionClue) => {
         && !globals.variant.name.startsWith('Duck')
         && !(
           globals.characterAssignments[data.giver!] === 'Quacker'
-          && card.holder === globals.playerUs
+          && card.state.holder === globals.playerUs
           && !globals.replay
         )
       ) {
@@ -324,7 +324,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
         }
         const hand = globals.elements.playerHands[i];
         for (const layoutChild of hand.children.toArray()) {
-          const handCard = layoutChild.children[0];
+          const handCard: HanabiCard = layoutChild.children[0];
           handCard.removePossibility(suit, rank, false);
         }
       }

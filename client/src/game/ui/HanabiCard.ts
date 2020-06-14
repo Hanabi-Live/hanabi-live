@@ -54,7 +54,7 @@ export default class HanabiCard extends Konva.Group {
   arrowBase: Konva.Arrow | null = null;
   criticalIndicator: Konva.Image | null = null;
 
-  private empathy: boolean = false;
+  empathy: boolean = false;
 
   constructor(config: Konva.ContainerConfig) {
     super(config);
@@ -962,8 +962,8 @@ export default class HanabiCard extends Konva.Group {
     }
     const playerHand = globals.elements.playerHands[this.state.holder];
     for (const layoutChild of playerHand.children.toArray()) {
-      const card = layoutChild.children[0];
-      if (card.order === this.state.order) {
+      const card: HanabiCard = layoutChild.children[0];
+      if (card.state.order === this.state.order) {
         // There is no need to update the card that was just revealed
         continue;
       }
@@ -983,7 +983,7 @@ export default class HanabiCard extends Konva.Group {
 
         const playerHand2 = globals.elements.playerHands[i];
         for (const layoutChild of playerHand2.children.toArray()) {
-          const card = layoutChild.children[0];
+          const card: HanabiCard = layoutChild.children[0];
           card.removePossibility(suit, rank, false);
         }
       }
@@ -1078,7 +1078,7 @@ export default class HanabiCard extends Konva.Group {
     const numCardsInHand = this.parent.parent.children.length;
     for (let i = 0; i < numCardsInHand; i++) {
       const layoutChild = this.parent.parent.children[i];
-      if (layoutChild.children[0].order === this.state.order) {
+      if (layoutChild.children[0].state.order === this.state.order) {
         return numCardsInHand - i;
       }
     }

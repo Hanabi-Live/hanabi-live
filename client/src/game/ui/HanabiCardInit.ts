@@ -528,7 +528,7 @@ export function empathy(this: HanabiCard) {
 
     hand.empathy = enabled;
     for (const layoutChild of hand.children.toArray()) {
-      const card = layoutChild.children[0];
+      const card: HanabiCard = layoutChild.children[0];
       card.empathy = enabled;
       card.setBareImage();
     }
@@ -566,7 +566,7 @@ export function click(this: HanabiCard) {
     const hand = this.parent.parent;
     let hidden = false;
     for (const layoutChild of hand.children.toArray()) {
-      const card = layoutChild.children[0];
+      const card: HanabiCard = layoutChild.children[0];
       for (const arrow of globals.elements.arrows) {
         if (arrow.pointingTo === card) {
           hidden = true;

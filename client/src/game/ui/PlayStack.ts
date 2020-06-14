@@ -103,6 +103,6 @@ export default class PlayStack extends Konva.Group {
     // The PlayStack will always have at least 1 element in it (the "stack base" card)
     const topLayoutChild = this.children[this.children.length - 1];
     const topCard = topLayoutChild.children[0];
-    return topCard.rank;
+    return topCard.state.rank;
   }
 }

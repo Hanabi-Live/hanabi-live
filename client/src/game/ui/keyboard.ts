@@ -8,6 +8,7 @@ import ReplayActionType from '../types/ReplayActionType';
 import backToLobby from './backToLobby';
 import * as clues from './clues';
 import globals from './globals';
+import HanabiCard from './HanabiCard';
 import * as hypothetical from './hypothetical';
 import * as replay from './replay';
 import * as turn from './turn';
@@ -158,7 +159,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     && globals.activeHover !== null
     && globals.activeHover.type === 'HanabiCard'
   ) {
-    const card = globals.activeHover;
+    const card: HanabiCard = globals.activeHover;
     card.setNote('');
     return;
   }
