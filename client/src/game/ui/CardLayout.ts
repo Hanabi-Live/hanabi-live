@@ -17,8 +17,8 @@ export default class CardLayout extends Konva.Group {
     super(config);
 
     // Class variables
-    this.align = config.align || 'left';
-    this.reverse = config.reverse || false;
+    this.align = (config.align || 'left') as string;
+    this.reverse = (config.reverse || false) as boolean;
     this.origRotation = config.rotation || 0;
     this.empathy = false;
 

@@ -22,7 +22,7 @@ export const test = () => {
   });
 };
 
-export const send = (msg: string, tag: any) => {
+export const send = (msg: string, tag: string | undefined) => {
   // From: https://stackoverflow.com/questions/38422340/check-if-browser-notification-is-available
   if (!('Notification' in window)) {
     return;

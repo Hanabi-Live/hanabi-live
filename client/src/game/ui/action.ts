@@ -60,7 +60,8 @@ export default (data: Action) => {
 };
 
 // Define a command handler map
-const actionFunctions = new Map<ActionIncludingHypothetical['type'], any>();
+type ActionFunction = (data: any) => void;
+const actionFunctions = new Map<ActionIncludingHypothetical['type'], ActionFunction>();
 
 actionFunctions.set('clue', (data: ActionClue) => {
   // The clue comes from the server as an integer, so convert it to an object
@@ -105,7 +106,7 @@ actionFunctions.set('clue', (data: ActionClue) => {
   for (let i = 0; i < globals.elements.playerHands[data.target].children.length; i++) {
     const child = globals.elements.playerHands[data.target].children[i];
 
-    const card: HanabiCard = child.children[0];
+    const card = child.children[0] as HanabiCard;
     const order = card.state.order;
 
     if (data.list.indexOf(order) < 0) {
@@ -175,7 +176,7 @@ actionFunctions.set('deckOrder', () => {
 actionFunctions.set('discard', (data: ActionDiscard) => {
   // In "Throw It in a Hole" variants, convert misplays to real plays
   if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay && data.failed) {
-    actionFunctions.get('play')(data);
+    actionFunctions.get('play')!(data);
     return;
   }
 
@@ -236,13 +237,13 @@ actionFunctions.set('draw', (data: ActionDraw) => {
 
     // Since we are drawing a card, we can potentially reveal the other cards in the hand
     const hand = globals.elements.playerHands[holder];
-    for (const layoutChild of hand.children.toArray()) {
-      const card: HanabiCard = layoutChild.children[0];
+    hand.children.each((layoutChild) => {
+      const card: HanabiCard = layoutChild.children[0] as HanabiCard;
       const rememberedCard = globals.characterRememberedCards[card.state.order];
       if (rememberedCard) {
         card.reveal(rememberedCard.suit, rememberedCard.rank);
       }
-    }
+    });
   }
 
   if (globals.deckOrder.length !== 0) {
@@ -316,10 +317,10 @@ actionFunctions.set('draw', (data: ActionDraw) => {
           continue;
         }
         const hand = globals.elements.playerHands[i];
-        for (const layoutChild of hand.children.toArray()) {
-          const handCard: HanabiCard = layoutChild.children[0];
-          handCard.removePossibility(suit, rank, false);
-        }
+        hand.children.each((layoutChild) => {
+          const handCard = layoutChild.children[0] as HanabiCard;
+          handCard.removePossibility(suit!, rank!, false);
+        });
       }
     }
   }
@@ -478,7 +479,7 @@ actionFunctions.set('status', (data: ActionStatus) => {
   const maxScoreLabel = globals.elements.maxScoreNumberLabel!;
   maxScoreLabel.text(` / ${globals.maxScore}`);
   maxScoreLabel.width(maxScoreLabel.measureSize(maxScoreLabel.text()).width);
-  const x = scoreLabel.x() + scoreLabel.measureSize(scoreLabel.text()).width;
+  const x = scoreLabel.x() + scoreLabel.measureSize(scoreLabel.text()).width as number;
   maxScoreLabel.x(x);
 
   // Update the stats on the middle-left-hand side of the screen

@@ -185,11 +185,11 @@ export const hideClueUIAndDisableDragging = () => {
   // (but we need to keep them draggable if the pre-play setting is enabled)
   if (!globals.lobby.settings.speedrunPreplay) {
     const ourHand = globals.elements.playerHands[globals.playerUs];
-    for (const child of ourHand.children.toArray()) {
+    ourHand.children.each((child) => {
       // This is a LayoutChild
       child.off('dragend');
       child.draggable(false);
-    }
+    });
   }
 
   globals.elements.deck!.cardBack.draggable(false);

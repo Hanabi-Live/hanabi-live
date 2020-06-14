@@ -7,12 +7,14 @@ import { VARIANTS } from './data/gameData';
 import drawCards from './ui/drawCards';
 import websocket from './ui/websocket';
 
+type Callback = (data: any) => void;
+
 export default () => {
   if (globals.conn === null) {
     throw new Error('The "initCommands()" function was entered before "globals.conn" was initiated.');
   }
 
-  let commandsToUse: Map<string, (data: any) => void>;
+  let commandsToUse: Map<string, Callback>;
   if (window.location.pathname === '/dev2') {
     commandsToUse = commands; // The new client, defined below
   } else {
@@ -30,8 +32,12 @@ export default () => {
   }
 };
 
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+// TODO: fix type issues with client_v2
+
 // Define a command handler map for the new development client
-const commands = new Map();
+const commands = new Map<string, Callback>();
 
 commands.set('init', (data: any) => {
   // Record all of the settings for this game

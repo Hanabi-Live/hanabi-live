@@ -318,10 +318,10 @@ export const sendHypoAction = (hypoAction: ActionIncludingHypothetical) => {
 
 const disableDragOnAllHands = () => {
   for (const hand of globals.elements.playerHands) {
-    for (const layoutChild of hand.children.toArray()) {
+    hand.children.each((layoutChild) => {
       layoutChild.draggable(false);
       layoutChild.off('dragend');
-    }
+    });
   }
 };
 
@@ -376,7 +376,7 @@ const cycleHand = () => {
   const chopIndex = hand.getChopIndex();
 
   // We don't need to reorder anything if the chop is slot 1 (the left-most card)
-  const layoutChilds: HanabiCard[] = hand.children.toArray();
+  const layoutChilds = hand.children.toArray() as HanabiCard[];
   if (chopIndex === layoutChilds.length - 1) {
     return;
   }

@@ -26,7 +26,8 @@ export default () => {
 };
 
 // Define a command handler map
-const commands = new Map();
+type Callback = (data: any) => void;
+const commands = new Map<string, Callback>();
 
 interface JoinedData {
   tableID: number;

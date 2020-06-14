@@ -55,7 +55,7 @@ export function cardInitialState(order: number) : CardState {
     noteUnclued: false,
     possibleSuits: [],
     possibleRanks: [],
-    possibleCards: new Map(),
+    possibleCards: new Map<string, number>(),
     identityDetermined: false,
     numPositiveClues: 0,
     positiveColorClues: [],

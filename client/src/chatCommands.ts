@@ -4,7 +4,8 @@ import globals from './globals';
 import * as modals from './modals';
 
 // Define a command handler map
-const chatCommands = new Map();
+type Callback = (...args: any) => void;
+const chatCommands = new Map<string, Callback>();
 export default chatCommands;
 
 // /friend [username]

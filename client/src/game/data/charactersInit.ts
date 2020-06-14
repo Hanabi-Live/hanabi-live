@@ -11,7 +11,7 @@ interface CharacterJSON {
 type CharacterEntryIterable = Iterable<[keyof (typeof charactersJSON), CharacterJSON]>;
 
 export default () => {
-  const CHARACTERS: Map<string, Character> = new Map();
+  const CHARACTERS = new Map<string, Character>();
 
   const characters = Object.entries(charactersJSON) as CharacterEntryIterable;
   for (const [characterName, characterJSON] of characters) {

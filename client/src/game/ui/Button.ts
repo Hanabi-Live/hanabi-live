@@ -1,5 +1,6 @@
 // Imports
 import Konva from 'konva';
+import * as KonvaBaseLayer from 'konva/types/BaseLayer';
 import FitText from './FitText';
 
 export default class Button extends Konva.Group {
@@ -45,7 +46,7 @@ export default class Button extends Konva.Group {
         fontFamily: 'Verdana',
         fill: 'white',
         align: 'center',
-        text: config.text,
+        text: config.text as string,
         listening: false,
       });
       this.add(this.textElement);
@@ -76,20 +77,14 @@ export default class Button extends Konva.Group {
 
     const resetButton = () => {
       this.background.fill('black');
-      const layer = this.getLayer();
-      if (layer) {
-        layer.batchDraw();
-      }
+      this.drawLayer();
 
       this.background.off('mouseup');
       this.background.off('mouseout');
     };
     this.background.on('mousedown', () => {
       this.background.fill('#888888');
-      const layer = this.getLayer();
-      if (layer) {
-        layer.batchDraw();
-      }
+      this.drawLayer();
 
       this.background.on('mouseout', () => {
         resetButton();
@@ -117,19 +112,13 @@ export default class Button extends Konva.Group {
 
     this.background.listening(enabled);
 
-    const layer = this.getLayer();
-    if (layer) {
-      layer.batchDraw();
-    }
+    this.drawLayer();
   }
 
   setPressed(pressed: boolean) {
     this.pressed = pressed;
     this.background.fill(pressed ? '#cccccc' : 'black');
-    const layer = this.getLayer();
-    if (layer) {
-      layer.batchDraw();
-    }
+    this.drawLayer();
   }
 
   text(newText: string) {
@@ -145,6 +134,13 @@ export default class Button extends Konva.Group {
       this.textElement.fill(newFill);
     } else {
       throw new Error('The "fill()" method was called on a non-text Button.');
+    }
+  }
+
+  private drawLayer() {
+    const layer = this.getLayer() as KonvaBaseLayer.BaseLayer | null;
+    if (layer) {
+      layer.batchDraw();
     }
   }
 }

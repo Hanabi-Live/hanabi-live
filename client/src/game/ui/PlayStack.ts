@@ -83,7 +83,7 @@ export default class PlayStack extends Konva.Group {
     }
 
     for (let i = 0; i < n; i++) {
-      const node: LayoutChild = this.children[i] as any;
+      const node = this.children[i] as unknown as LayoutChild;
       if (!node.tween) {
         continue;
       }
@@ -102,7 +102,7 @@ export default class PlayStack extends Konva.Group {
   getLastPlayedRank() {
     // The PlayStack will always have at least 1 element in it (the "stack base" card)
     const topLayoutChild = this.children[this.children.length - 1];
-    const topCard = topLayoutChild.children[0];
+    const topCard = topLayoutChild.children[0] as HanabiCard;
     return topCard.state.rank;
   }
 }

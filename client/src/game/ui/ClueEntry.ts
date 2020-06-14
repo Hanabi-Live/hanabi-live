@@ -27,9 +27,9 @@ export default class ClueEntry extends Konva.Group {
     if (typeof h === 'undefined') {
       throw new Error('ClueEntry was not provided with a "h" value.');
     }
-    this.list = config.list;
-    this.negativeList = config.negativeList;
-    this.turn = config.turn;
+    this.list = config.list as number[];
+    this.negativeList = config.negativeList as number[];
+    this.turn = config.turn as number;
 
     this.background = new Konva.Rect({
       x: 0,
@@ -50,7 +50,7 @@ export default class ClueEntry extends Konva.Group {
       fontSize: 0.9 * h,
       fontFamily: 'Verdana',
       fill: 'white',
-      text: config.giver,
+      text: config.giver as string | undefined,
     });
     this.add(giver);
 
@@ -62,7 +62,7 @@ export default class ClueEntry extends Konva.Group {
       fontSize: 0.9 * h,
       fontFamily: 'Verdana',
       fill: 'white',
-      text: config.target,
+      text: config.target as string | undefined,
     });
     this.add(target);
 
@@ -75,7 +75,7 @@ export default class ClueEntry extends Konva.Group {
       fontSize: 0.9 * h,
       fontFamily: 'Verdana',
       fill: 'white',
-      text: config.clueName,
+      text: config.clueName as string | undefined,
     });
     this.add(name);
 

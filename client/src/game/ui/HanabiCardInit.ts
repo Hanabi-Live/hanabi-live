@@ -2,9 +2,12 @@
 
 // Imports
 import Konva from 'konva';
+import * as KonvaContext from 'konva/types/Context';
+import * as KonvaUtil from 'konva/types/Util';
 import { CARD_H, CARD_W } from '../../constants';
 import * as variant from '../rules/variant';
 import { START_CARD_RANK } from '../types/constants';
+import Suit from '../types/Suit';
 import * as arrows from './arrows';
 import CardLayout from './CardLayout';
 import drawPip from './drawPip';
@@ -24,11 +27,11 @@ export function image(this: HanabiCard) {
   this.bare = new Konva.Image({
     width: CARD_W,
     height: CARD_H,
-    image: null as any,
+    image: null as unknown as ImageBitmapSource,
   });
-  (this.bare as any).sceneFunc((ctx: CanvasRenderingContext2D) => {
+  (this.bare as Konva.Shape).sceneFunc((ctx: KonvaContext.Context) => {
     scaleCardImage(
-      ctx,
+      ctx._context,
       this.bareName,
       this.bare!.width(),
       this.bare!.height(),
@@ -145,13 +148,6 @@ export function directionArrow(this: HanabiCard) {
   });
   this.add(this.arrow);
 
-  (this.arrow as any).setBottomRight = () => {
-    this.arrow!.y(0.79 * CARD_H);
-  };
-  (this.arrow as any).setMiddleRight = () => {
-    this.arrow!.y(0.5 * CARD_H);
-  };
-
   const arrowHeight = 0.25;
   const pointerLength = 0.05 * CARD_W;
 
@@ -213,8 +209,8 @@ export function pips(this: HanabiCard) {
   this.add(this.suitPips);
 
   const { suits } = globals.variant;
-  this.suitPipsMap = new Map(); // Keys are suit objects
-  this.suitPipsXMap = new Map(); // Keys are suit objects
+  this.suitPipsMap = new Map<Suit, Konva.Shape>();
+  this.suitPipsXMap = new Map<Suit, Konva.Shape>();
   for (let i = 0; i < suits.length; i++) {
     const suit = suits[i];
 
@@ -313,8 +309,8 @@ export function pips(this: HanabiCard) {
   });
   this.add(this.rankPips);
 
-  this.rankPipsMap = new Map();
-  this.rankPipsXMap = new Map();
+  this.rankPipsMap = new Map<number, RankPip>();
+  this.rankPipsXMap = new Map<number, Konva.Shape>();
   for (const rank of globals.variant.ranks) {
     const x = Math.floor(CARD_W * ((rank * 0.19) - 0.14));
     const y = 0;
@@ -502,9 +498,10 @@ export function empathy(this: HanabiCard) {
     setEmpathyOnHand(true);
   });
 
-  // Konva.PointerEvent does not have a "type" property for some reason
-  this.on('mouseup mouseout', (event: any) => {
-    if (event.type === 'mouseup' && event.evt.which !== 1) { // Left-click
+  this.on('mouseup mouseout', (event: Konva.KonvaEventObject<MouseEvent>) => {
+    // Konva.MouseEvent does not have a "type" property for some reason
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if ((event as any).type === 'mouseup' && event.evt.which !== 1) { // Left-click
       return;
     }
 
@@ -527,11 +524,11 @@ export function empathy(this: HanabiCard) {
     }
 
     hand.empathy = enabled;
-    for (const layoutChild of hand.children.toArray()) {
-      const card: HanabiCard = layoutChild.children[0];
+    hand.children.each((layoutChild) => {
+      const card = layoutChild.children[0] as HanabiCard;
       card.empathy = enabled;
       card.setBareImage();
-    }
+    });
     globals.layers.card.batchDraw();
   };
 }
@@ -550,7 +547,7 @@ export function click(this: HanabiCard) {
   // Define the other mouse handlers
   this.on('click tap', HanabiCardClick);
   this.on('mousedown', HanabiCardClickSpeedrun);
-  this.on('mousedown', (event: any) => {
+  this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
     if (
       event.evt.which !== 1 // Dragging uses left click
       || !this.parent
@@ -566,7 +563,7 @@ export function click(this: HanabiCard) {
     const hand = this.parent.parent;
     let hidden = false;
     for (const layoutChild of hand.children.toArray()) {
-      const card: HanabiCard = layoutChild.children[0];
+      const card: HanabiCard = (layoutChild as Konva.Node).children[0] as HanabiCard;
       for (const arrow of globals.elements.arrows) {
         if (arrow.pointingTo === card) {
           hidden = true;
@@ -639,7 +636,7 @@ const scaleCardImage = (
   name: string,
   width: number,
   height: number,
-  tf: any, // Konva.Transform does not exist for some reason
+  tf: KonvaUtil.Transform,
 ) => {
   let src = globals.cardImages.get(name);
   if (typeof src === 'undefined') {
@@ -693,7 +690,7 @@ const scaleCardImage = (
 };
 
 const drawX = (
-  ctx: any, // Konva.Context does not exist for some reason
+  ctx: KonvaContext.Context,
   shape: any,
   x: number,
   y: number,

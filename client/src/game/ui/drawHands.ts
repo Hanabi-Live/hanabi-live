@@ -65,7 +65,7 @@ export default (winW: number, winH: number) => {
 
   // In Board Game Arena mode, the hands are all in a line,
   // so they do not have to be hard coded
-  const handPosBGA: any = {};
+  const handPosBGA: HandConfig[][] = [];
   const handPosBGAValues = {
     x: 0.435,
     y: 0.03,
@@ -244,7 +244,7 @@ export default (winW: number, winH: number) => {
       });
       if (numCardsPerHand === 5) {
         namePosBGA[i][j].x += 0.005;
-        namePosBGA[i][j].w = handPosBGA[i][j].w + 0.01;
+        namePosBGA[i][j].w = handPosBGA[i][j].w! + 0.01;
       } else if (numCardsPerHand === 4) {
         namePosBGA[i][j].w = 0.29;
       } else if (numCardsPerHand === 3) {

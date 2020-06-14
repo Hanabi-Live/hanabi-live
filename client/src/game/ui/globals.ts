@@ -53,7 +53,7 @@ export class Globals {
   // Game constants (set upon first initialization)
   deck: HanabiCard[] = [];
   stackBases: HanabiCard[] = [];
-  cardsMap: Map<string, number> = new Map();
+  cardsMap: Map<string, number> = new Map<string, number>();
 
   // Game state variables (reset when rewinding in a replay)
   turn: number = 0;
@@ -75,9 +75,9 @@ export class Globals {
   stage: Konva.Stage = new Konva.Stage({ container: 'game' });
   layers: Layers = new Layers();
   elements: Elements = new Elements();
-  activeHover: any = null; // The element that the mouse cursor is currently over
-  cardImages: Map<string, HTMLCanvasElement> = new Map();
-  scaledCardImages: Map<string, HTMLCanvasElement[]> = new Map();
+  activeHover: Konva.Node | null = null; // The element that the mouse cursor is currently over
+  cardImages: Map<string, HTMLCanvasElement> = new Map<string, HTMLCanvasElement>();
+  scaledCardImages: Map<string, HTMLCanvasElement[]> = new Map<string, HTMLCanvasElement[]>();
 
   // Replay feature
   inReplay: boolean = false; // Whether or not the replay controls are currently showing
@@ -173,7 +173,7 @@ export class Globals {
     this.characterRememberedCards = [];
     this.deck = [];
     this.stackBases = [];
-    this.cardsMap = new Map();
+    this.cardsMap = new Map<string, number>();
     this.turn = 0;
     this.currentPlayerIndex = 0;
     this.ourTurn = false;
@@ -192,8 +192,8 @@ export class Globals {
     this.layers = new Layers();
     this.elements = new Elements();
     this.activeHover = null;
-    this.cardImages = new Map();
-    this.scaledCardImages = new Map();
+    this.cardImages = new Map<string, HTMLCanvasElement>();
+    this.scaledCardImages = new Map<string, HTMLCanvasElement[]>();
     this.inReplay = false;
     this.replayLog = [];
     this.replayPos = 0;

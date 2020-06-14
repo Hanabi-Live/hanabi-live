@@ -325,7 +325,7 @@ export const show = (card: HanabiCard) => {
   // If there is an clue arrow showing, it will overlap with the tooltip arrow,
   // so move it over to the right a little bit
   for (const arrow of globals.elements.arrows) {
-    if (arrow.pointingTo === card.state.order) {
+    if (arrow.pointingTo === card) {
       posX = pos.x + ((card.width() * card.parent!.scale().x / 2) / 2.5);
       break;
     }

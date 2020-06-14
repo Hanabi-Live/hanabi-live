@@ -1,5 +1,6 @@
 // Imports
 import Konva from 'konva';
+import * as KonvaBaseLayer from 'konva/types/BaseLayer';
 
 export default class Button2 extends Konva.Group {
   enabled: boolean = true;
@@ -50,7 +51,7 @@ export default class Button2 extends Konva.Group {
       fontFamily,
       fill,
       align,
-      text: config.text,
+      text: config.text as string | undefined,
       listening,
     });
     this.add(this.textElement);
@@ -64,7 +65,7 @@ export default class Button2 extends Konva.Group {
       fontFamily,
       fill,
       align,
-      text: config.text2,
+      text: config.text2 as string | undefined,
       listening,
     });
     this.add(this.textElement2);
@@ -78,27 +79,21 @@ export default class Button2 extends Konva.Group {
       fontFamily,
       fill,
       align,
-      text: config.text3,
+      text: config.text3 as string | undefined,
       listening,
     });
     this.add(this.textElement3);
 
     const resetButton = () => {
       this.background.fill('black');
-      const layer = this.getLayer();
-      if (layer) {
-        layer.batchDraw();
-      }
+      this.drawLayer();
 
       this.background.off('mouseup');
       this.background.off('mouseout');
     };
     this.background.on('mousedown', () => {
       this.background.fill('#888888');
-      const layer = this.getLayer();
-      if (layer) {
-        layer.batchDraw();
-      }
+      this.drawLayer();
 
       this.background.on('mouseout', () => {
         resetButton();
@@ -107,6 +102,13 @@ export default class Button2 extends Konva.Group {
         resetButton();
       });
     });
+  }
+
+  private drawLayer() {
+    const layer = this.getLayer() as KonvaBaseLayer.BaseLayer | null;
+    if (layer) {
+      layer.batchDraw();
+    }
   }
 
   setMiddleText(text: string) {

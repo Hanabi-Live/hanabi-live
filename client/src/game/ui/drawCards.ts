@@ -16,7 +16,7 @@ import drawStylizedRank from './drawStylizedRank';
 
 // This function returns an object containing all of the drawn cards images (on individual canvases)
 export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean) => {
-  const cardImages: Map<string, HTMLCanvasElement> = new Map();
+  const cardImages: Map<string, HTMLCanvasElement> = new Map<string, HTMLCanvasElement>();
 
   // Add the "Unknown" suit to the list of suits for this variant
   // The unknown suit has blank white cards, representing cards of known rank but unknown suit

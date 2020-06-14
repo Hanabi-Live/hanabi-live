@@ -21,10 +21,11 @@ export default class LayoutChild extends Konva.Group {
     this.height(child.height());
 
     const change = (event: any) => {
-      if (event.oldVal === event.newVal) {
+      const changeEvent = event as {oldVal: number; newVal: number};
+      if (changeEvent.oldVal === changeEvent.newVal) {
         return;
       }
-      this.width(event.newVal);
+      this.width(changeEvent.newVal);
       if (this.parent) {
         (this.parent as unknown as CardLayout | PlayStack).doLayout();
       }
@@ -37,7 +38,7 @@ export default class LayoutChild extends Konva.Group {
   // The card sliding animation is finished, so make the card draggable
   checkSetDraggable() {
     // Cards should only be draggable in specific circumstances
-    const card: HanabiCard = this.children[0] as any;
+    const card = this.children[0] as unknown as HanabiCard;
     if (!card) {
       // Rarely, if the game is restarted when a tween is happening,
       // we can get here without the card being defined
@@ -94,7 +95,7 @@ export default class LayoutChild extends Konva.Group {
   }
 
   dragEnd() {
-    const card: HanabiCard = this.children[0] as any;
+    const card = this.children[0] as unknown as HanabiCard;
 
     const pos = this.getAbsolutePosition();
     pos.x += this.width() * this.scaleX() / 2;

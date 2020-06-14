@@ -72,7 +72,7 @@ const showClueMatch = (target: number, clue: Clue) => {
   const hand = globals.elements.playerHands[target].children;
   for (let i = 0; i < hand.length; i++) {
     const child = globals.elements.playerHands[target].children[i];
-    const card: HanabiCard = child.children[0];
+    const card: HanabiCard = child.children[0] as HanabiCard;
     if (variantIsCardTouched(clue, card.state)) {
       touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue);
@@ -85,12 +85,12 @@ const showClueMatch = (target: number, clue: Clue) => {
 export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
   const hand = globals.elements.playerHands[target];
   const cardsTouched: number[] = []; // An array of the card orders
-  for (const child of hand.children.toArray()) {
-    const card: HanabiCard = child.children[0];
+  hand.children.each((child) => {
+    const card = child.children[0] as HanabiCard;
     if (variantIsCardTouched(msgClueToClue(clue, globals.variant), card.state)) {
       cardsTouched.push(card.state.order);
     }
-  }
+  });
 
   return cardsTouched;
 };

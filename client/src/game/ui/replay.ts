@@ -306,7 +306,7 @@ export const exitButton = () => {
 // The replay shuttle
 // ------------------
 
-export function barClick(this: Konva.Rect, event: Konva.KonvaPointerEvent) {
+export function barClick(this: Konva.Rect, event: Konva.KonvaEventObject<MouseEvent>) {
   const rectX = event.evt.x - this.getAbsolutePosition().x;
   const w = this.width();
   const step = w / globals.replayMax;

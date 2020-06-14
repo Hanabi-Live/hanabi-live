@@ -146,7 +146,7 @@ commands.set('gameOver', () => {
 });
 
 commands.set('hypoAction', (data: string) => {
-  const actionMessage = JSON.parse(data);
+  const actionMessage = JSON.parse(data) as Action;
 
   // We need to save this game state change for the purposes of the in-game hypothetical
   globals.hypoActions.push(actionMessage);
@@ -451,7 +451,7 @@ const processNewAction = (actionMessage: Action) => {
 
 interface GameActionListData {
   tableID: number,
-  list: any[],
+  list: Action[],
 }
 commands.set('gameActionList', (data: GameActionListData) => {
   // Play through all of the turns
@@ -583,11 +583,11 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
   globals.elements.pauseSharedTurnsButton!.visible(globals.useSharedTurns);
   globals.elements.useSharedTurnsButton!.visible(!globals.useSharedTurns);
   if (globals.amSharedReplayLeader) {
-    (globals.elements.pauseSharedTurnsButton as any).setLeft();
-    (globals.elements.useSharedTurnsButton as any).setLeft();
+    globals.elements.pauseSharedTurnsButton!.setLeft();
+    globals.elements.useSharedTurnsButton!.setLeft();
   } else {
-    (globals.elements.pauseSharedTurnsButton as any).setCenter();
-    (globals.elements.useSharedTurnsButton as any).setCenter();
+    globals.elements.pauseSharedTurnsButton!.setCenter();
+    globals.elements.useSharedTurnsButton!.setCenter();
   }
   globals.elements.enterHypoButton!.visible(globals.amSharedReplayLeader);
   globals.elements.enterHypoButton!.setEnabled(globals.currentPlayerIndex !== -1);

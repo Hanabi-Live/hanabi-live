@@ -4,6 +4,7 @@ import Button from './Button';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as replay from './replay';
+import SharedTurnsButton from './SharedTurnsButton';
 import Shuttle from './Shuttle';
 
 export default (winW: number, winH: number) => {
@@ -52,7 +53,7 @@ export default (winW: number, winH: number) => {
     opacity: 0,
     listening: true,
   });
-  replayBarClickRect.on('click', replay.barClick as any);
+  replayBarClickRect.on('click', replay.barClick);
   globals.elements.replayArea.add(replayBarClickRect);
 
   const shuttleValues = {
@@ -224,7 +225,7 @@ export default (winW: number, winH: number) => {
 
   // The "Pause Shared Turns" button
   // (this will be shown when the client receives the "replayLeader" command)
-  globals.elements.pauseSharedTurnsButton = new Button({
+  globals.elements.pauseSharedTurnsButton = new SharedTurnsButton({
     width: bottomLeftReplayButtonValues.w * winW,
     height: bottomLeftReplayButtonValues.h * winH,
     text: 'Pause Shared Turns',
@@ -235,7 +236,7 @@ export default (winW: number, winH: number) => {
 
   // The "Use Shared Turns" button
   // (this will be shown when the client receives the "replayLeader" command)
-  globals.elements.useSharedTurnsButton = new Button({
+  globals.elements.useSharedTurnsButton = new SharedTurnsButton({
     width: bottomLeftReplayButtonValues.w * winW,
     height: bottomLeftReplayButtonValues.h * winH,
     text: 'Use Shared Turns',
@@ -247,19 +248,19 @@ export default (winW: number, winH: number) => {
   // The previous two buttons will be moved to the left for replay leaders and
   // centered for non-replay-leaders
   const totalWidth = (replayButtonValues.w * 4) + (replayButtonValues.spacing * 3);
-  function setCenter(this: Button) {
+  function setCenter(this: SharedTurnsButton) {
     const x = replayButtonValues.x + ((totalWidth - bottomLeftReplayButtonValues.w) / 2);
     this.x(x * winW);
     this.y(bottomLeftReplayButtonValues.y * winH);
   }
-  function setLeft(this: Button) {
+  function setLeft(this: SharedTurnsButton) {
     this.x(bottomLeftReplayButtonValues.x * winW);
     this.y(bottomLeftReplayButtonValues.y * winH);
   }
-  (globals.elements.pauseSharedTurnsButton as any).setCenter = setCenter;
-  (globals.elements.pauseSharedTurnsButton as any).setLeft = setLeft;
-  (globals.elements.useSharedTurnsButton as any).setCenter = setCenter;
-  (globals.elements.useSharedTurnsButton as any).setLeft = setLeft;
+  globals.elements.pauseSharedTurnsButton!.setCenter = setCenter;
+  globals.elements.pauseSharedTurnsButton!.setLeft = setLeft;
+  globals.elements.useSharedTurnsButton!.setCenter = setCenter;
+  globals.elements.useSharedTurnsButton!.setLeft = setLeft;
 
   const bottomRightReplayButtonValues = {
     x: replayButtonValues.x + (replayButtonValues.w * 2) + (replayButtonValues.spacing * 2),

@@ -111,5 +111,11 @@ module.exports = {
     // https://blog.javascripting.com/2015/09/07/fine-tuning-airbnbs-eslint-config/
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L448
     'quote-props': ['error', 'consistent-as-needed'],
+
+     // No any's, ever
+    '@typescript-eslint/no-unsafe-assignment': ['error'],
+    '@typescript-eslint/no-unsafe-call': ['error'],
+    '@typescript-eslint/no-unsafe-member-access': ['error'],
+    '@typescript-eslint/no-unsafe-return': ['error'],
   },
 };

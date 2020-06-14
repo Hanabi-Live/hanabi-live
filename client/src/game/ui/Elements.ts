@@ -17,6 +17,7 @@ import MultiFitText from './MultiFitText';
 import NameFrame from './NameFrame';
 import PlayStack from './PlayStack';
 import RankButton from './RankButton';
+import SharedTurnsButton from './SharedTurnsButton';
 import Shuttle from './Shuttle';
 import StrikeSquare from './StrikeSquare';
 import StrikeX from './StrikeX';
@@ -26,10 +27,10 @@ export default class Elements {
   // The main screen
   stageFade: Konva.Rect | null = null;
   playArea: ClickArea | null = null;
-  playStacks: Map<Suit | 'hole', PlayStack> = new Map();
+  playStacks: Map<Suit | 'hole', PlayStack> = new Map<Suit | 'hole', PlayStack>();
   suitLabelTexts: FitText[] = [];
   discardArea: ClickArea | null = null;
-  discardStacks: Map<Suit, CardLayout> = new Map();
+  discardStacks: Map<Suit, CardLayout> = new Map<Suit, CardLayout>();
   playerHands: CardLayout[] = [];
   playerHandTurnRects: Konva.Rect[] = [];
   nameFrames: NameFrame[] = [];
@@ -94,8 +95,8 @@ export default class Elements {
   replayForwardButton: Button | null = null;
   replayForwardFullButton: Button | null = null;
   replayExitButton: Button | null = null;
-  pauseSharedTurnsButton: Button | null = null;
-  useSharedTurnsButton: Button | null = null;
+  pauseSharedTurnsButton: SharedTurnsButton | null = null;
+  useSharedTurnsButton: SharedTurnsButton | null = null;
   enterHypoButton: Button | null = null;
   hypoCircle: Konva.Group | null = null;
   hypoBackButton: Button | null = null;
