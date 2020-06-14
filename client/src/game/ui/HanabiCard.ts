@@ -21,6 +21,7 @@ import Suit from '../types/Suit';
 import { msgSuitToSuit } from './convert';
 import globals from './globals';
 import * as HanabiCardInit from './HanabiCardInit';
+import LayoutChild from './LayoutChild';
 import NoteIndicator from './NoteIndicator';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
@@ -259,6 +260,13 @@ export default class HanabiCard extends Konva.Group {
     if (this.state.blank) {
       // The "blank" property is set when the card should appear blank no matter what
       this.bareName = 'deck-back';
+
+      // Disable dragging of this card
+      const layoutChild = this.parent;
+      if (layoutChild) {
+        layoutChild.draggable(false);
+        layoutChild.off('dragend');
+      }
     } else if (
       // A "blank" note means that the user wants to force the card to appear blank
       this.state.noteBlank
@@ -288,6 +296,7 @@ export default class HanabiCard extends Konva.Group {
       globals.lobby.settings.realLifeMode
       || globals.variant.name.startsWith('Cow & Pig')
       || globals.variant.name.startsWith('Duck')
+      || this.state.blank
     ) {
       this.suitPips!.hide();
       this.rankPips!.hide();
@@ -893,6 +902,9 @@ export default class HanabiCard extends Konva.Group {
     const suit = msgSuit === -1 ? null : msgSuitToSuit(msgSuit, globals.variant);
     const rank = msgRank === -1 ? null : msgRank;
 
+    // Blank the card if it is revealed with no suit and no rank
+    this.state.blank = !(suit || rank);
+
     // Set the true suit/rank on the card
     this.state.suit = suit;
     this.state.rank = rank;
@@ -937,7 +949,10 @@ export default class HanabiCard extends Konva.Group {
       && globals.hypoFirstDrawnIndex
       && this.state.order >= globals.hypoFirstDrawnIndex
     ) {
-      if (this.state.suit === trueSuit && this.state.rank === trueRank) {
+      if (
+        (this.state.suit === trueSuit && this.state.rank === trueRank)
+        || (!this.state.suit && !this.state.rank)
+      ) {
         // We need to hide this card unless it was morphed from its real identity
         // -1 is used for null suits and ranks
         this.reveal(-1, -1);
@@ -946,6 +961,12 @@ export default class HanabiCard extends Konva.Group {
       // Otherwise, we should make sure to fill in information from deckOrder
       // unless this card is fully known, possibly morphed
       this.reveal(suitNum, trueRank);
+
+      // Check if we can drag this card now
+      const layoutChild = this.parent as unknown as LayoutChild;
+      if (layoutChild) {
+        layoutChild.checkSetDraggable();
+      }
     }
   }
 

@@ -12,6 +12,7 @@ import State from '../types/State';
 import action from './action';
 import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
+import { checkLegal } from './clues';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as notes from './notes';
@@ -187,6 +188,9 @@ commands.set('hypoRevealed', (data: HypoRevealedData) => {
       globals.deck[i].replayRedraw();
     }
   }
+
+  // Check if the ability to give a clue changed
+  checkLegal();
 
   globals.layers.card.batchDraw();
 });
