@@ -546,12 +546,7 @@ actionFunctions.set('reveal', (data: ActionReveal) => {
     throw new Error('Failed to get the card in the "reveal" command.');
   }
 
-  if (data.suit === -1 && data.rank === -1) {
-    card.state.blank = true;
-    card.setBareImage();
-  } else {
-    card.reveal(data.suit, data.rank);
-  }
+  card.reveal(data.suit, data.rank);
 
   globals.layers.card.batchDraw();
 });

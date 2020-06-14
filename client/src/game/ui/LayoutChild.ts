@@ -46,7 +46,11 @@ export default class LayoutChild extends Konva.Group {
 
     // First, handle the special case of a hypothetical
     if (globals.hypothetical) {
-      if (globals.amSharedReplayLeader && globals.currentPlayerIndex === card.state.holder) {
+      if (
+        globals.amSharedReplayLeader
+        && globals.currentPlayerIndex === card.state.holder
+        && !card.state.blank
+      ) {
         this.draggable(true);
         this.on('dragstart', this.dragStart);
         this.on('dragend', this.dragEnd);
