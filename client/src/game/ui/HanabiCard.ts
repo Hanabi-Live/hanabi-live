@@ -21,6 +21,7 @@ import Suit from '../types/Suit';
 import { msgSuitToSuit } from './convert';
 import globals from './globals';
 import * as HanabiCardInit from './HanabiCardInit';
+import LayoutChild from './LayoutChild';
 import NoteIndicator from './NoteIndicator';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
@@ -960,6 +961,12 @@ export default class HanabiCard extends Konva.Group {
       // Otherwise, we should make sure to fill in information from deckOrder
       // unless this card is fully known, possibly morphed
       this.reveal(suitNum, trueRank);
+
+      // Check if we can drag this card now
+      const layoutChild = this.parent as unknown as LayoutChild;
+      if (layoutChild) {
+        layoutChild.checkSetDraggable();
+      }
     }
   }
 

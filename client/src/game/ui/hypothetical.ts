@@ -404,6 +404,26 @@ const cycleHand = () => {
 };
 
 export const toggleRevealed = () => {
+  // Prevent the toggle if any of the cards are played, clued, or discarded
+  if (globals.hypoFirstDrawnIndex) {
+    for (let i = globals.hypoFirstDrawnIndex; i <= globals.deckOrder.length; i++) {
+      const card = globals.deck[i];
+      if (!card) {
+        continue;
+      }
+      if (
+        card.state.isPlayed
+        || card.state.isMisplayed
+        || card.state.isDiscarded
+        || card.state.positiveColorClues.length !== 0
+        || card.state.positiveRankClues.length !== 0
+      ) {
+        console.log('Attempted to toggle hidden cards when this is not allowed.');
+        return;
+      }
+    }
+  }
+
   globals.lobby.conn!.send('replayAction', {
     tableID: globals.lobby.tableID,
     type: ReplayActionType.HypoToggleRevealed,
