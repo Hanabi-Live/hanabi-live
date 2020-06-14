@@ -272,7 +272,7 @@ def main():
         "suits": ["Tomato", "Mahogany", "Lime", "Forest", "Sky", "Navy",],
         "showSuitNames": True,
     }
-    amibuous_suits = [
+    ambiguous_suits = [
         "Tomato",
         "Mahogany",
         "Sky",
@@ -280,17 +280,17 @@ def main():
     ]
     variants["Ambiguous (4 Suits)"] = {
         "id": get_variant_id("Ambiguous (4 Suits)"),
-        "suits": amibuous_suits,
+        "suits": ambiguous_suits,
         "showSuitNames": True,
     }
     variants["Ambiguous & Rainbow (5 Suits)"] = {
         "id": get_variant_id("Ambiguous & Rainbow (5 Suits)"),
-        "suits": amibuous_suits + ["Rainbow"],
+        "suits": ambiguous_suits + ["Rainbow"],
         "showSuitNames": True,
     }
     variants["Ambiguous & White (5 Suits)"] = {
         "id": get_variant_id("Ambiguous & White (5 Suits)"),
-        "suits": amibuous_suits + ["White"],
+        "suits": ambiguous_suits + ["White"],
         "showSuitNames": True,
     }
 
