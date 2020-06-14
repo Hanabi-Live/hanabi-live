@@ -260,7 +260,12 @@ export const send = (hypoAction: ClientAction) => {
 
     // Text
     let text = `${globals.playerNames[globals.currentPlayerIndex]} ${type}s `;
-    text += `${card.state.suit!.name} ${card.state.rank} from slot #${card.getSlotNum()}`;
+    if (card.state.suit && card.state.rank) {
+      text += `${card.state.suit!.name} ${card.state.rank} `;
+    } else {
+      text += 'a card ';
+    }
+    text += `from slot #${card.getSlotNum()}`;
     sendHypoAction({
       type: 'text',
       text,
