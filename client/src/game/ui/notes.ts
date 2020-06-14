@@ -141,6 +141,10 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
     || fullNote.includes('[ocm]')
     || note === 'tocm'
     || fullNote.includes('[tocm]')
+    || note === 'utfcm'
+    || fullNote.includes('[utfcm]')
+    || note === 'utbcm'
+    || fullNote.includes('[utbcm]')
   );
   card.state.noteFinessed = (
     note === 'f'
