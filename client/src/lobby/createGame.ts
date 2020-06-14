@@ -71,6 +71,30 @@ export const init = () => {
     $('#nav-buttons-games-create-game').tooltipster('reposition');
   });
 
+  // Disable some checkboxes if a checkbox is checked
+  $('#createTableOneExtraCard').change(() => {
+    if ($('#createTableOneExtraCard').is(':checked')) {
+      $('#createTableOneLessCardRow').fadeTo(0, 0.3);
+      $('#createTableOneLessCard').prop('disabled', true);
+      $('#createTableOneLessCardLabel').css('cursor', 'auto');
+    } else {
+      $('#createTableOneLessCardRow').fadeTo(0, 1);
+      $('#createTableOneLessCard').prop('disabled', false);
+      $('#createTableOneLessCardLabel').css('cursor', 'pointer');
+    }
+  });
+  $('#createTableOneLessCard').change(() => {
+    if ($('#createTableOneLessCard').is(':checked')) {
+      $('#createTableOneExtraCardRow').fadeTo(0, 0.3);
+      $('#createTableOneExtraCard').prop('disabled', true);
+      $('#createTableOneExtraCardLabel').css('cursor', 'auto');
+    } else {
+      $('#createTableOneExtraCardRow').fadeTo(0, 1);
+      $('#createTableOneExtraCard').prop('disabled', false);
+      $('#createTableOneExtraCardLabel').css('cursor', 'pointer');
+    }
+  });
+
   // Pressing enter anywhere will submit the form
   $('#create-game-tooltip').on('keypress', (event) => {
     if (event.key === 'Enter') {
