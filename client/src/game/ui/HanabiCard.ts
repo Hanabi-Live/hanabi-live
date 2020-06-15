@@ -384,11 +384,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   private setArrowMiddleRight = () => {
-    this.arrow!.y(0.79 * CARD_H);
+    this.arrow!.y(0.5 * CARD_H);
   };
 
   private setArrowBottomRight = () => {
-    this.arrow!.y(0.5 * CARD_H);
+    this.arrow!.y(0.79 * CARD_H);
   };
 
   // Fade this card if it is useless, fully revealed, and still in a player's hand
