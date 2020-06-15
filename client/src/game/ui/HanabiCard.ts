@@ -989,7 +989,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       throw new Error('The holder of this card\'s hand is null in the "updatePossibilitiesOnOtherCards()" function.');
     }
     const playerHand = globals.elements.playerHands[this.state.holder];
-    for (const layoutChild of playerHand.children.toArray() as Array<Konva.Node>) {
+    for (const layoutChild of playerHand.children.toArray() as Konva.Node[]) {
       const card = layoutChild.children[0] as HanabiCard;
       if (card.state.order === this.state.order) {
         // There is no need to update the card that was just revealed

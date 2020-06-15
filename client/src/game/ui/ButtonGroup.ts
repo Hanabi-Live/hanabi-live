@@ -6,7 +6,7 @@ import RankButton from './RankButton';
 
 type ClueButton = PlayerButton | ColorButton | RankButton;
 export default class ButtonGroup extends Konva.Group {
-  list: Array<ClueButton> = [];
+  list: ClueButton[] = [];
 
   constructor(config: Konva.ContainerConfig) {
     super(config);
