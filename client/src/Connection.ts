@@ -1,3 +1,13 @@
+interface WebSocketCallbackCommands {
+  [command: string]: (data: any) => void;
+}
+
+type WebSocketCallbacks = WebSocketCallbackCommands & {
+  open?: (evt: Event) => void;
+  close?: (evt: Event) => void;
+  socketError?: (evt: Event) => void;
+};
+
 // Connection is a class that manages a WebSocket connection to the server
 // On top of the WebSocket protocol, the client and the server communicate using a specific format
 // based on the protocol that the Golem WebSocket framework uses
@@ -5,7 +15,7 @@
 // Based on: https://github.com/trevex/golem_client/blob/master/golem.js
 export default class Connection {
   ws: WebSocket;
-  callbacks: Callbacks = {};
+  callbacks: WebSocketCallbacks = {};
   debug: boolean;
 
   constructor(addr: string, debug: boolean) {
@@ -71,16 +81,6 @@ export default class Connection {
     this.ws.close();
   }
 }
-
-interface CallbackCommands {
-  [command: string]: (data: any) => void;
-}
-
-type Callbacks = CallbackCommands & {
-  open?: (evt: Event) => void;
-  close?: (evt: Event) => void;
-  socketError?: (evt: Event) => void;
-};
 
 const separator = ' ';
 const unpack = (data: string) => {
