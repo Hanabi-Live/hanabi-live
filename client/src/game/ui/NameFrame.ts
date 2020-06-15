@@ -57,10 +57,10 @@ export default class NameFrame extends Konva.Group {
     this.playerName.on('click tap', function click(event) {
       const username = this.text();
       const mouseEvent = event.evt as MouseEvent;
-      if (mouseEvent.which === 1) { // Left-click
+      if (mouseEvent.button === 0) { // Left-click
         // Left-click on the name frame to see a log of only their actions
         globals.elements.fullActionLog!.showPlayerActions(username);
-      } else if (mouseEvent.which === 3) { // Right-click
+      } else if (mouseEvent.button === 2) { // Right-click
         if (!globals.replay && globals.spectating) {
           // As a spectator in an ongoing game, right-clicking on a name frame reloads the
           // page, shifting the seat and hiding the appropriate cards

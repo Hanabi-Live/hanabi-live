@@ -29,11 +29,11 @@ export default function HanabiCardClick(this: HanabiCard, event: Konva.KonvaEven
   }
 
   const mouseEvent = event.evt as MouseEvent;
-  if (mouseEvent.which === 1) { // Left-click
+  if (mouseEvent.button === 0) { // Left-click
     clickLeft(this, mouseEvent);
-  } else if (mouseEvent.which === 2) { // Middle-click
+  } else if (mouseEvent.button === 1) { // Middle-click
     clickMiddle(this, mouseEvent);
-  } else if (mouseEvent.which === 3) { // Right-click
+  } else if (mouseEvent.button === 2) { // Right-click
     clickRight(this, mouseEvent);
   }
 }

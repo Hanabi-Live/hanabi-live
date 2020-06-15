@@ -471,10 +471,9 @@ export function criticalIndicator(this: HanabiCard) {
 export function empathy(this: HanabiCard) {
   this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
     if (
-      event.evt.which !== 1 // Only enable Empathy for left-clicks
+      event.evt.button !== 0 // Only enable Empathy for left-clicks
       // Disable Empathy if a modifier key is pressed
-      // (unless we are in a speedrun,
-      // because then Empathy is mapped to Ctrl + left click)
+      // (unless we are in a speedrun, because then Empathy is mapped to Ctrl + left click)
       || (event.evt.ctrlKey && !globals.options.speedrun && !globals.lobby.settings.speedrunMode)
       || (
         !event.evt.ctrlKey
@@ -501,7 +500,7 @@ export function empathy(this: HanabiCard) {
   this.on('mouseup mouseout', (event: Konva.KonvaEventObject<MouseEvent>) => {
     // Konva.MouseEvent does not have a "type" property for some reason
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if ((event as any).type === 'mouseup' && event.evt.which !== 1) { // Left-click
+    if ((event as any).type === 'mouseup' && event.evt.button !== 0) { // Left-click
       return;
     }
 
@@ -549,7 +548,7 @@ export function click(this: HanabiCard) {
   this.on('mousedown', HanabiCardClickSpeedrun);
   this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
     if (
-      event.evt.which !== 1 // Dragging uses left click
+      event.evt.button !== 0 // Dragging uses left click
       || !this.parent
       || !this.parent.draggable()
     ) {

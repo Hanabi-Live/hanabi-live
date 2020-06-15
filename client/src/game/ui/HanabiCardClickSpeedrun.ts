@@ -49,9 +49,9 @@ export default function HanabiCardClickSpeedrun(
   }
 
   const mouseEvent = event.evt as MouseEvent;
-  if (mouseEvent.which === 1) { // Left-click
+  if (mouseEvent.button === 0) { // Left-click
     clickLeft(this, mouseEvent);
-  } else if (mouseEvent.which === 3) { // Right-click
+  } else if (mouseEvent.button === 2) { // Right-click
     clickRight(this, mouseEvent);
   }
 }

@@ -760,7 +760,7 @@ const drawScoreArea = () => {
 
   // We also want to be able to right-click the turn to go to a specific turn in the replay
   turnTextLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
-    if (event.evt.which === 3) { // Right-click
+    if (event.evt.button === 2) { // Right-click
       replay.promptTurn();
     }
   });
@@ -775,7 +775,7 @@ const drawScoreArea = () => {
 
   // We also want to be able to right-click the turn to go to a specific turn in the replay
   globals.elements.turnNumberLabel!.on('click', (event) => {
-    if (event.evt.which === 3) { // Right-click
+    if (event.evt.button === 2) { // Right-click
       replay.promptTurn();
     }
   });
@@ -1056,13 +1056,10 @@ const drawSharedReplay = () => {
 
   // The user can right-click on the crown to pass the replay leader to an arbitrary person
   sharedReplayLeaderLabel.on('click', (event) => {
-    // Do nothing if this is not a right-click
-    if (event.evt.which !== 3) {
-      return;
-    }
-
-    // Do nothing if we are not the shared replay leader
-    if (!globals.amSharedReplayLeader) {
+    if (
+      event.evt.button !== 2 // Do nothing if this is not a right-click
+      || !globals.amSharedReplayLeader // Do nothing if we are not the shared replay leader
+    ) {
       return;
     }
 
@@ -1403,7 +1400,7 @@ const drawTimers = () => {
   globals.layers.timer.add(globals.elements.timer1 as any);
   globals.elements.timer1.on('click', (event) => {
     if (
-      event.evt.which !== 3 // Right-click
+      event.evt.button !== 2 // Right-click
       || !globals.options.timed // We don't need to pause if this is not a timed game
       || globals.paused // We don't need to pause if the game is already paused
     ) {
