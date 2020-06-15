@@ -37,6 +37,8 @@ export const start = () => {
     replay.toggleSharedTurns();
   }
 
+  globals.elements.toggleRevealedButton?.setEnabled(true);
+
   show();
   beginTurn();
 };
@@ -67,11 +69,13 @@ export const playThroughPastActions = () => {
   // If we are joining a hypothetical that is already in progress
   // or we are going backwards in an existing hypothetical,
   // play all of the existing hypothetical actions that have taken place so far, if any
+  globals.elements.toggleRevealedButton?.setEnabled(true);
   if (globals.hypoActions.length > 0) {
     // This is a mini-version of what happens in the "replay.goto()" function
     globals.animateFast = true;
     for (const actionMessage of globals.hypoActions) {
       setHypoFirstDrawnIndex(actionMessage);
+      checkToggleRevealedButton(actionMessage);
       action(actionMessage);
     }
     cardStatusCheck();
@@ -395,36 +399,35 @@ const cycleHand = () => {
 };
 
 export const toggleRevealed = () => {
-  // Prevent the toggle if any of the cards are played, clued, or discarded
-  if (globals.hypoFirstDrawnIndex) {
-    for (let i = globals.hypoFirstDrawnIndex; i <= globals.deckOrder.length; i++) {
-      const card = globals.deck[i];
-      if (!card) {
-        continue;
-      }
-      if (
-        card.state.isPlayed
-        || card.state.isMisplayed
-        || card.state.isDiscarded
-        || card.state.positiveColorClues.length !== 0
-        || card.state.positiveRankClues.length !== 0
-      ) {
-        console.log('Attempted to toggle hidden cards when this is not allowed.');
-        return;
-      }
-    }
-  }
-
   globals.lobby.conn!.send('replayAction', {
     tableID: globals.lobby.tableID,
     type: ReplayActionType.HypoToggleRevealed,
   });
 };
 
+// Set hypoFirstDrawnIndex if this is the first card we drew in the hypothetical
+// This check should only run if the draw action is a hypoAction
 export const setHypoFirstDrawnIndex = (actionMessage: ActionIncludingHypothetical) => {
-  // Set hypoFirstDrawnIndex if this is the first card we drew in the hypothetical
-  // This check should only run if the draw action is a hypoAction
   if (actionMessage.type === 'draw' && globals.hypothetical && !globals.hypoFirstDrawnIndex) {
     globals.hypoFirstDrawnIndex = actionMessage.order;
+  }
+};
+
+// Check if we need to disable the toggleRevealedButton
+// This happens when a newly drawn card is played, discarded, or clued
+// It should also happen for misplays once those are implemented
+export const checkToggleRevealedButton = (actionMessage: ActionIncludingHypothetical) => {
+  if (actionMessage.type === 'play' || actionMessage.type === 'discard') {
+    const cardOrder = actionMessage.which.order;
+    if (globals.hypoFirstDrawnIndex && cardOrder >= globals.hypoFirstDrawnIndex) {
+      globals.elements.toggleRevealedButton?.setEnabled(false);
+    }
+  } else if (actionMessage.type === 'clue') {
+    for (const cardOrder of actionMessage.list) {
+      if (globals.hypoFirstDrawnIndex && cardOrder >= globals.hypoFirstDrawnIndex) {
+        globals.elements.toggleRevealedButton?.setEnabled(false);
+        return;
+      }
+    }
   }
 };
