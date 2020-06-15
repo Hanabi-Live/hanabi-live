@@ -3,6 +3,7 @@
 
 // Imports
 import Konva from 'konva';
+import * as variantRules from '../rules/variant';
 import { STACK_BASE_RANK } from '../types/constants';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
@@ -25,7 +26,7 @@ export default class PlayStack extends Konva.Group {
       const stackBase = card.state.rank === STACK_BASE_RANK;
       const opacity = (
         // Hide cards in "Throw It in a Hole" variants
-        globals.variant.name.startsWith('Throw It in a Hole')
+        variantRules.isThrowItInAHole(globals.variant)
         && !globals.replay // Revert to the normal behavior for replays
         && !stackBase // We want the stack bases to always be visible
       ) ? 0 : 1;

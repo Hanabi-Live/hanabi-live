@@ -5,6 +5,7 @@ import { MAX_CLUE_NUM } from '../types/constants';
 import Variant from '../types/Variant';
 import * as deck from './deck';
 import * as hand from './hand';
+import * as variantRules from './variant';
 
 export function minEfficiency(variant: Variant, playerCount: number): number {
   // Calculate the minimum amount of efficiency needed in order to win this variant
@@ -28,7 +29,7 @@ export function minEfficiency(variant: Variant, playerCount: number): number {
   // https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
   const minEfficiencyNumerator = 5 * numSuits;
   let cluesGainedAfterCompletingSuits = numSuits;
-  if (variant.name.startsWith('Throw It in a Hole')) {
+  if (variantRules.isThrowItInAHole(variant)) {
     // Players do not gain a clue after playing a 5 in this variant
     cluesGainedAfterCompletingSuits = 0;
   }
@@ -36,12 +37,12 @@ export function minEfficiency(variant: Variant, playerCount: number): number {
   if (playerCount >= 5) {
     unusableClues = 2;
   }
-  if (variant.name.startsWith('Throw It in a Hole')) {
+  if (variantRules.isThrowItInAHole(variant)) {
     // Players do not gain a clue after playing a 5 in this variant
     unusableClues = 0;
   }
   let discardsPerClue = 1;
-  if (variant.name.startsWith('Clue Starved')) {
+  if (variantRules.isClueStarved(variant)) {
     discardsPerClue = 2;
   }
   const minEfficiencyDenominator = MAX_CLUE_NUM + Math.floor(

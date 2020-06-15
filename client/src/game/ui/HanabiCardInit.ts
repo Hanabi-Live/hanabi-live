@@ -5,7 +5,7 @@ import Konva from 'konva';
 import * as KonvaContext from 'konva/types/Context';
 import * as KonvaUtil from 'konva/types/Util';
 import { CARD_H, CARD_W } from '../../constants';
-import * as variant from '../rules/variant';
+import * as variantRules from '../rules/variant';
 import { START_CARD_RANK } from '../types/constants';
 import Suit from '../types/Suit';
 import * as arrows from './arrows';
@@ -134,7 +134,7 @@ export function borders(this: HanabiCard) {
 }
 
 export function directionArrow(this: HanabiCard) {
-  if (!variant.hasReversedSuits(globals.variant)) {
+  if (!variantRules.hasReversedSuits(globals.variant)) {
     return;
   }
 

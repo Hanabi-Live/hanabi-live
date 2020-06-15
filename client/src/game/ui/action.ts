@@ -6,7 +6,7 @@ import {
   CARD_W,
   LABEL_COLOR,
 } from '../../constants';
-import * as variant from '../rules/variant';
+import * as variantRules from '../rules/variant';
 import {
   ActionClue,
   ActionDiscard,
@@ -89,8 +89,8 @@ actionFunctions.set('clue', (data: ActionClue) => {
     card.setClued();
     if (
       !globals.lobby.settings.realLifeMode
-      && !globals.variant.name.startsWith('Cow & Pig')
-      && !globals.variant.name.startsWith('Duck')
+      && !variantRules.isCowAndPig(globals.variant)
+      && !variantRules.isDuck(globals.variant)
       && !(
         globals.characterAssignments[data.giver!] === 'Quacker'
         && card.state.holder === globals.playerUs
@@ -113,8 +113,8 @@ actionFunctions.set('clue', (data: ActionClue) => {
       negativeList.push(order);
       if (
         !globals.lobby.settings.realLifeMode
-        && !globals.variant.name.startsWith('Cow & Pig')
-        && !globals.variant.name.startsWith('Duck')
+        && !variantRules.isCowAndPig(globals.variant)
+        && !variantRules.isDuck(globals.variant)
         && !(
           globals.characterAssignments[data.giver!] === 'Quacker'
           && card.state.holder === globals.playerUs
@@ -137,14 +137,14 @@ actionFunctions.set('clue', (data: ActionClue) => {
   } else if (data.clue.type === ClueType.Rank) {
     clueName = clue.value.toString();
   }
-  if (globals.variant.name.startsWith('Cow & Pig')) {
+  if (variantRules.isCowAndPig(globals.variant)) {
     if (data.clue.type === ClueType.Color) {
       clueName = 'Moo';
     } else if (data.clue.type === ClueType.Rank) {
       clueName = 'Oink';
     }
   } else if (
-    globals.variant.name.startsWith('Duck')
+    variantRules.isDuck(globals.variant)
     || globals.characterAssignments[data.giver!] === 'Quacker'
   ) {
     clueName = 'Quack';
@@ -175,7 +175,7 @@ actionFunctions.set('deckOrder', () => {
 
 actionFunctions.set('discard', (data: ActionDiscard) => {
   // In "Throw It in a Hole" variants, convert misplays to real plays
-  if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay && data.failed) {
+  if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay && data.failed) {
     actionFunctions.get('play')!(data);
     return;
   }
@@ -385,7 +385,7 @@ actionFunctions.set('reorder', (data: ActionReorder) => {
 });
 
 actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
-  if (!variant.hasReversedSuits(globals.variant)) {
+  if (!variantRules.hasReversedSuits(globals.variant)) {
     return;
   }
 
@@ -403,11 +403,11 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
     if (stackDirection === StackDirection.Undecided) {
       text = '';
     } else if (stackDirection === StackDirection.Up) {
-      text = variant.isUpOrDown(globals.variant) ? 'Up' : '';
+      text = variantRules.isUpOrDown(globals.variant) ? 'Up' : '';
     } else if (stackDirection === StackDirection.Down) {
-      text = variant.isUpOrDown(globals.variant) ? 'Down' : 'Reversed';
+      text = variantRules.isUpOrDown(globals.variant) ? 'Down' : 'Reversed';
     } else if (stackDirection === StackDirection.Finished) {
-      if (variant.isUpOrDown(globals.variant)) {
+      if (variantRules.isUpOrDown(globals.variant)) {
         text = 'Finished';
       } else if (suit.reversed) {
         text = 'Reversed';
@@ -434,7 +434,7 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
 actionFunctions.set('status', (data: ActionStatus) => {
   // Update internal state variables
   globals.clues = data.clues;
-  if (globals.variant.name.startsWith('Clue Starved')) {
+  if (variantRules.isClueStarved(globals.variant)) {
     // In "Clue Starved" variants, 1 clue is represented on the server by 2
     // Thus, in order to get the "real" clue count, we have to divide by 2
     globals.clues /= 2;
@@ -499,7 +499,7 @@ actionFunctions.set('status', (data: ActionStatus) => {
 //   turn: 2,
 // }
 actionFunctions.set('strike', (data: ActionStrike) => {
-  if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
+  if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
     return;
   }
 

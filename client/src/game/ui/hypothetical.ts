@@ -2,6 +2,7 @@
 // to see what will happen
 
 // Imports
+import * as variantRules from '../rules/variant';
 import { ActionIncludingHypothetical } from '../types/actions';
 import { ActionType, ClientAction } from '../types/ClientAction';
 import ClueType from '../types/ClueType';
@@ -249,7 +250,7 @@ export const send = (hypoAction: ClientAction) => {
       || type === 'discard'
     ) {
       globals.clues += 1;
-      if (globals.variant.name.startsWith('Clue Starved')) {
+      if (variantRules.isClueStarved(globals.variant)) {
         globals.clues -= 0.5;
       }
     }
@@ -284,7 +285,7 @@ export const send = (hypoAction: ClientAction) => {
   // Status
   sendHypoAction({
     type: 'status',
-    clues: globals.variant.name.startsWith('Clue Starved') ? globals.clues * 2 : globals.clues,
+    clues: variantRules.isClueStarved(globals.variant) ? globals.clues * 2 : globals.clues,
     doubleDiscard: false,
     score: globals.score,
     maxScore: globals.maxScore,

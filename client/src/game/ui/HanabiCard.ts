@@ -10,7 +10,7 @@ import {
   CARD_W,
 } from '../../constants';
 import { SUITS } from '../data/gameData';
-import * as variant from '../rules/variant';
+import * as variantRules from '../rules/variant';
 import CardState, { cardInitialState } from '../types/CardState';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
@@ -279,8 +279,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     } else if (
       (
         globals.lobby.settings.realLifeMode
-        || globals.variant.name.startsWith('Cow & Pig')
-        || globals.variant.name.startsWith('Duck')
+        || variantRules.isCowAndPig(globals.variant)
+        || variantRules.isDuck(globals.variant)
       ) && (suitToShow!.name === 'Unknown' || rankToShow === 6)
     ) {
       // In Real-Life mode or Cow & Pig / Duck variants,
@@ -293,8 +293,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Show or hide the pips
     if (
       globals.lobby.settings.realLifeMode
-      || globals.variant.name.startsWith('Cow & Pig')
-      || globals.variant.name.startsWith('Duck')
+      || variantRules.isCowAndPig(globals.variant)
+      || variantRules.isDuck(globals.variant)
       || this.state.blank
     ) {
       this.suitPips!.hide();
@@ -334,7 +334,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     if (
       this.state.suit === null
       || this.state.rank === 0
-      || (!this.state.suit.reversed && !variant.isUpOrDown(globals.variant))
+      || (!this.state.suit.reversed && !variantRules.isUpOrDown(globals.variant))
     ) {
       return;
     }
@@ -343,7 +343,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     const direction = globals.stackDirections[suitIndex];
 
     let shouldShowArrow;
-    if (variant.isUpOrDown(globals.variant)) {
+    if (variantRules.isUpOrDown(globals.variant)) {
       // In "Up or Down" variants, the arrow should be shown when the stack direction is determined
       // (and the arrow should be cleared when the stack is finished)
       shouldShowArrow = (
@@ -396,7 +396,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     if (
       globals.lobby.settings.realLifeMode
       || globals.options.speedrun
-      || globals.variant.name.startsWith('Throw It in a Hole')
+      || variantRules.isThrowItInAHole(globals.variant)
     ) {
       return;
     }
@@ -917,7 +917,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.state.rank = rank;
 
     // Played cards are not revealed in the "Throw It in a Hole" variant
-    if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay && this.state.isPlayed) {
+    if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay && this.state.isPlayed) {
       return;
     }
 
@@ -1038,7 +1038,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   animateToPlayStacks() {
     // We add a LayoutChild to a PlayStack
-    if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
+    if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
       // The act of adding it will automatically tween the card
       const hole = globals.elements.playStacks.get('hole')!;
       hole.addChild(this.parent as any);
@@ -1135,7 +1135,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     // "Up or Down" has some special cases for critical cards
-    if (variant.hasReversedSuits(globals.variant)) {
+    if (variantRules.hasReversedSuits(globals.variant)) {
       return reversible.isCardCritical(this.state);
     }
 
@@ -1163,7 +1163,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Determining if the card needs to be played in variants with reversed suits is more
     // complicated
-    if (variant.hasReversedSuits(globals.variant)) {
+    if (variantRules.hasReversedSuits(globals.variant)) {
       return reversible.needsToBePlayed(this.state);
     }
 
@@ -1183,7 +1183,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   isPotentiallyPlayable() {
     // Calculating this in an Up or Down variant is more complicated
-    if (variant.hasReversedSuits(globals.variant)) {
+    if (variantRules.hasReversedSuits(globals.variant)) {
       return reversible.isPotentiallyPlayable(this.state);
     }
 
@@ -1272,7 +1272,7 @@ export const getSpecificCardNum = (suit: Suit, rank: number) => {
   let total = 0;
   if (rank === 1) {
     total = 3;
-    if (variant.isUpOrDown(globals.variant) || suit.reversed) {
+    if (variantRules.isUpOrDown(globals.variant) || suit.reversed) {
       total = 1;
     }
   } else if (rank === 5) {

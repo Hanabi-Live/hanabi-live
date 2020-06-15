@@ -8,7 +8,7 @@ import {
 import * as debug from '../../debug';
 import * as deck from '../rules/deck';
 import * as stats from '../rules/stats';
-import * as variant from '../rules/variant';
+import * as variantRules from '../rules/variant';
 import { ActionType } from '../types/ClientAction';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
@@ -363,7 +363,7 @@ const drawPlayStacks = () => {
         const colorList = suit.clueColors.map((color) => color.abbreviation).join('/');
         text += ` [${colorList}]`;
       }
-      if (variant.isUpOrDown(globals.variant)) {
+      if (variantRules.isUpOrDown(globals.variant)) {
         text = '';
       }
 
@@ -385,7 +385,7 @@ const drawPlayStacks = () => {
 
   // Make the invisible "hole" play stack for "Throw It in a Hole" variants
   // (centered in the middle of the rest of the stacks)
-  if (globals.variant.name.startsWith('Throw It in a Hole')) {
+  if (variantRules.isThrowItInAHole(globals.variant)) {
     const playStackX = playStackValues.x + (playStackValues.w / 2) - (cardWidth / 2);
     const playStack = new PlayStack({
       x: playStackX * winW,
@@ -784,7 +784,7 @@ const drawScoreArea = () => {
     text: 'Score',
     x: labelX * winW,
     y: 0.045 * winH,
-    visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
+    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.replay,
   }) as Konva.Text;
   globals.elements.scoreArea.add(scoreTextLabel);
 
@@ -792,7 +792,7 @@ const drawScoreArea = () => {
     text: '0',
     x: (labelX + labelSpacing) * winW,
     y: 0.045 * winH,
-    visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
+    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.replay,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreNumberLabel!);
 
@@ -801,7 +801,7 @@ const drawScoreArea = () => {
     x: (labelX + labelSpacing) * winW,
     y: 0.05 * winH,
     fontSize: 0.017 * winH,
-    visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
+    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.replay,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel!);
 
@@ -809,7 +809,7 @@ const drawScoreArea = () => {
     text: 'Plays',
     x: labelX * winW,
     y: 0.045 * winH,
-    visible: globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay,
+    visible: variantRules.isThrowItInAHole(globals.variant) && !globals.replay,
   }) as Konva.Text;
   globals.elements.scoreArea.add(playsTextLabel);
 
@@ -817,7 +817,7 @@ const drawScoreArea = () => {
     text: '0',
     x: (labelX + labelSpacing) * winW,
     y: 0.045 * winH,
-    visible: globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay,
+    visible: variantRules.isThrowItInAHole(globals.variant) && !globals.replay,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.playsNumberLabel!);
 

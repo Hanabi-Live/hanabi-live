@@ -3,6 +3,7 @@
 // Imports
 import * as sentry from '../../sentry';
 import { VARIANTS } from '../data/gameData';
+import * as variantRules from '../rules/variant';
 import stateReducer from '../stateReducer';
 import { Action, ActionIncludingHypothetical } from '../types/actions';
 import ClueType from '../types/ClueType';
@@ -137,7 +138,7 @@ commands.set('gameOver', () => {
   globals.elements.deck!.initTooltip();
 
   // Turn off the "Throw It in a Hole" UI
-  if (globals.variant.name.startsWith('Throw It in a Hole')) {
+  if (variantRules.isThrowItInAHole(globals.variant)) {
     globals.elements.scoreNumberLabel!.text(globals.score.toString());
     globals.elements.maxScoreNumberLabel!.show();
   }
@@ -411,7 +412,7 @@ const processNewAction = (actionMessage: Action) => {
     if (!globals.replay && globals.replayMax > 0) {
       globals.elements.replayButton!.setEnabled(true);
     }
-  } else if (actionMessage.type === 'clue' && globals.variant.name.startsWith('Alternating Clues')) {
+  } else if (actionMessage.type === 'clue' && variantRules.isAlternatingClues(globals.variant)) {
     if (actionMessage.clue.type === ClueType.Color) {
       for (const button of globals.elements.colorClueButtons) {
         button.hide();

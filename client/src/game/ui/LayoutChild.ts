@@ -4,6 +4,7 @@
 // Imports
 import Konva from 'konva';
 import * as sounds from '../../sounds';
+import * as variantRules from '../rules/variant';
 import { ActionType } from '../types/ClientAction';
 import { MAX_CLUE_NUM } from '../types/constants';
 import CardLayout from './CardLayout';
@@ -138,7 +139,7 @@ export default class LayoutChild extends Konva.Group {
     if (
       draggedTo === 'playArea'
       && !globals.options.speedrun
-      && !globals.variant.name.startsWith('Throw It in a Hole')
+      && !variantRules.isThrowItInAHole(globals.variant)
       && globals.ourTurn // Don't use warnings for preplays
       && !card.isPotentiallyPlayable()
     ) {

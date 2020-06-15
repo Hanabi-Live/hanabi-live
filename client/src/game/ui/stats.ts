@@ -2,6 +2,7 @@
 
 // Imports
 import { LABEL_COLOR } from '../../constants';
+import * as variantRules from '../rules/variant';
 import globals from './globals';
 
 export const updatePace = () => {
@@ -10,7 +11,7 @@ export const updatePace = () => {
     throw new Error('paceNumberLabel is not initialized.');
   }
 
-  if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
+  if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
     // In "Throw It in a Hole" variants,
     // pace will leak information that the player is not supposed to know
     label.text('?');
@@ -70,7 +71,7 @@ export const updateEfficiency = (cardsGottenDelta: number) => {
     throw new Error('efficiencyNumberLabel is not initialized.');
   }
 
-  if (globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay) {
+  if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
     // In "Throw It in a Hole" variants,
     // efficiency will leak information that the player is not supposed to know
     effLabel.text('? / ');

@@ -12,8 +12,6 @@ export const isDuck = (variant: Variant) => variant.name.startsWith('Duck');
 
 export const isThrowItInAHole = (variant: Variant) => variant.name.startsWith('Throw It in a Hole');
 
-export const isDualColor = (variant: Variant) => variant.name.startsWith('Dual Color');
-
 export const isAlternatingClues = (variant: Variant) => variant.name.startsWith('Alternating Clues');
 
 export const hasReversedSuits = (variant: Variant) => {

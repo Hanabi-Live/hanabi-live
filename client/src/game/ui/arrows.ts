@@ -7,6 +7,7 @@ import { KonvaEventObject } from 'konva/types/Node';
 import {
   ARROW_COLOR,
 } from '../../constants';
+import * as variantRules from '../rules/variant';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
 import { STACK_BASE_RANK } from '../types/constants';
@@ -102,7 +103,7 @@ export const set = (
 
     // Clue arrows have a circle that shows the type of clue given
     if (
-      globals.variant.name.startsWith('Duck')
+      variantRules.isDuck(globals.variant)
       || (globals.characterAssignments[giver!] === 'Quacker' && !globals.replay)
     ) {
       // Don't show the circle in variants where the clue types are supposed to be hidden
@@ -114,7 +115,7 @@ export const set = (
 
         // The circle for color clues should have a black border and a fill matching the color
         arrow.circle.stroke('black');
-        if (globals.variant.name.startsWith('Cow & Pig')) {
+        if (variantRules.isCowAndPig(globals.variant)) {
           // The specific clue color is hidden in "Cow & Pig" variants
           arrow.circle.fill('white');
         } else {
@@ -144,7 +145,7 @@ export const set = (
         }
       } else if (clue.type === ClueType.Rank) {
         let text = clue.value.toString();
-        if (globals.variant.name.startsWith('Cow & Pig')) {
+        if (variantRules.isCowAndPig(globals.variant)) {
           text = '#';
         }
         arrow.text.text(text);

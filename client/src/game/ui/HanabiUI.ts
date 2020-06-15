@@ -8,7 +8,7 @@ import { LABEL_COLOR } from '../../constants';
 import { Globals as LobbyGlobals } from '../../globals';
 import { GameExports } from '../main';
 import * as deck from '../rules/deck';
-import * as variant from '../rules/variant';
+import * as variantRules from '../rules/variant';
 import { STACK_BASE_RANK } from '../types/constants';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
@@ -190,7 +190,7 @@ const loadingFinishedCallback = () => {
 
 const initCardsMap = () => {
   for (const suit of globals.variant.suits) {
-    if (variant.isUpOrDown(globals.variant)) {
+    if (variantRules.isUpOrDown(globals.variant)) {
       // 6 is an unknown rank, so we use 7 to represent a "START" card
       const key = `${suit.name}7`;
       globals.cardsMap.set(key, 1);
@@ -201,7 +201,7 @@ const initCardsMap = () => {
       let amountToAdd = 2;
       if (rank === 1) {
         amountToAdd = 3;
-        if (variant.isUpOrDown(globals.variant) || suit.reversed) {
+        if (variantRules.isUpOrDown(globals.variant) || suit.reversed) {
           amountToAdd = 1;
         }
       } else if (rank === 5) {
