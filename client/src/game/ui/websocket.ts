@@ -4,7 +4,7 @@
 import * as sentry from '../../sentry';
 import { VARIANTS } from '../data/gameData';
 import stateReducer from '../stateReducer';
-import { Action } from '../types/actions';
+import { Action, ActionIncludingHypothetical } from '../types/actions';
 import ClueType from '../types/ClueType';
 import Options from '../types/Options';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
@@ -146,7 +146,7 @@ commands.set('gameOver', () => {
 });
 
 commands.set('hypoAction', (data: string) => {
-  const actionMessage = JSON.parse(data) as Action;
+  const actionMessage = JSON.parse(data) as ActionIncludingHypothetical;
 
   // We need to save this game state change for the purposes of the in-game hypothetical
   globals.hypoActions.push(actionMessage);
@@ -271,7 +271,7 @@ commands.set('init', (data: InitData) => {
   globals.hypothetical = data.hypothetical;
   globals.hypoActions = [];
   for (let i = 0; i < data.hypoActions.length; i++) {
-    globals.hypoActions[i] = JSON.parse(data.hypoActions[i]);
+    globals.hypoActions[i] = JSON.parse(data.hypoActions[i]) as ActionIncludingHypothetical;
   }
   globals.hypoRevealed = data.hypoRevealed;
 

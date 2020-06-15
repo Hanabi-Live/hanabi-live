@@ -6,7 +6,7 @@ import Konva from 'konva';
 import { Globals as LobbyGlobals } from '../../globals';
 import { VARIANTS } from '../data/gameData';
 import { GameExports } from '../main';
-import { Action } from '../types/actions';
+import { Action, ActionIncludingHypothetical } from '../types/actions';
 import { ClientAction } from '../types/ClientAction';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import Options from '../types/Options';
@@ -101,7 +101,7 @@ export class Globals {
   useSharedTurns: boolean = false;
   sharedReplayLoading: boolean = false; // This is used to not animate cards when loading in
   hypothetical: boolean = false; // Whether or not we are in a hypothetical
-  hypoActions: Action[] = []; // An array of the actions in the current hypothetical
+  hypoActions: ActionIncludingHypothetical[] = []; // Actions in the current hypothetical
   hypoRevealed: boolean = true; // Whether or not drawn cards should be revealed when drawn
   hypoFirstDrawnIndex: number = 0; // The index of the first card drawn in a hypothetical
 

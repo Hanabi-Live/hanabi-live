@@ -8,7 +8,6 @@ import {
 } from '../../constants';
 import * as variant from '../rules/variant';
 import {
-  Action,
   ActionClue,
   ActionDiscard,
   ActionDraw,
@@ -19,6 +18,8 @@ import {
   ActionStrike,
   ActionText,
   ActionTurn,
+  ActionIncludingHypothetical,
+  ActionReveal,
 } from '../types/actions';
 import ClueType from '../types/ClueType';
 import { MAX_CLUE_NUM } from '../types/constants';
@@ -29,7 +30,6 @@ import ClueEntry from './ClueEntry';
 import { msgClueToClue, msgSuitToSuit } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
-import { ActionIncludingHypothetical, ActionReveal } from './hypothetical';
 import LayoutChild from './LayoutChild';
 import possibilitiesCheck from './possibilitiesCheck';
 import * as stats from './stats';
@@ -39,7 +39,7 @@ import updateCurrentPlayerArea from './updateCurrentPlayerArea';
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list that was sent upon loading a new
 // game/replay)
-export default (data: Action) => {
+export default (data: ActionIncludingHypothetical) => {
   // If a user is editing a note and an action in the game happens,
   // mark to make the tooltip go away as soon as they are finished editing the note
   if (globals.editingNote !== null) {

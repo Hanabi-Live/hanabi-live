@@ -14,6 +14,8 @@ export type Action =
 | ActionText
 | ActionTurn;
 
+export type ActionIncludingHypothetical = Action | ActionReveal;
+
 export interface ActionClue {
   type: 'clue';
   clue: MsgClue;
@@ -86,6 +88,14 @@ export interface ActionTurn {
 
 export interface Which {
   index: number;
+  suit: number;
+  rank: number;
+  order: number;
+}
+
+// Hypothetical only
+export interface ActionReveal {
+  type: 'reveal';
   suit: number;
   rank: number;
   order: number;

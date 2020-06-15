@@ -2,7 +2,7 @@
 // to see what will happen
 
 // Imports
-import { Action } from '../types/actions';
+import { ActionIncludingHypothetical } from '../types/actions';
 import { ActionType, ClientAction } from '../types/ClientAction';
 import ClueType from '../types/ClueType';
 import { MAX_CLUE_NUM } from '../types/constants';
@@ -18,15 +18,6 @@ import LayoutChild from './LayoutChild';
 import PlayerButton from './PlayerButton';
 import * as replay from './replay';
 import * as turn from './turn';
-
-export interface ActionReveal {
-  type: 'reveal';
-  suit: number;
-  rank: number;
-  order: number;
-}
-
-export type ActionIncludingHypothetical = ClientAction | Action | ActionReveal;
 
 export const start = () => {
   if (globals.hypothetical) {
@@ -430,7 +421,7 @@ export const toggleRevealed = () => {
   });
 };
 
-export const setHypoFirstDrawnIndex = (actionMessage: Action) => {
+export const setHypoFirstDrawnIndex = (actionMessage: ActionIncludingHypothetical) => {
   // Set hypoFirstDrawnIndex if this is the first card we drew in the hypothetical
   // This check should only run if the draw action is a hypoAction
   if (actionMessage.type === 'draw' && globals.hypothetical && !globals.hypoFirstDrawnIndex) {
