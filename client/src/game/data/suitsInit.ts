@@ -23,7 +23,7 @@ interface SuitJSON {
 type SuitEntryIterable = Iterable<[keyof (typeof suitsJSON), SuitJSON]>;
 
 export default (COLORS: Map<string, Color>) => {
-  const SUITS: Map<string, Suit> = new Map<string, Suit>();
+  const SUITS = new Map<string, Suit>();
 
   for (const [suitName, suitJSON] of Object.entries(suitsJSON) as SuitEntryIterable) {
     // Validate the name
