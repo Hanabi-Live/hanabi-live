@@ -15,8 +15,8 @@ import * as modals from './modals';
 const emojiMap = new Map<string, string>();
 const emoteList: string[] = [];
 let chatLineNum = 1;
-let tabCompleteCounter: number = 0;
-let tabCompleteIndex: number = 0;
+let tabCompleteCounter = 0;
+let tabCompleteIndex = 0;
 let tabCompleteWordList: string[] = [];
 
 export const init = () => {

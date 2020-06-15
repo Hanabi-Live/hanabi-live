@@ -110,7 +110,7 @@ export default (COLORS: Map<string, Color>) => {
     // If it is not specified, use the fill of the color with the same name
     // Otherwise, assume the fill of the first clue color
     let fill: string = suitJSON.fill || '';
-    let fillColorblind: string = '';
+    let fillColorblind = '';
     if (fill === '') {
       const color = COLORS.get(name);
       if (typeof color !== 'undefined') {

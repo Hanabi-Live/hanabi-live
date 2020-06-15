@@ -117,5 +117,8 @@ module.exports = {
     '@typescript-eslint/no-unsafe-call': ['error'],
     '@typescript-eslint/no-unsafe-member-access': ['error'],
     '@typescript-eslint/no-unsafe-return': ['error'],
+
+    // Keep the code a bit less verbose by removing inferrable type annotations
+    '@typescript-eslint/no-inferrable-types': ['error', { ignoreParameters: true, ignoreProperties: true }],
   },
 };
