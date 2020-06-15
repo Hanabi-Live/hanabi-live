@@ -1,5 +1,6 @@
 // Imports
 import Konva from 'konva';
+import * as variantRules from '../rules/variant';
 import Clue from '../types/Clue';
 import Suit from '../types/Suit';
 import drawLayer from './drawLayer';
@@ -46,7 +47,7 @@ export default class ColorButton extends Konva.Group {
     this.add(backgroundColor);
 
     if (globals.lobby.settings.colorblindMode) {
-      if (globals.variant.name.startsWith('Dual-Color')) {
+      if (variantRules.isDualColor(globals.variant)) {
         // For Dual-Color variants, draw the color abbreviation (as text)
         const text = new Konva.Text({
           x: 0,

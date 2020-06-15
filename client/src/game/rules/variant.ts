@@ -2,7 +2,9 @@
 
 import Variant from '../types/Variant';
 
-export const isUpOrDown = (variant: Variant) => variant.name.startsWith('Up or Down');
+export const isDualColor = (variant: Variant) => variant.name.startsWith('Dual-Color');
+
+export const isAlternatingClues = (variant: Variant) => variant.name.startsWith('Alternating Clues');
 
 export const isClueStarved = (variant: Variant) => variant.name.startsWith('Clue Starved');
 
@@ -12,7 +14,7 @@ export const isDuck = (variant: Variant) => variant.name.startsWith('Duck');
 
 export const isThrowItInAHole = (variant: Variant) => variant.name.startsWith('Throw It in a Hole');
 
-export const isAlternatingClues = (variant: Variant) => variant.name.startsWith('Alternating Clues');
+export const isUpOrDown = (variant: Variant) => variant.name.startsWith('Up or Down');
 
 export const hasReversedSuits = (variant: Variant) => {
   const suits = variant.suits;
