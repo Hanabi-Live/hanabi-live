@@ -171,8 +171,13 @@ const reset = () => {
   globals.clues = MAX_CLUE_NUM;
   globals.cardsGotten = 0;
   globals.cluesSpentPlusStrikes = 0;
-  globals.stackDirections = [0, 0, 0, 0, 0];
   globals.numCardsPlayed = 0;
+  if (variant.isUpOrDown(globals.variant)) {
+    globals.stackDirections = [];
+    for (let i = 0; i < globals.variant.suits.length; i++) {
+      globals.stackDirections.push(StackDirection.Undecided);
+    }
+  }
 
   // Reset various UI elements
   globals.postAnimationLayout = null;
@@ -180,6 +185,11 @@ const reset = () => {
   globals.elements.fullActionLog!.reset();
   globals.elements.deck!.setCount(globals.deckSize);
   globals.elements.clueLog!.clear();
+  if (variant.isUpOrDown(globals.variant)) {
+    for (let i = 0; i < globals.variant.suits.length; i++) {
+      globals.elements.suitLabelTexts[i].fitText('');
+    }
+  }
 
   for (let i = 0; i < globals.elements.playerHands.length; i++) {
     globals.elements.playerHands[i].removeChildren();

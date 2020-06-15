@@ -329,8 +329,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.setCritical();
   }
 
+  // Show or hide the direction arrow (for specific variants)
   setDirectionArrow() {
-    // Show or hide the direction arrow (for specific variants)
     if (
       this.state.suit === null
       || this.state.rank === 0
