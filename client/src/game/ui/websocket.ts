@@ -178,8 +178,8 @@ interface HypoRevealedData {
 commands.set('hypoRevealed', (data: HypoRevealedData) => {
   globals.hypoRevealed = data.hypoRevealed;
 
-  const text = globals.hypoRevealed ? 'Hidden' : 'Revealed';
-  globals.elements.toggleRevealedButton!.setMiddleText(text);
+  const text = globals.hypoRevealed ? 'Hide' : 'Show';
+  globals.elements.toggleRevealedButton!.setText({ line1: text });
   globals.layers.UI.batchDraw();
 
   // Redraw the cards drawn after the hypothetical started

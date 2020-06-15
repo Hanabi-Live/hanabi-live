@@ -18,7 +18,6 @@ import Arrow from './Arrow';
 import * as arrows from './arrows';
 import backToLobby from './backToLobby';
 import Button from './Button';
-import Button2 from './Button2';
 import ButtonGroup from './ButtonGroup';
 import CardLayout from './CardLayout';
 import ClickArea from './ClickArea';
@@ -45,6 +44,7 @@ import * as replay from './replay';
 import StrikeSquare from './StrikeSquare';
 import StrikeX from './StrikeX';
 import TextWithTooltip from './TextWithTooltip';
+import ThreeLineButton from './ThreeLineButton';
 import * as timer from './timer';
 import TimerDisplay from './TimerDisplay';
 import * as tooltips from './tooltips';
@@ -1832,13 +1832,13 @@ const drawHypotheticalArea = () => {
     x: hypoBackButtonValues.x,
     y: hypoBackButtonValues.y + 0.0663,
   };
-  globals.elements.toggleRevealedButton = new Button2({
+  globals.elements.toggleRevealedButton = new ThreeLineButton({
     x: toggleHiddenButtonValues.x * winW,
     y: toggleHiddenButtonValues.y * winH,
     width: 0.07 * winW,
     height: 0.1226 * winH,
-    text: 'Toggle',
-    text2: globals.hypoRevealed ? 'Hidden' : 'Revealed',
+    text: globals.hypoRevealed ? 'Hide' : 'Show',
+    text2: 'Drawn',
     text3: 'Cards',
     visible: false,
   });
