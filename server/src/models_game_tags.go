@@ -10,7 +10,7 @@ func (*GameTags) Insert(gameID int, userID int, tag string) error {
 	_, err := db.Exec(context.Background(), `
 		INSERT INTO game_tags (game_id, user_id, tag)
 		VALUES ($1, $2, $3)
-	`, gameID, tag)
+	`, gameID, userID, tag)
 	return err
 }
 
