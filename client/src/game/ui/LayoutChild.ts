@@ -79,19 +79,39 @@ export default class LayoutChild extends Konva.Group {
       || card.tweening
     ) {
       this.draggable(false);
+      this.off('dragstart');
       this.off('dragend');
       return;
     }
 
     this.draggable(true);
+    this.on('dragstart', this.dragStart);
     this.on('dragend', this.dragEnd);
   }
 
-  dragStart() {
+  dragStart(event: Konva.KonvaEventObject<MouseEvent>) {
+    // Only make a card draggable with a left click
+    // (evt.button does not work properly, so we have to check the bitwise flag of evt.buttons)
+    if (!(event.evt.buttons & 1)) { // eslint-disable-line no-bitwise
+      // Returning false does not work
+      // "evt.preventDefault()" does not work
+      // Instead, unset the drag behavior
+      // As soon as the mouse button is released, the card will "tween" back to the hand
+      // (even though it is in exactly the same place)
+      // At that point, the drag functionality will be automatically restored in the
+      // "checkSetDraggable()" function
+      this.draggable(false);
+      this.off('dragstart');
+      this.off('dragend');
+      return;
+    }
+
     // In a hypothetical, dragging a rotated card from another person's hand is frustrating,
     // so temporarily remove all rotation (for the duration of the drag)
     // The rotation will be automatically reset if the card tweens back to the hand
-    this.rotation(this.parent!.rotation() * -1);
+    if (globals.hypothetical) {
+      this.rotation(this.parent!.rotation() * -1);
+    }
   }
 
   dragEnd() {
@@ -133,6 +153,7 @@ export default class LayoutChild extends Konva.Group {
 
     // We have to unregister the handler or else it will send multiple actions for one drag
     this.draggable(false);
+    this.off('dragstart');
     this.off('dragend');
 
     if (draggedTo === null) {
