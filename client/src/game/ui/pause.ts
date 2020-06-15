@@ -1,6 +1,7 @@
 // Miscellaneous helper functions that apply to the entire UI generally
 
 // Imports
+import drawLayer from './drawLayer';
 import globals from './globals';
 
 export default () => {
@@ -19,11 +20,11 @@ export default () => {
 
     globals.elements.stageFade!.opacity(0.8);
     globals.elements.stageFade!.show();
-    globals.elements.stageFade!.getLayer()!.batchDraw();
+    drawLayer(globals.elements.stageFade!);
 
     globals.elements.timer1!.hide();
     globals.elements.timer2!.hide();
-    globals.elements.timer1!.getLayer()!.batchDraw();
+    drawLayer(globals.elements.timer1!);
 
     globals.elements.pauseArea!.show();
     globals.elements.pauseText!.text(`by: ${globals.pausePlayer}`);
@@ -34,17 +35,17 @@ export default () => {
       globals.elements.pauseButton!.setEnabled(true);
       globals.elements.pauseButton!.opacity(1);
     }
-    globals.elements.pauseArea!.getLayer()!.batchDraw();
+    drawLayer(globals.elements.pauseArea!);
   } else {
     globals.elements.stageFade!.opacity(0.3);
     globals.elements.stageFade!.hide();
-    globals.elements.stageFade!.getLayer()!.batchDraw();
+    drawLayer(globals.elements.stageFade!);
 
     globals.elements.timer1!.visible(!globals.spectating);
     globals.elements.timer2!.show();
-    globals.elements.timer1!.getLayer()!.batchDraw();
+    drawLayer(globals.elements.timer1!);
 
     globals.elements.pauseArea!.hide();
-    globals.elements.pauseArea!.getLayer()!.batchDraw();
+    drawLayer(globals.elements.pauseArea!);
   }
 };

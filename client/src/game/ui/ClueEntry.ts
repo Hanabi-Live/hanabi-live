@@ -2,6 +2,7 @@
 
 // Imports
 import Konva from 'konva';
+import drawLayer from './drawLayer';
 import FitText from './FitText';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
@@ -98,17 +99,11 @@ export default class ClueEntry extends Konva.Group {
       globals.elements.clueLog!.showMatches(null);
 
       this.background.opacity(0.4);
-      const layer = this.getLayer();
-      if (layer) {
-        layer.batchDraw();
-      }
+      drawLayer(this);
     });
     this.background.on('mouseout', () => {
       this.background.opacity(0.1);
-      const layer = this.getLayer();
-      if (layer) {
-        layer.batchDraw();
-      }
+      drawLayer(this);
     });
 
     // Click an entry in the clue log to go to that turn in the replay

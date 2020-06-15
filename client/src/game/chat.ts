@@ -20,11 +20,11 @@ export const init = () => {
       ],
 
       // Define the drag behavior
-      onmove: (event: any) => {
+      onmove: (event: Interact.InteractEvent) => {
         // Get the new position based on the delta between the event and the old position
         // (which is conveniently stored in the "data-x" and "data-y" attributes)
-        const x = (parseFloat(event.target.getAttribute('data-x')) || 0) + event.dx;
-        const y = (parseFloat(event.target.getAttribute('data-y')) || 0) + event.dy;
+        const x = (parseFloat(event.target.getAttribute('data-x') as string) || 0) + event.dx;
+        const y = (parseFloat(event.target.getAttribute('data-y') as string) || 0) + event.dy;
 
         // Move it
         const element = $(`#${event.target.id}`);
@@ -61,15 +61,15 @@ export const init = () => {
       ],
     })
 
-    .on('resizemove', (event: any) => {
+    .on('resizemove', (event: Interact.ResizeEvent) => {
       // Get the new position based on the delta between the event and the old position
       // (which is conveniently stored in the "data-x" and "data-y" attributes)
-      let x = parseFloat(event.target.getAttribute('data-x')) || 0;
-      let y = parseFloat(event.target.getAttribute('data-y')) || 0;
+      let x = parseFloat(event.target.getAttribute('data-x') as string) || 0;
+      let y = parseFloat(event.target.getAttribute('data-y') as string) || 0;
 
       // Translate when resizing from top or left edges
-      x += event.deltaRect.left;
-      y += event.deltaRect.top;
+      x += event.deltaRect!.left;
+      y += event.deltaRect!.top;
 
       // Move it
       const element = $(`#${event.target.id}`);
@@ -80,7 +80,7 @@ export const init = () => {
       event.target.style.height = `${event.rect.height}px`;
     })
 
-    .on('dragend resizeend', (event: any) => {
+    .on('dragend resizeend', (event: Interact.InteractEvent) => {
       // The modal was moved or resized;
       // store the window dimensions in a cookie so that it will persist between refreshes
       localStorage.setItem('chatWindowWidth', event.target.style.width);

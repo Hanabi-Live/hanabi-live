@@ -22,7 +22,7 @@ export const init = () => {
   $('#login-form').submit(submit);
 };
 
-const submit = (event: any) => {
+const submit = (event: JQuery.Event) => {
   // By default, the form will reload the page, so stop this from happening
   event.preventDefault();
 
@@ -82,7 +82,7 @@ const send = (username: string, password: string) => {
   });
 };
 
-const getAjaxError = (jqXHR: any) => {
+const getAjaxError = (jqXHR: JQuery.jqXHR<any>) => {
   if (jqXHR.readyState === 0) {
     return 'A network error occured. The server might be down!';
   }

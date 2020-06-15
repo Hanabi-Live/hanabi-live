@@ -1,5 +1,6 @@
 import Konva from 'konva';
 import Clue from '../types/Clue';
+import drawLayer from './drawLayer';
 
 export default class RankButton extends Konva.Group {
   pressed: boolean = false;
@@ -11,7 +12,7 @@ export default class RankButton extends Konva.Group {
     this.listening(true);
 
     // Class variables
-    this.clue = config.clue;
+    this.clue = config.clue as Clue;
 
     // Local variables
     const w = this.width();
@@ -37,27 +38,21 @@ export default class RankButton extends Konva.Group {
       fontFamily: 'Verdana',
       fill: 'white',
       align: 'center',
-      text: config.number.toString(),
+      text: (config.number as number).toString(),
       listening: false,
     });
     this.add(text);
 
     const resetButton = () => {
       this.background.fill('black');
-      const layer = this.getLayer();
-      if (layer) {
-        layer.batchDraw();
-      }
+      drawLayer(this);
 
       this.background.off('mouseup');
       this.background.off('mouseout');
     };
     this.background.on('mousedown', () => {
       this.background.fill('#888888');
-      const layer = this.getLayer();
-      if (layer) {
-        layer.batchDraw();
-      }
+      drawLayer(this);
 
       this.background.on('mouseout', () => {
         resetButton();
@@ -71,9 +66,6 @@ export default class RankButton extends Konva.Group {
   setPressed(pressed: boolean) {
     this.pressed = pressed;
     this.background.fill(pressed ? '#cccccc' : 'black');
-    const layer = this.getLayer();
-    if (layer) {
-      layer.batchDraw();
-    }
+    drawLayer(this);
   }
 }

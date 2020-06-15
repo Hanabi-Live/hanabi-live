@@ -1,6 +1,6 @@
 // Imports
 import Konva from 'konva';
-import * as KonvaBaseLayer from 'konva/types/BaseLayer';
+import drawLayer from './drawLayer';
 import FitText from './FitText';
 
 export default class Button extends Konva.Group {
@@ -77,14 +77,14 @@ export default class Button extends Konva.Group {
 
     const resetButton = () => {
       this.background.fill('black');
-      this.drawLayer();
+      drawLayer(this);
 
       this.background.off('mouseup');
       this.background.off('mouseout');
     };
     this.background.on('mousedown', () => {
       this.background.fill('#888888');
-      this.drawLayer();
+      drawLayer(this);
 
       this.background.on('mouseout', () => {
         resetButton();
@@ -112,13 +112,13 @@ export default class Button extends Konva.Group {
 
     this.background.listening(enabled);
 
-    this.drawLayer();
+    drawLayer(this);
   }
 
   setPressed(pressed: boolean) {
     this.pressed = pressed;
     this.background.fill(pressed ? '#cccccc' : 'black');
-    this.drawLayer();
+    drawLayer(this);
   }
 
   text(newText: string) {
@@ -134,13 +134,6 @@ export default class Button extends Konva.Group {
       this.textElement.fill(newFill);
     } else {
       throw new Error('The "fill()" method was called on a non-text Button.');
-    }
-  }
-
-  private drawLayer() {
-    const layer = this.getLayer() as KonvaBaseLayer.BaseLayer | null;
-    if (layer) {
-      layer.batchDraw();
     }
   }
 }

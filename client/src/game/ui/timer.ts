@@ -2,6 +2,7 @@
 
 // Imports
 import * as misc from '../../misc';
+import drawLayer from './drawLayer';
 import globals from './globals';
 import TimerDisplay from './TimerDisplay';
 
@@ -120,10 +121,7 @@ function setTickingDownTime(timer: TimerDisplay) {
 
   // Update display
   timer.setTimerText(displayString);
-  const layer = timer.getLayer();
-  if (layer) {
-    layer.batchDraw();
-  }
+  drawLayer(timer);
 
   // Play a sound to indicate that the current player is almost out of time
   // Do not play it more frequently than about once per second

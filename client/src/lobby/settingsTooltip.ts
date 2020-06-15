@@ -88,7 +88,7 @@ function changeSetting(this: HTMLElement) {
 
   // Write the new value to our local variable
   // We must cast the settings to any since this assignment violates type safety
-  (globals.settings as any)[settingName] = checked;
+  (globals.settings[settingName] as any) = checked;
 
   // Send the new value to the server
   globals.conn!.send('setting', {
