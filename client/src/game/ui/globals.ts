@@ -6,7 +6,7 @@ import Konva from 'konva';
 import { Globals as LobbyGlobals } from '../../globals';
 import { VARIANTS } from '../data/gameData';
 import { GameExports } from '../main';
-import { Action } from '../types/actions';
+import { Action, ActionIncludingHypothetical } from '../types/actions';
 import { ClientAction } from '../types/ClientAction';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import Options from '../types/Options';
@@ -53,7 +53,7 @@ export class Globals {
   // Game constants (set upon first initialization)
   deck: HanabiCard[] = [];
   stackBases: HanabiCard[] = [];
-  cardsMap: Map<string, number> = new Map();
+  cardsMap: Map<string, number> = new Map<string, number>();
 
   // Game state variables (reset when rewinding in a replay)
   turn: number = 0;
@@ -75,9 +75,9 @@ export class Globals {
   stage: Konva.Stage = new Konva.Stage({ container: 'game' });
   layers: Layers = new Layers();
   elements: Elements = new Elements();
-  activeHover: any = null; // The element that the mouse cursor is currently over
-  cardImages: Map<string, HTMLCanvasElement> = new Map();
-  scaledCardImages: Map<string, HTMLCanvasElement[]> = new Map();
+  activeHover: Konva.Node | null = null; // The element that the mouse cursor is currently over
+  cardImages: Map<string, HTMLCanvasElement> = new Map<string, HTMLCanvasElement>();
+  scaledCardImages: Map<string, HTMLCanvasElement[]> = new Map<string, HTMLCanvasElement[]>();
 
   // Replay feature
   inReplay: boolean = false; // Whether or not the replay controls are currently showing
@@ -101,7 +101,7 @@ export class Globals {
   useSharedTurns: boolean = false;
   sharedReplayLoading: boolean = false; // This is used to not animate cards when loading in
   hypothetical: boolean = false; // Whether or not we are in a hypothetical
-  hypoActions: Action[] = []; // An array of the actions in the current hypothetical
+  hypoActions: ActionIncludingHypothetical[] = []; // Actions in the current hypothetical
   hypoRevealed: boolean = true; // Whether or not drawn cards should be revealed when drawn
   hypoFirstDrawnIndex: number = 0; // The index of the first card drawn in a hypothetical
 
@@ -173,7 +173,7 @@ export class Globals {
     this.characterRememberedCards = [];
     this.deck = [];
     this.stackBases = [];
-    this.cardsMap = new Map();
+    this.cardsMap = new Map<string, number>();
     this.turn = 0;
     this.currentPlayerIndex = 0;
     this.ourTurn = false;
@@ -192,8 +192,8 @@ export class Globals {
     this.layers = new Layers();
     this.elements = new Elements();
     this.activeHover = null;
-    this.cardImages = new Map();
-    this.scaledCardImages = new Map();
+    this.cardImages = new Map<string, HTMLCanvasElement>();
+    this.scaledCardImages = new Map<string, HTMLCanvasElement[]>();
     this.inReplay = false;
     this.replayLog = [];
     this.replayPos = 0;

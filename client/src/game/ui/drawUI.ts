@@ -44,6 +44,7 @@ import RectWithTooltip from './RectWithTooltip';
 import * as replay from './replay';
 import StrikeSquare from './StrikeSquare';
 import StrikeX from './StrikeX';
+import TextWithTooltip from './TextWithTooltip';
 import * as timer from './timer';
 import TimerDisplay from './TimerDisplay';
 import * as tooltips from './tooltips';
@@ -122,9 +123,10 @@ export default () => {
   }
 
   // Just in case, delete all existing layers
-  for (const layer of globals.stage.getLayers().toArray()) {
+  globals.stage.getLayers().each((layer) => {
     layer.remove();
-  }
+  });
+
   for (const layer of Object.values(globals.layers)) {
     globals.stage.add(layer);
   }
@@ -187,7 +189,7 @@ const initReusableObjects = () => {
     },
     shadowOpacity: 0.9,
   });
-  basicNumberLabel = basicTextLabel.clone();
+  basicNumberLabel = basicTextLabel.clone() as Konva.Text;
   basicNumberLabel.text('0');
   basicNumberLabel.width(0.03 * winW);
 };
@@ -676,7 +678,7 @@ const drawDeck = () => {
     y: (deckValues.y + deckValues.h! - 0.07) * winH,
     fontSize: fontSize * winH,
     visible: false,
-  });
+  }) as Konva.Text;
   globals.layers.UI.add(globals.elements.deckTurnsRemainingLabel1!);
   globals.elements.deckTurnsRemainingLabel2 = basicTextLabel.clone({
     text: 'left: #',
@@ -684,7 +686,7 @@ const drawDeck = () => {
     y: (deckValues.y + deckValues.h! - 0.04) * winH,
     fontSize: fontSize * winH,
     visible: false,
-  });
+  }) as Konva.Text;
   globals.layers.UI.add(globals.elements.deckTurnsRemainingLabel2!);
 
   // This is a yellow border around the deck that will appear when only one card is left
@@ -753,11 +755,11 @@ const drawScoreArea = () => {
     x: labelX * winW,
     y: 0.01 * winH,
     listening: true,
-  });
+  }) as Konva.Text;
   globals.elements.scoreArea.add(turnTextLabel);
 
   // We also want to be able to right-click the turn to go to a specific turn in the replay
-  turnTextLabel.on('click', (event: Konva.KonvaPointerEvent) => {
+  turnTextLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
     if (event.evt.which === 3) { // Right-click
       replay.promptTurn();
     }
@@ -768,7 +770,7 @@ const drawScoreArea = () => {
     x: (labelX + labelSpacing) * winW,
     y: 0.01 * winH,
     listening: true,
-  });
+  }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.turnNumberLabel!);
 
   // We also want to be able to right-click the turn to go to a specific turn in the replay
@@ -783,7 +785,7 @@ const drawScoreArea = () => {
     x: labelX * winW,
     y: 0.045 * winH,
     visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
-  });
+  }) as Konva.Text;
   globals.elements.scoreArea.add(scoreTextLabel);
 
   globals.elements.scoreNumberLabel = basicNumberLabel.clone({
@@ -791,7 +793,7 @@ const drawScoreArea = () => {
     x: (labelX + labelSpacing) * winW,
     y: 0.045 * winH,
     visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
-  });
+  }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreNumberLabel!);
 
   globals.elements.maxScoreNumberLabel = basicNumberLabel.clone({
@@ -800,7 +802,7 @@ const drawScoreArea = () => {
     y: 0.05 * winH,
     fontSize: 0.017 * winH,
     visible: !globals.variant.name.startsWith('Throw It in a Hole') || globals.replay,
-  });
+  }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel!);
 
   const playsTextLabel = basicTextLabel.clone({
@@ -808,7 +810,7 @@ const drawScoreArea = () => {
     x: labelX * winW,
     y: 0.045 * winH,
     visible: globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay,
-  });
+  }) as Konva.Text;
   globals.elements.scoreArea.add(playsTextLabel);
 
   globals.elements.playsNumberLabel = basicNumberLabel.clone({
@@ -816,7 +818,7 @@ const drawScoreArea = () => {
     x: (labelX + labelSpacing) * winW,
     y: 0.045 * winH,
     visible: globals.variant.name.startsWith('Throw It in a Hole') && !globals.replay,
-  });
+  }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.playsNumberLabel!);
 
   const cluesTextLabel = basicTextLabel.clone({
@@ -824,7 +826,7 @@ const drawScoreArea = () => {
     x: labelX * winW,
     y: 0.08 * winH,
     listening: true,
-  });
+  }) as Konva.Text;
   globals.elements.scoreArea.add(cluesTextLabel);
 
   const cluesNumberLabel = basicNumberLabel.clone({
@@ -832,14 +834,14 @@ const drawScoreArea = () => {
     x: (labelX + labelSpacing) * winW,
     y: 0.08 * winH,
     listening: true,
-  });
+  }) as Konva.Text;
   globals.elements.scoreArea.add(cluesNumberLabel);
   globals.elements.cluesNumberLabel = cluesNumberLabel;
 
-  cluesTextLabel.on('click', (event: Konva.KonvaPointerEvent) => {
+  cluesTextLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Clues, cluesNumberLabel);
   });
-  cluesNumberLabel.on('click', (event: Konva.KonvaPointerEvent) => {
+  cluesNumberLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Clues, cluesNumberLabel);
   });
 
@@ -861,7 +863,7 @@ const drawScoreArea = () => {
   globals.elements.cluesNumberLabelPulse.anim.addLayer(globals.layers.UI);
 
   // Draw the 3 strike (bomb) black squares / X's
-  function strikeClick(this: any) {
+  function strikeClick(this: StrikeSquare | StrikeX) {
     if (this.turn === null) {
       return;
     }
@@ -1064,7 +1066,7 @@ const drawSharedReplay = () => {
       return;
     }
 
-    const spectatorMap: Map<number, string> = new Map();
+    const spectatorMap: Map<number, string> = new Map<number, string>();
 
     let msg = 'What is the number of the person that you want to pass the replay leader to?\n\n';
     let i = 1;
@@ -1186,7 +1188,7 @@ const drawStatistics = () => {
     y: 0.54 * winH,
     fontSize: 0.02 * winH,
     listening: true,
-  });
+  }) as TextWithTooltip;
   globals.layers.UI.add(paceTextLabel);
   paceTextLabel.tooltipName = 'pace';
   let paceContent = 'Pace is a measure of how many discards can happen while<br />';
@@ -1194,6 +1196,7 @@ const drawStatistics = () => {
   paceContent += 'still having a chance to get the maximum score.<br />';
   paceContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
   paceContent += '(For more information, click on the "Help" button in the lobby.)';
+  globals.layers.UI.add(paceTextLabel);
   paceTextLabel.tooltipContent = paceContent;
   tooltips.init(paceTextLabel, true, false);
 
@@ -1203,14 +1206,14 @@ const drawStatistics = () => {
     y: 0.54 * winH,
     fontSize: 0.02 * winH,
     listening: true,
-  });
+  }) as Konva.Text;
   globals.layers.UI.add(paceNumberLabel);
   globals.elements.paceNumberLabel = paceNumberLabel;
 
-  paceTextLabel.on('click', (event: Konva.KonvaPointerEvent) => {
+  paceTextLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Pace, paceNumberLabel);
   });
-  paceNumberLabel.on('click', (event: Konva.KonvaPointerEvent) => {
+  paceNumberLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Pace, paceNumberLabel);
   });
 
@@ -1220,7 +1223,7 @@ const drawStatistics = () => {
     y: 0.56 * winH,
     fontSize: 0.02 * winH,
     listening: true,
-  });
+  }) as TextWithTooltip;
   globals.layers.UI.add(efficiencyTextLabel);
   efficiencyTextLabel.tooltipName = 'efficiency';
   const efficiencyContent = `
@@ -1242,14 +1245,14 @@ const drawStatistics = () => {
     y: 0.56 * winH,
     fontSize: 0.02 * winH,
     listening: true,
-  });
+  }) as Konva.Text;
   globals.layers.UI.add(efficiencyNumberLabel);
   globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
 
-  efficiencyTextLabel.on('click', (event: Konva.KonvaPointerEvent) => {
+  efficiencyTextLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
   });
-  efficiencyNumberLabel.on('click', (event: Konva.KonvaPointerEvent) => {
+  efficiencyNumberLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
   });
 
@@ -1263,9 +1266,9 @@ const drawStatistics = () => {
     // "Hard" variants use pink
     fill: minEfficiency < 1.25 ? LABEL_COLOR : '#ffb2b2',
     listening: true,
-  });
+  }) as Konva.Text;
   globals.layers.UI.add(efficiencyNumberLabelMinNeeded);
-  efficiencyNumberLabelMinNeeded.on('click', (event: Konva.KonvaPointerEvent) => {
+  efficiencyNumberLabelMinNeeded.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(
       event,
       ReplayArrowOrder.MinEfficiency,

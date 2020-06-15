@@ -10,7 +10,7 @@ interface ColorJSON {
 type ColorEntryIterable = Iterable<[keyof (typeof colorsJSON), ColorJSON]>;
 
 export default () => {
-  const COLORS: Map<string, Color> = new Map();
+  const COLORS = new Map<string, Color>();
 
   for (const [colorName, colorJSON] of Object.entries(colorsJSON) as ColorEntryIterable) {
     // Validate the name

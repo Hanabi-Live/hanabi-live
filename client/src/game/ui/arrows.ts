@@ -14,9 +14,11 @@ import ReplayActionType from '../types/ReplayActionType';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import Suit from '../types/Suit';
 import Arrow from './Arrow';
+import CardLayout from './CardLayout';
 import drawPip from './drawPip';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
+import { NodeWithTooltip } from './tooltips';
 
 export const hideAll = () => {
   let changed = false;
@@ -32,7 +34,12 @@ export const hideAll = () => {
   }
 };
 
-export const set = (i: number, element: any, giver: number | null, clue: Clue | null) => {
+export const set = (
+  i: number,
+  element: Konva.Node | null,
+  giver: number | null,
+  clue: Clue | null,
+) => {
   // Show the arrow
   const arrow = globals.elements.arrows[i];
   arrow.pointingTo = element;
@@ -42,21 +49,21 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
   // Figure out whether the arrrow should be inverted or not
   let rot = 0;
   if (
-    element.type === 'HanabiCard'
-    && !element.isPlayed
-    && !element.isDiscarded
-    && element.rank !== STACK_BASE_RANK
+    element instanceof HanabiCard
+    && !element.state.isPlayed
+    && !element.state.isDiscarded
+    && element.state.rank !== STACK_BASE_RANK
   ) {
-    if (element.parent && element.parent.parent) {
+    if (element.parent && element.parent.parent && element.parent.parent instanceof CardLayout) {
       rot = element.parent.parent.origRotation;
     }
     if (
       (
         !globals.lobby.settings.keldonMode
-        && element.holder === globals.playerUs
+        && element.state.holder === globals.playerUs
       ) || (
         globals.lobby.settings.keldonMode
-        && (element.holder !== globals.playerUs && element.holder !== null)
+        && (element.state.holder !== globals.playerUs && element.state.holder !== null)
       )
     ) {
       // In BGA mode, invert the arrows on our hand
@@ -83,7 +90,7 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
   } else {
     // This is a clue arrow
     let color;
-    if (element.numPositiveClues >= 2) {
+    if (element instanceof HanabiCard && element.state.numPositiveClues >= 2) {
       // Cards that are re-clued use a different color
       color = ARROW_COLOR.RETOUCHED;
     } else {
@@ -158,21 +165,21 @@ export const set = (i: number, element: any, giver: number | null, clue: Clue | 
     arrow.tween.destroy();
   }
   if (globals.animateFast || giver === null) {
-    const pos = getPos(element, rot);
+    const pos = getPos(element!, rot);
     arrow.setAbsolutePosition(pos);
   } else {
-    animate(arrow, element, rot, giver, globals.turn);
+    animate(arrow, element as HanabiCard, rot, giver, globals.turn);
   }
   if (!globals.animateFast) {
     globals.layers.arrow.batchDraw();
   }
 };
 
-const getPos = (element: any, rot: number) => {
+const getPos = (element: Konva.Node, rot: number) => {
   // Start by using the absolute position of the element
-  const pos = element.absolutePosition();
+  const pos = element.getAbsolutePosition();
 
-  if (element.type === 'HanabiCard') {
+  if (element instanceof HanabiCard) {
     // If we set the arrow at the absolute position of a card, it will point to the exact center
     // Instead, back it off a little bit (accounting for the rotation of the hand)
     const winH = globals.stage.height();
@@ -263,9 +270,9 @@ export const send = (order: ReplayArrowOrder, element: any) => {
 };
 
 // This toggles the "highlight" arrow on a particular element
-export const toggle = (element: any) => {
+export const toggle = (element: NodeWithTooltip | null) => {
   // If the card is currently tweening, delay showing the arrow until the tween is finished
-  if (element.type === 'HanabiCard' && element.tweening) {
+  if (element instanceof HanabiCard && element.tweening) {
     setTimeout(() => {
       toggle(element);
     }, 5);
@@ -279,7 +286,7 @@ export const toggle = (element: any) => {
     set(0, element, null, null);
 
     // If this element has a tooltip and it is open, close it
-    if (element.tooltipName) {
+    if (element && element.tooltipName) {
       const tooltip = $(`#tooltip-${element.tooltipName}`);
       tooltip.tooltipster('close');
     }

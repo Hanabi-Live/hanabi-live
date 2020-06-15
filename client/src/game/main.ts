@@ -75,9 +75,9 @@ export const hide = () => {
 // These are references to some functions and submodules that need to be interacted with
 // in the UI code (e.g. hiding the UI, playing a sound)
 export interface GameExports {
-  hide: any;
-  chat: any;
-  sounds: any;
+  hide: () => void;
+  chat: typeof chat;
+  sounds: typeof sounds;
 }
 const gameExports: GameExports = {
   hide,

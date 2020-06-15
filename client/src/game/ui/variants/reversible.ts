@@ -155,7 +155,7 @@ export const isPotentiallyPlayable = (cardState : CardState) => {
         }
       }
     } else if (globals.stackDirections[i] === StackDirection.Up) {
-      const nextRankNeeded = lastPlayedRank + 1;
+      const nextRankNeeded = lastPlayedRank! + 1;
       const count = cardState.possibleCards.get(`${suit.name}${nextRankNeeded}`);
       if (typeof count === 'undefined') {
         throw new Error(`Failed to get an entry for ${suit.name}${nextRankNeeded} from the "possibleCards" map for card ${cardState.order}.`);
@@ -165,7 +165,7 @@ export const isPotentiallyPlayable = (cardState : CardState) => {
         break;
       }
     } else if (globals.stackDirections[i] === StackDirection.Down) {
-      let nextRankNeeded = lastPlayedRank - 1;
+      let nextRankNeeded = lastPlayedRank! - 1;
       if (!variant.isUpOrDown(globals.variant) && lastPlayedRank === 0) {
         // Reversed stacks start with 5, except in "Up or Down"
         nextRankNeeded = 5;

@@ -1,6 +1,7 @@
 // Speedrun click functions for the HanabiCard object
 
 // Imports
+import Konva from 'konva';
 import { ActionType } from '../types/ClientAction';
 import Color from '../types/Color';
 import {
@@ -15,7 +16,10 @@ import HanabiCard from './HanabiCard';
 import * as notes from './notes';
 import * as turn from './turn';
 
-export default function HanabiCardClickSpeedrun(this: HanabiCard, event: any) {
+export default function HanabiCardClickSpeedrun(
+  this: HanabiCard,
+  event: Konva.KonvaEventObject<any>,
+) {
   // Speedrunning overrides the normal card clicking behavior
   // (but don't use the speedrunning behavior if we are in a
   // solo replay / shared replay / spectating / clicking on the stack base)
@@ -44,14 +48,15 @@ export default function HanabiCardClickSpeedrun(this: HanabiCard, event: any) {
     return;
   }
 
-  if (event.evt.which === 1) { // Left-click
-    clickLeft(this, event.evt);
-  } else if (event.evt.which === 3) { // Right-click
-    clickRight(this, event.evt);
+  const mouseEvent = event.evt as MouseEvent;
+  if (mouseEvent.which === 1) { // Left-click
+    clickLeft(this, mouseEvent);
+  } else if (mouseEvent.which === 3) { // Right-click
+    clickRight(this, mouseEvent);
   }
 }
 
-const clickLeft = (card: HanabiCard, event: PointerEvent) => {
+const clickLeft = (card: HanabiCard, event: MouseEvent) => {
   // Left-clicking on cards in our own hand is a play action
   if (
     card.state.holder === globals.playerUs
@@ -117,7 +122,7 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
   }
 };
 
-const clickRight = (card: HanabiCard, event: PointerEvent) => {
+const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // Right-clicking on cards in our own hand is a discard action
   if (
     card.state.holder === globals.playerUs

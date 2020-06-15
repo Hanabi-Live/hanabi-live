@@ -18,7 +18,7 @@ export const draw = () => {
   }
 
   // Make a mapping of user names to IDs (and keep track of our friends)
-  const usernameMapping: Map<string, number> = new Map();
+  const usernameMapping: Map<string, number> = new Map<string, number>();
   const onlineFriends: string[] = [];
   for (const [id, user] of globals.userMap) {
     usernameMapping.set(user.name, id);

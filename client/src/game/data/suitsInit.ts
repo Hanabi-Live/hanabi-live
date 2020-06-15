@@ -23,7 +23,7 @@ interface SuitJSON {
 type SuitEntryIterable = Iterable<[keyof (typeof suitsJSON), SuitJSON]>;
 
 export default (COLORS: Map<string, Color>) => {
-  const SUITS: Map<string, Suit> = new Map();
+  const SUITS = new Map<string, Suit>();
 
   for (const [suitName, suitJSON] of Object.entries(suitsJSON) as SuitEntryIterable) {
     // Validate the name
@@ -110,7 +110,7 @@ export default (COLORS: Map<string, Color>) => {
     // If it is not specified, use the fill of the color with the same name
     // Otherwise, assume the fill of the first clue color
     let fill: string = suitJSON.fill || '';
-    let fillColorblind: string = '';
+    let fillColorblind = '';
     if (fill === '') {
       const color = COLORS.get(name);
       if (typeof color !== 'undefined') {

@@ -1,6 +1,7 @@
 // Click functions for the HanabiCard object
 
 // Imports
+import Konva from 'konva';
 import { STACK_BASE_RANK } from '../types/constants';
 import * as arrows from './arrows';
 import { suitToMsgSuit } from './convert';
@@ -10,7 +11,7 @@ import * as hypothetical from './hypothetical';
 import * as notes from './notes';
 import * as replay from './replay';
 
-export default function HanabiCardClick(this: HanabiCard, event: any) {
+export default function HanabiCardClick(this: HanabiCard, event: Konva.KonvaEventObject<any>) {
   // Speedrunning overrides the normal card clicking behavior
   // (but do not use the speedrunning behavior if we are in a
   // solo replay / shared replay / spectating)
@@ -27,16 +28,17 @@ export default function HanabiCardClick(this: HanabiCard, event: any) {
     return;
   }
 
-  if (event.evt.which === 1) { // Left-click
-    clickLeft(this, event.evt);
-  } else if (event.evt.which === 2) { // Middle-click
-    clickMiddle(this, event.evt);
-  } else if (event.evt.which === 3) { // Right-click
-    clickRight(this, event.evt);
+  const mouseEvent = event.evt as MouseEvent;
+  if (mouseEvent.which === 1) { // Left-click
+    clickLeft(this, mouseEvent);
+  } else if (mouseEvent.which === 2) { // Middle-click
+    clickMiddle(this, mouseEvent);
+  } else if (mouseEvent.which === 3) { // Right-click
+    clickRight(this, mouseEvent);
   }
 }
 
-const clickLeft = (card: HanabiCard, event: PointerEvent) => {
+const clickLeft = (card: HanabiCard, event: MouseEvent) => {
   // The "Empathy" feature is handled in the "HanabiCardInit.ts" file,
   // so we don't have to worry about it here
   if (
@@ -66,7 +68,7 @@ const clickLeft = (card: HanabiCard, event: PointerEvent) => {
   }
 };
 
-const clickMiddle = (card: HanabiCard, event: PointerEvent) => {
+const clickMiddle = (card: HanabiCard, event: MouseEvent) => {
   // Disable this for the stack base
   if (card.state.rank === STACK_BASE_RANK) {
     return;
@@ -84,7 +86,7 @@ const clickMiddle = (card: HanabiCard, event: PointerEvent) => {
   goToTurn(card.state.turnsClued[0], true);
 };
 
-const clickRight = (card: HanabiCard, event: PointerEvent) => {
+const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // Alt + right-click is a card morph (in a hypothetical)
   if (
     globals.replay

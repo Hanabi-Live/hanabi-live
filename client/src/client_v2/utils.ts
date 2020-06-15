@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+// TODO: fix typing issues in client_v2
+
 export function makeArray(obj: any) {
   if (!Array.isArray(obj)) {
     return [obj];

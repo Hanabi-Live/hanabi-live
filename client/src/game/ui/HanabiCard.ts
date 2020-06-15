@@ -26,11 +26,10 @@ import NoteIndicator from './NoteIndicator';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
 import RankPip from './RankPip';
+import { NodeWithTooltip } from './tooltips';
 import * as reversible from './variants/reversible';
 
-export default class HanabiCard extends Konva.Group {
-  // Mark the object type for use elsewhere in the code
-  type: string = 'HanabiCard';
+export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   state: CardState;
   bareName: string = '';
 
@@ -42,11 +41,11 @@ export default class HanabiCard extends Konva.Group {
   chopMoveBorder: Konva.Group | null = null;
   finesseBorder: Konva.Group | null = null;
   suitPips: Konva.Group | null = null;
-  suitPipsMap: Map<Suit, Konva.Shape> = new Map();
-  suitPipsXMap: Map<Suit, Konva.Shape> = new Map();
+  suitPipsMap: Map<Suit, Konva.Shape> = new Map<Suit, Konva.Shape>();
+  suitPipsXMap: Map<Suit, Konva.Shape> = new Map<Suit, Konva.Shape>();
   rankPips: Konva.Group | null = null;
-  rankPipsMap: Map<number, RankPip> = new Map();
-  rankPipsXMap: Map<number, Konva.Shape> = new Map();
+  rankPipsMap: Map<number, RankPip> = new Map<number, RankPip>();
+  rankPipsXMap: Map<number, Konva.Shape> = new Map<number, Konva.Shape>();
   noteIndicator: NoteIndicator | null = null;
   tooltipName: string = '';
   trashcan: Konva.Image | null = null;
@@ -378,11 +377,19 @@ export default class HanabiCard extends Konva.Group {
       this.arrowBase!.stroke(this.state.suit.fillColors[0]);
     }
     if (this.rankPips!.visible()) {
-      (this.arrow! as any).setMiddleRight();
+      this.setArrowMiddleRight();
     } else {
-      (this.arrow! as any).setBottomRight();
+      this.setArrowBottomRight();
     }
   }
+
+  private setArrowMiddleRight = () => {
+    this.arrow!.y(0.79 * CARD_H);
+  };
+
+  private setArrowBottomRight = () => {
+    this.arrow!.y(0.5 * CARD_H);
+  };
 
   // Fade this card if it is useless, fully revealed, and still in a player's hand
   setFade() {
@@ -982,8 +989,8 @@ export default class HanabiCard extends Konva.Group {
       throw new Error('The holder of this card\'s hand is null in the "updatePossibilitiesOnOtherCards()" function.');
     }
     const playerHand = globals.elements.playerHands[this.state.holder];
-    for (const layoutChild of playerHand.children.toArray()) {
-      const card: HanabiCard = layoutChild.children[0];
+    for (const layoutChild of playerHand.children.toArray() as Array<Konva.Node>) {
+      const card = layoutChild.children[0] as HanabiCard;
       if (card.state.order === this.state.order) {
         // There is no need to update the card that was just revealed
         continue;
@@ -1003,10 +1010,10 @@ export default class HanabiCard extends Konva.Group {
         }
 
         const playerHand2 = globals.elements.playerHands[i];
-        for (const layoutChild of playerHand2.children.toArray()) {
-          const card: HanabiCard = layoutChild.children[0];
+        playerHand2.children.each((layoutChild) => {
+          const card = layoutChild.children[0] as HanabiCard;
           card.removePossibility(suit, rank, false);
-        }
+        });
       }
     }
   }
@@ -1107,7 +1114,7 @@ export default class HanabiCard extends Konva.Group {
     const numCardsInHand = this.parent.parent.children.length;
     for (let i = 0; i < numCardsInHand; i++) {
       const layoutChild = this.parent.parent.children[i];
-      if (layoutChild.children[0].state.order === this.state.order) {
+      if ((layoutChild.children[0] as HanabiCard).state.order === this.state.order) {
         return numCardsInHand - i;
       }
     }
@@ -1190,7 +1197,7 @@ export default class HanabiCard extends Konva.Group {
       if (lastPlayedRank === STACK_BASE_RANK) {
         lastPlayedRank = 0;
       }
-      const nextRankNeeded = lastPlayedRank + 1;
+      const nextRankNeeded = lastPlayedRank! + 1;
       const count = this.state.possibleCards.get(`${suit.name}${nextRankNeeded}`);
       if (typeof count === 'undefined') {
         throw new Error(`Failed to get an entry for ${suit.name}${nextRankNeeded} from the "possibleCards" map for card ${this.state.order}.`);
@@ -1239,7 +1246,7 @@ export default class HanabiCard extends Konva.Group {
 // ---------------
 
 // Remove everything from the array that does not match the condition in the function
-const filterInPlace = (values: any[], predicate: (value: any) => boolean) => {
+function filterInPlace<T>(values: T[], predicate: (value: T) => boolean) : T[] {
   const removed = [];
   let i = values.length - 1;
   while (i >= 0) {
@@ -1249,12 +1256,12 @@ const filterInPlace = (values: any[], predicate: (value: any) => boolean) => {
     i -= 1;
   }
   return removed;
-};
+}
 
 // From: https://medium.com/dailyjs/how-to-remove-array-duplicates-in-es6-5daa8789641c
-const removeDuplicatesFromArray = (array: any[]) => array.filter(
-  (item, index) => array.indexOf(item) === index,
-);
+function removeDuplicatesFromArray<T>(array: T[]) {
+  return array.filter((item, index) => array.indexOf(item) === index);
+}
 
 // getSpecificCardNum returns the total cards in the deck of the specified suit and rank
 // as well as how many of those that have been already discarded

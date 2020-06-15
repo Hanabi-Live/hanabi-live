@@ -19,17 +19,17 @@ export default class TimerDisplay extends Konva.Group {
       width: config.width,
       height: config.height,
       fill: 'black',
-      cornerRadius: config.cornerRadius,
+      cornerRadius: config.cornerRadius as (number | number[] | undefined),
       opacity: 0.2,
     });
     this.add(rectangle);
 
     this.timerText = new FitText({
       x: 0,
-      y: config.spaceH,
+      y: config.spaceH as (number | undefined),
       width: config.width,
       height: config.height,
-      fontSize: config.fontSize,
+      fontSize: config.fontSize as (number | undefined),
       fontFamily: 'Verdana',
       align: 'center',
       text: '??:??',
@@ -49,10 +49,10 @@ export default class TimerDisplay extends Konva.Group {
       y: 6 * config.spaceH,
       width: config.width,
       height: config.height,
-      fontSize: config.labelFontSize || config.fontSize,
+      fontSize: (config.labelFontSize || config.fontSize) as (number | undefined),
       fontFamily: 'Verdana',
       align: 'center',
-      text: config.label,
+      text: config.label as (string | undefined),
       fill: LABEL_COLOR,
       shadowColor: 'black',
       shadowBlur: 10,

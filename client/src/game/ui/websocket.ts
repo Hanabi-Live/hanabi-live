@@ -4,7 +4,7 @@
 import * as sentry from '../../sentry';
 import { VARIANTS } from '../data/gameData';
 import stateReducer from '../stateReducer';
-import { Action } from '../types/actions';
+import { Action, ActionIncludingHypothetical } from '../types/actions';
 import ClueType from '../types/ClueType';
 import Options from '../types/Options';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
@@ -146,7 +146,7 @@ commands.set('gameOver', () => {
 });
 
 commands.set('hypoAction', (data: string) => {
-  const actionMessage = JSON.parse(data);
+  const actionMessage = JSON.parse(data) as ActionIncludingHypothetical;
 
   // We need to save this game state change for the purposes of the in-game hypothetical
   globals.hypoActions.push(actionMessage);
@@ -271,7 +271,7 @@ commands.set('init', (data: InitData) => {
   globals.hypothetical = data.hypothetical;
   globals.hypoActions = [];
   for (let i = 0; i < data.hypoActions.length; i++) {
-    globals.hypoActions[i] = JSON.parse(data.hypoActions[i]);
+    globals.hypoActions[i] = JSON.parse(data.hypoActions[i]) as ActionIncludingHypothetical;
   }
   globals.hypoRevealed = data.hypoRevealed;
 
@@ -451,7 +451,7 @@ const processNewAction = (actionMessage: Action) => {
 
 interface GameActionListData {
   tableID: number,
-  list: any[],
+  list: Action[],
 }
 commands.set('gameActionList', (data: GameActionListData) => {
   // Play through all of the turns
@@ -583,11 +583,11 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
   globals.elements.pauseSharedTurnsButton!.visible(globals.useSharedTurns);
   globals.elements.useSharedTurnsButton!.visible(!globals.useSharedTurns);
   if (globals.amSharedReplayLeader) {
-    (globals.elements.pauseSharedTurnsButton as any).setLeft();
-    (globals.elements.useSharedTurnsButton as any).setLeft();
+    globals.elements.pauseSharedTurnsButton!.setLeft();
+    globals.elements.useSharedTurnsButton!.setLeft();
   } else {
-    (globals.elements.pauseSharedTurnsButton as any).setCenter();
-    (globals.elements.useSharedTurnsButton as any).setCenter();
+    globals.elements.pauseSharedTurnsButton!.setCenter();
+    globals.elements.useSharedTurnsButton!.setCenter();
   }
   globals.elements.enterHypoButton!.visible(globals.amSharedReplayLeader);
   globals.elements.enterHypoButton!.setEnabled(globals.currentPlayerIndex !== -1);

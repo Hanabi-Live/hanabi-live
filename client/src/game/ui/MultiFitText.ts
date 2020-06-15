@@ -5,7 +5,7 @@ import globals from './globals';
 
 export default class MultiFitText extends Konva.Group {
   maxLines: number;
-  smallHistory: any[] = [];
+  smallHistory: string[] = [];
 
   constructor(config: Konva.ContainerConfig, maxLines: number) {
     super(config);
@@ -48,14 +48,14 @@ export default class MultiFitText extends Konva.Group {
       if (!msg) {
         msg = '';
       }
-      (this.children[i] as any).fitText(msg);
+      (this.children[i] as FitText).fitText(msg);
     }
   }
 
   reset() {
     this.smallHistory = [];
     for (let i = 0; i < this.children.length; i++) {
-      (this.children[i] as any).fitText('');
+      (this.children[i] as FitText).fitText('');
     }
   }
 

@@ -17,8 +17,8 @@ export default class CardLayout extends Konva.Group {
     super(config);
 
     // Class variables
-    this.align = config.align || 'left';
-    this.reverse = config.reverse || false;
+    this.align = (config.align || 'left') as string;
+    this.reverse = (config.reverse || false) as boolean;
     this.origRotation = config.rotation || 0;
     this.empathy = false;
 
@@ -166,8 +166,8 @@ export default class CardLayout extends Konva.Group {
   }
 
   isLocked() {
-    for (const layoutChild of this.children.toArray()) {
-      const card: HanabiCard = layoutChild.children[0];
+    for (const layoutChild of this.children.toArray() as Konva.Node[]) {
+      const card = layoutChild.children[0] as HanabiCard;
       if (!card.isClued()) {
         return false;
       }
@@ -176,10 +176,10 @@ export default class CardLayout extends Konva.Group {
   }
 
   getChopIndex() {
-    const hand = this.children.toArray();
+    const hand = this.children.toArray() as Konva.Node[];
     for (let i = 0; i < hand.length; i++) {
       const layoutChild = hand[i];
-      const card: HanabiCard = layoutChild.children[0];
+      const card = layoutChild.children[0] as HanabiCard;
       if (!card.isClued()) {
         return i;
       }

@@ -94,6 +94,6 @@ export const updateEfficiency = (cardsGottenDelta: number) => {
   if (!effMinLabel) {
     throw new Error('efficiencyNumberLabelMinNeeded is not initialized.');
   }
-  const x = effLabel.x() + effLabel.measureSize(effLabel.text()).width;
+  const x = effLabel.x() + effLabel.measureSize(effLabel.text()).width as number;
   effMinLabel.x(x);
 };

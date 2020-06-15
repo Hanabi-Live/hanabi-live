@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+// TODO: fix typing issues in client_v2
+
 // The HanabiCard object, which represents a single card
 // TODO this object has to be re-copied over due to lots of new changes in the Konva UI
 

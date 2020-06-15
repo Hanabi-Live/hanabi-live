@@ -4,8 +4,9 @@ import ColorButton from './ColorButton';
 import PlayerButton from './PlayerButton';
 import RankButton from './RankButton';
 
+type ClueButton = PlayerButton | ColorButton | RankButton;
 export default class ButtonGroup extends Konva.Group {
-  list: Array<PlayerButton | ColorButton | RankButton> = [];
+  list: Array<ClueButton> = [];
 
   constructor(config: Konva.ContainerConfig) {
     super(config);
@@ -14,13 +15,13 @@ export default class ButtonGroup extends Konva.Group {
     this.list = [];
   }
 
-  addList(button: any) {
+  addList(button: ClueButton) {
     const self = this;
 
     this.list.push(button);
 
-    button.on('click tap', function buttonClick(this: any) {
-      this.setPressed(true);
+    (button as Konva.Node).on('click tap', function buttonClick(this: any) {
+      (this as ClueButton).setPressed(true);
 
       for (let i = 0; i < self.list.length; i++) {
         if (self.list[i] !== this && self.list[i].pressed) {

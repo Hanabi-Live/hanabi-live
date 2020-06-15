@@ -11,6 +11,7 @@ import gameWebsocketInit from './game/websocketInit';
 import globals from './globals';
 import * as lobbyLogin from './lobby/login';
 import * as pregame from './lobby/pregame';
+import Settings from './lobby/Settings';
 import * as lobbySettingsTooltip from './lobby/settingsTooltip';
 import lobbyWebsocketInit from './lobby/websocketInit';
 import * as modals from './modals';
@@ -92,7 +93,7 @@ const initCommands = () => {
     globals.username = data.username; // We might have logged-in with a different stylization
     globals.totalGames = data.totalGames;
     globals.muted = data.muted;
-    globals.settings = data.settings;
+    globals.settings = data.settings as Settings;
     globals.friends = data.friends;
     globals.shuttingDown = data.shuttingDown;
     globals.maintenanceMode = data.maintenanceMode;

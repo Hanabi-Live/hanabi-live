@@ -1,6 +1,7 @@
 // Functions for handling all of the keyboard shortcuts
 
 // Imports
+import Konva from 'konva';
 import { copyStringToClipboard } from '../../misc';
 import { ActionType } from '../types/ClientAction';
 import { MAX_CLUE_NUM } from '../types/constants';
@@ -14,9 +15,10 @@ import * as replay from './replay';
 import * as turn from './turn';
 
 // Variables
-const hotkeyClueMap = new Map();
-const hotkeyPlayMap = new Map();
-const hotkeyDiscardMap = new Map();
+type Callback = () => void;
+const hotkeyClueMap = new Map<string, Callback>();
+const hotkeyPlayMap = new Map<string, Callback>();
+const hotkeyDiscardMap = new Map<string, Callback>();
 
 // Build a mapping of hotkeys to functions
 export const init = () => {
@@ -157,7 +159,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   if (
     event.key === 'Delete'
     && globals.activeHover !== null
-    && globals.activeHover.type === 'HanabiCard'
+    && globals.activeHover instanceof HanabiCard
   ) {
     const card: HanabiCard = globals.activeHover;
     card.setNote('');
@@ -287,7 +289,7 @@ const performAction = (playAction = true) => {
 };
 
 // Keyboard actions for playing and discarding cards
-const promptOwnHandOrder = (actionString: string) => {
+const promptOwnHandOrder = (actionString: string) : string | number | null => {
   const playerCards = globals.elements.playerHands[globals.playerUs].children;
   const maxSlotIndex = playerCards.length;
   const msg = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${actionString}.`;
@@ -308,9 +310,9 @@ const promptOwnHandOrder = (actionString: string) => {
     return null;
   }
 
-  return playerCards[maxSlotIndex - numResponse].children[0].order;
+  return (playerCards[maxSlotIndex - numResponse].children[0] as HanabiCard).state.order;
 };
 
-const click = (element: any) => () => {
+const click = (element: Konva.Node) => () => {
   element.dispatchEvent(new MouseEvent('click'));
 };

@@ -12,11 +12,11 @@ import globals from './globals';
 import * as modals from './modals';
 
 // Variables
-const emojiMap = new Map();
+const emojiMap = new Map<string, string>();
 const emoteList: string[] = [];
 let chatLineNum = 1;
-let tabCompleteCounter: number = 0;
-let tabCompleteIndex: number = 0;
+let tabCompleteCounter = 0;
+let tabCompleteIndex = 0;
 let tabCompleteWordList: string[] = [];
 
 export const init = () => {

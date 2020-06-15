@@ -91,10 +91,10 @@ const submit = () => {
   if (typeof gameJSONString !== 'string') {
     throw new Error('The value of the "replay-json" element is not a string.');
   }
-  let gameJSON;
+  let gameJSON: unknown;
   if (source === 'json') {
     try {
-      gameJSON = JSON.parse(gameJSONString);
+      gameJSON = JSON.parse(gameJSONString) as unknown;
     } catch (err) {
       error('Error: That is not a valid JSON object.');
       return;

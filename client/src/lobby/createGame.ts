@@ -4,9 +4,11 @@
 import { FADE_TIME, SHUTDOWN_TIMEOUT } from '../constants';
 import * as debug from '../debug';
 import { VARIANTS } from '../game/data/gameData';
+import { DEFAULT_VARIANT_NAME } from '../game/types/constants';
 import globals from '../globals';
 import * as misc from '../misc';
 import * as modals from '../modals';
+import Settings from './Settings';
 
 // Constants
 const basicVariants = [
@@ -221,7 +223,7 @@ const submit = () => {
   $('#nav-buttons-games-create-game').addClass('disabled');
 };
 
-const getCheckbox = (setting: string) => {
+const getCheckbox = (setting: keyof Settings) => {
   const element = document.getElementById(setting) as HTMLInputElement | null;
   if (!element) {
     throw new Error(`Failed to get the element of "${setting}".`);
@@ -231,7 +233,7 @@ const getCheckbox = (setting: string) => {
   return value;
 };
 
-const getTextbox = (setting: string) => {
+const getTextbox = (setting: keyof Settings) => {
   const element = $(`#${setting}`);
   if (!element) {
     throw new Error(`Failed to get the element of "${setting}".`);
@@ -248,7 +250,7 @@ const getTextbox = (setting: string) => {
   return value;
 };
 
-const getVariant = (setting: string) => {
+const getVariant = (setting: keyof Settings) => {
   const element = $(`#${setting}`);
   if (!element) {
     throw new Error(`Failed to get the element of "${setting}".`);
@@ -262,14 +264,14 @@ const getVariant = (setting: string) => {
   return value;
 };
 
-const checkChanged = (settingName: string, value: boolean | string) => {
+const checkChanged = (settingName: keyof Settings, value: boolean | string) => {
   if (!misc.isKeyOf(settingName, globals.settings)) {
     throw new Error(`The setting of ${settingName} does not exist in the Settings class.`);
   }
 
   if (value !== globals.settings[settingName]) {
     // We must cast the settings to any since this assignment violates type safety
-    (globals.settings as any)[settingName] = value;
+    (globals.settings[settingName] as any) = value;
     globals.conn!.send('setting', {
       name: settingName,
       setting: value.toString(), // The server expects the value of all settings as strings
@@ -369,14 +371,11 @@ export const ready = () => {
 
 const readyVariant = (value: any) => {
   // Validate the variant name that we got from the server
-  let variant = value;
-  if (typeof variant !== 'string') {
-    variant = 'No Variant';
-    globals.settings.createTableVariant = 'No Variant';
-  }
-  if (!variantNames.includes(variant)) {
-    variant = 'No Variant';
-    globals.settings.createTableVariant = 'No Variant';
+  let variant = DEFAULT_VARIANT_NAME;
+  if (typeof value !== 'string' || !variantNames.includes(value)) {
+    globals.settings.createTableVariant = variant;
+  } else {
+    variant = value;
   }
 
   // Update the hidden field

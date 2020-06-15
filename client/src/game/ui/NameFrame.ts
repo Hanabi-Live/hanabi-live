@@ -26,7 +26,7 @@ export default class NameFrame extends Konva.Group {
     }
 
     // Class variables
-    this.playerIndex = config.playerIndex;
+    this.playerIndex = config.playerIndex as number;
     this.tooltipName = `player-${this.playerIndex}`;
 
     this.playerName = new Konva.Text({
@@ -56,15 +56,16 @@ export default class NameFrame extends Konva.Group {
 
     this.playerName.on('click tap', function click(event) {
       const username = this.text();
-      if (event.evt.which === 1) { // Left-click
+      const mouseEvent = event.evt as MouseEvent;
+      if (mouseEvent.which === 1) { // Left-click
         // Left-click on the name frame to see a log of only their actions
         globals.elements.fullActionLog!.showPlayerActions(username);
-      } else if (event.evt.which === 3) { // Right-click
+      } else if (mouseEvent.which === 3) { // Right-click
         if (!globals.replay && globals.spectating) {
           // As a spectator in an ongoing game, right-clicking on a name frame reloads the
           // page, shifting the seat and hiding the appropriate cards
           // (so that you can spectate from a specific player's perspective)
-          event.evt.preventDefault();
+          mouseEvent.preventDefault();
           setTimeout(() => {
             globals.lobby.conn!.send('tableSpectate', {
               tableID: globals.lobby.tableID,

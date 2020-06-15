@@ -5,7 +5,7 @@ import globals from './globals';
 // These are arrows used to show which cards that are touched by a clue
 // (and for pointing to various things in a shared replay)
 export default class Arrow extends Konva.Group {
-  pointingTo: any;
+  pointingTo: Konva.Node | null;
   tween: Konva.Tween | null;
 
   base: Konva.Arrow;

@@ -1,9 +1,16 @@
 // Imports
+import Konva from 'konva';
 import { TOOLTIP_DELAY } from '../../constants';
 import globals from './globals';
+import TextWithTooltip from './TextWithTooltip';
 
-export const init = (element: any, delayed: boolean, customContent: boolean) => {
-  element.on('mousemove', function mouseMove(this: any) {
+export interface NodeWithTooltip extends Konva.Node {
+  tooltipName?: string;
+  tooltipContent?: string;
+}
+
+export const init = (element: NodeWithTooltip, delayed: boolean, customContent: boolean) => {
+  element.on('mousemove', function mouseMove(this: Konva.Node) {
     globals.activeHover = this;
     if (!delayed) {
       show(this);
@@ -26,7 +33,7 @@ export const init = (element: any, delayed: boolean, customContent: boolean) => 
   $(`#tooltip-${element.tooltipName}`).tooltipster('instance').content(content);
 };
 
-export const show = (element: any) => {
+export const show = (element: NodeWithTooltip) => {
   // Don't do anything if we are no longer in the game
   if (globals.lobby.currentScreen !== 'game') {
     return;
@@ -38,9 +45,9 @@ export const show = (element: any) => {
   }
 
   const tooltip = $(`#tooltip-${element.tooltipName}`);
-  const pos = element.absolutePosition();
+  const pos = element.getAbsolutePosition();
   let width = element.width();
-  if (typeof element.getTextWidth === 'function') {
+  if (element instanceof TextWithTooltip) {
     width = element.getTextWidth();
   }
   const tooltipX = pos.x + (width / 2);

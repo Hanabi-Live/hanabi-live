@@ -1,11 +1,14 @@
-export default class Loader {
-  filePathMap: Map<string, string> = new Map();
-  numLoaded: number = 0;
-  imageMap: Map<string, HTMLImageElement> = new Map();
-  progressCallback: any = null;
-  finishedCallback: any = null;
+type ProgressCallback = (numLoaded: number, size: number) => void;
+type FinishedCallback = () => void;
 
-  constructor(progressCallback: any, finishedCallback: any) {
+export default class Loader {
+  filePathMap: Map<string, string> = new Map<string, string>();
+  numLoaded: number = 0;
+  imageMap: Map<string, HTMLImageElement> = new Map<string, HTMLImageElement>();
+  progressCallback: ProgressCallback;
+  finishedCallback: FinishedCallback;
+
+  constructor(progressCallback: ProgressCallback, finishedCallback: FinishedCallback) {
     this.progressCallback = progressCallback;
     this.finishedCallback = finishedCallback;
 

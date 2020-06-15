@@ -2,6 +2,7 @@
 import Konva from 'konva';
 import Clue from '../types/Clue';
 import Suit from '../types/Suit';
+import drawLayer from './drawLayer';
 import drawPip from './drawPip';
 import globals from './globals';
 
@@ -15,7 +16,7 @@ export default class ColorButton extends Konva.Group {
     super(config);
     this.listening(true);
 
-    this.clue = config.clue;
+    this.clue = config.clue as Clue;
 
     // Local variables
     const w = this.width();
@@ -38,7 +39,7 @@ export default class ColorButton extends Konva.Group {
       width: 0.8 * w,
       height: 0.8 * h,
       cornerRadius: 0.12 * 0.8 * h,
-      fill: config.color,
+      fill: config.color as string | undefined,
       opacity: 0.9,
       listening: false,
     });
@@ -58,7 +59,7 @@ export default class ColorButton extends Konva.Group {
           stroke: 'black',
           strokeWidth: 1,
           align: 'center',
-          text: config.text,
+          text: config.text as string | undefined,
           listening: false,
         });
         this.add(text);
@@ -84,20 +85,14 @@ export default class ColorButton extends Konva.Group {
 
     const resetButton = () => {
       this.background.fill('black');
-      const layer = this.getLayer();
-      if (layer) {
-        layer.batchDraw();
-      }
+      drawLayer(this);
 
       this.background.off('mouseup');
       this.background.off('mouseout');
     };
     this.background.on('mousedown', () => {
       this.background.fill('#888888');
-      const layer = this.getLayer();
-      if (layer) {
-        layer.batchDraw();
-      }
+      drawLayer(this);
 
       this.background.on('mouseout', () => {
         resetButton();
@@ -111,9 +106,6 @@ export default class ColorButton extends Konva.Group {
   setPressed(pressed: boolean) {
     this.pressed = pressed;
     this.background.fill(pressed ? '#cccccc' : 'black');
-    const layer = this.getLayer();
-    if (layer) {
-      layer.batchDraw();
-    }
+    drawLayer(this);
   }
 }
