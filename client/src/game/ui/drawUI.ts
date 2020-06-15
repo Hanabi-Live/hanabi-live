@@ -48,7 +48,6 @@ import TextWithTooltip from './TextWithTooltip';
 import * as timer from './timer';
 import TimerDisplay from './TimerDisplay';
 import * as tooltips from './tooltips';
-import { NodeWithTooltip } from './tooltips';
 
 interface Values {
   x: number;
@@ -1189,16 +1188,16 @@ const drawStatistics = () => {
     y: 0.54 * winH,
     fontSize: 0.02 * winH,
     listening: true,
-  }) as Konva.Text;
+  }) as TextWithTooltip;
   globals.layers.UI.add(paceTextLabel);
-  (paceTextLabel as NodeWithTooltip).tooltipName = 'pace';
+  paceTextLabel.tooltipName = 'pace';
   let paceContent = 'Pace is a measure of how many discards can happen while<br />';
   paceContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
   paceContent += 'still having a chance to get the maximum score.<br />';
   paceContent += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
   paceContent += '(For more information, click on the "Help" button in the lobby.)';
   globals.layers.UI.add(paceTextLabel);
-  (paceTextLabel as NodeWithTooltip).tooltipContent = paceContent;
+  paceTextLabel.tooltipContent = paceContent;
   tooltips.init(paceTextLabel, true, false);
 
   const paceNumberLabel = basicNumberLabel.clone({
