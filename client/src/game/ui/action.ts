@@ -508,7 +508,8 @@ actionFunctions.set('strike', (data: ActionStrike) => {
   const strikeX = globals.elements.strikeXs[i];
 
   // Update the stats
-  globals.cluesSpentPlusStrikes += 1;
+  // In clue starved variants, each strike only "costs" half a clue
+  globals.cluesSpentPlusStrikes += globals.variant.name.startsWith('Clue Starved') ? 0.5 : 1;
   stats.updateEfficiency(0);
 
   // Animate the strike square fading in
