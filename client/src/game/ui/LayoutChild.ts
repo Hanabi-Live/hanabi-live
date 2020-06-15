@@ -91,8 +91,7 @@ export default class LayoutChild extends Konva.Group {
 
   dragStart(event: Konva.KonvaEventObject<MouseEvent>) {
     // Only make a card draggable with a left click
-    // (evt.button does not work properly, so we have to check the bitwise flag of evt.buttons)
-    if (!(event.evt.buttons & 1)) { // eslint-disable-line no-bitwise
+    if (event.evt.buttons !== 1) {
       // Returning false does not work
       // "evt.preventDefault()" does not work
       // Instead, unset the drag behavior
