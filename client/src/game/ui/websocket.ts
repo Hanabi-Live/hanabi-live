@@ -152,6 +152,7 @@ commands.set('hypoAction', (data: string) => {
   globals.hypoActions.push(actionMessage);
 
   hypothetical.setHypoFirstDrawnIndex(actionMessage);
+  hypothetical.checkToggleRevealedButton(actionMessage);
   action(actionMessage);
 
   if (actionMessage.type === 'turn') {
