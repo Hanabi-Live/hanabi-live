@@ -32,9 +32,21 @@ module.exports = {
   // We modify the linting rules from the base for some specific things
   // (listed in alphabetical order)
   rules: {
+    // Prefer the "[]string" syntax over "Array<string>"
+    '@typescript-eslint/array-type': ['error', { default: 'array-simple' }],
+
     // Temp rules until airbnb-typescript can be updated
     '@typescript-eslint/camelcase': 'off',
 
+    // Keep the code a bit less verbose by removing inferrable type annotations
+    '@typescript-eslint/no-inferrable-types': ['error', { ignoreParameters: true, ignoreProperties: true }],
+
+    // No "any" types
+    '@typescript-eslint/no-unsafe-assignment': ['error'],
+    '@typescript-eslint/no-unsafe-call': ['error'],
+    '@typescript-eslint/no-unsafe-member-access': ['error'],
+    '@typescript-eslint/no-unsafe-return': ['error'],
+ 
     // This allows code to be structured in a more logical order
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/variables.js#L42
     '@typescript-eslint/no-use-before-define': ['off'],
@@ -111,14 +123,5 @@ module.exports = {
     // https://blog.javascripting.com/2015/09/07/fine-tuning-airbnbs-eslint-config/
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L448
     'quote-props': ['error', 'consistent-as-needed'],
-
-     // No any's, ever
-    '@typescript-eslint/no-unsafe-assignment': ['error'],
-    '@typescript-eslint/no-unsafe-call': ['error'],
-    '@typescript-eslint/no-unsafe-member-access': ['error'],
-    '@typescript-eslint/no-unsafe-return': ['error'],
-
-    // Keep the code a bit less verbose by removing inferrable type annotations
-    '@typescript-eslint/no-inferrable-types': ['error', { ignoreParameters: true, ignoreProperties: true }],
   },
 };
