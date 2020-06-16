@@ -169,7 +169,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 		if len(match) != 0 {
 			oldTableName = match[0][1] // This is the name of the room without the "(#2)" part
 			gameNumber, _ = strconv.Atoi(match[0][2])
-			gameNumber += 1
+			gameNumber++
 		}
 		newTableName = oldTableName + " (#" + strconv.Itoa(gameNumber) + ")"
 	} else {
