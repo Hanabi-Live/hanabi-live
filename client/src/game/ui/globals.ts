@@ -3,6 +3,7 @@
 
 // Imports
 import Konva from 'konva';
+import * as Redux from 'redux';
 import { Globals as LobbyGlobals } from '../../globals';
 import { VARIANTS } from '../data/gameData';
 import { GameExports } from '../main';
@@ -146,8 +147,8 @@ export class Globals {
   chatUnread: number = 0;
 
   // State information
-  state: State = new State(this.variant, this.playerNames.length); // The current state
-  states: State[] = []; // The state for each turn
+  store: Redux.Store<State, Action> | null = null;
+  states: State[] = [];
 
   // We provide a method to reset every class variable to its initial value
   // This is called when the user goes into a new game
@@ -232,8 +233,6 @@ export class Globals {
     this.UIClickTime = 0;
     this.spectators = [];
     this.chatUnread = 0;
-    this.state = new State(this.variant, this.playerNames.length);
-    this.states = [];
     this.deckOrder = [];
   }
 }

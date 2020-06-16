@@ -7,7 +7,6 @@ import { ActionIncludingHypothetical } from '../types/actions';
 import { ActionType, ClientAction } from '../types/ClientAction';
 import ClueType from '../types/ClueType';
 import { MAX_CLUE_NUM } from '../types/constants';
-import MsgClue from '../types/MsgClue';
 import ReplayActionType from '../types/ReplayActionType';
 import action from './action';
 import cardStatusCheck from './cardStatusCheck';
@@ -190,9 +189,9 @@ export const send = (hypoAction: ClientAction) => {
     }
     let clue;
     if (hypoAction.type === ActionType.ColorClue) {
-      clue = new MsgClue(ClueType.Color, hypoAction.value);
+      clue = { type: ClueType.Color, value: hypoAction.value };
     } else if (hypoAction.type === ActionType.RankClue) {
-      clue = new MsgClue(ClueType.Rank, hypoAction.value);
+      clue = { type: ClueType.Rank, value: hypoAction.value };
     } else {
       throw new Error('The hypothetical action had an invalid clue type.');
     }
