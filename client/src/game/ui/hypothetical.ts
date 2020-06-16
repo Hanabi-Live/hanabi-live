@@ -40,7 +40,6 @@ export const start = () => {
   globals.elements.toggleRevealedButton?.setEnabled(true);
 
   show();
-  beginTurn();
 };
 
 // Transition the screen to show all of the hypothetical buttons and elements
@@ -53,16 +52,27 @@ export const show = () => {
     globals.elements.clueTargetButtonGroup2!.show();
   }
 
-  if (globals.amSharedReplayLeader) {
-    globals.elements.restartButton!.visible(false);
-    globals.elements.endHypotheticalButton!.visible(true);
-    globals.elements.hypoBackButton!.visible(globals.hypoActions.length > 0);
-    globals.elements.toggleRevealedButton!.visible(true);
-  } else {
-    globals.elements.hypoCircle!.visible(true);
+  // Make sure to toggle all of the elements
+  // in case the leader changes in the middle of a hypothetical
+  globals.elements.restartButton!.visible(false);
+
+  // These elements are visible only for the leader
+  globals.elements.endHypotheticalButton!.visible(globals.amSharedReplayLeader);
+  globals.elements.hypoBackButton!.visible(globals.amSharedReplayLeader && globals.hypoActions.length > 0); // eslint-disable-line max-len
+  globals.elements.toggleRevealedButton!.visible(globals.amSharedReplayLeader);
+  globals.elements.clueTargetButtonGroup2!.visible(globals.amSharedReplayLeader);
+  globals.elements.clueArea!.visible(globals.amSharedReplayLeader);
+
+  // This element is visible only for the other spectators
+  globals.elements.hypoCircle!.visible(!globals.amSharedReplayLeader);
+
+  if (!globals.amSharedReplayLeader) {
+    disableDragOnAllHands();
   }
 
   globals.layers.UI.batchDraw();
+
+  beginTurn();
 };
 
 export const playThroughPastActions = () => {
