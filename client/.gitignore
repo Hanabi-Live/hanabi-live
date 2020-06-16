@@ -3,3 +3,9 @@
 
 # We don't need to include the converted TypeScript --> Javascript files
 /webpack_output
+
+# Normally, you are supposed to commit the NPM package-lock.json in the repository
+# However, whenever a user runs "npx install-peerdeps --dev eslint-config-airbnb-base" as specified
+# in the Airbnb documentation, it will completely rewrite the package-lock.json file
+# Thus, just ignore it
+/package-lock.json
