@@ -102,6 +102,9 @@ func commandChat(s *Session, d *CommandData) {
 		return
 	}
 
+	d.Msg = chatFillMentions(d.Msg) // Convert Discord mentions from number to username
+	d.Msg = chatFillChannels(d.Msg) // Convert Discord channel names from number to username
+
 	// Add the message to the database
 	if d.Discord {
 		if err := models.ChatLog.InsertDiscord(d.Username, d.Msg, d.Room); err != nil {
@@ -116,9 +119,6 @@ func commandChat(s *Session, d *CommandData) {
 			return
 		}
 	}
-
-	d.Msg = chatFillMentions(d.Msg) // Convert Discord mentions from number to username
-	d.Msg = chatFillChannels(d.Msg) // Convert Discord channel names from number to username
 
 	// Lobby messages go to everyone
 	if !d.OnlyDiscord {
