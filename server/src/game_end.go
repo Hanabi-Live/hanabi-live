@@ -371,6 +371,7 @@ func (t *Table) ConvertToSharedReplay() {
 	g := t.Game
 
 	t.Replay = true
+	t.InitialName = t.Name
 	t.Name = "Shared replay for game #" + strconv.Itoa(g.ID)
 	// Update the "EndTurn" field (since we incremented the final turn above in an artificial way)
 	g.EndTurn = g.Turn

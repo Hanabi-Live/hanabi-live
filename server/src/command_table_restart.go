@@ -158,17 +158,23 @@ func commandTableRestart(s *Session, d *CommandData) {
 		})
 	}
 
+	newTableName := ""
+
 	// Generate a new name for the game based on which iteration of the room this is
 	// For example, a game named "logic only" will be "logic only (#2)" and then "logic only (#3)"
-	oldTableName := t.Name
-	gameNumber := 2 // By default, this is the second game of a particular table
-	match := roomNameRegExp.FindAllStringSubmatch(oldTableName, -1)
-	if len(match) != 0 {
-		oldTableName = match[0][1] // This is the name of the room without the "(#2)" part
-		gameNumber, _ := strconv.Atoi(match[0][2])
-		gameNumber += 1
+	if t.InitialName != "" {
+		oldTableName := t.InitialName
+		gameNumber := 2 // By default, this is the second game of a particular table
+		match := roomNameRegExp.FindAllStringSubmatch(oldTableName, -1)
+		if len(match) != 0 {
+			oldTableName = match[0][1] // This is the name of the room without the "(#2)" part
+			gameNumber, _ = strconv.Atoi(match[0][2])
+			gameNumber += 1
+		}
+		newTableName = oldTableName + " (#" + strconv.Itoa(gameNumber) + ")"
+	} else {
+		newTableName = getName()
 	}
-	newTableName := oldTableName + " (#" + strconv.Itoa(gameNumber) + ")"
 
 	// The shared replay should now be deleted, since all of the players have left
 	// Now, create the new game but hide it from the lobby

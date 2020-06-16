@@ -10,8 +10,9 @@ var (
 )
 
 type Table struct {
-	ID   int
-	Name string
+	ID          int
+	Name        string
+	InitialName string // The name of the table before it was converted to a replay
 
 	Players    []*Player
 	Spectators []*Spectator
