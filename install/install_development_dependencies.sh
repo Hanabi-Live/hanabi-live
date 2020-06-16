@@ -8,7 +8,7 @@ set -x # Enable debugging
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # Install VS Code extensions
-code --install-extension "ms-vscode.Go" # For Golang
+code --install-extension "golang.go" # For Golang
 code --install-extension "dbaeumer.vscode-eslint" # For TypeScript
 
 # Install the Golang linter
