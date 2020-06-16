@@ -79,8 +79,8 @@ export const playThroughPastActions = () => {
       checkToggleRevealedButton(actionMessage);
       action(actionMessage);
     }
-    cardStatusCheck();
     globals.animateFast = false;
+    cardStatusCheck();
     globals.elements.actionLog!.refreshText();
     globals.elements.fullActionLog!.refreshText();
     globals.layers.card.batchDraw();
