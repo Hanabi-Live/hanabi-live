@@ -171,12 +171,12 @@ func commandTableRestart(s *Session, d *CommandData) {
 	newTableName := oldTableName + " (#" + strconv.Itoa(gameNumber) + ")"
 
 	// The shared replay should now be deleted, since all of the players have left
-	// Now, emulate the game owner creating a new game
-	commandTableCreate(s, &CommandData{
+	// Now, create the new game but hide it from the lobby
+	createTable(s, &CommandData{
 		Name:         newTableName,
 		Options:      t.Options,
 		AlertWaiters: t.AlertWaiters,
-	})
+	}, false)
 
 	// Find the table ID for the new game
 	var t2 *Table

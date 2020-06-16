@@ -21,7 +21,7 @@ func notifyAllUserInactive(s *Session) {
 }
 
 func notifyAllTable(t *Table) {
-	if t.Visible {
+	if t.Visible && (t.PreGameVisible || t.Running || t.Replay) {
 		for _, s := range sessions {
 			s.NotifyTable(t)
 		}
