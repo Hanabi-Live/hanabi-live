@@ -1,11 +1,17 @@
 package main
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 )
 
-// commandTableRestart is sent when the user is in a shared replay of a speedrun game and wants to
+var (
+	// In example string "room name (#2)" this matches "room name" and "2"
+	roomNameRegExp = regexp.MustCompile(`^(.*) \(#(\d+)\)$`)
+)
+
+// commandTableRestart is sent when the user is in a shared replay of a game and wants to
 // start a new game with the same settings as the current game
 //
 // Example data:
@@ -152,8 +158,17 @@ func commandTableRestart(s *Session, d *CommandData) {
 		})
 	}
 
-	// Generate a random name for the new game
-	newTableName := getName()
+	// Generate a new name for the game based on which iteration of the room this is
+	// For example, a game named "logic only" will be "logic only (#2)" and then "logic only (#3)"
+	oldTableName := t.Name
+	gameNumber := 2 // By default, this is the second game of a particular table
+	match := roomNameRegExp.FindAllStringSubmatch(oldTableName, -1)
+	if len(match) != 0 {
+		oldTableName = match[0][1] // This is the name of the room without the "(#2)" part
+		gameNumber, _ := strconv.Atoi(match[0][2])
+		gameNumber += 1
+	}
+	newTableName := oldTableName + " (#" + strconv.Itoa(gameNumber) + ")"
 
 	// The shared replay should now be deleted, since all of the players have left
 	// Now, emulate the game owner creating a new game
