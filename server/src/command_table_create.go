@@ -364,7 +364,7 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	}
 
 	t := NewTable(d.Name, s.UserID())
-	t.PreGameVisible = preGameVisible
+	t.Visible = preGameVisible
 	t.PasswordHash = passwordHash
 	t.AlertWaiters = d.AlertWaiters
 	if setReplayOptions == nil {

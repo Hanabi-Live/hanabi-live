@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	// In example string "room name (#2)" this matches "room name" and "2"
+	// e.g. "room name (#2)" matches "room name" and "2"
 	roomNameRegExp = regexp.MustCompile(`^(.*) \(#(\d+)\)$`)
 )
 
@@ -226,6 +226,8 @@ func commandTableRestart(s *Session, d *CommandData) {
 	commandTableStart(s, &CommandData{
 		TableID: t2.ID,
 	})
+
+	t2.Visible = true
 
 	// Automatically join any other spectators that were watching
 	for _, s2 := range spectatorSessions {

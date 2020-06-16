@@ -25,9 +25,8 @@ type Table struct {
 
 	// This is the user ID of the person who started the table
 	// or the current leader of the shared replay
-	Owner          int
-	Visible        bool // Whether or not this table is shown to other users
-	PreGameVisible bool // Whether or not this table is shown to other users while it's a pre-game
+	Owner   int
+	Visible bool // Whether or not this table is shown to other users
 	// This is an Argon2id hash generated from the plain-text password
 	// that the table creator sends us
 	PasswordHash string
@@ -93,9 +92,8 @@ func NewTable(name string, owner int) *Table {
 		KickedPlayers:    make(map[int]struct{}),
 		DisconSpectators: make(map[int]struct{}),
 
-		Owner:          owner,
-		PreGameVisible: true,
-		Visible:        true, // Tables are visible by default
+		Owner:   owner,
+		Visible: true, // Tables are visible by default
 
 		DatetimeCreated:    time.Now(),
 		DatetimeLastJoined: time.Now(),
