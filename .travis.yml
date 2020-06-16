@@ -33,7 +33,8 @@ matrix:
         # https://github.com/golangci/golangci-lint
         - echo "Installing golangci-lint (the Go linter)..."
         - cd server
-        - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.27.0
+        - source .golangci-lint.version
+        - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin $GOLANGCI_LINT_VERSION
       script:
         - echo "Building the server..."
         - ./build_server.sh
