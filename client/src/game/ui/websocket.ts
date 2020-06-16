@@ -1,10 +1,11 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things
 
 // Imports
+import { createStore } from 'redux';
 import * as sentry from '../../sentry';
 import { VARIANTS } from '../data/gameData';
+import stateReducer from '../reducers/stateReducer';
 import * as variantRules from '../rules/variant';
-import stateReducer from '../stateReducer';
 import { Action, ActionIncludingHypothetical } from '../types/actions';
 import ClueType from '../types/ClueType';
 import Options from '../types/Options';
@@ -262,7 +263,8 @@ commands.set('init', (data: InitData) => {
     globals.variant = variant;
   }
 
-  globals.state = initialState(variant, globals.playerNames.length);
+  // Recreate the store
+  globals.store = createStore(stateReducer, initialState(variant, globals.playerNames.length));
 
   // Character settings
   globals.characterAssignments = data.characterAssignments;
@@ -386,14 +388,14 @@ commands.set('gameAction', (data: GameActionData) => {
 
 const processNewAction = (actionMessage: Action) => {
   // Update the game state
-  globals.state = stateReducer(globals.state, actionMessage);
+  globals.store!.dispatch(actionMessage);
 
   // TEMP: We need to save this game state change for the purposes of the in-game replay
   globals.replayLog.push(actionMessage);
 
   if (actionMessage.type === 'turn') {
     // Store the current state in the state table to enable replays
-    globals.states[actionMessage.num] = globals.state;
+    globals.states[actionMessage.num] = globals.store!.getState();
 
     // Keep track of whether it is our turn or not
     globals.ourTurn = actionMessage.who === globals.playerUs && !globals.spectating;

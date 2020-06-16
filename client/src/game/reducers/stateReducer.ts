@@ -4,10 +4,10 @@
 
 // Imports
 import produce, { Draft } from 'immer';
-import { VARIANTS } from './data/gameData';
-import * as clues from './rules/clues';
-import { Action } from './types/actions';
-import State from './types/State';
+import { VARIANTS } from '../data/gameData';
+import * as clues from '../rules/clues';
+import { Action } from '../types/actions';
+import State from '../types/State';
 
 const stateReducer = produce((state: Draft<State>, action: Action) => {
   switch (action.type) {
@@ -166,6 +166,6 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     default:
       break;
   }
-});
+}, {} as State);
 
 export default stateReducer;
