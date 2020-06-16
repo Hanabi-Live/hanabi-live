@@ -38,6 +38,11 @@ module.exports = {
     // Temp rules until airbnb-typescript can be updated
     '@typescript-eslint/camelcase': 'off',
 
+    // Airbnb has "exceptAfterSingleLine" turned off by default
+    // A list of single-line variable declarations at the top of a class is common in TypeScript
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L183
+    '@typescript-eslint/lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
+
     // Keep the code a bit less verbose by removing inferrable type annotations
     '@typescript-eslint/no-inferrable-types': ['error', { ignoreParameters: true, ignoreProperties: true }],
 
@@ -63,11 +68,6 @@ module.exports = {
       groups: [['builtin', 'external', 'internal']],
       alphabetize: { order: 'asc', caseInsensitive: true },
     }],
-
-    // Airbnb has "exceptAfterSingleLine" turned off by default
-    // A list of single-line variable declarations at the top of a class is common in TypeScript
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L183
-    'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
 
     // The client makes use of some tasteful alerts
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js#L59
