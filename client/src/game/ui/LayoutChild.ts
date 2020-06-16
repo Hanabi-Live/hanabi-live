@@ -90,21 +90,9 @@ export default class LayoutChild extends Konva.Group {
     this.on('dragend', this.dragEnd);
   }
 
-  dragStart(event: Konva.KonvaEventObject<MouseEvent>) {
-    // Only make a card draggable with a left click
-    if (event.evt.buttons !== 1) {
-      // Returning false does not work
-      // "evt.preventDefault()" does not work
-      // Instead, unset the drag behavior
-      // As soon as the mouse button is released, the card will "tween" back to the hand
-      // (even though it is in exactly the same place)
-      // At that point, the drag functionality will be automatically restored in the
-      // "checkSetDraggable()" function
-      this.draggable(false);
-      this.off('dragstart');
-      this.off('dragend');
-      return;
-    }
+  dragStart() {
+    // Ideally, we would have a check to only make a card draggable with a left click
+    // However, checking for "event.evt.buttons !== 1" will break iPads
 
     // In a hypothetical, dragging a rotated card from another person's hand is frustrating,
     // so temporarily remove all rotation (for the duration of the drag)
