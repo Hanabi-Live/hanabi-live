@@ -10,7 +10,7 @@ import Settings from './lobby/Settings';
 import Table from './lobby/Table';
 import User from './lobby/User';
 
-type screen = (
+type Screen = (
   'login'
   | 'lobby'
   | 'pregame'
@@ -56,7 +56,7 @@ export class Globals {
 
   game: Game | null = null; // Equal to the data from the "game" command
 
-  currentScreen: screen = 'login'; // See "screen" declaration above
+  currentScreen: Screen = 'login'; // See "screen" declaration above
   modalShowing: boolean = false;
   tableID: number = -1; // Equal to the table we are joined to or -1 if no table
   errorOccured: boolean = false;
