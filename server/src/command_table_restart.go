@@ -222,6 +222,8 @@ func commandTableRestart(s *Session, d *CommandData) {
 		t2.ChatRead[k] = v
 	}
 
+	t2.ExtraOptions.RestartedGame = true
+
 	// Emulate the game owner clicking on the "Start Game" button
 	commandTableStart(s, &CommandData{
 		TableID: t2.ID,
