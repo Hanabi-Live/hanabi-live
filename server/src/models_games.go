@@ -251,10 +251,10 @@ func (*Games) GetGameIDsUser(userID int, offset int, amount int) ([]int, error) 
 		WHERE game_participants.user_id = $1
 		/* We must get the results in decending order for the limit to work properly */
 		ORDER BY games.id DESC
+		LIMIT $2 OFFSET $3
 	`
-	SQLString += "LIMIT " + strconv.Itoa(amount) + " OFFSET " + strconv.Itoa(offset)
 
-	rows, err := db.Query(context.Background(), SQLString, userID)
+	rows, err := db.Query(context.Background(), SQLString, userID, amount, offset)
 
 	gameIDs := make([]int, 0)
 	for rows.Next() {
@@ -309,17 +309,23 @@ func (*Games) GetGameIDsFriends(
 		SELECT DISTINCT games.id
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
-		WHERE game_participants.user_id != $1 AND (`
+		WHERE `
 	for friendID := range friends {
 		SQLString += "game_participants.user_id = " + strconv.Itoa(friendID) + " OR "
 	}
 	SQLString = strings.TrimSuffix(SQLString, "OR ")
-	SQLString += ") "
-	// We must get the results in decending order for the limit to work properly
-	SQLString += "ORDER BY games.id DESC "
-	SQLString += "LIMIT " + strconv.Itoa(amount) + " OFFSET " + strconv.Itoa(offset)
+	SQLString += `
+		EXCEPT
+		SELECT DISTINCT games.id
+		FROM games
+			JOIN game_participants ON games.id = game_participants.game_id
+		WHERE game_participants.user_id != $1
+		/* We must get the results in decending order for the limit to work properly */
+		ORDER BY games.id DESC
+		LIMIT $2 OFFSET $3
+	`
 
-	rows, err := db.Query(context.Background(), SQLString, userID)
+	rows, err := db.Query(context.Background(), SQLString, userID, amount, offset)
 
 	gameIDs := make([]int, 0)
 	for rows.Next() {
