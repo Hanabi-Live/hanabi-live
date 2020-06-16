@@ -1,63 +1,82 @@
 import * as deck from '../rules/deck';
-import { MAX_CLUE_NUM, DEFAULT_VARIANT_NAME } from './constants';
+import { MAX_CLUE_NUM } from './constants';
+import StackDirection from './StackDirection';
 import Variant from './Variant';
 
-export default class State {
-  // Using a string instead of an object to keep this object as flat as possible since it is cloned
-  // often
-  variantName: Variant['name'] = DEFAULT_VARIANT_NAME;
-  log: string[] = []; // TODO set to action log message object
-  deck: StateCard[] = [];
-  deckSize: number = 0;
-  score: number = 0;
-  maxScore: number = 0;
-  clueTokens: number = MAX_CLUE_NUM;
-  doubleDiscard: boolean = false;
-  strikes: StateStrike[] = [];
-  pace: number = 0;
-  currentPlayerIndex: number = 0;
-  hands: number[][] = [];
-  playStacks: number[][] = [];
-  playStacksDirections: number[] = [];
-  discardStacks: number[][] = [];
-  clues: StateClue[] = [];
-
-  constructor(variant: Variant, playerCount: number) {
-    this.variantName = variant.name;
-
-    this.deckSize = deck.totalCards(variant);
-    this.maxScore = variant.maxScore;
-    for (let i = 0; i < playerCount; i++) {
-      this.hands.push([]);
-    }
-    for (let i = 0; i < variant.suits.length; i++) {
-      this.playStacks.push([]);
-      this.discardStacks.push([]);
-    }
-  }
+export default interface State {
+  // Using a string instead of an object to keep this object
+  // as flat as possible since it is cloned often
+  readonly variantName: Variant['name'],
+  readonly log: string[], // TODO set to action log message object
+  readonly deck: StateCard[],
+  readonly deckSize: number,
+  readonly score: number,
+  readonly maxScore: number,
+  readonly clueTokens: number,
+  readonly doubleDiscard: boolean,
+  readonly strikes: StateStrike[],
+  readonly pace: number,
+  readonly currentPlayerIndex: number,
+  readonly hands: number[][],
+  readonly playStacks: number[][],
+  readonly playStacksDirections: StackDirection[],
+  readonly discardStacks: number[][],
+  readonly clues: StateClue[],
 }
 
+export const initialState = (variant: Variant, playerCount: number) => {
+  const state: State = {
+    variantName: variant.name,
+    log: [],
+    deck: [],
+    deckSize: deck.totalCards(variant),
+    score: 0,
+    maxScore: variant.maxScore,
+    clueTokens: MAX_CLUE_NUM,
+    doubleDiscard: false,
+    strikes: [],
+    pace: 0,
+    currentPlayerIndex: 0,
+    hands: [],
+    playStacks: [],
+    playStacksDirections: [],
+    discardStacks: [],
+    clues: [],
+  };
+
+  for (let i = 0; i < playerCount; i++) {
+    state.hands.push([]);
+  }
+  for (let i = 0; i < variant.suits.length; i++) {
+    state.playStacksDirections.push(StackDirection.Undecided);
+    state.playStacks.push([]);
+    state.discardStacks.push([]);
+  }
+
+  return state;
+};
+
 interface StateCard {
-  suit: number;
-  rank: number;
-  clues: StateCardClue[];
+  readonly suit: number;
+  readonly rank: number;
+  readonly clues: StateCardClue[];
 }
 
 interface StateStrike {
-  order: number;
-  turn: number;
+  readonly order: number;
+  readonly turn: number;
 }
 
 interface StateClue {
-  type: number;
-  value: number;
-  giver: number;
-  target: number;
-  turn: number;
+  readonly type: number;
+  readonly value: number;
+  readonly giver: number;
+  readonly target: number;
+  readonly turn: number;
 }
 
 interface StateCardClue {
-  type: number;
-  value: number;
-  positive: boolean;
+  readonly type: number;
+  readonly value: number;
+  readonly positive: boolean;
 }

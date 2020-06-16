@@ -18,79 +18,79 @@ export type ActionIncludingHypothetical = Action | ActionReveal;
 
 export interface ActionClue {
   type: 'clue';
-  clue: MsgClue;
-  giver: number;
-  list: number[];
-  target: number;
-  turn: number;
+  readonly clue: MsgClue;
+  readonly giver: number;
+  readonly list: number[];
+  readonly target: number;
+  readonly turn: number;
 }
 
 export interface ActionDeckOrder {
   type: 'deckOrder';
-  deck: SimpleCard[];
+  readonly deck: SimpleCard[];
 }
 
 export interface ActionDiscard {
   type: 'discard';
-  failed: boolean;
-  which: Which;
+  readonly failed: boolean;
+  readonly which: Which;
 }
 
 export interface ActionDraw {
   type: 'draw';
-  who: number;
-  rank: number;
-  suit: number;
-  order: number;
+  readonly who: number;
+  readonly rank: number;
+  readonly suit: number;
+  readonly order: number;
 }
 
 export interface ActionPlay {
   type: 'play';
-  which: Which;
+  readonly which: Which;
 }
 
 export interface ActionReorder {
   type: 'reorder';
-  target: number;
-  handOrder: number[];
+  readonly target: number;
+  readonly handOrder: number[];
 }
 
 export interface ActionStackDirections {
   type: 'stackDirections';
-  directions: number[];
+  readonly directions: number[];
 }
 
 export interface ActionStatus {
   type: 'status';
-  clues: number;
-  score: number;
-  maxScore: number;
-  doubleDiscard: boolean;
+  readonly clues: number;
+  readonly score: number;
+  readonly maxScore: number;
+  readonly doubleDiscard: boolean;
 }
 
 export interface ActionStrike {
   type: 'strike';
-  num: number; // 1 for the first strike, 2 for the second strike, etc.
-  order: number; // The order of the card that was misplayed
-  turn: number;
+  readonly num: number; // 1 for the first strike, 2 for the second strike, etc.
+  readonly order: number; // The order of the card that was misplayed
+  readonly turn: number;
 }
 
 export interface ActionText {
   type: 'text';
-  text: string;
+  readonly text: string;
 }
 
 export interface ActionTurn {
   type: 'turn';
-  num: number;
-  who: number;
+  readonly num: number;
+  readonly who: number;
 }
 
 export interface Which {
-  index: number;
-  suit: number;
-  rank: number;
-  order: number;
+  readonly index: number;
+  readonly suit: number;
+  readonly rank: number;
+  readonly order: number;
 }
 
 // Hypothetical only

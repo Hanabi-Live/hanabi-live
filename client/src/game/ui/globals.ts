@@ -12,7 +12,7 @@ import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import Options from '../types/Options';
 import { SimpleCard } from '../types/SimpleCard';
 import StackDirection from '../types/StackDirection';
-import State from '../types/State';
+import State, { initialState } from '../types/State';
 import Variant from '../types/Variant';
 import Elements from './Elements';
 import HanabiCard from './HanabiCard';
@@ -146,7 +146,7 @@ export class Globals {
   chatUnread: number = 0;
 
   // State information
-  state: State = new State(this.variant, this.playerNames.length); // The current state
+  state: State = initialState(this.variant, this.playerNames.length); // The current state
   states: State[] = []; // The state for each turn
 
   // We provide a method to reset every class variable to its initial value
@@ -232,7 +232,7 @@ export class Globals {
     this.UIClickTime = 0;
     this.spectators = [];
     this.chatUnread = 0;
-    this.state = new State(this.variant, this.playerNames.length);
+    this.state = initialState(this.variant, this.playerNames.length);
     this.states = [];
     this.deckOrder = [];
   }

@@ -4,12 +4,7 @@
 import ClueType from './ClueType';
 
 // On the server, the color is a simple integer mapping
-export default class MsgClue {
-  type: ClueType;
-  value: number;
-
-  constructor(type: ClueType, value: number) {
-    this.type = type;
-    this.value = value;
-  }
+export default interface MsgClue {
+  readonly type: ClueType;
+  readonly value: number;
 }

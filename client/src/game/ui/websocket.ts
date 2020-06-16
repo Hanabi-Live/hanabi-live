@@ -9,7 +9,7 @@ import { Action, ActionIncludingHypothetical } from '../types/actions';
 import ClueType from '../types/ClueType';
 import Options from '../types/Options';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
-import State from '../types/State';
+import { initialState } from '../types/State';
 import action from './action';
 import * as arrows from './arrows';
 import { checkLegal } from './clues';
@@ -262,7 +262,7 @@ commands.set('init', (data: InitData) => {
     globals.variant = variant;
   }
 
-  globals.state = new State(variant, globals.playerNames.length);
+  globals.state = initialState(variant, globals.playerNames.length);
 
   // Character settings
   globals.characterAssignments = data.characterAssignments;
