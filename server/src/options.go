@@ -27,7 +27,7 @@ type ExtraOptions struct {
 	DatabaseID int          // For replays created from the database (or "!replay" games)
 	CustomDeck []SimpleCard // For replays created from arbitrary JSON data
 
-	RestartedGame bool // Whether or not this game was created by clicking "Restart" in a replay
+	Restarted bool // Whether or not this game was created by clicking "Restart" in a replay
 
 	// The rest of the options are parsed from the game name
 	// (for "!seed", "!replay", and "!deal" games respectively)

@@ -294,7 +294,7 @@ func commandTableStart(s *Session, d *CommandData) {
 
 	// If we are emulating actions, we do not have to tell anyone about the table yet
 	if !t.ExtraOptions.Replay {
-		if t.ExtraOptions.RestartedGame {
+		if t.ExtraOptions.Restarted {
 			// If this is a restarted game, we can make it visible in the lobby now
 			t.Visible = true
 		}
