@@ -294,6 +294,10 @@ func commandTableStart(s *Session, d *CommandData) {
 
 	// If we are emulating actions, we do not have to tell anyone about the table yet
 	if !t.ExtraOptions.Replay {
+		if t.ExtraOptions.RestartedGame {
+			// If this is a restarted game, we can make it visible in the lobby now
+			t.Visible = true
+		}
 		// Let everyone know that the game has started, which will turn the
 		// "Join Game" button into "Spectate"
 		notifyAllTable(t)

@@ -22,10 +22,12 @@ type Options struct {
 // ExtraOptions are extra specifications for the game; they are not recorded in the database
 // Similar to Options, a pointer to ExtraOptions is copied into the Game struct for convenience
 type ExtraOptions struct {
-	// Whether or not this is a game created from a reply or a user-submitted JSON array
+	// Whether or not this is a game created from a replay or a user-submitted JSON array
 	Replay     bool
 	DatabaseID int          // For replays created from the database (or "!replay" games)
 	CustomDeck []SimpleCard // For replays created from arbitrary JSON data
+
+	RestartedGame bool // Whether or not this game was created by clicking "Restart" in a replay
 
 	// The rest of the options are parsed from the game name
 	// (for "!seed", "!replay", and "!deal" games respectively)

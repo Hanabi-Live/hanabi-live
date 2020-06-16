@@ -1,11 +1,17 @@
 package main
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 )
 
-// commandTableRestart is sent when the user is in a shared replay of a speedrun game and wants to
+var (
+	// e.g. "room name (#2)" matches "room name" and "2"
+	roomNameRegExp = regexp.MustCompile(`^(.*) \(#(\d+)\)$`)
+)
+
+// commandTableRestart is sent when the user is in a shared replay of a game and wants to
 // start a new game with the same settings as the current game
 //
 // Example data:
@@ -152,16 +158,31 @@ func commandTableRestart(s *Session, d *CommandData) {
 		})
 	}
 
-	// Generate a random name for the new game
-	newTableName := getName()
+	newTableName := ""
+
+	// Generate a new name for the game based on which iteration of the room this is
+	// For example, a game named "logic only" will be "logic only (#2)" and then "logic only (#3)"
+	if t.InitialName != "" {
+		oldTableName := t.InitialName
+		gameNumber := 2 // By default, this is the second game of a particular table
+		match := roomNameRegExp.FindAllStringSubmatch(oldTableName, -1)
+		if len(match) != 0 {
+			oldTableName = match[0][1] // This is the name of the room without the "(#2)" part
+			gameNumber, _ = strconv.Atoi(match[0][2])
+			gameNumber++
+		}
+		newTableName = oldTableName + " (#" + strconv.Itoa(gameNumber) + ")"
+	} else {
+		newTableName = getName()
+	}
 
 	// The shared replay should now be deleted, since all of the players have left
-	// Now, emulate the game owner creating a new game
-	commandTableCreate(s, &CommandData{
+	// Now, create the new game but hide it from the lobby
+	createTable(s, &CommandData{
 		Name:         newTableName,
 		Options:      t.Options,
 		AlertWaiters: t.AlertWaiters,
-	})
+	}, false)
 
 	// Find the table ID for the new game
 	var t2 *Table
@@ -200,6 +221,8 @@ func commandTableRestart(s *Session, d *CommandData) {
 	for k, v := range oldChatRead {
 		t2.ChatRead[k] = v
 	}
+
+	t2.ExtraOptions.RestartedGame = true
 
 	// Emulate the game owner clicking on the "Start Game" button
 	commandTableStart(s, &CommandData{

@@ -70,7 +70,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 
 	// Make a default game name if they did not provide one
 	if len(d.Name) == 0 {
-		d.Name = s.Username() + "'s game"
+		d.Name = getName()
 	}
 
 	// Check for non-ASCII characters
@@ -100,6 +100,13 @@ func commandTableCreate(s *Session, d *CommandData) {
 		return
 	}
 
+	createTable(s, d, true)
+}
+
+// This function is run after some validation in commandTableCreate
+// that may be bypassed if the server creates the game from a restart, for example
+// preGameVisible is false if this game should be hidden before it starts, such as a restarted game
+func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	// Set default values for the custom game options
 	var customDeck []SimpleCard
 	setSeedSuffix := ""
@@ -357,6 +364,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 	}
 
 	t := NewTable(d.Name, s.UserID())
+	t.Visible = preGameVisible
 	t.PasswordHash = passwordHash
 	t.AlertWaiters = d.AlertWaiters
 	if setReplayOptions == nil {
