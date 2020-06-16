@@ -1054,12 +1054,9 @@ const drawSharedReplay = () => {
   sharedReplayLeaderLabel.tooltipContent = '';
   tooltips.init(sharedReplayLeaderLabel, false, true);
 
-  // The user can right-click on the crown to pass the replay leader to an arbitrary person
-  sharedReplayLeaderLabel.on('click', (event) => {
-    if (
-      event.evt.button !== 2 // Do nothing if this is not a right-click
-      || !globals.amSharedReplayLeader // Do nothing if we are not the shared replay leader
-    ) {
+  // The user can click on the crown to pass the replay leader to an arbitrary person
+  sharedReplayLeaderLabel.on('click', () => {
+    if (!globals.amSharedReplayLeader) { // Do nothing if we are not the shared replay leader
       return;
     }
 
@@ -1768,7 +1765,7 @@ const drawHypotheticalArea = () => {
     h: 0.05,
   };
 
-  // The "Hypothetical" circle that shows whether or not we are currently in a hypothetical
+  // The "Hypothetical" circle that shows we are currently in a hypothetical
   globals.elements.hypoCircle = new Konva.Group({
     x: hypoValues.x * winW,
     y: hypoValues.y * winH,

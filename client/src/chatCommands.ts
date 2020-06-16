@@ -109,7 +109,7 @@ const setLeader = (_room: string, args: string[]) => {
 chatCommands.set('setleader', setLeader);
 chatCommands.set('setlead', setLeader);
 chatCommands.set('setowner', setLeader);
-chatCommands.set('chnageleader', setLeader);
+chatCommands.set('changeleader', setLeader);
 chatCommands.set('changelead', setLeader);
 chatCommands.set('changeowner', setLeader);
 
