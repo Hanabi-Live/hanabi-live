@@ -390,8 +390,7 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	// Alert the people on the waiting list, if any
 	// (even if they check the "Alert people on the waiting list" checkbox,
 	// we don't want to alert on password-protected games or test games)
-	if preGameVisible &&
-		t.AlertWaiters &&
+	if t.AlertWaiters &&
 		t.PasswordHash == "" &&
 		t.Name != "test" &&
 		!strings.HasPrefix(t.Name, "test ") {

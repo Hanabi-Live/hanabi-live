@@ -227,8 +227,6 @@ func commandTableRestart(s *Session, d *CommandData) {
 		TableID: t2.ID,
 	})
 
-	t2.Visible = true
-
 	// Automatically join any other spectators that were watching
 	for _, s2 := range spectatorSessions {
 		commandTableSpectate(s2, &CommandData{
