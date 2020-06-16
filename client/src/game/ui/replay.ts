@@ -140,8 +140,8 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
     }
   }
 
-  cardStatusCheck();
   globals.animateFast = false;
+  cardStatusCheck();
   globals.elements.actionLog!.refreshText();
   globals.elements.fullActionLog!.refreshText();
   globals.layers.card.batchDraw();

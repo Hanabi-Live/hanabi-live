@@ -12,7 +12,6 @@ import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import State from '../types/State';
 import action from './action';
 import * as arrows from './arrows';
-import cardStatusCheck from './cardStatusCheck';
 import { checkLegal } from './clues';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
@@ -487,9 +486,6 @@ commands.set('gameActionList', (data: GameActionListData) => {
     replay.goto(turnNum, true);
   }
 
-  cardStatusCheck();
-  globals.layers.card.batchDraw();
-  globals.layers.UI.batchDraw();
   globals.loading = false;
 });
 
