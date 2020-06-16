@@ -598,10 +598,8 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
   // Hide the replay area if we are in a hypothetical
   if (globals.hypothetical) {
     hypothetical.show();
-  } else {
-    // A batchDraw() already happens in the hypothetical.show() function
-    globals.layers.UI.batchDraw();
   }
+  globals.layers.UI.batchDraw();
 
   // Update the tooltip
   let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
