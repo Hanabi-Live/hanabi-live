@@ -175,7 +175,7 @@ func (*Games) GetHistory(gameIDs []int) ([]*GameHistory, error) {
 			) AS player_names
 		FROM games AS games1
 		/*
-		 * We must use the ANY operator for matching an array of game IDs:
+		 * We must use the ANY operator for matching an array of IDs:
 		 * https://github.com/jackc/pgx/issues/334
 		 */
 		WHERE games1.id = ANY($1)
@@ -305,27 +305,31 @@ func (*Games) GetGameIDsFriends(
 	offset int,
 	amount int,
 ) ([]int, error) {
+	friendIDs := make([]int, 0)
+	for friendID := range friends {
+		friendIDs = append(friendIDs, friendID)
+	}
+
 	SQLString := `
 		SELECT DISTINCT games.id
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
-		WHERE `
-	for friendID := range friends {
-		SQLString += "game_participants.user_id = " + strconv.Itoa(friendID) + " OR "
-	}
-	SQLString = strings.TrimSuffix(SQLString, "OR ")
-	SQLString += `
+		/*
+		* We must use the ANY operator for matching an array of IDs:
+		* https://github.com/jackc/pgx/issues/334
+		*/
+		WHERE game_participants.user_id = ANY($1)
 		EXCEPT
-		SELECT DISTINCT games.id
+		SELECT games.id
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
-		WHERE game_participants.user_id != $1
+		WHERE game_participants.user_id = $2
 		/* We must get the results in decending order for the limit to work properly */
-		ORDER BY games.id DESC
-		LIMIT $2 OFFSET $3
+		ORDER BY id DESC
+		LIMIT $3 OFFSET $4
 	`
 
-	rows, err := db.Query(context.Background(), SQLString, userID, amount, offset)
+	rows, err := db.Query(context.Background(), SQLString, friendIDs, userID, amount, offset)
 
 	gameIDs := make([]int, 0)
 	for rows.Next() {
