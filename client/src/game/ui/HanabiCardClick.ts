@@ -211,7 +211,7 @@ const goToTurnAndIndicateCard = (turn: number, order: number) => {
 
 // Morphing cards allows for creation of hypothetical situations
 const clickMorph = (order: number) => {
-  const cardText = prompt('What card do you want to morph it into?\n(e.g. "b1", "k2", "m3", "45")');
+  const cardText = prompt('What card do you want to morph it into?\n(e.g. "blue 1", "k2", "3pink", "45")');
   if (cardText === null) {
     return;
   }
@@ -227,52 +227,15 @@ const clickMorph = (order: number) => {
     return;
   }
 
-  if (cardText.length !== 2) {
+  // We want an exact match, so fullNote is sent as an empty string
+  const card = notes.cardFromNote(cardText, '');
+  if (!card.suit || !card.rank) {
     window.alert('You entered an invalid card.');
     return;
   }
 
-  // Parse the suit
-  const suitLetter = cardText[0];
-  let suit = null;
-  for (const variantSuit of globals.variant.suits) {
-    if (suitLetter.toLowerCase() === variantSuit.abbreviation.toLowerCase()) {
-      suit = variantSuit;
-    }
-  }
-  if (suit === null) {
-    const suitNumber = parseInt(cardText[0], 10);
-    if (Number.isNaN(suitNumber)) {
-      let msg = `The letter "${suitLetter}" does nto corresponds to a suit.\n`;
-      const abbreviations = globals.variant.suits.map(
-        (variantSuit) => variantSuit.abbreviation.toLowerCase(),
-      );
-      msg += `The available acronyms are: ${abbreviations}`;
-      window.alert(msg);
-      return;
-    }
-
-    // They are using a number to represent the suit
-    if (suitNumber < 1 || suitNumber > globals.variant.suits.length) {
-      window.alert(`The suit number of "${cardText[0]}" is not valid.`);
-      return;
-    }
-
-    // We want 1 to represent the first suit, etc.
-    suit = globals.variant.suits[suitNumber - 1];
-  }
-  suit = suitToMsgSuit(suit, globals.variant);
-
-  // Parse the rank
-  const rank = parseInt(cardText[1], 10);
-  if (Number.isNaN(rank)) {
-    window.alert(`The rank of "${cardText[1]}" is not a number.`);
-    return;
-  }
-  if (rank < 0 || rank > 7) {
-    window.alert(`The rank of "${cardText[1]}" must be between 0 and 7.`);
-    return;
-  }
+  const suit = suitToMsgSuit(card.suit, globals.variant);
+  const rank = card.rank;
 
   // Tell the server that we are morphing a card
   hypothetical.sendHypoAction({
