@@ -44,7 +44,8 @@ matrix:
         - ./lint_server.sh
 
     # Job #3: Spell Check
-    - script:
+    - language: shell
+      script:
         - echo "Spell checking..."
         - ./spell_check.sh
 
