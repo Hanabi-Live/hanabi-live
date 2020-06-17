@@ -75,9 +75,10 @@ func main() {
 	// Check to see if the "ongoing-tables" directory exists
 	tablesPath = path.Join(dataPath, "ongoing-tables")
 	if _, err := os.Stat(tablesPath); os.IsNotExist(err) {
-		logger.Error("The directory \"" + tablesPath + "\" does not exist. " +
-			"This directory should always exist; please try re-cloning the repository.")
-		return
+		if err2 := os.MkdirAll(tablesPath, 0755); err2 != nil {
+			logger.Fatal("Failed to create the \""+tablesPath+"\" directory:", err2)
+			return
+		}
 	} else if err != nil {
 		logger.Fatal("Failed to check if the \""+tablesPath+"\" file exists:", err)
 		return

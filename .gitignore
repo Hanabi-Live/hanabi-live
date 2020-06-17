@@ -19,6 +19,7 @@ motd.txt*
 /data/version.json
 
 # Various directories
-backups
-letsencrypt
-logs
+/backups
+/letsencrypt
+/logs
+/data/ongoing-games
