@@ -124,6 +124,7 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
 
   card.state.noteNeedsFix = checkNoteKeywords([
     'fixme',
+    'needs fix',
   ], note, fullNote);
 
   card.state.noteChopMoved = checkNoteKeywords([
@@ -148,13 +149,9 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
     'gd',
   ], note, fullNote);
 
-  card.state.noteBlank = checkNoteKeywords([
-    'blank',
-  ], note, fullNote);
+  card.state.noteBlank = checkNoteKeywords(['blank'], note, fullNote);
 
-  card.state.noteUnclued = checkNoteKeywords([
-    'unclued',
-  ], note, fullNote);
+  card.state.noteUnclued = checkNoteKeywords(['unclued'], note, fullNote);
 
   card.setClued();
 
