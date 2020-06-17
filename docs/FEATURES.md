@@ -223,7 +223,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 #### Card Cycling
 
-* Each game has the option to enable algorithmical card cycling.
+* Each game has the option to enable algorithmic card cycling.
 * If enabled, whenever a player gives a clue, their oldest unclued card will be moved to their newest slot.
 * This is a way to play Hanabi that is used by <a href="https://sites.google.com/view/iraci">Alessandro Iraci's</a> group from the <a href="https://www.sns.it/en">Scuola Normale Superiore di Pisa</a>.
 
