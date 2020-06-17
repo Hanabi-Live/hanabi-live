@@ -1,7 +1,10 @@
 // Users can right-click cards to record information on them
 
 // Imports
+import * as variantRules from '../rules/variant';
+import { CardIdentity } from '../types/CardIdentity';
 import CardState from '../types/CardState';
+import { START_CARD_RANK } from '../types/constants';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 
@@ -104,126 +107,100 @@ export const checkSpecialNote = (card: HanabiCard) => {
   globals.layers.card.batchDraw();
 };
 
+const checkNoteKeywords = (
+  keywords: string[],
+  note: string,
+  fullNote: string,
+) => keywords.find((k) => note === k || fullNote.includes(`[${k}]`)) !== undefined;
+
 const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => {
   // First, check to see if this card should be marked with certain properties
-  card.state.noteKnownTrash = (
-    note === 'kt'
-    || fullNote.includes('[kt]')
-    || note === 'trash'
-    || fullNote.includes('[trash]')
-    || note === 'stale'
-    || fullNote.includes('[stale]')
-    || note === 'bad'
-    || fullNote.includes('[bad]')
-  );
-  card.state.noteNeedsFix = (
-    note === 'fixme'
-    || fullNote.includes('[fixme]')
-  );
-  card.state.noteChopMoved = (
-    note === 'cm'
-    || fullNote.includes('[cm]')
-    || note === 'chop move'
-    || fullNote.includes('[chop move]')
-    || note === '5cm'
-    || fullNote.includes('[5cm]')
-    || note === 'e5cm'
-    || fullNote.includes('[e5cm]')
-    || note === 'tcm'
-    || fullNote.includes('[tcm]')
-    || note === 'tccm'
-    || fullNote.includes('[tccm]')
-    || note === 'sdcm'
-    || fullNote.includes('[sdcm]')
-    || note === 'sbpcm'
-    || fullNote.includes('[sbpcm]')
-    || note === 'ocm'
-    || fullNote.includes('[ocm]')
-    || note === 'tocm'
-    || fullNote.includes('[tocm]')
-    || note === 'utfcm'
-    || fullNote.includes('[utfcm]')
-    || note === 'utbcm'
-    || fullNote.includes('[utbcm]')
-  );
-  card.state.noteFinessed = (
-    note === 'f'
-    || fullNote.includes('[f]')
-    || note === 'pf'
-    || fullNote.includes('[hf]')
-    || note === 'hf'
-    || fullNote.includes('[pf]')
-    || note === 'gd'
-    || fullNote.includes('[gd]')
-  );
-  card.state.noteBlank = (
-    note === 'blank'
-    || fullNote.includes('[blank]')
-  );
-  card.state.noteUnclued = (
-    note === 'unclued'
-    || fullNote.includes('[unclued]')
-  );
+  card.state.noteKnownTrash = checkNoteKeywords([
+    'kt',
+    'trash',
+    'stale',
+    'bad',
+  ], note, fullNote);
+
+  card.state.noteNeedsFix = checkNoteKeywords([
+    'fixme',
+  ], note, fullNote);
+
+  card.state.noteChopMoved = checkNoteKeywords([
+    'cm',
+    'chop move',
+    '5cm',
+    'e5cm',
+    'tcm',
+    'tccm',
+    'sdcm',
+    'sbpcm',
+    'ocm',
+    'tocm',
+    'utfcm',
+    'utbcm',
+  ], note, fullNote);
+
+  card.state.noteFinessed = checkNoteKeywords([
+    'f',
+    'hf',
+    'pf',
+    'gd',
+  ], note, fullNote);
+
+  card.state.noteBlank = checkNoteKeywords([
+    'blank',
+  ], note, fullNote);
+
+  card.state.noteUnclued = checkNoteKeywords([
+    'unclued',
+  ], note, fullNote);
+
   card.setClued();
 
-  // Second, check the contents of the note right of the right-most pipe
-  card.state.noteSuit = null;
-  card.state.noteRank = null;
-  for (const rank of globals.variant.ranks) {
-    if (note === rank.toString()) {
-      card.state.noteSuit = null;
-      card.state.noteRank = rank;
-      return;
+  const noteCard = cardFromNote(note, fullNote);
+  card.state.noteSuit = noteCard.suit;
+  card.state.noteRank = noteCard.rank;
+};
+
+export const cardFromNote = (note: string, fullNote: string): CardIdentity => {
+  let rankStrings = globals.variant.ranks.map((r) => r.toString());
+  if (variantRules.isUpOrDown(globals.variant)) {
+    rankStrings = rankStrings.concat('0', 's', 'start');
+  }
+  for (const rankText of rankStrings) {
+    let rank = parseInt(rankText, 10);
+    if (rank === 0 || Number.isNaN(rank)) {
+      rank = START_CARD_RANK;
+    }
+    if (checkNoteKeywords([
+      rankText,
+    ], note, fullNote)) {
+      return { suit: null, rank };
     }
     for (const suit of globals.variant.suits) {
-      if (note === suit.abbreviation.toLowerCase()) {
-        card.state.noteSuit = suit;
-        card.state.noteRank = null;
-        return;
+      if (checkNoteKeywords([
+        suit.abbreviation.toLowerCase(),
+        suit.name.toLowerCase(),
+      ], note, fullNote)) {
+        return { suit, rank: null };
       }
-      if (
-        note === `${suit.abbreviation.toLowerCase()}${rank}` // e.g. "b1" or "B1"
-        || note === `${suit.name.toLowerCase()}${rank}` // e.g. "blue1" or "Blue1" or "BLUE1"
-        || note === `${suit.name.toLowerCase()} ${rank}` // e.g. "blue 1" or "Blue 1" or "BLUE 1"
-        || note === `${rank}${suit.abbreviation.toLowerCase()}` // e.g. "1b" or "1B"
-        || note === `${rank}${suit.name.toLowerCase()}` // e.g. "1blue" or "1Blue" or "1BLUE"
-        || note === `${rank} ${suit.name.toLowerCase()}` // e.g. "1 blue" or "1 Blue" or "1 BLUE"
-      ) {
-        card.state.noteSuit = suit;
-        card.state.noteRank = rank;
-        return;
+
+      if (checkNoteKeywords([
+        `${suit.abbreviation.toLowerCase()}${rankText}`, // e.g. "b1" or "B1"
+        `${suit.name.toLowerCase()}${rankText}`, // e.g. "blue1" or "Blue1" or "BLUE1"
+        `${suit.name.toLowerCase()} ${rankText}`, // e.g. "blue 1" or "Blue 1" or "BLUE 1"
+        `${globals.variant.suits.indexOf(suit) + 1}${rankText}`, // e.g. "41", since blue is the 4th suit on the stacks
+        `${rankText}${suit.abbreviation.toLowerCase()}`, // e.g. "1b" or "1B"
+        `${rankText}${suit.name.toLowerCase()}`, // e.g. "1blue" or "1Blue" or "1BLUE"
+        `${rankText} ${suit.name.toLowerCase()}`, // e.g. "1 blue" or "1 Blue" or "1 BLUE"
+      ], note, fullNote)) {
+        return { suit, rank };
       }
     }
   }
 
-  // Third, check the contents of the full note
-  // (players can use square brackets to force a note identity)
-  for (const rank of globals.variant.ranks) {
-    if (fullNote.includes(`[${rank}]`)) {
-      card.state.noteSuit = null;
-      card.state.noteRank = rank;
-      return;
-    }
-    for (const suit of globals.variant.suits) {
-      if (fullNote.includes(`[${suit.abbreviation.toLowerCase()}]`)) {
-        card.state.noteSuit = suit;
-        card.state.noteRank = null;
-        return;
-      }
-      if (
-        fullNote.includes(`[${suit.abbreviation.toLowerCase()}${rank}]`) // e.g. "b1" or "B1"
-        || fullNote.includes(`[${suit.name.toLowerCase()}${rank}]`) // e.g. "blue1" or "Blue1" or "BLUE1"
-        || fullNote.includes(`[${suit.name.toLowerCase()} ${rank}]`) // e.g. "blue 1" or "Blue 1" or "BLUE 1"
-        || fullNote.includes(`[${rank}${suit.abbreviation.toLowerCase()}]`) // e.g. "1b" or "1B"
-        || fullNote.includes(`[${rank}${suit.name.toLowerCase()}]`) // e.g. "1blue" or "1Blue" or "1BLUE"
-        || fullNote.includes(`[${rank} ${suit.name.toLowerCase()}]`) // e.g. "1 blue" or "1 Blue" or "1 BLUE"
-      ) {
-        card.state.noteSuit = suit;
-        card.state.noteRank = rank;
-        return;
-      }
-    }
-  }
+  return { suit: null, rank: null };
 };
 
 const checkNoteImpossibility = (cardState: CardState) => {
