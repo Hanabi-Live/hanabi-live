@@ -53,3 +53,9 @@ notifications:
   email:
     on_success: never
     on_failure: never
+
+addons:
+  apt:
+    packages:
+      - aspell
+      - aspell-en
