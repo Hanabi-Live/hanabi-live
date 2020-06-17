@@ -1,3 +1,5 @@
 \.png$
-^LICENSE\.txt$
+^\.git/
 ^\.github/
+^LICENSE\.txt$
+^word_list\.txt$
