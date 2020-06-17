@@ -103,7 +103,7 @@ func commandChat(s *Session, d *CommandData) {
 	}
 
 	d.Msg = chatFillMentions(d.Msg) // Convert Discord mentions from number to username
-	d.Msg = chatFillChannels(d.Msg) // Convert Discord channel names from number to username
+	d.Msg = chatFillChannels(d.Msg) // Convert Discord channel links from number to name
 
 	// Add the message to the database
 	if d.Discord {

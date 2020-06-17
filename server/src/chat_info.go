@@ -18,6 +18,7 @@ func chatWrongChannel(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	msg := "It looks like you are asking a question about the Hyphen-ated conventions or the Hyphen-ated group. Please put all such questions in the #questions-and-help channel."
+	// This includes a discord link to the #convention-questions channel
+	msg := "It looks like you are asking a question about the Hyphen-ated conventions or the Hyphen-ated group. Please put all such questions in the <#456214043351580674> channel."
 	chatServerSend(msg, d.Room)
 }
