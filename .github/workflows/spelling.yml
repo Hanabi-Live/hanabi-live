@@ -9,12 +9,7 @@ jobs:
     name: Spell checker
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.0.0
-      with:
-        fetch-depth: 2
-    - uses: ./
-      with:
-        bucket: .github/actions
-        project: spelling
+    - uses: actions/checkout@v2
+    - uses: check-spelling/check-spelling@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
