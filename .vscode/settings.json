@@ -52,5 +52,10 @@
   "python.linting.enabled": true,
   "search.exclude": {
     "**/*.min.js*": true
-  }
+  },
+
+  // Words that should be added to the default cSpell dictionary
+  "cSpell.words": [
+    "Tooltipster",
+  ]
 }

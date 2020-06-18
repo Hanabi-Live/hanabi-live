@@ -406,7 +406,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
   const index = globals.peopleTyping.indexOf(data.who);
   if (index !== -1) {
     globals.peopleTyping.splice(index, 1);
-    updatePeopletyping();
+    updatePeopleTyping();
   }
 };
 
@@ -458,7 +458,7 @@ const fillLocalEmotes = (message: string) => {
   return filledMessage;
 };
 
-export const updatePeopletyping = () => {
+export const updatePeopleTyping = () => {
   const chat1 = $('#lobby-chat-pregame-istyping');
   const chat2 = $('#game-chat-istyping');
 

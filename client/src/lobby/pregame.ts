@@ -79,7 +79,7 @@ export const hide = () => {
 
   // Clear the typing list
   globals.peopleTyping = [];
-  chat.updatePeopletyping();
+  chat.updatePeopleTyping();
 
   // Adjust the navigation bar
   nav.show('games');

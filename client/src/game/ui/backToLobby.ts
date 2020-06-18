@@ -14,7 +14,7 @@ export default () => {
 
   // Clear the typing list
   globals.lobby.peopleTyping = [];
-  chat.updatePeopletyping();
+  chat.updatePeopleTyping();
 
   globals.lobby.conn!.send('tableUnattend', {
     tableID: globals.lobby.tableID,

@@ -256,7 +256,7 @@ const initCommands = () => {
         globals.peopleTyping.splice(index, 1);
       }
     }
-    chat.updatePeopletyping();
+    chat.updatePeopleTyping();
   });
 
   // The "chatList" command is sent upon initial connection
