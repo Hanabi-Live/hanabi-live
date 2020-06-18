@@ -365,14 +365,14 @@ export const openEditTooltip = (card: HanabiCard) => {
 
       // Strip any HTML elements
       // (to be thorough, the server will also perform this validation)
-      newNote = stripHTMLtags(newNote);
+      newNote = stripHTMLTags(newNote);
 
       set(card.state.order, newNote);
     }
 
     // Check to see if an event happened while we were editing this note
-    if (globals.actionOccured) {
-      globals.actionOccured = false;
+    if (globals.actionOccurred) {
+      globals.actionOccurred = false;
       tooltip.tooltipster('close');
     }
 
@@ -433,7 +433,7 @@ export const shouldShowIndicator = (order: number) => {
   return globals.ourNotes[order] !== '';
 };
 
-const stripHTMLtags = (input: string) => {
+const stripHTMLTags = (input: string) => {
   const doc = new DOMParser().parseFromString(input, 'text/html');
   return doc.body.textContent || '';
 };

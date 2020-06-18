@@ -381,7 +381,7 @@ const cycleHand = () => {
   const chopIndex = hand.getChopIndex();
 
   // We don't need to reorder anything if the chop is slot 1 (the left-most card)
-  const layoutChilds = hand.children.toArray() as HanabiCard[];
+  const layoutChilds = hand.children.toArray() as LayoutChild[];
   if (chopIndex === layoutChilds.length - 1) {
     return;
   }

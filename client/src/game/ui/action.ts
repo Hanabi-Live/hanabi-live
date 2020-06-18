@@ -43,7 +43,7 @@ export default (data: ActionIncludingHypothetical) => {
   // If a user is editing a note and an action in the game happens,
   // mark to make the tooltip go away as soon as they are finished editing the note
   if (globals.editingNote !== null) {
-    globals.actionOccured = true;
+    globals.actionOccurred = true;
   }
 
   // Automatically close any tooltips once an action in the game happens

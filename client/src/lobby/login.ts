@@ -84,10 +84,10 @@ const send = (username: string, password: string) => {
 
 const getAjaxError = (jqXHR: JQuery.jqXHR<any>) => {
   if (jqXHR.readyState === 0) {
-    return 'A network error occured. The server might be down!';
+    return 'A network error occurred. The server might be down!';
   }
   if (jqXHR.responseText === '') {
-    return 'An unknown error occured.';
+    return 'An unknown error occurred.';
   }
   return jqXHR.responseText;
 };
@@ -155,7 +155,7 @@ export const hide = (firstTimeUser: boolean) => {
   // Even with height and width 100%,
   // the scroll bar can pop up when going back from a game to the lobby
   // It also can show up in-game if a tooltip animates off of the edge of the screen
-  // So we can set "overflow" to explicitly prevent this from occuring
+  // So we can set "overflow" to explicitly prevent this from occurring
   // We don't want to set this in "hanabi.css" because
   // there should be scrolling enabled on the login screen
   // We need to scroll to the top of the screen before disabling the scroll bars
@@ -183,7 +183,7 @@ export const hide = (firstTimeUser: boolean) => {
 };
 
 export const formError = (msg: string) => {
-  // For some reason this has to be invoked asycnronously in order to work properly
+  // For some reason this has to be invoked asynchronously in order to work properly
   setTimeout(() => {
     $('#login-ajax').hide();
     $('#login-button').removeClass('disabled');

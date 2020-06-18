@@ -19,7 +19,7 @@ export interface ClockData {
 // {
 //   times: [100, 200], // A list of the times for each player
 //   active: 0, // The index of the active player
-//   timeTaken: 500, // The amount of time that has elasped since the turn began
+//   timeTaken: 500, // The amount of time that has elapsed since the turn began
 // }
 export const update = (data: ClockData) => {
   stop();
@@ -44,7 +44,7 @@ export const update = (data: ClockData) => {
 
   // Update onscreen time displays
   if (!globals.spectating) {
-    // The visibilty of the first timer does not change during a game
+    // The visibility of the first timer does not change during a game
     let time = globals.playerTimes[globals.playerUs];
     if (!globals.options.timed) {
       // Invert it to show how much time each player is taking
@@ -133,7 +133,7 @@ function setTickingDownTime(timer: TimerDisplay) {
     && elapsedTime > 900
     && elapsedTime < 1100
     && !globals.paused
-    && !globals.lobby.errorOccured
+    && !globals.lobby.errorOccurred
   ) {
     globals.game!.sounds.play('tone');
   }

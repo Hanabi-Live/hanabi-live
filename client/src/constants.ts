@@ -1,4 +1,4 @@
-// Constants used thoughout the app
+// Constants used throughout the app
 
 // Define the default qualities of a card
 export const CARD_W = 286;

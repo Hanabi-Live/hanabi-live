@@ -101,10 +101,10 @@ export const warningShow = (msg: string) => {
 
 export const errorShow = (msg: string) => {
   // Do nothing if we are already showing the error modal
-  if (globals.errorOccured) {
+  if (globals.errorOccurred) {
     return;
   }
-  globals.errorOccured = true;
+  globals.errorOccurred = true;
 
   if ($('#lobby').is(':visible')) {
     $('#lobby').fadeTo(FADE_TIME, 0.1);

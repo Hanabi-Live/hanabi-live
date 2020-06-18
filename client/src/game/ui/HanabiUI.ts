@@ -26,7 +26,7 @@ export default class HanabiUI {
 
   constructor(lobby: LobbyGlobals, game: GameExports) {
     // Since the "HanabiUI" object is being reinstantiated,
-    // we need to explicitly reinitialize all globals varaibles
+    // we need to explicitly reinitialize all globals variables
     // (or else they will retain their old values)
     globals.reset();
 
@@ -131,7 +131,7 @@ const showLoadingScreen = () => {
   });
   loadingLayer.add(loadingLabel);
 
-  const progresslabel = new Konva.Text({
+  const progressLabel = new Konva.Text({
     fill: LABEL_COLOR,
     stroke: '#747278',
     strokeWidth: 1,
@@ -145,12 +145,12 @@ const showLoadingScreen = () => {
     fontStyle: 'bold',
     fontSize: 0.05 * winH,
   });
-  loadingLayer.add(progresslabel);
+  loadingLayer.add(progressLabel);
 
   globals.stage.add(loadingLayer);
 
   const loadingProgressCallback = (done: number, total: number) => {
-    progresslabel.text(`${done}/${total}`);
+    progressLabel.text(`${done}/${total}`);
     loadingLayer.batchDraw();
   };
   globals.ImageLoader = new Loader(loadingProgressCallback, loadingFinishedCallback);

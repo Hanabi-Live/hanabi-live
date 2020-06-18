@@ -59,7 +59,7 @@ export class Globals {
   currentScreen: Screen = 'login'; // See "screen" declaration above
   modalShowing: boolean = false;
   tableID: number = -1; // Equal to the table we are joined to or -1 if no table
-  errorOccured: boolean = false;
+  errorOccurred: boolean = false;
 
   // Legacy UI variables
   ui: HanabiUI | null = null;

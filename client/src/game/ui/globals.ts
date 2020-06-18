@@ -116,7 +116,7 @@ export class Globals {
   // Equal to the card order number or null
   editingNote: number | null = null;
   // Equal to true if something happened when the note box happens to be open
-  actionOccured: boolean = false;
+  actionOccurred: boolean = false;
   lastNote: string = ''; // Equal to the last note entered
 
   // Timer feature
@@ -215,7 +215,7 @@ export class Globals {
     this.ourNotes = [];
     this.allNotes = [];
     this.editingNote = null;
-    this.actionOccured = false;
+    this.actionOccurred = false;
     this.lastNote = '';
     this.timerID = null;
     this.playerTimes = [];

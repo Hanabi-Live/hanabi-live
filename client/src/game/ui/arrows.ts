@@ -47,7 +47,7 @@ export const set = (
   arrow.show();
   arrow.moveToTop();
 
-  // Figure out whether the arrrow should be inverted or not
+  // Figure out whether the arrow should be inverted or not
   let rot = 0;
   if (
     element instanceof HanabiCard
@@ -75,7 +75,7 @@ export const set = (
   }
   arrow.rotation(rot);
 
-  // We want the text to always be right-side up (e.g. have a rotaiton of 0)
+  // We want the text to always be right-side up (e.g. have a rotation of 0)
   arrow.text.rotation(360 - rot);
 
   // Set the arrow features
