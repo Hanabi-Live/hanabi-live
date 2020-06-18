@@ -20,4 +20,7 @@ export default () => {
     tableID: globals.lobby.tableID,
   });
   globals.game!.hide();
+
+  // Reset the URL since we are now in the lobby
+  window.history.pushState('', '', '/');
 };
