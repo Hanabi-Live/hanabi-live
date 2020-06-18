@@ -97,6 +97,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 		"three",
 		"four",
 		"five",
+		"six",
 	}
 	text += words[len(cardsTouched)] + " "
 

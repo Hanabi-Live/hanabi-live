@@ -219,7 +219,7 @@ export const send = (hypoAction: ClientAction) => {
     // Text
     let text = `${globals.playerNames[globals.currentPlayerIndex]} tells `;
     text += `${globals.playerNames[hypoAction.target]} about `;
-    const words = ['zero', 'one', 'two', 'three', 'four', 'five'];
+    const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
     text += `${words[list.length]} `;
 
     if (clue.type === ClueType.Color) {
