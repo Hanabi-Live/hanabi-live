@@ -1,7 +1,7 @@
 /*
  * Notes:
- * - Hanabi Live uses PostreSQL
- * - Initalizing the database is accomplished in the "install_database_schema.sh" script
+ * - Hanabi Live uses PostgreSQL
+ * - Initializing the database is accomplished in the "install_database_schema.sh" script
  * - "SERIAL" is a keyword in PostgreSQL to have an automatic-incrementing column:
  *   https://www.postgresqltutorial.com/postgresql-serial
  * - PostgreSQL automatically creates indexes for columns with primary keys, foreign keys, and

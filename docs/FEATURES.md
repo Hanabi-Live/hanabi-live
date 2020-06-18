@@ -375,7 +375,7 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 
 * The website offers a public lobby chat and a private per-game chat. When chatting with other players, please follow [the community guidelines](COMMUNITY_GUIDELINES.md).
 * You can also send private messages to other players with the `/pm` command.
-* You can type any emoji into chat using the [standard emoji shortcode](https://raw.githubusercontent.com/Zamiell/hanabi-live/master/public/js/src/data/emojis.json). For example, `:thinking:` will turn into 🤔.
+* You can type any emoji into chat using the [standard emoji short-code](https://raw.githubusercontent.com/Zamiell/hanabi-live/master/public/js/src/data/emojis.json). For example, `:thinking:` will turn into 🤔.
 * You can type any [Twitch emote](https://raw.githubusercontent.com/Zamiell/hanabi-live/master/public/js/src/data/emotes.json) into chat. For example, `Kappa` will turn into <img src="https://github.com/Zamiell/hanabi-live/raw/master/public/img/emotes/twitch/Kappa.png">. (Many BetterTwitchTV and FrankerFaceZ emotes are also supported.)
 * There are various chat commands. The full list can be found [here](CHAT_COMMANDS.md).
 * All lobby chat will be replicated to (and from) the [Hanabi Discord server](https://discord.gg/FADvkJp).
@@ -417,10 +417,12 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 
 ### JSON Endpoints
 
-* `/history/[username]?api` - Provides all of the games played by a user.
-* `/history/[username1]/[username2]?api` - Provides all of the games played in by both users.
-* `/history/[username1]/[username2]/[username3]?api` - Provides all of the games played in by all three users, and so forth.
-* `/seed/[seed]?api` - Provides all of the games played on the specified seed.
-* `/export/[game ID]` - Provides the data for an arbitrary game from the database.
+| URL                                                | Description
+| -------------------------------------------------- | -----------
+| `/history/[username]?api`                          | Provides all of the games played by a user.
+| `/history/[username1]/[username2]?api`             | Provides all of the games played in by both users.
+| `/history/[username1]/[username2]/[username3]?api` | Provides all of the games played in by all three users, and so forth.
+| `/seed/[seed]?api`                                 | Provides all of the games played on the specified seed.
+| `/export/[game ID]`                                | Provides the data for an arbitrary game from the database.
 
 <br />

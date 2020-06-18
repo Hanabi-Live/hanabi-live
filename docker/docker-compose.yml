@@ -41,7 +41,7 @@ services:
     # use the mariadb service
     image: mariadb
     environment:
-      # intialize with the given username and password
+      # initialize with the given username and password
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASS}
