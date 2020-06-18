@@ -42,7 +42,7 @@ func commandSetting(s *Session, d *CommandData) {
 
 	// Validate the setting value
 	if fieldType == "bool" {
-		// Bools are stored in the database as 0s and 1s
+		// Booleans are stored in the database as 0s and 1s
 		if d.Setting == "true" {
 			d.Setting = "1"
 		} else if d.Setting == "false" {

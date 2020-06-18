@@ -427,6 +427,6 @@ func httpLogin(c *gin.Context) {
 	logger.Info("User \""+user.Username+"\" logged in from:", ip)
 	http.Error(w, http.StatusText(http.StatusOK), http.StatusOK)
 
-	// Next, the client will attempt to esbalish a WebSocket connection,
+	// Next, the client will attempt to establish a WebSocket connection,
 	// which is handled in "httpWS.go"
 }

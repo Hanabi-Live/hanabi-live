@@ -61,7 +61,7 @@ type CommandData struct {
 	// Used internally
 	// (a tag of "-" means that the JSON encoder will ignore the field)
 	Username string `json:"-"` // Used to mark the username of a chat message
-	Discord  bool   `json:"-"` // Used to mark if a chat message origined from Discord
+	Discord  bool   `json:"-"` // Used to mark if a chat message originated from Discord
 	Server   bool   `json:"-"` // Used to mark if the server generated the chat message
 	// True if this is a chat message that should only go to Discord
 	OnlyDiscord          bool   `json:"-"`
