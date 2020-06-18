@@ -87,18 +87,9 @@ a {
   color: hotpink;
 }
 
-/* Make the lobby width be 80% on big resolutions and 100% on smaller resolutions */
-@media screen and (min-width: 1280px) {
-  .container.max {
-    width: 80%;
-  }
-}
-
-/* Make the nav bar always show, even on the tiniest resolutions */
-@media screen and (max-width: 840px) {
-  #header {
-    display: block;
-  }
+#header nav > ul > li a {
+  /* Decrease the padding of the nav buttons */
+  padding: 0 0.8em;
 }
 
 /*
@@ -262,7 +253,7 @@ table td {
 .nav-icon {
   position: relative;
   top: 0.05em;
-  right: 0.3em;
+  margin-right: 0.3em;
 }
 
 .nav-hotkey-indicator {
@@ -722,4 +713,32 @@ input::-webkit-calendar-picker-indicator {
 .stat-description {
   display: inline-block;
   width: 19em;
+}
+
+/*
+  Media edits
+*/
+
+/* Make the lobby width be 80% on big resolutions and 100% on smaller resolutions */
+@media screen and (min-width: 1280px) {
+  .container.max {
+    width: 80%;
+  }
+}
+
+/* Make the nav bar show only the button icons on smaller resolutions */
+@media screen and (max-width: 1050px) {
+  .mobile-hide {
+    display: none;
+  }
+  .nav-icon {
+    margin-right: 0em;
+  }
+}
+
+/* Make the nav bar always show, even on the tiniest resolutions */
+@media screen and (max-width: 840px) {
+  #header {
+    display: block;
+  }
 }
