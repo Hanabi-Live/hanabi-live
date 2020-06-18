@@ -22,4 +22,4 @@ FILES=$(find "$DIR" -type f \
 )
 
 cd "$DIR/client"
-npx cspell -- --no-summary $FILES
+npx cspell --no-summary --config "$DIR/.cspell.json" $FILES
