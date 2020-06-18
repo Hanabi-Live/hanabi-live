@@ -26,6 +26,8 @@ func sentryInit() bool {
 	if err := sentry.Init(sentry.ClientOptions{
 		Dsn:          sentryDSN,
 		IgnoreErrors: commonHTTPErrors,
+		Release:      gitCommitOnStart,
+		HTTPClient:   HTTPClientWithTimeout,
 	}); err != nil {
 		logger.Fatal("Failed to initialize Sentry:", err)
 		return false

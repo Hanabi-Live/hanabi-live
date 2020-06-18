@@ -11,15 +11,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-var (
-	// HTTPClientWithTimeout is used for sending web requests to external sites
-	// (e.g. Google Analytics)
-	// We don't want to use the default http.Client because it has no default timeout set
-	HTTPClientWithTimeout = &http.Client{
-		Timeout: HTTPWriteTimeout,
-	}
-)
-
 // Gin middleware for sending this page view to Google Analytics
 // (we do this on the server because client-side blocking is common via uBlock Origin, Adblock Plus,
 // etc.)

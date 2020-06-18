@@ -35,6 +35,13 @@ const (
 var (
 	domain       string
 	GATrackingID string
+
+	// HTTPClientWithTimeout is used for sending web requests to external sites,
+	// which is used in various middleware
+	// We don't want to use the default http.Client because it has no default timeout set
+	HTTPClientWithTimeout = &http.Client{
+		Timeout: HTTPWriteTimeout,
+	}
 )
 
 func httpInit() {
