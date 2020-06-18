@@ -17908,7 +17908,8 @@
       "Sky",
       "Navy",
       "Black"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Rainbow (5 Suits)": {
     "id": 32,
@@ -17918,7 +17919,8 @@
       "Sky",
       "Navy",
       "Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Rainbow (3 Suits)": {
     "id": 1353,
@@ -17926,7 +17928,8 @@
       "Tomato",
       "Mahogany",
       "Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Pink (5 Suits)": {
     "id": 1354,
@@ -17936,7 +17939,8 @@
       "Sky",
       "Navy",
       "Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Pink (3 Suits)": {
     "id": 1355,
@@ -17944,7 +17948,8 @@
       "Tomato",
       "Mahogany",
       "Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & White (5 Suits)": {
     "id": 31,
@@ -17954,7 +17959,8 @@
       "Sky",
       "Navy",
       "White"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & White (3 Suits)": {
     "id": 1360,
@@ -17962,7 +17968,8 @@
       "Tomato",
       "Mahogany",
       "White"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Brown (5 Suits)": {
     "id": 1361,
@@ -17972,7 +17979,8 @@
       "Sky",
       "Navy",
       "Brown"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Brown (3 Suits)": {
     "id": 1362,
@@ -17980,7 +17988,8 @@
       "Tomato",
       "Mahogany",
       "Brown"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Omni (5 Suits)": {
     "id": 1363,
@@ -17990,7 +17999,8 @@
       "Sky",
       "Navy",
       "Omni"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Omni (3 Suits)": {
     "id": 1364,
@@ -17998,7 +18008,8 @@
       "Tomato",
       "Mahogany",
       "Omni"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Null (5 Suits)": {
     "id": 1365,
@@ -18008,7 +18019,8 @@
       "Sky",
       "Navy",
       "Null"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Null (3 Suits)": {
     "id": 1366,
@@ -18016,7 +18028,8 @@
       "Tomato",
       "Mahogany",
       "Null"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Muddy Rainbow (5 Suits)": {
     "id": 1367,
@@ -18026,7 +18039,8 @@
       "Sky",
       "Navy",
       "Muddy Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Muddy Rainbow (3 Suits)": {
     "id": 1368,
@@ -18034,7 +18048,8 @@
       "Tomato",
       "Mahogany",
       "Muddy Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Light Pink (5 Suits)": {
     "id": 1369,
@@ -18044,7 +18059,8 @@
       "Sky",
       "Navy",
       "Light Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Light Pink (3 Suits)": {
     "id": 1370,
@@ -18052,7 +18068,8 @@
       "Tomato",
       "Mahogany",
       "Light Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Dark Rainbow (5 Suits)": {
     "id": 1371,
@@ -18062,7 +18079,8 @@
       "Sky",
       "Navy",
       "Dark Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Dark Pink (5 Suits)": {
     "id": 1372,
@@ -18072,7 +18090,8 @@
       "Sky",
       "Navy",
       "Dark Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Gray (5 Suits)": {
     "id": 1373,
@@ -18082,7 +18101,8 @@
       "Sky",
       "Navy",
       "Gray"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Dark Brown (5 Suits)": {
     "id": 1374,
@@ -18092,7 +18112,8 @@
       "Sky",
       "Navy",
       "Dark Brown"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Dark Omni (5 Suits)": {
     "id": 1375,
@@ -18102,7 +18123,8 @@
       "Sky",
       "Navy",
       "Dark Omni"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Dark Null (5 Suits)": {
     "id": 1376,
@@ -18112,7 +18134,8 @@
       "Sky",
       "Navy",
       "Dark Null"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Cocoa Rainbow (5 Suits)": {
     "id": 1377,
@@ -18122,7 +18145,8 @@
       "Sky",
       "Navy",
       "Cocoa Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Ambiguous & Gray Pink (5 Suits)": {
     "id": 1378,
@@ -18132,7 +18156,8 @@
       "Sky",
       "Navy",
       "Gray Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Very Ambiguous (6 Suits)": {
     "id": 9,
@@ -18197,7 +18222,8 @@
       "Berry EA",
       "Navy EA",
       "Black"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Black (5 Suits)": {
     "id": 1382,
@@ -18207,7 +18233,8 @@
       "Sky EA",
       "Berry EA",
       "Black"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Rainbow (6 Suits)": {
     "id": 1383,
@@ -18218,7 +18245,8 @@
       "Berry EA",
       "Navy EA",
       "Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Rainbow (5 Suits)": {
     "id": 1386,
@@ -18228,7 +18256,8 @@
       "Sky EA",
       "Berry EA",
       "Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Rainbow (4 Suits)": {
     "id": 1387,
@@ -18237,7 +18266,8 @@
       "Berry VA",
       "Navy VA",
       "Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Pink (6 Suits)": {
     "id": 1388,
@@ -18248,7 +18278,8 @@
       "Berry EA",
       "Navy EA",
       "Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Pink (5 Suits)": {
     "id": 1389,
@@ -18258,7 +18289,8 @@
       "Sky EA",
       "Berry EA",
       "Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Pink (4 Suits)": {
     "id": 1390,
@@ -18267,7 +18299,8 @@
       "Berry VA",
       "Navy VA",
       "Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & White (6 Suits)": {
     "id": 1391,
@@ -18278,7 +18311,8 @@
       "Berry EA",
       "Navy EA",
       "White"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & White (5 Suits)": {
     "id": 1392,
@@ -18288,7 +18322,8 @@
       "Sky EA",
       "Berry EA",
       "White"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & White (4 Suits)": {
     "id": 1393,
@@ -18297,7 +18332,8 @@
       "Berry VA",
       "Navy VA",
       "White"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Brown (6 Suits)": {
     "id": 1394,
@@ -18308,7 +18344,8 @@
       "Berry EA",
       "Navy EA",
       "Brown"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Brown (5 Suits)": {
     "id": 1395,
@@ -18318,7 +18355,8 @@
       "Sky EA",
       "Berry EA",
       "Brown"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Brown (4 Suits)": {
     "id": 1396,
@@ -18327,7 +18365,8 @@
       "Berry VA",
       "Navy VA",
       "Brown"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Omni (6 Suits)": {
     "id": 1397,
@@ -18338,7 +18377,8 @@
       "Berry EA",
       "Navy EA",
       "Omni"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Omni (5 Suits)": {
     "id": 1398,
@@ -18348,7 +18388,8 @@
       "Sky EA",
       "Berry EA",
       "Omni"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Omni (4 Suits)": {
     "id": 1399,
@@ -18357,7 +18398,8 @@
       "Berry VA",
       "Navy VA",
       "Omni"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Null (6 Suits)": {
     "id": 1400,
@@ -18368,7 +18410,8 @@
       "Berry EA",
       "Navy EA",
       "Null"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Null (5 Suits)": {
     "id": 1401,
@@ -18378,7 +18421,8 @@
       "Sky EA",
       "Berry EA",
       "Null"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Null (4 Suits)": {
     "id": 1402,
@@ -18387,7 +18431,8 @@
       "Berry VA",
       "Navy VA",
       "Null"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Muddy Rainbow (6 Suits)": {
     "id": 1403,
@@ -18398,7 +18443,8 @@
       "Berry EA",
       "Navy EA",
       "Muddy Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Muddy Rainbow (5 Suits)": {
     "id": 1404,
@@ -18408,7 +18454,8 @@
       "Sky EA",
       "Berry EA",
       "Muddy Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Muddy Rainbow (4 Suits)": {
     "id": 1405,
@@ -18417,7 +18464,8 @@
       "Berry VA",
       "Navy VA",
       "Muddy Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Light Pink (6 Suits)": {
     "id": 1406,
@@ -18428,7 +18476,8 @@
       "Berry EA",
       "Navy EA",
       "Light Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Light Pink (5 Suits)": {
     "id": 1407,
@@ -18438,7 +18487,8 @@
       "Sky EA",
       "Berry EA",
       "Light Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Light Pink (4 Suits)": {
     "id": 1408,
@@ -18447,7 +18497,8 @@
       "Berry VA",
       "Navy VA",
       "Light Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Dark Rainbow (6 Suits)": {
     "id": 1409,
@@ -18458,7 +18509,8 @@
       "Berry EA",
       "Navy EA",
       "Dark Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Dark Rainbow (5 Suits)": {
     "id": 1410,
@@ -18468,7 +18520,8 @@
       "Sky EA",
       "Berry EA",
       "Dark Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Dark Pink (6 Suits)": {
     "id": 1411,
@@ -18479,7 +18532,8 @@
       "Berry EA",
       "Navy EA",
       "Dark Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Dark Pink (5 Suits)": {
     "id": 1412,
@@ -18489,7 +18543,8 @@
       "Sky EA",
       "Berry EA",
       "Dark Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Gray (6 Suits)": {
     "id": 1413,
@@ -18500,7 +18555,8 @@
       "Berry EA",
       "Navy EA",
       "Gray"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Gray (5 Suits)": {
     "id": 1414,
@@ -18510,7 +18566,8 @@
       "Sky EA",
       "Berry EA",
       "Gray"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Dark Brown (6 Suits)": {
     "id": 1415,
@@ -18521,7 +18578,8 @@
       "Berry EA",
       "Navy EA",
       "Dark Brown"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Dark Brown (5 Suits)": {
     "id": 1416,
@@ -18531,7 +18589,8 @@
       "Sky EA",
       "Berry EA",
       "Dark Brown"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Dark Omni (6 Suits)": {
     "id": 1417,
@@ -18542,7 +18601,8 @@
       "Berry EA",
       "Navy EA",
       "Dark Omni"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Dark Omni (5 Suits)": {
     "id": 1418,
@@ -18552,7 +18612,8 @@
       "Sky EA",
       "Berry EA",
       "Dark Omni"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Dark Null (6 Suits)": {
     "id": 1419,
@@ -18563,7 +18624,8 @@
       "Berry EA",
       "Navy EA",
       "Dark Null"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Dark Null (5 Suits)": {
     "id": 1420,
@@ -18573,7 +18635,8 @@
       "Sky EA",
       "Berry EA",
       "Dark Null"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Cocoa Rainbow (6 Suits)": {
     "id": 1421,
@@ -18584,7 +18647,8 @@
       "Berry EA",
       "Navy EA",
       "Cocoa Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Cocoa Rainbow (5 Suits)": {
     "id": 1422,
@@ -18594,7 +18658,8 @@
       "Sky EA",
       "Berry EA",
       "Cocoa Rainbow"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Gray Pink (6 Suits)": {
     "id": 1423,
@@ -18605,7 +18670,8 @@
       "Berry EA",
       "Navy EA",
       "Gray Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Extremely Ambiguous & Gray Pink (5 Suits)": {
     "id": 1424,
@@ -18615,7 +18681,8 @@
       "Sky EA",
       "Berry EA",
       "Gray Pink"
-    ]
+    ],
+    "showSuitNames": true
   },
   "Dual-Color (6 Suits)": {
     "id": 4,

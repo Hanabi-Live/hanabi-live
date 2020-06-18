@@ -300,6 +300,7 @@ def main():
             variants[variant_name] = {
                 "id": get_variant_id(variant_name),
                 "suits": ambiguous_suits[suit_num] + [suit_name],
+                "showSuitNames": True,
             }
 
     # Add "Very Ambiguous" variants
@@ -372,6 +373,7 @@ def main():
             variants[variant_name] = {
                 "id": get_variant_id(variant_name),
                 "suits": extremely_ambiguous_suits[suit_num] + [suit_name],
+                "showSuitNames": True,
             }
 
     # Add "Dual-Color" variants

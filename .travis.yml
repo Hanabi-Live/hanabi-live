@@ -8,6 +8,7 @@ matrix:
     # Job #1: Client
     - language: node_js
       node_js:
+        # Use the latest stable Node.js release
         - node
       before_script:
         # Install the JavaScript tooling (TypeScript, Webpack, ESLint, etc.)
