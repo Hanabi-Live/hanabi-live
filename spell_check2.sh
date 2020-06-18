@@ -19,6 +19,8 @@ FILES=$(find "$DIR" -type f \
   -not -path "$DIR/public/js/bundles/*" \
   -not -path "$DIR/public/sounds/*" \
   -not -path "$DIR/public/webfonts/*" \
+  -not -path "$DIR/server/src/go.mod" \
+  -not -path "$DIR/server/src/go.sum" \
 )
 
 cd "$DIR/client"

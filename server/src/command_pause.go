@@ -61,7 +61,7 @@ func commandPause(s *Session, d *CommandData) {
 		d.Setting = "pause"
 	}
 
-	// Validate the settomg
+	// Validate the setting
 	if d.Setting == "pause" {
 		if g.Paused {
 			s.Warning("The game is already paused.")

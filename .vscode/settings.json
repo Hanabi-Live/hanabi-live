@@ -44,7 +44,7 @@
   // https://github.com/psf/black
   "python.formatting.provider": "black",
 
-  // Automatically run the "yapf" formatter when a Python file is saved
+  // Automatically run the formatter when a Python file is saved
   "[python]": {
     "editor.formatOnSave": true,
   },
