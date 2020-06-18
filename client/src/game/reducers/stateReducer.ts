@@ -108,12 +108,22 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       // Add it to the play stacks
       state.playStacks[card.suit].push(action.which.order);
 
-      // Get points
+      // Gain a point
       state.score += 1;
 
-      // Get clues if the stack is complete
+      // Gain a clue token if the stack is complete
       if (state.playStacks[card.suit].length === 5) {
         state.clueTokens = clues.gainClue(VARIANTS.get(state.variantName)!, state.clueTokens);
+
+        // If we finished a stack while at 8 clues, then the extra clue is "wasted",
+        // similar to what happens when the team gets a strike
+        // In clue starved variants, a played 5 would only grant half a clue
+        /*
+        if (state.clueTokens === MAX_CLUE_NUM) {
+          globals.cluesSpentPlusStrikes += variantRules.isClueStarved(globals.variant) ? 0.5 : 1;
+          stats.updateEfficiency(0);
+        }
+        */
       }
 
       break;
@@ -149,7 +159,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       break;
     }
 
-    // A line of text was recieved from the server
+    // A line of text was received from the server
     // {text: "Razgovor plays Black 2 from slot #1", type: "text"}
     case 'text': {
       state.log.push(action.text);

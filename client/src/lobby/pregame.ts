@@ -55,7 +55,7 @@ export const show = () => {
   $('#lobby-chat-pregame-input').focus();
 
   // The "Create Game" button in the nav was disabled after we clicked the "Create" button,
-  // so re-enable it now that we have recieved a message back from the server
+  // so re-enable it now that we have received a message back from the server
   $('#nav-buttons-games-create-game').removeClass('disabled');
 
   // Adjust the top navigation bar
@@ -87,7 +87,7 @@ export const hide = () => {
 
 export const draw = () => {
   if (globals.game === null) {
-    throw new Error('Attempted to draw the pre-game screen without having first recieved a "game" message from the server.');
+    throw new Error('Attempted to draw the pre-game screen without having first received a "game" message from the server.');
   }
 
   // Update the information on the left-hand side of the screen

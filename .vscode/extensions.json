@@ -2,8 +2,9 @@
 // https://go.microsoft.com/fwlink/?LinkId=827846
 {
   "recommendations": [
-    "golang.go",
-    "ms-python.python",
-    "dbaeumer.vscode-eslint",
+    "dbaeumer.vscode-eslint", // ESLint lints the client TypeScript
+    "golang.go", // The server is written in Golang
+    "ms-python.python", // The repository has several Python scripts
+    "streetsidesoftware.code-spell-checker", // A spell checker is useful
   ],
 }
