@@ -98,7 +98,7 @@ export const draw = () => {
   optionsTitle.text('Options:');
   const options = $('#lobby-pregame-options');
 
-  // Note that the tooltips must be created inline; if they are created staticly in "main.tmpl",
+  // Note that the tooltips must be created inline; if they are created statically in "main.tmpl",
   // then they will fail to initialize properly on the second viewing
   let html = '';
 

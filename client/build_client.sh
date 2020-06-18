@@ -21,7 +21,7 @@ echo "$VERSION" > "$DIR/../data/version.json"
 # (the Golang process will execute this script during a graceful restart and it will not have it in
 # the path by default)
 if ! command -v npx > /dev/null; then
-  # MacOS only has Bash version 3, which does not have assosiative arrays,
+  # MacOS only has Bash version 3, which does not have associative arrays,
   # so the below check will not work
   # https://unix.stackexchange.com/questions/92208/bash-how-to-get-the-first-number-that-occurs-in-a-variables-content
   BASH_VERSION_FIRST_DIGIT=$(bash --version | grep -o -E '[0-9]+' | head -1 | sed -e 's/^0\+//')

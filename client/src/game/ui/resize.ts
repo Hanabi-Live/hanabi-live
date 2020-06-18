@@ -22,7 +22,7 @@ const resizeCanvas = () => {
 const redraw = () => {
     const self = globals.lobby.ui;
 
-    // Unbind duplicateable keybindings
+    // Unbind game keybindings
     // (commented out because this would unbind the lobby hotkeys)
     // $(document).off('keydown');
 

@@ -57,10 +57,6 @@ export default () => {
     // "socketError" is defined in the Connection object as mapping to
     // the WebSocket "onerror" event
     console.error('WebSocket error:', event);
-
-    if ($('#loginbox').is(':visible')) {
-      lobbyLogin.formError('Failed to connect to the WebSocket server. The server might be down!');
-    }
   });
 
   // All of the normal commands/messages that we expect from the server are defined in the

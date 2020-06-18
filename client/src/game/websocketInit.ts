@@ -47,7 +47,7 @@ commands.set('init', (data: any) => {
   // so convert it accordingly
   globals.init.variant = VARIANTS.get(data.variant);
 
-  // Also initalize the "ui2" object, which contains various graphical objects
+  // Also initialize the "ui2" object, which contains various graphical objects
   globals.ui2 = {
     cards: [],
   };

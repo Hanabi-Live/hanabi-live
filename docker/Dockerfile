@@ -84,7 +84,7 @@ RUN chown -R appuser:appuser /app/
 FROM scratch
 
 # for debugging purposes, you can use a different image like:
-# FROM buysbox
+# FROM busybox
 
 ARG SENTRY_DSN=""
 

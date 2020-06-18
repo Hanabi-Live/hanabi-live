@@ -140,7 +140,7 @@ commands.set('table', (data: Table) => {
 });
 
 const tableSet = (data: Table) => {
-  // The timebase and timePerTurn come in seconds, so convert them to milliseconds
+  // The timeBase and timePerTurn come in seconds, so convert them to milliseconds
   data.timeBase *= 1000;
   data.timePerTurn *= 1000;
 

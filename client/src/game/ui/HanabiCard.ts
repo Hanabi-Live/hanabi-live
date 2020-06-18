@@ -371,9 +371,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.arrow!.rotation(direction === StackDirection.Up ? 180 : 0);
     this.arrowBase!.stroke(this.state.suit!.fill);
     if (this.state.suit.fill === 'multi') {
-      // We can't use a fill gradiant because the "fill" is actually a big stroke
+      // We can't use a fill gradient because the "fill" is actually a big stroke
       // (the Konva arrow object is not a shape, but instead a very thick line)
-      // Instead, just use the the first gradiant color
+      // Instead, just use the the first gradient color
       this.arrowBase!.stroke(this.state.suit.fillColors[0]);
     }
     if (this.rankPips!.visible()) {
@@ -556,7 +556,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
               && this.state.possibleSuits.filter((suit) => suit.allClueColors).length === 0
             ) {
               // Two positive color clues should "fill in" a special rank that is touched by all
-              // color clues (that cannot be a mult-color suit)
+              // color clues (that cannot be a multi-color suit)
               ranksRemoved = filterInPlace(
                 this.state.possibleRanks,
                 (rank: number) => rank === globals.variant.specialRank,

@@ -30,6 +30,7 @@ FILES=$(find "$DIR" -type f \
   -not -path "$DIR/scripts/python/emotes/twitch.txt" \
   -not -path "$DIR/server/src/go.mod" \
   -not -path "$DIR/server/src/go.sum" \
+  -not -path "$DIR/LICENSE" \
 )
 
 cd "$DIR/client"

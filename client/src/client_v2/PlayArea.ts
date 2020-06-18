@@ -10,12 +10,12 @@ import Suit from '../game/types/Suit';
 import HanabiCard from './HanabiCard';
 import * as utils from './utils';
 
-// Phaser devs warned against using too many levels of nested containers, so I didn't design
-// containers for play stacks. This means we lose the ability to independently position them, but
-// that's probably not something we will want to do.
+// The Phaser developers warned against using too many levels of nested containers,
+// so I didn't design containers for play stacks. This means we lose the ability to independently
+// position them, but that's probably not something we will want to do.
 export default class PlayArea extends Phaser.GameObjects.Container {
   suits: any;
-  horizSpacing: number;
+  horizontalSpacing: number;
   zone: any;
 
   constructor(scene: any, config: any) {
@@ -24,18 +24,18 @@ export default class PlayArea extends Phaser.GameObjects.Container {
     this.y = config.y;
     this.suits = config.suits;
     this.scale = config.scale;
-    this.horizSpacing = CARD_W * config.scale * PLAY_AREA_PADDING;
+    this.horizontalSpacing = CARD_W * config.scale * PLAY_AREA_PADDING;
 
     this.zone = new Phaser.GameObjects.Zone(
       scene,
       config.x,
       config.y,
-      this.horizSpacing * config.suits.length,
+      this.horizontalSpacing * config.suits.length,
       CARD_H * config.scale,
     );
     this.zone.zoneContainer = this;
     this.zone.setRectangleDropZone(
-      this.horizSpacing * config.suits.length,
+      this.horizontalSpacing * config.suits.length,
       CARD_H * config.scale,
     );
     const cardsToAdd = this.suits.map((suit: Suit) => new HanabiCard(scene, {
@@ -61,7 +61,7 @@ export default class PlayArea extends Phaser.GameObjects.Container {
 
     for (const card of cards) {
       const suitIdx = this.suits.findIndex((suit: Suit) => suit === card.suit);
-      const x = (suitIdx + (1 / 2) - (nSuits / 2)) * this.horizSpacing;
+      const x = (suitIdx + (1 / 2) - (nSuits / 2)) * this.horizontalSpacing;
       this.scene.tweens.add({
         targets: card,
         x,

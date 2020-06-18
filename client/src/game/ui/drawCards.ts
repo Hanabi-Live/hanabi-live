@@ -1,4 +1,4 @@
-// The Hanabi card grahpics are various HTML5 canvas drawings
+// The Hanabi card graphics are various HTML5 canvas drawings
 
 // Imports
 import {
@@ -345,19 +345,19 @@ const drawCardBase = (
 };
 
 const cardBorderPath = (ctx: CanvasRenderingContext2D, padding: number) => {
-  const xrad = CARD_W * 0.08;
-  const yrad = CARD_W * 0.08;
+  const xRadians = CARD_W * 0.08;
+  const yRadians = CARD_W * 0.08;
   // (we want them to both have the same value so that the curve has a 45 degree angle)
   ctx.beginPath();
-  ctx.moveTo(padding, yrad + padding); // Top-left corner
-  ctx.lineTo(padding, CARD_H - yrad - padding); // Bottom-left corner
-  ctx.quadraticCurveTo(0, CARD_H, xrad + padding, CARD_H - padding);
-  ctx.lineTo(CARD_W - xrad - padding, CARD_H - padding); // Bottom-right corner
-  ctx.quadraticCurveTo(CARD_W, CARD_H, CARD_W - padding, CARD_H - yrad - padding);
-  ctx.lineTo(CARD_W - padding, yrad + padding); // Top-right corner
-  ctx.quadraticCurveTo(CARD_W, 0, CARD_W - xrad - padding, padding);
-  ctx.lineTo(xrad + padding, padding); // Top-left corner
-  ctx.quadraticCurveTo(0, 0, padding, yrad + padding);
+  ctx.moveTo(padding, yRadians + padding); // Top-left corner
+  ctx.lineTo(padding, CARD_H - yRadians - padding); // Bottom-left corner
+  ctx.quadraticCurveTo(0, CARD_H, xRadians + padding, CARD_H - padding);
+  ctx.lineTo(CARD_W - xRadians - padding, CARD_H - padding); // Bottom-right corner
+  ctx.quadraticCurveTo(CARD_W, CARD_H, CARD_W - padding, CARD_H - yRadians - padding);
+  ctx.lineTo(CARD_W - padding, yRadians + padding); // Top-right corner
+  ctx.quadraticCurveTo(CARD_W, 0, CARD_W - xRadians - padding, padding);
+  ctx.lineTo(xRadians + padding, padding); // Top-left corner
+  ctx.quadraticCurveTo(0, 0, padding, yRadians + padding);
 };
 
 const drawShape = (ctx: CanvasRenderingContext2D) => {

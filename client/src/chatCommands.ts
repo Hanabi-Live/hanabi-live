@@ -65,7 +65,7 @@ const pm = (room: string, args: string[]) => {
     return;
   }
 
-  // Validate that the receipient is online
+  // Validate that the recipient is online
   let isOnline = false;
   for (const user of globals.userMap.values()) {
     if (user.name.toLowerCase() === recipient.toLowerCase()) {
