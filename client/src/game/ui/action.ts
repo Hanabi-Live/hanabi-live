@@ -425,7 +425,7 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
 
     for (const card of globals.deck) {
       if (card.state.suit === suit) {
-        card.setDirectionArrow();
+        card.setDirectionArrow(suit);
       }
     }
   }
