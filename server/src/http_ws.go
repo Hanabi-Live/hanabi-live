@@ -19,7 +19,7 @@ var (
 // httpWS handles part 2 of 2 for logic authentication
 // Part 1 is found in "httpLogin.go"
 // After receiving a cookie in part 1, the client will attempt to open a WebSocket connection with
-// the cookie (this is done implicitly because JavaScript will automatiaclly use any current cookies
+// the cookie (this is done implicitly because JavaScript will automatically use any current cookies
 // for the website when establishing a WebSocket connection)
 // So, before allowing anyone to open a WebSocket connection, we need to validate that they have
 // gone through part 1 (e.g. they have a valid cookie that was created N seconds ago)
@@ -101,7 +101,7 @@ func httpWS(c *gin.Context) {
 		// The user has a cookie for a user that does not exist in the database,
 		// e.g. an "orphaned" user
 		// This can happen in situations where a test user was deleted, for example
-		// Delete their cookie and force them to relogin
+		// Delete their cookie and force them to re-login
 		logger.Info("User from \"" + ip + "\" " +
 			"tried to login with a cookie with an orphaned user ID of " + strconv.Itoa(userID) + ". " +
 			"Deleting their cookie.")

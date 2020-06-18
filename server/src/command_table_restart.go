@@ -103,7 +103,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 	}
 
 	// Validate that the server is not about to go offline
-	if checkImminenntShutdown(s) {
+	if checkImminentShutdown(s) {
 		return
 	}
 

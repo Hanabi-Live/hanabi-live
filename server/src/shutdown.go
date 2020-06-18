@@ -141,7 +141,7 @@ func cancel() {
 	chatServerSendAll("Server shutdown has been canceled.")
 }
 
-func checkImminenntShutdown(s *Session) bool {
+func checkImminentShutdown(s *Session) bool {
 	if !shuttingDown {
 		return false
 	}

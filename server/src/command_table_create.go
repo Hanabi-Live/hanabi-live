@@ -39,7 +39,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 	*/
 
 	// Validate that the server is not about to go offline
-	if checkImminenntShutdown(s) {
+	if checkImminentShutdown(s) {
 		return
 	}
 
@@ -115,7 +115,7 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	setReplayTurn := 0
 	var setReplayOptions *Options
 
-	// Hande special game option creation
+	// Handle special game option creation
 	if strings.HasPrefix(d.Name, "!") {
 		args := strings.Split(d.Name, " ")
 		command := args[0]
