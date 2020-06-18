@@ -21,7 +21,7 @@ import possibilitiesCheck from './possibilitiesCheck';
 import RankPip from './RankPip';
 
 export function image(this: HanabiCard) {
-  // Create the "bare" card image, which is the main card grahpic
+  // Create the "bare" card image, which is the main card graphic
   // If the card is not revealed, it will just be a gray rectangle
   // The pips and other elements of a card are drawn on top of the bare image
   this.bare = new Konva.Image({
