@@ -27,6 +27,7 @@ func httpHistory(c *gin.Context) {
 	// e.g. "/history/Alice/Bob/Cathy"
 	playerIDs := make([]int, 0)
 	playerNames := make([]string, 0)
+	playerNormalizedNames := make([]string, 0)
 	for i := 1; i <= 6; i++ {
 		player := c.Param("player" + strconv.Itoa(i))
 		if player == "" {
@@ -38,6 +39,17 @@ func httpHistory(c *gin.Context) {
 		}
 
 		normalizedUsername := normalizeString(player)
+
+		// Check to see if this is a duplicate player
+		// e.g. "/history/Alice/Bob/bob"
+		if stringInSlice(normalizedUsername, playerNormalizedNames) {
+			http.Error(
+				w,
+				"Error: You can not specify the same player twice.",
+				http.StatusNotFound,
+			)
+			return
+		}
 
 		// Check if the player exists
 		var user User
@@ -64,6 +76,7 @@ func httpHistory(c *gin.Context) {
 
 		playerIDs = append(playerIDs, user.ID)
 		playerNames = append(playerNames, user.Username)
+		playerNormalizedNames = append(playerNames, normalizedUsername)
 	}
 
 	// Get the game IDs for this player (or set of players)
