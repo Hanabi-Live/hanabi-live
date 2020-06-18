@@ -19,8 +19,10 @@ matrix:
         - ./build_client.sh
         - echo "Linting the client code..."
         - ./lint_client.sh
-        - echo "Running tests..."
+        - echo "Running client tests..."
         - npm test
+        - echo "Spell checking the entire project..."
+        - ../spell_check.sh
 
     # Job #2: Server
     - language: go
@@ -43,19 +45,7 @@ matrix:
         - echo "Linting the server code..."
         - ./lint_server.sh
 
-    # Job #3: Spell Check
-    - language: shell
-      script:
-        - echo "Spell checking..."
-        - ./spell_check.sh
-
 notifications:
   email:
     on_success: never
     on_failure: never
-
-addons:
-  apt:
-    packages:
-      - aspell
-      - aspell-en
