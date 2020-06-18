@@ -1,6 +1,6 @@
 # Security at Hanabi Live
 
-Many tech comapanies have security blogs that explain how they use your data, how they protect your data, and provide a little transparency. This blog is a short attempt to provide something similar.
+Many tech companies have security blogs that explain how they use your data, how they protect your data, and provide a little transparency. This blog is a short attempt to provide something similar.
 
 <br />
 

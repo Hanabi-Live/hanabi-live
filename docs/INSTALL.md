@@ -301,12 +301,12 @@ This assumes that your domain names are "hanabi.live" and "www.hanabi.live". It 
 
 ## Installation (Docker)
 
-Docker is **not supported** as an official installation method. However, we provide a [docker-compose.yml](../docker-compose.yml) file which runs PostgreSQL and the Golang backend inside of networked Docker containers, if you so choose.
+Docker is **not supported** as an official installation method. However, we provide a [docker-compose.yml](../docker-compose.yml) file which runs PostgreSQL and the Golang back-end inside of networked Docker containers, if you so choose.
 
 * [Install Docker](https://docs.docker.com/get-docker/).
 * Run `docker-compose up --build` to build and run the server.
   * The database will be automatically initialized when the server is first run, and will persist in a local directory called `mysql_data`.
-* Run `webpack-dev-server.sh`, as above, to build the frontend.
+* Run `webpack-dev-server.sh`, as above, to build the front-end.
 * Visit "http://localhost:8081/dev".
 
 <br />
