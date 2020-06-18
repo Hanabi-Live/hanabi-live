@@ -38,10 +38,9 @@ func httpHistory(c *gin.Context) {
 			break
 		}
 
-		normalizedUsername := normalizeString(player)
-
 		// Check to see if this is a duplicate player
 		// e.g. "/history/Alice/Bob/bob"
+		normalizedUsername := normalizeString(player)
 		if stringInSlice(normalizedUsername, playerNormalizedNames) {
 			http.Error(
 				w,

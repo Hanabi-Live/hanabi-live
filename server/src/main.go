@@ -168,6 +168,7 @@ func main() {
 		return
 	} else {
 		wordListString := string(v)
+		wordListString = strings.TrimSpace(wordListString)
 		wordList = strings.Split(wordListString, "\n")
 	}
 
