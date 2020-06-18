@@ -16,7 +16,7 @@ var (
 	// (e.g. Google Analytics)
 	// We don't want to use the default http.Client because it has no default timeout set
 	HTTPClientWithTimeout = &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: HTTPWriteTimeout,
 	}
 )
 

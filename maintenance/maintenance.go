@@ -15,6 +15,11 @@ import (
 	"github.com/op/go-logging"
 )
 
+var (
+	HTTPReadTimeout  = 5 * time.Second
+	HTTPWriteTimeout = 10 * time.Second
+)
+
 func main() {
 	// Initialize logging using the "go-logging" library
 	// http://godoc.org/github.com/op/go-logging#Formatter
@@ -108,8 +113,8 @@ func main() {
 			HTTPRedirectServerWithTimeout := &http.Server{
 				Addr:         "0.0.0.0:80", // Listen on all IP addresses
 				Handler:      HTTPServeMux,
-				ReadTimeout:  5 * time.Second,
-				WriteTimeout: 10 * time.Second,
+				ReadTimeout:  HTTPReadTimeout,
+				WriteTimeout: HTTPWriteTimeout,
 			}
 			if err := HTTPRedirectServerWithTimeout.ListenAndServe(); err != nil {
 				logger.Fatal("ListenAndServe failed to start on port 80.")
@@ -136,8 +141,8 @@ func main() {
 	HTTPServerWithTimeout := &http.Server{
 		Addr:         "0.0.0.0:" + strconv.Itoa(port), // Listen on all IP addresses
 		Handler:      httpRouter,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  HTTPReadTimeout,
+		WriteTimeout: HTTPWriteTimeout,
 	}
 	if useTLS {
 		if err := HTTPServerWithTimeout.ListenAndServeTLS(tlsCertFile, tlsKeyFile); err != nil {

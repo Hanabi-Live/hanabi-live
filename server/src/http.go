@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 	"strconv"
-	"strings"
 	"text/template"
 	"time"
 
@@ -29,6 +28,8 @@ const (
 	// The name supplied to the Gin session middleware can be any arbitrary string
 	HTTPSessionName    = "hanabi.sid"
 	HTTPSessionTimeout = 60 * 60 * 24 * 365 // 1 year in seconds
+	HTTPReadTimeout    = 5 * time.Second
+	HTTPWriteTimeout   = 10 * time.Second
 )
 
 var (
@@ -120,7 +121,11 @@ func httpInit() {
 
 	// Attach the Sentry middleware
 	if usingSentry {
-		httpRouter.Use(sentrygin.New(sentrygin.Options{}))
+		httpRouter.Use(sentrygin.New(sentrygin.Options{
+			// https://github.com/getsentry/sentry-go/blob/master/gin/sentrygin.go
+			Repanic: true, // Recommended as per the documentation
+			Timeout: HTTPWriteTimeout,
+		}))
 	}
 
 	// Path handlers (for cookies and logging in)
@@ -238,8 +243,8 @@ func httpInit() {
 			HTTPRedirectServerWithTimeout := &http.Server{
 				Addr:         "0.0.0.0:80", // Listen on all IP addresses
 				Handler:      HTTPServeMux,
-				ReadTimeout:  5 * time.Second,
-				WriteTimeout: 10 * time.Second,
+				ReadTimeout:  HTTPReadTimeout,
+				WriteTimeout: HTTPWriteTimeout,
 			}
 			if err := HTTPRedirectServerWithTimeout.ListenAndServe(); err != nil {
 				logger.Fatal("ListenAndServe failed to start on port 80.")
@@ -256,8 +261,8 @@ func httpInit() {
 	HTTPServerWithTimeout := &http.Server{
 		Addr:         "0.0.0.0:" + strconv.Itoa(port), // Listen on all IP addresses
 		Handler:      httpRouter,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  HTTPReadTimeout,
+		WriteTimeout: HTTPWriteTimeout,
 	}
 	if useTLS {
 		if err := HTTPServerWithTimeout.ListenAndServeTLS(tlsCertFile, tlsKeyFile); err != nil {
@@ -324,15 +329,7 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 
 	// Execute the template and send it to the user
 	if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {
-		if strings.HasSuffix(err.Error(), "client disconnected") ||
-			strings.HasSuffix(err.Error(), "http2: stream closed") ||
-			strings.HasSuffix(err.Error(), "write: broken pipe") ||
-			strings.HasSuffix(err.Error(), "write: connection reset by peer") ||
-			strings.HasSuffix(err.Error(), "write: connection timed out") ||
-			strings.HasSuffix(err.Error(), "i/o timeout") {
-
-			// Some errors are common and expected
-			// (e.g. the user presses the "Stop" button while the template is executing)
+		if isCommonHTTPError(err.Error()) {
 			logger.Info("Ordinary error when executing the template: " + err.Error())
 		} else {
 			logger.Error("Failed to execute the template: " + err.Error())

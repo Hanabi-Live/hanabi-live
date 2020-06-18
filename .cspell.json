@@ -178,6 +178,7 @@
         "rebases",
         "refreshenv",
         "reinstantiated",
+        "repanic",
         "resizeend",
         "resizemove",
         "resizers",

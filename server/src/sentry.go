@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 
 	"github.com/getsentry/sentry-go"
 )
@@ -23,11 +24,33 @@ func sentryInit() bool {
 
 	// Initialize Sentry
 	if err := sentry.Init(sentry.ClientOptions{
-		Dsn: sentryDSN,
+		Dsn:          sentryDSN,
+		IgnoreErrors: commonHTTPErrors,
 	}); err != nil {
 		logger.Fatal("Failed to initialize Sentry:", err)
 		return false
 	}
 
 	return true
+}
+
+var commonHTTPErrors = []string{
+	"client disconnected",
+	"http2: stream closed",
+	"write: broken pipe",
+	"write: connection reset by peer",
+	"write: connection timed out",
+	"i/o timeout",
+}
+
+// isCommonHTTPError checks for some errors that are common and expected
+// (e.g. the user presses the "Stop" button while the template is executing)
+func isCommonHTTPError(errorMsg string) bool {
+	for _, commonHTTPError := range commonHTTPErrors {
+		if strings.HasSuffix(errorMsg, commonHTTPError) {
+			return true
+		}
+	}
+
+	return false
 }

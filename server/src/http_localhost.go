@@ -8,7 +8,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -58,8 +57,8 @@ func httpLocalhostInit() {
 	HTTPServerWithTimeout := &http.Server{
 		Addr:         "127.0.0.1:" + strconv.Itoa(port), // Listen only on the localhost interface
 		Handler:      httpRouter,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  HTTPReadTimeout,
+		WriteTimeout: HTTPWriteTimeout,
 	}
 	if err := HTTPServerWithTimeout.ListenAndServe(); err != nil {
 		logger.Fatal("ListenAndServe failed (for localhost):", err)
