@@ -56,7 +56,7 @@ module.exports = {
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/variables.js#L42
     '@typescript-eslint/no-use-before-define': ['off'],
 
-    // The Hanabi codebase uses cyclical depedencies because
+    // The Hanabi codebase uses cyclical dependencies because
     // various objects are attached to the global variables object,
     // but methods of these objects also reference/change global variables
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/imports.js#L236
@@ -107,8 +107,8 @@ module.exports = {
     // Clean code can arise from for-of statements if used properly
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L334
     'no-restricted-syntax': ['off', 'ForOfStatement'],
-
-    // KineticJS's API has functions that are prefixed with an underscore
+  
+    // KineticJS has functions that are prefixed with an underscore
     // (remove this once the code base is transitioned to Phaser)
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L371
     'no-underscore-dangle': ['off'],

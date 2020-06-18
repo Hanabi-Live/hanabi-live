@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
 // Imports
 const path = require('path');
 
@@ -17,7 +21,6 @@ module.exports = (grunt) => {
           path.join(cssLibPath, 'solid.min.css'),
           path.join(cssLibPath, 'tooltipster.bundle.min.css'),
           path.join(cssLibPath, 'tooltipster-sideTip-shadow.min.css'),
-          path.join(cssLibPath, 'slimselect.min.css'),
           path.join(cssLibPath, 'alpha.css'),
           path.join(cssPath, 'hanabi.css'),
         ],
