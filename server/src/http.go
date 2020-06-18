@@ -86,11 +86,6 @@ func httpInit() {
 	limiterMiddleware := tollbooth_gin.LimitHandler(limiter)
 	httpRouter.Use(limiterMiddleware)
 
-	// Attach the Sentry middleware
-	if usingSentry {
-		httpRouter.Use(sentrygin.New(sentrygin.Options{}))
-	}
-
 	// Create a session store
 	httpSessionStore := cookie.NewStore([]byte(sessionSecret))
 	options := gsessions.Options{
@@ -121,6 +116,11 @@ func httpInit() {
 	// Initialize Google Analytics
 	if len(GATrackingID) > 0 {
 		httpRouter.Use(httpGoogleAnalytics) // Attach the Google Analytics middleware
+	}
+
+	// Attach the Sentry middleware
+	if usingSentry {
+		httpRouter.Use(sentrygin.New(sentrygin.Options{}))
 	}
 
 	// Path handlers (for cookies and logging in)

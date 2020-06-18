@@ -67,34 +67,35 @@ func httpGoogleAnalytics(c *gin.Context) {
 	// that in a new goroutine to avoid locking up the server
 	// According to the Gin documentation, we have to make a copy of the context
 	// before using it inside of a goroutine
-	cCp := c.Copy()
-	go func(cCp *gin.Context) {
-		// Local variables
-		r := cCp.Request
-
-		ip, _, _ := net.SplitHostPort(r.RemoteAddr)
-		data := url.Values{
-			"v":   {"1"},           // API version
-			"tid": {GATrackingID},  // Tracking ID
-			"cid": {clientID},      // Anonymous client ID
-			"t":   {"pageview"},    // Hit type
-			"dh":  {r.Host},        // Document hostname
-			"dp":  {r.URL.Path},    // Document page/path
-			"uip": {ip},            // IP address override
-			"ua":  {r.UserAgent()}, // User agent override
-		}
-		resp, err := HTTPClientWithTimeout.PostForm(
-			"https://www.google-analytics.com/collect",
-			data,
-		)
-		if err != nil {
-			// POSTs to Google Analytics will occasionally time out; if this occurs,
-			// do not bother retrying, since losing a single page view is fairly meaningless
-			logger.Info("Failed to send a page hit to Google Analytics:", err)
-			return
-		}
-		defer resp.Body.Close()
-	}(cCp)
-
+	contextCopy := c.Copy()
+	go sendGoogleAnalytics(contextCopy, clientID)
 	c.Next()
+}
+
+func sendGoogleAnalytics(c *gin.Context, clientID string) {
+	// Local variables
+	r := c.Request
+
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	data := url.Values{
+		"v":   {"1"},           // API version
+		"tid": {GATrackingID},  // Tracking ID
+		"cid": {clientID},      // Anonymous client ID
+		"t":   {"pageview"},    // Hit type
+		"dh":  {r.Host},        // Document hostname
+		"dp":  {r.URL.Path},    // Document page/path
+		"uip": {ip},            // IP address override
+		"ua":  {r.UserAgent()}, // User agent override
+	}
+	resp, err := HTTPClientWithTimeout.PostForm(
+		"https://www.google-analytics.com/collect",
+		data,
+	)
+	if err != nil {
+		// POSTs to Google Analytics will occasionally time out; if this occurs,
+		// do not bother retrying, since losing a single page view is fairly meaningless
+		logger.Info("Failed to send a page hit to Google Analytics:", err)
+		return
+	}
+	defer resp.Body.Close()
 }
