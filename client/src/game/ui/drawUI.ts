@@ -1031,7 +1031,7 @@ const drawSharedReplay = () => {
   globals.layers.UI.add(sharedReplayLeaderLabel);
   globals.elements.sharedReplayLeaderLabel = sharedReplayLeaderLabel;
 
-  // Add an animation to alert everyone when shared replay leadership has been transfered
+  // Add an animation to alert everyone when shared replay leadership has been transferred
   globals.elements.sharedReplayLeaderLabelPulse = new Konva.Tween({
     node: sharedReplayLeaderLabel,
     width: size * 2,

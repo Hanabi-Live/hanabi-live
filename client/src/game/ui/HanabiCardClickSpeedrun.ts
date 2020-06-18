@@ -165,7 +165,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     return;
   }
 
-  // Ctrl + right-click is the normal note popup
+  // Ctrl + right-click is the normal note pop-up
   if (
     event.ctrlKey
     && !event.shiftKey

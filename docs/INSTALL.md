@@ -64,9 +64,9 @@ If you want to install less stuff on your computer, you can alternatively follow
   * `\q`
 * Clone the repository:
   * `cd [the path where you want the code to live]` (optional)
-  * If you already have an SSH keypair and have the public key attached to your GitHub profile, then use the following command to clone the repostory via SSH:
+  * If you already have an SSH key pair and have the public key attached to your GitHub profile, then use the following command to clone the repository via SSH:
     * `git clone git@github.com:Zamiell/hanabi-live.git`
-  * If you do not already have an SSH keypair, then use the following command to clone the repository via HTTPS:
+  * If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
     * `git clone https://github.com/Zamiell/hanabi-live.git`
   * Or, if you are doing development work, then clone your forked version of the repository. For example:
     * `git clone https://github.com/[Your_Username]/hanabi-live.git`
@@ -88,7 +88,7 @@ If you want to install less stuff on your computer, you can alternatively follow
 * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
 * Test the Golang linter:
   * On the left pane, navigate to and open "src\main.go".
-  * If you get a popup asking to use any experimental features (e.g. gopls), ignore it and/or do not allow it to proceed.
+  * If you get a pop-up asking to use any experimental features (e.g. gopls), ignore it and/or do not allow it to proceed.
   * Add a new line of "test" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
   * Add a blank line somewhere, save the file, and watch as the blank line is automatically removed (because VSCode will automatically run the "goimports" tool every time you save a file).
 * Test the TypeScript linter:
@@ -131,9 +131,9 @@ If you want to install less stuff on your computer, you can alternatively follow
   * `\q`
 * Clone the repository:
   * `cd [the path where you want the code to live]` (optional)
-  * If you already have an SSH keypair and have the public key attached to your GitHub profile, then use the following command to clone the repostory via SSH:
+  * If you already have an SSH key pair and have the public key attached to your GitHub profile, then use the following command to clone the repository via SSH:
     * `git clone git@github.com:Zamiell/hanabi-live.git`
-  * If you do not already have an SSH keypair, then use the following command to clone the repository via HTTPS:
+  * If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
     * `git clone https://github.com/Zamiell/hanabi-live.git`
   * Or, if you are doing development work, then clone your forked version of the repository. For example:
     * `git clone https://github.com/[Your_Username]/hanabi-live.git`
@@ -152,7 +152,7 @@ If you want to install less stuff on your computer, you can alternatively follow
 * In the bottom-right-hand corner, click on "Analysis Tools Missing" and then on "Install". You will know that it has finished once it displays: "All tools successfully installed."
 * Test the Golang linter:
   * On the left pane, navigate to and open "src\main.go".
-  * If you get a popup asking to use any experimental features (e.g. gopls), ignore it and/or do not allow it to proceed.
+  * If you get a pop-up asking to use any experimental features (e.g. gopls), ignore it and/or do not allow it to proceed.
   * Add a new line of "testing" somewhere, save the file, and watch as some "Problems" appear in the bottom pane.
   * Add a blank line somewhere, save the file, and watch as the blank line is automatically removed (because VSCode will automatically run the "goimports" tool every time you save a file).
 * Test the TypeScript linter:
@@ -200,9 +200,9 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
   (this installs the latest version)
 * Clone the server:
   * `cd /root` (or change to the path where you want the code to live; "/root" is recommended)
-  * If you already have an SSH keypair and have the public key attached to your GitHub profile, then use the following command to clone the repostory via SSH:
+  * If you already have an SSH key pair and have the public key attached to your GitHub profile, then use the following command to clone the repository via SSH:
     * `git clone git@github.com:Zamiell/hanabi-live.git`
-  * If you do not already have an SSH keypair, then use the following command to clone the repository via HTTPS:
+  * If you do not already have an SSH key pair, then use the following command to clone the repository via HTTPS:
     * `git clone https://github.com/Zamiell/hanabi-live.git`
   * `cd hanabi-live`
 * Install the project dependencies:

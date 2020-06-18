@@ -30,7 +30,7 @@ Hanabi Live uses HTTPS, which means that all traffic to and from the web server 
 
 <br />
 
-### Password Hasing
+### Password Hashing
 
 On the server, passwords are salted and hashed using the [Argon2 algorithm](https://en.wikipedia.org/wiki/Argon2) before being stored in the database. As of 2020, this is considered to be [best practice](https://medium.com/analytics-vidhya/password-hashing-pbkdf2-scrypt-bcrypt-and-argon2-e25aaf41598e). This means that if an attacker was able to access the Hanabi Live database, they would not be able to derive your password (since a hash is just a random sequence of bytes).
 

@@ -112,10 +112,10 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 * A shared replay is similar to a normal replay, but others can join to have a coordinated review session.
 * At the end of each game, you will automatically be put into a shared replay with everyone who played the game.
 * The leader controls what turn is being shown. By default, the leader will be the person who created the game or created the shared replay.
-* Players can "break free" of what the leader is showing by clicking the "Pause Shared Turns" button, or by manually navigating to a different turn. To resyncronize with the team, they need to click on the "Use Shared Turns Button". (The up arrow and down arrow are also shortcuts for clicking on this button.)
+* Players can "break free" of what the leader is showing by clicking the "Pause Shared Turns" button, or by manually navigating to a different turn. To resynchronize with the team, they need to click on the "Use Shared Turns Button". (The up arrow and down arrow are also shortcuts for clicking on this button.)
 * The leader can right-click on a card to highlight it with a red arrow (to point out things to the other players).
 * The current leader can be seen by hovering over the "👑" icon in the bottom right-hand corner.
-* The leader role can be transfered by right-clicking the crown.
+* The leader role can be transferred by right-clicking the crown.
 
 #### Hypotheticals
 
@@ -263,7 +263,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 #### Detrimental Character Assignments
 
 * Each game has the option to enable "Detrimental Character Assignments". When enabled, it will restrict players in additional ways beyond the normal rules.
-* The characters are loosly based on [this post](https://boardgamegeek.com/thread/1688194/hanabi-characters-variant) from Sean McCarthy on the Board Game Geek forums.
+* The characters are loosely based on [this post](https://boardgamegeek.com/thread/1688194/hanabi-characters-variant) from Sean McCarthy on the Board Game Geek forums.
 * More information on the characters are listed on [a separate page](https://github.com/Zamiell/hanabi-live/tree/master/docs/CHARACTERS.md).
 
 #### Password-Protected Games
