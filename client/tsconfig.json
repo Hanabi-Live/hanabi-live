@@ -8,7 +8,7 @@
 
     // "target" specifies the ECMAScript target version
     // By default, it is "ES3"
-    // This is too conservative; Hanabi Live will target browsers within a 2 year timeframe
+    // This is too conservative; Hanabi Live will target browsers within a 2 year time-frame
     "target": "ES2018",
 
     // "newLine" specifies the end of line sequence
