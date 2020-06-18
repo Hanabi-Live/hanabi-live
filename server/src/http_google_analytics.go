@@ -11,7 +11,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-// Gin middleware for sending this page view to Google Analytics
+// httpGoogleAnalytics is a Gin middleware for sending page views to Google Analytics
 // (we do this on the server because client-side blocking is common via uBlock Origin, Adblock Plus,
 // etc.)
 func httpGoogleAnalytics(c *gin.Context) {
