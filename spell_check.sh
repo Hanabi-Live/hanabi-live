@@ -8,7 +8,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 MARKDOWN_TEXT=$(cat $DIR/*.md && cat $DIR/docs/*.md)
 MARKDOWN_TEXT=$(echo "$MARKDOWN_TEXT" | sed 's/`.*`//g') # Remove code blocks
-MARKDOWN_TEXT=$(echo "$MARKDOWN_TEXT" | tr A-Z a-z) # Convert to lowercase
 MISSPELLED=`echo "$MARKDOWN_TEXT" | aspell --lang=en --encoding=utf-8 --personal="$DIR/.aspell.en.pws" list | sort -u`
 
 if [[ -z $MISSPELLED ]]; then
