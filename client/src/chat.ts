@@ -432,7 +432,7 @@ const fillLocalEmotes = (message: string) => {
   for (const [category, emotes] of Object.entries(emoteCategories)) {
     for (const emote of emotes) {
       // We don't want to replace the emote if it is followed by a quote,
-      // because we don't want to replace Discord emoptes
+      // because we don't want to replace Discord emotes
       const index = message.indexOf(emote);
       if (index !== -1 && message[index + emote.length] !== '"') {
         const re = new RegExp(`\\b${emote}\\b`, 'g'); // "\b" is a word boundary in regex

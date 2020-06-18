@@ -16,6 +16,7 @@
     "@types/jest": "^26.0.0",
     "@typescript-eslint/eslint-plugin": "^3.3.0",
     "@typescript-eslint/parser": "^3.3.0",
+    "cspell": "^4.0.63",
     "dotenv": "^8.2.0",
     "eslint": "^7.2.0",
     "eslint-config-airbnb": "^18.1.0",

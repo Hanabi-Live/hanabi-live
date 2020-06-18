@@ -3,8 +3,9 @@
 {
   "recommendations": [
     "dbaeumer.vscode-eslint", // ESLint lints the client TypeScript
+    "orta.vscode-jest", // Client TypeScript tests are written in Jest
     "golang.go", // The server is written in Golang
     "ms-python.python", // The repository has several Python scripts
-    "streetsidesoftware.code-spell-checker", // A spell checker is useful
+    "streetsidesoftware.code-spell-checker", // A spell-checker extension based on cspell is used
   ],
 }

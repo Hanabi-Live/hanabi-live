@@ -160,7 +160,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     }
 
     // A line of text was received from the server
-    // {text: "Razgovor plays Black 2 from slot #1", type: "text"}
+    // {text: "Alice plays Red 2 from slot #1", type: "text"}
     case 'text': {
       state.log.push(action.text);
       break;
