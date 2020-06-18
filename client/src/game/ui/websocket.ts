@@ -111,7 +111,7 @@ commands.set('gameOver', () => {
   }
 
   // Turn off the flag that tracks when the game is over
-  // (before the "gameOver" command is receieved)
+  // (before the "gameOver" command is received)
   // (this must be after the "replay.enter()" function)
   globals.gameOver = false;
 
