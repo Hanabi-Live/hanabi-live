@@ -179,7 +179,7 @@ func validateDatabase(s *Session, d *CommandData) bool {
 }
 
 func validateJSON(s *Session, d *CommandData) bool {
-	// All options are optinal; specify defaults if they were not specified
+	// All options are optional; specify defaults if they were not specified
 	if d.GameJSON.Options == nil {
 		d.GameJSON.Options = &OptionsJSON{}
 	}

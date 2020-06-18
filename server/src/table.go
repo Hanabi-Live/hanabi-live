@@ -239,7 +239,7 @@ func (t *Table) GetOwnerSession() *Session {
 }
 
 // Get a list of online user sessions that should be notified about actions and other important
-// eventss from this table
+// events from this table
 // We do not want to notify everyone about every table, as that would constitute a lot of spam
 // Only notify:
 // 1) players who are currently in the game
