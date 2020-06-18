@@ -1,12 +1,24 @@
 {
-  "version": "0.1",
-  "language": "en",
-  "words": [
-    "hanabi",
-    "tmpl",
-    "supervisorctl",
-    "speedruns",
-    "tooltipster",
-    "tablesorter"
-  ]
+    "version": "0.1",
+    "language": "en",
+    "words": [
+        "datetime",
+        "hanabi",
+        "istyping",
+        "kadda",
+        "linkify",
+        "linkifyjs",
+        "nbsp",
+        "noopener",
+        "noot",
+        "noreferrer",
+        "speedrun",
+        "speedruns",
+        "supervisorctl",
+        "tablesorter",
+        "tmpl",
+        "tooltipster",
+        "unmarshal",
+        "webfonts"
+    ]
 }

@@ -53,28 +53,4 @@
   "search.exclude": {
     "**/*.min.js*": true
   },
-
-  // Words that should be added to the default cSpell dictionary
-  "cSpell.words": [
-    "Hanabi",
-    "Kadda",
-    "Noot",
-    "Tooltipster",
-    "Unattend",
-    "datetime",
-    "immer",
-    "istyping",
-    "linkify",
-    "linkifyjs",
-    "loginbox",
-    "nbsp",
-    "noopener",
-    "noreferrer",
-    "speedrun",
-    "staticly",
-    "tmpl",
-    "unmarshal",
-    "unstarted",
-    "webfonts"
-  ]
 }
