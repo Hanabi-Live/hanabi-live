@@ -538,8 +538,9 @@ actionFunctions.set('text', (data: ActionText) => {
 });
 
 actionFunctions.set('reveal', (data: ActionReveal) => {
-  // This is the reveal for hypotheticals
-  // The code here is mostly copied from the "websocket.ts" file
+  // This is the reveal for hypotheticals when a card is morphed
+  // The code here is copied from the "websocket.ts" file
+  // and the reveal() function in "HanabiCard.ts"
   let card = globals.deck[data.order];
   if (!card) {
     card = globals.stackBases[data.order - globals.deck.length];
@@ -548,8 +549,22 @@ actionFunctions.set('reveal', (data: ActionReveal) => {
     throw new Error('Failed to get the card in the "reveal" command.');
   }
 
-  card.reveal(data.suit, data.rank);
+  const suit = data.suit === -1 ? null : msgSuitToSuit(data.suit, globals.variant);
+  const rank = data.rank === -1 ? null : data.rank;
 
+  // Blank the card if it is revealed with no suit and no rank
+  card.state.blank = !(suit || rank);
+
+  // Set the true suit/rank on the card
+  card.state.suit = suit;
+  card.state.rank = rank;
+
+  // Keep track of what this card is
+  const learnedCard = globals.learnedCards[card.state.order];
+  learnedCard.suit = suit;
+  learnedCard.rank = rank;
+
+  card.setBareImage();
   globals.layers.card.batchDraw();
 });
 
