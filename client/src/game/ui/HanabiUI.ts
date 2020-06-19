@@ -79,11 +79,12 @@ const initStage = () => {
   let ww = window.innerWidth;
   let wh = window.innerHeight;
 
-  if (ww < 640) {
-    ww = 640;
+  if (ww < 240) {
+    // The stage seems to break for widths of around 235 px or less
+    ww = 240;
   }
-  if (wh < 360) {
-    wh = 360;
+  if (wh < 135) {
+    wh = 135;
   }
 
   let cw;
@@ -118,7 +119,7 @@ const showLoadingScreen = () => {
   const loadingLabel = new Konva.Text({
     fill: LABEL_COLOR,
     stroke: '#747278',
-    strokeWidth: 1,
+    strokeWidth: 0.001 * winW,
     text: 'Loading...',
     align: 'center',
     x: 0,
@@ -134,7 +135,7 @@ const showLoadingScreen = () => {
   const progressLabel = new Konva.Text({
     fill: LABEL_COLOR,
     stroke: '#747278',
-    strokeWidth: 1,
+    strokeWidth: 0.001 * winW,
     text: '0 / 0',
     align: 'center',
     x: 0,

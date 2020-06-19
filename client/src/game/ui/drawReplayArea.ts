@@ -49,8 +49,7 @@ export default (winW: number, winH: number) => {
     x: replayBarValues.x * winW,
     y: 0,
     width: replayBarValues.w * winW,
-    height: 0.05 * winH,
-    opacity: 0,
+    height: 0.07 * winH,
     listening: true,
   });
   replayBarClickRect.on('click', replay.barClick);
@@ -61,6 +60,7 @@ export default (winW: number, winH: number) => {
     h: 0.03,
     cornerRadius: 0.01,
     stroke: 'black',
+    strokeWidth: 0.0015,
     scale: 0.75,
   };
 
@@ -76,6 +76,7 @@ export default (winW: number, winH: number) => {
     cornerRadius: shuttleValues.cornerRadius * winW,
     fill: '#d1d1d1', // Gray
     stroke: shuttleValues.stroke,
+    strokeWidth: shuttleValues.strokeWidth * winW,
     visible: !globals.useSharedTurns,
     listening: true,
   });
@@ -98,6 +99,7 @@ export default (winW: number, winH: number) => {
     draggable: true,
     dragBoundFunc: replay.barDrag,
     stroke: shuttleValues.stroke,
+    strokeWidth: shuttleValues.strokeWidth * winW,
     listening: true,
   });
   globals.elements.replayArea.add(globals.elements.replayShuttle);
