@@ -285,7 +285,7 @@ export const show = (card: HanabiCard) => {
 
   // We want the tooltip to appear above the card by default
   const pos = card.getAbsolutePosition();
-  let posX = pos.x;
+  const posX = pos.x;
   let posY = pos.y - (card.height() * card.parent!.scale().y / 2);
   tooltipInstance.option('side', 'top');
 
@@ -294,15 +294,6 @@ export const show = (card: HanabiCard) => {
     // 200 is just an arbitrary threshold; 100 is not big enough for the BGA layout
     posY = pos.y + (card.height() * card.parent!.scale().y / 2);
     tooltipInstance.option('side', 'bottom');
-  }
-
-  // If there is an clue arrow showing, it will overlap with the tooltip arrow,
-  // so move it over to the right a little bit
-  for (const arrow of globals.elements.arrows) {
-    if (arrow.pointingTo === card) {
-      posX = pos.x + ((card.width() * card.parent!.scale().x / 2) / 2.5);
-      break;
-    }
   }
 
   // Update the tooltip and open it
