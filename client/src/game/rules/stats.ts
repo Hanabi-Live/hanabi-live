@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 // Functions to calculate game stats such as pace and efficiency
 
 import { MAX_CLUE_NUM } from '../types/constants';

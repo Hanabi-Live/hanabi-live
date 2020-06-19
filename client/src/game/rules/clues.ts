@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 // Functions related to clues: gaining clues, giving clues, applying clues
 
 import { MAX_CLUE_NUM } from '../types/constants';
