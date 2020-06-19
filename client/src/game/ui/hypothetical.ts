@@ -60,7 +60,6 @@ export const show = () => {
   globals.elements.endHypotheticalButton!.visible(globals.amSharedReplayLeader);
   globals.elements.hypoBackButton!.visible(globals.amSharedReplayLeader && globals.hypoActions.length > 0); // eslint-disable-line max-len
   globals.elements.toggleRevealedButton!.visible(globals.amSharedReplayLeader);
-  globals.elements.clueTargetButtonGroup2!.visible(globals.amSharedReplayLeader);
   globals.elements.clueArea!.visible(globals.amSharedReplayLeader);
 
   // This element is visible only for the other spectators
