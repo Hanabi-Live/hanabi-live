@@ -324,22 +324,26 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !globals.spectating
     ));
 
-    this.setDirectionArrow();
+    if (!suitToShow || suitToShow!.name === 'Unknown') {
+      suitToShow = null;
+    }
+    this.setDirectionArrow(suitToShow);
     this.setFade();
     this.setCritical();
   }
 
   // Show or hide the direction arrow (for specific variants)
-  setDirectionArrow() {
-    if (
-      this.state.suit === null
-      || this.state.rank === 0
-      || (!this.state.suit.reversed && !variantRules.isUpOrDown(globals.variant))
-    ) {
+  setDirectionArrow(suitToShow: Suit | null) {
+    if (!variantRules.hasReversedSuits(globals.variant)) {
       return;
     }
 
-    const suitIndex = globals.variant.suits.indexOf(this.state.suit);
+    if (suitToShow === null || this.state.rank === STACK_BASE_RANK) {
+      this.arrow!.hide();
+      return;
+    }
+
+    const suitIndex = globals.variant.suits.indexOf(suitToShow);
     const direction = globals.stackDirections[suitIndex];
 
     let shouldShowArrow;
@@ -350,31 +354,25 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         direction === StackDirection.Up
         || direction === StackDirection.Down
       );
-    } else if (this.state.suit.reversed) {
+    } else if (suitToShow.reversed) {
       // In variants with a reversed suit, the arrow should always be shown on the reversed suit
       shouldShowArrow = true;
     } else {
-      throw new Error('The "setDirectionArrow()" function encountered an impossible situation.');
+      shouldShowArrow = false;
     }
 
-    const visible = (
-      shouldShowArrow
-      // As an exception, arrows should not show if we are using empathy and they have not
-      // discovered the true suit of the card yet
-      && (!this.empathy || this.state.possibleSuits.length === 1)
-    );
-    this.arrow!.visible(visible);
-    if (!visible) {
+    this.arrow!.visible(shouldShowArrow);
+    if (!shouldShowArrow) {
       return;
     }
 
     this.arrow!.rotation(direction === StackDirection.Up ? 180 : 0);
-    this.arrowBase!.stroke(this.state.suit!.fill);
-    if (this.state.suit.fill === 'multi') {
+    this.arrowBase!.stroke(suitToShow.fill);
+    if (suitToShow.fill === 'multi') {
       // We can't use a fill gradient because the "fill" is actually a big stroke
       // (the Konva arrow object is not a shape, but instead a very thick line)
       // Instead, just use the the first gradient color
-      this.arrowBase!.stroke(this.state.suit.fillColors[0]);
+      this.arrowBase!.stroke(suitToShow.fillColors[0]);
     }
     if (this.rankPips!.visible()) {
       this.setArrowMiddleRight();
@@ -397,6 +395,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       globals.lobby.settings.realLifeMode
       || globals.options.speedrun
       || variantRules.isThrowItInAHole(globals.variant)
+      || this.state.rank === STACK_BASE_RANK
     ) {
       return;
     }
@@ -444,8 +443,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   // so remove pips and possibilities from the card
   applyClue(clue: Clue, positive: boolean) {
     // If the card is already fully revealed from clues, then additional clues would tell us nothing
-    // We don't check for "this.identityDetermined" here because we still need to calculate the
-    // effects of clues on cards in other people's hands that we already know the true identity of
+    // We don't check for "this.state.identityDetermined" here because we still need to calculate
+    // the effects of clues on cards in other people's hands whose true identity we already know
     const wasFullyKnown = (
       this.state.possibleSuits.length === 1
       && this.state.possibleRanks.length === 1
