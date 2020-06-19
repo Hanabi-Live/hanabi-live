@@ -14,6 +14,8 @@ export default class NameFrame extends Konva.Group {
   leftLine: Konva.Line;
   rightLine: Konva.Line;
 
+  defaultStrokeWidth: number;
+
   constructor(config: Konva.ContainerConfig) {
     super(config);
     this.listening(true);
@@ -122,6 +124,8 @@ export default class NameFrame extends Konva.Group {
 
     w *= 1.4;
 
+    this.defaultStrokeWidth = 0.001 * globals.stage.width();
+
     this.leftLine = new Konva.Line({
       points: [
         0,
@@ -132,7 +136,7 @@ export default class NameFrame extends Konva.Group {
         config.height / 2,
       ],
       stroke: LABEL_COLOR,
-      strokeWidth: 1,
+      strokeWidth: this.defaultStrokeWidth,
       lineJoin: 'round',
       shadowColor: 'black',
       shadowBlur: 5,
@@ -155,7 +159,7 @@ export default class NameFrame extends Konva.Group {
         0,
       ],
       stroke: LABEL_COLOR,
-      strokeWidth: 1,
+      strokeWidth: this.defaultStrokeWidth,
       lineJoin: 'round',
       shadowColor: 'black',
       shadowBlur: 5,
@@ -195,8 +199,8 @@ export default class NameFrame extends Konva.Group {
   }
 
   setActive(active: boolean) {
-    this.leftLine.strokeWidth(active ? 3 : 1);
-    this.rightLine.strokeWidth(active ? 3 : 1);
+    this.leftLine.strokeWidth(active ? 3 * this.defaultStrokeWidth : 1 * this.defaultStrokeWidth);
+    this.rightLine.strokeWidth(active ? 3 * this.defaultStrokeWidth : 1 * this.defaultStrokeWidth);
 
     this.playerName.shadowOpacity(active ? 0.6 : 0);
     this.leftLine.shadowOpacity(active ? 0.6 : 0);

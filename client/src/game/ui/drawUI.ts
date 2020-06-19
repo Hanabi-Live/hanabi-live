@@ -698,7 +698,7 @@ const drawDeck = () => {
     height: deckValues.h! * winH,
     stroke: 'yellow',
     cornerRadius: 0.01 * winH,
-    strokeWidth: 10,
+    strokeWidth: 0.1 * deckValues.w!,
     visible: false,
   });
   globals.layers.UI.add(globals.elements.deckPlayAvailableLabel);
@@ -1005,7 +1005,7 @@ const drawSharedReplay = () => {
     y: (sharedReplayLeaderLabelValues.y + 0.015) * winH,
     radius: 0.028 * winH,
     stroke: '#ffe03b', // Yellow
-    strokeWidth: 2,
+    strokeWidth: 0.002 * winW,
     visible: false,
   });
   globals.layers.UI.add(globals.elements.sharedReplayLeaderCircle);
@@ -1673,7 +1673,7 @@ const drawClueAreaDisabled = () => {
       (clueAreaValues.h! - spacing.y) * winH,
     ],
     stroke: lineColor,
-    strokeWidth: 5,
+    strokeWidth: 0.003 * winW,
   });
   globals.elements.clueAreaDisabled.add(line1);
 
@@ -1686,7 +1686,7 @@ const drawClueAreaDisabled = () => {
       spacing.y * winH,
     ],
     stroke: lineColor,
-    strokeWidth: 5,
+    strokeWidth: 0.003 * winW,
   });
   globals.elements.clueAreaDisabled.add(line2);
 
@@ -1700,6 +1700,7 @@ const drawClueAreaDisabled = () => {
     text: 'No clues',
     fill: LABEL_COLOR,
     stroke: 'black',
+    strokeWidth: 0.001 * winW,
   });
   globals.elements.clueAreaDisabled.add(noCluesText);
 
