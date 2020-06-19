@@ -53,7 +53,7 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 	// Update the variant-specific stats for each player at the table
 	for _, p := range t.Players {
 		var variantStats UserStatsRow
-		if v, err := models.UserStats.Get(s.UserID(), variants[t.Options.Variant].ID); err != nil {
+		if v, err := models.UserStats.Get(p.ID, variants[t.Options.Variant].ID); err != nil {
 			logger.Error("Failed to get the stats for player \""+s.Username()+"\" "+
 				"for variant "+strconv.Itoa(variants[t.Options.Variant].ID)+":", err)
 			s.Error(DefaultErrorMsg)
