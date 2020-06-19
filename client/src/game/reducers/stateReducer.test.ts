@@ -2,7 +2,7 @@ import { VARIANTS } from '../data/gameData';
 import { ActionClue, ActionText } from '../types/actions';
 import ClueType from '../types/ClueType';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
-import { initialState } from '../types/State';
+import initialState from './initialState';
 import stateReducer from './stateReducer';
 
 const testClue: ActionClue = {

@@ -1,5 +1,3 @@
-import * as deck from '../rules/deck';
-import { MAX_CLUE_NUM } from './constants';
 import StackDirection from './StackDirection';
 import Variant from './Variant';
 
@@ -11,7 +9,6 @@ export default interface State {
   readonly deck: StateCard[],
   readonly deckSize: number,
   readonly score: number,
-  readonly maxScore: number,
   readonly clueTokens: number,
   readonly doubleDiscard: boolean,
   readonly strikes: StateStrike[],
@@ -22,52 +19,21 @@ export default interface State {
   readonly playStacksDirections: StackDirection[],
   readonly discardStacks: number[][],
   readonly clues: StateClue[],
+  readonly stats: StateStats,
 }
 
-export const initialState = (variant: Variant, playerCount: number) => {
-  const state: State = {
-    variantName: variant.name,
-    log: [],
-    deck: [],
-    deckSize: deck.totalCards(variant),
-    score: 0,
-    maxScore: variant.maxScore,
-    clueTokens: MAX_CLUE_NUM,
-    doubleDiscard: false,
-    strikes: [],
-    pace: 0,
-    currentPlayerIndex: 0,
-    hands: [],
-    playStacks: [],
-    playStacksDirections: [],
-    discardStacks: [],
-    clues: [],
-  };
-
-  for (let i = 0; i < playerCount; i++) {
-    state.hands.push([]);
-  }
-  for (let i = 0; i < variant.suits.length; i++) {
-    state.playStacksDirections.push(StackDirection.Undecided);
-    state.playStacks.push([]);
-    state.discardStacks.push([]);
-  }
-
-  return state;
-};
-
-interface StateCard {
+export interface StateCard {
   readonly suit: number;
   readonly rank: number;
   readonly clues: StateCardClue[];
 }
 
-interface StateStrike {
+export interface StateStrike {
   readonly order: number;
   readonly turn: number;
 }
 
-interface StateClue {
+export interface StateClue {
   readonly type: number;
   readonly value: number;
   readonly giver: number;
@@ -75,8 +41,19 @@ interface StateClue {
   readonly turn: number;
 }
 
-interface StateCardClue {
+export interface StateCardClue {
   readonly type: number;
   readonly value: number;
   readonly positive: boolean;
 }
+
+export interface StateStats {
+  readonly cardsGotten: number;
+  readonly potentialCluesLost: number;
+  readonly efficiency: number;
+  readonly pace: number;
+  readonly paceRisk: PaceRisk;
+  readonly maxScore: number;
+}
+
+export type PaceRisk = 'LowRisk' | 'MediumRisk' | 'HighRisk' | 'Zero';

@@ -2,10 +2,12 @@
 
 // Imports
 import { LABEL_COLOR } from '../../constants';
+import * as statsRules from '../rules/stats';
 import * as variantRules from '../rules/variant';
+import { PaceRisk } from '../types/State';
 import globals from './globals';
 
-export const updatePace = () => {
+export const updatePace = (pace: number, paceStatus: PaceRisk, deckSize: number) => {
   const label = globals.elements.paceNumberLabel;
   if (!label) {
     throw new Error('paceNumberLabel is not initialized.');
@@ -18,49 +20,42 @@ export const updatePace = () => {
     return;
   }
 
-  const adjustedScorePlusDeck = globals.score + globals.deckSize - globals.maxScore;
-
-  // Formula derived by Libster;
-  // the number of discards that can happen while still getting the maximum score
-  // (this is represented to the user as "Pace" on the user interface)
-  const endGameThreshold1 = adjustedScorePlusDeck + globals.playerNames.length;
-
-  // Formula derived by Florrat;
-  // a strategical estimate of "End-Game" that tries to account for the number of players
-  const endGameThreshold2 = adjustedScorePlusDeck + Math.floor(globals.playerNames.length / 2);
-
-  // Formula derived by Hyphen-ated;
-  // a more conservative estimate of "End-Game" that does not account for
-  // the number of players
-  const endGameThreshold3 = adjustedScorePlusDeck;
-
   // Update the pace
   // (part of the efficiency statistics on the right-hand side of the screen)
   // If there are no cards left in the deck, pace is meaningless
-  if (globals.deckSize === 0) {
+  if (deckSize === 0) {
     label.text('-');
     label.fill(LABEL_COLOR);
   } else {
-    let paceText = endGameThreshold1.toString();
-    if (endGameThreshold1 > 0) {
-      paceText = `+${endGameThreshold1}`;
+    let paceText = pace.toString();
+    if (pace > 0) {
+      paceText = `+${pace}`;
     }
     label.text(paceText);
 
     // Color the pace label depending on how "risky" it would be to discard
     // (approximately)
-    if (endGameThreshold1 <= 0) {
-      // No more discards can occur in order to get a maximum score
-      label.fill('#df1c2d'); // Red
-    } else if (endGameThreshold2 < 0) {
-      // It would probably be risky to discard
-      label.fill('#ef8c1d'); // Orange
-    } else if (endGameThreshold3 < 0) {
-      // It might be risky to discard
-      label.fill('#efef1d'); // Yellow
-    } else {
-      // We are not even close to the "End-Game", so give it the default color
-      label.fill(LABEL_COLOR);
+    switch (paceStatus) {
+      case 'Zero': {
+        // No more discards can occur in order to get a maximum score
+        label.fill('#df1c2d'); // Red
+        break;
+      }
+      case 'HighRisk': {
+        // It would probably be risky to discard
+        label.fill('#ef8c1d'); // Orange
+        break;
+      }
+      case 'MediumRisk': {
+        // It might be risky to discard
+        label.fill('#efef1d'); // Yellow
+        break;
+      }
+      case 'LowRisk': default: {
+        // We are not even close to the "End-Game", so give it the default color
+        label.fill(LABEL_COLOR);
+        break;
+      }
     }
   }
 };
@@ -79,15 +74,15 @@ export const updateEfficiency = (cardsGottenDelta: number) => {
   }
 
   globals.cardsGotten += cardsGottenDelta;
-  const efficiency = (globals.cardsGotten / globals.cluesSpentPlusStrikes).toFixed(2);
-  // Round it to 2 decimal places
+  const efficiency = statsRules.efficiency(globals.cardsGotten, globals.cluesSpentPlusStrikes);
 
   // Update the labels on the right-hand side of the screen
   if (globals.cluesSpentPlusStrikes === 0) {
     // First, handle the case in which 0 clues have been given
     effLabel.text('- / ');
   } else {
-    effLabel.text(`${efficiency} / `);
+    // Round it to 2 decimal places
+    effLabel.text(`${efficiency.toFixed(2)} / `);
     effLabel.width(effLabel.measureSize(effLabel.text()).width);
   }
 

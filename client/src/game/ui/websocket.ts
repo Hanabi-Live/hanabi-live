@@ -4,13 +4,13 @@
 import { createStore } from 'redux';
 import * as sentry from '../../sentry';
 import { VARIANTS } from '../data/gameData';
+import initialState from '../reducers/initialState';
 import stateReducer from '../reducers/stateReducer';
 import * as variantRules from '../rules/variant';
 import { Action, ActionIncludingHypothetical } from '../types/actions';
 import ClueType from '../types/ClueType';
 import Options from '../types/Options';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
-import { initialState } from '../types/State';
 import action from './action';
 import * as arrows from './arrows';
 import { checkLegal } from './clues';

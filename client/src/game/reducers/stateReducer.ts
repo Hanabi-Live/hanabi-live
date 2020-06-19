@@ -3,13 +3,16 @@
 // handle state transitions)
 
 // Imports
-import produce, { Draft } from 'immer';
+import produce, { Draft, original, current } from 'immer';
 import { VARIANTS } from '../data/gameData';
 import * as clues from '../rules/clues';
 import { Action } from '../types/actions';
 import State from '../types/State';
+import statsReducer from './statsReducer';
 
 const stateReducer = produce((state: Draft<State>, action: Action) => {
+  // Shorthand since the variant is often passed as a parameter
+  const v = VARIANTS.get(state.variantName)!;
   switch (action.type) {
     // A player just gave a clue
     // {clue: {type: 0, value: 1}, giver: 1, list: [11], target: 2, turn: 0, type: "clue"}
@@ -62,7 +65,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       state.discardStacks[card.suit].push(action.which.order);
 
       if (!action.failed) {
-        state.clueTokens = clues.gainClue(VARIANTS.get(state.variantName)!, state.clueTokens);
+        state.clueTokens = clues.gainClue(v, state.clueTokens);
       }
 
       break;
@@ -113,17 +116,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
       // Gain a clue token if the stack is complete
       if (state.playStacks[card.suit].length === 5) {
-        state.clueTokens = clues.gainClue(VARIANTS.get(state.variantName)!, state.clueTokens);
-
-        // If we finished a stack while at 8 clues, then the extra clue is "wasted",
-        // similar to what happens when the team gets a strike
-        // In clue starved variants, a played 5 would only grant half a clue
-        /*
-        if (state.clueTokens === MAX_CLUE_NUM) {
-          globals.cluesSpentPlusStrikes += variantRules.isClueStarved(globals.variant) ? 0.5 : 1;
-          stats.updateEfficiency(0);
-        }
-        */
+        state.clueTokens = clues.gainClue(v, state.clueTokens);
       }
 
       break;
@@ -132,8 +125,8 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     // An action has been taken, so there may be a change to game state variables
     // {clues: 5, doubleDiscard: false, maxScore: 24, score: 18, type: "status"}
     case 'status': {
+      // TODO: calculate doubleDiscard instead of using the server value
       state.doubleDiscard = action.doubleDiscard;
-      state.maxScore = action.maxScore;
 
       // TEMP: At this point, check the local state matches the server
       if (action.score !== state.score) {
@@ -176,6 +169,8 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     default:
       break;
   }
+  // Calculate the stats for this turn
+  state.stats = statsReducer(original(state.stats), action, original(state)!, current(state));
 }, {} as State);
 
 export default stateReducer;

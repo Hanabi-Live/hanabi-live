@@ -6,6 +6,7 @@ import {
   CARD_W,
   LABEL_COLOR,
 } from '../../constants';
+import * as statsRules from '../rules/stats';
 import * as variantRules from '../rules/variant';
 import {
   ActionClue,
@@ -32,9 +33,9 @@ import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
 import possibilitiesCheck from './possibilitiesCheck';
-import * as stats from './stats';
 import strikeRecord from './strikeRecord';
 import updateCurrentPlayerArea from './updateCurrentPlayerArea';
+import * as updateStats from './updateStats';
 
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list that was sent upon loading a new
@@ -71,15 +72,15 @@ actionFunctions.set('clue', (data: ActionClue) => {
   arrows.hideAll();
 
   globals.cluesSpentPlusStrikes += 1;
-  stats.updateEfficiency(0);
+  updateStats.updateEfficiency(0);
 
   for (let i = 0; i < data.list.length; i++) {
     const card = globals.deck[data.list[i]];
 
     if (!card.isClued()) {
-      stats.updateEfficiency(1);
+      updateStats.updateEfficiency(1);
     } else {
-      stats.updateEfficiency(0);
+      updateStats.updateEfficiency(0);
     }
 
     card.state.numPositiveClues += 1;
@@ -207,7 +208,7 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
   cardStatusCheck();
 
   if (card.isClued()) {
-    stats.updateEfficiency(-1);
+    updateStats.updateEfficiency(-1);
   }
 });
 
@@ -347,7 +348,7 @@ actionFunctions.set('play', (data: ActionPlay) => {
   cardStatusCheck();
 
   if (!card.isClued()) {
-    stats.updateEfficiency(1);
+    updateStats.updateEfficiency(1);
   }
 });
 
@@ -483,8 +484,15 @@ actionFunctions.set('status', (data: ActionStatus) => {
   maxScoreLabel.x(x);
 
   // Update the stats on the middle-left-hand side of the screen
-  stats.updatePace();
-  stats.updateEfficiency(0);
+  const pace = statsRules.pace(
+    globals.score,
+    globals.deckSize,
+    globals.maxScore,
+    globals.playerNames.length,
+  );
+  const paceRisk = statsRules.paceRisk(pace, globals.playerNames.length);
+  updateStats.updatePace(pace, paceRisk, globals.deckSize);
+  updateStats.updateEfficiency(0);
 
   if (!globals.animateFast) {
     globals.layers.UI.batchDraw();
@@ -510,7 +518,7 @@ actionFunctions.set('strike', (data: ActionStrike) => {
   // Update the stats
   // In clue starved variants, each strike only "costs" half a clue
   globals.cluesSpentPlusStrikes += variantRules.isClueStarved(globals.variant) ? 0.5 : 1;
-  stats.updateEfficiency(0);
+  updateStats.updateEfficiency(0);
 
   // Animate the strike square fading in
   if (globals.animateFast) {
