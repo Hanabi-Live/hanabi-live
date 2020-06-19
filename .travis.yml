@@ -12,9 +12,11 @@ matrix:
         - node
       before_script:
         # Install the JavaScript tooling (TypeScript, Webpack, ESLint, etc.)
-        - echo "Installing NPM modules..."
         - cd client
+        - echo "Installing NPM modules..."
         - npm install
+        - echo "Installing the Airbnb rules..."
+        - npx install-peerdeps --dev eslint-config-airbnb-base
       script:
         - echo "Building the client..."
         - ./build_client.sh
