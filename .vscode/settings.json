@@ -12,7 +12,6 @@
 
   // This is needed for VSCode to see ESLint errors on TypeScript files
   "eslint.validate": [
-    "javascript",
     "typescript"
   ],
 
@@ -21,6 +20,7 @@
   "eslint.workingDirectories": [
     "./client"
   ],
+  "jest.rootPath": "client",
 
   "files.associations": {
     "example_game_with_comments.json": "jsonc", // This is "json" by default
