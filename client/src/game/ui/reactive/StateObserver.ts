@@ -6,7 +6,7 @@ import * as gameInfoView from './view/gameInfoView';
 import * as statsView from './view/statsView';
 
 export default class StateObserver {
-  unsubscriber: Unsubscribe | null = null;
+  private unsubscribe: Unsubscribe | null = null;
 
   constructor(store: Store<State, Action>) {
     this.registerObservers(store);
@@ -33,12 +33,12 @@ export default class StateObserver {
       { select: (s) => s.visibleState.stats.paceRisk, onChange: statsView.onPaceRiskChanged },
     ];
 
-    this.unsubscriber = observeStore(store, subscriptions);
+    this.unsubscribe = observeStore(store, subscriptions);
   }
 
   unregisterObservers() {
-    if (this.unsubscriber) {
-      this.unsubscriber();
+    if (this.unsubscribe) {
+      this.unsubscribe();
     }
   }
 }
