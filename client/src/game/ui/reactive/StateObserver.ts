@@ -17,7 +17,10 @@ export default class StateObserver {
     // Clean up any existing subscribers
     this.unregisterObservers();
 
-    const subscriptions: Array<{ select: Selector<State, any>, onChange:Listener<any> }> = [
+    const subscriptions: Array<{
+      select: Selector<State, any>,
+      onChange:Listener<any>,
+    }> = [
       // Game info
       {
         select: (s) => s.visibleState.clueTokens,

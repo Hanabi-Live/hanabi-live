@@ -69,7 +69,7 @@ export default class Connection {
     if (this.ws.readyState !== WebSocket.OPEN) {
       return;
     }
-    if (typeof data === 'undefined') {
+    if (data === undefined) {
       data = {};
     }
     console.log(`%cSent ${command}:`, 'color: green;');

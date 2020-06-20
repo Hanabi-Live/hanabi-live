@@ -208,7 +208,7 @@ const checkNoteImpossibility = (cardState: CardState) => {
     let suitPossible = false;
     for (const rank of cardState.possibleRanks) {
       const count = cardState.possibleCards.get(`${cardState.noteSuit.name}${rank}`);
-      if (typeof count === 'undefined') {
+      if (count === undefined) {
         throw new Error(`The card of "${cardState.noteSuit.name}${rank}" does not exist in the possibleCards map.`);
       }
       if (count > 0) {
@@ -228,7 +228,7 @@ const checkNoteImpossibility = (cardState: CardState) => {
     let rankPossible = false;
     for (const suit of cardState.possibleSuits) {
       const count = cardState.possibleCards.get(`${suit.name}${cardState.noteRank}`);
-      if (typeof count === 'undefined') {
+      if (count === undefined) {
         throw new Error(`The card of "${suit.name}${cardState.noteRank}" does not exist in the possibleCards map.`);
       }
       if (count > 0) {

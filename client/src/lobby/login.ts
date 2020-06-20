@@ -191,7 +191,7 @@ export const formError = (msg: string) => {
     $('#login-alert').fadeIn(FADE_TIME);
 
     const offset = $('#login-alert').offset();
-    if (typeof offset === 'undefined') {
+    if (offset === undefined) {
       throw new Error('Failed to get the coordinates for the "#login-alert" element.');
     }
     $('html, body').animate({

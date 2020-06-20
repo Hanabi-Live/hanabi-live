@@ -8,7 +8,7 @@ import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialGameState';
 
 const defaultVariant = VARIANTS.get(DEFAULT_VARIANT_NAME);
-if (typeof defaultVariant === 'undefined') {
+if (defaultVariant === undefined) {
   throw new Error('Unable to find the default variant in the "VARIANTS" map.');
 }
 

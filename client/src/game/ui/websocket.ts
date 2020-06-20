@@ -258,7 +258,7 @@ commands.set('init', (data: InitData) => {
 
   // Set the variant
   const variant = VARIANTS.get(globals.options.variant);
-  if (typeof variant === 'undefined') {
+  if (variant === undefined) {
     throw new Error(`The "init" command was sent with an invalid variant name of "${globals.options.variant}".`);
   } else {
     globals.variant = variant;

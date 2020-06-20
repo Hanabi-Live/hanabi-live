@@ -638,7 +638,7 @@ const scaleCardImage = (
   tf: KonvaUtil.Transform,
 ) => {
   let src = globals.cardImages.get(name);
-  if (typeof src === 'undefined') {
+  if (src === undefined) {
     throw new Error(`The image "${name}" was not generated.`);
   }
 
@@ -654,7 +654,7 @@ const scaleCardImage = (
   let steps = 0;
 
   let scaledCardImages = globals.scaledCardImages.get(name);
-  if (typeof scaledCardImages === 'undefined') {
+  if (scaledCardImages === undefined) {
     scaledCardImages = [];
     globals.scaledCardImages.set(name, scaledCardImages);
   }

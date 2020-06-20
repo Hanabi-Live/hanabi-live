@@ -860,7 +860,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     let suitPossible = false;
     for (const rank2 of globals.variant.ranks) {
       const count = this.state.possibleCards.get(`${suit.name}${rank2}`);
-      if (typeof count === 'undefined') {
+      if (count === undefined) {
         throw new Error(`Failed to get an entry for ${suit.name}${rank2} from the "possibleCards" map for card ${this.state.order}.`);
       }
       if (count > 0) {
@@ -881,7 +881,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     let rankPossible = false;
     for (const suit2 of globals.variant.suits) {
       const count = this.state.possibleCards.get(`${suit2.name}${rank}`);
-      if (typeof count === 'undefined') {
+      if (count === undefined) {
         throw new Error(`Failed to get an entry for ${suit2.name}${rank} from the "possibleCards" map for card ${this.state.order}.`);
       }
       if (count > 0) {
@@ -1198,7 +1198,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
       const nextRankNeeded = lastPlayedRank! + 1;
       const count = this.state.possibleCards.get(`${suit.name}${nextRankNeeded}`);
-      if (typeof count === 'undefined') {
+      if (count === undefined) {
         throw new Error(`Failed to get an entry for ${suit.name}${nextRankNeeded} from the "possibleCards" map for card ${this.state.order}.`);
       }
       if (count > 0) {
@@ -1214,7 +1214,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Every card has a possibility map that maps card identities to count
     const mapIndex = `${suit.name}${rank}`;
     let cardsLeft = this.state.possibleCards.get(mapIndex);
-    if (typeof cardsLeft === 'undefined') {
+    if (cardsLeft === undefined) {
       throw new Error(`Failed to get an entry for ${mapIndex} from the "possibleCards" map for card ${this.state.order}.`);
     }
     if (cardsLeft > 0) {

@@ -21,11 +21,11 @@ export default class ClueEntry extends Konva.Group {
 
     // Object variables
     const w = config.width;
-    if (typeof w === 'undefined') {
+    if (w === undefined) {
       throw new Error('ClueEntry was not provided with a "w" value.');
     }
     const h = config.height;
-    if (typeof h === 'undefined') {
+    if (h === undefined) {
       throw new Error('ClueEntry was not provided with a "h" value.');
     }
     this.list = config.list as number[];

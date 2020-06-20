@@ -193,7 +193,7 @@ export const send = (hypoAction: ClientAction) => {
 
   if (type === 'clue') {
     // Clue
-    if (typeof hypoAction.value === 'undefined') {
+    if (hypoAction.value === undefined) {
       throw new Error('The hypothetical action was a clue but it did not include a value.');
     }
     let clue;

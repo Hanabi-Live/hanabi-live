@@ -20,10 +20,10 @@ export default class NameFrame extends Konva.Group {
     super(config);
     this.listening(true);
 
-    if (typeof config.width === 'undefined') {
+    if (config.width === undefined) {
       throw new Error('A NameFrame was initialized without a width.');
     }
-    if (typeof config.height === 'undefined') {
+    if (config.height === undefined) {
       throw new Error('A NameFrame was initialized without a height.');
     }
 

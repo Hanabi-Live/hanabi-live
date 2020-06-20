@@ -22,10 +22,10 @@ export default class CardLayout extends Konva.Group {
     this.origRotation = config.rotation || 0;
     this.empathy = false;
 
-    if (typeof config.width === 'undefined') {
+    if (config.width === undefined) {
       throw new Error('A width was not defined for a CardLayout.');
     }
-    if (typeof config.height === 'undefined') {
+    if (config.height === undefined) {
       throw new Error('A height was not defined for a CardLayout.');
     }
 

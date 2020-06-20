@@ -53,7 +53,7 @@ export default (data: ActionIncludingHypothetical) => {
   }
 
   const actionFunction = actionFunctions.get(data.type);
-  if (typeof actionFunction === 'undefined') {
+  if (actionFunction === undefined) {
     throw new Error(`A WebSocket action function for "${data.type}" is not defined.`);
   }
   actionFunction(data);
@@ -357,7 +357,7 @@ actionFunctions.set('reorder', (data: ActionReorder) => {
     const currentIndexOfNewCard = currentCardOrders.indexOf(newCardOrderForThisSlot);
     const numMoveDown = currentIndexOfNewCard - i;
     const card = globals.deck[newCardOrderForThisSlot];
-    if (typeof card === 'undefined') {
+    if (card === undefined) {
       throw new Error(`Received an invalid card order of ${newCardOrderForThisSlot} in the "reorder" action.`);
     }
     const layoutChild = card.parent as unknown as LayoutChild; // All cards should have parents

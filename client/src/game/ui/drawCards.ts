@@ -21,7 +21,7 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
   // Add the "Unknown" suit to the list of suits for this variant
   // The unknown suit has blank white cards, representing cards of known rank but unknown suit
   const unknownSuit = SUITS.get('Unknown');
-  if (typeof unknownSuit === 'undefined') {
+  if (unknownSuit === undefined) {
     throw new Error('Failed to get the "Unknown" variant in the "drawCards()" function.');
   }
   const suits = variant.suits.concat(unknownSuit);

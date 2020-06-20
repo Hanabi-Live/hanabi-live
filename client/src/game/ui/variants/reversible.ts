@@ -129,7 +129,7 @@ export const isPotentiallyPlayable = (cardState : CardState) => {
         // The "START" card has not been played
         for (const rank of [START_CARD_RANK, 1, 5]) {
           const count = cardState.possibleCards.get(`${suit.name}${rank}`);
-          if (typeof count === 'undefined') {
+          if (count === undefined) {
             throw new Error(`Failed to get an entry for ${suit.name}${rank} from the "possibleCards" map for card ${cardState.order}.`);
           }
           if (count > 0) {
@@ -144,7 +144,7 @@ export const isPotentiallyPlayable = (cardState : CardState) => {
         // The "START" card has been played
         for (const rank of [2, 4]) {
           const count = cardState.possibleCards.get(`${suit.name}${rank}`);
-          if (typeof count === 'undefined') {
+          if (count === undefined) {
             throw new Error(`Failed to get an entry for ${suit.name}${rank} from the "possibleCards" map for card ${cardState.order}.`);
           }
           if (count > 0) {
@@ -159,7 +159,7 @@ export const isPotentiallyPlayable = (cardState : CardState) => {
     } else if (globals.stackDirections[i] === StackDirection.Up) {
       const nextRankNeeded = lastPlayedRank! + 1;
       const count = cardState.possibleCards.get(`${suit.name}${nextRankNeeded}`);
-      if (typeof count === 'undefined') {
+      if (count === undefined) {
         throw new Error(`Failed to get an entry for ${suit.name}${nextRankNeeded} from the "possibleCards" map for card ${cardState.order}.`);
       }
       if (count > 0) {
@@ -173,7 +173,7 @@ export const isPotentiallyPlayable = (cardState : CardState) => {
         nextRankNeeded = 5;
       }
       const count = cardState.possibleCards.get(`${suit.name}${nextRankNeeded}`);
-      if (typeof count === 'undefined') {
+      if (count === undefined) {
         throw new Error(`Failed to get an entry for ${suit.name}${nextRankNeeded} from the "possibleCards" map for card ${cardState.order}.`);
       }
       if (count > 0) {

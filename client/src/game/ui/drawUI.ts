@@ -1084,7 +1084,7 @@ const drawSharedReplay = () => {
       return;
     }
     const selectedSpectator = spectatorMap.get(target);
-    if (typeof selectedSpectator === 'undefined') {
+    if (selectedSpectator === undefined) {
       // Don't do anything if they entered an invalid spectator number
       return;
     }
@@ -1562,7 +1562,7 @@ const drawClueArea = () => {
         break;
       }
     }
-    if (typeof matchingSuit === 'undefined') {
+    if (matchingSuit === undefined) {
       throw new Error(`Failed to find the suit for the color of "${color.name}".`);
     }
 

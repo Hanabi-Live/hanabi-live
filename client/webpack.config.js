@@ -113,7 +113,7 @@ module.exports = {
 };
 
 if (!inTravis && sentryTokenIsSet) {
-  if (typeof module.exports.plugins === 'undefined') {
+  if (module.exports.plugins === undefined) {
     throw new Error('There are no existing plugins to append to.');
   }
   module.exports.plugins.push(

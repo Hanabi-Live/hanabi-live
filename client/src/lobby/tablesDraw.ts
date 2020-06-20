@@ -62,7 +62,7 @@ const tablesDraw = () => {
   let addedFirstJoinButton = false;
   for (const id of sortedTableIDs) {
     const table = globals.tableMap.get(id);
-    if (typeof table === 'undefined') {
+    if (table === undefined) {
       throw new Error(`Failed to get the table for the ID of "${id}".`);
     }
 

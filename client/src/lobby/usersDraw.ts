@@ -67,7 +67,7 @@ const drawUser = (
 ) => {
   // Find the status of this user from the "userList" map
   const id = usernameMapping.get(username);
-  if (typeof id === 'undefined') {
+  if (id === undefined) {
     throw new Error(`Failed to get the ID for the username of "${username}".`);
   }
   const user = globals.userMap.get(id);

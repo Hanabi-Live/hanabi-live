@@ -58,7 +58,7 @@ export default class HanabiCard extends Phaser.GameObjects.Container {
     this.setCardImageName();
 
     // const image = this.scene.add.image(CARD_W / 2, CARD_H / 2, this.imageName);
-    if (typeof this.imageName === 'undefined') {
+    if (this.imageName === undefined) {
       throw new Error('"this.imageName" is undefined in the "getImage()" function.');
     }
     const image = new Phaser.GameObjects.Image(this.scene, 0, 0, this.imageName);
@@ -91,7 +91,7 @@ export default class HanabiCard extends Phaser.GameObjects.Container {
 
   setCardImageName() {
     const unknownSuit = SUITS.get('Unknown');
-    if (typeof unknownSuit === 'undefined') {
+    if (unknownSuit === undefined) {
       throw new Error('Failed to get the "Unknown" suit.');
     }
 

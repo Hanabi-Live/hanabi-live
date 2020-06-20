@@ -10,7 +10,7 @@ export default class MultiFitText extends Konva.Group {
   constructor(config: Konva.ContainerConfig, maxLines: number) {
     super(config);
 
-    if (typeof config.height === 'undefined') {
+    if (config.height === undefined) {
       throw new Error('The "height" property is not defined on a new MultiFitText.');
     }
 

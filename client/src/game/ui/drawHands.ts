@@ -445,7 +445,7 @@ const drawDetrimentalCharacters = (
         emoji: '',
       };
     }
-    if (typeof character === 'undefined') {
+    if (character === undefined) {
       throw new Error(`Failed to get the "${globals.characterAssignments[i]}" character.`);
     }
 
