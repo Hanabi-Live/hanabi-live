@@ -23,6 +23,7 @@ import StateObserver from './reactive/StateObserver';
 import * as replay from './replay';
 import strikeRecord from './strikeRecord';
 import * as timer from './timer';
+import * as tooltips from './tooltips';
 import * as turn from './turn';
 
 // Define a command handler map
@@ -87,10 +88,7 @@ commands.set('databaseID', (data: DatabaseIDData) => {
 
 commands.set('gameOver', () => {
   // If any tooltips are open, close them
-  if (globals.activeHover !== null) {
-    globals.activeHover.off('mousemove');
-    globals.activeHover = null;
-  }
+  tooltips.resetActiveHover();
 
   // If the timers are showing, hide them
   if (globals.elements.timer1) {

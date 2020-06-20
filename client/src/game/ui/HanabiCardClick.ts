@@ -79,7 +79,7 @@ const clickMiddle = (card: HanabiCard, event: MouseEvent) => {
     return;
   }
 
-  // Middle clicking on a card goes to a turn it was first clued
+  // Middle clicking on a card goes to the turn it was first clued
   if (card.state.turnsClued.length === 0) {
     return;
   }
@@ -201,7 +201,7 @@ const goToTurn = (turn: number, fast: boolean) => {
   replay.goto(turn, fast);
 };
 
-const goToTurnAndIndicateCard = (turn: number, order: number) => {
+export const goToTurnAndIndicateCard = (turn: number, order: number) => {
   goToTurn(turn, true);
 
   // We indicate the card to make it easier to find

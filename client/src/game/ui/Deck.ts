@@ -48,7 +48,7 @@ export default class Deck extends Konva.Group {
     });
     this.add(this.numLeftText);
 
-    this.on('click', (event) => {
+    this.on('click tap', (event) => {
       arrows.click(event, ReplayArrowOrder.Deck, this);
     });
 
@@ -140,19 +140,20 @@ export default class Deck extends Konva.Group {
   initTooltip() {
     // If the user hovers over the deck, show a tooltip that shows extra game options, if any
     // (we don't use the "tooltip.init()" function because we need the extra condition in the
-    // "mousemove" event)
-    this.on('mousemove', function mouseMove() {
+    // "mouseover" event)
+    this.on('mouseover touchstart', function mouseOver() {
       // Don't do anything if we might be dragging the deck
       if (globals.elements.deckPlayAvailableLabel!.visible()) {
         return;
       }
 
+      tooltips.resetActiveHover();
       globals.activeHover = this;
       setTimeout(() => {
         tooltips.show(this);
       }, TOOLTIP_DELAY);
     });
-    this.on('mouseout', () => {
+    this.on('mouseout touchend', () => {
       globals.activeHover = null;
       $('#tooltip-deck').tooltipster('close');
     });

@@ -17,8 +17,17 @@ import globals from './globals';
 import HanabiCard from './HanabiCard';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
+<<<<<<< HEAD
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
+=======
+import { HanabiCardTap, HanabiCardDblTap } from './HanabiCardTouchActions';
+import NoteIndicator from './NoteIndicator';
+import * as notes from './notes';
+import possibilitiesCheck from './possibilitiesCheck';
+import RankPip from './RankPip';
+import * as tooltips from './tooltips';
+>>>>>>> 76e922b3... Touch actions
 
 export function image(this: HanabiCard) {
   // Create the "bare" card image, which is the main card graphic
@@ -395,32 +404,18 @@ export function note(this: HanabiCard) {
 
   // If the user mouses over the card, show a tooltip that contains the note
   // (we don't use the "tooltip.init()" function because we need the extra conditions in the
-  // "mousemove" event)
+  // "mouseover" event)
+  // The "touchstart" event is handled later in the empathy function
   this.tooltipName = `card-${this.state.order}`;
-  this.on('mousemove', function cardMouseMove(this: HanabiCard) {
-    // Don't do anything if there is not a note on this card
-    if (!this.noteIndicator!.visible()) {
-      return;
-    }
-
-    // Don't open any more note tooltips if the user is currently editing a note
-    if (globals.editingNote !== null) {
-      return;
-    }
-
-    // If we are spectating and there is an new note, mark it as seen
-    if (this.noteIndicator!.rotated) {
-      this.noteIndicator!.rotated = false;
-      this.noteIndicator!.rotate(-15);
-      globals.layers.card.batchDraw();
-    }
-
+  this.on('mouseover', function cardMouseOver(this: HanabiCard) {
+    noteMouseOver.call(this);
     globals.activeHover = this;
-    notes.show(this);
   });
 
-  this.on('mouseout', function cardMouseOut(this: HanabiCard) {
-    globals.activeHover = null;
+  this.on('mouseout touchend', function cardMouseOut(this: HanabiCard) {
+    if (globals.activeHover !== this) {
+      return;
+    }
 
     // Don't close the tooltip if we are currently editing a note
     if (globals.editingNote !== null) {
@@ -430,6 +425,27 @@ export function note(this: HanabiCard) {
     const tooltip = $(`#tooltip-${this.tooltipName}`);
     tooltip.tooltipster('close');
   });
+}
+
+function noteMouseOver(this: HanabiCard) {
+  // Don't do anything if there is not a note on this card
+  if (!this.noteIndicator!.visible()) {
+    return;
+  }
+
+  // Don't open any more note tooltips if the user is currently editing a note
+  if (globals.editingNote !== null) {
+    return;
+  }
+
+  // If we are spectating and there is a new note, mark it as seen
+  if (this.noteIndicator!.rotated) {
+    this.noteIndicator!.rotated = false;
+    this.noteIndicator!.rotate(-15);
+    globals.layers.card.batchDraw();
+  }
+
+  notes.show(this);
 }
 
 export function criticalIndicator(this: HanabiCard) {
@@ -493,7 +509,35 @@ export function empathy(this: HanabiCard) {
       return;
     }
 
+    setEmpathyOnHand(true);
+  });
+  this.on('touchstart', () => {
+    tooltips.resetActiveHover();
     globals.activeHover = this;
+
+    // Make sure to not register this as a single tap if the user long presses the card
+    this.touchstartTimeout = setTimeout(() => {
+      // A tap will trigger when the touchend occurs
+      // The next tap action will not run because it will appear like the second tap of a double tap
+      if (!this.wasRecentlyTapped) {
+        this.wasRecentlyTapped = true;
+      }
+    }, 500); // 500 milliseconds, same as the double-tap time for standardization reasons
+
+    // First, show the note tooltip
+    noteMouseOver.call(this);
+
+    // Then, set the empathy
+    if (
+      this.tweening // Disable Empathy if the card is tweening
+      || this.state.isPlayed // Clicking on a played card goes to the turn that it was played
+      // Clicking on a discarded card goes to the turn that it was discarded
+      || this.state.isDiscarded
+      || this.state.order > globals.deck.length - 1 // Disable empathy for the stack bases
+    ) {
+      return;
+    }
+
     setEmpathyOnHand(true);
   });
 
@@ -504,11 +548,17 @@ export function empathy(this: HanabiCard) {
       return;
     }
 
-    globals.activeHover = null;
+    setEmpathyOnHand(false);
+  });
+  this.on('touchend', () => {
     setEmpathyOnHand(false);
   });
 
   const setEmpathyOnHand = (enabled: boolean) => {
+    if (globals.activeHover !== this) {
+      return;
+    }
+
     // Disable Empathy for the stack bases
     if (this.state.order > globals.deck.length - 1) {
       return;
@@ -534,17 +584,19 @@ export function empathy(this: HanabiCard) {
 
 export function click(this: HanabiCard) {
   // Define the clue log mouse handlers
-  this.on('mousemove tap', () => {
+  this.on('mouseover touchstart', () => {
     globals.elements.clueLog!.showMatches(this);
     globals.layers.UI.batchDraw();
   });
-  this.on('mouseout', () => {
+  this.on('mouseout touchend', () => {
     globals.elements.clueLog!.showMatches(null);
     globals.layers.UI.batchDraw();
   });
 
   // Define the other mouse handlers
-  this.on('click tap', HanabiCardClick);
+  this.on('click', HanabiCardClick);
+  this.on('tap', HanabiCardTap);
+  this.on('dbltap', HanabiCardDblTap);
   this.on('mousedown', HanabiCardClickSpeedrun);
   this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
     if (

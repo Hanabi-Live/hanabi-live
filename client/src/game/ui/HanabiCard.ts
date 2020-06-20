@@ -34,6 +34,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   bareName: string = '';
 
   tweening: boolean = false;
+  wasRecentlyTapped: boolean = false;
+  touchstartTimeout?: NodeJS.Timeout | null;
   doMisplayAnimation: boolean = false;
 
   bare: Konva.Image | null = null;

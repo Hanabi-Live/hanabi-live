@@ -6,7 +6,8 @@ import TextWithTooltip from './controls/TextWithTooltip';
 import globals from './globals';
 
 export const init = (element: NodeWithTooltip, delayed: boolean, customContent: boolean) => {
-  element.on('mousemove', function mouseMove(this: Konva.Node) {
+  element.on('mouseover touchstart', function mouseOver(this: Konva.Node) {
+    resetActiveHover();
     globals.activeHover = this;
     if (!delayed) {
       show(this);
@@ -16,7 +17,10 @@ export const init = (element: NodeWithTooltip, delayed: boolean, customContent: 
       }, TOOLTIP_DELAY);
     }
   });
-  element.on('mouseout', () => {
+  element.on('mouseout touchend', () => {
+    if (globals.activeHover !== element) {
+      return;
+    }
     globals.activeHover = null;
     $(`#tooltip-${element.tooltipName}`).tooltipster('close');
   });
@@ -50,4 +54,11 @@ export const show = (element: NodeWithTooltip) => {
   tooltip.css('left', tooltipX);
   tooltip.css('top', pos.y);
   tooltip.tooltipster('open');
+};
+
+export const resetActiveHover = () => {
+  if (globals.activeHover) {
+    globals.activeHover.dispatchEvent(new MouseEvent('mouseout'));
+    globals.activeHover = null;
+  }
 };

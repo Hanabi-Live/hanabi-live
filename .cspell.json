@@ -43,6 +43,7 @@
         "ctstate",
         "datetime",
         "dbaeumer",
+        "dbltap",
         "dbname",
         "deckplays",
         "depcruise",

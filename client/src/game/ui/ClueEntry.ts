@@ -107,7 +107,7 @@ export default class ClueEntry extends Konva.Group {
     });
 
     // Click an entry in the clue log to go to that turn in the replay
-    this.background.on('click', () => {
+    this.background.on('click tap', () => {
       replay.clueLogClickHandler(this.turn);
     });
   }
