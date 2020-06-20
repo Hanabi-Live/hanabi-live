@@ -16,10 +16,6 @@
     "html",
     "typescript",
   ],
-  "eslint.validate": [
-    "html",
-    "typescript",
-  ],
 
   // This is needed because the "package.json" and so forth are not located in the root of the
   // repository
