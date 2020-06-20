@@ -11,8 +11,14 @@
   "editor.rulers": [100],
 
   // This is needed for VSCode to see ESLint errors on TypeScript files
+  // (and ignore JavaScript files such as webpack.config.js)
+  "eslint.probe": [
+    "html",
+    "typescript",
+  ],
   "eslint.validate": [
-    "typescript"
+    "html",
+    "typescript",
   ],
 
   // This is needed because the "package.json" and so forth are not located in the root of the
