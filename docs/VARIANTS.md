@@ -122,7 +122,7 @@ One of each card per suit (e.g. 5 in total):
 ### Suit-Ones or Suit-Fives with Another Special Suit
 
 * Suit-Ones or Suit-Fives of a special suit inherit the special suit's properties.
-  * For example, in the "Muddy-Rainbow-Fives & Pink" variant, the pink 5 is touched by all colors and touched by all ranks.
+  * For example, in the "Rainbow-Fives & Pink" variant, the pink 5 is touched by all colors and touched by all ranks.
 * If a conflict is present, the suit property will override the special property.
   * For example, in the "Null-Ones & Rainbow" variant, the rainbow 1 is touched by all colors and touched by no ranks.
 
