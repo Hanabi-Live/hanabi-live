@@ -31,21 +31,20 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       }, initial);
 
       state.replay.states = states;
-      state.visibleState = state.game;
       break;
     }
     case 'startReplay': {
       state.replay.active = true;
-      state.visibleState = state.replay.states[0];
+      state.replay.turn = 0;
       break;
     }
     case 'endReplay': {
       state.replay.active = false;
-      state.visibleState = state.game;
+      state.replay.turn = 0;
       break;
     }
     case 'goToTurn': {
-      state.visibleState = state.replay.states[action.turn];
+      state.replay.turn = action.turn;
       break;
     }
     default: {
@@ -55,8 +54,19 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
         // Save it for replays
         state.replay.states[action.num] = state.game;
       }
+      if (!state.replay.active) {
+        // Update the visible state to the game state
+        state.visibleState = state.game;
+      }
       break;
     }
+  }
+
+  // Update the visible state to the game or replay state
+  if (state.replay.active) {
+    state.visibleState = state.replay.states[state.replay.turn];
+  } else {
+    state.visibleState = state.game;
   }
 }, {} as State);
 
