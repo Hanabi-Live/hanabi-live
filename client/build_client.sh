@@ -66,13 +66,13 @@ cp "$WEBPACK_OUTPUT_DIR/main.$VERSION.min.js.map" "$BUNDLES_DIR/"
 echo "$VERSION" > "$BUNDLES_DIR/version.txt"
 # In addition to the numerical version (e.g. the number of commits),
 # it is also handy to have the exact git commit hash for the current build
-echo $(git rev-parse HEAD) > "$DIR/../public/js/bundles/git-revision.txt"
+echo $(git rev-parse HEAD) > "$DIR/../public/js/bundles/git_revision.txt"
 rm -f "$COMPILING_FILE"
 
 # Clean up old files in the "bundles" directory
 cd "$DIR/../public/js/bundles"
-if [[ $(ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git-revision.txt) ]]; then
-  ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git-revision.txt | xargs rm
+if [[ $(ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt) ]]; then
+  ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt | xargs rm
   # (we don't use an environment variable to store the results because it will cause the script to
   # stop execution in the case where there are no results)
 fi

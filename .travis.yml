@@ -5,13 +5,12 @@
 # https://stackoverflow.com/questions/27644586/how-to-set-up-travis-ci-with-multiple-languages
 matrix:
   include:
-    # Job #1: Client
-    - language: node_js
+    - name: Job 1 - Client
+      language: node_js
       node_js:
         # Use the latest stable Node.js release
         - node
       before_script:
-        # Install the JavaScript tooling (TypeScript, Webpack, ESLint, etc.)
         - cd client
         - echo "Installing NPM modules..."
         - npm install
@@ -24,11 +23,9 @@ matrix:
         - ./lint_client.sh
         - echo "Running client tests..."
         - npm test
-        - echo "Spell checking the entire project..."
-        - ../spell_check.sh
 
-    # Job #2: Server
-    - language: go
+    - name: Job 2 - Server
+      language: go
       go:
         # This will automatically choose the latest released Go version
         - 1.x
@@ -47,6 +44,19 @@ matrix:
         - ./build_server.sh
         - echo "Linting the server code..."
         - ./lint_server.sh
+
+    - name: Job 3 - Spell Check
+      language: node_js
+      node_js:
+        # Use the latest stable Node.js release
+        - node
+      before_script:
+        - cd spell_check
+        - echo "Installing NPM modules..."
+        - npm install
+      script:
+        - echo "Spell checking the entire project..."
+        - ./spell_check.sh
 
 notifications:
   email:

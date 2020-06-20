@@ -4,6 +4,11 @@
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+# Set the directory to be the root of the repository
+# https://stackoverflow.com/questions/8426058/getting-the-parent-of-a-directory-in-bash
+DIR="$(dirname "$DIR")"
+
+# Get a list of all files that should be spell-checked
 FILES=$(find "$DIR" -type f \
   -not -path "$DIR/.git/*" \
   -not -path "$DIR/backups/*" \
@@ -11,8 +16,8 @@ FILES=$(find "$DIR" -type f \
   -not -path "$DIR/client/node_modules/*" \
   -not -path "$DIR/client/webpack_output/*" \
   -not -path "$DIR/client/package-lock.json" \
-  -not -path "$DIR/data/ongoing-tables/*" \
-  -not -path "$DIR/data/specific-deals/*" \
+  -not -path "$DIR/data/ongoing_tables/*" \
+  -not -path "$DIR/data/specific_deals/*" \
   -not -path "$DIR/data/emojis.json" \
   -not -path "$DIR/data/emotes.json" \
   -not -path "$DIR/data/word_list.txt" \
@@ -33,5 +38,7 @@ FILES=$(find "$DIR" -type f \
   -not -path "$DIR/LICENSE" \
 )
 
-cd "$DIR/client"
+# The ".cspell.json" file must live in the root of the repository for the "Code Spell Checker"
+# VSCode extension to work properly
+cd "$DIR/spell_check"
 npx cspell --no-summary --config "$DIR/.cspell.json" $FILES

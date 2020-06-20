@@ -16,10 +16,11 @@ import (
 )
 
 var (
-	projectPath string
-	dataPath    string
-	versionPath string
-	tablesPath  string
+	projectPath       string
+	dataPath          string
+	versionPath       string
+	tablesPath        string
+	specificDealsPath string
 
 	logger           *Logger
 	gitCommitOnStart string
@@ -72,8 +73,8 @@ func main() {
 		return
 	}
 
-	// Check to see if the "ongoing-tables" directory exists
-	tablesPath = path.Join(dataPath, "ongoing-tables")
+	// Check to see if the "ongoing_tables" directory exists
+	tablesPath = path.Join(dataPath, "ongoing_tables")
 	if _, err := os.Stat(tablesPath); os.IsNotExist(err) {
 		if err2 := os.MkdirAll(tablesPath, 0755); err2 != nil {
 			logger.Fatal("Failed to create the \""+tablesPath+"\" directory:", err2)
@@ -81,6 +82,18 @@ func main() {
 		}
 	} else if err != nil {
 		logger.Fatal("Failed to check if the \""+tablesPath+"\" file exists:", err)
+		return
+	}
+
+	// Check to see if the "specific_deals" directory exists
+	specificDealsPath = path.Join(dataPath, "specific_deals")
+	if _, err := os.Stat(tablesPath); os.IsNotExist(err) {
+		if err2 := os.MkdirAll(tablesPath, 0755); err2 != nil {
+			logger.Fatal("Failed to create the \""+specificDealsPath+"\" directory:", err2)
+			return
+		}
+	} else if err != nil {
+		logger.Fatal("Failed to check if the \""+specificDealsPath+"\" file exists:", err)
 		return
 	}
 
