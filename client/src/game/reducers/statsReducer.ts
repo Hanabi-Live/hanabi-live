@@ -12,11 +12,11 @@ import GameState, { StateStats } from '../types/GameState';
 const statsReducer = produce((
   stats: Draft<StateStats>,
   action: GameAction,
-  originalstate: GameState,
+  originalState: GameState,
   currentState: GameState,
 ) => {
   // Shorthand since the variant is often passed as a parameter
-  const v = VARIANTS.get(originalstate.variantName)!;
+  const v = VARIANTS.get(originalState.variantName)!;
   switch (action.type) {
     case 'clue': {
       // A clue was spent
@@ -25,7 +25,7 @@ const statsReducer = produce((
       // Count cards that were newly gotten
       for (let i = 0; i < action.list.length; i++) {
         const order = action.list[i];
-        const card = originalstate.deck[order];
+        const card = originalState.deck[order];
         if (!cluesRules.isClued(card)) {
           // A card was newly clued
           stats.cardsGotten += 1;
@@ -35,7 +35,7 @@ const statsReducer = produce((
     }
 
     case 'discard': {
-      const card = originalstate.deck[action.which.order];
+      const card = originalState.deck[action.which.order];
       if (cluesRules.isClued(card)) {
         // A clued card was discarded
         stats.cardsGotten -= 1;
@@ -52,14 +52,14 @@ const statsReducer = produce((
     case 'play': {
       if (
         currentState.playStacks[action.which.suit].length === 5
-        && originalstate.clueTokens === currentState.clueTokens
+        && originalState.clueTokens === currentState.clueTokens
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted",
         // similar to what happens when the team gets a strike
         stats.potentialCluesLost += cluesRules.clueValue(v);
       }
 
-      const card = originalstate.deck[action.which.order];
+      const card = originalState.deck[action.which.order];
       if (!cluesRules.isClued(card)) {
         // A card was blind played
         stats.cardsGotten += 1;
