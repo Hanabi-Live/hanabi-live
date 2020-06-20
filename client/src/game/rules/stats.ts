@@ -1,7 +1,7 @@
 // Functions to calculate game stats such as pace and efficiency
 
 import { MAX_CLUE_NUM } from '../types/constants';
-import { PaceRisk } from '../types/State';
+import { PaceRisk } from '../types/GameState';
 import Variant from '../types/Variant';
 import * as deck from './deck';
 import * as hand from './hand';
@@ -15,13 +15,20 @@ export function pace(
   deckSize: number,
   maxScore: number,
   playerCount: number,
-): number {
+): number | null {
+  if (deckSize <= 0) {
+    return null;
+  }
   const adjustedScorePlusDeck = score + deckSize - maxScore;
   return adjustedScorePlusDeck + playerCount;
 }
 
 // A measure of how risky a discard would be right now, using different heuristics
-export function paceRisk(currentPace: number, playerCount: number): PaceRisk {
+export function paceRisk(currentPace: number | null, playerCount: number): PaceRisk {
+  if (currentPace === null) {
+    return 'Null';
+  }
+
   if (currentPace <= 0) {
     return 'Zero';
   }
@@ -56,7 +63,7 @@ export function startingPace(variant: Variant, playerCount: number): number {
 
 export function efficiency(cardsGotten: number, potentialCluesLost: number): number {
   if (potentialCluesLost <= 0) {
-    return 0;
+    return Infinity;
   }
   return cardsGotten / potentialCluesLost;
 }

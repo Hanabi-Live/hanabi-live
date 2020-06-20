@@ -4,10 +4,10 @@
 import { LABEL_COLOR } from '../../constants';
 import * as statsRules from '../rules/stats';
 import * as variantRules from '../rules/variant';
-import { PaceRisk } from '../types/State';
+import { PaceRisk } from '../types/GameState';
 import globals from './globals';
 
-export const updatePace = (pace: number, paceStatus: PaceRisk, deckSize: number) => {
+export const updatePace = (pace: number | null, paceRisk: PaceRisk) => {
   const label = globals.elements.paceNumberLabel;
   if (!label) {
     throw new Error('paceNumberLabel is not initialized.');
@@ -23,7 +23,7 @@ export const updatePace = (pace: number, paceStatus: PaceRisk, deckSize: number)
   // Update the pace
   // (part of the efficiency statistics on the right-hand side of the screen)
   // If there are no cards left in the deck, pace is meaningless
-  if (deckSize === 0) {
+  if (pace === null) {
     label.text('-');
     label.fill(LABEL_COLOR);
   } else {
@@ -35,7 +35,7 @@ export const updatePace = (pace: number, paceStatus: PaceRisk, deckSize: number)
 
     // Color the pace label depending on how "risky" it would be to discard
     // (approximately)
-    switch (paceStatus) {
+    switch (paceRisk) {
       case 'Zero': {
         // No more discards can occur in order to get a maximum score
         label.fill('#df1c2d'); // Red
@@ -54,6 +54,10 @@ export const updatePace = (pace: number, paceStatus: PaceRisk, deckSize: number)
       case 'LowRisk': default: {
         // We are not even close to the "End-Game", so give it the default color
         label.fill(LABEL_COLOR);
+        break;
+      }
+      case 'Null': {
+        console.error(`An invalid value of pace / risk was detected. Pace = ${pace}, Risk = Null`);
         break;
       }
     }

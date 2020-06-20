@@ -6,14 +6,14 @@ import produce, { Draft } from 'immer';
 import { VARIANTS } from '../data/gameData';
 import * as cluesRules from '../rules/clues';
 import * as statsRules from '../rules/stats';
-import { Action } from '../types/actions';
-import State, { StateStats } from '../types/State';
+import { GameAction } from '../types/actions';
+import GameState, { StateStats } from '../types/GameState';
 
 const statsReducer = produce((
   stats: Draft<StateStats>,
-  action: Action,
-  originalstate: State,
-  currentState: State,
+  action: GameAction,
+  originalstate: GameState,
+  currentState: GameState,
 ) => {
   // Shorthand since the variant is often passed as a parameter
   const v = VARIANTS.get(originalstate.variantName)!;
@@ -69,7 +69,7 @@ const statsReducer = produce((
 
     case 'status': {
       // TODO: calculate maxScore instead of using the server one
-      stats.maxScore = action.clues;
+      stats.maxScore = action.maxScore;
       break;
     }
 

@@ -6,6 +6,6 @@ enum ReplayActionType {
   HypoEnd = 4,
   HypoAction = 5,
   HypoBack = 6,
-  HypoToggleRevealed = 7
+  HypoToggleRevealed = 7,
 }
 export default ReplayActionType;

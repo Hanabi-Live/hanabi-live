@@ -4,7 +4,6 @@
 import Konva from 'konva';
 import {
   CARD_W,
-  LABEL_COLOR,
 } from '../../constants';
 import * as statsRules from '../rules/stats';
 import * as variantRules from '../rules/variant';
@@ -443,19 +442,7 @@ actionFunctions.set('status', (data: ActionStatus) => {
   globals.score = data.score;
   globals.maxScore = data.maxScore;
 
-  // Update the number of clues in the bottom-right hand corner of the screen
-  globals.elements.cluesNumberLabel!.text(globals.clues.toString());
-
   if (!globals.lobby.settings.realLifeMode) {
-    if (globals.clues === 0) {
-      globals.elements.cluesNumberLabel!.fill('red');
-    } else if (globals.clues === 1) {
-      globals.elements.cluesNumberLabel!.fill('yellow');
-    } else {
-      globals.elements.cluesNumberLabel!.fill(LABEL_COLOR);
-    }
-    globals.elements.noClueBorder!.visible(globals.clues === 0);
-
     if (globals.clues === MAX_CLUE_NUM) {
       // Show the red border around the discard pile
       // (to reinforce that the current player cannot discard)
@@ -472,17 +459,6 @@ actionFunctions.set('status', (data: ActionStatus) => {
     }
   }
 
-  // Update the score (in the bottom-right-hand corner)
-  const scoreLabel = globals.elements.scoreNumberLabel!;
-  scoreLabel.text(globals.score.toString());
-
-  // Reposition the maximum score
-  const maxScoreLabel = globals.elements.maxScoreNumberLabel!;
-  maxScoreLabel.text(` / ${globals.maxScore}`);
-  maxScoreLabel.width(maxScoreLabel.measureSize(maxScoreLabel.text()).width);
-  const x = scoreLabel.x() + scoreLabel.measureSize(scoreLabel.text()).width as number;
-  maxScoreLabel.x(x);
-
   // Update the stats on the middle-left-hand side of the screen
   const pace = statsRules.pace(
     globals.score,
@@ -491,7 +467,7 @@ actionFunctions.set('status', (data: ActionStatus) => {
     globals.playerNames.length,
   );
   const paceRisk = statsRules.paceRisk(pace, globals.playerNames.length);
-  updateStats.updatePace(pace, paceRisk, globals.deckSize);
+  updateStats.updatePace(pace, paceRisk);
   updateStats.updateEfficiency(0);
 
   if (!globals.animateFast) {

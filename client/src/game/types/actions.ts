@@ -1,7 +1,9 @@
 import MsgClue from './MsgClue';
 import { SimpleCard } from './SimpleCard';
 
-export type Action =
+export type Action = GameAction | ReplayAction | ActionListReceived;
+
+export type GameAction =
 | ActionClue
 | ActionDeckOrder
 | ActionDiscard
@@ -14,7 +16,14 @@ export type Action =
 | ActionText
 | ActionTurn;
 
-export type ActionIncludingHypothetical = Action | ActionReveal;
+export type ActionIncludingHypothetical = GameAction | ActionReveal;
+
+export type ReplayAction = ActionStartReplay | ActionEndReplay | ActionGoToTurn;
+
+export interface ActionListReceived {
+  type: 'gameActionList';
+  readonly actions: GameAction[];
+}
 
 export interface ActionClue {
   type: 'clue';
@@ -96,7 +105,21 @@ export interface Which {
 // Hypothetical only
 export interface ActionReveal {
   type: 'reveal';
-  suit: number;
-  rank: number;
-  order: number;
+  readonly suit: number;
+  readonly rank: number;
+  readonly order: number;
+}
+
+// Replay actions
+export interface ActionStartReplay {
+  type: 'startReplay';
+}
+
+export interface ActionEndReplay {
+  type: 'endReplay';
+}
+
+export interface ActionGoToTurn {
+  type: 'goToTurn';
+  readonly turn: number;
 }

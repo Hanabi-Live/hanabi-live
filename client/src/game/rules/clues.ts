@@ -1,7 +1,7 @@
 // Functions related to clues: gaining clues, giving clues, applying clues
 
 import { MAX_CLUE_NUM } from '../types/constants';
-import { StateCard } from '../types/State';
+import { StateCard } from '../types/GameState';
 import Variant from '../types/Variant';
 import * as variantRules from './variant';
 
