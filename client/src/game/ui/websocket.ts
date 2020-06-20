@@ -4,13 +4,13 @@
 import { createStore } from 'redux';
 import * as sentry from '../../sentry';
 import { VARIANTS } from '../data/gameData';
+import initialState from '../reducers/initialState';
 import stateReducer from '../reducers/stateReducer';
 import * as variantRules from '../rules/variant';
-import { Action, ActionIncludingHypothetical } from '../types/actions';
+import { GameAction, ActionIncludingHypothetical } from '../types/actions';
 import ClueType from '../types/ClueType';
 import Options from '../types/Options';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
-import { initialState } from '../types/State';
 import action from './action';
 import * as arrows from './arrows';
 import { checkLegal } from './clues';
@@ -18,6 +18,7 @@ import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as notes from './notes';
 import pause from './pause';
+import StateObserver from './reactive/StateObserver';
 import * as replay from './replay';
 import SpectatorNote from './SpectatorNote';
 import strikeRecord from './strikeRecord';
@@ -380,23 +381,20 @@ commands.set('noteListPlayer', (data: NoteListPlayerData) => {
 // Used when the game state changes
 interface GameActionData {
   tableID: number,
-  action: Action,
+  action: GameAction,
 }
 commands.set('gameAction', (data: GameActionData) => {
+  // Update the game state
+  globals.store!.dispatch(data.action);
+
   processNewAction(data.action);
 });
 
-const processNewAction = (actionMessage: Action) => {
-  // Update the game state
-  globals.store!.dispatch(actionMessage);
-
+const processNewAction = (actionMessage: GameAction) => {
   // TEMP: We need to save this game state change for the purposes of the in-game replay
   globals.replayLog.push(actionMessage);
 
   if (actionMessage.type === 'turn') {
-    // Store the current state in the state table to enable replays
-    globals.states[actionMessage.num] = globals.store!.getState();
-
     // Keep track of whether it is our turn or not
     globals.ourTurn = actionMessage.who === globals.playerUs && !globals.spectating;
 
@@ -454,9 +452,12 @@ const processNewAction = (actionMessage: Action) => {
 
 interface GameActionListData {
   tableID: number,
-  list: Action[],
+  list: GameAction[],
 }
 commands.set('gameActionList', (data: GameActionListData) => {
+  // Send the list to the reducers
+  globals.store?.dispatch({ type: 'gameActionList', actions: data.list });
+
   // Play through all of the turns
   for (const actionMessage of data.list) {
     processNewAction(actionMessage);
@@ -489,6 +490,14 @@ commands.set('gameActionList', (data: GameActionListData) => {
   }
 
   globals.loading = false;
+
+  // Subscribe to state changes
+  // TODO: this is not a great place to do this
+  if (globals.stateObserver) {
+    globals.stateObserver.registerObservers(globals.store!);
+  } else {
+    globals.stateObserver = new StateObserver(globals.store!);
+  }
 });
 
 interface PauseData {

@@ -9,3 +9,9 @@
 # in the Airbnb documentation, it will completely rewrite the package-lock.json file
 # Thus, just ignore it
 /package-lock.json
+
+# Jest Code coverage
+/coverage
+
+# Dependency graph output
+/graph.html

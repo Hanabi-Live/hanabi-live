@@ -7,7 +7,7 @@ import * as Redux from 'redux';
 import { Globals as LobbyGlobals } from '../../globals';
 import { VARIANTS } from '../data/gameData';
 import { GameExports } from '../main';
-import { Action, ActionIncludingHypothetical } from '../types/actions';
+import { GameAction, ActionIncludingHypothetical, Action } from '../types/actions';
 import { ClientAction } from '../types/ClientAction';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import Options from '../types/Options';
@@ -20,6 +20,7 @@ import HanabiCard from './HanabiCard';
 import Layers from './Layers';
 import LearnedCard from './LearnedCard';
 import Loader from './Loader';
+import StateObserver from './reactive/StateObserver';
 import SpectatorNote from './SpectatorNote';
 
 export class Globals {
@@ -82,7 +83,7 @@ export class Globals {
 
   // Replay feature
   inReplay: boolean = false; // Whether or not the replay controls are currently showing
-  replayLog: Action[] = []; // Contains all of the "action" messages for the game
+  replayLog: GameAction[] = []; // Contains all of the "action" messages for the game
   replayPos: number = 0; // The current index of the "globals.replayLog" array
   replayTurn: number = 0; // The current game turn
   replayMax: number = 0; // The maximum turn recorded so fast
@@ -148,7 +149,7 @@ export class Globals {
 
   // State information
   store: Redux.Store<State, Action> | null = null;
-  states: State[] = [];
+  stateObserver: StateObserver | null = null;
 
   // We provide a method to reset every class variable to its initial value
   // This is called when the user goes into a new game
@@ -234,6 +235,9 @@ export class Globals {
     this.spectators = [];
     this.chatUnread = 0;
     this.deckOrder = [];
+    this.stateObserver?.unregisterObservers();
+    this.stateObserver = null;
+    this.store = null;
   }
 }
 

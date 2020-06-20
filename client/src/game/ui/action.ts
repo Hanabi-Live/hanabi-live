@@ -4,8 +4,8 @@
 import Konva from 'konva';
 import {
   CARD_W,
-  LABEL_COLOR,
 } from '../../constants';
+import * as statsRules from '../rules/stats';
 import * as variantRules from '../rules/variant';
 import {
   ActionClue,
@@ -32,9 +32,9 @@ import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
 import possibilitiesCheck from './possibilitiesCheck';
-import * as stats from './stats';
 import strikeRecord from './strikeRecord';
 import updateCurrentPlayerArea from './updateCurrentPlayerArea';
+import * as updateStats from './updateStats';
 
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list that was sent upon loading a new
@@ -71,15 +71,15 @@ actionFunctions.set('clue', (data: ActionClue) => {
   arrows.hideAll();
 
   globals.cluesSpentPlusStrikes += 1;
-  stats.updateEfficiency(0);
+  updateStats.updateEfficiency(0);
 
   for (let i = 0; i < data.list.length; i++) {
     const card = globals.deck[data.list[i]];
 
     if (!card.isClued()) {
-      stats.updateEfficiency(1);
+      updateStats.updateEfficiency(1);
     } else {
-      stats.updateEfficiency(0);
+      updateStats.updateEfficiency(0);
     }
 
     card.state.numPositiveClues += 1;
@@ -207,7 +207,7 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
   cardStatusCheck();
 
   if (card.isClued()) {
-    stats.updateEfficiency(-1);
+    updateStats.updateEfficiency(-1);
   }
 });
 
@@ -347,7 +347,7 @@ actionFunctions.set('play', (data: ActionPlay) => {
   cardStatusCheck();
 
   if (!card.isClued()) {
-    stats.updateEfficiency(1);
+    updateStats.updateEfficiency(1);
   }
 });
 
@@ -442,19 +442,7 @@ actionFunctions.set('status', (data: ActionStatus) => {
   globals.score = data.score;
   globals.maxScore = data.maxScore;
 
-  // Update the number of clues in the bottom-right hand corner of the screen
-  globals.elements.cluesNumberLabel!.text(globals.clues.toString());
-
   if (!globals.lobby.settings.realLifeMode) {
-    if (globals.clues === 0) {
-      globals.elements.cluesNumberLabel!.fill('red');
-    } else if (globals.clues === 1) {
-      globals.elements.cluesNumberLabel!.fill('yellow');
-    } else {
-      globals.elements.cluesNumberLabel!.fill(LABEL_COLOR);
-    }
-    globals.elements.noClueBorder!.visible(globals.clues === 0);
-
     if (globals.clues === MAX_CLUE_NUM) {
       // Show the red border around the discard pile
       // (to reinforce that the current player cannot discard)
@@ -471,20 +459,16 @@ actionFunctions.set('status', (data: ActionStatus) => {
     }
   }
 
-  // Update the score (in the bottom-right-hand corner)
-  const scoreLabel = globals.elements.scoreNumberLabel!;
-  scoreLabel.text(globals.score.toString());
-
-  // Reposition the maximum score
-  const maxScoreLabel = globals.elements.maxScoreNumberLabel!;
-  maxScoreLabel.text(` / ${globals.maxScore}`);
-  maxScoreLabel.width(maxScoreLabel.measureSize(maxScoreLabel.text()).width);
-  const x = scoreLabel.x() + scoreLabel.measureSize(scoreLabel.text()).width as number;
-  maxScoreLabel.x(x);
-
   // Update the stats on the middle-left-hand side of the screen
-  stats.updatePace();
-  stats.updateEfficiency(0);
+  const pace = statsRules.pace(
+    globals.score,
+    globals.deckSize,
+    globals.maxScore,
+    globals.playerNames.length,
+  );
+  const paceRisk = statsRules.paceRisk(pace, globals.playerNames.length);
+  updateStats.updatePace(pace, paceRisk);
+  updateStats.updateEfficiency(0);
 
   if (!globals.animateFast) {
     globals.layers.UI.batchDraw();
@@ -510,7 +494,7 @@ actionFunctions.set('strike', (data: ActionStrike) => {
   // Update the stats
   // In clue starved variants, each strike only "costs" half a clue
   globals.cluesSpentPlusStrikes += variantRules.isClueStarved(globals.variant) ? 0.5 : 1;
-  stats.updateEfficiency(0);
+  updateStats.updateEfficiency(0);
 
   // Animate the strike square fading in
   if (globals.animateFast) {
