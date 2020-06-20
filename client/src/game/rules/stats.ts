@@ -7,9 +7,13 @@ import * as deck from './deck';
 import * as hand from './hand';
 import * as variantRules from './variant';
 
-// Formula derived by Libster;
-// the number of discards that can happen while still getting the maximum score
-// (this is represented to the user as "Pace" on the user interface)
+/*
+export function maxScore(state: GameState): number {
+  // TODO
+}
+*/
+
+// Pace is the number of discards that can happen while still getting the maximum score
 export function pace(
   score: number,
   deckSize: number,
@@ -19,6 +23,8 @@ export function pace(
   if (deckSize <= 0) {
     return null;
   }
+
+  // The formula for pace was derived by Libster
   const adjustedScorePlusDeck = score + deckSize - maxScore;
   return adjustedScorePlusDeck + playerCount;
 }
@@ -40,8 +46,7 @@ export function paceRisk(currentPace: number | null, playerCount: number): PaceR
   }
 
   // Formula derived by Hyphen-ated;
-  // a more conservative estimate of "End-Game" that does not account for
-  // the number of players
+  // a more conservative estimate of "End-Game" that does not account for the number of players
   if (currentPace - playerCount < 0) {
     return 'MediumRisk';
   }
@@ -62,9 +67,14 @@ export function startingPace(variant: Variant, playerCount: number): number {
 }
 
 export function efficiency(cardsGotten: number, potentialCluesLost: number): number {
-  if (potentialCluesLost <= 0) {
+  // First, handle the case where no clues have been given yet
+  // Infinity is normal and expected in this case (on e.g. the first turn of the game)
+  // We must explicitly check for this because while e.g. "1 / 0" in JavaScript is infinity,
+  // "0 / 0" in JavaScript is NaN
+  if (potentialCluesLost === 0) {
     return Infinity;
   }
+
   return cardsGotten / potentialCluesLost;
 }
 

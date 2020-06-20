@@ -70,17 +70,8 @@ actionFunctions.set('clue', (data: ActionClue) => {
   // Clear all visible arrows when a new move occurs
   arrows.hideAll();
 
-  globals.cluesSpentPlusStrikes += 1;
-  updateStats.updateEfficiency(0);
-
   for (let i = 0; i < data.list.length; i++) {
     const card = globals.deck[data.list[i]];
-
-    if (!card.isClued()) {
-      updateStats.updateEfficiency(1);
-    } else {
-      updateStats.updateEfficiency(0);
-    }
 
     card.state.numPositiveClues += 1;
 
@@ -205,10 +196,6 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
 
   // The fact that this card was discarded could make some other cards useless or critical
   cardStatusCheck();
-
-  if (card.isClued()) {
-    updateStats.updateEfficiency(-1);
-  }
 });
 
 // A player just drew a card from the deck
@@ -345,10 +332,6 @@ actionFunctions.set('play', (data: ActionPlay) => {
 
   // The fact that this card was played could make some other cards useless or critical
   cardStatusCheck();
-
-  if (!card.isClued()) {
-    updateStats.updateEfficiency(1);
-  }
 });
 
 // Has the following data:
@@ -468,7 +451,6 @@ actionFunctions.set('status', (data: ActionStatus) => {
   );
   const paceRisk = statsRules.paceRisk(pace, globals.playerNames.length);
   updateStats.updatePace(pace, paceRisk);
-  updateStats.updateEfficiency(0);
 
   if (!globals.animateFast) {
     globals.layers.UI.batchDraw();
@@ -490,11 +472,6 @@ actionFunctions.set('strike', (data: ActionStrike) => {
   // Local variables
   const i = data.num - 1;
   const strikeX = globals.elements.strikeXs[i];
-
-  // Update the stats
-  // In clue starved variants, each strike only "costs" half a clue
-  globals.cluesSpentPlusStrikes += variantRules.isClueStarved(globals.variant) ? 0.5 : 1;
-  updateStats.updateEfficiency(0);
 
   // Animate the strike square fading in
   if (globals.animateFast) {

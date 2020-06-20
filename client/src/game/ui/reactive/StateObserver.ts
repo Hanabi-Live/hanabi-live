@@ -19,7 +19,10 @@ export default class StateObserver {
 
     const subscriptions: Array<{ select: Selector<State, any>, onChange:Listener<any> }> = [
       // Game info
-      { select: (s) => s.visibleState.clueTokens, onChange: gameInfoView.onClueTokensChanged },
+      {
+        select: (s) => s.visibleState.clueTokens,
+        onChange: gameInfoView.onClueTokensChanged,
+      },
       {
         select: (s) => ({
           score: s.visibleState.score,
@@ -27,10 +30,20 @@ export default class StateObserver {
         }),
         onChange: gameInfoView.onScoreOrMaxScoreChanged,
       },
+
       // Stats
-      { select: (s) => s.visibleState.stats.efficiency, onChange: statsView.onEfficiencyChanged },
-      { select: (s) => s.visibleState.stats.pace, onChange: statsView.onPaceChanged },
-      { select: (s) => s.visibleState.stats.paceRisk, onChange: statsView.onPaceRiskChanged },
+      {
+        select: (s) => s.visibleState.stats.efficiency,
+        onChange: statsView.onEfficiencyChanged,
+      },
+      {
+        select: (s) => s.visibleState.stats.pace,
+        onChange: statsView.onPaceChanged,
+      },
+      {
+        select: (s) => s.visibleState.stats.paceRisk,
+        onChange: statsView.onPaceRiskChanged,
+      },
     ];
 
     this.unsubscribe = observeStore(store, subscriptions);

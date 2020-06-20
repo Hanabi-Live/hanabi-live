@@ -128,7 +128,7 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
       // TODO: calculate doubleDiscard instead of using the server value
       state.doubleDiscard = action.doubleDiscard;
 
-      // TEMP: At this point, check the local state matches the server
+      // TEMP: At this point, check that the local state matches the server
       if (action.score !== state.score) {
         console.warn('The scores from client and server don\'t match. '
             + `Client = ${state.score}, Server = ${action.score}`);
@@ -169,6 +169,7 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
     default:
       break;
   }
+
   // Calculate the stats for this turn
   state.stats = statsReducer(original(state.stats), action, original(state)!, current(state));
 }, {} as GameState);

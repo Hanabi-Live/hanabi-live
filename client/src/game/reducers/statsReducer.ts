@@ -77,7 +77,7 @@ const statsReducer = produce((
       break;
   }
 
-  // We got the latest card stats, update pace and efficiency
+  // Now that the action has occurred, update the stats relating to the current game state
   stats.pace = statsRules.pace(
     currentState.score,
     currentState.deckSize,

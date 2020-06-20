@@ -1,8 +1,8 @@
+/* eslint-disable import/prefer-default-export */
 // Functions for the stats on the middle-right-hand side of the game screen
 
 // Imports
 import { LABEL_COLOR } from '../../constants';
-import * as statsRules from '../rules/stats';
 import * as variantRules from '../rules/variant';
 import { PaceRisk } from '../types/GameState';
 import globals from './globals';
@@ -62,38 +62,4 @@ export const updatePace = (pace: number | null, paceRisk: PaceRisk) => {
       }
     }
   }
-};
-
-export const updateEfficiency = (cardsGottenDelta: number) => {
-  const effLabel = globals.elements.efficiencyNumberLabel;
-  if (!effLabel) {
-    throw new Error('efficiencyNumberLabel is not initialized.');
-  }
-
-  if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
-    // In "Throw It in a Hole" variants,
-    // efficiency will leak information that the player is not supposed to know
-    effLabel.text('? / ');
-    return;
-  }
-
-  globals.cardsGotten += cardsGottenDelta;
-  const efficiency = statsRules.efficiency(globals.cardsGotten, globals.cluesSpentPlusStrikes);
-
-  // Update the labels on the right-hand side of the screen
-  if (globals.cluesSpentPlusStrikes === 0) {
-    // First, handle the case in which 0 clues have been given
-    effLabel.text('- / ');
-  } else {
-    // Round it to 2 decimal places
-    effLabel.text(`${efficiency.toFixed(2)} / `);
-    effLabel.width(effLabel.measureSize(effLabel.text()).width);
-  }
-
-  const effMinLabel = globals.elements.efficiencyNumberLabelMinNeeded;
-  if (!effMinLabel) {
-    throw new Error('efficiencyNumberLabelMinNeeded is not initialized.');
-  }
-  const x = effLabel.x() + effLabel.measureSize(effLabel.text()).width as number;
-  effMinLabel.x(x);
 };

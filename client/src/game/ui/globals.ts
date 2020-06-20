@@ -68,7 +68,6 @@ export class Globals {
   maxScore: number = 0;
   clues: number = 0;
   cardsGotten: number = 0;
-  cluesSpentPlusStrikes: number = 0;
   stackDirections: StackDirection[] = [];
   numCardsPlayed: number = 0; // For "Throw It in a Hole" variants
 
@@ -186,7 +185,6 @@ export class Globals {
     this.maxScore = 0;
     this.clues = 0;
     this.cardsGotten = 0;
-    this.cluesSpentPlusStrikes = 0;
     this.stackDirections = [];
     this.numCardsPlayed = 0;
     this.ImageLoader = null;

@@ -2,11 +2,6 @@ import { LABEL_COLOR } from '../../../../constants';
 import globals from '../../globals';
 
 export function onClueTokensChanged(clueTokens: number) {
-  if (globals.loading) {
-    return;
-  }
-
-  // Update the number of clues in the bottom-right hand corner of the screen
   globals.elements.cluesNumberLabel!.text(clueTokens.toString());
 
   if (!globals.lobby.settings.realLifeMode) {
@@ -22,11 +17,6 @@ export function onClueTokensChanged(clueTokens: number) {
 }
 
 export function onScoreOrMaxScoreChanged(scores: { score: number, maxScore: number }) {
-  if (globals.loading) {
-    return;
-  }
-
-  // Update the score (in the bottom-right-hand corner)
   const scoreLabel = globals.elements.scoreNumberLabel!;
   scoreLabel.text(scores.score.toString());
 

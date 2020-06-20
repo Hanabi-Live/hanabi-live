@@ -7,6 +7,11 @@ import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialGameState';
 
+const defaultVariant = VARIANTS.get(DEFAULT_VARIANT_NAME);
+if (typeof defaultVariant === 'undefined') {
+  throw new Error('Unable to find the default variant in the "VARIANTS" map.');
+}
+
 const testClue: ActionClue = {
   type: 'clue',
   clue: { type: ClueType.Rank, value: 5 },
@@ -23,8 +28,8 @@ const testText: ActionText = {
 
 describe('stateReducer', () => {
   test('does not mutate state', () => {
-    const state = initialGameState(VARIANTS.get(DEFAULT_VARIANT_NAME)!, 3);
-    const unchangedState = initialGameState(VARIANTS.get(DEFAULT_VARIANT_NAME)!, 3);
+    const state = initialGameState(defaultVariant, 3);
+    const unchangedState = initialGameState(defaultVariant, 3);
 
     const newState = gameStateReducer(state, testText);
     expect(newState).not.toEqual(state);
@@ -34,7 +39,7 @@ describe('stateReducer', () => {
 
   describe('when processing a clue', () => {
     test('adds the clue to the list of clues', () => {
-      const state = initialGameState(VARIANTS.get(DEFAULT_VARIANT_NAME)!, 3);
+      const state = initialGameState(defaultVariant, 3);
 
       const newState = gameStateReducer(state, testClue);
       expect(newState.clues.length).toBe(state.clues.length + 1);
@@ -48,7 +53,7 @@ describe('stateReducer', () => {
 
   describe('when processing a text', () => {
     test('adds the text to the log', () => {
-      const state = initialGameState(VARIANTS.get(DEFAULT_VARIANT_NAME)!, 3);
+      const state = initialGameState(defaultVariant, 3);
 
       const newState = gameStateReducer(state, testText);
       expect(newState.log.length).toBe(state.log.length + 1);
@@ -59,8 +64,8 @@ describe('stateReducer', () => {
   describe('when processing a play', () => {
     describe('when a blind play happens on first turn', () => {
       test('efficiency returns infinity', () => {
-      // Arrange
-        let state = initialGameState(VARIANTS.get(DEFAULT_VARIANT_NAME)!, 3);
+        // Arrange
+        let state = initialGameState(defaultVariant, 3);
 
         // Act
         const draw: ActionDraw = {

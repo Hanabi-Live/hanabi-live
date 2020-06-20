@@ -179,7 +179,6 @@ const reset = () => {
   globals.maxScore = globals.variant.maxScore;
   globals.clues = MAX_CLUE_NUM;
   globals.cardsGotten = 0;
-  globals.cluesSpentPlusStrikes = 0;
   globals.numCardsPlayed = 0;
   if (variantRules.isUpOrDown(globals.variant)) {
     globals.stackDirections = [];

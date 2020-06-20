@@ -40,7 +40,7 @@ export default function initialGameState(variant: Variant, playerCount: number):
     stats: {
       cardsGotten: 0,
       potentialCluesLost: 0,
-      efficiency: 0,
+      efficiency: Infinity,
       pace: startingPace,
       paceRisk: statsRules.paceRisk(startingPace, playerCount),
       maxScore: variant.maxScore,
