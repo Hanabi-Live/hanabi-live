@@ -11,8 +11,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source "$DIR/../server/.golangci-lint.version"
 
 # Install VS Code extensions
-code --install-extension "golang.go" # For Golang
-code --install-extension "dbaeumer.vscode-eslint" # For TypeScript
+EXTENSIONS=$(sed --quiet --regexp-extended --expression 's/^\s*"(.+)".*$/\1/p' "$DIR/../.vscode/extensions.json" | grep -v recommendations)
+for EXTENSION in $EXTENSIONS; do
+  code --install-extension "$EXTENSION"
+done
 
 # Install the Golang linter
 # (it is not recommended to install this with "go get")

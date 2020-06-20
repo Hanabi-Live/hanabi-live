@@ -76,6 +76,7 @@ const statsReducer = produce((
     default:
       break;
   }
+
   // We got the latest card stats, update pace and efficiency
   stats.pace = statsRules.pace(
     currentState.score,
