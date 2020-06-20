@@ -18,13 +18,13 @@ module.exports = {
   },
   plugins: [ '@typescript-eslint' ],
   settings: {
-    'import/extensions': ['.js', '.ts'],
+    'import/extensions': ['.ts'],
     'import/parsers': {
       '@typescript-eslint/parser': ['.ts'],
     },
     'import/resolver': {
       'node': {
-        'extensions': ['.js', '.ts'],
+        'extensions': ['.ts'],
       },
     },
   },
