@@ -5,6 +5,7 @@ import * as handRules from '../src/game/rules/hand';
 import {
   ActionPlay, GameAction, ActionDiscard, ActionClue, ActionDraw,
 } from '../src/game/types/actions';
+import ClueType from '../src/game/types/ClueType';
 import { SimpleCard } from '../src/game/types/SimpleCard';
 import State from '../src/game/types/State';
 import testGame from '../test_data/test_game.json';
@@ -114,7 +115,7 @@ function parseJsonAction(
       return {
         type: 'clue',
         clue: {
-          type: a.type === JsonActionType.ActionTypeColorClue ? 0 : 1,
+          type: a.type === JsonActionType.ActionTypeColorClue ? ClueType.Color : ClueType.Rank,
           value: a.value,
         },
         giver: currentPlayer,
