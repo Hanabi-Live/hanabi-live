@@ -119,7 +119,7 @@ const showLoadingScreen = () => {
   const loadingLabel = new Konva.Text({
     fill: LABEL_COLOR,
     stroke: '#747278',
-    strokeWidth: 0.001 * winW,
+    strokeWidth: 0.001056 * winH,
     text: 'Loading...',
     align: 'center',
     x: 0,
@@ -135,7 +135,7 @@ const showLoadingScreen = () => {
   const progressLabel = new Konva.Text({
     fill: LABEL_COLOR,
     stroke: '#747278',
-    strokeWidth: 0.001 * winW,
+    strokeWidth: 0.001056 * winH,
     text: '0 / 0',
     align: 'center',
     x: 0,

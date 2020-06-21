@@ -124,7 +124,7 @@ export default class NameFrame extends Konva.Group {
 
     w *= 1.4;
 
-    this.defaultStrokeWidth = 0.001 * globals.stage.width();
+    this.defaultStrokeWidth = 0.001056 * globals.stage.height();
 
     this.leftLine = new Konva.Line({
       points: [

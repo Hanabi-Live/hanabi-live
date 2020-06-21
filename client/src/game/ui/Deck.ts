@@ -34,7 +34,7 @@ export default class Deck extends Konva.Group {
     this.numLeftText = new Konva.Text({
       fill: 'white',
       stroke: '#222222',
-      strokeWidth: 0.03 * this.width(),
+      strokeWidth: 0.0168 * this.height(),
       align: 'center',
       x: 0,
       y: 0.3 * this.height(),

@@ -131,7 +131,7 @@ export default class CurrentPlayerArea extends Konva.Group {
     });
     this.add(rect2);
 
-    const baseArrowLength = 0.004 * winW;
+    const baseArrowLength = 0.00528 * winH;
 
     this.arrow = new Konva.Group({
       x: (arrowValues.x + (arrowValues.w / 2)) * winW,
@@ -154,7 +154,7 @@ export default class CurrentPlayerArea extends Konva.Group {
       pointerWidth: baseArrowLength * 2,
       fill: 'black',
       stroke: 'black',
-      strokeWidth: baseArrowLength * 1.5,
+      strokeWidth: baseArrowLength * 2,
       shadowBlur: 75,
       shadowOpacity: 1,
     });
@@ -169,7 +169,7 @@ export default class CurrentPlayerArea extends Konva.Group {
       ],
       fill: 'black',
       stroke: 'black',
-      strokeWidth: baseArrowLength * 0.5,
+      strokeWidth: baseArrowLength,
     });
     this.arrow.add(arrowBorderEdge);
 
