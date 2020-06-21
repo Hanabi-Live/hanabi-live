@@ -41,9 +41,9 @@
   * Play a card by clicking and dragging it to the play stacks.
   * Discard a card by clicking and dragging it to the discard pile.
   * Give a clue by:
-    * Click on the button corresponding to the clue recipient.
-    * Click on the button corresponding to the rank or the color.
-    * Click on the "Give Clue" button.
+    * Clicking on the button corresponding to the clue recipient.
+    * Clicking on the button corresponding to the rank or the color.
+    * Clicking on the "Give Clue" button.
 * Once the game is over, use the "Lobby" button in the bottom-left-hand corner.
 
 <br />
@@ -58,7 +58,7 @@
   * Arrows with a gray border indicate that they are re-touching a card that has been previously touched by one or more positive clues.
 * Black borders around a card signify that it has been "touched" by one or more positive clues.
 * The game will keep track of the clues that accumulate on cards, "filling them in" when appropriate.
-* You can hold down the left mouse button on someone else's hand to see how it appears to them. (This is referred to as "empathy".)
+* You can hold down the left mouse button or tap and hold on someone else's hand to see how it appears to them. (This is referred to as "empathy".)
 
 #### Pips
 
@@ -115,7 +115,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 * Players can "break free" of what the leader is showing by clicking the "Pause Shared Turns" button, or by manually navigating to a different turn. To resynchronize with the team, they need to click on the "Use Shared Turns Button". (The up arrow and down arrow are also shortcuts for clicking on this button.)
 * The leader can right-click on a card to highlight it with a red arrow (to point out things to the other players).
 * The current leader can be seen by hovering over the "👑" icon in the bottom right-hand corner.
-* The leader role can be transferred by right-clicking the crown.
+* The leader role can be transferred by clicking or double-tapping the crown.
 
 #### Hypotheticals
 
@@ -153,7 +153,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 #### Basic Description
 
-* When in the middle of an ongoing game, players can right-click on any card to add a note to it. Afterward, by hovering over a card, a tooltip will appear with the written note.
+* When in the middle of an ongoing game, players can right-click or double-tap on any card to add a note to it. Afterward, by hovering over a card, a tooltip will appear with the written note.
 * This is useful for storing contextual information about a card for later.
 * Notes can also be written during an in-game replay as a way to track the card as it moves throughout your hand.
 * Since notes are tracked by the server, players can switch computers mid-game and keep any notes written.
@@ -169,6 +169,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
   * Brown is abbreviated as "n".
   * The "dark" suits are abbreviated the same as their normal counterparts.
   * Gray is abbreviated as "a".
+* You can also use the order of a suit on the stacks instead of the suit name. For example, "11" represents a red 1 when the red stack is the left-most stack. This is helpful in games with suit names that start with the same letter.
 
 #### Special Note Borders
 
@@ -181,6 +182,10 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 * A note of "fixme" can be be written to indicate that the card needs to be given a "fix clue" at some point in the future. This will draw a special image on the card.
 * A note of "blank" can be written on a card to make it look like the deck back.
 * A note of "unclued" can be written to manually remove the border that normally appears around a card when it is touched by one or more clues.
+
+#### Adding Context to Special Notes
+
+* If you want to keep the behavior of a special note but write additional text on the note, place the special note in square brackets. This can also be used to stack multiple effects on top of each other. For example, the note "[f] [r1]" will mark a card as finessed and as a red 1.
 
 #### Note Shortcuts
 
