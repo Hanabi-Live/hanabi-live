@@ -33,7 +33,7 @@ export const enter = () => {
   globals.inReplay = true;
 
   // TEMP: eventually, move code from this file to reducers and observers
-  globals.store?.dispatch({ type: 'startReplay' });
+  globals.store!.dispatch({ type: 'startReplay' });
 
   // Start by putting us at the end of the replay (the current game state)
   globals.replayPos = globals.replayLog.length;
@@ -66,7 +66,7 @@ export const exit = () => {
   globals.elements.replayArea!.hide();
 
   // TEMP: eventually, move code from this file to reducers and observers
-  globals.store?.dispatch({ type: 'endReplay' });
+  globals.store!.dispatch({ type: 'endReplay' });
 
   if (globals.ourTurn) {
     turn.showClueUIAndEnableDragging();
@@ -147,7 +147,7 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
   }
 
   // TEMP: eventually, move code from this file to reducers and observers
-  globals.store?.dispatch({ type: 'goToTurn', turn: globals.replayTurn });
+  globals.store!.dispatch({ type: 'goToTurn', turn: globals.replayTurn });
 
   globals.animateFast = false;
   cardStatusCheck();

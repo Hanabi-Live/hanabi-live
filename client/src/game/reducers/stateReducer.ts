@@ -8,18 +8,19 @@ import GameState from '../types/GameState';
 import State from '../types/State';
 import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialGameState';
+import replayReducer from './replayReducer';
 
 const stateReducer = produce((state: Draft<State>, action: Action) => {
   switch (action.type) {
     case 'gameActionList': {
       // Calculate all the intermediate states
       const initial = initialGameState(
-        VARIANTS.get(state.game.variantName)!,
-        state.game.hands.length,
+        VARIANTS.get(state.ongoingGame.variantName)!,
+        state.ongoingGame.hands.length,
       );
       const states: GameState[] = [initial];
 
-      state.game = action.actions.reduce((s: GameState, a: GameAction) => {
+      state.ongoingGame = action.actions.reduce((s: GameState, a: GameAction) => {
         const nextState = gameStateReducer(s, a);
 
         if (a.type === 'turn') {
@@ -33,30 +34,22 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       state.replay.states = states;
       break;
     }
-    case 'startReplay': {
-      state.replay.active = true;
-      state.replay.turn = 0;
-      break;
-    }
-    case 'endReplay': {
-      state.replay.active = false;
-      state.replay.turn = 0;
-      break;
-    }
-    case 'goToTurn': {
-      state.replay.turn = action.turn;
+    case 'startReplay':
+    case 'endReplay':
+    case 'goToTurn':
+    case 'hypoStart':
+    case 'hypoBack':
+    case 'hypoEnd':
+    case 'hypoAction': {
+      state.replay = replayReducer(state.replay, action);
       break;
     }
     default: {
       // A new game state happened
-      state.game = gameStateReducer(original(state.game)!, action)!;
+      state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action)!;
       if (action.type === 'turn') {
         // Save it for replays
-        state.replay.states[action.num] = state.game;
-      }
-      if (!state.replay.active) {
-        // Update the visible state to the game state
-        state.visibleState = state.game;
+        state.replay.states[action.num] = state.ongoingGame;
       }
       break;
     }
@@ -64,9 +57,9 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
   // Update the visible state to the game or replay state
   if (state.replay.active) {
-    state.visibleState = state.replay.states[state.replay.turn];
+    state.visibleState = state.replay.ongoingHypothetical ?? state.replay.states[state.replay.turn];
   } else {
-    state.visibleState = state.game;
+    state.visibleState = state.ongoingGame;
   }
 }, {} as State);
 

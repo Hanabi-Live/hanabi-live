@@ -77,3 +77,7 @@ export const timerFormatter = (milliseconds: number) => {
   const secondsFormatted = seconds < 10 ? `0${seconds}` : seconds;
   return `${minutes}:${secondsFormatted}`;
 };
+
+// Use this on a switch statement's default case to get
+// the linter to complain if a case was not predicted
+export const ensureAllCases = (obj: never): never => obj;

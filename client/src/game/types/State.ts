@@ -3,6 +3,6 @@ import ReplayState from './ReplayState';
 
 export default interface State {
   readonly visibleState: GameState,
-  readonly game: GameState,
+  readonly ongoingGame: GameState,
   readonly replay: ReplayState,
 }

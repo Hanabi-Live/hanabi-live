@@ -6,11 +6,13 @@ export default function initialState(variant: Variant, playerCount: number): Sta
   const game = initialGameState(variant, playerCount);
   return {
     visibleState: game,
-    game,
+    ongoingGame: game,
     replay: {
       active: false,
-      states: [],
       turn: 0,
+      states: [],
+      ongoingHypothetical: null,
+      hypotheticalStates: [],
     },
   };
 }

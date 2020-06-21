@@ -150,6 +150,9 @@ commands.set('gameOver', () => {
 commands.set('hypoAction', (data: string) => {
   const actionMessage = JSON.parse(data) as ActionIncludingHypothetical;
 
+  // Pass it along to the reducers
+  globals.store!.dispatch({ type: 'hypoAction', action: actionMessage });
+
   // We need to save this game state change for the purposes of the in-game hypothetical
   globals.hypoActions.push(actionMessage);
 
@@ -167,12 +170,14 @@ commands.set('hypoBack', () => {
   if (!globals.amSharedReplayLeader) {
     globals.elements.sharedReplayBackwardTween!.play();
   }
+  globals.store!.dispatch({ type: 'hypoBack' });
 });
 
 commands.set('hypoEnd', () => {
   if (!globals.amSharedReplayLeader) {
     hypothetical.end();
   }
+  globals.store!.dispatch({ type: 'hypoEnd' });
 });
 
 interface HypoRevealedData {
@@ -202,6 +207,7 @@ commands.set('hypoStart', () => {
   if (!globals.amSharedReplayLeader) {
     hypothetical.start();
   }
+  globals.store!.dispatch({ type: 'hypoStart' });
 });
 
 interface InitData {
@@ -288,6 +294,8 @@ commands.set('init', (data: InitData) => {
   globals.inReplay = globals.replay;
   if (globals.replay) {
     globals.replayTurn = -1;
+    // HACK: also let the state know this is a replay
+    globals.store!.dispatch({ type: 'startReplay' });
   }
 
   // Begin to load all of the card images
@@ -456,7 +464,7 @@ interface GameActionListData {
 }
 commands.set('gameActionList', (data: GameActionListData) => {
   // Send the list to the reducers
-  globals.store?.dispatch({ type: 'gameActionList', actions: data.list });
+  globals.store!.dispatch({ type: 'gameActionList', actions: data.list });
 
   // Play through all of the turns
   for (const actionMessage of data.list) {

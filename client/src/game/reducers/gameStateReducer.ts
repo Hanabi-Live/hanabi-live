@@ -4,6 +4,7 @@
 
 // Imports
 import produce, { Draft, original, current } from 'immer';
+import { ensureAllCases } from '../../misc';
 import { VARIANTS } from '../data/gameData';
 import * as clues from '../rules/clues';
 import { GameAction } from '../types/actions';
@@ -166,8 +167,16 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
       break;
     }
 
-    default:
+    case 'stackDirections':
+    case 'reorder':
+    case 'deckOrder': {
       break;
+    }
+
+    default: {
+      ensureAllCases(action);
+      break;
+    }
   }
 
   // Calculate the stats for this turn

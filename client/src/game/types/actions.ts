@@ -1,7 +1,10 @@
 import MsgClue from './MsgClue';
 import { SimpleCard } from './SimpleCard';
 
-export type Action = GameAction | ReplayAction | ActionListReceived;
+export type Action =
+| GameAction
+| ReplayAction
+| ActionListReceived;
 
 export type GameAction =
 | ActionClue
@@ -18,7 +21,14 @@ export type GameAction =
 
 export type ActionIncludingHypothetical = GameAction | ActionReveal;
 
-export type ReplayAction = ActionStartReplay | ActionEndReplay | ActionGoToTurn;
+export type ReplayAction =
+| ActionStartReplay
+| ActionEndReplay
+| ActionGoToTurn
+| ActionHypotheticalStart
+| ActionHypotheticalEnd
+| ActionHypotheticalBack
+| ActionHypothetical;
 
 export interface ActionListReceived {
   type: 'gameActionList';
@@ -102,14 +112,6 @@ export interface Which {
   readonly order: number;
 }
 
-// Hypothetical only
-export interface ActionReveal {
-  type: 'reveal';
-  readonly suit: number;
-  readonly rank: number;
-  readonly order: number;
-}
-
 // Replay actions
 export interface ActionStartReplay {
   type: 'startReplay';
@@ -122,4 +124,29 @@ export interface ActionEndReplay {
 export interface ActionGoToTurn {
   type: 'goToTurn';
   readonly turn: number;
+}
+
+// Hypothetical actions
+export interface ActionHypotheticalStart {
+  type: 'hypoStart';
+}
+
+export interface ActionHypotheticalEnd {
+  type: 'hypoEnd';
+}
+
+export interface ActionHypotheticalBack {
+  type: 'hypoBack';
+}
+
+export interface ActionHypothetical {
+  type: 'hypoAction';
+  readonly action: ActionIncludingHypothetical;
+}
+
+export interface ActionReveal {
+  type: 'reveal';
+  readonly suit: number;
+  readonly rank: number;
+  readonly order: number;
 }
