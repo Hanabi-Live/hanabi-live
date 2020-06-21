@@ -1,3 +1,4 @@
+import { LABEL_COLOR } from '../../../../constants';
 import * as variantRules from '../../../rules/variant';
 import { PaceRisk } from '../../../types/GameState';
 import globals from '../../globals';
@@ -38,10 +39,59 @@ export function onEfficiencyChanged(efficiency: number) {
   effMinLabel.x(x);
 }
 
-export function onPaceChanged(pace: number) {
-  console.log(`pace: ${pace}`);
-}
+export function onPaceOrPaceRiskChanged(p: { pace: number | null, paceRisk: PaceRisk }) {
+  const label = globals.elements.paceNumberLabel;
+  if (!label) {
+    throw new Error('paceNumberLabel is not initialized.');
+  }
 
-export function onPaceRiskChanged(paceRisk: PaceRisk) {
-  console.log(`paceRisk: ${paceRisk}`);
+  if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
+    // In "Throw It in a Hole" variants,
+    // pace will leak information that the player is not supposed to know
+    label.text('?');
+    return;
+  }
+
+  // Update the pace
+  // (part of the efficiency statistics on the right-hand side of the screen)
+  // If there are no cards left in the deck, pace is meaningless
+  if (p.pace === null) {
+    label.text('-');
+    label.fill(LABEL_COLOR);
+  } else {
+    let paceText = p.pace.toString();
+    if (p.pace > 0) {
+      paceText = `+${p.pace}`;
+    }
+    label.text(paceText);
+
+    // Color the pace label depending on how "risky" it would be to discard
+    // (approximately)
+    switch (p.paceRisk) {
+      case 'Zero': {
+        // No more discards can occur in order to get a maximum score
+        label.fill('#df1c2d'); // Red
+        break;
+      }
+      case 'HighRisk': {
+        // It would probably be risky to discard
+        label.fill('#ef8c1d'); // Orange
+        break;
+      }
+      case 'MediumRisk': {
+        // It might be risky to discard
+        label.fill('#efef1d'); // Yellow
+        break;
+      }
+      case 'LowRisk': default: {
+        // We are not even close to the "End-Game", so give it the default color
+        label.fill(LABEL_COLOR);
+        break;
+      }
+      case 'Null': {
+        console.error(`An invalid value of pace / risk was detected. Pace = ${p.pace}, Risk = Null`);
+        break;
+      }
+    }
+  }
 }
