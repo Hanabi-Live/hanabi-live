@@ -1,72 +1,79 @@
 import loadGameJson from '../../../test/loadGameJson';
+// Direct import instead of namespace import for compactness
+import {
+  hypoStart, startReplay, hypoAction, clue, turn, hypoBack, hypoEnd,
+} from '../../../test/testActions';
 import testGame from '../../../test_data/test_game.json';
-import { ActionHypothetical } from '../types/actions';
+import ClueType from '../types/ClueType';
 import State from '../types/State';
 import replayReducer from './replayReducer';
 import stateReducer from './stateReducer';
 
+let testState: State;
+
+// Initialize the state before each test
+beforeEach(() => {
+  // Load the game and start a replay
+  testState = loadGameJson(testGame);
+  testState = stateReducer(testState, startReplay());
+});
+
 describe('replayReducer', () => {
-  describe('during a replay', () => {
-    let state: State = loadGameJson(testGame);
-    state = stateReducer(state, { type: 'startReplay' });
-    test('can start a hypothetical', () => {
+  describe('hypothetical', () => {
+    test('can start', () => {
       // Act
-      const newState = replayReducer(state.replay, { type: 'hypoStart' });
+      const newState = replayReducer(testState.replay, hypoStart());
 
       // Assert
-      expect(newState.ongoingHypothetical).toBe(state.replay.states[state.replay.turn]);
+      expect(newState.ongoingHypothetical).toBe(testState.replay.states[testState.replay.turn]);
       expect(newState.hypotheticalStates.length).toBe(1);
       expect(newState.hypotheticalStates[0]).toBe(newState.ongoingHypothetical);
     });
 
-    describe('during a hypothetical', () => {
-      const hypoState = replayReducer(state.replay, { type: 'hypoStart' });
-      const hypoClue: ActionHypothetical = {
-        type: 'hypoAction',
-        action: {
-          type: 'clue',
-          giver: 0,
-          clue: { type: 1, value: 3 },
-          list: [],
-          target: 1,
-          turn: 0,
-        },
-      };
-      const hypoTurn: ActionHypothetical = {
-        type: 'hypoAction',
-        action: { type: 'turn', who: 1, num: 1 },
-      };
+    test('can give a clue', () => {
+      // Arrange
+      const hypoState = replayReducer(testState.replay, hypoStart());
 
-      test('can give a hypothetical clue', () => {
-        // Act
-        let newState = replayReducer(hypoState, hypoClue);
-        newState = replayReducer(newState, hypoTurn);
+      // Act
+      // Give a random hypo clue
+      const hypoClue = hypoAction(clue(ClueType.Rank, 3, 0, [], 1, 0));
+      let newState = replayReducer(hypoState, hypoClue);
 
-        // Assert
-        const expectedClues = state.replay.states[state.replay.turn].clueTokens - 1;
-        expect(newState.ongoingHypothetical?.clueTokens).toBe(expectedClues);
-      });
+      // End turn
+      newState = replayReducer(newState, hypoAction(turn(1, 1)));
 
-      describe('after giving a hypothetical clue', () => {
-        let hypoClueState = replayReducer(hypoState, hypoClue);
-        hypoClueState = replayReducer(hypoClueState, hypoTurn);
+      // Assert
+      const expectedClues = testState.replay.states[testState.replay.turn].clueTokens - 1;
+      expect(newState.ongoingHypothetical?.clueTokens).toBe(expectedClues);
+    });
 
-        test('can go back on a hypothetical', () => {
-          // Act
-          const newState = replayReducer(hypoClueState, { type: 'hypoBack' });
+    test('can go back on a hypothetical after giving a clue', () => {
+      // Arrange
+      let hypoClueState = replayReducer(testState.replay, hypoStart());
+      const hypoClue = hypoAction(clue(ClueType.Rank, 3, 0, [], 1, 0));
+      hypoClueState = replayReducer(hypoClueState, hypoClue);
+      hypoClueState = replayReducer(hypoClueState, hypoAction(turn(1, 1)));
 
-          // Assert
-          expect(newState.ongoingHypothetical).toBe(state.visibleState);
-        });
+      // Act
+      const newState = replayReducer(hypoClueState, hypoBack());
 
-        test('can end a hypothetical', () => {
-          // Act
-          const newState = replayReducer(hypoClueState, { type: 'hypoEnd' });
+      // Assert
+      const originalState = testState.visibleState;
+      expect(newState.ongoingHypothetical).toBe(originalState);
+    });
 
-          // Assert
-          expect(newState.ongoingHypothetical).toBeNull();
-        });
-      });
+    test('can end hypothetical after giving a clue', () => {
+      // Arrange
+      let hypoClueState = replayReducer(testState.replay, hypoStart());
+      const hypoClue = hypoAction(clue(ClueType.Rank, 3, 0, [], 1, 0));
+      hypoClueState = replayReducer(hypoClueState, hypoClue);
+      hypoClueState = replayReducer(hypoClueState, hypoAction(turn(1, 1)));
+
+      // Act
+      const newState = replayReducer(hypoClueState, hypoEnd());
+
+      // Assert
+      expect(newState.ongoingHypothetical).toBeNull();
     });
   });
 });
