@@ -17,11 +17,10 @@ import (
 )
 
 type TemplateData struct {
-	Title     string // Used to populate the <title> tag
+	Title     string // Used to populate the "<title>" tag
 	Domain    string // Used to validate that the user is going to the correct URL
 	Version   int
 	Compiling bool // True if we are currently recompiling the TypeScript client
-	Dev       bool
 }
 
 const (
@@ -181,6 +180,8 @@ func httpInit() {
 	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5/:player6", httpHistory)
 	httpRouter.GET("/missing-scores", httpScores)
 	httpRouter.GET("/missing-scores/:player", httpScores)
+	httpRouter.GET("/tags", httpTags)
+	httpRouter.GET("/tags/:player", httpTags)
 	httpRouter.GET("/seed", httpSeed)
 	httpRouter.GET("/seed/:seed", httpSeed) // Display all games played on a given seed
 	httpRouter.GET("/stats", httpStats)

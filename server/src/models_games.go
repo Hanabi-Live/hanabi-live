@@ -135,6 +135,7 @@ type GameHistory struct {
 	NumGamesOnThisSeed int       `json:"numGamesOnThisSeed"`
 	PlayerNames        []string  `json:"playerNames"`
 	IncrementNumGames  bool      `json:"incrementNumGames"`
+	Tags               string    `json:"tags"`
 }
 
 func (*Games) GetHistory(gameIDs []int) ([]*GameHistory, error) {

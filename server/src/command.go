@@ -100,10 +100,10 @@ func commandInit() {
 	commandMap["chatFriend"] = commandChatFriend
 	commandMap["chatUnfriend"] = commandChatUnfriend
 	commandMap["chatPlayerInfo"] = commandChatPlayerInfo
-	commandMap["inactive"] = commandInactive
 	commandMap["getName"] = commandGetName
-	commandMap["historyGetSeed"] = commandHistoryGetSeed
+	commandMap["inactive"] = commandInactive
 	commandMap["historyGet"] = commandHistoryGet
+	commandMap["historyGetSeed"] = commandHistoryGetSeed
 	commandMap["historyFriendsGet"] = commandHistoryFriendsGet
 	commandMap["replayCreate"] = commandReplayCreate
 	commandMap["tagSearch"] = commandTagSearch

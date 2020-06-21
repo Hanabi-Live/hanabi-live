@@ -52,7 +52,6 @@ func httpSeed(c *gin.Context) {
 
 	data := HistoryData{
 		Title:        "History",
-		Dev:          false,
 		History:      gameHistoryList,
 		NamesTitle:   "seed: " + seed,
 		SpecificSeed: true,

@@ -3,11 +3,22 @@
 <h3 class="align-center">
 {{ $length := len .History }}
 {{if eq $length 0}}
-  No games played.
+  {{if eq .Title "History" }}
+    No games played.
+  {{end}}
+  {{if eq .Title "Tagged Games" }}
+    No tagged games.
+  {{end}}
 {{else}}
   Total games: {{$length}}
 {{end}}
 </h3>
+
+{{if eq $length 0}}{{if eq .Title "Tagged Games" }}
+<h4 class="align-center">
+  Get them to tag some games with the <code>/tag</code> command. (e.g. <code>/tag Layered Finesse</code>)
+</h4>
+{{end}}{{end}}
 
 {{if gt $length 0}}
 <br />
@@ -43,6 +54,7 @@
       <th>Date</th>
       <th>Players</th>
       {{if not .SpecificSeed}}<th>Other Scores</th>{{end}}
+      {{if eq .Title "Tagged Games" }}<th>Tags</th>{{end}}
     </tr>
   </thead>
   <tbody>
@@ -60,6 +72,7 @@
           </a>
         </td>
         {{if not $.SpecificSeed}}<td><a href="/seed/{{.Seed}}">{{.NumGamesOnThisSeed}}</a></td>{{end}}
+        {{if eq $.Title "Tagged Games" }}<td>{{.Tags}}</td>{{end}}
       </tr>
     {{- end -}}
   </tbody>

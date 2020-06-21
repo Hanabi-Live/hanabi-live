@@ -1329,7 +1329,7 @@
 <!-- Used to validate that we are connecting to the correct URL -->
 <div id="domain" class="hidden">{{.Domain}}</div>
 
-{{if .Dev}}
+{{if eq .Title "Dev"}}
 <!--
     In development, we use "webpack-dev-server" to serve the JavaScript on a separate port
     (this is necessary because it provides "hot reloading" and speeds up long compilation times)

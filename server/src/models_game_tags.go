@@ -47,7 +47,7 @@ func (*GameTags) GetAll(gameID int) ([]string, error) {
 	return tags, nil
 }
 
-func (*GameTags) Search(tag string) ([]int, error) {
+func (*GameTags) SearchByTag(tag string) ([]int, error) {
 	rows, err := db.Query(context.Background(), `
 		SELECT game_id
 		FROM game_tags
@@ -69,4 +69,29 @@ func (*GameTags) Search(tag string) ([]int, error) {
 	rows.Close()
 
 	return gameIDs, nil
+}
+
+func (*GameTags) SearchByUserID(userID int) (map[int][]string, error) {
+	rows, err := db.Query(context.Background(), `
+		SELECT game_id, tag
+		FROM game_tags
+		WHERE user_id = $1
+	`, userID)
+
+	gamesMap := make(map[int][]string)
+	for rows.Next() {
+		var gameID int
+		var tag string
+		if err2 := rows.Scan(&gameID, &tag); err2 != nil {
+			return gamesMap, err2
+		}
+		gamesMap[gameID] = append(gamesMap[gameID], tag)
+	}
+
+	if rows.Err() != nil {
+		return gamesMap, err
+	}
+	rows.Close()
+
+	return gamesMap, nil
 }

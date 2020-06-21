@@ -11,7 +11,6 @@ import (
 
 type ProfileData struct {
 	Title string
-	Dev   bool
 
 	Name                       string
 	NamesTitle                 string // Used on the "History" page
@@ -217,7 +216,6 @@ func httpScores(c *gin.Context) {
 
 	data := ProfileData{
 		Title: "Scores",
-		Dev:   false,
 
 		Name:                       user.Username,
 		DateJoined:                 dateJoined,

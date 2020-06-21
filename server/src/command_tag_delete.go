@@ -2,7 +2,6 @@ package main
 
 import (
 	"strconv"
-	"time"
 )
 
 // commandTagDelete is sent when a user types the "/tagdelete [tag]" command
@@ -44,13 +43,8 @@ func commandTagDelete(s *Session, d *CommandData) {
 
 			// Send them an acknowledgement via private message to avoid spoiling information about
 			// the ongoing game
-			s.Emit("chat", &ChatMessage{
-				Msg:       "Successfully deleted the tag of \"" + d.Msg + "\".",
-				Who:       "Hanabi Live",
-				Datetime:  time.Now(),
-				Room:      d.Room,
-				Recipient: s.Username(),
-			})
+			msg := "Successfully deleted the tag of \"" + d.Msg + "\"."
+			chatServerSendPM(s, msg, d.Room)
 		} else {
 			s.Warning("The tag of \"" + d.Msg + "\" does not exist on this game yet.")
 		}

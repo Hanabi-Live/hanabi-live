@@ -52,6 +52,17 @@ func chatServerSendAll(msg string) {
 	}
 }
 
+// chatServerSendPM is for sending non-public messages to specific users
+func chatServerSendPM(s *Session, msg string, room string) {
+	s.Emit("chat", &ChatMessage{
+		Msg:       msg,
+		Who:       "Hanabi Live",
+		Datetime:  time.Now(),
+		Room:      room,
+		Recipient: s.Username(),
+	})
+}
+
 func chatFillMentions(msg string) string {
 	if discord == nil {
 		return msg

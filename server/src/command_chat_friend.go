@@ -1,9 +1,5 @@
 package main
 
-import (
-	"time"
-)
-
 // commandChatFriend is sent when a user types the "/friend" command
 //
 // Example data:
@@ -130,6 +126,7 @@ func friend(s *Session, d *CommandData, add bool) {
 
 		msg = "Successfully removed \"" + d.Name + "\" from your friends list."
 	}
+	chatServerSendPM(s, msg, d.Room)
 
 	// Get their (new) friends from the database
 	var friends []string
@@ -147,13 +144,5 @@ func friend(s *Session, d *CommandData, add bool) {
 	}
 	s.Emit("friends", &FriendsMessage{
 		Friends: friends,
-	})
-
-	s.Emit("chat", &ChatMessage{
-		Msg:       msg,
-		Who:       "Hanabi Live",
-		Datetime:  time.Now(),
-		Room:      d.Room,
-		Recipient: s.Username(),
 	})
 }

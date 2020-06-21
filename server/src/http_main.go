@@ -29,8 +29,7 @@ func httpMain(c *gin.Context) {
 	}
 
 	title := "Main"
-	path := c.FullPath()
-	if strings.HasPrefix(path, "/dev") {
+	if strings.HasPrefix(c.FullPath(), "/dev") {
 		title = "Dev"
 	}
 
@@ -39,7 +38,6 @@ func httpMain(c *gin.Context) {
 		Domain:    domain,
 		Version:   getVersion(),
 		Compiling: compiling,
-		Dev:       strings.HasPrefix(c.FullPath(), "/dev"),
 	}
 	httpServeTemplate(w, data, "main")
 }

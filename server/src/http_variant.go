@@ -170,7 +170,6 @@ func httpVariant(c *gin.Context) {
 
 	data := VariantData{
 		Title: "Variant Stats",
-		Dev:   false,
 
 		Name:               variantsID[variantID],
 		NumGames:           stats.NumGames,

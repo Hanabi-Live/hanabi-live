@@ -3,7 +3,6 @@ package main
 import (
 	"strconv"
 	"strings"
-	"time"
 )
 
 // commandTagSearch is sent when a user types the "/tagsearch [tag]" command
@@ -23,7 +22,7 @@ func commandTagSearch(s *Session, d *CommandData) {
 
 	// Search through the database for games matching this tag
 	var gameIDs []int
-	if v, err := models.GameTags.Search(d.Msg); err != nil {
+	if v, err := models.GameTags.SearchByTag(d.Msg); err != nil {
 		logger.Error("Failed to search for games matching a tag of \""+d.Msg+"\":", err)
 		s.Error(DefaultErrorMsg)
 		return
@@ -38,11 +37,5 @@ func commandTagSearch(s *Session, d *CommandData) {
 
 	// Send the results via a private message as to not spam public channels
 	msg := "Games matching \"" + d.Msg + "\": " + strings.Join(gameIDStrings, ", ")
-	s.Emit("chat", &ChatMessage{
-		Msg:       msg,
-		Who:       "Hanabi Live",
-		Datetime:  time.Now(),
-		Room:      d.Room,
-		Recipient: s.Username(),
-	})
+	chatServerSendPM(s, msg, d.Room)
 }

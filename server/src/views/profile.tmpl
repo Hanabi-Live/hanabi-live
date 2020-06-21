@@ -34,13 +34,24 @@
           <div>
             <ul class="actions fit">
               <li>
-                <a class="button fit icon fa-chart-area{{if eq .Title "Scores"}} disabled{{else}}" href="/scores/{{.Name}}{{end}}">Scores & Statistics</a>
+                <a class="button fit icon fa-chart-area{{if eq .Title "Scores"}} disabled{{else}}" href="/scores/{{.Name}}{{end}}">
+                  Scores & Statistics
+                </a>
               </li>
               <li>
-                <a class="button fit icon fa-history{{if eq .Title "History"}} disabled{{else}}" href="/history/{{.Name}}{{end}}">Full Game History</a>
+                <a class="button fit icon fa-history{{if eq .Title "History"}} disabled{{else}}" href="/history/{{.Name}}{{end}}">
+                  Full Game History
+                </a>
               </li>
               <li>
-                <a class="button fit icon fa-question{{if eq .Title "Missing Scores"}} disabled{{else}}" href="/missing-scores/{{.Name}}{{end}}">Missing Scores</a>
+                <a class="button fit icon fa-question{{if eq .Title "Missing Scores"}} disabled{{else}}" href="/missing-scores/{{.Name}}{{end}}">
+                  Missing Scores
+                </a>
+              </li>
+              <li>
+                <a class="button fit icon fa-tag{{if eq .Title "Tagged Games"}} disabled{{else}}" href="/tags/{{.Name}}{{end}}">
+                  Tagged Games
+                </a>
               </li>
             </ul>
           </div>

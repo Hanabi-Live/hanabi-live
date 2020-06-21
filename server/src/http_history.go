@@ -10,11 +10,11 @@ import (
 
 type HistoryData struct {
 	Title        string
-	Dev          bool
 	Name         string
 	NamesTitle   string
 	History      []*GameHistory
 	SpecificSeed bool
+	Tags         map[int][]string
 }
 
 func httpHistory(c *gin.Context) {
@@ -114,7 +114,6 @@ func httpHistory(c *gin.Context) {
 
 	data := HistoryData{
 		Title:   "History",
-		Dev:     false,
 		Name:    playerNames[0],
 		History: gameHistoryList,
 	}

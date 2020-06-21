@@ -51,11 +51,7 @@ func commandTableTerminate(s *Session, d *CommandData) {
 		Terminate
 	*/
 
-	username := s.Username()
-	if d.Server {
-		username = "Hanabi Live"
-	}
-	terminate(t, username, i)
+	terminate(t, s.Username(), i)
 }
 
 func terminate(t *Table, username string, endPlayerIndex int) {

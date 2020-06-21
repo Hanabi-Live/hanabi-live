@@ -169,25 +169,6 @@ chatCommands.set('tagsearch', (room: string, args: string[]) => {
   });
 });
 
-// /unfriend [username]
-chatCommands.set('unfriend', (_room: string, args: string[]) => {
-  // Validate that the format of the command is correct
-  if (args.length < 1) {
-    modals.warningShow('The format of the /unfriend command is: <code>/unfriend Alice</code>');
-    return;
-  }
-
-  // Validate that we are not targeting ourselves
-  const name = args.join(' ');
-  if (name.toLowerCase() === globals.username.toLowerCase()) {
-    modals.warningShow('You cannot unfriend yourself.');
-  }
-
-  globals.conn!.send('chatUnfriend', {
-    name,
-  });
-});
-
 // /playerinfo (username)
 const playerinfo = (_room: string, args: string[]) => {
   let usernames: string[] = [];
@@ -214,6 +195,25 @@ const playerinfo = (_room: string, args: string[]) => {
 chatCommands.set('playerinfo', playerinfo);
 chatCommands.set('games', playerinfo);
 chatCommands.set('stats', playerinfo);
+
+// /unfriend [username]
+chatCommands.set('unfriend', (_room: string, args: string[]) => {
+  // Validate that the format of the command is correct
+  if (args.length < 1) {
+    modals.warningShow('The format of the /unfriend command is: <code>/unfriend Alice</code>');
+    return;
+  }
+
+  // Validate that we are not targeting ourselves
+  const name = args.join(' ');
+  if (name.toLowerCase() === globals.username.toLowerCase()) {
+    modals.warningShow('You cannot unfriend yourself.');
+  }
+
+  globals.conn!.send('chatUnfriend', {
+    name,
+  });
+});
 
 // /version
 chatCommands.set('version', (room: string) => {

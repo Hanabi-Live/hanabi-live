@@ -4,7 +4,6 @@ import (
 	"errors"
 	"strconv"
 	"strings"
-	"time"
 	"unicode"
 	"unicode/utf8"
 )
@@ -52,13 +51,8 @@ func commandTag(s *Session, d *CommandData) {
 
 		// Send them an acknowledgement via private message to avoid spoiling information about the
 		// ongoing game
-		s.Emit("chat", &ChatMessage{
-			Msg:       "Successfully added a tag of \"" + d.Msg + "\".",
-			Who:       "Hanabi Live",
-			Datetime:  time.Now(),
-			Room:      d.Room,
-			Recipient: s.Username(),
-		})
+		msg := "Successfully added a tag of \"" + d.Msg + "\"."
+		chatServerSendPM(s, msg, d.Room)
 		return
 	}
 

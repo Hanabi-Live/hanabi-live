@@ -17,7 +17,8 @@
 9. [Chat](#chat)
 10. [Friends](#friends)
 11. [Tags](#tags)
-12. [Research & Bots](#research--bots)
+12. [Webpage Endpoints](#webpage-endpoints)
+13. [Research & Bots](#research--bots)
 
 <br />
 
@@ -406,6 +407,23 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 * Tags added during a replay will echo the everyone in the replay.
 * You can use the `/tagdelete [tag]` command to delete an existing tag.
 * You can use the `/tagsearch [tag]` command to search through all games for a specific tag.
+
+<br />
+
+## Website Endpoints
+
+* As mentioned previously, Hanabi Live offers webpage endpoints to show statistics on specific players, variants, and so forth.
+
+| URL                          | Description
+| ---------------------------- | -----------
+| `/scores/[username]`         | Lists the player's profile and best scores.
+| `/history/[username]`        | Lists the player's past games.
+| `/missing-scores/[username]` | Lists the player's remaining non-max scores.
+| `/tags/[username]`           | Lists the player's tagged games.
+| `/seed/[seed]`               | Lists the games played on a specific seed.
+| `/stats`                     | Lists stats for the entire website.
+| `/variant/[id]`              | Lists stats for a specific variant.
+| `/tag/[tag]`                 | Lists all the games that match the specified tag.
 
 <br />
 
