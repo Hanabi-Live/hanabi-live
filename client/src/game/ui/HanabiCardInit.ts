@@ -17,17 +17,10 @@ import globals from './globals';
 import HanabiCard from './HanabiCard';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
-<<<<<<< HEAD
-import * as notes from './notes';
-import possibilitiesCheck from './possibilitiesCheck';
-=======
 import { HanabiCardTap, HanabiCardDblTap } from './HanabiCardTouchActions';
-import NoteIndicator from './NoteIndicator';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
-import RankPip from './RankPip';
 import * as tooltips from './tooltips';
->>>>>>> 76e922b3... Touch actions
 
 export function image(this: HanabiCard) {
   // Create the "bare" card image, which is the main card graphic
