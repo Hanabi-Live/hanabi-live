@@ -512,7 +512,8 @@ export function empathy(this: HanabiCard) {
     this.touchstartTimeout = setTimeout(() => {
       // A tap will trigger when the touchend occurs
       // The next tap action will not run because it will appear like the second tap of a double tap
-      if (!this.wasRecentlyTapped) {
+      // Don't worry about this if we actually double-tapped
+      if (!this.wasRecentlyTapped && globals.editingNote == null) {
         this.wasRecentlyTapped = true;
       }
     }, 500); // 500 milliseconds, same as the double-tap time for standardization reasons
