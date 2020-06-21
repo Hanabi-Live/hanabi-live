@@ -399,6 +399,7 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 * You can have an unlimited amount of tags per game. Anyone can add a tag to a game, regardless of whether they played in it or not. Everyone's tags are shared.
 * You can add tags during an ongoing game. The server will not reveal what the tag is to the other players (in order to avoid leaking information about the game).
 * Tags added during a replay will echo the everyone in the replay.
+* You can use the `/tagdelete [tag]` command to delete an existing tag.
 * You can use the `/tagsearch [tag]` command to search through all games for a specific tag.
 
 <br />
