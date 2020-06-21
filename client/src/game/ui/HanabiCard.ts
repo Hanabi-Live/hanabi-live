@@ -922,7 +922,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // If the card was already fully-clued,
     // we already updated the possibilities for it on other cards
-    if (suit && rank && this.state.holder && !this.state.identityDetermined) {
+    if (suit && rank && !this.state.identityDetermined) {
       this.state.identityDetermined = true;
       this.updatePossibilitiesOnOtherCards(suit, rank);
     }
