@@ -1,7 +1,7 @@
 import { Unsubscribe, Store } from 'redux';
 import { Action } from '../../types/actions';
 import State from '../../types/State';
-import observeStore, { Selector, Listener } from './observeStore';
+import observeStore, { Selector, Listener, Subscription } from './observeStore';
 import * as gameInfoView from './view/gameInfoView';
 import * as statsView from './view/statsView';
 
@@ -17,37 +17,26 @@ export default class StateObserver {
     // Clean up any existing subscribers
     this.unregisterObservers();
 
-    const subscriptions: Array<{
-      select: Selector<State, any>,
-      onChange:Listener<any>,
-    }> = [
-      // Game info
-      {
-        select: (s) => s.visibleState.clueTokens,
-        onChange: gameInfoView.onClueTokensChanged,
-      },
-      {
-        select: (s) => ({
-          score: s.visibleState.score,
-          maxScore: s.visibleState.stats.maxScore,
-        }),
-        onChange: gameInfoView.onScoreOrMaxScoreChanged,
-      },
+    const subscriptions: Array<Subscription<State, any>> = [];
 
-      // Stats
-      {
-        select: (s) => s.visibleState.stats.efficiency,
-        onChange: statsView.onEfficiencyChanged,
-      },
-      {
-        select: (s) => s.visibleState.stats.pace,
-        onChange: statsView.onPaceChanged,
-      },
-      {
-        select: (s) => s.visibleState.stats.paceRisk,
-        onChange: statsView.onPaceRiskChanged,
-      },
-    ];
+    // Shorthand function for a nicer syntax and type checking when registering subscriptions
+    function sub<T>(s: Selector<State, T>, l: Listener<T>) {
+      subscriptions.push({ select: s, onChange: l });
+    }
+
+    // Game info
+    sub((s) => s.visibleState.clueTokens, gameInfoView.onClueTokensChanged);
+    sub((s) => ({
+      score: s.visibleState.score,
+      maxScore: s.visibleState.stats.maxScore,
+    }), gameInfoView.onScoreOrMaxScoreChanged);
+
+    // Stats
+    sub((s) => s.visibleState.stats.efficiency, statsView.onEfficiencyChanged);
+    sub((s) => ({
+      pace: s.visibleState.stats.pace,
+      paceRisk: s.visibleState.stats.paceRisk,
+    }), statsView.onPaceOrPaceRiskChanged);
 
     this.unsubscribe = observeStore(store, subscriptions);
   }

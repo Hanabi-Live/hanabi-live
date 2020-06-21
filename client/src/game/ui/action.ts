@@ -5,7 +5,6 @@ import Konva from 'konva';
 import {
   CARD_W,
 } from '../../constants';
-import * as statsRules from '../rules/stats';
 import * as variantRules from '../rules/variant';
 import {
   ActionClue,
@@ -34,7 +33,6 @@ import LayoutChild from './LayoutChild';
 import possibilitiesCheck from './possibilitiesCheck';
 import strikeRecord from './strikeRecord';
 import updateCurrentPlayerArea from './updateCurrentPlayerArea';
-import * as updateStats from './updateStats';
 
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list that was sent upon loading a new
@@ -441,16 +439,6 @@ actionFunctions.set('status', (data: ActionStatus) => {
       globals.elements.noDoubleDiscardBorder!.hide();
     }
   }
-
-  // Update the stats on the middle-left-hand side of the screen
-  const pace = statsRules.pace(
-    globals.score,
-    globals.deckSize,
-    globals.maxScore,
-    globals.playerNames.length,
-  );
-  const paceRisk = statsRules.paceRisk(pace, globals.playerNames.length);
-  updateStats.updatePace(pace, paceRisk);
 
   if (!globals.animateFast) {
     globals.layers.UI.batchDraw();
