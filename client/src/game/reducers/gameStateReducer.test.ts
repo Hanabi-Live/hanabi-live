@@ -1,6 +1,11 @@
 import { VARIANTS } from '../data/gameData';
 import {
-  ActionClue, ActionText, ActionDraw, ActionPlay,
+  ActionClue,
+  ActionDiscard,
+  ActionDraw,
+  ActionPlay,
+  ActionStrike,
+  ActionText,
 } from '../types/actions';
 import ClueType from '../types/ClueType';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
@@ -14,20 +19,22 @@ if (defaultVariant === undefined) {
 
 describe('stateReducer', () => {
   const state = initialGameState(defaultVariant, 3);
+
   test('does not mutate state', () => {
     const unchangedState = initialGameState(defaultVariant, 3);
-
     const newState = gameStateReducer(state, { type: 'text', text: 'doesn\'t matter' });
     expect(newState).not.toEqual(state);
     expect(newState).not.toStrictEqual(state);
     expect(state).toStrictEqual(unchangedState);
   });
 
-  describe('when processing a play on first turn', () => {
+  describe('when processing a play on the first turn', () => {
+    let newState = state;
+
     const draw: ActionDraw = {
       type: 'draw', rank: 1, suit: 0, who: 0, order: 0,
     };
-    const drawState = gameStateReducer(state, draw);
+    newState = gameStateReducer(newState, draw);
 
     const blindPlay: ActionPlay = {
       type: 'play',
@@ -35,15 +42,48 @@ describe('stateReducer', () => {
         index: 0, suit: 0, rank: 1, order: 0,
       },
     };
-    const newState = gameStateReducer(drawState, blindPlay);
+    newState = gameStateReducer(newState, blindPlay);
 
     test('returns a state with efficiency = Infinity', () => {
       expect(newState.stats.efficiency).toBe(Infinity);
     });
   });
 
+  describe('when processing a misplay on the first turn', () => {
+    let newState = state;
+
+    const draw: ActionDraw = {
+      type: 'draw', rank: 2, suit: 0, who: 0, order: 0,
+    };
+    newState = gameStateReducer(newState, draw);
+
+    const misplay: ActionDiscard = {
+      type: 'discard',
+      failed: true,
+      which: {
+        index: 0, suit: 0, rank: 2, order: 0,
+      },
+    };
+    newState = gameStateReducer(newState, misplay);
+
+    // TODO remove this when misplays are calculated from an ActionPlay
+    const strike: ActionStrike = {
+      type: 'strike',
+      num: 1,
+      order: 0,
+      turn: 1,
+    };
+    newState = gameStateReducer(newState, strike);
+
+    test('returns a state with efficiency = 0', () => {
+      expect(newState.stats.efficiency).toBe(0);
+    });
+  });
+
   describe('when processing a clue', () => {
     test('adds the clue to the list of clues', () => {
+      let newState = state;
+
       const testClue: ActionClue = {
         type: 'clue',
         clue: { type: ClueType.Rank, value: 5 },
@@ -52,8 +92,7 @@ describe('stateReducer', () => {
         turn: 2,
         list: [],
       };
-
-      const newState = gameStateReducer(state, testClue);
+      newState = gameStateReducer(newState, testClue);
 
       expect(newState.clues.length).toBe(state.clues.length + 1);
       expect(newState.clues[0].giver).toBe(testClue.giver);
@@ -65,14 +104,15 @@ describe('stateReducer', () => {
   });
 
   describe('when processing a text', () => {
+    let newState = state;
+
     const testText: ActionText = {
       type: 'text',
       text: 'testing',
     };
+    newState = gameStateReducer(newState, testText);
 
     test('adds the text to the log', () => {
-      const newState = gameStateReducer(state, testText);
-
       expect(newState.log.length).toBe(state.log.length + 1);
       expect(newState.log[0]).toBe(testText.text);
     });
