@@ -56,7 +56,7 @@
   * A circle on the arrow shows the type of clue that was given.
   * Arrows with a white border indicate that they are touching a "brand new" card (e.g. a card that has not been touched by any positive clues yet).
   * Arrows with a gray border indicate that they are re-touching a card that has been previously touched by one or more positive clues.
-* Black borders around a card signify that it has been "touched" by one or more positive clues.
+* An orange border around a card signifies that it has been "touched" by one or more positive clues. The card will also be raised slightly.
 * The game will keep track of the clues that accumulate on cards, "filling them in" when appropriate.
 * You can hold down the left mouse button or tap and hold on someone else's hand to see how it appears to them. (This is referred to as "empathy".)
 
