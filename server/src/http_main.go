@@ -28,8 +28,14 @@ func httpMain(c *gin.Context) {
 		return
 	}
 
+	title := "Main"
+	path := c.FullPath()
+	if strings.HasPrefix(path, "/dev") {
+		title = "Dev"
+	}
+
 	data := TemplateData{
-		Title:     "Main",
+		Title:     title,
 		Domain:    domain,
 		Version:   getVersion(),
 		Compiling: compiling,
