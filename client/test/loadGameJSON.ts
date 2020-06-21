@@ -26,7 +26,7 @@ interface JsonAction {
   value: number;
 }
 
-export default function loadGameJson(gameJson: JsonGame): State {
+export default function loadGameJSON(gameJson: JsonGame): State {
   const playerCount = gameJson.players.length;
   const variant = VARIANTS.get(gameJson.options.variant)!;
   const actions: GameAction[] = [];

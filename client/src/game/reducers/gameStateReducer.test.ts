@@ -38,20 +38,20 @@ describe('stateReducer', () => {
     });
 
     test('is 0 after a misplay on the first turn', () => {
-      const state = initialGameState(defaultVariant, 3);
+      let state = initialGameState(defaultVariant, 3);
 
       // Draw a red 1
-      let newState = gameStateReducer(state, draw(0, 1, 0, 0));
+      state = gameStateReducer(state, draw(0, 1, 0, 0));
 
       // Misplay the red 1
       const misplay = discard(true, 0, 0, 1, 0);
-      newState = gameStateReducer(newState, misplay);
+      state = gameStateReducer(state, misplay);
 
       // TODO remove this when misplays are calculated from an ActionPlay
       // Mark a strike
-      newState = gameStateReducer(newState, strike(1, 0, 1));
+      state = gameStateReducer(state, strike(1, 0, 1));
 
-      expect(newState.stats.efficiency).toBe(0);
+      expect(state.stats.efficiency).toBe(0);
     });
 
     test('is 3 after a 3-for-1 clue', () => {
@@ -72,18 +72,19 @@ describe('stateReducer', () => {
 
   describe('clues', () => {
     test('are added to the list of clues', () => {
-      const state = initialGameState(defaultVariant, 3);
+      const initialState = initialGameState(defaultVariant, 3);
 
       // Player 1 gives a random clue to player 0
+      let state = initialGameState(defaultVariant, 3);
       const testClue = clue(ClueType.Rank, 5, 1, [], 0, 2);
-      const newState = gameStateReducer(state, testClue);
+      state = gameStateReducer(state, testClue);
 
-      expect(newState.clues.length).toBe(state.clues.length + 1);
-      expect(newState.clues[0].giver).toBe(testClue.giver);
-      expect(newState.clues[0].target).toBe(testClue.target);
-      expect(newState.clues[0].turn).toBe(testClue.turn);
-      expect(newState.clues[0].type).toBe(testClue.clue.type);
-      expect(newState.clues[0].value).toBe(testClue.clue.value);
+      expect(state.clues.length).toBe(initialState.clues.length + 1);
+      expect(state.clues[0].giver).toBe(testClue.giver);
+      expect(state.clues[0].target).toBe(testClue.target);
+      expect(state.clues[0].turn).toBe(testClue.turn);
+      expect(state.clues[0].type).toBe(testClue.clue.type);
+      expect(state.clues[0].value).toBe(testClue.clue.value);
     });
 
     test('decrement clueTokens', () => {
@@ -99,13 +100,14 @@ describe('stateReducer', () => {
 
   describe('texts', () => {
     test('are added to the log', () => {
-      const state = initialGameState(defaultVariant, 3);
+      const initialState = initialGameState(defaultVariant, 3);
+      let state = initialGameState(defaultVariant, 3);
 
       const testText = text('testing');
-      const newState = gameStateReducer(state, testText);
+      state = gameStateReducer(state, testText);
 
-      expect(newState.log.length).toBe(state.log.length + 1);
-      expect(newState.log[0]).toBe(testText.text);
+      expect(state.log.length).toBe(initialState.log.length + 1);
+      expect(state.log[0]).toBe(testText.text);
     });
   });
 
