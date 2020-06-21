@@ -52,7 +52,7 @@ export default (winW: number, winH: number) => {
     height: 0.07 * winH,
     listening: true,
   });
-  replayBarClickRect.on('click', replay.barClick);
+  replayBarClickRect.on('click tap', replay.barClick);
   globals.elements.replayArea.add(replayBarClickRect);
 
   const shuttleValues = {

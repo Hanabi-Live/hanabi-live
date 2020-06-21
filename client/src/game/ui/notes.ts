@@ -278,11 +278,6 @@ export const show = (card: HanabiCard) => {
   const tooltip = $(`#tooltip-${card.tooltipName}`);
   const tooltipInstance = tooltip.tooltipster('instance');
 
-  // Do nothing if the tooltip is already open
-  if (tooltip.tooltipster('status').open) {
-    return;
-  }
-
   // We want the tooltip to appear above the card by default
   const pos = card.getAbsolutePosition();
   const posX = pos.x;

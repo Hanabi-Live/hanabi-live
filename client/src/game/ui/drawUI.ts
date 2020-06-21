@@ -142,14 +142,14 @@ const drawBackground = () => {
     image: globals.ImageLoader!.get('background')!,
     listening: true,
   });
-  background.on('click tap', () => {
-    // Close any existing note tooltips
-    if (globals.editingNote === null) {
-      return;
+  background.on('click tap', tooltips.resetActiveHover);
+  // Double-tapping the background will close the note we are currently editing
+  background.on('dbltap', () => {
+    if (globals.editingNote !== null) {
+      const tooltip = $(`#tooltip-card-${globals.editingNote}`);
+      tooltip.tooltipster('close');
+      globals.editingNote = null;
     }
-    const tooltip = $(`#tooltip-card-${globals.editingNote}`);
-    tooltip.tooltipster('close');
-    globals.editingNote = null;
   });
 
   globals.layers.UI.add(background);
@@ -764,6 +764,7 @@ const drawScoreArea = () => {
       replay.promptTurn();
     }
   });
+  turnTextLabel.on('dbltap', replay.promptTurn);
 
   globals.elements.turnNumberLabel = basicNumberLabel.clone({
     text: '1',
@@ -779,6 +780,7 @@ const drawScoreArea = () => {
       replay.promptTurn();
     }
   });
+  globals.elements.turnNumberLabel!.on('dbltap', replay.promptTurn);
 
   const scoreTextLabel = basicTextLabel.clone({
     text: 'Score',
@@ -838,10 +840,10 @@ const drawScoreArea = () => {
   globals.elements.scoreArea.add(cluesNumberLabel);
   globals.elements.cluesNumberLabel = cluesNumberLabel;
 
-  cluesTextLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
+  cluesTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Clues, cluesNumberLabel);
   });
-  cluesNumberLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
+  cluesNumberLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Clues, cluesNumberLabel);
   });
 
@@ -925,8 +927,8 @@ const drawScoreArea = () => {
     strikeX.turn = null;
     strikeSquare.order = null;
     strikeX.order = null;
-    strikeSquare.on('click', strikeClick);
-    strikeX.on('click', strikeClick);
+    strikeSquare.on('click tap', strikeClick);
+    strikeX.on('click tap', strikeClick);
 
     globals.elements.strikeSquares[i] = strikeSquare;
     globals.elements.strikeXs[i] = strikeX;
@@ -1055,7 +1057,8 @@ const drawSharedReplay = () => {
   tooltips.init(sharedReplayLeaderLabel, false, true);
 
   // The user can click on the crown to pass the replay leader to an arbitrary person
-  sharedReplayLeaderLabel.on('click', () => {
+  // Require a double tap to prevent accidentally opening the dialog when hovering over the crown
+  sharedReplayLeaderLabel.on('click dbltap', () => {
     if (!globals.amSharedReplayLeader) { // Do nothing if we are not the shared replay leader
       return;
     }
@@ -1204,10 +1207,10 @@ const drawStatistics = () => {
   globals.layers.UI.add(paceNumberLabel);
   globals.elements.paceNumberLabel = paceNumberLabel;
 
-  paceTextLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
+  paceTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Pace, paceNumberLabel);
   });
-  paceNumberLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
+  paceNumberLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Pace, paceNumberLabel);
   });
 
@@ -1243,10 +1246,10 @@ const drawStatistics = () => {
   globals.layers.UI.add(efficiencyNumberLabel);
   globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
 
-  efficiencyTextLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
+  efficiencyTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
   });
-  efficiencyNumberLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
+  efficiencyNumberLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
   });
 
@@ -1262,7 +1265,7 @@ const drawStatistics = () => {
     listening: true,
   }) as Konva.Text;
   globals.layers.UI.add(efficiencyNumberLabelMinNeeded);
-  efficiencyNumberLabelMinNeeded.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
+  efficiencyNumberLabelMinNeeded.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(
       event,
       ReplayArrowOrder.MinEfficiency,
@@ -1395,15 +1398,13 @@ const drawTimers = () => {
     listening: true,
   });
   globals.layers.timer.add(globals.elements.timer1 as any);
-  globals.elements.timer1.on('click', (event) => {
+  const timerClick = () => {
     if (
-      event.evt.button !== 2 // Right-click
-      || !globals.options.timed // We don't need to pause if this is not a timed game
+      !globals.options.timed // We don't need to pause if this is not a timed game
       || globals.paused // We don't need to pause if the game is already paused
     ) {
       return;
     }
-
     let setting;
     if (globals.ourTurn) {
       setting = 'pause';
@@ -1424,7 +1425,13 @@ const drawTimers = () => {
       globals.elements.timer1Circle!.visible(globals.pauseQueued);
       globals.layers.UI.batchDraw();
     }
+  };
+  globals.elements.timer1.on('click', (event) => {
+    if (event.evt.button === 2) { // Right-click
+      timerClick();
+    }
   });
+  globals.elements.timer1.on('dbltap', timerClick);
 
   // The timer for the current player
   globals.elements.timer2 = new TimerDisplay({

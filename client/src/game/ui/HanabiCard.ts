@@ -34,6 +34,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   bareName: string = '';
 
   tweening: boolean = false;
+  wasRecentlyTapped: boolean = false;
+  touchstartTimeout: ReturnType<typeof setTimeout> | null = null;
   doMisplayAnimation: boolean = false;
 
   bare: Konva.Image | null = null;
@@ -96,6 +98,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.state.possibleCards = new Map(globals.cardsMap); // Start by cloning the "globals.cardsMap"
     this.state.identityDetermined = false;
     this.tweening = false;
+    this.wasRecentlyTapped = false;
+    this.touchstartTimeout = null;
     this.empathy = false;
     this.doMisplayAnimation = false;
     this.state.numPositiveClues = 0;
