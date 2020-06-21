@@ -32,6 +32,7 @@ If you need general help with the website, then read the [features page](FEATURE
 | `/friend [username]`   | Add someone to your friends list
 | `/unfriend [username]` | Remove someone from your friends list
 | `/friends`             | Show a list of all your friends
+| `/tagsearch [tag]`     | Search through all games for a specific tag
 
 <br />
 
@@ -86,9 +87,10 @@ If you need general help with the website, then read the [features page](FEATURE
 
 ### Replay commands
 
-| Command | Description
-| ------- | -----------
-| `/tags` | Show all of the tags for this game
+| Command            | Description
+| ------------------ | -----------
+| `/tagdelete [tag]` | Delete an existing tag from the game
+| `/tags`            | Show all of the tags for this game
 
 <br />
 
