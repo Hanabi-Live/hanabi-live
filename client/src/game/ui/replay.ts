@@ -9,9 +9,9 @@ import ReplayActionType from '../types/ReplayActionType';
 import StackDirection from '../types/StackDirection';
 import action from './action';
 import cardStatusCheck from './cardStatusCheck';
+import Shuttle from './controls/Shuttle';
 import globals from './globals';
 import LayoutChild from './LayoutChild';
-import Shuttle from './Shuttle';
 import * as turn from './turn';
 
 // ---------------------

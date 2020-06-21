@@ -1,6 +1,6 @@
 // Imports
 import Konva from 'konva';
-import FitText from './FitText';
+import FitText from './controls/FitText';
 import globals from './globals';
 import MultiFitText from './MultiFitText';
 

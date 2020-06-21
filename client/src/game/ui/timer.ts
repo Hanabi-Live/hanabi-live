@@ -2,9 +2,9 @@
 
 // Imports
 import * as misc from '../../misc';
+import TimerDisplay from './controls/TimerDisplay';
 import drawLayer from './drawLayer';
 import globals from './globals';
-import TimerDisplay from './TimerDisplay';
 
 export interface ClockData {
   times: number[];

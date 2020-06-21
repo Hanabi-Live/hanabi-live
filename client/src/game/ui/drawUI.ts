@@ -14,39 +14,39 @@ import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
 import { STACK_BASE_RANK } from '../types/constants';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
-import Arrow from './Arrow';
 import * as arrows from './arrows';
 import backToLobby from './backToLobby';
-import Button from './Button';
 import ButtonGroup from './ButtonGroup';
 import CardLayout from './CardLayout';
-import ClickArea from './ClickArea';
 import ClueLog from './ClueLog';
 import * as clues from './clues';
 import ColorButton from './ColorButton';
-import CurrentPlayerArea from './CurrentPlayerArea';
+import Arrow from './controls/Arrow';
+import Button from './controls/Button';
+import ClickArea from './controls/ClickArea';
+import CurrentPlayerArea from './controls/CurrentPlayerArea';
+import FitText from './controls/FitText';
+import ImageWithTooltip from './controls/ImageWithTooltip';
+import PlayerButton from './controls/PlayerButton';
+import RectWithTooltip from './controls/RectWithTooltip';
+import StrikeSquare from './controls/StrikeSquare';
+import StrikeX from './controls/StrikeX';
+import TextWithTooltip from './controls/TextWithTooltip';
+import ThreeLineButton from './controls/ThreeLineButton';
+import TimerDisplay from './controls/TimerDisplay';
 import Deck from './Deck';
 import drawHands from './drawHands';
 import drawReplayArea from './drawReplayArea';
-import FitText from './FitText';
 import FullActionLog from './FullActionLog';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import * as hypothetical from './hypothetical';
-import ImageWithTooltip from './ImageWithTooltip';
 import LayoutChild from './LayoutChild';
 import MultiFitText from './MultiFitText';
-import PlayerButton from './PlayerButton';
 import PlayStack from './PlayStack';
 import RankButton from './RankButton';
-import RectWithTooltip from './RectWithTooltip';
 import * as replay from './replay';
-import StrikeSquare from './StrikeSquare';
-import StrikeX from './StrikeX';
-import TextWithTooltip from './TextWithTooltip';
-import ThreeLineButton from './ThreeLineButton';
 import * as timer from './timer';
-import TimerDisplay from './TimerDisplay';
 import * as tooltips from './tooltips';
 
 interface Values {
@@ -1334,7 +1334,7 @@ const drawDiscardArea = () => {
 
 const drawArrows = () => {
   for (let i = 0; i < 6; i++) {
-    const arrow = new Arrow(winW, winH);
+    const arrow = new Arrow(winW, winH, globals.lobby.settings.colorblindMode);
     globals.layers.arrow.add(arrow as any);
     globals.elements.arrows.push(arrow);
   }

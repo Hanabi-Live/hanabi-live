@@ -7,10 +7,10 @@ import Color from '../types/Color';
 import MsgClue from '../types/MsgClue';
 import * as arrows from './arrows';
 import ColorButton from './ColorButton';
+import PlayerButton from './controls/PlayerButton';
 import { colorToMsgColor, msgClueToClue } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
-import PlayerButton from './PlayerButton';
 import RankButton from './RankButton';
 import * as turn from './turn';
 

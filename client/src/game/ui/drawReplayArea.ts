@@ -1,11 +1,11 @@
 // Imports
 import Konva from 'konva';
-import Button from './Button';
+import Button from './controls/Button';
+import SharedTurnsButton from './controls/SharedTurnsButton';
+import Shuttle from './controls/Shuttle';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as replay from './replay';
-import SharedTurnsButton from './SharedTurnsButton';
-import Shuttle from './Shuttle';
 
 export default (winW: number, winH: number) => {
   const replayAreaValues = {

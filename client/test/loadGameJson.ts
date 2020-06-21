@@ -6,7 +6,7 @@ import {
   ActionPlay, GameAction, ActionDiscard, ActionClue, ActionDraw,
 } from '../src/game/types/actions';
 import ClueType from '../src/game/types/ClueType';
-import { SimpleCard } from '../src/game/types/SimpleCard';
+import SimpleCard from '../src/game/types/SimpleCard';
 import State from '../src/game/types/State';
 import testGame from '../test_data/test_game.json';
 

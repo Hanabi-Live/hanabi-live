@@ -14,12 +14,12 @@ import { STACK_BASE_RANK } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import Suit from '../types/Suit';
-import Arrow from './Arrow';
 import CardLayout from './CardLayout';
+import Arrow from './controls/Arrow';
+import NodeWithTooltip from './controls/NodeWithTooltip';
 import drawPip from './drawPip';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
-import { NodeWithTooltip } from './tooltips';
 
 export const hideAll = () => {
   let changed = false;

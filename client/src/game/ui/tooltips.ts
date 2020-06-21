@@ -1,13 +1,9 @@
 // Imports
 import Konva from 'konva';
 import { TOOLTIP_DELAY } from '../../constants';
+import NodeWithTooltip from './controls/NodeWithTooltip';
+import TextWithTooltip from './controls/TextWithTooltip';
 import globals from './globals';
-import TextWithTooltip from './TextWithTooltip';
-
-export interface NodeWithTooltip extends Konva.Node {
-  tooltipName?: string;
-  tooltipContent?: string;
-}
 
 export const init = (element: NodeWithTooltip, delayed: boolean, customContent: boolean) => {
   element.on('mousemove', function mouseMove(this: Konva.Node) {
