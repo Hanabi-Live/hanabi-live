@@ -8,7 +8,7 @@ import {
   ActionText,
 } from '../types/actions';
 import ClueType from '../types/ClueType';
-import { DEFAULT_VARIANT_NAME } from '../types/constants';
+import { DEFAULT_VARIANT_NAME, MAX_CLUE_NUM } from '../types/constants';
 import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialGameState';
 
@@ -147,6 +147,10 @@ describe('stateReducer', () => {
     newState = gameStateReducer(newState, redClue);
 
     describe('after a 3-for-1 clue', () => {
+      test('returns a state with clueTokens decremented', () => {
+        expect(newState.clueTokens).toBe(MAX_CLUE_NUM - 1);
+      });
+
       test('returns a state with efficiency = 3', () => {
         expect(newState.stats.efficiency).toBe(3);
       });
