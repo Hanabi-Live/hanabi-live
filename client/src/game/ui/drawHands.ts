@@ -3,9 +3,9 @@ import Konva from 'konva';
 import { CHARACTERS } from '../data/gameData';
 import * as hand from '../rules/hand';
 import CardLayout from './CardLayout';
+import TextWithTooltip from './controls/TextWithTooltip';
 import globals from './globals';
 import NameFrame from './NameFrame';
-import TextWithTooltip from './TextWithTooltip';
 import * as tooltips from './tooltips';
 
 interface HandConfig {

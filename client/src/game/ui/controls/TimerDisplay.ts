@@ -1,6 +1,6 @@
 // Imports
 import Konva from 'konva';
-import { LABEL_COLOR } from '../../constants';
+import { LABEL_COLOR } from '../../../constants';
 import FitText from './FitText';
 
 export default class TimerDisplay extends Konva.Group {

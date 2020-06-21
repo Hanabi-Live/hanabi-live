@@ -18,15 +18,15 @@ import Color from '../types/Color';
 import { STACK_BASE_RANK, START_CARD_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
 import StackDirection from '../types/StackDirection';
 import Suit from '../types/Suit';
+import NodeWithTooltip from './controls/NodeWithTooltip';
+import NoteIndicator from './controls/NoteIndicator';
+import RankPip from './controls/RankPip';
 import { msgSuitToSuit } from './convert';
 import globals from './globals';
 import * as HanabiCardInit from './HanabiCardInit';
 import LayoutChild from './LayoutChild';
-import NoteIndicator from './NoteIndicator';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
-import RankPip from './RankPip';
-import { NodeWithTooltip } from './tooltips';
 import * as reversible from './variants/reversible';
 
 export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
@@ -931,7 +931,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     const learnedCard = globals.learnedCards[this.state.order];
     learnedCard.suit = suit;
     learnedCard.rank = rank;
-    learnedCard.revealed = true;
 
     // Redraw the card
     this.setBareImage();

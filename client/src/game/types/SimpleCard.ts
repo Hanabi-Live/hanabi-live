@@ -1,4 +1,4 @@
-export interface SimpleCard {
+export default interface SimpleCard {
   suit: number;
   rank: number;
 }

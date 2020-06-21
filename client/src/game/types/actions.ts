@@ -1,5 +1,5 @@
 import MsgClue from './MsgClue';
-import { SimpleCard } from './SimpleCard';
+import SimpleCard from './SimpleCard';
 
 export type Action =
 | GameAction

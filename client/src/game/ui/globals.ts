@@ -8,20 +8,20 @@ import { Globals as LobbyGlobals } from '../../globals';
 import { VARIANTS } from '../data/gameData';
 import { GameExports } from '../main';
 import { GameAction, ActionIncludingHypothetical, Action } from '../types/actions';
+import { CardIdentity } from '../types/CardIdentity';
 import { ClientAction } from '../types/ClientAction';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import Options from '../types/Options';
-import { SimpleCard } from '../types/SimpleCard';
+import SimpleCard from '../types/SimpleCard';
+import SpectatorNote from '../types/SpectatorNote';
 import StackDirection from '../types/StackDirection';
 import State from '../types/State';
 import Variant from '../types/Variant';
 import Elements from './Elements';
 import HanabiCard from './HanabiCard';
 import Layers from './Layers';
-import LearnedCard from './LearnedCard';
 import Loader from './Loader';
 import StateObserver from './reactive/StateObserver';
-import SpectatorNote from './SpectatorNote';
 
 export class Globals {
   // Objects sent upon UI initialization
@@ -92,7 +92,7 @@ export class Globals {
   finalReplayTurn: number = 0;
   // In replays, we can show information about a card that was not known at the time,
   // but is known now; these are cards we have "learned"
-  learnedCards: LearnedCard[] = [];
+  learnedCards: CardIdentity[] = [];
   deckOrder: SimpleCard[] = []; // Sent when the game ends
 
   // Shared replay feature

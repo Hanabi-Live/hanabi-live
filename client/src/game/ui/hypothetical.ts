@@ -11,11 +11,11 @@ import ReplayActionType from '../types/ReplayActionType';
 import action from './action';
 import cardStatusCheck from './cardStatusCheck';
 import { getTouchedCardsFromClue } from './clues';
+import PlayerButton from './controls/PlayerButton';
 import { suitToMsgSuit } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
-import PlayerButton from './PlayerButton';
 import * as replay from './replay';
 import * as turn from './turn';
 

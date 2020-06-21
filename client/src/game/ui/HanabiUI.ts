@@ -229,7 +229,6 @@ const initCards = () => {
     globals.learnedCards.push({
       suit: null,
       rank: null,
-      revealed: false,
     });
 
     // Create the notes for this card
@@ -253,7 +252,6 @@ const initCards = () => {
     globals.learnedCards.push({
       suit,
       rank: STACK_BASE_RANK,
-      revealed: true,
     });
 
     globals.ourNotes.push('');

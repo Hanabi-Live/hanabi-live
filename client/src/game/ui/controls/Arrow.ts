@@ -1,6 +1,5 @@
 // Imports
 import Konva from 'konva';
-import globals from './globals';
 
 // These are arrows used to show which cards that are touched by a clue
 // (and for pointing to various things in a shared replay)
@@ -13,7 +12,7 @@ export default class Arrow extends Konva.Group {
   text: Konva.Text;
   suitPip: Konva.Shape | null;
 
-  constructor(winW: number, winH: number) {
+  constructor(winW: number, winH: number, colorblindMode: boolean) {
     const x = 0.1 * winW;
     const y = 0.1 * winH;
     super({
@@ -119,7 +118,7 @@ export default class Arrow extends Konva.Group {
     this.add(this.text);
 
     // In colorblind mode, the circle will show the suit pip corresponding to the color
-    if (globals.lobby.settings.colorblindMode) {
+    if (colorblindMode) {
       this.suitPip = new Konva.Shape({
         x,
         y: y * 0.3,

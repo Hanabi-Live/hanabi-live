@@ -254,7 +254,6 @@ actionFunctions.set('draw', (data: ActionDraw) => {
     const learnedCard = globals.learnedCards[order];
     learnedCard.suit = suit;
     learnedCard.rank = rank;
-    learnedCard.revealed = true;
   }
 
   // Cards are created on first initialization for performance reasons

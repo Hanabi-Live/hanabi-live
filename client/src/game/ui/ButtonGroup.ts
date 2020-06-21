@@ -1,7 +1,7 @@
 // Imports
 import Konva from 'konva';
 import ColorButton from './ColorButton';
-import PlayerButton from './PlayerButton';
+import PlayerButton from './controls/PlayerButton';
 import RankButton from './RankButton';
 
 type ClueButton = PlayerButton | ColorButton | RankButton;

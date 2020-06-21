@@ -10,15 +10,15 @@ import { START_CARD_RANK } from '../types/constants';
 import Suit from '../types/Suit';
 import * as arrows from './arrows';
 import CardLayout from './CardLayout';
+import NoteIndicator from './controls/NoteIndicator';
+import RankPip from './controls/RankPip';
 import drawPip from './drawPip';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
-import NoteIndicator from './NoteIndicator';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
-import RankPip from './RankPip';
 
 export function image(this: HanabiCard) {
   // Create the "bare" card image, which is the main card graphic
