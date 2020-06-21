@@ -60,7 +60,7 @@ export default (winW: number, winH: number) => {
     h: 0.03,
     cornerRadius: 0.01,
     stroke: 'black',
-    strokeWidth: 0.0015,
+    strokeWidth: 0.001217,
     scale: 0.75,
   };
 
