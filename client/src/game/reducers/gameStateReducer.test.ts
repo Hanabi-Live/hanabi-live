@@ -23,6 +23,25 @@ describe('stateReducer', () => {
     expect(state).toStrictEqual(unchangedState);
   });
 
+  describe('when processing a play on first turn', () => {
+    const draw: ActionDraw = {
+      type: 'draw', rank: 1, suit: 0, who: 0, order: 0,
+    };
+    const drawState = gameStateReducer(state, draw);
+
+    const blindPlay: ActionPlay = {
+      type: 'play',
+      which: {
+        index: 0, suit: 0, rank: 1, order: 0,
+      },
+    };
+    const newState = gameStateReducer(drawState, blindPlay);
+
+    test('returns a state with efficiency = Infinity', () => {
+      expect(newState.stats.efficiency).toBe(Infinity);
+    });
+  });
+
   describe('when processing a clue', () => {
     test('adds the clue to the list of clues', () => {
       const testClue: ActionClue = {
@@ -45,43 +64,6 @@ describe('stateReducer', () => {
     });
   });
 
-  describe('when processing a 3-for-1 clue', () => {
-    let newState = state;
-
-    // Draw 3 cards
-    for (let i = 0; i < 3; i++) {
-      const draw: ActionDraw = {
-        type: 'draw',
-        rank: i + 1,
-        suit: 0,
-        who: 0,
-        order: i,
-      };
-      newState = gameStateReducer(newState, draw);
-    }
-
-    test('returns a state with efficiency = 3', () => {
-      // Act
-      // Give a 3-for-1 clue to the 3 red cards
-      const redClue: ActionClue = {
-        type: 'clue',
-        clue: {
-          type: ClueType.Color,
-          value: 0,
-        },
-        giver: 1,
-        target: 0,
-        turn: 0,
-        list: [0, 1, 2],
-      };
-
-      newState = gameStateReducer(newState, redClue);
-
-      // Assert
-      expect(newState.stats.efficiency).toBe(3);
-    });
-  });
-
   describe('when processing a text', () => {
     const testText: ActionText = {
       type: 'text',
@@ -96,25 +78,55 @@ describe('stateReducer', () => {
     });
   });
 
-  describe('when a blind play happens on first turn', () => {
-    const draw: ActionDraw = {
-      type: 'draw', rank: 1, suit: 0, who: 0, order: 0,
+  describe('during a game', () => {
+    let newState = state;
+
+    for (let i = 0; i < 3; i++) {
+      const draw: ActionDraw = {
+        type: 'draw',
+        rank: i + 1,
+        suit: 0,
+        who: 0,
+        order: i,
+      };
+      newState = gameStateReducer(newState, draw);
+    }
+
+    // Give a 3-for-1 clue to the 3 red cards
+    const redClue: ActionClue = {
+      type: 'clue',
+      clue: {
+        type: ClueType.Color,
+        value: 0,
+      },
+      giver: 1,
+      target: 0,
+      turn: 0,
+      list: [0, 1, 2],
     };
+    newState = gameStateReducer(newState, redClue);
 
-    const drawState = gameStateReducer(state, draw);
+    describe('after a 3-for-1 clue', () => {
+      test('returns a state with efficiency = 3', () => {
+        expect(newState.stats.efficiency).toBe(3);
+      });
+    });
 
-    const blindPlay: ActionPlay = {
+    const play: ActionPlay = {
       type: 'play',
       which: {
         index: 0, suit: 0, rank: 1, order: 0,
       },
     };
-    test('returns a state with efficiency = Infinity', () => {
-      // Act
-      const newState = gameStateReducer(drawState, blindPlay);
+    newState = gameStateReducer(newState, play);
 
-      // Assert
-      expect(newState.stats.efficiency).toBe(Infinity);
+    describe('after a play', () => {
+      test('returns a state with score = 1', () => {
+        expect(newState.score).toBe(1);
+      });
+      test('returns a state with efficiency = 3', () => {
+        expect(newState.stats.efficiency).toBe(3);
+      });
     });
   });
 });
