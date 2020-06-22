@@ -27,18 +27,20 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
       });
 
       const hand = state.hands[action.target];
-      if (hand) {
-        for (const order of hand) {
-          const card = state.deck[order];
-          card.clues.push({
-            type: action.clue.type,
-            value: action.clue.value,
-            positive: action.list.includes(order),
-          });
-        }
-      } else {
+      if (!hand) {
         console.error(`Failed to get "state.hands[]" with an index of ${action.target}.`);
+        break;
       }
+      for (const order of hand) {
+        const card = state.deck[order];
+        card.clues.push({
+          type: action.clue.type,
+          value: action.clue.value,
+          positive: action.list.includes(order),
+        });
+      }
+
+      incrementTurn(state);
       break;
     }
 
@@ -68,6 +70,7 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
         state.clueTokens = clues.gainClue(v, state.clueTokens);
       }
 
+      incrementTurn(state);
       break;
     }
 
@@ -119,6 +122,7 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
         state.clueTokens = clues.gainClue(v, state.clueTokens);
       }
 
+      incrementTurn(state);
       break;
     }
 
@@ -162,8 +166,7 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
     // It is now a new turn
     // {num: 0, type: "turn", who: 1}
     case 'turn': {
-      state.turn = action.num;
-      state.currentPlayerIndex = action.who;
+      // TODO: Remove this block
       break;
     }
 
@@ -182,5 +185,11 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
   // Calculate the stats for this turn
   state.stats = statsReducer(original(state.stats), action, original(state)!, current(state));
 }, {} as GameState);
+
+const incrementTurn = (state: Draft<GameState>) => {
+  state.turn += 1;
+  state.currentPlayerIndex += 1;
+  state.currentPlayerIndex %= state.hands.length;
+};
 
 export default gameStateReducer;
