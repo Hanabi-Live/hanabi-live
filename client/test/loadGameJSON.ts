@@ -124,7 +124,8 @@ function parseJsonAction(
         list: [],
       } as ActionClue;
     }
-    default:
+    default: {
       return null;
+    }
   }
 }

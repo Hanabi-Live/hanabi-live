@@ -9,6 +9,7 @@ import * as clues from '../rules/clues';
 import { GameAction } from '../types/actions';
 import GameState from '../types/GameState';
 import statsReducer from './statsReducer';
+// import turnReducer from './turnReducer';
 
 const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) => {
   // Shorthand since the variant is often passed as a parameter
@@ -40,7 +41,6 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
         });
       }
 
-      incrementTurn(state);
       break;
     }
 
@@ -70,7 +70,6 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
         state.clueTokens = clues.gainClue(v, state.clueTokens);
       }
 
-      incrementTurn(state);
       break;
     }
 
@@ -122,7 +121,6 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
         state.clueTokens = clues.gainClue(v, state.clueTokens);
       }
 
-      incrementTurn(state);
       break;
     }
 
@@ -133,13 +131,12 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
       state.doubleDiscard = action.doubleDiscard;
 
       // TEMP: At this point, check that the local state matches the server
-      if (action.score !== state.score) {
-        console.warn('The scores from client and server don\'t match. '
+      if (state.score !== action.score) {
+        console.warn('The scores from the client and the server do not match. '
             + `Client = ${state.score}, Server = ${action.score}`);
       }
-
-      if (action.clues !== state.clueTokens) {
-        console.warn('The clues from client and server don\'t match. '
+      if (state.clueTokens !== action.clues) {
+        console.warn('The clues from the client and the server do not match. '
             + `Client = ${state.clueTokens}, Server = ${action.clues}`);
       }
 
@@ -166,7 +163,17 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
     // It is now a new turn
     // {num: 0, type: "turn", who: 1}
     case 'turn': {
-      // TODO: Remove this block
+      // TEMP: At this point, check that the local state matches the server
+      /*
+      if (state.turn !== action.num) {
+        console.warn('The turns from the client and the server do not match. '
+            + `Client = ${state.score}, Server = ${action.num}`);
+      }
+      if (state.currentPlayerIndex !== action.who) {
+        console.warn('The currentPlayerIndex from the client and the server do not match. '
+            + `Client = ${state.currentPlayerIndex}, Server = ${action.who}`);
+      }
+      */
       break;
     }
 
@@ -182,14 +189,9 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
     }
   }
 
-  // Calculate the stats for this turn
+  // Use other sub-reducers to accumulate/calculate other parts of the state
+  // state = turnReducer(original(state), action);
   state.stats = statsReducer(original(state.stats), action, original(state)!, current(state));
 }, {} as GameState);
-
-const incrementTurn = (state: Draft<GameState>) => {
-  state.turn += 1;
-  state.currentPlayerIndex += 1;
-  state.currentPlayerIndex %= state.hands.length;
-};
 
 export default gameStateReducer;
