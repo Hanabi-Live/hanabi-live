@@ -29,19 +29,23 @@ describe('stateReducer', () => {
 
   describe('turn', () => {
     test('is properly incremented (integration test)', () => {
+      const initialState = initialGameState(defaultVariant, 3);
+
       let state = initialGameState(defaultVariant, 3);
       const testClue = clue(ClueType.Rank, 5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue);
-      expect(state.turn).toBe(1);
+      expect(state.turn).toBeGreaterThan(initialState.turn);
     });
   });
 
   describe('currentPlayerIndex', () => {
     test('is properly incremented (integration test)', () => {
+      const initialState = initialGameState(defaultVariant, 3);
+
       let state = initialGameState(defaultVariant, 3);
       const testClue = clue(ClueType.Rank, 5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue);
-      expect(state.currentPlayerIndex).toBe(1);
+      expect(state.currentPlayerIndex).not.toEqual(initialState.currentPlayerIndex);
     });
   });
 
