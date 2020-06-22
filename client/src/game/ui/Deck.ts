@@ -47,7 +47,7 @@ export default class Deck extends Konva.Group {
     });
     this.add(this.numLeftText);
 
-    this.on('click tap', (event) => {
+    this.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
       arrows.click(event, ReplayArrowOrder.Deck, this);
     });
 

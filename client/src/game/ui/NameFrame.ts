@@ -55,7 +55,7 @@ export default class NameFrame extends Konva.Group {
     }
     this.playerName.offsetX(w / 2);
 
-    this.playerName.on('click tap', function click(event) {
+    this.playerName.on('click tap', function click(event: Konva.KonvaEventObject<MouseEvent>) {
       const username = this.text();
       const mouseEvent = event.evt as MouseEvent;
       if (mouseEvent.button === 0) { // Left-click

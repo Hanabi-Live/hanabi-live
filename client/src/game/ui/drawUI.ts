@@ -773,7 +773,7 @@ const drawScoreArea = () => {
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.turnNumberLabel!);
 
-  globals.elements.turnNumberLabel.on('click', (event) => {
+  globals.elements.turnNumberLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
     if (event.evt.button === 0) { // Left-click
       // We want to be able to left-click the turn number to go to a specific turn in the replay
       replay.promptTurn();
@@ -1427,7 +1427,7 @@ const drawTimers = () => {
       globals.layers.UI.batchDraw();
     }
   };
-  globals.elements.timer1.on('click', (event) => {
+  globals.elements.timer1.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
     if (event.evt.button === 2) { // Right-click
       timerClick();
     }
