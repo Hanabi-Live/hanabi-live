@@ -24,6 +24,7 @@ export default function initialGameState(variant: Variant, playerCount: number):
 
   return {
     variantName: variant.name,
+    turn: 0,
     log: [],
     deck: [],
     deckSize: deck.totalCards(variant),

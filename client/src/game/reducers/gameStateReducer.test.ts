@@ -1,10 +1,11 @@
 import { // Direct import instead of namespace import for compactness
-  text,
+  clue,
+  discard,
   draw,
   play,
-  discard,
   strike,
-  clue,
+  text,
+  turn,
 } from '../../../test/testActions';
 import { VARIANTS } from '../data/gameData';
 import ClueType from '../types/ClueType';
@@ -25,6 +26,17 @@ describe('stateReducer', () => {
     expect(newState).not.toEqual(state);
     expect(newState).not.toStrictEqual(state);
     expect(state).toStrictEqual(unchangedState);
+  });
+
+  describe('turns', () => {
+    test('are properly incremented', () => {
+      let state = initialGameState(defaultVariant, 3);
+      for (let i = 0; i < 3; i++) {
+        const turnAction = turn(i, 0);
+        state = gameStateReducer(state, turnAction);
+      }
+      expect(state.turn).toBe(2);
+    });
   });
 
   describe('efficiency', () => {

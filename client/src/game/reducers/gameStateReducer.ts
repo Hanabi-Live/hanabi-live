@@ -162,6 +162,7 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
     // It is now a new turn
     // {num: 0, type: "turn", who: 1}
     case 'turn': {
+      state.turn = action.num;
       state.currentPlayerIndex = action.who;
       break;
     }

@@ -2,10 +2,11 @@ import StackDirection from './StackDirection';
 import Variant from './Variant';
 
 export default interface GameState {
-  // Using a string instead of an object to keep this object
-  // as flat as possible since it is cloned often
+  // For the variant, we use a string instead of the full variant object in order to keep the
+  // GameState object as flat as possible (since it is cloned often)
   readonly variantName: Variant['name'];
-  readonly log: string[]; // TODO set to action log message object
+  readonly turn: number;
+  readonly log: string[];
   readonly deck: StateCard[];
   readonly deckSize: number;
   readonly score: number;
