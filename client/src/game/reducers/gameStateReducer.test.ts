@@ -27,14 +27,21 @@ describe('stateReducer', () => {
     expect(state).toStrictEqual(unchangedState);
   });
 
-  describe('turns', () => {
-    test('are properly incremented', () => {
+  describe('turn', () => {
+    test('is properly incremented (integration test)', () => {
       let state = initialGameState(defaultVariant, 3);
-      for (let i = 0; i < 3; i++) {
-        const testClue = clue(ClueType.Rank, 5, 1, [], 0, 2);
-        state = gameStateReducer(state, testClue);
-      }
-      expect(state.turn).toBe(3);
+      const testClue = clue(ClueType.Rank, 5, 1, [], 0, 2);
+      state = gameStateReducer(state, testClue);
+      expect(state.turn).toBe(1);
+    });
+  });
+
+  describe('currentPlayerIndex', () => {
+    test('is properly incremented (integration test)', () => {
+      let state = initialGameState(defaultVariant, 3);
+      const testClue = clue(ClueType.Rank, 5, 1, [], 0, 2);
+      state = gameStateReducer(state, testClue);
+      expect(state.currentPlayerIndex).toBe(1);
     });
   });
 
