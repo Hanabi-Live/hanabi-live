@@ -63,6 +63,11 @@ input[type="radio"] + label:before,
   margin-top: 0;
 }
 
+#header h1 a {
+  color: #bbb;
+  font-weight: 300;
+}
+
 .button {
   /* Disable the ugly black border that appears when we click on a button */
   outline: none;
@@ -726,13 +731,40 @@ input::-webkit-calendar-picker-indicator {
   }
 }
 
-/* Make the nav bar show only the button icons on smaller resolutions */
+/* Make the lobby nav bar show only the button icons on smaller resolutions */
 @media screen and (max-width: 1050px) {
-  .mobile-hide {
+  #nav-buttons-games .mobile-hide {
     display: none;
   }
-  .nav-icon {
+  #nav-buttons-games .nav-icon {
     margin-right: 0em;
+  }
+}
+
+/* Make the pre-game nav bar show only the button icons on smaller resolutions */
+@media screen and (max-width: 490px) {
+  #nav-buttons-pregame .mobile-hide {
+    display: none;
+  }
+  #nav-buttons-pregame .nav-icon {
+    margin-right: 0em;
+  }
+}
+
+/* Make the history nav bar show only the button icons on smaller resolutions */
+@media screen and (max-width: 580px) {
+  #nav-buttons-history .mobile-hide {
+    display: none;
+  }
+  #nav-buttons-history .nav-icon {
+    margin-right: 0em;
+  }
+}
+
+/* Hide the "Hanabi Live" header when it overlaps with the nav bar buttons */
+@media screen and (max-width: 480px) {
+  #header > h1 {
+    display: none;
   }
 }
 
