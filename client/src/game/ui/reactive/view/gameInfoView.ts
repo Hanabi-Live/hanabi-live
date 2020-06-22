@@ -1,6 +1,12 @@
 import { LABEL_COLOR } from '../../../../constants';
 import globals from '../../globals';
 
+export function onTurnChanged(turn: number) {
+  // On both the client and the server, the first turn of the game is represented as turn 0
+  // However, turn 0 is represented to the end-user as turn 1, so we must add one
+  globals.elements.turnNumberLabel!.text(`${turn + 1}`);
+}
+
 export function onClueTokensChanged(clueTokens: number) {
   globals.elements.cluesNumberLabel!.text(clueTokens.toString());
 

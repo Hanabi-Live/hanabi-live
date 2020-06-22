@@ -25,6 +25,7 @@ export default class StateObserver {
     }
 
     // Game info
+    sub((s) => s.visibleState.turn, gameInfoView.onTurnChanged);
     sub((s) => s.visibleState.clueTokens, gameInfoView.onClueTokensChanged);
     sub((s) => ({
       score: s.visibleState.score,

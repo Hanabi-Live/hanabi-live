@@ -528,9 +528,6 @@ actionFunctions.set('turn', (data: ActionTurn) => {
     }
   }
 
-  // Update the turn count in the score area
-  globals.elements.turnNumberLabel!.text(`${globals.turn + 1}`);
-
   // Update the current player in the middle of the screen
   updateCurrentPlayerArea();
 
