@@ -28,7 +28,6 @@ describe('stateReducer', () => {
   });
 
   describe('turns', () => {
-    /*
     test('are properly incremented', () => {
       let state = initialGameState(defaultVariant, 3);
       for (let i = 0; i < 3; i++) {
@@ -37,7 +36,6 @@ describe('stateReducer', () => {
       }
       expect(state.turn).toBe(3);
     });
-    */
   });
 
   describe('efficiency', () => {
