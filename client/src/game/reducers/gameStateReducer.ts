@@ -165,7 +165,6 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
     // {num: 0, type: "turn", who: 1}
     case 'turn': {
       // TEMP: At this point, check that the local state matches the server
-      /*
       if (state.turn !== action.num) {
         console.warn('The turns from the client and the server do not match. '
             + `Client = ${state.score}, Server = ${action.num}`);
@@ -174,7 +173,6 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
         console.warn('The currentPlayerIndex from the client and the server do not match. '
             + `Client = ${state.currentPlayerIndex}, Server = ${action.who}`);
       }
-      */
       break;
     }
 
