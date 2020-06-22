@@ -906,8 +906,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  // This card was either played or discarded (or revealed at the end of the game)
-  reveal(msgSuit: number, msgRank: number) {
+  // We have learned the true suit and rank of this card
+  // but it might not be known to the holder
+  convert(msgSuit: number, msgRank: number) {
     // Local variables
     const suit = msgSuit === -1 ? null : msgSuitToSuit(msgSuit, globals.variant);
     const rank = msgRank === -1 ? null : msgRank;
@@ -919,18 +920,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.state.suit = suit;
     this.state.rank = rank;
 
-    // Played cards are not revealed in the "Throw It in a Hole" variant
-    if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay && this.state.isPlayed) {
-      return;
-    }
-
-    // If the card was already fully-clued,
-    // we already updated the possibilities for it on other cards
-    if (suit && rank && !this.state.identityDetermined) {
-      this.state.identityDetermined = true;
-      this.updatePossibilitiesOnOtherCards(suit, rank);
-    }
-
     // Keep track of what this card is
     const learnedCard = globals.learnedCards[this.state.order];
     learnedCard.suit = suit;
@@ -938,6 +927,26 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Redraw the card
     this.setBareImage();
+  }
+
+  // This card was either played or discarded
+  reveal(msgSuit: number, msgRank: number) {
+    this.convert(msgSuit, msgRank);
+
+    // Played cards are not revealed in the "Throw It in a Hole" variant
+    if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay && this.state.isPlayed) {
+      return;
+    }
+
+    const suit = this.state.suit;
+    const rank = this.state.rank;
+
+    // If the card was already fully-clued,
+    // we already updated the possibilities for it on other cards
+    if (suit && rank && !this.state.identityDetermined) {
+      this.state.identityDetermined = true;
+      this.updatePossibilitiesOnOtherCards(suit, rank);
+    }
   }
 
   // We need to redraw this card's suit and rank in a shared replay or hypothetical
@@ -964,12 +973,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       ) {
         // We need to hide this card unless it was morphed from its real identity
         // -1 is used for null suits and ranks
-        this.reveal(-1, -1);
+        this.convert(-1, -1);
       }
     } else if (this.state.suit === null || this.state.rank === null) {
       // Otherwise, we should make sure to fill in information from deckOrder
       // unless this card is fully known, possibly morphed
-      this.reveal(suitNum, trueRank);
+      this.convert(suitNum, trueRank);
 
       // Check if we can drag this card now
       const layoutChild = this.parent as unknown as LayoutChild;

@@ -221,7 +221,7 @@ const reset = () => {
 
     // The stack base might have been morphed
     if (stackBase.state.rank !== 0 || stackBase.state.suit !== globals.variant.suits[i]) {
-      stackBase.reveal(i, 0);
+      stackBase.convert(i, 0);
     }
 
     // Reverse the stack direction of reversed suits, except on the "Up or Down" variant
