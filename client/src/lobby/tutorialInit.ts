@@ -1,6 +1,5 @@
 // A short tutorial is shown to brand-new users
 
-// Imports
 import { FADE_TIME } from '../constants';
 import * as login from './login';
 

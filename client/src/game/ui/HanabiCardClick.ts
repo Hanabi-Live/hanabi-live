@@ -1,6 +1,5 @@
 // Click functions for the HanabiCard object
 
-// Imports
 import Konva from 'konva';
 import { STACK_BASE_RANK } from '../types/constants';
 import * as arrows from './arrows';

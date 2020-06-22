@@ -1,6 +1,5 @@
 // Functions for progressing forward and backward through time
 
-// Imports
 import Konva from 'konva';
 import * as deck from '../rules/deck';
 import * as variantRules from '../rules/variant';

@@ -1,6 +1,5 @@
 // The "Settings" nav button
 
-// Imports
 import globals from '../globals';
 import * as misc from '../misc';
 import * as notifications from '../notifications';

@@ -1,7 +1,6 @@
 // Functions for calculating running statistics such as efficiency and pace
 // as a result of each action
 
-// Imports
 import produce, { Draft } from 'immer';
 import { VARIANTS } from '../data/gameData';
 import * as cluesRules from '../rules/clues';

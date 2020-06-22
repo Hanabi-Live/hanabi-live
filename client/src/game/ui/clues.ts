@@ -1,4 +1,3 @@
-// Imports
 import CardState from '../types/CardState';
 import { ActionType } from '../types/ClientAction';
 import Clue from '../types/Clue';

@@ -1,6 +1,5 @@
 // The reducer for replays and hypotheticals
 
-// Imports
 import produce, { Draft, original } from 'immer';
 import { ensureAllCases } from '../../misc';
 import { ReplayAction } from '../types/actions';

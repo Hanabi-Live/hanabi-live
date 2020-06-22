@@ -1,7 +1,6 @@
 // This is the parent of a HanabiCard
 // It has a CardLayout or PlayStack parent
 
-// Imports
 import Konva from 'konva';
 import * as sounds from '../../sounds';
 import * as variantRules from '../rules/variant';

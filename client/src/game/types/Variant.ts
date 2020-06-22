@@ -1,4 +1,3 @@
-// Imports
 import Color from './Color';
 import Suit from './Suit';
 

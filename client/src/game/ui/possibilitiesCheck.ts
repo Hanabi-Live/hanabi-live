@@ -1,4 +1,3 @@
-// Imports
 import * as variantRules from '../rules/variant';
 import globals from './globals';
 

@@ -1,7 +1,6 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen
 
-// Imports
 import * as variantRules from '../rules/variant';
 import { ActionIncludingHypothetical } from '../types/actions';
 import { ActionType, ClientAction } from '../types/ClientAction';

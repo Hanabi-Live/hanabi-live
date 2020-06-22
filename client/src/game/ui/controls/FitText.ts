@@ -1,4 +1,3 @@
-// Imports
 import Konva from 'konva';
 
 export default class FitText extends Konva.Text {

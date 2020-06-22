@@ -1,4 +1,3 @@
-// Imports
 import ClueType from './ClueType';
 import Color from './Color';
 

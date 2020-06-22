@@ -1,6 +1,5 @@
 // This is one of the entries in the clue log (in the top-right-hand corner of the UI)
 
-// Imports
 import Konva from 'konva';
 import FitText from './controls/FitText';
 import drawLayer from './drawLayer';

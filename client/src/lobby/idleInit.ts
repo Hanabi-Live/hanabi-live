@@ -1,4 +1,3 @@
-// Imports
 import globals from '../globals';
 
 // Constants

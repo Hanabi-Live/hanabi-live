@@ -6,7 +6,6 @@
 // The HanabiCard object, which represents a single card
 // TODO this object has to be re-copied over due to lots of new changes in the Konva UI
 
-// Imports
 import Phaser from 'phaser';
 import { CARD_H, CARD_W } from '../constants';
 import { SUITS } from '../game/data/gameData';

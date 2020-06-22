@@ -1,7 +1,6 @@
 // Arrows are used to show which cards are touched by a clue
 // (and to highlight things in shared replays)
 
-// Imports
 import Konva from 'konva';
 import { KonvaEventObject } from 'konva/types/Node';
 import {

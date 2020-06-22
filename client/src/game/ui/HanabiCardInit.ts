@@ -1,6 +1,5 @@
 // Initialization functions for the HanabiCard object
 
-// Imports
 import Konva from 'konva';
 import * as KonvaContext from 'konva/types/Context';
 import * as KonvaUtil from 'konva/types/Util';

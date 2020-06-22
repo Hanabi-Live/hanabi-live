@@ -1,6 +1,5 @@
 // In-game sounds
 
-// Imports
 import globals from './globals';
 
 export const init = () => {

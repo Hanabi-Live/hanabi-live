@@ -6,7 +6,6 @@
 
 // A Phaser demo
 
-// Imports
 import Phaser from 'phaser';
 import { HAND_BASE_SCALE, PLAY_AREA_BASE_SCALE } from '../constants';
 import { msgSuitToSuit as convertMsgSuitToSuit } from '../game/ui/convert';

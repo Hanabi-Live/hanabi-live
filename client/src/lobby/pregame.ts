@@ -1,6 +1,5 @@
 // The lobby area that shows all of the players in the current unstarted game
 
-// Imports
 import * as chat from '../chat';
 import { VARIANTS } from '../game/data/gameData';
 import globals from '../globals';

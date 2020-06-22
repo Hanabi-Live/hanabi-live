@@ -1,4 +1,3 @@
-// Imports
 import suitsJSON from '../../../../data/suits.json';
 import Color from '../types/Color';
 import Suit from '../types/Suit';

@@ -1,4 +1,3 @@
-// Imports
 import Konva from 'konva';
 import drawLayer from '../drawLayer';
 import FitText from './FitText';

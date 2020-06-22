@@ -1,6 +1,5 @@
 // The site has the ability to send (optional) notifications
 
-// Imports
 import * as modals from './modals';
 
 export const test = () => {

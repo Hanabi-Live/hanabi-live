@@ -1,4 +1,3 @@
-// Imports
 import Konva from 'konva';
 import { CHARACTERS } from '../data/gameData';
 import * as hand from '../rules/hand';

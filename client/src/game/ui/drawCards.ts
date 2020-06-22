@@ -1,6 +1,5 @@
 // The Hanabi card graphics are various HTML5 canvas drawings
 
-// Imports
 import {
   CARD_H,
   CARD_W,

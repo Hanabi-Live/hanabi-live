@@ -1,6 +1,5 @@
 // The lobby area that shows all of the current logged-in users
 
-// Imports
 import globals from '../globals';
 
 export const draw = () => {

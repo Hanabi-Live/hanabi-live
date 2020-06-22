@@ -1,4 +1,3 @@
-// Imports
 import Konva from 'konva';
 
 export default class NoteIndicator extends Konva.Image {

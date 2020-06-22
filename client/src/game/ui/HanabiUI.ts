@@ -2,7 +2,6 @@
 // It is re-created every time when going into a new game
 // (and destroyed when going to the lobby)
 
-// Imports
 import Konva from 'konva';
 import { LABEL_COLOR } from '../../constants';
 import { Globals as LobbyGlobals } from '../../globals';

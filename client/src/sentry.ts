@@ -1,6 +1,5 @@
 // In production, we send all errors to the cloud using the Sentry.io service
 
-// Imports
 import * as Sentry from '@sentry/browser';
 import version from '../../data/version.json';
 

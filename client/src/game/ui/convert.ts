@@ -1,7 +1,6 @@
 // These are helper functions that convert objects to the integers that the server expects and
 // vice versa
 
-// Imports
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
 import Color from '../types/Color';

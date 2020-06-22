@@ -2,7 +2,6 @@
 // The HanabiCard object represents a single card
 // It has a LayoutChild parent
 
-// Imports
 import Konva from 'konva';
 import {
   CARD_FADE,

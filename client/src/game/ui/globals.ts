@@ -1,7 +1,6 @@
 // This object contains global variables for the game UI
 // Every class variable must also be reset in the "reset()" function
 
-// Imports
 import Konva from 'konva';
 import * as Redux from 'redux';
 import { Globals as LobbyGlobals } from '../../globals';

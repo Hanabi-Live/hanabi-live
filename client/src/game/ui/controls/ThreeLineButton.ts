@@ -1,4 +1,3 @@
-// Imports
 import Konva from 'konva';
 import Button from './Button';
 import FitText from './FitText';

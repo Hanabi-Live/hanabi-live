@@ -1,4 +1,3 @@
-// Imports
 import { ActionStrike } from '../types/actions';
 import globals from './globals';
 

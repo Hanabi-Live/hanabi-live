@@ -1,6 +1,5 @@
 // The initial login page
 
-// Imports
 import version from '../../../data/version.json';
 import { FADE_TIME } from '../constants';
 import globals from '../globals';

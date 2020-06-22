@@ -1,4 +1,3 @@
-// Imports
 import Konva from 'konva';
 import Button from './controls/Button';
 import SharedTurnsButton from './controls/SharedTurnsButton';

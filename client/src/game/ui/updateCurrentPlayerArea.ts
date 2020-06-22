@@ -1,4 +1,3 @@
-// Imports
 import Konva from 'konva';
 import { LABEL_COLOR } from '../../constants';
 import { MAX_CLUE_NUM } from '../types/constants';

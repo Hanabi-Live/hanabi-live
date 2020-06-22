@@ -1,6 +1,5 @@
 // The Hanabi game UI
 
-// Imports
 import { FADE_TIME } from '../constants';
 import globals from '../globals';
 import tablesDraw from '../lobby/tablesDraw';

@@ -1,5 +1,3 @@
-// Imports
-
 import Options from '../game/types/Options';
 
 export default interface Game {

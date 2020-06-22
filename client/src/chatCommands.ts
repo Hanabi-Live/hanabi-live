@@ -1,4 +1,3 @@
-// Imports
 import * as chat from './chat';
 import globals from './globals';
 import * as modals from './modals';

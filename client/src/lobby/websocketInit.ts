@@ -1,6 +1,5 @@
 // WebSocket command handlers for in-game events
 
-// Imports
 import * as gameMain from '../game/main';
 import globals from '../globals';
 import * as sounds from '../sounds';

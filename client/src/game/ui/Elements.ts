@@ -1,4 +1,3 @@
-// Imports
 import Konva from 'konva';
 import Suit from '../types/Suit';
 import ButtonGroup from './ButtonGroup';

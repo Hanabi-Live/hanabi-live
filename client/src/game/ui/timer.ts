@@ -1,6 +1,5 @@
 // Functions for timed games (and the timer that ticks up in untimed games)
 
-// Imports
 import * as misc from '../../misc';
 import TimerDisplay from './controls/TimerDisplay';
 import drawLayer from './drawLayer';

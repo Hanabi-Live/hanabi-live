@@ -1,7 +1,6 @@
 // PlayStack represents the stack in the middle of the table for each suit
 // It is composed of LayoutChild objects
 
-// Imports
 import Konva from 'konva';
 import * as variantRules from '../rules/variant';
 import { STACK_BASE_RANK } from '../types/constants';

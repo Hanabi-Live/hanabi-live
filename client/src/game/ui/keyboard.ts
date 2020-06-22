@@ -1,6 +1,5 @@
 // Functions for handling all of the keyboard shortcuts
 
-// Imports
 import Konva from 'konva';
 import { copyStringToClipboard } from '../../misc';
 import { ActionType } from '../types/ClientAction';

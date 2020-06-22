@@ -1,4 +1,3 @@
-// Imports
 import Konva from 'konva';
 import ColorButton from './ColorButton';
 import PlayerButton from './controls/PlayerButton';

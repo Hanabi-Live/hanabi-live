@@ -2,7 +2,6 @@
 // (state tables are currently unused but eventually the client will eventually be rewritten to
 // handle state transitions)
 
-// Imports
 import produce, { Draft, original, current } from 'immer';
 import { ensureAllCases } from '../../misc';
 import { VARIANTS } from '../data/gameData';

@@ -1,4 +1,3 @@
-// Imports
 import Konva from 'konva';
 import { LABEL_COLOR } from '../../constants';
 import * as modals from '../../modals';

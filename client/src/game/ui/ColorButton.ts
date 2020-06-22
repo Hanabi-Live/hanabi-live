@@ -1,4 +1,3 @@
-// Imports
 import Konva from 'konva';
 import * as variantRules from '../rules/variant';
 import Clue from '../types/Clue';

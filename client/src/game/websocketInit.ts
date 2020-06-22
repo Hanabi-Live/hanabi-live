@@ -1,6 +1,5 @@
 // WebSocket command handlers for in-game events
 
-// Imports
 import phaserInit from '../client_v2/phaserInit';
 import globals from '../globals';
 import { VARIANTS } from './data/gameData';

@@ -1,6 +1,5 @@
 // Speedrun click functions for the HanabiCard object
 
-// Imports
 import Konva from 'konva';
 import { ActionType } from '../types/ClientAction';
 import Color from '../types/Color';

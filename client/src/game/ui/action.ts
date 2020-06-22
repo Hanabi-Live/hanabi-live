@@ -1,6 +1,5 @@
 // The "gameAction" WebSocket command communicate a change in the game state
 
-// Imports
 import Konva from 'konva';
 import {
   CARD_W,

@@ -1,6 +1,5 @@
 // Miscellaneous helper functions that apply to the entire UI generally
 
-// Imports
 import drawLayer from './drawLayer';
 import globals from './globals';
 

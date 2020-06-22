@@ -2,7 +2,6 @@
 // (e.g. cards that no longer need to be played are faded,
 // cards that become critical get an icon)
 
-// Imports
 import globals from './globals';
 
 // Resets the fade and critical for every card in game

@@ -1,4 +1,3 @@
-// Imports
 import Konva from 'konva';
 
 // These are arrows used to show which cards that are touched by a clue

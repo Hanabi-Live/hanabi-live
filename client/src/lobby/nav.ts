@@ -1,6 +1,5 @@
 // The navigation bar at the top of the lobby
 
-// Imports
 import { FADE_TIME } from '../constants';
 import globals from '../globals';
 import * as misc from '../misc';

@@ -1,7 +1,6 @@
 // CardLayout is an object that represents a player's hand (or a discard pile)
 // It is composed of LayoutChild objects
 
-// Imports
 import Konva from 'konva';
 import globals from './globals';
 import HanabiCard from './HanabiCard';

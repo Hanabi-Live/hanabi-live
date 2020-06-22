@@ -1,4 +1,3 @@
-// Imports
 import charactersJSON from '../../../../data/characters.json';
 import Character from '../types/Character';
 

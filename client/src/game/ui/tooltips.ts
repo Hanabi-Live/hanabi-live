@@ -1,4 +1,3 @@
-// Imports
 import Konva from 'konva';
 import { TOOLTIP_DELAY } from '../../constants';
 import NodeWithTooltip from './controls/NodeWithTooltip';

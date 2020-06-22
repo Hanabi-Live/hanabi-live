@@ -1,4 +1,3 @@
-// Imports
 import colorsJSON from '../../../../data/colors.json';
 import Color from '../types/Color';
 

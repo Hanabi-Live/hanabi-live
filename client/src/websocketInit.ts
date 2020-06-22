@@ -1,7 +1,6 @@
 // Communication with the server is done through the WebSocket protocol
 // The client uses a slightly modified version of the Golem WebSocket library
 
-// Imports
 import * as chat from './chat';
 import ChatMessage from './ChatMessage';
 import Connection from './Connection';

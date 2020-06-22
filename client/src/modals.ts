@@ -1,6 +1,5 @@
 // Modals (boxes that hover on top of the UI)
 
-// Imports
 import { FADE_TIME } from './constants';
 import * as gameChat from './game/chat';
 import globals from './globals';

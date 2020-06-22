@@ -1,6 +1,5 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things
 
-// Imports
 import { createStore } from 'redux';
 import * as sentry from '../../sentry';
 import { VARIANTS } from '../data/gameData';

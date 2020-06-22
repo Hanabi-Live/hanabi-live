@@ -1,4 +1,3 @@
-// Imports
 import * as notifications from '../../notifications';
 import { ActionType, ClientAction } from '../types/ClientAction';
 import { MAX_CLUE_NUM } from '../types/constants';
