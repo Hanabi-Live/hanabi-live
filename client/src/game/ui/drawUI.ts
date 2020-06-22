@@ -773,13 +773,15 @@ const drawScoreArea = () => {
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.turnNumberLabel!);
 
-  // We also want to be able to right-click the turn to go to a specific turn in the replay
-  globals.elements.turnNumberLabel!.on('click', (event) => {
-    if (event.evt.button === 2) { // Right-click
+  globals.elements.turnNumberLabel.on('click', (event) => {
+    if (event.evt.button === 0) { // Left-click
+      // We want to be able to left-click the turn number to go to a specific turn in the replay
       replay.promptTurn();
+    } else if (event.evt.button === 2) { // Right-click
+      arrows.click(event, ReplayArrowOrder.Clues, cluesNumberLabel);
     }
   });
-  globals.elements.turnNumberLabel!.on('dbltap', replay.promptTurn);
+  globals.elements.turnNumberLabel.on('tap', replay.promptTurn);
 
   const scoreTextLabel = basicTextLabel.clone({
     text: 'Score',
