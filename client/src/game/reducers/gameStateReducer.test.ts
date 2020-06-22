@@ -5,7 +5,6 @@ import { // Direct import instead of namespace import for compactness
   play,
   strike,
   text,
-  // turn,
 } from '../../../test/testActions';
 import { VARIANTS } from '../data/gameData';
 import ClueType from '../types/ClueType';

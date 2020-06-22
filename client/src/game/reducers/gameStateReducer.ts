@@ -190,7 +190,7 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
     }
   }
 
-  // Use a sub-reducers to calculate the turn
+  // Use a sub-reducer to calculate the turn
   let turnState: TurnState = {
     turn: state.turn,
     currentPlayerIndex: state.currentPlayerIndex,
@@ -199,7 +199,7 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
   state.turn = turnState.turn;
   state.currentPlayerIndex = turnState.currentPlayerIndex;
 
-  // Use a sub-reducers to calculate some game statistics
+  // Use a sub-reducer to calculate some game statistics
   state.stats = statsReducer(original(state.stats), action, original(state)!, current(state));
 }, {} as GameState);
 

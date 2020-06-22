@@ -42,17 +42,22 @@
       "--fast",
   ],
 
-  // Use "black" to automatically format Python files
-  // https://github.com/psf/black
-  "python.formatting.provider": "black",
+  // Configure glob patterns for excluding files and folders in fulltext searches and quick open
+  "search.exclude": {
+    "**/*.min.js*": true
+  },
+
+  "[typescript]": {
+    "editor.tabSize": 2,
+  },
 
   // Automatically run the formatter when a Python file is saved
   "[python]": {
     "editor.formatOnSave": true,
   },
+  // Use "black" to automatically format Python files
+  // https://github.com/psf/black
+  "python.formatting.provider": "black",
   "python.linting.pylintEnabled": true,
   "python.linting.enabled": true,
-  "search.exclude": {
-    "**/*.min.js*": true
-  },
 }
