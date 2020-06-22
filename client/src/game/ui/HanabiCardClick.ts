@@ -166,8 +166,8 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // Ctrl + right-click is a local arrow
   // Even if they are not a leader in a shared replay,
   // a user might still want to draw an arrow on a card for demonstration purposes
-  // However, we don't want this functionality in shared replays because
-  // it could be misleading as to who the real replay leader is
+  // However, we don't want to enable this functionality in shared replays because it could be
+  // misleading as to who the real replay leader is
   if (
     event.ctrlKey
     && !event.shiftKey
