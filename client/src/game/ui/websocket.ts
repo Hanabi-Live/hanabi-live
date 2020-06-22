@@ -268,7 +268,11 @@ commands.set('init', (data: InitData) => {
   }
 
   // Recreate the store
-  globals.store = createStore(stateReducer, initialState(variant, globals.playerNames.length));
+  globals.store = createStore(stateReducer, initialState(
+    variant,
+    globals.playerNames.length,
+    globals.options.startingPlayer,
+  ));
 
   // Character settings
   globals.characterAssignments = data.characterAssignments;

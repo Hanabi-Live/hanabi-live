@@ -37,5 +37,22 @@ describe('turnReducer', () => {
       playCard();
       expect(state.currentPlayerIndex).toBe(0);
     });
+
+    test('is properly incremented for a legacy game with a custom starting player', () => {
+      const numPlayers = 3;
+      let state = initialTurnState(1);
+
+      const playCard = () => {
+        state = turnReducer(state, draw(0, 1, 0, 0), numPlayers); // Draw a red 1
+        state = turnReducer(state, play(0, 0, 1, 0), numPlayers); // Play that red 1
+      };
+      expect(state.currentPlayerIndex).toBe(1);
+      playCard();
+      expect(state.currentPlayerIndex).toBe(2);
+      playCard();
+      expect(state.currentPlayerIndex).toBe(0);
+      playCard();
+      expect(state.currentPlayerIndex).toBe(1);
+    });
   });
 });
