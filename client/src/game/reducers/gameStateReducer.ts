@@ -8,8 +8,9 @@ import { VARIANTS } from '../data/gameData';
 import * as clues from '../rules/clues';
 import { GameAction } from '../types/actions';
 import GameState from '../types/GameState';
+import TurnState from '../types/TurnState';
 import statsReducer from './statsReducer';
-// import turnReducer from './turnReducer';
+import turnReducer from './turnReducer';
 
 const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) => {
   // Shorthand since the variant is often passed as a parameter
@@ -189,8 +190,16 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
     }
   }
 
-  // Use other sub-reducers to accumulate/calculate other parts of the state
-  // state = turnReducer(original(state), action);
+  // Use a sub-reducers to calculate the turn
+  let turnState: TurnState = {
+    turn: state.turn,
+    currentPlayerIndex: state.currentPlayerIndex,
+  };
+  turnState = turnReducer(turnState, action, state.hands.length);
+  state.turn = turnState.turn;
+  state.currentPlayerIndex = turnState.currentPlayerIndex;
+
+  // Use a sub-reducers to calculate some game statistics
   state.stats = statsReducer(original(state.stats), action, original(state)!, current(state));
 }, {} as GameState);
 

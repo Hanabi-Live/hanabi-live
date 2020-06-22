@@ -1,19 +1,21 @@
 import produce, { Draft } from 'immer';
 import { GameAction } from '../types/actions';
-import GameState from '../types/GameState';
+import TurnState from '../types/TurnState';
 
-const turnReducer = produce((state: Draft<GameState>, action: GameAction) => {
+const turnReducer = produce((state: Draft<TurnState>, action: GameAction, numPlayers: number) => {
   switch (action.type) {
-    case 'play': case 'clue': case 'discard': {
+    case 'play':
+    case 'discard':
+    case 'clue': {
       state.turn += 1;
       state.currentPlayerIndex += 1;
-      state.currentPlayerIndex %= state.hands.length;
+      state.currentPlayerIndex %= numPlayers;
       break;
     }
     default: {
       break;
     }
   }
-}, {} as GameState);
+}, {} as TurnState);
 
 export default turnReducer;
