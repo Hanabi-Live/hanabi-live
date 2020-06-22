@@ -1,6 +1,10 @@
-// Direct import instead of namespace import for compactness
-import {
-  text, draw, play, discard, strike, clue,
+import { // Direct import instead of namespace import for compactness
+  text,
+  draw,
+  play,
+  discard,
+  strike,
+  clue,
 } from '../../../test/testActions';
 import { VARIANTS } from '../data/gameData';
 import ClueType from '../types/ClueType';

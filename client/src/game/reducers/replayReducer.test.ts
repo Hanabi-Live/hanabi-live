@@ -1,7 +1,12 @@
 import loadGameJSON from '../../../test/loadGameJSON';
-// Direct import instead of namespace import for compactness
-import {
-  hypoStart, startReplay, hypoAction, clue, turn, hypoBack, hypoEnd,
+import { // Direct import instead of namespace import for compactness
+  hypoStart,
+  startReplay,
+  hypoAction,
+  clue,
+  turn,
+  hypoBack,
+  hypoEnd,
 } from '../../../test/testActions';
 import testGame from '../../../test_data/test_game.json';
 import ClueType from '../types/ClueType';
