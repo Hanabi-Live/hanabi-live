@@ -804,7 +804,6 @@ const drawScoreArea = () => {
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreNumberLabel!);
   globals.elements.scoreNumberLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
-    console.log('ZZZZZZZZZZZ');
     arrows.click(event, ReplayArrowOrder.Score, globals.elements.scoreNumberLabel);
   });
 
@@ -889,26 +888,43 @@ const drawScoreArea = () => {
   globals.elements.cluesNumberLabelPulse.anim.addLayer(globals.layers.UI);
 
   // Draw the 3 strike (bomb) black squares / X's
-  function strikeClick(this: StrikeSquare | StrikeX) {
-    if (this.turn === null) {
-      return;
-    }
-    if (globals.replay) {
-      replay.checkDisableSharedTurns();
-    } else {
-      replay.enter();
-    }
-    replay.goto(this.turn + 1, true);
-
-    // Also highlight the card
-    if (this.order !== null) {
-      // Ensure that the card exists as a sanity-check
-      const card = globals.deck[this.order];
-      if (!card) {
+  function strikeClick(this: StrikeSquare | StrikeX, event: Konva.KonvaEventObject<MouseEvent>) {
+    if (event.evt.button === 0) { // Left-click
+      // Left-clicking a strike X or a strike square takes us to the turn that the strike happened
+      if (this.turn === null) {
         return;
       }
+      if (globals.replay) {
+        replay.checkDisableSharedTurns();
+      } else {
+        replay.enter();
+      }
+      replay.goto(this.turn + 1, true);
 
-      arrows.toggle(card);
+      // Also highlight the card
+      if (this.order !== null) {
+        // Ensure that the card exists as a sanity-check
+        const card = globals.deck[this.order];
+        if (!card) {
+          return;
+        }
+
+        arrows.toggle(card);
+      }
+    } else if (event.evt.button === 2) { // Right-click
+      // Right-clicking a strike X or a strike square shows an arrow over the strike square
+      let order;
+      if (this.num === 1) {
+        order = ReplayArrowOrder.Strike1;
+      } else if (this.num === 2) {
+        order = ReplayArrowOrder.Strike2;
+      } else if (this.num === 3) {
+        order = ReplayArrowOrder.Strike3;
+      } else {
+        throw new Error(`Unknown strike number of ${this.num}" in the "strickClick()" function.`);
+      }
+      const element = globals.elements.strikeSquares[this.num - 1];
+      arrows.click(event, order, element);
     }
   }
   for (let i = 0; i < 3; i++) {
@@ -923,6 +939,7 @@ const drawScoreArea = () => {
       cornerRadius: 0.005 * winW,
       listening: true,
     });
+    strikeSquare.num = i + 1;
     globals.elements.scoreArea.add(strikeSquare);
 
     // Draw the red X that indicates the strike
@@ -935,6 +952,7 @@ const drawScoreArea = () => {
       opacity: 0,
       listening: true,
     });
+    strikeX.num = i + 1;
     globals.elements.scoreArea.add(strikeX);
 
     // Handle the tooltips

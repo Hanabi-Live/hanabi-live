@@ -7,9 +7,12 @@ enum ReplayArrowOrder {
   Score = -3,
   MaxScore = -4,
   Clues = -5,
-  Pace = -6,
-  Efficiency = -7,
-  MinEfficiency = -8,
+  Strike1 = -6,
+  Strike2 = -7,
+  Strike3 = -8,
+  Pace = -9,
+  Efficiency = -10,
+  MinEfficiency = -11,
 }
 
 export default ReplayArrowOrder;

@@ -16,6 +16,7 @@ import Suit from '../types/Suit';
 import CardLayout from './CardLayout';
 import Arrow from './controls/Arrow';
 import NodeWithTooltip from './controls/NodeWithTooltip';
+import StrikeSquare from './controls/StrikeSquare';
 import drawPip from './drawPip';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
@@ -199,6 +200,8 @@ const getPos = (element: Konva.Node, rot: number) => {
     pos.x += element.width() * 0.15;
   } else if (element === globals.elements.maxScoreNumberLabel) {
     pos.x += element.width() * 0.7;
+  } else if (element instanceof StrikeSquare) {
+    pos.x += element.width() * 0.5;
   } else {
     pos.x += element.width() / 3;
   }

@@ -1,6 +1,7 @@
 import Konva from 'konva';
 
 export default class StrikeX extends Konva.Image {
+  num: number | null = null;
   turn: number | null = null;
   order: number | null = null;
   tween: Konva.Tween | null = null;
