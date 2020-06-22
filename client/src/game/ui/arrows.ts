@@ -187,11 +187,18 @@ const getPos = (element: Konva.Node, rot: number) => {
     const rotRadians = (rot / 180) * Math.PI;
     pos.x -= Math.sin(rotRadians) * distance;
     pos.y += Math.cos(rotRadians) * distance;
-  } else if (element === globals.elements.cluesNumberLabel) {
-    pos.x += element.width() * 0.15;
   } else if (element === globals.elements.deck) {
     pos.x += element.width() * 0.5;
     pos.y += element.height() * 0.1;
+  } else if (
+    element === globals.elements.turnNumberLabel
+    || element === globals.elements.scoreNumberLabel
+    || element === globals.elements.playsNumberLabel
+    || element === globals.elements.cluesNumberLabel
+  ) {
+    pos.x += element.width() * 0.15;
+  } else if (element === globals.elements.maxScoreNumberLabel) {
+    pos.x += element.width() * 0.7;
   } else {
     pos.x += element.width() / 3;
   }
@@ -279,11 +286,16 @@ export const send = (order: ReplayArrowOrder, element: any) => {
 };
 
 // This toggles the "highlight" arrow on a particular element
-export const toggle = (element: NodeWithTooltip | null) => {
-  // If the card is currently tweening, delay showing the arrow until the tween is finished
+export const toggle = (element: NodeWithTooltip | null, attempt: number = 0) => {
+  // If we are showing an arrow on a card that is currently tweening,
+  // delay showing it until the tween is finished
+  if (attempt >= 100) {
+    // Give up after 100 attempts to prevent an infinite recursion
+    return;
+  }
   if (element instanceof HanabiCard && element.tweening) {
     setTimeout(() => {
-      toggle(element);
+      toggle(element, attempt + 1);
     }, 5);
     return;
   }

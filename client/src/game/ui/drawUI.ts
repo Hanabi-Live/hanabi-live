@@ -756,11 +756,12 @@ const drawScoreArea = () => {
     listening: true,
   }) as Konva.Text;
   globals.elements.scoreArea.add(turnTextLabel);
-
-  // We also want to be able to right-click the turn to go to a specific turn in the replay
   turnTextLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
-    if (event.evt.button === 2) { // Right-click
+    if (event.evt.button === 0) { // Left-click
+      // We want to be able to left-click the turn number to go to a specific turn in the replay
       replay.promptTurn();
+    } else if (event.evt.button === 2) { // Right-click
+      arrows.click(event, ReplayArrowOrder.Clues, globals.elements.turnNumberLabel);
     }
   });
   turnTextLabel.on('dbltap', replay.promptTurn);
@@ -772,13 +773,12 @@ const drawScoreArea = () => {
     listening: true,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.turnNumberLabel!);
-
   globals.elements.turnNumberLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
     if (event.evt.button === 0) { // Left-click
       // We want to be able to left-click the turn number to go to a specific turn in the replay
       replay.promptTurn();
     } else if (event.evt.button === 2) { // Right-click
-      arrows.click(event, ReplayArrowOrder.Clues, cluesNumberLabel);
+      arrows.click(event, ReplayArrowOrder.Clues, globals.elements.turnNumberLabel);
     }
   });
   globals.elements.turnNumberLabel.on('tap', replay.promptTurn);
@@ -787,42 +787,66 @@ const drawScoreArea = () => {
     text: 'Score',
     x: labelX * winW,
     y: 0.045 * winH,
+    listening: true,
     visible: !variantRules.isThrowItInAHole(globals.variant) || globals.replay,
   }) as Konva.Text;
   globals.elements.scoreArea.add(scoreTextLabel);
+  scoreTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
+    arrows.click(event, ReplayArrowOrder.Score, globals.elements.scoreNumberLabel);
+  });
 
   globals.elements.scoreNumberLabel = basicNumberLabel.clone({
     text: '0',
     x: (labelX + labelSpacing) * winW,
     y: 0.045 * winH,
+    listening: true,
     visible: !variantRules.isThrowItInAHole(globals.variant) || globals.replay,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreNumberLabel!);
+  globals.elements.scoreNumberLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
+    console.log('ZZZZZZZZZZZ');
+    arrows.click(event, ReplayArrowOrder.Score, globals.elements.scoreNumberLabel);
+  });
 
   globals.elements.maxScoreNumberLabel = basicNumberLabel.clone({
     text: '',
     x: (labelX + labelSpacing) * winW,
     y: 0.05 * winH,
     fontSize: 0.017 * winH,
+    listening: true,
     visible: !variantRules.isThrowItInAHole(globals.variant) || globals.replay,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel!);
+  globals.elements.maxScoreNumberLabel.on(
+    'click tap',
+    (event: Konva.KonvaEventObject<MouseEvent>) => {
+      arrows.click(event, ReplayArrowOrder.MaxScore, globals.elements.maxScoreNumberLabel);
+    },
+  );
 
   const playsTextLabel = basicTextLabel.clone({
     text: 'Plays',
     x: labelX * winW,
     y: 0.045 * winH,
+    listening: true,
     visible: variantRules.isThrowItInAHole(globals.variant) && !globals.replay,
   }) as Konva.Text;
   globals.elements.scoreArea.add(playsTextLabel);
+  playsTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
+    arrows.click(event, ReplayArrowOrder.Clues, globals.elements.playsNumberLabel);
+  });
 
   globals.elements.playsNumberLabel = basicNumberLabel.clone({
     text: '0',
     x: (labelX + labelSpacing) * winW,
     y: 0.045 * winH,
+    listening: true,
     visible: variantRules.isThrowItInAHole(globals.variant) && !globals.replay,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.playsNumberLabel!);
+  globals.elements.playsNumberLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
+    arrows.click(event, ReplayArrowOrder.Clues, globals.elements.playsNumberLabel);
+  });
 
   const cluesTextLabel = basicTextLabel.clone({
     text: 'Clues',
@@ -831,6 +855,9 @@ const drawScoreArea = () => {
     listening: true,
   }) as Konva.Text;
   globals.elements.scoreArea.add(cluesTextLabel);
+  cluesTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
+    arrows.click(event, ReplayArrowOrder.Clues, cluesNumberLabel);
+  });
 
   const cluesNumberLabel = basicNumberLabel.clone({
     text: '8',
@@ -840,10 +867,6 @@ const drawScoreArea = () => {
   }) as Konva.Text;
   globals.elements.scoreArea.add(cluesNumberLabel);
   globals.elements.cluesNumberLabel = cluesNumberLabel;
-
-  cluesTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
-    arrows.click(event, ReplayArrowOrder.Clues, cluesNumberLabel);
-  });
   cluesNumberLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Clues, cluesNumberLabel);
   });

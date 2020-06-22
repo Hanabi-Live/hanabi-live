@@ -539,7 +539,8 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
     return;
   }
 
-  if (data.order >= 0) { // A card
+  if (data.order >= 0) {
+    // This is an arrow for a card
     // Ensure that the card exists as a sanity-check
     // (the server does not validate the order that the leader sends)
     let card = globals.deck[data.order];
@@ -551,10 +552,17 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
     }
 
     arrows.toggle(card);
-  } else { // Some other UI element
+  } else {
+    // This is an arrow for some other UI element
     let element;
     if (data.order === ReplayArrowOrder.Deck) {
       element = globals.elements.deck;
+    } else if (data.order === ReplayArrowOrder.Turn) {
+      element = globals.elements.turnNumberLabel;
+    } else if (data.order === ReplayArrowOrder.Score) {
+      element = globals.elements.scoreNumberLabel;
+    } else if (data.order === ReplayArrowOrder.MaxScore) {
+      element = globals.elements.maxScoreNumberLabel;
     } else if (data.order === ReplayArrowOrder.Clues) {
       element = globals.elements.cluesNumberLabel;
     } else if (data.order === ReplayArrowOrder.Pace) {
@@ -564,6 +572,7 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
     } else if (data.order === ReplayArrowOrder.MinEfficiency) {
       element = globals.elements.efficiencyNumberLabelMinNeeded;
     } else {
+      console.warn('Received a "replayIndicator" for an unknown element.');
       return;
     }
 
