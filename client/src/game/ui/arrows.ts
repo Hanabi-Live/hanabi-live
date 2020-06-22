@@ -248,13 +248,18 @@ export const click = (
   order: ReplayArrowOrder,
   element: any,
 ) => {
+  if (event.evt.button !== 2) { // Right-click
+    return;
+  }
+
   if (
-    event.evt.button === 2 // Right-click
-    && globals.sharedReplay
+    globals.sharedReplay
     && globals.amSharedReplayLeader
     && globals.useSharedTurns
   ) {
     send(order, element);
+  } else {
+    toggle(element);
   }
 };
 
