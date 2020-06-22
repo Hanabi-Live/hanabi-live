@@ -4,8 +4,11 @@ import { MAX_CLUE_NUM } from '../types/constants';
 import GameState from '../types/GameState';
 import StackDirection from '../types/StackDirection';
 import Variant from '../types/Variant';
+import initialTurnState from './initialTurnState';
 
 export default function initialGameState(variant: Variant, playerCount: number): GameState {
+  const turnState = initialTurnState();
+
   const startingPace = statsRules.startingPace(variant, playerCount);
 
   const hands: number[][] = [];
@@ -24,7 +27,7 @@ export default function initialGameState(variant: Variant, playerCount: number):
 
   return {
     variantName: variant.name,
-    turn: 0,
+    turn: turnState.turn,
     log: [],
     deck: [],
     deckSize: deck.totalCards(variant),
@@ -32,7 +35,7 @@ export default function initialGameState(variant: Variant, playerCount: number):
     clueTokens: MAX_CLUE_NUM,
     doubleDiscard: false,
     strikes: [],
-    currentPlayerIndex: 0,
+    currentPlayerIndex: turnState.currentPlayerIndex,
     hands,
     playStacks,
     playStacksDirections,
