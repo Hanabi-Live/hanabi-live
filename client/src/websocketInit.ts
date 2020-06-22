@@ -277,7 +277,7 @@ const initCommands = () => {
 
   interface ShutdownData {
     shuttingDown: boolean;
-    datetimeShutdownInit: number,
+    datetimeShutdownInit: number;
   }
   globals.conn.on('shutdown', (data: ShutdownData) => {
     globals.shuttingDown = data.shuttingDown;

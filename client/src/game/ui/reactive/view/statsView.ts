@@ -39,7 +39,10 @@ export function onEfficiencyChanged(efficiency: number) {
   effMinLabel.x(x);
 }
 
-export function onPaceOrPaceRiskChanged(p: { pace: number | null, paceRisk: PaceRisk }) {
+export function onPaceOrPaceRiskChanged(p: {
+  pace: number | null;
+  paceRisk: PaceRisk;
+}) {
   const label = globals.elements.paceNumberLabel;
   if (!label) {
     throw new Error('paceNumberLabel is not initialized.');

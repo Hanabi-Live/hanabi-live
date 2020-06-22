@@ -385,8 +385,8 @@ commands.set('noteListPlayer', (data: NoteListPlayerData) => {
 
 // Used when the game state changes
 interface GameActionData {
-  tableID: number,
-  action: GameAction,
+  tableID: number;
+  action: GameAction;
 }
 commands.set('gameAction', (data: GameActionData) => {
   // Update the game state
@@ -456,8 +456,8 @@ const processNewAction = (actionMessage: GameAction) => {
 };
 
 interface GameActionListData {
-  tableID: number,
-  list: GameAction[],
+  tableID: number;
+  list: GameAction[];
 }
 commands.set('gameActionList', (data: GameActionListData) => {
   // Send the list to the reducers

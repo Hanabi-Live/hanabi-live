@@ -16,7 +16,10 @@ export function onClueTokensChanged(clueTokens: number) {
   }
 }
 
-export function onScoreOrMaxScoreChanged(scores: { score: number, maxScore: number }) {
+export function onScoreOrMaxScoreChanged(scores: {
+  score: number;
+  maxScore: number;
+}) {
   const scoreLabel = globals.elements.scoreNumberLabel!;
   scoreLabel.text(scores.score.toString());
 

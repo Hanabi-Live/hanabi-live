@@ -104,8 +104,8 @@ commands.set('gameHistoryFriends', (dataArray: GameHistory[]) => {
 });
 
 interface GameHistoryOtherScoresData {
-  games: GameHistory[],
-  friends: boolean,
+  games: GameHistory[];
+  friends: boolean;
 }
 commands.set('gameHistoryOtherScores', (data: GameHistoryOtherScoresData) => {
   history.drawOtherScores(data.games, data.friends);

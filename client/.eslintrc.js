@@ -43,6 +43,10 @@ module.exports = {
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L183
     '@typescript-eslint/lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
 
+    // Enforce semi-colons inside interface and type declarations
+    // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/semi.md
+    '@typescript-eslint/member-delimiter-style': ['error'],
+
     // Keep the code a bit less verbose by removing inferrable type annotations
     '@typescript-eslint/no-inferrable-types': ['error', { ignoreParameters: true, ignoreProperties: true }],
 
@@ -51,7 +55,7 @@ module.exports = {
     '@typescript-eslint/no-unsafe-call': ['error'],
     '@typescript-eslint/no-unsafe-member-access': ['error'],
     '@typescript-eslint/no-unsafe-return': ['error'],
- 
+
     // This allows code to be structured in a more logical order
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/variables.js#L42
     '@typescript-eslint/no-use-before-define': ['off'],

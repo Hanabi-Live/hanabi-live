@@ -46,7 +46,11 @@ export default class ThreeLineButton extends Button {
     this.add(this.textElement3);
   }
 
-  setText(lines: {line1?: string, line2?: string, line3?: string}) {
+  setText(lines: {
+    line1?: string;
+    line2?: string;
+    line3?: string;
+  }) {
     if (lines.line1) {
       this.textElement1.text(lines.line1);
     }

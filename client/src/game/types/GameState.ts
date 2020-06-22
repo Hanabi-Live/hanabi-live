@@ -4,21 +4,21 @@ import Variant from './Variant';
 export default interface GameState {
   // Using a string instead of an object to keep this object
   // as flat as possible since it is cloned often
-  readonly variantName: Variant['name'],
-  readonly log: string[], // TODO set to action log message object
-  readonly deck: StateCard[],
-  readonly deckSize: number,
-  readonly score: number,
-  readonly clueTokens: number,
-  readonly doubleDiscard: boolean,
-  readonly strikes: StateStrike[],
-  readonly currentPlayerIndex: number,
-  readonly hands: number[][],
-  readonly playStacks: number[][],
-  readonly playStacksDirections: StackDirection[],
-  readonly discardStacks: number[][],
-  readonly clues: StateClue[],
-  readonly stats: StateStats,
+  readonly variantName: Variant['name'];
+  readonly log: string[]; // TODO set to action log message object
+  readonly deck: StateCard[];
+  readonly deckSize: number;
+  readonly score: number;
+  readonly clueTokens: number;
+  readonly doubleDiscard: boolean;
+  readonly strikes: StateStrike[];
+  readonly currentPlayerIndex: number;
+  readonly hands: number[][];
+  readonly playStacks: number[][];
+  readonly playStacksDirections: StackDirection[];
+  readonly discardStacks: number[][];
+  readonly clues: StateClue[];
+  readonly stats: StateStats;
 }
 
 export interface StateCard {

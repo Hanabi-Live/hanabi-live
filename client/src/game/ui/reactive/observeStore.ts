@@ -3,8 +3,8 @@ import { Store, Action } from 'redux';
 export type Selector<T, U> = (s: T) => U;
 export type Listener<U> = (prop: U) => void;
 export type Subscription<T, U> = {
-  select: Selector<T, U>,
-  onChange: Listener<U>,
+  select: Selector<T, U>;
+  onChange: Listener<U>;
 };
 
 // Observes a property of type T on a Store<S, A> and calls a listener function when it changes
