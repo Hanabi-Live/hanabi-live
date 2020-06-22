@@ -17,12 +17,10 @@
     "typescript",
   ],
 
-  // This is needed because the "package.json" and so forth are not located in the root of the
-  // repository
+  // This is needed because the ".eslintrc.js" is not located in the root of the repository
   "eslint.workingDirectories": [
     "./client"
   ],
-  "jest.rootPath": "client",
 
   "files.associations": {
     "example_game_with_comments.json": "jsonc", // This is "json" by default
@@ -42,7 +40,10 @@
       "--fast",
   ],
 
-  // Configure glob patterns for excluding files and folders in fulltext searches and quick open
+  // This is needed because the "jest.config.js" is not located in the root of the repository
+  "jest.rootPath": "client",
+
+  // Configure glob patterns for excluding files and folders in full text searches and quick open
   "search.exclude": {
     "**/*.min.js*": true
   },
