@@ -7,13 +7,14 @@ import { CARD_H, CARD_W } from '../../constants';
 import * as variantRules from '../rules/variant';
 import { START_CARD_RANK } from '../types/constants';
 import Suit from '../types/Suit';
+import Variant from '../types/Variant';
 import * as arrows from './arrows';
 import CardLayout from './CardLayout';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';
 import drawPip from './drawPip';
 import globals from './globals';
-import HanabiCard from './HanabiCard';
+import HanabiCard, { removePossibility } from './HanabiCard';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
 import { HanabiCardTap, HanabiCardDblTap } from './HanabiCardTouchActions';
@@ -21,25 +22,25 @@ import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
 import * as tooltips from './tooltips';
 
-export function image(this: HanabiCard) {
+export function image(getBareName: () => string) {
   // Create the "bare" card image, which is the main card graphic
   // If the card is not revealed, it will just be a gray rectangle
   // The pips and other elements of a card are drawn on top of the bare image
-  this.bare = new Konva.Image({
+  const bare = new Konva.Image({
     width: CARD_W,
     height: CARD_H,
     image: null as unknown as ImageBitmapSource,
   });
-  (this.bare as Konva.Shape).sceneFunc((ctx: KonvaContext.Context) => {
+  (bare as Konva.Shape).sceneFunc((ctx: KonvaContext.Context) => {
     scaleCardImage(
       ctx._context,
-      this.bareName,
-      this.bare!.width(),
-      this.bare!.height(),
-      this.bare!.getAbsoluteTransform(),
+      getBareName(),
+      bare!.width(),
+      bare!.height(),
+      bare!.getAbsoluteTransform(),
     );
   });
-  this.add(this.bare);
+  return bare;
 }
 
 const borderCornerRadius = 6;
@@ -48,9 +49,9 @@ const borderStrokeWidthInside = borderStrokeWidth * 0.6;
 const borderOffset = 2;
 const borderOutsideColor = '#0d0d0d'; // Off-black
 
-export function borders(this: HanabiCard) {
+export function borders() {
   // The card will get a border when it becomes clued
-  this.cluedBorder = new Konva.Group({
+  const cluedBorder = new Konva.Group({
     visible: false,
     listening: false,
   });
@@ -73,12 +74,11 @@ export function borders(this: HanabiCard) {
     listening: false,
   });
 
-  this.cluedBorder.add(cluedBorderOutside);
-  this.cluedBorder.add(cluedBorderInside);
-  this.add(this.cluedBorder);
+  cluedBorder.add(cluedBorderOutside);
+  cluedBorder.add(cluedBorderInside);
 
   // The card will get a special border if the player tells us that it is chop moved
-  this.chopMoveBorder = new Konva.Group({
+  const chopMoveBorder = new Konva.Group({
     visible: false,
     listening: false,
   });
@@ -101,12 +101,11 @@ export function borders(this: HanabiCard) {
     listening: false,
   });
 
-  this.chopMoveBorder.add(chopMoveBorderOutside);
-  this.chopMoveBorder.add(chopMoveBorderInside);
-  this.add(this.chopMoveBorder);
+  chopMoveBorder.add(chopMoveBorderOutside);
+  chopMoveBorder.add(chopMoveBorderInside);
 
   // The card will get a special border if the player tells us that it is finessed
-  this.finesseBorder = new Konva.Group({
+  const finesseBorder = new Konva.Group({
     visible: false,
     listening: false,
   });
@@ -129,17 +128,22 @@ export function borders(this: HanabiCard) {
     listening: false,
   });
 
-  this.finesseBorder.add(finesseBorderOutside);
-  this.finesseBorder.add(finesseBorderInside);
-  this.add(this.finesseBorder);
+  finesseBorder.add(finesseBorderOutside);
+  finesseBorder.add(finesseBorderInside);
+
+  return {
+    cluedBorder,
+    chopMoveBorder,
+    finesseBorder,
+  };
 }
 
-export function directionArrow(this: HanabiCard) {
-  if (!variantRules.hasReversedSuits(globals.variant)) {
-    return;
+export function directionArrow(variant: Variant) {
+  if (!variantRules.hasReversedSuits(variant)) {
+    return null;
   }
 
-  this.arrow = new Konva.Group({
+  const arrow = new Konva.Group({
     x: 0.815 * CARD_W,
     visible: false,
     offset: {
@@ -147,7 +151,6 @@ export function directionArrow(this: HanabiCard) {
       y: 0.14 * CARD_H,
     },
   });
-  this.add(this.arrow);
 
   const arrowHeight = 0.25;
   const pointerLength = 0.05 * CARD_W;
@@ -165,7 +168,7 @@ export function directionArrow(this: HanabiCard) {
     stroke: 'black',
     strokeWidth: pointerLength * 2,
   });
-  this.arrow.add(border);
+  arrow.add(border);
 
   const edge = new Konva.Line({
     points: [
@@ -178,9 +181,9 @@ export function directionArrow(this: HanabiCard) {
     stroke: 'black',
     strokeWidth: pointerLength * 0.75,
   });
-  this.arrow.add(edge);
+  arrow.add(edge);
 
-  this.arrowBase = new Konva.Arrow({
+  const arrowBase = new Konva.Arrow({
     points: [
       0,
       0,
@@ -193,7 +196,9 @@ export function directionArrow(this: HanabiCard) {
     stroke: 'white', // This should match the color of the suit; it will be manually set later on
     strokeWidth: pointerLength * 1.25,
   });
-  this.arrow.add(this.arrowBase);
+  arrow.add(arrowBase);
+
+  return arrow;
 }
 
 export function pips(this: HanabiCard) {
@@ -644,12 +649,13 @@ export function possibilities(this: HanabiCard) {
     // (because they do not know what it is yet)
     if (
       card.state.holder === this.state.holder
-      && (card.state.possibleSuits.length > 1 || card.state.possibleRanks.length > 1)
+      && (card.state.colorClueMemory.possibilities.length > 1
+        || card.state.rankClueMemory.possibilities.length > 1)
     ) {
       continue;
     }
 
-    this.removePossibility(card.state.suit, card.state.rank, false);
+    removePossibility(globals.variant, card.state, card.state.suit, card.state.rank, false);
   }
 }
 

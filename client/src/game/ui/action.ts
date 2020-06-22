@@ -28,7 +28,7 @@ import cardStatusCheck from './cardStatusCheck';
 import ClueEntry from './ClueEntry';
 import { msgClueToClue, msgSuitToSuit } from './convert';
 import globals from './globals';
-import HanabiCard from './HanabiCard';
+import HanabiCard, { removePossibility } from './HanabiCard';
 import LayoutChild from './LayoutChild';
 import possibilitiesCheck from './possibilitiesCheck';
 import strikeRecord from './strikeRecord';
@@ -81,7 +81,6 @@ actionFunctions.set('clue', (data: ActionClue) => {
       )
     ) {
       card.applyClue(clue, true);
-      card.setBareImage();
     }
   }
 
@@ -105,7 +104,6 @@ actionFunctions.set('clue', (data: ActionClue) => {
         )
       ) {
         card.applyClue(clue, false);
-        card.setBareImage();
       }
     }
   }
@@ -302,7 +300,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
         const hand = globals.elements.playerHands[i];
         hand.children.each((layoutChild) => {
           const handCard = layoutChild.children[0] as HanabiCard;
-          handCard.removePossibility(suit!, rank!, false);
+          removePossibility(globals.variant, handCard.state, suit!, rank!, false);
         });
       }
     }

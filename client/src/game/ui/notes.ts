@@ -209,7 +209,7 @@ const checkNoteImpossibility = (cardState: CardState) => {
     // Only the suit was specified
     // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
     let suitPossible = false;
-    for (const rank of cardState.possibleRanks) {
+    for (const rank of cardState.rankClueMemory.possibilities) {
       const count = cardState.possibleCards.get(`${cardState.noteSuit.name}${rank}`);
       if (count === undefined) {
         throw new Error(`The card of "${cardState.noteSuit.name}${rank}" does not exist in the possibleCards map.`);
@@ -229,7 +229,7 @@ const checkNoteImpossibility = (cardState: CardState) => {
     // Only the rank was specified
     // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
     let rankPossible = false;
-    for (const suit of cardState.possibleSuits) {
+    for (const suit of cardState.colorClueMemory.possibilities) {
       const count = cardState.possibleCards.get(`${suit.name}${cardState.noteRank}`);
       if (count === undefined) {
         throw new Error(`The card of "${suit.name}${cardState.noteRank}" does not exist in the possibleCards map.`);
