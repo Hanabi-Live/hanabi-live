@@ -55,7 +55,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 	// Validate that this person was one of the players in the game
 	leaderPlayedInOriginalGame := false
 	for _, p := range t.Players {
-		if p.Name == s.Username() {
+		if p.ID == s.UserID() {
 			leaderPlayedInOriginalGame = true
 			break
 		}
@@ -85,7 +85,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 		}
 		playedInOriginalGame := false
 		for _, p := range t.Players {
-			if p.Name == sp.Name {
+			if p.ID == sp.ID {
 				playedInOriginalGame = true
 				break
 			}
