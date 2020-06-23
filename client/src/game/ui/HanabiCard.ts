@@ -251,7 +251,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         continue;
       }
 
-      removePossibility(globals.variant, card.state, card.state.suit, card.state.rank, false);
+      removePossibility(globals.variant, this.state, card.state.suit, card.state.rank, false);
     }
   }
 
