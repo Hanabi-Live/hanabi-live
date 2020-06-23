@@ -68,6 +68,11 @@ input[type="radio"] + label:before,
   outline: none;
 }
 
+.button.icon {
+  /* Center the button around the icon and the text, instead of just the text */
+  padding-right: 1.35em;
+}
+
 .row {
   border-bottom: 0;
 }
@@ -756,7 +761,7 @@ input::-webkit-calendar-picker-indicator {
   }
 }
 
-/* Hide the "Hanabi Live" header when it overlaps with the nav bar buttons */
+/* Hide the "Hanabi Live" header when it overlaps with the lobby nav bar buttons */
 @media screen and (max-width: 480px) {
   .lobby-header {
     display: none;
@@ -768,4 +773,18 @@ input::-webkit-calendar-picker-indicator {
   #header {
     display: block;
   }
+}
+
+/* Stack the profile buttons on top of each other if they would go off screen otherwise */
+@media screen and (max-width: 830px) {
+  #profile-buttons { /* These lines are copied from alpha.css which has breakpoint 480 px */
+    display: flex;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+    align-items: stretch;
+  }
+
+    #profile-buttons li {
+      padding-top: 1em
+    }
 }
