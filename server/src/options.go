@@ -1,9 +1,10 @@
 package main
 
 // Options are things that are specified about the game upon table creation (before the game starts)
-// All of these are stored in the database are columns in the "games" table
+// All of these are stored in the database as columns of the "games" table
 // A pointer to these options is copied into the Game struct when the game starts for convenience
 type Options struct {
+	NumPlayers            int    `json:"numPlayers"`
 	StartingPlayer        int    `json:"startingPlayer"` // Legacy field for games prior to April 2020
 	Variant               string `json:"variantName"`
 	Timed                 bool   `json:"timed"`

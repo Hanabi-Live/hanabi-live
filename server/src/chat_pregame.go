@@ -9,32 +9,32 @@ import (
 	Pregame chat commands
 */
 
-// /s
+// /s - Automatically start the game as soon as someone joins
 func chatS(s *Session, d *CommandData, t *Table) {
 	automaticStart(s, d, t, len(t.Players)+1)
 }
 
-// /s2
+// /s2 - Automatically start the game as soon as there are 2 players
 func chatS2(s *Session, d *CommandData, t *Table) {
 	automaticStart(s, d, t, 2)
 }
 
-// /s3
+// /s3 - Automatically start the game as soon as there are 3 players
 func chatS3(s *Session, d *CommandData, t *Table) {
 	automaticStart(s, d, t, 3)
 }
 
-// /s4
+// /s4 - Automatically start the game as soon as there are 4 players
 func chatS4(s *Session, d *CommandData, t *Table) {
 	automaticStart(s, d, t, 4)
 }
 
-// /s5
+// /s5 - Automatically start the game as soon as there are 5 players
 func chatS5(s *Session, d *CommandData, t *Table) {
 	automaticStart(s, d, t, 5)
 }
 
-// /s6
+// /s6 - Automatically start the game as soon as there are 6 players
 func chatS6(s *Session, d *CommandData, t *Table) {
 	automaticStart(s, d, t, 6)
 }

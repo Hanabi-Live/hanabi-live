@@ -126,7 +126,6 @@ func (g *Game) End() {
 	gameHistoryList := make([]*GameHistory, 0)
 	gameHistoryList = append(gameHistoryList, &GameHistory{
 		ID:                 g.ID, // Recorded in the "WriteDatabase()" function above
-		NumPlayers:         len(g.Players),
 		Options:            g.Options,
 		Seed:               g.Seed,
 		Score:              g.Score,
@@ -157,7 +156,6 @@ func (g *Game) WriteDatabase() error {
 
 	row := GameRow{
 		Name:             t.Name,
-		NumPlayers:       len(g.Players),
 		Options:          g.Options,
 		Seed:             g.Seed,
 		Score:            g.Score,

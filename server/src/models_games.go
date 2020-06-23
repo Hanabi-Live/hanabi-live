@@ -16,7 +16,6 @@ type Games struct{}
 // (it contains a subset of the information in the Game struct)
 type GameRow struct {
 	Name             string
-	NumPlayers       int
 	Options          *Options
 	Seed             string
 	Score            int
@@ -79,7 +78,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 			RETURNING id
 		`,
 		gameRow.Name,
-		gameRow.NumPlayers,
+		gameRow.Options.NumPlayers,
 		// In the Options struct, the variant is stored as a string,
 		// but it needs to be stored in the database as an integer
 		variants[gameRow.Options.Variant].ID,
@@ -124,7 +123,6 @@ func (*Games) Exists(databaseID int) (bool, error) {
 
 type GameHistory struct {
 	ID                 int       `json:"id"`
-	NumPlayers         int       `json:"numPlayers"`
 	Options            *Options  `json:"options"`
 	Seed               string    `json:"seed"`
 	Score              int       `json:"score"`
@@ -194,7 +192,7 @@ func (*Games) GetHistory(gameIDs []int) ([]*GameHistory, error) {
 		var playerNamesString string
 		if err2 := rows.Scan(
 			&gameHistory.ID,
-			&gameHistory.NumPlayers,
+			&gameHistory.Options.NumPlayers,
 			&variantID,
 			&gameHistory.Options.Timed,
 			&gameHistory.Options.TimeBase,
