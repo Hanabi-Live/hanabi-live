@@ -40,15 +40,16 @@ const replayReducer = produce((state: Draft<ReplayState>, action: ReplayAction) 
     }
     case 'hypoAction': {
       // TODO: the game reducer doesn't care about the reveal action, yet
-      if (action.action.type !== 'reveal') {
-        const hypoState = original(state.ongoingHypothetical)!;
+      if (action.action.type === 'reveal') {
+        break;
+      }
 
-        state.ongoingHypothetical = gameStateReducer(hypoState, action.action);
+      const hypoState = original(state.ongoingHypothetical)!;
+      state.ongoingHypothetical = gameStateReducer(hypoState, action.action);
 
-        if (action.action.type === 'turn') {
-          // Save it for going back
-          state.hypotheticalStates.push(state.ongoingHypothetical);
-        }
+      if (action.action.type === 'turn') {
+        // Save it for going back
+        state.hypotheticalStates.push(state.ongoingHypothetical);
       }
 
       break;
