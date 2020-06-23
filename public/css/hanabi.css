@@ -63,11 +63,6 @@ input[type="radio"] + label:before,
   margin-top: 0;
 }
 
-#header h1 a {
-  color: #bbb;
-  font-weight: 300;
-}
-
 .button {
   /* Disable the ugly black border that appears when we click on a button */
   outline: none;
@@ -763,7 +758,7 @@ input::-webkit-calendar-picker-indicator {
 
 /* Hide the "Hanabi Live" header when it overlaps with the nav bar buttons */
 @media screen and (max-width: 480px) {
-  #header > h1 {
+  .lobby-header {
     display: none;
   }
 }
