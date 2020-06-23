@@ -501,6 +501,9 @@ export function empathy(this: HanabiCard) {
       return;
     }
 
+    // We might need to set activeHover again because it was cleared by a game action, for example
+    globals.activeHover = this;
+
     setEmpathyOnHand(true);
   });
   this.on('touchstart', () => {
@@ -548,10 +551,6 @@ export function empathy(this: HanabiCard) {
   });
 
   const setEmpathyOnHand = (enabled: boolean) => {
-    if (globals.activeHover !== this) {
-      return;
-    }
-
     // Disable Empathy for the stack bases
     if (this.state.order > globals.deck.length - 1) {
       return;
