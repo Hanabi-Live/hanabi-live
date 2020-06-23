@@ -52,6 +52,19 @@ func commandTableRestart(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that this person was one of the players in the game
+	leaderPlayedInOriginalGame := false
+	for _, p := range t.Players {
+		if p.Name == s.Username() {
+			leaderPlayedInOriginalGame = true
+			break
+		}
+	}
+	if !leaderPlayedInOriginalGame {
+		s.Warning("You cannot restart a game unless you played in it.")
+		return
+	}
+
 	// Validate that there are at least two people in the shared replay
 	if len(t.Spectators) < 2 {
 		s.Warning("You cannot restart a game unless there are at least two people in it.")
