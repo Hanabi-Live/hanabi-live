@@ -121,7 +121,7 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
       state.score += 1;
 
       // Gain a clue token if the stack is complete
-      if (state.playStacks[card.suit].length === 5) {
+      if (state.playStacks[card.suit].length === 5) { // Hard-code 5 cards per stack
         state.clueTokens = clues.gainClue(variant, state.clueTokens);
       }
 
@@ -196,7 +196,7 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
     turn: state.turn,
     currentPlayerIndex: state.currentPlayerIndex,
   };
-  turnState = turnReducer(turnState, action, state.hands.length);
+  turnState = turnReducer(turnState, action, state.options.numPlayers);
   state.turn = turnState.turn;
   state.currentPlayerIndex = turnState.currentPlayerIndex;
 
