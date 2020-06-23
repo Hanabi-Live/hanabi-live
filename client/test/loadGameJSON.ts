@@ -1,12 +1,11 @@
-import { VARIANTS } from '../src/game/data/gameData';
 import initialState from '../src/game/reducers/initialState';
-import initialStateOptionsBasic from '../src/game/reducers/initialStateOptionsBasic';
 import stateReducer from '../src/game/reducers/stateReducer';
 import * as handRules from '../src/game/rules/hand';
 import {
   ActionPlay, GameAction, ActionDiscard, ActionClue, ActionDraw,
 } from '../src/game/types/actions';
 import ClueType from '../src/game/types/ClueType';
+import Options from '../src/game/types/Options';
 import SimpleCard from '../src/game/types/SimpleCard';
 import State from '../src/game/types/State';
 import testGame from '../test_data/test_game.json';
@@ -28,21 +27,13 @@ interface JsonAction {
 }
 
 export default function loadGameJSON(gameJSON: JsonGame): State {
-  const numPlayers = gameJSON.players.length;
-  const actions: GameAction[] = [];
-  const stateOptions = initialStateOptionsBasic(numPlayers, gameJSON.options.variant);
-  const variant = VARIANTS.get(stateOptions.variantName);
-  if (variant === undefined) {
-    throw new Error(`Unable to find the "${stateOptions.variantName}" variant in the "VARIANTS" map.`);
-  }
+  const options = new Options();
+  options.numPlayers = gameJSON.players.length;
+  options.variantName = gameJSON.options.variant;
 
-  let topOfDeck = dealInitialCards(
-    numPlayers,
-    stateOptions.oneExtraCard,
-    stateOptions.oneLessCard,
-    actions,
-    gameJSON.deck,
-  );
+  const cardsPerHand = handRules.cardsPerHand(options.numPlayers, false, false);
+  const actions: GameAction[] = [];
+  let topOfDeck = dealInitialCards(options.numPlayers, cardsPerHand, actions, gameJSON.deck);
 
   // Parse all plays/discards/clues
   let turn = 0;
@@ -59,11 +50,11 @@ export default function loadGameJSON(gameJSON: JsonGame): State {
     }
     actions.push({ type: 'turn', num: turn, who });
     turn += 1;
-    who = (who + 1) % numPlayers;
+    who = (who + 1) % options.numPlayers;
   });
 
   // Run the list of states through the state reducer
-  const state = initialState(stateOptions);
+  const state = initialState(options);
   return stateReducer(state, { type: 'gameActionList', actions });
 }
 
@@ -79,13 +70,11 @@ function drawCard(who: number, order: number, deck: SimpleCard[]): ActionDraw {
 
 function dealInitialCards(
   numPlayers: number,
-  oneExtraCard: boolean,
-  oneLessCard: boolean,
+  cardsPerHand: number,
   actions: GameAction[],
   deck: SimpleCard[],
 ) {
   let topOfDeck = 0;
-  const cardsPerHand = handRules.cardsPerHand(numPlayers, oneExtraCard, oneLessCard);
   for (let player = 0; player < numPlayers; player++) {
     for (let card = 0; card < cardsPerHand; card++) {
       actions.push(drawCard(player, topOfDeck, deck));

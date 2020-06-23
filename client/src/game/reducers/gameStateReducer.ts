@@ -8,14 +8,19 @@ import { VARIANTS } from '../data/gameData';
 import * as clues from '../rules/clues';
 import { GameAction } from '../types/actions';
 import GameState from '../types/GameState';
+import Options from '../types/Options';
 import TurnState from '../types/TurnState';
 import statsReducer from './statsReducer';
 import turnReducer from './turnReducer';
 
-const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) => {
-  const variant = VARIANTS.get(state.options.variantName);
+const gameStateReducer = produce((
+  state: Draft<GameState>,
+  options: Options,
+  action: GameAction,
+) => {
+  const variant = VARIANTS.get(options.variantName);
   if (variant === undefined) {
-    throw new Error(`Unable to find the "${state.options.variantName}" variant in the "VARIANTS" map.`);
+    throw new Error(`Unable to find the "${options.variantName}" variant in the "VARIANTS" map.`);
   }
 
   switch (action.type) {
@@ -196,7 +201,7 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
     turn: state.turn,
     currentPlayerIndex: state.currentPlayerIndex,
   };
-  turnState = turnReducer(turnState, action, state.options.numPlayers);
+  turnState = turnReducer(turnState, action, options.numPlayers);
   state.turn = turnState.turn;
   state.currentPlayerIndex = turnState.currentPlayerIndex;
 

@@ -1,8 +1,8 @@
-import { StateOptions } from '../types/GameState';
+import Options from '../types/Options';
 import State from '../types/State';
 import initialGameState from './initialGameState';
 
-export default function initialState(options: StateOptions): State {
+export default function initialState(options: Options): State {
   const game = initialGameState(options);
   return {
     visibleState: game,

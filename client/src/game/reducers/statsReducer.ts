@@ -7,16 +7,18 @@ import * as cluesRules from '../rules/clues';
 import * as statsRules from '../rules/stats';
 import { GameAction } from '../types/actions';
 import GameState, { StateStats } from '../types/GameState';
+import Options from '../types/Options';
 
 const statsReducer = produce((
   stats: Draft<StateStats>,
+  options: Options,
   action: GameAction,
   originalState: GameState,
   currentState: GameState,
 ) => {
-  const variant = VARIANTS.get(originalState.options.variantName)!;
+  const variant = VARIANTS.get(options.variantName)!;
   if (variant === undefined) {
-    throw new Error(`Unable to find the "${originalState.options.variantName}" variant in the "VARIANTS" map.`);
+    throw new Error(`Unable to find the "${options.variantName}" variant in the "VARIANTS" map.`);
   }
 
   switch (action.type) {
