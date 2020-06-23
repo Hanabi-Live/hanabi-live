@@ -1,8 +1,8 @@
 import { DEFAULT_VARIANT_NAME } from './constants';
 
 export default class Options {
-  startingPlayer: number = 0;
-  variant: string = DEFAULT_VARIANT_NAME;
+  startingPlayer: number = 0; // Legacy field for games prior to April 2020
+  variantName: string = DEFAULT_VARIANT_NAME;
   timed: boolean = false;
   timeBase: number = 0;
   timePerTurn: number = 0;

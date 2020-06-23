@@ -224,7 +224,11 @@ export default (winW: number, winH: number) => {
     x: -0.01,
     y: 0.17,
   };
-  const numCardsPerHand = hand.cardsPerHand(globals.playerNames.length);
+  const numCardsPerHand = hand.cardsPerHand(
+    globals.playerNames.length,
+    globals.options.oneExtraCard,
+    globals.options.oneLessCard,
+  );
   for (let i = 2; i <= 6; i++) {
     let { y } = namePosBGAMod;
     if (i === 5) {

@@ -91,7 +91,7 @@ export const draw = () => {
 
   // Update the information on the left-hand side of the screen
   $('#lobby-pregame-name').text(globals.game.name);
-  $('#lobby-pregame-variant').text(globals.game.options.variant);
+  $('#lobby-pregame-variant').text(globals.game.options.variantName);
 
   const optionsTitle = $('#lobby-pregame-options-title');
   optionsTitle.text('Options:');
@@ -356,9 +356,9 @@ export const draw = () => {
       <div class="hidden">
         <div id="lobby-pregame-player-${i + 1}-tooltip" class="lobby-pregame-tooltip">
     `;
-    const variant = VARIANTS.get(globals.game.options.variant);
-    if (!variant) {
-      throw new Error(`Failed to get the "${globals.game.options.variant}" variant.`);
+    const variant = VARIANTS.get(globals.game.options.variantName);
+    if (variant === undefined) {
+      throw new Error(`Unable to find the "${globals.game.options.variantName}" variant in the "VARIANTS" map.`);
     }
     const { maxScore } = variant;
     for (let j = 2; j <= 6; j++) {

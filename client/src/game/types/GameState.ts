@@ -2,9 +2,6 @@ import StackDirection from './StackDirection';
 import Variant from './Variant';
 
 export default interface GameState {
-  // For the variant, we use a string instead of the full variant object in order to keep the
-  // GameState object as flat as possible (since it is cloned often)
-  readonly variantName: Variant['name'];
   readonly turn: number;
   readonly log: string[];
   readonly deck: StateCard[];
@@ -20,6 +17,7 @@ export default interface GameState {
   readonly discardStacks: number[][];
   readonly clues: StateClue[];
   readonly stats: StateStats;
+  readonly options: StateOptions;
 }
 
 export interface StateCard {
@@ -57,3 +55,18 @@ export interface StateStats {
 }
 
 export type PaceRisk = 'LowRisk' | 'MediumRisk' | 'HighRisk' | 'Zero' | 'Null';
+
+export interface StateOptions {
+  readonly numPlayers: number;
+  readonly startingPlayer: number; // Legacy field for games prior to April 2020
+  // For the variant, we use a string instead of the full variant object in order to keep the
+  // GameState object as flat as possible (since it is cloned often)
+  readonly variantName: Variant['name'];
+  readonly cardCycle: boolean;
+  readonly deckPlays: boolean;
+  readonly emptyClues: boolean;
+  readonly oneExtraCard: boolean;
+  readonly oneLessCard: boolean;
+  readonly allOrNothing: boolean;
+  readonly detrimentalCharacters: boolean;
+}

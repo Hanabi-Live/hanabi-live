@@ -1,24 +1,29 @@
+import { VARIANTS } from '../data/gameData';
 import * as deck from '../rules/deck';
 import * as statsRules from '../rules/stats';
 import { MAX_CLUE_NUM } from '../types/constants';
-import GameState from '../types/GameState';
+import GameState, { StateOptions } from '../types/GameState';
 import StackDirection from '../types/StackDirection';
-import Variant from '../types/Variant';
 import initialTurnState from './initialTurnState';
 
-export default function initialGameState(
-  variant: Variant,
-  playerCount: number,
-  startingPlayer: number = 0, // Legacy field for games prior to April 2020
-): GameState {
-  const turnState = initialTurnState(startingPlayer);
-  const startingPace = statsRules.startingPace(variant, playerCount);
+export default function initialGameState(options: StateOptions): GameState {
+  const variant = VARIANTS.get(options.variantName);
+  if (variant === undefined) {
+    throw new Error(`Unable to find the "${options.variantName}" variant in the "VARIANTS" map.`);
+  }
+  const turnState = initialTurnState(options.startingPlayer);
+  const startingPace = statsRules.startingPace(
+    options.numPlayers,
+    variant,
+    options.oneExtraCard,
+    options.oneLessCard,
+  );
   const hands: number[][] = [];
   const playStacksDirections: StackDirection[] = [];
   const playStacks: number[][] = [];
   const discardStacks: number[][] = [];
 
-  for (let i = 0; i < playerCount; i++) {
+  for (let i = 0; i < options.numPlayers; i++) {
     hands.push([]);
   }
 
@@ -29,7 +34,6 @@ export default function initialGameState(
   }
 
   return {
-    variantName: variant.name,
     turn: turnState.turn,
     log: [],
     deck: [],
@@ -49,8 +53,9 @@ export default function initialGameState(
       potentialCluesLost: 0,
       efficiency: Infinity,
       pace: startingPace,
-      paceRisk: statsRules.paceRisk(startingPace, playerCount),
+      paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),
       maxScore: variant.maxScore,
     },
+    options,
   };
 }

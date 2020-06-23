@@ -111,9 +111,9 @@ export const draw = (friends: boolean) => {
     } else {
       gameData = globals.historyFriends[ids[i]];
     }
-    const variant = VARIANTS.get(gameData.options.variant);
-    if (!variant) {
-      throw new Error(`Failed to get the "${gameData.options.variant}" variant.`);
+    const variant = VARIANTS.get(gameData.options.variantName);
+    if (variant === undefined) {
+      throw new Error(`Unable to find the "${gameData.options.variantName}" variant in the "VARIANTS" map.`);
     }
     const { maxScore } = variant;
 
@@ -129,7 +129,7 @@ export const draw = (friends: boolean) => {
     $('<td>').html(`${gameData.score}/${maxScore}`).appendTo(row);
 
     // Column 4 - Variant
-    $('<td>').html(gameData.options.variant).appendTo(row);
+    $('<td>').html(gameData.options.variantName).appendTo(row);
 
     // Column 5 - Other Players
     // Remove our name from the list of players
@@ -278,12 +278,12 @@ export const drawOtherScores = (games: GameHistory[], friends: boolean) => {
   if (!friends) {
     variant = games
       .filter((g) => g.id in globals.history)
-      .map((g) => globals.history[g.id].options.variant)
+      .map((g) => globals.history[g.id].options.variantName)
       .map((v) => VARIANTS.get(v))[0];
   } else if (friends) {
     variant = games
       .filter((g) => g.id in globals.historyFriends)
-      .map((g) => globals.historyFriends[g.id].options.variant)
+      .map((g) => globals.historyFriends[g.id].options.variantName)
       .map((v) => VARIANTS.get(v))[0];
   } else {
     return;

@@ -1295,7 +1295,12 @@ const drawStatistics = () => {
     arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
   });
 
-  const minEfficiency = stats.minEfficiency(globals.variant, globals.playerNames.length);
+  const minEfficiency = stats.minEfficiency(
+    globals.playerNames.length,
+    globals.variant,
+    globals.options.oneExtraCard,
+    globals.options.oneLessCard,
+  );
   const efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
     text: minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places
     x: 0.918 * winW,

@@ -14,8 +14,11 @@ const statsReducer = produce((
   originalState: GameState,
   currentState: GameState,
 ) => {
-  // Shorthand since the variant is often passed as a parameter
-  const v = VARIANTS.get(originalState.variantName)!;
+  const variant = VARIANTS.get(originalState.options.variantName)!;
+  if (variant === undefined) {
+    throw new Error(`Unable to find the "${originalState.options.variantName}" variant in the "VARIANTS" map.`);
+  }
+
   switch (action.type) {
     case 'clue': {
       // A clue was spent
@@ -45,7 +48,7 @@ const statsReducer = produce((
     case 'strike': {
       // TODO move this check to the play action when we have logic for knowing which cards play
       // A strike is equivalent to losing a clue
-      stats.potentialCluesLost += cluesRules.clueValue(v);
+      stats.potentialCluesLost += cluesRules.clueValue(variant);
       break;
     }
 
@@ -56,7 +59,7 @@ const statsReducer = produce((
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted",
         // similar to what happens when the team gets a strike
-        stats.potentialCluesLost += cluesRules.clueValue(v);
+        stats.potentialCluesLost += cluesRules.clueValue(variant);
       }
 
       const card = originalState.deck[action.which.order];

@@ -1,38 +1,52 @@
 import { VARIANTS } from '../data/gameData';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import {
-  startingPace, minEfficiency, pace, paceRisk, efficiency,
+  startingPace,
+  minEfficiency,
+  pace,
+  paceRisk,
+  efficiency,
 } from './stats';
 
+const defaultVariant = VARIANTS.get(DEFAULT_VARIANT_NAME);
+if (defaultVariant === undefined) {
+  throw new Error('Unable to find the default variant in the "VARIANTS" map.');
+}
+const blackVariantName = 'Black (6 Suits)';
+const blackVariant = VARIANTS.get(blackVariantName);
+if (blackVariant === undefined) {
+  throw new Error(`Unable to find the "${blackVariantName}" variant in the "VARIANTS" map.`);
+}
+
 describe('startingPace', () => {
-  test('returns 13 for No Variant, 4 player', () => {
-    expect(startingPace(VARIANTS.get(DEFAULT_VARIANT_NAME)!, 4)).toBe(13);
+  test('returns 17 for 2-player No Variant', () => {
+    expect(startingPace(2, defaultVariant, false, false)).toBe(17);
   });
-  test('returns 17 for No Variant, 2 player', () => {
-    expect(startingPace(VARIANTS.get(DEFAULT_VARIANT_NAME)!, 2)).toBe(17);
+  test('returns 13 for 4-player No Variant', () => {
+    expect(startingPace(4, defaultVariant, false, false)).toBe(13);
   });
 
-  test('returns 13 for Black (6 Suits), 4 player', () => {
-    expect(startingPace(VARIANTS.get('Black (6 Suits)')!, 4)).toBe(13);
+  test('returns 17 for 2-player Black (6 Suits)', () => {
+    expect(startingPace(2, blackVariant, false, false)).toBe(17);
   });
-  test('returns 17 for Black (6 Suits), 2 player', () => {
-    expect(startingPace(VARIANTS.get('Black (6 Suits)')!, 2)).toBe(17);
+  test('returns 13 for 4-player Black (6 Suits)', () => {
+    expect(startingPace(4, blackVariant, false, false)).toBe(13);
   });
 });
 
 describe('minEfficiency', () => {
-  test('returns about 1 for No Variant, 4 player', () => {
-    expect(minEfficiency(VARIANTS.get(DEFAULT_VARIANT_NAME)!, 4)).toBeCloseTo(1);
+  test('returns about 0.86 for 2-player No Variant', () => {
+    expect(minEfficiency(2, defaultVariant, false, false)).toBeCloseTo(0.86);
   });
-  test('returns about 0.86 for No Variant, 2 player', () => {
-    expect(minEfficiency(VARIANTS.get(DEFAULT_VARIANT_NAME)!, 2)).toBeCloseTo(0.86);
+  test('returns about 1 for 4-player No Variant', () => {
+    expect(minEfficiency(4, defaultVariant, false, false)).toBeCloseTo(1);
   });
 
-  test('returns about 1.15 for Black (6 Suits), 4 player', () => {
-    expect(minEfficiency(VARIANTS.get('Black (6 Suits)')!, 4)).toBeCloseTo(1.15);
+  test('returns about 1 for 2-player Black (6 Suits)', () => {
+    expect(minEfficiency(2, blackVariant, false, false)).toBeCloseTo(1);
   });
-  test('returns about 1 for Black (6 Suits), 2 player', () => {
-    expect(minEfficiency(VARIANTS.get('Black (6 Suits)')!, 2)).toBeCloseTo(1);
+  test('returns about 1.15 for 4-player Black (6 Suits)', () => {
+    expect(minEfficiency(4, blackVariant, false, false)).toBeCloseTo(1.15);
   });
 });
 
@@ -40,7 +54,7 @@ describe('pace', () => {
   test('is null when deckSize is 0', () => {
     expect(pace(25, 0, 25, 4)).toBeNull();
   });
-  test('returns +13 at the beginning of a No Variant, 4 player game', () => {
+  test('returns +13 at the beginning of a 4-player No Variant game', () => {
     expect(pace(0, 34, 25, 4)).toBe(13);
   });
 });

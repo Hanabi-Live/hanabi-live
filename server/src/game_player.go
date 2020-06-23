@@ -166,7 +166,7 @@ func (p *GamePlayer) RemoveCard(target int) *Card {
 	c := p.Hand[i]
 
 	// Mark what the "slot" number is
-	// e.g. slot 1 is the newest (left-most) card, which is index 5 (in a 3 player game)
+	// e.g. slot 1 is the newest (left-most) card, which is index 5 (in a 3-player game)
 	c.Slot = p.GetCardSlot(target)
 
 	// Remove it from the hand

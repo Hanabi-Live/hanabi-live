@@ -1,13 +1,9 @@
+import { StateOptions } from '../types/GameState';
 import State from '../types/State';
-import Variant from '../types/Variant';
 import initialGameState from './initialGameState';
 
-export default function initialState(
-  variant: Variant,
-  playerCount: number,
-  startingPlayer: number = 0,
-): State {
-  const game = initialGameState(variant, playerCount, startingPlayer);
+export default function initialState(options: StateOptions): State {
+  const game = initialGameState(options);
   return {
     visibleState: game,
     ongoingGame: game,

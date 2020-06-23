@@ -1,7 +1,6 @@
 // The main reducer for the game mode, contemplating replays and game actions
 
 import produce, { Draft, original } from 'immer';
-import { VARIANTS } from '../data/gameData';
 import { Action, GameAction } from '../types/actions';
 import GameState from '../types/GameState';
 import State from '../types/State';
@@ -13,10 +12,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
   switch (action.type) {
     case 'gameActionList': {
       // Calculate all the intermediate states
-      const initial = initialGameState(
-        VARIANTS.get(state.ongoingGame.variantName)!,
-        state.ongoingGame.hands.length,
-      );
+      const initial = initialGameState(state.ongoingGame.options);
       const states: GameState[] = [initial];
 
       state.ongoingGame = action.actions.reduce((s: GameState, a: GameAction) => {

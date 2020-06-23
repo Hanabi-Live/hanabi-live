@@ -1,5 +1,6 @@
 import { VARIANTS } from '../src/game/data/gameData';
 import initialState from '../src/game/reducers/initialState';
+import initialStateOptionsBasic from '../src/game/reducers/initialStateOptionsBasic';
 import stateReducer from '../src/game/reducers/stateReducer';
 import * as handRules from '../src/game/rules/hand';
 import {
@@ -17,7 +18,7 @@ enum JsonActionType {
   ActionTypeDiscard = 1,
   ActionTypeColorClue = 2,
   ActionTypeRankClue = 3,
-  ActionTypeGameOver = 4
+  ActionTypeGameOver = 4,
 }
 
 interface JsonAction {
@@ -26,33 +27,43 @@ interface JsonAction {
   value: number;
 }
 
-export default function loadGameJSON(gameJson: JsonGame): State {
-  const playerCount = gameJson.players.length;
-  const variant = VARIANTS.get(gameJson.options.variant)!;
+export default function loadGameJSON(gameJSON: JsonGame): State {
+  const numPlayers = gameJSON.players.length;
   const actions: GameAction[] = [];
+  const stateOptions = initialStateOptionsBasic(numPlayers, gameJSON.options.variant);
+  const variant = VARIANTS.get(stateOptions.variantName);
+  if (variant === undefined) {
+    throw new Error(`Unable to find the "${stateOptions.variantName}" variant in the "VARIANTS" map.`);
+  }
 
-  let topOfDeck = drawInitialHands(playerCount, actions, gameJson.deck);
+  let topOfDeck = dealInitialCards(
+    numPlayers,
+    stateOptions.oneExtraCard,
+    stateOptions.oneLessCard,
+    actions,
+    gameJSON.deck,
+  );
 
   // Parse all plays/discards/clues
   let turn = 0;
   let who = 0;
 
-  gameJson.actions.forEach((a) => {
-    const action = parseJsonAction(who, turn, gameJson.deck, a);
+  gameJSON.actions.forEach((a) => {
+    const action = parseJsonAction(who, turn, gameJSON.deck, a);
     if (action) {
       actions.push(action);
-      if (topOfDeck < gameJson.deck.length && (action.type === 'discard' || action.type === 'play')) {
-        actions.push(drawCard(who, topOfDeck, gameJson.deck));
+      if (topOfDeck < gameJSON.deck.length && (action.type === 'discard' || action.type === 'play')) {
+        actions.push(drawCard(who, topOfDeck, gameJSON.deck));
         topOfDeck += 1;
       }
     }
     actions.push({ type: 'turn', num: turn, who });
     turn += 1;
-    who = (who + 1) % playerCount;
+    who = (who + 1) % numPlayers;
   });
 
   // Run the list of states through the state reducer
-  const state = initialState(variant, playerCount);
+  const state = initialState(stateOptions);
   return stateReducer(state, { type: 'gameActionList', actions });
 }
 
@@ -66,14 +77,17 @@ function drawCard(who: number, order: number, deck: SimpleCard[]): ActionDraw {
   };
 }
 
-function drawInitialHands(
-  playerCount: number,
+function dealInitialCards(
+  numPlayers: number,
+  oneExtraCard: boolean,
+  oneLessCard: boolean,
   actions: GameAction[],
   deck: SimpleCard[],
 ) {
   let topOfDeck = 0;
-  for (let player = 0; player < playerCount; player++) {
-    for (let card = 0; card < handRules.cardsPerHand(playerCount); card++) {
+  const cardsPerHand = handRules.cardsPerHand(numPlayers, oneExtraCard, oneLessCard);
+  for (let player = 0; player < numPlayers; player++) {
+    for (let card = 0; card < cardsPerHand; card++) {
       actions.push(drawCard(player, topOfDeck, deck));
       topOfDeck += 1;
     }

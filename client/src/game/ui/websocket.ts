@@ -4,6 +4,7 @@ import { createStore } from 'redux';
 import * as sentry from '../../sentry';
 import { VARIANTS } from '../data/gameData';
 import initialState from '../reducers/initialState';
+import initialStateOptions from '../reducers/initialStateOptions';
 import stateReducer from '../reducers/stateReducer';
 import * as variantRules from '../rules/variant';
 import { GameAction, ActionIncludingHypothetical } from '../types/actions';
@@ -260,19 +261,16 @@ commands.set('init', (data: InitData) => {
   globals.options = data.options;
 
   // Set the variant
-  const variant = VARIANTS.get(globals.options.variant);
+  const variant = VARIANTS.get(globals.options.variantName);
   if (variant === undefined) {
-    throw new Error(`The "init" command was sent with an invalid variant name of "${globals.options.variant}".`);
+    throw new Error(`The "init" command was sent with an invalid variant name of "${globals.options.variantName}".`);
   } else {
     globals.variant = variant;
   }
 
   // Recreate the store
-  globals.store = createStore(stateReducer, initialState(
-    variant,
-    globals.playerNames.length,
-    globals.options.startingPlayer,
-  ));
+  const stateOptions = initialStateOptions(globals.playerNames.length, globals.options);
+  globals.store = createStore(stateReducer, initialState(stateOptions));
 
   // Character settings
   globals.characterAssignments = data.characterAssignments;

@@ -18,7 +18,7 @@ export function pace(
   score: number,
   deckSize: number,
   maxScore: number,
-  playerCount: number,
+  numPlayers: number,
 ): number | null {
   if (deckSize <= 0) {
     return null;
@@ -26,11 +26,11 @@ export function pace(
 
   // The formula for pace was derived by Libster
   const adjustedScorePlusDeck = score + deckSize - maxScore;
-  return adjustedScorePlusDeck + playerCount;
+  return adjustedScorePlusDeck + numPlayers;
 }
 
 // A measure of how risky a discard would be right now, using different heuristics
-export function paceRisk(currentPace: number | null, playerCount: number): PaceRisk {
+export function paceRisk(currentPace: number | null, numPlayers: number): PaceRisk {
   if (currentPace === null) {
     return 'Null';
   }
@@ -41,13 +41,13 @@ export function paceRisk(currentPace: number | null, playerCount: number): PaceR
 
   // Formula derived by Florrat;
   // a strategical estimate of "End-Game" that tries to account for the number of players
-  if (currentPace - playerCount + Math.floor(playerCount / 2) < 0) {
+  if (currentPace - numPlayers + Math.floor(numPlayers / 2) < 0) {
     return 'HighRisk';
   }
 
   // Formula derived by Hyphen-ated;
   // a more conservative estimate of "End-Game" that does not account for the number of players
-  if (currentPace - playerCount < 0) {
+  if (currentPace - numPlayers < 0) {
     return 'MediumRisk';
   }
 
@@ -59,9 +59,15 @@ export function paceRisk(currentPace: number | null, playerCount: number): PaceR
 //   ((number of cards in a player's hand - 1) * number of players) -
 //   (5 * number of suits)
 // https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
-export function startingPace(variant: Variant, playerCount: number): number {
+export function startingPace(
+  numPlayers: number,
+  variant: Variant,
+  oneExtraCard: boolean,
+  oneLessCard: boolean,
+): number {
   let p = deck.totalCards(variant);
-  p -= (hand.cardsPerHand(playerCount) - 1) * playerCount;
+  const cardsPerHand = hand.cardsPerHand(numPlayers, oneExtraCard, oneLessCard);
+  p -= (cardsPerHand - 1) * numPlayers;
   p -= 5 * variant.suits.length;
   return p;
 }
@@ -79,9 +85,14 @@ export function efficiency(cardsGotten: number, potentialCluesLost: number): num
 }
 
 // Calculate the minimum amount of efficiency needed in order to win this variant
-export function minEfficiency(variant: Variant, playerCount: number): number {
+export function minEfficiency(
+  numPlayers: number,
+  variant: Variant,
+  oneExtraCard: boolean,
+  oneLessCard: boolean,
+): number {
   // First, calculate the starting pace:
-  const initialPace = startingPace(variant, playerCount);
+  const initialPace = startingPace(numPlayers, variant, oneExtraCard, oneLessCard);
 
   // Second, use the pace to calculate the minimum efficiency required to win the game with the
   // following formula:
@@ -96,7 +107,7 @@ export function minEfficiency(variant: Variant, playerCount: number): number {
     cluesGainedAfterCompletingSuits = 0;
   }
   let unusableClues = 1;
-  if (playerCount >= 5) {
+  if (numPlayers >= 5) {
     unusableClues = 2;
   }
   if (variantRules.isThrowItInAHole(variant)) {

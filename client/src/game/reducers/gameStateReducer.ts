@@ -13,8 +13,11 @@ import statsReducer from './statsReducer';
 import turnReducer from './turnReducer';
 
 const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) => {
-  // Shorthand since the variant is often passed as a parameter
-  const v = VARIANTS.get(state.variantName)!;
+  const variant = VARIANTS.get(state.options.variantName);
+  if (variant === undefined) {
+    throw new Error(`Unable to find the "${state.options.variantName}" variant in the "VARIANTS" map.`);
+  }
+
   switch (action.type) {
     // A player just gave a clue
     // {clue: {type: 0, value: 1}, giver: 1, list: [11], target: 2, turn: 0, type: "clue"}
@@ -68,7 +71,7 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
       state.discardStacks[card.suit].push(action.which.order);
 
       if (!action.failed) {
-        state.clueTokens = clues.gainClue(v, state.clueTokens);
+        state.clueTokens = clues.gainClue(variant, state.clueTokens);
       }
 
       break;
@@ -119,7 +122,7 @@ const gameStateReducer = produce((state: Draft<GameState>, action: GameAction) =
 
       // Gain a clue token if the stack is complete
       if (state.playStacks[card.suit].length === 5) {
-        state.clueTokens = clues.gainClue(v, state.clueTokens);
+        state.clueTokens = clues.gainClue(variant, state.clueTokens);
       }
 
       break;

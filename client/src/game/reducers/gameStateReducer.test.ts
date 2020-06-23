@@ -6,21 +6,18 @@ import { // Direct import instead of namespace import for compactness
   strike,
   text,
 } from '../../../test/testActions';
-import { VARIANTS } from '../data/gameData';
 import ClueType from '../types/ClueType';
-import { DEFAULT_VARIANT_NAME, MAX_CLUE_NUM } from '../types/constants';
+import { MAX_CLUE_NUM, DEFAULT_VARIANT_NAME } from '../types/constants';
 import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialGameState';
+import initialStateOptionsBasic from './initialStateOptionsBasic';
 
-const defaultVariant = VARIANTS.get(DEFAULT_VARIANT_NAME);
-if (defaultVariant === undefined) {
-  throw new Error('Unable to find the default variant in the "VARIANTS" map.');
-}
+const defaultOptions = initialStateOptionsBasic(3, DEFAULT_VARIANT_NAME);
 
 describe('stateReducer', () => {
   test('does not mutate state', () => {
-    const state = initialGameState(defaultVariant, 3);
-    const unchangedState = initialGameState(defaultVariant, 3);
+    const state = initialGameState(defaultOptions);
+    const unchangedState = initialGameState(defaultOptions);
     const newState = gameStateReducer(state, text('doesn\'t matter'));
     expect(newState).not.toEqual(state);
     expect(newState).not.toStrictEqual(state);
@@ -29,9 +26,9 @@ describe('stateReducer', () => {
 
   describe('turn', () => {
     test('is properly incremented (integration test)', () => {
-      const initialState = initialGameState(defaultVariant, 3);
+      const initialState = initialGameState(defaultOptions);
 
-      let state = initialGameState(defaultVariant, 3);
+      let state = initialGameState(defaultOptions);
       const testClue = clue(ClueType.Rank, 5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue);
       expect(state.turn).toBeGreaterThan(initialState.turn);
@@ -40,9 +37,9 @@ describe('stateReducer', () => {
 
   describe('currentPlayerIndex', () => {
     test('is properly incremented (integration test)', () => {
-      const initialState = initialGameState(defaultVariant, 3);
+      const initialState = initialGameState(defaultOptions);
 
-      let state = initialGameState(defaultVariant, 3);
+      let state = initialGameState(defaultOptions);
       const testClue = clue(ClueType.Rank, 5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue);
       expect(state.currentPlayerIndex).not.toEqual(initialState.currentPlayerIndex);
@@ -51,7 +48,7 @@ describe('stateReducer', () => {
 
   describe('efficiency', () => {
     test('is Infinity after a play on the first turn', () => {
-      let state = initialGameState(defaultVariant, 3);
+      let state = initialGameState(defaultOptions);
 
       // Draw a red 1
       state = gameStateReducer(state, draw(0, 1, 0, 0));
@@ -64,7 +61,7 @@ describe('stateReducer', () => {
     });
 
     test('is 0 after a misplay on the first turn', () => {
-      let state = initialGameState(defaultVariant, 3);
+      let state = initialGameState(defaultOptions);
 
       // Draw a red 1
       state = gameStateReducer(state, draw(0, 1, 0, 0));
@@ -81,7 +78,7 @@ describe('stateReducer', () => {
     });
 
     test('is 3 after a 3-for-1 clue', () => {
-      let state = initialGameState(defaultVariant, 3);
+      let state = initialGameState(defaultOptions);
 
       // Draw a red 1, 2 and 3
       for (let i = 0; i < 3; i++) {
@@ -98,10 +95,10 @@ describe('stateReducer', () => {
 
   describe('clues', () => {
     test('are added to the list of clues', () => {
-      const initialState = initialGameState(defaultVariant, 3);
+      const initialState = initialGameState(defaultOptions);
 
       // Player 1 gives a random clue to player 0
-      let state = initialGameState(defaultVariant, 3);
+      let state = initialGameState(defaultOptions);
       const testClue = clue(ClueType.Rank, 5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue);
 
@@ -114,7 +111,7 @@ describe('stateReducer', () => {
     });
 
     test('decrement clueTokens', () => {
-      let state = initialGameState(defaultVariant, 3);
+      let state = initialGameState(defaultOptions);
 
       // Player 1 gives a random clue to player 0
       const testClue = clue(ClueType.Rank, 5, 1, [], 0, 2);
@@ -126,8 +123,8 @@ describe('stateReducer', () => {
 
   describe('texts', () => {
     test('are added to the log', () => {
-      const initialState = initialGameState(defaultVariant, 3);
-      let state = initialGameState(defaultVariant, 3);
+      const initialState = initialGameState(defaultOptions);
+      let state = initialGameState(defaultOptions);
 
       const testText = text('testing');
       state = gameStateReducer(state, testText);
@@ -139,7 +136,7 @@ describe('stateReducer', () => {
 
   describe('plays', () => {
     test('increase the score by 1', () => {
-      let state = initialGameState(defaultVariant, 3);
+      let state = initialGameState(defaultOptions);
 
       // Draw a red 1
       state = gameStateReducer(state, draw(0, 1, 0, 0));
