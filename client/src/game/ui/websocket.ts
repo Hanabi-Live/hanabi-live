@@ -4,7 +4,6 @@ import { createStore } from 'redux';
 import * as sentry from '../../sentry';
 import { VARIANTS } from '../data/gameData';
 import initialState from '../reducers/initialState';
-import initialStateOptions from '../reducers/initialStateOptions';
 import stateReducer from '../reducers/stateReducer';
 import * as variantRules from '../rules/variant';
 import { GameAction, ActionIncludingHypothetical } from '../types/actions';
@@ -269,8 +268,7 @@ commands.set('init', (data: InitData) => {
   }
 
   // Recreate the store
-  const stateOptions = initialStateOptions(globals.playerNames.length, globals.options);
-  globals.store = createStore(stateReducer, initialState(stateOptions));
+  globals.store = createStore(stateReducer, initialState(globals.options));
 
   // Character settings
   globals.characterAssignments = data.characterAssignments;
