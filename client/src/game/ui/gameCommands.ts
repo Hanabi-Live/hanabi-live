@@ -373,12 +373,12 @@ commands.set('noteListPlayer', (data: NoteListPlayerData) => {
   // Check for special notes
   for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
     const card = globals.deck[i];
-    notes.checkSpecialNote(card);
+    card.checkSpecialNote();
   }
 
   // Check for special notes on the stack bases
   for (const stackBase of globals.stackBases) {
-    notes.checkSpecialNote(stackBase);
+    stackBase.checkSpecialNote();
   }
 });
 

@@ -345,9 +345,7 @@ const drawPlayStacks = () => {
       order: deck.totalCards(globals.variant) + i,
     });
     globals.stackBases.push(stackBase);
-    stackBase.state.suit = suit;
-    stackBase.state.rank = STACK_BASE_RANK;
-    stackBase.refresh();
+    stackBase.refresh(suit, STACK_BASE_RANK);
 
     // Create the LayoutChild that will be the parent of the stack base
     const child = new LayoutChild();

@@ -10,7 +10,8 @@ import {
 } from '../../constants';
 import { SUITS } from '../data/gameData';
 import * as variantRules from '../rules/variant';
-import CardState, { cardInitialState } from '../types/CardState';
+import CardNote from '../types/CardNote';
+import CardState, { cardInitialState, PipState } from '../types/CardState';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
 import Color from '../types/Color';
@@ -18,43 +19,61 @@ import { STACK_BASE_RANK, START_CARD_RANK, UNKNOWN_CARD_RANK } from '../types/co
 import StackDirection from '../types/StackDirection';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
+import * as arrows from './arrows';
+import CardLayout from './CardLayout';
 import NodeWithTooltip from './controls/NodeWithTooltip';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';
 import { msgSuitToSuit } from './convert';
 import globals from './globals';
+import HanabiCardClick from './HanabiCardClick';
+import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
 import * as HanabiCardInit from './HanabiCardInit';
 import LayoutChild from './LayoutChild';
 import * as notes from './notes';
 import possibilitiesCheck from './possibilitiesCheck';
 import * as reversible from './variants/reversible';
 
+const DECK_BACK_IMAGE = 'deck-back';
+
 export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   state: CardState;
-  bareName: string = '';
 
   tweening: boolean = false;
   wasRecentlyTapped: boolean = false;
   touchstartTimeout: ReturnType<typeof setTimeout> | null = null;
   doMisplayAnimation: boolean = false;
-
-  bare: Konva.Image | null = null;
-  cluedBorder: Konva.Group | null = null;
-  chopMoveBorder: Konva.Group | null = null;
-  finesseBorder: Konva.Group | null = null;
-  suitPips: Konva.Group | null = null;
-  suitPipsMap: Map<Suit, Konva.Shape> = new Map<Suit, Konva.Shape>();
-  suitPipsXMap: Map<Suit, Konva.Shape> = new Map<Suit, Konva.Shape>();
-  rankPips: Konva.Group | null = null;
-  rankPipsMap: Map<number, RankPip> = new Map<number, RankPip>();
-  rankPipsXMap: Map<number, Konva.Shape> = new Map<number, Konva.Shape>();
-  noteIndicator: NoteIndicator | null = null;
   tooltipName: string = '';
-  trashcan: Konva.Image | null = null;
-  wrench: Konva.Image | null = null;
-  arrow: Konva.Group | null = null;
-  arrowBase: Konva.Arrow | null = null;
-  criticalIndicator: Konva.Image | null = null;
+  noteIndicator: NoteIndicator;
+  note: CardNote = {
+    suit: null,
+    rank: null,
+    chopMoved: false,
+    needsFix: false,
+    knownTrash: false,
+    finessed: false,
+    blank: false,
+    unclued: false,
+  };
+
+  private cluedBorder: Konva.Group;
+  private chopMoveBorder: Konva.Group;
+  private finesseBorder: Konva.Group;
+
+  private suitPips: Konva.Group;
+  private rankPips: Konva.Group;
+  private bareName: string = '';
+  private bare: Konva.Image;
+  private suitPipsMap: Map<Suit, Konva.Shape>;
+  private suitPipsXMap: Map<Suit, Konva.Shape>;
+  private rankPipsMap: Map<number, RankPip>;
+  private rankPipsXMap: Map<number, Konva.Shape>;
+  private trashcan: Konva.Image;
+  private wrench: Konva.Image;
+  private criticalIndicator: Konva.Image;
+
+  private arrow: Konva.Group | null = null;
+  private arrowBase: Konva.Arrow | null = null;
 
   empathy: boolean = false;
 
@@ -80,29 +99,61 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.bare = HanabiCardInit.image(() => this.bareName);
     this.add(this.bare);
 
-    const { cluedBorder, finesseBorder, chopMoveBorder } = HanabiCardInit.borders();
-    this.cluedBorder = cluedBorder;
-    this.finesseBorder = finesseBorder;
-    this.chopMoveBorder = chopMoveBorder;
+    this.cluedBorder = HanabiCardInit.cluedBorder();
+    this.finesseBorder = HanabiCardInit.finesseBorder();
+    this.chopMoveBorder = HanabiCardInit.chopMoveBorder();
     this.add(this.cluedBorder);
     this.add(this.finesseBorder);
     this.add(this.chopMoveBorder);
 
-    this.arrow = HanabiCardInit.directionArrow(globals.variant);
-    if (this.arrow) {
+    const arrowElements = HanabiCardInit.directionArrow(globals.variant);
+    if (arrowElements) {
+      this.arrow = arrowElements.arrow;
+      this.arrowBase = arrowElements.arrowBase;
       this.add(this.arrow);
     }
 
-    HanabiCardInit.pips.call(this);
-    HanabiCardInit.note.call(this);
-    HanabiCardInit.empathy.call(this);
-    HanabiCardInit.click.call(this);
-    HanabiCardInit.fadedImages.call(this);
-    HanabiCardInit.criticalIndicator.call(this);
+    const pips = HanabiCardInit.pips(globals.variant);
+    this.suitPipsMap = pips.suitPipsMap;
+    this.suitPipsXMap = pips.suitPipsXMap;
+    this.rankPipsMap = pips.rankPipsMap;
+    this.rankPipsXMap = pips.rankPipsXMap;
+    this.suitPips = pips.suitPips;
+    this.rankPips = pips.rankPips;
+    this.add(this.suitPips);
+    this.add(this.rankPips);
+
+    this.noteIndicator = HanabiCardInit.note(
+      globals.variant.offsetCornerElements,
+      () => notes.shouldShowIndicator(this.state.order),
+    );
+    this.add(this.noteIndicator);
+
+    this.criticalIndicator = HanabiCardInit.criticalIndicator(globals.variant.offsetCornerElements);
+    this.add(this.criticalIndicator);
+
+    this.trashcan = HanabiCardInit.trashcan();
+    this.add(this.trashcan);
+    this.wrench = HanabiCardInit.wrench();
+    this.add(this.wrench);
+
+    // Register mouse events
+    this.initTooltip();
+    this.initEmpathy();
+    this.registerClick();
   }
 
   // Erase all of the data on the card to make it like it was freshly drawn
-  refresh() {
+  refresh(suit: Suit | null, rank: number | null) {
+    // Reset visual state
+    this.tweening = false;
+    this.empathy = false;
+    this.doMisplayAnimation = false;
+
+    // We might have some information about this card already
+    this.state.suit = suit;
+    this.state.rank = rank;
+
     // Possible suits and ranks (based on clues given) are tracked separately
     // from knowledge of the true suit and rank
     this.state.colorClueMemory.possibilities = globals.variant.suits.slice();
@@ -110,11 +161,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Possible cards (based on both clues given and cards seen) are also tracked separately
     this.state.possibleCards = new Map(globals.cardsMap); // Start by cloning the "globals.cardsMap"
     this.state.identityDetermined = false;
-    this.tweening = false;
-    this.wasRecentlyTapped = false;
-    this.touchstartTimeout = null;
-    this.empathy = false;
-    this.doMisplayAnimation = false;
     this.state.numPositiveClues = 0;
     this.state.colorClueMemory.positiveClues = [];
     this.state.colorClueMemory.negativeClues = [];
@@ -137,11 +183,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.setClued();
     if (!globals.replay && !globals.spectating) {
       // If it has a "chop move" note on it, we want to keep the chop move border turned on
-      if (this.state.noteChopMoved) {
+      if (this.note?.chopMoved) {
         this.chopMoveBorder!.show();
       }
       // If it has a "finessed" note on it, we want to keep the finesse border turned on
-      if (this.state.noteFinessed) {
+      if (this.note?.finessed) {
         this.finesseBorder!.show();
       }
     }
@@ -170,8 +216,51 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
     }
 
-    HanabiCardInit.possibilities.call(this);
+    this.resetPossibilities();
     this.setBareImage();
+
+    if (suit && rank) {
+      // Hide the pips if we have full knowledge of the suit / rank
+      this.suitPips!.visible(false);
+      this.rankPips!.visible(false);
+    }
+  }
+
+  resetPossibilities() {
+    if (!possibilitiesCheck()) {
+      return;
+    }
+
+    // We want to remove all of the currently seen cards from the list of possibilities
+    for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
+      const card = globals.deck[i];
+
+      // Don't do anything if this is one of our unknown cards
+      if (card.state.suit === null || card.state.rank === null) {
+        continue;
+      }
+
+      // If the card is still in the player's hand and it is not fully "filled in" with clues,
+      // then we cannot remove it from the list of possibilities
+      // (because they do not know what it is yet)
+      if (
+        card.state.holder === this.state.holder
+        && (card.state.colorClueMemory.possibilities.length > 1
+          || card.state.rankClueMemory.possibilities.length > 1)
+      ) {
+        continue;
+      }
+
+      removePossibility(globals.variant, card.state, card.state.suit, card.state.rank, false);
+    }
+  }
+
+  setHolder(holder: number) {
+    this.state.holder = holder;
+  }
+
+  unsetBlank() {
+    this.state.blank = false;
   }
 
   setClued() {
@@ -179,7 +268,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this.state.numPositiveClues > 0
       && !this.state.isPlayed
       && !this.state.isDiscarded
-      && !this.state.noteUnclued
+      && !this.note.unclued
     );
 
     // When cards are clued,
@@ -207,6 +296,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return this.state.numPositiveClues > 0;
   }
 
+  markPositiveClue() {
+    this.state.numPositiveClues += 1;
+  }
+
   setBareImage() {
     // Optimization: This function is expensive, so don't do it in replays
     // unless we got to the final destination
@@ -225,28 +318,28 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Find out the suit to display
     // (Unknown is a colorless suit used for unclued cards)
-    let suitToShow;
+    let suitToShow: Suit | undefined | null;
     if (this.empathy) {
       // If we are in Empathy mode, only show the suit if there is only one possibility left
       if (this.state.colorClueMemory.possibilities.length === 1) {
         [suitToShow] = this.state.colorClueMemory.possibilities;
       } else {
-        suitToShow = SUITS.get('Unknown');
+        suitToShow = SUITS.get('Unknown')!;
       }
     } else {
       // If we are not in Empathy mode, then show the suit if it is known
-      suitToShow = learnedCard.suit;
+      suitToShow = learnedCard.suit!;
       if (
         this.state.rank === STACK_BASE_RANK
-        && this.state.noteSuit !== null
+        && this.note?.suit !== null
         && !globals.replay
       ) {
         // The card note suit has precedence over the "real" suit,
         // but only for the stack bases (and not in replays)
-        suitToShow = this.state.noteSuit;
+        suitToShow = this.note?.suit;
       }
       if (suitToShow === null) {
-        suitToShow = this.state.noteSuit;
+        suitToShow = this.note?.suit;
       }
       if (suitToShow === null) {
         suitToShow = SUITS.get('Unknown');
@@ -268,15 +361,15 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       rankToShow = learnedCard.rank;
       if (
         this.state.rank === STACK_BASE_RANK
-        && this.state.noteRank !== null
+        && this.note?.rank !== null
         && !globals.replay
       ) {
         // The card note rank has precedence over the "real" rank,
         // but only for the stack bases (and not in replays)
-        rankToShow = this.state.noteRank;
+        rankToShow = this.note?.rank;
       }
       if (rankToShow === null) {
-        rankToShow = this.state.noteRank;
+        rankToShow = this.note?.rank;
       }
       if (rankToShow === null) {
         rankToShow = 6;
@@ -288,7 +381,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // the "card" layer is drawn)
     if (this.state.blank) {
       // The "blank" property is set when the card should appear blank no matter what
-      this.bareName = 'deck-back';
+      this.bareName = DECK_BACK_IMAGE;
 
       // Disable dragging of this card
       const layoutChild = this.parent;
@@ -298,14 +391,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
     } else if (
       // A "blank" note means that the user wants to force the card to appear blank
-      this.state.noteBlank
+      this.note?.blank
       && !this.empathy
       && !this.state.isPlayed
       && !this.state.isDiscarded
       && !globals.replay
       && !globals.spectating
     ) {
-      this.bareName = 'deck-back';
+      this.bareName = DECK_BACK_IMAGE;
     } else if (
       (
         globals.lobby.settings.realLifeMode
@@ -315,7 +408,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     ) {
       // In Real-Life mode or Cow & Pig / Duck variants,
       // always show the vanilla card back if the card is not fully revealed
-      this.bareName = 'deck-back';
+      this.bareName = DECK_BACK_IMAGE;
     } else {
       this.bareName = `card-${suitToShow!.name}-${rankToShow}`;
     }
@@ -336,7 +429,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Show or hide the "trash" image
     this.trashcan!.visible((
-      this.state.noteKnownTrash
+      (this.note ? this.note.knownTrash : false)
       && !this.empathy
       && !this.state.isPlayed
       && !this.state.isDiscarded
@@ -346,7 +439,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Show or hide the "fixme" image
     this.wrench!.visible((
-      this.state.noteNeedsFix
+      (this.note ? this.note.needsFix : false)
       && !this.empathy
       && !this.state.isPlayed
       && !this.state.isDiscarded
@@ -465,8 +558,19 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !globals.lobby.settings.realLifeMode
       && !this.state.isPlayed
       && !this.state.isDiscarded
-      && !this.state.noteBlank
+      && !this.note.blank
     ));
+  }
+
+  discard(turn: number, failed: boolean) {
+    this.state.isDiscarded = true;
+    this.state.turnDiscarded = turn;
+    this.state.isMisplayed = failed;
+  }
+
+  play(turn: number) {
+    this.state.isPlayed = true;
+    this.state.turnPlayed = turn;
   }
 
   // This card was touched by a positive or negative clue,
@@ -485,27 +589,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     );
     if (wasFullyKnown) {
       return;
-    }
-
-    // Mark all turns that this card is positively clued
-    if (positive) {
-      // We add one because the "clue" action comes before the "turn" action
-      state.turnsClued.push(globals.turn + 1);
-    }
-
-    // Record unique clues that touch the card for later
-    if (clue.type === ClueType.Color) {
-      if (positive && !state.colorClueMemory.positiveClues.includes(clue.value as Color)) {
-        state.colorClueMemory.positiveClues.push(clue.value as Color);
-      } else if (!positive && !state.colorClueMemory.negativeClues.includes(clue.value as Color)) {
-        state.colorClueMemory.negativeClues.push(clue.value as Color);
-      }
-    } else if (clue.type === ClueType.Rank) {
-      if (positive && !state.rankClueMemory.positiveClues.includes(clue.value as number)) {
-        state.rankClueMemory.positiveClues.push(clue.value as number);
-      } else if (!positive && !state.rankClueMemory.negativeClues.includes(clue.value as number)) {
-        state.rankClueMemory.negativeClues.push(clue.value as number);
-      }
     }
 
     const { suitsRemoved, ranksRemoved } = applyClueCore(
@@ -531,12 +614,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         }
       }
 
-      // Check for note impossibilities
-      // e.g. a note of "r" is now impossible because we know that it is not a red card
-      if (state.noteSuit === suitRemoved && state.noteRank === null) {
-        unmorph(state);
-      }
-
       if (suitRemoved.allClueRanks || suitRemoved.noClueRanks) {
         // Mark to retroactively apply rank clues when we return from this function
         shouldReapplyRankClues = true;
@@ -555,12 +632,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         }
       }
 
-      // Check for note impossibilities
-      // e.g. a note of "1" is now impossible because we know that it is not a 1
-      if (state.noteSuit === null && state.noteRank === rankRemoved) {
-        unmorph(state);
-      }
-
       if (rankRemoved === variant.specialRank
             && (variant.specialAllClueColors || variant.specialNoClueColors)) {
         // Mark to retroactively apply color clues when we return from this function
@@ -568,21 +639,21 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
     }
 
-    if (this.state.rankClueMemory.possibilities.length === 1) {
+    if (state.rankClueMemory.possibilities.length === 1) {
       // We have discovered the true rank of the card
-      [this.state.rank] = this.state.rankClueMemory.possibilities;
-      globals.learnedCards[this.state.order].rank = this.state.rank;
+      [state.rank] = state.rankClueMemory.possibilities;
+      globals.learnedCards[state.order].rank = state.rank;
       this.rankPips!.hide();
     }
 
     // Handle if this is the first time that the card is fully revealed to the holder
     const isFullyKnown = (
-      this.state.colorClueMemory.possibilities.length === 1
-      && this.state.rankClueMemory.possibilities.length === 1
+      state.colorClueMemory.possibilities.length === 1
+      && state.rankClueMemory.possibilities.length === 1
     );
     if (isFullyKnown && !wasFullyKnown) {
-      this.state.identityDetermined = true;
-      this.updatePossibilitiesOnOtherCards(this.state.suit!, this.state.rank!);
+      state.identityDetermined = true;
+      this.updatePossibilitiesOnOtherCards(state.suit!, state.rank!);
     }
 
     if (shouldReapplyRankClues) {
@@ -593,9 +664,29 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this.reapplyColorClues(state);
     }
 
+    this.updateNotePossibilities();
+
     this.updatePips();
 
     this.setBareImage();
+  }
+
+  private updateNotePossibilities() {
+    // If we wrote a card identity note and all the possibilities for that note have been
+    // eliminated, unmorph the card
+    // e.g. a note of "r1" is now impossible because red 1 has 0 cards left
+
+    const isSuitImpossible = this.note.suit !== null
+    && !this.state.colorClueMemory.possibilities.includes(this.note.suit);
+
+    const isRankImpossible = this.note.rank !== null
+    && !this.state.rankClueMemory.possibilities.includes(this.note.rank);
+
+    if (isSuitImpossible || isRankImpossible) {
+      // Unmorph
+      this.note.suit = null;
+      this.note.rank = null;
+    }
   }
 
   // If a clue just eliminated the possibility of being a special multi-color card,
@@ -992,6 +1083,46 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   // Update all UI pips to their state
   private updatePips() {
+    function updatePip(pipState: PipState, pip: Konva.Shape | RankPip, x : Konva.Shape) {
+      switch (pipState) {
+        case 'Visible': {
+          pip.show();
+          x.hide();
+          if (pip instanceof RankPip) {
+            pip.hidePositiveClue();
+          }
+          break;
+        }
+        case 'Hidden': {
+          pip.hide();
+          x.hide();
+          if (pip instanceof RankPip) {
+            pip.hidePositiveClue();
+          }
+          break;
+        }
+        case 'Eliminated': {
+          pip.show();
+          x.show();
+          if (pip instanceof RankPip) {
+            pip.hidePositiveClue();
+          }
+          break;
+        }
+        case 'PositiveClue': {
+          pip.show();
+          x.hide();
+          // TODO: Positive clues on suits
+          if (pip instanceof RankPip) {
+            pip.showPositiveClue();
+          }
+          break;
+        }
+        default:
+          break;
+      }
+    }
+
     for (const [suit, pipState] of this.state.colorClueMemory.pipStates) {
       const pip = this.suitPipsMap.get(suit)!;
       const x = this.suitPipsXMap.get(suit)!;
@@ -1003,45 +1134,206 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       updatePip(pipState, pip, x);
     }
   }
-}
 
-function updatePip(pipState: string, pip: Konva.Shape | RankPip, x : Konva.Shape) {
-  switch (pipState) {
-    case 'Visible': {
-      pip.show();
-      x.hide();
-      if (pip instanceof RankPip) {
-        pip.hidePositiveClue();
+  private registerClick() {
+    // Define the clue log mouse handlers
+    this.on('mousemove tap', () => {
+      globals.elements.clueLog!.showMatches(this);
+      globals.layers.UI.batchDraw();
+    });
+    this.on('mouseout', () => {
+      globals.elements.clueLog!.showMatches(null);
+      globals.layers.UI.batchDraw();
+    });
+
+    // Define the other mouse handlers
+    this.on('click tap', HanabiCardClick);
+    this.on('mousedown', HanabiCardClickSpeedrun);
+    this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
+      if (
+        event.evt.button !== 0 // Dragging uses left click
+        || !this.parent
+        || !this.parent.draggable()
+      ) {
+        return;
       }
-      break;
-    }
-    case 'Hidden': {
-      pip.hide();
-      x.hide();
-      if (pip instanceof RankPip) {
-        pip.hidePositiveClue();
+
+      // Hide any visible arrows on the rest of a hand when the card begins to be dragged
+      if (!this.parent || !this.parent.parent) {
+        return;
       }
-      break;
-    }
-    case 'Eliminated': {
-      pip.show();
-      x.show();
-      if (pip instanceof RankPip) {
-        pip.hidePositiveClue();
+      const hand = this.parent.parent;
+      let hidden = false;
+      for (const layoutChild of hand.children.toArray()) {
+        const card: HanabiCard = (layoutChild as Konva.Node).children[0] as HanabiCard;
+        for (const arrow of globals.elements.arrows) {
+          if (arrow.pointingTo === card) {
+            hidden = true;
+            arrows.hideAll();
+            break;
+          }
+        }
+        if (hidden) {
+          break;
+        }
       }
-      break;
-    }
-    case 'PositiveClue': {
-      pip.show();
-      x.hide();
-      // TODO: Positive clues on suits
-      if (pip instanceof RankPip) {
-        pip.showPositiveClue();
+
+      // Move this hand to the top
+      // (otherwise, the card can appear under the play stacks / discard stacks)
+      hand.moveToTop();
+    });
+  }
+
+  private initTooltip() {
+    // If the user mouses over the card, show a tooltip that contains the note
+    // (we don't use the "tooltip.init()" function because we need the extra conditions in the
+    // "mousemove" event)
+    this.tooltipName = `card-${this.state.order}`;
+    this.on('mousemove', function cardMouseMove(this: HanabiCard) {
+      // Don't do anything if there is not a note on this card
+      if (!this.noteIndicator!.visible()) {
+        return;
       }
-      break;
+
+      // Don't open any more note tooltips if the user is currently editing a note
+      if (globals.editingNote !== null) {
+        return;
+      }
+
+      // If we are spectating and there is an new note, mark it as seen
+      if (this.noteIndicator!.rotated) {
+        this.noteIndicator!.rotated = false;
+        this.noteIndicator!.rotate(-15);
+        globals.layers.card.batchDraw();
+      }
+
+      globals.activeHover = this;
+      notes.show(this);
+    });
+
+    this.on('mouseout', function cardMouseOut(this: HanabiCard) {
+      globals.activeHover = null;
+
+      // Don't close the tooltip if we are currently editing a note
+      if (globals.editingNote !== null) {
+        return;
+      }
+
+      const tooltipElement = $(`#tooltip-${this.tooltipName}`);
+      tooltipElement.tooltipster('close');
+    });
+  }
+
+  // In a game, click on a teammate's hand to it show as it would to that teammate
+  // (or show your own hand as it should appear without any identity notes on it)
+  // (or, in a replay, show the hand as it appeared at that moment in time)
+  private initEmpathy() {
+    this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
+      if (
+        event.evt.button !== 0 // Only enable Empathy for left-clicks
+        // Disable Empathy if a modifier key is pressed
+        // (unless we are in a speedrun, because then Empathy is mapped to Ctrl + left click)
+        || (event.evt.ctrlKey && !globals.options.speedrun && !globals.lobby.settings.speedrunMode)
+        || (
+          !event.evt.ctrlKey
+          && (globals.options.speedrun || globals.lobby.settings.speedrunMode)
+          && !globals.replay
+          && !globals.spectating
+        )
+        || event.evt.shiftKey
+        || event.evt.altKey
+        || event.evt.metaKey
+        || this.tweening // Disable Empathy if the card is tweening
+        || this.state.isPlayed // Clicking on a played card goes to the turn that it was played
+        // Clicking on a discarded card goes to the turn that it was discarded
+        || this.state.isDiscarded
+        || this.state.order > globals.deck.length - 1 // Disable empathy for the stack bases
+      ) {
+        return;
+      }
+
+      globals.activeHover = this;
+      setEmpathyOnHand(true);
+    });
+
+    this.on('mouseup mouseout', (event: Konva.KonvaEventObject<MouseEvent>) => {
+      // Konva.MouseEvent does not have a "type" property for some reason
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if ((event as any).type === 'mouseup' && event.evt.button !== 0) { // Left-click
+        return;
+      }
+
+      globals.activeHover = null;
+      setEmpathyOnHand(false);
+    });
+
+    const setEmpathyOnHand = (enabled: boolean) => {
+      // Disable Empathy for the stack bases
+      if (this.state.order > globals.deck.length - 1) {
+        return;
+      }
+
+      if (!this.parent || !this.parent.parent) {
+        return;
+      }
+      const hand = this.parent.parent as unknown as CardLayout;
+      if (!hand || hand.children.length === 0 || hand.empathy === enabled) {
+        return;
+      }
+
+      hand.empathy = enabled;
+      hand.children.each((layoutChild) => {
+        const card = layoutChild.children[0] as HanabiCard;
+        card.empathy = enabled;
+        card.setBareImage();
+      });
+      globals.layers.card.batchDraw();
+    };
+  }
+
+  checkSpecialNote() {
+    let note = globals.ourNotes[this.state.order];
+    note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
+    note = note.trim(); // Remove all leading and trailing whitespace
+    const fullNote = note;
+
+    // Only examine the text to the right of the rightmost pipe
+    // (pipes are a conventional way to append new information to a note
+    if (note.includes('|')) {
+      const match = note.match(/.*\|(.*)/);
+      note = match![1];
+      note = note.trim(); // Remove all leading and trailing whitespace
     }
-    default:
-      break;
+
+    this.note = notes.checkNoteIdentity(globals.variant, note, fullNote);
+    notes.checkNoteImpossibility(this.state, this.note);
+    this.setClued();
+
+    // Feature 1 - Morph the card if it has an "exact" card note
+    // (or clear the bare image if the note was deleted/changed)
+    this.setBareImage();
+
+    // Feature 2 - Give the card a special border if it is chop moved
+    this.chopMoveBorder!.visible((
+      this.note.chopMoved
+      && !this.cluedBorder!.visible()
+      && !this.state.isPlayed
+      && !this.state.isDiscarded
+      && !globals.replay
+      && !globals.spectating
+    ));
+
+    // Feature 3 - Give the card a special border if it is finessed
+    this.finesseBorder!.visible((
+      this.note.finessed
+      && !this.cluedBorder!.visible()
+      && !this.state.isPlayed
+      && !this.state.isDiscarded
+      && !globals.replay
+      && !globals.spectating
+    ));
+
+    globals.layers.card.batchDraw();
   }
 }
 
@@ -1054,6 +1346,27 @@ function applyClueCore(
   clue: Clue,
   positive: boolean,
 ) {
+  // Mark all turns that this card is positively clued
+  if (positive) {
+    // We add one because the "clue" action comes before the "turn" action
+    state.turnsClued.push(globals.turn + 1);
+  }
+
+  // Record unique clues that touch the card for later
+  if (clue.type === ClueType.Color) {
+    if (positive && !state.colorClueMemory.positiveClues.includes(clue.value as Color)) {
+      state.colorClueMemory.positiveClues.push(clue.value as Color);
+    } else if (!positive && !state.colorClueMemory.negativeClues.includes(clue.value as Color)) {
+      state.colorClueMemory.negativeClues.push(clue.value as Color);
+    }
+  } else if (clue.type === ClueType.Rank) {
+    if (positive && !state.rankClueMemory.positiveClues.includes(clue.value as number)) {
+      state.rankClueMemory.positiveClues.push(clue.value as number);
+    } else if (!positive && !state.rankClueMemory.negativeClues.includes(clue.value as number)) {
+      state.rankClueMemory.negativeClues.push(clue.value as number);
+    }
+  }
+
   // Find out if we can remove some rank pips or suit pips from this clue
   let ranksRemoved: number[] = [];
   let suitsRemoved: Suit[] = [];
@@ -1330,15 +1643,6 @@ export function removePossibility(
     state.possibleCards.set(mapIndex, cardsLeft);
     checkPipPossibilities(variant, state, suit, rank);
   }
-
-  // If we wrote a card identity note and all the possibilities for that note have been
-  // eliminated, unmorph the card
-  // e.g. a note of "r1" is now impossible because red 1 has 0 cards left
-  // The case of removing a wrong note of "r" or "1" is handled in the "HanabiCard.applyClue()"
-  // function
-  if (state.noteSuit === suit && state.noteRank === rank && cardsLeft === 0) {
-    unmorph(state);
-  }
 }
 
 // Check to see if we can put an X over this suit pip or this rank pip
@@ -1385,11 +1689,6 @@ function checkPipPossibilities(variant: Variant, state: CardState, suit: Suit, r
       }
     }
   }
-}
-
-function unmorph(state: CardState) {
-  state.noteSuit = null;
-  state.noteRank = null;
 }
 
 // ---------------

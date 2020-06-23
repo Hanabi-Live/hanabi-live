@@ -129,10 +129,10 @@ export const end = () => {
   // In case we blanked out any cards in the hypothetical,
   // unset the "blank" property of all cards
   for (const card of globals.deck) {
-    card.state.blank = false;
+    card.unsetBlank();
   }
   for (const card of globals.stackBases) {
-    card.state.blank = false;
+    card.unsetBlank();
   }
 
   globals.hypoActions = [];

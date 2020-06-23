@@ -29,9 +29,9 @@ export const msgSuitToSuit = (
 ) => variant.suits[msgSuit] || null;
 
 export const suitToMsgSuit = (
-  suit: Suit,
+  suit: Suit | null,
   variant: Variant,
-) => variant.suits.indexOf(suit);
+) => (suit ? variant.suits.indexOf(suit) : -1);
 
 export const msgColorToColor = (
   msgColor: number,

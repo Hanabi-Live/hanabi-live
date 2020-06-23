@@ -7,8 +7,8 @@ import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
 
 export default class CardLayout extends Konva.Group {
-  align: string;
-  reverse: boolean;
+  private align: string;
+  private reverse: boolean;
   origRotation: number;
   empathy: boolean;
 
