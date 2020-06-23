@@ -5,7 +5,7 @@ package main
 // A pointer to these options is copied into the Game struct when the game starts for convenience
 type Options struct {
 	StartingPlayer        int    `json:"startingPlayer"` // Legacy field for games prior to April 2020
-	Variant               string `json:"variant"`
+	Variant               string `json:"variantName"`
 	Timed                 bool   `json:"timed"`
 	TimeBase              int    `json:"timeBase"`
 	TimePerTurn           int    `json:"timePerTurn"`
