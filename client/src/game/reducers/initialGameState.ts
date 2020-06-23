@@ -1,5 +1,6 @@
 import { VARIANTS } from '../data/gameData';
 import * as deck from '../rules/deck';
+import * as hand from '../rules/hand';
 import * as statsRules from '../rules/stats';
 import { MAX_CLUE_NUM } from '../types/constants';
 import GameState, { StateOptions } from '../types/GameState';
@@ -12,12 +13,12 @@ export default function initialGameState(options: StateOptions): GameState {
     throw new Error(`Unable to find the "${options.variantName}" variant in the "VARIANTS" map.`);
   }
   const turnState = initialTurnState(options.startingPlayer);
-  const startingPace = statsRules.startingPace(
+  const cardsPerHand = hand.cardsPerHand(
     options.numPlayers,
-    variant,
     options.oneExtraCard,
     options.oneLessCard,
   );
+  const startingPace = statsRules.startingPace(options.numPlayers, cardsPerHand, variant);
   const hands: number[][] = [];
   const playStacksDirections: StackDirection[] = [];
   const playStacks: number[][] = [];

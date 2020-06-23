@@ -1,5 +1,6 @@
 import { VARIANTS } from '../data/gameData';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
+import * as hand from './hand';
 import {
   startingPace,
   minEfficiency,
@@ -17,20 +18,22 @@ const blackVariant = VARIANTS.get(blackVariantName);
 if (blackVariant === undefined) {
   throw new Error(`Unable to find the "${blackVariantName}" variant in the "VARIANTS" map.`);
 }
+const cardsPerHand2Player = hand.cardsPerHand(2, false, false);
+const cardsPerHand4Player = hand.cardsPerHand(4, false, false);
 
 describe('startingPace', () => {
   test('returns 17 for 2-player No Variant', () => {
-    expect(startingPace(2, defaultVariant, false, false)).toBe(17);
+    expect(startingPace(2, cardsPerHand2Player, defaultVariant)).toBe(17);
   });
   test('returns 13 for 4-player No Variant', () => {
-    expect(startingPace(4, defaultVariant, false, false)).toBe(13);
+    expect(startingPace(4, cardsPerHand4Player, defaultVariant)).toBe(13);
   });
 
   test('returns 17 for 2-player Black (6 Suits)', () => {
-    expect(startingPace(2, blackVariant, false, false)).toBe(17);
+    expect(startingPace(2, cardsPerHand2Player, blackVariant)).toBe(17);
   });
   test('returns 13 for 4-player Black (6 Suits)', () => {
-    expect(startingPace(4, blackVariant, false, false)).toBe(13);
+    expect(startingPace(4, cardsPerHand4Player, blackVariant)).toBe(13);
   });
 });
 

@@ -61,12 +61,10 @@ export function paceRisk(currentPace: number | null, numPlayers: number): PaceRi
 // https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
 export function startingPace(
   numPlayers: number,
+  cardsPerHand: number,
   variant: Variant,
-  oneExtraCard: boolean,
-  oneLessCard: boolean,
 ): number {
   let p = deck.totalCards(variant);
-  const cardsPerHand = hand.cardsPerHand(numPlayers, oneExtraCard, oneLessCard);
   p -= (cardsPerHand - 1) * numPlayers;
   p -= 5 * variant.suits.length;
   return p;
@@ -92,7 +90,8 @@ export function minEfficiency(
   oneLessCard: boolean,
 ): number {
   // First, calculate the starting pace:
-  const initialPace = startingPace(numPlayers, variant, oneExtraCard, oneLessCard);
+  const cardsPerHand = hand.cardsPerHand(numPlayers, oneExtraCard, oneLessCard);
+  const initialPace = startingPace(numPlayers, cardsPerHand, variant);
 
   // Second, use the pace to calculate the minimum efficiency required to win the game with the
   // following formula:
