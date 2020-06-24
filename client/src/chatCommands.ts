@@ -119,11 +119,11 @@ const setVariant = (_room: string, args: string[]) => {
     return;
   }
 
-  const variant = args.join(' ');
+  const variantName = args.join(' ');
   globals.conn!.send('tableSetVariant', {
     tableID: globals.tableID,
     options: {
-      variant,
+      variantName,
     },
   });
 };

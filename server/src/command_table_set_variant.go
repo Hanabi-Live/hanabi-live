@@ -9,7 +9,9 @@ import (
 // Example data:
 // {
 //   tableID: 123,
-//   variant: 'Black & Rainbow (6 Suit)',
+//   options: {
+//     variant: 'Black & Rainbow (6 Suit)',
+//   },
 // }
 func commandTableSetVariant(s *Session, d *CommandData) {
 	// Validate that the table exists
