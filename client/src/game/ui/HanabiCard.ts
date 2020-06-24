@@ -930,12 +930,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   // This card was either played or discarded
   reveal(msgSuit: number, msgRank: number) {
-    this.convert(msgSuit, msgRank);
-
     // Played cards are not revealed in the "Throw It in a Hole" variant
     if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay && this.state.isPlayed) {
       return;
     }
+
+    this.convert(msgSuit, msgRank);
 
     const suit = this.state.suit;
     const rank = this.state.rank;
