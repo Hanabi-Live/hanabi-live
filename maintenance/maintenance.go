@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/op/go-logging"
@@ -85,6 +86,7 @@ func main() {
 	// Create a new Gin HTTP router
 	gin.SetMode(gin.ReleaseMode) // Comment this out to debug HTTP stuff
 	httpRouter := gin.Default()  // Has the "Logger" and "Recovery" middleware attached
+	httpRouter.Use(gzip.Gzip(gzip.DefaultCompression)) // Add GZip compression middleware
 	httpRouter.StaticFile("/", path.Join(projectPath, "maintenance", "index.html"))
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
 	httpRouter.StaticFile("/favicon.ico", path.Join(projectPath, "public", "img", "favicon.png"))
