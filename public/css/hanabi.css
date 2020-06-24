@@ -193,7 +193,7 @@ table td {
   top: 0.25em;
 }
 
-/* 
+/*
   For inserting elements without changing the surrounding formatting
   https://stackoverflow.com/questions/6040005/relatively-position-an-element-without-it-taking-up-space-in-document-flow
 */
@@ -351,7 +351,7 @@ table td {
   margin-bottom: 1em;
   padding: 0 0.5em 0 0.5em;
   height: calc(100% - 3.5em - 2.5em);
-  /* (the height of the input box is 3.5em and the hight of the "Lobby Chat" text is 2.5em) */
+  /* (the height of the input box is 3.5em and the height of the "Lobby Chat" text is 2.5em) */
 }
 
 .chat-emote {
@@ -434,6 +434,11 @@ table td {
 
 .lobby-pregame-col {
   width: 13.75%;
+}
+
+#lobby-chat-pregame-container {
+  /* Make the pre-game chat padding match that of the user list */
+  padding-left: 1.5em !important;
 }
 
 /*
@@ -768,13 +773,6 @@ input::-webkit-calendar-picker-indicator {
   }
 }
 
-/* Make the nav bar always show, even on the tiniest resolutions */
-@media screen and (max-width: 840px) {
-  #header {
-    display: block;
-  }
-}
-
 /* Stack the profile buttons on top of each other if they would go off screen otherwise */
 @media screen and (max-width: 830px) {
   #profile-buttons { /* These lines are copied from alpha.css which has breakpoint 480 px */
@@ -787,4 +785,30 @@ input::-webkit-calendar-picker-indicator {
     #profile-buttons li {
       padding-top: 1em
     }
+}
+
+/* Make the main screen appear the same way, even on smaller resolutions */
+@media screen and (max-width: 840px) {
+  #header {
+    display: block;
+  }
+
+  #page-wrapper {
+    padding-top: 3em;
+  }
+}
+
+/* Fix the box margins on smaller resolutions */
+@media screen and (max-width: 736px) {
+  .container.max {
+    width: calc(100% - 2em) !important;
+    margin-left: 1em;
+    margin-right: 1em;
+  }
+
+  .box {
+    margin: 0em;
+    padding: 1.5em !important;
+    overflow-y: hidden;
+  }
 }
