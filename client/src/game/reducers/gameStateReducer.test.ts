@@ -7,14 +7,15 @@ import { // Direct import instead of namespace import for compactness
   text,
 } from '../../../test/testActions';
 import ClueType from '../types/ClueType';
-import { MAX_CLUE_NUM, DEFAULT_VARIANT_NAME } from '../types/constants';
+import { MAX_CLUE_NUM } from '../types/constants';
 import Options from '../types/Options';
 import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialGameState';
 
-const defaultOptions = new Options();
-defaultOptions.numPlayers = 3;
-defaultOptions.variantName = DEFAULT_VARIANT_NAME;
+const defaultOptions = {
+  ...(new Options()),
+  numPlayers: 3,
+};
 
 describe('stateReducer', () => {
   test('does not mutate state', () => {

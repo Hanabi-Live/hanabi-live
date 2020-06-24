@@ -27,9 +27,11 @@ interface JSONAction {
 }
 
 export default function loadGameJSON(gameJSON: JSONGame): State {
-  const options = new Options();
-  options.numPlayers = gameJSON.players.length;
-  options.variantName = gameJSON.options.variant;
+  const options = {
+    ...(new Options()),
+    numPlayers: gameJSON.players.length,
+    variantName: gameJSON.options.variant,
+  };
 
   const cardsPerHand = handRules.cardsPerHand(options.numPlayers, false, false);
   const actions: GameAction[] = [];
