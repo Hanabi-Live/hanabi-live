@@ -174,18 +174,7 @@ const gameStateReducer = produce((
       break;
     }
 
-    // It is now a new turn
-    // {num: 0, type: "turn", who: 1}
     case 'turn': {
-      // TEMP: At this point, check that the local state matches the server
-      if (state.turn !== action.num) {
-        console.warn('The turns from the client and the server do not match. '
-            + `Client = ${state.turn}, Server = ${action.num}`);
-      }
-      if (state.currentPlayerIndex !== action.who) {
-        console.warn('The currentPlayerIndex from the client and the server do not match. '
-            + `Client = ${state.currentPlayerIndex}, Server = ${action.who}`);
-      }
       break;
     }
 
