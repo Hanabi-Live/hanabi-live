@@ -43,7 +43,11 @@ interface FriendsData {
   friends: string[];
 }
 commands.set('friends', (data: FriendsData) => {
+  // The server has sent us a new list of our friends; store this locally
   globals.friends = data.friends;
+
+  // Since our list of friends has changed, we need to redraw some UI elements so that users that
+  // happen to be our friend will be shown in the correct color
   if (globals.currentScreen === 'lobby' || globals.currentScreen === 'pregame') {
     usersDraw.draw();
   }
@@ -54,7 +58,12 @@ commands.set('friends', (data: FriendsData) => {
     pregame.draw();
   }
   if (globals.currentScreen === 'game') {
-    websocketUI.get('spectators')!({ names: globals.ui!.globals.spectators });
+    // Re-call the "spectators" command handler to emulate receiving a "spectators" message from the
+    // server
+    const spectatorsCommandHandler = websocketUI.get('spectators')!;
+    spectatorsCommandHandler({
+      names: globals.ui!.globals.spectators,
+    });
   }
 });
 
