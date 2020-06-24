@@ -3,21 +3,20 @@
 import produce, { Draft, original } from 'immer';
 import { Action, GameAction } from '../types/actions';
 import GameState from '../types/GameState';
-import Options from '../types/Options';
 import State from '../types/State';
 import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialGameState';
 import replayReducer from './replayReducer';
 
-const stateReducer = produce((state: Draft<State>, options: Options, action: Action) => {
+const stateReducer = produce((state: Draft<State>, action: Action) => {
   switch (action.type) {
     case 'gameActionList': {
       // Calculate all the intermediate states
-      const initial = initialGameState(options);
+      const initial = initialGameState(state.options);
       const states: GameState[] = [initial];
 
-      state.ongoingGame = action.actions.reduce((s: GameState, o: Options, a: GameAction) => {
-        const nextState = gameStateReducer(s, o, a);
+      state.ongoingGame = action.actions.reduce((s: GameState, a: GameAction) => {
+        const nextState = gameStateReducer(s, a, state.options);
 
         if (a.type === 'turn') {
           // Store the current state in the state table to enable replays
@@ -37,12 +36,12 @@ const stateReducer = produce((state: Draft<State>, options: Options, action: Act
     case 'hypoBack':
     case 'hypoEnd':
     case 'hypoAction': {
-      state.replay = replayReducer(state.replay, action);
+      state.replay = replayReducer(state.replay, action, state.options);
       break;
     }
     default: {
       // A new game state happened
-      state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action)!;
+      state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action, state.options)!;
       if (action.type === 'turn') {
         // Save it for replays
         state.replay.states[action.num] = state.ongoingGame;

@@ -14,5 +14,6 @@ export default function initialState(options: Options): State {
       ongoingHypothetical: null,
       hypotheticalStates: [],
     },
+    options,
   };
 }

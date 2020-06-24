@@ -87,9 +87,9 @@ const statsReducer = produce((
     currentState.score,
     currentState.deckSize,
     stats.maxScore,
-    currentState.options.numPlayers,
+    options.numPlayers,
   );
-  stats.paceRisk = statsRules.paceRisk(stats.pace, currentState.options.numPlayers);
+  stats.paceRisk = statsRules.paceRisk(stats.pace, options.numPlayers);
   stats.efficiency = statsRules.efficiency(stats.cardsGotten, stats.potentialCluesLost);
 }, {} as StateStats);
 
