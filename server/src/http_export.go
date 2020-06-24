@@ -129,7 +129,7 @@ func httpExport(c *gin.Context) {
 	}
 
 	// Get the notes from the database
-	variant := variants[g.Options.Variant]
+	variant := variants[g.Options.VariantName]
 	noteSize := variant.GetDeckSize() + len(variant.Suits)
 	var notes [][]string
 	if v, err := models.Games.GetNotes(gameID, len(dbPlayers), noteSize); err != nil {
@@ -182,7 +182,7 @@ func httpExport(c *gin.Context) {
 		optionsJSON.StartingPlayer = &options.StartingPlayer
 		allDefaultOptions = false
 	}
-	if options.Variant != "No Variant" {
+	if options.VariantName != "No Variant" {
 		optionsJSON.Variant = &variant.Name
 		allDefaultOptions = false
 	}

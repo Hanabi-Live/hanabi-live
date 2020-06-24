@@ -17,10 +17,10 @@ func (g *Game) InitDeck() {
 
 	// Suits are represented as a slice of integers from 0 to the number of suits - 1
 	// (e.g. {0, 1, 2, 3, 4} for a "No Variant" game)
-	for suitInt, suitObject := range variants[g.Options.Variant].Suits {
+	for suitInt, suitObject := range variants[g.Options.VariantName].Suits {
 		// Ranks are represented as a slice of integers
 		// (e.g. {1, 2, 3, 4, 5} for a "No Variant" game)
-		for _, rank := range variants[g.Options.Variant].Ranks {
+		for _, rank := range variants[g.Options.VariantName].Ranks {
 			// In a normal suit of Hanabi, there are:
 			// - three 1's
 			// - two 2's
@@ -30,7 +30,7 @@ func (g *Game) InitDeck() {
 			var amountToAdd int
 			if rank == 1 {
 				amountToAdd = 3
-				if variants[g.Options.Variant].IsUpOrDown() || suitObject.Reversed {
+				if variants[g.Options.VariantName].IsUpOrDown() || suitObject.Reversed {
 					amountToAdd = 1
 				}
 			} else if rank == 5 {

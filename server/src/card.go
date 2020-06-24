@@ -30,7 +30,7 @@ func NewCard(suit int, rank int) *Card {
 }
 
 func (c *Card) Name(g *Game) string {
-	name := variants[g.Options.Variant].Suits[c.Suit].Name // The name of the suit that this card is
+	name := variants[g.Options.VariantName].Suits[c.Suit].Name // The name of the suit that this card is
 	name += " "
 	if c.Rank == StartCardRank {
 		name += "START"
@@ -54,7 +54,7 @@ func (c *Card) NeedsToBePlayed(g *Game) bool {
 	}
 
 	// Determining if the card needs to be played in the "Up or Down" variants is more complicated
-	if variants[g.Options.Variant].HasReversedSuits() {
+	if variants[g.Options.VariantName].HasReversedSuits() {
 		return variantReversibleNeedsToBePlayed(g, c)
 	}
 

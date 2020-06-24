@@ -22,7 +22,7 @@ const (
 )
 
 func isUpOrDown(g *Game) bool {
-	return variants[g.Options.Variant].IsUpOrDown()
+	return variants[g.Options.VariantName].IsUpOrDown()
 }
 
 func variantReversiblePlay(g *Game, c *Card) bool {

@@ -203,7 +203,7 @@ func commandAction(s *Session, d *CommandData) {
 	if g.EndCondition == EndConditionInProgress {
 		logger.Info(t.GetName() + " It is now " + np.Name + "'s turn.")
 	} else if g.EndCondition == EndConditionNormal {
-		if g.Score == variants[g.Options.Variant].MaxScore {
+		if g.Score == variants[g.Options.VariantName].MaxScore {
 			g.Sound = "finished_perfect"
 		} else {
 			// The players did got get a perfect score, but they did not strike out either
@@ -284,7 +284,7 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 	// Validate that the team is not at the maximum amount of clues
 	// (the client should enforce this, but do a check just in case)
 	clueLimit := MaxClueNum
-	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
+	if strings.HasPrefix(g.Options.VariantName, "Clue Starved") {
 		clueLimit *= 2
 	}
 	if g.ClueTokens == clueLimit {
@@ -335,7 +335,7 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 		g.InvalidActionOccurred = true
 		return false
 	}
-	if strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens == 1 {
+	if strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens == 1 {
 		s.Warning("You cannot give a clue when the team only has 0.5 clues.")
 		g.InvalidActionOccurred = true
 		return false
@@ -346,14 +346,14 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 
 	// Validate the clue value
 	if clue.Type == ClueTypeColor {
-		if clue.Value < 0 || clue.Value > len(variants[g.Options.Variant].ClueColors)-1 {
+		if clue.Value < 0 || clue.Value > len(variants[g.Options.VariantName].ClueColors)-1 {
 			s.Warning("You cannot give a color clue with a value of " +
 				"\"" + strconv.Itoa(clue.Value) + "\".")
 			g.InvalidActionOccurred = true
 			return false
 		}
 	} else if clue.Type == ClueTypeRank {
-		if !intInSlice(clue.Value, variants[g.Options.Variant].ClueRanks) {
+		if !intInSlice(clue.Value, variants[g.Options.VariantName].ClueRanks) {
 			s.Warning("You cannot give a rank clue with a value of " +
 				"\"" + strconv.Itoa(clue.Value) + "\".")
 			g.InvalidActionOccurred = true
@@ -366,7 +366,7 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 	}
 
 	// Validate special variant restrictions
-	if strings.HasPrefix(g.Options.Variant, "Alternating Clues") &&
+	if strings.HasPrefix(g.Options.VariantName, "Alternating Clues") &&
 		clue.Type == g.LastClueTypeGiven {
 
 		s.Warning("You cannot give two clues of the same time in a row in this variant.")
@@ -384,7 +384,7 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 	p2 := g.Players[d.Target] // The target of the clue
 	touchedAtLeastOneCard := false
 	for _, c := range p2.Hand {
-		if variantIsCardTouched(g.Options.Variant, clue, c) {
+		if variantIsCardTouched(g.Options.VariantName, clue, c) {
 			touchedAtLeastOneCard = true
 			break
 		}
@@ -393,9 +393,9 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 		// Make an exception if they have the optional setting for "Empty Clues" turned on
 		!g.Options.EmptyClues &&
 		// Make an exception for variants where color clues are always allowed
-		(!variants[g.Options.Variant].ColorCluesTouchNothing || clue.Type != ClueTypeColor) &&
+		(!variants[g.Options.VariantName].ColorCluesTouchNothing || clue.Type != ClueTypeColor) &&
 		// Make an exception for variants where rank clues are always allowed
-		(!variants[g.Options.Variant].RankCluesTouchNothing || clue.Type != ClueTypeRank) &&
+		(!variants[g.Options.VariantName].RankCluesTouchNothing || clue.Type != ClueTypeRank) &&
 		// Make an exception for certain characters
 		!characterEmptyClueAllowed(d, g, p) {
 

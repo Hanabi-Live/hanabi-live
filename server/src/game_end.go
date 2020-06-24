@@ -300,7 +300,7 @@ func (g *Game) WriteDatabase() error {
 	for _, p := range t.Players {
 		// Get their current best scores
 		var userStats UserStatsRow
-		if v, err := models.UserStats.Get(p.ID, variants[g.Options.Variant].ID); err != nil {
+		if v, err := models.UserStats.Get(p.ID, variants[g.Options.VariantName].ID); err != nil {
 			logger.Error("Failed to get the stats for user "+p.Name+":", err)
 			continue
 		} else {
@@ -321,7 +321,7 @@ func (g *Game) WriteDatabase() error {
 		// we still want to update their average score and strikeout rate)
 		if err := models.UserStats.Update(
 			p.ID,
-			variants[g.Options.Variant].ID,
+			variants[g.Options.VariantName].ID,
 			userStats,
 		); err != nil {
 			logger.Error("Failed to update the stats for user "+p.Name+":", err)
@@ -331,9 +331,9 @@ func (g *Game) WriteDatabase() error {
 
 	// Get the current stats for this variant
 	var variantStats VariantStatsRow
-	if v, err := models.VariantStats.Get(variants[g.Options.Variant].ID); err != nil {
+	if v, err := models.VariantStats.Get(variants[g.Options.VariantName].ID); err != nil {
 		logger.Error("Failed to get the stats for variant "+
-			strconv.Itoa(variants[g.Options.Variant].ID)+":", err)
+			strconv.Itoa(variants[g.Options.VariantName].ID)+":", err)
 		return err
 	} else {
 		variantStats = v
@@ -352,12 +352,12 @@ func (g *Game) WriteDatabase() error {
 	// (even if the game was played with modifiers,
 	// we still need to update the number of games played)
 	if err := models.VariantStats.Update(
-		variants[g.Options.Variant].ID,
-		variants[g.Options.Variant].MaxScore,
+		variants[g.Options.VariantName].ID,
+		variants[g.Options.VariantName].MaxScore,
 		variantStats,
 	); err != nil {
 		logger.Error("Failed to update the stats for variant "+
-			strconv.Itoa(variants[g.Options.Variant].ID)+":", err)
+			strconv.Itoa(variants[g.Options.VariantName].ID)+":", err)
 		return err
 	}
 
@@ -404,8 +404,7 @@ func (t *Table) ConvertToSharedReplay() {
 			ID:      p.ID,
 			Name:    p.Name,
 			Session: p.Session,
-			// There are notes for every card in the deck + the stack bases for each suit
-			Notes: make([]string, len(g.Deck)+len(variants[t.Options.Variant].Suits)),
+			Notes:   make([]string, g.GetNotesSize()),
 		}
 		t.Spectators = append(t.Spectators, sp)
 		logger.Info("Converted " + p.Name + " to a spectator.")

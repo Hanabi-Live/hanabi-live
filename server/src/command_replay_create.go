@@ -400,7 +400,7 @@ func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 	// (the variant was already validated in the "validateJSON()" function)
 	t.Options = &Options{
 		StartingPlayer:        startingPlayer,
-		Variant:               *d.GameJSON.Options.Variant,
+		VariantName:           *d.GameJSON.Options.Variant,
 		Timed:                 timed,
 		TimeBase:              timeBase,
 		TimePerTurn:           timePerTurn,
@@ -466,7 +466,7 @@ func applyNotesToPlayers(s *Session, d *CommandData, g *Game) bool {
 	var notes [][]string
 	if d.Source == "id" {
 		// Get the notes from the database
-		variant := variants[g.Options.Variant]
+		variant := variants[g.Options.VariantName]
 		noteSize := variant.GetDeckSize() + len(variant.Suits)
 		if v, err := models.Games.GetNotes(d.GameID, len(g.Players), noteSize); err != nil {
 			logger.Error("Failed to get the notes from the database for game "+
@@ -485,7 +485,7 @@ func applyNotesToPlayers(s *Session, d *CommandData, g *Game) bool {
 		notes = append(notes, make([]string, 0))
 	}
 	for i := range notes {
-		for len(notes[i]) < len(g.Deck)+len(variants[g.Options.Variant].Suits) {
+		for len(notes[i]) < g.GetNotesSize() {
 			notes[i] = append(notes[i], "")
 		}
 	}

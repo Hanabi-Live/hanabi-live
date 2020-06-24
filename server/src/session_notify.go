@@ -104,7 +104,7 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		NumPlayers:        numPlayers,
 		Owned:             s.UserID() == t.Owner,
 		Running:           t.Running,
-		Variant:           t.Options.Variant,
+		Variant:           t.Options.VariantName,
 		Timed:             t.Options.Timed,
 		TimeBase:          t.Options.TimeBase,
 		TimePerTurn:       t.Options.TimePerTurn,

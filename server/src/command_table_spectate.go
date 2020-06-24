@@ -85,8 +85,7 @@ func commandTableSpectate(s *Session, d *CommandData) {
 		Session:     s,
 		Shadowing:   playerIndex != -1,
 		PlayerIndex: playerIndex,
-		// There are notes for every card in the deck + the stack bases for each suit
-		Notes: make([]string, len(g.Deck)+len(variants[t.Options.Variant].Suits)),
+		Notes:       make([]string, g.GetNotesSize()),
 	}
 	t.Spectators = append(t.Spectators, sp)
 	notifyAllTable(t)    // Update the spectator list for the row in the lobby

@@ -39,25 +39,25 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 		d.Options = &Options{}
 	}
 
-	if len(d.Options.Variant) == 0 {
+	if len(d.Options.VariantName) == 0 {
 		s.Warning("You must specify the variant. (e.g. \"/setvariant Black & Rainbow (6 Suits)\")")
 		return
 	}
 
-	if _, ok := variants[d.Options.Variant]; !ok {
-		s.Warning("The variant of \"" + d.Options.Variant + "\" does not exist.")
+	if _, ok := variants[d.Options.VariantName]; !ok {
+		s.Warning("The variant of \"" + d.Options.VariantName + "\" does not exist.")
 		return
 	}
 
 	// First, change the variant
-	t.Options.Variant = d.Options.Variant
+	t.Options.VariantName = d.Options.VariantName
 
 	// Update the variant-specific stats for each player at the table
 	for _, p := range t.Players {
 		var variantStats UserStatsRow
-		if v, err := models.UserStats.Get(p.ID, variants[t.Options.Variant].ID); err != nil {
+		if v, err := models.UserStats.Get(p.ID, variants[t.Options.VariantName].ID); err != nil {
 			logger.Error("Failed to get the stats for player \""+s.Username()+"\" "+
-				"for variant "+strconv.Itoa(variants[t.Options.Variant].ID)+":", err)
+				"for variant "+strconv.Itoa(variants[t.Options.VariantName].ID)+":", err)
 			s.Error(DefaultErrorMsg)
 			return
 		} else {
@@ -78,5 +78,5 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 	notifyAllTable(t)
 
 	room := "table" + strconv.Itoa(tableID)
-	chatServerSend(s.Username()+" has changed the variant to: "+d.Options.Variant, room)
+	chatServerSend(s.Username()+" has changed the variant to: "+d.Options.VariantName, room)
 }

@@ -6,7 +6,7 @@ package main
 type Options struct {
 	NumPlayers            int    `json:"numPlayers"`
 	StartingPlayer        int    `json:"startingPlayer"` // Legacy field for games prior to April 2020
-	Variant               string `json:"variantName"`
+	VariantName           string `json:"variantName"`
 	Timed                 bool   `json:"timed"`
 	TimeBase              int    `json:"timeBase"`
 	TimePerTurn           int    `json:"timePerTurn"`

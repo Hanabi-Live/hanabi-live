@@ -136,7 +136,7 @@ func waitingListAlert(t *Table, creator string) {
 	waitingList = make([]*Waiter, 0)
 
 	// Alert all of the people on the waiting list
-	msg := creator + " created a table. (" + t.Options.Variant + ")\n" + mentionList
+	msg := creator + " created a table. (" + t.Options.VariantName + ")\n" + mentionList
 	chatServerSend(msg, "lobby")
 
 	// Also, copy the people who were pinged to the pre-game chat for reference

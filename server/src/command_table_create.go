@@ -297,13 +297,13 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	// Validate that they sent the options object
 	if d.Options == nil {
 		d.Options = &Options{
-			Variant: "No Variant",
+			VariantName: "No Variant",
 		}
 	}
 
 	// Validate that the variant name is valid
-	if _, ok := variants[d.Options.Variant]; !ok {
-		s.Warning("\"" + d.Options.Variant + "\" is not a valid variant.")
+	if _, ok := variants[d.Options.VariantName]; !ok {
+		s.Warning("\"" + d.Options.VariantName + "\" is not a valid variant.")
 		return
 	}
 

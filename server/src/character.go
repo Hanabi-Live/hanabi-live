@@ -155,7 +155,7 @@ func characterGenerate(g *Game) {
 
 		if p.Character == "Fuming" { // 0
 			// A random number from 0 to the number of colors in this variant
-			p.CharacterMetadata = rand.Intn(len(variants[g.Options.Variant].ClueColors))
+			p.CharacterMetadata = rand.Intn(len(variants[g.Options.VariantName].ClueColors))
 		} else if p.Character == "Dumbfounded" { // 1
 			// A random number from 1 to 5
 			p.CharacterMetadata = rand.Intn(4) + 1
@@ -329,7 +329,7 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		}
 	} else if p.Character == "Miser" && // 10
 		(g.ClueTokens < 4 ||
-			(strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens < 8)) {
+			(strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens < 8)) {
 
 		s.Warning("You are " + p.Character + ", " +
 			"so you cannot give a clue unless there are 4 or more clues available.")
@@ -367,7 +367,7 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		p.CharacterMetadata == -1 {
 
 		if g.ClueTokens < 2 ||
-			(strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens < 4) {
+			(strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens < 4) {
 
 			s.Warning("You are " + p.Character + ", " +
 				"so there needs to be at least two clues available for you to give a clue.")
@@ -453,8 +453,8 @@ func characterCheckDiscard(s *Session, g *Game, p *GamePlayer) bool {
 			"so you cannot discard when there is an odd number of clues available.")
 		return true
 	} else if p.Character == "Wasteful" && // 23
-		((!strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens >= 2) ||
-			(strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens >= 4)) {
+		((!strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens >= 2) ||
+			(strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens >= 4)) {
 
 		s.Warning("You are " + p.Character + ", " +
 			"so you cannot discard if there are 2 or more clues available.")
@@ -569,7 +569,7 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 		// "p.CharacterMetadata" represents the state, which alternates between -1 and 0
 		if p.CharacterMetadata == -1 &&
 			(g.ClueTokens <= 4 ||
-				(strings.HasPrefix(g.Options.Variant, "Clue Starved") && g.ClueTokens <= 8)) {
+				(strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens <= 8)) {
 
 			p.CharacterMetadata = 0
 			return true

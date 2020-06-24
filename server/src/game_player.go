@@ -60,7 +60,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 
 	// Keep track that someone clued (i.e. doing 1 clue costs 1 "Clue Token")
 	g.ClueTokens--
-	if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
+	if strings.HasPrefix(g.Options.VariantName, "Clue Starved") {
 		// In the "Clue Starved" variants, you only get 0.5 clues per discard
 		// This is represented on the server by having each clue take two clues
 		// On the client, clues are shown to the user to be divided by two
@@ -72,7 +72,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	p2 := g.Players[d.Target] // The target of the clue
 	cardsTouched := make([]int, 0)
 	for _, c := range p2.Hand {
-		if variantIsCardTouched(g.Options.Variant, clue, c) {
+		if variantIsCardTouched(g.Options.VariantName, clue, c) {
 			c.Touched = true
 			cardsTouched = append(cardsTouched, c.Order)
 		}
@@ -102,7 +102,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	text += words[len(cardsTouched)] + " "
 
 	if clue.Type == ClueTypeColor {
-		text += variants[g.Options.Variant].ClueColors[clue.Value]
+		text += variants[g.Options.VariantName].ClueColors[clue.Value]
 	} else if clue.Type == ClueTypeRank {
 		text += strconv.Itoa(clue.Value)
 	}
@@ -110,8 +110,8 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 		text += "s"
 	}
 
-	if strings.HasPrefix(g.Options.Variant, "Cow & Pig") ||
-		strings.HasPrefix(g.Options.Variant, "Duck") ||
+	if strings.HasPrefix(g.Options.VariantName, "Cow & Pig") ||
+		strings.HasPrefix(g.Options.VariantName, "Duck") ||
 		p.Character == "Quacker" { // 34
 
 		// Create a list of slot numbers that correspond to the cards touched
@@ -122,7 +122,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 		sort.Strings(slots)
 
 		text = p.Name + " "
-		if strings.HasPrefix(g.Options.Variant, "Cow & Pig") {
+		if strings.HasPrefix(g.Options.VariantName, "Cow & Pig") {
 			if clue.Type == ClueTypeColor {
 				text += "moos"
 				g.Sound = "moo"
@@ -130,7 +130,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 				text += "oinks"
 				g.Sound = "oink"
 			}
-		} else if strings.HasPrefix(g.Options.Variant, "Duck") ||
+		} else if strings.HasPrefix(g.Options.VariantName, "Duck") ||
 			p.Character == "Quacker" { // 34
 
 			text += "quacks"
@@ -198,7 +198,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 
 	// Find out if this successfully plays
 	var failed bool
-	if variants[g.Options.Variant].HasReversedSuits() {
+	if variants[g.Options.VariantName].HasReversedSuits() {
 		// In the "Up or Down" and "Reversed" variants, cards might not play in order
 		failed = variantReversiblePlay(g, c)
 	} else {
@@ -215,7 +215,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 		c.Failed = true
 		g.Strikes++
 
-		if strings.HasPrefix(g.Options.Variant, "Throw It in a Hole") {
+		if strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") {
 			// Pretend like this card successfully played
 			if c.Touched {
 				// Mark that the blind-play streak has ended
@@ -276,7 +276,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 
 	// Send the "message" about the play
 	text := p.Name + " plays "
-	if strings.HasPrefix(g.Options.Variant, "Throw It in a Hole") {
+	if strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") {
 		text += "a card"
 	} else {
 		text += c.Name(g)
@@ -311,20 +311,20 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	extraClue := c.Rank == 5
 
 	// Handle custom variants that do not play in order from 1 to 5
-	if variants[g.Options.Variant].HasReversedSuits() {
+	if variants[g.Options.VariantName].HasReversedSuits() {
 		extraClue = (c.Rank == 5 || c.Rank == 1) &&
 			g.StackDirections[c.Suit] == StackDirectionFinished
 	}
 
 	if extraClue {
 		// Some variants do not grant an extra clue when successfully playing a 5
-		if !strings.HasPrefix(g.Options.Variant, "Throw It in a Hole") {
+		if !strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") {
 			g.ClueTokens++
 		}
 
 		// The extra clue is wasted if the team is at the maximum amount of clues already
 		clueLimit := MaxClueNum
-		if strings.HasPrefix(g.Options.Variant, "Clue Starved") {
+		if strings.HasPrefix(g.Options.VariantName, "Clue Starved") {
 			clueLimit *= 2
 		}
 		if g.ClueTokens > clueLimit {
@@ -390,7 +390,7 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 
 	text := p.Name + " "
 	if c.Failed {
-		if strings.HasPrefix(g.Options.Variant, "Throw It in a Hole") {
+		if strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") {
 			text += "plays"
 		} else {
 			text += "fails to play"
@@ -399,7 +399,7 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 		text += "discards"
 	}
 	text += " "
-	if strings.HasPrefix(g.Options.Variant, "Throw It in a Hole") && c.Failed {
+	if strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") && c.Failed {
 		text += "a card"
 	} else {
 		text += c.Name(g)

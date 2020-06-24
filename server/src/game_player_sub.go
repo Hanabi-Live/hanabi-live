@@ -41,7 +41,7 @@ func (p *GamePlayer) FindCardsTouchedByClue(clue Clue) []int {
 
 	list := make([]int, 0)
 	for _, c := range p.Hand {
-		if variantIsCardTouched(g.Options.Variant, clue, c) {
+		if variantIsCardTouched(g.Options.VariantName, clue, c) {
 			list = append(list, c.Order)
 		}
 	}
@@ -52,13 +52,13 @@ func (p *GamePlayer) FindCardsTouchedByClue(clue Clue) []int {
 func (p *GamePlayer) IsFirstCardTouchedByClue(clue Clue) bool {
 	g := p.Game
 	card := p.Hand[len(p.Hand)-1]
-	return variantIsCardTouched(g.Options.Variant, clue, card)
+	return variantIsCardTouched(g.Options.VariantName, clue, card)
 }
 
 func (p *GamePlayer) IsLastCardTouchedByClue(clue Clue) bool {
 	g := p.Game
 	card := p.Hand[0]
-	return variantIsCardTouched(g.Options.Variant, clue, card)
+	return variantIsCardTouched(g.Options.VariantName, clue, card)
 }
 
 func (p *GamePlayer) InHand(order int) bool {
@@ -115,7 +115,7 @@ func (p *GamePlayer) CheckSurprise(c *Card) {
 	g := p.Game
 
 	// Disable the surprise sound in certain variants
-	if strings.HasPrefix(g.Options.Variant, "Throw It in a Hole") {
+	if strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") {
 		return
 	}
 
@@ -144,7 +144,7 @@ func (p *GamePlayer) CheckSurprise(c *Card) {
 			break
 		}
 
-		for _, suit := range variants[g.Options.Variant].Suits {
+		for _, suit := range variants[g.Options.VariantName].Suits {
 			suitAbbrev := strings.ToLower(suit.Abbreviation)
 			suitName := strings.ToLower(suit.Name)
 			if note == suitAbbrev+rankStr || // e.g. "b1" or "B1"
@@ -174,7 +174,7 @@ func (p *GamePlayer) CheckSurprise(c *Card) {
 
 	// The suit and the rank were specified
 	if noteSuit != nil && noteRank != -1 {
-		suit := variants[g.Options.Variant].Suits[c.Suit] // Convert the suit int to a Suit pointer
+		suit := variants[g.Options.VariantName].Suits[c.Suit] // Convert the suit int to a Suit pointer
 		if noteSuit.Name != suit.Name || noteRank != c.Rank {
 			p.Surprised = true
 			return

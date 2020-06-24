@@ -81,7 +81,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 		gameRow.Options.NumPlayers,
 		// In the Options struct, the variant is stored as a string,
 		// but it needs to be stored in the database as an integer
-		variants[gameRow.Options.Variant].ID,
+		variants[gameRow.Options.VariantName].ID,
 		gameRow.Options.Timed,
 		gameRow.Options.TimeBase,
 		gameRow.Options.TimePerTurn,
@@ -221,7 +221,7 @@ func (*Games) GetHistory(gameIDs []int) ([]*GameHistory, error) {
 		if variantName, ok := variantsID[variantID]; !ok {
 			return nil, errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
 		} else {
-			gameHistory.Options.Variant = variantName
+			gameHistory.Options.VariantName = variantName
 		}
 
 		// The players come from the database in a random order
@@ -479,7 +479,7 @@ func (*Games) GetOptions(databaseID int) (*Options, error) {
 		err := errors.New("failed to find a definition for variant " + strconv.Itoa(variantID))
 		return &options, err
 	} else {
-		options.Variant = v
+		options.VariantName = v
 	}
 
 	return &options, nil

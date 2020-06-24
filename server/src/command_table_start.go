@@ -107,7 +107,7 @@ func commandTableStart(s *Session, d *CommandData) {
 	shuffleDeck := true
 	shufflePlayers := true
 	seedPrefix := "p" + strconv.Itoa(len(t.Players)) + // e.g. p2v0s
-		"v" + strconv.Itoa(variants[t.Options.Variant].ID) + "s"
+		"v" + strconv.Itoa(variants[t.Options.VariantName].ID) + "s"
 	if t.ExtraOptions.DatabaseID != 0 {
 		// This is a replay of a game from the database or
 		// a custom game created with the "!replay" prefix
@@ -147,7 +147,7 @@ func commandTableStart(s *Session, d *CommandData) {
 			var seeds []string
 			if v, err := models.Games.GetPlayerSeeds(
 				p.ID,
-				variants[g.Options.Variant].ID,
+				variants[g.Options.VariantName].ID,
 			); err != nil {
 				logger.Error("Failed to get the past seeds for \""+s.Username()+"\":", err)
 				s.Error(StartGameFail)
@@ -219,9 +219,8 @@ func commandTableStart(s *Session, d *CommandData) {
 			Index: i,
 			Game:  g,
 
-			Hand: make([]*Card, 0),
-			// There are notes for every card in the deck + the stack bases for each suit
-			Notes: make([]string, len(g.Deck)+len(variants[t.Options.Variant].Suits)),
+			Hand:  make([]*Card, 0),
+			Notes: make([]string, g.GetNotesSize()),
 		}
 		gp.InitTime(t.Options)
 		g.Players = append(g.Players, gp)
