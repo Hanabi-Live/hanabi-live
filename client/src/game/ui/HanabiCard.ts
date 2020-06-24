@@ -717,54 +717,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  // Check to see if we can put an X over this suit pip or this rank pip
-  private checkPipPossibilities(suit: Suit, rank: number) {
-    // First, check to see if there are any possibilities remaining for this suit
-    let suitPossible = false;
-    for (const rank2 of globals.variant.ranks) {
-      const count = this.state.possibleCards.get(`${suit.name}${rank2}`);
-      if (count === undefined) {
-        throw new Error(`Failed to get an entry for ${suit.name}${rank2} from the "possibleCards" map for card ${this.state.order}.`);
-      }
-      if (count > 0) {
-        suitPossible = true;
-        break;
-      }
-    }
-    if (!suitPossible) {
-      // Do nothing if the normal pip is already hidden
-      const pip = this.suitPipsMap.get(suit)!;
-      if (pip.visible()) {
-        // All the cards of this suit are seen, so put an X over the suit pip
-        this.suitPipsXMap.get(suit)!.visible(true);
-      }
-    }
-
-    // Second, check to see if there are any possibilities remaining for this rank
-    let rankPossible = false;
-    for (const suit2 of globals.variant.suits) {
-      const count = this.state.possibleCards.get(`${suit2.name}${rank}`);
-      if (count === undefined) {
-        throw new Error(`Failed to get an entry for ${suit2.name}${rank} from the "possibleCards" map for card ${this.state.order}.`);
-      }
-      if (count > 0) {
-        rankPossible = true;
-        break;
-      }
-    }
-    if (!rankPossible) {
-      // There is no rank pip for "START" cards
-      if (rank >= 1 && rank <= 5) {
-        // Do nothing if the normal pip is already hidden
-        const pip = this.rankPipsMap.get(rank)!;
-        if (pip.visible()) {
-          // All the cards of this rank are seen, so put an X over the rank pip
-          this.rankPipsXMap.get(rank)!.visible(true);
-        }
-      }
-    }
-  }
-
   // We have learned the true suit and rank of this card
   // but it might not be known to the holder
   convert(msgSuit: number, msgRank: number) {
