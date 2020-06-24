@@ -9,8 +9,8 @@ import gameStateReducer from './gameStateReducer';
 
 const replayReducer = produce((
   state: Draft<ReplayState>,
-  options: Options,
   action: ReplayAction,
+  options: Options,
 ) => {
   switch (action.type) {
     case 'startReplay': {
@@ -50,7 +50,7 @@ const replayReducer = produce((
       }
 
       const hypoState = original(state.ongoingHypothetical)!;
-      state.ongoingHypothetical = gameStateReducer(hypoState, options, action.action);
+      state.ongoingHypothetical = gameStateReducer(hypoState, action.action, options);
 
       if (action.action.type === 'turn') {
         // Save it for going back

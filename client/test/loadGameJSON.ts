@@ -55,7 +55,7 @@ export default function loadGameJSON(gameJSON: JsonGame): State {
 
   // Run the list of states through the state reducer
   const state = initialState(options);
-  return stateReducer(state, options, { type: 'gameActionList', actions });
+  return stateReducer(state, { type: 'gameActionList', actions });
 }
 
 function drawCard(who: number, order: number, deck: SimpleCard[]): ActionDraw {

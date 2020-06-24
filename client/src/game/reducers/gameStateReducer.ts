@@ -15,8 +15,8 @@ import turnReducer from './turnReducer';
 
 const gameStateReducer = produce((
   state: Draft<GameState>,
-  options: Options,
   action: GameAction,
+  options: Options,
 ) => {
   const variant = VARIANTS.get(options.variantName);
   if (variant === undefined) {
@@ -175,7 +175,7 @@ const gameStateReducer = produce((
       // TEMP: At this point, check that the local state matches the server
       if (state.turn !== action.num) {
         console.warn('The turns from the client and the server do not match. '
-            + `Client = ${state.score}, Server = ${action.num}`);
+            + `Client = ${state.turn}, Server = ${action.num}`);
       }
       if (state.currentPlayerIndex !== action.who) {
         console.warn('The currentPlayerIndex from the client and the server do not match. '
