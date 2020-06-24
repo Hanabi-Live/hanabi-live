@@ -47,6 +47,7 @@ func httpLocalhostInit() {
 	httpRouter.POST("/sendError", httpLocalhostUserAction)
 	httpRouter.POST("/serialize", httpLocalhostSerialize)
 	httpRouter.GET("/shutdown", httpLocalhostShutdown)
+	httpRouter.GET("/terminate", httpLocalhostTerminate)
 	httpRouter.GET("/timeLeft", httpLocalhostTimeLeft)
 	httpRouter.GET("/uptime", httpLocalhostUptime)
 	httpRouter.GET("/version", httpLocalhostVersion)

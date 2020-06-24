@@ -51,6 +51,9 @@ func commandTableTerminate(s *Session, d *CommandData) {
 		Terminate
 	*/
 
+	if d.Server {
+		i = -1
+	}
 	terminate(t, s.Username(), i)
 }
 
