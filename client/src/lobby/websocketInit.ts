@@ -1,6 +1,7 @@
 // WebSocket command handlers for in-game events
 
 import * as gameMain from '../game/main';
+import websocketUI from '../game/ui/websocket';
 import globals from '../globals';
 import * as sounds from '../sounds';
 import Game from './Game';
@@ -51,6 +52,9 @@ commands.set('friends', (data: FriendsData) => {
   }
   if (globals.currentScreen === 'pregame') {
     pregame.draw();
+  }
+  if (globals.currentScreen === 'game') {
+    websocketUI.get('spectators')!({ names: globals.ui!.globals.spectators });
   }
 });
 
