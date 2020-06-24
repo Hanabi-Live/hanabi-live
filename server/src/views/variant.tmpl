@@ -92,7 +92,7 @@
                 {{range $index, $results := .RecentGames}}
                   <tr>
                     <td><a href="/replay/{{.ID}}">{{.ID}}</a></td>
-                    <td>{{.NumPlayers}}</td>
+                    <td>{{.Options.NumPlayers}}</td>
                     <td>{{.Score}}</td>
                     <td>
                       <!-- From: https://stackoverflow.com/questions/21305865/golang-separating-items-with-comma-in-template -->
