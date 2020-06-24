@@ -32,7 +32,6 @@ import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
 import possibilitiesCheck from './possibilitiesCheck';
 import strikeRecord from './strikeRecord';
-import * as tooltips from './tooltips';
 import updateCurrentPlayerArea from './updateCurrentPlayerArea';
 
 // The server has sent us a new game action
@@ -44,9 +43,6 @@ export default (data: ActionIncludingHypothetical) => {
   if (globals.editingNote !== null) {
     globals.actionOccurred = true;
   }
-
-  // Automatically close any tooltips once an action in the game happens
-  tooltips.resetActiveHover();
 
   const actionFunction = actionFunctions.get(data.type);
   if (actionFunction === undefined) {
