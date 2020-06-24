@@ -5,7 +5,7 @@
   html5up.net | @ajlkn
   Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
-<html>
+<html lang="en">
 
 <head>
   <title>
@@ -20,6 +20,9 @@
   <!-- We remove "user-scalable=no" since we are removing the mobile nav and want them to be able to zoom -->
   <meta name="description" content="A place to play Hanabi online, a cooperative card game of logic and reasoning.">
   <meta name="keywords" content="hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning">
+  {{ template "criticalCSS" }}
+  <!-- Preload fonts -->
+  <link rel="preload" as="font" crossorigin="anonymous" type="font/woff2" href="/public/webfonts/fa-solid-900.woff2" />
   {{if eq .Title "Dev"}}
     <!-- These should match the CSS array in "Gruntfile.js" -->
     <link rel="stylesheet" type="text/css" href="/public/css/lib/fontawesome.min.css" />
@@ -29,8 +32,8 @@
     <link rel="stylesheet" type="text/css" href="/public/css/lib/alpha.css" />
     <link rel="stylesheet" type="text/css" href="/public/css/hanabi.css" />
   {{else}}
-    <!-- All of the CSS is bundled into one file with Grunt -->
-    <link rel="stylesheet" type="text/css" href="/public/css/main.min.css" />
+    <!-- Delay loading non-critical CSS -->
+    <link rel="preload" type="text/css" href="/public/css/main.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   {{end}}
   <link rel="icon" href="/public/img/favicon.png" type="image/x-icon">
 </head>

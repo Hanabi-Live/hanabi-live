@@ -11,6 +11,7 @@ import (
 	"github.com/didip/tollbooth"
 	"github.com/didip/tollbooth_gin"
 	sentrygin "github.com/getsentry/sentry-go/gin"
+	"github.com/gin-contrib/gzip"
 	gsessions "github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -81,8 +82,9 @@ func httpInit() {
 	GATrackingID = os.Getenv("GA_TRACKING_ID")
 
 	// Create a new Gin HTTP router
-	gin.SetMode(gin.ReleaseMode) // Comment this out to debug HTTP stuff
-	httpRouter := gin.Default()  // Has the "Logger" and "Recovery" middleware attached
+	gin.SetMode(gin.ReleaseMode)                       // Comment this out to debug HTTP stuff
+	httpRouter := gin.Default()                        // Has the "Logger" and "Recovery" middleware attached
+	httpRouter.Use(gzip.Gzip(gzip.DefaultCompression)) // Add GZip compression middleware
 
 	// Attach rate-limiting middleware from Tollbooth
 	// The limiter works per path request,
@@ -291,6 +293,7 @@ func httpInit() {
 func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...string) {
 	viewsPath := path.Join(projectPath, "server", "src", "views")
 	layoutPath := path.Join(viewsPath, "layout.tmpl")
+	criticalCSSPath := path.Join(viewsPath, "criticalCSS.tmpl")
 
 	// Turn the slice of file names into a slice of full paths
 	for i := 0; i < len(templateName); i++ {
@@ -319,6 +322,9 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 
 	// Append the main layout to our list of layouts
 	templateName = append(templateName, layoutPath)
+
+	// Append the critical CSS to our list of layouts
+	templateName = append(templateName, criticalCSSPath)
 
 	// Create the template
 	var tmpl *template.Template
