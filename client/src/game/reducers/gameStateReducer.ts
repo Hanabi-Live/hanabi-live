@@ -208,10 +208,10 @@ const gameStateReducer = produce((
   // Use a sub-reducer to calculate some game statistics
   state.stats = statsReducer(
     original(state.stats),
-    options,
     action,
     original(state)!,
     current(state),
+    options,
   );
 }, {} as GameState);
 

@@ -9,7 +9,9 @@ const turnReducer = produce((state: Draft<TurnState>, action: GameAction, numPla
     case 'clue': {
       state.turn += 1;
       state.currentPlayerIndex += 1;
-      state.currentPlayerIndex %= numPlayers;
+      if (state.currentPlayerIndex === numPlayers) {
+        state.currentPlayerIndex = 0;
+      }
       break;
     }
     default: {

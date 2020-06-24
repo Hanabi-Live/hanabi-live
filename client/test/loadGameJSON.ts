@@ -10,9 +10,9 @@ import SimpleCard from '../src/game/types/SimpleCard';
 import State from '../src/game/types/State';
 import testGame from '../test_data/test_game.json';
 
-type JsonGame = typeof testGame;
+type JSONGame = typeof testGame;
 
-enum JsonActionType {
+enum JSONActionType {
   ActionTypePlay = 0,
   ActionTypeDiscard = 1,
   ActionTypeColorClue = 2,
@@ -20,13 +20,13 @@ enum JsonActionType {
   ActionTypeGameOver = 4,
 }
 
-interface JsonAction {
-  type: JsonActionType;
+interface JSONAction {
+  type: JSONActionType;
   target: number;
   value: number;
 }
 
-export default function loadGameJSON(gameJSON: JsonGame): State {
+export default function loadGameJSON(gameJSON: JSONGame): State {
   const options = new Options();
   options.numPlayers = gameJSON.players.length;
   options.variantName = gameJSON.options.variant;
@@ -36,18 +36,27 @@ export default function loadGameJSON(gameJSON: JsonGame): State {
   let topOfDeck = dealInitialCards(options.numPlayers, cardsPerHand, actions, gameJSON.deck);
 
   // Parse all plays/discards/clues
-  let turn = 0;
-  let who = 0;
+  let turn = 0; // Start on the 0th turn
+  let who = 0; // The player at index 0 goes first
+
+  // Make a "turn" action for the initial turn, before any players have taken any actions yet
+  actions.push({ type: 'turn', num: turn, who });
+  turn += 1;
+  who += 1;
 
   gameJSON.actions.forEach((a) => {
-    const action = parseJsonAction(who, turn, gameJSON.deck, a);
+    const action = parseJSONAction(who, turn, gameJSON.deck, a);
     if (action) {
       actions.push(action);
-      if (topOfDeck < gameJSON.deck.length && (action.type === 'discard' || action.type === 'play')) {
+      if (
+        topOfDeck < gameJSON.deck.length
+        && (action.type === 'discard' || action.type === 'play')
+      ) {
         actions.push(drawCard(who, topOfDeck, gameJSON.deck));
         topOfDeck += 1;
       }
     }
+
     actions.push({ type: 'turn', num: turn, who });
     turn += 1;
     who = (who + 1) % options.numPlayers;
@@ -84,14 +93,14 @@ function dealInitialCards(
   return topOfDeck;
 }
 
-function parseJsonAction(
+function parseJSONAction(
   currentPlayer: number,
   turn: number,
   deck: SimpleCard[],
-  a: JsonAction,
+  a: JSONAction,
 ): GameAction | null {
   switch (a.type) {
-    case JsonActionType.ActionTypePlay: {
+    case JSONActionType.ActionTypePlay: {
       return {
         type: 'play',
         which: {
@@ -102,7 +111,7 @@ function parseJsonAction(
         },
       } as ActionPlay;
     }
-    case JsonActionType.ActionTypeDiscard: {
+    case JSONActionType.ActionTypeDiscard: {
       return {
         type: 'discard',
         which: {
@@ -113,12 +122,12 @@ function parseJsonAction(
         },
       } as ActionDiscard;
     }
-    case JsonActionType.ActionTypeColorClue:
-    case JsonActionType.ActionTypeRankClue: {
+    case JSONActionType.ActionTypeColorClue:
+    case JSONActionType.ActionTypeRankClue: {
       return {
         type: 'clue',
         clue: {
-          type: a.type === JsonActionType.ActionTypeColorClue ? ClueType.Color : ClueType.Rank,
+          type: a.type === JSONActionType.ActionTypeColorClue ? ClueType.Color : ClueType.Rank,
           value: a.value,
         },
         giver: currentPlayer,

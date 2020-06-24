@@ -11,10 +11,10 @@ import Options from '../types/Options';
 
 const statsReducer = produce((
   stats: Draft<StateStats>,
-  options: Options,
   action: GameAction,
   originalState: GameState,
   currentState: GameState,
+  options: Options,
 ) => {
   const variant = VARIANTS.get(options.variantName)!;
   if (variant === undefined) {

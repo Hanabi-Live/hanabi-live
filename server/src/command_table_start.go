@@ -81,6 +81,9 @@ func commandTableStart(s *Session, d *CommandData) {
 
 	logger.Info(t.GetName() + "Starting the game.")
 
+	// Record the number of players
+	t.Options.NumPlayers = len(t.Players)
+
 	// Make everyone stop typing
 	for _, p := range t.Players {
 		if p.Typing {
