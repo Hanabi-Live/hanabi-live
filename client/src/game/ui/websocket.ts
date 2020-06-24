@@ -704,6 +704,11 @@ commands.set('replayTurn', (data: ReplayTurnData) => {
     // loading
     // We need to "catch up" to everyone else and play all of the existing hypothetical actions
     // that have taken place
+
+    // TEMP: Pass the actions along to the reducers
+    globals.store!.dispatch({ type: 'hypoStart' });
+    globals.hypoActions.forEach((a) => globals.store!.dispatch({ type: 'hypoAction', action: a }));
+
     hypothetical.playThroughPastActions();
   }
 });
