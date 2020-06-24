@@ -30,6 +30,9 @@
   // Linux line endings are used in this project
   "files.eol": "\n",
 
+  // Automatically removing all trailing whitespace when saving a file
+  "files.trimTrailingWhitespace": true,
+
   // The default Golang linter is golint, which is only concerned with coding style
   // GolangCI-Lint does a suite of different checks
   "go.lintTool": "golangci-lint",
