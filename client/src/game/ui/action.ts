@@ -230,7 +230,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
     // Since we are in a shared replay, this is a mistake, because we should have full knowledge of
     // what the card is (from the "deckOrder" message that is sent at the end of the game)
     const card = globals.deck[order];
-    card.state.holder = holder;
+    card.setHolder(holder);
     card.replayRedraw();
     suit = card.state.suit;
     rank = card.state.rank;

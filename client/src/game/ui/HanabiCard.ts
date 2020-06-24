@@ -256,7 +256,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  setHolder(holder: number) {
+  setHolder(holder: number | null) {
     this.state.holder = holder;
   }
 
@@ -856,7 +856,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     layoutChild.setAbsolutePosition(pos);
 
     // Mark that no player is now holding this card
-    this.state.holder = null;
+    this.setHolder(null);
   }
 
   animateToPlayStacks() {
