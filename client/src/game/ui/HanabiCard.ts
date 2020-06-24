@@ -45,7 +45,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   doMisplayAnimation: boolean = false;
   tooltipName: string = '';
   noteIndicator: NoteIndicator;
-  note: CardNote = {
+
+  private note: CardNote = {
     suit: null,
     rank: null,
     chopMoved: false,
@@ -55,6 +56,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     blank: false,
     unclued: false,
   };
+
+  private empathy: boolean = false;
 
   private cluedBorder: Konva.Group;
   private chopMoveBorder: Konva.Group;
@@ -74,8 +77,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   private arrow: Konva.Group | null = null;
   private arrowBase: Konva.Arrow | null = null;
-
-  empathy: boolean = false;
 
   constructor(config: Konva.ContainerConfig) {
     super(config);
@@ -1244,20 +1245,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   checkSpecialNote() {
-    let note = globals.ourNotes[this.state.order];
-    note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
-    note = note.trim(); // Remove all leading and trailing whitespace
-    const fullNote = note;
+    const noteText = globals.ourNotes[this.state.order];
 
-    // Only examine the text to the right of the rightmost pipe
-    // (pipes are a conventional way to append new information to a note
-    if (note.includes('|')) {
-      const match = note.match(/.*\|(.*)/);
-      note = match![1];
-      note = note.trim(); // Remove all leading and trailing whitespace
-    }
-
-    this.note = notes.checkNoteIdentity(globals.variant, note, fullNote);
+    this.note = notes.checkNoteIdentity(globals.variant, noteText);
     notes.checkNoteImpossibility(this.state, this.note);
     this.setClued();
 
@@ -1266,23 +1256,23 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.setBareImage();
 
     // Feature 2 - Give the card a special border if it is chop moved
-    this.chopMoveBorder!.visible((
-      this.note.chopMoved
-      && !this.cluedBorder!.visible()
+    const showSpecialBorder = (
+      !this.cluedBorder!.visible()
       && !this.state.isPlayed
       && !this.state.isDiscarded
       && !globals.replay
       && !globals.spectating
+    );
+
+    this.chopMoveBorder!.visible((
+      this.note.chopMoved
+      && showSpecialBorder
     ));
 
     // Feature 3 - Give the card a special border if it is finessed
     this.finesseBorder!.visible((
       this.note.finessed
-      && !this.cluedBorder!.visible()
-      && !this.state.isPlayed
-      && !this.state.isDiscarded
-      && !globals.replay
-      && !globals.spectating
+      && showSpecialBorder
     ));
 
     globals.layers.card.batchDraw();

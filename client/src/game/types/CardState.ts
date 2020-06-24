@@ -33,10 +33,10 @@ export type Trait<V extends Color | number> =
       never;
 
 export interface ClueMemory<V extends Color | number> {
-  possibilities: Array<Trait<V>>,
-  positiveClues: V[],
-  negativeClues: V[],
-  readonly pipStates: Map<Trait<V>, PipState>,
+  possibilities: Array<Trait<V>>;
+  positiveClues: V[];
+  negativeClues: V[];
+  readonly pipStates: Map<Trait<V>, PipState>;
 }
 
 export function cardInitialState(order: number) : CardState {

@@ -74,7 +74,19 @@ const checkNoteKeywords = (
   fullNote: string,
 ) => keywords.find((k) => note === k || fullNote.includes(`[${k}]`)) !== undefined;
 
-export const checkNoteIdentity = (variant: Variant, note: string, fullNote: string): CardNote => {
+export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
+  note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
+  note = note.trim(); // Remove all leading and trailing whitespace
+  const fullNote = note;
+
+  // Only examine the text to the right of the rightmost pipe
+  // (pipes are a conventional way to append new information to a note
+  if (note.includes('|')) {
+    const match = note.match(/.*\|(.*)/);
+    note = match![1];
+    note = note.trim(); // Remove all leading and trailing whitespace
+  }
+
   // First, check to see if this card should be marked with certain properties
   const knownTrash = checkNoteKeywords([
     'kt',
