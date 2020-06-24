@@ -19,14 +19,9 @@ export const show = () => {
   $('#page-wrapper').hide(); // We can't fade this out as it will overlap
   $('#game-chat-text').html(''); // Clear the in-game chat box of any previous content
 
-  if (window.location.pathname === '/dev2') {
-    // Do nothing and initialize later when we get the "init" message
-    // TODO we can initialize the stage and some graphics here
-  } else {
-    $('#game').fadeIn(FADE_TIME);
-    globals.ui = new HanabiUI(globals, gameExports);
-    globals.chatUnread = 0;
-  }
+  $('#game').fadeIn(FADE_TIME);
+  globals.ui = new HanabiUI(globals, gameExports);
+  globals.chatUnread = 0;
 
   // Request some high-level information about the game (e.g. the number of players)
   // This will be enough information to load the UI

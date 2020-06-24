@@ -112,18 +112,6 @@ const initCommands = () => {
       return;
     }
 
-    // Automatically go into a replay if we are testing the new development client
-    if (window.location.pathname === '/dev2') {
-      setTimeout(() => {
-        globals.conn!.send('replayCreate', {
-          gameID: 2906, // The first game in the Hanabi Live database
-          source: 'id',
-          visibility: 'solo',
-        });
-      }, 10);
-      return;
-    }
-
     // Automatically go into a replay if we are using a "/replay/123" URL
     const match1 = window.location.pathname.match(/\/replay\/(\d+)/);
     if (match1) {

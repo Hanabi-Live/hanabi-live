@@ -45,7 +45,6 @@
     "jquery": "^3.5.1",
     "konva": "3.4.1",
     "linkifyjs": "^2.1.9",
-    "phaser": "^3.23.0",
     "redux": "^4.0.5",
     "tooltipster": "^4.2.8"
   }

@@ -164,7 +164,6 @@ func httpInit() {
 	httpRouter.GET("/dev/create-table", httpMain)
 	httpRouter.GET("/dev/test", httpMain)
 	httpRouter.GET("/dev/test/:testNum", httpMain)
-	httpRouter.GET("/dev2", httpMain) // Used for testing the new Phaser client
 
 	// Path handlers for other URLs
 	httpRouter.GET("/scores", httpScores)

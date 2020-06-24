@@ -1,26 +1,17 @@
 // WebSocket command handlers for in-game events
 
-import phaserInit from '../client_v2/phaserInit';
 import globals from '../globals';
-import { VARIANTS } from './data/gameData';
-import drawCards from './ui/drawCards';
 import websocket from './ui/websocket';
-
-type Callback = (data: any) => void;
 
 export default () => {
   if (globals.conn === null) {
     throw new Error('The "initCommands()" function was entered before "globals.conn" was initiated.');
   }
 
-  let commandsToUse: Map<string, Callback>;
-  if (window.location.pathname === '/dev2') {
-    commandsToUse = commands; // The new client, defined below
-  } else {
-    commandsToUse = websocket; // The old client, defined in the "ui/websocket.ts" file
-  }
-
-  for (const [commandName, commandFunction] of commandsToUse) {
+  // WebSocket command handlers for the game are defined in "client/src/game/ui/websocket.ts"
+  // As a safety precaution, ignore any game-related commands if the current screen is not on the
+  // game
+  for (const [commandName, commandFunction] of websocket) {
     globals.conn.on(commandName, (data: any) => {
       if (globals.currentScreen !== 'game') {
         return;
@@ -30,50 +21,3 @@ export default () => {
     });
   }
 };
-
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-// TODO: fix type issues with client_v2
-
-// Define a command handler map for the new development client
-const commands = new Map<string, Callback>();
-
-commands.set('init', (data: any) => {
-  // Record all of the settings for this game
-  globals.init = data;
-
-  // The variant is an integer on the server side, but an object on the client side,
-  // so convert it accordingly
-  globals.init.variant = VARIANTS.get(data.variant);
-
-  // Also initialize the "ui2" object, which contains various graphical objects
-  globals.ui2 = {
-    cards: [],
-  };
-
-  // Find out whether some settings are enabled
-  let colorblindMode = false;
-  let styleNumbers = false;
-  if (globals.settings !== null) {
-    colorblindMode = globals.settings.colorblindMode;
-    styleNumbers = globals.settings.styleNumbers;
-  }
-
-  // Build images for every card
-  // (with respect to the variant that we are playing
-  // and whether or not we have the colorblind UI feature enabled)
-  globals.ui2.cardImages = drawCards(
-    globals.init.variant,
-    colorblindMode,
-    styleNumbers,
-  );
-
-  // Draw the user interface
-  phaserInit();
-
-  // Keyboard hotkeys can only be initialized once the clue buttons are drawn
-  // keyboard.init();
-
-  // Tell the server that we are finished loading
-  // TODO send "getGameInfo2" command
-});
