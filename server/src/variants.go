@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	orderedJson "github.com/virtuald/go-ordered-json"
+	orderedJSON "github.com/virtuald/go-ordered-json"
 )
 
 var (
@@ -230,8 +230,8 @@ func variantsInit() {
 	}
 
 	// We also need an ordered list of the variants
-	var variantsOrdered orderedJson.OrderedObject
-	if err := orderedJson.Unmarshal(contents, &variantsOrdered); err != nil {
+	var variantsOrdered orderedJSON.OrderedObject
+	if err := orderedJSON.Unmarshal(contents, &variantsOrdered); err != nil {
 		logger.Fatal("Failed to convert the variants file to ordered JSON:", err)
 		return
 	}
