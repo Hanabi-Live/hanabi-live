@@ -59,9 +59,9 @@
   </thead>
   <tbody>
     {{range $index, $results := .History}}
-      <tr class="history-row-{{.NumPlayers}}">
+      <tr class="history-row-{{.Options.NumPlayers}}">
         <td><a href="/replay/{{.ID}}">{{.ID}}</a></td>
-        <td>{{.NumPlayers}}</td>
+        <td>{{.Options.NumPlayers}}</td>
         <td>{{.Score}}</td>
         <td>{{.Options.Variant}}</td>
         <td>{{.DatetimeFinished}}</td>
