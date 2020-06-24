@@ -6,5 +6,5 @@ export default interface State {
   readonly visibleState: GameState;
   readonly ongoingGame: GameState;
   readonly replay: ReplayState;
-  readonly options: Readonly<Options>;
+  readonly options: Options;
 }
