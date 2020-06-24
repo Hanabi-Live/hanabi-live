@@ -45,6 +45,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   doMisplayAnimation: boolean = false;
   tooltipName: string = '';
   noteIndicator: NoteIndicator;
+  empathy: boolean = false;
 
   private note: CardNote = {
     suit: null,
@@ -56,8 +57,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     blank: false,
     unclued: false,
   };
-
-  private empathy: boolean = false;
 
   private cluedBorder: Konva.Group;
   private chopMoveBorder: Konva.Group;
