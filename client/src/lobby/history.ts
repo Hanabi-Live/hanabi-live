@@ -123,7 +123,7 @@ export const draw = (friends: boolean) => {
     $('<td>').html(`#${ids[i]}`).appendTo(row);
 
     // Column 2 - # of Players
-    $('<td>').html(gameData.numPlayers.toString()).appendTo(row);
+    $('<td>').html(gameData.options.numPlayers.toString()).appendTo(row);
 
     // Column 3 - Score
     $('<td>').html(`${gameData.score}/${maxScore}`).appendTo(row);
