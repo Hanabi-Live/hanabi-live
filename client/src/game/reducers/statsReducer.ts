@@ -72,12 +72,6 @@ const statsReducer = produce((
       break;
     }
 
-    case 'status': {
-      // TODO: calculate maxScore instead of using the server one
-      stats.maxScore = action.maxScore;
-      break;
-    }
-
     default:
       break;
   }
@@ -86,7 +80,7 @@ const statsReducer = produce((
   stats.pace = statsRules.pace(
     currentState.score,
     currentState.deckSize,
-    stats.maxScore,
+    currentState.maxScore,
     options.numPlayers,
   );
   stats.paceRisk = statsRules.paceRisk(stats.pace, options.numPlayers);

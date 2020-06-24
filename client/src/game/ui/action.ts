@@ -500,14 +500,6 @@ actionFunctions.set('turn', (data: ActionTurn) => {
   globals.turn = data.num;
   globals.currentPlayerIndex = data.who;
 
-  // Bold the name frame of the current player to indicate that it is their turn
-  for (let i = 0; i < globals.playerNames.length; i++) {
-    const nameFrame = globals.elements.nameFrames[i];
-    if (nameFrame) {
-      nameFrame.setActive(globals.currentPlayerIndex === i);
-    }
-  }
-
   // Update the current player in the middle of the screen
   updateCurrentPlayerArea();
 

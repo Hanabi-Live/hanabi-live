@@ -41,6 +41,7 @@ export default function initialGameState(options: Options): GameState {
     deck: [],
     deckSize: deck.totalCards(variant),
     score: 0,
+    maxScore: variant.maxScore,
     clueTokens: MAX_CLUE_NUM,
     doubleDiscard: false,
     strikes: [],
@@ -56,7 +57,6 @@ export default function initialGameState(options: Options): GameState {
       efficiency: Infinity,
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),
-      maxScore: variant.maxScore,
     },
   };
 }

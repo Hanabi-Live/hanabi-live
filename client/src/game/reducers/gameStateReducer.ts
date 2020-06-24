@@ -136,18 +136,23 @@ const gameStateReducer = produce((
     // An action has been taken, so there may be a change to game state variables
     // {clues: 5, doubleDiscard: false, maxScore: 24, score: 18, type: "status"}
     case 'status': {
-      // TODO: calculate doubleDiscard instead of using the server value
-      state.doubleDiscard = action.doubleDiscard;
+      // TEMP: At this point, check that the local state matches the server
+      if (state.clueTokens !== action.clues) {
+        console.warn('The clues from the client and the server do not match. '
+            + `Client = ${state.clueTokens}, Server = ${action.clues}`);
+      }
 
       // TEMP: At this point, check that the local state matches the server
       if (state.score !== action.score) {
         console.warn('The scores from the client and the server do not match. '
             + `Client = ${state.score}, Server = ${action.score}`);
       }
-      if (state.clueTokens !== action.clues) {
-        console.warn('The clues from the client and the server do not match. '
-            + `Client = ${state.clueTokens}, Server = ${action.clues}`);
-      }
+
+      // TODO: calculate maxScore instead of using the server one
+      state.maxScore = action.maxScore;
+
+      // TODO: calculate doubleDiscard instead of using the server value
+      state.doubleDiscard = action.doubleDiscard;
 
       break;
     }

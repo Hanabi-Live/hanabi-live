@@ -26,11 +26,12 @@ export default class StateObserver {
 
     // Game info
     sub((s) => s.visibleState.turn, gameInfoView.onTurnChanged);
-    sub((s) => s.visibleState.clueTokens, gameInfoView.onClueTokensChanged);
+    sub((s) => s.visibleState.currentPlayerIndex, gameInfoView.onCurrentPlayerIndexChanged);
     sub((s) => ({
       score: s.visibleState.score,
-      maxScore: s.visibleState.stats.maxScore,
+      maxScore: s.visibleState.maxScore,
     }), gameInfoView.onScoreOrMaxScoreChanged);
+    sub((s) => s.visibleState.clueTokens, gameInfoView.onClueTokensChanged);
 
     // Stats
     sub((s) => s.visibleState.stats.efficiency, statsView.onEfficiencyChanged);
