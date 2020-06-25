@@ -691,6 +691,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       // rank-less suit
       if (
         !positive
+        && !globals.variant.rankCluesTouchNothing
         && this.state.negativeRankClues.length === globals.variant.ranks.length
         // We know that any special rank can be given as a rank clue
         // so there is no need to have a separate check for special variants
