@@ -88,8 +88,10 @@ func discordConnect() {
 	go discordRefreshMembers()
 
 	// Announce that the server has started
+	msg := "The server has successfully started at: " + getCurrentTimestamp() + "\n"
+	msg += "(" + gitCommitOnStart + ")"
 	commandChat(nil, &CommandData{
-		Msg:    "The server has successfully started at: " + getCurrentTimestamp(),
+		Msg:    msg,
 		Room:   "lobby",
 		Server: true,
 	})
