@@ -2,7 +2,7 @@
 
 import * as gameMain from '../game/main';
 import { DEFAULT_VARIANT_NAME } from '../game/types/constants';
-import websocketUI from '../game/ui/commandsGame';
+import websocketUI from '../game/ui/gameCommands';
 import globals from '../globals';
 import * as sentry from '../sentry';
 import * as sounds from '../sounds';
