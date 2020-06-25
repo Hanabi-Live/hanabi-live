@@ -1,19 +1,16 @@
-import Color from './Color';
-import Suit from './Suit';
-
 export default interface CardState {
   readonly order: number;
   // The index of the player that holds this card (or null if played/discarded)
   holder: number | null;
-  suit: Suit | null;
+  suitIndex: number | null;
   rank: number | null;
   blank: boolean;
 
   // The following are the variables that are refreshed
-  readonly rankClueMemory: ClueMemory<number>;
-  readonly colorClueMemory: ClueMemory<Color>;
+  readonly rankClueMemory: ClueMemory;
+  readonly colorClueMemory: ClueMemory;
 
-  possibleCards: Map<string, number>;
+  possibleCards: number[][]; // indexed possibleCards[suitIndex][rank]
   identityDetermined: boolean;
   numPositiveClues: number;
   turnsClued: number[];
@@ -27,26 +24,21 @@ export default interface CardState {
 
 export type PipState = 'Visible' | 'Eliminated' | 'Hidden' | 'PositiveClue';
 
-export type Trait<V extends Color | number> =
-  V extends Color ? Suit :
-    V extends number ? number :
-      never;
-
-export interface ClueMemory<V extends Color | number> {
-  possibilities: Array<Trait<V>>;
-  positiveClues: V[];
-  negativeClues: V[];
-  readonly pipStates: Map<Trait<V>, PipState>;
+export interface ClueMemory {
+  possibilities: number[];
+  positiveClues: number[];
+  negativeClues: number[];
+  pipStates: PipState[];
 }
 
 export function cardInitialState(order: number) : CardState {
   return {
     order,
     holder: null,
-    suit: null,
+    suitIndex: null,
     rank: null,
     blank: false,
-    possibleCards: new Map<string, number>(),
+    possibleCards: [],
     identityDetermined: false,
     numPositiveClues: 0,
     turnsClued: [],
@@ -60,13 +52,13 @@ export function cardInitialState(order: number) : CardState {
       possibilities: [],
       positiveClues: [],
       negativeClues: [],
-      pipStates: new Map<number, PipState>(),
+      pipStates: [],
     },
     colorClueMemory: {
       possibilities: [],
       positiveClues: [],
       negativeClues: [],
-      pipStates: new Map<Suit, PipState>(),
+      pipStates: [],
     },
   };
 }

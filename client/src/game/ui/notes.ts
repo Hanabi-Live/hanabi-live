@@ -6,6 +6,7 @@ import CardNote from '../types/CardNote';
 import CardState from '../types/CardState';
 import { START_CARD_RANK } from '../types/constants';
 import Variant from '../types/Variant';
+import { suitToMsgSuit } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 
@@ -127,12 +128,12 @@ export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
   const unclued = checkNoteKeywords(['unclued'], note, fullNote);
 
   const noteCard = cardFromNote(variant, note, fullNote);
-  const suit = noteCard.suit;
+  const suitIndex = noteCard.suit ? suitToMsgSuit(noteCard.suit, variant) : null;
   const rank = noteCard.rank;
 
   return {
     rank,
-    suit,
+    suitIndex,
     blank,
     chopMoved,
     finessed,
@@ -182,16 +183,16 @@ export const cardFromNote = (variant: Variant, note: string, fullNote: string): 
   return { suit: null, rank: null };
 };
 
-export const checkNoteImpossibility = (cardState: CardState, note: CardNote) => {
+export const checkNoteImpossibility = (variant: Variant, cardState: CardState, note: CardNote) => {
   // Validate that the note does not contain an impossibility
-  if (note.suit !== null && note.rank === null) {
+  if (note.suitIndex !== null && note.rank === null) {
     // Only the suit was specified
     // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
     let suitPossible = false;
     for (const rank of cardState.rankClueMemory.possibilities) {
-      const count = cardState.possibleCards.get(`${note.suit.name}${rank}`);
+      const count = cardState.possibleCards[note.suitIndex][rank];
       if (count === undefined) {
-        throw new Error(`The card of "${note.suit.name}${rank}" does not exist in the possibleCards map.`);
+        throw new Error(`The card of Suit: ${note.suitIndex} and Rank: ${rank} does not exist in the possibleCards map.`);
       }
       if (count > 0) {
         suitPossible = true;
@@ -199,19 +200,20 @@ export const checkNoteImpossibility = (cardState: CardState, note: CardNote) => 
       }
     }
     if (!suitPossible && cardState.holder === globals.playerUs) {
-      window.alert(`That card cannot possibly be ${note.suit.name.toLowerCase()}.`);
-      note.suit = null;
+      const suitName = variant.suits[note.suitIndex].name;
+      window.alert(`That card cannot possibly be ${suitName.toLowerCase()}.`);
+      note.suitIndex = null;
       return;
     }
   }
-  if (note.suit === null && note.rank !== null) {
+  if (note.suitIndex === null && note.rank !== null) {
     // Only the rank was specified
     // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
     let rankPossible = false;
     for (const suit of cardState.colorClueMemory.possibilities) {
-      const count = cardState.possibleCards.get(`${suit.name}${note.rank}`);
+      const count = cardState.possibleCards[suit][note.rank];
       if (count === undefined) {
-        throw new Error(`The card of "${suit.name}${note.suit}" does not exist in the possibleCards map.`);
+        throw new Error(`The card of Suit: ${suit} and Rank: ${note.rank} does not exist in the possibleCards map.`);
       }
       if (count > 0) {
         rankPossible = true;
@@ -224,12 +226,15 @@ export const checkNoteImpossibility = (cardState: CardState, note: CardNote) => 
       return;
     }
   }
-  if (note.suit !== null && note.rank !== null) {
+  if (note.suitIndex !== null && note.rank !== null) {
     // Both the suit and the rank were specified
-    const mapIndex = `${note.suit.name}${note.rank}`;
-    if (cardState.possibleCards.get(mapIndex) === 0 && cardState.holder === globals.playerUs) {
-      window.alert(`That card cannot possibly be a ${note.suit.name.toLowerCase()} ${note.rank}.`);
-      note.suit = null;
+    if (
+      cardState.possibleCards[note.suitIndex][note.rank] === 0
+      && cardState.holder === globals.playerUs
+    ) {
+      const suitName = variant.suits[note.suitIndex].name;
+      window.alert(`That card cannot possibly be a ${suitName.toLowerCase()} ${note.rank}.`);
+      note.suitIndex = null;
       note.rank = null;
     }
   }

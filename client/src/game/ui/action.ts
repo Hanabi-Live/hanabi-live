@@ -232,7 +232,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
     const card = globals.deck[order];
     card.setHolder(holder);
     card.replayRedraw();
-    suit = card.state.suit;
+    suit = msgSuitToSuit(card.state.suitIndex ?? -1, globals.variant);
     rank = card.state.rank;
   }
 
@@ -282,6 +282,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   // then remove it from the card possibilities for the players who see this card
   if (suit && rank) {
     if (possibilitiesCheck()) {
+      const suitIndex = globals.variant.suits.indexOf(suit!);
       for (let i = 0; i < globals.elements.playerHands.length; i++) {
         if (i === holder) {
           // We can't update the player who drew this card,
@@ -291,7 +292,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
         const hand = globals.elements.playerHands[i];
         hand.children.each((layoutChild) => {
           const handCard = layoutChild.children[0] as HanabiCard;
-          removePossibility(globals.variant, handCard.state, suit!, rank!, false);
+          removePossibility(globals.variant, handCard.state, suitIndex, rank!, false);
         });
       }
     }
@@ -395,8 +396,8 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
     }
 
     for (const card of globals.deck) {
-      if (card.state.suit === suit) {
-        card.setDirectionArrow(suit);
+      if (card.state.suitIndex === i) {
+        card.setDirectionArrow(i);
       }
     }
   }

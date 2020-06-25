@@ -24,9 +24,19 @@ export const msgClueToClue = (msgClue: MsgClue, variant: Variant) => {
 };
 
 export const msgSuitToSuit = (
-  msgSuit: number,
+  msgSuit: number | null,
   variant: Variant,
-) => variant.suits[msgSuit] || null;
+) => {
+  if (
+    msgSuit === null
+  || msgSuit < 0
+  || msgSuit >= variant.suits.length
+  ) {
+    return null;
+  }
+
+  return variant.suits[msgSuit];
+};
 
 export const suitToMsgSuit = (
   suit: Suit | null,
@@ -36,7 +46,7 @@ export const suitToMsgSuit = (
 export const msgColorToColor = (
   msgColor: number,
   variant: Variant,
-) => variant.clueColors[msgColor] || null;
+) => (msgColor < 0 || msgColor >= variant.clueColors.length ? null : variant.clueColors[msgColor]);
 
 export const colorToMsgColor = (
   color: Color,

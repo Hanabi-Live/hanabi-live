@@ -219,7 +219,7 @@ const reset = () => {
     stackBaseLayoutChild.visible(true);
 
     // The stack base might have been morphed
-    if (stackBase.state.rank !== 0 || stackBase.state.suit !== globals.variant.suits[i]) {
+    if (stackBase.state.rank !== 0 || stackBase.state.suitIndex !== i) {
       stackBase.convert(i, 0);
     }
 
@@ -257,7 +257,7 @@ const reset = () => {
       child.tween.destroy();
     }
     card.state.holder = null;
-    card.state.suit = null;
+    card.state.suitIndex = null;
     card.state.rank = null;
   }
 

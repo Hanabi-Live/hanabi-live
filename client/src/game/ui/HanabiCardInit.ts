@@ -7,7 +7,6 @@ import * as KonvaUtil from 'konva/types/Util';
 import { CARD_H, CARD_W } from '../../constants';
 import * as variantRules from '../rules/variant';
 import { START_CARD_RANK } from '../types/constants';
-import Suit from '../types/Suit';
 import Variant from '../types/Variant';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';
@@ -144,8 +143,8 @@ export function pips(variant: Variant) {
     listening: false,
   });
 
-  const suitPipsMap = new Map<Suit, Konva.Shape>();
-  const suitPipsXMap = new Map<Suit, Konva.Shape>();
+  const suitPipsMap = new Map<number, Konva.Shape>();
+  const suitPipsXMap = new Map<number, Konva.Shape>();
   for (let i = 0; i < variant.suits.length; i++) {
     const suit = variant.suits[i];
 
@@ -208,7 +207,7 @@ export function pips(variant: Variant) {
       suitPip.fillRadialGradientEndRadius(Math.floor(CARD_W * 0.25));
     }
     suitPips.add(suitPip);
-    suitPipsMap.set(suit, suitPip);
+    suitPipsMap.set(i, suitPip);
 
     // Also create the X that will show when a certain suit can be ruled out
     const suitPipX = new Konva.Shape({
@@ -230,7 +229,7 @@ export function pips(variant: Variant) {
       listening: false,
     });
     suitPips.add(suitPipX);
-    suitPipsXMap.set(suit, suitPipX);
+    suitPipsXMap.set(i, suitPipX);
   }
 
   // Initialize the rank pips, which are black squares along the bottom of the card

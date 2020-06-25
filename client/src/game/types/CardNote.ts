@@ -1,8 +1,6 @@
-import Suit from './Suit';
-
 export default interface CardNote {
   // The suit corresponding to the note written on the card, if any
-  suit: Suit | null;
+  suitIndex: number | null;
   // The rank corresponding to the note written on the card, if any
   rank: number | null;
   readonly knownTrash: boolean;
