@@ -50,32 +50,28 @@ export default function websocketInit() {
     console.error('WebSocket error:', event);
   });
 
-  initCommands();
+  initCommands(globals.conn);
 }
 
 // We specify a callback for each command/message that we expect to receive from the server
-const initCommands = () => {
-  if (globals.conn === null) {
-    throw new Error('The "initCommands()" function was entered before "globals.conn" was initiated.');
-  }
-
+const initCommands = (conn: Connection) => {
   // Activate the command handlers for commands relating to both the lobby and the game
   for (const [commandName, commandFunction] of commands) {
-    globals.conn.on(commandName, (data: any) => {
+    conn.on(commandName, (data: any) => {
       commandFunction(data);
     });
   }
 
   // Activate the command handlers for lobby-related commands
   for (const [commandName, commandFunction] of commandsLobby) {
-    globals.conn.on(commandName, (data: any) => {
+    conn.on(commandName, (data: any) => {
       commandFunction(data);
     });
   }
 
   // Activate the command handlers for game-related commands
   for (const [commandName, commandFunction] of commandsGame) {
-    globals.conn.on(commandName, (data: any) => {
+    conn.on(commandName, (data: any) => {
       // As a safety precaution, ignore any game-related commands if we are not inside of a game
       if (globals.currentScreen !== 'game') {
         return;
