@@ -3,9 +3,9 @@
 
 import commands from './commands';
 import Connection from './Connection';
-import commandsGame from './game/ui/commandsGame';
+import gameCommands from './game/ui/gameCommands';
 import globals from './globals';
-import commandsLobby from './lobby/commandsLobby';
+import lobbyCommands from './lobby/lobbyCommands';
 import * as modals from './modals';
 
 export default function websocketInit() {
@@ -33,49 +33,46 @@ export default function websocketInit() {
   // This will automatically use the cookie that we received earlier from the POST
   // If the second argument is true, debugging is turned on
   console.log('Connecting to websocket URL:', websocketURL);
-  globals.conn = new Connection(websocketURL, true);
+  const conn = new Connection(websocketURL, true);
 
   // Define event handlers
-  globals.conn.on('open', () => {
+  conn.on('open', () => {
     // We will show the lobby upon receiving the "welcome" command from the server
     console.log('WebSocket connection established.');
   });
-  globals.conn.on('close', () => {
+  conn.on('close', () => {
     console.log('WebSocket connection disconnected / closed.');
     modals.errorShow('Disconnected from the server. Either your Internet hiccuped or the server restarted.');
   });
-  globals.conn.on('socketError', (event: Event) => {
+  conn.on('socketError', (event: Event) => {
     // "socketError" is defined in the Connection object as mapping to
     // the WebSocket "onerror" event
     console.error('WebSocket error:', event);
   });
 
-  initCommands();
+  initCommands(conn);
+  globals.conn = conn;
 }
 
 // We specify a callback for each command/message that we expect to receive from the server
-const initCommands = () => {
-  if (globals.conn === null) {
-    throw new Error('The "initCommands()" function was entered before "globals.conn" was initiated.');
-  }
-
+const initCommands = (conn: Connection) => {
   // Activate the command handlers for commands relating to both the lobby and the game
   for (const [commandName, commandFunction] of commands) {
-    globals.conn.on(commandName, (data: any) => {
+    conn.on(commandName, (data: any) => {
       commandFunction(data);
     });
   }
 
   // Activate the command handlers for lobby-related commands
-  for (const [commandName, commandFunction] of commandsLobby) {
-    globals.conn.on(commandName, (data: any) => {
+  for (const [commandName, commandFunction] of lobbyCommands) {
+    conn.on(commandName, (data: any) => {
       commandFunction(data);
     });
   }
 
   // Activate the command handlers for game-related commands
-  for (const [commandName, commandFunction] of commandsGame) {
-    globals.conn.on(commandName, (data: any) => {
+  for (const [commandName, commandFunction] of gameCommands) {
+    conn.on(commandName, (data: any) => {
       // As a safety precaution, ignore any game-related commands if we are not inside of a game
       if (globals.currentScreen !== 'game') {
         return;
