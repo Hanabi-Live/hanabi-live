@@ -340,6 +340,10 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 		tmpl = v
 	}
 
+	// Since we are using the GZip middleware, we have to specify the content type,
+	// or else the page will be downloaded by the browser as "download.gz"
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	// Execute the template and send it to the user
 	if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {
 		if isCommonHTTPError(err.Error()) {
