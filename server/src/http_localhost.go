@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,8 +31,7 @@ func httpLocalhostInit() {
 
 	// Create a new Gin HTTP router
 	gin.SetMode(gin.ReleaseMode)
-	httpRouter := gin.Default()                        // Has the "Logger" and "Recovery" middleware attached
-	httpRouter.Use(gzip.Gzip(gzip.DefaultCompression)) // Add GZip compression middleware
+	httpRouter := gin.Default() // Has the "Logger" and "Recovery" middleware attached
 
 	// Path handlers
 	httpRouter.POST("/ban", httpLocalhostUserAction)

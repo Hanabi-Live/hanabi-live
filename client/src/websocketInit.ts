@@ -146,7 +146,7 @@ const initCommands = () => {
     ) {
       const urlParams = new URLSearchParams(window.location.search);
       const name = urlParams.get('name') || globals.randomName;
-      const variant = urlParams.get('variant') || DEFAULT_VARIANT_NAME;
+      const variantName = urlParams.get('variantName') || DEFAULT_VARIANT_NAME;
       const timed = urlParams.get('timed') === 'true';
       const timeBaseString = urlParams.get('timeBase') || '120';
       const timeBase = parseInt(timeBaseString, 10);
@@ -166,7 +166,7 @@ const initCommands = () => {
         globals.conn!.send('tableCreate', {
           name,
           options: {
-            variant,
+            variantName,
             timed,
             timeBase,
             timePerTurn,
