@@ -36,7 +36,13 @@ export const init = () => {
   // (initialized in the "initTooltips()" function)
 
   // The "Sign Out" button
-  // (this is just a simple link)
+  $('.signout').on('click', () => {
+    let path = '/logout';
+    if (window.location.pathname.includes('/dev')) {
+      path += '?dev=true';
+    }
+    window.location.href = path;
+  });
 
   // The "Start Game" button
   $('#nav-buttons-pregame-start').on('click', () => {
