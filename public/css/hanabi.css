@@ -611,6 +611,10 @@ input::-webkit-calendar-picker-indicator {
   position: absolute;
 }
 
+.tippy-content {
+  font-size: 1.1em;
+}
+
 .tippy-box[data-theme~='hanabi'] {
   background-color: white;
   color: #646464;
