@@ -3,7 +3,7 @@ import globals from './globals';
 import * as timer from './timer';
 import * as tooltips from './tooltips';
 
-export default () => {
+export default function backToLobby() {
   // Hide the tooltip, if showing
   tooltips.resetActiveHover();
 
@@ -18,4 +18,4 @@ export default () => {
     tableID: globals.lobby.tableID,
   });
   globals.game!.hide();
-};
+}

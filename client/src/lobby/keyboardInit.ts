@@ -3,7 +3,7 @@
 import globals from '../globals';
 import * as modals from '../modals';
 
-export default () => {
+export default function keyboardInit() {
   $(document).keydown((event) => {
     // On the "Create Game" tooltip, submit the form if enter is pressed
     if (
@@ -71,7 +71,7 @@ export default () => {
       }
     }
   });
-};
+}
 
 const clickReturnToLobby = () => {
   // Click on the "Return to Lobby" button

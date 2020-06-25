@@ -13,7 +13,7 @@ import tablesDraw from './tablesDraw';
 import User from './User';
 import * as usersDraw from './usersDraw';
 
-export default () => {
+export default function websocketInit() {
   if (globals.conn === null) {
     throw new Error('The "initCommands()" function was entered before "globals.conn" was initiated.');
   }
@@ -23,7 +23,7 @@ export default () => {
       commandFunction(data);
     });
   }
-};
+}
 
 // Define a command handler map
 type Callback = (data: any) => void;

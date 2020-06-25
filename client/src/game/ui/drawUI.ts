@@ -73,7 +73,7 @@ let finalRankButtonValues: Values;
 let clueLogValues: Values;
 let spectatorsLabelValues: Values;
 
-export default () => {
+export default function drawUI() {
   // Constants
   winW = globals.stage.width();
   winH = globals.stage.height();
@@ -129,7 +129,7 @@ export default () => {
   for (const layer of Object.values(globals.layers)) {
     globals.stage.add(layer);
   }
-};
+}
 
 const drawBackground = () => {
   // Draw a green background behind everything

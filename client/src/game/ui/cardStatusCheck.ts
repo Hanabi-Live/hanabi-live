@@ -5,7 +5,7 @@
 import globals from './globals';
 
 // Resets the fade and critical for every card in game
-export default () => {
+export default function cardStatusChecks() {
   if (globals.animateFast) {
     return;
   }
@@ -15,4 +15,4 @@ export default () => {
     card.setFade();
     card.setCritical();
   }
-};
+}

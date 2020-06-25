@@ -8,7 +8,7 @@ interface ColorJSON {
 }
 type ColorEntryIterable = Iterable<[keyof (typeof colorsJSON), ColorJSON]>;
 
-export default () => {
+export default function colorsInit() {
   const COLORS = new Map<string, Color>();
 
   for (const [colorName, colorJSON] of Object.entries(colorsJSON) as ColorEntryIterable) {
@@ -47,4 +47,4 @@ export default () => {
   }
 
   return COLORS;
-};
+}

@@ -22,7 +22,11 @@ interface VariantJSON {
 }
 type VariantEntryIterable = Iterable<[keyof (typeof variantsJSON), VariantJSON]>;
 
-export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD_RANK: number) => {
+export default function variantsInit(
+  COLORS: Map<string, Color>,
+  SUITS: Map<string, Suit>,
+  START_CARD_RANK: number,
+) {
   const VARIANTS = new Map<string, Variant>();
 
   for (const [variantName, variantJSON] of Object.entries(variantsJSON) as VariantEntryIterable) {
@@ -244,4 +248,4 @@ export default (COLORS: Map<string, Color>, SUITS: Map<string, Suit>, START_CARD
   }
 
   return VARIANTS;
-};
+}

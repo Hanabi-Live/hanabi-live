@@ -6,7 +6,7 @@ import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as replay from './replay';
 
-export default (winW: number, winH: number) => {
+export default function drawReplayArea(winW: number, winH: number) {
   const replayAreaValues = {
     x: 0.15,
     y: 0.51,
@@ -286,4 +286,4 @@ export default (winW: number, winH: number) => {
   globals.elements.replayArea.hide();
   globals.layers.UI.add(globals.elements.replayArea);
   replay.adjustShuttles(true);
-};
+}

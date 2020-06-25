@@ -1,7 +1,7 @@
 import { ActionStrike } from '../types/actions';
 import globals from './globals';
 
-export default (data: ActionStrike) => {
+export default function strikeRecord(data: ActionStrike) {
   const i = data.num - 1;
   const strikeX = globals.elements.strikeXs[i];
   if (!strikeX) {
@@ -39,4 +39,4 @@ export default (data: ActionStrike) => {
 
   // Show an indication that the strike is clickable
   strikeX.setFaded();
-};
+}

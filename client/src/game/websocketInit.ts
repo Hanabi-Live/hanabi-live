@@ -3,7 +3,7 @@
 import globals from '../globals';
 import websocket from './ui/websocket';
 
-export default () => {
+export default function websocketInit() {
   if (globals.conn === null) {
     throw new Error('The "initCommands()" function was entered before "globals.conn" was initiated.');
   }
@@ -20,4 +20,4 @@ export default () => {
       commandFunction(data);
     });
   }
-};
+}

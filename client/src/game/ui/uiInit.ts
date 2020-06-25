@@ -14,7 +14,7 @@ import pause from './pause';
 // When the HanabiUI object is instantiated,
 // we do not know how many players are in the game or what the variant is
 // Now that the server has sent us that information, we can initialize the UI
-export default () => {
+export default function uiInit() {
   if (globals.lobby.imageLoader === null) {
     throw new Error('The "globals.lobby.imageLoader" object was never instantiated upon reaching the "uiInit()" function.');
   }
@@ -84,7 +84,7 @@ export default () => {
   loadingLayer.add(progressLabel);
 
   globals.stage.add(loadingLayer);
-};
+}
 
 const finishedDownloadingImages = () => {
   // Build images for every card

@@ -14,7 +14,11 @@ import drawPip from './drawPip';
 import drawStylizedRank from './drawStylizedRank';
 
 // This function returns an object containing all of the drawn cards images (on individual canvases)
-export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean) => {
+export default function drawCards(
+  variant: Variant,
+  colorblindMode: boolean,
+  styleNumbers: boolean,
+) {
   const cardImages: Map<string, HTMLCanvasElement> = new Map<string, HTMLCanvasElement>();
 
   // Add the "Unknown" suit to the list of suits for this variant
@@ -138,7 +142,7 @@ export default (variant: Variant, colorblindMode: boolean, styleNumbers: boolean
   cardImages.set('deck-back', makeDeckBack(variant));
 
   return cardImages;
-};
+}
 
 const initCanvas = () => {
   const cvs = document.createElement('canvas');

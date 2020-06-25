@@ -16,7 +16,7 @@ import lobbyWebsocketInit from './lobby/websocketInit';
 import * as modals from './modals';
 import * as sentry from './sentry';
 
-export default () => {
+export default function websocketInit() {
   // Ensure that we are connecting to the right URL
   const domain = $('#domain').html();
   if (window.location.hostname !== domain) {
@@ -61,7 +61,7 @@ export default () => {
   // All of the normal commands/messages that we expect from the server are defined in the
   // "initCommands()" function
   initCommands();
-};
+}
 
 // This is all of the normal commands/messages that we expect to receive from the server
 const initCommands = () => {

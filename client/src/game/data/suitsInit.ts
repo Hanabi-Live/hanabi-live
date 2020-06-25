@@ -21,7 +21,7 @@ interface SuitJSON {
 }
 type SuitEntryIterable = Iterable<[keyof (typeof suitsJSON), SuitJSON]>;
 
-export default (COLORS: Map<string, Color>) => {
+export default function suitsInit(COLORS: Map<string, Color>) {
   const SUITS = new Map<string, Suit>();
 
   for (const [suitName, suitJSON] of Object.entries(suitsJSON) as SuitEntryIterable) {
@@ -190,4 +190,4 @@ export default (COLORS: Map<string, Color>) => {
   }
 
   return SUITS;
-};
+}

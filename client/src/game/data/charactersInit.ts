@@ -9,7 +9,7 @@ interface CharacterJSON {
 }
 type CharacterEntryIterable = Iterable<[keyof (typeof charactersJSON), CharacterJSON]>;
 
-export default () => {
+export default function charactersInit() {
   const CHARACTERS = new Map<string, Character>();
 
   const characters = Object.entries(charactersJSON) as CharacterEntryIterable;
@@ -49,4 +49,4 @@ export default () => {
   }
 
   return CHARACTERS;
-};
+}

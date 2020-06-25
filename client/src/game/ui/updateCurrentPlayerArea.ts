@@ -4,7 +4,7 @@ import { MAX_CLUE_NUM } from '../types/constants';
 import globals from './globals';
 
 // Set the "Current Player" area up for this specific turn
-export default () => {
+export default function updateCurrentPlayerArea() {
   const currentPlayerArea = globals.elements.currentPlayerArea!;
   const winW = globals.stage.width();
   const winH = globals.stage.height();
@@ -127,4 +127,4 @@ export default () => {
       },
     }).play();
   }
-};
+}

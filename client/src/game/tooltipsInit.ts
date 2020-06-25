@@ -4,7 +4,7 @@
 const maxPlayers = 6;
 const maxCardsInADeck = 60;
 
-export default () => {
+export default function tooltipsInit() {
   const tooltipThemes = ['tooltipster-shadow', 'tooltipster-shadow-big'];
   const tooltipOptions: JQueryTooltipster.ITooltipsterOptions = {
     animation: 'grow',
@@ -61,4 +61,4 @@ export default () => {
     $('#game-tooltips').append(`<div id="tooltip-card-${i}"></div>`);
     $(`#tooltip-card-${i}`).tooltipster(tooltipOptions);
   }
-};
+}

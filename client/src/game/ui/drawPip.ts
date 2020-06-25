@@ -643,12 +643,12 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: string[])
   ctx.scale(1 / sf, 1 / sf);
 });
 
-export default (
+export default function drawPip(
   ctx: CanvasRenderingContext2D,
   suit: Suit,
   shadow?: boolean,
   customFill?: string,
-) => {
+) {
   // Each suit has a shape defined in the "suits.json" file (as the 'pip' property)
   const shapeFunction = shapeFunctions.get(suit.pip);
   if (!shapeFunction) {
@@ -682,4 +682,4 @@ export default (
     ctx.shadowColor = 'rgba(0, 0, 0, 0)';
   }
   ctx.stroke();
-};
+}

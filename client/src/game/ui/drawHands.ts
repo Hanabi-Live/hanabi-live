@@ -20,7 +20,7 @@ const handPos: HandConfig[][] = [];
 const namePos: HandConfig[][] = [];
 const namePosBGA: HandConfig[][] = [];
 
-export default (winW: number, winH: number) => {
+export default function drawHands(winW: number, winH: number) {
   // Constants
   const numPlayers = globals.playerNames.length;
 
@@ -345,7 +345,7 @@ export default (winW: number, winH: number) => {
 
     drawDetrimentalCharacters(winW, winH, numPlayers, i, j);
   }
-};
+}
 
 /*
 // Draw the faded shade that shows where the "new" side of the hand is

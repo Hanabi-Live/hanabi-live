@@ -37,7 +37,7 @@ import updateCurrentPlayerArea from './updateCurrentPlayerArea';
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list that was sent upon loading a new
 // game/replay)
-export default (data: ActionIncludingHypothetical) => {
+export default function action(data: ActionIncludingHypothetical) {
   // If a user is editing a note and an action in the game happens,
   // mark to make the tooltip go away as soon as they are finished editing the note
   if (globals.editingNote !== null) {
@@ -49,7 +49,7 @@ export default (data: ActionIncludingHypothetical) => {
     throw new Error(`A WebSocket action function for "${data.type}" is not defined.`);
   }
   actionFunction(data);
-};
+}
 
 // Define a command handler map
 type ActionFunction = (data: any) => void;

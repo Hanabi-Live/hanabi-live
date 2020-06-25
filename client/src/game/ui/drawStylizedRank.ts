@@ -220,7 +220,7 @@ shapeFunctions.set(7, (ctx: CanvasRenderingContext2D) => {
   ctx.closePath();
 });
 
-export default (ctx: CanvasRenderingContext2D, rank: number) => {
+export default function drawStylizedRank(ctx: CanvasRenderingContext2D, rank: number) {
   // Each rank has a shape
   const shapeFunction = shapeFunctions.get(rank);
   if (!shapeFunction) {
@@ -232,4 +232,4 @@ export default (ctx: CanvasRenderingContext2D, rank: number) => {
 
   // Draw the respective shape on the canvas
   shapeFunction(ctx);
-};
+}

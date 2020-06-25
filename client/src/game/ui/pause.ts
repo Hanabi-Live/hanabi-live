@@ -3,7 +3,7 @@
 import drawLayer from './drawLayer';
 import globals from './globals';
 
-export default () => {
+export default function pause() {
   if (!globals.options.timed || globals.replay) {
     return;
   }
@@ -47,4 +47,4 @@ export default () => {
     globals.elements.pauseArea!.hide();
     drawLayer(globals.elements.pauseArea!);
   }
-};
+}
