@@ -2,7 +2,7 @@
 
 import * as gameMain from '../game/main';
 import { DEFAULT_VARIANT_NAME } from '../game/types/constants';
-import websocketUI from '../game/ui/gameCommands';
+import gameCommands from '../game/ui/gameCommands';
 import globals from '../globals';
 import * as sentry from '../sentry';
 import * as sounds from '../sounds';
@@ -42,9 +42,12 @@ commands.set('friends', (data: FriendsData) => {
     pregame.draw();
   }
   if (globals.currentScreen === 'game') {
-    // Re-call the "spectators" command handler to emulate receiving a "spectators" message from the
-    // server
-    const spectatorsCommandHandler = websocketUI.get('spectators')!;
+    // Re-call the "spectators" command handler to emulate having received a "spectators" message
+    // from the server
+    const spectatorsCommandHandler = gameCommands.get('spectators');
+    if (spectatorsCommandHandler === undefined) {
+      throw new Error('There is no command handler for the "spectators" command.');
+    }
     spectatorsCommandHandler({
       names: globals.ui!.globals.spectators,
     });
