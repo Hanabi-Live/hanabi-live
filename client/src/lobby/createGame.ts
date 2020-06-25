@@ -8,7 +8,7 @@ import globals from '../globals';
 import * as misc from '../misc';
 import * as modals from '../modals';
 import Settings from './Settings';
-import tooltipInit from './tooltipInit';
+// import tooltipInit from './tooltipInit';
 
 // Constants
 const basicVariants = [
@@ -25,7 +25,7 @@ let dropdown2: JQuery<Element>;
 let timeStart: Date;
 
 export const init = () => {
-  tooltipInit('nav-buttons-games-create-game', 'create-game-tooltip');
+  // tooltipInit('nav-buttons-games-create-game', 'create-game-tooltip');
 
   dropdown1 = $('#create-game-variant-dropdown1');
   dropdown2 = $('#create-game-variant-dropdown2');

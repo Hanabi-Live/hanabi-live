@@ -611,6 +611,11 @@ input::-webkit-calendar-picker-indicator {
   position: absolute;
 }
 
+.tippy-box[data-theme~='hanabi'] {
+  background-color: white;
+  color: #646464;
+}
+
 .tooltipster-sidetip.tooltipster-shadow.tooltipster-shadow-big .tooltipster-content {
   font-size: 1.5em;
   padding: 0.5em;

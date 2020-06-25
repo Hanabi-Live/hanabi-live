@@ -8,21 +8,32 @@ export default function tooltipInit(elementName: string, tooltipElementName: str
   if (tooltipElement === null) {
     throw new Error(`The "tooltipInit()" function was unable to find the "${tooltipElementName}" element.`);
   }
-  tooltipElement.style.display = 'block';
+
   const elementSelector = `#${elementName}`;
-  const instance = tippy(elementSelector, {
+  const tooltipElementSelector = `#${tooltipElementName}`;
+
+  tooltipElement.style.display = 'block';
+  const instanceArray = tippy(elementSelector, {
     // "appendTo" is needed to have "interactive: true" to work properly,
     // as noted in the Tippy documentation
     appendTo: document.body,
     content: tooltipElement,
     interactive: true,
+    maxWidth: 'none',
+    theme: 'hanabi',
     trigger: 'manual',
   });
-  if (instance === undefined) {
-    throw new Error('poop');
+  if (instanceArray.length !== 1) {
+    throw new Error(`There is more than one "${elementSelector}" element on the page.`);
   }
+  const instance = instanceArray[0];
+
   $(elementSelector).click(() => {
-    instance[0].show();
+    if ($(tooltipElementSelector).is(':visible')) {
+      instance.hide();
+    } else {
+      instance.show();
+    }
   });
 
   /*
