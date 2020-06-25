@@ -10,10 +10,13 @@ export default interface CardState {
   readonly rankClueMemory: ClueMemory;
   readonly colorClueMemory: ClueMemory;
 
-  possibleCards: number[][]; // indexed possibleCards[suitIndex][rank]
+  // possibleCards[suitIndex][rank] = how many cards of this suitIndex and rank could this be?
+  // NOTE: we're using an array as a map, so there will be empty spaces for ranks
+  // that are not valid card ranks (e.g. 0, or 6 in Up or Down)
+  possibleCards: number[][];
   identityDetermined: boolean;
   numPositiveClues: number;
-  turnsClued: number[];
+  turnsClued: number[]; // TODO: seems like the UI only cares about the 1st turn clued?
   turnDrawn: number;
   isDiscarded: boolean;
   turnDiscarded: number;
@@ -25,6 +28,8 @@ export default interface CardState {
 export type PipState = 'Visible' | 'Eliminated' | 'Hidden' | 'PositiveClue';
 
 export interface ClueMemory {
+  // NOTE: we're using arrays as maps, so there will be empty spaces for ranks
+  // that are not valid card ranks (e.g. 0, or 6 in Up or Down)
   possibilities: number[];
   positiveClues: number[];
   negativeClues: number[];
