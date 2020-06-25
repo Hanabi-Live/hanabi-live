@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
 // Imports
 const path = require('path');
 
@@ -17,11 +13,10 @@ module.exports = (grunt) => {
     concat: {
       css: {
         src: [
-          path.join(cssLibPath, 'fontawesome.min.css'),
-          path.join(cssLibPath, 'solid.min.css'),
-          path.join(cssLibPath, 'tooltipster.bundle.min.css'),
-          path.join(cssLibPath, 'tooltipster-sideTip-shadow.min.css'),
-          path.join(cssLibPath, 'alpha.css'),
+          path.join(cssLibPath, 'fontawesome.min.css'), // For icons
+          path.join(cssLibPath, 'solid.min.css'), // Additional Font Awesome styles
+          path.join(cssLibPath, 'tippy.min.css'), // For tooltips
+          path.join(cssLibPath, 'alpha.css'), // For the HTML5Up Alpha template
           path.join(cssPath, 'hanabi.css'),
         ],
         dest: path.join(cssPath, 'main.css'),

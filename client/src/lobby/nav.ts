@@ -1,21 +1,20 @@
 // The navigation bar at the top of the lobby
 
-import { FADE_TIME } from '../constants';
 import globals from '../globals';
-import * as misc from '../misc';
-import * as modals from '../modals';
 import * as createGame from './createGame';
 import * as history from './history';
 import * as pregame from './pregame';
-import * as watchReplay from './watchReplay';
+// import tooltipsInit from './tooltipsInit';
+// import * as watchReplay from './watchReplay';
 
 export const init = () => {
   // Initialize all of the navigation tooltips using Tooltipster
-  initTooltips();
+  // tooltipsInit();
 
   // The "Create Game" button
-  $('#nav-buttons-games-create-game').tooltipster('option', 'functionBefore', createGame.before);
-  $('#nav-buttons-games-create-game').tooltipster('option', 'functionReady', createGame.ready);
+  createGame.init();
+  // $('#nav-buttons-games-create-game').tooltipster('option', 'functionBefore', createGame.before);
+  // $('#nav-buttons-games-create-game').tooltipster('option', 'functionReady', createGame.ready);
   // (the logic for this tooltip is handled in the "createGame.ts" file)
 
   // The "Show History" button
@@ -24,7 +23,7 @@ export const init = () => {
   });
 
   // The "Watch Specific Replay" button
-  $('#nav-buttons-games-replay').tooltipster('option', 'functionReady', watchReplay.ready);
+  // $('#nav-buttons-games-replay').tooltipster('option', 'functionReady', watchReplay.ready);
   // (the logic for this tooltip is handled in the "watchReplay.ts" file)
 
   // The "Help" button
@@ -82,68 +81,6 @@ export const init = () => {
 
   // The "Return to History" button (from the "History Details" screen)
   // (initialized in the "history.drawOtherScores()" function)
-};
-
-const initTooltips = () => {
-  const tooltips = [
-    'create-game',
-    'replay',
-    'resources',
-    'settings',
-  ];
-
-  const tooltipsterOptions = {
-    theme: 'tooltipster-shadow',
-    trigger: 'click',
-    interactive: true,
-    delay: 0,
-    // Some tooltips are too large for small resolutions and will wrap off the screen;
-    // we can use a Tooltipster plugin to automatically create a scroll bar for it
-    // https://github.com/louisameline/tooltipster-scrollableTip
-    plugins: [
-      'sideTip', // Make it have the ability to be positioned on a specific side
-      'scrollableTip', // Make it scrollable
-    ],
-    functionBefore: () => {
-      $('#lobby').fadeTo(FADE_TIME, 0.4);
-    },
-  };
-
-  const tooltipsterClose = () => {
-    // We want to fade in the background as soon as we start the tooltip closing animation,
-    // so we have to hook to the "close" event
-    // Furthermore, we don't want to fade in the background if we click from one tooltip to the
-    // other, so we have to check to see how many tooltips are open
-    // If one tooltip is open, then it is the one currently closing
-    // If two tooltips are open, then we are clicking from one to the next
-    let tooltipsOpen = 0;
-    for (const tooltip of tooltips) {
-      if ($(`#nav-buttons-games-${tooltip}`).tooltipster('status').open) {
-        tooltipsOpen += 1;
-      }
-    }
-    if (tooltipsOpen <= 1) {
-      $('#lobby').fadeTo(FADE_TIME, 1);
-    }
-  };
-
-  // The "close" event will not fire if we initialize this on the tooltip class for some reason,
-  // so we initialize all 3 individually
-  for (const tooltip of tooltips) {
-    $(`#nav-buttons-games-${tooltip}`)
-      .tooltipster(tooltipsterOptions)
-      .tooltipster('instance')
-      .on('close', tooltipsterClose);
-  }
-
-  // Map the escape key to close all tooltips / modals
-  $(document).keydown((event) => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      misc.closeAllTooltips();
-      modals.closeAll();
-    }
-  });
 };
 
 export const show = (target: string) => {

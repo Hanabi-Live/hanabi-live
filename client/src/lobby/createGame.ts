@@ -8,6 +8,7 @@ import globals from '../globals';
 import * as misc from '../misc';
 import * as modals from '../modals';
 import Settings from './Settings';
+import tooltipInit from './tooltipInit';
 
 // Constants
 const basicVariants = [
@@ -24,6 +25,8 @@ let dropdown2: JQuery<Element>;
 let timeStart: Date;
 
 export const init = () => {
+  tooltipInit('nav-buttons-games-create-game', 'create-game-tooltip');
+
   dropdown1 = $('#create-game-variant-dropdown1');
   dropdown2 = $('#create-game-variant-dropdown2');
 
@@ -57,7 +60,7 @@ export const init = () => {
     }
 
     // Redraw the tooltip so that the new elements will fit better
-    $('#nav-buttons-games-create-game').tooltipster('reposition');
+    // $('#nav-buttons-games-create-game').tooltipster('reposition');
   });
   $('#createTableSpeedrun').change(() => {
     if ($('#createTableSpeedrun').prop('checked')) {
@@ -69,7 +72,7 @@ export const init = () => {
     }
 
     // Redraw the tooltip so that the new elements will fit better
-    $('#nav-buttons-games-create-game').tooltipster('reposition');
+    // $('#nav-buttons-games-create-game').tooltipster('reposition');
   });
 
   // Disable some checkboxes if a checkbox is checked

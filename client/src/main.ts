@@ -1,26 +1,12 @@
 // This is the main entry point for the Hanabi client code
 // The client code is split up into multiple files and bundled together with Webpack
 
-// Tooltipster is a jQuery library, so we import it purely for the side-effects
-// (e.g. so that it can add the ".tooltipster" property to the "$" object)
-// Webpack will purge modules like this from the resulting bundled file (e.g. the "tree shaking"
-// feature) if we have "sideEffects" equal to true in the "package.json" file
-// So we have to make sure that "sideEffects" is is either removed or set to false
-// Tree shaking only makes a difference of 2 KB in the resulting bundled file, so we do not have
-// to worry about that for now
-import 'tooltipster';
-
-// ScrollableTip is a Tooltipster library that allows for a scrolling tooltip
-// We import it for the side-effects for the same reason
-import '../lib/tooltipster-scrollableTip.min';
-
 import * as chat from './chat';
 import * as gameChat from './game/chat';
 import * as gameMain from './game/main';
-import gameTooltipsInit from './game/tooltipsInit';
+// import gameTooltipsInit from './game/tooltipsInit';
 import globals from './globals';
 import Loader from './Loader';
-import * as lobbyCreateGame from './lobby/createGame';
 import * as lobbyHistory from './lobby/history';
 import lobbyIdleInit from './lobby/idleInit';
 import lobbyKeyboardInit from './lobby/keyboardInit';
@@ -47,8 +33,7 @@ $(document).ready(() => {
   chat.init();
   gameChat.init();
   gameMain.init();
-  gameTooltipsInit();
-  lobbyCreateGame.init();
+  // gameTooltipsInit();
   lobbyHistory.init();
   lobbyIdleInit();
   lobbyKeyboardInit();
