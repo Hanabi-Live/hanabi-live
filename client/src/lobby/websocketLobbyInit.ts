@@ -13,7 +13,7 @@ import tablesDraw from './tablesDraw';
 import User from './User';
 import * as usersDraw from './usersDraw';
 
-export default function websocketInit() {
+export default function websocketLobbyInit() {
   if (globals.conn === null) {
     throw new Error('The "initCommands()" function was entered before "globals.conn" was initiated.');
   }

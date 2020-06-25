@@ -6,13 +6,13 @@ import ChatMessage from './ChatMessage';
 import Connection from './Connection';
 import * as gameChat from './game/chat';
 import { DEFAULT_VARIANT_NAME } from './game/types/constants';
-import gameWebsocketInit from './game/websocketInit';
+import websocketGameInit from './game/websocketGameInit';
 import globals from './globals';
 import * as lobbyLogin from './lobby/login';
 import * as pregame from './lobby/pregame';
 import Settings from './lobby/Settings';
 import * as lobbySettingsTooltip from './lobby/settingsTooltip';
-import lobbyWebsocketInit from './lobby/websocketInit';
+import websocketLobbyInit from './lobby/websocketLobbyInit';
 import * as modals from './modals';
 import * as sentry from './sentry';
 
@@ -317,9 +317,9 @@ const initCommands = () => {
   });
 
   // Activate the command handlers for lobby-related commands
-  lobbyWebsocketInit();
+  websocketLobbyInit();
 
   // Activate the command handlers for game-related commands
   // (these will only have an effect if the current screen is equal to "game")
-  gameWebsocketInit();
+  websocketGameInit();
 };

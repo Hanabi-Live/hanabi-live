@@ -3,7 +3,7 @@
 import globals from '../globals';
 import websocket from './ui/websocket';
 
-export default function websocketInit() {
+export default function websocketGameInit() {
   if (globals.conn === null) {
     throw new Error('The "initCommands()" function was entered before "globals.conn" was initiated.');
   }
