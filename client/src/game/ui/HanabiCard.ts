@@ -628,8 +628,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     // Handle if this is the first time that the card is fully revealed to the holder
-    const isFullyKnown = (state.rank !== null && state.suitIndex !== null);
-    if (isFullyKnown && !wasFullyKnown) {
+    const isFullyKnown = (
+      state.colorClueMemory.possibilities.length === 1
+      && state.rankClueMemory.possibilities.length === 1
+    );
+    if (isFullyKnown) {
       this.updatePossibilitiesOnOtherCards(state.suitIndex!, state.rank!);
     }
 
