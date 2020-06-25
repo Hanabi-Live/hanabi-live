@@ -138,7 +138,7 @@ const drawBackground = () => {
     y: 0,
     width: winW,
     height: winH,
-    image: globals.ImageLoader!.get('background')!,
+    image: globals.imageLoader!.get('background')!,
     listening: true,
   });
   background.on('click tap', tooltips.resetActiveHover);
@@ -458,8 +458,8 @@ const drawBottomLeftButtons = () => {
       visible: !globals.replay,
     },
     [
-      globals.ImageLoader!.get('replay')!,
-      globals.ImageLoader!.get('replay-disabled')!,
+      globals.imageLoader!.get('replay')!,
+      globals.imageLoader!.get('replay-disabled')!,
     ],
   );
   replayButton.on('click tap', () => {
@@ -556,7 +556,7 @@ const drawBottomLeftButtons = () => {
     width: ((bottomLeftButtonValues.w! / 2) - shortButtonSpacing) * winW,
     height: lobbyButtonValues.h! * winH,
     visible: !globals.replay && !globals.spectating,
-  }, [globals.ImageLoader!.get('home')!]);
+  }, [globals.imageLoader!.get('home')!]);
   globals.layers.UI.add(lobbyButtonSmall as any);
   lobbyButtonSmall.on('click tap', lobbyButtonClick);
   lobbyButtonSmall.tooltipName = 'lobby-small';
@@ -586,7 +586,7 @@ const drawBottomLeftButtons = () => {
     width: ((bottomLeftButtonValues.w! / 2) - shortButtonSpacing) * winW,
     height: bottomLeftButtonValues.h! * winH,
     visible: !globals.replay && !globals.spectating,
-  }, [globals.ImageLoader!.get('skull')!]);
+  }, [globals.imageLoader!.get('skull')!]);
   globals.layers.UI.add(killButton as any);
   killButton.on('click tap', () => {
     if (
@@ -948,7 +948,7 @@ const drawScoreArea = () => {
       y: 0.125 * winH,
       width: 0.02 * winW,
       height: 0.036 * winH,
-      image: globals.ImageLoader!.get('x')!,
+      image: globals.imageLoader!.get('x')!,
       opacity: 0,
       listening: true,
     });
@@ -996,7 +996,7 @@ const drawSpectators = () => {
     height: imageSize * winW,
     // (this is not a typo; we want it to have the same width and height)
     align: 'center',
-    image: globals.ImageLoader!.get('eyes')!,
+    image: globals.imageLoader!.get('eyes')!,
     shadowColor: 'black',
     shadowBlur: 10,
     shadowOffset: {
@@ -1061,7 +1061,7 @@ const drawSharedReplay = () => {
     y: (sharedReplayLeaderLabelValues.y - 0.007) * winH,
     width: size,
     height: size,
-    image: globals.ImageLoader!.get('crown')!,
+    image: globals.imageLoader!.get('crown')!,
     shadowColor: 'black',
     shadowBlur: 10,
     shadowOffset: {
@@ -1369,7 +1369,7 @@ const drawDiscardArea = () => {
     width: 0.15 * winW,
     height: 0.35 * winH,
     opacity: 0.2,
-    image: globals.ImageLoader!.get('trashcan')!,
+    image: globals.imageLoader!.get('trashcan')!,
   });
   globals.layers.UI.add(trashcan);
 
@@ -1990,7 +1990,7 @@ const drawPauseArea = () => {
     y: buttonH * winH,
     width: button2W * winW,
     height: 0.1 * winH,
-  }, [globals.ImageLoader!.get('home')!]);
+  }, [globals.imageLoader!.get('home')!]);
   globals.elements.pauseArea.add(lobbyButton as any);
   lobbyButton.on('click tap', lobbyButtonClick);
 };
@@ -2007,7 +2007,7 @@ const drawExtraAnimations = () => {
     y: y * winH,
     width: size * winW,
     height: size * winH,
-    image: globals.ImageLoader!.get('replay-forward')!,
+    image: globals.imageLoader!.get('replay-forward')!,
     opacity: 0,
   });
   globals.layers.UI2.add(globals.elements.sharedReplayForward);
@@ -2027,7 +2027,7 @@ const drawExtraAnimations = () => {
     y: y * winH,
     width: size * winW,
     height: size * winH,
-    image: globals.ImageLoader!.get('replay-back')!,
+    image: globals.imageLoader!.get('replay-back')!,
     opacity: 0,
   });
   globals.layers.UI2.add(globals.elements.sharedReplayBackward);

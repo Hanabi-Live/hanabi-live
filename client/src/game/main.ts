@@ -19,13 +19,14 @@ export const show = () => {
   $('#page-wrapper').hide(); // We can't fade this out as it will overlap
   $('#game-chat-text').html(''); // Clear the in-game chat box of any previous content
 
+  // Every time a new game is opened, the UI is rebuilt from scratch
   $('#game').fadeIn(FADE_TIME);
   globals.ui = new HanabiUI(globals, gameExports);
   globals.chatUnread = 0;
 
-  // Request some high-level information about the game (e.g. the number of players)
-  // This will be enough information to load the UI
-  // (we will request the specific actions for the game later on)
+  // Request some high-level information about the game (e.g. the number of players and the variant)
+  // The server will send us back an "init" message, which will contain enough information to start
+  // drawing the UI (we will request the specific actions for the game later on)
   globals.conn!.send('getGameInfo1', {
     tableID: globals.tableID,
   });
@@ -66,8 +67,8 @@ export const hide = () => {
   chatElement.scrollTop = chatElement.scrollHeight;
 };
 
-// These are references to some functions and submodules that need to be interacted with
-// in the UI code (e.g. hiding the UI, playing a sound)
+// These are references to some functions and submodules that need to be interacted with in the UI
+// code (e.g. hiding the UI, playing a sound)
 export interface GameExports {
   hide: () => void;
   chat: typeof chat;

@@ -18,6 +18,8 @@ import * as chat from './chat';
 import * as gameChat from './game/chat';
 import * as gameMain from './game/main';
 import gameTooltipsInit from './game/tooltipsInit';
+import globals from './globals';
+import Loader from './Loader';
 import * as lobbyCreateGame from './lobby/createGame';
 import * as lobbyHistory from './lobby/history';
 import lobbyIdleInit from './lobby/idleInit';
@@ -58,6 +60,9 @@ $(document).ready(() => {
   misc.init();
   modals.init();
   sounds.init();
+
+  // Start preloading some images that we will need for when a game starts
+  globals.imageLoader = new Loader();
 
   // For debugging graphics
   /*

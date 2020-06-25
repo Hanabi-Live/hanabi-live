@@ -24,6 +24,7 @@ import strikeRecord from './strikeRecord';
 import * as timer from './timer';
 import * as tooltips from './tooltips';
 import * as turn from './turn';
+import uiInit from './uiInit';
 
 // Define a command handler map
 type CommandAction = (data: any) => void;
@@ -220,8 +221,6 @@ interface InitData {
   seeded: boolean;
   datetimeStarted: Date;
   datetimeFinished: Date;
-
-  // Optional settings
   options: Options;
 
   // Character settings
@@ -255,8 +254,6 @@ commands.set('init', (data: InitData) => {
   globals.seeded = data.seeded; // If playing a table started with the "!seed" prefix
   globals.datetimeStarted = data.datetimeStarted;
   globals.datetimeFinished = data.datetimeFinished;
-
-  // Optional settings
   globals.options = data.options;
 
   // Set the variant
@@ -267,7 +264,7 @@ commands.set('init', (data: InitData) => {
     globals.variant = variant;
   }
 
-  // Recreate the store
+  // Recreate the state store (using the Redux library)
   globals.store = createStore(stateReducer, initialState(globals.options));
 
   // Character settings
@@ -291,13 +288,13 @@ commands.set('init', (data: InitData) => {
   globals.inReplay = globals.replay;
   if (globals.replay) {
     globals.replayTurn = -1;
+
     // HACK: also let the state know this is a replay
     globals.store!.dispatch({ type: 'startReplay' });
   }
 
-  // Begin to load all of the card images
-  globals.ImageLoader!.start();
-  // (more initialization logic is found in the "finishedLoadingImages()" function)
+  // Now that we know the number of players and the variant, we can start to load & draw the UI
+  uiInit();
 });
 
 // Received when spectating a game

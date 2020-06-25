@@ -374,7 +374,7 @@ export function note(this: HanabiCard) {
     x: (globals.variant.offsetCornerElements ? noteX - 0.05 : noteX) * CARD_W,
     y: (globals.variant.offsetCornerElements ? noteY + 0.05 : noteY) * CARD_H,
     align: 'center',
-    image: globals.ImageLoader!.get('note')!,
+    image: globals.imageLoader!.get('note')!,
     width: size,
     height: size,
     rotation: 180,
@@ -452,7 +452,7 @@ export function criticalIndicator(this: HanabiCard) {
     x: (globals.variant.offsetCornerElements ? critX + 0.05 : critX) * CARD_W,
     y: (globals.variant.offsetCornerElements ? critY - 0.05 : critY) * CARD_H,
     align: 'center',
-    image: globals.ImageLoader!.get('critical')!,
+    image: globals.imageLoader!.get('critical')!,
     width: size,
     height: size,
     rotation: 180,
@@ -659,7 +659,7 @@ export function fadedImages(this: HanabiCard) {
     y: 0.2 * CARD_H,
     width: 0.7 * CARD_W,
     height: 0.6 * CARD_H,
-    image: globals.ImageLoader!.get('trashcan2')!,
+    image: globals.imageLoader!.get('trashcan2')!,
     visible: false,
   });
   this.add(this.trashcan);
@@ -668,7 +668,7 @@ export function fadedImages(this: HanabiCard) {
     x: 0.1 * CARD_W,
     y: 0.33 * CARD_H,
     width: 0.8 * CARD_W,
-    image: globals.ImageLoader!.get('wrench')!,
+    image: globals.imageLoader!.get('wrench')!,
     visible: false,
   });
   this.add(this.wrench);

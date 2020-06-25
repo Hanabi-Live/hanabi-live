@@ -4,6 +4,7 @@
 import Konva from 'konva';
 import * as Redux from 'redux';
 import { Globals as LobbyGlobals } from '../../globals';
+import Loader from '../../Loader';
 import { VARIANTS } from '../data/gameData';
 import { GameExports } from '../main';
 import { GameAction, ActionIncludingHypothetical, Action } from '../types/actions';
@@ -19,13 +20,15 @@ import Variant from '../types/Variant';
 import Elements from './Elements';
 import HanabiCard from './HanabiCard';
 import Layers from './Layers';
-import Loader from './Loader';
 import StateObserver from './reactive/StateObserver';
 
 export class Globals {
   // Objects sent upon UI initialization
   lobby: LobbyGlobals = new LobbyGlobals();
   game: GameExports | null = null;
+
+  // The UI is instantiated before all the images are necessarily downloaded
+  // and before we know enough information to draw all the UI elements
   loading: boolean = true;
 
   // Game settings
@@ -71,7 +74,7 @@ export class Globals {
   numCardsPlayed: number = 0; // For "Throw It in a Hole" variants
 
   // UI elements
-  ImageLoader: Loader | null = null;
+  imageLoader: Loader | null = null;
   stage: Konva.Stage = new Konva.Stage({ container: 'game' });
   layers: Layers = new Layers();
   elements: Elements = new Elements();
@@ -186,7 +189,7 @@ export class Globals {
     this.cardsGotten = 0;
     this.stackDirections = [];
     this.numCardsPlayed = 0;
-    this.ImageLoader = null;
+    this.imageLoader = null;
     this.stage = new Konva.Stage({ container: 'game' });
     this.layers = new Layers();
     this.elements = new Elements();

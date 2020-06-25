@@ -3,6 +3,7 @@
 import version from '../../data/version.json';
 import Connection from './Connection';
 import HanabiUI from './game/ui/HanabiUI';
+import Loader from './Loader';
 import Game from './lobby/Game';
 import GameHistory from './lobby/GameHistory';
 import Settings from './lobby/Settings';
@@ -61,6 +62,7 @@ export class Globals {
   errorOccurred: boolean = false;
 
   // Legacy UI variables
+  imageLoader: Loader | null = null;
   ui: HanabiUI | null = null;
   // Used to keep track of how many in-game chat messages are currently unread
   chatUnread: number = 0;

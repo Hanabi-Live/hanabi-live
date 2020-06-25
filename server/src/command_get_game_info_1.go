@@ -112,9 +112,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		Seeded           bool      `json:"seeded"`
 		DatetimeStarted  time.Time `json:"datetimeStarted"`
 		DatetimeFinished time.Time `json:"datetimeFinished"`
-
-		// Game options
-		Options *Options `json:"options"`
+		Options          *Options  `json:"options"`
 
 		// Character settings
 		CharacterAssignments []string `json:"characterAssignments"`
