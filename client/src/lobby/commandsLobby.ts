@@ -1,43 +1,27 @@
-// WebSocket command handlers for in-game events
+// We will receive WebSocket messages / commands from the server that tell us to do things
 
 import * as gameMain from '../game/main';
-import websocketUI from '../game/ui/websocket';
+import { DEFAULT_VARIANT_NAME } from '../game/types/constants';
+import websocketUI from '../game/ui/commandsGame';
 import globals from '../globals';
+import * as sentry from '../sentry';
 import * as sounds from '../sounds';
 import Game from './Game';
 import GameHistory from './GameHistory';
 import * as history from './history';
+import * as lobbyLogin from './login';
 import * as pregame from './pregame';
+import Settings from './Settings';
+import * as lobbySettingsTooltip from './settingsTooltip';
 import Table from './Table';
 import tablesDraw from './tablesDraw';
 import User from './User';
 import * as usersDraw from './usersDraw';
 
-export default function websocketLobbyInit() {
-  if (globals.conn === null) {
-    throw new Error('The "initCommands()" function was entered before "globals.conn" was initiated.');
-  }
-
-  for (const [commandName, commandFunction] of commands) {
-    globals.conn.on(commandName, (data: any) => {
-      commandFunction(data);
-    });
-  }
-}
-
 // Define a command handler map
-type Callback = (data: any) => void;
-const commands = new Map<string, Callback>();
-
-interface JoinedData {
-  tableID: number;
-}
-commands.set('joined', (data: JoinedData) => {
-  globals.tableID = data.tableID;
-
-  // We joined a new game, so transition between screens
-  pregame.show();
-});
+type CommandCallback = (data: any) => void;
+const commands = new Map<string, CommandCallback>();
+export default commands;
 
 interface FriendsData {
   friends: string[];
@@ -127,9 +111,26 @@ commands.set('gameHistoryOtherScores', (data: GameHistoryOtherScoresData) => {
   history.drawOtherScores(data.games, data.friends);
 });
 
+interface JoinedData {
+  tableID: number;
+}
+commands.set('joined', (data: JoinedData) => {
+  globals.tableID = data.tableID;
+
+  // We joined a new game, so transition between screens
+  pregame.show();
+});
+
 commands.set('left', () => {
   // We left a table, so transition between screens
   pregame.hide();
+});
+
+interface MaintenanceData {
+  maintenanceMode: boolean;
+}
+commands.set('maintenance', (data: MaintenanceData) => {
+  globals.maintenanceMode = data.maintenanceMode;
 });
 
 interface NameData {
@@ -137,6 +138,15 @@ interface NameData {
 }
 commands.set('name', (data: NameData) => {
   globals.randomName = data.name;
+});
+
+interface ShutdownData {
+  shuttingDown: boolean;
+  datetimeShutdownInit: number;
+}
+commands.set('shutdown', (data: ShutdownData) => {
+  globals.shuttingDown = data.shuttingDown;
+  globals.datetimeShutdownInit = data.datetimeShutdownInit;
 });
 
 interface SoundLobbyData {
@@ -188,7 +198,6 @@ interface TableProgressData {
   id: number;
   progress: number;
 }
-
 commands.set('tableProgress', (data: TableProgressData) => {
   const table = globals.tableMap.get(data.id);
   if (!table) {
@@ -254,5 +263,121 @@ commands.set('userInactive', (data: UserInactiveData) => {
     if (globals.currentScreen === 'lobby' || globals.currentScreen === 'pregame') {
       usersDraw.setInactive(user.id, user.inactive);
     }
+  }
+});
+
+// Received by the client upon first connecting
+interface WelcomeData {
+  id: number;
+  username: string;
+  totalGames: number;
+  muted: boolean;
+  firstTimeUser: boolean;
+  settings: any;
+  friends: string[];
+  atOngoingTable: boolean;
+  shuttingDown: boolean;
+  maintenanceMode: boolean;
+}
+commands.set('welcome', (data: WelcomeData) => {
+  // Store some variables (mostly relating to our user account)
+  globals.id = data.id;
+  globals.username = data.username; // We might have logged-in with a different stylization
+  globals.totalGames = data.totalGames;
+  globals.muted = data.muted;
+  globals.settings = data.settings as Settings;
+  globals.friends = data.friends;
+  globals.shuttingDown = data.shuttingDown;
+  globals.maintenanceMode = data.maintenanceMode;
+
+  // Now that we know what our user ID and username are, we can attach them to the Sentry context
+  sentry.setUserContext(globals.id, globals.username);
+
+  // Update various elements of the UI to reflect our settings
+  $('#nav-buttons-history-total-games').html(globals.totalGames.toString());
+  lobbySettingsTooltip.setSettingsTooltip();
+  lobbyLogin.hide(data.firstTimeUser);
+
+  // Disable custom path functionality for first time users
+  if (data.firstTimeUser) {
+    return;
+  }
+
+  // If we are currently in an ongoing game or are reconnecting to a shared replay,
+  // then do not automatically go into another replay
+  if (data.atOngoingTable) {
+    return;
+  }
+
+  // Automatically go into a replay if we are using a "/replay/123" URL
+  const match1 = window.location.pathname.match(/\/replay\/(\d+)/);
+  if (match1) {
+    setTimeout(() => {
+      const gameID = parseInt(match1[1], 10); // The server expects the game ID as an integer
+      globals.conn!.send('replayCreate', {
+        gameID,
+        source: 'id',
+        visibility: 'solo',
+      });
+    }, 10);
+    return;
+  }
+
+  // Automatically go into a shared replay if we are using a "/shared-replay/123" URL
+  const match2 = window.location.pathname.match(/\/shared-replay\/(\d+)/);
+  if (match2) {
+    setTimeout(() => {
+      const gameID = parseInt(match2[1], 10); // The server expects the game ID as an integer
+      globals.conn!.send('replayCreate', {
+        gameID,
+        source: 'id',
+        visibility: 'shared',
+      });
+    }, 10);
+  }
+
+  // Automatically create a table if we are using a "/create-table" URL
+  if (
+    window.location.pathname === '/create-table'
+      || window.location.pathname === '/dev/create-table'
+  ) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const name = urlParams.get('name') || globals.randomName;
+    const variantName = urlParams.get('variantName') || DEFAULT_VARIANT_NAME;
+    const timed = urlParams.get('timed') === 'true';
+    const timeBaseString = urlParams.get('timeBase') || '120';
+    const timeBase = parseInt(timeBaseString, 10);
+    const timePerTurnString = urlParams.get('timePerTurn') || '20';
+    const timePerTurn = parseInt(timePerTurnString, 10);
+    const speedrun = urlParams.get('speedrun') === 'true';
+    const cardCycle = urlParams.get('cardCycle') === 'true';
+    const deckPlays = urlParams.get('deckPlays') === 'true';
+    const emptyClues = urlParams.get('emptyClues') === 'true';
+    const oneExtraCard = urlParams.get('oneExtraCard') === 'true';
+    const oneLessCard = urlParams.get('oneLessCard') === 'true';
+    const allOrNothing = urlParams.get('allOrNothing') === 'true';
+    const detrimentalCharacters = urlParams.get('detrimentalCharacters') === 'true';
+    const password = urlParams.get('password') || '';
+
+    setTimeout(() => {
+      globals.conn!.send('tableCreate', {
+        name,
+        options: {
+          variantName,
+          timed,
+          timeBase,
+          timePerTurn,
+          speedrun,
+          cardCycle,
+          deckPlays,
+          emptyClues,
+          oneExtraCard,
+          oneLessCard,
+          allOrNothing,
+          detrimentalCharacters,
+        },
+        password,
+      });
+    }, 10);
   }
 });

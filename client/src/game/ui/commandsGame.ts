@@ -1,4 +1,6 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things
+// The client also sends these messages to itself in order to emulate actions coming from the server
+// for e.g. in-game replays
 
 import { createStore } from 'redux';
 import * as sentry from '../../sentry';
@@ -27,8 +29,8 @@ import * as turn from './turn';
 import uiInit from './uiInit';
 
 // Define a command handler map
-type CommandAction = (data: any) => void;
-const commands = new Map<string, CommandAction>();
+type CommandCallback = (data: any) => void;
+const commands = new Map<string, CommandCallback>();
 export default commands;
 
 // Received when it is our turn
