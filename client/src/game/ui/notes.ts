@@ -91,6 +91,8 @@ export const checkSpecialNote = (card: HanabiCard) => {
   card.chopMoveBorder!.visible((
     card.state.noteChopMoved
     && !card.cluedBorder!.visible()
+    && !card.state.isPlayed
+    && !card.state.isDiscarded
     && !globals.replay
     && !globals.spectating
   ));
@@ -99,6 +101,8 @@ export const checkSpecialNote = (card: HanabiCard) => {
   card.finesseBorder!.visible((
     card.state.noteFinessed
     && !card.cluedBorder!.visible()
+    && !card.state.isPlayed
+    && !card.state.isDiscarded
     && !globals.replay
     && !globals.spectating
   ));
