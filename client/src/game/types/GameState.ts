@@ -3,26 +3,26 @@ import StackDirection from './StackDirection';
 export default interface GameState {
   readonly turn: number;
   readonly currentPlayerIndex: number;
-  readonly log: string[];
-  readonly deck: StateCard[];
+  readonly log: readonly string[];
+  readonly deck: readonly StateCard[];
   readonly deckSize: number;
   readonly score: number;
   readonly maxScore: number;
   readonly clueTokens: number;
   readonly doubleDiscard: boolean;
-  readonly strikes: StateStrike[];
-  readonly hands: number[][];
-  readonly playStacks: number[][];
-  readonly playStacksDirections: StackDirection[];
-  readonly discardStacks: number[][];
-  readonly clues: StateClue[];
+  readonly strikes: readonly StateStrike[];
+  readonly hands: ReadonlyArray<readonly number[]>;
+  readonly playStacks: ReadonlyArray<readonly number[]>;
+  readonly playStacksDirections: readonly StackDirection[];
+  readonly discardStacks: ReadonlyArray<readonly number[]>;
+  readonly clues: readonly StateClue[];
   readonly stats: StateStats;
 }
 
 export interface StateCard {
   readonly suit: number;
   readonly rank: number;
-  readonly clues: StateCardClue[];
+  readonly clues: readonly StateCardClue[];
 }
 
 export interface StateStrike {

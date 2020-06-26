@@ -3,6 +3,7 @@
 
 import produce, { Draft } from 'immer';
 import { VARIANTS } from '../data/gameData';
+import * as cardRules from '../rules/card';
 import * as cluesRules from '../rules/clues';
 import * as statsRules from '../rules/stats';
 import { GameAction } from '../types/actions';
@@ -30,7 +31,7 @@ const statsReducer = produce((
       for (let i = 0; i < action.list.length; i++) {
         const order = action.list[i];
         const card = originalState.deck[order];
-        if (!cluesRules.isClued(card)) {
+        if (!cardRules.isClued(card)) {
           // A card was newly clued
           stats.cardsGotten += 1;
         }
@@ -40,7 +41,7 @@ const statsReducer = produce((
 
     case 'discard': {
       const card = originalState.deck[action.which.order];
-      if (cluesRules.isClued(card)) {
+      if (cardRules.isClued(card)) {
         // A clued card was discarded
         stats.cardsGotten -= 1;
       }
@@ -65,7 +66,7 @@ const statsReducer = produce((
       }
 
       const card = originalState.deck[action.which.order];
-      if (!cluesRules.isClued(card)) {
+      if (!cardRules.isClued(card)) {
         // A card was blind played
         stats.cardsGotten += 1;
       }
