@@ -1,5 +1,7 @@
 // The "Create Game" nav button
 
+/// <reference path="../../lib/autoComplete.d.ts" />
+import autoComplete from '@tarekraafat/autocomplete.js';
 import { FADE_TIME, SHUTDOWN_TIMEOUT } from '../constants';
 import * as debug from '../debug';
 import { VARIANTS } from '../game/data/gameData';
@@ -153,7 +155,36 @@ const firstVariantDropdownInit = () => {
 };
 
 const secondVariantDropdownInit = () => {
+  new autoComplete({ // eslint-disable-line
+    data: {
+      src: variantNames,
+      cache: true,
+    },
+    // placeHolder: 'Food & Drinks...',
+    selector: '#create-game-variant-dropdown2',
+    // searchEngine: "loose",
+    maxResults: 10,
+    /*
+    resultItem: {                          // Rendered result item            | (Optional)
+        content: (data, source) => {
+            source.innerHTML = data.match;
+        },
+        element: "li"
+    },
+    */
+    /*
+    noResults: () => {                     // Action script on noResults      | (Optional)
+        const result = document.createElement("li");
+        result.setAttribute("class", "no_result");
+        result.setAttribute("tabindex", "1");
+        result.innerHTML = "No Results";
+        document.querySelector("#autoComplete_list").appendChild(result);
+    },
+    */
+  });
+
   // Populate the full datalist/dropdown in the "Create Game" tooltip
+  /*
   for (const variantName of VARIANTS.keys()) {
     const option = new Option(variantName, variantName);
     $('#create-game-variant-dropdown2-list').append($(option));
@@ -181,6 +212,7 @@ const secondVariantDropdownInit = () => {
       $('#dice').hide();
     }
   });
+  */
 };
 
 const submit = () => {
