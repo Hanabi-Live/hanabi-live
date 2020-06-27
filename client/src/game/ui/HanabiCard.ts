@@ -194,6 +194,16 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   setBareImage() {
+    // Optimization: This function is expensive, so don't do it in replays
+    // unless we got to the final destination
+    if (
+      this.bareName !== ''
+      && globals.replay
+      && globals.replayTurn !== globals.turn
+    ) {
+      return;
+    }
+
     const learnedCard = globals.learnedCards[this.state.order];
 
     // Find out the suit to display

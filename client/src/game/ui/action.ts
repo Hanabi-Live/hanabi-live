@@ -509,7 +509,11 @@ actionFunctions.set('turn', (data: ActionTurn) => {
   globals.currentPlayerIndex = data.who;
 
   // Update the current player in the middle of the screen
-  updateCurrentPlayerArea();
+  // Optimization: this function is expensive, so only
+  // do it in replays if this is the correct turn
+  if (!globals.replay || globals.replayTurn === globals.turn) {
+    updateCurrentPlayerArea();
+  }
 
   // Show the black rectangle over the hand that signifies that it is their turn
   if (globals.currentPlayerIndex !== -1) {
