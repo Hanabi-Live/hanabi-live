@@ -4,6 +4,7 @@ import Konva from 'konva';
 import {
   CARD_W,
 } from '../../constants';
+import { removePossibilityTemp } from '../rules/applyClueCore';
 import * as variantRules from '../rules/variant';
 
 import {
@@ -28,7 +29,7 @@ import cardStatusCheck from './cardStatusCheck';
 import ClueEntry from './ClueEntry';
 import { msgClueToClue, msgSuitToSuit } from './convert';
 import globals from './globals';
-import HanabiCard, { removePossibility } from './HanabiCard';
+import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
 import possibilitiesCheck from './possibilitiesCheck';
 import strikeRecord from './strikeRecord';
@@ -292,7 +293,13 @@ actionFunctions.set('draw', (data: ActionDraw) => {
         const hand = globals.elements.playerHands[i];
         hand.children.each((layoutChild) => {
           const handCard = layoutChild.children[0] as HanabiCard;
-          removePossibility(globals.variant, handCard.state, suitIndex, rank!, false);
+          handCard.state = removePossibilityTemp(
+            handCard.state,
+            suitIndex,
+            rank!,
+            false,
+            globals.variant,
+          );
         });
       }
     }

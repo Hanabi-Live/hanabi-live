@@ -2,6 +2,7 @@
 // The HanabiCard object represents a single card
 // It has a LayoutChild parent
 
+import produce from 'immer';
 import Konva from 'konva';
 import {
   CARD_FADE,
@@ -9,12 +10,12 @@ import {
   CARD_W,
 } from '../../constants';
 import { SUITS } from '../data/gameData';
+import { applyClueCore, removePossibilityTemp } from '../rules/applyClueCore';
 import * as variantRules from '../rules/variant';
 import CardNote from '../types/CardNote';
 import CardState, { cardInitialState, PipState } from '../types/CardState';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
-import Color from '../types/Color';
 import { STACK_BASE_RANK, START_CARD_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
 import StackDirection from '../types/StackDirection';
 import Suit from '../types/Suit';
@@ -150,42 +151,60 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.empathy = false;
     this.doMisplayAnimation = false;
 
-    // We might have some information about this card already
-    this.state.suitIndex = suit ? suitToMsgSuit(suit, globals.variant) : null;
-    this.state.rank = rank;
+    // Reset all memory of clues and possibilities
 
     // Possible suits and ranks (based on clues given) are tracked separately
     // from knowledge of the true suit and rank
-    this.state.colorClueMemory.possibilities = globals.variant.suits.slice().map((_, i) => i);
-    this.state.rankClueMemory.possibilities = globals.variant.ranks.slice();
-    // Possible cards (based on both clues given and cards seen) are also tracked separately
+    const possibleSuits = globals.variant.suits.slice().map((_, i) => i);
+    const possibleRanks = globals.variant.ranks.slice();
+    const possibleCards: number[][] = [];
 
+    // Possible cards (based on both clues given and cards seen) are also tracked separately
     // Start by cloning the "globals.cardsMap"
-    this.state.colorClueMemory.possibilities.forEach((suitIndex) => {
-      this.state.possibleCards[suitIndex] = [];
+    possibleSuits.forEach((suitIndex) => {
+      possibleCards[suitIndex] = [];
       const suitName = msgSuitToSuit(suitIndex, globals.variant)!.name;
-      this.state.rankClueMemory.possibilities.forEach((rankIndex) => {
-        this.state.possibleCards[suitIndex][rankIndex] = globals.cardsMap.get(`${suitName}${rankIndex}`)!;
+      possibleRanks.forEach((rankIndex) => {
+        possibleCards[suitIndex][rankIndex] = globals.cardsMap.get(`${suitName}${rankIndex}`)!;
       });
     });
-    this.state.identityDetermined = false;
-    this.state.numPositiveClues = 0;
-    for (const mem of [this.state.colorClueMemory, this.state.rankClueMemory]) {
-      mem.positiveClues = [];
-      mem.negativeClues = [];
-      mem.pipStates = [];
-      mem.possibilities.forEach((i) => { mem.pipStates[i] = 'Visible'; });
-    }
-    this.state.turnsClued = [];
-    // We have to add one to the turn drawn because
-    // the "draw" command comes before the "turn" command
-    // However, if it was part of the initial deal, then it will correctly be set as turn 0
-    this.state.turnDrawn = globals.turn === 0 ? 0 : globals.turn + 1;
-    this.state.isDiscarded = false;
-    this.state.turnDiscarded = -1;
-    this.state.isPlayed = false;
-    this.state.turnPlayed = -1;
-    this.state.isMisplayed = false;
+
+    // Mark all rank pips as visible. Note that since we're using an array
+    // as map, there will be gaps on the values
+    const rankPipStates: PipState[] = [];
+    possibleRanks.forEach((r) => { rankPipStates[r] = 'Visible'; });
+
+    this.state = {
+      ...this.state,
+      // We might have some information about this card already
+      suitIndex: suit ? suitToMsgSuit(suit, globals.variant) : null,
+      rank,
+      possibleCards,
+      colorClueMemory: {
+        possibilities: possibleSuits,
+        positiveClues: [],
+        negativeClues: [],
+        pipStates: possibleSuits.map(() => 'Visible'),
+      },
+      rankClueMemory: {
+        possibilities: possibleRanks,
+        positiveClues: [],
+        negativeClues: [],
+        pipStates: rankPipStates,
+      },
+      identityDetermined: false,
+      numPositiveClues: 0,
+      turnsClued: [],
+      // We have to add one to the turn drawn because
+      // the "draw" command comes before the "turn" command
+      // However, if it was part of the initial deal, then it will correctly be set as turn 0
+      turnDrawn: globals.turn === 0 ? 0 : globals.turn + 1,
+      isDiscarded: false,
+      turnDiscarded: -1,
+      isPlayed: false,
+      turnPlayed: -1,
+      isMisplayed: false,
+    };
 
     // Some variants disable listening on cards
     this.listening(true);
@@ -204,27 +223,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Reset all of the pips to their default state
     // (but don't show any pips in Real-Life mode)
-    if (this.suitPipsMap) {
-      for (const [, suitPip] of this.suitPipsMap) {
-        suitPip.show();
-      }
-    }
-    if (this.suitPipsXMap) {
-      for (const [, suitPipX] of this.suitPipsXMap) {
-        suitPipX.hide();
-      }
-    }
-    if (this.rankPipsMap) {
-      for (const [, rankPip] of this.rankPipsMap) {
-        rankPip.show();
-        rankPip.hidePositiveClue();
-      }
-    }
-    if (this.rankPipsXMap) {
-      for (const [, rankPipX] of this.rankPipsXMap) {
-        rankPipX.hide();
-      }
-    }
+    this.updatePips();
 
     this.resetPossibilities();
     this.setBareImage();
@@ -263,16 +262,28 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         continue;
       }
 
-      removePossibility(globals.variant, this.state, card.state.suitIndex, card.state.rank, false);
+      this.state = removePossibilityTemp(
+        this.state,
+        card.state.suitIndex,
+        card.state.rank,
+        false,
+        globals.variant,
+      );
     }
   }
 
   setHolder(holder: number | null) {
-    this.state.holder = holder;
+    this.state = {
+      ...this.state,
+      holder,
+    };
   }
 
   unsetBlank() {
-    this.state.blank = false;
+    this.state = {
+      ...this.state,
+      blank: false,
+    };
   }
 
   setClued() {
@@ -309,7 +320,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   markPositiveClue() {
-    this.state.numPositiveClues += 1;
+    this.state = {
+      ...this.state,
+      numPositiveClues: this.state.numPositiveClues + 1,
+    };
   }
 
   setBareImage() {
@@ -579,28 +593,33 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   discard(turn: number, failed: boolean) {
-    this.state.isDiscarded = true;
-    this.state.turnDiscarded = turn;
-    this.state.isMisplayed = failed;
+    this.state = {
+      ...this.state,
+      isDiscarded: true,
+      turnDiscarded: turn,
+      isMisplayed: failed,
+    };
   }
 
   play(turn: number) {
-    this.state.isPlayed = true;
-    this.state.turnPlayed = turn;
+    this.state = {
+      ...this.state,
+      isPlayed: true,
+      turnPlayed: turn,
+    };
   }
 
   // This card was touched by a positive or negative clue,
   // so remove pips and possibilities from the card
   applyClue(clue: Clue, positive: boolean) {
-    const state = this.state;
     const variant = globals.variant;
 
     // If the card is already fully revealed from clues, then additional clues would tell us nothing
     // We don't check for "state.identityDetermined" here because we still need to calculate
     // the effects of clues on cards in other people's hands whose true identity we already know
     const wasFullyKnown = (
-      state.colorClueMemory.possibilities.length === 1
-      && state.rankClueMemory.possibilities.length === 1
+      this.state.colorClueMemory.possibilities.length === 1
+      && this.state.rankClueMemory.possibilities.length === 1
     );
     if (wasFullyKnown) {
       return;
@@ -609,13 +628,19 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Mark all turns that this card is positively clued
     if (positive) {
       // We add one because the "clue" action comes before the "turn" action
-      state.turnsClued.push(globals.turn + 1);
+      this.state = produce(this.state, (state) => {
+        state.turnsClued.push(globals.turn + 1);
+      });
     }
 
     const {
+      state,
       shouldReapplyRankClues,
       shouldReapplyColorClues,
-    } = applyClueCore(state, variant, possibilitiesCheck(), clue, positive);
+    } = applyClueCore(this.state, variant, possibilitiesCheck(), clue, positive);
+
+    // Mutate state
+    this.state = state;
 
     if (state.colorClueMemory.possibilities.length === 1) {
       // We have discovered the true suit of the card
@@ -637,11 +662,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     if (shouldReapplyRankClues) {
-      this.reapplyRankClues(state);
+      this.reapplyRankClues();
     }
 
     if (shouldReapplyColorClues) {
-      this.reapplyColorClues(state);
+      this.reapplyColorClues();
     }
 
     this.updateNotePossibilities();
@@ -671,10 +696,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   // If a clue just eliminated the possibility of being a special multi-color card,
   // we need to retroactively apply previous color clues
-  private reapplyColorClues(state: CardState) {
-    const { positiveClues, negativeClues } = state.colorClueMemory;
-    state.colorClueMemory.positiveClues = [];
-    state.colorClueMemory.negativeClues = [];
+  private reapplyColorClues() {
+    const { positiveClues, negativeClues } = this.state.colorClueMemory;
+    this.state = produce(this.state, (state) => {
+      state.colorClueMemory.positiveClues = [];
+      state.colorClueMemory.negativeClues = [];
+    });
     for (const color of positiveClues) {
       this.applyClue(new Clue(ClueType.Color, color), true);
     }
@@ -685,10 +712,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   // If a clue just eliminated the possibility of being a special multi-rank card,
   // we can retroactively remove rank pips from previous rank clues
-  private reapplyRankClues(state: CardState) {
-    const { positiveClues, negativeClues } = state.rankClueMemory;
-    state.rankClueMemory.positiveClues = [];
-    state.rankClueMemory.negativeClues = [];
+  private reapplyRankClues() {
+    const { positiveClues, negativeClues } = this.state.rankClueMemory;
+    this.state = produce(this.state, (state) => {
+      state.rankClueMemory.positiveClues = [];
+      state.rankClueMemory.negativeClues = [];
+    });
     for (const rank of positiveClues) {
       this.applyClue(new Clue(ClueType.Rank, rank), true);
     }
@@ -704,12 +733,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     const suitIndex = msgSuit === -1 ? null : msgSuit;
     const rank = msgRank === -1 ? null : msgRank;
 
+    this.state = produce(this.state, (state) => {
     // Blank the card if it is revealed with no suit and no rank
-    this.state.blank = !(suitIndex || rank);
+      state.blank = !(suitIndex || rank);
 
-    // Set the true suit/rank on the card
-    this.state.suitIndex = suitIndex;
-    this.state.rank = rank;
+      // Set the true suit/rank on the card
+      state.suitIndex = suitIndex;
+      state.rank = rank;
+    });
 
     // Keep track of what this card is
     const learnedCard = globals.learnedCards[this.state.order];
@@ -735,7 +766,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // If the card was already fully-clued,
     // we already updated the possibilities for it on other cards
     if (suitIndex != null && rank != null && !this.state.identityDetermined) {
-      this.state.identityDetermined = true;
+      this.state = produce(this.state, (state) => { state.identityDetermined = true; });
       this.updatePossibilitiesOnOtherCards(suitIndex, rank);
     }
   }
@@ -797,7 +828,13 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         // There is no need to update the card that was just revealed
         continue;
       }
-      removePossibility(globals.variant, card.state, suit, rank, false);
+      this.state = removePossibilityTemp(
+        card.state,
+        suit,
+        rank,
+        false,
+        globals.variant,
+      );
     }
 
     // If this is a:
@@ -814,7 +851,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         const playerHand2 = globals.elements.playerHands[i];
         playerHand2.children.each((layoutChild) => {
           const card = layoutChild.children[0] as HanabiCard;
-          removePossibility(globals.variant, card.state, suit, rank, false);
+          card.state = removePossibilityTemp(card.state, suit, rank, false, globals.variant);
         });
       }
     }
@@ -1258,445 +1295,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     globals.layers.card.batchDraw();
   }
-}
-
-// Functions that don't depend on HanabiCard
-
-function applyClueCore(
-  state: CardState,
-  variant: Variant,
-  calculatePossibilities: boolean,
-  clue: Clue,
-  positive: boolean,
-) {
-  // Helpers to convert from suit/color to index and vice-versa
-  const suitIndexes: Map<string, number> = new Map<string, number>();
-  const colorIndexes: Map<Color, number> = new Map<Color, number>();
-  variant.suits.forEach((suit, index) => suitIndexes.set(suit.name, index));
-  variant.clueColors.forEach((color, index) => colorIndexes.set(color, index));
-
-  const getIndex = (suit: Suit) => suitIndexes.get(suit.name)!;
-
-  // Record unique clues that touch the card for later
-  if (clue.type === ClueType.Color) {
-    const colorId = colorIndexes.get(clue.value as Color)!;
-    if (positive && !state.colorClueMemory.positiveClues.includes(colorId)) {
-      state.colorClueMemory.positiveClues.push(colorId);
-    } else if (!positive && !state.colorClueMemory.negativeClues.includes(colorId)) {
-      state.colorClueMemory.negativeClues.push(colorId);
-    }
-  } else if (clue.type === ClueType.Rank) {
-    if (positive && !state.rankClueMemory.positiveClues.includes(clue.value as number)) {
-      state.rankClueMemory.positiveClues.push(clue.value as number);
-    } else if (!positive && !state.rankClueMemory.negativeClues.includes(clue.value as number)) {
-      state.rankClueMemory.negativeClues.push(clue.value as number);
-    }
-  }
-
-  // Temporarily use a suit array so we don't have to keep converting back and forth
-  const possibleSuits = state.colorClueMemory.possibilities.map((p) => variant.suits[p]);
-
-  // Find out if we can remove some rank pips or suit pips from this clue
-  let ranksRemoved: number[] = [];
-  let suitsRemoved: number[] = [];
-  if (clue.type === ClueType.Color) {
-    const clueColor = clue.value as Color;
-    // suitsRemoved keeps track of suits removed for normal ranks
-    // This allows for proper checking of possibilities to cross out rank pips
-    // We handle special ranks later
-    if (variant.colorCluesTouchNothing) {
-      // Some variants have color clues touch no cards
-      // If this is the case, we cannot remove any suit pips from the card
-    } else {
-      // The default case (e.g. No Variant)
-      // Remove all possibilities that do not include this color
-      suitsRemoved = possibleSuits.filter(
-        (suit: Suit) => (suit.clueColors.includes(clueColor) || suit.allClueColors) !== positive,
-      ).map(getIndex);
-    }
-
-    if (calculatePossibilities
-      && (variant.specialAllClueColors || variant.specialNoClueColors)) {
-      // We only need to run this early possibility removal for variants with special ranks
-      // touched by all or no color clues
-      for (const rank of state.rankClueMemory.possibilities) {
-        // We can remove possibilities for normal ranks
-        if (rank !== variant.specialRank) {
-          for (const suitIndex of suitsRemoved) {
-            removePossibility(variant, state, suitIndex, rank, true);
-          }
-        }
-      }
-    }
-
-    if (positive
-      && state.rankClueMemory.possibilities.includes(variant.specialRank)
-      && variant.specialAllClueColors) {
-      // Some variants have specific ranks touched by all colors
-      // If this is the case, and this is a positive color clue,
-      // we cannot remove any color pips from the card
-      // An exception to this is special suits touched by no colors
-      suitsRemoved = filterInPlace(
-        possibleSuits,
-        (suit: Suit) => !suit.noClueColors,
-      ).map(getIndex);
-    } else if (!positive
-      && state.rankClueMemory.possibilities.includes(variant.specialRank)
-      && variant.specialNoClueColors) {
-      // Some variants have specific ranks touched by no colors
-      // If this is the case, and this is a negative color clue,
-      // we cannot remove any color pips from the card
-      // An exception to this is special suits touched by all colors
-      suitsRemoved = filterInPlace(
-        possibleSuits,
-        (suit: Suit) => !suit.allClueColors,
-      ).map(getIndex);
-    } else {
-      // We can safely remove the suits from possible suits
-      filterInPlace(
-        possibleSuits,
-        (suit: Suit) => suitsRemoved.indexOf(suitIndexes.get(suit.name)!) === -1,
-      );
-    }
-
-    // Handle special ranks
-    if (variant.specialRank !== -1) {
-      if (variant.specialAllClueColors) {
-        if (positive) {
-          if (state.colorClueMemory.positiveClues.length >= 2
-            && possibleSuits
-              .filter((suit) => suit.allClueColors)
-              .length === 0
-          ) {
-            // Two positive color clues should "fill in" a special rank that is touched by all
-            // color clues (that cannot be a multi-color suit)
-            ranksRemoved = filterInPlace(
-              state.rankClueMemory.possibilities,
-              (rank: number) => rank === variant.specialRank,
-            );
-          }
-        } else if (state.rankClueMemory.possibilities.length === 1
-          && state.rank === variant.specialRank) {
-          // Negative color to a known special rank means that we can remove all suits
-          // other that the ones that are never touched by color clues
-          const moreSuitsRemoved = filterInPlace(
-            possibleSuits,
-            (suit: Suit) => suit.noClueColors,
-          ).map(getIndex);
-          suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
-          suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
-        } else if (
-          possibleSuits
-            .filter((suit: Suit) => suit.noClueColors).length === 0
-        ) {
-          // Negative color means that the card cannot be the special rank
-          // (as long as the card cannot be a suit that is never touched by color clues)
-          ranksRemoved = filterInPlace(
-            state.rankClueMemory.possibilities,
-            (rank: number) => rank !== variant.specialRank,
-          );
-        } else if (calculatePossibilities) {
-          // If there is a suit never touched by color clues, we can still remove
-          // possibilities for other suits on the special rank
-          for (const suit of possibleSuits.filter((s) => !s.noClueColors)) {
-            const suitIndex = suitIndexes.get(suit.name)!;
-            removePossibility(variant, state, suitIndex, variant.specialRank, true);
-          }
-        }
-      } else if (variant.specialNoClueColors) {
-        if (positive) {
-          if (
-            possibleSuits
-              .filter((suit) => suit.allClueColors).length === 0
-          ) {
-            // Positive color means that the card cannot be a special rank
-            // (as long as the card cannot be a suit that is always touched by color clues)
-            ranksRemoved = filterInPlace(
-              state.rankClueMemory.possibilities,
-              (rank: number) => rank !== variant.specialRank,
-            );
-          } else if (calculatePossibilities) {
-            // If there is a suit always touched by color clues, we can still remove
-            // possibilities for other suits on the special rank
-            for (const suit of possibleSuits.filter((s) => !s.allClueColors)) {
-              const suitIndex = suitIndexes.get(suit.name)!;
-              removePossibility(variant, state, suitIndex, variant.specialRank, true);
-            }
-          }
-        } else if (state.colorClueMemory.negativeClues.length === variant.clueColors.length) {
-          if (
-            possibleSuits
-              .filter((suit) => suit.noClueColors).length === 0
-          ) {
-            // All negative colors means that the card must be the special rank
-            // (as long as it cannot be a suit that is never touched by color clues)
-            ranksRemoved = filterInPlace(
-              state.rankClueMemory.possibilities,
-              (rank: number) => rank === variant.specialRank,
-            );
-          }
-        }
-      }
-    }
-  } else if (clue.type === ClueType.Rank) {
-    const clueRank = clue.value as number;
-    // ranksRemoved keeps track of ranks removed for normal suits touched by their own rank
-    // This allows for proper checking of possibilities to cross out suit pips
-    // We handle suits with special ranks later
-    if (variant.rankCluesTouchNothing) {
-      // Some variants have rank clues touch no cards
-      // If this is the case, we cannot remove any rank pips from the card
-    } else if (state.rankClueMemory.possibilities.includes(variant.specialRank)
-      && variant.specialAllClueRanks) {
-      // Some variants have specific ranks touched by all rank clues
-      ranksRemoved = state.rankClueMemory.possibilities.filter(
-        (rank: number) => (rank === clueRank || rank === variant.specialRank) !== positive,
-      );
-    } else if (state.rankClueMemory.possibilities.includes(variant.specialRank)
-      && variant.specialNoClueRanks) {
-      // Some variants have specific ranks touched by no rank clues
-      ranksRemoved = state.rankClueMemory.possibilities.filter(
-        (rank: number) => (rank === clueRank && rank !== variant.specialRank) !== positive,
-      );
-    } else {
-      // The default case (e.g. No Variant)
-      // Remove all possibilities that do not include this rank
-      ranksRemoved = state.rankClueMemory.possibilities.filter(
-        (rank: number) => (rank === clueRank) !== positive,
-      );
-    }
-
-    // Some suits are touched by all rank clues
-    // Some suits are not touched by any rank clues
-    // So we may be able to remove a suit pip
-    if (positive) {
-      suitsRemoved = filterInPlace(
-        possibleSuits,
-        (suit: Suit) => !suit.noClueRanks,
-      ).map((suit) => suitIndexes.get(suit.name)!);
-    } else {
-      suitsRemoved = filterInPlace(
-        possibleSuits,
-        (suit: Suit) => !suit.allClueRanks,
-      ).map((suit) => suitIndexes.get(suit.name)!);
-    }
-
-    // Handle the special case where two positive rank clues should "fill in" a card of a
-    // multi-rank suit
-    if (positive
-      && state.rankClueMemory.positiveClues.length >= 2
-      && !(
-        state.rankClueMemory.possibilities.includes(variant.specialRank)
-        && variant.specialAllClueRanks
-      )) {
-      const moreSuitsRemoved = filterInPlace(
-        possibleSuits,
-        (suit: Suit) => suit.allClueRanks,
-      ).map((suit) => suitIndexes.get(suit.name)!);
-      suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
-      suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
-    }
-
-    // Handle the special case where all negative rank clues should "fill in" a card of a
-    // rank-less suit
-    if (!positive
-      && !variant.rankCluesTouchNothing
-      && state.rankClueMemory.negativeClues.length === variant.ranks.length
-      // We know that any special rank can be given as a rank clue
-      // so there is no need to have a separate check for special variants
-    ) {
-      const moreSuitsRemoved = filterInPlace(
-        possibleSuits,
-        (suit: Suit) => suit.noClueRanks,
-      ).map(getIndex);
-      suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
-      suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
-    }
-
-    // If the rank of the card is not known yet,
-    // change the rank pip that corresponds with this number to signify a positive clue
-    if (positive) {
-      if (state.rankClueMemory.pipStates[clueRank] === 'Visible') {
-        state.rankClueMemory.pipStates[clueRank] = 'PositiveClue';
-      }
-    }
-
-    if (calculatePossibilities) {
-      for (const suit of possibleSuits) {
-        // We can remove possibilities for normal suits touched by their own rank
-        if (!suit.allClueRanks && !suit.noClueRanks) {
-          for (const rank of ranksRemoved) {
-            removePossibility(variant, state, suitIndexes.get(suit.name)!, rank, true);
-          }
-        }
-      }
-    }
-
-    if (possibleSuits.some((suit) => suit.allClueRanks) && positive) {
-      // Some cards are touched by all ranks,
-      // so if this is a positive rank clue, we cannot remove any rank pips from the card
-      ranksRemoved = [];
-    } else if (possibleSuits.some((suit) => suit.noClueRanks) && !positive) {
-      // Some suits are not touched by any ranks,
-      // so if this is a negative rank clue, we cannot remove any rank pips from the card
-      ranksRemoved = [];
-    } else {
-      // We can safely remove the ranks from possible ranks
-      filterInPlace(state.rankClueMemory.possibilities,
-        (rank: number) => ranksRemoved.indexOf(rank) === -1);
-    }
-  }
-
-  // Bring the result back to the state as indexes
-  state.colorClueMemory.possibilities = possibleSuits.map(getIndex);
-
-  let shouldReapplyRankClues = false;
-  let shouldReapplyColorClues = false;
-
-  // Remove suit pips, if any
-  for (const suitRemoved of suitsRemoved) {
-    // Hide the suit pips
-    state.colorClueMemory.pipStates[suitRemoved] = 'Hidden';
-
-    // Remove any card possibilities for this suit
-    if (calculatePossibilities) {
-      for (const rank of variant.ranks) {
-        removePossibility(variant, state, suitRemoved, rank, true);
-      }
-    }
-
-    const suitObject = msgSuitToSuit(suitRemoved, variant)!;
-    if (suitObject.allClueRanks || suitObject.noClueRanks) {
-      // Mark to retroactively apply rank clues when we return from this function
-      shouldReapplyRankClues = true;
-    }
-  }
-
-  // Remove rank pips, if any
-  for (const rankRemoved of ranksRemoved) {
-    // Hide the rank pips
-    state.rankClueMemory.pipStates[rankRemoved] = 'Hidden';
-
-    // Remove any card possibilities for this rank
-    if (calculatePossibilities) {
-      for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
-        removePossibility(variant, state, suitIndex, rankRemoved, true);
-      }
-    }
-
-    if (rankRemoved === variant.specialRank
-          && (variant.specialAllClueColors || variant.specialNoClueColors)) {
-      // Mark to retroactively apply color clues when we return from this function
-      shouldReapplyColorClues = true;
-    }
-  }
-
-  if (state.colorClueMemory.possibilities.length === 1) {
-    // We have discovered the true suit of the card
-    [state.suitIndex] = state.colorClueMemory.possibilities;
-  }
-
-  if (state.rankClueMemory.possibilities.length === 1) {
-    // We have discovered the true rank of the card
-    [state.rank] = state.rankClueMemory.possibilities;
-  }
-
-  if (state.colorClueMemory.possibilities.length === 1
-    && state.rankClueMemory.possibilities.length === 1) {
-    state.identityDetermined = true;
-  }
-
-  return { shouldReapplyRankClues, shouldReapplyColorClues };
-}
-
-export function removePossibility(
-  variant: Variant,
-  state: CardState,
-  suit: number,
-  rank: number,
-  all: boolean,
-) {
-  // Every card has a possibility map that maps card identities to count
-  let cardsLeft = state.possibleCards[suit][rank];
-  if (cardsLeft === undefined) {
-    throw new Error(`Failed to get an entry for Suit: ${suit} and Rank: ${rank} from the "possibleCards" map for card ${state.order}.`);
-  }
-  if (cardsLeft > 0) {
-    // Remove one or all possibilities for this card,
-    // (depending on whether the card was clued
-    // or if we saw someone draw a copy of this card)
-    cardsLeft = all ? 0 : cardsLeft - 1;
-    state.possibleCards[suit][rank] = cardsLeft;
-    checkPipPossibilities(variant, state, suit, rank);
-  }
-}
-
-// Check to see if we can put an X over this suit pip or this rank pip
-function checkPipPossibilities(variant: Variant, state: CardState, suit: number, rank: number) {
-  // First, check to see if there are any possibilities remaining for this suit
-  let suitPossible = false;
-  for (const rank2 of variant.ranks) {
-    const count = state.possibleCards[suit][rank2];
-    if (count === undefined) {
-      throw new Error(`Failed to get an entry for Suit: ${suit} and Rank: ${rank2} from the "possibleCards" map for card ${state.order}.`);
-    }
-    if (count > 0) {
-      suitPossible = true;
-      break;
-    }
-  }
-  if (!suitPossible) {
-    // Do nothing if the normal pip is already hidden
-    if (state.colorClueMemory.pipStates[suit] !== 'Hidden') {
-      // All the cards of this suit are seen, so put an X over the suit pip
-      state.colorClueMemory.pipStates[suit] = 'Eliminated';
-    }
-  }
-
-  // Second, check to see if there are any possibilities remaining for this rank
-  let rankPossible = false;
-  for (let suit2 = 0; suit2 < variant.suits.length; suit2++) {
-    const count = state.possibleCards[suit2][rank];
-    if (count === undefined) {
-      throw new Error(`Failed to get an entry for Suit: ${suit2} and Rank: ${rank}from the "possibleCards" map for card ${state.order}.`);
-    }
-    if (count > 0) {
-      rankPossible = true;
-      break;
-    }
-  }
-  if (!rankPossible) {
-    // There is no rank pip for "START" cards
-    if (rank >= 1 && rank <= 5) {
-      // Do nothing if the normal pip is already hidden
-      if (state.rankClueMemory.pipStates[rank] !== 'Hidden') {
-        // All the cards of this rank are seen, so put an X over the rank pip
-        state.rankClueMemory.pipStates[rank] = 'Eliminated';
-      }
-    }
-  }
-}
-
-// ---------------
-// Misc. functions
-// ---------------
-
-// Remove everything from the array that does not match the condition in the function
-function filterInPlace<T>(values: T[], predicate: (value: T) => boolean) : T[] {
-  const removed = [];
-  let i = values.length - 1;
-  while (i >= 0) {
-    if (!predicate(values[i])) {
-      removed.unshift(values.splice(i, 1)[0]);
-    }
-    i -= 1;
-  }
-  return removed;
-}
-
-// From: https://medium.com/dailyjs/how-to-remove-array-duplicates-in-es6-5daa8789641c
-function removeDuplicatesFromArray<T>(array: T[]) {
-  return array.filter((item, index) => array.indexOf(item) === index);
 }
 
 // getSpecificCardNum returns the total cards in the deck of the specified suit and rank
