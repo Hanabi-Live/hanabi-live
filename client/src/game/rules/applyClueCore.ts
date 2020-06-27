@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import produce, { Draft, castDraft } from 'immer';
+import produce, { Draft, castDraft, original } from 'immer';
 import CardState from '../types/CardState';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
@@ -29,7 +29,7 @@ export function applyClueCore(
   const possibleSuits = state.colorClueMemory.possibilities.map((p) => variant.suits[p]);
   const possibleRanks = state.rankClueMemory.possibilities.map((i) => i);
 
-  const possibilitiesToRemove: Set<{suitIndex: number; rank: number; all: boolean}> = new Set();
+  const possibilitiesToRemove: Array<{suitIndex: number; rank: number; all: boolean}> = [];
 
   // Make a copy here for quick modification
   const possibleCards: number[][] = state.possibleCards.map((arr) => arr.map((n) => n));
@@ -61,7 +61,7 @@ export function applyClueCore(
         // We can remove possibilities for normal ranks
         if (rank !== variant.specialRank) {
           for (const suitIndex of suitsRemoved) {
-            possibilitiesToRemove.add({ suitIndex, rank, all: true });
+            possibilitiesToRemove.push({ suitIndex, rank, all: true });
           }
         }
       }
@@ -135,7 +135,7 @@ export function applyClueCore(
           // possibilities for other suits on the special rank
           for (const suit of possibleSuits.filter((theSuit) => !theSuit.noClueColors)) {
             const suitIndex = suitIndexes.get(suit.name)!;
-            possibilitiesToRemove.add({ suitIndex, rank: variant.specialRank, all: true });
+            possibilitiesToRemove.push({ suitIndex, rank: variant.specialRank, all: true });
           }
         }
       } else if (variant.specialNoClueColors) {
@@ -153,7 +153,7 @@ export function applyClueCore(
             // possibilities for other suits on the special rank
             for (const suit of possibleSuits.filter((theSuit) => !theSuit.allClueColors)) {
               const suitIndex = suitIndexes.get(suit.name)!;
-              possibilitiesToRemove.add({ suitIndex, rank: variant.specialRank, all: true });
+              possibilitiesToRemove.push({ suitIndex, rank: variant.specialRank, all: true });
             }
           }
         } else if (state.colorClueMemory.negativeClues.length === variant.clueColors.length) {
@@ -249,7 +249,7 @@ export function applyClueCore(
         // We can remove possibilities for normal suits touched by their own rank
         if (!suit.allClueRanks && !suit.noClueRanks) {
           for (const rank of ranksRemoved) {
-            possibilitiesToRemove.add({ suitIndex: suitIndexes.get(suit.name)!, rank, all: true });
+            possibilitiesToRemove.push({ suitIndex: suitIndexes.get(suit.name)!, rank, all: true });
           }
         }
       }
@@ -308,7 +308,7 @@ export function applyClueCore(
       // Remove any card possibilities for this suit
       if (calculatePossibilities) {
         for (const rank of variant.ranks) {
-          possibilitiesToRemove.add({ suitIndex: suitRemoved, rank, all: true });
+          possibilitiesToRemove.push({ suitIndex: suitRemoved, rank, all: true });
         }
       }
 
@@ -327,7 +327,7 @@ export function applyClueCore(
       // Remove any card possibilities for this rank
       if (calculatePossibilities) {
         for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
-          possibilitiesToRemove.add({ suitIndex, rank: rankRemoved, all: true });
+          possibilitiesToRemove.push({ suitIndex, rank: rankRemoved, all: true });
         }
       }
 
@@ -342,9 +342,11 @@ export function applyClueCore(
       // Remove all the possibilities we found
       for (const { suitIndex, rank, all } of possibilitiesToRemove) {
         const {
+          cardsLeft,
           suitEliminated,
           rankEliminated,
         } = removePossibility(possibleCards, suitIndex, rank, all, variant);
+        possibleCards[suitIndex][rank] = cardsLeft;
         if (suitEliminated) {
           s.colorClueMemory.pipStates[suitIndex] = 'Eliminated';
         }
@@ -385,7 +387,7 @@ export const removePossibilityTemp = produce((
     cardsLeft,
     suitEliminated,
     rankEliminated,
-  } = removePossibility(state.possibleCards, suitIndex, rank, all, variant);
+  } = removePossibility(original(state.possibleCards)!, suitIndex, rank, all, variant);
   state.possibleCards[suitIndex][rank] = cardsLeft;
   if (suitEliminated) {
     state.colorClueMemory.pipStates[suitIndex] = 'Eliminated';
@@ -412,11 +414,10 @@ function removePossibility(
     // (depending on whether the card was clued
     // or if we saw someone draw a copy of this card)
     cardsLeft = all ? 0 : cardsLeft - 1;
-    possibleCards[suitIndex][rank] = cardsLeft;
     const {
       suitEliminated,
       rankEliminated,
-    } = checkPipPossibilities(possibleCards, suitIndex, rank, variant);
+    } = checkPipPossibilities(cardsLeft, possibleCards, suitIndex, rank, variant);
     return { cardsLeft, suitEliminated, rankEliminated };
   }
   return { cardsLeft, suitEliminated: false, rankEliminated: false };
@@ -424,6 +425,7 @@ function removePossibility(
 
 // Check to see if we can put an X over this suit pip or this rank pip
 function checkPipPossibilities(
+  cardsLeft: number,
   possibleCards: number[][],
   suit: number,
   rank: number,
@@ -434,7 +436,7 @@ function checkPipPossibilities(
   // Optimization: check to see if it makes sense to check this at all
   // First, check to see if there are any possibilities remaining for this suit
   for (const rank2 of variant.ranks) {
-    const count = possibleCards[suit][rank2];
+    const count = rank2 === rank ? cardsLeft : possibleCards[suit][rank2];
     if (count === undefined) {
       throw new Error(`Failed to get an entry for Suit: ${suit} and Rank: ${rank2} from the "possibleCards" map for card.`);
     }
@@ -449,7 +451,7 @@ function checkPipPossibilities(
     rank >= 1 && rank <= 5) {
     // Second, check to see if there are any possibilities remaining for this rank
     for (let suit2 = 0; suit2 < variant.suits.length; suit2++) {
-      const count = possibleCards[suit2][rank];
+      const count = suit === suit2 ? cardsLeft : possibleCards[suit2][rank];
       if (count === undefined) {
         throw new Error(`Failed to get an entry for Suit: ${suit2} and Rank: ${rank}from the "possibleCards" map for card.`);
       }
