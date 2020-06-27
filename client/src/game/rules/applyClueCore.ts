@@ -6,6 +6,12 @@ import Color from '../types/Color';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
 
+export interface PossibilityToRemove {
+  readonly suitIndex: number;
+  readonly rank: number;
+  readonly all: boolean;
+}
+
 export function applyClueCore(
   state: CardState,
   variant: Variant,
@@ -28,10 +34,7 @@ export function applyClueCore(
   const possibleSuits = state.colorClueMemory.possibilities.map((p) => variant.suits[p]);
   const possibleRanks = state.rankClueMemory.possibilities.map((i) => i);
 
-  const possibilitiesToRemove: Array<{ suitIndex: number; rank: number; all: boolean }> = [];
-
-  // Make a copy here for quick modification
-  const possibleCards: number[][] = state.possibleCards.map((arr) => arr.map((n) => n));
+  const possibilitiesToRemove: PossibilityToRemove[] = [];
 
   // Find out if we can remove some rank pips or suit pips from this clue
   let ranksRemoved: number[] = [];
@@ -341,7 +344,7 @@ export function applyClueCore(
 
     if (calculatePossibilities) {
       // Remove all the possibilities we found
-      removePossibilities(possibleCards, possibilitiesToRemove);
+      const possibleCards = removePossibilities(original(s.possibleCards)!, possibilitiesToRemove);
 
       const { suitsPossible, ranksPossible } = checkAllPipPossibilities(possibleCards, variant);
 
@@ -395,21 +398,18 @@ export const removePossibilityTemp = produce((
   if (!rankPossible && original(state.rankClueMemory.pipStates)![rank] !== 'Hidden') {
     state.rankClueMemory.pipStates[rank] = 'Eliminated';
   }
-});
+}, {} as CardState);
 
-export interface PossibilityToRemove {
-  readonly suitIndex: number;
-  readonly rank: number;
-  readonly all: boolean;
-}
-
-function removePossibilities(
-  possibleCards: number[][],
+export function removePossibilities(
+  possibleCards: ReadonlyArray<readonly number[]>,
   possibilitiesToRemove: PossibilityToRemove[],
 ) {
+  // Make a copy here for quick modification
+  const possibleCardsCopy: number[][] = possibleCards.map((arr) => arr.map((n) => n));
   for (const { suitIndex, rank, all } of possibilitiesToRemove) {
-    possibleCards[suitIndex][rank] = removePossibility(possibleCards, suitIndex, rank, all);
+    possibleCardsCopy[suitIndex][rank] = removePossibility(possibleCardsCopy, suitIndex, rank, all);
   }
+  return possibleCardsCopy;
 }
 
 function removePossibility(
@@ -433,8 +433,8 @@ function removePossibility(
 }
 
 // Check to see if we can put an X over all suits pip and rank pips
-function checkAllPipPossibilities(
-  possibleCards: number[][],
+export function checkAllPipPossibilities(
+  possibleCards: ReadonlyArray<readonly number[]>,
   variant: Variant,
 ) {
   const suitsPossible = variant.suits.map(

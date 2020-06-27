@@ -9,7 +9,13 @@ import {
   CARD_W,
 } from '../../constants';
 import { SUITS } from '../data/gameData';
-import { removePossibilityTemp, applyClueCore } from '../rules/applyClueCore';
+import {
+  removePossibilityTemp,
+  applyClueCore,
+  PossibilityToRemove,
+  removePossibilities,
+  checkAllPipPossibilities,
+} from '../rules/applyClueCore';
 import * as variantRules from '../rules/variant';
 import CardNote from '../types/CardNote';
 import CardState, { cardInitialState, PipState } from '../types/CardState';
@@ -241,6 +247,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       return;
     }
 
+    const possibilitiesToRemove: PossibilityToRemove[] = [];
+
     // We want to remove all of the currently seen cards from the list of possibilities
     for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
       const card = globals.deck[i];
@@ -261,14 +269,36 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         continue;
       }
 
-      this.state = removePossibilityTemp(
-        this.state,
-        card.state.suitIndex,
-        card.state.rank,
-        false,
-        globals.variant,
-      );
+      possibilitiesToRemove.push({
+        suitIndex: card.state.suitIndex,
+        rank: card.state.rank,
+        all: false,
+      });
     }
+
+    const possibleCards = removePossibilities(this.state.possibleCards, possibilitiesToRemove);
+    const pipPossibilities = checkAllPipPossibilities(possibleCards, globals.variant);
+
+    const suitPipStates = this.state.colorClueMemory.pipStates.map(
+      (pipState, suitIndex) => (!pipPossibilities.suitsPossible[suitIndex] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
+    );
+
+    const rankPipStates = this.state.rankClueMemory.pipStates.map(
+      (pipState, rank) => (!pipPossibilities.ranksPossible[rank] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
+    );
+
+    this.state = {
+      ...this.state,
+      possibleCards,
+      colorClueMemory: {
+        ...this.state.colorClueMemory,
+        pipStates: suitPipStates,
+      },
+      rankClueMemory: {
+        ...this.state.rankClueMemory,
+        pipStates: rankPipStates,
+      },
+    };
   }
 
   setHolder(holder: number | null) {
