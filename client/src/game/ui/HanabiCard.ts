@@ -624,14 +624,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       return;
     }
 
-    // Mark all turns that this card is positively clued
-    if (positive) {
-      // We add one because the "clue" action comes before the "turn" action
-      this.state = produce(this.state, (state) => {
-        state.turnsClued.push(globals.turn + 1);
-      });
-    }
-
     const {
       state,
       shouldReapplyRankClues,
@@ -639,7 +631,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     } = applyClueCore(this.state, variant, possibilitiesCheck(), clue, positive);
 
     // Mutate state
-    this.state = state;
+    this.state = {
+      ...state,
+      // Mark all turns that this card is positively clued
+      // We add one because the "clue" action comes before the "turn" action
+      turnsClued: positive ? [...state.turnsClued, globals.turn + 1] : state.turnsClued,
+    };
 
     if (state.colorClueMemory.possibilities.length === 1) {
       // We have discovered the true suit of the card
@@ -809,7 +806,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  private updatePossibilitiesOnOtherCards(suit: number, rank: number) {
+  private updatePossibilitiesOnOtherCards(suitIndex: number, rank: number) {
     if (!possibilitiesCheck()) {
       return;
     }
@@ -829,7 +826,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
       card.state = removePossibilityTemp(
         card.state,
-        suit,
+        suitIndex,
         rank,
         false,
         globals.variant,
@@ -850,7 +847,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         const playerHand2 = globals.elements.playerHands[i];
         playerHand2.children.each((layoutChild) => {
           const card = layoutChild.children[0] as HanabiCard;
-          card.state = removePossibilityTemp(card.state, suit, rank, false, globals.variant);
+          card.state = removePossibilityTemp(card.state, suitIndex, rank, false, globals.variant);
         });
       }
     }
