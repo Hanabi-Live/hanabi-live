@@ -10,8 +10,8 @@ import * as tooltips from './tooltips';
 interface HandConfig {
   x: number;
   y: number;
-  w?: number;
-  h?: number;
+  w: number;
+  h: number;
   rot?: number;
 }
 
@@ -62,6 +62,8 @@ export default function drawHands(winW: number, winH: number) {
     { x: 0.77, y: 0.292, w: 0.301 * 0.8, h: 0.18, rot: 90 },
   ];
 
+  const naturalCardsPerHand = hand.cardsPerHand(globals.playerNames.length, false, false);
+
   // In Board Game Arena mode, the hands are all in a line,
   // so they do not have to be hard coded
   const handPosBGA: HandConfig[][] = [];
@@ -95,6 +97,12 @@ export default function drawHands(winW: number, winH: number) {
       handSpacing -= 0.075;
     }
 
+    if (globals.options.oneLessCard) {
+      // Reposition the hands horizontally if they have less cards than normal
+      handX += (handW / naturalCardsPerHand / 2);
+      handW -= (handW / naturalCardsPerHand);
+    }
+
     handPosBGA[i] = [];
     for (let j = 0; j < i; j++) {
       handPosBGA[i].push({
@@ -105,26 +113,6 @@ export default function drawHands(winW: number, winH: number) {
         rot: 0,
       });
     }
-  }
-
-  // Set the hand positions for 4-player and 5-player
-  // (with 4 cards in the hand)
-  const handPosBGAValues4 = {
-    x: 0.47,
-    y: handPosBGAValues.y,
-    w: 0.27,
-    h: handPosBGAValues.h,
-    rot: 0,
-    spacing: handPosBGAValues.spacing,
-  };
-  for (let j = 0; j < 4; j++) {
-    handPosBGA[4].push({
-      x: handPosBGAValues4.x,
-      y: handPosBGAValues4.y + (handPosBGAValues4.spacing * j),
-      w: handPosBGAValues4.w,
-      h: handPosBGAValues4.h,
-      rot: 0,
-    });
   }
 
   // This is the position for the player name frames in Keldon mode
@@ -150,8 +138,8 @@ export default function drawHands(winW: number, winH: number) {
   namePos[5] = [
     {
       x: handPos[5][0].x - 0.005,
-      y: handPos[5][0].y + handPos[5][1].h! + 0.02,
-      w: handPos[5][0].w! + 0.01,
+      y: handPos[5][0].y + handPos[5][1].h + 0.02,
+      w: handPos[5][0].w + 0.01,
       h: namePosValues.h,
     },
     {
@@ -162,14 +150,14 @@ export default function drawHands(winW: number, winH: number) {
     },
     {
       x: handPos[5][2].x - 0.005,
-      y: handPos[5][2].y + handPos[5][2].h! + 0.005,
-      w: handPos[5][2].w! + 0.01,
+      y: handPos[5][2].y + handPos[5][2].h + 0.005,
+      w: handPos[5][2].w + 0.01,
       h: namePosValues.h,
     },
     {
       x: handPos[5][3].x - 0.005,
-      y: handPos[5][3].y + handPos[5][3].h! + 0.005,
-      w: handPos[5][3].w! + 0.01,
+      y: handPos[5][3].y + handPos[5][3].h + 0.005,
+      w: handPos[5][3].w + 0.01,
       h: namePosValues.h,
     },
     {
@@ -182,8 +170,8 @@ export default function drawHands(winW: number, winH: number) {
   namePos[6] = [
     {
       x: handPos[6][0].x - 0.005,
-      y: handPos[6][0].y + handPos[6][1].h! + 0.02,
-      w: handPos[6][0].w! + 0.01,
+      y: handPos[6][0].y + handPos[6][1].h + 0.02,
+      w: handPos[6][0].w + 0.01,
       h: namePosValues.h,
     },
     {
@@ -194,20 +182,20 @@ export default function drawHands(winW: number, winH: number) {
     },
     {
       x: handPos[6][2].x - 0.005,
-      y: handPos[6][2].y + handPos[6][2].h! + 0.02,
-      w: handPos[6][2].w! + 0.01,
+      y: handPos[6][2].y + handPos[6][2].h + 0.02,
+      w: handPos[6][2].w + 0.01,
       h: namePosValues.h,
     },
     {
       x: handPos[6][3].x - 0.005,
-      y: handPos[6][3].y + handPos[6][3].h! + 0.02,
-      w: handPos[6][3].w! + 0.01,
+      y: handPos[6][3].y + handPos[6][3].h + 0.02,
+      w: handPos[6][3].w + 0.01,
       h: namePosValues.h,
     },
     {
       x: handPos[6][4].x - 0.005,
-      y: handPos[6][4].y + handPos[6][4].h! + 0.02,
-      w: handPos[6][4].w! + 0.01,
+      y: handPos[6][4].y + handPos[6][4].h + 0.02,
+      w: handPos[6][4].w + 0.01,
       h: namePosValues.h,
     },
     {
@@ -222,37 +210,25 @@ export default function drawHands(winW: number, winH: number) {
 
   const namePosBGAMod = {
     x: -0.01,
-    y: 0.17,
+    y: 0.01,
   };
-  const numCardsPerHand = hand.cardsPerHand(
-    globals.playerNames.length,
-    globals.options.oneExtraCard,
-    globals.options.oneLessCard,
-  );
   for (let i = 2; i <= 6; i++) {
-    let { y } = namePosBGAMod;
-    if (i === 5) {
-      // Matches the "handH" reduction above
-      y -= 0.02;
-    } else if (i === 6) {
-      // Matches the "handH" reduction above
-      y -= 0.045;
-    }
     namePosBGA[i] = [];
     for (let j = 0; j < i; j++) {
       namePosBGA[i].push({
         x: handPosBGA[i][j].x + namePosBGAMod.x,
-        y: handPosBGA[i][j].y + y,
+        y: handPosBGA[i][j].y + handPosBGA[i][j].h + namePosBGAMod.y,
         h: namePosValues.h,
+        w: handPosBGA[i][j].w,
       });
-      if (numCardsPerHand === 5) {
+      if (naturalCardsPerHand === 5) {
         namePosBGA[i][j].x += 0.005;
-        namePosBGA[i][j].w = handPosBGA[i][j].w! + 0.01;
-      } else if (numCardsPerHand === 4) {
-        namePosBGA[i][j].w = 0.29;
-      } else if (numCardsPerHand === 3) {
+        namePosBGA[i][j].w += 0.01;
+      } else if (naturalCardsPerHand === 4) {
+        namePosBGA[i][j].w += 0.02;
+      } else if (naturalCardsPerHand === 3) {
         namePosBGA[i][j].x += 0.054;
-        namePosBGA[i][j].w = 0.182;
+        namePosBGA[i][j].w -= 0.088;
       }
     }
   }
@@ -275,8 +251,8 @@ export default function drawHands(winW: number, winH: number) {
     const handValues = {
       x: playerHandPos[numPlayers][j].x,
       y: playerHandPos[numPlayers][j].y,
-      w: playerHandPos[numPlayers][j].w!,
-      h: playerHandPos[numPlayers][j].h!,
+      w: playerHandPos[numPlayers][j].w,
+      h: playerHandPos[numPlayers][j].h,
       rot: playerHandPos[numPlayers][j].rot,
     };
     globals.elements.playerHands[i] = new CardLayout({
@@ -295,7 +271,7 @@ export default function drawHands(winW: number, winH: number) {
       // The black box should always be as wide as the name frame
       x: playerNamePos[numPlayers][j].x,
       y: handValues.y,
-      w: playerNamePos[numPlayers][j].w! * 1.04,
+      w: playerNamePos[numPlayers][j].w * 1.04,
       h: handValues.h * 1.38,
       offsetX: handValues.w * 0.02,
       offsetY: handValues.h * 0.14,
@@ -336,8 +312,8 @@ export default function drawHands(winW: number, winH: number) {
     globals.elements.nameFrames[i] = new NameFrame({
       x: playerNamePos[numPlayers][j].x * winW,
       y: playerNamePos[numPlayers][j].y * winH,
-      width: playerNamePos[numPlayers][j].w! * winW,
-      height: playerNamePos[numPlayers][j].h! * winH,
+      width: playerNamePos[numPlayers][j].w * winW,
+      height: playerNamePos[numPlayers][j].h * winH,
       name: globals.playerNames[i],
       playerIndex: i,
     });
@@ -391,8 +367,8 @@ const drawShades = (winW: number, winH: number, numPlayers: number, playerIndex:
   ];
   for (let i = 2; i <= 6; i++) {
     for (let j = 0; j < i; j++) {
-      shadePos[i][j].w = handPos[i][j].w! + 0.01;
-      shadePos[i][j].h = handPos[i][j].h! + 0.016;
+      shadePos[i][j].w = handPos[i][j].w + 0.01;
+      shadePos[i][j].h = handPos[i][j].h + 0.016;
       shadePos[i][j].rot = handPos[i][j].rot;
     }
   }
@@ -400,17 +376,17 @@ const drawShades = (winW: number, winH: number, numPlayers: number, playerIndex:
   const rect = new Konva.Rect({
     x: shadePos[numPlayers][playerIndex].x * winW,
     y: shadePos[numPlayers][playerIndex].y * winH,
-    width: shadePos[numPlayers][playerIndex].w! * winW,
-    height: shadePos[numPlayers][playerIndex].h! * winH,
+    width: shadePos[numPlayers][playerIndex].w * winW,
+    height: shadePos[numPlayers][playerIndex].h * winH,
     rotation: shadePos[numPlayers][playerIndex].rot,
-    cornerRadius: 0.03 * shadePos[numPlayers][playerIndex].w! * winW,
+    cornerRadius: 0.03 * shadePos[numPlayers][playerIndex].w * winW,
     opacity: 0.4,
     fillLinearGradientStartPoint: {
       x: 0,
       y: 0,
     },
     fillLinearGradientEndPoint: {
-      x: shadePos[numPlayers][playerIndex].w! * winW,
+      x: shadePos[numPlayers][playerIndex].w * winW,
       y: 0,
     },
     fillLinearGradientColorStops: [0, 'rgba(0,0,0,0)', 0.9, 'white'],
