@@ -2,11 +2,14 @@
 // (state tables are currently unused but eventually the client will eventually be rewritten to
 // handle state transitions)
 
-import produce, { Draft, original, current } from 'immer';
+import produce, {
+  Draft, original, current, castDraft,
+} from 'immer';
 import { ensureAllCases } from '../../misc';
 import { VARIANTS } from '../data/gameData';
 import * as clues from '../rules/clues';
 import { GameAction } from '../types/actions';
+import { cardInitialState } from '../types/CardState';
 import GameState from '../types/GameState';
 import Options from '../types/Options';
 import TurnState from '../types/TurnState';
@@ -43,11 +46,10 @@ const gameStateReducer = produce((
       }
       for (const order of hand) {
         const card = state.deck[order];
-        card.clues.push({
-          type: action.clue.type,
-          value: action.clue.value,
-          positive: action.list.includes(order),
-        });
+        // TODO: applyClue
+        if (action.list.includes(order)) {
+          card.numPositiveClues += 1;
+        }
       }
 
       break;
@@ -62,7 +64,7 @@ const gameStateReducer = produce((
         console.error(`Failed to get the card for index ${action.which.order}.`);
         break;
       }
-      card.suit = action.which.suit;
+      card.suitIndex = action.which.suit;
       card.rank = action.which.rank;
 
       // Remove it from the hand
@@ -73,7 +75,7 @@ const gameStateReducer = produce((
       }
 
       // Add it to the discard stacks
-      state.discardStacks[card.suit].push(action.which.order);
+      state.discardStacks[card.suitIndex!].push(action.which.order);
 
       if (!action.failed) {
         state.clueTokens = clues.gainClue(variant, state.clueTokens);
@@ -87,9 +89,9 @@ const gameStateReducer = produce((
     case 'draw': {
       state.deckSize -= 1;
       state.deck[action.order] = {
-        suit: action.suit,
-        rank: action.rank,
-        clues: [],
+        ...castDraft(cardInitialState(action.order)),
+        suitIndex: action.suit >= 0 ? action.suit : null,
+        rank: action.rank >= 0 ? action.rank : null,
       };
       const hand = state.hands[action.who];
       if (hand) {
@@ -109,7 +111,7 @@ const gameStateReducer = produce((
         console.error(`Failed to get the card for index ${action.which.order}.`);
         break;
       }
-      card.suit = action.which.suit;
+      card.suitIndex = action.which.suit;
       card.rank = action.which.rank;
 
       // Remove it from the hand
@@ -120,13 +122,13 @@ const gameStateReducer = produce((
       }
 
       // Add it to the play stacks
-      state.playStacks[card.suit].push(action.which.order);
+      state.playStacks[card.suitIndex].push(action.which.order);
 
       // Gain a point
       state.score += 1;
 
       // Gain a clue token if the stack is complete
-      if (state.playStacks[card.suit].length === 5) { // Hard-code 5 cards per stack
+      if (state.playStacks[card.suitIndex].length === 5) { // Hard-code 5 cards per stack
         state.clueTokens = clues.gainClue(variant, state.clueTokens);
       }
 

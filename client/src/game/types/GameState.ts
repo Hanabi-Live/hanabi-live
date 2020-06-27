@@ -1,10 +1,11 @@
+import CardState from './CardState';
 import StackDirection from './StackDirection';
 
 export default interface GameState {
   readonly turn: number;
   readonly currentPlayerIndex: number;
   readonly log: readonly string[];
-  readonly deck: readonly StateCard[];
+  readonly deck: readonly CardState[];
   readonly deckSize: number;
   readonly score: number;
   readonly maxScore: number;
@@ -18,13 +19,6 @@ export default interface GameState {
   readonly clues: readonly StateClue[];
   readonly stats: StateStats;
 }
-
-export interface StateCard {
-  readonly suit: number;
-  readonly rank: number;
-  readonly clues: readonly StateCardClue[];
-}
-
 export interface StateStrike {
   readonly order: number;
   readonly turn: number;

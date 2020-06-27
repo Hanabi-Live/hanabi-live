@@ -27,9 +27,6 @@ export function applyClueCore(
 
   const getIndex = (suit: Suit) => suitIndexes.get(suit.name)!;
 
-  let shouldReapplyRankClues = false;
-  let shouldReapplyColorClues = false;
-
   // Temporarily use a suit array so we don't have to keep converting back and forth
   const possibleSuits = state.colorClueMemory.possibilities.map((p) => variant.suits[p]);
   const possibleRanks = state.rankClueMemory.possibilities.map((i) => i);
@@ -271,6 +268,9 @@ export function applyClueCore(
         (rank: number) => ranksRemoved.indexOf(rank) === -1);
     }
   }
+
+  let shouldReapplyRankClues = false;
+  let shouldReapplyColorClues = false;
 
   // TODO: We produce a copy of the state until this becomes a proper reducer
   const newState = produce(state, (s) => {

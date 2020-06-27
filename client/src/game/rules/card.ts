@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 
-import { StateCard } from '../types/GameState';
+import CardState from '../types/CardState';
 
-export function isClued(card: StateCard) {
-  return card.clues.find((c) => c.positive) !== undefined;
+export function isClued(card: CardState) {
+  return card.numPositiveClues > 0;
 }
