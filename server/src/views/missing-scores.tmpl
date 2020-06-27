@@ -64,9 +64,9 @@
     {{range $index, $results := .VariantStats}}
       {{range $index2, $results2 := .BestScores}}
         {{if or (ne .Score $results.MaxScore) (ne .Modifier 0)}}
-          <tr class="missing-scores-row-{{.Options.NumPlayers}}">
+          <tr class="missing-scores-row-{{.NumPlayers}}">
             <td>{{$results.Name}}</td>
-            <td>{{.Options.NumPlayers}}</td>
+            <td>{{.NumPlayers}}</td>
             <td>
               {{.Score}} / {{$results.MaxScore}} &nbsp;
               {{if eq .Modifier 1}}

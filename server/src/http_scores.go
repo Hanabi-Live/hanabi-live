@@ -215,8 +215,6 @@ func httpScores(c *gin.Context) {
 	percentageMaxScoresString = strings.TrimSuffix(percentageMaxScoresString, ".0")
 
 	data := ProfileData{
-		Title: "Scores",
-
 		Name:                       user.Username,
 		DateJoined:                 dateJoined,
 		NumGames:                   profileStats.NumGames,
@@ -232,10 +230,13 @@ func httpScores(c *gin.Context) {
 		VariantStats: variantStatsList,
 	}
 
-	if strings.HasPrefix(c.Request.URL.Path, "/missing-scores/") {
+	if strings.HasPrefix(c.Request.URL.Path, "/scores/") {
+		data.Title = "Scores"
+		httpServeTemplate(w, data, "profile", "scores")
+	} else if strings.HasPrefix(c.Request.URL.Path, "/missing-scores/") {
 		data.Title = "Missing Scores"
 		httpServeTemplate(w, data, "profile", "missing-scores")
 	} else {
-		httpServeTemplate(w, data, "profile", "scores")
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 	}
 }
