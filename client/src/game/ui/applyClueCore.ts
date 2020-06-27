@@ -330,10 +330,8 @@ export function applyClueCore(
         }
       }
 
-      if (
-        rankRemoved === variant.specialRank
-        && (variant.specialAllClueColors || variant.specialNoClueColors)
-      ) {
+      if (rankRemoved === variant.specialRank
+        && (variant.specialAllClueColors || variant.specialNoClueColors)) {
         // Mark to retroactively apply color clues when we return from this function
         shouldReapplyColorClues = true;
       }
@@ -368,7 +366,8 @@ export function applyClueCore(
       [s.rank] = possibleRanks;
     }
 
-    if (possibleSuits.length === 1 && possibleRanks.length === 1) {
+    if (possibleSuits.length === 1
+      && possibleRanks.length === 1) {
       s.identityDetermined = true;
     }
   });
@@ -421,7 +420,6 @@ function removePossibility(
   }
   return { cardsLeft, suitEliminated: false, rankEliminated: false };
 }
-
 // Check to see if we can put an X over this suit pip or this rank pip
 function checkPipPossibilities(
   cardsLeft: number,
@@ -464,7 +462,6 @@ function checkPipPossibilities(
 // ---------------
 // Misc. functions
 // ---------------
-
 // Remove everything from the array that does not match the condition in the function
 function filterInPlace<T>(values: T[], predicate: (value: T) => boolean): T[] {
   const removed = [];
@@ -477,7 +474,6 @@ function filterInPlace<T>(values: T[], predicate: (value: T) => boolean): T[] {
   }
   return removed;
 }
-
 // From: https://medium.com/dailyjs/how-to-remove-array-duplicates-in-es6-5daa8789641c
 function removeDuplicatesFromArray<T>(array: T[]) {
   return array.filter((item, index) => array.indexOf(item) === index);

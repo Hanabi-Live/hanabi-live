@@ -4,7 +4,6 @@ import Konva from 'konva';
 import {
   CARD_W,
 } from '../../constants';
-import { removePossibilityTemp } from '../rules/applyClueCore';
 import * as variantRules from '../rules/variant';
 
 import {
@@ -24,6 +23,7 @@ import {
 import ClueType from '../types/ClueType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import StackDirection from '../types/StackDirection';
+import { removePossibilityTemp } from './applyClueCore';
 import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
 import ClueEntry from './ClueEntry';

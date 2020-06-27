@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 // The HanabiCard object represents a single card
 // It has a LayoutChild parent
 
@@ -10,7 +9,6 @@ import {
   CARD_W,
 } from '../../constants';
 import { SUITS } from '../data/gameData';
-import { applyClueCore, removePossibilityTemp } from '../rules/applyClueCore';
 import * as variantRules from '../rules/variant';
 import CardNote from '../types/CardNote';
 import CardState, { cardInitialState, PipState } from '../types/CardState';
@@ -20,6 +18,7 @@ import { STACK_BASE_RANK, START_CARD_RANK, UNKNOWN_CARD_RANK } from '../types/co
 import StackDirection from '../types/StackDirection';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
+import { removePossibilityTemp, applyClueCore } from './applyClueCore';
 import * as arrows from './arrows';
 import CardLayout from './CardLayout';
 import NodeWithTooltip from './controls/NodeWithTooltip';
@@ -828,7 +827,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         // There is no need to update the card that was just revealed
         continue;
       }
-      this.state = removePossibilityTemp(
+      card.state = removePossibilityTemp(
         card.state,
         suit,
         rank,
