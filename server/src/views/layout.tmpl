@@ -33,7 +33,8 @@
     <link rel="stylesheet" type="text/css" href="/public/css/hanabi.css" />
   {{else}}
     <!-- Delay loading non-critical CSS -->
-    <link rel="preload" type="text/css" href="/public/css/main.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" type="text/css" href="/public/css/main.min.css" as="style">
+    <link rel="stylesheet" type="text/css" href="/public/css/main.min.css">
   {{end}}
   <link rel="icon" href="/public/img/favicon.png" type="image/x-icon">
 </head>
