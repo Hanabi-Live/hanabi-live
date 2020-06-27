@@ -9,6 +9,7 @@ import {
   CARD_W,
 } from '../../constants';
 import { SUITS } from '../data/gameData';
+import { removePossibilityTemp, applyClueCore } from '../rules/applyClueCore';
 import * as variantRules from '../rules/variant';
 import CardNote from '../types/CardNote';
 import CardState, { cardInitialState, PipState } from '../types/CardState';
@@ -18,7 +19,6 @@ import { STACK_BASE_RANK, START_CARD_RANK, UNKNOWN_CARD_RANK } from '../types/co
 import StackDirection from '../types/StackDirection';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
-import { removePossibilityTemp, applyClueCore } from './applyClueCore';
 import * as arrows from './arrows';
 import CardLayout from './CardLayout';
 import NodeWithTooltip from './controls/NodeWithTooltip';
@@ -171,7 +171,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Mark all rank pips as visible. Note that since we're using an array
     // as map, there will be gaps on the values
     const rankPipStates: PipState[] = [];
-    possibleRanks.forEach((r) => { rankPipStates[r] = 'Visible'; });
+    possibleRanks.forEach((r) => { rankPipStates[r] = r >= 1 && r <= 5 ? 'Visible' : 'Hidden'; });
 
     this.state = {
       ...this.state,
