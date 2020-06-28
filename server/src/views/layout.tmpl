@@ -21,7 +21,9 @@
   <meta name="description" content="A place to play Hanabi online, a cooperative card game of logic and reasoning.">
   <meta name="keywords" content="hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning">
   <!-- Load the Critical CSS first -->
-  <link rel="stylesheet" type="text/css" href="/public/css/critical.min.css" />
+  {{if ne .Title "Dev"}}
+    <link rel="stylesheet" type="text/css" href="/public/css/critical.min.css" />
+  {{end}}
   <!-- Preload fonts -->
   <link rel="preload" as="font" crossorigin="anonymous" type="font/woff2" href="/public/webfonts/fa-solid-900.woff2" />
   {{if eq .Title "Dev"}}

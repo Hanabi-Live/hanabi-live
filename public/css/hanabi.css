@@ -749,7 +749,7 @@ input::-webkit-calendar-picker-indicator {
 }
 
 /* Make the lobby nav bar show only the button icons for all buttons on smaller resolutions */
-@media screen and (max-width: 1010px) {
+@media screen and (max-width: 970px) {
   #nav-buttons-games .pri1 .mobile-hide {
     display: none;
   }

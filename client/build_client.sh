@@ -13,7 +13,7 @@ SECONDS=0
 # Import the port
 source "$DIR/../.env"
 if [[ -z $PORT ]]; then
-  PORT=80
+  PORT="80"
 fi
 
 # Set the version number in the "version.json" file
