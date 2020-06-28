@@ -196,10 +196,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   setBareImage() {
     // Optimization: This function is expensive, so don't do it in replays
     // unless we got to the final destination
+    // However, if an action happens before the "turn" message is sent,
+    // we still need to redraw any affected cards
     if (
       this.bareName !== ''
       && globals.replay
-      && globals.replayTurn !== globals.turn
+      && globals.turn < globals.replayTurn - 1
     ) {
       return;
     }
