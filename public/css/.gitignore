@@ -1,3 +1,5 @@
 # We don't need to include combined or minified CSS
 /main.css
 /main.min.css
+/critical.css
+# TODO: when the CI server can generate the minified critical CSS, we can add it here

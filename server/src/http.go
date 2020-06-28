@@ -293,7 +293,7 @@ func httpInit() {
 func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...string) {
 	viewsPath := path.Join(projectPath, "server", "src", "views")
 	layoutPath := path.Join(viewsPath, "layout.tmpl")
-	criticalCSSPath := path.Join(viewsPath, "criticalCSS.tmpl")
+	logoPath := path.Join(viewsPath, "logo.tmpl")
 
 	// Turn the slice of file names into a slice of full paths
 	for i := 0; i < len(templateName); i++ {
@@ -323,8 +323,8 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 	// Append the main layout to our list of layouts
 	templateName = append(templateName, layoutPath)
 
-	// Append the critical CSS to our list of layouts
-	templateName = append(templateName, criticalCSSPath)
+	// Append the nav bar logo to our list of layouts
+	templateName = append(templateName, logoPath)
 
 	// Create the template
 	var tmpl *template.Template

@@ -736,18 +736,28 @@ input::-webkit-calendar-picker-indicator {
   }
 }
 
-/* Make the lobby nav bar show only the button icons on smaller resolutions */
-@media screen and (max-width: 1050px) {
-  #nav-buttons-games .mobile-hide {
+/* Make the lobby nav bar show only the button icons for low pri buttons on smaller resolutions */
+@media screen and (max-width: 1220px) {
+  #nav-buttons-games .pri2 .mobile-hide {
     display: none;
   }
-  #nav-buttons-games .nav-icon {
+  #nav-buttons-games .pri2 .nav-icon {
+    margin-right: 0em;
+  }
+}
+
+/* Make the lobby nav bar show only the button icons for all buttons on smaller resolutions */
+@media screen and (max-width: 1010px) {
+  #nav-buttons-games .pri1 .mobile-hide {
+    display: none;
+  }
+  #nav-buttons-games .pri1 .nav-icon {
     margin-right: 0em;
   }
 }
 
 /* Make the pre-game nav bar show only the button icons on smaller resolutions */
-@media screen and (max-width: 490px) {
+@media screen and (max-width: 400px) {
   #nav-buttons-pregame .mobile-hide {
     display: none;
   }
@@ -757,7 +767,7 @@ input::-webkit-calendar-picker-indicator {
 }
 
 /* Make the history nav bar show only the button icons on smaller resolutions */
-@media screen and (max-width: 580px) {
+@media screen and (max-width: 290px) {
   #nav-buttons-history .mobile-hide {
     display: none;
   }
@@ -766,8 +776,15 @@ input::-webkit-calendar-picker-indicator {
   }
 }
 
-/* Hide the "Hanabi Live" header when it overlaps with the lobby nav bar buttons */
-@media screen and (max-width: 480px) {
+/* Hide the "Hanabi Live" text on the header when it overlaps with the lobby nav bar buttons */
+@media screen and (max-width: 650px) {
+  .lobby-header #logo-text {
+    display: none;
+  }
+}
+
+/* Hide the "Hanabi Live" logo when it overlaps with the lobby nav bar buttons */
+@media screen and (max-width: 490px) {
   .lobby-header {
     display: none;
   }
