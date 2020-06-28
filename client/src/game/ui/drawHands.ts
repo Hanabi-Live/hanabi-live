@@ -1,4 +1,5 @@
 import Konva from 'konva';
+import { CARD_W, CARD_H } from '../../constants';
 import { CHARACTERS } from '../data/gameData';
 import * as hand from '../rules/hand';
 import CardLayout from './CardLayout';
@@ -23,6 +24,11 @@ const namePosBGA: HandConfig[][] = [];
 export default function drawHands(winW: number, winH: number) {
   // Constants
   const numPlayers = globals.playerNames.length;
+  const numCardsPerHand = hand.cardsPerHand(
+    numPlayers,
+    globals.options.oneExtraCard,
+    globals.options.oneLessCard,
+  );
 
   /* eslint-disable object-curly-newline */
 
@@ -62,52 +68,65 @@ export default function drawHands(winW: number, winH: number) {
     { x: 0.77, y: 0.292, w: 0.301 * 0.8, h: 0.18, rot: 90 },
   ];
 
-  const naturalCardsPerHand = hand.cardsPerHand(globals.playerNames.length, false, false);
-
   // In Board Game Arena mode, the hands are all in a line,
   // so they do not have to be hard coded
   const handPosBGA: HandConfig[][] = [];
-  const handPosBGAValues = {
-    x: 0.435,
-    y: 0.03,
-    w: 0.34,
-    h: 0.16,
-    spacing: 0.24,
-  };
-  for (let i = 2; i <= 6; i++) {
-    let handX = handPosBGAValues.x;
-    let handY = handPosBGAValues.y;
-    let handW = handPosBGAValues.w;
-    let handH = handPosBGAValues.h;
-    let handSpacing = handPosBGAValues.spacing;
-    if (i >= 4) {
-      // The hands have 4 cards instead of 5,
-      // so we need to slightly reposition the hands horizontally
-      handX += 0.03;
-      handW -= 0.07;
+  if (!globals.lobby.settings.keldonMode) {
+    let leftX = 0.430; // This is 0.020 away from the action log
+    const rightX = 0.780; // This is 0.020 away from the clue log
+    let topY = 0.03;
+    const bottomY = 0.96;
+    let cardSpacing = 0.1; // The amount of card widths between adjacent cards
+    const handSpacing = 0.45; // The amount of hand heights between adjacent hands
+
+    if (numPlayers >= 4) {
+      // The hands would overlap with the timer for spectators
+      // or the hypothetical controls during a shared replay
+      leftX = 0.440;
     }
-    if (i === 5) {
-      // There is not enough room for 5 hands to fit on the screen,
-      // so we need to reduce the size of the cards and the spacing
-      handH -= 0.02;
-      handSpacing -= 0.045;
-    } else if (i === 6) {
-      handY -= 0.005;
-      handH -= 0.045;
-      handSpacing -= 0.075;
+    if (numPlayers >= 5) {
+      // Create a bit more space for the cards
+      topY -= 0.005;
     }
 
-    if (globals.options.oneLessCard) {
-      // Reposition the hands horizontally if they have less cards than normal
-      handX += (handW / naturalCardsPerHand / 2);
-      handW -= (handW / naturalCardsPerHand);
+    if (numCardsPerHand <= 4) {
+      // We don't need to keep the cards so close to each other
+      cardSpacing = 0.2;
     }
 
-    handPosBGA[i] = [];
-    for (let j = 0; j < i; j++) {
-      handPosBGA[i].push({
+    // The ratio of hand width to card width
+    const widthRatio = (numCardsPerHand * (1 + cardSpacing)) - cardSpacing;
+    const maxCardWidth = (rightX - leftX) / widthRatio;
+    // The ratio of hand height to the total height used by the hands (not including name frames)
+    const heightRatio = (numPlayers * (1 + handSpacing)) - handSpacing;
+    const maxCardHeight = (bottomY - topY) / heightRatio;
+
+    // We need this because all of the other variables are defined relative to the canvas dimensions
+    const relativeCardRatio = (CARD_W / winW) / (CARD_H / winH);
+
+    let handX;
+    let handY;
+    let handW;
+    let handH;
+    if (maxCardWidth / maxCardHeight <= relativeCardRatio) {
+      // If we were to stretch the hands as much as possible, the cards would be too tall
+      // So, the limiting factor on card size is the width
+      handX = leftX;
+      handY = topY;
+      handW = rightX - leftX;
+      handH = maxCardWidth / relativeCardRatio;
+    } else {
+      handW = maxCardHeight * relativeCardRatio * widthRatio;
+      handH = maxCardHeight; // The height of cards and hands are the same
+      handX = (rightX + leftX - handW) / 2;
+      handY = topY;
+    }
+
+    handPosBGA[numPlayers] = [];
+    for (let j = 0; j < numPlayers; j++) {
+      handPosBGA[numPlayers].push({
         x: handX,
-        y: handY + (handSpacing * j),
+        y: handY + (handH * (1 + handSpacing) * j),
         w: handW,
         h: handH,
         rot: 0,
@@ -208,28 +227,20 @@ export default function drawHands(winW: number, winH: number) {
 
   /* eslint-enable object-curly-newline */
 
-  const namePosBGAMod = {
-    x: -0.01,
-    y: 0.01,
-  };
-  for (let i = 2; i <= 6; i++) {
+  if (!globals.lobby.settings.keldonMode) {
+    const i = numPlayers;
+    const namePosBGAMod = {
+      x: 0.005,
+      y: 0.01,
+    };
     namePosBGA[i] = [];
     for (let j = 0; j < i; j++) {
       namePosBGA[i].push({
-        x: handPosBGA[i][j].x + namePosBGAMod.x,
+        x: handPosBGA[i][j].x - namePosBGAMod.x,
         y: handPosBGA[i][j].y + handPosBGA[i][j].h + namePosBGAMod.y,
         h: namePosValues.h,
-        w: handPosBGA[i][j].w,
+        w: handPosBGA[i][j].w + (namePosBGAMod.x * 2),
       });
-      if (naturalCardsPerHand === 5) {
-        namePosBGA[i][j].x += 0.005;
-        namePosBGA[i][j].w += 0.01;
-      } else if (naturalCardsPerHand === 4) {
-        namePosBGA[i][j].w += 0.02;
-      } else if (naturalCardsPerHand === 3) {
-        namePosBGA[i][j].x += 0.054;
-        namePosBGA[i][j].w -= 0.088;
-      }
     }
   }
 
