@@ -92,9 +92,17 @@ a {
   color: hotpink;
 }
 
-#header nav > ul > li a {
-  /* Decrease the padding of the nav buttons */
+#header nav > ul > li .button {
+  /* Decrease the padding of the nav buttons on the left and the right sides */
   padding: 0 0.8em;
+  /* Center it vertically */
+  vertical-align: middle;
+}
+
+@media screen and (min-width: 1440px) {
+  #header nav > ul > li .button {
+    margin-bottom: 3px;
+  }
 }
 
 /*
