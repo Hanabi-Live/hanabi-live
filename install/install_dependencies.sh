@@ -12,12 +12,12 @@ if [[ ! -f "$DIR/../.env" ]]; then
   cp "$DIR/../.env_template" "$DIR/../.env"
 fi
 
-# Build the server, which will automatically install the Golang dependencies
-"$DIR/../server/build_server.sh"
-
 # Install the JavaScript/TypeScript dependencies and build the client
 cd "$DIR/../client"
 npm install
 "$DIR/../client/build_client.sh"
+
+# Build the server, which will automatically install the Golang dependencies
+"$DIR/../server/build_server.sh"
 
 echo "Successfully installed dependencies."
