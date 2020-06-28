@@ -739,7 +739,7 @@
 
 		}
 
-		@media screen and (max-width: 1280px) {
+		@media screen and (max-width: 1440px) { /* Changed from vanilla: 1280 */
 
 			.row {
 				display: flex;
@@ -3366,7 +3366,7 @@
 
 /* Normal */
 
-	@media screen and (max-width: 1280px) {
+	@media screen and (max-width: 1440px) { /* Changed from vanilla: 1280 */
 
 		/* Basic */
 

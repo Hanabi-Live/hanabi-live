@@ -80,9 +80,24 @@ cd "$DIR"
 
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
 # to end-users
-echo "Packing the CSS using Grunt..."
-echo
-npx grunt
-echo
+if [[ $1 == "crit" ]]; then
+  # Import the port information
+  source "$DIR/../.env"
+  if [[ -z $PORT ]]; then
+    PORT=80
+  fi
+
+  echo "Packing the CSS and generating critical CSS using Grunt..."
+  echo
+  npx grunt critical --url=http://localhost:$PORT
+  echo
+  echo "Remember to commit critical.min.css if it had any changes."
+  echo
+else
+  echo "Packing the CSS using Grunt..."
+  echo
+  npx grunt
+  echo
+fi
 
 echo "Client v$VERSION successfully built in $SECONDS seconds."
