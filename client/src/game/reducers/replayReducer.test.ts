@@ -18,14 +18,13 @@ import stateReducer from './stateReducer';
 let testState: State;
 const options = new Options();
 
-// Initialize the state before each test
-beforeEach(() => {
-  // Load the game and start a replay
-  testState = loadGameJSON(testGame);
-  testState = stateReducer(testState, startReplay());
-});
-
 describe('replayReducer', () => {
+  // Initialize the state before each test
+  beforeAll(() => {
+  // Load the game and start a replay
+    testState = loadGameJSON(testGame);
+    testState = stateReducer(testState, startReplay());
+  });
   describe('hypothetical', () => {
     test('can start', () => {
       const state = replayReducer(testState.replay, hypoStart(), options);
