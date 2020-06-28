@@ -7,6 +7,7 @@ import { ensureAllCases } from '../../misc';
 import { VARIANTS } from '../data/gameData';
 import { GameAction } from '../types/actions';
 import CardState, { cardInitialState } from '../types/CardState';
+import ClueType from '../types/ClueType';
 import GameState from '../types/GameState';
 import Options from '../types/Options';
 
@@ -25,13 +26,39 @@ const cardsReducer = produce((
     // A player just gave a clue
     // {clue: {type: 0, value: 1}, giver: 1, list: [11], target: 2, turn: 0, type: "clue"}
     case 'clue': {
+      const isColorClue = action.clue.type === ClueType.Color;
+      const value = action.clue.value;
+
+      // Positive clues
       action.list.forEach((order) => {
         const card = getCard(deck, order);
         card.numPositiveClues += 1;
 
+        const memory = isColorClue ? card.colorClueMemory : card.rankClueMemory;
+
+        if (!memory.positiveClues.includes(value)) {
+          memory.positiveClues.push(value);
+        }
+
         // TODO: conditions to applyClue
-        // TODO: applyClue
+        // TODO: apply positive clues
       });
+
+      // Negative clues
+      game.hands[action.target]
+        .filter((order) => !action.list.includes(order))
+        .forEach((order) => {
+          const card = getCard(deck, order);
+
+          const memory = isColorClue ? card.colorClueMemory : card.rankClueMemory;
+
+          if (!memory.negativeClues.includes(value)) {
+            memory.negativeClues.push(value);
+          }
+
+          // TODO: conditions to applyClue
+          // TODO: apply negative clues
+        });
       break;
     }
 

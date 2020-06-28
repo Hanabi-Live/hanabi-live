@@ -108,4 +108,50 @@ describe('cardsReducer', () => {
       expect(deck[0].numPositiveClues).toBe(0);
     });
   });
+
+  describe('clue memory', () => {
+    test('is empty initially', () => {
+      const deck: CardState[] = [cardInitialState(0)];
+      expect(deck[0].colorClueMemory.positiveClues.length).toBe(0);
+      expect(deck[0].colorClueMemory.negativeClues.length).toBe(0);
+      expect(deck[0].rankClueMemory.positiveClues.length).toBe(0);
+      expect(deck[0].rankClueMemory.negativeClues.length).toBe(0);
+    });
+    test('remembers positive clues', () => {
+      let deck: CardState[] = [cardInitialState(0)];
+      deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultOptions);
+
+      const clueToCardZero = clue(ClueType.Rank, 1, 2, [0], 0, 0);
+      deck = cardsReducer(deck, clueToCardZero, gameState, defaultOptions);
+      expect(deck[0].rankClueMemory.positiveClues.length).toBe(1);
+      expect(deck[0].rankClueMemory.positiveClues[0]).toBe(clueToCardZero.clue.value);
+
+      const anotherClueToCardZero = clue(ClueType.Color, 0, 1, [0], 0, 0);
+      deck = cardsReducer(deck, anotherClueToCardZero, gameState, defaultOptions);
+      expect(deck[0].colorClueMemory.positiveClues.length).toBe(1);
+      expect(deck[0].colorClueMemory.positiveClues[0]).toBe(anotherClueToCardZero.clue.value);
+    });
+    test('remembers negative clues and positive clues in the right cards', () => {
+      let deck: CardState[] = [cardInitialState(0), cardInitialState(1)];
+      deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultOptions);
+      deck = cardsReducer(deck, draw(0, -1, -1, 1), gameState, defaultOptions);
+
+      // In order to apply negative clues, the hand must be correct
+      const gameStateWithCorrectHands = { ...gameState, hands: [[0, 1]] };
+
+      const clueToCardOne = clue(ClueType.Rank, 1, 2, [1], 0, 0);
+      deck = cardsReducer(deck, clueToCardOne, gameStateWithCorrectHands, defaultOptions);
+      expect(deck[0].rankClueMemory.negativeClues.length).toBe(1);
+      expect(deck[0].rankClueMemory.negativeClues[0]).toBe(clueToCardOne.clue.value);
+      expect(deck[1].rankClueMemory.positiveClues.length).toBe(1);
+      expect(deck[1].rankClueMemory.positiveClues[0]).toBe(clueToCardOne.clue.value);
+
+      const anotherClueToCardOne = clue(ClueType.Color, 0, 1, [1], 0, 0);
+      deck = cardsReducer(deck, anotherClueToCardOne, gameStateWithCorrectHands, defaultOptions);
+      expect(deck[0].colorClueMemory.negativeClues.length).toBe(1);
+      expect(deck[0].colorClueMemory.negativeClues[0]).toBe(anotherClueToCardOne.clue.value);
+      expect(deck[1].colorClueMemory.positiveClues.length).toBe(1);
+      expect(deck[1].colorClueMemory.positiveClues[0]).toBe(anotherClueToCardOne.clue.value);
+    });
+  });
 });
