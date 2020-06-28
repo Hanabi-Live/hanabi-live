@@ -10,6 +10,9 @@ import * as pregame from './pregame';
 import * as watchReplay from './watchReplay';
 
 export const init = () => {
+  // Remove the recursive link to prevent confusion
+  $('#logo-link').removeAttr('href');
+
   // Initialize all of the navigation tooltips using Tooltipster
   initTooltips();
 
