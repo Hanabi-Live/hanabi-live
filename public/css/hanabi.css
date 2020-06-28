@@ -736,7 +736,9 @@ input::-webkit-calendar-picker-indicator {
   }
 }
 
-/* Make the lobby nav bar show only the button icons for low pri buttons on smaller resolutions */
+/*
+  Make the lobby nav bar show only the button icons for low priority buttons on smaller resolutions
+*/
 @media screen and (max-width: 1220px) {
   #nav-buttons-games .pri2 .mobile-hide {
     display: none;

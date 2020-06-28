@@ -10,6 +10,12 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # https://stackoverflow.com/questions/16908084/bash-script-to-calculate-time-elapsed
 SECONDS=0
 
+# Import the port
+source "$DIR/../.env"
+if [[ -z $PORT ]]; then
+  PORT=80
+fi
+
 # Set the version number in the "version.json" file
 # (which is equal to the number of commits in the git repository)
 # This is "baked" into the JavaScript bundle and self-reported when connecting to the server so that
@@ -81,12 +87,6 @@ cd "$DIR"
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
 # to end-users
 if [[ $1 == "crit" ]]; then
-  # Import the port information
-  source "$DIR/../.env"
-  if [[ -z $PORT ]]; then
-    PORT=80
-  fi
-
   echo "Packing the CSS and generating critical CSS using Grunt..."
   echo
   npx grunt critical --url=http://localhost:$PORT

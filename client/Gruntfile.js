@@ -77,12 +77,14 @@ module.exports = (grunt) => {
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-criticalcss');
+
   grunt.registerTask('default', [
     'concat',
     'cssmin:main',
   ]);
+
   // Generating critical CSS is slow and infrequent
-  // Run manually when the CSS changes with "npx grunt critical --url=http://localhost:<port>"
+  // Run manually when the CSS changes with "npx grunt critical --url=http://localhost"
   // and commit the resulting file (critical.min.css)
   grunt.registerTask('critical', [
     'concat',
