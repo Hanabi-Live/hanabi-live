@@ -5,7 +5,7 @@ import produce, {
 } from 'immer';
 import { ensureAllCases } from '../../misc';
 import { VARIANTS } from '../data/gameData';
-import { GameAction } from '../types/actions';
+import { GameAction, Which } from '../types/actions';
 import CardState, { cardInitialState } from '../types/CardState';
 import Options from '../types/Options';
 
@@ -36,7 +36,7 @@ const cardsReducer = produce((
     case 'discard':
     case 'play': {
       // Reveal all cards played and discarded
-      reveal(deck, action.which.order, action.which.suit, action.which.rank);
+      reveal(deck, action.which);
       break;
     }
 
@@ -84,8 +84,8 @@ function getCard(deck: Draft<CardState[]>, order: number) {
   return card;
 }
 
-function reveal(deck: Draft<CardState[]>, order: number, suitIndex: number, rank: number) {
-  const card = getCard(deck, order);
-  card.suitIndex = suitIndex;
-  card.rank = rank;
+function reveal(deck: Draft<CardState[]>, which: Which) {
+  const card = getCard(deck, which.order);
+  card.suitIndex = which.suit;
+  card.rank = which.rank;
 }

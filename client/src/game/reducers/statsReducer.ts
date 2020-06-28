@@ -4,7 +4,7 @@
 import produce, { Draft } from 'immer';
 import { VARIANTS } from '../data/gameData';
 import * as cardRules from '../rules/card';
-import * as cluesRules from '../rules/clues';
+import * as clueTokensRules from '../rules/clueTokens';
 import * as statsRules from '../rules/stats';
 import { GameAction } from '../types/actions';
 import GameState, { StateStats } from '../types/GameState';
@@ -51,7 +51,7 @@ const statsReducer = produce((
     case 'strike': {
       // TODO move this check to the play action when we have logic for knowing which cards play
       // A strike is equivalent to losing a clue
-      stats.potentialCluesLost += cluesRules.clueValue(variant);
+      stats.potentialCluesLost += clueTokensRules.clueValue(variant);
       break;
     }
 
@@ -62,7 +62,7 @@ const statsReducer = produce((
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted",
         // similar to what happens when the team gets a strike
-        stats.potentialCluesLost += cluesRules.clueValue(variant);
+        stats.potentialCluesLost += clueTokensRules.clueValue(variant);
       }
 
       const card = originalState.deck[action.which.order];

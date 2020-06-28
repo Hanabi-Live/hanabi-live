@@ -5,7 +5,7 @@ import produce, {
 } from 'immer';
 import { ensureAllCases } from '../../misc';
 import { VARIANTS } from '../data/gameData';
-import * as clues from '../rules/clues';
+import * as clues from '../rules/clueTokens';
 import { GameAction } from '../types/actions';
 import GameState from '../types/GameState';
 import Options from '../types/Options';

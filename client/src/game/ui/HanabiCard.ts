@@ -344,10 +344,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.finesseBorder!.hide();
   }
 
-  isClued() {
-    return this.state.numPositiveClues > 0;
-  }
-
   markPositiveClue() {
     this.state = {
       ...this.state,
@@ -708,10 +704,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // e.g. a note of "r1" is now impossible because red 1 has 0 cards left
 
     const isSuitImpossible = this.note.suitIndex !== null
-    && !this.state.colorClueMemory.possibilities.includes(this.note.suitIndex);
+      && !this.state.colorClueMemory.possibilities.includes(this.note.suitIndex);
 
     const isRankImpossible = this.note.rank !== null
-    && !this.state.rankClueMemory.possibilities.includes(this.note.rank);
+      && !this.state.rankClueMemory.possibilities.includes(this.note.rank);
 
     if (isSuitImpossible || isRankImpossible) {
       // Unmorph

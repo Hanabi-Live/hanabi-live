@@ -2,6 +2,7 @@
 // It is composed of LayoutChild objects
 
 import Konva from 'konva';
+import * as cardRules from '../rules/card';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
@@ -167,7 +168,7 @@ export default class CardLayout extends Konva.Group {
   isLocked() {
     for (const layoutChild of this.children.toArray() as Konva.Node[]) {
       const card = layoutChild.children[0] as HanabiCard;
-      if (!card.isClued()) {
+      if (!cardRules.isClued(card.state)) {
         return false;
       }
     }
@@ -179,7 +180,7 @@ export default class CardLayout extends Konva.Group {
     for (let i = 0; i < hand.length; i++) {
       const layoutChild = hand[i];
       const card = layoutChild.children[0] as HanabiCard;
-      if (!card.isClued()) {
+      if (!cardRules.isClued(card.state)) {
         return i;
       }
     }
