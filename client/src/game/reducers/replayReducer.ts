@@ -3,14 +3,14 @@
 import produce, { Draft, original } from 'immer';
 import { ensureAllCases } from '../../misc';
 import { ReplayAction } from '../types/actions';
-import Options from '../types/Options';
+import GameMetadata from '../types/GameMetadata';
 import ReplayState from '../types/ReplayState';
 import gameStateReducer from './gameStateReducer';
 
 const replayReducer = produce((
   state: Draft<ReplayState>,
   action: ReplayAction,
-  options: Options,
+  metadata: GameMetadata,
 ) => {
   switch (action.type) {
     case 'startReplay': {
@@ -50,7 +50,7 @@ const replayReducer = produce((
       }
 
       const hypoState = original(state.ongoingHypothetical)!;
-      state.ongoingHypothetical = gameStateReducer(hypoState, action.action, options);
+      state.ongoingHypothetical = gameStateReducer(hypoState, action.action, metadata);
 
       if (action.action.type === 'turn') {
         // Save it for going back

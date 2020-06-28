@@ -7,8 +7,8 @@ import { ensureAllCases } from '../../misc';
 import { VARIANTS } from '../data/gameData';
 import * as clues from '../rules/clueTokens';
 import { GameAction } from '../types/actions';
+import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
-import Options from '../types/Options';
 import TurnState from '../types/TurnState';
 import cardsReducer from './cardsReducer';
 import statsReducer from './statsReducer';
@@ -17,11 +17,11 @@ import turnReducer from './turnReducer';
 const gameStateReducer = produce((
   state: Draft<GameState>,
   action: GameAction,
-  options: Options,
+  metadata: GameMetadata,
 ) => {
-  const variant = VARIANTS.get(options.variantName);
+  const variant = VARIANTS.get(metadata.options.variantName);
   if (variant === undefined) {
-    throw new Error(`Unable to find the "${options.variantName}" variant in the "VARIANTS" map.`);
+    throw new Error(`Unable to find the "${metadata.options.variantName}" variant in the "VARIANTS" map.`);
   }
 
   switch (action.type) {
@@ -158,17 +158,19 @@ const gameStateReducer = produce((
     original(state.deck),
     action,
     current(state),
-    options,
+    metadata,
   );
 
   // Use a sub-reducer to calculate the turn
   let turnState: TurnState = {
     turn: state.turn,
     currentPlayerIndex: state.currentPlayerIndex,
+    cardsPlayedOrDiscardedThisTurn: state.cardsPlayedOrDiscardedThisTurn,
   };
-  turnState = turnReducer(turnState, action, options.numPlayers);
+  turnState = turnReducer(turnState, action, metadata, state.deckSize);
   state.turn = turnState.turn;
   state.currentPlayerIndex = turnState.currentPlayerIndex;
+  state.cardsPlayedOrDiscardedThisTurn = turnState.cardsPlayedOrDiscardedThisTurn;
 
   // Use a sub-reducer to calculate some game statistics
   state.stats = statsReducer(
@@ -176,7 +178,7 @@ const gameStateReducer = produce((
     action,
     original(state)!,
     current(state),
-    options,
+    metadata,
   );
 }, {} as GameState);
 

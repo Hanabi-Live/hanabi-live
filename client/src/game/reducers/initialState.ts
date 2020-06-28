@@ -1,9 +1,9 @@
-import Options from '../types/Options';
+import GameMetadata from '../types/GameMetadata';
 import State from '../types/State';
 import initialGameState from './initialGameState';
 
-export default function initialState(options: Options): State {
-  const game = initialGameState(options);
+export default function initialState(metadata: GameMetadata): State {
+  const game = initialGameState(metadata);
   return {
     visibleState: game,
     ongoingGame: game,
@@ -14,6 +14,6 @@ export default function initialState(options: Options): State {
       ongoingHypothetical: null,
       hypotheticalStates: [],
     },
-    options,
+    metadata,
   };
 }

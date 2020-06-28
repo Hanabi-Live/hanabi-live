@@ -7,19 +7,19 @@ import * as cardRules from '../rules/card';
 import * as clueTokensRules from '../rules/clueTokens';
 import * as statsRules from '../rules/stats';
 import { GameAction } from '../types/actions';
+import GameMetadata from '../types/GameMetadata';
 import GameState, { StateStats } from '../types/GameState';
-import Options from '../types/Options';
 
 const statsReducer = produce((
   stats: Draft<StateStats>,
   action: GameAction,
   originalState: GameState,
   currentState: GameState,
-  options: Options,
+  metadata: GameMetadata,
 ) => {
-  const variant = VARIANTS.get(options.variantName)!;
+  const variant = VARIANTS.get(metadata.options.variantName)!;
   if (variant === undefined) {
-    throw new Error(`Unable to find the "${options.variantName}" variant in the "VARIANTS" map.`);
+    throw new Error(`Unable to find the "${metadata.options.variantName}" variant in the "VARIANTS" map.`);
   }
 
   switch (action.type) {
@@ -82,9 +82,9 @@ const statsReducer = produce((
     currentState.score,
     currentState.deckSize,
     currentState.maxScore,
-    options.numPlayers,
+    metadata.options.numPlayers,
   );
-  stats.paceRisk = statsRules.paceRisk(stats.pace, options.numPlayers);
+  stats.paceRisk = statsRules.paceRisk(stats.pace, metadata.options.numPlayers);
   stats.efficiency = statsRules.efficiency(stats.cardsGotten, stats.potentialCluesLost);
 }, {} as StateStats);
 

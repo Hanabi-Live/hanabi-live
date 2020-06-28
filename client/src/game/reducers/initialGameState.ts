@@ -3,12 +3,13 @@ import * as deck from '../rules/deck';
 import * as hand from '../rules/hand';
 import * as statsRules from '../rules/stats';
 import { MAX_CLUE_NUM } from '../types/constants';
+import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
-import Options from '../types/Options';
 import StackDirection from '../types/StackDirection';
 import initialTurnState from './initialTurnState';
 
-export default function initialGameState(options: Options): GameState {
+export default function initialGameState(metadata: GameMetadata): GameState {
+  const options = metadata.options;
   const variant = VARIANTS.get(options.variantName);
   if (variant === undefined) {
     throw new Error(`Unable to find the "${options.variantName}" variant in the "VARIANTS" map.`);
@@ -58,5 +59,6 @@ export default function initialGameState(options: Options): GameState {
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),
     },
+    cardsPlayedOrDiscardedThisTurn: 0,
   };
 }

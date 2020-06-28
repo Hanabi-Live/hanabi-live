@@ -18,6 +18,7 @@ export default interface GameState {
   readonly discardStacks: ReadonlyArray<readonly number[]>;
   readonly clues: readonly StateClue[];
   readonly stats: StateStats;
+  readonly cardsPlayedOrDiscardedThisTurn: number;
 }
 export interface StateStrike {
   readonly order: number;

@@ -8,18 +8,18 @@ import { VARIANTS } from '../data/gameData';
 import { GameAction } from '../types/actions';
 import CardState, { cardInitialState } from '../types/CardState';
 import ClueType from '../types/ClueType';
+import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
-import Options from '../types/Options';
 
 const cardsReducer = produce((
   deck: Draft<CardState[]>,
   action: GameAction,
   game: GameState,
-  options: Options,
+  metadata: GameMetadata,
 ) => {
-  const variant = VARIANTS.get(options.variantName);
+  const variant = VARIANTS.get(metadata.options.variantName);
   if (variant === undefined) {
-    throw new Error(`Unable to find the "${options.variantName}" variant in the "VARIANTS" map.`);
+    throw new Error(`Unable to find the "${metadata.options.variantName}" variant in the "VARIANTS" map.`);
   }
 
   switch (action.type) {
@@ -87,17 +87,19 @@ const cardsReducer = produce((
     // A player just drew a card from the deck
     // {order: 0, rank: 1, suit: 4, type: "draw", who: 0}
     case 'draw': {
-      // NOTE: at this point, the current player index will
-      // already have moved to the next player, since a draw
-      // happens after a play/discard, and that's what changes the turn.
-      // We have to trust the server for the holder, and subtract 1
-      // from turnDrawn to account for that.
+      // TEMP: At this point, check that the local state matches the server
+      if (game.currentPlayerIndex !== action.who && game.turn > 0) {
+        // NOTE: don't check this during the initial draw
+        console.warn('The currentPlayerIndex on a draw from the client and the server do not match. '
+            + `Client = ${game.currentPlayerIndex}, Server = ${action.who}`);
+      }
+
       deck[action.order] = castDraft({
         ...cardInitialState(action.order),
-        holder: action.who,
+        holder: game.currentPlayerIndex,
         suitIndex: nullIfNegative(action.suit),
         rank: nullIfNegative(action.rank),
-        turnDrawn: game.turn - 1,
+        turnDrawn: game.turn,
       });
 
       break;
