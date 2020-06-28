@@ -12,7 +12,7 @@ import Options from '../types/Options';
 const cardsReducer = produce((
   deck: Draft<CardState[]>,
   action: GameAction,
-  hands: number[][],
+  _hands: number[][],
   options: Options,
 ) => {
   const variant = VARIANTS.get(options.variantName);
