@@ -2967,7 +2967,7 @@
 					#header nav > ul > li a {
 						display: inline-block;
 						height: 2em;
-						line-height: 1.95em;
+						line-height: 2em; /* Changed from vanilla: 1.95em */
 						padding: 0 1em;
 						border-radius: 6px;
 					}
