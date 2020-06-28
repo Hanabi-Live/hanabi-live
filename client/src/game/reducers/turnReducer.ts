@@ -23,9 +23,15 @@ const turnReducer = produce((state: Draft<TurnState>, action: GameAction, numPla
         console.warn('The turns from the client and the server do not match. '
             + `Client = ${state.turn}, Server = ${action.num}`);
       }
-      if (state.currentPlayerIndex !== action.who && action.who !== -1) {
-        // TODO the client should set the "currentPlayerIndex" index to -1 when the game is over
-        // But it does not have logic to know when the game is over yet
+
+      // TEMP: the client should set the "currentPlayerIndex" index to -1 when the game is over
+      // But it does not have logic to know when the game is over yet
+      if (action.who === -1) {
+        state.currentPlayerIndex = -1;
+      }
+
+      if (state.currentPlayerIndex !== action.who) {
+        // TODO
         console.warn('The currentPlayerIndex from the client and the server do not match. '
             + `Client = ${state.currentPlayerIndex}, Server = ${action.who}`);
       }
