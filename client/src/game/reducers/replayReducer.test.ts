@@ -19,7 +19,7 @@ let testState: State;
 const options = new Options();
 
 describe('replayReducer', () => {
-  // Initialize the state before each test
+  // Initialize the state before this test suite
   beforeAll(() => {
   // Load the game and start a replay
     testState = loadGameJSON(testGame);
