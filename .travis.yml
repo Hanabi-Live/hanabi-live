@@ -11,6 +11,8 @@ matrix:
         # Use the latest stable Node.js release
         - node
       before_script:
+        - echo "Installing environment variables..."
+        - cp .env_template .env
         - cd client
         - echo "Installing NPM modules..."
         - npm install
