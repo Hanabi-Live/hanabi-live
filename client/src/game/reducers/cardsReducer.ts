@@ -5,14 +5,15 @@ import produce, {
 } from 'immer';
 import { ensureAllCases } from '../../misc';
 import { VARIANTS } from '../data/gameData';
-import { GameAction, Which } from '../types/actions';
+import { GameAction } from '../types/actions';
 import CardState, { cardInitialState } from '../types/CardState';
+import GameState from '../types/GameState';
 import Options from '../types/Options';
 
 const cardsReducer = produce((
   deck: Draft<CardState[]>,
   action: GameAction,
-  _hands: number[][],
+  game: GameState,
   options: Options,
 ) => {
   const variant = VARIANTS.get(options.variantName);
@@ -26,17 +27,30 @@ const cardsReducer = produce((
     case 'clue': {
       action.list.forEach((order) => {
         const card = getCard(deck, order);
-
-        // TODO: applyClue
         card.numPositiveClues += 1;
+
+        // TODO: conditions to applyClue
+        // TODO: applyClue
       });
       break;
     }
 
     case 'discard':
     case 'play': {
+      const card = getCard(deck, action.which.order);
+
       // Reveal all cards played and discarded
-      reveal(deck, action.which);
+      card.suitIndex = nullIfNegative(action.which.suit);
+      card.rank = nullIfNegative(action.which.rank);
+
+      card.holder = null;
+      if (action.type === 'play') {
+        card.turnPlayed = game.turn;
+        card.isPlayed = true;
+      } else {
+        card.turnDiscarded = game.turn;
+        card.isDiscarded = true;
+      }
       break;
     }
 
@@ -45,8 +59,9 @@ const cardsReducer = produce((
     case 'draw': {
       deck[action.order] = castDraft({
         ...cardInitialState(action.order),
-        suitIndex: action.suit >= 0 ? action.suit : null,
-        rank: action.rank >= 0 ? action.rank : null,
+        holder: action.who,
+        suitIndex: nullIfNegative(action.suit),
+        rank: nullIfNegative(action.rank),
       });
 
       break;
@@ -84,8 +99,6 @@ function getCard(deck: Draft<CardState[]>, order: number) {
   return card;
 }
 
-function reveal(deck: Draft<CardState[]>, which: Which) {
-  const card = getCard(deck, which.order);
-  card.suitIndex = which.suit;
-  card.rank = which.rank;
+function nullIfNegative(x: number) {
+  return x >= 0 ? x : null;
 }

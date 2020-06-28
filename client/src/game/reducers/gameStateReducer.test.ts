@@ -17,7 +17,7 @@ const defaultOptions = {
   numPlayers: 3,
 };
 
-describe('stateReducer', () => {
+describe('gameStateReducer', () => {
   test('does not mutate state', () => {
     const state = initialGameState(defaultOptions);
     const unchangedState = initialGameState(defaultOptions);

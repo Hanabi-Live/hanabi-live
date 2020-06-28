@@ -157,7 +157,7 @@ const gameStateReducer = produce((
   state.deck = cardsReducer(
     original(state.deck),
     action,
-    current(state.hands),
+    current(state),
     options,
   );
 
