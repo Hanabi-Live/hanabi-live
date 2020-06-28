@@ -1076,55 +1076,52 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   // Update all UI pips to their state
   private updatePips() {
-    function updatePip(pipState: PipState, pip: Konva.Shape | RankPip, x : Konva.Shape) {
+    function updatePip(
+      pipState: PipState,
+      hasPositiveClues: boolean,
+      pip: Konva.Shape | RankPip,
+      x : Konva.Shape,
+    ) {
       switch (pipState) {
         case 'Visible': {
           pip.show();
           x.hide();
-          if (pip instanceof RankPip) {
-            pip.hidePositiveClue();
-          }
           break;
         }
         case 'Hidden': {
           pip.hide();
           x.hide();
-          if (pip instanceof RankPip) {
-            pip.hidePositiveClue();
-          }
           break;
         }
         case 'Eliminated': {
           pip.show();
           x.show();
-          if (pip instanceof RankPip) {
-            pip.hidePositiveClue();
-          }
-          break;
-        }
-        case 'PositiveClue': {
-          pip.show();
-          x.hide();
-          // TODO: Positive clues on suits
-          if (pip instanceof RankPip) {
-            pip.showPositiveClue();
-          }
           break;
         }
         default:
           break;
+      }
+      // TODO: Positive clues on suits
+      if (pip instanceof RankPip) {
+        if (hasPositiveClues && pipState !== 'Hidden') {
+          pip.showPositiveClue();
+        } else {
+          pip.hidePositiveClue();
+        }
       }
     }
 
     for (const [suit, pipState] of this.state.colorClueMemory.pipStates.entries()) {
       const pip = this.suitPipsMap.get(suit)!;
       const x = this.suitPipsXMap.get(suit)!;
-      updatePip(pipState, pip, x);
+      // TODO: Positive clues on suits
+      updatePip(pipState, false, pip, x);
     }
     for (const [rank, pipState] of this.state.rankClueMemory.pipStates.entries()) {
       const pip = this.rankPipsMap.get(rank)!;
       const x = this.rankPipsXMap.get(rank)!;
-      updatePip(pipState, pip, x);
+      const hasPositiveClues = this.state.rankClueMemory.positiveClues.includes(rank);
+      updatePip(pipState, hasPositiveClues, pip, x);
     }
   }
 

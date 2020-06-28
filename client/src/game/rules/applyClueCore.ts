@@ -288,14 +288,6 @@ export function applyClueCore(
       } else if (!positive && !s.rankClueMemory.negativeClues.includes(clue.value as number)) {
         s.rankClueMemory.negativeClues.push(clue.value as number);
       }
-
-      // If the rank of the card is not known yet,
-      // change the rank pip that corresponds with this number to signify a positive clue
-      if (positive) {
-        if (s.rankClueMemory.pipStates[clue.value as number] === 'Visible') {
-          s.rankClueMemory.pipStates[clue.value as number] = 'PositiveClue';
-        }
-      }
     }
 
     // Bring the result back to the state as indexes

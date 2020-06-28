@@ -25,12 +25,17 @@ export default interface CardState {
   readonly isMisplayed: boolean;
 }
 
-export type PipState = 'Visible' | 'Eliminated' | 'Hidden' | 'PositiveClue';
+export type PipState = 'Visible' | 'Hidden' | 'Eliminated';
 
 export interface ClueMemory {
   // NOTE: we're using arrays as maps, so there will be empty spaces for ranks
   // that are not valid card ranks (e.g. 0, or 6 in Up or Down)
   readonly possibilities: readonly number[];
+  // TODO: positiveClues and negativeClues should be used like maps
+  // of booleans so you can quickly check if a particular color/rank
+  // has a positive/negative clue without searching the array.
+  // But to make this change safely, the applyClue function
+  // has to be thoroughly covered by tests.
   readonly positiveClues: readonly number[];
   readonly negativeClues: readonly number[];
   readonly pipStates: readonly PipState[];
