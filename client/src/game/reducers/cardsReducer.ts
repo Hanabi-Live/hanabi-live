@@ -77,6 +77,9 @@ const cardsReducer = produce((
       } else {
         card.turnDiscarded = game.turn;
         card.isDiscarded = true;
+        if (action.failed) {
+          card.isMisplayed = true;
+        }
       }
       break;
     }
@@ -84,11 +87,17 @@ const cardsReducer = produce((
     // A player just drew a card from the deck
     // {order: 0, rank: 1, suit: 4, type: "draw", who: 0}
     case 'draw': {
+      // NOTE: at this point, the current player index will
+      // already have moved to the next player, since a draw
+      // happens after a play/discard, and that's what changes the turn.
+      // We have to trust the server for the holder, and subtract 1
+      // from turnDrawn to account for that.
       deck[action.order] = castDraft({
         ...cardInitialState(action.order),
         holder: action.who,
         suitIndex: nullIfNegative(action.suit),
         rank: nullIfNegative(action.rank),
+        turnDrawn: game.turn - 1,
       });
 
       break;
