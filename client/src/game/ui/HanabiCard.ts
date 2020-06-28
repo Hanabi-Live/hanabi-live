@@ -201,6 +201,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     if (
       this.bareName !== ''
       && globals.replay
+      && !globals.hypothetical
       && globals.turn < globals.replayTurn - 1
     ) {
       return;
