@@ -655,6 +655,18 @@ func (*Games) GetNotes(databaseID int, numPlayers int, noteSize int) ([][]string
 			return nil, err2
 		}
 
+		if seat > len(allPlayersNotes)-1 {
+			logger.Error("The seat number of " + strconv.Itoa(seat) +
+				" for the game with a database ID of " + strconv.Itoa(databaseID) + " is invalid.")
+			continue
+		}
+
+		if order > len(allPlayersNotes[seat])-1 {
+			logger.Error("The order of " + strconv.Itoa(order) +
+				" for the game with a database ID of " + strconv.Itoa(databaseID) + " is invalid.")
+			continue
+		}
+
 		allPlayersNotes[seat][order] = note
 	}
 
