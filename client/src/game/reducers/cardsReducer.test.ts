@@ -68,8 +68,8 @@ describe('cardsReducer', () => {
     test('is true when misplayed', () => {
       let deck: CardState[] = [cardInitialState(0)];
       deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultOptions);
-      const misplay = discard(true, 0, 1, 2, 0); // A misplay is a discard with failed = true
 
+      const misplay = discard(true, 0, 1, 2, 0); // A misplay is a discard with failed = true
       const newDeck = cardsReducer(deck, misplay, gameState, defaultOptions);
       expect(newDeck[0].isDiscarded).toBe(true);
     });
@@ -84,13 +84,12 @@ describe('cardsReducer', () => {
     test('increments by 1 after each positive clue', () => {
       let deck: CardState[] = [cardInitialState(0)];
       deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultOptions);
-      const clueToCardZero = clue(ClueType.Rank, 1, 2, [0], 0, 0);
 
+      const clueToCardZero = clue(ClueType.Rank, 1, 2, [0], 0, 0);
       deck = cardsReducer(deck, clueToCardZero, gameState, defaultOptions);
       expect(deck[0].numPositiveClues).toBe(1);
 
       const anotherClueToCardZero = clue(ClueType.Color, 0, 1, [0], 0, 0);
-
       deck = cardsReducer(deck, anotherClueToCardZero, gameState, defaultOptions);
       expect(deck[0].numPositiveClues).toBe(2);
     });
@@ -99,13 +98,12 @@ describe('cardsReducer', () => {
       let deck: CardState[] = [cardInitialState(0), cardInitialState(1)];
       deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultOptions);
       deck = cardsReducer(deck, draw(0, -1, -1, 1), gameState, defaultOptions);
-      const clueToCardOne = clue(ClueType.Rank, 1, 2, [1], 0, 0);
 
+      const clueToCardOne = clue(ClueType.Rank, 1, 2, [1], 0, 0);
       deck = cardsReducer(deck, clueToCardOne, gameState, defaultOptions);
       expect(deck[0].numPositiveClues).toBe(0);
 
       const anotherClueToCardOne = clue(ClueType.Color, 0, 1, [1], 0, 0);
-
       deck = cardsReducer(deck, anotherClueToCardOne, gameState, defaultOptions);
       expect(deck[0].numPositiveClues).toBe(0);
     });
