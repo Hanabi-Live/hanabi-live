@@ -1,6 +1,6 @@
-import produce, { castDraft, Draft, original } from 'immer';
+import produce, { Draft, original } from 'immer';
 import CardState from '../types/CardState';
-import Clue from '../types/Clue';
+import Clue, { ColorClue, RankClue } from '../types/Clue';
 import ClueType from '../types/ClueType';
 import Color from '../types/Color';
 import Suit from '../types/Suit';
@@ -20,284 +20,51 @@ export function applyClueCore(
   positive: boolean,
 ) {
   // Helpers to convert from suit/color to index and vice-versa
-  const suitIndexes: Map<string, number> = new Map<string, number>();
-  const colorIndexes: Map<Color, number> = new Map<Color, number>();
-  variant.suits.forEach((suit, index) => suitIndexes.set(suit.name, index));
-  variant.clueColors.forEach((color, index) => colorIndexes.set(color, index));
+  const getIndex = getIndexHelper(variant);
 
-  const getIndex = (suit: Suit) => suitIndexes.get(suit.name)!;
+  // suits/ranksRemoved keep track of suits/ranks removed for normal ranks/suits
+  // This allows for proper checking of possibilities to cross out rank/suit pips
+  // We handle special ranks/suits later
+  const {
+    suitsRemoved,
+    ranksRemoved,
+    possibilitiesToRemove,
+  } = clue.type === ClueType.Color
+    ? applyColorClue(state, variant, calculatePossibilities, clue, positive)
+    : applyRankClue(state, variant, calculatePossibilities, clue, positive);
 
-  // Temporarily use a suit array so we don't have to keep converting back and forth
-  const possibleSuits = state.colorClueMemory.possibilities.map((p) => variant.suits[p]);
-  const possibleRanks = state.rankClueMemory.possibilities.map((i) => i);
+  // Mark to retroactively apply color/rank clues when we return from this function
 
-  const possibilitiesToRemove: PossibilityToRemove[] = [];
+  // Reapply rank clues if we removed a special suit
+  const shouldReapplyRankClues = calculatePossibilities
+    && suitsRemoved
+      .map((i) => variant.suits[i])
+      .some((s) => s.allClueRanks || s.noClueRanks);
 
-  // Find out if we can remove some rank pips or suit pips from this clue
-  let ranksRemoved: number[] = [];
-  let suitsRemoved: number[] = [];
-  if (clue.type === ClueType.Color) {
-    // suitsRemoved keeps track of suits removed for normal ranks
-    // This allows for proper checking of possibilities to cross out rank pips
-    // We handle special ranks later
-    if (variant.colorCluesTouchNothing) {
-      // Some variants have color clues touch no cards
-      // If this is the case, we cannot remove any suit pips from the card
-    } else {
-      // The default case (e.g. No Variant)
-      // Remove all possibilities that do not include this color
-      suitsRemoved = possibleSuits.filter(
-        (suit: Suit) => (suit.clueColors.includes(clue.value) || suit.allClueColors) !== positive,
-      ).map(getIndex);
-    }
+  // Reapply suit clues if we removed the special rank
+  const shouldReapplyColorClues = calculatePossibilities
+    && (variant.specialAllClueColors || variant.specialNoClueColors)
+    && ranksRemoved.some((r) => r === variant.specialRank);
 
-    if (calculatePossibilities
-      && (variant.specialAllClueColors || variant.specialNoClueColors)) {
-      // We only need to run this early possibility removal for variants with special ranks
-      // touched by all or no color clues
-      for (const rank of possibleRanks) {
-        // We can remove possibilities for normal ranks
-        if (rank !== variant.specialRank) {
-          for (const suitIndex of suitsRemoved) {
-            possibilitiesToRemove.push({ suitIndex, rank, all: true });
-          }
-        }
-      }
-    }
-
-    if (positive
-      && possibleRanks.includes(variant.specialRank)
-      && variant.specialAllClueColors) {
-      // Some variants have specific ranks touched by all colors
-      // If this is the case, and this is a positive color clue,
-      // we cannot remove any color pips from the card
-      // An exception to this is special suits touched by no colors
-      suitsRemoved = filterInPlace(
-        possibleSuits,
-        (suit: Suit) => !suit.noClueColors,
-      ).map(getIndex);
-    } else if (!positive
-      && possibleRanks.includes(variant.specialRank)
-      && variant.specialNoClueColors) {
-      // Some variants have specific ranks touched by no colors
-      // If this is the case, and this is a negative color clue,
-      // we cannot remove any color pips from the card
-      // An exception to this is special suits touched by all colors
-      suitsRemoved = filterInPlace(
-        possibleSuits,
-        (suit: Suit) => !suit.allClueColors,
-      ).map(getIndex);
-    } else {
-      // We can safely remove the suits from possible suits
-      filterInPlace(
-        possibleSuits,
-        (suit: Suit) => !suitsRemoved.includes(getIndex(suit)),
-      );
-    }
-
-    // Handle special ranks
-    if (variant.specialRank !== -1) {
-      if (variant.specialAllClueColors) {
-        if (positive) {
-          if (state.colorClueMemory.positiveClues.length >= 1
-            && !possibleSuits.some((suit) => suit.allClueColors)) {
-            // Two positive color clues should "fill in" a special rank that is touched by all
-            // color clues (that cannot be a multi-color suit)
-            ranksRemoved = filterInPlace(
-              possibleRanks,
-              (rank: number) => rank === variant.specialRank,
-            );
-          }
-        } else if (possibleRanks.length === 1
-          && state.rank === variant.specialRank) {
-          // Negative color to a known special rank means that we can remove all suits
-          // other that the ones that are never touched by color clues
-          const moreSuitsRemoved = filterInPlace(
-            possibleSuits,
-            (suit: Suit) => suit.noClueColors,
-          ).map(getIndex);
-          suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
-          suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
-        } else if (!possibleSuits.some((suit: Suit) => suit.noClueColors)) {
-          // Negative color means that the card cannot be the special rank
-          // (as long as the card cannot be a suit that is never touched by color clues)
-          ranksRemoved = filterInPlace(
-            possibleRanks,
-            (rank: number) => rank !== variant.specialRank,
-          );
-        } else if (calculatePossibilities) {
-          // If there is a suit never touched by color clues, we can still remove
-          // possibilities for other suits on the special rank
-          for (const suit of possibleSuits.filter((theSuit) => !theSuit.noClueColors)) {
-            const suitIndex = getIndex(suit);
-            possibilitiesToRemove.push({ suitIndex, rank: variant.specialRank, all: true });
-          }
-        }
-      } else if (variant.specialNoClueColors) {
-        if (positive) {
-          if (!possibleSuits.some((suit) => suit.allClueColors)) {
-            // Positive color means that the card cannot be a special rank
-            // (as long as the card cannot be a suit that is always touched by color clues)
-            ranksRemoved = filterInPlace(
-              possibleRanks,
-              (rank: number) => rank !== variant.specialRank,
-            );
-          } else if (calculatePossibilities) {
-            // If there is a suit always touched by color clues, we can still remove
-            // possibilities for other suits on the special rank
-            for (const suit of possibleSuits.filter((theSuit) => !theSuit.allClueColors)) {
-              const suitIndex = getIndex(suit);
-              possibilitiesToRemove.push({ suitIndex, rank: variant.specialRank, all: true });
-            }
-          }
-        } else if (state.colorClueMemory.negativeClues.length === variant.clueColors.length - 1) {
-          if (!possibleSuits.some((suit) => suit.noClueColors)) {
-            // All negative colors means that the card must be the special rank
-            // (as long as it cannot be a suit that is never touched by color clues)
-            ranksRemoved = filterInPlace(
-              possibleRanks,
-              (rank: number) => rank === variant.specialRank,
-            );
-          }
-        }
-      }
-    }
-  } else if (clue.type === ClueType.Rank) {
-    const clueRank = clue.value as number;
-    // ranksRemoved keeps track of ranks removed for normal suits touched by their own rank
-    // This allows for proper checking of possibilities to cross out suit pips
-    // We handle suits with special ranks later
-    if (variant.rankCluesTouchNothing) {
-      // Some variants have rank clues touch no cards
-      // If this is the case, we cannot remove any rank pips from the card
-    } else if (possibleRanks.includes(variant.specialRank)
-      && variant.specialAllClueRanks) {
-      // Some variants have specific ranks touched by all rank clues
-      ranksRemoved = possibleRanks.filter(
-        (rank: number) => (rank === clueRank || rank === variant.specialRank) !== positive,
-      );
-    } else if (possibleRanks.includes(variant.specialRank)
-      && variant.specialNoClueRanks) {
-      // Some variants have specific ranks touched by no rank clues
-      ranksRemoved = possibleRanks.filter(
-        (rank: number) => (rank === clueRank && rank !== variant.specialRank) !== positive,
-      );
-    } else {
-      // The default case (e.g. No Variant)
-      // Remove all possibilities that do not include this rank
-      ranksRemoved = possibleRanks.filter(
-        (rank: number) => (rank === clueRank) !== positive,
-      );
-    }
-
-    // Some suits are touched by all rank clues
-    // Some suits are not touched by any rank clues
-    // So we may be able to remove a suit pip
-    if (positive) {
-      suitsRemoved = filterInPlace(
-        possibleSuits,
-        (suit: Suit) => !suit.noClueRanks,
-      ).map(getIndex);
-    } else {
-      suitsRemoved = filterInPlace(
-        possibleSuits,
-        (suit: Suit) => !suit.allClueRanks,
-      ).map(getIndex);
-    }
-
-    // Handle the special case where two positive rank clues should "fill in" a card of a
-    // multi-rank suit
-    if (positive
-      && state.rankClueMemory.positiveClues.length >= 1
-      && !(
-        possibleRanks.includes(variant.specialRank)
-        && variant.specialAllClueRanks
-      )) {
-      const moreSuitsRemoved = filterInPlace(
-        possibleSuits,
-        (suit: Suit) => suit.allClueRanks,
-      ).map(getIndex);
-      suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
-      suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
-    }
-
-    // Handle the special case where all negative rank clues should "fill in" a card of a
-    // rank-less suit
-    if (!positive
-      && !variant.rankCluesTouchNothing
-      && state.rankClueMemory.negativeClues.length === variant.ranks.length - 1
-      // We know that any special rank can be given as a rank clue
-      // so there is no need to have a separate check for special variants
-    ) {
-      const moreSuitsRemoved = filterInPlace(
-        possibleSuits,
-        (suit: Suit) => suit.noClueRanks,
-      ).map(getIndex);
-      suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
-      suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
-    }
-
-    if (calculatePossibilities) {
-      for (const suit of possibleSuits) {
-        // We can remove possibilities for normal suits touched by their own rank
-        if (!suit.allClueRanks && !suit.noClueRanks) {
-          for (const rank of ranksRemoved) {
-            possibilitiesToRemove.push({ suitIndex: getIndex(suit), rank, all: true });
-          }
-        }
-      }
-    }
-
-    if (possibleSuits.some((suit) => suit.allClueRanks) && positive) {
-      // Some cards are touched by all ranks,
-      // so if this is a positive rank clue, we cannot remove any rank pips from the card
-      ranksRemoved = [];
-    } else if (possibleSuits.some((suit) => suit.noClueRanks) && !positive) {
-      // Some suits are not touched by any ranks,
-      // so if this is a negative rank clue, we cannot remove any rank pips from the card
-      ranksRemoved = [];
-    } else {
-      // We can safely remove the ranks from possible ranks
-      filterInPlace(possibleRanks,
-        (rank: number) => ranksRemoved.indexOf(rank) === -1);
-    }
-  }
-
-  let shouldReapplyRankClues = false;
-  let shouldReapplyColorClues = false;
   let suitsPossible: boolean[];
   let ranksPossible: boolean[];
   let possibleCards: number[][];
 
-  // Remove suit pips, if any
   if (calculatePossibilities) {
     for (const suitRemoved of suitsRemoved) {
       // Remove any card possibilities for this suit
       for (const rank of variant.ranks) {
         possibilitiesToRemove.push({ suitIndex: suitRemoved, rank, all: true });
       }
-      const suitObject = variant.suits[suitRemoved];
-      if (suitObject.allClueRanks || suitObject.noClueRanks) {
-        // Mark to retroactively apply rank clues when we return from this function
-        shouldReapplyRankClues = true;
-      }
     }
 
-    // Remove rank pips, if any
     for (const rankRemoved of ranksRemoved) {
       // Remove any card possibilities for this rank
       for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
         possibilitiesToRemove.push({ suitIndex, rank: rankRemoved, all: true });
       }
-
-      if (
-        rankRemoved === variant.specialRank
-        && (variant.specialAllClueColors || variant.specialNoClueColors)
-      ) {
-        // Mark to retroactively apply color clues when we return from this function
-        shouldReapplyColorClues = true;
-      }
     }
+
     // Remove all the possibilities we found
     possibleCards = removePossibilities(state.possibleCards, possibilitiesToRemove);
 
@@ -310,7 +77,7 @@ export function applyClueCore(
   const newState = produce(state, (s) => {
     // Record unique clues that touch the card
     if (clue.type === ClueType.Color) {
-      const colorId = colorIndexes.get(clue.value)!;
+      const colorId = getIndex(clue.value);
       if (positive && !s.colorClueMemory.positiveClues.includes(colorId)) {
         s.colorClueMemory.positiveClues.push(colorId);
       } else if (!positive && !s.colorClueMemory.negativeClues.includes(colorId)) {
@@ -325,8 +92,11 @@ export function applyClueCore(
     }
 
     // Bring the result back to the state as indexes
-    s.rankClueMemory.possibilities = castDraft(possibleRanks);
-    s.colorClueMemory.possibilities = possibleSuits.map(getIndex);
+    s.rankClueMemory.possibilities = original(s.rankClueMemory.possibilities)!
+      .filter((r) => !ranksRemoved.includes(r));
+
+    s.colorClueMemory.possibilities = original(s.colorClueMemory.possibilities)!
+      .filter((r) => !suitsRemoved.includes(r));
 
     // Remove suit pips, if any
     for (const suitRemoved of suitsRemoved) {
@@ -352,22 +122,42 @@ export function applyClueCore(
       s.possibleCards = possibleCards;
     }
 
-    if (possibleSuits.length === 1) {
+    if (s.colorClueMemory.possibilities.length === 1) {
       // We have discovered the true suit of the card
       [s.suitIndex] = s.colorClueMemory.possibilities;
     }
 
-    if (possibleRanks.length === 1) {
+    if (s.rankClueMemory.possibilities.length === 1) {
       // We have discovered the true rank of the card
-      [s.rank] = possibleRanks;
+      [s.rank] = s.rankClueMemory.possibilities;
     }
 
-    if (possibleSuits.length === 1 && possibleRanks.length === 1) {
+    if (
+      s.colorClueMemory.possibilities.length === 1
+      && s.rankClueMemory.possibilities.length === 1
+    ) {
       s.identityDetermined = true;
     }
   });
 
   return { state: newState, shouldReapplyRankClues, shouldReapplyColorClues };
+}
+
+function getIndexHelper(variant: Variant) {
+  const suitIndexes: Map<string, number> = new Map<string, number>();
+  const colorIndexes: Map<Color, number> = new Map<Color, number>();
+  variant.suits.forEach((suit, index) => suitIndexes.set(suit.name, index));
+  variant.clueColors.forEach((color, index) => colorIndexes.set(color, index));
+
+  function getIndex<T extends Suit | Color>(value: T): number {
+    // HACK: test a member of the interface that is exclusive to Suit
+    if ((value as Suit).reversed !== undefined) {
+      return suitIndexes.get(value.name)!;
+    }
+    return colorIndexes.get(value)!;
+  }
+
+  return getIndex;
 }
 
 export const removePossibilityTemp = produce((
@@ -392,6 +182,262 @@ export const removePossibilityTemp = produce((
     state.rankClueMemory.pipStates[rank] = 'Eliminated';
   }
 }, {} as CardState);
+
+function applyColorClue(
+  state: CardState,
+  variant: Variant,
+  calculatePossibilities: boolean,
+  clue: Readonly<ColorClue>,
+  positive: boolean,
+) {
+  const possibleSuits = state.colorClueMemory.possibilities.map((p) => variant.suits[p]);
+  const possibleRanks = state.rankClueMemory.possibilities.map((i) => i);
+  const getIndex = getIndexHelper(variant);
+
+  let suitsRemoved: number[] = [];
+  let ranksRemoved: number[] = [];
+  const possibilitiesToRemove: PossibilityToRemove[] = [];
+
+  if (variant.colorCluesTouchNothing) {
+    // Some variants have color clues touch no cards
+    // If this is the case, we cannot remove any suit pips from the card
+  } else {
+    // The default case (e.g. No Variant)
+    // Remove all possibilities that do not include this color
+    suitsRemoved = possibleSuits.filter(
+      (suit: Suit) => (suit.clueColors.includes(clue.value) || suit.allClueColors) !== positive,
+    ).map(getIndex);
+  }
+
+  if (calculatePossibilities
+    && (variant.specialAllClueColors || variant.specialNoClueColors)) {
+    // We only need to run this early possibility removal for variants with special ranks
+    // touched by all or no color clues
+    for (const rank of possibleRanks) {
+      // We can remove possibilities for normal ranks
+      if (rank !== variant.specialRank) {
+        for (const suitIndex of suitsRemoved) {
+          possibilitiesToRemove.push({ suitIndex, rank, all: true });
+        }
+      }
+    }
+  }
+
+  if (positive
+    && possibleRanks.includes(variant.specialRank)
+    && variant.specialAllClueColors) {
+    // Some variants have specific ranks touched by all colors
+    // If this is the case, and this is a positive color clue,
+    // we cannot remove any color pips from the card
+    // An exception to this is special suits touched by no colors
+    suitsRemoved = filterInPlace(
+      possibleSuits,
+      (suit: Suit) => !suit.noClueColors,
+    ).map(getIndex);
+  } else if (!positive
+    && possibleRanks.includes(variant.specialRank)
+    && variant.specialNoClueColors) {
+    // Some variants have specific ranks touched by no colors
+    // If this is the case, and this is a negative color clue,
+    // we cannot remove any color pips from the card
+    // An exception to this is special suits touched by all colors
+    suitsRemoved = filterInPlace(
+      possibleSuits,
+      (suit: Suit) => !suit.allClueColors,
+    ).map(getIndex);
+  } else {
+    // We can safely remove the suits from possible suits
+    filterInPlace(
+      possibleSuits,
+      (suit: Suit) => !suitsRemoved.includes(getIndex(suit)),
+    );
+  }
+
+  // Handle special ranks
+  if (variant.specialRank !== -1) {
+    if (variant.specialAllClueColors) {
+      if (positive) {
+        if (state.colorClueMemory.positiveClues.length >= 1
+          && !possibleSuits.some((suit) => suit.allClueColors)) {
+          // Two positive color clues should "fill in" a special rank that is touched by all
+          // color clues (that cannot be a multi-color suit)
+          ranksRemoved = filterInPlace(
+            possibleRanks,
+            (rank: number) => rank === variant.specialRank,
+          );
+        }
+      } else if (possibleRanks.length === 1
+        && state.rank === variant.specialRank) {
+        // Negative color to a known special rank means that we can remove all suits
+        // other that the ones that are never touched by color clues
+        const moreSuitsRemoved = filterInPlace(
+          possibleSuits,
+          (suit: Suit) => suit.noClueColors,
+        ).map(getIndex);
+        suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
+        suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
+      } else if (!possibleSuits.some((suit: Suit) => suit.noClueColors)) {
+        // Negative color means that the card cannot be the special rank
+        // (as long as the card cannot be a suit that is never touched by color clues)
+        ranksRemoved = filterInPlace(
+          possibleRanks,
+          (rank: number) => rank !== variant.specialRank,
+        );
+      } else if (calculatePossibilities) {
+        // If there is a suit never touched by color clues, we can still remove
+        // possibilities for other suits on the special rank
+        for (const suit of possibleSuits.filter((theSuit) => !theSuit.noClueColors)) {
+          const suitIndex = getIndex(suit);
+          possibilitiesToRemove.push({ suitIndex, rank: variant.specialRank, all: true });
+        }
+      }
+    } else if (variant.specialNoClueColors) {
+      if (positive) {
+        if (!possibleSuits.some((suit) => suit.allClueColors)) {
+          // Positive color means that the card cannot be a special rank
+          // (as long as the card cannot be a suit that is always touched by color clues)
+          ranksRemoved = filterInPlace(
+            possibleRanks,
+            (rank: number) => rank !== variant.specialRank,
+          );
+        } else if (calculatePossibilities) {
+          // If there is a suit always touched by color clues, we can still remove
+          // possibilities for other suits on the special rank
+          for (const suit of possibleSuits.filter((theSuit) => !theSuit.allClueColors)) {
+            const suitIndex = getIndex(suit);
+            possibilitiesToRemove.push({ suitIndex, rank: variant.specialRank, all: true });
+          }
+        }
+      } else if (state.colorClueMemory.negativeClues.length === variant.clueColors.length - 1) {
+        if (!possibleSuits.some((suit) => suit.noClueColors)) {
+          // All negative colors means that the card must be the special rank
+          // (as long as it cannot be a suit that is never touched by color clues)
+          ranksRemoved = filterInPlace(
+            possibleRanks,
+            (rank: number) => rank === variant.specialRank,
+          );
+        }
+      }
+    }
+  }
+  return { suitsRemoved, ranksRemoved, possibilitiesToRemove };
+}
+
+function applyRankClue(
+  state: CardState,
+  variant: Variant,
+  calculatePossibilities: boolean,
+  clue: Readonly<RankClue>,
+  positive: boolean,
+) {
+  const possibleSuits = state.colorClueMemory.possibilities.map((p) => variant.suits[p]);
+  const possibleRanks = state.rankClueMemory.possibilities.map((i) => i);
+  const getIndex = getIndexHelper(variant);
+
+  let suitsRemoved: number[] = [];
+  let ranksRemoved: number[] = [];
+  const possibilitiesToRemove: PossibilityToRemove[] = [];
+
+  const clueRank = clue.value;
+  // ranksRemoved keeps track of ranks removed for normal suits touched by their own rank
+  // This allows for proper checking of possibilities to cross out suit pips
+  // We handle suits with special ranks later
+  if (variant.rankCluesTouchNothing) {
+    // Some variants have rank clues touch no cards
+    // If this is the case, we cannot remove any rank pips from the card
+  } else if (possibleRanks.includes(variant.specialRank)
+    && variant.specialAllClueRanks) {
+    // Some variants have specific ranks touched by all rank clues
+    ranksRemoved = possibleRanks.filter(
+      (rank: number) => (rank === clueRank || rank === variant.specialRank) !== positive,
+    );
+  } else if (possibleRanks.includes(variant.specialRank)
+    && variant.specialNoClueRanks) {
+    // Some variants have specific ranks touched by no rank clues
+    ranksRemoved = possibleRanks.filter(
+      (rank: number) => (rank === clueRank && rank !== variant.specialRank) !== positive,
+    );
+  } else {
+    // The default case (e.g. No Variant)
+    // Remove all possibilities that do not include this rank
+    ranksRemoved = possibleRanks.filter(
+      (rank: number) => (rank === clueRank) !== positive,
+    );
+  }
+
+  // Some suits are touched by all rank clues
+  // Some suits are not touched by any rank clues
+  // So we may be able to remove a suit pip
+  if (positive) {
+    suitsRemoved = filterInPlace(
+      possibleSuits,
+      (suit: Suit) => !suit.noClueRanks,
+    ).map(getIndex);
+  } else {
+    suitsRemoved = filterInPlace(
+      possibleSuits,
+      (suit: Suit) => !suit.allClueRanks,
+    ).map(getIndex);
+  }
+
+  // Handle the special case where two positive rank clues should "fill in" a card of a
+  // multi-rank suit
+  if (positive
+    && state.rankClueMemory.positiveClues.length >= 1
+    && !(
+      possibleRanks.includes(variant.specialRank)
+      && variant.specialAllClueRanks
+    )) {
+    const moreSuitsRemoved = filterInPlace(
+      possibleSuits,
+      (suit: Suit) => suit.allClueRanks,
+    ).map(getIndex);
+    suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
+    suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
+  }
+
+  // Handle the special case where all negative rank clues should "fill in" a card of a
+  // rank-less suit
+  if (!positive
+    && !variant.rankCluesTouchNothing
+    && state.rankClueMemory.negativeClues.length === variant.ranks.length - 1
+    // We know that any special rank can be given as a rank clue
+    // so there is no need to have a separate check for special variants
+  ) {
+    const moreSuitsRemoved = filterInPlace(
+      possibleSuits,
+      (suit: Suit) => suit.noClueRanks,
+    ).map(getIndex);
+    suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
+    suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
+  }
+
+  if (calculatePossibilities) {
+    for (const suit of possibleSuits) {
+      // We can remove possibilities for normal suits touched by their own rank
+      if (!suit.allClueRanks && !suit.noClueRanks) {
+        for (const rank of ranksRemoved) {
+          possibilitiesToRemove.push({ suitIndex: getIndex(suit), rank, all: true });
+        }
+      }
+    }
+  }
+
+  if (possibleSuits.some((suit) => suit.allClueRanks) && positive) {
+    // Some cards are touched by all ranks,
+    // so if this is a positive rank clue, we cannot remove any rank pips from the card
+    ranksRemoved = [];
+  } else if (possibleSuits.some((suit) => suit.noClueRanks) && !positive) {
+    // Some suits are not touched by any ranks,
+    // so if this is a negative rank clue, we cannot remove any rank pips from the card
+    ranksRemoved = [];
+  } else {
+    // We can safely remove the ranks from possible ranks
+    filterInPlace(possibleRanks,
+      (rank: number) => ranksRemoved.indexOf(rank) === -1);
+  }
+  return { suitsRemoved, ranksRemoved, possibilitiesToRemove };
+}
 
 export function removePossibilities(
   possibleCards: ReadonlyArray<readonly number[]>,
