@@ -37,7 +37,6 @@ export function applyClueCore(
   let ranksRemoved: number[] = [];
   let suitsRemoved: number[] = [];
   if (clue.type === ClueType.Color) {
-    const clueColor = clue.value as Color;
     // suitsRemoved keeps track of suits removed for normal ranks
     // This allows for proper checking of possibilities to cross out rank pips
     // We handle special ranks later
@@ -48,7 +47,7 @@ export function applyClueCore(
       // The default case (e.g. No Variant)
       // Remove all possibilities that do not include this color
       suitsRemoved = possibleSuits.filter(
-        (suit: Suit) => (suit.clueColors.includes(clueColor) || suit.allClueColors) !== positive,
+        (suit: Suit) => (suit.clueColors.includes(clue.value) || suit.allClueColors) !== positive,
       ).map(getIndex);
     }
 
@@ -311,17 +310,17 @@ export function applyClueCore(
   const newState = produce(state, (s) => {
     // Record unique clues that touch the card
     if (clue.type === ClueType.Color) {
-      const colorId = colorIndexes.get(clue.value as Color)!;
+      const colorId = colorIndexes.get(clue.value)!;
       if (positive && !s.colorClueMemory.positiveClues.includes(colorId)) {
         s.colorClueMemory.positiveClues.push(colorId);
       } else if (!positive && !s.colorClueMemory.negativeClues.includes(colorId)) {
         s.colorClueMemory.negativeClues.push(colorId);
       }
     } else if (clue.type === ClueType.Rank) {
-      if (positive && !s.rankClueMemory.positiveClues.includes(clue.value as number)) {
-        s.rankClueMemory.positiveClues.push(clue.value as number);
-      } else if (!positive && !s.rankClueMemory.negativeClues.includes(clue.value as number)) {
-        s.rankClueMemory.negativeClues.push(clue.value as number);
+      if (positive && !s.rankClueMemory.positiveClues.includes(clue.value)) {
+        s.rankClueMemory.positiveClues.push(clue.value);
+      } else if (!positive && !s.rankClueMemory.negativeClues.includes(clue.value)) {
+        s.rankClueMemory.negativeClues.push(clue.value);
       }
     }
 
