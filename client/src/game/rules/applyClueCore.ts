@@ -1,8 +1,9 @@
-import produce, { Draft, original } from 'immer';
+import produce, { Draft, original, castDraft } from 'immer';
 import CardState from '../types/CardState';
 import Clue, { ColorClue, RankClue } from '../types/Clue';
 import ClueType from '../types/ClueType';
 import Color from '../types/Color';
+import SimpleCard from '../types/SimpleCard';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
 
@@ -28,7 +29,7 @@ export function applyClueCore(
   const {
     suitsRemoved,
     ranksRemoved,
-    possibilitiesToRemove,
+    impossibleCards,
   } = clue.type === ClueType.Color
     ? applyColorClue(state, variant, calculatePossibilities, clue, positive)
     : applyRankClue(state, variant, calculatePossibilities, clue, positive);
@@ -46,27 +47,32 @@ export function applyClueCore(
     && (variant.specialAllClueColors || variant.specialNoClueColors)
     && ranksRemoved.some((r) => r === variant.specialRank);
 
-  let suitsPossible: boolean[];
-  let ranksPossible: boolean[];
-  let possibleCards: number[][];
+  let suitsPossible: boolean[] | null = null;
+  let ranksPossible: boolean[] | null = null;
+  let possibleCards = state.possibleCards;
 
   if (calculatePossibilities) {
+    // Remove any card possibilities for removed suits/ranks
+
     for (const suitRemoved of suitsRemoved) {
-      // Remove any card possibilities for this suit
       for (const rank of variant.ranks) {
-        possibilitiesToRemove.push({ suitIndex: suitRemoved, rank, all: true });
+        impossibleCards.push({ suit: suitRemoved, rank });
       }
     }
 
     for (const rankRemoved of ranksRemoved) {
-      // Remove any card possibilities for this rank
       for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
-        possibilitiesToRemove.push({ suitIndex, rank: rankRemoved, all: true });
+        impossibleCards.push({ suit: suitIndex, rank: rankRemoved });
       }
     }
 
     // Remove all the possibilities we found
-    possibleCards = removePossibilities(state.possibleCards, possibilitiesToRemove);
+    const possibilitiesToRemove = impossibleCards.map((c) => ({
+      suitIndex: c.suit,
+      rank: c.rank,
+      all: true,
+    }));
+    possibleCards = removePossibilities(possibleCards, possibilitiesToRemove);
 
     const pipPossibilities = checkAllPipPossibilities(possibleCards, variant);
     suitsPossible = pipPossibilities.suitsPossible;
@@ -112,14 +118,14 @@ export function applyClueCore(
 
     if (calculatePossibilities) {
       s.colorClueMemory.pipStates = s.colorClueMemory.pipStates.map(
-        (pipState, suitIndex) => (!suitsPossible[suitIndex] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
+        (pipState, suitIndex) => (!suitsPossible![suitIndex] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
       );
 
       s.rankClueMemory.pipStates = s.rankClueMemory.pipStates.map(
-        (pipState, rank) => (!ranksPossible[rank] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
+        (pipState, rank) => (!ranksPossible![rank] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
       );
 
-      s.possibleCards = possibleCards;
+      s.possibleCards = castDraft(possibleCards);
     }
 
     if (s.colorClueMemory.possibilities.length === 1) {
@@ -143,46 +149,6 @@ export function applyClueCore(
   return { state: newState, shouldReapplyRankClues, shouldReapplyColorClues };
 }
 
-function getIndexHelper(variant: Variant) {
-  const suitIndexes: Map<string, number> = new Map<string, number>();
-  const colorIndexes: Map<Color, number> = new Map<Color, number>();
-  variant.suits.forEach((suit, index) => suitIndexes.set(suit.name, index));
-  variant.clueColors.forEach((color, index) => colorIndexes.set(color, index));
-
-  function getIndex<T extends Suit | Color>(value: T): number {
-    // HACK: test a member of the interface that is exclusive to Suit
-    if ((value as Suit).reversed !== undefined) {
-      return suitIndexes.get(value.name)!;
-    }
-    return colorIndexes.get(value)!;
-  }
-
-  return getIndex;
-}
-
-export const removePossibilityTemp = produce((
-  state: Draft<CardState>,
-  suitIndex: number,
-  rank: number,
-  all: boolean,
-  variant: Variant,
-) => {
-  const cardsLeft = removePossibility(original(state.possibleCards)!, suitIndex, rank, all);
-  state.possibleCards[suitIndex][rank] = cardsLeft;
-
-  const {
-    suitPossible,
-    rankPossible,
-  } = checkPipPossibilities(state.possibleCards, suitIndex, rank, variant);
-
-  if (!suitPossible && original(state.colorClueMemory.pipStates)![suitIndex] !== 'Hidden') {
-    state.colorClueMemory.pipStates[suitIndex] = 'Eliminated';
-  }
-  if (!rankPossible && original(state.rankClueMemory.pipStates)![rank] !== 'Hidden') {
-    state.rankClueMemory.pipStates[rank] = 'Eliminated';
-  }
-}, {} as CardState);
-
 function applyColorClue(
   state: CardState,
   variant: Variant,
@@ -196,7 +162,7 @@ function applyColorClue(
 
   let suitsRemoved: number[] = [];
   let ranksRemoved: number[] = [];
-  const possibilitiesToRemove: PossibilityToRemove[] = [];
+  const impossibleCards: SimpleCard[] = [];
 
   if (variant.colorCluesTouchNothing) {
     // Some variants have color clues touch no cards
@@ -217,7 +183,7 @@ function applyColorClue(
       // We can remove possibilities for normal ranks
       if (rank !== variant.specialRank) {
         for (const suitIndex of suitsRemoved) {
-          possibilitiesToRemove.push({ suitIndex, rank, all: true });
+          impossibleCards.push({ suit: suitIndex, rank });
         }
       }
     }
@@ -288,7 +254,7 @@ function applyColorClue(
         // possibilities for other suits on the special rank
         for (const suit of possibleSuits.filter((theSuit) => !theSuit.noClueColors)) {
           const suitIndex = getIndex(suit);
-          possibilitiesToRemove.push({ suitIndex, rank: variant.specialRank, all: true });
+          impossibleCards.push({ suit: suitIndex, rank: variant.specialRank });
         }
       }
     } else if (variant.specialNoClueColors) {
@@ -305,7 +271,7 @@ function applyColorClue(
           // possibilities for other suits on the special rank
           for (const suit of possibleSuits.filter((theSuit) => !theSuit.allClueColors)) {
             const suitIndex = getIndex(suit);
-            possibilitiesToRemove.push({ suitIndex, rank: variant.specialRank, all: true });
+            impossibleCards.push({ suit: suitIndex, rank: variant.specialRank });
           }
         }
       } else if (state.colorClueMemory.negativeClues.length === variant.clueColors.length - 1) {
@@ -320,7 +286,7 @@ function applyColorClue(
       }
     }
   }
-  return { suitsRemoved, ranksRemoved, possibilitiesToRemove };
+  return { suitsRemoved, ranksRemoved, impossibleCards };
 }
 
 function applyRankClue(
@@ -336,7 +302,7 @@ function applyRankClue(
 
   let suitsRemoved: number[] = [];
   let ranksRemoved: number[] = [];
-  const possibilitiesToRemove: PossibilityToRemove[] = [];
+  const impossibleCards: SimpleCard[] = [];
 
   const clueRank = clue.value;
   // ranksRemoved keeps track of ranks removed for normal suits touched by their own rank
@@ -417,7 +383,7 @@ function applyRankClue(
       // We can remove possibilities for normal suits touched by their own rank
       if (!suit.allClueRanks && !suit.noClueRanks) {
         for (const rank of ranksRemoved) {
-          possibilitiesToRemove.push({ suitIndex: getIndex(suit), rank, all: true });
+          impossibleCards.push({ suit: getIndex(suit), rank });
         }
       }
     }
@@ -436,7 +402,7 @@ function applyRankClue(
     filterInPlace(possibleRanks,
       (rank: number) => ranksRemoved.indexOf(rank) === -1);
   }
-  return { suitsRemoved, ranksRemoved, possibilitiesToRemove };
+  return { suitsRemoved, ranksRemoved, impossibleCards };
 }
 
 export function removePossibilities(
@@ -470,6 +436,29 @@ function removePossibility(
   }
   return cardsLeft;
 }
+
+export const removePossibilityTemp = produce((
+  state: Draft<CardState>,
+  suitIndex: number,
+  rank: number,
+  all: boolean,
+  variant: Variant,
+) => {
+  const cardsLeft = removePossibility(original(state.possibleCards)!, suitIndex, rank, all);
+  state.possibleCards[suitIndex][rank] = cardsLeft;
+
+  const {
+    suitPossible,
+    rankPossible,
+  } = checkPipPossibilities(state.possibleCards, suitIndex, rank, variant);
+
+  if (!suitPossible && original(state.colorClueMemory.pipStates)![suitIndex] !== 'Hidden') {
+    state.colorClueMemory.pipStates[suitIndex] = 'Eliminated';
+  }
+  if (!rankPossible && original(state.rankClueMemory.pipStates)![rank] !== 'Hidden') {
+    state.rankClueMemory.pipStates[rank] = 'Eliminated';
+  }
+}, {} as CardState);
 
 // Check to see if we can put an X over all suits pip and rank pips
 export function checkAllPipPossibilities(
@@ -518,4 +507,21 @@ function filterInPlace<T>(values: T[], predicate: (value: T) => boolean): T[] {
 // From: https://medium.com/dailyjs/how-to-remove-array-duplicates-in-es6-5daa8789641c
 function removeDuplicatesFromArray<T>(array: T[]) {
   return array.filter((item, index) => array.indexOf(item) === index);
+}
+
+function getIndexHelper(variant: Variant) {
+  const suitIndexes: Map<string, number> = new Map<string, number>();
+  const colorIndexes: Map<Color, number> = new Map<Color, number>();
+  variant.suits.forEach((suit, index) => suitIndexes.set(suit.name, index));
+  variant.clueColors.forEach((color, index) => colorIndexes.set(color, index));
+
+  function getIndex<T extends Suit | Color>(value: T): number {
+    // HACK: test a member of the interface that is exclusive to Suit
+    if ((value as Suit).reversed !== undefined) {
+      return suitIndexes.get(value.name)!;
+    }
+    return colorIndexes.get(value)!;
+  }
+
+  return getIndex;
 }
