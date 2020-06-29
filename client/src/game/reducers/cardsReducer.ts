@@ -105,8 +105,6 @@ const cardsReducer = produce((
       break;
     }
 
-    // A player failed to play a card
-    // {num: 1, order: 24, turn: 32, type: "strike"}
     case 'strike':
     case 'turn':
     case 'text':

@@ -92,7 +92,7 @@ export function applyClueCore(
       // We can safely remove the suits from possible suits
       filterInPlace(
         possibleSuits,
-        (suit: Suit) => suitsRemoved.indexOf(suitIndexes.get(suit.name)!) === -1,
+        (suit: Suit) => !suitsRemoved.includes(getIndex(suit)),
       );
     }
 
@@ -101,9 +101,7 @@ export function applyClueCore(
       if (variant.specialAllClueColors) {
         if (positive) {
           if (state.colorClueMemory.positiveClues.length >= 1
-            && possibleSuits
-              .filter((suit) => suit.allClueColors)
-              .length === 0) {
+            && !possibleSuits.some((suit) => suit.allClueColors)) {
             // Two positive color clues should "fill in" a special rank that is touched by all
             // color clues (that cannot be a multi-color suit)
             ranksRemoved = filterInPlace(
@@ -121,8 +119,7 @@ export function applyClueCore(
           ).map(getIndex);
           suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
           suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
-        } else if (possibleSuits
-          .filter((suit: Suit) => suit.noClueColors).length === 0) {
+        } else if (!possibleSuits.some((suit: Suit) => suit.noClueColors)) {
           // Negative color means that the card cannot be the special rank
           // (as long as the card cannot be a suit that is never touched by color clues)
           ranksRemoved = filterInPlace(
@@ -133,14 +130,13 @@ export function applyClueCore(
           // If there is a suit never touched by color clues, we can still remove
           // possibilities for other suits on the special rank
           for (const suit of possibleSuits.filter((theSuit) => !theSuit.noClueColors)) {
-            const suitIndex = suitIndexes.get(suit.name)!;
+            const suitIndex = getIndex(suit);
             possibilitiesToRemove.push({ suitIndex, rank: variant.specialRank, all: true });
           }
         }
       } else if (variant.specialNoClueColors) {
         if (positive) {
-          if (possibleSuits
-            .filter((suit) => suit.allClueColors).length === 0) {
+          if (!possibleSuits.some((suit) => suit.allClueColors)) {
             // Positive color means that the card cannot be a special rank
             // (as long as the card cannot be a suit that is always touched by color clues)
             ranksRemoved = filterInPlace(
@@ -151,13 +147,12 @@ export function applyClueCore(
             // If there is a suit always touched by color clues, we can still remove
             // possibilities for other suits on the special rank
             for (const suit of possibleSuits.filter((theSuit) => !theSuit.allClueColors)) {
-              const suitIndex = suitIndexes.get(suit.name)!;
+              const suitIndex = getIndex(suit);
               possibilitiesToRemove.push({ suitIndex, rank: variant.specialRank, all: true });
             }
           }
         } else if (state.colorClueMemory.negativeClues.length === variant.clueColors.length - 1) {
-          if (possibleSuits
-            .filter((suit) => suit.noClueColors).length === 0) {
+          if (!possibleSuits.some((suit) => suit.noClueColors)) {
             // All negative colors means that the card must be the special rank
             // (as long as it cannot be a suit that is never touched by color clues)
             ranksRemoved = filterInPlace(
@@ -203,12 +198,12 @@ export function applyClueCore(
       suitsRemoved = filterInPlace(
         possibleSuits,
         (suit: Suit) => !suit.noClueRanks,
-      ).map((suit) => suitIndexes.get(suit.name)!);
+      ).map(getIndex);
     } else {
       suitsRemoved = filterInPlace(
         possibleSuits,
         (suit: Suit) => !suit.allClueRanks,
-      ).map((suit) => suitIndexes.get(suit.name)!);
+      ).map(getIndex);
     }
 
     // Handle the special case where two positive rank clues should "fill in" a card of a
@@ -222,7 +217,7 @@ export function applyClueCore(
       const moreSuitsRemoved = filterInPlace(
         possibleSuits,
         (suit: Suit) => suit.allClueRanks,
-      ).map((suit) => suitIndexes.get(suit.name)!);
+      ).map(getIndex);
       suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
       suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
     }
@@ -248,7 +243,7 @@ export function applyClueCore(
         // We can remove possibilities for normal suits touched by their own rank
         if (!suit.allClueRanks && !suit.noClueRanks) {
           for (const rank of ranksRemoved) {
-            possibilitiesToRemove.push({ suitIndex: suitIndexes.get(suit.name)!, rank, all: true });
+            possibilitiesToRemove.push({ suitIndex: getIndex(suit), rank, all: true });
           }
         }
       }
@@ -271,6 +266,46 @@ export function applyClueCore(
 
   let shouldReapplyRankClues = false;
   let shouldReapplyColorClues = false;
+  let suitsPossible: boolean[];
+  let ranksPossible: boolean[];
+  let possibleCards: number[][];
+
+  // Remove suit pips, if any
+  if (calculatePossibilities) {
+    for (const suitRemoved of suitsRemoved) {
+      // Remove any card possibilities for this suit
+      for (const rank of variant.ranks) {
+        possibilitiesToRemove.push({ suitIndex: suitRemoved, rank, all: true });
+      }
+      const suitObject = variant.suits[suitRemoved];
+      if (suitObject.allClueRanks || suitObject.noClueRanks) {
+        // Mark to retroactively apply rank clues when we return from this function
+        shouldReapplyRankClues = true;
+      }
+    }
+
+    // Remove rank pips, if any
+    for (const rankRemoved of ranksRemoved) {
+      // Remove any card possibilities for this rank
+      for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
+        possibilitiesToRemove.push({ suitIndex, rank: rankRemoved, all: true });
+      }
+
+      if (
+        rankRemoved === variant.specialRank
+        && (variant.specialAllClueColors || variant.specialNoClueColors)
+      ) {
+        // Mark to retroactively apply color clues when we return from this function
+        shouldReapplyColorClues = true;
+      }
+    }
+    // Remove all the possibilities we found
+    possibleCards = removePossibilities(state.possibleCards, possibilitiesToRemove);
+
+    const pipPossibilities = checkAllPipPossibilities(possibleCards, variant);
+    suitsPossible = pipPossibilities.suitsPossible;
+    ranksPossible = pipPossibilities.ranksPossible;
+  }
 
   // TODO: We produce a copy of the state until this becomes a proper reducer
   const newState = produce(state, (s) => {
@@ -298,48 +333,15 @@ export function applyClueCore(
     for (const suitRemoved of suitsRemoved) {
       // Hide the suit pips
       s.colorClueMemory.pipStates[suitRemoved] = 'Hidden';
-
-      // Remove any card possibilities for this suit
-      if (calculatePossibilities) {
-        for (const rank of variant.ranks) {
-          possibilitiesToRemove.push({ suitIndex: suitRemoved, rank, all: true });
-        }
-      }
-
-      const suitObject = variant.suits[suitRemoved];
-      if (suitObject.allClueRanks || suitObject.noClueRanks) {
-        // Mark to retroactively apply rank clues when we return from this function
-        shouldReapplyRankClues = true;
-      }
     }
 
     // Remove rank pips, if any
     for (const rankRemoved of ranksRemoved) {
       // Hide the rank pips
       s.rankClueMemory.pipStates[rankRemoved] = 'Hidden';
-
-      // Remove any card possibilities for this rank
-      if (calculatePossibilities) {
-        for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
-          possibilitiesToRemove.push({ suitIndex, rank: rankRemoved, all: true });
-        }
-      }
-
-      if (
-        rankRemoved === variant.specialRank
-        && (variant.specialAllClueColors || variant.specialNoClueColors)
-      ) {
-        // Mark to retroactively apply color clues when we return from this function
-        shouldReapplyColorClues = true;
-      }
     }
 
     if (calculatePossibilities) {
-      // Remove all the possibilities we found
-      const possibleCards = removePossibilities(original(s.possibleCards)!, possibilitiesToRemove);
-
-      const { suitsPossible, ranksPossible } = checkAllPipPossibilities(possibleCards, variant);
-
       s.colorClueMemory.pipStates = s.colorClueMemory.pipStates.map(
         (pipState, suitIndex) => (!suitsPossible[suitIndex] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
       );
