@@ -1,7 +1,7 @@
 // These are helper functions that convert objects to the integers that the server expects and
 // vice versa
 
-import Clue from '../types/Clue';
+import { colorClue, rankClue } from '../types/Clue';
 import ClueType from '../types/ClueType';
 import Color from '../types/Color';
 import MsgClue from '../types/MsgClue';
@@ -15,12 +15,12 @@ export const msgClueToClue = (msgClue: MsgClue, variant: Variant) => {
   let clueValue;
   if (msgClue.type === ClueType.Color) {
     clueValue = variant.clueColors[msgClue.value]; // This is a Color object
-  } else if (msgClue.type === ClueType.Rank) {
+    return colorClue(clueValue);
+  } if (msgClue.type === ClueType.Rank) {
     clueValue = msgClue.value;
-  } else {
-    throw new Error('Unknown clue type given to the "msgClueToClue()" function.');
+    return rankClue(clueValue);
   }
-  return new Clue(msgClue.type, clueValue);
+  throw new Error('Unknown clue type given to the "msgClueToClue()" function.');
 };
 
 export const msgSuitToSuit = (

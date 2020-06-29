@@ -1,12 +1,29 @@
 import ClueType from './ClueType';
 import Color from './Color';
 
-export default class Clue {
-  type: ClueType;
-  value: number | Color;
+interface RankClue {
+  readonly type: ClueType.Rank;
+  readonly value: number;
+}
 
-  constructor(type: ClueType, value: number | Color) {
-    this.type = type;
-    this.value = value;
-  }
+interface ColorClue {
+  readonly type: ClueType.Color;
+  readonly value: Color;
+}
+
+type Clue = RankClue | ColorClue;
+export default Clue;
+
+export function rankClue(rank: number): RankClue {
+  return {
+    type: ClueType.Rank,
+    value: rank,
+  };
+}
+
+export function colorClue(color: Color): ColorClue {
+  return {
+    type: ClueType.Color,
+    value: color,
+  };
 }

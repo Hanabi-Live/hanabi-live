@@ -9,8 +9,7 @@ import * as deck from '../rules/deck';
 import * as stats from '../rules/stats';
 import * as variantRules from '../rules/variant';
 import { ActionType } from '../types/ClientAction';
-import Clue from '../types/Clue';
-import ClueType from '../types/ClueType';
+import { colorClue, rankClue } from '../types/Clue';
 import { STACK_BASE_RANK } from '../types/constants';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import * as arrows from './arrows';
@@ -1625,7 +1624,7 @@ const drawClueArea = () => {
       height: buttonH * winH,
       color: color.fill,
       text: color.abbreviation,
-      clue: new Clue(ClueType.Color, color),
+      clue: colorClue(color),
     }, matchingSuit);
 
     // Also store the X and Y coordinates of the slot to the right of this button for later
@@ -1654,7 +1653,7 @@ const drawClueArea = () => {
       width: buttonW * winW,
       height: buttonH * winH,
       number: rank,
-      clue: new Clue(ClueType.Rank, rank),
+      clue: rankClue(rank),
     });
 
     // Also store the X and Y coordinates of the slot to the right of this button for later

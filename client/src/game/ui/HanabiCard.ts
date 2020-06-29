@@ -19,8 +19,7 @@ import {
 import * as variantRules from '../rules/variant';
 import CardNote from '../types/CardNote';
 import CardState, { cardInitialState, PipState } from '../types/CardState';
-import Clue from '../types/Clue';
-import ClueType from '../types/ClueType';
+import Clue, { colorClue, rankClue } from '../types/Clue';
 import { STACK_BASE_RANK, START_CARD_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
 import StackDirection from '../types/StackDirection';
 import Suit from '../types/Suit';
@@ -724,11 +723,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       state.colorClueMemory.positiveClues = [];
       state.colorClueMemory.negativeClues = [];
     });
-    for (const color of positiveClues) {
-      this.applyClue(new Clue(ClueType.Color, color), true);
+    for (const colorIndex of positiveClues) {
+      this.applyClue(colorClue(globals.variant.clueColors[colorIndex]), true);
     }
-    for (const color of negativeClues) {
-      this.applyClue(new Clue(ClueType.Color, color), false);
+    for (const colorIndex of negativeClues) {
+      this.applyClue(colorClue(globals.variant.clueColors[colorIndex]), false);
     }
   }
 
@@ -741,10 +740,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       state.rankClueMemory.negativeClues = [];
     });
     for (const rank of positiveClues) {
-      this.applyClue(new Clue(ClueType.Rank, rank), true);
+      this.applyClue(rankClue(rank), true);
     }
     for (const rank of negativeClues) {
-      this.applyClue(new Clue(ClueType.Rank, rank), false);
+      this.applyClue(rankClue(rank), false);
     }
   }
 
