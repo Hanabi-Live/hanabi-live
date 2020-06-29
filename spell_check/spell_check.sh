@@ -16,6 +16,7 @@ FILES=$(find "$DIR" -type f \
   -not -path "$DIR/client/node_modules/*" \
   -not -path "$DIR/client/webpack_output/*" \
   -not -path "$DIR/client/package-lock.json" \
+  -not -path "$DIR/client/test_data/*" \
   -not -path "$DIR/data/ongoing_tables/*" \
   -not -path "$DIR/data/specific_deals/*" \
   -not -path "$DIR/data/emojis.json" \
