@@ -115,6 +115,7 @@ export interface Which {
 // Replay actions
 export interface ActionStartReplay {
   type: 'startReplay';
+  readonly turn: number;
 }
 
 export interface ActionEndReplay {

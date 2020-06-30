@@ -12,10 +12,17 @@ const replayReducer = produce((
   action: ReplayAction,
   options: Options,
 ) => {
+  // Validate current state
+  if (state.active && action.type === 'startReplay') {
+    throw new Error('Tried to start a replay but replay was already active.');
+  } else if (!state.active && action.type !== 'startReplay') {
+    throw new Error('Tried perform a replay action but replay was not active.');
+  }
+
   switch (action.type) {
     case 'startReplay': {
       state.active = true;
-      state.turn = 0;
+      state.turn = action.turn;
       break;
     }
     case 'endReplay': {
