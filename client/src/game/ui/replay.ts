@@ -32,12 +32,12 @@ export const enter = () => {
   }
   globals.inReplay = true;
 
-  // TEMP: eventually, move code from this file to reducers and observers
-  globals.store!.dispatch({ type: 'startReplay' });
-
   // Start by putting us at the end of the replay (the current game state)
   globals.replayPos = globals.replayLog.length;
   globals.replayTurn = globals.replayMax;
+
+  // TEMP: eventually, move code from this file to reducers and observers
+  globals.store!.dispatch({ type: 'startReplay', turn: globals.replayTurn });
 
   // However, if the game just ended,
   // we want to go to the turn before the miscellaneous data sent at the end of the game

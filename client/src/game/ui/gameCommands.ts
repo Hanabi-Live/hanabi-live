@@ -292,7 +292,7 @@ commands.set('init', (data: InitData) => {
     globals.replayTurn = -1;
 
     // HACK: also let the state know this is a replay
-    globals.store!.dispatch({ type: 'startReplay' });
+    globals.store!.dispatch({ type: 'startReplay', turn: 0 });
   }
 
   // Now that we know the number of players and the variant, we can start to load & draw the UI
