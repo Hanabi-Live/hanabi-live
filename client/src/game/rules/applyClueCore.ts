@@ -34,8 +34,6 @@ export function applyClueCore(
     ? applyColorClue(state, variant, calculatePossibilities, clue, positive)
     : applyRankClue(state, variant, calculatePossibilities, clue, positive);
 
-  // Mark to retroactively apply color/rank clues when we return from this function
-
   // Reapply rank clues if we removed a special suit
   const shouldReapplyRankClues = calculatePossibilities
     && suitsRemoved
@@ -52,14 +50,13 @@ export function applyClueCore(
   let possibleCards = state.possibleCards;
 
   if (calculatePossibilities) {
-    // Remove any card possibilities for removed suits/ranks
-
+    // Now that this card has been given a clue and we have more information,
+    // make a map of card possibilities that are now impossible
     for (const suitRemoved of suitsRemoved) {
       for (const rank of variant.ranks) {
         impossibleCards.push({ suit: suitRemoved, rank });
       }
     }
-
     for (const rankRemoved of ranksRemoved) {
       for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
         impossibleCards.push({ suit: suitIndex, rank: rankRemoved });
@@ -175,8 +172,10 @@ function applyColorClue(
     ).map(getIndex);
   }
 
-  if (calculatePossibilities
-    && (variant.specialAllClueColors || variant.specialNoClueColors)) {
+  if (
+    calculatePossibilities
+    && (variant.specialAllClueColors || variant.specialNoClueColors)
+  ) {
     // We only need to run this early possibility removal for variants with special ranks
     // touched by all or no color clues
     for (const rank of possibleRanks) {
@@ -189,9 +188,11 @@ function applyColorClue(
     }
   }
 
-  if (positive
+  if (
+    positive
     && possibleRanks.includes(variant.specialRank)
-    && variant.specialAllClueColors) {
+    && variant.specialAllClueColors
+  ) {
     // Some variants have specific ranks touched by all colors
     // If this is the case, and this is a positive color clue,
     // we cannot remove any color pips from the card
@@ -200,9 +201,11 @@ function applyColorClue(
       possibleSuits,
       (suit: Suit) => !suit.noClueColors,
     ).map(getIndex);
-  } else if (!positive
+  } else if (
+    !positive
     && possibleRanks.includes(variant.specialRank)
-    && variant.specialNoClueColors) {
+    && variant.specialNoClueColors
+  ) {
     // Some variants have specific ranks touched by no colors
     // If this is the case, and this is a negative color clue,
     // we cannot remove any color pips from the card
@@ -232,8 +235,10 @@ function applyColorClue(
             (rank: number) => rank === variant.specialRank,
           );
         }
-      } else if (possibleRanks.length === 1
-        && state.rank === variant.specialRank) {
+      } else if (
+        possibleRanks.length === 1
+        && state.rank === variant.specialRank
+      ) {
         // Negative color to a known special rank means that we can remove all suits
         // other that the ones that are never touched by color clues
         const moreSuitsRemoved = filterInPlace(
@@ -348,12 +353,14 @@ function applyRankClue(
 
   // Handle the special case where two positive rank clues should "fill in" a card of a
   // multi-rank suit
-  if (positive
+  if (
+    positive
     && state.rankClueMemory.positiveClues.length >= 1
     && !(
       possibleRanks.includes(variant.specialRank)
       && variant.specialAllClueRanks
-    )) {
+    )
+  ) {
     const moreSuitsRemoved = filterInPlace(
       possibleSuits,
       (suit: Suit) => suit.allClueRanks,
@@ -364,7 +371,8 @@ function applyRankClue(
 
   // Handle the special case where all negative rank clues should "fill in" a card of a
   // rank-less suit
-  if (!positive
+  if (
+    !positive
     && !variant.rankCluesTouchNothing
     && state.rankClueMemory.negativeClues.length === variant.ranks.length - 1
     // We know that any special rank can be given as a rank clue
@@ -437,6 +445,8 @@ function removePossibility(
   return cardsLeft;
 }
 
+// This function is temporary because eventually all state changes will be performed inside of a
+// proper reducer function (using Redux)
 export const removePossibilityTemp = produce((
   state: Draft<CardState>,
   suitIndex: number,

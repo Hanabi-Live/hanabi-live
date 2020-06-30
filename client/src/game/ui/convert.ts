@@ -29,8 +29,8 @@ export const msgSuitToSuit = (
 ) => {
   if (
     msgSuit === null
-  || msgSuit < 0
-  || msgSuit >= variant.suits.length
+    || msgSuit < 0
+    || msgSuit >= variant.suits.length
   ) {
     return null;
   }

@@ -24,7 +24,7 @@ describe('turnReducer', () => {
 
       for (let i = 0; i < 3; i++) {
         state = turnReducer(state, play(0, 0, 1, 0), defaultMetadata, 1); // Play that red 1
-        state = turnReducer(state, draw(0, 1, 0, 0), defaultMetadata, 1); // Draw a red 1
+        state = turnReducer(state, draw(0, 1, 0, 0), defaultMetadata, 1); // Draw another red 1
       }
 
       expect(state.turn).toBe(3);
@@ -55,7 +55,7 @@ describe('turnReducer', () => {
 
       const playCard = () => {
         state = turnReducer(state, play(0, 0, 1, 0), defaultMetadata, 1); // Play that red 1
-        state = turnReducer(state, draw(0, 1, 0, 0), defaultMetadata, 1); // Draw a red 1
+        state = turnReducer(state, draw(0, 1, 0, 0), defaultMetadata, 1); // Draw another red 1
       };
       expect(state.currentPlayerIndex).toBe(1);
       playCard();

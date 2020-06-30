@@ -9,7 +9,7 @@ import GameMetadata from '../src/game/types/GameMetadata';
 import Options from '../src/game/types/Options';
 import SimpleCard from '../src/game/types/SimpleCard';
 import State from '../src/game/types/State';
-import testGame from '../test_data/test_game.json';
+import testGame from '../test_data/up_or_down.json';
 
 type JSONGame = typeof testGame;
 

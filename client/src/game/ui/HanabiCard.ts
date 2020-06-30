@@ -105,10 +105,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.add(this.bare);
 
     this.cluedBorder = HanabiCardInit.cluedBorder();
-    this.finesseBorder = HanabiCardInit.finesseBorder();
-    this.chopMoveBorder = HanabiCardInit.chopMoveBorder();
     this.add(this.cluedBorder);
+    this.finesseBorder = HanabiCardInit.finesseBorder();
     this.add(this.finesseBorder);
+    this.chopMoveBorder = HanabiCardInit.chopMoveBorder();
     this.add(this.chopMoveBorder);
 
     const arrowElements = HanabiCardInit.directionArrow(globals.variant);
@@ -155,8 +155,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.empathy = false;
     this.doMisplayAnimation = false;
 
-    // Reset all memory of clues and possibilities
-
     // Possible suits and ranks (based on clues given) are tracked separately
     // from knowledge of the true suit and rank
     const possibleSuits = globals.variant.suits.slice().map((_, i) => i);
@@ -173,8 +171,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       });
     });
 
-    // Mark all rank pips as visible. Note that since we're using an array
-    // as map, there will be gaps on the values
+    // Mark all rank pips as visible
+    // Note that since we are using an array as a map, there will be gaps on the values
     const rankPipStates: PipState[] = [];
     possibleRanks.forEach((r) => { rankPipStates[r] = r >= 1 && r <= 5 ? 'Visible' : 'Hidden'; });
 
@@ -1062,7 +1060,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       const nextRankNeeded = lastPlayedRank! + 1;
       const count = this.state.possibleCards[suitIndex][nextRankNeeded];
       if (count === undefined) {
-        throw new Error(`Failed to get an entry for Suit: ${suitIndex} Rank:${nextRankNeeded} from the "possibleCards" map for card ${this.state.order}.`);
+        throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${nextRankNeeded} from the "possibleCards" map for card ${this.state.order}.`);
       }
       if (count > 0) {
         potentiallyPlayable = true;

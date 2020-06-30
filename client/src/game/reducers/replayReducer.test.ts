@@ -8,7 +8,7 @@ import { // Direct import instead of namespace import for compactness
   hypoBack,
   hypoEnd,
 } from '../../../test/testActions';
-import testGame from '../../../test_data/test_game.json';
+import testGame from '../../../test_data/up_or_down.json';
 import ClueType from '../types/ClueType';
 import GameMetadata from '../types/GameMetadata';
 import State from '../types/State';
@@ -21,7 +21,7 @@ let metadata: GameMetadata;
 describe('replayReducer', () => {
   // Initialize the state before each test
   beforeAll(() => {
-  // Load the game and start a replay
+    // Load the game and start a replay
     testState = loadGameJSON(testGame);
     testState = stateReducer(testState, startReplay());
     metadata = testState.metadata;
