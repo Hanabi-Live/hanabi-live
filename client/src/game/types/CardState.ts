@@ -1,67 +1,56 @@
-import Color from './Color';
-import Suit from './Suit';
-
 export default interface CardState {
-  order: number;
+  readonly order: number;
   // The index of the player that holds this card (or null if played/discarded)
-  holder: number | null;
-  suit: Suit | null;
-  rank: number | null;
-  blank: boolean;
-  // The suit corresponding to the note written on the card, if any
-  noteSuit: Suit | null;
-  // The rank corresponding to the note written on the card, if any
-  noteRank: number | null;
-  noteKnownTrash: boolean;
-  noteNeedsFix: boolean;
-  noteChopMoved: boolean;
-  noteFinessed: boolean;
-  noteBlank: boolean;
-  noteUnclued: boolean;
+  readonly holder: number | null;
+  readonly suitIndex: number | null;
+  readonly rank: number | null;
+  readonly blank: boolean;
 
   // The following are the variables that are refreshed
-  possibleSuits: Suit[];
-  possibleRanks: number[];
-  possibleCards: Map<string, number>;
-  identityDetermined: boolean;
-  numPositiveClues: number;
-  positiveColorClues: Color[];
-  negativeColorClues: Color[];
-  positiveRankClues: number[];
-  negativeRankClues: number[];
-  turnsClued: number[];
-  turnDrawn: number;
-  isDiscarded: boolean;
-  turnDiscarded: number;
-  isPlayed: boolean;
-  turnPlayed: number;
-  isMisplayed: boolean;
+  readonly rankClueMemory: ClueMemory;
+  readonly colorClueMemory: ClueMemory;
+
+  // possibleCards[suitIndex][rank] = how many cards of this suitIndex and rank could this be?
+  // NOTE: we're using an array as a map, so there will be empty spaces for ranks
+  // that are not valid card ranks (e.g. 0, or 6 in Up or Down)
+  readonly possibleCards: ReadonlyArray<readonly number[]>;
+  readonly identityDetermined: boolean;
+  readonly numPositiveClues: number;
+  readonly turnsClued: readonly number[]; // TODO: seems like the UI only reads the 1st turn clued?
+  readonly turnDrawn: number;
+  readonly isDiscarded: boolean;
+  readonly turnDiscarded: number;
+  readonly isPlayed: boolean;
+  readonly turnPlayed: number;
+  readonly isMisplayed: boolean;
+}
+
+export type PipState = 'Visible' | 'Hidden' | 'Eliminated';
+
+export interface ClueMemory {
+  // NOTE: we're using arrays as maps, so there will be empty spaces for ranks
+  // that are not valid card ranks (e.g. 0, or 6 in Up or Down)
+  readonly possibilities: readonly number[];
+  // TODO: positiveClues and negativeClues should be used like maps
+  // of booleans so you can quickly check if a particular color/rank
+  // has a positive/negative clue without searching the array.
+  // But to make this change safely, the applyClue function
+  // has to be thoroughly covered by tests.
+  readonly positiveClues: readonly number[];
+  readonly negativeClues: readonly number[];
+  readonly pipStates: readonly PipState[];
 }
 
 export function cardInitialState(order: number) : CardState {
   return {
     order,
     holder: null,
-    suit: null,
+    suitIndex: null,
     rank: null,
     blank: false,
-    noteSuit: null,
-    noteRank: null,
-    noteKnownTrash: false,
-    noteNeedsFix: false,
-    noteChopMoved: false,
-    noteFinessed: false,
-    noteBlank: false,
-    noteUnclued: false,
-    possibleSuits: [],
-    possibleRanks: [],
-    possibleCards: new Map<string, number>(),
+    possibleCards: [],
     identityDetermined: false,
     numPositiveClues: 0,
-    positiveColorClues: [],
-    negativeColorClues: [],
-    positiveRankClues: [],
-    negativeRankClues: [],
     turnsClued: [],
     turnDrawn: -1,
     isDiscarded: false,
@@ -69,5 +58,17 @@ export function cardInitialState(order: number) : CardState {
     isPlayed: false,
     turnPlayed: -1,
     isMisplayed: false,
+    rankClueMemory: {
+      possibilities: [],
+      positiveClues: [],
+      negativeClues: [],
+      pipStates: [],
+    },
+    colorClueMemory: {
+      possibilities: [],
+      positiveClues: [],
+      negativeClues: [],
+      pipStates: [],
+    },
   };
 }

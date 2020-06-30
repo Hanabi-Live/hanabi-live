@@ -5,6 +5,7 @@ import {
   ActionPlay, GameAction, ActionDiscard, ActionClue, ActionDraw,
 } from '../src/game/types/actions';
 import ClueType from '../src/game/types/ClueType';
+import GameMetadata from '../src/game/types/GameMetadata';
 import Options from '../src/game/types/Options';
 import SimpleCard from '../src/game/types/SimpleCard';
 import State from '../src/game/types/State';
@@ -27,15 +28,20 @@ interface JSONAction {
 }
 
 export default function loadGameJSON(gameJSON: JSONGame): State {
-  const options = {
-    ...(new Options()),
-    numPlayers: gameJSON.players.length,
-    variantName: gameJSON.options.variant,
+  const numPlayers = gameJSON.players.length;
+  const metadata: GameMetadata = {
+    options: {
+      ...(new Options()),
+      numPlayers,
+      variantName: gameJSON.options.variant,
+    },
+    characterAssignments: [],
+    characterMetadata: [],
   };
 
-  const cardsPerHand = handRules.cardsPerHand(options.numPlayers, false, false);
+  const cardsPerHand = handRules.cardsPerHand(numPlayers, false, false);
   const actions: GameAction[] = [];
-  let topOfDeck = dealInitialCards(options.numPlayers, cardsPerHand, actions, gameJSON.deck);
+  let topOfDeck = dealInitialCards(numPlayers, cardsPerHand, actions, gameJSON.deck);
 
   // Parse all plays/discards/clues
   let turn = 0; // Start on the 0th turn
@@ -43,8 +49,6 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
 
   // Make a "turn" action for the initial turn, before any players have taken any actions yet
   actions.push({ type: 'turn', num: turn, who });
-  turn += 1;
-  who += 1;
 
   gameJSON.actions.forEach((a) => {
     const action = parseJSONAction(who, turn, gameJSON.deck, a);
@@ -59,13 +63,13 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       }
     }
 
-    actions.push({ type: 'turn', num: turn, who });
     turn += 1;
-    who = (who + 1) % options.numPlayers;
+    who = (who + 1) % numPlayers;
+    actions.push({ type: 'turn', num: turn, who });
   });
 
   // Run the list of states through the state reducer
-  const state = initialState(options);
+  const state = initialState(metadata);
   return stateReducer(state, { type: 'gameActionList', actions });
 }
 
@@ -102,27 +106,19 @@ function parseJSONAction(
   a: JSONAction,
 ): GameAction | null {
   switch (a.type) {
-    case JSONActionType.ActionTypePlay: {
-      return {
-        type: 'play',
-        which: {
-          order: a.target,
-          index: currentPlayer,
-          suit: deck[a.target].suit,
-          rank: deck[a.target].rank,
-        },
-      } as ActionPlay;
-    }
+    case JSONActionType.ActionTypePlay:
     case JSONActionType.ActionTypeDiscard: {
-      return {
-        type: 'discard',
+      const isPlay = a.type === JSONActionType.ActionTypePlay;
+      const action = {
+        type: isPlay ? 'play' : 'discard',
         which: {
           order: a.target,
           index: currentPlayer,
           suit: deck[a.target].suit,
           rank: deck[a.target].rank,
         },
-      } as ActionDiscard;
+      };
+      return (isPlay ? action as ActionPlay : action as ActionDiscard);
     }
     case JSONActionType.ActionTypeColorClue:
     case JSONActionType.ActionTypeRankClue: {

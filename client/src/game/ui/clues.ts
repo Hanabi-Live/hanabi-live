@@ -97,19 +97,21 @@ export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
 // This mirrors the function in "variants.go"
 const variantIsCardTouched = (clue: Clue, cardState: CardState) => {
   // Some detrimental characters are not able to see other people's hands
-  if (cardState.suit === null) {
+  if (cardState.suitIndex === null) {
     return false;
   }
+
+  const suitObject = globals.variant.suits[cardState.suitIndex];
 
   if (clue.type === ClueType.Color) {
     if (globals.variant.colorCluesTouchNothing) {
       return false;
     }
 
-    if (cardState.suit.allClueColors) {
+    if (suitObject.allClueColors) {
       return true;
     }
-    if (cardState.suit.noClueColors) {
+    if (suitObject.noClueColors) {
       return false;
     }
 
@@ -122,7 +124,7 @@ const variantIsCardTouched = (clue: Clue, cardState: CardState) => {
       }
     }
 
-    return cardState.suit.clueColors.includes(clue.value as Color);
+    return suitObject.clueColors.includes(clue.value as Color);
   }
 
   if (clue.type === ClueType.Rank) {
@@ -130,10 +132,10 @@ const variantIsCardTouched = (clue: Clue, cardState: CardState) => {
       return false;
     }
 
-    if (cardState.suit.allClueRanks) {
+    if (suitObject.allClueRanks) {
       return true;
     }
-    if (cardState.suit.noClueRanks) {
+    if (suitObject.noClueRanks) {
       return false;
     }
 

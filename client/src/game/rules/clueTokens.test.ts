@@ -1,6 +1,6 @@
 import { VARIANTS } from '../data/gameData';
 import { DEFAULT_VARIANT_NAME, MAX_CLUE_NUM } from '../types/constants';
-import { gainClue } from './clues';
+import { gainClue } from './clueTokens';
 
 describe('gainClue', () => {
   test.each([...Array(8).keys()])('adds a clue when there are %i clues', (n) => {

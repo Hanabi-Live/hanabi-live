@@ -2,8 +2,11 @@
 
 import * as variantRules from '../rules/variant';
 import { CardIdentity } from '../types/CardIdentity';
+import CardNote from '../types/CardNote';
 import CardState from '../types/CardState';
 import { START_CARD_RANK } from '../types/constants';
+import Variant from '../types/Variant';
+import { suitToMsgSuit } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 
@@ -63,11 +66,16 @@ export const set = (order: number, note: string) => {
   if (!card) {
     card = globals.stackBases[order - globals.deck.length];
   }
-  checkSpecialNote(card);
+  card.checkSpecialNote();
 };
 
-export const checkSpecialNote = (card: HanabiCard) => {
-  let note = globals.ourNotes[card.state.order];
+const checkNoteKeywords = (
+  keywords: string[],
+  note: string,
+  fullNote: string,
+) => keywords.find((k) => note === k || fullNote.includes(`[${k}]`)) !== undefined;
+
+export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
   note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
   note = note.trim(); // Remove all leading and trailing whitespace
   const fullNote = note;
@@ -80,57 +88,20 @@ export const checkSpecialNote = (card: HanabiCard) => {
     note = note.trim(); // Remove all leading and trailing whitespace
   }
 
-  checkNoteIdentity(card, note, fullNote);
-  checkNoteImpossibility(card.state);
-
-  // Feature 1 - Morph the card if it has an "exact" card note
-  // (or clear the bare image if the note was deleted/changed)
-  card.setBareImage();
-
-  // Feature 2 - Give the card a special border if it is chop moved
-  card.chopMoveBorder!.visible((
-    card.state.noteChopMoved
-    && !card.cluedBorder!.visible()
-    && !card.state.isPlayed
-    && !card.state.isDiscarded
-    && !globals.replay
-    && !globals.spectating
-  ));
-
-  // Feature 3 - Give the card a special border if it is finessed
-  card.finesseBorder!.visible((
-    card.state.noteFinessed
-    && !card.cluedBorder!.visible()
-    && !card.state.isPlayed
-    && !card.state.isDiscarded
-    && !globals.replay
-    && !globals.spectating
-  ));
-
-  globals.layers.card.batchDraw();
-};
-
-const checkNoteKeywords = (
-  keywords: string[],
-  note: string,
-  fullNote: string,
-) => keywords.find((k) => note === k || fullNote.includes(`[${k}]`)) !== undefined;
-
-const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => {
   // First, check to see if this card should be marked with certain properties
-  card.state.noteKnownTrash = checkNoteKeywords([
+  const knownTrash = checkNoteKeywords([
     'kt',
     'trash',
     'stale',
     'bad',
   ], note, fullNote);
 
-  card.state.noteNeedsFix = checkNoteKeywords([
+  const needsFix = checkNoteKeywords([
     'fixme',
     'needs fix',
   ], note, fullNote);
 
-  card.state.noteChopMoved = checkNoteKeywords([
+  const chopMoved = checkNoteKeywords([
     'cm',
     'chop move',
     '5cm',
@@ -145,27 +116,36 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
     'utbcm',
   ], note, fullNote);
 
-  card.state.noteFinessed = checkNoteKeywords([
+  const finessed = checkNoteKeywords([
     'f',
     'hf',
     'pf',
     'gd',
   ], note, fullNote);
 
-  card.state.noteBlank = checkNoteKeywords(['blank'], note, fullNote);
+  const blank = checkNoteKeywords(['blank'], note, fullNote);
 
-  card.state.noteUnclued = checkNoteKeywords(['unclued'], note, fullNote);
+  const unclued = checkNoteKeywords(['unclued'], note, fullNote);
 
-  card.setClued();
+  const noteCard = cardFromNote(variant, note, fullNote);
+  const suitIndex = noteCard.suit ? suitToMsgSuit(noteCard.suit, variant) : null;
+  const rank = noteCard.rank;
 
-  const noteCard = cardFromNote(note, fullNote);
-  card.state.noteSuit = noteCard.suit;
-  card.state.noteRank = noteCard.rank;
+  return {
+    rank,
+    suitIndex,
+    blank,
+    chopMoved,
+    finessed,
+    knownTrash,
+    needsFix,
+    unclued,
+  };
 };
 
-export const cardFromNote = (note: string, fullNote: string): CardIdentity => {
-  let rankStrings = globals.variant.ranks.map((r) => r.toString());
-  if (variantRules.isUpOrDown(globals.variant)) {
+export const cardFromNote = (variant: Variant, note: string, fullNote: string): CardIdentity => {
+  let rankStrings = variant.ranks.map((r) => r.toString());
+  if (variantRules.isUpOrDown(variant)) {
     rankStrings = rankStrings.concat('0', 's', 'start');
   }
   for (const rankText of rankStrings) {
@@ -178,7 +158,7 @@ export const cardFromNote = (note: string, fullNote: string): CardIdentity => {
     ], note, fullNote)) {
       return { suit: null, rank };
     }
-    for (const suit of globals.variant.suits) {
+    for (const suit of variant.suits) {
       if (checkNoteKeywords([
         suit.abbreviation.toLowerCase(),
         suit.name.toLowerCase(),
@@ -203,16 +183,16 @@ export const cardFromNote = (note: string, fullNote: string): CardIdentity => {
   return { suit: null, rank: null };
 };
 
-const checkNoteImpossibility = (cardState: CardState) => {
+export const checkNoteImpossibility = (variant: Variant, cardState: CardState, note: CardNote) => {
   // Validate that the note does not contain an impossibility
-  if (cardState.noteSuit !== null && cardState.noteRank === null) {
+  if (note.suitIndex !== null && note.rank === null) {
     // Only the suit was specified
     // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
     let suitPossible = false;
-    for (const rank of cardState.possibleRanks) {
-      const count = cardState.possibleCards.get(`${cardState.noteSuit.name}${rank}`);
+    for (const rank of cardState.rankClueMemory.possibilities) {
+      const count = cardState.possibleCards[note.suitIndex][rank];
       if (count === undefined) {
-        throw new Error(`The card of "${cardState.noteSuit.name}${rank}" does not exist in the possibleCards map.`);
+        throw new Error(`The card of Suit: ${note.suitIndex} and Rank: ${rank} does not exist in the possibleCards map.`);
       }
       if (count > 0) {
         suitPossible = true;
@@ -220,19 +200,20 @@ const checkNoteImpossibility = (cardState: CardState) => {
       }
     }
     if (!suitPossible && cardState.holder === globals.playerUs) {
-      window.alert(`That card cannot possibly be ${cardState.noteSuit.name.toLowerCase()}.`);
-      cardState.noteSuit = null;
+      const suitName = variant.suits[note.suitIndex].name;
+      window.alert(`That card cannot possibly be ${suitName.toLowerCase()}.`);
+      note.suitIndex = null;
       return;
     }
   }
-  if (cardState.noteSuit === null && cardState.noteRank !== null) {
+  if (note.suitIndex === null && note.rank !== null) {
     // Only the rank was specified
     // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
     let rankPossible = false;
-    for (const suit of cardState.possibleSuits) {
-      const count = cardState.possibleCards.get(`${suit.name}${cardState.noteRank}`);
+    for (const suit of cardState.colorClueMemory.possibilities) {
+      const count = cardState.possibleCards[suit][note.rank];
       if (count === undefined) {
-        throw new Error(`The card of "${suit.name}${cardState.noteRank}" does not exist in the possibleCards map.`);
+        throw new Error(`The card of Suit: ${suit} and Rank: ${note.rank} does not exist in the possibleCards map.`);
       }
       if (count > 0) {
         rankPossible = true;
@@ -240,18 +221,21 @@ const checkNoteImpossibility = (cardState: CardState) => {
       }
     }
     if (!rankPossible && cardState.holder === globals.playerUs) {
-      window.alert(`That card cannot possibly be a ${cardState.noteRank}.`);
-      cardState.noteRank = null;
+      window.alert(`That card cannot possibly be a ${note.rank}.`);
+      note.rank = null;
       return;
     }
   }
-  if (cardState.noteSuit !== null && cardState.noteRank !== null) {
+  if (note.suitIndex !== null && note.rank !== null) {
     // Both the suit and the rank were specified
-    const mapIndex = `${cardState.noteSuit.name}${cardState.noteRank}`;
-    if (cardState.possibleCards.get(mapIndex) === 0 && cardState.holder === globals.playerUs) {
-      window.alert(`That card cannot possibly be a ${cardState.noteSuit.name.toLowerCase()} ${cardState.noteRank}.`);
-      cardState.noteSuit = null;
-      cardState.noteRank = null;
+    if (
+      cardState.possibleCards[note.suitIndex][note.rank] === 0
+      && cardState.holder === globals.playerUs
+    ) {
+      const suitName = variant.suits[note.suitIndex].name;
+      window.alert(`That card cannot possibly be a ${suitName.toLowerCase()} ${note.rank}.`);
+      note.suitIndex = null;
+      note.rank = null;
     }
   }
 };

@@ -4,12 +4,13 @@
 
 import { createStore } from 'redux';
 import * as sentry from '../../sentry';
-import { VARIANTS } from '../data/gameData';
+import { VARIANTS, CHARACTERS } from '../data/gameData';
 import initialState from '../reducers/initialState';
 import stateReducer from '../reducers/stateReducer';
 import * as variantRules from '../rules/variant';
 import { GameAction, ActionIncludingHypothetical } from '../types/actions';
 import ClueType from '../types/ClueType';
+import GameMetadata from '../types/GameMetadata';
 import Options from '../types/Options';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import SpectatorNote from '../types/SpectatorNote';
@@ -267,7 +268,12 @@ commands.set('init', (data: InitData) => {
   }
 
   // Recreate the state store (using the Redux library)
-  globals.store = createStore(stateReducer, initialState(globals.options));
+  const metadata: GameMetadata = {
+    options: data.options,
+    characterAssignments: data.characterAssignments.map((char) => CHARACTERS.get(char)!.id),
+    characterMetadata: data.characterMetadata,
+  };
+  globals.store = createStore(stateReducer, initialState(metadata));
 
   // Character settings
   globals.characterAssignments = data.characterAssignments;
@@ -373,12 +379,12 @@ commands.set('noteListPlayer', (data: NoteListPlayerData) => {
   // Check for special notes
   for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
     const card = globals.deck[i];
-    notes.checkSpecialNote(card);
+    card.checkSpecialNote();
   }
 
   // Check for special notes on the stack bases
   for (const stackBase of globals.stackBases) {
-    notes.checkSpecialNote(stackBase);
+    stackBase.checkSpecialNote();
   }
 });
 

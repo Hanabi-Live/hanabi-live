@@ -1,16 +1,37 @@
 import produce, { Draft } from 'immer';
 import { GameAction } from '../types/actions';
+import GameMetadata from '../types/GameMetadata';
 import TurnState from '../types/TurnState';
 
-const turnReducer = produce((state: Draft<TurnState>, action: GameAction, numPlayers: number) => {
+const turnReducer = produce((
+  state: Draft<TurnState>,
+  action: GameAction,
+  metadata: GameMetadata,
+  deckSize: number,
+) => {
+  const numPlayers = metadata.options.numPlayers;
   switch (action.type) {
     case 'play':
-    case 'discard':
+    case 'discard': {
+      state.cardsPlayedOrDiscardedThisTurn += 1;
+
+      if (deckSize === 0) {
+        nextTurn(state, numPlayers);
+      }
+
+      break;
+    }
+
     case 'clue': {
-      state.turn += 1;
-      state.currentPlayerIndex += 1;
-      if (state.currentPlayerIndex === numPlayers) {
-        state.currentPlayerIndex = 0;
+      nextTurn(state, numPlayers);
+      break;
+    }
+
+    case 'draw': {
+      // TODO: const character = metadata.characterAssignments[state.currentPlayerIndex];
+      // TODO: if (turnRules.shouldEndTurn(state.cardsPlayedOrDiscardedThisTurn, character)) {
+      if (state.cardsPlayedOrDiscardedThisTurn === 1) {
+        nextTurn(state, numPlayers);
       }
       break;
     }
@@ -45,3 +66,12 @@ const turnReducer = produce((state: Draft<TurnState>, action: GameAction, numPla
 }, {} as TurnState);
 
 export default turnReducer;
+
+function nextTurn(state: Draft<TurnState>, numPlayers: number) {
+  state.turn += 1;
+  state.currentPlayerIndex += 1;
+  if (state.currentPlayerIndex === numPlayers) {
+    state.currentPlayerIndex = 0;
+  }
+  state.cardsPlayedOrDiscardedThisTurn = 0;
+}

@@ -1,7 +1,6 @@
 // Functions related to clues: gaining clues, giving clues, applying clues
 
 import { MAX_CLUE_NUM } from '../types/constants';
-import { StateCard } from '../types/GameState';
 import Variant from '../types/Variant';
 import * as variantRules from './variant';
 
@@ -20,8 +19,4 @@ export function clueValue(variant: Variant) {
     return 0.5;
   }
   return 1;
-}
-
-export function isClued(card: StateCard) {
-  return card.clues.find((c) => c.positive) !== undefined;
 }

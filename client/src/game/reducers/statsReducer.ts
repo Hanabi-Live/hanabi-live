@@ -3,22 +3,23 @@
 
 import produce, { Draft } from 'immer';
 import { VARIANTS } from '../data/gameData';
-import * as cluesRules from '../rules/clues';
+import * as cardRules from '../rules/card';
+import * as clueTokensRules from '../rules/clueTokens';
 import * as statsRules from '../rules/stats';
 import { GameAction } from '../types/actions';
+import GameMetadata from '../types/GameMetadata';
 import GameState, { StateStats } from '../types/GameState';
-import Options from '../types/Options';
 
 const statsReducer = produce((
   stats: Draft<StateStats>,
   action: GameAction,
   originalState: GameState,
   currentState: GameState,
-  options: Options,
+  metadata: GameMetadata,
 ) => {
-  const variant = VARIANTS.get(options.variantName)!;
+  const variant = VARIANTS.get(metadata.options.variantName)!;
   if (variant === undefined) {
-    throw new Error(`Unable to find the "${options.variantName}" variant in the "VARIANTS" map.`);
+    throw new Error(`Unable to find the "${metadata.options.variantName}" variant in the "VARIANTS" map.`);
   }
 
   switch (action.type) {
@@ -30,7 +31,7 @@ const statsReducer = produce((
       for (let i = 0; i < action.list.length; i++) {
         const order = action.list[i];
         const card = originalState.deck[order];
-        if (!cluesRules.isClued(card)) {
+        if (!cardRules.isClued(card)) {
           // A card was newly clued
           stats.cardsGotten += 1;
         }
@@ -40,7 +41,7 @@ const statsReducer = produce((
 
     case 'discard': {
       const card = originalState.deck[action.which.order];
-      if (cluesRules.isClued(card)) {
+      if (cardRules.isClued(card)) {
         // A clued card was discarded
         stats.cardsGotten -= 1;
       }
@@ -50,7 +51,7 @@ const statsReducer = produce((
     case 'strike': {
       // TODO move this check to the play action when we have logic for knowing which cards play
       // A strike is equivalent to losing a clue
-      stats.potentialCluesLost += cluesRules.clueValue(variant);
+      stats.potentialCluesLost += clueTokensRules.clueValue(variant);
       break;
     }
 
@@ -61,11 +62,11 @@ const statsReducer = produce((
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted",
         // similar to what happens when the team gets a strike
-        stats.potentialCluesLost += cluesRules.clueValue(variant);
+        stats.potentialCluesLost += clueTokensRules.clueValue(variant);
       }
 
       const card = originalState.deck[action.which.order];
-      if (!cluesRules.isClued(card)) {
+      if (!cardRules.isClued(card)) {
         // A card was blind played
         stats.cardsGotten += 1;
       }
@@ -81,9 +82,9 @@ const statsReducer = produce((
     currentState.score,
     currentState.deckSize,
     currentState.maxScore,
-    options.numPlayers,
+    metadata.options.numPlayers,
   );
-  stats.paceRisk = statsRules.paceRisk(stats.pace, options.numPlayers);
+  stats.paceRisk = statsRules.paceRisk(stats.pace, metadata.options.numPlayers);
   stats.efficiency = statsRules.efficiency(stats.cardsGotten, stats.potentialCluesLost);
 }, {} as StateStats);
 

@@ -11,7 +11,7 @@ import action from './action';
 import cardStatusCheck from './cardStatusCheck';
 import { getTouchedCardsFromClue } from './clues';
 import PlayerButton from './controls/PlayerButton';
-import { suitToMsgSuit } from './convert';
+import { msgSuitToSuit } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
@@ -129,10 +129,10 @@ export const end = () => {
   // In case we blanked out any cards in the hypothetical,
   // unset the "blank" property of all cards
   for (const card of globals.deck) {
-    card.state.blank = false;
+    card.unsetBlank();
   }
   for (const card of globals.stackBases) {
-    card.state.blank = false;
+    card.unsetBlank();
   }
 
   globals.hypoActions = [];
@@ -245,7 +245,7 @@ export const send = (hypoAction: ClientAction) => {
         index: globals.currentPlayerIndex,
         order: hypoAction.target,
         rank: card.state.rank!,
-        suit: suitToMsgSuit(card.state.suit!, globals.variant),
+        suit: card.state.suitIndex!,
       },
       failed: false,
     });
@@ -264,8 +264,9 @@ export const send = (hypoAction: ClientAction) => {
 
     // Text
     let text = `${globals.playerNames[globals.currentPlayerIndex]} ${type}s `;
-    if (card.state.suit && card.state.rank) {
-      text += `${card.state.suit!.name} ${card.state.rank} `;
+    if (card.state.suitIndex && card.state.rank) {
+      const suit = msgSuitToSuit(card.state.suitIndex!, globals.variant)!;
+      text += `${suit.name} ${card.state.rank} `;
     } else {
       text += 'a card ';
     }

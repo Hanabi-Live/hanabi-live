@@ -4,6 +4,7 @@ import Konva from 'konva';
 import {
   CARD_W,
 } from '../../constants';
+import { removePossibilityTemp } from '../rules/applyClueCore';
 import * as variantRules from '../rules/variant';
 
 import {
@@ -65,7 +66,7 @@ actionFunctions.set('clue', (data: ActionClue) => {
   for (let i = 0; i < data.list.length; i++) {
     const card = globals.deck[data.list[i]];
 
-    card.state.numPositiveClues += 1;
+    card.markPositiveClue();
 
     arrows.set(i, card, data.giver, clue);
 
@@ -81,7 +82,6 @@ actionFunctions.set('clue', (data: ActionClue) => {
       )
     ) {
       card.applyClue(clue, true);
-      card.setBareImage();
     }
   }
 
@@ -105,7 +105,6 @@ actionFunctions.set('clue', (data: ActionClue) => {
         )
       ) {
         card.applyClue(clue, false);
-        card.setBareImage();
       }
     }
   }
@@ -165,10 +164,7 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
 
   // Local variables
   const card = globals.deck[data.which.order];
-
-  card.state.isDiscarded = true;
-  card.state.turnDiscarded = globals.turn;
-  card.state.isMisplayed = data.failed;
+  card.discard(globals.turn, data.failed);
 
   // Clear all visible arrows when a new move occurs
   arrows.hideAll();
@@ -235,9 +231,9 @@ actionFunctions.set('draw', (data: ActionDraw) => {
     // Since we are in a shared replay, this is a mistake, because we should have full knowledge of
     // what the card is (from the "deckOrder" message that is sent at the end of the game)
     const card = globals.deck[order];
-    card.state.holder = holder;
+    card.setHolder(holder);
     card.replayRedraw();
-    suit = card.state.suit;
+    suit = msgSuitToSuit(card.state.suitIndex ?? -1, globals.variant);
     rank = card.state.rank;
   }
 
@@ -259,15 +255,9 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   // So, since this card was just drawn, refresh all the variables on the card
   // (this is necessary because we might be rewinding in a replay)
   const card = globals.deck[order];
-  card.state.holder = holder;
-  card.state.suit = suit; // This will be null if we don't know the suit
-  card.state.rank = rank; // This will be null if we don't know the rank
-  card.refresh();
-  if (suit && rank) {
-    // Hide the pips if we have full knowledge of the suit / rank
-    card.suitPips!.visible(false);
-    card.rankPips!.visible(false);
-  }
+  card.setHolder(holder);
+  // Suit and rank will be null if we don't know the suit/rank
+  card.refresh(suit, rank);
 
   // Each card is contained within a LayoutChild
   // Position the LayoutChild over the deck
@@ -293,6 +283,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   // then remove it from the card possibilities for the players who see this card
   if (suit && rank) {
     if (possibilitiesCheck()) {
+      const suitIndex = globals.variant.suits.indexOf(suit!);
       for (let i = 0; i < globals.elements.playerHands.length; i++) {
         if (i === holder) {
           // We can't update the player who drew this card,
@@ -302,7 +293,13 @@ actionFunctions.set('draw', (data: ActionDraw) => {
         const hand = globals.elements.playerHands[i];
         hand.children.each((layoutChild) => {
           const handCard = layoutChild.children[0] as HanabiCard;
-          handCard.removePossibility(suit!, rank!, false);
+          handCard.state = removePossibilityTemp(
+            handCard.state,
+            suitIndex,
+            rank!,
+            false,
+            globals.variant,
+          );
         });
       }
     }
@@ -313,8 +310,7 @@ actionFunctions.set('play', (data: ActionPlay) => {
   // Local variables
   const card = globals.deck[data.which.order];
 
-  card.state.isPlayed = true;
-  card.state.turnPlayed = globals.turn;
+  card.play(globals.turn);
   globals.numCardsPlayed += 1;
   globals.elements.playsNumberLabel!.text(globals.numCardsPlayed.toString());
 
@@ -407,8 +403,8 @@ actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
     }
 
     for (const card of globals.deck) {
-      if (card.state.suit === suit) {
-        card.setDirectionArrow(suit);
+      if (card.state.suitIndex === i) {
+        card.setDirectionArrow(i);
       }
     }
   }

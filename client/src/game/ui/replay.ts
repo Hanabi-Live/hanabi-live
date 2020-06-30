@@ -1,5 +1,6 @@
 // Functions for progressing forward and backward through time
 
+import produce from 'immer';
 import Konva from 'konva';
 import * as deck from '../rules/deck';
 import * as variantRules from '../rules/variant';
@@ -219,7 +220,7 @@ const reset = () => {
     stackBaseLayoutChild.visible(true);
 
     // The stack base might have been morphed
-    if (stackBase.state.rank !== 0 || stackBase.state.suit !== globals.variant.suits[i]) {
+    if (stackBase.state.rank !== 0 || stackBase.state.suitIndex !== i) {
       stackBase.convert(i, 0);
     }
 
@@ -256,9 +257,12 @@ const reset = () => {
     if (child.tween) {
       child.tween.destroy();
     }
-    card.state.holder = null;
-    card.state.suit = null;
-    card.state.rank = null;
+    // HACK: this should not be done here
+    card.state = produce(card.state, (state) => {
+      state.holder = null;
+      state.suitIndex = null;
+      state.rank = null;
+    });
   }
 
   // Reset the arrows

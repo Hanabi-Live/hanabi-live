@@ -1,26 +1,27 @@
 // Functions for building a state table for every turn
-// (state tables are currently unused but eventually the client will eventually be rewritten to
-// handle state transitions)
 
-import produce, { Draft, original, current } from 'immer';
+import produce, {
+  Draft, original, current,
+} from 'immer';
 import { ensureAllCases } from '../../misc';
 import { VARIANTS } from '../data/gameData';
-import * as clues from '../rules/clues';
+import * as clues from '../rules/clueTokens';
 import { GameAction } from '../types/actions';
+import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
-import Options from '../types/Options';
 import TurnState from '../types/TurnState';
+import cardsReducer from './cardsReducer';
 import statsReducer from './statsReducer';
 import turnReducer from './turnReducer';
 
 const gameStateReducer = produce((
   state: Draft<GameState>,
   action: GameAction,
-  options: Options,
+  metadata: GameMetadata,
 ) => {
-  const variant = VARIANTS.get(options.variantName);
+  const variant = VARIANTS.get(metadata.options.variantName);
   if (variant === undefined) {
-    throw new Error(`Unable to find the "${options.variantName}" variant in the "VARIANTS" map.`);
+    throw new Error(`Unable to find the "${metadata.options.variantName}" variant in the "VARIANTS" map.`);
   }
 
   switch (action.type) {
@@ -36,35 +37,12 @@ const gameStateReducer = produce((
         turn: action.turn,
       });
 
-      const hand = state.hands[action.target];
-      if (!hand) {
-        console.error(`Failed to get "state.hands[]" with an index of ${action.target}.`);
-        break;
-      }
-      for (const order of hand) {
-        const card = state.deck[order];
-        card.clues.push({
-          type: action.clue.type,
-          value: action.clue.value,
-          positive: action.list.includes(order),
-        });
-      }
-
       break;
     }
 
     // A player just discarded a card
     // {failed: false, type: "discard", which: {index: 0, order: 4, rank: 1, suit: 2}}
     case 'discard': {
-      // Reveal all cards discarded
-      const card = state.deck[action.which.order];
-      if (!card) {
-        console.error(`Failed to get the card for index ${action.which.order}.`);
-        break;
-      }
-      card.suit = action.which.suit;
-      card.rank = action.which.rank;
-
       // Remove it from the hand
       const hand = state.hands[action.which.index];
       const handIndex = hand.indexOf(action.which.order);
@@ -73,7 +51,7 @@ const gameStateReducer = produce((
       }
 
       // Add it to the discard stacks
-      state.discardStacks[card.suit].push(action.which.order);
+      state.discardStacks[action.which.suit].push(action.which.order);
 
       if (!action.failed) {
         state.clueTokens = clues.gainClue(variant, state.clueTokens);
@@ -86,11 +64,6 @@ const gameStateReducer = produce((
     // {order: 0, rank: 1, suit: 4, type: "draw", who: 0}
     case 'draw': {
       state.deckSize -= 1;
-      state.deck[action.order] = {
-        suit: action.suit,
-        rank: action.rank,
-        clues: [],
-      };
       const hand = state.hands[action.who];
       if (hand) {
         hand.push(action.order);
@@ -103,15 +76,6 @@ const gameStateReducer = produce((
     // {type: "play", which: {index: 0, order: 4, rank: 1, suit: 2}}
     // (index is the player index)
     case 'play': {
-      // Reveal all cards played
-      const card = state.deck[action.which.order];
-      if (!card) {
-        console.error(`Failed to get the card for index ${action.which.order}.`);
-        break;
-      }
-      card.suit = action.which.suit;
-      card.rank = action.which.rank;
-
       // Remove it from the hand
       const hand = state.hands[action.which.index];
       const handIndex = hand.indexOf(action.which.order);
@@ -120,13 +84,13 @@ const gameStateReducer = produce((
       }
 
       // Add it to the play stacks
-      state.playStacks[card.suit].push(action.which.order);
+      state.playStacks[action.which.suit].push(action.which.order);
 
       // Gain a point
       state.score += 1;
 
       // Gain a clue token if the stack is complete
-      if (state.playStacks[card.suit].length === 5) { // Hard-code 5 cards per stack
+      if (state.playStacks[action.which.suit].length === 5) { // Hard-code 5 cards per stack
         state.clueTokens = clues.gainClue(variant, state.clueTokens);
       }
 
@@ -174,13 +138,12 @@ const gameStateReducer = produce((
       break;
     }
 
-    case 'turn': {
-      break;
-    }
-
+    case 'turn':
     case 'stackDirections':
     case 'reorder':
     case 'deckOrder': {
+      // Actions that don't affect the main state
+      // or are handled by another reducer
       break;
     }
 
@@ -190,14 +153,24 @@ const gameStateReducer = produce((
     }
   }
 
+  // Use a sub-reducer to calculate changes on cards
+  state.deck = cardsReducer(
+    original(state.deck),
+    action,
+    current(state),
+    metadata,
+  );
+
   // Use a sub-reducer to calculate the turn
   let turnState: TurnState = {
     turn: state.turn,
     currentPlayerIndex: state.currentPlayerIndex,
+    cardsPlayedOrDiscardedThisTurn: state.cardsPlayedOrDiscardedThisTurn,
   };
-  turnState = turnReducer(turnState, action, options.numPlayers);
+  turnState = turnReducer(turnState, action, metadata, state.deckSize);
   state.turn = turnState.turn;
   state.currentPlayerIndex = turnState.currentPlayerIndex;
+  state.cardsPlayedOrDiscardedThisTurn = turnState.cardsPlayedOrDiscardedThisTurn;
 
   // Use a sub-reducer to calculate some game statistics
   state.stats = statsReducer(
@@ -205,7 +178,7 @@ const gameStateReducer = produce((
     action,
     original(state)!,
     current(state),
-    options,
+    metadata,
   );
 }, {} as GameState);
 

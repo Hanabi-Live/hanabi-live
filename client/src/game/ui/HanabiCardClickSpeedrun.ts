@@ -76,7 +76,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
   if (
     card.state.holder !== globals.playerUs
     && card.state.holder !== null
-    && card.state.suit !== null
+    && card.state.suitIndex !== null
     && globals.clues !== 0
     && !event.ctrlKey
     && !event.shiftKey
@@ -90,26 +90,27 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     // First, find out if they have a clue color button selected
     const clueButton = globals.elements.clueTypeButtonGroup!.getPressed() as ColorButton;
     let clueColor: Color;
+    const suit = globals.variant.suits[card.state.suitIndex];
     if (clueButton === null) {
       // They have not clicked on a clue color button yet,
       // so assume that they want to use the first possible color of the card
-      clueColor = card.state.suit.clueColors[0];
+      clueColor = suit.clueColors[0];
     } else if (typeof clueButton.clue.value === 'number') {
       // They have clicked on a number clue button,
       // so assume that they want to use the first possible color of the card
-      clueColor = card.state.suit.clueColors[0];
+      clueColor = suit.clueColors[0];
     } else {
       // They have clicked on a color button, so assume that they want to use that color
       clueColor = clueButton.clue.value;
 
       // See if this is a valid color for the clicked card
-      const clueColorIndex = card.state.suit.clueColors.findIndex(
+      const clueColorIndex = suit.clueColors.findIndex(
         (cardColor: Color) => cardColor === clueColor,
       );
       if (clueColorIndex === -1) {
         // It is not possible to clue this color to this card,
         // so default to using the first valid color
-        clueColor = card.state.suit.clueColors[0];
+        clueColor = suit.clueColors[0];
       }
     }
 

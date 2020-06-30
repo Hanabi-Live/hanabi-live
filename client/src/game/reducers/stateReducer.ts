@@ -1,6 +1,6 @@
 // The main reducer for the game mode, contemplating replays and game actions
 
-import produce, { Draft, original } from 'immer';
+import produce, { Draft, original, castDraft } from 'immer';
 import { Action, GameAction } from '../types/actions';
 import GameState from '../types/GameState';
 import State from '../types/State';
@@ -12,11 +12,11 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
   switch (action.type) {
     case 'gameActionList': {
       // Calculate all the intermediate states
-      const initial = initialGameState(state.options);
+      const initial = initialGameState(state.metadata);
       const states: GameState[] = [initial];
 
-      state.ongoingGame = action.actions.reduce((s: GameState, a: GameAction) => {
-        const nextState = gameStateReducer(s, a, state.options);
+      const game = action.actions.reduce((s: GameState, a: GameAction) => {
+        const nextState = gameStateReducer(s, a, state.metadata);
 
         if (a.type === 'turn') {
           // Store the current state in the state table to enable replays
@@ -25,8 +25,9 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
         return nextState;
       }, initial);
+      state.ongoingGame = castDraft(game);
 
-      state.replay.states = states;
+      state.replay.states = castDraft(states);
       break;
     }
     case 'startReplay':
@@ -36,12 +37,12 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     case 'hypoBack':
     case 'hypoEnd':
     case 'hypoAction': {
-      state.replay = replayReducer(state.replay, action, state.options);
+      state.replay = replayReducer(state.replay, action, state.metadata);
       break;
     }
     default: {
       // A new game state happened
-      state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action, state.options)!;
+      state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action, state.metadata)!;
       if (action.type === 'turn') {
         // Save it for replays
         state.replay.states[action.num] = state.ongoingGame;
