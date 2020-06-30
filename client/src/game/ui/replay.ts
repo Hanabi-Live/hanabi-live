@@ -100,6 +100,9 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
     target = globals.replayMax;
   }
   if (target === globals.replayTurn) {
+    // TEMP: eventually, move code from this file to reducers and observers
+    globals.store!.dispatch({ type: 'goToTurn', turn: globals.replayTurn });
+
     return;
   }
 
