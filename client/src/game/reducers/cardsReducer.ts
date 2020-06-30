@@ -125,7 +125,9 @@ const cardsReducer = produce((
 
 export default cardsReducer;
 
+// -------
 // Helpers
+// -------
 
 function getCard(deck: Draft<CardState[]>, order: number) {
   const card = deck[order];

@@ -20,7 +20,7 @@ const gameState = initialGameState(defaultMetadata);
 
 describe('cardsReducer', () => {
   describe('holder', () => {
-    test('is correct when drawn', () => {
+    test('is equal to the player index when drawn', () => {
       const deck: CardState[] = [cardInitialState(0), cardInitialState(1)];
       expect(deck[0].holder).toBeNull();
 
