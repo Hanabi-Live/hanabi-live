@@ -126,15 +126,6 @@ export const end = () => {
   }
   globals.layers.UI.batchDraw();
 
-  // In case we blanked out any cards in the hypothetical,
-  // unset the "blank" property of all cards
-  for (const card of globals.deck) {
-    card.state.blank = false;
-  }
-  for (const card of globals.stackBases) {
-    card.state.blank = false;
-  }
-
   globals.hypoActions = [];
 
   globals.hypoFirstDrawnIndex = 0;
@@ -144,6 +135,20 @@ export const end = () => {
   // game from the beginning
   globals.replayTurn = globals.replayMax;
   replay.goto(globals.sharedReplayTurn, true, true);
+
+  // In case we blanked out any cards in the hypothetical,
+  // unset the "blank" property of all cards
+  // We need to actually redraw all the cards in case they were morphed
+  // In addition to visible cards, it is also possible that a card drawn in the future was morphed.
+  // If we don't redraw it now, it might still appear as morphed if we jump ahead in the replay.
+  for (const card of globals.deck) {
+    card.state.blank = false;
+    card.setBareImage();
+  }
+  for (const card of globals.stackBases) {
+    card.state.blank = false;
+    card.setBareImage();
+  }
 };
 
 export const beginTurn = () => {
