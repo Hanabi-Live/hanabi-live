@@ -260,8 +260,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       // (because they do not know what it is yet)
       if (
         card.state.holder === this.state.holder
-        && (card.state.colorClueMemory.possibilities.length > 1
-          || card.state.rankClueMemory.possibilities.length > 1)
+        && (
+          card.state.colorClueMemory.possibilities.length > 1
+          || card.state.rankClueMemory.possibilities.length > 1
+        )
       ) {
         continue;
       }
@@ -356,7 +358,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     if (
       this.bareName !== ''
       && globals.replay
-      && !globals.hypothetical
       && globals.turn < globals.replayTurn - 1
     ) {
       return;

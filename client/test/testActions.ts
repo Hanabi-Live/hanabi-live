@@ -72,7 +72,10 @@ export const turn = (num: number, who: number): ActionTurn => ({
   type: 'turn', num, who,
 });
 
-export const startReplay = (): ActionStartReplay => ({ type: 'startReplay' });
+export const startReplay = (turnNumber: number): ActionStartReplay => ({
+  type: 'startReplay', turn: turnNumber,
+});
+
 export const endReplay = (): ActionEndReplay => ({ type: 'endReplay' });
 
 export const hypoStart = (): ActionHypotheticalStart => ({ type: 'hypoStart' });
