@@ -12,6 +12,7 @@ import cardStatusCheck from './cardStatusCheck';
 import Shuttle from './controls/Shuttle';
 import globals from './globals';
 import LayoutChild from './LayoutChild';
+import * as tooltips from './tooltips';
 import * as turn from './turn';
 
 // ---------------------
@@ -32,12 +33,12 @@ export const enter = () => {
   }
   globals.inReplay = true;
 
-  // TEMP: eventually, move code from this file to reducers and observers
-  globals.store!.dispatch({ type: 'startReplay' });
-
   // Start by putting us at the end of the replay (the current game state)
   globals.replayPos = globals.replayLog.length;
   globals.replayTurn = globals.replayMax;
+
+  // TEMP: eventually, move code from this file to reducers and observers
+  globals.store!.dispatch({ type: 'startReplay', turn: globals.replayTurn });
 
   // However, if the game just ended,
   // we want to go to the turn before the miscellaneous data sent at the end of the game
@@ -101,6 +102,9 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
     target = globals.replayMax;
   }
   if (target === globals.replayTurn) {
+    // TEMP: eventually, move code from this file to reducers and observers
+    globals.store!.dispatch({ type: 'goToTurn', turn: globals.replayTurn });
+
     return;
   }
 
@@ -148,6 +152,10 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
 
   // TEMP: eventually, move code from this file to reducers and observers
   globals.store!.dispatch({ type: 'goToTurn', turn: globals.replayTurn });
+
+  // Automatically close any tooltips and disable all Empathy when we jump to a particular turn
+  // Without this, we would observe glitchy behavior
+  tooltips.resetActiveHover();
 
   globals.animateFast = false;
   cardStatusCheck();

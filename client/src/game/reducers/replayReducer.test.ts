@@ -23,7 +23,7 @@ describe('replayReducer', () => {
   beforeAll(() => {
     // Load the game and start a replay
     testState = loadGameJSON(testGame);
-    testState = stateReducer(testState, startReplay());
+    testState = stateReducer(testState, startReplay(0));
     metadata = testState.metadata;
   });
   describe('hypothetical', () => {
