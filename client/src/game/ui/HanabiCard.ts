@@ -9,6 +9,7 @@ import {
   CARD_W,
 } from '../../constants';
 import { SUITS } from '../data/gameData';
+import initialCardState from '../reducers/initialStates/initialCardState';
 import {
   removePossibilityTemp,
   applyClueCore,
@@ -18,7 +19,7 @@ import {
 } from '../rules/applyClueCore';
 import * as variantRules from '../rules/variant';
 import CardNote from '../types/CardNote';
-import CardState, { cardInitialState, PipState } from '../types/CardState';
+import CardState, { PipState } from '../types/CardState';
 import Clue, { colorClue, rankClue } from '../types/Clue';
 import { STACK_BASE_RANK, START_CARD_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
 import StackDirection from '../types/StackDirection';
@@ -98,7 +99,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Most class variables are defined below in the "refresh()" function
     // Order is defined upon first initialization
-    this.state = cardInitialState(config.order);
+    this.state = initialCardState(config.order, globals.variant);
 
     // Initialize various elements/features of the card
     this.bare = HanabiCardInit.image(() => this.bareName);
@@ -155,57 +156,17 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.empathy = false;
     this.doMisplayAnimation = false;
 
-    // Possible suits and ranks (based on clues given) are tracked separately
-    // from knowledge of the true suit and rank
-    const possibleSuits = globals.variant.suits.slice().map((_, i) => i);
-    const possibleRanks = globals.variant.ranks.slice();
-    const possibleCards: number[][] = [];
-
-    // Possible cards (based on both clues given and cards seen) are also tracked separately
-    // Start by cloning the "globals.cardsMap"
-    possibleSuits.forEach((suitIndex) => {
-      possibleCards[suitIndex] = [];
-      const suitName = msgSuitToSuit(suitIndex, globals.variant)!.name;
-      possibleRanks.forEach((rankIndex) => {
-        possibleCards[suitIndex][rankIndex] = globals.cardsMap.get(`${suitName}${rankIndex}`)!;
-      });
-    });
-
-    // Mark all rank pips as visible
-    // Note that since we are using an array as a map, there will be gaps on the values
-    const rankPipStates: PipState[] = [];
-    possibleRanks.forEach((r) => { rankPipStates[r] = r >= 1 && r <= 5 ? 'Visible' : 'Hidden'; });
-
     this.state = {
-      ...this.state,
+      ...initialCardState(this.state.order, globals.variant),
+      holder: this.state.holder,
+      blank: this.state.blank,
       // We might have some information about this card already
       suitIndex: suit ? suitToMsgSuit(suit, globals.variant) : null,
       rank,
-      possibleCards,
-      colorClueMemory: {
-        possibilities: possibleSuits,
-        positiveClues: [],
-        negativeClues: [],
-        pipStates: possibleSuits.map(() => 'Visible'),
-      },
-      rankClueMemory: {
-        possibilities: possibleRanks,
-        positiveClues: [],
-        negativeClues: [],
-        pipStates: rankPipStates,
-      },
-      identityDetermined: false,
-      numPositiveClues: 0,
-      turnsClued: [],
       // We have to add one to the turn drawn because
       // the "draw" command comes before the "turn" command
       // However, if it was part of the initial deal, then it will correctly be set as turn 0
       turnDrawn: globals.turn === 0 ? 0 : globals.turn + 1,
-      isDiscarded: false,
-      turnDiscarded: -1,
-      isPlayed: false,
-      turnPlayed: -1,
-      isMisplayed: false,
     };
 
     // Some variants disable listening on cards
@@ -652,7 +613,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       state,
       shouldReapplyRankClues,
       shouldReapplyColorClues,
-    } = applyClueCore(this.state, variant, possibilitiesCheck(), clue, positive);
+    } = applyClueCore(this.state, clue, positive, possibilitiesCheck(), variant);
 
     // Mutate state
     this.state = {

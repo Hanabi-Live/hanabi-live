@@ -4,7 +4,7 @@ import { // Direct import instead of namespace import for compactness
 } from '../../../test/testActions';
 import GameMetadata from '../types/GameMetadata';
 import Options from '../types/Options';
-import initialTurnState from './initialTurnState';
+import initialTurnState from './initialStates/initialTurnState';
 import turnReducer from './turnReducer';
 
 const defaultMetadata: GameMetadata = {

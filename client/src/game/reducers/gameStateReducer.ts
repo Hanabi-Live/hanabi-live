@@ -138,8 +138,13 @@ const gameStateReducer = produce((
       break;
     }
 
+    case 'stackDirections': {
+      // TODO: The client should be able to determine the stack directions directly
+      state.playStacksDirections = action.directions;
+      break;
+    }
+
     case 'turn':
-    case 'stackDirections':
     case 'reorder':
     case 'deckOrder': {
       // Actions that don't affect the main state

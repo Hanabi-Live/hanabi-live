@@ -4,12 +4,15 @@ import produce, {
   Draft, castDraft,
 } from 'immer';
 import { ensureAllCases } from '../../misc';
-import { VARIANTS } from '../data/gameData';
 import { GameAction } from '../types/actions';
-import CardState, { cardInitialState } from '../types/CardState';
+import CardState from '../types/CardState';
+import { colorClue, rankClue } from '../types/Clue';
 import ClueType from '../types/ClueType';
 import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
+import cardPossibilitiesReducer from './cardPossibilitiesReducer';
+import initialCardState from './initialStates/initialCardState';
+import { getVariant } from './reducerHelpers';
 
 const cardsReducer = produce((
   deck: Draft<CardState[]>,
@@ -17,31 +20,35 @@ const cardsReducer = produce((
   game: GameState,
   metadata: GameMetadata,
 ) => {
-  const variant = VARIANTS.get(metadata.options.variantName);
-  if (variant === undefined) {
-    throw new Error(`Unable to find the "${metadata.options.variantName}" variant in the "VARIANTS" map.`);
-  }
+  const variant = getVariant(metadata);
 
   switch (action.type) {
     // A player just gave a clue
     // {clue: {type: 0, value: 1}, giver: 1, list: [11], target: 2, turn: 0, type: "clue"}
     case 'clue': {
-      const isColorClue = action.clue.type === ClueType.Color;
-      const value = action.clue.value;
+      const clue = action.clue.type === ClueType.Color
+        ? colorClue(variant.clueColors[action.clue.value])
+        : rankClue(action.clue.value);
 
       // Positive clues
       action.list.forEach((order) => {
         const card = getCard(deck, order);
         card.numPositiveClues += 1;
-
-        const memory = isColorClue ? card.colorClueMemory : card.rankClueMemory;
-
-        if (!memory.positiveClues.includes(value)) {
-          memory.positiveClues.push(value);
-        }
+        card.turnsClued.push(game.turn);
 
         // TODO: conditions to applyClue
-        // TODO: apply positive clues
+        /*
+          if (
+          !globals.lobby.settings.realLifeMode
+          && !variantRules.isCowAndPig(globals.variant)
+          && !variantRules.isDuck(globals.variant)
+          && !(
+            globals.characterAssignments[data.giver!] === 'Quacker'
+            && card.state.holder === globals.playerUs
+            && !globals.replay
+          )
+        */
+        deck[order] = cardPossibilitiesReducer(card, clue, true, metadata);
       });
 
       // Negative clues
@@ -50,15 +57,11 @@ const cardsReducer = produce((
         .forEach((order) => {
           const card = getCard(deck, order);
 
-          const memory = isColorClue ? card.colorClueMemory : card.rankClueMemory;
-
-          if (!memory.negativeClues.includes(value)) {
-            memory.negativeClues.push(value);
-          }
-
-          // TODO: conditions to applyClue
-          // TODO: apply negative clues
+          // TODO: conditions to applyClue (see above)
+          deck[order] = cardPossibilitiesReducer(card, clue, false, metadata);
         });
+
+      // TODO: update other cards in hand
       break;
     }
 
@@ -95,7 +98,7 @@ const cardsReducer = produce((
       }
 
       deck[action.order] = castDraft({
-        ...cardInitialState(action.order),
+        ...initialCardState(action.order, variant),
         holder: game.currentPlayerIndex,
         suitIndex: nullIfNegative(action.suit),
         rank: nullIfNegative(action.rank),

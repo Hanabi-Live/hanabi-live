@@ -11,7 +11,7 @@ import { MAX_CLUE_NUM } from '../types/constants';
 import GameMetadata from '../types/GameMetadata';
 import Options from '../types/Options';
 import gameStateReducer from './gameStateReducer';
-import initialGameState from './initialGameState';
+import initialGameState from './initialStates/initialGameState';
 
 const defaultMetadata: GameMetadata = {
   options: {

@@ -5,7 +5,7 @@
 import { createStore } from 'redux';
 import * as sentry from '../../sentry';
 import { VARIANTS, CHARACTERS } from '../data/gameData';
-import initialState from '../reducers/initialState';
+import initialState from '../reducers/initialStates/initialState';
 import stateReducer from '../reducers/stateReducer';
 import * as variantRules from '../rules/variant';
 import { GameAction, ActionIncludingHypothetical } from '../types/actions';
