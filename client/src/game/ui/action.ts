@@ -300,6 +300,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
             false,
             globals.variant,
           );
+          handCard.updatePips();
         });
       }
     }

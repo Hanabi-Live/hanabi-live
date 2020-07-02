@@ -5,7 +5,7 @@ import { Action, GameAction } from '../types/actions';
 import GameState from '../types/GameState';
 import State from '../types/State';
 import gameStateReducer from './gameStateReducer';
-import initialGameState from './initialGameState';
+import initialGameState from './initialStates/initialGameState';
 import replayReducer from './replayReducer';
 
 const stateReducer = produce((state: Draft<State>, action: Action) => {

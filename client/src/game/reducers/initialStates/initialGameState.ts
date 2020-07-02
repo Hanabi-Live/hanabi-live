@@ -1,11 +1,11 @@
-import { VARIANTS } from '../data/gameData';
-import * as deck from '../rules/deck';
-import * as hand from '../rules/hand';
-import * as statsRules from '../rules/stats';
-import { MAX_CLUE_NUM } from '../types/constants';
-import GameMetadata from '../types/GameMetadata';
-import GameState from '../types/GameState';
-import StackDirection from '../types/StackDirection';
+import { VARIANTS } from '../../data/gameData';
+import * as deck from '../../rules/deck';
+import * as hand from '../../rules/hand';
+import * as statsRules from '../../rules/stats';
+import { MAX_CLUE_NUM } from '../../types/constants';
+import GameMetadata from '../../types/GameMetadata';
+import GameState from '../../types/GameState';
+import StackDirection from '../../types/StackDirection';
 import initialTurnState from './initialTurnState';
 
 export default function initialGameState(metadata: GameMetadata): GameState {

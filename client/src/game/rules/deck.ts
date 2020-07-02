@@ -1,6 +1,7 @@
-/* eslint-disable import/prefer-default-export */
 // Functions related to deck information: total cards, drawing cards
 
+import { START_CARD_RANK } from '../types/constants';
+import Suit from '../types/Suit';
 import Variant from '../types/Variant';
 import * as variantRules from './variant';
 
@@ -15,4 +16,34 @@ export function totalCards(variant: Variant) {
     }
   }
   return totalCardsInTheDeck;
+}
+
+// Given a variant, and a card's rank and suit, returns how many copies of
+// this card exist in the deck
+export function numCopiesOfCard(variant: Variant, rank: number, suit: Suit) {
+  // In a normal suit of Hanabi,
+  // there are three 1's, two 2's, two 3's, two 4's, and one 5
+  let amountToAdd = 2;
+  if (rank === 1) {
+    amountToAdd = 3;
+    if (variantRules.isUpOrDown(variant) || suit.reversed) {
+      amountToAdd = 1;
+    }
+  } else if (rank === 5) {
+    amountToAdd = 1;
+    if (suit.reversed) {
+      amountToAdd = 3;
+    }
+  } else if (rank === START_CARD_RANK) {
+    if (variantRules.isUpOrDown(variant)) {
+      amountToAdd = 1;
+    } else {
+      throw new Error('Trying to add a Start card to a variant that is not Up or Down');
+    }
+  }
+
+  if (suit.oneOfEach) {
+    amountToAdd = 1;
+  }
+  return amountToAdd;
 }

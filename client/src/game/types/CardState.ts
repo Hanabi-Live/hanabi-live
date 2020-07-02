@@ -40,35 +40,3 @@ export interface ClueMemory {
   readonly negativeClues: readonly number[];
   readonly pipStates: readonly PipState[];
 }
-
-export function cardInitialState(order: number) : CardState {
-  return {
-    order,
-    holder: null,
-    suitIndex: null,
-    rank: null,
-    blank: false,
-    possibleCards: [],
-    identityDetermined: false,
-    numPositiveClues: 0,
-    turnsClued: [],
-    turnDrawn: -1,
-    isDiscarded: false,
-    turnDiscarded: -1,
-    isPlayed: false,
-    turnPlayed: -1,
-    isMisplayed: false,
-    rankClueMemory: {
-      possibilities: [],
-      positiveClues: [],
-      negativeClues: [],
-      pipStates: [],
-    },
-    colorClueMemory: {
-      possibilities: [],
-      positiveClues: [],
-      negativeClues: [],
-      pipStates: [],
-    },
-  };
-}

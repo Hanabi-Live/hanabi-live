@@ -126,26 +126,8 @@ const initCardsMap = () => {
       globals.cardsMap.set(key, 1);
     }
     for (let rank = 1; rank <= 5; rank++) {
-      // In a normal suit of Hanabi,
-      // there are three 1's, two 2's, two 3's, two 4's, and one five
-      let amountToAdd = 2;
-      if (rank === 1) {
-        amountToAdd = 3;
-        if (variantRules.isUpOrDown(globals.variant) || suit.reversed) {
-          amountToAdd = 1;
-        }
-      } else if (rank === 5) {
-        amountToAdd = 1;
-        if (suit.reversed) {
-          amountToAdd = 3;
-        }
-      }
-      if (suit.oneOfEach) {
-        amountToAdd = 1;
-      }
-
       const key = `${suit.name}${rank}`;
-      globals.cardsMap.set(key, amountToAdd);
+      globals.cardsMap.set(key, deck.numCopiesOfCard(globals.variant, rank, suit));
     }
   }
 };

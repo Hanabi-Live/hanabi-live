@@ -15,10 +15,10 @@ export interface PossibilityToRemove {
 
 export function applyClueCore(
   state: CardState,
-  variant: Variant,
-  calculatePossibilities: boolean,
   clue: Readonly<Clue>,
   positive: boolean,
+  calculatePossibilities: boolean,
+  variant: Variant,
 ) {
   // Helpers to convert from suit/color to index and vice-versa
   const getIndex = getIndexHelper(variant);
@@ -31,8 +31,8 @@ export function applyClueCore(
     ranksRemoved,
     impossibleCards,
   } = clue.type === ClueType.Color
-    ? applyColorClue(state, variant, calculatePossibilities, clue, positive)
-    : applyRankClue(state, variant, calculatePossibilities, clue, positive);
+    ? applyColorClue(state, clue, positive, calculatePossibilities, variant)
+    : applyRankClue(state, clue, positive, calculatePossibilities, variant);
 
   // Reapply rank clues if we removed a special suit
   const shouldReapplyRankClues = calculatePossibilities
@@ -146,12 +146,12 @@ export function applyClueCore(
   return { state: newState, shouldReapplyRankClues, shouldReapplyColorClues };
 }
 
-function applyColorClue(
+export function applyColorClue(
   state: CardState,
-  variant: Variant,
-  calculatePossibilities: boolean,
   clue: Readonly<ColorClue>,
   positive: boolean,
+  calculatePossibilities: boolean,
+  variant: Variant,
 ) {
   const possibleSuits = state.colorClueMemory.possibilities.map((p) => variant.suits[p]);
   const possibleRanks = state.rankClueMemory.possibilities.map((i) => i);
@@ -280,12 +280,12 @@ function applyColorClue(
   return { suitsRemoved, ranksRemoved, impossibleCards };
 }
 
-function applyRankClue(
+export function applyRankClue(
   state: CardState,
-  variant: Variant,
-  calculatePossibilities: boolean,
   clue: Readonly<RankClue>,
   positive: boolean,
+  calculatePossibilities: boolean,
+  variant: Variant,
 ) {
   const possibleSuits = state.colorClueMemory.possibilities.map((p) => variant.suits[p]);
   const possibleRanks = state.rankClueMemory.possibilities.map((i) => i);
@@ -357,10 +357,12 @@ function applyRankClue(
 
   // Handle the special case where all negative rank clues should "fill in" a card of a
   // rank-less suit
+  const allNegatives = state.rankClueMemory.negativeClues.length === variant.ranks.length - 1;
+
   if (
     !positive
     && !variant.rankCluesTouchNothing
-    && state.rankClueMemory.negativeClues.length === variant.ranks.length - 1
+    && allNegatives
     // We know that any special rank can be given as a rank clue
     // so there is no need to have a separate check for special variants
   ) {
@@ -389,11 +391,8 @@ function applyRankClue(
     // Some suits are not touched by any ranks,
     // so if this is a negative rank clue, we cannot remove any rank pips from the card
     ranksRemoved = [];
-  } else {
-    // We can safely remove the ranks from possible ranks
-    filterInPlace(possibleRanks,
-      (rank: number) => ranksRemoved.indexOf(rank) === -1);
   }
+
   return { suitsRemoved, ranksRemoved, impossibleCards };
 }
 
