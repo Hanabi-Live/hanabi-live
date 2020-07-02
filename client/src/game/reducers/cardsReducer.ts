@@ -4,6 +4,7 @@ import produce, {
   Draft, castDraft,
 } from 'immer';
 import { ensureAllCases } from '../../misc';
+import { removePossibilities, checkAllPipPossibilities } from '../rules/applyClueCore';
 import { GameAction } from '../types/actions';
 import CardState from '../types/CardState';
 import { colorClue, rankClue } from '../types/Clue';
@@ -131,7 +132,7 @@ const cardsReducer = produce((
             + `Client = ${game.currentPlayerIndex}, Server = ${action.who}`);
       }
 
-      const card = castDraft({
+      const drawnCard = castDraft({
         ...initialCardState(action.order, variant),
         holder: action.who,
         suitIndex: nullIfNegative(action.suit),
@@ -139,13 +140,39 @@ const cardsReducer = produce((
         turnDrawn: game.turn,
       });
 
-      deck[action.order] = card;
+      // Remove all possibilities of all cards previously drawn and visible
+
+      const possibilitiesToRemove = deck.slice(0, action.order)
+        .filter((card) => card.suitIndex !== null && card.rank !== null)
+        .filter((card) => card.holder !== drawnCard.holder
+        || (
+          card.colorClueMemory.possibilities.length === 1
+          && card.rankClueMemory.possibilities.length === 1
+        ))
+        .map((card) => ({ suitIndex: card.suitIndex!, rank: card.rank!, all: false }));
+
+      const possibleCards = removePossibilities(drawnCard.possibleCards, possibilitiesToRemove);
+      const pipPossibilities = checkAllPipPossibilities(possibleCards, variant);
+
+      const suitPipStates = drawnCard.colorClueMemory.pipStates.map(
+        (pipState, suitIndex) => (!pipPossibilities.suitsPossible[suitIndex] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
+      );
+
+      const rankPipStates = drawnCard.rankClueMemory.pipStates.map(
+        (pipState, rank) => (!pipPossibilities.ranksPossible[rank] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
+      );
+
+      drawnCard.colorClueMemory.pipStates = suitPipStates;
+      drawnCard.rankClueMemory.pipStates = rankPipStates;
+      drawnCard.possibleCards = possibleCards;
+
+      deck[action.order] = drawnCard;
 
       // If the card was drawn by a player we can see, update possibilities
       // on all hands, except for the player that didn't see it
-      if (card.suitIndex != null && card.rank != null) {
-        for (const hand of game.hands.filter((_, i) => i !== card.holder)) {
-          removePossibilityOnHand(deck, hand, card, variant);
+      if (drawnCard.suitIndex != null && drawnCard.rank != null) {
+        for (const hand of game.hands.filter((_, i) => i !== drawnCard.holder)) {
+          removePossibilityOnHand(deck, hand, drawnCard, variant);
         }
       }
 

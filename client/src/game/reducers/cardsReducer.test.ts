@@ -231,6 +231,18 @@ describe('cardsReducer', () => {
         // Expect the remaining card to remove a possibility for a red 5
         expect(deck[0].possibleCards[0][5]).toBe(0);
       });
+      test('eliminates possibilities from previously drawn cards', () => {
+        let deck: CardState[] = [defaultCard, secondCard];
+        // P0 draws a red 5
+        const gameStateDrawP0 = { ...gameState, hands: [[0], []] };
+        deck = cardsReducer(deck, draw(0, 5, 0, 0), gameStateDrawP0, defaultMetadata);
+
+        const gameStateDrawP1 = { ...gameState, hands: [[0], [1]] };
+        deck = cardsReducer(deck, draw(1, 1, 0, 1), gameStateDrawP1, defaultMetadata);
+
+        // Expect the newly drawn card to remove a possibility for a red 5
+        expect(deck[1].possibleCards[0][5]).toBe(0);
+      });
     });
   });
 });
