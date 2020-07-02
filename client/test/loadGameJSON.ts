@@ -107,7 +107,9 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
         // Check if this is actually a play or a misplay
         const jsonCard = gameJSON.deck[a.which.order];
         const playStack = s.playStacks[jsonCard.suit];
-        const topOfStackRank = playStack.length === 0 ? 0 : gameJSON.deck[playStack[playStack.length - 1]].rank;
+        const topOfStackRank = playStack.length === 0
+          ? 0
+          : gameJSON.deck[playStack[playStack.length - 1]].rank;
         // TODO: Ignoring reversed for now
         const misplayed = hasReversedSuits(variant) ? false : topOfStackRank !== jsonCard.rank - 1;
         if (misplayed) {

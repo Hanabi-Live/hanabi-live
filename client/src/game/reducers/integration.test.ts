@@ -4,9 +4,15 @@ import loadGameJSON from '../../../test/loadGameJSON';
 import pinkRainbowOnesGame from '../../../test_data/pink_rainbow_ones.json';
 import upOrDownGame from '../../../test_data/up_or_down.json';
 import upOrDownFinalCards from '../../../test_data/up_or_down_final_cards.json';
+import upOrDownTurn5Cards from '../../../test_data/up_or_down_turn5.json';
+import CardState from '../types/CardState';
 import State from '../types/State';
 
 let testState: State;
+
+function getStateAtTurn(state: State, turn: number) {
+  return state.replay.states[turn];
+}
 
 function getFinalState(state: State) {
   return state.replay.states[state.replay.states.length - 1];
@@ -17,6 +23,62 @@ describe('integration', () => {
     beforeAll(() => {
       // Load the game and get the final state
       testState = loadGameJSON(upOrDownGame);
+    });
+    describe('at turn 5', () => {
+      test('has the correct cards on each player\'s hands', () => {
+        const turn5State = getStateAtTurn(testState, 4);
+        expect(turn5State.hands).toEqual([
+          [0, 1, 2, 3],
+          [4, 5, 6, 7],
+          [8, 9, 11, 16],
+          [12, 13, 15, 17]]);
+      });
+      test('has the correct stats', () => {
+        const turn5State = getStateAtTurn(testState, 4);
+        expect(turn5State.turn).toBe(4);
+        expect(turn5State.currentPlayerIndex).toBe(0);
+        expect(turn5State.score).toBe(2);
+        expect(turn5State.clueTokens).toBe(6);
+        expect(turn5State.stats.pace).toBe(8);
+        expect(turn5State.stats.efficiency).toBeCloseTo(1.50);
+        expect(turn5State.stats.cardsGotten).toBe(3);
+        expect(turn5State.stats.potentialCluesLost).toBe(2);
+
+        /* TODO: stack directions on the test loader
+        expect(turn5State.playStacksDirections).toEqual([
+          StackDirection.Undecided,
+          StackDirection.Down,
+          StackDirection.Undecided,
+          StackDirection.Down,
+          StackDirection.Undecided,
+        ]);
+        */
+      });
+      test.each([...Array(18).keys()])(
+        'card %i has the correct pips and possibilities', (order) => {
+          const turn5State = getStateAtTurn(testState, 4);
+          const card = turn5State.deck[order];
+          const expected = upOrDownTurn5Cards[order] as CardState;
+          expect(card.rankClueMemory.negativeClues)
+            .toEqual(expected.rankClueMemory.negativeClues);
+          expect(card.rankClueMemory.positiveClues)
+            .toEqual(expected.rankClueMemory.positiveClues);
+          expect(card.rankClueMemory.possibilities)
+            .toEqual(expected.rankClueMemory.possibilities);
+          expect(card.rankClueMemory.pipStates.slice(1, 5))
+            .toEqual(expected.rankClueMemory.pipStates.slice(1, 5));
+          expect(card.colorClueMemory.negativeClues)
+            .toEqual(expected.colorClueMemory.negativeClues);
+          expect(card.colorClueMemory.positiveClues)
+            .toEqual(expected.colorClueMemory.positiveClues);
+          expect(card.colorClueMemory.possibilities)
+            .toEqual(expected.colorClueMemory.possibilities);
+          expect(card.colorClueMemory.pipStates)
+            .toEqual(expected.colorClueMemory.pipStates);
+          // expect(card.possibleCards.map((arr) => arr.slice(1, 5)))
+          //  .toEqual(expected.possibleCards.map((arr) => arr.slice(1, 5)));
+        },
+      );
     });
     describe('final state', () => {
       test('has the correct cards on each player\'s hands', () => {
@@ -48,33 +110,31 @@ describe('integration', () => {
         ]);
         */
       });
-      test.skip('has the correct pips and possibilities', () => {
-        const finalState = getFinalState(testState);
-        for (const hand of finalState.hands) {
-          for (const order of hand) {
-            const card = finalState.deck[order];
-            const expected = upOrDownFinalCards[order];
-            expect(card.possibleCards)
-              .toEqual(expected.possibleCards);
-            expect(card.rankClueMemory.negativeClues)
-              .toEqual(expected.rankClueMemory.negativeClues);
-            expect(card.rankClueMemory.positiveClues)
-              .toEqual(expected.rankClueMemory.positiveClues);
-            expect(card.rankClueMemory.possibilities)
-              .toEqual(expected.rankClueMemory.possibilities);
-            expect(card.rankClueMemory.pipStates)
-              .toEqual(expected.rankClueMemory.pipStates);
-            expect(card.colorClueMemory.negativeClues)
-              .toEqual(expected.colorClueMemory.negativeClues);
-            expect(card.colorClueMemory.positiveClues)
-              .toEqual(expected.colorClueMemory.positiveClues);
-            expect(card.colorClueMemory.possibilities)
-              .toEqual(expected.colorClueMemory.possibilities);
-            expect(card.colorClueMemory.pipStates)
-              .toEqual(expected.colorClueMemory.pipStates);
-          }
-        }
-      });
+      test.each([...Array(45).keys()])(
+        'card %i has the correct pips and possibilities', (order) => {
+          const finalState = getFinalState(testState);
+          const card = finalState.deck[order];
+          const expected = upOrDownFinalCards[order];
+          expect(card.rankClueMemory.negativeClues)
+            .toEqual(expected.rankClueMemory.negativeClues);
+          expect(card.rankClueMemory.positiveClues)
+            .toEqual(expected.rankClueMemory.positiveClues);
+          expect(card.rankClueMemory.possibilities)
+            .toEqual(expected.rankClueMemory.possibilities);
+          // expect(card.rankClueMemory.pipStates.slice(1, 5))
+          //  .toEqual(expected.rankClueMemory.pipStates.slice(1, 5));
+          expect(card.colorClueMemory.negativeClues)
+            .toEqual(expected.colorClueMemory.negativeClues);
+          expect(card.colorClueMemory.positiveClues)
+            .toEqual(expected.colorClueMemory.positiveClues);
+          expect(card.colorClueMemory.possibilities)
+            .toEqual(expected.colorClueMemory.possibilities);
+          // expect(card.colorClueMemory.pipStates)
+          //  .toEqual(expected.colorClueMemory.pipStates);
+          // expect(card.possibleCards.map((arr) => arr.slice(1, 5)))
+          //   .toEqual(expected.possibleCards.map((arr) => arr.slice(1, 5)));
+        },
+      );
     });
     describe('pink_rainbow_ones test game', () => {
       beforeAll(() => {

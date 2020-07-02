@@ -48,11 +48,11 @@ const cardPossibilitiesReducer = produce((
   const valueIndex = clue.type === ClueType.Color ? getIndex(clue.value) : clue.value;
   const memory = isColorClue ? state.colorClueMemory : state.rankClueMemory;
 
-  if (!memory.positiveClues.includes(valueIndex)) {
+  if (positive && !memory.positiveClues.includes(valueIndex)) {
     memory.positiveClues.push(valueIndex);
   }
 
-  if (!memory.negativeClues.includes(valueIndex)) {
+  if (!positive && !memory.negativeClues.includes(valueIndex)) {
     memory.negativeClues.push(valueIndex);
   }
 

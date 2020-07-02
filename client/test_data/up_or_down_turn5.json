@@ -1,0 +1,4867 @@
+[
+    {
+        "order": 0,
+        "holder": 0,
+        "blank": false,
+        "suitIndex": 0,
+        "rank": 4,
+        "possibleCards": [
+            [
+                null,
+                1,
+                0,
+                0,
+                1,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                1,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                0,
+                1,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 1,
+        "holder": 0,
+        "blank": false,
+        "suitIndex": 2,
+        "rank": 5,
+        "possibleCards": [
+            [
+                null,
+                1,
+                0,
+                0,
+                1,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                1,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                0,
+                1,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 2,
+        "holder": 0,
+        "blank": false,
+        "suitIndex": 2,
+        "rank": 2,
+        "possibleCards": [
+            [
+                null,
+                1,
+                0,
+                0,
+                1,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                1,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                0,
+                1,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 3,
+        "holder": 0,
+        "blank": false,
+        "suitIndex": 2,
+        "rank": 4,
+        "possibleCards": [
+            [
+                null,
+                1,
+                0,
+                0,
+                1,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                1,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                0,
+                1,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 4,
+        "holder": 1,
+        "blank": false,
+        "suitIndex": 0,
+        "rank": 4,
+        "possibleCards": [
+            [
+                null,
+                1,
+                0,
+                1,
+                1,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 5,
+        "holder": 1,
+        "blank": false,
+        "suitIndex": 4,
+        "rank": 3,
+        "possibleCards": [
+            [
+                null,
+                1,
+                0,
+                1,
+                1,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 6,
+        "holder": 1,
+        "blank": false,
+        "suitIndex": 0,
+        "rank": 3,
+        "possibleCards": [
+            [
+                null,
+                1,
+                0,
+                1,
+                1,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 7,
+        "holder": 1,
+        "blank": false,
+        "suitIndex": 3,
+        "rank": 2,
+        "possibleCards": [
+            [
+                null,
+                1,
+                0,
+                1,
+                1,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 8,
+        "holder": 2,
+        "blank": false,
+        "suitIndex": 4,
+        "rank": 3,
+        "possibleCards": [
+            [
+                null,
+                1,
+                1,
+                1,
+                0,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                1,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [
+                1
+            ],
+            "pipStates": [
+                "Visible",
+                "Hidden",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 9,
+        "holder": 2,
+        "blank": false,
+        "suitIndex": 0,
+        "rank": 3,
+        "possibleCards": [
+            [
+                null,
+                1,
+                1,
+                1,
+                0,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                1,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [
+                1
+            ],
+            "pipStates": [
+                "Visible",
+                "Hidden",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 10,
+        "holder": null,
+        "blank": false,
+        "suitIndex": 1,
+        "rank": 5,
+        "possibleCards": [
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ],
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ],
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                1
+            ],
+            "positiveClues": [
+                1
+            ],
+            "negativeClues": [],
+            "pipStates": [
+                "Hidden",
+                "Visible",
+                "Hidden",
+                "Hidden",
+                "Hidden"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": true,
+        "numPositiveClues": 1,
+        "turnsClued": [
+            1
+        ],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": true,
+        "turnPlayed": 2,
+        "isMisplayed": false
+    },
+    {
+        "order": 11,
+        "holder": 2,
+        "blank": false,
+        "suitIndex": 0,
+        "rank": 2,
+        "possibleCards": [
+            [
+                null,
+                1,
+                1,
+                1,
+                0,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                1,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [
+                1
+            ],
+            "pipStates": [
+                "Visible",
+                "Hidden",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 12,
+        "holder": 3,
+        "blank": false,
+        "suitIndex": 4,
+        "rank": 2,
+        "possibleCards": [
+            [
+                null,
+                1,
+                1,
+                0,
+                0,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ],
+            [
+                null,
+                1,
+                2,
+                0,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [
+                3
+            ],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Hidden",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 13,
+        "holder": 3,
+        "blank": false,
+        "suitIndex": 3,
+        "rank": 1,
+        "possibleCards": [
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ],
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ],
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                3
+            ],
+            "positiveClues": [
+                3
+            ],
+            "negativeClues": [],
+            "pipStates": [
+                "Hidden",
+                "Hidden",
+                "Hidden",
+                "Visible",
+                "Hidden"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Eliminated",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 1,
+        "turnsClued": [
+            2
+        ],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 14,
+        "holder": null,
+        "blank": false,
+        "suitIndex": 3,
+        "rank": 5,
+        "possibleCards": [
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ],
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ],
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                3
+            ],
+            "positiveClues": [
+                3
+            ],
+            "negativeClues": [],
+            "pipStates": [
+                "Hidden",
+                "Hidden",
+                "Hidden",
+                "Visible",
+                "Hidden"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": true,
+        "numPositiveClues": 1,
+        "turnsClued": [
+            2
+        ],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": true,
+        "turnPlayed": 3,
+        "isMisplayed": false
+    },
+    {
+        "order": 15,
+        "holder": 3,
+        "blank": false,
+        "suitIndex": 4,
+        "rank": 4,
+        "possibleCards": [
+            [
+                null,
+                1,
+                1,
+                0,
+                0,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                0,
+                0,
+                0,
+                0,
+                null,
+                0
+            ],
+            [
+                null,
+                1,
+                2,
+                0,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [
+                3
+            ],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Hidden",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 0,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 16,
+        "holder": 2,
+        "blank": false,
+        "suitIndex": 2,
+        "rank": 3,
+        "possibleCards": [
+            [
+                null,
+                1,
+                1,
+                1,
+                0,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                1,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 3,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 17,
+        "holder": 3,
+        "blank": false,
+        "suitIndex": 0,
+        "rank": 2,
+        "possibleCards": [
+            [
+                null,
+                1,
+                1,
+                0,
+                0,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                0,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 4,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 18,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                0,
+                0,
+                0,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                1,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                1,
+                0,
+                1,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": 5,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 19,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 20,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 21,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 22,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 23,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 24,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 25,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 26,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 27,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 28,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 29,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 30,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 31,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 32,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 33,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 34,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 35,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 36,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 37,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 38,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 39,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 40,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 41,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 42,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 43,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    },
+    {
+        "order": 44,
+        "holder": null,
+        "blank": false,
+        "suitIndex": null,
+        "rank": null,
+        "possibleCards": [
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                2
+            ]
+        ],
+        "colorClueMemory": {
+            "possibilities": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible"
+            ]
+        },
+        "rankClueMemory": {
+            "possibilities": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7
+            ],
+            "positiveClues": [],
+            "negativeClues": [],
+            "pipStates": [
+                null,
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                "Visible",
+                null,
+                "Hidden"
+            ]
+        },
+        "identityDetermined": false,
+        "numPositiveClues": 0,
+        "turnsClued": [],
+        "turnDrawn": -1,
+        "isDiscarded": false,
+        "turnDiscarded": -1,
+        "isPlayed": false,
+        "turnPlayed": -1,
+        "isMisplayed": false
+    }
+]
