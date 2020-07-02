@@ -29,6 +29,7 @@ const cardPossibilitiesReducer = produce((
 
   // Don't calculate possibilities on speedrun (perf optimization)
   // or on "Throw it in a Hole" since the player can't see the played cards
+  // TODO: move to rules
   const calculatePossibilities = !metadata.options.speedrun
     && !variantRules.isThrowItInAHole(variant);
 

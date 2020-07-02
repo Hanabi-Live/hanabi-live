@@ -133,7 +133,7 @@ const cardsReducer = produce((
 
       const card = castDraft({
         ...initialCardState(action.order, variant),
-        holder: game.currentPlayerIndex,
+        holder: action.who,
         suitIndex: nullIfNegative(action.suit),
         rank: nullIfNegative(action.rank),
         turnDrawn: game.turn,
