@@ -18,6 +18,7 @@ const defaultMetadata: GameMetadata = {
     ...(new Options()),
     numPlayers: 3,
   },
+  playerSeat: null,
   characterAssignments: [],
   characterMetadata: [],
 };

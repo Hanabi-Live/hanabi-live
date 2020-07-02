@@ -40,6 +40,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       numPlayers,
       variantName: gameJSON.options.variant,
     },
+    playerSeat: null,
     characterAssignments: [],
     characterMetadata: [],
   };

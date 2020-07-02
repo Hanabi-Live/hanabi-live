@@ -15,6 +15,7 @@ const defaultMetadata: GameMetadata = {
     ...(new Options()),
     numPlayers: 3,
   },
+  playerSeat: null,
   characterAssignments: [],
   characterMetadata: [],
 };
@@ -198,6 +199,24 @@ describe('cardsReducer', () => {
       expect(deck[0].colorClueMemory.negativeClues[0]).toBe(anotherClueToCardOne.clue.value);
       expect(deck[1].colorClueMemory.positiveClues.length).toBe(1);
       expect(deck[1].colorClueMemory.positiveClues[0]).toBe(anotherClueToCardOne.clue.value);
+    });
+  });
+  describe('discard', () => {
+    test('eliminates a possibility on other cards', () => {
+      let deck: CardState[] = [defaultCard, secondCard];
+      deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultMetadata);
+      deck = cardsReducer(deck, draw(0, -1, -1, 1), gameState, defaultMetadata);
+
+      // In order to apply negative clues, the hand must be correct
+      const gameStateWithCorrectHands = { ...gameState, hands: [[0, 1]] };
+
+      // Discard a red 1
+      const discardCardOne = discard(false, 0, 0, 1, 1);
+      deck = cardsReducer(deck, discardCardOne, gameStateWithCorrectHands, defaultMetadata);
+
+      // Expect the remaining card to remove a possibility for a red 1
+      // So there are 2 red ones remaining in the deck
+      expect(deck[0].possibleCards[0][1]).toBe(2);
     });
   });
 });

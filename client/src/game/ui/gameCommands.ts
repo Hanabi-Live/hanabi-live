@@ -270,6 +270,7 @@ commands.set('init', (data: InitData) => {
   // Recreate the state store (using the Redux library)
   const metadata: GameMetadata = {
     options: data.options,
+    playerSeat: data.seat >= 0 ? data.seat : null,
     characterAssignments: data.characterAssignments.map((char) => CHARACTERS.get(char)!.id),
     characterMetadata: data.characterMetadata,
   };
