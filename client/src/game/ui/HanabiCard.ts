@@ -816,6 +816,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         false,
         globals.variant,
       );
+      card.updatePips();
     }
 
     // If this is a:
@@ -833,6 +834,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         playerHand2.children.each((layoutChild) => {
           const card = layoutChild.children[0] as HanabiCard;
           card.state = removePossibilityTemp(card.state, suitIndex, rank, false, globals.variant);
+          card.updatePips();
         });
       }
     }
@@ -1034,7 +1036,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   // Update all UI pips to their state
-  private updatePips() {
+  updatePips() {
     function updatePip(
       pipState: PipState,
       hasPositiveClues: boolean,

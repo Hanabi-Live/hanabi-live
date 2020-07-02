@@ -1,5 +1,6 @@
 // Functions related to deck information: total cards, drawing cards
 
+import { START_CARD_RANK } from '../types/constants';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
 import * as variantRules from './variant';
@@ -33,7 +34,14 @@ export function numCopiesOfCard(variant: Variant, rank: number, suit: Suit) {
     if (suit.reversed) {
       amountToAdd = 3;
     }
+  } else if (rank === START_CARD_RANK) {
+    if (variantRules.isUpOrDown(variant)) {
+      amountToAdd = 1;
+    } else {
+      throw new Error('Trying to add a Start card to a variant that is not Up or Down');
+    }
   }
+
   if (suit.oneOfEach) {
     amountToAdd = 1;
   }

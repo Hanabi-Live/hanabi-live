@@ -155,10 +155,14 @@ function checkPossibilitiesEliminatedByClues(card: CardState, expected: CardStat
 }
 
 function checkPossibilitiesEliminatedByObservation(card: CardState, expected: CardState) {
-  expect(card.rankClueMemory.pipStates.slice(1, 6))
-    .toEqual(expected.rankClueMemory.pipStates.slice(1, 6));
+  function validRanks<T>(arr: readonly T[]) {
+    // Ensure Start is counted as a valid rank
+    return arr.length > 6 ? arr.slice(1, 6).concat(arr[7]) : arr.slice(1, 6);
+  }
+  expect(validRanks(card.rankClueMemory.pipStates))
+    .toEqual(validRanks(expected.rankClueMemory.pipStates));
   expect(card.colorClueMemory.pipStates)
     .toEqual(expected.colorClueMemory.pipStates);
-  expect(card.possibleCards.map((arr) => arr.slice(1, 6)))
-    .toEqual(expected.possibleCards.map((arr) => arr.slice(1, 6)));
+  expect(card.possibleCards.map(validRanks))
+    .toEqual(expected.possibleCards.map(validRanks));
 }
