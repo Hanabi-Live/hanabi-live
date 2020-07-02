@@ -59,24 +59,9 @@ describe('integration', () => {
           const turn5State = getStateAtTurn(testState, 4);
           const card = turn5State.deck[order];
           const expected = upOrDownTurn5Cards[order] as CardState;
-          expect(card.rankClueMemory.negativeClues)
-            .toEqual(expected.rankClueMemory.negativeClues);
-          expect(card.rankClueMemory.positiveClues)
-            .toEqual(expected.rankClueMemory.positiveClues);
-          expect(card.rankClueMemory.possibilities)
-            .toEqual(expected.rankClueMemory.possibilities);
-          expect(card.rankClueMemory.pipStates.slice(1, 5))
-            .toEqual(expected.rankClueMemory.pipStates.slice(1, 5));
-          expect(card.colorClueMemory.negativeClues)
-            .toEqual(expected.colorClueMemory.negativeClues);
-          expect(card.colorClueMemory.positiveClues)
-            .toEqual(expected.colorClueMemory.positiveClues);
-          expect(card.colorClueMemory.possibilities)
-            .toEqual(expected.colorClueMemory.possibilities);
-          expect(card.colorClueMemory.pipStates)
-            .toEqual(expected.colorClueMemory.pipStates);
-          // expect(card.possibleCards.map((arr) => arr.slice(1, 5)))
-          //  .toEqual(expected.possibleCards.map((arr) => arr.slice(1, 5)));
+          checkCluesAreRemembered(card, expected);
+          checkPossibilitiesEliminatedByClues(card, expected);
+          // checkPossibilitiesEliminatedByObservation(card, expected);
         },
       );
     });
@@ -114,25 +99,10 @@ describe('integration', () => {
         'card %i has the correct pips and possibilities', (order) => {
           const finalState = getFinalState(testState);
           const card = finalState.deck[order];
-          const expected = upOrDownFinalCards[order];
-          expect(card.rankClueMemory.negativeClues)
-            .toEqual(expected.rankClueMemory.negativeClues);
-          expect(card.rankClueMemory.positiveClues)
-            .toEqual(expected.rankClueMemory.positiveClues);
-          expect(card.rankClueMemory.possibilities)
-            .toEqual(expected.rankClueMemory.possibilities);
-          // expect(card.rankClueMemory.pipStates.slice(1, 5))
-          //  .toEqual(expected.rankClueMemory.pipStates.slice(1, 5));
-          expect(card.colorClueMemory.negativeClues)
-            .toEqual(expected.colorClueMemory.negativeClues);
-          expect(card.colorClueMemory.positiveClues)
-            .toEqual(expected.colorClueMemory.positiveClues);
-          expect(card.colorClueMemory.possibilities)
-            .toEqual(expected.colorClueMemory.possibilities);
-          // expect(card.colorClueMemory.pipStates)
-          //  .toEqual(expected.colorClueMemory.pipStates);
-          // expect(card.possibleCards.map((arr) => arr.slice(1, 5)))
-          //   .toEqual(expected.possibleCards.map((arr) => arr.slice(1, 5)));
+          const expected = upOrDownFinalCards[order] as CardState;
+          checkCluesAreRemembered(card, expected);
+          checkPossibilitiesEliminatedByClues(card, expected);
+          // checkPossibilitiesEliminatedByObservation(card, expected);
         },
       );
     });
@@ -165,3 +135,32 @@ describe('integration', () => {
     });
   });
 });
+
+function checkCluesAreRemembered(card: CardState, expected: CardState) {
+  expect(card.rankClueMemory.negativeClues)
+    .toEqual(expected.rankClueMemory.negativeClues);
+  expect(card.rankClueMemory.positiveClues)
+    .toEqual(expected.rankClueMemory.positiveClues);
+  expect(card.colorClueMemory.negativeClues)
+    .toEqual(expected.colorClueMemory.negativeClues);
+  expect(card.colorClueMemory.positiveClues)
+    .toEqual(expected.colorClueMemory.positiveClues);
+}
+
+function checkPossibilitiesEliminatedByClues(card: CardState, expected: CardState) {
+  expect(card.rankClueMemory.possibilities)
+    .toEqual(expected.rankClueMemory.possibilities);
+  expect(card.colorClueMemory.possibilities)
+    .toEqual(expected.colorClueMemory.possibilities);
+}
+
+/*
+function checkPossibilitiesEliminatedByObservation(card: CardState, expected: CardState) {
+  expect(card.rankClueMemory.pipStates.slice(1, 5))
+    .toEqual(expected.rankClueMemory.pipStates.slice(1, 5));
+  expect(card.colorClueMemory.pipStates)
+    .toEqual(expected.colorClueMemory.pipStates);
+  expect(card.possibleCards.map((arr) => arr.slice(1, 5)))
+    .toEqual(expected.possibleCards.map((arr) => arr.slice(1, 5)));
+}
+*/
