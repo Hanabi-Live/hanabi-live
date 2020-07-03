@@ -390,7 +390,7 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 
 ## Friends
 
-* When there are a lot of users online and a lot of games going on, it can be cumbersome to find the people you care about. The website supports adding specific people to your friends list with the `/friend` command.
+* When there are a lot of users online and a lot of games going on, it can be cumbersome to find the people you care about. The website supports adding specific people to your friends list with the `/friend` command. (e.g. `/friend Alice` to add Alice)
 * Your friends will be listed alphabetically at the top of the user list.
 * Games that contain one or more of your friends will be sorted at the top of the games list.
 * If you have one or more friends, a "Show History of Friends" button will appear on the history screen.
