@@ -1,10 +1,16 @@
 // Calculates the state of a card after a clue
 
 import produce, {
-  Draft, original, castDraft, castImmutable,
+  castDraft,
+  castImmutable,
+  Draft,
+  original,
 } from 'immer';
 import {
-  removePossibilities, checkAllPipPossibilities, applyColorClue, applyRankClue,
+  applyColorClue,
+  applyRankClue,
+  checkAllPipPossibilities,
+  removePossibilities,
 } from '../rules/applyClueCore';
 import * as variantRules from '../rules/variant';
 import CardState, { PipState } from '../types/CardState';

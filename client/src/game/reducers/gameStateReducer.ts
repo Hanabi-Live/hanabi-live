@@ -1,7 +1,9 @@
 // Functions for building a state table for every turn
 
 import produce, {
-  Draft, original, current,
+  current,
+  Draft,
+  original,
 } from 'immer';
 import { ensureAllCases } from '../../misc';
 import { VARIANTS } from '../data/gameData';

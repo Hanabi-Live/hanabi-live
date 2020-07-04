@@ -1,8 +1,6 @@
 // Calculates the state of the deck after an action
 
-import produce, {
-  Draft, castDraft,
-} from 'immer';
+import produce, { castDraft, Draft } from 'immer';
 import { ensureAllCases } from '../../misc';
 import { removePossibilities, checkAllPipPossibilities } from '../rules/applyClueCore';
 import { GameAction } from '../types/actions';

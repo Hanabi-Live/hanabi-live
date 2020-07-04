@@ -1,6 +1,10 @@
 // The main reducer for the game mode, contemplating replays and game actions
 
-import produce, { Draft, original, castDraft } from 'immer';
+import produce, {
+  castDraft,
+  Draft,
+  original,
+} from 'immer';
 import { Action, GameAction } from '../types/actions';
 import GameState from '../types/GameState';
 import State from '../types/State';
