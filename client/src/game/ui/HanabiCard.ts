@@ -577,7 +577,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  removeFromParent() {
+  private removeFromParent() {
     // Remove the card from the player's hand in preparation of adding it to either
     // the play stacks or the discard pile
     const layoutChild = this.parent;
@@ -593,6 +593,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToPlayStacks() {
+    this.removeFromParent();
     // We add a LayoutChild to a PlayStack
     if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
       // The act of adding it will automatically tween the card
@@ -618,6 +619,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToDiscardPile() {
+    this.removeFromParent();
+
     // We add a LayoutChild to a CardLayout
     const suit = globals.variant.suits[this.state.suitIndex!];
     const discardStack = globals.elements.discardStacks.get(suit);

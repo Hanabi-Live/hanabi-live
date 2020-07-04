@@ -140,8 +140,6 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
   // It is redrawn in the reveal() function
   card.empathy = false;
 
-  card.removeFromParent();
-
   if (card.state.isMisplayed && !globals.animateFast && !globals.options.speedrun) {
     // If this card was misplayed,
     // it will automatically tween to the discard pile after reaching the play stacks
@@ -257,7 +255,6 @@ actionFunctions.set('play', (data: ActionPlay) => {
   // It is redrawn in the reveal() function
   card.empathy = false;
 
-  card.removeFromParent();
   card.animateToPlayStacks();
 
   // The fact that this card was played could make some other cards useless or critical
