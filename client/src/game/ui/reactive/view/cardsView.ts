@@ -1,4 +1,5 @@
 import CardState from '../../../types/CardState';
+import ClueType from '../../../types/ClueType';
 import State from '../../../types/State';
 import globals from '../../globals';
 import observeStore, { Subscription, Selector, Listener } from '../observeStore';
@@ -39,15 +40,48 @@ function subscribeToCardChanges(order: number) {
   }
 
   // TODO: all the properties!
+  // Clued border
   sub((c) => ({
     numPositiveClues: c.numPositiveClues,
     isPlayed: c.isPlayed,
     isDiscarded: c.isDiscarded,
-  }), () => setClued(order));
-
+  }), () => updateCluedBorder(order));
+  // Pips
+  sub((c) => c.rankClueMemory.pipStates, () => updatePips(order, ClueType.Rank));
+  sub((c) => c.colorClueMemory.pipStates, () => updatePips(order, ClueType.Color));
+  // Card visuals
+  sub((c) => ({
+    rank: c.rank,
+    suitIndex: c.suitIndex,
+    isPlayed: c.isPlayed,
+    isDiscarded: c.isDiscarded,
+    possibleRanks: c.rankClueMemory.possibilities,
+    possibleSuits: c.colorClueMemory.possibilities,
+    blank: c.blank,
+  }), () => updateCardVisuals(order));
+  // Notes
+  sub((c) => ({
+    possibleRanks: c.rankClueMemory.possibilities,
+    possibleSuits: c.colorClueMemory.possibilities,
+  }), () => updateNotePossibilities(order));
   return observeStore(globals.store!, subscriptions);
 }
 
-function setClued(order: number) {
+// TODO: these functions should pass the value of the changed properties,
+// and not let the UI query the whole state object
+
+function updateCluedBorder(order: number) {
   globals.deck[order].setClued();
+}
+
+function updatePips(order: number, clueType: ClueType) {
+  globals.deck[order].updatePips(clueType);
+}
+
+function updateCardVisuals(order: number) {
+  globals.deck[order].setBareImage();
+}
+
+function updateNotePossibilities(order: number) {
+  globals.deck[order].updateNotePossibilities();
 }

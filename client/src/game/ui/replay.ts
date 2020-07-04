@@ -3,10 +3,8 @@
 import produce from 'immer';
 import Konva from 'konva';
 import * as deck from '../rules/deck';
-import * as variantRules from '../rules/variant';
 import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
-import StackDirection from '../types/StackDirection';
 import action from './action';
 import cardStatusCheck from './cardStatusCheck';
 import Shuttle from './controls/Shuttle';
@@ -184,12 +182,6 @@ const reset = () => {
   globals.clues = MAX_CLUE_NUM;
   globals.cardsGotten = 0;
   globals.numCardsPlayed = 0;
-  if (variantRules.isUpOrDown(globals.variant)) {
-    globals.stackDirections = [];
-    for (let i = 0; i < globals.variant.suits.length; i++) {
-      globals.stackDirections.push(StackDirection.Undecided);
-    }
-  }
 
   // Reset various UI elements
   globals.postAnimationLayout = null;
@@ -197,11 +189,6 @@ const reset = () => {
   globals.elements.fullActionLog!.reset();
   globals.elements.deck!.setCount(globals.deckSize);
   globals.elements.clueLog!.clear();
-  if (variantRules.isUpOrDown(globals.variant)) {
-    for (let i = 0; i < globals.variant.suits.length; i++) {
-      globals.elements.suitLabelTexts[i].fitText('');
-    }
-  }
 
   for (let i = 0; i < globals.elements.playerHands.length; i++) {
     globals.elements.playerHands[i].removeChildren();
@@ -226,15 +213,6 @@ const reset = () => {
     // The stack base might have been morphed
     if (stackBase.state.rank !== 0 || stackBase.state.suitIndex !== i) {
       stackBase.convert(i, 0);
-    }
-
-    // Reverse the stack direction of reversed suits, except on the "Up or Down" variant
-    // that uses the "UNDECIDED" direction.
-    if (
-      variantRules.hasReversedSuits(globals.variant)
-      && !variantRules.isUpOrDown(globals.variant)
-    ) {
-      globals.stackDirections[i] = suit.reversed ? StackDirection.Down : StackDirection.Up;
     }
   }
 
