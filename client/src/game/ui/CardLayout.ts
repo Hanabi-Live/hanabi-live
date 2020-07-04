@@ -77,9 +77,6 @@ export default class CardLayout extends Konva.Group {
     if (n > 1) {
       dist = (lw - uw) / (n - 1);
     }
-    if (dist > 10) {
-      dist = 10;
-    }
     uw += dist * (n - 1);
 
     if (this.align === 'center' && uw < lw) {
