@@ -1,4 +1,4 @@
-import deepEqual from 'deep-equal';
+import equal from 'fast-deep-equal';
 import { Store, Action } from 'redux';
 
 export type Selector<T, U> = (s: T) => U | undefined;
@@ -35,7 +35,7 @@ export default function observeStore<S, A extends Action<any>, T>(
           return true;
         }
         // Fire if any part of it changed
-        return !deepEqual(nextValue, s.select(currentState));
+        return !equal(nextValue, s.select(currentState));
       })
       .forEach((s) => s.onChange(s.select(nextState)!));
 
