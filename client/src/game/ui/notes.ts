@@ -76,16 +76,16 @@ const checkNoteKeywords = (
 ) => keywords.find((k) => note === k || fullNote.includes(`[${k}]`)) !== undefined;
 
 export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
-  note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
-  note = note.trim(); // Remove all leading and trailing whitespace
-  const fullNote = note;
+  let text = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
+  text = text.trim(); // Remove all leading and trailing whitespace
+  const fullNote = text;
 
   // Only examine the text to the right of the rightmost pipe
   // (pipes are a conventional way to append new information to a note
-  if (note.includes('|')) {
-    const match = note.match(/.*\|(.*)/);
-    note = match![1];
-    note = note.trim(); // Remove all leading and trailing whitespace
+  if (text.includes('|')) {
+    const match = text.match(/.*\|(.*)/);
+    text = match![1];
+    text = text.trim(); // Remove all leading and trailing whitespace
   }
 
   // First, check to see if this card should be marked with certain properties
@@ -94,12 +94,12 @@ export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
     'trash',
     'stale',
     'bad',
-  ], note, fullNote);
+  ], text, fullNote);
 
   const needsFix = checkNoteKeywords([
     'fixme',
     'needs fix',
-  ], note, fullNote);
+  ], text, fullNote);
 
   const chopMoved = checkNoteKeywords([
     'cm',
@@ -114,20 +114,20 @@ export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
     'tocm',
     'utfcm',
     'utbcm',
-  ], note, fullNote);
+  ], text, fullNote);
 
   const finessed = checkNoteKeywords([
     'f',
     'hf',
     'pf',
     'gd',
-  ], note, fullNote);
+  ], text, fullNote);
 
-  const blank = checkNoteKeywords(['blank'], note, fullNote);
+  const blank = checkNoteKeywords(['blank'], text, fullNote);
 
-  const unclued = checkNoteKeywords(['unclued'], note, fullNote);
+  const unclued = checkNoteKeywords(['unclued'], text, fullNote);
 
-  const noteCard = cardFromNote(variant, note, fullNote);
+  const noteCard = cardFromNote(variant, text, fullNote);
   const suitIndex = noteCard.suit ? suitToMsgSuit(noteCard.suit, variant) : null;
   const rank = noteCard.rank;
 

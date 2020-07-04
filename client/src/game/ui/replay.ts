@@ -94,31 +94,27 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
     return;
   }
 
-  // Validate function arguments
-  if (target < 0) {
-    target = 0;
-  }
-  if (target > globals.replayMax) {
-    target = globals.replayMax;
-  }
-  if (target === globals.replayTurn) {
+  // Validate function arguments: target must be between 0 and replayMax
+  const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max));
+  const targetTurn = clamp(target, 0, globals.replayMax);
+  if (targetTurn === globals.replayTurn) {
     // TEMP: eventually, move code from this file to reducers and observers
     globals.store!.dispatch({ type: 'goToTurn', turn: globals.replayTurn });
 
     return;
   }
 
-  const rewind = target < globals.replayTurn;
+  const rewind = targetTurn < globals.replayTurn;
 
   if (
     globals.sharedReplay
     && globals.amSharedReplayLeader
     && globals.useSharedTurns
   ) {
-    shareCurrentTurn(target);
+    shareCurrentTurn(targetTurn);
   }
 
-  globals.replayTurn = target;
+  globals.replayTurn = targetTurn;
 
   setVisibleButtons();
   adjustShuttles(false);
@@ -375,20 +371,14 @@ export function barDrag(this: Konva.Rect, pos: Konva.Vector2d) {
 
 const positionReplayShuttle = (
   shuttle: Shuttle,
-  targetTurn: number,
+  target: number,
   smaller: boolean,
   fast: boolean,
 ) => {
-  let max = globals.replayMax;
-
   // During initialization, the turn will be -1 and the maximum number of replay turns will be 0
   // Account for this and provide sane defaults
-  if (targetTurn === -1) {
-    targetTurn = 0;
-  }
-  if (max === 0) {
-    max = 1;
-  }
+  const targetTurn = (target === -1) ? 0 : target;
+  const max = (globals.replayMax === 0) ? 1 : globals.replayMax;
 
   const winH = globals.stage.height();
   const sliderW = globals.elements.replayBar!.width() - shuttle.width();
