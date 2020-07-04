@@ -102,35 +102,35 @@ describe('integration', () => {
           const expected = (upOrDownFinalCards as CardState[])[order];
           checkCluesAreRemembered(card, expected);
           checkPossibilitiesEliminatedByClues(card, expected);
-          // checkPossibilitiesEliminatedByObservation(card, expected);
+          checkPossibilitiesEliminatedByObservation(card, expected);
         },
       );
     });
-    describe('pink_rainbow_ones test game', () => {
-      beforeAll(() => {
-        // Load the game and get the final state
-        testState = loadGameJSON(pinkRainbowOnesGame);
+  });
+  describe('pink_rainbow_ones test game', () => {
+    beforeAll(() => {
+      // Load the game and get the final state
+      testState = loadGameJSON(pinkRainbowOnesGame);
+    });
+    describe('final state', () => {
+      test('has the correct cards on each player\'s hands', () => {
+        const finalState = getFinalState(testState);
+        expect(finalState.hands).toEqual([
+          [34, 37, 39, 43],
+          [38, 40, 44, 47],
+          [28, 31, 33, 42],
+        ]);
       });
-      describe('final state', () => {
-        test('has the correct cards on each player\'s hands', () => {
-          const finalState = getFinalState(testState);
-          expect(finalState.hands).toEqual([
-            [34, 37, 39, 43],
-            [38, 40, 44, 47],
-            [28, 31, 33, 42],
-          ]);
-        });
-        test('has the correct stats', () => {
-          const finalState = getFinalState(testState);
-          expect(finalState.turn).toBe(53);
-          expect(finalState.currentPlayerIndex).toBe(-1);
-          expect(finalState.score).toBe(25);
-          expect(finalState.clueTokens).toBe(8);
-          expect(finalState.stats.pace).toBeNull();
-          expect(finalState.stats.efficiency).toBeCloseTo(1.67);
-          expect(finalState.stats.cardsGotten).toBe(30);
-          expect(finalState.stats.potentialCluesLost).toBe(18);
-        });
+      test('has the correct stats', () => {
+        const finalState = getFinalState(testState);
+        expect(finalState.turn).toBe(53);
+        expect(finalState.currentPlayerIndex).toBe(-1);
+        expect(finalState.score).toBe(25);
+        expect(finalState.clueTokens).toBe(8);
+        expect(finalState.stats.pace).toBeNull();
+        expect(finalState.stats.efficiency).toBeCloseTo(1.67);
+        expect(finalState.stats.cardsGotten).toBe(30);
+        expect(finalState.stats.potentialCluesLost).toBe(18);
       });
     });
   });
@@ -159,10 +159,10 @@ function checkPossibilitiesEliminatedByObservation(card: CardState, expected: Ca
     // Ensure Start is counted as a valid rank
     return arr.length > 6 ? arr.slice(1, 6).concat(arr[7]) : arr.slice(1, 6);
   }
+  expect(card.possibleCards.map(validRanks))
+    .toEqual(expected.possibleCards.map(validRanks));
   expect(validRanks(card.rankClueMemory.pipStates))
     .toEqual(validRanks(expected.rankClueMemory.pipStates));
   expect(card.colorClueMemory.pipStates)
     .toEqual(expected.colorClueMemory.pipStates);
-  expect(card.possibleCards.map(validRanks))
-    .toEqual(expected.possibleCards.map(validRanks));
 }

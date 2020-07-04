@@ -1,6 +1,8 @@
 // Calculates the state of a card after a clue
 
-import produce, { Draft, original, castDraft } from 'immer';
+import produce, {
+  Draft, original, castDraft, castImmutable,
+} from 'immer';
 import {
   removePossibilities, checkAllPipPossibilities, applyColorClue, applyRankClue,
 } from '../rules/applyClueCore';
@@ -98,18 +100,20 @@ const cardPossibilitiesReducer = produce((
     .filter((r) => !suitsRemoved.includes(r));
 
   // Use the calculated information to hide/eliminate pips
-  updatePipStates(
+  state.colorClueMemory.pipStates = updatePipStates(
     state.colorClueMemory.pipStates,
     suitsRemoved,
     suitsPossible,
   );
-  updatePipStates(
+  state.rankClueMemory.pipStates = updatePipStates(
     state.rankClueMemory.pipStates,
     ranksRemoved,
     ranksPossible,
   );
 
   updateIdentity(state);
+
+  let newState = castImmutable(state);
 
   // Reapply rank clues if we removed a special suit
   const shouldReapplyRankClues = calculatePossibilities
@@ -118,7 +122,7 @@ const cardPossibilitiesReducer = produce((
       .some((s) => s.allClueRanks || s.noClueRanks);
 
   if (shouldReapplyRankClues) {
-    state = reapplyClues(state, ClueType.Rank, metadata);
+    newState = reapplyClues(newState, ClueType.Rank, metadata);
   }
 
   // Reapply suit clues if we removed the special rank
@@ -127,47 +131,64 @@ const cardPossibilitiesReducer = produce((
     && ranksRemoved.some((r) => r === variant.specialRank);
 
   if (shouldReapplyColorClues) {
-    state = reapplyClues(state, ClueType.Color, metadata);
+    newState = reapplyClues(newState, ClueType.Color, metadata);
   }
+
+  state.rankClueMemory = castDraft(newState.rankClueMemory);
+  state.colorClueMemory = castDraft(newState.colorClueMemory);
+  state.possibleCards = castDraft(newState.possibleCards);
 }, {} as CardState);
 
 export default cardPossibilitiesReducer;
 
-function reapplyClues(state: Draft<CardState>, clueType: ClueType, metadata: GameMetadata) {
+function reapplyClues(state: CardState, clueType: ClueType, metadata: GameMetadata) {
   const isColorType = clueType === ClueType.Color;
   const colors = isColorType ? getVariant(metadata).clueColors : null;
 
   const memory = isColorType ? state.colorClueMemory : state.rankClueMemory;
   const { positiveClues, negativeClues } = memory;
-  memory.positiveClues = [];
-  memory.negativeClues = [];
+
+  // Reapplying clues means starting from scratch
+  const memoryWithoutClues = {
+    ...memory,
+    negativeClues: [],
+    positiveClues: [],
+  };
+  let newState = {
+    ...state,
+    rankClueMemory: (isColorType ? state.rankClueMemory : memoryWithoutClues),
+    colorClueMemory: (isColorType ? memoryWithoutClues : state.colorClueMemory),
+  };
 
   // Recurse
   for (const clueValue of positiveClues) {
     const value = isColorType ? colorClue(colors![clueValue]) : rankClue(clueValue);
-    state = cardPossibilitiesReducer(state, value, true, metadata);
+    newState = cardPossibilitiesReducer(newState, value, true, metadata);
   }
   for (const clueValue of negativeClues) {
     const value = isColorType ? colorClue(colors![clueValue]) : rankClue(clueValue);
-    state = cardPossibilitiesReducer(state, value, false, metadata);
+    newState = cardPossibilitiesReducer(newState, value, false, metadata);
   }
 
-  return state;
+  return newState;
 }
 
 function updatePipStates(
-  pipStates: PipState[],
+  pipStates: readonly PipState[],
   pipsRemoved: number[],
   pipsPossible: boolean[] | null,
 ) {
-  for (const i of pipsRemoved) {
+  return pipStates.map((pip, i) => {
     // Hide the removed pips
-    pipStates[i] = 'Hidden';
-  }
-  if (pipsPossible !== null) {
+    if (pipsRemoved.includes(i)) {
+      return 'Hidden';
+    }
     // Mark pips that are not hidden but not possible as eliminated
-    pipStates = pipStates.map((pip, i) => (!pipsPossible[i] && pip !== 'Hidden' ? 'Eliminated' : pip));
-  }
+    if (pipsPossible !== null && !pipsPossible[i] && pip !== 'Hidden') {
+      return 'Eliminated';
+    }
+    return pip;
+  });
 }
 
 // Based on the current possibilities, updates the known identity of this card

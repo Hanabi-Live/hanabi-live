@@ -7,6 +7,7 @@ import {
   ActionPlay, GameAction, ActionDiscard, ActionClue, ActionDraw,
 } from '../src/game/types/actions';
 import ClueType from '../src/game/types/ClueType';
+import { STACK_BASE_RANK } from '../src/game/types/constants';
 import GameMetadata from '../src/game/types/GameMetadata';
 import GameState from '../src/game/types/GameState';
 import MsgClue from '../src/game/types/MsgClue';
@@ -108,12 +109,13 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
         // Check if this is actually a play or a misplay
         const jsonCard = gameJSON.deck[a.which.order];
         const playStack = s.playStacks[jsonCard.suit];
-        const topOfStackRank = playStack.length === 0
-          ? 0
-          : gameJSON.deck[playStack[playStack.length - 1]].rank;
+        let topOfStackRank = STACK_BASE_RANK;
+        if (playStack.length > 0) {
+          topOfStackRank = gameJSON.deck[playStack[playStack.length - 1]].rank;
+        }
         // TODO: Ignoring reversed for now
-        const misplayed = hasReversedSuits(variant) ? false : topOfStackRank !== jsonCard.rank - 1;
-        if (misplayed) {
+        const successful = hasReversedSuits(variant) ? true : topOfStackRank === jsonCard.rank - 1;
+        if (!successful) {
           // Send a discard and a strike
           action = { type: 'discard', failed: true, which: a.which };
           nextState = gameStateReducer(s, action, state.metadata);
