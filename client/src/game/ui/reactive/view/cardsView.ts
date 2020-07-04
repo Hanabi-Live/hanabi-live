@@ -79,6 +79,20 @@ function updatePips(order: number, clueType: ClueType) {
 }
 
 function updateCardVisuals(order: number) {
+  // TODO REMOVE THIS LATER
+  // Keep track of which cards we have learned for the purposes of
+  // showing the true card face in the in-game replay
+  // (this has to be done before the card is initialized)
+  const card = globals.store?.getState().visibleState.deck[order];
+  if (!card) {
+    throw new Error('Bad things are happening.');
+  }
+  if (card.suitIndex !== null && card.rank !== null) {
+    const learnedCard = globals.learnedCards[order];
+    learnedCard.suit = globals.variant.suits[card.suitIndex];
+    learnedCard.rank = card.rank;
+  }
+
   globals.deck[order].setBareImage();
 }
 

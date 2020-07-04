@@ -204,15 +204,6 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   globals.indexOfLastDrawnCard = order;
   globals.elements.deck!.setCount(globals.deckSize);
 
-  // Keep track of which cards we have learned for the purposes of
-  // showing the true card face in the in-game replay
-  // (this has to be done before the card is initialized)
-  if (suit !== null && rank !== null) {
-    const learnedCard = globals.learnedCards[order];
-    learnedCard.suit = suit;
-    learnedCard.rank = rank;
-  }
-
   // Cards are created on first initialization for performance reasons
   // So, since this card was just drawn, refresh all the variables on the card
   // (this is necessary because we might be rewinding in a replay)
