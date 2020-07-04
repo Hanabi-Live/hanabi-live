@@ -139,8 +139,9 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
 
   // Use "startsWith" instead of "===" to work around an unknown bug where
   // the room can already have the table number appended (e.g. "table123")
-  if (room.startsWith('table')) {
-    room = `table${globals.tableID}`;
+  let roomId = room;
+  if (roomId.startsWith('table')) {
+    roomId = `table${globals.tableID}`;
   }
 
   // Add the chat message to the typed history so that we can use the up arrow later
@@ -160,7 +161,7 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
 
     const chatCommandFunction = chatCommands.get(command);
     if (typeof chatCommandFunction !== 'undefined') {
-      chatCommandFunction(room, args);
+      chatCommandFunction(roomId, args);
       return;
     }
   }

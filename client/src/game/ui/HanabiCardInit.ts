@@ -452,11 +452,13 @@ const scaleCardImage = (
 const drawX = (
   ctx: KonvaContext.Context,
   shape: Konva.Shape,
-  x: number,
-  y: number,
+  positionX: number,
+  positionY: number,
   size: number,
   width: number,
 ) => {
+  let x = positionX;
+  let y = positionY;
   // Start at the top left corner and draw an X
   ctx.beginPath();
   x -= size;

@@ -142,11 +142,11 @@ export const end = () => {
   // In addition to visible cards, it is also possible that a card drawn in the future was morphed.
   // If we don't redraw it now, it might still appear as morphed if we jump ahead in the replay.
   for (const card of globals.deck) {
-    card.unsetBlank();
+    // TODO: card.unsetBlank();
     card.setBareImage();
   }
   for (const card of globals.stackBases) {
-    card.unsetBlank();
+    // TODO: card.unsetBlank();
     card.setBareImage();
   }
 };

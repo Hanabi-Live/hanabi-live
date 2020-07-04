@@ -99,9 +99,9 @@ module.exports = {
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L316
     'no-multiple-empty-lines': ['error', { max: 1, maxBOF: 0, maxEOF: 0 }],
 
-    // We make use of parameter reassigning where appropriate
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js#L190
-    'no-param-reassign': ['off'],
+    // We allow reassigning properties of parameters, but not the parameters themselves
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js#L195
+    'no-param-reassign': ['error', { props: false }],
 
     // Airbnb disallows these because it can lead to errors with minified code;
     // we don't have to worry about this in for loops though
@@ -111,7 +111,7 @@ module.exports = {
     // Clean code can arise from for-of statements if used properly
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L334
     'no-restricted-syntax': ['off', 'ForOfStatement'],
-  
+
     // KineticJS has functions that are prefixed with an underscore
     // (remove this once the code base is transitioned to Phaser)
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L371

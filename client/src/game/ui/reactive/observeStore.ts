@@ -1,6 +1,7 @@
+import equal from 'fast-deep-equal';
 import { Store, Action } from 'redux';
 
-export type Selector<T, U> = (s: T) => U;
+export type Selector<T, U> = (s: T) => U | undefined;
 export type Listener<U> = (prop: U) => void;
 export type Subscription<T, U> = {
   select: Selector<T, U>;
@@ -16,11 +17,27 @@ export default function observeStore<S, A extends Action<any>, T>(
 
   function handleChange() {
     const nextState = store.getState();
+    if (currentState === nextState) {
+      // No change
+      return;
+    }
 
     // If the path changed, call the function
     subscriptions
-      .filter((s) => currentState === undefined || s.select(nextState) !== s.select(currentState))
-      .forEach((s) => s.onChange(s.select(nextState)));
+      .filter((s) => {
+        const nextValue = s.select(nextState);
+        if (nextValue === undefined) {
+          // The selector wants to skip this one
+          return false;
+        }
+        if (currentState === undefined) {
+          // Initializing, always fire all
+          return true;
+        }
+        // Fire if any part of it changed
+        return !equal(nextValue, s.select(currentState));
+      })
+      .forEach((s) => s.onChange(s.select(nextState)!));
 
     currentState = nextState;
   }

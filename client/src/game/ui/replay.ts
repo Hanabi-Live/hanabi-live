@@ -3,10 +3,8 @@
 import produce from 'immer';
 import Konva from 'konva';
 import * as deck from '../rules/deck';
-import * as variantRules from '../rules/variant';
 import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
-import StackDirection from '../types/StackDirection';
 import action from './action';
 import cardStatusCheck from './cardStatusCheck';
 import Shuttle from './controls/Shuttle';
@@ -94,31 +92,27 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
     return;
   }
 
-  // Validate function arguments
-  if (target < 0) {
-    target = 0;
-  }
-  if (target > globals.replayMax) {
-    target = globals.replayMax;
-  }
-  if (target === globals.replayTurn) {
+  // Validate function arguments: target must be between 0 and replayMax
+  const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max));
+  const targetTurn = clamp(target, 0, globals.replayMax);
+  if (targetTurn === globals.replayTurn) {
     // TEMP: eventually, move code from this file to reducers and observers
     globals.store!.dispatch({ type: 'goToTurn', turn: globals.replayTurn });
 
     return;
   }
 
-  const rewind = target < globals.replayTurn;
+  const rewind = targetTurn < globals.replayTurn;
 
   if (
     globals.sharedReplay
     && globals.amSharedReplayLeader
     && globals.useSharedTurns
   ) {
-    shareCurrentTurn(target);
+    shareCurrentTurn(targetTurn);
   }
 
-  globals.replayTurn = target;
+  globals.replayTurn = targetTurn;
 
   setVisibleButtons();
   adjustShuttles(false);
@@ -188,12 +182,6 @@ const reset = () => {
   globals.clues = MAX_CLUE_NUM;
   globals.cardsGotten = 0;
   globals.numCardsPlayed = 0;
-  if (variantRules.isUpOrDown(globals.variant)) {
-    globals.stackDirections = [];
-    for (let i = 0; i < globals.variant.suits.length; i++) {
-      globals.stackDirections.push(StackDirection.Undecided);
-    }
-  }
 
   // Reset various UI elements
   globals.postAnimationLayout = null;
@@ -201,11 +189,6 @@ const reset = () => {
   globals.elements.fullActionLog!.reset();
   globals.elements.deck!.setCount(globals.deckSize);
   globals.elements.clueLog!.clear();
-  if (variantRules.isUpOrDown(globals.variant)) {
-    for (let i = 0; i < globals.variant.suits.length; i++) {
-      globals.elements.suitLabelTexts[i].fitText('');
-    }
-  }
 
   for (let i = 0; i < globals.elements.playerHands.length; i++) {
     globals.elements.playerHands[i].removeChildren();
@@ -230,15 +213,6 @@ const reset = () => {
     // The stack base might have been morphed
     if (stackBase.state.rank !== 0 || stackBase.state.suitIndex !== i) {
       stackBase.convert(i, 0);
-    }
-
-    // Reverse the stack direction of reversed suits, except on the "Up or Down" variant
-    // that uses the "UNDECIDED" direction.
-    if (
-      variantRules.hasReversedSuits(globals.variant)
-      && !variantRules.isUpOrDown(globals.variant)
-    ) {
-      globals.stackDirections[i] = suit.reversed ? StackDirection.Down : StackDirection.Up;
     }
   }
 
@@ -375,20 +349,14 @@ export function barDrag(this: Konva.Rect, pos: Konva.Vector2d) {
 
 const positionReplayShuttle = (
   shuttle: Shuttle,
-  targetTurn: number,
+  target: number,
   smaller: boolean,
   fast: boolean,
 ) => {
-  let max = globals.replayMax;
-
   // During initialization, the turn will be -1 and the maximum number of replay turns will be 0
   // Account for this and provide sane defaults
-  if (targetTurn === -1) {
-    targetTurn = 0;
-  }
-  if (max === 0) {
-    max = 1;
-  }
+  const targetTurn = (target === -1) ? 0 : target;
+  const max = (globals.replayMax === 0) ? 1 : globals.replayMax;
 
   const winH = globals.stage.height();
   const sliderW = globals.elements.replayBar!.width() - shuttle.width();

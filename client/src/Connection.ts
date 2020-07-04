@@ -69,12 +69,9 @@ export default class Connection {
     if (this.ws.readyState !== WebSocket.OPEN) {
       return;
     }
-    if (data === undefined) {
-      data = {};
-    }
     console.log(`%cSent ${command}:`, 'color: green;');
     console.log(data);
-    this.ws.send(marshalAndPack(command, data));
+    this.ws.send(marshalAndPack(command, data || {}));
   }
 
   close() {
@@ -88,4 +85,4 @@ const unpack = (data: string) => {
   return [name, data.substring(name.length + 1, data.length)];
 };
 const unmarshal = (data: string) => JSON.parse(data) as unknown;
-const marshalAndPack = (name: string, data: string) => name + separator + JSON.stringify(data);
+const marshalAndPack = (name: string, data: any) => name + separator + JSON.stringify(data);

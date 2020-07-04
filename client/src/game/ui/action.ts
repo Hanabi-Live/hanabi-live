@@ -4,7 +4,6 @@ import Konva from 'konva';
 import {
   CARD_W,
 } from '../../constants';
-import { removePossibilityTemp } from '../rules/applyClueCore';
 import * as variantRules from '../rules/variant';
 
 import {
@@ -13,7 +12,6 @@ import {
   ActionDraw,
   ActionPlay,
   ActionReorder,
-  ActionStackDirections,
   ActionStatus,
   ActionStrike,
   ActionText,
@@ -23,7 +21,6 @@ import {
 } from '../types/actions';
 import ClueType from '../types/ClueType';
 import { MAX_CLUE_NUM } from '../types/constants';
-import StackDirection from '../types/StackDirection';
 import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
 import ClueEntry from './ClueEntry';
@@ -31,7 +28,6 @@ import { msgClueToClue, msgSuitToSuit } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
-import possibilitiesCheck from './possibilitiesCheck';
 import strikeRecord from './strikeRecord';
 import updateCurrentPlayerArea from './updateCurrentPlayerArea';
 
@@ -66,23 +62,7 @@ actionFunctions.set('clue', (data: ActionClue) => {
   for (let i = 0; i < data.list.length; i++) {
     const card = globals.deck[data.list[i]];
 
-    card.markPositiveClue();
-
     arrows.set(i, card, data.giver, clue);
-
-    card.setClued();
-    if (
-      !globals.lobby.settings.realLifeMode
-      && !variantRules.isCowAndPig(globals.variant)
-      && !variantRules.isDuck(globals.variant)
-      && !(
-        globals.characterAssignments[data.giver!] === 'Quacker'
-        && card.state.holder === globals.playerUs
-        && !globals.replay
-      )
-    ) {
-      card.applyClue(clue, true);
-    }
   }
 
   const negativeList = [];
@@ -94,18 +74,6 @@ actionFunctions.set('clue', (data: ActionClue) => {
 
     if (data.list.indexOf(order) < 0) {
       negativeList.push(order);
-      if (
-        !globals.lobby.settings.realLifeMode
-        && !variantRules.isCowAndPig(globals.variant)
-        && !variantRules.isDuck(globals.variant)
-        && !(
-          globals.characterAssignments[data.giver!] === 'Quacker'
-          && card.state.holder === globals.playerUs
-          && !globals.replay
-        )
-      ) {
-        card.applyClue(clue, false);
-      }
     }
   }
 
@@ -164,7 +132,6 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
 
   // Local variables
   const card = globals.deck[data.which.order];
-  card.discard(globals.turn, data.failed);
 
   // Clear all visible arrows when a new move occurs
   arrows.hideAll();
@@ -172,10 +139,6 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
   // Turn off Empathy on this card
   // It is redrawn in the reveal() function
   card.empathy = false;
-
-  card.reveal(data.which.suit, data.which.rank);
-  card.removeFromParent();
-  card.setClued();
 
   if (card.state.isMisplayed && !globals.animateFast && !globals.options.speedrun) {
     // If this card was misplayed,
@@ -231,7 +194,6 @@ actionFunctions.set('draw', (data: ActionDraw) => {
     // Since we are in a shared replay, this is a mistake, because we should have full knowledge of
     // what the card is (from the "deckOrder" message that is sent at the end of the game)
     const card = globals.deck[order];
-    card.setHolder(holder);
     card.replayRedraw();
     suit = msgSuitToSuit(card.state.suitIndex ?? -1, globals.variant);
     rank = card.state.rank;
@@ -255,7 +217,6 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   // So, since this card was just drawn, refresh all the variables on the card
   // (this is necessary because we might be rewinding in a replay)
   const card = globals.deck[order];
-  card.setHolder(holder);
   // Suit and rank will be null if we don't know the suit/rank
   card.refresh(suit, rank);
 
@@ -278,40 +239,12 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   // Add it to the player's hand (which will automatically tween the card)
   globals.elements.playerHands[holder].addChild(child);
   globals.elements.playerHands[holder].moveToTop();
-
-  // If this card is known,
-  // then remove it from the card possibilities for the players who see this card
-  if (suit && rank) {
-    if (possibilitiesCheck()) {
-      const suitIndex = globals.variant.suits.indexOf(suit!);
-      for (let i = 0; i < globals.elements.playerHands.length; i++) {
-        if (i === holder) {
-          // We can't update the player who drew this card,
-          // because they do not know what it is yet
-          continue;
-        }
-        const hand = globals.elements.playerHands[i];
-        hand.children.each((layoutChild) => {
-          const handCard = layoutChild.children[0] as HanabiCard;
-          handCard.state = removePossibilityTemp(
-            handCard.state,
-            suitIndex,
-            rank!,
-            false,
-            globals.variant,
-          );
-          handCard.updatePips();
-        });
-      }
-    }
-  }
 });
 
 actionFunctions.set('play', (data: ActionPlay) => {
   // Local variables
   const card = globals.deck[data.which.order];
 
-  card.play(globals.turn);
   globals.numCardsPlayed += 1;
   globals.elements.playsNumberLabel!.text(globals.numCardsPlayed.toString());
 
@@ -322,9 +255,6 @@ actionFunctions.set('play', (data: ActionPlay) => {
   // It is redrawn in the reveal() function
   card.empathy = false;
 
-  card.reveal(data.which.suit, data.which.rank);
-  card.removeFromParent();
-  card.setClued();
   card.animateToPlayStacks();
 
   // The fact that this card was played could make some other cards useless or critical
@@ -364,51 +294,9 @@ actionFunctions.set('reorder', (data: ActionReorder) => {
   }
 });
 
-actionFunctions.set('stackDirections', (data: ActionStackDirections) => {
-  if (!variantRules.hasReversedSuits(globals.variant)) {
-    return;
-  }
+actionFunctions.set('stackDirections', () => {
 
-  // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants)
-  const oldStackDirections = globals.stackDirections.slice(); // Make a copy of the array
-  globals.stackDirections = data.directions;
-  for (let i = 0; i < globals.stackDirections.length; i++) {
-    const stackDirection = globals.stackDirections[i];
-    if (stackDirection === oldStackDirections[i]) {
-      continue;
-    }
-
-    const suit = globals.variant.suits[i];
-    let text;
-    if (stackDirection === StackDirection.Undecided) {
-      text = '';
-    } else if (stackDirection === StackDirection.Up) {
-      text = variantRules.isUpOrDown(globals.variant) ? 'Up' : '';
-    } else if (stackDirection === StackDirection.Down) {
-      text = variantRules.isUpOrDown(globals.variant) ? 'Down' : 'Reversed';
-    } else if (stackDirection === StackDirection.Finished) {
-      if (variantRules.isUpOrDown(globals.variant)) {
-        text = 'Finished';
-      } else if (suit.reversed) {
-        text = 'Reversed';
-      } else {
-        text = '';
-      }
-    } else {
-      text = 'Unknown';
-    }
-
-    globals.elements.suitLabelTexts[i].fitText(text);
-    if (!globals.animateFast) {
-      globals.layers.UI.batchDraw();
-    }
-
-    for (const card of globals.deck) {
-      if (card.state.suitIndex === i) {
-        card.setDirectionArrow(i);
-      }
-    }
-  }
+  // Nothing! TODO: delete this
 });
 
 actionFunctions.set('status', (data: ActionStatus) => {

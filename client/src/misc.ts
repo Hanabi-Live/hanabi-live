@@ -67,11 +67,8 @@ const pad2 = (num: number) => {
 };
 
 export const timerFormatter = (milliseconds: number) => {
-  if (!milliseconds) {
-    milliseconds = 0;
-  }
   const time = new Date();
-  time.setHours(0, 0, 0, milliseconds);
+  time.setHours(0, 0, 0, milliseconds || 0);
   const minutes = time.getMinutes();
   const seconds = time.getSeconds();
   const secondsFormatted = seconds < 10 ? `0${seconds}` : seconds;
