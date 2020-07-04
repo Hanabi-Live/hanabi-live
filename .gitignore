@@ -23,6 +23,3 @@ motd.txt*
 /letsencrypt
 /logs
 /data/ongoing_tables
-
-# VSCode stuff
-/.vscode/launch.json
