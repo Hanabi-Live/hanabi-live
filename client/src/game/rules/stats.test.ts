@@ -18,6 +18,11 @@ const blackVariant = VARIANTS.get(blackVariantName);
 if (blackVariant === undefined) {
   throw new Error(`Unable to find the "${blackVariantName}" variant in the "VARIANTS" map.`);
 }
+const clueStarvedVariantName = 'Clue Starved (6 Suits)';
+const clueStarvedVariant = VARIANTS.get(clueStarvedVariantName);
+if (clueStarvedVariant === undefined) {
+  throw new Error(`Unable to find the "${clueStarvedVariantName}" variant in the "VARIANTS" map.`);
+}
 const cardsPerHand2Player = hand.cardsPerHand(2, false, false);
 const cardsPerHand4Player = hand.cardsPerHand(4, false, false);
 
