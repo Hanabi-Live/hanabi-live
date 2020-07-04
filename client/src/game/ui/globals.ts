@@ -151,6 +151,7 @@ export class Globals {
   // State information
   store: Redux.Store<State, Action> | null = null;
   stateObserver: StateObserver | null = null;
+  cardSubscriptions: Redux.Unsubscribe[] = [];
 
   // We provide a method to reset every class variable to its initial value
   // This is called when the user goes into a new game
@@ -237,6 +238,8 @@ export class Globals {
     this.deckOrder = [];
     this.stateObserver?.unregisterObservers();
     this.stateObserver = null;
+    this.cardSubscriptions.forEach((u: Redux.Unsubscribe) => u());
+    this.cardSubscriptions = [];
     this.store = null;
   }
 }
