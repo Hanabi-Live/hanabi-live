@@ -18,10 +18,11 @@ import (
 )
 
 type TemplateData struct {
-	Title     string // Used to populate the "<title>" tag
-	Domain    string // Used to validate that the user is going to the correct URL
-	Version   int
-	Compiling bool // True if we are currently recompiling the TypeScript client
+	Title       string // Used to populate the "<title>" tag
+	Domain      string // Used to validate that the user is going to the correct URL
+	Version     int
+	Compiling   bool // True if we are currently recompiling the TypeScript client
+	WebpackPort int
 }
 
 const (
@@ -35,6 +36,7 @@ const (
 var (
 	domain       string
 	GATrackingID string
+	webpackPort  int
 
 	// HTTPClientWithTimeout is used for sending web requests to external sites,
 	// which is used in various middleware
@@ -80,6 +82,17 @@ func httpInit() {
 		}
 	}
 	GATrackingID = os.Getenv("GA_TRACKING_ID")
+	webpackPortString := os.Getenv("WEBPACK_DEV_SERVER_PORT")
+	if len(webpackPortString) == 0 {
+		webpackPort = 8080
+	} else {
+		if v, err := strconv.Atoi(webpackPortString); err != nil {
+			logger.Fatal("Failed to convert the \"WEBPACK_DEV_SERVER_PORT\" environment variable to a number.")
+			return
+		} else {
+			webpackPort = v
+		}
+	}
 
 	// Create a new Gin HTTP router
 	gin.SetMode(gin.ReleaseMode)                       // Comment this out to debug HTTP stuff
