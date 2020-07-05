@@ -4,7 +4,11 @@ import { getVariant } from '../src/game/reducers/reducerHelpers';
 import * as handRules from '../src/game/rules/hand';
 import { hasReversedSuits } from '../src/game/rules/variant';
 import {
-  ActionPlay, GameAction, ActionDiscard, ActionClue, ActionDraw,
+  ActionClue,
+  ActionDiscard,
+  ActionDraw,
+  ActionPlay,
+  GameAction,
 } from '../src/game/types/actions';
 import ClueType from '../src/game/types/ClueType';
 import { STACK_BASE_RANK } from '../src/game/types/constants';
@@ -142,7 +146,11 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   return {
     visibleState: game,
     ongoingGame: game,
-    replay: { ...state.replay, states },
+    replay: {
+      ...state.replay,
+      states,
+    },
+    cardIdentities: [],
     metadata,
   };
 }

@@ -1,6 +1,6 @@
 import Suit from './Suit';
 
-export interface CardIdentity {
+export default interface CardIdentity {
   suit: Suit | null;
   rank: number | null;
 }

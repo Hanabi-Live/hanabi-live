@@ -1,7 +1,7 @@
 // Users can right-click cards to record information on them
 
 import * as variantRules from '../rules/variant';
-import { CardIdentity } from '../types/CardIdentity';
+import CardIdentity from '../types/CardIdentity';
 import CardNote from '../types/CardNote';
 import CardState from '../types/CardState';
 import { START_CARD_RANK } from '../types/constants';
