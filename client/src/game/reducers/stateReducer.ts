@@ -61,6 +61,16 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
   } else {
     state.visibleState = state.ongoingGame;
   }
+
+  // Make the currently visible state from the JavaScript console (for debugging purposes)
+  window.state = state.visibleState;
 }, {} as State);
 
 export default stateReducer;
+
+// Allow TypeScript to modify the browser's "window" object
+declare global {
+  interface Window {
+    state: GameState;
+  }
+}

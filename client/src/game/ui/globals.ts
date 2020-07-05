@@ -11,7 +11,6 @@ import { GameAction, ActionIncludingHypothetical, Action } from '../types/action
 import { CardIdentity } from '../types/CardIdentity';
 import { ClientAction } from '../types/ClientAction';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
-import GameState from '../types/GameState';
 import Options from '../types/Options';
 import SimpleCard from '../types/SimpleCard';
 import SpectatorNote from '../types/SpectatorNote';
@@ -248,15 +247,14 @@ export class Globals {
 const globals = new Globals();
 export default globals;
 
-// Also make it available to the window so that we can access global variables
-// from the JavaScript console (for debugging purposes)
+// Allow TypeScript to modify the browser's "window" object
 declare global {
   interface Window {
     globals: Globals;
-    state: () => GameState | undefined;
   }
 }
+
+// Make the globals available from the JavaScript console (for debugging purposes)
 if (typeof window !== 'undefined') {
   window.globals = globals;
-  window.state = () => globals.store?.getState().visibleState;
 }
