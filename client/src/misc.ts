@@ -46,6 +46,10 @@ export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   day: '2-digit',
 });
 
+// Use this on a switch statement's default case to get
+// the linter to complain if a case was not predicted
+export const ensureAllCases = (obj: never): never => obj;
+
 export const getRandomNumber = (
   min: number,
   max: number,
@@ -58,6 +62,10 @@ export const millisecondsToClockString = (milliseconds: number) => {
   const seconds = Math.ceil(milliseconds / 1000);
   return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
 };
+
+export function nullIfNegative(x: number) {
+  return x >= 0 ? x : null;
+}
 
 const pad2 = (num: number) => {
   if (num < 10) {
@@ -74,7 +82,3 @@ export const timerFormatter = (milliseconds: number) => {
   const secondsFormatted = seconds < 10 ? `0${seconds}` : seconds;
   return `${minutes}:${secondsFormatted}`;
 };
-
-// Use this on a switch statement's default case to get
-// the linter to complain if a case was not predicted
-export const ensureAllCases = (obj: never): never => obj;

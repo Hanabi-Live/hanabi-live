@@ -7,6 +7,7 @@ import {
   CARD_H,
   CARD_W,
 } from '../../constants';
+import { nullIfNegative } from '../../misc';
 import { SUITS } from '../data/gameData';
 import initialCardState from '../reducers/initialStates/initialCardState';
 import * as variantRules from '../rules/variant';
@@ -519,14 +520,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   // We have learned the true suit and rank of this card
   // but it might not be known to the holder
   convert(msgSuit: number, msgRank: number) {
-    // Local variables
-    const suitIndex = msgSuit === -1 ? null : msgSuit;
-    const rank = msgRank === -1 ? null : msgRank;
-
     // Keep track of what this card is
     const learnedCard = globals.learnedCards[this.state.order];
-    learnedCard.suitIndex = suitIndex;
-    learnedCard.rank = rank;
+    learnedCard.suitIndex = nullIfNegative(msgSuit);
+    learnedCard.rank = nullIfNegative(msgRank);
 
     // Redraw the card
     this.setBareImage();

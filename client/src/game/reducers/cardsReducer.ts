@@ -1,7 +1,7 @@
 // Calculates the state of the deck after an action
 
 import produce, { castDraft, Draft } from 'immer';
-import { ensureAllCases } from '../../misc';
+import { ensureAllCases, nullIfNegative } from '../../misc';
 import { removePossibilities, checkAllPipPossibilities } from '../rules/applyClueCore';
 import { GameAction } from '../types/actions';
 import CardState from '../types/CardState';
@@ -257,8 +257,4 @@ function getCard(deck: Draft<CardState[]>, order: number) {
     console.error(`Failed to get the card for index ${order}.`);
   }
   return card;
-}
-
-function nullIfNegative(x: number) {
-  return x >= 0 ? x : null;
 }
