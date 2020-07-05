@@ -24,6 +24,7 @@ var (
 
 	logger           *Logger
 	gitCommitOnStart string
+	isDev            bool
 	usingSentry      bool
 	models           *Models
 	datetimeStarted  time.Time
@@ -126,8 +127,16 @@ func main() {
 		return
 	}
 
+	if os.Getenv("DOMAIN") == "" ||
+		os.Getenv("DOMAIN") == "localhost" ||
+		strings.HasPrefix(os.Getenv("DOMAIN"), "192.168.") ||
+		strings.HasPrefix(os.Getenv("DOMAIN"), "10.") {
+
+		isDev = true
+	}
+
 	// If we are running in a development environment, change some constants
-	if os.Getenv("DOMAIN") == "localhost" || os.Getenv("DOMAIN") == "" {
+	if isDev {
 		idleGameTimeout = idleGameTimeoutDev
 	}
 

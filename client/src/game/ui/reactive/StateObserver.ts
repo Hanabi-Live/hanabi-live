@@ -43,8 +43,9 @@ export default class StateObserver {
       paceRisk: s.visibleState.stats.paceRisk,
     }), statsView.onPaceOrPaceRiskChanged);
 
-    // Text
+    // Logs
     sub((s) => s.visibleState.log, logView.onLogChanged);
+    sub((s) => s.visibleState.clues, logView.onCluesChanged);
 
     // Card layout
     sub((s) => s.visibleState.playStacksDirections, cardLayoutView.onStackDirectionsChanged);
