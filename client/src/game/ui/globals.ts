@@ -11,6 +11,7 @@ import { GameAction, ActionIncludingHypothetical, Action } from '../types/action
 import { CardIdentity } from '../types/CardIdentity';
 import { ClientAction } from '../types/ClientAction';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
+import GameState from '../types/GameState';
 import Options from '../types/Options';
 import SimpleCard from '../types/SimpleCard';
 import SpectatorNote from '../types/SpectatorNote';
@@ -252,8 +253,10 @@ export default globals;
 declare global {
   interface Window {
     globals: Globals;
+    state: () => GameState | undefined;
   }
 }
 if (typeof window !== 'undefined') {
   window.globals = globals;
+  window.state = () => globals.store?.getState().visibleState;
 }

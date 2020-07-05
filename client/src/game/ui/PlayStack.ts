@@ -61,7 +61,7 @@ export default class PlayStack extends Konva.Group {
               // If the card is misplayed, then tween it to the discard pile
               // We check for "card.parent.parent" to fix the bug where
               // the tween will still finish if the user goes backward in a replay
-              // card.animateToDiscardPile();
+              // card.animateToDiscardPile(); // TODO
             } else {
               card.tweening = false;
               node.checkSetDraggable();
