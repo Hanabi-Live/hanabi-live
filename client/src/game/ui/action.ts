@@ -11,7 +11,6 @@ import {
   ActionReorder,
   ActionStatus,
   ActionStrike,
-  ActionText,
   ActionTurn,
   ActionIncludingHypothetical,
   ActionReveal,
@@ -332,13 +331,8 @@ actionFunctions.set('strike', (data: ActionStrike) => {
 });
 
 // A new line of text has appeared in the action log
-actionFunctions.set('text', (data: ActionText) => {
-  globals.elements.actionLog!.setMultiText(data.text);
-  globals.elements.fullActionLog!.addMessage(data.text);
-  if (!globals.animateFast) {
-    globals.layers.UI.batchDraw();
-    globals.layers.UI2.batchDraw();
-  }
+actionFunctions.set('text', () => {
+  // Nothing! TODO: remove
 });
 
 actionFunctions.set('reveal', (data: ActionReveal) => {

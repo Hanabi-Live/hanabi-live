@@ -153,8 +153,6 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
 
   globals.animateFast = false;
   cardStatusCheck();
-  globals.elements.actionLog!.refreshText();
-  globals.elements.fullActionLog!.refreshText();
   globals.layers.card.batchDraw();
   globals.layers.UI.batchDraw();
   globals.layers.arrow.batchDraw();
@@ -185,8 +183,6 @@ const reset = () => {
 
   // Reset various UI elements
   globals.postAnimationLayout = null;
-  globals.elements.actionLog!.reset();
-  globals.elements.fullActionLog!.reset();
   globals.elements.deck!.setCount(globals.deckSize);
   globals.elements.clueLog!.clear();
 

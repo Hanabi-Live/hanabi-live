@@ -88,8 +88,6 @@ export const playThroughPastActions = () => {
     }
     globals.animateFast = false;
     cardStatusCheck();
-    globals.elements.actionLog!.refreshText();
-    globals.elements.fullActionLog!.refreshText();
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();
     globals.layers.arrow.batchDraw();

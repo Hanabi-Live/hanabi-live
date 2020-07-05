@@ -5,6 +5,7 @@ import observeStore, { Selector, Listener, Subscription } from './observeStore';
 import * as cardLayoutView from './view/cardLayoutView';
 import * as cardsView from './view/cardsView';
 import * as gameInfoView from './view/gameInfoView';
+import * as logView from './view/logView';
 import * as statsView from './view/statsView';
 
 export default class StateObserver {
@@ -41,6 +42,9 @@ export default class StateObserver {
       pace: s.visibleState.stats.pace,
       paceRisk: s.visibleState.stats.paceRisk,
     }), statsView.onPaceOrPaceRiskChanged);
+
+    // Text
+    sub((s) => s.visibleState.log, logView.onLogChanged);
 
     // Card layout
     sub((s) => s.visibleState.playStacksDirections, cardLayoutView.onStackDirectionsChanged);

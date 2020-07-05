@@ -5,14 +5,10 @@ import globals from '../../globals';
 import HanabiCard from '../../HanabiCard';
 import PlayStack from '../../PlayStack';
 
-/* eslint-disable import/prefer-default-export */
 export function onStackDirectionsChanged(directions: readonly StackDirection[]) {
   if (!variantRules.hasReversedSuits(globals.variant)) {
     return;
   }
-
-  console.log(`stackDirections: ${directions}`);
-  console.log(`globals: ${globals.stackDirections}`);
 
   const stackStringsReversed = new Map<StackDirection, string>([
     [StackDirection.Undecided, ''],
@@ -43,7 +39,7 @@ export function onStackDirectionsChanged(directions: readonly StackDirection[]) 
       if (isUpOrDown || suit.reversed) {
         const stackStrings = isUpOrDown ? stackStringsUpOrDown : stackStringsReversed;
         if (stackStrings.get(direction) === undefined) {
-          console.error(`Not a valid stackDirection: ${direction}`);
+          throw new Error(`Not a valid stackDirection: ${direction}`);
         }
         text = stackStrings.get(direction)!;
       }
