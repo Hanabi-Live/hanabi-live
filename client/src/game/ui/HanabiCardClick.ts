@@ -3,7 +3,6 @@
 import Konva from 'konva';
 import { STACK_BASE_RANK } from '../types/constants';
 import * as arrows from './arrows';
-import { suitToMsgSuit } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import * as hypothetical from './hypothetical';
@@ -227,20 +226,17 @@ const clickMorph = (order: number) => {
   }
 
   // We want an exact match, so fullNote is sent as an empty string
-  const card = notes.cardFromNote(globals.variant, cardText, '');
-  if (!card.suit || !card.rank) {
+  const cardIdentity = notes.cardIdentityFromNote(globals.variant, cardText, '');
+  if (!cardIdentity.suitIndex || !cardIdentity.rank) {
     window.alert('You entered an invalid card.');
     return;
   }
-
-  const suit = suitToMsgSuit(card.suit, globals.variant);
-  const rank = card.rank;
 
   // Tell the server that we are morphing a card
   hypothetical.sendHypoAction({
     type: 'reveal',
     order,
-    suit,
-    rank,
+    suit: cardIdentity.suitIndex,
+    rank: cardIdentity.rank,
   });
 };

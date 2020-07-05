@@ -2,6 +2,7 @@ import Konva from 'konva';
 import { LABEL_COLOR } from '../../constants';
 import * as deck from '../rules/deck';
 import { STACK_BASE_RANK } from '../types/constants';
+import { suitToMsgSuit } from './convert';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
 import globals from './globals';
@@ -120,7 +121,7 @@ const initCards = () => {
     // Create the "learned" card object
     // (this must be done before creating the HanabiCard object)
     globals.learnedCards.push({
-      suit: null,
+      suitIndex: null,
       rank: null,
     });
 
@@ -142,8 +143,9 @@ const initCards = () => {
 
   // Also create objects for the stack bases
   for (const suit of globals.variant.suits) {
+    const suitIndex = suitToMsgSuit(suit, globals.variant);
     globals.learnedCards.push({
-      suit,
+      suitIndex,
       rank: STACK_BASE_RANK,
     });
 

@@ -22,6 +22,13 @@ const defaultMetadata: GameMetadata = {
   characterAssignments: [],
   characterMetadata: [],
 };
+const clueStarvedMetadata: GameMetadata = {
+  ...defaultMetadata,
+  options: {
+    ...defaultMetadata.options,
+    variantName: 'Clue Starved (6 Suits)',
+  },
+};
 
 describe('gameStateReducer', () => {
   test('does not mutate state', () => {
@@ -60,7 +67,7 @@ describe('gameStateReducer', () => {
       let state = initialGameState(defaultMetadata);
 
       // Draw a red 1
-      state = gameStateReducer(state, draw(0, 1, 0, 0), defaultMetadata);
+      state = gameStateReducer(state, draw(0, 0, 1, 0), defaultMetadata);
 
       // Blind-play that red 1
       state = gameStateReducer(state, play(0, 0, 1, 0), defaultMetadata);
@@ -72,7 +79,7 @@ describe('gameStateReducer', () => {
       let state = initialGameState(defaultMetadata);
 
       // Draw a red 1
-      state = gameStateReducer(state, draw(0, 1, 0, 0), defaultMetadata);
+      state = gameStateReducer(state, draw(0, 0, 1, 0), defaultMetadata);
 
       // Misplay the red 1
       state = gameStateReducer(state, discard(true, 0, 0, 1, 0), defaultMetadata);
@@ -84,24 +91,12 @@ describe('gameStateReducer', () => {
       expect(state.stats.efficiency).toBe(0);
     });
 
-    test('is 1 after a 1-for-1 clue', () => {
-      let state = initialGameState(defaultMetadata);
-
-      // Draw a red 1
-      state = gameStateReducer(state, draw(0, 1, 0, 0), defaultMetadata);
-
-      // Give a 1-for-1 clue
-      state = gameStateReducer(state, colorClue(0, 1, [0], 0, 0), defaultMetadata);
-
-      expect(state.stats.efficiency).toBe(1);
-    });
-
     test('is 3 after a 3-for-1 clue', () => {
       let state = initialGameState(defaultMetadata);
 
-      // Draw a red 1, 2 and 3
+      // Draw a red 1, a red 2, and a red 3
       for (let i = 0; i < 3; i++) {
-        state = gameStateReducer(state, draw(0, i + 1, 0, i), defaultMetadata);
+        state = gameStateReducer(state, draw(0, 0, i + 1, i), defaultMetadata);
       }
 
       // Give a 3-for-1 clue touching the 3 red cards
@@ -110,20 +105,20 @@ describe('gameStateReducer', () => {
       expect(state.stats.efficiency).toBe(3);
     });
 
-    test('is 0.5 after a 1-for-1 clue + a play + a misplay', () => {
+    test('is decreased after a misplay', () => {
       let state = initialGameState(defaultMetadata);
 
-      // Draw a red 1
-      state = gameStateReducer(state, draw(0, 1, 0, 0), defaultMetadata);
+      // Draw a yellow 2 to player 0
+      state = gameStateReducer(state, draw(1, 1, 2, 1), defaultMetadata);
+
+      // Draw a red 1 to player 1
+      state = gameStateReducer(state, draw(1, 0, 1, 0), defaultMetadata);
 
       // Give a 1-for-1 clue
-      state = gameStateReducer(state, colorClue(0, 1, [0], 0, 0), defaultMetadata);
+      state = gameStateReducer(state, colorClue(0, 0, [0], 1, 0), defaultMetadata);
 
       // Play that red 1
-      state = gameStateReducer(state, play(0, 0, 1, 0), defaultMetadata);
-
-      // Draw a yellow 2
-      state = gameStateReducer(state, draw(1, 2, 0, 1), defaultMetadata);
+      state = gameStateReducer(state, play(1, 0, 1, 0), defaultMetadata);
 
       // Misplay the yellow 2
       state = gameStateReducer(state, discard(true, 0, 1, 2, 1), defaultMetadata);
@@ -133,6 +128,91 @@ describe('gameStateReducer', () => {
       state = gameStateReducer(state, strike(1, 1, 2), defaultMetadata);
 
       expect(state.stats.efficiency).toBe(0.5);
+    });
+
+    test('is decreased after a clue from playing a 5 is wasted', () => {
+      let state = initialGameState(defaultMetadata);
+
+      // Draw a red 2, a red 4, and a red 5 to player 0
+      state = gameStateReducer(state, draw(0, 0, 2, 2), defaultMetadata);
+      state = gameStateReducer(state, draw(0, 0, 4, 4), defaultMetadata);
+      state = gameStateReducer(state, draw(1, 0, 5, 5), defaultMetadata);
+
+      // Draw a red 1, a red 3, and a red 1 to player 1
+      state = gameStateReducer(state, draw(1, 0, 1, 1), defaultMetadata);
+      state = gameStateReducer(state, draw(1, 0, 3, 3), defaultMetadata);
+      state = gameStateReducer(state, draw(0, 0, 1, 11), defaultMetadata);
+
+      // Give a 1-for-1 clue
+      state = gameStateReducer(state, rankClue(0, 0, [1], 1, 0), defaultMetadata);
+
+      // Play the red 1
+      state = gameStateReducer(state, play(1, 0, 1, 1), defaultMetadata);
+
+      // Play the red 2
+      state = gameStateReducer(state, play(0, 0, 2, 2), defaultMetadata);
+
+      // Play the red 3
+      state = gameStateReducer(state, play(1, 0, 3, 3), defaultMetadata);
+
+      // Play the red 4
+      state = gameStateReducer(state, play(0, 0, 4, 4), defaultMetadata);
+
+      // Discard the other red 1
+      state = gameStateReducer(state, discard(false, 1, 0, 1, 11), defaultMetadata);
+
+      expect(state.clueTokens).toBe(MAX_CLUE_NUM);
+      expect(state.stats.efficiency).toBe(4); // e.g. 4 / 1
+
+      // Play the red 5
+      state = gameStateReducer(state, play(0, 0, 5, 5), defaultMetadata);
+
+      expect(state.stats.efficiency).toBe(2.5); // e.g. 5 / 2 (because we wasted a clue)
+    });
+
+    describe('Clue Starved', () => {
+      test('is decreased after a clue from playing a 5 is wasted', () => {
+        let state = initialGameState(clueStarvedMetadata);
+
+        // Draw a red 2, a red 4, and a red 5 to player 0
+        state = gameStateReducer(state, draw(0, 0, 2, 2), clueStarvedMetadata);
+        state = gameStateReducer(state, draw(0, 0, 4, 4), clueStarvedMetadata);
+        state = gameStateReducer(state, draw(1, 0, 5, 5), clueStarvedMetadata);
+
+        // Draw a red 1, a red 3, a red 1, and a red 1 to player 1
+        state = gameStateReducer(state, draw(1, 0, 1, 1), clueStarvedMetadata);
+        state = gameStateReducer(state, draw(1, 0, 3, 3), clueStarvedMetadata);
+        state = gameStateReducer(state, draw(0, 0, 1, 11), clueStarvedMetadata);
+        state = gameStateReducer(state, draw(0, 0, 1, 12), clueStarvedMetadata);
+
+        // Give a 1-for-1 clue
+        state = gameStateReducer(state, rankClue(0, 0, [1], 1, 0), clueStarvedMetadata);
+
+        // Play the red 1
+        state = gameStateReducer(state, play(1, 0, 1, 1), clueStarvedMetadata);
+
+        // Play the red 2
+        state = gameStateReducer(state, play(0, 0, 2, 2), clueStarvedMetadata);
+
+        // Play the red 3
+        state = gameStateReducer(state, play(1, 0, 3, 3), clueStarvedMetadata);
+
+        // Play the red 4
+        state = gameStateReducer(state, play(0, 0, 4, 4), clueStarvedMetadata);
+
+        // Discard the other two red 1s
+        state = gameStateReducer(state, discard(false, 1, 0, 1, 11), clueStarvedMetadata);
+        state = gameStateReducer(state, discard(false, 1, 0, 1, 12), clueStarvedMetadata);
+
+        expect(state.clueTokens).toBe(MAX_CLUE_NUM);
+        expect(state.stats.efficiency).toBe(4); // e.g. 4 / 1
+
+        // Play the red 5
+        state = gameStateReducer(state, play(0, 0, 5, 5), clueStarvedMetadata);
+
+        expect(state.stats.efficiency).toBeCloseTo(3.33);
+        // e.g. 5 / 1.5 (because we wasted half a clue)
+      });
     });
   });
 
@@ -156,17 +236,19 @@ describe('gameStateReducer', () => {
     });
     test('are remembered with the correct positive and negative cards', () => {
       let state = initialGameState(defaultMetadata);
+
       // Draw 5 cards (red 1-3, yellow 4-5)
-      for (let i = 1; i <= 5; i++) {
-        state = gameStateReducer(state, draw(0, i, i <= 3 ? 0 : 1, i), defaultMetadata);
+      for (let i = 0; i <= 4; i++) {
+        const drawAction = draw(1, i <= 2 ? 0 : 1, i + 1, i);
+        state = gameStateReducer(state, drawAction, defaultMetadata);
       }
 
-      // Player 1 gives a clue that touches cards 1, 2, 3
-      const testClue = rankClue(5, 1, [1, 2, 3], 0, 2);
+      // Player 0 gives a clue that touches cards 0, 1, and 2
+      const testClue = rankClue(5, 0, [0, 1, 2], 1, 2);
       state = gameStateReducer(state, testClue, defaultMetadata);
 
-      expect(state.clues[0].list).toEqual([1, 2, 3]);
-      expect(state.clues[0].negativeList).toEqual([4, 5]);
+      expect(state.clues[0].list).toEqual([0, 1, 2]);
+      expect(state.clues[0].negativeList).toEqual([3, 4]);
     });
 
     test('decrement clueTokens', () => {
@@ -198,7 +280,7 @@ describe('gameStateReducer', () => {
       let state = initialGameState(defaultMetadata);
 
       // Draw a red 1
-      state = gameStateReducer(state, draw(0, 1, 0, 0), defaultMetadata);
+      state = gameStateReducer(state, draw(0, 0, 1, 0), defaultMetadata);
 
       // Play a red 1
       state = gameStateReducer(state, play(0, 0, 1, 0), defaultMetadata);

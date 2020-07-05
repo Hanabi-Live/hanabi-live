@@ -27,7 +27,15 @@ const clue = (
   target: number,
   turn: number,
 ): ActionClue => ({
-  type: 'clue', clue: { type, value }, giver, list, target, turn,
+  type: 'clue',
+  clue: {
+    type,
+    value,
+  },
+  giver,
+  list,
+  target,
+  turn,
 });
 
 export const colorClue = (
@@ -60,8 +68,12 @@ export const rankClue = (
   turn,
 );
 
-export const draw = (who: number, rank: number, suit: number, order: number): ActionDraw => ({
-  type: 'draw', who, rank, suit, order,
+export const draw = (who: number, suit: number, rank: number, order: number): ActionDraw => ({
+  type: 'draw',
+  who,
+  suit,
+  rank,
+  order,
 });
 
 export const discard = (
@@ -74,7 +86,10 @@ export const discard = (
   type: 'discard',
   failed,
   which: {
-    index, suit, rank, order,
+    index,
+    suit,
+    rank,
+    order,
   },
 });
 
@@ -86,24 +101,34 @@ export const play = (
 ): ActionPlay => ({
   type: 'play',
   which: {
-    index, suit, rank, order,
+    index,
+    suit,
+    rank,
+    order,
   },
 });
 
 export const strike = (num: number, order: number, turn: number): ActionStrike => ({
-  type: 'strike', num, order, turn,
+  type: 'strike',
+  num,
+  order,
+  turn,
 });
 
 export const text = (textContent: string): ActionText => ({
-  type: 'text', text: textContent,
+  type: 'text',
+  text: textContent,
 });
 
 export const turn = (num: number, who: number): ActionTurn => ({
-  type: 'turn', num, who,
+  type: 'turn',
+  num,
+  who,
 });
 
 export const startReplay = (turnNumber: number): ActionStartReplay => ({
-  type: 'startReplay', turn: turnNumber,
+  type: 'startReplay',
+  turn: turnNumber,
 });
 
 export const endReplay = (): ActionEndReplay => ({ type: 'endReplay' });

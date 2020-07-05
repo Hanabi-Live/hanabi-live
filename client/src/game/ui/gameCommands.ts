@@ -11,6 +11,7 @@ import * as variantRules from '../rules/variant';
 import { GameAction, ActionIncludingHypothetical } from '../types/actions';
 import ClueType from '../types/ClueType';
 import GameMetadata from '../types/GameMetadata';
+import GameState from '../types/GameState';
 import Options from '../types/Options';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import SpectatorNote from '../types/SpectatorNote';
@@ -275,6 +276,11 @@ commands.set('init', (data: InitData) => {
     characterMetadata: data.characterMetadata,
   };
   globals.store = createStore(stateReducer, initialState(metadata));
+
+  // Make the current visible state available from the JavaScript console (for debugging purposes)
+  globals.store.subscribe(() => {
+    window.state = globals.store!.getState().visibleState;
+  });
 
   // Character settings
   globals.characterAssignments = data.characterAssignments;
@@ -804,3 +810,10 @@ commands.set('sound', (data: SoundData) => {
     globals.game!.sounds.play(data.file);
   }
 });
+
+// Allow TypeScript to modify the browser's "window" object
+declare global {
+  interface Window {
+    state: GameState;
+  }
+}
