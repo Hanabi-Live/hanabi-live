@@ -3,7 +3,7 @@
 import produce from 'immer';
 import Konva from 'konva';
 import * as deck from '../rules/deck';
-import { MAX_CLUE_NUM } from '../types/constants';
+import { MAX_CLUE_NUM, STACK_BASE_RANK } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import action from './action';
 import cardStatusCheck from './cardStatusCheck';
@@ -190,37 +190,6 @@ const reset = () => {
   globals.elements.deck!.setCount(globals.deckSize);
   globals.elements.clueLog!.clear();
 
-  for (let i = 0; i < globals.elements.playerHands.length; i++) {
-    globals.elements.playerHands[i].removeChildren();
-  }
-
-  // Remove all of the cards from the play stacks
-  for (const [, playStack] of globals.elements.playStacks) {
-    playStack.removeChildren();
-  }
-
-  // Re-add the stack base to the play stacks
-  for (let i = 0; i < globals.variant.suits.length; i++) {
-    const suit = globals.variant.suits[i];
-    const playStack = globals.elements.playStacks.get(suit)!;
-    const stackBase = globals.stackBases[i];
-    const stackBaseLayoutChild = stackBase.parent!;
-    playStack.addChild(stackBaseLayoutChild as any);
-
-    // The stack base might have been hidden if there was a card on top of it
-    stackBaseLayoutChild.visible(true);
-
-    // The stack base might have been morphed
-    if (stackBase.state.rank !== 0 || stackBase.state.suitIndex !== i) {
-      stackBase.convert(i, 0);
-    }
-  }
-
-  // Remove all of the cards from the discard stacks
-  for (const [, discardStack] of globals.elements.discardStacks) {
-    discardStack.removeChildren();
-  }
-
   // Reset the strikes
   for (const strikeX of globals.elements.strikeXs) {
     if (strikeX.tween) {
@@ -238,6 +207,11 @@ const reset = () => {
     }
     if (child.tween) {
       child.tween.destroy();
+    }
+    if (card.state.rank === STACK_BASE_RANK) {
+      card.parent!.show();
+    } else {
+      card.parent!.hide();
     }
     // HACK: this should not be done here
     card.state = produce(card.state, (state) => {

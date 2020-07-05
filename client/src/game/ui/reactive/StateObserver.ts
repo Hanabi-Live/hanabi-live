@@ -44,6 +44,9 @@ export default class StateObserver {
 
     // Card layout
     sub((s) => s.visibleState.playStacksDirections, cardLayoutView.onStackDirectionsChanged);
+    sub((s) => s.visibleState.hands, cardLayoutView.onHandsChanged);
+    sub((s) => s.visibleState.discardStacks, cardLayoutView.onDiscardStacksChanged);
+    sub((s) => s.visibleState.playStacks, cardLayoutView.onPlayStacksChanged);
 
     // Cards
     // Each card will subscribe to changes to its own data
