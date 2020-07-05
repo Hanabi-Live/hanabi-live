@@ -592,6 +592,28 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     layoutChild.setAbsolutePosition(pos);
   }
 
+  animateToPlayerHand(holder: number) {
+    this.removeFromParent();
+
+    const child = this.parent as unknown as LayoutChild;
+    // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
+    // and the user rewinds to the beginning of the replay
+    child!.visible(true);
+    child!.opacity(1); // Cards can be faded in certain variants
+    const pos = globals.elements.deck!.cardBack.getAbsolutePosition();
+    child!.setAbsolutePosition(pos);
+    child!.rotation(-globals.elements.playerHands[holder].rotation());
+    const scale = globals.elements.deck!.cardBack.width() / CARD_W;
+    child!.scale({
+      x: scale,
+      y: scale,
+    });
+
+    // Add it to the player's hand (which will automatically tween the card)
+    globals.elements.playerHands[holder].addChild(child);
+    globals.elements.playerHands[holder].moveToTop();
+  }
+
   animateToPlayStacks() {
     this.removeFromParent();
     // We add a LayoutChild to a PlayStack

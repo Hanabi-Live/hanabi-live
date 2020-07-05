@@ -9,6 +9,7 @@ export default class FullActionLog extends Konva.Group {
   playerLogEmptyMessage: FitText;
   playerLogs: MultiFitText[] = [];
   playerLogNumbers: MultiFitText[] = [];
+  private needsRefresh: boolean = false;
 
   constructor(winW: number, winH: number) {
     super({
@@ -91,10 +92,10 @@ export default class FullActionLog extends Konva.Group {
     }
   }
 
-  addMessage(msg: string) {
+  addMessage(turn: number, msg: string) {
     const appendLine = (log: MultiFitText, numbers: MultiFitText, line: string) => {
       log.setMultiText(line);
-      numbers.setMultiText((globals.turn + 1).toString());
+      numbers.setMultiText(turn.toString());
     };
 
     appendLine(this.logText, this.logNumbers, msg);
@@ -104,15 +105,20 @@ export default class FullActionLog extends Konva.Group {
         break;
       }
     }
+    this.needsRefresh = true;
+  }
+
+  // Overrides the Konva show() method to refresh the text as well
+  show() {
+    // We only need to refresh the text when it is shown
+    if (this.needsRefresh) {
+      this.refreshText();
+    }
+    return super.show();
   }
 
   showPlayerActions(playerName: string) {
-    let playerIndex = -1;
-    for (let i = 0; i < globals.playerNames.length; i++) {
-      if (globals.playerNames[i] === playerName) {
-        playerIndex = i;
-      }
-    }
+    const playerIndex = globals.playerNames.findIndex((name) => name === playerName);
     if (playerIndex === -1) {
       throw new Error(`Failed to find player "${playerName}" in the player names.`);
     }
@@ -150,13 +156,14 @@ export default class FullActionLog extends Konva.Group {
     });
   }
 
-  refreshText() {
+  private refreshText() {
     this.logText.refreshText();
     this.logNumbers.refreshText();
     for (let i = 0; i < globals.playerNames.length; i++) {
       this.playerLogs[i].refreshText();
       this.playerLogNumbers[i].refreshText();
     }
+    this.needsRefresh = false;
   }
 
   reset() {

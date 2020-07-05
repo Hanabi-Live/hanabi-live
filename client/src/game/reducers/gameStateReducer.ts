@@ -136,7 +136,8 @@ const gameStateReducer = produce((
     // A line of text was received from the server
     // {text: "Alice plays Red 2 from slot #1", type: "text"}
     case 'text': {
-      state.log.push(action.text);
+      // Add 1 to turn because server turns start counting from 0
+      state.log.push({ turn: state.turn + 1, text: action.text });
       break;
     }
 

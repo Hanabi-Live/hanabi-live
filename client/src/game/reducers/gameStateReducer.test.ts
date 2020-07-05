@@ -139,7 +139,7 @@ describe('gameStateReducer', () => {
       state = gameStateReducer(state, testText, defaultMetadata);
 
       expect(state.log.length).toBe(initialState.log.length + 1);
-      expect(state.log[0]).toBe(testText.text);
+      expect(state.log[0]).toEqual({ turn: 1, text: testText.text });
     });
   });
 

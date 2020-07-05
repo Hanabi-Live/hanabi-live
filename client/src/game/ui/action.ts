@@ -1,9 +1,6 @@
 // The "gameAction" WebSocket command communicate a change in the game state
 
 import Konva from 'konva';
-import {
-  CARD_W,
-} from '../../constants';
 import * as variantRules from '../rules/variant';
 
 import {
@@ -14,7 +11,6 @@ import {
   ActionReorder,
   ActionStatus,
   ActionStrike,
-  ActionText,
   ActionTurn,
   ActionIncludingHypothetical,
   ActionReveal,
@@ -140,14 +136,15 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
   // It is redrawn in the reveal() function
   card.empathy = false;
 
-  if (card.state.isMisplayed && !globals.animateFast && !globals.options.speedrun) {
-    // If this card was misplayed,
-    // it will automatically tween to the discard pile after reaching the play stacks
-    card.doMisplayAnimation = true;
-    card.animateToPlayStacks();
-  } else {
-    card.animateToDiscardPile();
-  }
+  // TODO: migrate to states
+  // if (card.state.isMisplayed && !globals.animateFast && !globals.options.speedrun) {
+  //   // If this card was misplayed,
+  //   // it will automatically tween to the discard pile after reaching the play stacks
+  //   card.doMisplayAnimation = true;
+  //   card.animateToPlayStacks();
+  // } else {
+  //   card.animateToDiscardPile();
+  // }
 
   // The fact that this card was discarded could make some other cards useless or critical
   cardStatusCheck();
@@ -210,26 +207,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   const card = globals.deck[order];
   // Suit and rank will be null if we don't know the suit/rank
   card.refresh(suit, rank);
-
-  // Each card is contained within a LayoutChild
-  // Position the LayoutChild over the deck
-  const child = card.parent as unknown as LayoutChild;
-  // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
-  // and the user rewinds to the beginning of the replay
-  child!.visible(true);
-  child!.opacity(1); // Cards can be faded in certain variants
-  const pos = globals.elements.deck!.cardBack.getAbsolutePosition();
-  child!.setAbsolutePosition(pos);
-  child!.rotation(-globals.elements.playerHands[holder].rotation());
-  const scale = globals.elements.deck!.cardBack.width() / CARD_W;
-  child!.scale({
-    x: scale,
-    y: scale,
-  });
-
-  // Add it to the player's hand (which will automatically tween the card)
-  globals.elements.playerHands[holder].addChild(child);
-  globals.elements.playerHands[holder].moveToTop();
+  card.parent!.show();
 });
 
 actionFunctions.set('play', (data: ActionPlay) => {
@@ -245,8 +223,6 @@ actionFunctions.set('play', (data: ActionPlay) => {
   // Turn off Empathy on this card
   // It is redrawn in the reveal() function
   card.empathy = false;
-
-  card.animateToPlayStacks();
 
   // The fact that this card was played could make some other cards useless or critical
   cardStatusCheck();
@@ -355,13 +331,8 @@ actionFunctions.set('strike', (data: ActionStrike) => {
 });
 
 // A new line of text has appeared in the action log
-actionFunctions.set('text', (data: ActionText) => {
-  globals.elements.actionLog!.setMultiText(data.text);
-  globals.elements.fullActionLog!.addMessage(data.text);
-  if (!globals.animateFast) {
-    globals.layers.UI.batchDraw();
-    globals.layers.UI2.batchDraw();
-  }
+actionFunctions.set('text', () => {
+  // Nothing! TODO: remove
 });
 
 actionFunctions.set('reveal', (data: ActionReveal) => {
