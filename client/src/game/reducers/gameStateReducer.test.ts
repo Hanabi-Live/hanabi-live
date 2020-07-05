@@ -1,12 +1,12 @@
 import { // Direct import instead of namespace import for compactness
-  clue,
+  colorClue,
   discard,
   draw,
   play,
+  rankClue,
   strike,
   text,
 } from '../../../test/testActions';
-import ClueType from '../types/ClueType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import GameMetadata from '../types/GameMetadata';
 import Options from '../types/Options';
@@ -38,7 +38,7 @@ describe('gameStateReducer', () => {
       const initialState = initialGameState(defaultMetadata);
 
       let state = initialGameState(defaultMetadata);
-      const testClue = clue(ClueType.Rank, 5, 1, [], 0, 2);
+      const testClue = rankClue(5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue, defaultMetadata);
       expect(state.turn).toBeGreaterThan(initialState.turn);
     });
@@ -49,7 +49,7 @@ describe('gameStateReducer', () => {
       const initialState = initialGameState(defaultMetadata);
 
       let state = initialGameState(defaultMetadata);
-      const testClue = clue(ClueType.Rank, 5, 1, [], 0, 2);
+      const testClue = rankClue(5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue, defaultMetadata);
       expect(state.currentPlayerIndex).not.toEqual(initialState.currentPlayerIndex);
     });
@@ -62,9 +62,8 @@ describe('gameStateReducer', () => {
       // Draw a red 1
       state = gameStateReducer(state, draw(0, 1, 0, 0), defaultMetadata);
 
-      // Play that red 1
-      const blindPlay = play(0, 0, 1, 0);
-      state = gameStateReducer(state, blindPlay, defaultMetadata);
+      // Blind-play that red 1
+      state = gameStateReducer(state, play(0, 0, 1, 0), defaultMetadata);
 
       expect(state.stats.efficiency).toBe(Infinity);
     });
@@ -76,14 +75,25 @@ describe('gameStateReducer', () => {
       state = gameStateReducer(state, draw(0, 1, 0, 0), defaultMetadata);
 
       // Misplay the red 1
-      const misplay = discard(true, 0, 0, 1, 0);
-      state = gameStateReducer(state, misplay, defaultMetadata);
+      state = gameStateReducer(state, discard(true, 0, 0, 1, 0), defaultMetadata);
 
       // TODO remove this when misplays are calculated from an ActionPlay
       // Mark a strike
       state = gameStateReducer(state, strike(1, 0, 1), defaultMetadata);
 
       expect(state.stats.efficiency).toBe(0);
+    });
+
+    test('is 1 after a 1-for-1 clue', () => {
+      let state = initialGameState(defaultMetadata);
+
+      // Draw a red 1
+      state = gameStateReducer(state, draw(0, 1, 0, 0), defaultMetadata);
+
+      // Give a 1-for-1 clue
+      state = gameStateReducer(state, colorClue(0, 1, [0], 0, 0), defaultMetadata);
+
+      expect(state.stats.efficiency).toBe(1);
     });
 
     test('is 3 after a 3-for-1 clue', () => {
@@ -95,10 +105,34 @@ describe('gameStateReducer', () => {
       }
 
       // Give a 3-for-1 clue touching the 3 red cards
-      const threeForOne = clue(ClueType.Color, 0, 1, [0, 1, 2], 0, 0);
-      state = gameStateReducer(state, threeForOne, defaultMetadata);
+      state = gameStateReducer(state, colorClue(0, 1, [0, 1, 2], 0, 0), defaultMetadata);
 
       expect(state.stats.efficiency).toBe(3);
+    });
+
+    test('is 0.5 after a 1-for-1 clue + a play + a misplay', () => {
+      let state = initialGameState(defaultMetadata);
+
+      // Draw a red 1
+      state = gameStateReducer(state, draw(0, 1, 0, 0), defaultMetadata);
+
+      // Give a 1-for-1 clue
+      state = gameStateReducer(state, colorClue(0, 1, [0], 0, 0), defaultMetadata);
+
+      // Play that red 1
+      state = gameStateReducer(state, play(0, 0, 1, 0), defaultMetadata);
+
+      // Draw a yellow 2
+      state = gameStateReducer(state, draw(1, 2, 0, 1), defaultMetadata);
+
+      // Misplay the yellow 2
+      state = gameStateReducer(state, discard(true, 0, 1, 2, 1), defaultMetadata);
+
+      // TODO remove this when misplays are calculated from an ActionPlay
+      // Mark a strike
+      state = gameStateReducer(state, strike(1, 1, 2), defaultMetadata);
+
+      expect(state.stats.efficiency).toBe(0.5);
     });
   });
 
@@ -108,7 +142,7 @@ describe('gameStateReducer', () => {
 
       // Player 1 gives a random clue to player 0
       let state = initialGameState(defaultMetadata);
-      const testClue = clue(ClueType.Rank, 5, 1, [], 0, 2);
+      const testClue = rankClue(5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue, defaultMetadata);
 
       expect(state.clues.length).toBe(initialState.clues.length + 1);
@@ -139,7 +173,7 @@ describe('gameStateReducer', () => {
       let state = initialGameState(defaultMetadata);
 
       // Player 1 gives a random clue to player 0
-      const testClue = clue(ClueType.Rank, 5, 1, [], 0, 2);
+      const testClue = rankClue(5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue, defaultMetadata);
 
       expect(state.clueTokens).toBe(MAX_CLUE_NUM - 1);
