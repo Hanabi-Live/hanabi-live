@@ -162,7 +162,7 @@ describe('gameStateReducer', () => {
       }
 
       // Player 1 gives a clue that touches cards 1, 2, 3
-      const testClue = clue(ClueType.Rank, 5, 1, [1, 2, 3], 0, 2);
+      const testClue = rankClue(5, 1, [1, 2, 3], 0, 2);
       state = gameStateReducer(state, testClue, defaultMetadata);
 
       expect(state.clues[0].list).toEqual([1, 2, 3]);
