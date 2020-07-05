@@ -56,6 +56,13 @@ describe('minEfficiency', () => {
   test('returns about 1.15 for 4-player Black (6 Suits)', () => {
     expect(minEfficiency(4, blackVariant, false, false)).toBeCloseTo(1.15);
   });
+
+  test('returns about 1.43 for 2-player Clue Starved (6 Suits)', () => {
+    expect(minEfficiency(2, clueStarvedVariant, false, false)).toBeCloseTo(1.43);
+  });
+  test('returns about 1.58 for 4-player Clue Starved (6 Suits)', () => {
+    expect(minEfficiency(4, clueStarvedVariant, false, false)).toBeCloseTo(1.58);
+  });
 });
 
 describe('pace', () => {
