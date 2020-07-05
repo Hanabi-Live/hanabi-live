@@ -1,8 +1,11 @@
 import {
-  draw, discard, play, clue,
+  colorClue,
+  draw,
+  discard,
+  play,
+  rankClue,
 } from '../../../test/testActions';
 import CardState from '../types/CardState';
-import ClueType from '../types/ClueType';
 import GameMetadata from '../types/GameMetadata';
 import Options from '../types/Options';
 import cardsReducer from './cardsReducer';
@@ -132,11 +135,11 @@ describe('cardsReducer', () => {
       let deck: CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultMetadata);
 
-      const clueToCardZero = clue(ClueType.Rank, 1, 2, [0], 0, 0);
+      const clueToCardZero = rankClue(1, 2, [0], 0, 0);
       deck = cardsReducer(deck, clueToCardZero, gameState, defaultMetadata);
       expect(deck[0].numPositiveClues).toBe(1);
 
-      const anotherClueToCardZero = clue(ClueType.Color, 0, 1, [0], 0, 0);
+      const anotherClueToCardZero = colorClue(0, 1, [0], 0, 0);
       deck = cardsReducer(deck, anotherClueToCardZero, gameState, defaultMetadata);
       expect(deck[0].numPositiveClues).toBe(2);
     });
@@ -146,11 +149,11 @@ describe('cardsReducer', () => {
       deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultMetadata);
       deck = cardsReducer(deck, draw(0, -1, -1, 1), gameState, defaultMetadata);
 
-      const clueToCardOne = clue(ClueType.Rank, 1, 2, [1], 0, 0);
+      const clueToCardOne = rankClue(1, 2, [1], 0, 0);
       deck = cardsReducer(deck, clueToCardOne, gameState, defaultMetadata);
       expect(deck[0].numPositiveClues).toBe(0);
 
-      const anotherClueToCardOne = clue(ClueType.Color, 0, 1, [1], 0, 0);
+      const anotherClueToCardOne = colorClue(0, 1, [1], 0, 0);
       deck = cardsReducer(deck, anotherClueToCardOne, gameState, defaultMetadata);
       expect(deck[0].numPositiveClues).toBe(0);
     });
@@ -168,12 +171,12 @@ describe('cardsReducer', () => {
       let deck: CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultMetadata);
 
-      const clueToCardZero = clue(ClueType.Rank, 1, 2, [0], 0, 0);
+      const clueToCardZero = rankClue(1, 2, [0], 0, 0);
       deck = cardsReducer(deck, clueToCardZero, gameState, defaultMetadata);
       expect(deck[0].rankClueMemory.positiveClues.length).toBe(1);
       expect(deck[0].rankClueMemory.positiveClues[0]).toBe(clueToCardZero.clue.value);
 
-      const anotherClueToCardZero = clue(ClueType.Color, 0, 1, [0], 0, 0);
+      const anotherClueToCardZero = colorClue(0, 1, [0], 0, 0);
       deck = cardsReducer(deck, anotherClueToCardZero, gameState, defaultMetadata);
       expect(deck[0].colorClueMemory.positiveClues.length).toBe(1);
       expect(deck[0].colorClueMemory.positiveClues[0]).toBe(anotherClueToCardZero.clue.value);
@@ -186,14 +189,14 @@ describe('cardsReducer', () => {
       // In order to apply negative clues, the hand must be correct
       const gameStateWithCorrectHands = { ...gameState, hands: [[0, 1]] };
 
-      const clueToCardOne = clue(ClueType.Rank, 1, 2, [1], 0, 0);
+      const clueToCardOne = rankClue(1, 2, [1], 0, 0);
       deck = cardsReducer(deck, clueToCardOne, gameStateWithCorrectHands, defaultMetadata);
       expect(deck[0].rankClueMemory.negativeClues.length).toBe(1);
       expect(deck[0].rankClueMemory.negativeClues[0]).toBe(clueToCardOne.clue.value);
       expect(deck[1].rankClueMemory.positiveClues.length).toBe(1);
       expect(deck[1].rankClueMemory.positiveClues[0]).toBe(clueToCardOne.clue.value);
 
-      const anotherClueToCardOne = clue(ClueType.Color, 0, 1, [1], 0, 0);
+      const anotherClueToCardOne = colorClue(0, 1, [1], 0, 0);
       deck = cardsReducer(deck, anotherClueToCardOne, gameStateWithCorrectHands, defaultMetadata);
       expect(deck[0].colorClueMemory.negativeClues.length).toBe(1);
       expect(deck[0].colorClueMemory.negativeClues[0]).toBe(anotherClueToCardOne.clue.value);
