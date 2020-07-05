@@ -19,7 +19,7 @@ import {
 } from '../src/game/types/actions';
 import ClueType from '../src/game/types/ClueType';
 
-export const clue = (
+const clue = (
   type: ClueType,
   value: number,
   giver: number,
@@ -29,6 +29,36 @@ export const clue = (
 ): ActionClue => ({
   type: 'clue', clue: { type, value }, giver, list, target, turn,
 });
+
+export const colorClue = (
+  value: number,
+  giver: number,
+  list: number[],
+  target: number,
+  turn: number,
+): ActionClue => clue(
+  ClueType.Color,
+  value,
+  giver,
+  list,
+  target,
+  turn,
+);
+
+export const rankClue = (
+  value: number,
+  giver: number,
+  list: number[],
+  target: number,
+  turn: number,
+): ActionClue => clue(
+  ClueType.Rank,
+  value,
+  giver,
+  list,
+  target,
+  turn,
+);
 
 export const draw = (who: number, rank: number, suit: number, order: number): ActionDraw => ({
   type: 'draw', who, rank, suit, order,
