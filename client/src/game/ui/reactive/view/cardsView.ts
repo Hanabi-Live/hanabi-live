@@ -89,7 +89,7 @@ function updateCardVisuals(order: number) {
   }
   if (card.suitIndex !== null && card.rank !== null) {
     const learnedCard = globals.learnedCards[order];
-    learnedCard.suit = globals.variant.suits[card.suitIndex];
+    learnedCard.suitIndex = card.suitIndex;
     learnedCard.rank = card.rank;
   }
 

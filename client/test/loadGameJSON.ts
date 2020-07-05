@@ -146,10 +146,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   return {
     visibleState: game,
     ongoingGame: game,
-    replay: {
-      ...state.replay,
-      states,
-    },
+    replay: { ...state.replay, states },
     cardIdentities: [],
     metadata,
   };

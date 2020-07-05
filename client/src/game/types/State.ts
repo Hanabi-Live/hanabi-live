@@ -7,6 +7,6 @@ export default interface State {
   readonly visibleState: GameState;
   readonly ongoingGame: GameState;
   readonly replay: ReplayState;
-  readonly cardIdentities: CardIdentity[];
+  readonly cardIdentities: readonly CardIdentity[];
   readonly metadata: GameMetadata;
 }

@@ -1,6 +1,4 @@
-import Suit from './Suit';
-
 export default interface CardIdentity {
-  suit: Suit | null;
-  rank: number | null;
+  suitIndex: number | null; // TODO make this readonly after learnedCards gets killed
+  rank: number | null; // TODO make this readonly after learnedCards gets killed
 }

@@ -257,7 +257,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
     } else {
       // If we are not in Empathy mode, then show the suit if it is known
-      suitToShow = learnedCard.suit!;
+      if (learnedCard.suitIndex === null) {
+        suitToShow = null;
+      } else {
+        suitToShow = msgSuitToSuit(learnedCard.suitIndex, globals.variant);
+      }
       if (
         this.state.rank === STACK_BASE_RANK
         && this.note?.suitIndex !== null
@@ -521,7 +525,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Keep track of what this card is
     const learnedCard = globals.learnedCards[this.state.order];
-    learnedCard.suit = msgSuitToSuit(suitIndex, globals.variant);
+    learnedCard.suitIndex = suitIndex;
     learnedCard.rank = rank;
 
     // Redraw the card

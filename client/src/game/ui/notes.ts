@@ -88,18 +88,7 @@ export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
     text = text.trim(); // Remove all leading and trailing whitespace
   }
 
-  // First, check to see if this card should be marked with certain properties
-  const knownTrash = checkNoteKeywords([
-    'kt',
-    'trash',
-    'stale',
-    'bad',
-  ], text, fullNote);
-
-  const needsFix = checkNoteKeywords([
-    'fixme',
-    'needs fix',
-  ], text, fullNote);
+  const cardIdentity = cardIdentityFromNote(variant, text, fullNote);
 
   const chopMoved = checkNoteKeywords([
     'cm',
@@ -115,35 +104,42 @@ export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
     'utfcm',
     'utbcm',
   ], text, fullNote);
-
   const finessed = checkNoteKeywords([
     'f',
     'hf',
     'pf',
     'gd',
   ], text, fullNote);
-
+  const knownTrash = checkNoteKeywords([
+    'kt',
+    'trash',
+    'stale',
+    'bad',
+  ], text, fullNote);
+  const needsFix = checkNoteKeywords([
+    'fixme',
+    'needs fix',
+  ], text, fullNote);
   const blank = checkNoteKeywords(['blank'], text, fullNote);
-
   const unclued = checkNoteKeywords(['unclued'], text, fullNote);
 
-  const noteCard = cardFromNote(variant, text, fullNote);
-  const suitIndex = noteCard.suit ? suitToMsgSuit(noteCard.suit, variant) : null;
-  const rank = noteCard.rank;
-
   return {
-    rank,
-    suitIndex,
-    blank,
+    suitIndex: cardIdentity.suitIndex,
+    rank: cardIdentity.rank,
     chopMoved,
     finessed,
     knownTrash,
     needsFix,
+    blank,
     unclued,
   };
 };
 
-export const cardFromNote = (variant: Variant, note: string, fullNote: string): CardIdentity => {
+export const cardIdentityFromNote = (
+  variant: Variant,
+  note: string,
+  fullNote: string,
+): CardIdentity => {
   let rankStrings = variant.ranks.map((r) => r.toString());
   if (variantRules.isUpOrDown(variant)) {
     rankStrings = rankStrings.concat('0', 's', 'start');
@@ -156,14 +152,20 @@ export const cardFromNote = (variant: Variant, note: string, fullNote: string): 
     if (checkNoteKeywords([
       rankText,
     ], note, fullNote)) {
-      return { suit: null, rank };
+      return {
+        suitIndex: null,
+        rank,
+      };
     }
     for (const suit of variant.suits) {
       if (checkNoteKeywords([
         suit.abbreviation.toLowerCase(),
         suit.name.toLowerCase(),
       ], note, fullNote)) {
-        return { suit, rank: null };
+        return {
+          suitIndex: suitToMsgSuit(suit, variant),
+          rank: null,
+        };
       }
 
       if (checkNoteKeywords([
@@ -175,12 +177,18 @@ export const cardFromNote = (variant: Variant, note: string, fullNote: string): 
         `${rankText}${suit.name.toLowerCase()}`, // e.g. "1blue" or "1Blue" or "1BLUE"
         `${rankText} ${suit.name.toLowerCase()}`, // e.g. "1 blue" or "1 Blue" or "1 BLUE"
       ], note, fullNote)) {
-        return { suit, rank };
+        return {
+          suitIndex: suitToMsgSuit(suit, variant),
+          rank,
+        };
       }
     }
   }
 
-  return { suit: null, rank: null };
+  return {
+    suitIndex: null,
+    rank: null,
+  };
 };
 
 export const checkNoteImpossibility = (variant: Variant, cardState: CardState, note: CardNote) => {
