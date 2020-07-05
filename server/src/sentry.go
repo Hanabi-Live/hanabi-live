@@ -9,7 +9,7 @@ import (
 
 func sentryInit() bool {
 	// We only want to report errors in production
-	if os.Getenv("DOMAIN") == "localhost" || os.Getenv("DOMAIN") == "" {
+	if isDev {
 		return false
 	}
 
