@@ -10,12 +10,11 @@ export default function initialCardState(order: number, variant: Variant) : Card
   const possibleCards: number[][] = [];
 
   // Possible cards (based on both clues given and cards seen) are also tracked separately
-  // Start by cloning the "globals.cardsMap"
   possibleSuits.forEach((suitIndex) => {
     possibleCards[suitIndex] = [];
     const suit = variant.suits[suitIndex];
     possibleRanks.forEach((rank) => {
-      possibleCards[suitIndex][rank] = deckRules.numCopiesOfCard(variant, rank, suit);
+      possibleCards[suitIndex][rank] = deckRules.numCopiesOfCard(variant, suit, rank);
     });
   });
 
