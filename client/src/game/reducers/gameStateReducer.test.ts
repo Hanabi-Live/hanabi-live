@@ -62,9 +62,8 @@ describe('gameStateReducer', () => {
       // Draw a red 1
       state = gameStateReducer(state, draw(0, 1, 0, 0), defaultMetadata);
 
-      // Play that red 1
-      const blindPlay = play(0, 0, 1, 0);
-      state = gameStateReducer(state, blindPlay, defaultMetadata);
+      // Blind-play that red 1
+      state = gameStateReducer(state, play(0, 0, 1, 0), defaultMetadata);
 
       expect(state.stats.efficiency).toBe(Infinity);
     });
@@ -76,8 +75,7 @@ describe('gameStateReducer', () => {
       state = gameStateReducer(state, draw(0, 1, 0, 0), defaultMetadata);
 
       // Misplay the red 1
-      const misplay = discard(true, 0, 0, 1, 0);
-      state = gameStateReducer(state, misplay, defaultMetadata);
+      state = gameStateReducer(state, discard(true, 0, 0, 1, 0), defaultMetadata);
 
       // TODO remove this when misplays are calculated from an ActionPlay
       // Mark a strike
@@ -93,10 +91,9 @@ describe('gameStateReducer', () => {
       state = gameStateReducer(state, draw(0, 1, 0, 0), defaultMetadata);
 
       // Give a 1-for-1 clue
-      const oneForOne = colorClue(0, 1, [0], 0, 0);
-      state = gameStateReducer(state, oneForOne, defaultMetadata);
+      state = gameStateReducer(state, colorClue(0, 1, [0], 0, 0), defaultMetadata);
 
-      expect(state.stats.efficiency).toBe(3);
+      expect(state.stats.efficiency).toBe(1);
     });
 
     test('is 3 after a 3-for-1 clue', () => {
@@ -108,10 +105,34 @@ describe('gameStateReducer', () => {
       }
 
       // Give a 3-for-1 clue touching the 3 red cards
-      const threeForOne = colorClue(0, 1, [0, 1, 2], 0, 0);
-      state = gameStateReducer(state, threeForOne, defaultMetadata);
+      state = gameStateReducer(state, colorClue(0, 1, [0, 1, 2], 0, 0), defaultMetadata);
 
       expect(state.stats.efficiency).toBe(3);
+    });
+
+    test('is 0.5 after a 1-for-1 clue + a play + a misplay', () => {
+      let state = initialGameState(defaultMetadata);
+
+      // Draw a red 1
+      state = gameStateReducer(state, draw(0, 1, 0, 0), defaultMetadata);
+
+      // Give a 1-for-1 clue
+      state = gameStateReducer(state, colorClue(0, 1, [0], 0, 0), defaultMetadata);
+
+      // Play that red 1
+      state = gameStateReducer(state, play(0, 0, 1, 0), defaultMetadata);
+
+      // Draw a yellow 2
+      state = gameStateReducer(state, draw(1, 2, 0, 1), defaultMetadata);
+
+      // Misplay the yellow 2
+      state = gameStateReducer(state, discard(true, 0, 1, 2, 1), defaultMetadata);
+
+      // TODO remove this when misplays are calculated from an ActionPlay
+      // Mark a strike
+      state = gameStateReducer(state, strike(1, 1, 2), defaultMetadata);
+
+      expect(state.stats.efficiency).toBe(0.5);
     });
   });
 
