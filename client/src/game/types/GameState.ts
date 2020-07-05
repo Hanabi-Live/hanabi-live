@@ -36,6 +36,8 @@ export interface StateClue {
   readonly giver: number;
   readonly target: number;
   readonly turn: number;
+  readonly list: readonly number[];
+  readonly negativeList: readonly number[];
 }
 
 export interface StateCardClue {

@@ -117,6 +117,22 @@ describe('gameStateReducer', () => {
       expect(state.clues[0].turn).toBe(testClue.turn);
       expect(state.clues[0].type).toBe(testClue.clue.type);
       expect(state.clues[0].value).toBe(testClue.clue.value);
+      expect(state.clues[0].list).toEqual([]);
+      expect(state.clues[0].negativeList).toEqual([]);
+    });
+    test('are remembered with the correct positive and negative cards', () => {
+      let state = initialGameState(defaultMetadata);
+      // Draw 5 cards (red 1-3, yellow 4-5)
+      for (let i = 1; i <= 5; i++) {
+        state = gameStateReducer(state, draw(0, i, i <= 3 ? 0 : 1, i), defaultMetadata);
+      }
+
+      // Player 1 gives a clue that touches cards 1, 2, 3
+      const testClue = clue(ClueType.Rank, 5, 1, [1, 2, 3], 0, 2);
+      state = gameStateReducer(state, testClue, defaultMetadata);
+
+      expect(state.clues[0].list).toEqual([1, 2, 3]);
+      expect(state.clues[0].negativeList).toEqual([4, 5]);
     });
 
     test('decrement clueTokens', () => {

@@ -37,6 +37,8 @@ const gameStateReducer = produce((
         giver: action.giver,
         target: action.target,
         turn: action.turn,
+        list: action.list,
+        negativeList: state.hands[action.target].filter((i) => !action.list.includes(i)),
       });
 
       break;

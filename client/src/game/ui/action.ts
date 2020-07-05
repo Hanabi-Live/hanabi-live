@@ -15,11 +15,9 @@ import {
   ActionIncludingHypothetical,
   ActionReveal,
 } from '../types/actions';
-import ClueType from '../types/ClueType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
-import ClueEntry from './ClueEntry';
 import { msgClueToClue, msgSuitToSuit } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
@@ -60,53 +58,6 @@ actionFunctions.set('clue', (data: ActionClue) => {
 
     arrows.set(i, card, data.giver, clue);
   }
-
-  const negativeList = [];
-  for (let i = 0; i < globals.elements.playerHands[data.target].children.length; i++) {
-    const child = globals.elements.playerHands[data.target].children[i];
-
-    const card = child.children[0] as HanabiCard;
-    const order = card.state.order;
-
-    if (data.list.indexOf(order) < 0) {
-      negativeList.push(order);
-    }
-  }
-
-  // Add an entry to the clue log
-  let clueName;
-  if (data.clue.type === ClueType.Color) {
-    if (typeof clue.value === 'number') {
-      throw new Error('The value of a color clue was a number.');
-    }
-    clueName = clue.value.name;
-  } else if (data.clue.type === ClueType.Rank) {
-    clueName = clue.value.toString();
-  }
-  if (variantRules.isCowAndPig(globals.variant)) {
-    if (data.clue.type === ClueType.Color) {
-      clueName = 'Moo';
-    } else if (data.clue.type === ClueType.Rank) {
-      clueName = 'Oink';
-    }
-  } else if (
-    variantRules.isDuck(globals.variant)
-    || globals.characterAssignments[data.giver!] === 'Quacker'
-  ) {
-    clueName = 'Quack';
-  }
-
-  const entry = new ClueEntry({
-    width: globals.elements.clueLog!.width(),
-    height: 0.017 * globals.stage.height(),
-    giver: globals.playerNames[data.giver],
-    target: globals.playerNames[data.target],
-    clueName,
-    list: data.list,
-    negativeList,
-    turn: data.turn,
-  });
-  globals.elements.clueLog!.addClue(entry);
 
   if (!globals.animateFast) {
     globals.layers.card.batchDraw();

@@ -1,6 +1,5 @@
 // Functions for progressing forward and backward through time
 
-import produce from 'immer';
 import Konva from 'konva';
 import * as deck from '../rules/deck';
 import { MAX_CLUE_NUM, STACK_BASE_RANK } from '../types/constants';
@@ -184,7 +183,6 @@ const reset = () => {
   // Reset various UI elements
   globals.postAnimationLayout = null;
   globals.elements.deck!.setCount(globals.deckSize);
-  globals.elements.clueLog!.clear();
 
   // Reset the strikes
   for (const strikeX of globals.elements.strikeXs) {
@@ -209,12 +207,6 @@ const reset = () => {
     } else {
       card.parent!.hide();
     }
-    // HACK: this should not be done here
-    card.state = produce(card.state, (state) => {
-      state.holder = null;
-      state.suitIndex = null;
-      state.rank = null;
-    });
   }
 
   // Reset the arrows
