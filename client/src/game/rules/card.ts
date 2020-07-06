@@ -50,6 +50,9 @@ export function isCritical(
   return total === discarded + 1;
 }
 
+// needsToBePlayed returns true if the card is not yet played
+// and is still needed to be played in order to get the maximum score
+// (this mirrors the server function in "card.go")
 export function needsToBePlayed(
   variant: Variant,
   deck: readonly CardState[],

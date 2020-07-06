@@ -475,7 +475,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     if (
       this.state.suitIndex !== null
       && this.state.rank !== null
-      && this.state.numPositiveClues === 0
+      && !cardRules.isClued(this.state)
       && !this.state.isPlayed
       && !this.state.isDiscarded
       && !this.empathy
@@ -723,35 +723,26 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   private isCritical() {
-    const visibleState = globals.store!.getState().visibleState;
-    if (!visibleState) {
-      return false;
-    }
-    const variant = this.variant;
-    const deck = visibleState.deck;
-    const playStacks = visibleState.playStacks;
-    const stackDirections = visibleState.playStacksDirections;
-    const state = this.state;
-    return cardRules.isCritical(variant, deck, playStacks, stackDirections, state);
+    return this.cardRule(cardRules.isCritical);
   }
 
-  // needsToBePlayed returns true if the card is not yet played
-  // and is still needed to be played in order to get the maximum score
-  // (this mirrors the server function in "card.go")
   private needsToBePlayed() {
-    const visibleState = globals.store!.getState().visibleState;
-    if (!visibleState) {
-      return false;
-    }
-    const variant = this.variant;
-    const deck = visibleState.deck;
-    const playStacks = visibleState.playStacks;
-    const stackDirections = visibleState.playStacksDirections;
-    const state = this.state;
-    return cardRules.needsToBePlayed(variant, deck, playStacks, stackDirections, state);
+    return this.cardRule(cardRules.needsToBePlayed);
   }
 
   isPotentiallyPlayable() {
+    return this.cardRule(cardRules.isPotentiallyPlayable);
+  }
+
+  // Gathers all the appropriate state and passes as arguments to
+  // a function from cardRules.ts
+  private cardRule(fn: (
+    variant: Variant,
+    deck: readonly CardState[],
+    playStacks: ReadonlyArray<readonly number[]>,
+    stackDirections: readonly StackDirection[],
+    card: CardState,
+  ) => boolean) {
     const visibleState = globals.store!.getState().visibleState;
     if (!visibleState) {
       return false;
@@ -761,7 +752,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     const playStacks = visibleState.playStacks;
     const stackDirections = visibleState.playStacksDirections;
     const state = this.state;
-    return cardRules.isPotentiallyPlayable(variant, deck, playStacks, stackDirections, state);
+    return fn(variant, deck, playStacks, stackDirections, state);
   }
 
   // Update all UI pips to their state
@@ -1010,4 +1001,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     globals.layers.card.batchDraw();
   }
+}
+
+export function initArray<T>(length: number, value: T): T[] {
+  return Array.from({ length }, () => value);
 }
