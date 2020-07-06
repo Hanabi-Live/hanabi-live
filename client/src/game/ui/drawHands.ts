@@ -425,9 +425,10 @@ const drawDetrimentalCharacters = (
   }
 
   if (globals.options.detrimentalCharacters) {
-    let character = CHARACTERS.get(globals.characterAssignments[i]);
-    if (globals.characterAssignments[i] === 'n/a') {
-      // A "n/a" character may be assigned when debugging
+    const characterID = globals.characterAssignments[i];
+    let character = CHARACTERS.get(characterID);
+    if (characterID === -1) {
+      // A character with the ID of -1 may be assigned when debugging
       character = {
         id: -1,
         name: 'n/a',
@@ -436,7 +437,7 @@ const drawDetrimentalCharacters = (
       };
     }
     if (character === undefined) {
-      throw new Error(`Failed to get the "${globals.characterAssignments[i]}" character.`);
+      throw new Error(`Unable to find the character corresponding to ID ${characterID}.`);
     }
 
     const width2 = 0.03 * winW;

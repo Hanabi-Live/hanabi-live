@@ -1,4 +1,4 @@
-import { CHARACTERS_ID } from '../data/gameData';
+import { CHARACTERS } from '../data/gameData';
 
 export function shouldEndTurnAfterDraw(
   cardsPlayedOrDiscardedThisTurn: number,
@@ -6,13 +6,13 @@ export function shouldEndTurnAfterDraw(
   clueTokens: number,
 ) {
   // Some "Detrimental Characters" are able to perform two actions
-  if (characterID !== 0) {
-    const characterName = CHARACTERS_ID.get(characterID);
-    if (characterName === undefined) {
+  if (characterID > 0) {
+    const character = CHARACTERS.get(characterID);
+    if (character === undefined) {
       throw new Error(`Unable to find the character corresponding to ID ${characterID}.`);
     }
 
-    if (characterName === 'Panicky' && clueTokens <= 4) {
+    if (character.name === 'Panicky' && clueTokens <= 4) {
       return cardsPlayedOrDiscardedThisTurn === 2;
     }
   }
@@ -28,13 +28,13 @@ export function shouldEndTurnAfterClue(
   characterID: number,
 ) {
   // Some "Detrimental Characters" are able to perform two clues
-  if (characterID !== 0) {
-    const characterName = CHARACTERS_ID.get(characterID);
-    if (characterName === undefined) {
+  if (characterID > 0) {
+    const character = CHARACTERS.get(characterID);
+    if (character === undefined) {
       throw new Error(`Unable to find the character corresponding to ID ${characterID}.`);
     }
 
-    if (characterName === 'Genius') {
+    if (character.name === 'Genius') {
       return cluesGivenThisTurn === 2;
     }
   }
@@ -45,13 +45,13 @@ export function shouldEndTurnAfterClue(
 
 export function shouldTurnsInvert(characterID: number) {
   // Some "Detrimental Characters" are able to invert the turns
-  if (characterID !== 0) {
-    const characterName = CHARACTERS_ID.get(characterID);
-    if (characterName === undefined) {
+  if (characterID > 0) {
+    const character = CHARACTERS.get(characterID);
+    if (character === undefined) {
       throw new Error(`Unable to find the character corresponding to ID ${characterID}.`);
     }
 
-    if (characterName === 'Contrarian') {
+    if (character.name === 'Contrarian') {
       return true;
     }
   }

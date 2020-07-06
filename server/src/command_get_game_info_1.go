@@ -62,11 +62,11 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 	}
 
 	// Create a list of the "Detrimental Character Assignments", if enabled
-	characterAssignments := make([]string, 0)
+	characterAssignments := make([]int, 0)
 	characterMetadata := make([]int, 0)
 	if t.Options.DetrimentalCharacters {
 		for _, p := range g.Players {
-			characterAssignments = append(characterAssignments, p.Character)
+			characterAssignments = append(characterAssignments, characters[p.Character].ID)
 			characterMetadata = append(characterMetadata, p.CharacterMetadata)
 		}
 	}
@@ -115,8 +115,8 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		Options          *Options  `json:"options"`
 
 		// Character settings
-		CharacterAssignments []string `json:"characterAssignments"`
-		CharacterMetadata    []int    `json:"characterMetadata"`
+		CharacterAssignments []int `json:"characterAssignments"`
+		CharacterMetadata    []int `json:"characterMetadata"`
 
 		// Hypothetical settings
 		Hypothetical bool     `json:"hypothetical"`

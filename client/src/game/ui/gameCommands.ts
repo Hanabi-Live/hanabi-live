@@ -228,7 +228,7 @@ interface InitData {
   options: Options;
 
   // Character settings
-  characterAssignments: string[];
+  characterAssignments: number[];
   characterMetadata: number[];
 
   // Hypothetical settings
@@ -272,7 +272,7 @@ commands.set('init', (data: InitData) => {
   const metadata: GameMetadata = {
     options: data.options,
     playerSeat: data.seat >= 0 ? data.seat : null,
-    characterAssignments: data.characterAssignments.map((char) => CHARACTERS.get(char)!.id),
+    characterAssignments: data.characterAssignments,
     characterMetadata: data.characterMetadata,
   };
   globals.store = createStore(stateReducer, initialState(metadata));
