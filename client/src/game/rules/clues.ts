@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 // Functions related to the clue objects themselves: converting, getting names, etc
 
-import { CHARACTERS } from '../data/gameData';
+import { getCharacter } from '../data/gameData';
 import ClueType from '../types/ClueType';
 import { StateClue } from '../types/GameState';
 import Variant from '../types/Variant';
@@ -10,10 +10,7 @@ import * as variantRules from './variant';
 export function getClueName(clue: StateClue, variant: Variant, characterID: number | null) {
   let characterName = '';
   if (characterID !== null) {
-    const character = CHARACTERS.get(characterID);
-    if (character === undefined) {
-      throw new Error(`Unable to find the character corresponding to ID ${characterID}.`);
-    }
+    const character = getCharacter(characterID);
     characterName = character.name;
   }
 

@@ -5,13 +5,13 @@ import {
   play,
   rankClue,
 } from '../../../test/testActions';
+import { getVariant } from '../data/gameData';
 import CardState from '../types/CardState';
 import GameMetadata from '../types/GameMetadata';
 import Options from '../types/Options';
 import cardsReducer from './cardsReducer';
 import initialCardState from './initialStates/initialCardState';
 import initialGameState from './initialStates/initialGameState';
-import { getVariant } from './reducerHelpers';
 
 const defaultMetadata: GameMetadata = {
   options: {
@@ -23,7 +23,7 @@ const defaultMetadata: GameMetadata = {
   characterMetadata: [],
 };
 const gameState = initialGameState(defaultMetadata);
-const variant = getVariant(defaultMetadata);
+const variant = getVariant(defaultMetadata.options.variantName);
 const defaultCard = initialCardState(0, variant);
 const secondCard = initialCardState(1, variant);
 

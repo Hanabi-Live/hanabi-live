@@ -2,6 +2,7 @@
 
 import produce, { castDraft, Draft } from 'immer';
 import { ensureAllCases, nullIfNegative } from '../../misc';
+import { getVariant } from '../data/gameData';
 import { removePossibilities, checkAllPipPossibilities } from '../rules/applyClueCore';
 import { GameAction } from '../types/actions';
 import CardState from '../types/CardState';
@@ -12,7 +13,6 @@ import GameState from '../types/GameState';
 import Variant from '../types/Variant';
 import cardPossibilitiesReducer from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
-import { getVariant } from './reducerHelpers';
 
 const cardsReducer = produce((
   deck: Draft<CardState[]>,
@@ -20,7 +20,7 @@ const cardsReducer = produce((
   game: GameState,
   metadata: GameMetadata,
 ) => {
-  const variant = getVariant(metadata);
+  const variant = getVariant(metadata.options.variantName);
 
   switch (action.type) {
     // A player just gave a clue

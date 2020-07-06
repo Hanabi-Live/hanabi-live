@@ -6,6 +6,7 @@ import produce, {
   Draft,
   original,
 } from 'immer';
+import { getVariant } from '../data/gameData';
 import {
   applyColorClue,
   applyRankClue,
@@ -17,7 +18,7 @@ import CardState, { PipState } from '../types/CardState';
 import Clue, { rankClue, colorClue } from '../types/Clue';
 import ClueType from '../types/ClueType';
 import GameMetadata from '../types/GameMetadata';
-import { getVariant, getIndexConverter } from './reducerHelpers';
+import { getIndexConverter } from './reducerHelpers';
 
 const cardPossibilitiesReducer = produce((
   state: Draft<CardState>,
@@ -33,7 +34,7 @@ const cardPossibilitiesReducer = produce((
     return;
   }
 
-  const variant = getVariant(metadata);
+  const variant = getVariant(metadata.options.variantName);
 
   // Don't calculate possibilities on speedrun (perf optimization)
   // or on "Throw it in a Hole" since the player can't see the played cards
@@ -149,7 +150,7 @@ export default cardPossibilitiesReducer;
 
 function reapplyClues(state: CardState, clueType: ClueType, metadata: GameMetadata) {
   const isColorType = clueType === ClueType.Color;
-  const colors = isColorType ? getVariant(metadata).clueColors : null;
+  const colors = isColorType ? getVariant(metadata.options.variantName).clueColors : null;
 
   const memory = isColorType ? state.colorClueMemory : state.rankClueMemory;
   const { positiveClues, negativeClues } = memory;

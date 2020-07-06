@@ -1,9 +1,9 @@
+import { getVariant } from '../data/gameData';
 import { colorClue } from '../types/Clue';
 import GameMetadata from '../types/GameMetadata';
 import Options from '../types/Options';
 import cardPossibilitiesReducer from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
-import { getVariant } from './reducerHelpers';
 
 const defaultMetadata: GameMetadata = {
   options: {
@@ -14,7 +14,7 @@ const defaultMetadata: GameMetadata = {
   characterAssignments: [],
   characterMetadata: [],
 };
-const variant = getVariant(defaultMetadata);
+const variant = getVariant(defaultMetadata.options.variantName);
 const defaultCard = initialCardState(0, variant);
 
 // Can be used to count possible cards in a possibleCards array using a reduce function

@@ -1,4 +1,4 @@
-import { CHARACTERS } from '../data/gameData';
+import { getCharacter } from '../data/gameData';
 import CardState from '../types/CardState';
 import { ActionType } from '../types/ClientAction';
 import Clue from '../types/Clue';
@@ -45,10 +45,7 @@ export const checkLegal = () => {
   const ourCharacterID = globals.characterAssignments[globals.playerUs];
   let ourCharacterName = '';
   if (ourCharacterID !== null) {
-    const ourCharacter = CHARACTERS.get(ourCharacterID);
-    if (ourCharacter === undefined) {
-      throw new Error(`Unable to find the character corresponding to ID ${ourCharacterID}.`);
-    }
+    const ourCharacter = getCharacter(ourCharacterID);
     ourCharacterName = ourCharacter.name;
   }
 

@@ -2,7 +2,7 @@
 
 import Konva from 'konva';
 import { nullIfNegative } from '../../misc';
-import { CHARACTERS } from '../data/gameData';
+import { getCharacter } from '../data/gameData';
 import * as variantRules from '../rules/variant';
 import {
   ActionClue,
@@ -117,10 +117,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   // cards that are in slot 1
   const ourCharacterID = globals.characterAssignments[globals.playerUs];
   if (ourCharacterID !== null) {
-    const ourCharacter = CHARACTERS.get(ourCharacterID);
-    if (ourCharacter === undefined) {
-      throw new Error(`Unable to find the character corresponding to ID ${ourCharacterID}.`);
-    }
+    const ourCharacter = getCharacter(ourCharacterID);
     if (ourCharacter.name === 'Slow-Witted') {
       if (suitIndex !== null || rank !== null) {
         globals.characterRememberedCards[order] = {

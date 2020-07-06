@@ -6,7 +6,7 @@ import { KonvaEventObject } from 'konva/types/Node';
 import {
   ARROW_COLOR,
 } from '../../constants';
-import { CHARACTERS } from '../data/gameData';
+import { getCharacter } from '../data/gameData';
 import * as variantRules from '../rules/variant';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
@@ -106,10 +106,7 @@ export const set = (
     const giverCharacterID = globals.characterAssignments[giver!];
     let giverCharacterName = '';
     if (giverCharacterID !== null) {
-      const giverCharacter = CHARACTERS.get(giverCharacterID);
-      if (giverCharacter === undefined) {
-        throw new Error(`Unable to find the character corresponding to ID ${giverCharacterID}.`);
-      }
+      const giverCharacter = getCharacter(giverCharacterID);
       giverCharacterName = giverCharacter.name;
     }
     if (

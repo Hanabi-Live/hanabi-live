@@ -1,6 +1,6 @@
 import Konva from 'konva';
 import { CARD_W, CARD_H } from '../../constants';
-import { CHARACTERS } from '../data/gameData';
+import { getCharacter } from '../data/gameData';
 import * as hand from '../rules/hand';
 import Character from '../types/Character';
 import CardLayout from './CardLayout';
@@ -440,10 +440,7 @@ const drawDetrimentalCharacters = (
         emoji: '',
       };
     } else {
-      character = CHARACTERS.get(characterID);
-      if (character === undefined) {
-        throw new Error(`Unable to find the character corresponding to ID ${characterID}.`);
-      }
+      character = getCharacter(characterID);
     }
 
     const width2 = 0.03 * winW;
