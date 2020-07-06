@@ -12,9 +12,12 @@ const turnReducer = produce((
   clueTokens: number,
 ) => {
   const numPlayers = metadata.options.numPlayers;
-  const characterID = metadata.characterAssignments[state.currentPlayerIndex];
-  if (characterID === undefined) {
-    throw new Error(`The character ID for player ${state.currentPlayerIndex} was undefined in the "turnReducer()" function.`);
+  let characterID = null;
+  if (state.currentPlayerIndex !== -1) {
+    characterID = metadata.characterAssignments[state.currentPlayerIndex];
+    if (characterID === undefined) {
+      throw new Error(`The character ID for player ${state.currentPlayerIndex} was undefined in the "turnReducer()" function.`);
+    }
   }
 
   switch (action.type) {
