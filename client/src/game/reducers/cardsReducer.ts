@@ -230,8 +230,7 @@ function removePossibility(
   }
   if (cardsLeft > 0) {
     // Remove one or all possibilities for this card,
-    // (depending on whether the card was clued
-    // or if we saw someone draw a copy of this card)
+    // (depending on whether the card was clued or if we saw someone draw a copy of this card)
     cardsLeft = all ? 0 : cardsLeft - 1;
   }
 
