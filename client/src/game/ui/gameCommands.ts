@@ -3,6 +3,7 @@
 // for e.g. in-game replays
 
 import { createStore } from 'redux';
+import { initArray } from '../../misc';
 import * as sentry from '../../sentry';
 import { getVariant } from '../data/gameData';
 import initialState from '../reducers/initialStates/initialState';
@@ -280,9 +281,7 @@ commands.set('init', (data: InitData) => {
   // Character settings
   globals.characterAssignments = data.characterAssignments;
   if (globals.characterAssignments.length === 0) {
-    for (let i = 0; i < globals.options.numPlayers; i++) {
-      globals.characterAssignments.push(null);
-    }
+    globals.characterAssignments = initArray(globals.options.numPlayers, null);
   }
   globals.characterMetadata = data.characterMetadata;
 
