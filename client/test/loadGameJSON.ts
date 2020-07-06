@@ -19,7 +19,7 @@ import MsgClue from '../src/game/types/MsgClue';
 import Options from '../src/game/types/Options';
 import State from '../src/game/types/State';
 import Variant from '../src/game/types/Variant';
-import { initNullArray } from '../src/misc';
+import { initArray } from '../src/misc';
 import testGame from '../test_data/up_or_down.json';
 
 type JSONGame = typeof testGame;
@@ -47,7 +47,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       variantName: gameJSON.options.variant,
     },
     playerSeat: null,
-    characterAssignments: initNullArray(numPlayers),
+    characterAssignments: initArray(numPlayers, null),
     characterMetadata: [],
   };
   const variant = getVariant(metadata.options.variantName);

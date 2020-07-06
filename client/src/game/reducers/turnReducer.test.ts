@@ -2,7 +2,7 @@ import { // Direct import instead of namespace import for compactness
   draw,
   play,
 } from '../../../test/testActions';
-import { initNullArray } from '../../misc';
+import { initArray } from '../../misc';
 import { MAX_CLUE_NUM } from '../types/constants';
 import GameMetadata from '../types/GameMetadata';
 import Options from '../types/Options';
@@ -17,7 +17,7 @@ const defaultMetadata: GameMetadata = {
     numPlayers,
   },
   playerSeat: null,
-  characterAssignments: initNullArray(numPlayers),
+  characterAssignments: initArray(numPlayers, null),
   characterMetadata: [],
 };
 

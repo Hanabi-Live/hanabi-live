@@ -55,7 +55,9 @@ export const getRandomNumber = (
   max: number,
 ) => Math.floor((Math.random() * (max - min + 1)) + min);
 
-export const initNullArray = (n: number) => [...Array(n).keys()].map(() => null);
+export function initArray<T>(length: number, value: T): T[] {
+  return Array.from({ length }, () => value);
+}
 
 // From: https://stackoverflow.com/questions/61526746
 export const isKeyOf = <T>(p: PropertyKey, target: T): p is keyof T => p in target;
