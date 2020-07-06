@@ -12,10 +12,13 @@ const turnReducer = produce((
   clueTokens: number,
 ) => {
   const numPlayers = metadata.options.numPlayers;
-  const characterID = metadata.characterAssignments[state.currentPlayerIndex];
-  if (characterID === undefined) {
-    throw new Error(`The character ID for player ${state.currentPlayerIndex} was undefined in the "turnReducer()" function.`);
-  }
+  const getCharacterID = () => {
+    const characterID = metadata.characterAssignments[state.currentPlayerIndex];
+    if (characterID === undefined) {
+      throw new Error(`The character ID for player ${state.currentPlayerIndex} was undefined in the "turnReducer()" function.`);
+    }
+    return characterID;
+  };
 
   switch (action.type) {
     case 'play':
@@ -23,15 +26,15 @@ const turnReducer = produce((
       state.cardsPlayedOrDiscardedThisTurn += 1;
 
       if (deckSize === 0) {
-        nextTurn(state, numPlayers, characterID);
+        nextTurn(state, numPlayers, getCharacterID());
       }
 
       break;
     }
 
     case 'clue': {
-      if (turnRules.shouldEndTurnAfterClue(state.cluesGivenThisTurn, characterID)) {
-        nextTurn(state, numPlayers, characterID);
+      if (turnRules.shouldEndTurnAfterClue(state.cluesGivenThisTurn, getCharacterID())) {
+        nextTurn(state, numPlayers, getCharacterID());
       }
       break;
     }
@@ -39,10 +42,10 @@ const turnReducer = produce((
     case 'draw': {
       if (turnRules.shouldEndTurnAfterDraw(
         state.cardsPlayedOrDiscardedThisTurn,
-        characterID,
+        getCharacterID(),
         clueTokens,
       )) {
-        nextTurn(state, numPlayers, characterID);
+        nextTurn(state, numPlayers, getCharacterID());
       }
       break;
     }

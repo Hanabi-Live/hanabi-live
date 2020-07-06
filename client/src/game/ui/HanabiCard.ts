@@ -594,7 +594,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  private removeFromParent() {
+  removeFromParent() {
     // Remove the card from the player's hand in preparation of adding it to either
     // the play stacks or the discard pile
     const layoutChild = this.parent;
@@ -610,21 +610,25 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToPlayerHand(holder: number) {
+    const child = this.parent as unknown as LayoutChild;
+    const oldParent = child!.parent;
     this.removeFromParent();
 
-    const child = this.parent as unknown as LayoutChild;
     // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
     // and the user rewinds to the beginning of the replay
     child!.visible(true);
     child!.opacity(1); // Cards can be faded in certain variants
-    const pos = globals.elements.deck!.cardBack.getAbsolutePosition();
-    child!.setAbsolutePosition(pos);
-    child!.rotation(-globals.elements.playerHands[holder].rotation());
-    const scale = globals.elements.deck!.cardBack.width() / CARD_W;
-    child!.scale({
-      x: scale,
-      y: scale,
-    });
+    if (!oldParent) {
+      // Animate from the deck
+      const deckPos = globals.elements.deck!.cardBack.getAbsolutePosition();
+      child!.setAbsolutePosition(deckPos);
+      child!.rotation(-globals.elements.playerHands[holder].rotation());
+      const scale = globals.elements.deck!.cardBack.width() / CARD_W;
+      child!.scale({
+        x: scale,
+        y: scale,
+      });
+    }
 
     // Add it to the player's hand (which will automatically tween the card)
     globals.elements.playerHands[holder].addChild(child);

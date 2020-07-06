@@ -216,8 +216,6 @@ const reset = () => {
     }
     arrow.hide();
   }
-
-  globals.animateFast = true;
 };
 
 // -----------------------------
@@ -231,7 +229,7 @@ export const backFull = () => {
 
 export const back = () => {
   checkDisableSharedTurns();
-  goto(globals.replayTurn - 1, true);
+  goto(globals.replayTurn - 1, false);
 };
 
 export const forward = () => {

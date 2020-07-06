@@ -1,9 +1,11 @@
-import Konva from 'konva';
+import equal from 'fast-deep-equal';
 import * as variantRules from '../../../rules/variant';
+import { STACK_BASE_RANK } from '../../../types/constants';
 import StackDirection from '../../../types/StackDirection';
+import CardLayout from '../../CardLayout';
 import globals from '../../globals';
 import HanabiCard from '../../HanabiCard';
-import PlayStack from '../../PlayStack';
+import LayoutChild from '../../LayoutChild';
 
 export function onStackDirectionsChanged(directions: readonly StackDirection[]) {
   if (!variantRules.hasReversedSuits(globals.variant)) {
@@ -58,62 +60,85 @@ export function onStackDirectionsChanged(directions: readonly StackDirection[]) 
 }
 
 export function onHandsChanged(hands: ReadonlyArray<readonly number[]>) {
-  removeAndReAddChildren(
+  syncChildren(
     hands,
-    (i) => (globals.elements.playerHands[i] as unknown as Konva.Group).removeChildren(),
+    (i) => globals.elements.playerHands[i],
     (card, i) => card.animateToPlayerHand(i),
   );
 }
 
 export function onDiscardStacksChanged(discardStacks: ReadonlyArray<readonly number[]>) {
-  removeAndReAddChildren(
+  syncChildren(
     discardStacks,
     (i) => {
       const suit = globals.variant.suits[i];
-      const discardStackUI = globals.elements.discardStacks.get(suit)! as unknown as Konva.Group;
-      discardStackUI.removeChildren();
+      return globals.elements.discardStacks.get(suit)! as unknown as CardLayout;
     },
     (card) => card.animateToDiscardPile(),
   );
 }
 
 export function onPlayStacksChanged(playStacks: ReadonlyArray<readonly number[]>) {
-  removeAndReAddChildren(
+  syncChildren(
     playStacks,
     (i) => {
       const suit = globals.variant.suits[i];
-      const playStackUI = globals.elements.playStacks.get(suit)! as unknown as PlayStack;
-      playStackUI.removeChildren();
-
-      // Re-add the stack base to the play stacks
-      const stackBase = globals.stackBases[i];
-      const stackBaseLayoutChild = stackBase.parent!;
-      playStackUI.addChild(stackBaseLayoutChild as any);
-
-      // The stack base might have been hidden if there was a card on top of it
-      stackBaseLayoutChild.visible(true);
-
-      // The stack base might have been morphed
-      if (stackBase.state.rank !== 0 || stackBase.state.suitIndex !== i) {
-        stackBase.convert(i, 0);
-      }
+      return globals.elements.playStacks.get(suit)! as unknown as CardLayout;
     },
     (card) => card.animateToPlayStacks(),
   );
 }
 
-function removeAndReAddChildren(
+function syncChildren(
   collections: ReadonlyArray<readonly number[]>,
-  cleanCollectionUI: (i: number) => void,
+  getCollectionUI: (i: number) => CardLayout,
   addToCollectionUI: (card: HanabiCard, i: number) => void,
 ) {
-  const oldAnimateFast = globals.animateFast;
-  globals.animateFast = true;
+  const getCard = (order: number) => globals.deck[order];
+
   collections.forEach((collection, i) => {
-    cleanCollectionUI(i);
-    for (const card of collection.map((order) => globals.deck[order])) {
-      addToCollectionUI(card, i);
+    const getCurrentSorting = () => (getCollectionUI(i).children.toArray() as LayoutChild[])
+      .map((layoutChild) => layoutChild.children[0] as unknown as HanabiCard)
+      .filter((card) => card.state.rank !== STACK_BASE_RANK)
+      .map((card) => card.state.order);
+
+    let current = getCurrentSorting();
+
+    // Remove the elements that were removed
+    current
+      .filter((n) => !collection.includes(n))
+      .map(getCard)
+      .forEach((card) => card.removeFromParent());
+
+    // Add the elements that were added
+    collection
+      .filter((n) => !current.includes(n))
+      .map(getCard)
+      .forEach((card) => addToCollectionUI(card, i));
+
+    // Reorder the elements to match the collection
+    collection.forEach((order, pos) => {
+      current = getCurrentSorting();
+      if (current.length !== collection.length) {
+        throw new Error('The UI collection is out of sync with the state');
+      }
+
+      const layoutChild = getCard(order).parent as unknown as LayoutChild;
+      let sourcePosition = current.indexOf(order);
+      while (sourcePosition < pos) {
+        layoutChild.moveUp();
+        sourcePosition += 1;
+      }
+      while (sourcePosition > pos) {
+        layoutChild.moveDown();
+        sourcePosition -= 1;
+      }
+    });
+
+    // Verify the final result
+    current = getCurrentSorting();
+    if (!equal(current, collection)) {
+      throw new Error('The UI collection is out of sync with the state');
     }
   });
-  globals.animateFast = oldAnimateFast;
 }
