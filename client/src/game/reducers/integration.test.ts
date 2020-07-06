@@ -77,7 +77,7 @@ describe('integration', () => {
       test('has the correct stats', () => {
         const finalState = getFinalState(testState);
         expect(finalState.turn).toBe(51);
-        expect(finalState.currentPlayerIndex).toBe(null);
+        expect(finalState.currentPlayerIndex).toBeNull();
         expect(finalState.score).toBe(24);
         expect(finalState.clueTokens).toBe(3);
         expect(finalState.stats.pace).toBeNull();
@@ -124,7 +124,7 @@ describe('integration', () => {
       test('has the correct stats', () => {
         const finalState = getFinalState(testState);
         expect(finalState.turn).toBe(53);
-        expect(finalState.currentPlayerIndex).toBe(null);
+        expect(finalState.currentPlayerIndex).toBeNull();
         expect(finalState.score).toBe(25);
         expect(finalState.clueTokens).toBe(8);
         expect(finalState.stats.pace).toBeNull();
