@@ -13,7 +13,7 @@ const turnReducer = produce((
 ) => {
   const numPlayers = metadata.options.numPlayers;
   let characterID = null;
-  if (state.currentPlayerIndex !== -1) {
+  if (state.currentPlayerIndex !== null) {
     characterID = metadata.characterAssignments[state.currentPlayerIndex];
     if (characterID === undefined) {
       throw new Error(`The character ID for player ${state.currentPlayerIndex} was undefined in the "turnReducer()" function.`);
