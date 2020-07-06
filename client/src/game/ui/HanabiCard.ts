@@ -542,12 +542,19 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   // We need to redraw this card's suit and rank in a shared replay or hypothetical
   // based on deckOrder and hypoRevealed
   replayRedraw() {
-    if (globals.deckOrder.length === 0) {
-      return;
+    const cardIdentity = globals.deckOrder[this.state.order];
+    if (!cardIdentity) {
+      throw new Error(`The identity for card ${this.state.order} was not found in the "replayRedraw()" function.`);
     }
-    const suitNum = globals.deckOrder[this.state.order].suit;
-    const trueSuit = msgSuitToSuit(suitNum, globals.variant);
+    const trueSuitIndex = cardIdentity.suitIndex;
+    if (trueSuitIndex === null) {
+      throw new Error(`The suit identity for card ${this.state.order} was not found in the "replayRedraw() function.`);
+    }
+    const trueSuit = msgSuitToSuit(trueSuitIndex, globals.variant);
     const trueRank = globals.deckOrder[this.state.order].rank;
+    if (trueRank === null) {
+      throw new Error(`The rank identity for card ${this.state.order} was not found in the "replayRedraw() function.`);
+    }
 
     if (
       // If we are in a hypothetical and "hypoRevealed" is turned off
@@ -568,7 +575,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     } else if (this.state.suitIndex === null || this.state.rank === null) {
       // Otherwise, we should make sure to fill in information from deckOrder
       // unless this card is fully known, possibly morphed
-      this.convert(suitNum, trueRank);
+      this.convert(trueSuitIndex, trueRank);
 
       // Check if we can drag this card now
       const layoutChild = this.parent as unknown as LayoutChild;

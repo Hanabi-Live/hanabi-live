@@ -9,10 +9,10 @@ import (
 )
 
 type GameJSON struct {
-	ID      int           `json:"id,omitempty"` // Optional element only used for game exports
-	Players []string      `json:"players"`
-	Deck    []SimpleCard  `json:"deck"`
-	Actions []*GameAction `json:"actions"`
+	ID      int             `json:"id,omitempty"` // Optional element only used for game exports
+	Players []string        `json:"players"`
+	Deck    []*CardIdentity `json:"deck"`
+	Actions []*GameAction   `json:"actions"`
 	// Options is an optional element
 	// Thus, it must be a pointer so that we can tell if the value was specified or not
 	Options *OptionsJSON `json:"options,omitempty"`
@@ -261,9 +261,9 @@ func validateJSON(s *Session, d *CommandData) bool {
 		return false
 	}
 	for i, card := range d.GameJSON.Deck {
-		if card.Suit < 0 || card.Suit > len(variant.Suits)-1 {
+		if card.SuitIndex < 0 || card.SuitIndex > len(variant.Suits)-1 {
 			s.Warning("The card at index " + strconv.Itoa(i) +
-				" has an invalid suit number of " + strconv.Itoa(card.Suit) + ".")
+				" has an invalid suit number of " + strconv.Itoa(card.SuitIndex) + ".")
 			return false
 		}
 		if (card.Rank < 1 || card.Rank > 5) && card.Rank != StartCardRank {

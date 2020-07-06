@@ -283,11 +283,14 @@ export const send = (hypoAction: ClientAction) => {
     const nextCardOrder = globals.indexOfLastDrawnCard + 1;
     const nextCard = globals.deckOrder[nextCardOrder];
     if (nextCard) { // All the cards might have already been drawn
+      if (nextCard.suitIndex === null || nextCard.rank === null) {
+        throw new Error('Unable to find the suit or rank of the next card.');
+      }
       sendHypoAction({
         type: 'draw',
         order: nextCardOrder,
+        suit: globals.hypoRevealed ? nextCard.suitIndex : -1,
         rank: globals.hypoRevealed ? nextCard.rank : -1,
-        suit: globals.hypoRevealed ? nextCard.suit : -1,
         who: globals.currentPlayerIndex,
       });
     }

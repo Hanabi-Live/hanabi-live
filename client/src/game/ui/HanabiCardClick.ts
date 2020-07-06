@@ -219,7 +219,7 @@ const clickMorph = (order: number) => {
     hypothetical.sendHypoAction({
       type: 'reveal',
       order,
-      suit: -1,
+      suitIndex: -1,
       rank: -1,
     });
     return;
@@ -236,7 +236,7 @@ const clickMorph = (order: number) => {
   hypothetical.sendHypoAction({
     type: 'reveal',
     order,
-    suit: cardIdentity.suitIndex,
+    suitIndex: cardIdentity.suitIndex,
     rank: cardIdentity.rank,
   });
 };

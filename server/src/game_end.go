@@ -18,11 +18,11 @@ func (g *Game) End() {
 
 	// Append a final action with a listing of every card in the deck
 	// (so that the client will have it for hypotheticals)
-	deck := make([]SimpleCard, 0)
+	deck := make([]CardIdentity, 0)
 	for _, c := range g.Deck {
-		deck = append(deck, SimpleCard{
-			Suit: c.Suit,
-			Rank: c.Rank,
+		deck = append(deck, CardIdentity{
+			SuitIndex: c.SuitIndex,
+			Rank:      c.Rank,
 		})
 	}
 	g.Actions = append(g.Actions, ActionDeckOrder{
@@ -77,14 +77,14 @@ func (g *Game) End() {
 		if p.Present {
 			for _, c := range gp.Hand {
 				type RevealMessage struct {
-					Suit  int `json:"suit"`
-					Rank  int `json:"rank"`
-					Order int `json:"order"` // The ID of the card (based on its order in the deck)
+					SuitIndex int `json:"suitIndex"`
+					Rank      int `json:"rank"`
+					Order     int `json:"order"` // The ID of the card (based on its order in the deck)
 				}
 				p.Session.Emit("reveal", &RevealMessage{
-					Suit:  c.Suit,
-					Rank:  c.Rank,
-					Order: c.Order,
+					SuitIndex: c.SuitIndex,
+					Rank:      c.Rank,
+					Order:     c.Order,
 				})
 			}
 		}

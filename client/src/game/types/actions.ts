@@ -1,5 +1,5 @@
+import CardIdentity from './CardIdentity';
 import MsgClue from './MsgClue';
-import SimpleCard from './SimpleCard';
 
 export type Action =
 | GameAction
@@ -46,7 +46,7 @@ export interface ActionClue {
 
 export interface ActionDeckOrder {
   type: 'deckOrder';
-  readonly deck: SimpleCard[];
+  readonly deck: CardIdentity[];
 }
 
 export interface ActionDiscard {
@@ -147,7 +147,7 @@ export interface ActionHypothetical {
 
 export interface ActionReveal {
   type: 'reveal';
-  readonly suit: number;
+  readonly suitIndex: number;
   readonly rank: number;
   readonly order: number;
 }

@@ -10,6 +10,7 @@ import {
   applyColorClue,
   applyRankClue,
   checkAllPipPossibilities,
+  PossibilityToRemove,
   removePossibilities,
 } from '../rules/applyClueCore';
 import * as variantRules from '../rules/variant';
@@ -74,21 +75,21 @@ const cardPossibilitiesReducer = produce((
     // eliminate card possibilities that are now impossible
     for (const suitRemoved of suitsRemoved) {
       for (const rank of variant.ranks) {
-        impossibleCards.push({ suit: suitRemoved, rank });
+        impossibleCards.push({ suitIndex: suitRemoved, rank });
       }
     }
     for (const rankRemoved of ranksRemoved) {
       for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
-        impossibleCards.push({ suit: suitIndex, rank: rankRemoved });
+        impossibleCards.push({ suitIndex, rank: rankRemoved });
       }
     }
 
     // Remove all the possibilities we found
-    const possibilitiesToRemove = impossibleCards.map((c) => ({
-      suitIndex: c.suit,
+    const possibilitiesToRemove = (impossibleCards.map((c) => ({
+      suitIndex: c.suitIndex,
       rank: c.rank,
       all: true,
-    }));
+    })) as PossibilityToRemove[]);
     possibleCards = removePossibilities(possibleCards, possibilitiesToRemove);
 
     const pipPossibilities = checkAllPipPossibilities(possibleCards, variant);

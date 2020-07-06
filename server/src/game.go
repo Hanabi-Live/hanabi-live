@@ -264,7 +264,7 @@ func (g *Game) CheckEnd() bool {
 			neededSuit := i
 			neededRank := stackLen + 1
 			for _, c := range g.Deck {
-				if c.Suit == neededSuit &&
+				if c.SuitIndex == neededSuit &&
 					c.Rank == neededRank &&
 					!c.Discarded &&
 					!c.CannotBePlayed {
@@ -341,11 +341,11 @@ func (g *Game) GetMaxScore() int {
 
 // GetSpecificCardNum returns the total cards in the deck of the specified suit and rank
 // as well as how many of those that have been already discarded
-func (g *Game) GetSpecificCardNum(suit int, rank int) (int, int) {
+func (g *Game) GetSpecificCardNum(suitIndex int, rank int) (int, int) {
 	total := 0
 	discarded := 0
 	for _, c := range g.Deck {
-		if c.Suit == suit && c.Rank == rank {
+		if c.SuitIndex == suitIndex && c.Rank == rank {
 			total++
 			if c.Discarded {
 				discarded++

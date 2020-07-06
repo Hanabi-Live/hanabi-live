@@ -272,7 +272,7 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		cardsTouched := p2.FindCardsTouchedByClue(clue)
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
-			if c.Suit == p.CharacterMetadata {
+			if c.SuitIndex == p.CharacterMetadata {
 				s.Warning("You are " + p.Character + ", " +
 					"so you cannot give clues that touch a specific suit.")
 				return true

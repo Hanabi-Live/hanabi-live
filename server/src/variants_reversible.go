@@ -27,56 +27,56 @@ func isUpOrDown(g *Game) bool {
 
 func variantReversiblePlay(g *Game, c *Card) bool {
 	var failed bool
-	if g.StackDirections[c.Suit] == StackDirectionUndecided {
+	if g.StackDirections[c.SuitIndex] == StackDirectionUndecided {
 		// If the stack direction is undecided,
 		// then there is either no cards played or a "START" card has been played
-		if g.Stacks[c.Suit] == 0 {
+		if g.Stacks[c.SuitIndex] == 0 {
 			// No cards have been played yet on this stack
 			failed = c.Rank != 1 && c.Rank != 5 && c.Rank != StartCardRank
 
 			// Set the stack direction
 			if !failed {
 				if c.Rank == 1 {
-					g.StackDirections[c.Suit] = StackDirectionUp
+					g.StackDirections[c.SuitIndex] = StackDirectionUp
 				} else if c.Rank == 5 {
-					g.StackDirections[c.Suit] = StackDirectionDown
+					g.StackDirections[c.SuitIndex] = StackDirectionDown
 				}
 				// If the "START" card was played, we want to keep the stack direction undecided
 			}
-		} else if g.Stacks[c.Suit] == StartCardRank {
+		} else if g.Stacks[c.SuitIndex] == StartCardRank {
 			// The "START" card has been played on the stack
 			failed = c.Rank != 2 && c.Rank != 4
 
 			// Set the stack direction
 			if !failed {
 				if c.Rank == 2 {
-					g.StackDirections[c.Suit] = StackDirectionUp
+					g.StackDirections[c.SuitIndex] = StackDirectionUp
 				} else if c.Rank == 4 {
-					g.StackDirections[c.Suit] = StackDirectionDown
+					g.StackDirections[c.SuitIndex] = StackDirectionDown
 				}
 			}
 		}
-	} else if g.StackDirections[c.Suit] == StackDirectionUp {
-		failed = c.Rank != g.Stacks[c.Suit]+1
+	} else if g.StackDirections[c.SuitIndex] == StackDirectionUp {
+		failed = c.Rank != g.Stacks[c.SuitIndex]+1
 
 		// Set the stack direction
 		if !failed && c.Rank == 5 {
-			g.StackDirections[c.Suit] = StackDirectionFinished
+			g.StackDirections[c.SuitIndex] = StackDirectionFinished
 		}
-	} else if g.StackDirections[c.Suit] == StackDirectionDown {
-		if !isUpOrDown(g) && g.Stacks[c.Suit] == 0 {
+	} else if g.StackDirections[c.SuitIndex] == StackDirectionDown {
+		if !isUpOrDown(g) && g.Stacks[c.SuitIndex] == 0 {
 			// The first card in a down stack must be a 5
 			// except on "Up or Down", where the stack direction starts Undecided
 			failed = c.Rank != 5
 		} else {
-			failed = c.Rank != g.Stacks[c.Suit]-1
+			failed = c.Rank != g.Stacks[c.SuitIndex]-1
 		}
 
 		// Set the stack direction
 		if !failed && c.Rank == 1 {
-			g.StackDirections[c.Suit] = StackDirectionFinished
+			g.StackDirections[c.SuitIndex] = StackDirectionFinished
 		}
-	} else if g.StackDirections[c.Suit] == StackDirectionFinished {
+	} else if g.StackDirections[c.SuitIndex] == StackDirectionFinished {
 		// Once a stack is finished, any card that is played will fail to play
 		failed = true
 	}
@@ -89,7 +89,7 @@ func variantReversiblePlay(g *Game, c *Card) bool {
 // (before getting here, we already checked to see if the card has already been played)
 func variantReversibleNeedsToBePlayed(g *Game, c *Card) bool {
 	// First, check to see if the stack is already finished
-	if g.StackDirections[c.Suit] == StackDirectionFinished {
+	if g.StackDirections[c.SuitIndex] == StackDirectionFinished {
 		return false
 	}
 
@@ -116,12 +116,12 @@ func variantReversibleIsDead(g *Game, c *Card) bool {
 
 	allDiscarded := make(map[int]bool)
 	for _, rank := range ranks {
-		total, discarded := g.GetSpecificCardNum(c.Suit, rank)
+		total, discarded := g.GetSpecificCardNum(c.SuitIndex, rank)
 		allDiscarded[rank] = total == discarded
 	}
 
 	// Start by handling the easy cases of up and down
-	if g.StackDirections[c.Suit] == StackDirectionUp {
+	if g.StackDirections[c.SuitIndex] == StackDirectionUp {
 		firstRank := 1
 		if isUpOrDown(g) {
 			// When the direction is up on "Up or Down", the 1 has been played
@@ -134,7 +134,7 @@ func variantReversibleIsDead(g *Game, c *Card) bool {
 		}
 		return false
 	}
-	if g.StackDirections[c.Suit] == StackDirectionDown {
+	if g.StackDirections[c.SuitIndex] == StackDirectionDown {
 		firstRank := 5
 		if isUpOrDown(g) {
 			// When the direction is up on "Up or Down", the 5 has been played
@@ -164,7 +164,7 @@ func variantReversibleIsDead(g *Game, c *Card) bool {
 	// If the "START" card is played on the stack,
 	// then this card will be dead if all of the 2's and all of the 4's have been discarded
 	// (this situation also applies to 3's when no cards have been played on the stack)
-	if g.Stacks[c.Suit] == StartCardRank || c.Rank == 3 {
+	if g.Stacks[c.SuitIndex] == StartCardRank || c.Rank == 3 {
 		if allDiscarded[2] && allDiscarded[4] {
 			return true
 		}
@@ -264,9 +264,9 @@ func variantReversibleWalkDown(g *Game, suit int, allDiscarded map[int]bool) int
 
 // variantReversibleCheckAllDead returns true if no more cards can be played on the stacks
 func variantReversibleCheckAllDead(g *Game) bool {
-	for suit, stackRank := range g.Stacks {
+	for suitIndex, stackRank := range g.Stacks {
 		neededRanks := make([]int, 0)
-		if g.StackDirections[suit] == StackDirectionUndecided {
+		if g.StackDirections[suitIndex] == StackDirectionUndecided {
 			if stackRank == 0 {
 				// Nothing is played on the stack
 				neededRanks = []int{1, 5, StartCardRank}
@@ -274,22 +274,22 @@ func variantReversibleCheckAllDead(g *Game) bool {
 				// The "START" card is played on the stack
 				neededRanks = []int{2, 4}
 			}
-		} else if g.StackDirections[suit] == StackDirectionUp {
+		} else if g.StackDirections[suitIndex] == StackDirectionUp {
 			neededRanks = append(neededRanks, stackRank+1)
-		} else if g.StackDirections[suit] == StackDirectionDown {
+		} else if g.StackDirections[suitIndex] == StackDirectionDown {
 			if !isUpOrDown(g) && stackRank == 0 {
 				// On "Reversed", the Down stacks start with 5
 				neededRanks = []int{5}
 			} else {
 				neededRanks = append(neededRanks, stackRank-1)
 			}
-		} else if g.StackDirections[suit] == StackDirectionFinished {
+		} else if g.StackDirections[suitIndex] == StackDirectionFinished {
 			continue
 		}
 
 		for _, c := range g.Deck {
 			for _, neededRank := range neededRanks {
-				if c.Suit == suit &&
+				if c.SuitIndex == suitIndex &&
 					c.Rank == neededRank &&
 					!c.Discarded {
 
