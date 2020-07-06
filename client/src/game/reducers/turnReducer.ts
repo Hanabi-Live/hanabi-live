@@ -1,4 +1,5 @@
 import produce, { Draft } from 'immer';
+import * as turnRules from '../rules/turn';
 import { GameAction } from '../types/actions';
 import GameMetadata from '../types/GameMetadata';
 import TurnState from '../types/TurnState';
@@ -8,30 +9,40 @@ const turnReducer = produce((
   action: GameAction,
   metadata: GameMetadata,
   deckSize: number,
+  clueTokens: number,
 ) => {
   const numPlayers = metadata.options.numPlayers;
+  const characterID = metadata.characterAssignments[state.currentPlayerIndex];
+  if (characterID === undefined) {
+    throw new Error(`The character ID for player ${state.currentPlayerIndex} was undefined in the "turnReducer()" function.`);
+  }
+
   switch (action.type) {
     case 'play':
     case 'discard': {
       state.cardsPlayedOrDiscardedThisTurn += 1;
 
       if (deckSize === 0) {
-        nextTurn(state, numPlayers);
+        nextTurn(state, numPlayers, characterID);
       }
 
       break;
     }
 
     case 'clue': {
-      nextTurn(state, numPlayers);
+      if (turnRules.shouldEndTurnAfterClue(state.cluesGivenThisTurn, characterID)) {
+        nextTurn(state, numPlayers, characterID);
+      }
       break;
     }
 
     case 'draw': {
-      // TODO: const character = metadata.characterAssignments[state.currentPlayerIndex];
-      // TODO: if (turnRules.shouldEndTurn(state.cardsPlayedOrDiscardedThisTurn, character)) {
-      if (state.cardsPlayedOrDiscardedThisTurn === 1) {
-        nextTurn(state, numPlayers);
+      if (turnRules.shouldEndTurnAfterDraw(
+        state.cardsPlayedOrDiscardedThisTurn,
+        characterID,
+        clueTokens,
+      )) {
+        nextTurn(state, numPlayers, characterID);
       }
       break;
     }
@@ -67,11 +78,15 @@ const turnReducer = produce((
 
 export default turnReducer;
 
-function nextTurn(state: Draft<TurnState>, numPlayers: number) {
+function nextTurn(state: Draft<TurnState>, numPlayers: number, characterID: number | null) {
   state.turn += 1;
-  state.currentPlayerIndex += 1;
-  if (state.currentPlayerIndex === numPlayers) {
-    state.currentPlayerIndex = 0;
+  if (turnRules.shouldTurnsInvert(characterID)) {
+    state.turnsInverted = !state.turnsInverted;
   }
+  state.currentPlayerIndex = turnRules.getNextPlayerIndex(
+    state.currentPlayerIndex,
+    numPlayers,
+    state.turnsInverted,
+  );
   state.cardsPlayedOrDiscardedThisTurn = 0;
 }

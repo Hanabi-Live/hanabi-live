@@ -49,7 +49,7 @@ export class Globals {
   options: Options = new Options();
 
   // Character settings
-  characterAssignments: string[] = [];
+  characterAssignments: Array<number | null> = [];
   characterMetadata: number[] = [];
   characterRememberedCards: CardIdentity[] = [];
 

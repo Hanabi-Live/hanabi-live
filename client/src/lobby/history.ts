@@ -1,6 +1,6 @@
 // The screens that show past games and other scores
 
-import { VARIANTS } from '../game/data/gameData';
+import { getVariant, VARIANTS } from '../game/data/gameData';
 import Variant from '../game/types/Variant';
 import globals from '../globals';
 import * as misc from '../misc';
@@ -111,10 +111,7 @@ export const draw = (friends: boolean) => {
     } else {
       gameData = globals.historyFriends[ids[i]];
     }
-    const variant = VARIANTS.get(gameData.options.variantName);
-    if (variant === undefined) {
-      throw new Error(`Unable to find the "${gameData.options.variantName}" variant in the "VARIANTS" map.`);
-    }
+    const variant = getVariant(gameData.options.variantName);
     const { maxScore } = variant;
 
     const row = $('<tr>');

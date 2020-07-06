@@ -88,7 +88,7 @@
   },
   "Follower": {
     "id": 31,
-    "description": "Cannot play a card unless two cards of the same rank have already been played",
+    "description": "Cannot play a card unless two cards of that same rank have already been played",
     "emoji": "👁️"
   },
   "Impulsive": {

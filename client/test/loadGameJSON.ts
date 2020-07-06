@@ -1,6 +1,6 @@
+import { getVariant } from '../src/game/data/gameData';
 import gameStateReducer from '../src/game/reducers/gameStateReducer';
 import initialState from '../src/game/reducers/initialStates/initialState';
-import { getVariant } from '../src/game/reducers/reducerHelpers';
 import * as handRules from '../src/game/rules/hand';
 import { hasReversedSuits } from '../src/game/rules/variant';
 import {
@@ -19,6 +19,7 @@ import MsgClue from '../src/game/types/MsgClue';
 import Options from '../src/game/types/Options';
 import State from '../src/game/types/State';
 import Variant from '../src/game/types/Variant';
+import { initArray } from '../src/misc';
 import testGame from '../test_data/up_or_down.json';
 
 type JSONGame = typeof testGame;
@@ -46,10 +47,10 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       variantName: gameJSON.options.variant,
     },
     playerSeat: null,
-    characterAssignments: [],
+    characterAssignments: initArray(numPlayers, null),
     characterMetadata: [],
   };
-  const variant = getVariant(metadata);
+  const variant = getVariant(metadata.options.variantName);
 
   const cardsPerHand = handRules.cardsPerHand(numPlayers, false, false);
   const actions: GameAction[] = [];

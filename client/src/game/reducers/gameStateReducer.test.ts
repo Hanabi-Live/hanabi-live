@@ -7,19 +7,21 @@ import { // Direct import instead of namespace import for compactness
   strike,
   text,
 } from '../../../test/testActions';
+import { initArray } from '../../misc';
 import { MAX_CLUE_NUM } from '../types/constants';
 import GameMetadata from '../types/GameMetadata';
 import Options from '../types/Options';
 import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialStates/initialGameState';
 
+const numPlayers = 3;
 const defaultMetadata: GameMetadata = {
   options: {
     ...(new Options()),
-    numPlayers: 3,
+    numPlayers,
   },
   playerSeat: null,
-  characterAssignments: [],
+  characterAssignments: initArray(numPlayers, null),
   characterMetadata: [],
 };
 const clueStarvedMetadata: GameMetadata = {

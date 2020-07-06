@@ -4,7 +4,7 @@
 
 import { createStore } from 'redux';
 import * as sentry from '../../sentry';
-import { VARIANTS, CHARACTERS } from '../data/gameData';
+import { getVariant } from '../data/gameData';
 import initialState from '../reducers/initialStates/initialState';
 import stateReducer from '../reducers/stateReducer';
 import * as variantRules from '../rules/variant';
@@ -228,7 +228,7 @@ interface InitData {
   options: Options;
 
   // Character settings
-  characterAssignments: string[];
+  characterAssignments: number[];
   characterMetadata: number[];
 
   // Hypothetical settings
@@ -261,18 +261,13 @@ commands.set('init', (data: InitData) => {
   globals.options = data.options;
 
   // Set the variant
-  const variant = VARIANTS.get(globals.options.variantName);
-  if (variant === undefined) {
-    throw new Error(`The "init" command was sent with an invalid variant name of "${globals.options.variantName}".`);
-  } else {
-    globals.variant = variant;
-  }
+  globals.variant = getVariant(globals.options.variantName);
 
   // Recreate the state store (using the Redux library)
   const metadata: GameMetadata = {
     options: data.options,
     playerSeat: data.seat >= 0 ? data.seat : null,
-    characterAssignments: data.characterAssignments.map((char) => CHARACTERS.get(char)!.id),
+    characterAssignments: data.characterAssignments,
     characterMetadata: data.characterMetadata,
   };
   globals.store = createStore(stateReducer, initialState(metadata));
@@ -284,6 +279,11 @@ commands.set('init', (data: InitData) => {
 
   // Character settings
   globals.characterAssignments = data.characterAssignments;
+  if (globals.characterAssignments.length === 0) {
+    for (let i = 0; i < globals.options.numPlayers; i++) {
+      globals.characterAssignments.push(null);
+    }
+  }
   globals.characterMetadata = data.characterMetadata;
 
   // Hypothetical settings

@@ -1,7 +1,8 @@
 import Konva from 'konva';
 import { CARD_W, CARD_H } from '../../constants';
-import { CHARACTERS } from '../data/gameData';
+import { getCharacter } from '../data/gameData';
 import * as hand from '../rules/hand';
+import Character from '../types/Character';
 import CardLayout from './CardLayout';
 import TextWithTooltip from './controls/TextWithTooltip';
 import globals from './globals';
@@ -425,18 +426,21 @@ const drawDetrimentalCharacters = (
   }
 
   if (globals.options.detrimentalCharacters) {
-    let character = CHARACTERS.get(globals.characterAssignments[i]);
-    if (globals.characterAssignments[i] === 'n/a') {
-      // A "n/a" character may be assigned when debugging
+    const characterID = globals.characterAssignments[i];
+    if (characterID === null) {
+      throw new Error(`The character ID for player ${i} is null.`);
+    }
+    let character: Character | undefined;
+    if (characterID === -1) {
+      // A character with the ID of -1 may be assigned when debugging
       character = {
         id: -1,
         name: 'n/a',
         description: '',
         emoji: '',
       };
-    }
-    if (character === undefined) {
-      throw new Error(`Failed to get the "${globals.characterAssignments[i]}" character.`);
+    } else {
+      character = getCharacter(characterID);
     }
 
     const width2 = 0.03 * winW;

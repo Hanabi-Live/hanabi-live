@@ -1,19 +1,9 @@
 /* eslint-disable import/prefer-default-export */
 // Miscellaneous helpers used by several reducers
 
-import { VARIANTS } from '../data/gameData';
 import Color from '../types/Color';
-import GameMetadata from '../types/GameMetadata';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
-
-export function getVariant(metadata: GameMetadata) {
-  const variant = VARIANTS.get(metadata.options.variantName);
-  if (variant === undefined) {
-    throw new Error(`Unable to find the "${metadata.options.variantName}" variant in the "VARIANTS" map.`);
-  }
-  return variant;
-}
 
 export function getIndexConverter(variant: Variant) {
   const suitIndexes: Map<string, number> = new Map<string, number>();

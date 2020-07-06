@@ -6,7 +6,7 @@ import produce, {
   original,
 } from 'immer';
 import { ensureAllCases } from '../../misc';
-import { VARIANTS } from '../data/gameData';
+import { getVariant } from '../data/gameData';
 import * as clues from '../rules/clueTokens';
 import { GameAction } from '../types/actions';
 import GameMetadata from '../types/GameMetadata';
@@ -21,10 +21,7 @@ const gameStateReducer = produce((
   action: GameAction,
   metadata: GameMetadata,
 ) => {
-  const variant = VARIANTS.get(metadata.options.variantName);
-  if (variant === undefined) {
-    throw new Error(`Unable to find the "${metadata.options.variantName}" variant in the "VARIANTS" map.`);
-  }
+  const variant = getVariant(metadata.options.variantName);
 
   switch (action.type) {
     // A player just gave a clue
@@ -175,11 +172,14 @@ const gameStateReducer = produce((
   let turnState: TurnState = {
     turn: state.turn,
     currentPlayerIndex: state.currentPlayerIndex,
+    turnsInverted: state.turnsInverted,
     cardsPlayedOrDiscardedThisTurn: state.cardsPlayedOrDiscardedThisTurn,
+    cluesGivenThisTurn: state.cluesGivenThisTurn,
   };
-  turnState = turnReducer(turnState, action, metadata, state.deckSize);
+  turnState = turnReducer(turnState, action, metadata, state.deckSize, state.clueTokens);
   state.turn = turnState.turn;
   state.currentPlayerIndex = turnState.currentPlayerIndex;
+  state.turnsInverted = turnState.turnsInverted;
   state.cardsPlayedOrDiscardedThisTurn = turnState.cardsPlayedOrDiscardedThisTurn;
 
   // Use a sub-reducer to calculate some game statistics
