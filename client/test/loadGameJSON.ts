@@ -111,8 +111,11 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       }
       case 'play': {
         // Check if this is actually a play or a misplay
-        const jsonCard = gameJSON.deck[a.which.order];
-        const playStack = s.playStacks[jsonCard.suitIndex as number];
+        const jsonCard: CardIdentity = gameJSON.deck[a.which.order];
+        if (jsonCard.suitIndex === null || jsonCard.rank === null) {
+          throw new Error(`Failed to get the rank or the suit for card ${a.which.order} in the JSON deck.`);
+        }
+        const playStack = s.playStacks[jsonCard.suitIndex];
         let topOfStackRank = STACK_BASE_RANK;
         if (playStack.length > 0) {
           topOfStackRank = gameJSON.deck[playStack[playStack.length - 1]].rank;
@@ -201,7 +204,7 @@ function parseJSONAction(
         which: {
           order: a.target,
           index: currentPlayer,
-          suit: deck[a.target].suitIndex,
+          suitIndex: deck[a.target].suitIndex,
           rank: deck[a.target].rank,
         },
       };

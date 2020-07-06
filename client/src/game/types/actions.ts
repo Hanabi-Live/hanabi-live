@@ -107,7 +107,7 @@ export interface ActionTurn {
 
 export interface Which {
   readonly index: number;
-  readonly suit: number;
+  readonly suitIndex: number;
   readonly rank: number;
   readonly order: number;
 }

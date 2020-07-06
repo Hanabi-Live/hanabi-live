@@ -248,7 +248,7 @@ export const send = (hypoAction: ClientAction) => {
         index: globals.currentPlayerIndex,
         order: hypoAction.target,
         rank: card.state.rank!,
-        suit: card.state.suitIndex!,
+        suitIndex: card.state.suitIndex!,
       },
       failed: false,
     });
