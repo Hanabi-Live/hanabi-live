@@ -4,6 +4,7 @@ import StackDirection from './StackDirection';
 export default interface GameState {
   readonly turn: number;
   readonly currentPlayerIndex: number;
+  readonly turnsInverted: boolean;
   readonly log: readonly LogEntry[];
   readonly deck: readonly CardState[];
   readonly deckSize: number;
@@ -19,6 +20,7 @@ export default interface GameState {
   readonly clues: readonly StateClue[];
   readonly stats: StateStats;
   readonly cardsPlayedOrDiscardedThisTurn: number;
+  readonly cluesGivenThisTurn: number;
 }
 export interface LogEntry {
   readonly turn: number;

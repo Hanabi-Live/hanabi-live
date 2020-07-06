@@ -47,6 +47,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     doubleDiscard: false,
     strikes: [],
     currentPlayerIndex: turnState.currentPlayerIndex,
+    turnsInverted: false,
     hands,
     playStacks,
     playStacksDirections,
@@ -60,5 +61,6 @@ export default function initialGameState(metadata: GameMetadata): GameState {
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),
     },
     cardsPlayedOrDiscardedThisTurn: 0,
+    cluesGivenThisTurn: 0,
   };
 }

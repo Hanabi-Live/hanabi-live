@@ -175,11 +175,14 @@ const gameStateReducer = produce((
   let turnState: TurnState = {
     turn: state.turn,
     currentPlayerIndex: state.currentPlayerIndex,
+    turnsInverted: state.turnsInverted,
     cardsPlayedOrDiscardedThisTurn: state.cardsPlayedOrDiscardedThisTurn,
+    cluesGivenThisTurn: state.cluesGivenThisTurn,
   };
-  turnState = turnReducer(turnState, action, metadata, state.deckSize);
+  turnState = turnReducer(turnState, action, metadata, state.deckSize, state.clueTokens);
   state.turn = turnState.turn;
   state.currentPlayerIndex = turnState.currentPlayerIndex;
+  state.turnsInverted = turnState.turnsInverted;
   state.cardsPlayedOrDiscardedThisTurn = turnState.cardsPlayedOrDiscardedThisTurn;
 
   // Use a sub-reducer to calculate some game statistics

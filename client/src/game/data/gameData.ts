@@ -5,13 +5,13 @@ import suitsInit from './suitsInit';
 import variantsInit from './variantsInit';
 
 // Objects representing JSON files
-const COLORS = colorsInit();
-const SUITS = suitsInit(COLORS);
-const VARIANTS = variantsInit(COLORS, SUITS, START_CARD_RANK);
-const CHARACTERS = charactersInit();
-export {
-  COLORS,
-  SUITS,
-  VARIANTS,
-  CHARACTERS,
-};
+export const COLORS = colorsInit();
+export const SUITS = suitsInit(COLORS);
+export const VARIANTS = variantsInit(COLORS, SUITS, START_CARD_RANK);
+export const CHARACTERS = charactersInit();
+
+// Additionally, create a mapping of character ID to name
+export const CHARACTERS_ID = new Map<number, string>();
+for (const [key, value] of CHARACTERS.entries()) {
+  CHARACTERS_ID.set(value.id, key);
+}
