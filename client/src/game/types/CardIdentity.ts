@@ -1,4 +1,4 @@
 export default interface CardIdentity {
-  suitIndex: number | null;
-  rank: number | null;
+  readonly suitIndex: number | null;
+  readonly rank: number | null;
 }
