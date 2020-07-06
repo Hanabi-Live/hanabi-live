@@ -1,4 +1,4 @@
-import { VARIANTS } from '../data/gameData';
+import { getVariant } from '../data/gameData';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import * as hand from './hand';
 import {
@@ -9,20 +9,9 @@ import {
   efficiency,
 } from './stats';
 
-const defaultVariant = VARIANTS.get(DEFAULT_VARIANT_NAME);
-if (defaultVariant === undefined) {
-  throw new Error('Unable to find the default variant in the "VARIANTS" map.');
-}
-const blackVariantName = 'Black (6 Suits)';
-const blackVariant = VARIANTS.get(blackVariantName);
-if (blackVariant === undefined) {
-  throw new Error(`Unable to find the "${blackVariantName}" variant in the "VARIANTS" map.`);
-}
-const clueStarvedVariantName = 'Clue Starved (6 Suits)';
-const clueStarvedVariant = VARIANTS.get(clueStarvedVariantName);
-if (clueStarvedVariant === undefined) {
-  throw new Error(`Unable to find the "${clueStarvedVariantName}" variant in the "VARIANTS" map.`);
-}
+const defaultVariant = getVariant(DEFAULT_VARIANT_NAME);
+const blackVariant = getVariant('Black (6 Suits)');
+const clueStarvedVariant = getVariant('Clue Starved (6 Suits)');
 const cardsPerHand2Player = hand.cardsPerHand(2, false, false);
 const cardsPerHand4Player = hand.cardsPerHand(4, false, false);
 

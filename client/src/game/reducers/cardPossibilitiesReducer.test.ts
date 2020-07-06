@@ -1,3 +1,4 @@
+import { initNullArray } from '../../misc';
 import { getVariant } from '../data/gameData';
 import { colorClue } from '../types/Clue';
 import GameMetadata from '../types/GameMetadata';
@@ -5,13 +6,14 @@ import Options from '../types/Options';
 import cardPossibilitiesReducer from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
 
+const numPlayers = 3;
 const defaultMetadata: GameMetadata = {
   options: {
     ...(new Options()),
-    numPlayers: 3,
+    numPlayers,
   },
   playerSeat: null,
-  characterAssignments: [],
+  characterAssignments: initNullArray(numPlayers),
   characterMetadata: [],
 };
 const variant = getVariant(defaultMetadata.options.variantName);

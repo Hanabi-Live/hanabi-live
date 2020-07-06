@@ -1,4 +1,4 @@
-import { VARIANTS } from '../../data/gameData';
+import { getVariant } from '../../data/gameData';
 import * as deck from '../../rules/deck';
 import * as hand from '../../rules/hand';
 import * as statsRules from '../../rules/stats';
@@ -10,10 +10,7 @@ import initialTurnState from './initialTurnState';
 
 export default function initialGameState(metadata: GameMetadata): GameState {
   const options = metadata.options;
-  const variant = VARIANTS.get(options.variantName);
-  if (variant === undefined) {
-    throw new Error(`Unable to find the "${options.variantName}" variant in the "VARIANTS" map.`);
-  }
+  const variant = getVariant(options.variantName);
   const turnState = initialTurnState(options.startingPlayer);
   const cardsPerHand = hand.cardsPerHand(
     options.numPlayers,

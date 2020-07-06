@@ -5,6 +5,7 @@ import {
   play,
   rankClue,
 } from '../../../test/testActions';
+import { initNullArray } from '../../misc';
 import { getVariant } from '../data/gameData';
 import CardState from '../types/CardState';
 import GameMetadata from '../types/GameMetadata';
@@ -13,13 +14,14 @@ import cardsReducer from './cardsReducer';
 import initialCardState from './initialStates/initialCardState';
 import initialGameState from './initialStates/initialGameState';
 
+const numPlayers = 3;
 const defaultMetadata: GameMetadata = {
   options: {
     ...(new Options()),
-    numPlayers: 3,
+    numPlayers,
   },
   playerSeat: null,
-  characterAssignments: [],
+  characterAssignments: initNullArray(numPlayers),
   characterMetadata: [],
 };
 const gameState = initialGameState(defaultMetadata);

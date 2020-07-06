@@ -2,7 +2,7 @@
 // as a result of each action
 
 import produce, { Draft } from 'immer';
-import { VARIANTS } from '../data/gameData';
+import { getVariant } from '../data/gameData';
 import * as cardRules from '../rules/card';
 import * as clueTokensRules from '../rules/clueTokens';
 import * as statsRules from '../rules/stats';
@@ -17,10 +17,7 @@ const statsReducer = produce((
   currentState: GameState,
   metadata: GameMetadata,
 ) => {
-  const variant = VARIANTS.get(metadata.options.variantName)!;
-  if (variant === undefined) {
-    throw new Error(`Unable to find the "${metadata.options.variantName}" variant in the "VARIANTS" map.`);
-  }
+  const variant = getVariant(metadata.options.variantName);
 
   switch (action.type) {
     case 'clue': {

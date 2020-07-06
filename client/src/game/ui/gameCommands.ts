@@ -4,7 +4,7 @@
 
 import { createStore } from 'redux';
 import * as sentry from '../../sentry';
-import { VARIANTS } from '../data/gameData';
+import { getVariant } from '../data/gameData';
 import initialState from '../reducers/initialStates/initialState';
 import stateReducer from '../reducers/stateReducer';
 import * as variantRules from '../rules/variant';
@@ -261,12 +261,7 @@ commands.set('init', (data: InitData) => {
   globals.options = data.options;
 
   // Set the variant
-  const variant = VARIANTS.get(globals.options.variantName);
-  if (variant === undefined) {
-    throw new Error(`The "init" command was sent with an invalid variant name of "${globals.options.variantName}".`);
-  } else {
-    globals.variant = variant;
-  }
+  globals.variant = getVariant(globals.options.variantName);
 
   // Recreate the state store (using the Redux library)
   const metadata: GameMetadata = {
