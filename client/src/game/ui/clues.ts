@@ -1,3 +1,4 @@
+import { CHARACTERS } from '../data/gameData';
 import CardState from '../types/CardState';
 import { ActionType } from '../types/ClientAction';
 import Clue from '../types/Clue';
@@ -41,6 +42,16 @@ export const checkLegal = () => {
 
   const touchedAtLeastOneCard = showClueMatch(who, clueButton.clue);
 
+  const ourCharacterID = globals.characterAssignments[globals.playerUs];
+  let ourCharacterName = '';
+  if (ourCharacterID !== null) {
+    const ourCharacter = CHARACTERS.get(ourCharacterID);
+    if (ourCharacter === undefined) {
+      throw new Error(`Unable to find the character corresponding to ID ${ourCharacterID}.`);
+    }
+    ourCharacterName = ourCharacter.name;
+  }
+
   // By default, only enable the "Give Clue" button if the clue "touched"
   // one or more cards in the hand
   const enabled = touchedAtLeastOneCard
@@ -52,11 +63,11 @@ export const checkLegal = () => {
     || (globals.variant.rankCluesTouchNothing && clueButton.clue.type === ClueType.Rank)
     // Make an exception for certain characters
     || (
-      globals.characterAssignments[globals.playerUs] === 'Blind Spot'
+      ourCharacterName === 'Blind Spot'
       && who === (globals.playerUs + 1) % globals.playerNames.length
     )
     || (
-      globals.characterAssignments[globals.playerUs] === 'Oblivious'
+      ourCharacterName === 'Oblivious'
       && who === (globals.playerUs - 1 + globals.playerNames.length)
         % globals.playerNames.length
     );

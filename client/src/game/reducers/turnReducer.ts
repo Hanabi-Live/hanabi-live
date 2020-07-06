@@ -75,7 +75,7 @@ const turnReducer = produce((
 
 export default turnReducer;
 
-function nextTurn(state: Draft<TurnState>, numPlayers: number, characterID: number) {
+function nextTurn(state: Draft<TurnState>, numPlayers: number, characterID: number | null) {
   state.turn += 1;
   if (turnRules.shouldTurnsInvert(characterID)) {
     state.turnsInverted = !state.turnsInverted;

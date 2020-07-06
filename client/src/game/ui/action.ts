@@ -2,6 +2,7 @@
 
 import Konva from 'konva';
 import { nullIfNegative } from '../../misc';
+import { CHARACTERS } from '../data/gameData';
 import * as variantRules from '../rules/variant';
 import {
   ActionClue,
@@ -114,25 +115,32 @@ actionFunctions.set('draw', (data: ActionDraw) => {
 
   // If we are the "Slow-Witted" character, we are not supposed to be able to see other people's
   // cards that are in slot 1
-  if (globals.characterAssignments[globals.playerUs] === 'Slow-Witted') {
-    if (suitIndex !== null || rank !== null) {
-      globals.characterRememberedCards[order] = {
-        suitIndex,
-        rank,
-      };
-      suitIndex = null;
-      rank = null;
+  const ourCharacterID = globals.characterAssignments[globals.playerUs];
+  if (ourCharacterID !== null) {
+    const ourCharacter = CHARACTERS.get(ourCharacterID);
+    if (ourCharacter === undefined) {
+      throw new Error(`Unable to find the character corresponding to ID ${ourCharacterID}.`);
     }
-
-    // Since someone is drawing a card, we can potentially reveal the other cards in the hand
-    const hand = globals.elements.playerHands[holder];
-    hand.children.each((layoutChild) => {
-      const card: HanabiCard = layoutChild.children[0] as HanabiCard;
-      const rememberedCard = globals.characterRememberedCards[card.state.order];
-      if (rememberedCard && rememberedCard.suitIndex !== null && rememberedCard.rank !== null) {
-        card.reveal(rememberedCard.suitIndex, rememberedCard.rank);
+    if (ourCharacter.name === 'Slow-Witted') {
+      if (suitIndex !== null || rank !== null) {
+        globals.characterRememberedCards[order] = {
+          suitIndex,
+          rank,
+        };
+        suitIndex = null;
+        rank = null;
       }
-    });
+
+      // Since someone is drawing a card, we can potentially reveal the other cards in the hand
+      const hand = globals.elements.playerHands[holder];
+      hand.children.each((layoutChild) => {
+        const card: HanabiCard = layoutChild.children[0] as HanabiCard;
+        const rememberedCard = globals.characterRememberedCards[card.state.order];
+        if (rememberedCard && rememberedCard.suitIndex !== null && rememberedCard.rank !== null) {
+          card.reveal(rememberedCard.suitIndex, rememberedCard.rank);
+        }
+      });
+    }
   }
 
   if (globals.deckOrder.length !== 0) {

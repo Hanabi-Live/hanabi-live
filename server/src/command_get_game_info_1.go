@@ -66,7 +66,17 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 	characterMetadata := make([]int, 0)
 	if t.Options.DetrimentalCharacters {
 		for _, p := range g.Players {
-			characterAssignments = append(characterAssignments, characters[p.Character].ID)
+			var characterID int
+			if p.Character == "n/a" { // Manually handle the special character for debugging
+				characterID = -1
+			} else if character, ok := characters[p.Character]; !ok {
+				logger.Error("Failed to find the \"" + p.Character + "\" in the characters map.")
+				characterID = -1
+			} else {
+				characterID = character.ID
+			}
+
+			characterAssignments = append(characterAssignments, characterID)
 			characterMetadata = append(characterMetadata, p.CharacterMetadata)
 		}
 	}

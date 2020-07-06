@@ -6,6 +6,7 @@ import { KonvaEventObject } from 'konva/types/Node';
 import {
   ARROW_COLOR,
 } from '../../constants';
+import { CHARACTERS } from '../data/gameData';
 import * as variantRules from '../rules/variant';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
@@ -102,9 +103,18 @@ export const set = (
     arrow.base.fill(color);
 
     // Clue arrows have a circle that shows the type of clue given
+    const giverCharacterID = globals.characterAssignments[giver!];
+    let giverCharacterName = '';
+    if (giverCharacterID !== null) {
+      const giverCharacter = CHARACTERS.get(giverCharacterID);
+      if (giverCharacter === undefined) {
+        throw new Error(`Unable to find the character corresponding to ID ${giverCharacterID}.`);
+      }
+      giverCharacterName = giverCharacter.name;
+    }
     if (
       variantRules.isDuck(globals.variant)
-      || (globals.characterAssignments[giver!] === 'Quacker' && !globals.replay)
+      || (giverCharacterName === 'Quacker' && !globals.replay)
     ) {
       // Don't show the circle in variants where the clue types are supposed to be hidden
       arrow.circle.hide();

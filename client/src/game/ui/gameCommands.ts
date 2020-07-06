@@ -4,7 +4,7 @@
 
 import { createStore } from 'redux';
 import * as sentry from '../../sentry';
-import { VARIANTS, CHARACTERS } from '../data/gameData';
+import { VARIANTS } from '../data/gameData';
 import initialState from '../reducers/initialStates/initialState';
 import stateReducer from '../reducers/stateReducer';
 import * as variantRules from '../rules/variant';
@@ -284,6 +284,11 @@ commands.set('init', (data: InitData) => {
 
   // Character settings
   globals.characterAssignments = data.characterAssignments;
+  if (globals.characterAssignments.length === 0) {
+    for (let i = 0; i < globals.options.numPlayers; i++) {
+      globals.characterAssignments.push(null);
+    }
+  }
   globals.characterMetadata = data.characterMetadata;
 
   // Hypothetical settings

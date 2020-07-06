@@ -2,11 +2,11 @@ import { CHARACTERS } from '../data/gameData';
 
 export function shouldEndTurnAfterDraw(
   cardsPlayedOrDiscardedThisTurn: number,
-  characterID: number,
+  characterID: number | null,
   clueTokens: number,
 ) {
   // Some "Detrimental Characters" are able to perform two actions
-  if (characterID > 0) {
+  if (characterID !== null) {
     const character = CHARACTERS.get(characterID);
     if (character === undefined) {
       throw new Error(`Unable to find the character corresponding to ID ${characterID}.`);
@@ -25,10 +25,10 @@ export function shouldEndTurnAfterDraw(
 
 export function shouldEndTurnAfterClue(
   cluesGivenThisTurn: number,
-  characterID: number,
+  characterID: number | null,
 ) {
   // Some "Detrimental Characters" are able to perform two clues
-  if (characterID > 0) {
+  if (characterID !== null) {
     const character = CHARACTERS.get(characterID);
     if (character === undefined) {
       throw new Error(`Unable to find the character corresponding to ID ${characterID}.`);
@@ -43,9 +43,9 @@ export function shouldEndTurnAfterClue(
   return true;
 }
 
-export function shouldTurnsInvert(characterID: number) {
+export function shouldTurnsInvert(characterID: number | null) {
   // Some "Detrimental Characters" are able to invert the turns
-  if (characterID > 0) {
+  if (characterID !== null) {
     const character = CHARACTERS.get(characterID);
     if (character === undefined) {
       throw new Error(`Unable to find the character corresponding to ID ${characterID}.`);

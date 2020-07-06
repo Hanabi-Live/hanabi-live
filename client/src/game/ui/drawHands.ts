@@ -2,6 +2,7 @@ import Konva from 'konva';
 import { CARD_W, CARD_H } from '../../constants';
 import { CHARACTERS } from '../data/gameData';
 import * as hand from '../rules/hand';
+import Character from '../types/Character';
 import CardLayout from './CardLayout';
 import TextWithTooltip from './controls/TextWithTooltip';
 import globals from './globals';
@@ -426,7 +427,10 @@ const drawDetrimentalCharacters = (
 
   if (globals.options.detrimentalCharacters) {
     const characterID = globals.characterAssignments[i];
-    let character = CHARACTERS.get(characterID);
+    if (characterID === null) {
+      throw new Error(`The character ID for player ${i} is null.`);
+    }
+    let character: Character | undefined;
     if (characterID === -1) {
       // A character with the ID of -1 may be assigned when debugging
       character = {
@@ -435,9 +439,11 @@ const drawDetrimentalCharacters = (
         description: '',
         emoji: '',
       };
-    }
-    if (character === undefined) {
-      throw new Error(`Unable to find the character corresponding to ID ${characterID}.`);
+    } else {
+      character = CHARACTERS.get(characterID);
+      if (character === undefined) {
+        throw new Error(`Unable to find the character corresponding to ID ${characterID}.`);
+      }
     }
 
     const width2 = 0.03 * winW;
