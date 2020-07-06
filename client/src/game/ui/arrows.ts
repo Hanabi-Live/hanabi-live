@@ -103,11 +103,13 @@ export const set = (
     arrow.base.fill(color);
 
     // Clue arrows have a circle that shows the type of clue given
-    const giverCharacterID = globals.characterAssignments[giver!];
     let giverCharacterName = '';
-    if (giverCharacterID !== null) {
-      const giverCharacter = getCharacter(giverCharacterID);
-      giverCharacterName = giverCharacter.name;
+    if (giver !== null) {
+      const giverCharacterID = globals.characterAssignments[giver!];
+      if (giverCharacterID !== null) {
+        const giverCharacter = getCharacter(giverCharacterID);
+        giverCharacterName = giverCharacter.name;
+      }
     }
     if (
       variantRules.isDuck(globals.variant)
