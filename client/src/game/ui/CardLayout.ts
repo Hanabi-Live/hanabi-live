@@ -78,7 +78,7 @@ export default class CardLayout extends Konva.Group {
     if (n > 1) {
       dist = (lw - uw) / (n - 1);
     }
-    const maximumCardSpacing = 0.0075 * globals.stage.width();
+    const maximumCardSpacing = 0.02 * uw;
     if (dist > maximumCardSpacing) {
       dist = maximumCardSpacing;
     }
