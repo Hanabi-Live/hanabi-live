@@ -18,7 +18,7 @@ import {
 import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
-import { msgClueToClue, msgSuitToSuit } from './convert';
+import { msgClueToClue } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
@@ -112,9 +112,6 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   let rank = nullIfNegative(data.rank);
   const holder = data.who;
 
-  // Suit comes from the server as an integer, so we also need to convert it to a Suit object
-  let suit = msgSuitToSuit(suitIndex, globals.variant);
-
   // If we are the "Slow-Witted" character, we are not supposed to be able to see other people's
   // cards that are in slot 1
   if (globals.characterAssignments[globals.playerUs] === 'Slow-Witted') {
@@ -124,7 +121,6 @@ actionFunctions.set('draw', (data: ActionDraw) => {
         rank,
       };
       suitIndex = null;
-      suit = null;
       rank = null;
     }
 
@@ -148,7 +144,6 @@ actionFunctions.set('draw', (data: ActionDraw) => {
     card.replayRedraw();
     suitIndex = card.state.suitIndex;
     rank = card.state.rank;
-    suit = msgSuitToSuit(suitIndex, globals.variant);
   }
 
   // Remove one card from the deck
@@ -161,7 +156,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   // (this is necessary because we might be rewinding in a replay)
   const card = globals.deck[order];
   // Suit and rank will be null if we don't know the suit/rank
-  card.refresh(suit, rank);
+  card.refresh(suitIndex, rank);
   card.parent!.show();
 });
 

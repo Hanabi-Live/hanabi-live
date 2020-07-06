@@ -23,7 +23,7 @@ import CardLayout from './CardLayout';
 import NodeWithTooltip from './controls/NodeWithTooltip';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';
-import { msgSuitToSuit, suitToMsgSuit } from './convert';
+import { msgSuitToSuit } from './convert';
 import globals from './globals';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
@@ -153,7 +153,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   // Erase all of the data on the card to make it like it was freshly drawn
-  refresh(suit: Suit | null, rank: number | null) {
+  refresh(suitIndex: number | null, rank: number | null) {
     // Reset visual state
     this.tweening = false;
     this.empathy = false;
@@ -164,7 +164,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       holder: this.state.holder,
       blank: this.state.blank,
       // We might have some information about this card already
-      suitIndex: suit ? suitToMsgSuit(suit, globals.variant) : null,
+      suitIndex,
       rank,
       // We have to add one to the turn drawn because
       // the "draw" command comes before the "turn" command
@@ -192,7 +192,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     // Hide the pips if we have full knowledge of the suit / rank
-    if (suit) {
+    if (suitIndex) {
       this.suitPips!.hide();
     }
     if (rank) {
