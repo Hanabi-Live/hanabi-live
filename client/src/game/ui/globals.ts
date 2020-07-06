@@ -56,7 +56,6 @@ export class Globals {
   // Game constants (set upon first initialization)
   deck: HanabiCard[] = [];
   stackBases: HanabiCard[] = [];
-  cardsMap: Map<string, number> = new Map<string, number>();
 
   // Game state variables (reset when rewinding in a replay)
   turn: number = 0;
@@ -176,7 +175,6 @@ export class Globals {
     this.characterRememberedCards = [];
     this.deck = [];
     this.stackBases = [];
-    this.cardsMap = new Map<string, number>();
     this.turn = 0;
     this.currentPlayerIndex = 0;
     this.ourTurn = false;

@@ -8,13 +8,14 @@ import {
   CARD_W,
 } from '../../constants';
 import { nullIfNegative } from '../../misc';
-import { SUITS } from '../data/gameData';
+import { SUITS, VARIANTS } from '../data/gameData';
 import initialCardState from '../reducers/initialStates/initialCardState';
+import * as cardRules from '../rules/card';
 import * as variantRules from '../rules/variant';
 import CardNote from '../types/CardNote';
 import CardState, { PipState } from '../types/CardState';
 import ClueType from '../types/ClueType';
-import { STACK_BASE_RANK, START_CARD_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
+import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
 import StackDirection from '../types/StackDirection';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
@@ -30,7 +31,6 @@ import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
 import * as HanabiCardInit from './HanabiCardInit';
 import LayoutChild from './LayoutChild';
 import * as notes from './notes';
-import * as reversible from './variants/reversible';
 
 const DECK_BACK_IMAGE = 'deck-back';
 
@@ -46,6 +46,15 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   set state(state: CardState) {
     this._state = state;
+  }
+
+  private _variant: Variant | null = null;
+
+  private get variant() {
+    if (!this._variant) {
+      this._variant = VARIANTS.get(globals.store!.getState().metadata.options.variantName)!;
+    }
+    return this._variant;
   }
 
   tweening: boolean = false;
@@ -102,7 +111,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Most class variables are defined below in the "refresh()" function
     // Order is defined upon first initialization
-    this._state = initialCardState(config.order, globals.variant);
+    this._state = initialCardState(config.order, this.variant);
 
     // Initialize various elements/features of the card
     this.bare = HanabiCardInit.image(() => this.bareName);
@@ -115,14 +124,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.chopMoveBorder = HanabiCardInit.chopMoveBorder();
     this.add(this.chopMoveBorder);
 
-    const arrowElements = HanabiCardInit.directionArrow(globals.variant);
+    const arrowElements = HanabiCardInit.directionArrow(this.variant);
     if (arrowElements) {
       this.arrow = arrowElements.arrow;
       this.arrowBase = arrowElements.arrowBase;
       this.add(this.arrow);
     }
 
-    const pips = HanabiCardInit.pips(globals.variant);
+    const pips = HanabiCardInit.pips(this.variant);
     this.suitPipsMap = pips.suitPipsMap;
     this.suitPipsXMap = pips.suitPipsXMap;
     this.rankPipsMap = pips.rankPipsMap;
@@ -133,12 +142,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.add(this.rankPips);
 
     this.noteIndicator = HanabiCardInit.note(
-      globals.variant.offsetCornerElements,
+      this.variant.offsetCornerElements,
       () => notes.shouldShowIndicator(this.state.order),
     );
     this.add(this.noteIndicator);
 
-    this.criticalIndicator = HanabiCardInit.criticalIndicator(globals.variant.offsetCornerElements);
+    this.criticalIndicator = HanabiCardInit.criticalIndicator(this.variant.offsetCornerElements);
     this.add(this.criticalIndicator);
 
     this.trashcan = HanabiCardInit.trashcan();
@@ -160,7 +169,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.doMisplayAnimation = false;
 
     this.state = {
-      ...initialCardState(this.state.order, globals.variant),
+      ...initialCardState(this.state.order, this.variant),
       holder: this.state.holder,
       blank: this.state.blank,
       // We might have some information about this card already
@@ -252,7 +261,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       // If we are in Empathy mode, only show the suit if there is only one possibility left
       if (this.state.colorClueMemory.possibilities.length === 1) {
         const [suitId] = this.state.colorClueMemory.possibilities;
-        suitToShow = globals.variant.suits[suitId];
+        suitToShow = this.variant.suits[suitId];
       } else {
         suitToShow = SUITS.get('Unknown')!;
       }
@@ -270,10 +279,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       ) {
         // The card note suit has precedence over the "real" suit,
         // but only for the stack bases (and not in replays)
-        suitToShow = globals.variant.suits[this.note.suitIndex];
+        suitToShow = this.variant.suits[this.note.suitIndex];
       }
       if (suitToShow === null && this.note?.suitIndex !== null) {
-        suitToShow = globals.variant.suits[this.note.suitIndex];
+        suitToShow = this.variant.suits[this.note.suitIndex];
       }
       if (suitToShow === null) {
         suitToShow = SUITS.get('Unknown');
@@ -336,8 +345,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     } else if (
       (
         globals.lobby.settings.realLifeMode
-        || variantRules.isCowAndPig(globals.variant)
-        || variantRules.isDuck(globals.variant)
+        || variantRules.isCowAndPig(this.variant)
+        || variantRules.isDuck(this.variant)
       ) && (suitToShow!.name === 'Unknown' || rankToShow === 6)
     ) {
       // In Real-Life mode or Cow & Pig / Duck variants,
@@ -350,8 +359,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Show or hide the pips
     if (
       globals.lobby.settings.realLifeMode
-      || variantRules.isCowAndPig(globals.variant)
-      || variantRules.isDuck(globals.variant)
+      || variantRules.isCowAndPig(this.variant)
+      || variantRules.isDuck(this.variant)
       || this.state.blank
     ) {
       this.suitPips!.hide();
@@ -385,7 +394,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     if (!suitToShow || suitToShow!.name === 'Unknown') {
       suitIndex = null;
     } else {
-      suitIndex = globals.variant.suits.indexOf(suitToShow);
+      suitIndex = this.variant.suits.indexOf(suitToShow);
     }
     this.setDirectionArrow(suitIndex);
     this.setFade();
@@ -394,7 +403,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   // Show or hide the direction arrow (for specific variants)
   setDirectionArrow(suitIndex: number | null) {
-    if (!variantRules.hasReversedSuits(globals.variant)) {
+    if (!variantRules.hasReversedSuits(this.variant)) {
       return;
     }
 
@@ -404,10 +413,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     const direction = globals.stackDirections[suitIndex];
-    const suit = globals.variant.suits[suitIndex];
+    const suit = this.variant.suits[suitIndex];
 
     let shouldShowArrow;
-    if (variantRules.isUpOrDown(globals.variant)) {
+    if (variantRules.isUpOrDown(this.variant)) {
       // In "Up or Down" variants, the arrow should be shown when the stack direction is determined
       // (and the arrow should be cleared when the stack is finished)
       shouldShowArrow = (
@@ -454,7 +463,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     if (
       globals.lobby.settings.realLifeMode
       || globals.options.speedrun
-      || variantRules.isThrowItInAHole(globals.variant)
+      || variantRules.isThrowItInAHole(this.variant)
       || this.state.rank === STACK_BASE_RANK
     ) {
       return;
@@ -466,7 +475,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     if (
       this.state.suitIndex !== null
       && this.state.rank !== null
-      && this.state.numPositiveClues === 0
+      && !cardRules.isClued(this.state)
       && !this.state.isPlayed
       && !this.state.isDiscarded
       && !this.empathy
@@ -532,7 +541,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   // This card was either played or discarded
   reveal(msgSuit: number, msgRank: number) {
     // Played cards are not revealed in the "Throw It in a Hole" variant
-    if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay && this.state.isPlayed) {
+    if (variantRules.isThrowItInAHole(this.variant) && !globals.replay && this.state.isPlayed) {
       return;
     }
 
@@ -625,7 +634,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   animateToPlayStacks() {
     this.removeFromParent();
     // We add a LayoutChild to a PlayStack
-    if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
+    if (variantRules.isThrowItInAHole(this.variant) && !globals.replay) {
       // The act of adding it will automatically tween the card
       const hole = globals.elements.playStacks.get('hole')!;
       hole.addChild(this.parent as any);
@@ -634,7 +643,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this.listening(false);
     } else {
       // The act of adding it will automatically tween the card
-      const suit = globals.variant.suits[this.state.suitIndex!];
+      const suit = this.variant.suits[this.state.suitIndex!];
       const playStack = globals.elements.playStacks.get(suit);
       if (!playStack) {
         // We might have played a hidden card in a hypothetical
@@ -652,7 +661,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.removeFromParent();
 
     // We add a LayoutChild to a CardLayout
-    const suit = globals.variant.suits[this.state.suitIndex!];
+    const suit = this.variant.suits[this.state.suitIndex!];
     const discardStack = globals.elements.discardStacks.get(suit);
     if (!discardStack) {
       // We might have discarded a hidden card in a hypothetical
@@ -714,92 +723,36 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   private isCritical() {
-    if (
-      this.state.suitIndex === null
-      || this.state.rank === null
-      || this.state.rank === 0 // Base
-      || this.state.isPlayed
-      || this.state.isDiscarded
-      || !this.needsToBePlayed()
-    ) {
-      return false;
-    }
-
-    // "Up or Down" has some special cases for critical cards
-    if (variantRules.hasReversedSuits(globals.variant)) {
-      return reversible.isCardCritical(globals.variant, this.state);
-    }
-
-    const num = getSpecificCardNum(globals.variant, this.state.suitIndex, this.state.rank);
-    return num.total === num.discarded + 1;
+    return this.cardRule(cardRules.isCritical);
   }
 
-  // needsToBePlayed returns true if the card is not yet played
-  // and is still needed to be played in order to get the maximum score
-  // (this mirrors the server function in "card.go")
   private needsToBePlayed() {
-    // First, check to see if a copy of this card has already been played
-    for (const card of globals.deck) {
-      if (card.state.order === this.state.order) {
-        continue;
-      }
-      if (
-        card.state.suitIndex === this.state.suitIndex
-        && card.state.rank === this.state.rank
-        && card.state.isPlayed
-      ) {
-        return false;
-      }
-    }
-
-    // Determining if the card needs to be played in variants with reversed suits is more
-    // complicated
-    if (variantRules.hasReversedSuits(globals.variant)) {
-      return reversible.needsToBePlayed(globals.variant, globals.stackDirections, this.state);
-    }
-
-    // Second, check to see if it is still possible to play this card
-    // (the preceding cards in the suit might have already been discarded)
-    for (let i = 1; i < this.state.rank!; i++) {
-      const num = getSpecificCardNum(globals.variant, this.state.suitIndex!, i);
-      if (num.total === num.discarded) {
-        // The suit is "dead", so this card does not need to be played anymore
-        return false;
-      }
-    }
-
-    // By default, all cards not yet played will need to be played
-    return true;
+    return this.cardRule(cardRules.needsToBePlayed);
   }
 
   isPotentiallyPlayable() {
-    // Calculating this in an Up or Down variant is more complicated
-    if (variantRules.hasReversedSuits(globals.variant)) {
-      return reversible.isPotentiallyPlayable(globals.variant, globals.stackDirections, this.state);
-    }
+    return this.cardRule(cardRules.isPotentiallyPlayable);
+  }
 
-    let potentiallyPlayable = false;
-    for (const [suitIndex, suit] of globals.variant.suits.entries()) {
-      const playStack = globals.elements.playStacks.get(suit)!;
-      let lastPlayedRank = playStack.getLastPlayedRank();
-      if (lastPlayedRank === 5) {
-        continue;
-      }
-      if (lastPlayedRank === STACK_BASE_RANK) {
-        lastPlayedRank = 0;
-      }
-      const nextRankNeeded = lastPlayedRank! + 1;
-      const count = this.state.possibleCards[suitIndex][nextRankNeeded];
-      if (count === undefined) {
-        throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${nextRankNeeded} from the "possibleCards" map for card ${this.state.order}.`);
-      }
-      if (count > 0) {
-        potentiallyPlayable = true;
-        break;
-      }
+  // Gathers all the appropriate state and passes as arguments to
+  // a function from cardRules.ts
+  private cardRule(fn: (
+    variant: Variant,
+    deck: readonly CardState[],
+    playStacks: ReadonlyArray<readonly number[]>,
+    stackDirections: readonly StackDirection[],
+    card: CardState,
+  ) => boolean) {
+    const visibleState = globals.store!.getState().visibleState;
+    if (!visibleState) {
+      return false;
     }
-
-    return potentiallyPlayable;
+    const variant = this.variant;
+    const deck = visibleState.deck;
+    const playStacks = visibleState.playStacks;
+    const stackDirections = visibleState.playStacksDirections;
+    const state = this.state;
+    return fn(variant, deck, playStacks, stackDirections, state);
   }
 
   // Update all UI pips to their state
@@ -1018,8 +971,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   checkSpecialNote() {
     const noteText = globals.ourNotes[this.state.order];
 
-    this.note = notes.checkNoteIdentity(globals.variant, noteText);
-    notes.checkNoteImpossibility(globals.variant, this.state, this.note);
+    this.note = notes.checkNoteIdentity(this.variant, noteText);
+    notes.checkNoteImpossibility(this.variant, this.state, this.note);
     this.setClued();
 
     // Feature 1 - Morph the card if it has an "exact" card note
@@ -1050,40 +1003,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 }
 
-// getSpecificCardNum returns the total cards in the deck of the specified suit and rank
-// as well as how many of those that have been already discarded
-// (this DOES NOT mirror the server function in "game.go",
-// because the client does not have the full deck)
-export const getSpecificCardNum = (variant: Variant, suitIndex: number, rank: number) => {
-  const suit = variant.suits[suitIndex];
-  // First, find out how many of this card should be in the deck, based on the rules of the game
-  let total = 0;
-  if (rank === 1) {
-    total = 3;
-    if (variantRules.isUpOrDown(variant) || suit.reversed) {
-      total = 1;
-    }
-  } else if (rank === 5) {
-    total = 1;
-    if (suit.reversed) {
-      total = 3;
-    }
-  } else if (rank === START_CARD_RANK) {
-    total = 1;
-  } else {
-    total = 2;
-  }
-  if (suit.oneOfEach) {
-    total = 1;
-  }
-
-  // Second, search through the deck to find the total amount of discarded cards that match
-  let discarded = 0;
-  for (const card of globals.deck) {
-    if (card.state.suitIndex === suitIndex && card.state.rank === rank && card.state.isDiscarded) {
-      discarded += 1;
-    }
-  }
-
-  return { total, discarded };
-};
+export function initArray<T>(length: number, value: T): T[] {
+  return Array.from({ length }, () => value);
+}

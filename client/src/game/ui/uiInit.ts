@@ -1,7 +1,6 @@
 import Konva from 'konva';
 import { LABEL_COLOR } from '../../constants';
 import * as deck from '../rules/deck';
-import * as variantRules from '../rules/variant';
 import { STACK_BASE_RANK } from '../types/constants';
 import { suitToSuitIndex } from './convert';
 import drawCards from './drawCards';
@@ -97,9 +96,6 @@ const finishedDownloadingImages = () => {
     globals.lobby.settings.styleNumbers,
   );
 
-  // Construct a list of all of the cards in the deck
-  initCardsMap();
-
   // Build all of the reusable card objects
   initCards();
 
@@ -117,20 +113,6 @@ const finishedDownloadingImages = () => {
   globals.lobby.conn!.send('getGameInfo2', {
     tableID: globals.lobby.tableID,
   });
-};
-
-const initCardsMap = () => {
-  for (const suit of globals.variant.suits) {
-    if (variantRules.isUpOrDown(globals.variant)) {
-      // 6 is an unknown rank, so we use 7 to represent a "START" card
-      const key = `${suit.name}7`;
-      globals.cardsMap.set(key, 1);
-    }
-    for (let rank = 1; rank <= 5; rank++) {
-      const key = `${suit.name}${rank}`;
-      globals.cardsMap.set(key, deck.numCopiesOfCard(globals.variant, rank, suit));
-    }
-  }
 };
 
 const initCards = () => {
