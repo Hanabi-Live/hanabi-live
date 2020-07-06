@@ -90,9 +90,6 @@ export class Globals {
   gameOver: boolean = false;
   finalReplayPos: number = 0;
   finalReplayTurn: number = 0;
-  // In replays, we can show information about a card that was not known at the time,
-  // but is known now; these are cards we have "learned"
-  learnedCards: CardIdentity[] = [];
   deckOrder: CardIdentity[] = []; // Sent when the game ends
 
   // Shared replay feature
@@ -202,7 +199,6 @@ export class Globals {
     this.gameOver = false;
     this.finalReplayPos = 0;
     this.finalReplayTurn = 0;
-    this.learnedCards = [];
     this.sharedReplayLeader = '';
     this.amSharedReplayLeader = false;
     this.sharedReplayTurn = -1;

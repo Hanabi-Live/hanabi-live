@@ -94,9 +94,12 @@ export function onPlayStacksChanged(playStacks: ReadonlyArray<readonly number[]>
       stackBaseLayoutChild.visible(true);
 
       // The stack base might have been morphed
+      /*
+      TODO
       if (stackBase.state.rank !== 0 || stackBase.state.suitIndex !== i) {
         stackBase.convert(i, 0);
       }
+      */
     },
     (card) => card.animateToPlayStacks(),
   );

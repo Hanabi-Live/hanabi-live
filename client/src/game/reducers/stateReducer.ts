@@ -31,6 +31,12 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       }, initial);
       state.ongoingGame = castDraft(game);
 
+      // We copy the card identities to the global state for convenience
+      state.cardIdentities = state.ongoingGame.deck.map((c) => ({
+        suitIndex: c.suitIndex,
+        rank: c.rank,
+      }));
+
       state.replay.states = castDraft(states);
       break;
     }
@@ -47,10 +53,18 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     default: {
       // A new game state happened
       state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action, state.metadata)!;
+
+      // We copy the card identities to the global state for convenience
+      state.cardIdentities = state.ongoingGame.deck.map((c) => ({
+        suitIndex: c.suitIndex,
+        rank: c.rank,
+      }));
+
+      // Save a copy of the game state on every turn (for the purposes of in-game replays)
       if (action.type === 'turn') {
-        // Save it for replays
         state.replay.states[action.num] = state.ongoingGame;
       }
+
       break;
     }
   }

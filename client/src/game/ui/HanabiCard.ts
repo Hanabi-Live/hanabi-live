@@ -7,7 +7,6 @@ import {
   CARD_H,
   CARD_W,
 } from '../../constants';
-import { nullIfNegative } from '../../misc';
 import { SUITS, VARIANTS } from '../data/gameData';
 import initialCardState from '../reducers/initialStates/initialCardState';
 import * as cardRules from '../rules/card';
@@ -252,40 +251,57 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       return;
     }
 
-    const learnedCard = globals.learnedCards[this.state.order];
+    let previouslyKnownCardIdentity = globals.store?.getState().cardIdentities[this.state.order];
+    if (previouslyKnownCardIdentity === undefined) {
+      // This will always be undefined for the stack base
+      if (this.state.rank !== STACK_BASE_RANK) {
+        throw new Error(`Failed to get the previously known card identity for card ${this.state.order}.`);
+      }
+      previouslyKnownCardIdentity = {
+        suitIndex: this.state.suitIndex,
+        rank: this.state.rank,
+      };
+    }
+
+    const unknownSuit = SUITS.get('Unknown');
+    if (unknownSuit === undefined) {
+      throw new Error('Unable to find the "Unknown" suit in the "SUITS" map.');
+    }
 
     // Find out the suit to display
     // (Unknown is a colorless suit used for unclued cards)
-    let suitToShow: Suit | undefined | null;
+    let suitToShow: Suit | null | undefined;
     if (this.empathy) {
       // If we are in Empathy mode, only show the suit if there is only one possibility left
       if (this.state.colorClueMemory.possibilities.length === 1) {
-        const [suitId] = this.state.colorClueMemory.possibilities;
-        suitToShow = this.variant.suits[suitId];
+        const [suitIndex] = this.state.colorClueMemory.possibilities;
+        suitToShow = this.variant.suits[suitIndex];
       } else {
-        suitToShow = SUITS.get('Unknown')!;
+        suitToShow = unknownSuit;
       }
     } else {
       // If we are not in Empathy mode, then show the suit if it is known
-      if (learnedCard.suitIndex === null) {
+      if (previouslyKnownCardIdentity.suitIndex === null) {
         suitToShow = null;
       } else {
-        suitToShow = suitIndexToSuit(learnedCard.suitIndex, globals.variant);
+        suitToShow = suitIndexToSuit(previouslyKnownCardIdentity.suitIndex, globals.variant);
       }
       if (
         this.state.rank === STACK_BASE_RANK
         && this.note?.suitIndex !== null
         && !globals.replay
       ) {
-        // The card note suit has precedence over the "real" suit,
+        // Show the suit corresponding to the note
+        // The note has precedence over the "real" suit,
         // but only for the stack bases (and not in replays)
         suitToShow = this.variant.suits[this.note.suitIndex];
       }
       if (suitToShow === null && this.note?.suitIndex !== null) {
+        // Show the suit corresponding to the note
         suitToShow = this.variant.suits[this.note.suitIndex];
       }
       if (suitToShow === null) {
-        suitToShow = SUITS.get('Unknown');
+        suitToShow = unknownSuit;
       }
     }
 
@@ -301,7 +317,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
     } else {
       // If we are not in Empathy mode, then show the rank if it is known
-      rankToShow = learnedCard.rank;
+      rankToShow = previouslyKnownCardIdentity.rank;
       if (
         this.state.rank === STACK_BASE_RANK
         && this.note?.rank !== null
@@ -347,7 +363,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         globals.lobby.settings.realLifeMode
         || variantRules.isCowAndPig(this.variant)
         || variantRules.isDuck(this.variant)
-      ) && (suitToShow!.name === 'Unknown' || rankToShow === 6)
+      ) && (suitToShow === unknownSuit || rankToShow === 6)
     ) {
       // In Real-Life mode or Cow & Pig / Duck variants,
       // always show the vanilla card back if the card is not fully revealed
@@ -366,7 +382,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this.suitPips!.hide();
       this.rankPips!.hide();
     } else {
-      this.suitPips!.visible(suitToShow!.name === 'Unknown');
+      this.suitPips!.visible(suitToShow === unknownSuit);
       this.rankPips!.visible(rankToShow === UNKNOWN_CARD_RANK);
     }
 
@@ -391,7 +407,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     ));
 
     let suitIndex: number | null = null;
-    if (!suitToShow || suitToShow!.name === 'Unknown') {
+    if (!suitToShow || suitToShow === unknownSuit) {
       suitIndex = null;
     } else {
       suitIndex = this.variant.suits.indexOf(suitToShow);
@@ -526,31 +542,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  // We have learned the true suit and rank of this card
-  // but it might not be known to the holder
-  convert(msgSuit: number, msgRank: number) {
-    // Keep track of what this card is
-    const learnedCard = globals.learnedCards[this.state.order];
-    learnedCard.suitIndex = nullIfNegative(msgSuit);
-    learnedCard.rank = nullIfNegative(msgRank);
-
-    // Redraw the card
-    this.setBareImage();
-  }
-
-  // This card was either played or discarded
-  reveal(msgSuit: number, msgRank: number) {
-    // Played cards are not revealed in the "Throw It in a Hole" variant
-    if (variantRules.isThrowItInAHole(this.variant) && !globals.replay && this.state.isPlayed) {
-      return;
-    }
-
-    this.convert(msgSuit, msgRank);
-  }
-
   // We need to redraw this card's suit and rank in a shared replay or hypothetical
   // based on deckOrder and hypoRevealed
+  /* eslint-disable */
   replayRedraw() {
+    /*
     const cardIdentity = globals.deckOrder[this.state.order];
     if (!cardIdentity) {
       throw new Error(`The identity for card ${this.state.order} was not found in the "replayRedraw()" function.`);
@@ -592,6 +588,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         layoutChild.checkSetDraggable();
       }
     }
+    */
+    /* eslint-enable */
   }
 
   private removeFromParent() {

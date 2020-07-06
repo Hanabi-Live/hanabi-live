@@ -2,7 +2,7 @@
 
 import Konva from 'konva';
 import { nullIfNegative } from '../../misc';
-import { getCharacter } from '../data/gameData';
+// import { getCharacter } from '../data/gameData';
 import * as variantRules from '../rules/variant';
 import {
   ActionClue,
@@ -111,10 +111,11 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   // We want to convert this to just being null
   let suitIndex = nullIfNegative(data.suitIndex);
   let rank = nullIfNegative(data.rank);
-  const holder = data.who;
+  // const holder = data.who;
 
   // If we are the "Slow-Witted" character, we are not supposed to be able to see other people's
   // cards that are in slot 1
+  /*
   const ourCharacterID = globals.characterAssignments[globals.playerUs];
   if (ourCharacterID !== null) {
     const ourCharacter = getCharacter(ourCharacterID);
@@ -139,6 +140,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
       });
     }
   }
+  */
 
   if (globals.deckOrder.length !== 0) {
     // If we are in a shared replay that was converted from a game in which we were one of the
@@ -291,6 +293,8 @@ actionFunctions.set('text', () => {
 });
 
 actionFunctions.set('reveal', (data: ActionReveal) => {
+  console.log(data, 'TODO');
+  /*
   // This is the reveal for hypotheticals when a card is morphed
   // The code here is copied from the "websocket.ts" file
   let card = globals.deck[data.order];
@@ -303,6 +307,7 @@ actionFunctions.set('reveal', (data: ActionReveal) => {
 
   card.convert(data.suitIndex, data.rank);
   globals.layers.card.batchDraw();
+  */
 });
 
 actionFunctions.set('turn', (data: ActionTurn) => {

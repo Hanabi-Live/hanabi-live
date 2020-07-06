@@ -724,12 +724,16 @@ commands.set('replayTurn', (data: ReplayTurnData) => {
   }
 });
 
+// A "reveal" message is sent at the end of the game to reveal the remaining cards in a player's
+// hand
 interface RevealData {
   suitIndex: number;
   rank: number;
   order: number;
 }
 commands.set('reveal', (data: RevealData) => {
+  console.log(data, 'TODO');
+  /*
   let card = globals.deck[data.order];
   if (!card) {
     card = globals.stackBases[data.order - globals.deck.length];
@@ -740,6 +744,7 @@ commands.set('reveal', (data: RevealData) => {
 
   card.reveal(data.suitIndex, data.rank);
   globals.layers.card.batchDraw();
+  */
 });
 
 // This is used to update the names of the people currently spectating the game

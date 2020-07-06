@@ -5,8 +5,8 @@ import ReplayState from './ReplayState';
 
 export default interface State {
   readonly visibleState: GameState;
-  readonly ongoingGame: GameState;
+  readonly ongoingGame: GameState; // In a replay, this is the state of the final turn
   readonly replay: ReplayState;
-  readonly cardIdentities: ReadonlyArray<Readonly<CardIdentity>>;
+  readonly cardIdentities: CardIdentity[];
   readonly metadata: GameMetadata;
 }
