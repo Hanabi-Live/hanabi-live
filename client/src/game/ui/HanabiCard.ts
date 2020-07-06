@@ -23,7 +23,7 @@ import CardLayout from './CardLayout';
 import NodeWithTooltip from './controls/NodeWithTooltip';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';
-import { msgSuitToSuit } from './convert';
+import { suitIndexToSuit } from './convert';
 import globals from './globals';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
@@ -261,7 +261,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       if (learnedCard.suitIndex === null) {
         suitToShow = null;
       } else {
-        suitToShow = msgSuitToSuit(learnedCard.suitIndex, globals.variant);
+        suitToShow = suitIndexToSuit(learnedCard.suitIndex, globals.variant);
       }
       if (
         this.state.rank === STACK_BASE_RANK
@@ -550,7 +550,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     if (trueSuitIndex === null) {
       throw new Error(`The suit identity for card ${this.state.order} was not found in the "replayRedraw() function.`);
     }
-    const trueSuit = msgSuitToSuit(trueSuitIndex, globals.variant);
+    const trueSuit = suitIndexToSuit(trueSuitIndex, globals.variant);
     const trueRank = globals.deckOrder[this.state.order].rank;
     if (trueRank === null) {
       throw new Error(`The rank identity for card ${this.state.order} was not found in the "replayRedraw() function.`);

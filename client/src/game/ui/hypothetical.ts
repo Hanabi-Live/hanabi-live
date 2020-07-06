@@ -11,7 +11,7 @@ import action from './action';
 import cardStatusCheck from './cardStatusCheck';
 import { getTouchedCardsFromClue } from './clues';
 import PlayerButton from './controls/PlayerButton';
-import { msgSuitToSuit } from './convert';
+import { suitIndexToSuit } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
@@ -268,7 +268,7 @@ export const send = (hypoAction: ClientAction) => {
     // Text
     let text = `${globals.playerNames[globals.currentPlayerIndex]} ${type}s `;
     if (card.state.suitIndex && card.state.rank) {
-      const suit = msgSuitToSuit(card.state.suitIndex!, globals.variant)!;
+      const suit = suitIndexToSuit(card.state.suitIndex!, globals.variant)!;
       text += `${suit.name} ${card.state.rank} `;
     } else {
       text += 'a card ';

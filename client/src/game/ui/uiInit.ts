@@ -3,7 +3,7 @@ import { LABEL_COLOR } from '../../constants';
 import * as deck from '../rules/deck';
 import * as variantRules from '../rules/variant';
 import { STACK_BASE_RANK } from '../types/constants';
-import { suitToMsgSuit } from './convert';
+import { suitToSuitIndex } from './convert';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
 import globals from './globals';
@@ -161,7 +161,7 @@ const initCards = () => {
 
   // Also create objects for the stack bases
   for (const suit of globals.variant.suits) {
-    const suitIndex = suitToMsgSuit(suit, globals.variant);
+    const suitIndex = suitToSuitIndex(suit, globals.variant);
     globals.learnedCards.push({
       suitIndex,
       rank: STACK_BASE_RANK,

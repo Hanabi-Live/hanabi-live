@@ -23,22 +23,22 @@ export const msgClueToClue = (msgClue: MsgClue, variant: Variant) => {
   throw new Error('Unknown clue type given to the "msgClueToClue()" function.');
 };
 
-export const msgSuitToSuit = (
-  msgSuit: number | null,
+export const suitIndexToSuit = (
+  suitIndex: number | null,
   variant: Variant,
 ) => {
   if (
-    msgSuit === null
-    || msgSuit < 0
-    || msgSuit >= variant.suits.length
+    suitIndex === null
+    || suitIndex < 0
+    || suitIndex >= variant.suits.length
   ) {
     return null;
   }
 
-  return variant.suits[msgSuit];
+  return variant.suits[suitIndex];
 };
 
-export const suitToMsgSuit = (
+export const suitToSuitIndex = (
   suit: Suit | null,
   variant: Variant,
 ) => (suit ? variant.suits.indexOf(suit) : -1);
