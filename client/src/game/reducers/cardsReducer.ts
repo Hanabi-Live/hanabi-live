@@ -126,8 +126,8 @@ const cardsReducer = produce((
       // TEMP: At this point, check that the local state matches the server
       if (game.currentPlayerIndex !== action.who && game.turn > 0) {
         // NOTE: don't check this during the initial draw
-        console.warn('The currentPlayerIndex on a draw from the client and the server do not match. '
-            + `Client = ${game.currentPlayerIndex}, Server = ${action.who}`);
+        console.warn(`The currentPlayerIndex on a draw from the client and the server do not match on turn ${game.turn}`);
+        console.warn(`Client = ${game.currentPlayerIndex}, Server = ${action.who}`);
       }
 
       const drawnCard = castDraft({
