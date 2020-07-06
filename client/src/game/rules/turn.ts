@@ -1,4 +1,4 @@
-import { CHARACTERS } from '../data/gameData';
+import { getCharacter } from '../data/gameData';
 
 export function shouldEndTurnAfterDraw(
   cardsPlayedOrDiscardedThisTurn: number,
@@ -7,10 +7,7 @@ export function shouldEndTurnAfterDraw(
 ) {
   // Some "Detrimental Characters" are able to perform two actions
   if (characterID !== null) {
-    const character = CHARACTERS.get(characterID);
-    if (character === undefined) {
-      throw new Error(`Unable to find the character corresponding to ID ${characterID}.`);
-    }
+    const character = getCharacter(characterID);
 
     if (character.name === 'Panicky' && clueTokens <= 4) {
       return cardsPlayedOrDiscardedThisTurn === 2;
@@ -29,10 +26,7 @@ export function shouldEndTurnAfterClue(
 ) {
   // Some "Detrimental Characters" are able to perform two clues
   if (characterID !== null) {
-    const character = CHARACTERS.get(characterID);
-    if (character === undefined) {
-      throw new Error(`Unable to find the character corresponding to ID ${characterID}.`);
-    }
+    const character = getCharacter(characterID);
 
     if (character.name === 'Genius') {
       return cluesGivenThisTurn === 2;
@@ -46,10 +40,7 @@ export function shouldEndTurnAfterClue(
 export function shouldTurnsInvert(characterID: number | null) {
   // Some "Detrimental Characters" are able to invert the turns
   if (characterID !== null) {
-    const character = CHARACTERS.get(characterID);
-    if (character === undefined) {
-      throw new Error(`Unable to find the character corresponding to ID ${characterID}.`);
-    }
+    const character = getCharacter(characterID);
 
     if (character.name === 'Contrarian') {
       return true;
