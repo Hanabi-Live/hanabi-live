@@ -65,7 +65,7 @@ const turnReducer = produce((
         state.currentPlayerIndex = null;
       }
 
-      if (state.currentPlayerIndex !== action.who) {
+      if (state.currentPlayerIndex !== action.who && state.currentPlayerIndex !== null) {
         // TODO
         console.warn('The currentPlayerIndex from the client and the server do not match. '
             + `Client = ${state.currentPlayerIndex}, Server = ${action.who}`);
