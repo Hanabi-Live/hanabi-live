@@ -7,10 +7,11 @@ import {
   CARD_H,
   CARD_W,
 } from '../../constants';
-import { SUITS, VARIANTS } from '../data/gameData';
+import { getSuit, VARIANTS } from '../data/gameData';
 import initialCardState from '../reducers/initialStates/initialCardState';
 import * as cardRules from '../rules/card';
 import * as variantRules from '../rules/variant';
+import CardIdentity from '../types/CardIdentity';
 import CardNote from '../types/CardNote';
 import CardState, { PipState } from '../types/CardState';
 import ClueType from '../types/ClueType';
@@ -251,22 +252,28 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       return;
     }
 
-    let previouslyKnownCardIdentity = globals.store?.getState().cardIdentities[this.state.order];
-    if (previouslyKnownCardIdentity === undefined) {
-      // This will always be undefined for the stack base
-      if (this.state.rank !== STACK_BASE_RANK) {
-        throw new Error(`Failed to get the previously known card identity for card ${this.state.order}.`);
-      }
-      previouslyKnownCardIdentity = {
+    // Retrieve the identity of the card
+    // We may know the identity through normal means
+    // (e.g. it is a card that is currently in someone else's hand)
+    // We may also know the identity from a future game state
+    // (e.g. it is a card in our hand that we have learned about in the future)
+    let cardIdentity: CardIdentity | undefined;
+    if (this.state.rank === STACK_BASE_RANK) {
+      // We do not track the card identities for the stack base cards
+      // For stack bases, the suit and rank is always baked into the state from the get-go
+      cardIdentity = {
         suitIndex: this.state.suitIndex,
         rank: this.state.rank,
       };
+    } else {
+      // Card identities are stored on the global state for convenience
+      cardIdentity = globals.store?.getState().cardIdentities[this.state.order];
+      if (cardIdentity === undefined) {
+        throw new Error(`Failed to get the previously known card identity for card ${this.state.order}.`);
+      }
     }
 
-    const unknownSuit = SUITS.get('Unknown');
-    if (unknownSuit === undefined) {
-      throw new Error('Unable to find the "Unknown" suit in the "SUITS" map.');
-    }
+    const unknownSuit = getSuit('Unknown');
 
     // Find out the suit to display
     // (Unknown is a colorless suit used for unclued cards)
@@ -281,10 +288,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
     } else {
       // If we are not in Empathy mode, then show the suit if it is known
-      if (previouslyKnownCardIdentity.suitIndex === null) {
+      if (cardIdentity.suitIndex === null) {
         suitToShow = null;
       } else {
-        suitToShow = suitIndexToSuit(previouslyKnownCardIdentity.suitIndex, globals.variant);
+        suitToShow = suitIndexToSuit(cardIdentity.suitIndex, globals.variant);
       }
       if (
         this.state.rank === STACK_BASE_RANK
@@ -317,7 +324,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
     } else {
       // If we are not in Empathy mode, then show the rank if it is known
-      rankToShow = previouslyKnownCardIdentity.rank;
+      rankToShow = cardIdentity.rank;
       if (
         this.state.rank === STACK_BASE_RANK
         && this.note?.rank !== null
