@@ -1002,7 +1002,3 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     globals.layers.card.batchDraw();
   }
 }
-
-export function initArray<T>(length: number, value: T): T[] {
-  return Array.from({ length }, () => value);
-}
