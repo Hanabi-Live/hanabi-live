@@ -65,7 +65,7 @@ export default class CardLayout extends Konva.Group {
 
     const n = this.children.length;
     for (let i = 0; i < n; i++) {
-      const node = this.children[i]; // This is a LayoutChild
+      const node = this.children[i] as unknown as LayoutChild;
 
       if (!node.height()) {
         continue;
