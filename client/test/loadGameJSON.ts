@@ -168,7 +168,7 @@ function drawCard(who: number, order: number, deck: CardIdentity[]): ActionDraw 
     type: 'draw',
     who,
     order,
-    suit: cardIdentity.suitIndex,
+    suitIndex: cardIdentity.suitIndex,
     rank: cardIdentity.rank,
   };
 }
