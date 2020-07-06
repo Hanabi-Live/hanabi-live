@@ -289,7 +289,7 @@ export const send = (hypoAction: ClientAction) => {
       sendHypoAction({
         type: 'draw',
         order: nextCardOrder,
-        suit: globals.hypoRevealed ? nextCard.suitIndex : -1,
+        suitIndex: globals.hypoRevealed ? nextCard.suitIndex : -1,
         rank: globals.hypoRevealed ? nextCard.rank : -1,
         who: globals.currentPlayerIndex,
       });

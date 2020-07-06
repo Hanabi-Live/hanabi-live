@@ -121,7 +121,7 @@ const cardsReducer = produce((
     }
 
     // A player just drew a card from the deck
-    // {order: 0, rank: 1, suit: 4, type: "draw", who: 0}
+    // {order: 0, rank: 1, suitIndex: 4, type: "draw", who: 0}
     case 'draw': {
       // TEMP: At this point, check that the local state matches the server
       if (game.currentPlayerIndex !== action.who && game.turn > 0) {
@@ -133,7 +133,7 @@ const cardsReducer = produce((
       const drawnCard = castDraft({
         ...initialCardState(action.order, variant),
         holder: action.who,
-        suitIndex: nullIfNegative(action.suit),
+        suitIndex: nullIfNegative(action.suitIndex),
         rank: nullIfNegative(action.rank),
         turnDrawn: game.turn,
       });

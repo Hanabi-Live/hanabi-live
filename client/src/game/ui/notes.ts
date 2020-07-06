@@ -218,10 +218,10 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
     // Only the rank was specified
     // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
     let rankPossible = false;
-    for (const suit of cardState.colorClueMemory.possibilities) {
-      const count = cardState.possibleCards[suit][note.rank];
+    for (const suitIndex of cardState.colorClueMemory.possibilities) {
+      const count = cardState.possibleCards[suitIndex][note.rank];
       if (count === undefined) {
-        throw new Error(`The card of Suit: ${suit} and Rank: ${note.rank} does not exist in the possibleCards map.`);
+        throw new Error(`The card of Suit: ${suitIndex} and Rank: ${note.rank} does not exist in the possibleCards map.`);
       }
       if (count > 0) {
         rankPossible = true;

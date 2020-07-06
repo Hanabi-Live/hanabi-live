@@ -446,7 +446,7 @@ const processNewAction = (actionMessage: GameAction) => {
     }
   } else if (actionMessage.type === 'deckOrder') {
     // The game is over and the server gave us a list of every card in the deck
-    // {deck: [{suit: 0, rank: 1}, {suit: 2, rank: 2}, ...], type: "deckOrder", }
+    // {deck: [{suitIndex: 0, rank: 1}, {suitIndex: 2, rank: 2}, ...], type: "deckOrder", }
     globals.deckOrder = actionMessage.deck;
   }
 
@@ -726,7 +726,7 @@ commands.set('replayTurn', (data: ReplayTurnData) => {
 });
 
 interface RevealData {
-  suit: number;
+  suitIndex: number;
   rank: number;
   order: number;
 }
@@ -739,7 +739,7 @@ commands.set('reveal', (data: RevealData) => {
     throw new Error('Failed to get the card in the "reveal" command.');
   }
 
-  card.reveal(data.suit, data.rank);
+  card.reveal(data.suitIndex, data.rank);
   globals.layers.card.batchDraw();
 });
 

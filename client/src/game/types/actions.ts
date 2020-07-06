@@ -59,7 +59,7 @@ export interface ActionDraw {
   type: 'draw';
   readonly who: number;
   readonly rank: number;
-  readonly suit: number;
+  readonly suitIndex: number;
   readonly order: number;
 }
 

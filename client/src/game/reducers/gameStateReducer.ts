@@ -45,7 +45,7 @@ const gameStateReducer = produce((
     }
 
     // A player just discarded a card
-    // {failed: false, type: "discard", which: {index: 0, order: 4, rank: 1, suit: 2}}
+    // {failed: false, type: "discard", which: {index: 0, order: 4, rank: 1, suitIndex: 2}}
     case 'discard': {
       // Remove it from the hand
       const hand = state.hands[action.which.index];

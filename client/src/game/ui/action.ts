@@ -108,7 +108,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   // Suit and rank come from the server as -1 if the card is unknown
   // (e.g. being drawn to the current player's hand)
   // We want to convert this to just being null
-  let suitIndex = nullIfNegative(data.suit);
+  let suitIndex = nullIfNegative(data.suitIndex);
   let rank = nullIfNegative(data.rank);
   const holder = data.who;
 
