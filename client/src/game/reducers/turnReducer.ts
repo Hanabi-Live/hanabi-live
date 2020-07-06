@@ -62,7 +62,7 @@ const turnReducer = produce((
       // TEMP: the client should set the "currentPlayerIndex" index to -1 when the game is over
       // But it does not have logic to know when the game is over yet
       if (action.who === -1) {
-        state.currentPlayerIndex = -1;
+        state.currentPlayerIndex = null;
       }
 
       if (state.currentPlayerIndex !== action.who) {
