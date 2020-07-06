@@ -11,7 +11,7 @@ import action from './action';
 import cardStatusCheck from './cardStatusCheck';
 import { getTouchedCardsFromClue } from './clues';
 import PlayerButton from './controls/PlayerButton';
-import { msgSuitToSuit } from './convert';
+import { suitIndexToSuit } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
@@ -248,7 +248,7 @@ export const send = (hypoAction: ClientAction) => {
         index: globals.currentPlayerIndex,
         order: hypoAction.target,
         rank: card.state.rank!,
-        suit: card.state.suitIndex!,
+        suitIndex: card.state.suitIndex!,
       },
       failed: false,
     });
@@ -268,7 +268,7 @@ export const send = (hypoAction: ClientAction) => {
     // Text
     let text = `${globals.playerNames[globals.currentPlayerIndex]} ${type}s `;
     if (card.state.suitIndex && card.state.rank) {
-      const suit = msgSuitToSuit(card.state.suitIndex!, globals.variant)!;
+      const suit = suitIndexToSuit(card.state.suitIndex!, globals.variant)!;
       text += `${suit.name} ${card.state.rank} `;
     } else {
       text += 'a card ';
@@ -283,11 +283,14 @@ export const send = (hypoAction: ClientAction) => {
     const nextCardOrder = globals.indexOfLastDrawnCard + 1;
     const nextCard = globals.deckOrder[nextCardOrder];
     if (nextCard) { // All the cards might have already been drawn
+      if (nextCard.suitIndex === null || nextCard.rank === null) {
+        throw new Error('Unable to find the suit or rank of the next card.');
+      }
       sendHypoAction({
         type: 'draw',
         order: nextCardOrder,
+        suit: globals.hypoRevealed ? nextCard.suitIndex : -1,
         rank: globals.hypoRevealed ? nextCard.rank : -1,
-        suit: globals.hypoRevealed ? nextCard.suit : -1,
         who: globals.currentPlayerIndex,
       });
     }

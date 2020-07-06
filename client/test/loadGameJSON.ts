@@ -10,13 +10,13 @@ import {
   ActionPlay,
   GameAction,
 } from '../src/game/types/actions';
+import CardIdentity from '../src/game/types/CardIdentity';
 import ClueType from '../src/game/types/ClueType';
 import { STACK_BASE_RANK } from '../src/game/types/constants';
 import GameMetadata from '../src/game/types/GameMetadata';
 import GameState from '../src/game/types/GameState';
 import MsgClue from '../src/game/types/MsgClue';
 import Options from '../src/game/types/Options';
-import SimpleCard from '../src/game/types/SimpleCard';
 import State from '../src/game/types/State';
 import Variant from '../src/game/types/Variant';
 import testGame from '../test_data/up_or_down.json';
@@ -104,15 +104,18 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
           .hands[a.target]
           .filter((order) => {
             const jsonCard = gameJSON.deck[order];
-            return variantIsCardTouched(variant, a.clue, jsonCard.suit, jsonCard.rank);
+            return variantIsCardTouched(variant, a.clue, jsonCard.suitIndex, jsonCard.rank);
           });
         action = { ...a, list };
         break;
       }
       case 'play': {
         // Check if this is actually a play or a misplay
-        const jsonCard = gameJSON.deck[a.which.order];
-        const playStack = s.playStacks[jsonCard.suit];
+        const jsonCard: CardIdentity = gameJSON.deck[a.which.order];
+        if (jsonCard.suitIndex === null || jsonCard.rank === null) {
+          throw new Error(`Failed to get the rank or the suit for card ${a.which.order} in the JSON deck.`);
+        }
+        const playStack = s.playStacks[jsonCard.suitIndex];
         let topOfStackRank = STACK_BASE_RANK;
         if (playStack.length > 0) {
           topOfStackRank = gameJSON.deck[playStack[playStack.length - 1]].rank;
@@ -152,13 +155,21 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   };
 }
 
-function drawCard(who: number, order: number, deck: SimpleCard[]): ActionDraw {
+function drawCard(who: number, order: number, deck: CardIdentity[]): ActionDraw {
+  const cardIdentity = deck[order];
+  if (!cardIdentity) {
+    throw new Error(`Failed to find the ${order} card in the deck in the "drawCard()" function.`);
+  }
+  if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
+    throw new Error('Failed to find the suit or rank of the card in the "drawCard()" function.');
+  }
+
   return {
     type: 'draw',
     who,
     order,
-    suit: deck[order].suit,
-    rank: deck[order].rank,
+    suit: cardIdentity.suitIndex,
+    rank: cardIdentity.rank,
   };
 }
 
@@ -166,7 +177,7 @@ function dealInitialCards(
   numPlayers: number,
   cardsPerHand: number,
   actions: GameAction[],
-  deck: SimpleCard[],
+  deck: CardIdentity[],
 ) {
   let topOfDeck = 0;
   for (let player = 0; player < numPlayers; player++) {
@@ -181,7 +192,7 @@ function dealInitialCards(
 function parseJSONAction(
   currentPlayer: number,
   turn: number,
-  deck: SimpleCard[],
+  deck: CardIdentity[],
   a: JSONAction,
 ): GameAction | null {
   switch (a.type) {
@@ -193,7 +204,7 @@ function parseJSONAction(
         which: {
           order: a.target,
           index: currentPlayer,
-          suit: deck[a.target].suit,
+          suitIndex: deck[a.target].suitIndex,
           rank: deck[a.target].rank,
         },
       };

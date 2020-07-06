@@ -25,8 +25,8 @@ type Options struct {
 type ExtraOptions struct {
 	// Whether or not this is a game created from a replay or a user-submitted JSON array
 	Replay     bool
-	DatabaseID int          // For replays created from the database (or "!replay" games)
-	CustomDeck []SimpleCard // For replays created from arbitrary JSON data
+	DatabaseID int             // For replays created from the database (or "!replay" games)
+	CustomDeck []*CardIdentity // For replays created from arbitrary JSON data
 
 	Restarted bool // Whether or not this game was created by clicking "Restart" in a replay
 

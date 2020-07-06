@@ -108,7 +108,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 // preGameVisible is false if this game should be hidden before it starts, such as a restarted game
 func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	// Set default values for the custom game options
-	var customDeck []SimpleCard
+	var customDeck []*CardIdentity
 	setSeedSuffix := ""
 	setReplay := false
 	databaseID := 0
@@ -238,7 +238,7 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 				lines = strings.Split(string(v), "\n")
 			}
 
-			customDeck = make([]SimpleCard, 0)
+			customDeck = make([]*CardIdentity, 0)
 			for i, line := range lines {
 				// Ignore empty lines (the last line of the file might be empty)
 				if line == "" {
@@ -282,9 +282,9 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 					newRank = v
 				}
 
-				customDeck = append(customDeck, SimpleCard{
-					Suit: newSuit,
-					Rank: newRank,
+				customDeck = append(customDeck, &CardIdentity{
+					SuitIndex: newSuit,
+					Rank:      newRank,
 				})
 			}
 		} else {

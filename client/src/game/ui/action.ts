@@ -1,8 +1,8 @@
 // The "gameAction" WebSocket command communicate a change in the game state
 
 import Konva from 'konva';
+import { nullIfNegative } from '../../misc';
 import * as variantRules from '../rules/variant';
-
 import {
   ActionClue,
   ActionDiscard,
@@ -18,7 +18,7 @@ import {
 import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
-import { msgClueToClue, msgSuitToSuit } from './convert';
+import { msgClueToClue } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
@@ -108,30 +108,29 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   // Suit and rank come from the server as -1 if the card is unknown
   // (e.g. being drawn to the current player's hand)
   // We want to convert this to just being null
-  // Suit comes from the server as an integer, so we also need to convert it to a Suit object
-  let suit = data.suit === -1 ? null : msgSuitToSuit(data.suit, globals.variant);
-  let rank = data.rank === -1 ? null : data.rank;
+  let suitIndex = nullIfNegative(data.suit);
+  let rank = nullIfNegative(data.rank);
   const holder = data.who;
 
   // If we are the "Slow-Witted" character, we are not supposed to be able to see other people's
   // cards that are in slot 1
   if (globals.characterAssignments[globals.playerUs] === 'Slow-Witted') {
-    if (suit !== null || rank !== null) {
+    if (suitIndex !== null || rank !== null) {
       globals.characterRememberedCards[order] = {
-        suit: data.suit,
-        rank: data.rank,
+        suitIndex,
+        rank,
       };
-      suit = null;
+      suitIndex = null;
       rank = null;
     }
 
-    // Since we are drawing a card, we can potentially reveal the other cards in the hand
+    // Since someone is drawing a card, we can potentially reveal the other cards in the hand
     const hand = globals.elements.playerHands[holder];
     hand.children.each((layoutChild) => {
       const card: HanabiCard = layoutChild.children[0] as HanabiCard;
       const rememberedCard = globals.characterRememberedCards[card.state.order];
-      if (rememberedCard) {
-        card.reveal(rememberedCard.suit, rememberedCard.rank);
+      if (rememberedCard && rememberedCard.suitIndex !== null && rememberedCard.rank !== null) {
+        card.reveal(rememberedCard.suitIndex, rememberedCard.rank);
       }
     });
   }
@@ -143,7 +142,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
     // what the card is (from the "deckOrder" message that is sent at the end of the game)
     const card = globals.deck[order];
     card.replayRedraw();
-    suit = msgSuitToSuit(card.state.suitIndex ?? -1, globals.variant);
+    suitIndex = card.state.suitIndex;
     rank = card.state.rank;
   }
 
@@ -157,7 +156,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   // (this is necessary because we might be rewinding in a replay)
   const card = globals.deck[order];
   // Suit and rank will be null if we don't know the suit/rank
-  card.refresh(suit, rank);
+  card.refresh(suitIndex, rank);
   card.parent!.show();
 });
 
@@ -297,7 +296,7 @@ actionFunctions.set('reveal', (data: ActionReveal) => {
     throw new Error('Failed to get the card in the "reveal" command.');
   }
 
-  card.convert(data.suit, data.rank);
+  card.convert(data.suitIndex, data.rank);
   globals.layers.card.batchDraw();
 });
 

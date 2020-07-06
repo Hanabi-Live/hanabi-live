@@ -7,203 +7,203 @@
     ],
     "deck": [
         {
-            "suit": 1,
+            "suitIndex": 1,
             "rank": 1
         },
         {
-            "suit": 0,
+            "suitIndex": 0,
             "rank": 3
         },
         {
-            "suit": 2,
+            "suitIndex": 2,
             "rank": 1
         },
         {
-            "suit": 1,
+            "suitIndex": 1,
             "rank": 4
         },
         {
-            "suit": 0,
+            "suitIndex": 0,
             "rank": 1
         },
         {
-            "suit": 3,
+            "suitIndex": 3,
             "rank": 1
         },
         {
-            "suit": 1,
+            "suitIndex": 1,
             "rank": 2
         },
         {
-            "suit": 0,
+            "suitIndex": 0,
             "rank": 4
         },
         {
-            "suit": 4,
+            "suitIndex": 4,
             "rank": 2
         },
         {
-            "suit": 3,
+            "suitIndex": 3,
             "rank": 5
         },
         {
-            "suit": 1,
+            "suitIndex": 1,
             "rank": 2
         },
         {
-            "suit": 3,
+            "suitIndex": 3,
             "rank": 1
         },
         {
-            "suit": 4,
+            "suitIndex": 4,
             "rank": 2
         },
         {
-            "suit": 4,
+            "suitIndex": 4,
             "rank": 1
         },
         {
-            "suit": 1,
+            "suitIndex": 1,
             "rank": 5
         },
         {
-            "suit": 0,
+            "suitIndex": 0,
             "rank": 4
         },
         {
-            "suit": 4,
+            "suitIndex": 4,
             "rank": 4
         },
         {
-            "suit": 1,
+            "suitIndex": 1,
             "rank": 3
         },
         {
-            "suit": 0,
+            "suitIndex": 0,
             "rank": 2
         },
         {
-            "suit": 2,
+            "suitIndex": 2,
             "rank": 5
         },
         {
-            "suit": 0,
+            "suitIndex": 0,
             "rank": 2
         },
         {
-            "suit": 4,
+            "suitIndex": 4,
             "rank": 4
         },
         {
-            "suit": 1,
+            "suitIndex": 1,
             "rank": 4
         },
         {
-            "suit": 0,
+            "suitIndex": 0,
             "rank": 3
         },
         {
-            "suit": 2,
+            "suitIndex": 2,
             "rank": 2
         },
         {
-            "suit": 2,
+            "suitIndex": 2,
             "rank": 3
         },
         {
-            "suit": 3,
+            "suitIndex": 3,
             "rank": 2
         },
         {
-            "suit": 3,
+            "suitIndex": 3,
             "rank": 4
         },
         {
-            "suit": 4,
+            "suitIndex": 4,
             "rank": 1
         },
         {
-            "suit": 2,
+            "suitIndex": 2,
             "rank": 1
         },
         {
-            "suit": 2,
+            "suitIndex": 2,
             "rank": 4
         },
         {
-            "suit": 2,
+            "suitIndex": 2,
             "rank": 2
         },
         {
-            "suit": 0,
+            "suitIndex": 0,
             "rank": 1
         },
         {
-            "suit": 1,
+            "suitIndex": 1,
             "rank": 1
         },
         {
-            "suit": 3,
+            "suitIndex": 3,
             "rank": 1
         },
         {
-            "suit": 4,
+            "suitIndex": 4,
             "rank": 5
         },
         {
-            "suit": 3,
+            "suitIndex": 3,
             "rank": 3
         },
         {
-            "suit": 2,
+            "suitIndex": 2,
             "rank": 4
         },
         {
-            "suit": 2,
+            "suitIndex": 2,
             "rank": 3
         },
         {
-            "suit": 4,
+            "suitIndex": 4,
             "rank": 1
         },
         {
-            "suit": 1,
+            "suitIndex": 1,
             "rank": 1
         },
         {
-            "suit": 3,
+            "suitIndex": 3,
             "rank": 4
         },
         {
-            "suit": 3,
+            "suitIndex": 3,
             "rank": 3
         },
         {
-            "suit": 2,
+            "suitIndex": 2,
             "rank": 1
         },
         {
-            "suit": 4,
+            "suitIndex": 4,
             "rank": 3
         },
         {
-            "suit": 1,
+            "suitIndex": 1,
             "rank": 3
         },
         {
-            "suit": 4,
+            "suitIndex": 4,
             "rank": 3
         },
         {
-            "suit": 0,
+            "suitIndex": 0,
             "rank": 1
         },
         {
-            "suit": 3,
+            "suitIndex": 3,
             "rank": 2
         },
         {
-            "suit": 0,
+            "suitIndex": 0,
             "rank": 5
         }
     ],

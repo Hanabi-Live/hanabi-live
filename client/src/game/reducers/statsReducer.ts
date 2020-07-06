@@ -57,7 +57,7 @@ const statsReducer = produce((
 
     case 'play': {
       if (
-        currentState.playStacks[action.which.suit].length === 5
+        currentState.playStacks[action.which.suitIndex].length === 5
         && originalState.clueTokens === currentState.clueTokens
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted",

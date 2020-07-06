@@ -55,7 +55,7 @@ const gameStateReducer = produce((
       }
 
       // Add it to the discard stacks
-      state.discardStacks[action.which.suit].push(action.which.order);
+      state.discardStacks[action.which.suitIndex].push(action.which.order);
 
       if (!action.failed) {
         state.clueTokens = clues.gainClue(variant, state.clueTokens);
@@ -88,13 +88,13 @@ const gameStateReducer = produce((
       }
 
       // Add it to the play stacks
-      state.playStacks[action.which.suit].push(action.which.order);
+      state.playStacks[action.which.suitIndex].push(action.which.order);
 
       // Gain a point
       state.score += 1;
 
       // Gain a clue token if the stack is complete
-      if (state.playStacks[action.which.suit].length === 5) { // Hard-code 5 cards per stack
+      if (state.playStacks[action.which.suitIndex].length === 5) { // Hard-code 5 cards per stack
         state.clueTokens = clues.gainClue(variant, state.clueTokens);
       }
 

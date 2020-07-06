@@ -105,11 +105,11 @@ func httpExport(c *gin.Context) {
 	g.ShuffleDeck()
 
 	// Create a list of cards in the deck
-	deck := make([]SimpleCard, 0)
+	deck := make([]*CardIdentity, 0)
 	for _, c := range g.Deck {
-		deck = append(deck, SimpleCard{
-			Suit: c.Suit,
-			Rank: c.Rank,
+		deck = append(deck, &CardIdentity{
+			SuitIndex: c.SuitIndex,
+			Rank:      c.Rank,
 		})
 	}
 

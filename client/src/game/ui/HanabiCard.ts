@@ -24,7 +24,7 @@ import CardLayout from './CardLayout';
 import NodeWithTooltip from './controls/NodeWithTooltip';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';
-import { msgSuitToSuit, suitToMsgSuit } from './convert';
+import { suitIndexToSuit } from './convert';
 import globals from './globals';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
@@ -162,7 +162,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   // Erase all of the data on the card to make it like it was freshly drawn
-  refresh(suit: Suit | null, rank: number | null) {
+  refresh(suitIndex: number | null, rank: number | null) {
     // Reset visual state
     this.tweening = false;
     this.empathy = false;
@@ -173,7 +173,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       holder: this.state.holder,
       blank: this.state.blank,
       // We might have some information about this card already
-      suitIndex: suit ? suitToMsgSuit(suit, this.variant) : null,
+      suitIndex,
       rank,
       // We have to add one to the turn drawn because
       // the "draw" command comes before the "turn" command
@@ -201,7 +201,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     // Hide the pips if we have full knowledge of the suit / rank
-    if (suit) {
+    if (suitIndex) {
       this.suitPips!.hide();
     }
     if (rank) {
@@ -270,7 +270,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       if (learnedCard.suitIndex === null) {
         suitToShow = null;
       } else {
-        suitToShow = msgSuitToSuit(learnedCard.suitIndex, globals.variant);
+        suitToShow = suitIndexToSuit(learnedCard.suitIndex, globals.variant);
       }
       if (
         this.state.rank === STACK_BASE_RANK
@@ -551,12 +551,19 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   // We need to redraw this card's suit and rank in a shared replay or hypothetical
   // based on deckOrder and hypoRevealed
   replayRedraw() {
-    if (globals.deckOrder.length === 0) {
-      return;
+    const cardIdentity = globals.deckOrder[this.state.order];
+    if (!cardIdentity) {
+      throw new Error(`The identity for card ${this.state.order} was not found in the "replayRedraw()" function.`);
     }
-    const suitNum = globals.deckOrder[this.state.order].suit;
-    const trueSuit = msgSuitToSuit(suitNum, this.variant);
+    const trueSuitIndex = cardIdentity.suitIndex;
+    if (trueSuitIndex === null) {
+      throw new Error(`The suit identity for card ${this.state.order} was not found in the "replayRedraw() function.`);
+    }
+    const trueSuit = suitIndexToSuit(trueSuitIndex, globals.variant);
     const trueRank = globals.deckOrder[this.state.order].rank;
+    if (trueRank === null) {
+      throw new Error(`The rank identity for card ${this.state.order} was not found in the "replayRedraw() function.`);
+    }
 
     if (
       // If we are in a hypothetical and "hypoRevealed" is turned off
@@ -577,7 +584,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     } else if (this.state.suitIndex === null || this.state.rank === null) {
       // Otherwise, we should make sure to fill in information from deckOrder
       // unless this card is fully known, possibly morphed
-      this.convert(suitNum, trueRank);
+      this.convert(trueSuitIndex, trueRank);
 
       // Check if we can drag this card now
       const layoutChild = this.parent as unknown as LayoutChild;

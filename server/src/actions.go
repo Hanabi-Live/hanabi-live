@@ -4,11 +4,11 @@
 package main
 
 type ActionDraw struct {
-	Type  string `json:"type"`
-	Who   int    `json:"who"` // Who got dealt the card
-	Rank  int    `json:"rank"`
-	Suit  int    `json:"suit"`
-	Order int    `json:"order"` // The ID of the card, based on its ordering in the deck
+	Type      string `json:"type"`
+	Who       int    `json:"who"` // Who got dealt the card
+	SuitIndex int    `json:"suitIndex"`
+	Rank      int    `json:"rank"`
+	Order     int    `json:"order"` // The ID of the card, based on its ordering in the deck
 }
 type ActionStatus struct {
 	Type          string `json:"type"`
@@ -60,22 +60,22 @@ type ActionStrike struct {
 	Order int    `json:"order"` // The order of the card that was played
 }
 type ActionDeckOrder struct {
-	Type string       `json:"type"`
-	Deck []SimpleCard `json:"deck"`
+	Type string         `json:"type"`
+	Deck []CardIdentity `json:"deck"`
 }
 type Which struct { // Used by "ActionPlay" and "ActionDiscard"
-	Index int `json:"index"` // The index of the player
-	Suit  int `json:"suit"`
-	Rank  int `json:"rank"`
-	Order int `json:"order"` // The ID of the card (based on its order in the deck)
+	Index     int `json:"index"` // The index of the player
+	SuitIndex int `json:"suitIndex"`
+	Rank      int `json:"rank"`
+	Order     int `json:"order"` // The ID of the card (based on its order in the deck)
 }
 type Clue struct {
 	Type  int `json:"type"`
 	Value int `json:"value"`
 }
-type SimpleCard struct { // Used by "ActionDeckOrder"
-	Suit int `json:"suit"`
-	Rank int `json:"rank"`
+type CardIdentity struct { // Used by "ActionDeckOrder"
+	SuitIndex int `json:"suitIndex"`
+	Rank      int `json:"rank"`
 }
 
 // Scrub removes some information from an action so that we do not reveal
@@ -107,7 +107,7 @@ func (a *ActionDraw) Scrub(t *Table, userID int) {
 		characterHideCard(a, g, p) {
 
 		a.Rank = -1
-		a.Suit = -1
+		a.SuitIndex = -1
 	}
 }
 

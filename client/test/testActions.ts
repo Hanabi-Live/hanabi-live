@@ -79,7 +79,7 @@ export const draw = (who: number, suit: number, rank: number, order: number): Ac
 export const discard = (
   failed: boolean,
   index: number,
-  suit: number,
+  suitIndex: number,
   rank: number,
   order: number,
 ): ActionDiscard => ({
@@ -87,7 +87,7 @@ export const discard = (
   failed,
   which: {
     index,
-    suit,
+    suitIndex,
     rank,
     order,
   },
@@ -95,14 +95,14 @@ export const discard = (
 
 export const play = (
   index: number,
-  suit: number,
+  suitIndex: number,
   rank: number,
   order: number,
 ): ActionPlay => ({
   type: 'play',
   which: {
     index,
-    suit,
+    suitIndex,
     rank,
     order,
   },

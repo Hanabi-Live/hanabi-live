@@ -9,7 +9,7 @@ import {
   START_CARD_RANK,
 } from '../types/constants';
 import ColorButton from './ColorButton';
-import { colorToMsgColor } from './convert';
+import { colorToColorIndex } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import * as notes from './notes';
@@ -117,7 +117,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     turn.end({
       type: ActionType.ColorClue,
       target: card.state.holder,
-      value: colorToMsgColor(clueColor, globals.variant),
+      value: colorToColorIndex(clueColor, globals.variant),
     });
   }
 };

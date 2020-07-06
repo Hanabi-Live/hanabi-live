@@ -1,7 +1,7 @@
+import CardIdentity from '../types/CardIdentity';
 import CardState from '../types/CardState';
 import { ColorClue, RankClue } from '../types/Clue';
 import Color from '../types/Color';
-import SimpleCard from '../types/SimpleCard';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
 
@@ -24,7 +24,7 @@ export function applyColorClue(
 
   let suitsRemoved: number[] = [];
   let ranksRemoved: number[] = [];
-  const impossibleCards: SimpleCard[] = [];
+  const impossibleCards: CardIdentity[] = [];
 
   if (variant.colorCluesTouchNothing) {
     // Some variants have color clues touch no cards
@@ -46,7 +46,7 @@ export function applyColorClue(
     for (const rank of possibleRanks.filter((r) => r !== variant.specialRank)) {
       // We can remove possibilities for normal ranks
       for (const suitIndex of suitsRemoved) {
-        impossibleCards.push({ suit: suitIndex, rank });
+        impossibleCards.push({ suitIndex, rank });
       }
     }
   }
@@ -110,7 +110,7 @@ export function applyColorClue(
         // possibilities for other suits on the special rank
         for (const suit of possibleSuits.filter((theSuit) => !theSuit.noClueColors)) {
           const suitIndex = getIndex(suit);
-          impossibleCards.push({ suit: suitIndex, rank: variant.specialRank });
+          impossibleCards.push({ suitIndex, rank: variant.specialRank });
         }
       }
     } else if (variant.specialNoClueColors) {
@@ -127,7 +127,7 @@ export function applyColorClue(
           // possibilities for other suits on the special rank
           for (const suit of possibleSuits.filter((theSuit) => !theSuit.allClueColors)) {
             const suitIndex = getIndex(suit);
-            impossibleCards.push({ suit: suitIndex, rank: variant.specialRank });
+            impossibleCards.push({ suitIndex, rank: variant.specialRank });
           }
         }
       } else if (state.colorClueMemory.negativeClues.length === variant.clueColors.length - 1) {
@@ -158,7 +158,7 @@ export function applyRankClue(
 
   let suitsRemoved: number[] = [];
   let ranksRemoved: number[] = [];
-  const impossibleCards: SimpleCard[] = [];
+  const impossibleCards: CardIdentity[] = [];
 
   const clueRank = clue.value;
   // ranksRemoved keeps track of ranks removed for normal suits touched by their own rank
@@ -243,7 +243,7 @@ export function applyRankClue(
     for (const suit of possibleSuits.filter((s) => !s.allClueRanks && !s.noClueRanks)) {
       // We can remove possibilities for normal suits touched by their own rank
       for (const rank of ranksRemoved) {
-        impossibleCards.push({ suit: getIndex(suit), rank });
+        impossibleCards.push({ suitIndex: getIndex(suit), rank });
       }
     }
   }

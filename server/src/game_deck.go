@@ -10,7 +10,7 @@ func (g *Game) InitDeck() {
 	// then we can simply add every card to the deck as specified
 	if g.ExtraOptions.CustomDeck != nil {
 		for _, card := range g.ExtraOptions.CustomDeck {
-			g.Deck = append(g.Deck, NewCard(card.Suit, card.Rank))
+			g.Deck = append(g.Deck, NewCard(card.SuitIndex, card.Rank))
 		}
 		return
 	}

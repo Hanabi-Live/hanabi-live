@@ -12,7 +12,6 @@ import CardIdentity from '../types/CardIdentity';
 import { ClientAction } from '../types/ClientAction';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import Options from '../types/Options';
-import SimpleCard from '../types/SimpleCard';
 import SpectatorNote from '../types/SpectatorNote';
 import StackDirection from '../types/StackDirection';
 import State from '../types/State';
@@ -52,7 +51,7 @@ export class Globals {
   // Character settings
   characterAssignments: string[] = [];
   characterMetadata: number[] = [];
-  characterRememberedCards: SimpleCard[] = [];
+  characterRememberedCards: CardIdentity[] = [];
 
   // Game constants (set upon first initialization)
   deck: HanabiCard[] = [];
@@ -94,7 +93,7 @@ export class Globals {
   // In replays, we can show information about a card that was not known at the time,
   // but is known now; these are cards we have "learned"
   learnedCards: CardIdentity[] = [];
-  deckOrder: SimpleCard[] = []; // Sent when the game ends
+  deckOrder: CardIdentity[] = []; // Sent when the game ends
 
   // Shared replay feature
   sharedReplayLeader: string = ''; // Equal to the username of the leader

@@ -202,7 +202,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 		// In the "Up or Down" and "Reversed" variants, cards might not play in order
 		failed = variantReversiblePlay(g, c)
 	} else {
-		failed = c.Rank != g.Stacks[c.Suit]+1
+		failed = c.Rank != g.Stacks[c.SuitIndex]+1
 	}
 
 	// Handle "Detrimental Character Assignment" restrictions
@@ -255,9 +255,9 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	// Handle successful card plays
 	c.Played = true
 	g.Score++
-	g.Stacks[c.Suit] = c.Rank
+	g.Stacks[c.SuitIndex] = c.Rank
 	if c.Rank == 0 {
-		g.Stacks[c.Suit] = -1 // A rank 0 card is the "START" card
+		g.Stacks[c.SuitIndex] = -1 // A rank 0 card is the "START" card
 	}
 
 	// Mark that the misplay streak has ended
@@ -266,10 +266,10 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	g.Actions = append(g.Actions, ActionPlay{
 		Type: "play",
 		Which: Which{
-			Index: p.Index,
-			Suit:  c.Suit,
-			Rank:  c.Rank,
-			Order: c.Order,
+			Index:     p.Index,
+			SuitIndex: c.SuitIndex,
+			Rank:      c.Rank,
+			Order:     c.Order,
 		},
 	})
 	t.NotifyGameAction()
@@ -313,7 +313,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	// Handle custom variants that do not play in order from 1 to 5
 	if variants[g.Options.VariantName].HasReversedSuits() {
 		extraClue = (c.Rank == 5 || c.Rank == 1) &&
-			g.StackDirections[c.Suit] == StackDirectionFinished
+			g.StackDirections[c.SuitIndex] == StackDirectionFinished
 	}
 
 	if extraClue {
@@ -380,10 +380,10 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 		Type:   "discard",
 		Failed: c.Failed,
 		Which: Which{
-			Index: p.Index,
-			Rank:  c.Rank,
-			Suit:  c.Suit,
-			Order: c.Order,
+			Index:     p.Index,
+			Rank:      c.Rank,
+			SuitIndex: c.SuitIndex,
+			Order:     c.Order,
 		},
 	})
 	t.NotifyGameAction()
@@ -444,7 +444,7 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 
 	// This could be a double discard situation if there is only one other copy of this card
 	// and it needs to be played
-	total, discarded := g.GetSpecificCardNum(c.Suit, c.Rank)
+	total, discarded := g.GetSpecificCardNum(c.SuitIndex, c.Rank)
 	doubleDiscard := total == discarded+1 && c.NeedsToBePlayed(g)
 
 	// Return whether or not this is a "double discard" situation
@@ -467,11 +467,11 @@ func (p *GamePlayer) DrawCard() {
 	p.Hand = append(p.Hand, c)
 
 	g.Actions = append(g.Actions, ActionDraw{
-		Type:  "draw",
-		Who:   p.Index,
-		Rank:  c.Rank,
-		Suit:  c.Suit,
-		Order: c.Order,
+		Type:      "draw",
+		Who:       p.Index,
+		SuitIndex: c.SuitIndex,
+		Rank:      c.Rank,
+		Order:     c.Order,
 	})
 	if t.Running {
 		t.NotifyGameAction()

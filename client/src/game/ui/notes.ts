@@ -6,7 +6,7 @@ import CardNote from '../types/CardNote';
 import CardState from '../types/CardState';
 import { START_CARD_RANK } from '../types/constants';
 import Variant from '../types/Variant';
-import { suitToMsgSuit } from './convert';
+import { suitToSuitIndex } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 
@@ -163,7 +163,7 @@ export const cardIdentityFromNote = (
         suit.name.toLowerCase(),
       ], note, fullNote)) {
         return {
-          suitIndex: suitToMsgSuit(suit, variant),
+          suitIndex: suitToSuitIndex(suit, variant),
           rank: null,
         };
       }
@@ -178,7 +178,7 @@ export const cardIdentityFromNote = (
         `${rankText} ${suit.name.toLowerCase()}`, // e.g. "1 blue" or "1 Blue" or "1 BLUE"
       ], note, fullNote)) {
         return {
-          suitIndex: suitToMsgSuit(suit, variant),
+          suitIndex: suitToSuitIndex(suit, variant),
           rank,
         };
       }

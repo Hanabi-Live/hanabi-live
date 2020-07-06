@@ -7,7 +7,7 @@ import MsgClue from '../types/MsgClue';
 import * as arrows from './arrows';
 import ColorButton from './ColorButton';
 import PlayerButton from './controls/PlayerButton';
-import { colorToMsgColor, msgClueToClue } from './convert';
+import { colorToColorIndex, msgClueToClue } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import RankButton from './RankButton';
@@ -181,7 +181,7 @@ export const give = () => {
   let value: ClueType;
   if (clueButton.clue.type === ClueType.Color) {
     type = ActionType.ColorClue;
-    value = colorToMsgColor((clueButton.clue.value as Color), globals.variant);
+    value = colorToColorIndex((clueButton.clue.value as Color), globals.variant);
   } else if (clueButton.clue.type === ClueType.Rank) {
     type = ActionType.RankClue;
     value = (clueButton.clue.value as number);

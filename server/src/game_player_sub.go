@@ -174,7 +174,8 @@ func (p *GamePlayer) CheckSurprise(c *Card) {
 
 	// The suit and the rank were specified
 	if noteSuit != nil && noteRank != -1 {
-		suit := variants[g.Options.VariantName].Suits[c.Suit] // Convert the suit int to a Suit pointer
+		variant := variants[g.Options.VariantName]
+		suit := variant.Suits[c.SuitIndex]
 		if noteSuit.Name != suit.Name || noteRank != c.Rank {
 			p.Surprised = true
 			return

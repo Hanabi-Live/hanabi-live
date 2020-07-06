@@ -89,7 +89,7 @@ const cardsReducer = produce((
       const card = getCard(deck, action.which.order);
 
       // Reveal all cards played and discarded
-      card.suitIndex = nullIfNegative(action.which.suit);
+      card.suitIndex = nullIfNegative(action.which.suitIndex);
       card.rank = nullIfNegative(action.which.rank);
 
       // If the card was already fully-clued,
