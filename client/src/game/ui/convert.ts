@@ -43,11 +43,6 @@ export const suitToSuitIndex = (
   variant: Variant,
 ) => (suit ? variant.suits.indexOf(suit) : -1);
 
-export const msgColorToColor = (
-  msgColor: number,
-  variant: Variant,
-) => (msgColor < 0 || msgColor >= variant.clueColors.length ? null : variant.clueColors[msgColor]);
-
 export const colorToMsgColor = (
   color: Color,
   variant: Variant,
