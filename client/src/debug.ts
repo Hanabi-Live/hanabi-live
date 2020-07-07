@@ -1,4 +1,5 @@
 /* eslint-disable import/prefer-default-export */
+
 export const amTestUser = (username: string) => (
   username === 'test'
   || username === 'test1'

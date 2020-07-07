@@ -1,5 +1,5 @@
+// Functions related to hand management
 /* eslint-disable import/prefer-default-export */
-// Functions related to hand management: card counts
 
 export function cardsPerHand(numPlayers: number, oneExtraCard: boolean, oneLessCard: boolean) {
   return cardsPerHandNatural(numPlayers)

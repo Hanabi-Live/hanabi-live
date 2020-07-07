@@ -1,4 +1,5 @@
 /* eslint-disable import/prefer-default-export */
+
 import CardState from '../types/CardState';
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
 

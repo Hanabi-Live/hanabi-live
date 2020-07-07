@@ -1,5 +1,5 @@
-/* eslint-disable import/prefer-default-export */
 // Miscellaneous helpers used by several reducers
+/* eslint-disable import/prefer-default-export */
 
 import Color from '../types/Color';
 import Suit from '../types/Suit';
