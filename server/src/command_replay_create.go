@@ -93,7 +93,6 @@ func commandReplayCreate(s *Session, d *CommandData) {
 
 	// Load the players and options from the database or JSON file
 	if d.Source == "id" {
-		logger.Debug("XXXXXXXXX", d.GameID)
 		if !loadDatabaseToTable(s, d, t) {
 			delete(tables, t.ID)
 			return
