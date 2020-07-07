@@ -27,4 +27,4 @@ GRANT USAGE ON SCHEMA public TO $DB_USER;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $DB_USER;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;
 EOF
-PGPASSWORD="$DB_PASS" psql --host="$DB_HOST" --port="$DB_PORT" --username="postgres" < "$1"
+PGPASSWORD="$DB_PASS" psql --host="$DB_HOST" --port="$DB_PORT" --username="postgres" --dbname="$DB_NAME" < "$1"
