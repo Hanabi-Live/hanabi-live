@@ -3,9 +3,7 @@
 
 import Konva from 'konva';
 import { KonvaEventObject } from 'konva/types/Node';
-import {
-  ARROW_COLOR,
-} from '../../constants';
+import { ARROW_COLOR } from '../../constants';
 import { getCharacter } from '../data/gameData';
 import { cardRules, variantRules } from '../rules';
 import Clue from '../types/Clue';
