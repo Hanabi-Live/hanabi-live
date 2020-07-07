@@ -59,16 +59,17 @@ const turnReducer = produce((
     // {num: 0, type: "turn", who: 1}
     case 'turn': {
       // TEMP: At this point, check that the local state matches the server
-      if (state.turn !== action.num) {
+      if (state.turn !== action.num && state.currentPlayerIndex !== null) { // Ignore end-game turns
         console.warn(`The turns from the client and the server do not match on turn ${state.turn}.`);
         console.warn(`Client = ${state.turn}, Server = ${action.num}`);
       }
 
       // TEMP: the client should set the "currentPlayerIndex" index to -1 when the game is over
-      // But it does not have logic to know when the game is over yet
-      if (action.who === -1) {
+      if (action.who === -1 && state.currentPlayerIndex !== null) {
         state.currentPlayerIndex = null;
-        console.warn('The "turnReducer()" function had to manually set the "currentPlayerIndex" to null.');
+        console.log('The "turnReducer()" function had to manually set the "currentPlayerIndex" to null.');
+        // This condition will be triggered in Jest tests because the "loadGameJSON.ts" file does
+        // not know how to properly create a "gameOver" action
       }
 
       if (state.currentPlayerIndex !== action.who && state.currentPlayerIndex !== null) {

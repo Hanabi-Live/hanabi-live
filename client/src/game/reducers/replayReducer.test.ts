@@ -26,7 +26,7 @@ describe('replayReducer', () => {
     metadata = testState.metadata;
   });
   describe('hypothetical', () => {
-    test('can start', () => {
+    test.only('can start', () => {
       const state = replayReducer(testState.replay, hypoStart(), metadata);
       expect(state.ongoingHypothetical).toBe(testState.replay.states[testState.replay.turn]);
       expect(state.hypotheticalStates.length).toBe(1);

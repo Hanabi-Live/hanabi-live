@@ -16,14 +16,6 @@ func (g *Game) End() {
 	}
 	logger.Info(t.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
 
-	// Append a game over action
-	g.Actions = append(g.Actions, ActionGameOver{
-		Type:         "gameOver",
-		EndCondition: g.EndCondition,
-		PlayerIndex:  g.EndPlayer,
-	})
-	t.NotifyGameAction()
-
 	// Append a final action with a listing of every card in the deck
 	// (so that the client will have it for hypotheticals)
 	cardIdentities := make([]CardIdentity, 0)

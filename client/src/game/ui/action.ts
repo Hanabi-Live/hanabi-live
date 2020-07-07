@@ -169,6 +169,11 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   card.parent!.show();
 });
 
+actionFunctions.set('gameOver', () => {
+  // Do nothing
+  // (the "gameOver" command is handled inside the turn reducer)
+});
+
 actionFunctions.set('play', (data: ActionPlay) => {
   // Local variables
   const card = globals.deck[data.which.order];
