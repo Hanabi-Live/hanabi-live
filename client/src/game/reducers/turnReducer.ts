@@ -50,6 +50,11 @@ const turnReducer = produce((
       break;
     }
 
+    case 'gameOver': {
+      state.currentPlayerIndex = null;
+      break;
+    }
+
     // It is now a new turn
     // {num: 0, type: "turn", who: 1}
     case 'turn': {
@@ -63,6 +68,7 @@ const turnReducer = produce((
       // But it does not have logic to know when the game is over yet
       if (action.who === -1) {
         state.currentPlayerIndex = null;
+        console.warn('The "turnReducer()" function had to manually set the "currentPlayerIndex" to null.');
       }
 
       if (state.currentPlayerIndex !== action.who && state.currentPlayerIndex !== null) {
