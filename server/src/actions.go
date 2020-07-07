@@ -59,6 +59,11 @@ type ActionStrike struct {
 	Turn  int    `json:"turn"`  // The turn that the strike happened
 	Order int    `json:"order"` // The order of the card that was played
 }
+type ActionGameOver struct {
+	Type         string `json:"type"`
+	EndCondition int    `json:"endCondition"`
+	PlayerIndex  int    `json:"playerIndex"`
+}
 type ActionCardIdentities struct {
 	Type           string         `json:"type"`
 	CardIdentities []CardIdentity `json:"cardIdentities"`
