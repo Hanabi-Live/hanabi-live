@@ -2,7 +2,6 @@ import { Unsubscribe, Store } from 'redux';
 import { Action } from '../../types/actions';
 import State from '../../types/State';
 import observeStore, { Selector, Listener, Subscription } from './observeStore';
-import * as cardIdentitiesView from './view/cardIdentitiesView';
 import * as cardLayoutView from './view/cardLayoutView';
 import * as cardsView from './view/cardsView';
 import * as gameInfoView from './view/gameInfoView';
@@ -59,7 +58,7 @@ export default class StateObserver {
     sub((s) => s.visibleState.deck.length, cardsView.onDeckChanged);
 
     // Card identities
-    sub((s) => s.cardIdentities.length, cardIdentitiesView.onCardIdentitiesChanged);
+    // sub((s) => s.cardIdentities.length, ??? TODO
 
     this.unsubscribe = observeStore(store, subscriptions);
   }
