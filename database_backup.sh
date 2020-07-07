@@ -1,8 +1,11 @@
 #!/bin/bash
 
 # Redirect all output to syslog
+# (but skip this if we are on Windows)
 # https://www.urbanautomaton.com/blog/2014/09/09/redirecting-bash-script-output-to-syslog/
-exec 1> >(logger -s -t $(basename $0)) 2>&1
+if uname -a | grep -v MINGW64 >/dev/null 2>&1; then
+  exec 1> >(logger -s -t $(basename $0)) 2>&1
+fi
 
 # Get the directory of this script
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
