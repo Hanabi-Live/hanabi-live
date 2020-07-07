@@ -31,9 +31,19 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       }, initial);
       state.ongoingGame = castDraft(game);
 
+      // We copy the card identities to the global state for convenience
+      updateCardIdentities(state);
+
       state.replay.states = castDraft(states);
       break;
     }
+
+    case 'cardIdentities': {
+      // The game ended and the server sent us a list of the identities for every card in the deck
+      state.cardIdentities = action.cardIdentities;
+      break;
+    }
+
     case 'startReplay':
     case 'endReplay':
     case 'goToTurn':
@@ -44,13 +54,19 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       state.replay = replayReducer(state.replay, action, state.metadata);
       break;
     }
+
     default: {
-      // A new game state happened
+      // A new game action happened
       state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action, state.metadata)!;
+
+      // We copy the card identities to the global state for convenience
+      updateCardIdentities(state);
+
+      // Save a copy of the game state on every turn (for the purposes of in-game replays)
       if (action.type === 'turn') {
-        // Save it for replays
         state.replay.states[action.num] = state.ongoingGame;
       }
+
       break;
     }
   }
@@ -62,5 +78,31 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     state.visibleState = state.ongoingGame;
   }
 }, {} as State);
+
+// We keep a copy of each card identity in the global state for convenience
+// After each game action, check to see if we can add any new card identities
+// (or any suit/rank information to existing card identities)
+// We cannot just replace the array every time because we need to keep the "full" deck that the
+// server sends us
+const updateCardIdentities = (state: Draft<State>) => {
+  state.ongoingGame.deck.forEach((newCardIdentity, i) => {
+    if (i >= state.cardIdentities.length) {
+      // Add the new card identity
+      state.cardIdentities[i] = {
+        suitIndex: newCardIdentity.suitIndex,
+        rank: newCardIdentity.rank,
+      };
+    } else {
+      // Update the existing card identity
+      const existingCardIdentity = state.cardIdentities[i];
+      if (existingCardIdentity.suitIndex === null) {
+        existingCardIdentity.suitIndex = newCardIdentity.suitIndex;
+      }
+      if (existingCardIdentity.rank === null) {
+        existingCardIdentity.rank = newCardIdentity.rank;
+      }
+    }
+  });
+};
 
 export default stateReducer;

@@ -27,36 +27,35 @@ export function onStackDirectionsChanged(directions: readonly StackDirection[]) 
   ]);
 
   // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants)
-  directions
-    .forEach((direction, i) => {
-      if (globals.stackDirections[i] === direction) {
-        return;
+  directions.forEach((direction, i) => {
+    if (globals.stackDirections[i] === direction) {
+      return;
+    }
+
+    globals.stackDirections[i] = direction;
+
+    const suit = globals.variant.suits[i];
+    let text = '';
+    const isUpOrDown = variantRules.isUpOrDown(globals.variant);
+    if (isUpOrDown || suit.reversed) {
+      const stackStrings = isUpOrDown ? stackStringsUpOrDown : stackStringsReversed;
+      if (stackStrings.get(direction) === undefined) {
+        throw new Error(`Not a valid stackDirection: ${direction}`);
       }
+      text = stackStrings.get(direction)!;
+    }
 
-      globals.stackDirections[i] = direction;
+    globals.elements.suitLabelTexts[i].fitText(text);
+    if (!globals.animateFast) {
+      globals.layers.UI.batchDraw();
+    }
 
-      const suit = globals.variant.suits[i];
-      let text = '';
-      const isUpOrDown = variantRules.isUpOrDown(globals.variant);
-      if (isUpOrDown || suit.reversed) {
-        const stackStrings = isUpOrDown ? stackStringsUpOrDown : stackStringsReversed;
-        if (stackStrings.get(direction) === undefined) {
-          throw new Error(`Not a valid stackDirection: ${direction}`);
-        }
-        text = stackStrings.get(direction)!;
-      }
-
-      globals.elements.suitLabelTexts[i].fitText(text);
-      if (!globals.animateFast) {
-        globals.layers.UI.batchDraw();
-      }
-
-      // TODO: direction arrow should be in state,
-      // or calculated from state
-      globals.deck
-        .filter((c) => c.state?.suitIndex === i)
-        .forEach((c) => c.setDirectionArrow(i));
-    });
+    // TODO: direction arrow should be in state,
+    // or calculated from state
+    globals.deck
+      .filter((c) => c.state?.suitIndex === i)
+      .forEach((c) => c.setDirectionArrow(i));
+  });
 }
 
 export function onHandsChanged(hands: ReadonlyArray<readonly number[]>) {

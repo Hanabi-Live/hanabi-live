@@ -103,14 +103,14 @@ const gameStateReducer = produce((
     case 'status': {
       // TEMP: At this point, check that the local state matches the server
       if (state.clueTokens !== action.clues) {
-        console.warn('The clues from the client and the server do not match. '
-            + `Client = ${state.clueTokens}, Server = ${action.clues}`);
+        console.warn(`The clues from the client and the server do not match on turn ${state.turn}.`);
+        console.warn(`Client = ${state.clueTokens}, Server = ${action.clues}`);
       }
 
       // TEMP: At this point, check that the local state matches the server
       if (state.score !== action.score) {
-        console.warn('The scores from the client and the server do not match. '
-            + `Client = ${state.score}, Server = ${action.score}`);
+        console.warn(`The scores from the client and the server do not match on turn ${state.turn}.`);
+        console.warn(`Client = ${state.score}, Server = ${action.score}`);
       }
 
       // TODO: calculate maxScore instead of using the server one
@@ -146,11 +146,11 @@ const gameStateReducer = produce((
       break;
     }
 
-    case 'turn':
+    case 'cardIdentities':
+    case 'gameOver':
     case 'reorder':
-    case 'deckOrder': {
-      // Actions that don't affect the main state
-      // or are handled by another reducer
+    case 'turn': {
+      // Some actions do not affect the main state or are handled by another reducer
       break;
     }
 

@@ -2,37 +2,45 @@ import CardIdentity from './CardIdentity';
 import MsgClue from './MsgClue';
 
 export type Action =
-| GameAction
-| ReplayAction
-| ActionListReceived;
+  | GameAction
+  | ReplayAction
+  | ActionListReceived;
 
 export type GameAction =
-| ActionClue
-| ActionDeckOrder
-| ActionDiscard
-| ActionDraw
-| ActionPlay
-| ActionReorder
-| ActionStackDirections
-| ActionStatus
-| ActionStrike
-| ActionText
-| ActionTurn;
+  | ActionCardIdentities
+  | ActionClue
+  | ActionDiscard
+  | ActionDraw
+  | ActionGameOver
+  | ActionPlay
+  | ActionReorder
+  | ActionStackDirections
+  | ActionStatus
+  | ActionStrike
+  | ActionText
+  | ActionTurn;
 
 export type ActionIncludingHypothetical = GameAction | ActionReveal;
 
 export type ReplayAction =
-| ActionStartReplay
-| ActionEndReplay
-| ActionGoToTurn
-| ActionHypotheticalStart
-| ActionHypotheticalEnd
-| ActionHypotheticalBack
-| ActionHypothetical;
+  | ActionStartReplay
+  | ActionEndReplay
+  | ActionGoToTurn
+  | ActionHypotheticalStart
+  | ActionHypotheticalEnd
+  | ActionHypotheticalBack
+  | ActionHypothetical;
 
+// Initialization actions
 export interface ActionListReceived {
   type: 'gameActionList';
   readonly actions: GameAction[];
+}
+
+// Game actions
+export interface ActionCardIdentities {
+  type: 'cardIdentities';
+  readonly cardIdentities: CardIdentity[];
 }
 
 export interface ActionClue {
@@ -42,11 +50,6 @@ export interface ActionClue {
   readonly list: number[];
   readonly target: number;
   readonly turn: number;
-}
-
-export interface ActionDeckOrder {
-  type: 'deckOrder';
-  readonly deck: CardIdentity[];
 }
 
 export interface ActionDiscard {
@@ -61,6 +64,12 @@ export interface ActionDraw {
   readonly rank: number;
   readonly suitIndex: number;
   readonly order: number;
+}
+
+export interface ActionGameOver {
+  type: 'gameOver';
+  readonly endCondition: number;
+  readonly playerIndex: number;
 }
 
 export interface ActionPlay {

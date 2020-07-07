@@ -266,7 +266,7 @@ export function removePossibilities(
   possibilitiesToRemove: PossibilityToRemove[],
 ) {
   // Make a copy here for quick modification
-  const possibleCardsCopy: number[][] = possibleCards.map((arr) => arr.map((n) => n));
+  const possibleCardsCopy: number[][] = Array.from(possibleCards, (arr) => Array.from(arr));
   for (const { suitIndex, rank, all } of possibilitiesToRemove) {
     possibleCardsCopy[suitIndex][rank] = removePossibility(possibleCardsCopy, suitIndex, rank, all);
   }

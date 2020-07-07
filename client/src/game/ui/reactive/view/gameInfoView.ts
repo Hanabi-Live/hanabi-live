@@ -7,7 +7,7 @@ export function onTurnChanged(turn: number) {
   globals.elements.turnNumberLabel!.text(`${turn + 1}`);
 }
 
-export function onCurrentPlayerIndexChanged(currentPlayerIndex: number) {
+export function onCurrentPlayerIndexChanged(currentPlayerIndex: number | null) {
   // Bold the name frame of the current player to indicate that it is their turn
   for (let i = 0; i < globals.elements.nameFrames.length; i++) {
     globals.elements.nameFrames[i].setActive(currentPlayerIndex === i);

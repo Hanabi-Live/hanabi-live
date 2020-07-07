@@ -1,3 +1,4 @@
+import { initArray } from '../../../misc';
 import { getVariant } from '../../data/gameData';
 import * as deck from '../../rules/deck';
 import * as hand from '../../rules/hand';
@@ -18,20 +19,13 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     options.oneLessCard,
   );
   const startingPace = statsRules.startingPace(options.numPlayers, cardsPerHand, variant);
-  const hands: number[][] = [];
-  const playStacksDirections: StackDirection[] = [];
-  const playStacks: number[][] = [];
-  const discardStacks: number[][] = [];
-
-  for (let i = 0; i < options.numPlayers; i++) {
-    hands.push([]);
-  }
-
-  for (let i = 0; i < variant.suits.length; i++) {
-    playStacksDirections.push(StackDirection.Undecided);
-    playStacks.push([]);
-    discardStacks.push([]);
-  }
+  const hands: number[][] = initArray(options.numPlayers, []);
+  const playStacksDirections: StackDirection[] = initArray(
+    variant.suits.length,
+    StackDirection.Undecided,
+  );
+  const playStacks: number[][] = initArray(variant.suits.length, []);
+  const discardStacks: number[][] = initArray(variant.suits.length, []);
 
   return {
     turn: turnState.turn,

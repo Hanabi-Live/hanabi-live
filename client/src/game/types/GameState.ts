@@ -3,7 +3,7 @@ import StackDirection from './StackDirection';
 
 export default interface GameState {
   readonly turn: number;
-  readonly currentPlayerIndex: number;
+  readonly currentPlayerIndex: number | null;
   readonly turnsInverted: boolean;
   readonly log: readonly LogEntry[];
   readonly deck: readonly CardState[];

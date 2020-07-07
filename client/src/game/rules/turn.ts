@@ -51,10 +51,15 @@ export function shouldTurnsInvert(characterID: number | null) {
 }
 
 export function getNextPlayerIndex(
-  currentPlayerIndex: number,
+  currentPlayerIndex: number | null,
   numPlayers: number,
   turnsInverted: boolean,
 ) {
+  if (currentPlayerIndex === null) {
+    // If the game is already over, then there is no next player
+    return null;
+  }
+
   let nextPlayerIndex;
   if (!turnsInverted) {
     nextPlayerIndex = currentPlayerIndex + 1;

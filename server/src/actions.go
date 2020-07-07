@@ -59,9 +59,14 @@ type ActionStrike struct {
 	Turn  int    `json:"turn"`  // The turn that the strike happened
 	Order int    `json:"order"` // The order of the card that was played
 }
-type ActionDeckOrder struct {
-	Type string         `json:"type"`
-	Deck []CardIdentity `json:"deck"`
+type ActionGameOver struct {
+	Type         string `json:"type"`
+	EndCondition int    `json:"endCondition"`
+	PlayerIndex  int    `json:"playerIndex"`
+}
+type ActionCardIdentities struct {
+	Type           string         `json:"type"`
+	CardIdentities []CardIdentity `json:"cardIdentities"`
 }
 type Which struct { // Used by "ActionPlay" and "ActionDiscard"
 	Index     int `json:"index"` // The index of the player
@@ -73,7 +78,7 @@ type Clue struct {
 	Type  int `json:"type"`
 	Value int `json:"value"`
 }
-type CardIdentity struct { // Used by "ActionDeckOrder"
+type CardIdentity struct { // Used by "ActionCardIdentities"
 	SuitIndex int `json:"suitIndex"`
 	Rank      int `json:"rank"`
 }

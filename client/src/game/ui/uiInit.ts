@@ -1,8 +1,6 @@
 import Konva from 'konva';
 import { LABEL_COLOR } from '../../constants';
 import * as deck from '../rules/deck';
-import { STACK_BASE_RANK } from '../types/constants';
-import { suitToSuitIndex } from './convert';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
 import globals from './globals';
@@ -118,13 +116,6 @@ const finishedDownloadingImages = () => {
 const initCards = () => {
   globals.deckSize = deck.totalCards(globals.variant);
   for (let order = 0; order < globals.deckSize; order++) {
-    // Create the "learned" card object
-    // (this must be done before creating the HanabiCard object)
-    globals.learnedCards.push({
-      suitIndex: null,
-      rank: null,
-    });
-
     // Create the notes for this card
     // (this must be done before creating the HanabiCard object)
     globals.ourNotes.push('');
@@ -142,13 +133,7 @@ const initCards = () => {
   }
 
   // Also create objects for the stack bases
-  for (const suit of globals.variant.suits) {
-    const suitIndex = suitToSuitIndex(suit, globals.variant);
-    globals.learnedCards.push({
-      suitIndex,
-      rank: STACK_BASE_RANK,
-    });
-
+  for (let i = 0; i < globals.variant.suits.length; i++) {
     globals.ourNotes.push('');
     globals.allNotes.push([]);
   }

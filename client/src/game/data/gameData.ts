@@ -10,6 +10,14 @@ export const SUITS = suitsInit(COLORS);
 export const VARIANTS = variantsInit(COLORS, SUITS, START_CARD_RANK);
 export const CHARACTERS = charactersInit();
 
+export function getSuit(suitName: string) {
+  const suit = SUITS.get(suitName);
+  if (suit === undefined) {
+    throw new Error(`Unable to find the "${suitName}" suit in the "SUITS" map.`);
+  }
+  return suit;
+}
+
 export function getVariant(variantName: string) {
   const variant = VARIANTS.get(variantName);
   if (variant === undefined) {

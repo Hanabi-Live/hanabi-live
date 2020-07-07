@@ -171,20 +171,8 @@ export default function suitsInit(COLORS: Map<string, Color>) {
 
     // Additionally, add the reversed version of this suit
     const suitReversed: Suit = {
-      name,
-      abbreviation,
-      clueColors,
-      fill,
-      fillColorblind,
-      fillColors,
-      oneOfEach,
-      pip,
+      ...suit,
       reversed: true,
-
-      allClueColors,
-      allClueRanks,
-      noClueColors,
-      noClueRanks,
     };
     SUITS.set(suitName + SUIT_REVERSED_SUFFIX, suitReversed);
   }

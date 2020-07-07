@@ -4,7 +4,7 @@ import {
   CARD_H,
   CARD_W,
 } from '../../constants';
-import { SUITS } from '../data/gameData';
+import { getSuit } from '../data/gameData';
 import * as variantRules from '../rules/variant';
 import Color from '../types/Color';
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK, START_CARD_RANK } from '../types/constants';
@@ -23,10 +23,7 @@ export default function drawCards(
 
   // Add the "Unknown" suit to the list of suits for this variant
   // The unknown suit has blank white cards, representing cards of known rank but unknown suit
-  const unknownSuit = SUITS.get('Unknown');
-  if (unknownSuit === undefined) {
-    throw new Error('Failed to get the "Unknown" variant in the "drawCards()" function.');
-  }
+  const unknownSuit = getSuit('Unknown');
   const suits = variant.suits.concat(unknownSuit);
 
   for (const suit of suits) {

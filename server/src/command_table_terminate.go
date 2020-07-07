@@ -66,6 +66,14 @@ func terminate(t *Table, username string, endPlayerIndex int) {
 	g.EndCondition = EndConditionTerminated
 	g.EndPlayer = endPlayerIndex
 
+	// Append a game over action
+	g.Actions = append(g.Actions, ActionGameOver{
+		Type:         "gameOver",
+		EndCondition: g.EndCondition,
+		PlayerIndex:  g.EndPlayer,
+	})
+	t.NotifyGameAction()
+
 	// Add a text message for the termination
 	// and put it on its own turn so that it is separate from the final times
 	text := username + " terminated the game!"
