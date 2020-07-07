@@ -46,7 +46,7 @@ for line in game_ids:
 
     line_array = line.split(",")
     if len(line_array) != 2:
-        print("Invalid text file on line:", line_num)
+        print("Line " + str(line_num) + " is invalid:", line)
         sys.exit(1)
     game_id = line_array[0]
     num_actions_to_delete = line_array[1]
