@@ -338,6 +338,15 @@ func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 		playerNames = v
 	}
 
+	// Ensure that the number of game participants matches the number of players that are supposed
+	// to be in the game
+	if len(playerNames) != t.Options.NumPlayers {
+		logger.Error("There are not enough game participants for game " +
+			strconv.Itoa(d.GameID) + ".")
+		s.Error(InitGameFail)
+		return false
+	}
+
 	// Convert the database player objects to Player objects
 	loadFakePlayers(t, playerNames)
 

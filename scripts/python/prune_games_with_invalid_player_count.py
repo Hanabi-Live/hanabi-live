@@ -31,36 +31,40 @@ conn = psycopg2.connect(
     host=host, port=port, user=user, password=password, database=database,
 )
 
-# Get all users
+# Get all the games
 cursor = conn.cursor()
-cursor.execute("SELECT id, username FROM users WHERE id > 15000")
-# (users before 15000 are verified to have at least 1 game played)
+cursor.execute("SELECT id, num_players FROM games ORDER BY id")
 rows = cursor.fetchall()
-users = []
+games = []
 for row in rows:
-    users.append(row)
+    games.append(row)
 cursor.close()
+print("Loaded " + str(len(games)) + " games.", flush=True)
 
-print("Loaded " + str(len(users)) + " users.", flush=True)
+# Get the count of game participants for each game ID
 i = 0
-for user in users:
+numInvalidGames = 0
+for game in games:
     i += 1
     if i % 1000 == 0:
         print("On user #" + str(i), flush=True)
 
     cursor = conn.cursor()
     cursor.execute(
-        "SELECT COUNT(game_id) FROM game_participants WHERE user_id = %s", (user[0],)
+        "SELECT COUNT(id) FROM game_participants WHERE game_id = %s", (game[0],)
     )
     row = cursor.fetchone()
     cursor.close()
-    num_games = row[0]
+    num_game_participants = row[0]
+    if num_game_participants != game[1]:
+        print("Invalid player count found on game: ", game[0])
+        numInvalidGames += 1
 
-    if num_games == 0:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM users WHERE id = %s", (user[0],))
+        cursor.execute("DELETE FROM games WHERE id = %s", (game[0],))
         cursor.close()
-        print("Deleted user:", user[0], flush=True)
 
 conn.commit()
 conn.close()
+
+print("Total invalid rows:", numInvalidGames)
