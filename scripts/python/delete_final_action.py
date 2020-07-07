@@ -37,9 +37,19 @@ conn = psycopg2.connect(
 )
 
 # Delete the final game action for each game
-for game_id in game_ids:
-    if game_id == "":
+line_num = 0
+num_actions_deleted = 0
+for line in game_ids:
+    line_num += 1
+    if line == "":
         continue
+
+    line_array = line.split(",")
+    if len(line_array) != 2:
+        print("Invalid text file on line:", line_num)
+        sys.exit(1)
+    game_id = line_array[0]
+    num_actions_to_delete = line_array[1]
 
     cursor = conn.cursor()
     cursor.execute("SELECT MAX(turn) FROM game_actions WHERE game_id = %s", (game_id,))
@@ -47,13 +57,19 @@ for game_id in game_ids:
     cursor.close()
     max_turn = row[0]
 
-    cursor = conn.cursor()
-    cursor.execute(
-        "DELETE FROM game_actions WHERE game_id = %s AND turn = %s", (game_id, max_turn)
-    )
-    cursor.close()
+    for i in range(0, num_actions_to_delete):
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM game_actions WHERE game_id = %s AND turn = %s",
+            (game_id, max_turn),
+        )
+        cursor.close()
+        num_actions_deleted += 1
+
+        max_turn -= 1
 
 conn.commit()
 conn.close()
 
 print("Total pruned games:", len(game_ids))
+print("Total actions deleted:", num_actions_deleted)
