@@ -651,11 +651,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     const scale = globals.elements.deck!.cardBack.width() / CARD_W;
     if (globals.animateFast) {
       child.checkSetDraggable();
-      child.visible(false);
+      child.hide();
     } else {
       // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
       // and the user rewinds to the beginning of the replay
-      child.visible(true);
+      child.show();
       child.opacity(1); // Cards can be faded in certain variants
       const pos = child.getAbsolutePosition();
       globals.elements.deck!.add(child as any);
@@ -677,7 +677,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
           }
           this.tweening = false;
           child.checkSetDraggable();
-          child.visible(false);
+          child.hide();
           this.removeFromParent();
         },
       }).play();

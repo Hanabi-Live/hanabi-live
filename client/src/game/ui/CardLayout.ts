@@ -101,8 +101,9 @@ export default class CardLayout extends Konva.Group {
 
       const scale = lh / node.height();
 
-      if (node.tween) {
+      if (node.tween !== null) {
         node.tween.destroy();
+        node.tween = null;
       }
 
       const newX = x - (this.reverse ? scale * node.width() : 0);

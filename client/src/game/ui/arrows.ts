@@ -25,10 +25,14 @@ import HanabiCard from './HanabiCard';
 export const hideAll = () => {
   let changed = false;
   for (const arrow of globals.elements.arrows) {
-    if (arrow.pointingTo !== null || arrow.isVisible()) {
+    if (arrow.pointingTo !== null) {
       changed = true;
       arrow.pointingTo = null;
-      arrow.visible(false);
+      arrow.hide();
+      if (arrow.tween !== null) {
+        arrow.tween.destroy();
+        arrow.tween = null;
+      }
     }
   }
   if (!globals.animateFast && changed) {
@@ -146,9 +150,9 @@ export const set = (
               arrow.suitPip!.sceneFunc((ctx: any) => {
                 drawPip(ctx, matchingSuits[0]);
               });
-              arrow.suitPip!.visible(true);
+              arrow.suitPip!.show();
             } else {
-              arrow.suitPip!.visible(false);
+              arrow.suitPip!.hide();
             }
           }
         }
@@ -165,14 +169,15 @@ export const set = (
         arrow.circle.fill('black');
 
         if (globals.lobby.settings.colorblindMode) {
-          arrow.suitPip!.visible(false);
+          arrow.suitPip!.hide();
         }
       }
     }
   }
 
-  if (arrow.tween) {
+  if (arrow.tween !== null) {
     arrow.tween.destroy();
+    arrow.tween = null;
   }
   if (globals.animateFast || giver === null) {
     const pos = getPos(element!, rot);
@@ -225,13 +230,19 @@ const getPos = (element: Konva.Node, rot: number) => {
 // Animate the arrow to fly from the player who gave the clue to the card
 const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, turn: number) => {
   // Don't bother doing the animation if it is delayed by more than one turn
-  if (globals.turn > turn + 1) {
+  if (globals.turn > turn + 1 || globals.turn < turn - 1) {
     return;
   }
 
   // Don't bother doing the animation if the card is no longer part of a hand
-  // (which can happen rarely when jumping quickly through a replay)
-  if (!card.parent || !card.parent.parent) {
+  // (which can happen when jumping quickly through a replay)
+  if (!card || !card.parent || !card.parent.parent) {
+    return;
+  }
+
+  // Don't bother doing the animation if we have hidden the arrow in the meantime
+  // (which can happen when jumping quickly through a replay)
+  if (arrow.pointingTo === null) {
     return;
   }
 

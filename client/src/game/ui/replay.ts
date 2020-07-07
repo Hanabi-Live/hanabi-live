@@ -185,8 +185,9 @@ const reset = () => {
 
   // Reset the strikes
   for (const strikeX of globals.elements.strikeXs) {
-    if (strikeX.tween) {
+    if (strikeX.tween !== null) {
       strikeX.tween.destroy();
+      strikeX.tween = null;
     }
     strikeX.opacity(0);
     strikeX.setFaded();
@@ -307,8 +308,9 @@ const positionReplayShuttle = (
     shuttle.scaleX(scale);
     shuttle.scaleY(scale);
   } else {
-    if (shuttle.tween) {
+    if (shuttle.tween !== null) {
       shuttle.tween.destroy();
+      shuttle.tween = null;
     }
     shuttle.tween = new Konva.Tween({
       x,

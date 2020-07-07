@@ -43,7 +43,7 @@ export const start = () => {
 
 // Transition the screen to show all of the hypothetical buttons and elements
 export const show = () => {
-  globals.elements.replayArea!.visible(false);
+  globals.elements.replayArea!.hide();
 
   // Modify the clue UI
   if (globals.playerNames.length !== 2) {
@@ -53,7 +53,7 @@ export const show = () => {
 
   // Make sure to toggle all of the elements
   // in case the leader changes in the middle of a hypothetical
-  globals.elements.restartButton!.visible(false);
+  globals.elements.restartButton!.hide();
 
   // These elements are visible only for the leader
   globals.elements.endHypotheticalButton!.visible(globals.amSharedReplayLeader);
