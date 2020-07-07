@@ -123,7 +123,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	// If the game was terminated or did not finish, then the deck order will not be appended yet
 	// (which is normally done in the "Game.End()" function)
 	if g.EndCondition == EndConditionInProgress {
-		g.End() // This will only append the deck order and then return early
+		g.End() // This will append the "cardIdentities" action and then return early
 	}
 
 	// Handle scripts that are creating replays with no sessions

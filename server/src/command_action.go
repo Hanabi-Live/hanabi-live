@@ -181,6 +181,14 @@ func commandAction(s *Session, d *CommandData) {
 
 	// Check for end game states
 	if g.CheckEnd() {
+		// Append a game over action
+		g.Actions = append(g.Actions, ActionGameOver{
+			Type:         "gameOver",
+			EndCondition: g.EndCondition,
+			PlayerIndex:  g.EndPlayer,
+		})
+		t.NotifyGameAction()
+
 		var text string
 		if g.EndCondition > EndConditionNormal {
 			text = "Players lose!"

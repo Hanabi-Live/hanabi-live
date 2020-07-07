@@ -225,6 +225,13 @@ function parseJSONAction(
         list: [],
       } as ActionClue;
     }
+    case JSONActionType.ActionTypeGameOver: {
+      return {
+        type: 'gameOver',
+        endCondition: a.value,
+        playerIndex: a.target,
+      };
+    }
     default: {
       return null;
     }

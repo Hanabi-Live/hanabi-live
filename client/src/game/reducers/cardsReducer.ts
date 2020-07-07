@@ -177,13 +177,14 @@ const cardsReducer = produce((
       break;
     }
 
+    case 'cardIdentities':
+    case 'gameOver':
     case 'strike':
     case 'turn':
     case 'text':
     case 'status':
     case 'stackDirections':
-    case 'reorder':
-    case 'cardIdentities': {
+    case 'reorder': {
       // Actions that don't affect the card state
       break;
     }

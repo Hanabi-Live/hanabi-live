@@ -2,33 +2,34 @@ import CardIdentity from './CardIdentity';
 import MsgClue from './MsgClue';
 
 export type Action =
-| GameAction
-| ReplayAction
-| ActionListReceived;
+  | GameAction
+  | ReplayAction
+  | ActionListReceived;
 
 export type GameAction =
-| ActionCardIdentities // TODO: move to top level action
-| ActionClue
-| ActionDiscard
-| ActionDraw
-| ActionPlay
-| ActionReorder
-| ActionStackDirections
-| ActionStatus
-| ActionStrike
-| ActionText
-| ActionTurn;
+  | ActionCardIdentities // TODO: move to top level action
+  | ActionClue
+  | ActionDiscard
+  | ActionDraw
+  | ActionGameOver
+  | ActionPlay
+  | ActionReorder
+  | ActionStackDirections
+  | ActionStatus
+  | ActionStrike
+  | ActionText
+  | ActionTurn;
 
 export type ActionIncludingHypothetical = GameAction | ActionReveal;
 
 export type ReplayAction =
-| ActionStartReplay
-| ActionEndReplay
-| ActionGoToTurn
-| ActionHypotheticalStart
-| ActionHypotheticalEnd
-| ActionHypotheticalBack
-| ActionHypothetical;
+  | ActionStartReplay
+  | ActionEndReplay
+  | ActionGoToTurn
+  | ActionHypotheticalStart
+  | ActionHypotheticalEnd
+  | ActionHypotheticalBack
+  | ActionHypothetical;
 
 // Initialization actions
 export interface ActionListReceived {
@@ -63,6 +64,12 @@ export interface ActionDraw {
   readonly rank: number;
   readonly suitIndex: number;
   readonly order: number;
+}
+
+export interface ActionGameOver {
+  type: 'gameOver';
+  readonly endCondition: number;
+  readonly playerIndex: number;
 }
 
 export interface ActionPlay {

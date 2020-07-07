@@ -146,9 +146,10 @@ const gameStateReducer = produce((
       break;
     }
 
-    case 'turn':
+    case 'cardIdentities':
+    case 'gameOver':
     case 'reorder':
-    case 'cardIdentities': {
+    case 'turn': {
       // Some actions do not affect the main state or are handled by another reducer
       break;
     }
