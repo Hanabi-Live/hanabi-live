@@ -30,67 +30,65 @@ const defaultCard = initialCardState(0, variant);
 const secondCard = initialCardState(1, variant);
 
 describe('cardsReducer', () => {
-  describe('holder', () => {
+  describe('location', () => {
     test('is equal to the player index when drawn', () => {
       const deck: CardState[] = [defaultCard, secondCard];
-      expect(deck[0].holder).toBeNull();
+      expect(deck[0].location).toBe('deck');
 
       let newDeck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultMetadata);
-      expect(newDeck[0].holder).toBe(0);
+      expect(newDeck[0].location).toBe(0);
 
       const gameStateNextTurn = { ...gameState, currentPlayerIndex: 1 };
 
       newDeck = cardsReducer(deck, draw(1, -1, -1, 0), gameStateNextTurn, defaultMetadata);
-      expect(newDeck[0].holder).toBe(1);
+      expect(newDeck[0].location).toBe(1);
     });
 
-    test('is null when discarded', () => {
+    test('is discard when discarded', () => {
       let deck: CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultMetadata);
 
       const newDeck = cardsReducer(deck, discard(false, 0, 1, 2, 0), gameState, defaultMetadata);
-      expect(newDeck[0].holder).toBeNull();
+      expect(newDeck[0].location).toBe('discard');
     });
 
-    test('is null when played', () => {
+    test('is playStack when played', () => {
       let deck: CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultMetadata);
 
       const newDeck = cardsReducer(deck, play(0, 1, 2, 0), gameState, defaultMetadata);
-      expect(newDeck[0].holder).toBeNull();
+      expect(newDeck[0].location).toBe('playStack');
     });
   });
 
-  describe('isDiscarded', () => {
-    test('is false while on the deck', () => {
+  describe('turnDiscarded', () => {
+    test('is -1 while on the deck', () => {
       const deck: CardState[] = [defaultCard];
-      expect(deck[0].isDiscarded).toBe(false);
+      expect(deck[0].turnDiscarded).toBe(-1);
     });
 
-    test('is true when discarded', () => {
+    test('is correct when discarded', () => {
       let deck: CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultMetadata);
 
       const newDeck = cardsReducer(deck, discard(false, 0, 1, 2, 0), gameState, defaultMetadata);
-      expect(newDeck[0].isDiscarded).toBe(true);
       expect(newDeck[0].turnDiscarded).toBe(gameState.turn);
     });
 
-    test('is false when played', () => {
+    test('is -1 when played', () => {
       let deck: CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultMetadata);
 
       const newDeck = cardsReducer(deck, play(0, 1, 2, 0), gameState, defaultMetadata);
-      expect(newDeck[0].isDiscarded).toBe(false);
+      expect(newDeck[0].turnDiscarded).toBe(-1);
     });
 
-    test('is true when misplayed', () => {
+    test('is correct when misplayed', () => {
       let deck: CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultMetadata);
 
       const misplay = discard(true, 0, 1, 2, 0); // A misplay is a discard with failed = true
       const newDeck = cardsReducer(deck, misplay, gameState, defaultMetadata);
-      expect(newDeck[0].isDiscarded).toBe(true);
       expect(newDeck[0].turnDiscarded).toBe(gameState.turn);
     });
   });

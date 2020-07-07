@@ -7,7 +7,7 @@ import {
   ARROW_COLOR,
 } from '../../constants';
 import { getCharacter } from '../data/gameData';
-import * as variantRules from '../rules/variant';
+import { cardRules, variantRules } from '../rules';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
 import { STACK_BASE_RANK } from '../types/constants';
@@ -52,8 +52,8 @@ export const set = (
   let rot = 0;
   if (
     element instanceof HanabiCard
-    && !element.state.isPlayed
-    && !element.state.isDiscarded
+    && !cardRules.isPlayed(element.state)
+    && !cardRules.isDiscarded(element.state)
     && element.state.rank !== STACK_BASE_RANK
   ) {
     if (element.parent && element.parent.parent && element.parent.parent instanceof CardLayout) {
@@ -62,10 +62,10 @@ export const set = (
     if (
       (
         !globals.lobby.settings.keldonMode
-        && element.state.holder === globals.playerUs
+        && element.state.location === globals.playerUs
       ) || (
         globals.lobby.settings.keldonMode
-        && (element.state.holder !== globals.playerUs && element.state.holder !== null)
+        && (element.state.location !== globals.playerUs && cardRules.isOnPlayerHand(element.state))
       )
     ) {
       // In BGA mode, invert the arrows on our hand

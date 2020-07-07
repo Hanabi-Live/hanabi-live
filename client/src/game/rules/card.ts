@@ -13,6 +13,18 @@ export function isClued(card: CardState) {
   return card.numPositiveClues > 0;
 }
 
+export function isPlayed(card: CardState) {
+  return card.location === 'playStack';
+}
+
+export function isDiscarded(card: CardState) {
+  return card.location === 'discard';
+}
+
+export function isOnPlayerHand(card: CardState) {
+  return typeof card.location === 'number';
+}
+
 export function isCritical(
   variant: Variant,
   deck: readonly CardState[],
@@ -24,8 +36,8 @@ export function isCritical(
     card.suitIndex === null
     || card.rank === null
     || card.rank === 0 // Base
-    || card.isPlayed
-    || card.isDiscarded
+    || isPlayed(card)
+    || isDiscarded(card)
     || !needsToBePlayed(variant, deck, playStacks, stackDirections, card)
   ) {
     return false;
@@ -68,7 +80,7 @@ export function needsToBePlayed(
     if (
       otherCard.suitIndex === card.suitIndex
       && otherCard.rank === card.rank
-      && otherCard.isPlayed
+      && isPlayed(otherCard)
     ) {
       return false;
     }

@@ -1,6 +1,7 @@
 // Click functions for the HanabiCard object
 
 import Konva from 'konva';
+import * as cardRules from '../rules/card';
 import { STACK_BASE_RANK } from '../types/constants';
 import * as arrows from './arrows';
 import globals from './globals';
@@ -57,10 +58,10 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     goToTurn(turnBeforeDrawn, true);
     goToTurn(card.state.turnDrawn, false);
     goToTurnAndIndicateCard(card.state.turnDrawn, card.state.order);
-  } else if (card.state.isPlayed) {
+  } else if (cardRules.isPlayed(card.state)) {
     // Clicking on played cards goes to the turn immediately before they were played
     goToTurnAndIndicateCard(card.state.turnPlayed, card.state.order);
-  } else if (card.state.isDiscarded) {
+  } else if (cardRules.isDiscarded(card.state)) {
     // Clicking on discarded cards goes to the turn immediately before they were discarded
     goToTurnAndIndicateCard(card.state.turnDiscarded, card.state.order);
   }

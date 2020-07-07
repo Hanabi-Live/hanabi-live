@@ -1,6 +1,6 @@
 [{
     "order": 0,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 0,
     "rank": 4,
@@ -107,7 +107,7 @@
     "isMisplayed": false
 }, {
     "order": 1,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 2,
     "rank": 5,
@@ -215,7 +215,7 @@
     "isMisplayed": false
 }, {
     "order": 2,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 2,
     "rank": 2,
@@ -320,7 +320,7 @@
     "isMisplayed": false
 }, {
     "order": 3,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 2,
     "rank": 4,
@@ -428,7 +428,7 @@
     "isMisplayed": false
 }, {
     "order": 4,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 0,
     "rank": 4,
@@ -533,7 +533,7 @@
     "isMisplayed": false
 }, {
     "order": 5,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 4,
     "rank": 3,
@@ -642,7 +642,7 @@
     "isMisplayed": false
 }, {
     "order": 6,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 0,
     "rank": 3,
@@ -750,7 +750,7 @@
     "isMisplayed": false
 }, {
     "order": 7,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 3,
     "rank": 2,
@@ -861,7 +861,7 @@
     "isMisplayed": false
 }, {
     "order": 8,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 4,
     "rank": 3,
@@ -972,7 +972,7 @@
     "isMisplayed": false
 }, {
     "order": 9,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 0,
     "rank": 3,
@@ -1080,7 +1080,7 @@
     "isMisplayed": false
 }, {
     "order": 10,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 1,
     "rank": 5,
@@ -1187,7 +1187,7 @@
     "isMisplayed": false
 }, {
     "order": 11,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 0,
     "rank": 2,
@@ -1295,7 +1295,7 @@
     "isMisplayed": false
 }, {
     "order": 12,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 4,
     "rank": 2,
@@ -1403,7 +1403,7 @@
     "isMisplayed": false
 }, {
     "order": 13,
-    "holder": 3,
+    "location": 3,
     "blank": false,
     "suitIndex": 3,
     "rank": 1,
@@ -1510,7 +1510,7 @@
     "isMisplayed": false
 }, {
     "order": 14,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 3,
     "rank": 5,
@@ -1617,7 +1617,7 @@
     "isMisplayed": false
 }, {
     "order": 15,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 4,
     "rank": 4,
@@ -1726,7 +1726,7 @@
     "isMisplayed": false
 }, {
     "order": 16,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 2,
     "rank": 3,
@@ -1833,7 +1833,7 @@
     "isMisplayed": false
 }, {
     "order": 17,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 0,
     "rank": 2,
@@ -1941,7 +1941,7 @@
     "isMisplayed": false
 }, {
     "order": 18,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 1,
     "rank": 7,
@@ -2050,7 +2050,7 @@
     "isMisplayed": false
 }, {
     "order": 19,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 0,
     "rank": 7,
@@ -2157,7 +2157,7 @@
     "isMisplayed": false
 }, {
     "order": 20,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 1,
     "rank": 1,
@@ -2263,7 +2263,7 @@
     "isMisplayed": false
 }, {
     "order": 21,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 4,
     "rank": 4,
@@ -2372,7 +2372,7 @@
     "isMisplayed": false
 }, {
     "order": 22,
-    "holder": 1,
+    "location": 1,
     "blank": false,
     "suitIndex": 0,
     "rank": 1,
@@ -2480,7 +2480,7 @@
     "isMisplayed": false
 }, {
     "order": 23,
-    "holder": 3,
+    "location": 3,
     "blank": false,
     "suitIndex": 2,
     "rank": 7,
@@ -2587,7 +2587,7 @@
     "isMisplayed": false
 }, {
     "order": 24,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 2,
     "rank": 1,
@@ -2696,7 +2696,7 @@
     "isMisplayed": false
 }, {
     "order": 25,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 1,
     "rank": 3,
@@ -2803,7 +2803,7 @@
     "isMisplayed": false
 }, {
     "order": 26,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 1,
     "rank": 4,
@@ -2910,7 +2910,7 @@
     "isMisplayed": false
 }, {
     "order": 27,
-    "holder": 0,
+    "location": 0,
     "blank": false,
     "suitIndex": 3,
     "rank": 2,
@@ -3019,7 +3019,7 @@
     "isMisplayed": false
 }, {
     "order": 28,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 4,
     "rank": 5,
@@ -3126,7 +3126,7 @@
     "isMisplayed": false
 }, {
     "order": 29,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 4,
     "rank": 2,
@@ -3231,7 +3231,7 @@
     "isMisplayed": false
 }, {
     "order": 30,
-    "holder": 1,
+    "location": 1,
     "blank": false,
     "suitIndex": 4,
     "rank": 7,
@@ -3339,7 +3339,7 @@
     "isMisplayed": false
 }, {
     "order": 31,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 3,
     "rank": 4,
@@ -3448,7 +3448,7 @@
     "isMisplayed": false
 }, {
     "order": 32,
-    "holder": 0,
+    "location": 0,
     "blank": false,
     "suitIndex": 1,
     "rank": 3,
@@ -3556,7 +3556,7 @@
     "isMisplayed": false
 }, {
     "order": 33,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 2,
     "rank": 2,
@@ -3664,7 +3664,7 @@
     "isMisplayed": false
 }, {
     "order": 34,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 0,
     "rank": 5,
@@ -3772,7 +3772,7 @@
     "isMisplayed": false
 }, {
     "order": 35,
-    "holder": 0,
+    "location": 0,
     "blank": false,
     "suitIndex": 3,
     "rank": 7,
@@ -3880,7 +3880,7 @@
     "isMisplayed": false
 }, {
     "order": 36,
-    "holder": 2,
+    "location": 2,
     "blank": false,
     "suitIndex": 2,
     "rank": 3,
@@ -3989,7 +3989,7 @@
     "isMisplayed": false
 }, {
     "order": 37,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 3,
     "rank": 4,
@@ -4095,7 +4095,7 @@
     "isMisplayed": false
 }, {
     "order": 38,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 1,
     "rank": 2,
@@ -4202,7 +4202,7 @@
     "isMisplayed": false
 }, {
     "order": 39,
-    "holder": 3,
+    "location": 3,
     "blank": false,
     "suitIndex": 1,
     "rank": 2,
@@ -4309,7 +4309,7 @@
     "isMisplayed": false
 }, {
     "order": 40,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 4,
     "rank": 1,
@@ -4416,7 +4416,7 @@
     "isMisplayed": false
 }, {
     "order": 41,
-    "holder": 2,
+    "location": 2,
     "blank": false,
     "suitIndex": 1,
     "rank": 4,
@@ -4523,7 +4523,7 @@
     "isMisplayed": false
 }, {
     "order": 42,
-    "holder": null,
+    "location": "discard",
     "blank": false,
     "suitIndex": 3,
     "rank": 3,
@@ -4630,7 +4630,7 @@
     "isMisplayed": false
 }, {
     "order": 43,
-    "holder": 1,
+    "location": 1,
     "blank": false,
     "suitIndex": 3,
     "rank": 3,
@@ -4737,7 +4737,7 @@
     "isMisplayed": false
 }, {
     "order": 44,
-    "holder": 2,
+    "location": 2,
     "blank": false,
     "suitIndex": 2,
     "rank": 4,

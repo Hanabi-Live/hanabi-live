@@ -170,7 +170,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     this.state = {
       ...initialCardState(this.state.order, this.variant),
-      holder: this.state.holder,
+      location: this.state.location,
       blank: this.state.blank,
       // We might have some information about this card already
       suitIndex,
@@ -212,8 +212,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   setClued() {
     const isClued = (
       this.state.numPositiveClues > 0
-      && !this.state.isPlayed
-      && !this.state.isDiscarded
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
       && !this.note.unclued
     );
 
@@ -225,7 +225,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       isClued
       && (
         !globals.lobby.settings.keldonMode
-        || (this.state.holder === globals.playerUs && !globals.replay)
+        || (this.state.location === globals.playerUs && !globals.replay)
       )
     ) {
       this.offsetY(0.6 * CARD_H);
@@ -359,8 +359,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       // A "blank" note means that the user wants to force the card to appear blank
       this.note?.blank
       && !this.empathy
-      && !this.state.isPlayed
-      && !this.state.isDiscarded
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
       && !globals.replay
       && !globals.spectating
     ) {
@@ -397,8 +397,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.trashcan!.visible((
       (this.note ? this.note.knownTrash : false)
       && !this.empathy
-      && !this.state.isPlayed
-      && !this.state.isDiscarded
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
       && !globals.replay
       && !globals.spectating
     ));
@@ -407,8 +407,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.wrench!.visible((
       (this.note ? this.note.needsFix : false)
       && !this.empathy
-      && !this.state.isPlayed
-      && !this.state.isDiscarded
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
       && !globals.replay
       && !globals.spectating
     ));
@@ -499,8 +499,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this.state.suitIndex !== null
       && this.state.rank !== null
       && !cardRules.isClued(this.state)
-      && !this.state.isPlayed
-      && !this.state.isDiscarded
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
       && !this.empathy
       && !this.needsToBePlayed()
     ) {
@@ -525,8 +525,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this.isCritical()
       && (!this.empathy || this.state.identityDetermined)
       && !globals.lobby.settings.realLifeMode
-      && !this.state.isPlayed
-      && !this.state.isDiscarded
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
       && !this.note.blank
     ));
   }
@@ -638,6 +638,50 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Add it to the player's hand (which will automatically tween the card)
     globals.elements.playerHands[holder].addChild(child);
     globals.elements.playerHands[holder].moveToTop();
+  }
+
+  animateToDeck() {
+    const child = this.parent as unknown as LayoutChild;
+    if (!child || !child.parent) {
+      // First initialization
+      return;
+    }
+    this.removeFromParent();
+
+    const scale = globals.elements.deck!.cardBack.width() / CARD_W;
+    if (globals.animateFast) {
+      child.checkSetDraggable();
+      child.visible(false);
+    } else {
+      // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
+      // and the user rewinds to the beginning of the replay
+      child.visible(true);
+      child.opacity(1); // Cards can be faded in certain variants
+      const pos = child.getAbsolutePosition();
+      globals.elements.deck!.add(child as any);
+      child.setAbsolutePosition(pos);
+      // Animate to the deck
+      this.tweening = true;
+      child.tween = new Konva.Tween({
+        node: child,
+        duration: 0.5,
+        x: 0,
+        y: 0,
+        scaleX: scale,
+        scaleY: scale,
+        rotation: 0,
+        easing: Konva.Easings.EaseOut,
+        onFinish: () => {
+          if (!this || !child) {
+            return;
+          }
+          this.tweening = false;
+          child.checkSetDraggable();
+          child.visible(false);
+          this.removeFromParent();
+        },
+      }).play();
+    }
   }
 
   animateToPlayStacks() {
@@ -930,9 +974,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         || event.evt.altKey
         || event.evt.metaKey
         || this.tweening // Disable Empathy if the card is tweening
-        || this.state.isPlayed // Clicking on a played card goes to the turn that it was played
+        // Clicking on a played card goes to the turn that it was played
+        || cardRules.isPlayed(this.state)
         // Clicking on a discarded card goes to the turn that it was discarded
-        || this.state.isDiscarded
+        || cardRules.isDiscarded(this.state)
         || this.state.order > globals.deck.length - 1 // Disable empathy for the stack bases
       ) {
         return;
@@ -991,8 +1036,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Feature 2 - Give the card a special border if it is chop moved
     const showSpecialBorder = (
       !this.cluedBorder!.visible()
-      && !this.state.isPlayed
-      && !this.state.isDiscarded
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
       && !globals.replay
       && !globals.spectating
     );

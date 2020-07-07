@@ -25,7 +25,7 @@ export default function initialCardState(order: number, variant: Variant) : Card
 
   return {
     order,
-    holder: null,
+    location: 'deck',
     blank: false,
     suitIndex: null,
     rank: null,
@@ -46,9 +46,7 @@ export default function initialCardState(order: number, variant: Variant) : Card
     numPositiveClues: 0,
     turnsClued: [],
     turnDrawn: -1,
-    isDiscarded: false,
     turnDiscarded: -1,
-    isPlayed: false,
     turnPlayed: -1,
     isMisplayed: false,
   };

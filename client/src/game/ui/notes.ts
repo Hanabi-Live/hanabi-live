@@ -207,7 +207,7 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
         break;
       }
     }
-    if (!suitPossible && cardState.holder === globals.playerUs) {
+    if (!suitPossible && cardState.location === globals.playerUs) {
       const suitName = variant.suits[note.suitIndex].name;
       window.alert(`That card cannot possibly be ${suitName.toLowerCase()}.`);
       note.suitIndex = null;
@@ -228,7 +228,7 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
         break;
       }
     }
-    if (!rankPossible && cardState.holder === globals.playerUs) {
+    if (!rankPossible && cardState.location === globals.playerUs) {
       window.alert(`That card cannot possibly be a ${note.rank}.`);
       note.rank = null;
       return;
@@ -238,7 +238,7 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
     // Both the suit and the rank were specified
     if (
       cardState.possibleCards[note.suitIndex][note.rank] === 0
-      && cardState.holder === globals.playerUs
+      && cardState.location === globals.playerUs
     ) {
       const suitName = variant.suits[note.suitIndex].name;
       window.alert(`That card cannot possibly be a ${suitName.toLowerCase()} ${note.rank}.`);

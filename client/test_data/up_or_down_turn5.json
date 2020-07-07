@@ -1,6 +1,6 @@
 [{
     "order": 0,
-    "holder": 0,
+    "location": 0,
     "blank": false,
     "suitIndex": 0,
     "rank": 4,
@@ -34,7 +34,7 @@
     "isMisplayed": false
 }, {
     "order": 1,
-    "holder": 0,
+    "location": 0,
     "blank": false,
     "suitIndex": 2,
     "rank": 5,
@@ -68,7 +68,7 @@
     "isMisplayed": false
 }, {
     "order": 2,
-    "holder": 0,
+    "location": 0,
     "blank": false,
     "suitIndex": 2,
     "rank": 2,
@@ -102,7 +102,7 @@
     "isMisplayed": false
 }, {
     "order": 3,
-    "holder": 0,
+    "location": 0,
     "blank": false,
     "suitIndex": 2,
     "rank": 4,
@@ -136,7 +136,7 @@
     "isMisplayed": false
 }, {
     "order": 4,
-    "holder": 1,
+    "location": 1,
     "blank": false,
     "suitIndex": 0,
     "rank": 4,
@@ -170,7 +170,7 @@
     "isMisplayed": false
 }, {
     "order": 5,
-    "holder": 1,
+    "location": 1,
     "blank": false,
     "suitIndex": 4,
     "rank": 3,
@@ -204,7 +204,7 @@
     "isMisplayed": false
 }, {
     "order": 6,
-    "holder": 1,
+    "location": 1,
     "blank": false,
     "suitIndex": 0,
     "rank": 3,
@@ -238,7 +238,7 @@
     "isMisplayed": false
 }, {
     "order": 7,
-    "holder": 1,
+    "location": 1,
     "blank": false,
     "suitIndex": 3,
     "rank": 2,
@@ -272,7 +272,7 @@
     "isMisplayed": false
 }, {
     "order": 8,
-    "holder": 2,
+    "location": 2,
     "blank": false,
     "suitIndex": 4,
     "rank": 3,
@@ -306,7 +306,7 @@
     "isMisplayed": false
 }, {
     "order": 9,
-    "holder": 2,
+    "location": 2,
     "blank": false,
     "suitIndex": 0,
     "rank": 3,
@@ -340,7 +340,7 @@
     "isMisplayed": false
 }, {
     "order": 10,
-    "holder": null,
+    "location": "playStack",
     "blank": false,
     "suitIndex": 1,
     "rank": 5,
@@ -374,7 +374,7 @@
     "isMisplayed": false
 }, {
     "order": 11,
-    "holder": 2,
+    "location": 2,
     "blank": false,
     "suitIndex": 0,
     "rank": 2,
@@ -408,7 +408,7 @@
     "isMisplayed": false
 }, {
     "order": 12,
-    "holder": 3,
+    "location": 3,
     "blank": false,
     "suitIndex": 4,
     "rank": 2,
@@ -442,7 +442,7 @@
     "isMisplayed": false
 }, {
     "order": 13,
-    "holder": 3,
+    "location": 3,
     "blank": false,
     "suitIndex": 3,
     "rank": 1,
@@ -476,7 +476,7 @@
     "isMisplayed": false
 }, {
     "order": 14,
-    "holder": null,
+    "location": "playStack",
     "blank": false,
     "suitIndex": 3,
     "rank": 5,
@@ -510,7 +510,7 @@
     "isMisplayed": false
 }, {
     "order": 15,
-    "holder": 3,
+    "location": 3,
     "blank": false,
     "suitIndex": 4,
     "rank": 4,
@@ -544,7 +544,7 @@
     "isMisplayed": false
 }, {
     "order": 16,
-    "holder": 2,
+    "location": 2,
     "blank": false,
     "suitIndex": 2,
     "rank": 3,
@@ -578,7 +578,7 @@
     "isMisplayed": false
 }, {
     "order": 17,
-    "holder": 3,
+    "location": 3,
     "blank": false,
     "suitIndex": 0,
     "rank": 2,
@@ -612,7 +612,7 @@
     "isMisplayed": false
 }, {
     "order": 18,
-    "holder": null,
+    "location": "deck",
     "blank": false,
     "suitIndex": null,
     "rank": null,

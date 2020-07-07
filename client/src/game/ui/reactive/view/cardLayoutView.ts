@@ -1,8 +1,8 @@
 import equal from 'fast-deep-equal';
-import * as variantRules from '../../../rules/variant';
+import Konva from 'konva';
+import { variantRules } from '../../../rules';
 import { STACK_BASE_RANK } from '../../../types/constants';
 import StackDirection from '../../../types/StackDirection';
-import CardLayout from '../../CardLayout';
 import globals from '../../globals';
 import HanabiCard from '../../HanabiCard';
 import LayoutChild from '../../LayoutChild';
@@ -61,7 +61,7 @@ export function onStackDirectionsChanged(directions: readonly StackDirection[]) 
 export function onHandsChanged(hands: ReadonlyArray<readonly number[]>) {
   syncChildren(
     hands,
-    (i) => globals.elements.playerHands[i],
+    (i) => globals.elements.playerHands[i] as unknown as Konva.Container,
     (card, i) => card.animateToPlayerHand(i),
   );
 }
@@ -71,7 +71,7 @@ export function onDiscardStacksChanged(discardStacks: ReadonlyArray<readonly num
     discardStacks,
     (i) => {
       const suit = globals.variant.suits[i];
-      return globals.elements.discardStacks.get(suit)! as unknown as CardLayout;
+      return globals.elements.discardStacks.get(suit)! as unknown as Konva.Container;
     },
     (card) => card.animateToDiscardPile(),
   );
@@ -82,7 +82,7 @@ export function onPlayStacksChanged(playStacks: ReadonlyArray<readonly number[]>
     playStacks,
     (i) => {
       const suit = globals.variant.suits[i];
-      return globals.elements.playStacks.get(suit)! as unknown as CardLayout;
+      return globals.elements.playStacks.get(suit)! as unknown as Konva.Container;
     },
     (card) => card.animateToPlayStacks(),
   );
@@ -90,7 +90,7 @@ export function onPlayStacksChanged(playStacks: ReadonlyArray<readonly number[]>
 
 function syncChildren(
   collections: ReadonlyArray<readonly number[]>,
-  getCollectionUI: (i: number) => CardLayout,
+  getCollectionUI: (i: number) => Konva.Container,
   addToCollectionUI: (card: HanabiCard, i: number) => void,
 ) {
   const getCard = (order: number) => globals.deck[order];
@@ -107,7 +107,13 @@ function syncChildren(
     current
       .filter((n) => !collection.includes(n))
       .map(getCard)
-      .forEach((card) => card.removeFromParent());
+      .forEach((card) => {
+        if (card.state.location === 'deck') {
+          card.animateToDeck();
+        } else {
+          card.removeFromParent();
+        }
+      });
 
     // Add the elements that were added
     collection
