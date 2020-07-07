@@ -126,7 +126,7 @@ function syncChildren(
     collection.forEach((order, pos) => {
       current = getCurrentSorting();
       if (current.length !== collection.length) {
-        throw new Error('The UI collection is out of sync with the state');
+        throw new Error('The UI collection is out of sync with the state.');
       }
 
       const layoutChild = getCard(order).parent as unknown as LayoutChild;
@@ -144,7 +144,7 @@ function syncChildren(
     // Verify the final result
     current = getCurrentSorting();
     if (!equal(current, collection)) {
-      throw new Error('The UI collection is out of sync with the state');
+      throw new Error('The UI collection is out of sync with the state.');
     }
   });
 }
