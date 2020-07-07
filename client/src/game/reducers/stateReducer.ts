@@ -38,6 +38,13 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       break;
     }
 
+    case 'cardIdentities': {
+      // Either we just entered a new replay or an ongoing game ended,
+      // so the server sent us a list of the identities for every card in the deck
+      state.cardIdentities = action.cardIdentities;
+      break;
+    }
+
     case 'startReplay':
     case 'endReplay':
     case 'goToTurn':
@@ -46,11 +53,6 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     case 'hypoEnd':
     case 'hypoAction': {
       state.replay = replayReducer(state.replay, action, state.metadata);
-      break;
-    }
-
-    case 'cardIdentities': {
-      state.cardIdentities = action.cardIdentities;
       break;
     }
 
