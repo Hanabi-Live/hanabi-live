@@ -16,16 +16,14 @@ module.exports = {
   parserOptions: {
     project: './tsconfig.json',
   },
-  plugins: [ '@typescript-eslint' ],
+  plugins: [ '@typescript-eslint', 'import' ],
   settings: {
     'import/extensions': ['.ts'],
     'import/parsers': {
       '@typescript-eslint/parser': ['.ts'],
     },
     'import/resolver': {
-      'node': {
-        'extensions': ['.ts'],
-      },
+      "typescript": { },
     },
   },
 
@@ -72,6 +70,11 @@ module.exports = {
       groups: [['builtin', 'external', 'internal']],
       alphabetize: { order: 'asc', caseInsensitive: true },
     }],
+
+    // ESLint doesn't like TypeScript 3.8 syntax
+    // import { module } from 'file'
+    'import/named': ['off'],
+
 
     // The client makes use of some tasteful alerts
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js#L59

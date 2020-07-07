@@ -1,4 +1,5 @@
 import * as notifications from '../../notifications';
+import * as cardRules from '../rules/card';
 import { ActionType, ClientAction } from '../types/ClientAction';
 import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
@@ -38,7 +39,7 @@ export const begin = () => {
         throw new Error('"globals.preCluedCardOrder" was null in the "turn.begin()" function.');
       }
       const card = globals.deck[globals.preCluedCardOrder];
-      if (card.state.isPlayed || card.state.isDiscarded) {
+      if (cardRules.isPlayed(card.state) || cardRules.isDiscarded(card.state)) {
         return;
       }
     }

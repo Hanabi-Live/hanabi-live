@@ -27,44 +27,57 @@ export function onDeckChanged(length: number) {
 function subscribeToCardChanges(order: number) {
   const subscriptions: Array<Subscription<State, any>> = [];
 
-  // Shorthand function for a nicer syntax and type checking when registering subscriptions
-  function sub<T>(s: Selector<CardState, T>, l: Listener<T>) {
-    const checkOrderAndSelect: Selector<State, T> = (state) => {
+  // Validates that a card exists in the visible state before firing a listener
+  function checkOrderAndSelect<T>(s: Selector<State, T>): Selector<State, T> {
+    return (state) => {
       if (order >= state.visibleState.deck.length) {
-        // This card was removed from visible state
-        // Return undefined to prevent firing the listener
+      // This card was removed from visible state
+      // Return undefined to prevent firing the listener
         return undefined;
       }
-      return s(state.visibleState.deck[order]);
+      return s(state);
     };
-    subscriptions.push({ select: checkOrderAndSelect, onChange: l });
+  }
+
+  // Subscribes to a set of property changes from cards
+  function sub<T>(s: Selector<CardState, T>, l: Listener<T>) {
+    const cardSelector = (state: State) => s(state.visibleState.deck[order]);
+    subscriptions.push({ select: checkOrderAndSelect(cardSelector), onChange: l });
+  }
+
+  // Subscribes to a set of property changes from cards as well as the card identity
+  function subWithCardIdentity<T>(s: Selector<CardState, T>, l: Listener<T>) {
+    const combinedSelector = (state: State) => ({
+      identity: state.cardIdentities[order],
+      cardProperties: s(state.visibleState.deck[order]),
+    });
+    subscriptions.push({ select: checkOrderAndSelect(combinedSelector), onChange: l });
   }
 
   // TODO: all the properties!
   // Clued border
   sub((c) => ({
     numPositiveClues: c.numPositiveClues,
-    isPlayed: c.isPlayed,
-    isDiscarded: c.isDiscarded,
+    location: c.location,
   }), () => updateCluedBorder(order));
   // Pips
   sub((c) => c.rankClueMemory.pipStates, () => updatePips(order, ClueType.Rank));
   sub((c) => c.colorClueMemory.pipStates, () => updatePips(order, ClueType.Color));
-  // Card visuals
-  sub((c) => ({
-    rank: c.rank,
-    suitIndex: c.suitIndex,
-    isPlayed: c.isPlayed,
-    isDiscarded: c.isDiscarded,
-    possibleRanks: c.rankClueMemory.possibilities,
-    possibleSuits: c.colorClueMemory.possibilities,
-    blank: c.blank,
-  }), () => updateCardVisuals(order));
   // Notes
   sub((c) => ({
     possibleRanks: c.rankClueMemory.possibilities,
     possibleSuits: c.colorClueMemory.possibilities,
   }), () => updateNotePossibilities(order));
+  // Card visuals
+  subWithCardIdentity((c) => ({
+    rank: c.rank,
+    suitIndex: c.suitIndex,
+    location: c.location,
+    numPossibleRanks: c.rankClueMemory.possibilities.length,
+    numPossibleSuits: c.colorClueMemory.possibilities.length,
+    blank: c.blank,
+  }), () => updateCardVisuals(order));
+
   return observeStore(globals.store!, subscriptions);
 }
 
@@ -80,12 +93,7 @@ function updatePips(order: number, clueType: ClueType) {
 }
 
 function updateCardVisuals(order: number) {
-  // TODO this function is useless?
-  // setBareImage is now done in the cardIdentityReducer
-  // Not sure if this should be deleted now, its probably needed for notes?
-  // globals.deck[order].setBareImage();
-  const poop = order;
-  order = poop; // eslint-disable-line
+  globals.deck[order].setBareImage();
 }
 
 function updateNotePossibilities(order: number) {

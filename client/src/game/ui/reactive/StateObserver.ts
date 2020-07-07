@@ -4,6 +4,7 @@ import State from '../../types/State';
 import observeStore, { Selector, Listener, Subscription } from './observeStore';
 import * as cardLayoutView from './view/cardLayoutView';
 import * as cardsView from './view/cardsView';
+import * as cluesView from './view/cluesView';
 import * as gameInfoView from './view/gameInfoView';
 import * as logView from './view/logView';
 import * as statsView from './view/statsView';
@@ -45,7 +46,6 @@ export default class StateObserver {
 
     // Logs
     sub((s) => s.visibleState.log, logView.onLogChanged);
-    sub((s) => s.visibleState.clues, logView.onCluesChanged);
 
     // Card layout
     sub((s) => s.visibleState.playStacksDirections, cardLayoutView.onStackDirectionsChanged);
@@ -53,12 +53,15 @@ export default class StateObserver {
     sub((s) => s.visibleState.discardStacks, cardLayoutView.onDiscardStacksChanged);
     sub((s) => s.visibleState.playStacks, cardLayoutView.onPlayStacksChanged);
 
+    // Clues (arrows + log)
+    sub((s) => ({
+      clues: s.visibleState.clues,
+      turn: s.visibleState.turn,
+    }), cluesView.onCluesChanged);
+
     // Cards
     // Each card will subscribe to changes to its own data
     sub((s) => s.visibleState.deck.length, cardsView.onDeckChanged);
-
-    // Card identities
-    // sub((s) => s.cardIdentities.length, ??? TODO
 
     this.unsubscribe = observeStore(store, subscriptions);
   }

@@ -60,9 +60,9 @@ const cardsReducer = produce((
         ) {
           // If we're currently playing this game and we got clued, this is the first time
           // we identify this card, from the point of view of all hands
-          const handsSeeingCardForFirstTime = (metadata.playerSeat === card.holder!)
+          const handsSeeingCardForFirstTime = (metadata.playerSeat === card.location)
             ? game.hands // All hands
-            : [game.hands[card.holder!]]; // Just the person who's seeing this for the first time
+            : [game.hands[card.location as number]]; // Just who's seeing this for the first time
           for (const hand of handsSeeingCardForFirstTime) {
             removePossibilityOnHand(deck, hand, newCard, variant);
           }
@@ -98,21 +98,20 @@ const cardsReducer = produce((
         card.identityDetermined = true;
         // If we're currently playing this game, this is the first time
         // we see this card, from the point of view of all hands
-        const handsSeeingCardForFirstTime = (metadata.playerSeat === card.holder!)
+        const handsSeeingCardForFirstTime = (metadata.playerSeat === card.location)
           ? game.hands // All hands
-          : [game.hands[card.holder!]]; // Just the person who's seeing this for the first time
+          : [game.hands[card.location as number]]; // Just who's seeing this for the first time
         for (const hand of handsSeeingCardForFirstTime) {
           removePossibilityOnHand(deck, hand, card, variant);
         }
       }
 
-      card.holder = null;
       if (action.type === 'play') {
         card.turnPlayed = game.turn;
-        card.isPlayed = true;
+        card.location = 'playStack';
       } else {
         card.turnDiscarded = game.turn;
-        card.isDiscarded = true;
+        card.location = 'discard';
         if (action.failed) {
           card.isMisplayed = true;
         }
@@ -130,9 +129,9 @@ const cardsReducer = produce((
         console.warn(`Client = ${game.currentPlayerIndex}, Server = ${action.who}`);
       }
 
-      const drawnCard = castDraft({
+      const drawnCard: Draft<CardState> = castDraft({
         ...initialCardState(action.order, variant),
-        holder: action.who,
+        location: action.who,
         suitIndex: nullIfNegative(action.suitIndex),
         rank: nullIfNegative(action.rank),
         turnDrawn: game.turn,
@@ -142,7 +141,7 @@ const cardsReducer = produce((
 
       const possibilitiesToRemove = deck.slice(0, action.order)
         .filter((card) => card.suitIndex !== null && card.rank !== null)
-        .filter((card) => card.holder !== drawnCard.holder
+        .filter((card) => card.location !== drawnCard.location
         || (
           card.colorClueMemory.possibilities.length === 1
           && card.rankClueMemory.possibilities.length === 1
@@ -169,7 +168,7 @@ const cardsReducer = produce((
       // If the card was drawn by a player we can see, update possibilities
       // on all hands, except for the player that didn't see it
       if (drawnCard.suitIndex != null && drawnCard.rank != null) {
-        for (const hand of game.hands.filter((_, i) => i !== drawnCard.holder)) {
+        for (const hand of game.hands.filter((_, i) => i !== drawnCard.location)) {
           removePossibilityOnHand(deck, hand, drawnCard, variant);
         }
       }

@@ -1,6 +1,7 @@
 // Speedrun click functions for the HanabiCard object
 
 import Konva from 'konva';
+import { cardRules } from '../rules';
 import { ActionType } from '../types/ClientAction';
 import Color from '../types/Color';
 import {
@@ -41,8 +42,10 @@ export default function HanabiCardClickSpeedrun(
   // However, we do not want to allow clicking on the first card in the hand
   // (as it is sliding in from the deck)
     (this.tweening && this.parent.index === this.parent.parent.children.length - 1)
-    || this.state.isPlayed // Do nothing if we accidentally clicked on a played card
-    || this.state.isDiscarded // Do nothing if we accidentally clicked on a discarded card
+    // Do nothing if we accidentally clicked on a played card
+    || cardRules.isPlayed(this.state)
+    // Do nothing if we accidentally clicked on a discarded card
+    || cardRules.isDiscarded(this.state)
   ) {
     return;
   }
@@ -58,7 +61,7 @@ export default function HanabiCardClickSpeedrun(
 const clickLeft = (card: HanabiCard, event: MouseEvent) => {
   // Left-clicking on cards in our own hand is a play action
   if (
-    card.state.holder === globals.playerUs
+    card.state.location === globals.playerUs
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
@@ -74,8 +77,8 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
   // Left-clicking on cards in other people's hands is a color clue action
   // (but if we are holding Ctrl, then we are using Empathy)
   if (
-    card.state.holder !== globals.playerUs
-    && card.state.holder !== null
+    card.state.location !== globals.playerUs
+    && cardRules.isOnPlayerHand(card.state)
     && card.state.suitIndex !== null
     && globals.clues !== 0
     && !event.ctrlKey
@@ -116,7 +119,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
 
     turn.end({
       type: ActionType.ColorClue,
-      target: card.state.holder,
+      target: card.state.location as number,
       value: colorToColorIndex(clueColor, globals.variant),
     });
   }
@@ -125,7 +128,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
 const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // Right-clicking on cards in our own hand is a discard action
   if (
-    card.state.holder === globals.playerUs
+    card.state.location === globals.playerUs
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
@@ -144,8 +147,8 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
 
   // Right-clicking on cards in other people's hands is a rank clue action
   if (
-    card.state.holder !== globals.playerUs
-    && card.state.holder !== null
+    card.state.location !== globals.playerUs
+    && cardRules.isOnPlayerHand(card.state)
     && card.state.rank !== null
     // It is not possible to clue a Start Card with a rank clue
     && card.state.rank !== START_CARD_RANK
@@ -159,7 +162,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
 
     turn.end({
       type: ActionType.RankClue,
-      target: card.state.holder,
+      target: card.state.location as number,
       value: card.state.rank,
     });
     return;

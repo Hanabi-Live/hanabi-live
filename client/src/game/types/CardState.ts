@@ -1,7 +1,7 @@
 export default interface CardState {
   readonly order: number;
-  // The index of the player that holds this card (or null if played/discarded)
-  readonly holder: number | null;
+  // If location is a number, it's the index of the player that holds this card
+  readonly location: CardLocation;
   readonly suitIndex: number | null;
   readonly rank: number | null;
   readonly blank: boolean;
@@ -18,13 +18,12 @@ export default interface CardState {
   readonly numPositiveClues: number;
   readonly turnsClued: readonly number[]; // TODO: seems like the UI only reads the 1st turn clued?
   readonly turnDrawn: number;
-  readonly isDiscarded: boolean;
   readonly turnDiscarded: number;
-  readonly isPlayed: boolean;
   readonly turnPlayed: number;
   readonly isMisplayed: boolean;
 }
 
+export type CardLocation = 'deck' | 'discard' | 'playStack' | number;
 export type PipState = 'Visible' | 'Hidden' | 'Eliminated';
 
 export interface ClueMemory {

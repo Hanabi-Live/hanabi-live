@@ -4,6 +4,7 @@ import CardState from '../types/CardState';
 import { START_CARD_RANK } from '../types/constants';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
+import * as cardRules from './card';
 import * as variantRules from './variant';
 
 export function totalCards(variant: Variant) {
@@ -57,7 +58,7 @@ export const discardedCopies = (
   suitIndex: number,
   rank: number,
 ) => deck.reduce((discarded, c) => {
-  if (c.suitIndex === suitIndex && c.rank === rank && c.isDiscarded) {
+  if (c.suitIndex === suitIndex && c.rank === rank && cardRules.isDiscarded(c)) {
     return discarded + 1;
   }
   return discarded;

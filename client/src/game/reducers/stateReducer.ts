@@ -80,6 +80,8 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
   }
 }, {} as State);
 
+export default stateReducer;
+
 // We keep a copy of each card identity in the global state for convenience
 // After each game action, check to see if we can add any new card identities
 // (or any suit/rank information to existing card identities)
@@ -105,5 +107,3 @@ const updateCardIdentities = (state: Draft<State>) => {
     }
   });
 };
-
-export default stateReducer;
