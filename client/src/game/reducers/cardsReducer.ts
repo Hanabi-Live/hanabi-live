@@ -224,8 +224,8 @@ function removePossibility(
   all: boolean,
   variant: Variant,
 ) {
-  const possibleCards = Array.from(state.possibleCards, (arr) => Array.from(arr));
   // Every card has a possibility map that maps card identities to count
+  const possibleCards = Array.from(state.possibleCards, (arr) => Array.from(arr));
   let cardsLeft = possibleCards[suitIndex][rank];
   if (cardsLeft === undefined) {
     throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${rank} from the "possibleCards" map for card.`);
