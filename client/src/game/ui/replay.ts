@@ -2,13 +2,12 @@
 
 import Konva from 'konva';
 import * as deck from '../rules/deck';
-import { MAX_CLUE_NUM, STACK_BASE_RANK } from '../types/constants';
+import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import action from './action';
 import cardStatusCheck from './cardStatusCheck';
 import Shuttle from './controls/Shuttle';
 import globals from './globals';
-import LayoutChild from './LayoutChild';
 import * as tooltips from './tooltips';
 import * as turn from './turn';
 
@@ -191,30 +190,6 @@ const reset = () => {
     }
     strikeX.opacity(0);
     strikeX.setFaded();
-  }
-
-  // Reset all of the cards in the deck
-  for (const card of globals.deck) {
-    const child = card.parent as unknown as LayoutChild;
-    if (!child) {
-      return;
-    }
-    if (child.tween) {
-      child.tween.destroy();
-    }
-    if (card.state.rank === STACK_BASE_RANK) {
-      card.parent!.show();
-    } else {
-      card.parent!.hide();
-    }
-  }
-
-  // Reset the arrows
-  for (const arrow of globals.elements.arrows) {
-    if (arrow.tween) {
-      arrow.tween.destroy();
-    }
-    arrow.hide();
   }
 };
 

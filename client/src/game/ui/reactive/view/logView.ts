@@ -1,6 +1,5 @@
-import * as cluesRules from '../../../rules/clues';
-import { LogEntry, StateClue } from '../../../types/GameState';
-import ClueEntry from '../../ClueEntry';
+/* eslint-disable import/prefer-default-export */
+import { LogEntry } from '../../../types/GameState';
 import globals from '../../globals';
 
 export function onLogChanged(log: readonly LogEntry[]) {
@@ -23,35 +22,4 @@ export function onLogChanged(log: readonly LogEntry[]) {
     globals.layers.UI.batchDraw();
     globals.layers.UI2.batchDraw();
   }
-}
-
-export function onCluesChanged(clues: readonly StateClue[]) {
-  const clueLog = globals.elements.clueLog!;
-  const startingIndex = Math.max(0, clues.length - clueLog.maxLength);
-  clues.slice(startingIndex).forEach((clue, i) => {
-    // TODO: use character and playerNames from state
-    const characterID = globals.characterAssignments[clue.giver];
-
-    const entry = new ClueEntry({
-      width: clueLog.width(),
-      height: 0.017 * globals.stage.height(),
-      giver: globals.playerNames[clue.giver],
-      target: globals.playerNames[clue.target],
-      clueName: cluesRules.getClueName(clue, globals.variant, characterID),
-      list: clue.list,
-      negativeList: clue.negativeList,
-      turn: clue.turn,
-    });
-    if (i < clueLog.children.length) {
-      clueLog.updateClue(i, entry);
-    } else {
-      clueLog.addClue(entry);
-    }
-  });
-
-  // Delete any left over clues
-  if (clueLog.children.length > clues.length) {
-    clueLog.children.splice(clues.length, clueLog.children.length - clues.length);
-  }
-  clueLog.refresh();
 }

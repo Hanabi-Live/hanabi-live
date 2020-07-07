@@ -5,7 +5,6 @@ import { nullIfNegative } from '../../misc';
 // import { getCharacter } from '../data/gameData';
 import * as variantRules from '../rules/variant';
 import {
-  ActionClue,
   ActionDiscard,
   ActionDraw,
   ActionPlay,
@@ -19,7 +18,6 @@ import {
 import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
-import { msgClueToClue } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
@@ -47,22 +45,8 @@ export default function action(data: ActionIncludingHypothetical) {
 type ActionFunction = (data: any) => void;
 const actionFunctions = new Map<ActionIncludingHypothetical['type'], ActionFunction>();
 
-actionFunctions.set('clue', (data: ActionClue) => {
-  // The clue comes from the server as an integer, so convert it to an object
-  const clue = msgClueToClue(data.clue, globals.variant);
-
-  // Clear all visible arrows when a new move occurs
-  arrows.hideAll();
-
-  for (let i = 0; i < data.list.length; i++) {
-    const card = globals.deck[data.list[i]];
-
-    arrows.set(i, card, data.giver, clue);
-  }
-
-  if (!globals.animateFast) {
-    globals.layers.card.batchDraw();
-  }
+actionFunctions.set('clue', () => {
+  // Nothing! TODO: delete
 });
 
 actionFunctions.set('cardIdentities', () => {

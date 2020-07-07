@@ -25,7 +25,7 @@ import HanabiCard from './HanabiCard';
 export const hideAll = () => {
   let changed = false;
   for (const arrow of globals.elements.arrows) {
-    if (arrow.pointingTo !== null) {
+    if (arrow.pointingTo !== null || arrow.isVisible()) {
       changed = true;
       arrow.pointingTo = null;
       arrow.visible(false);

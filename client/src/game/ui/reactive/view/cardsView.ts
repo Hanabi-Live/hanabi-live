@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
-import CardState, { CardLocation } from '../../../types/CardState';
+import CardState from '../../../types/CardState';
 import ClueType from '../../../types/ClueType';
 import State from '../../../types/State';
 import globals from '../../globals';
@@ -41,8 +41,6 @@ function subscribeToCardChanges(order: number) {
   }
 
   // TODO: all the properties!
-  // Location
-  sub((c) => c.location, (location) => updateLocation(order, location));
   // Clued border
   sub((c) => ({
     numPositiveClues: c.numPositiveClues,
@@ -70,13 +68,6 @@ function subscribeToCardChanges(order: number) {
 
 // TODO: these functions should pass the value of the changed properties,
 // and not let the UI query the whole state object
-
-function updateLocation(order: number, location: CardLocation) {
-  if (location === 'deck') {
-    // All other locations are handled in the cards layout sync
-    globals.deck[order].animateToDeck();
-  }
-}
 
 function updateCluedBorder(order: number) {
   globals.deck[order].setClued();
