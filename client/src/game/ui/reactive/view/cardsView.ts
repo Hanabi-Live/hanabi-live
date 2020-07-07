@@ -1,10 +1,11 @@
+/* eslint-disable import/prefer-default-export */
+
 import CardState from '../../../types/CardState';
 import ClueType from '../../../types/ClueType';
 import State from '../../../types/State';
 import globals from '../../globals';
 import observeStore, { Subscription, Selector, Listener } from '../observeStore';
 
-// eslint-disable-next-line import/prefer-default-export
 export function onDeckChanged(length: number) {
   // TODO: this could be used to create/destroy HanabiCards / card UI
   // on the fly based on state which would make loading a lot faster
@@ -80,7 +81,11 @@ function updatePips(order: number, clueType: ClueType) {
 
 function updateCardVisuals(order: number) {
   // TODO this function is useless?
-  globals.deck[order].setBareImage();
+  // setBareImage is now done in the cardIdentityReducer
+  // Not sure if this should be deleted now, its probably needed for notes?
+  // globals.deck[order].setBareImage();
+  const poop = order;
+  order = poop; // eslint-disable-line
 }
 
 function updateNotePossibilities(order: number) {

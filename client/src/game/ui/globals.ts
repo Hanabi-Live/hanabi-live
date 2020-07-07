@@ -90,7 +90,6 @@ export class Globals {
   gameOver: boolean = false;
   finalReplayPos: number = 0;
   finalReplayTurn: number = 0;
-  deckOrder: CardIdentity[] = []; // Sent when the game ends
 
   // Shared replay feature
   sharedReplayLeader: string = ''; // Equal to the username of the leader
@@ -147,6 +146,7 @@ export class Globals {
   store: Redux.Store<State, Action> | null = null;
   stateObserver: StateObserver | null = null;
   cardSubscriptions: Redux.Unsubscribe[] = [];
+  cardIdentitySubscriptions: Redux.Unsubscribe[] = [];
 
   // We provide a method to reset every class variable to its initial value
   // This is called when the user goes into a new game
@@ -228,7 +228,6 @@ export class Globals {
     this.UIClickTime = 0;
     this.spectators = [];
     this.chatUnread = 0;
-    this.deckOrder = [];
     this.stateObserver?.unregisterObservers();
     this.stateObserver = null;
     this.cardSubscriptions.forEach((u: Redux.Unsubscribe) => u());
