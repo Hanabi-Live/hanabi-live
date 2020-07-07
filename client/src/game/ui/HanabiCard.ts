@@ -1015,6 +1015,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       hand.empathy = enabled;
       hand.children.each((layoutChild) => {
         const card = layoutChild.children[0] as HanabiCard;
+        if (!card) {
+          // When rewinding, sometimes the card can be undefined
+          return;
+        }
         card.empathy = enabled;
         card.setBareImage();
       });
