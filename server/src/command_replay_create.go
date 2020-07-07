@@ -108,7 +108,8 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	})
 	g := t.Game
 	if g == nil {
-		logger.Error("Failed to start the game for replay " + strconv.Itoa(d.GameID) + ".")
+		logger.Error("Failed to start the game when after loading database game #" + strconv.Itoa(d.GameID) + ".")
+		s.Error(InitGameFail)
 		delete(tables, t.ID)
 		return
 	}
