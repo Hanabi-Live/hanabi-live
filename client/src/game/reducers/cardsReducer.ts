@@ -212,7 +212,8 @@ function removePossibilityOnHand(
     .map((order) => deck[order]);
 
   for (const handCard of cardsExceptCardBeingRemoved) {
-    deck[handCard.order] = castDraft(removePossibility(handCard, card.suitIndex!, card.rank!, false, variant));
+    const newCard = removePossibility(handCard, card.suitIndex!, card.rank!, false, variant);
+    deck[handCard.order] = castDraft(newCard);
   }
 }
 
