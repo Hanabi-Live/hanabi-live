@@ -38,6 +38,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       break;
     }
 
+    // TODO: this should be a top level action because it's treated as such
     case 'cardIdentities': {
       // The game ended and the server sent us a list of the identities for every card in the deck
       state.cardIdentities = action.cardIdentities;
@@ -79,6 +80,8 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
   }
 }, {} as State);
 
+export default stateReducer;
+
 // We keep a copy of each card identity in the global state for convenience
 // After each game action, check to see if we can add any new card identities
 // (or any suit/rank information to existing card identities)
@@ -104,5 +107,3 @@ const updateCardIdentities = (state: Draft<State>) => {
     }
   });
 };
-
-export default stateReducer;

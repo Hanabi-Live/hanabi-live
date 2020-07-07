@@ -7,7 +7,7 @@ export type Action =
 | ActionListReceived;
 
 export type GameAction =
-| ActionCardIdentities
+| ActionCardIdentities // TODO: move to top level action
 | ActionClue
 | ActionDiscard
 | ActionDraw
