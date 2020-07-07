@@ -4,10 +4,10 @@ import MsgClue from './MsgClue';
 export type Action =
   | GameAction
   | ReplayAction
-  | ActionListReceived;
+  | ActionListReceived
+  | ActionCardIdentities;
 
 export type GameAction =
-  | ActionCardIdentities
   | ActionClue
   | ActionDiscard
   | ActionDraw
@@ -31,17 +31,22 @@ export type ReplayAction =
   | ActionHypotheticalBack
   | ActionHypothetical;
 
+// ----------------------
 // Initialization actions
+// ----------------------
 export interface ActionListReceived {
   type: 'gameActionList';
   readonly actions: GameAction[];
 }
 
-// Game actions
 export interface ActionCardIdentities {
   type: 'cardIdentities';
   readonly cardIdentities: CardIdentity[];
 }
+
+// ------------
+// Game actions
+// ------------
 
 export interface ActionClue {
   type: 'clue';
@@ -121,7 +126,10 @@ export interface Which {
   readonly order: number;
 }
 
+// --------------
 // Replay actions
+// --------------
+
 export interface ActionStartReplay {
   type: 'startReplay';
   readonly turn: number;
@@ -136,7 +144,10 @@ export interface ActionGoToTurn {
   readonly turn: number;
 }
 
+// --------------------
 // Hypothetical actions
+// --------------------
+
 export interface ActionHypotheticalStart {
   type: 'hypoStart';
 }

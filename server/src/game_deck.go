@@ -11,15 +11,19 @@ func (g *Game) InitDeck() {
 	if g.ExtraOptions.CustomDeck != nil {
 		for _, card := range g.ExtraOptions.CustomDeck {
 			g.Deck = append(g.Deck, NewCard(card.SuitIndex, card.Rank))
+			g.CardIdentities = append(g.CardIdentities, &CardIdentity{
+				SuitIndex: card.SuitIndex,
+				Rank:      card.Rank,
+			})
 		}
 		return
 	}
 
 	// Suits are represented as a slice of integers from 0 to the number of suits - 1
-	// (e.g. {0, 1, 2, 3, 4} for a "No Variant" game)
-	for suitInt, suitObject := range variants[g.Options.VariantName].Suits {
+	// (e.g. [0, 1, 2, 3, 4] for a "No Variant" game)
+	for suitIndex, suitObject := range variants[g.Options.VariantName].Suits {
 		// Ranks are represented as a slice of integers
-		// (e.g. {1, 2, 3, 4, 5} for a "No Variant" game)
+		// (e.g. [1, 2, 3, 4, 5] for a "No Variant" game)
 		for _, rank := range variants[g.Options.VariantName].Ranks {
 			// In a normal suit of Hanabi, there are:
 			// - three 1's
@@ -49,7 +53,11 @@ func (g *Game) InitDeck() {
 
 			for i := 0; i < amountToAdd; i++ {
 				// Add the card to the deck
-				g.Deck = append(g.Deck, NewCard(suitInt, rank))
+				g.Deck = append(g.Deck, NewCard(suitIndex, rank))
+				g.CardIdentities = append(g.CardIdentities, &CardIdentity{
+					SuitIndex: suitIndex,
+					Rank:      rank,
+				})
 			}
 		}
 	}

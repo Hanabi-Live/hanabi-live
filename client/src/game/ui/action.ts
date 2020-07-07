@@ -65,12 +65,6 @@ actionFunctions.set('clue', (data: ActionClue) => {
   }
 });
 
-actionFunctions.set('cardIdentities', () => {
-  // If we are exiting a hypothetical, we might re-receive a "cardIdentities" command
-  // If this is the case, we don't need to do anything,
-  // as the order should already be stored in the global variables
-});
-
 actionFunctions.set('discard', (data: ActionDiscard) => {
   // In "Throw It in a Hole" variants, convert misplays to real plays
   if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay && data.failed) {

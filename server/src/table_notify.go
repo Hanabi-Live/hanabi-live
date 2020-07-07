@@ -235,6 +235,18 @@ func (t *Table) NotifyGameOver() {
 	}
 }
 
+func (t *Table) NotifyCardIdentities() {
+	for _, p := range t.Players {
+		if p.Present {
+			p.Session.NotifyCardIdentities(t)
+		}
+	}
+
+	for _, sp := range t.Spectators {
+		sp.Session.NotifyCardIdentities(t)
+	}
+}
+
 func (t *Table) NotifyTime() {
 	for _, p := range t.Players {
 		if p.Present {

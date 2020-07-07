@@ -319,6 +319,19 @@ func (s *Session) NotifySpectators(t *Table) {
 	})
 }
 
+func (s *Session) NotifyCardIdentities(t *Table) {
+	g := t.Game
+
+	type CardIdentitiesMessage struct {
+		TableID        int             `json:"tableID"`
+		CardIdentities []*CardIdentity `json:"cardIdentities"`
+	}
+	s.Emit("cardIdentities", &CardIdentitiesMessage{
+		TableID:        t.ID,
+		CardIdentities: g.CardIdentities,
+	})
+}
+
 func (s *Session) NotifyReplayLeader(t *Table, playAnimation bool) {
 	// Get the username of the game owner
 	// (the "Owner" field is used to store the leader of the shared replay)
