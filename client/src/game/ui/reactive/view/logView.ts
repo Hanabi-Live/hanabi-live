@@ -1,4 +1,5 @@
 /* eslint-disable import/prefer-default-export */
+
 import { LogEntry } from '../../../types/GameState';
 import globals from '../../globals';
 

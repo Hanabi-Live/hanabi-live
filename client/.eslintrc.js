@@ -23,7 +23,7 @@ module.exports = {
       '@typescript-eslint/parser': ['.ts'],
     },
     'import/resolver': {
-      "typescript": { },
+      'typescript': {},
     },
   },
 
@@ -58,6 +58,9 @@ module.exports = {
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/variables.js#L42
     '@typescript-eslint/no-use-before-define': ['off'],
 
+    // ESLint does not like TypeScript 3.8 syntax, e.g. "import { module } from 'file'"
+    'import/named': ['off'],
+
     // The Hanabi codebase uses cyclical dependencies because
     // various objects are attached to the global variables object,
     // but methods of these objects also reference/change global variables
@@ -70,11 +73,6 @@ module.exports = {
       groups: [['builtin', 'external', 'internal']],
       alphabetize: { order: 'asc', caseInsensitive: true },
     }],
-
-    // ESLint doesn't like TypeScript 3.8 syntax
-    // import { module } from 'file'
-    'import/named': ['off'],
-
 
     // The client makes use of some tasteful alerts
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js#L59

@@ -23,7 +23,7 @@
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-config-airbnb-typescript": "^8.0.2",
     "eslint-import-resolver-typescript": "^2.0.0",
-    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-import": "^2.21.2",
     "grunt": "^1.1.0",
     "grunt-contrib-concat": "^1.0.1",
     "grunt-contrib-cssmin": "^3.0.0",

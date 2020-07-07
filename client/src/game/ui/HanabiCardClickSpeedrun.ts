@@ -78,7 +78,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
   // (but if we are holding Ctrl, then we are using Empathy)
   if (
     card.state.location !== globals.playerUs
-    && cardRules.isOnPlayerHand(card.state)
+    && cardRules.isInPlayerHand(card.state)
     && card.state.suitIndex !== null
     && globals.clues !== 0
     && !event.ctrlKey
@@ -148,7 +148,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // Right-clicking on cards in other people's hands is a rank clue action
   if (
     card.state.location !== globals.playerUs
-    && cardRules.isOnPlayerHand(card.state)
+    && cardRules.isInPlayerHand(card.state)
     && card.state.rank !== null
     // It is not possible to clue a Start Card with a rank clue
     && card.state.rank !== START_CARD_RANK

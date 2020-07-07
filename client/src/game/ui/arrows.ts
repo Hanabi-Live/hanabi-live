@@ -65,7 +65,7 @@ export const set = (
         && element.state.location === globals.playerUs
       ) || (
         globals.lobby.settings.keldonMode
-        && (element.state.location !== globals.playerUs && cardRules.isOnPlayerHand(element.state))
+        && (element.state.location !== globals.playerUs && cardRules.isInPlayerHand(element.state))
       )
     ) {
       // In BGA mode, invert the arrows on our hand

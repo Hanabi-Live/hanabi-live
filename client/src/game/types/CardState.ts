@@ -1,6 +1,6 @@
 export default interface CardState {
   readonly order: number;
-  // If location is a number, it's the index of the player that holds this card
+  // If location is a number, it is the index of the player that holds this card
   readonly location: CardLocation;
   readonly suitIndex: number | null;
   readonly rank: number | null;

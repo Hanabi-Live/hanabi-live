@@ -21,7 +21,7 @@ export function isDiscarded(card: CardState) {
   return card.location === 'discard';
 }
 
-export function isOnPlayerHand(card: CardState) {
+export function isInPlayerHand(card: CardState) {
   return typeof card.location === 'number';
 }
 

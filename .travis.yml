@@ -11,13 +11,11 @@ matrix:
         # Use the latest stable Node.js release
         - node
       before_script:
-        - echo "Installing environment variables..."
-        - cp .env_template .env
         - cd client
-        - echo "Installing NPM modules..."
-        - npm install
-        - echo "Installing the Airbnb rules..."
-        - npx install-peerdeps --dev eslint-config-airbnb-base
+        #- echo "Installing environment variables..."
+        #- cp .env_template .env
+        - echo "Installing ESLint (the TypeScript linter) and the Airbnb rules..."
+        - ./install_client_linter.sh
       script:
         - echo "Building the client..."
         - ./build_client.sh
@@ -35,12 +33,9 @@ matrix:
         # This is needed so that Travis will use the "go.mod" file
         - GO111MODULE=on
       before_script:
-        # Install the Go linter
-        # https://github.com/golangci/golangci-lint
-        - echo "Installing golangci-lint (the Go linter)..."
         - cd server
-        - source .golangci-lint.version
-        - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin $GOLANGCI_LINT_VERSION
+        - echo "Installing golangci-lint (the Go linter)..."
+        - ./install_server_linter.sh
       script:
         - echo "Building the server..."
         - ./build_server.sh
