@@ -18,7 +18,8 @@ if [[ -z $DB_PORT ]]; then
   DB_PORT=5432
 fi
 
-psql --host="$DB_HOST" --port="$DB_PORT" --username="postgres" << EOF
+# This assumes that "postgres" and "hanabiuser" share the same password
+PGPASSWORD="$DB_PASS" psql --host="$DB_HOST" --port="$DB_PORT" --username="postgres" << EOF
 DROP DATABASE $DB_NAME;
 CREATE DATABASE $DB_NAME;
 GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;
@@ -26,4 +27,4 @@ GRANT USAGE ON SCHEMA public TO $DB_USER;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $DB_USER;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;
 EOF
-psql --host="$DB_HOST" --port="$DB_PORT" --username="postgres" < "$1"
+PGPASSWORD="$DB_PASS" psql --host="$DB_HOST" --port="$DB_PORT" --username="postgres" < "$1"
