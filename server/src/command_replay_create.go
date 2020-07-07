@@ -341,8 +341,10 @@ func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 	// Ensure that the number of game participants matches the number of players that are supposed
 	// to be in the game
 	if len(playerNames) != t.Options.NumPlayers {
-		logger.Error("There are not enough game participants for game " +
-			strconv.Itoa(d.GameID) + ".")
+		logger.Error("There are not enough game participants for game #" +
+			strconv.Itoa(d.GameID) + ". (There were " + strconv.Itoa(len(playerNames)) +
+			" players in the database and there should be " +
+			strconv.Itoa(t.Options.NumPlayers) + " players.)")
 		s.Error(InitGameFail)
 		return false
 	}
