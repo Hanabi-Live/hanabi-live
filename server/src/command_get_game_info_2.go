@@ -73,6 +73,11 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 		List:    scrubbedActions,
 	})
 
+	// Send them the full list of all the cards in the deck if the game is already over
+	if t.Replay {
+		s.NotifyCardIdentities(t)
+	}
+
 	// If it is their turn, send a "yourTurn" message
 	if !t.Replay && g.ActivePlayer == i {
 		s.NotifyYourTurn(t)

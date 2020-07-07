@@ -16,21 +16,6 @@ func (g *Game) End() {
 	}
 	logger.Info(t.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
 
-	// Append a final action with a listing of every card in the deck
-	// (so that the client will have it for hypotheticals)
-	cardIdentities := make([]CardIdentity, 0)
-	for _, c := range g.Deck {
-		cardIdentities = append(cardIdentities, CardIdentity{
-			SuitIndex: c.SuitIndex,
-			Rank:      c.Rank,
-		})
-	}
-	g.Actions = append(g.Actions, ActionCardIdentities{
-		Type:           "cardIdentities",
-		CardIdentities: cardIdentities,
-	})
-	t.NotifyGameAction()
-
 	// There will be no times associated with a replay, so don't bother with the rest of the code
 	if g.ExtraOptions.Replay {
 		return
@@ -70,6 +55,9 @@ func (g *Game) End() {
 
 	// Notify everyone that the game is over
 	t.NotifyGameOver()
+
+	// Give all of the players and spectators the full listing of the cards in the deck
+	t.NotifyCardIdentities()
 
 	// Notify everyone that the table was deleted
 	// (we will send a new table message later for the shared replay)
@@ -440,13 +428,13 @@ func (t *Table) ConvertToSharedReplay() {
 		sp.Session.NotifyNoteList(t)
 
 		// Send them the database ID
-		type IDMessage struct {
-			TableID int `json:"tableID"`
-			ID      int `json:"id"`
+		type DatabaseIDMessage struct {
+			TableID    int `json:"tableID"`
+			DatabaseID int `json:"databaseID"`
 		}
-		sp.Session.Emit("databaseID", &IDMessage{
-			TableID: t.ID,
-			ID:      g.ID,
+		sp.Session.Emit("databaseID", &DatabaseIDMessage{
+			TableID:    t.ID,
+			DatabaseID: g.ID,
 		})
 	}
 

@@ -146,7 +146,6 @@ const gameStateReducer = produce((
       break;
     }
 
-    case 'cardIdentities':
     case 'gameOver':
     case 'reorder':
     case 'turn': {

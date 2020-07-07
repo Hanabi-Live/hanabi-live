@@ -34,6 +34,7 @@ type Game struct {
 	// randomly selected by the server upon starting a game
 	Seed              string
 	Deck              []*Card
+	CardIdentities    []*CardIdentity // A bare-bones version of the deck
 	DeckIndex         int
 	Stacks            []int
 	StackDirections   []int // The values for this are listed in "constants.go"
@@ -95,6 +96,7 @@ func NewGame(t *Table) *Game {
 
 		Players:           make([]*GamePlayer, 0),
 		Deck:              make([]*Card, 0),
+		CardIdentities:    make([]*CardIdentity, 0),
 		Stacks:            make([]int, len(variants[t.Options.VariantName].Suits)),
 		StackDirections:   make([]int, len(variants[t.Options.VariantName].Suits)),
 		DatetimeTurnBegin: time.Now(),

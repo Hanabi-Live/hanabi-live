@@ -176,7 +176,6 @@ const cardsReducer = produce((
       break;
     }
 
-    case 'cardIdentities':
     case 'gameOver':
     case 'strike':
     case 'turn':

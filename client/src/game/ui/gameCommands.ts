@@ -10,6 +10,7 @@ import initialState from '../reducers/initialStates/initialState';
 import stateReducer from '../reducers/stateReducer';
 import * as variantRules from '../rules/variant';
 import { GameAction, ActionIncludingHypothetical } from '../types/actions';
+import CardIdentity from '../types/CardIdentity';
 import ClueType from '../types/ClueType';
 import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
@@ -76,10 +77,11 @@ commands.set('connected', (data: ConnectedData) => {
 });
 
 interface DatabaseIDData {
-  id: number;
+  tableID: number;
+  databaseID: number;
 }
 commands.set('databaseID', (data: DatabaseIDData) => {
-  globals.databaseID = data.id;
+  globals.databaseID = data.databaseID;
   globals.elements.gameIDLabel!.text(`ID: ${globals.databaseID}`);
   globals.elements.gameIDLabel!.show();
 
@@ -89,6 +91,14 @@ commands.set('databaseID', (data: DatabaseIDData) => {
   }
 
   globals.layers.arrow.batchDraw();
+});
+
+interface CardIdentitiesData {
+  tableID: number;
+  cardIdentities: CardIdentity[];
+}
+commands.set('cardIdentities', (data: CardIdentitiesData) => {
+  globals.store!.dispatch({ type: 'cardIdentities', cardIdentities: data.cardIdentities });
 });
 
 commands.set('gameOver', () => {
