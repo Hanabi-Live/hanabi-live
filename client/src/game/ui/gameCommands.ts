@@ -195,7 +195,8 @@ commands.set('hypoRevealed', (data: HypoRevealedData) => {
 
   // Redraw the cards drawn after the hypothetical started
   if (globals.hypoFirstDrawnIndex) {
-    for (let i = globals.hypoFirstDrawnIndex; i < globals.deckOrder.length; i++) {
+    const deckSize = globals.store?.getState().ongoingGame.deckSize!;
+    for (let i = globals.hypoFirstDrawnIndex; i < deckSize; i++) {
       globals.deck[i].replayRedraw();
     }
   }
@@ -443,10 +444,6 @@ const processNewAction = (actionMessage: GameAction) => {
         button.hide();
       }
     }
-  } else if (actionMessage.type === 'deckOrder') {
-    // The game is over and the server gave us a list of every card in the deck
-    // {deck: [{suitIndex: 0, rank: 1}, {suitIndex: 2, rank: 2}, ...], type: "deckOrder", }
-    globals.deckOrder = actionMessage.deck;
   }
 
   // Now that it is recorded, change the actual drawn game state

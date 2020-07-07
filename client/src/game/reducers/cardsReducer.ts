@@ -183,7 +183,7 @@ const cardsReducer = produce((
     case 'status':
     case 'stackDirections':
     case 'reorder':
-    case 'deckOrder': {
+    case 'cardIdentities': {
       // Actions that don't affect the card state
       break;
     }

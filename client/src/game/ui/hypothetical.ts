@@ -280,8 +280,9 @@ export const send = (hypoAction: ClientAction) => {
     });
 
     // Draw
+    /*
     const nextCardOrder = globals.indexOfLastDrawnCard + 1;
-    const nextCard = globals.deckOrder[nextCardOrder];
+    const nextCard = globals.cardIdentities[nextCardOrder];
     if (nextCard) { // All the cards might have already been drawn
       if (nextCard.suitIndex === null || nextCard.rank === null) {
         throw new Error('Unable to find the suit or rank of the next card.');
@@ -294,6 +295,7 @@ export const send = (hypoAction: ClientAction) => {
         who: globals.currentPlayerIndex,
       });
     }
+    */
   }
 
   // Status

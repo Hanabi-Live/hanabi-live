@@ -7,8 +7,8 @@ export type Action =
 | ActionListReceived;
 
 export type GameAction =
+| ActionCardIdentities
 | ActionClue
-| ActionDeckOrder
 | ActionDiscard
 | ActionDraw
 | ActionPlay
@@ -30,9 +30,16 @@ export type ReplayAction =
 | ActionHypotheticalBack
 | ActionHypothetical;
 
+// Initialization actions
 export interface ActionListReceived {
   type: 'gameActionList';
   readonly actions: GameAction[];
+}
+
+// Game actions
+export interface ActionCardIdentities {
+  type: 'cardIdentities';
+  readonly cardIdentities: CardIdentity[];
 }
 
 export interface ActionClue {
@@ -42,11 +49,6 @@ export interface ActionClue {
   readonly list: number[];
   readonly target: number;
   readonly turn: number;
-}
-
-export interface ActionDeckOrder {
-  type: 'deckOrder';
-  readonly deck: CardIdentity[];
 }
 
 export interface ActionDiscard {

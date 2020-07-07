@@ -148,9 +148,8 @@ const gameStateReducer = produce((
 
     case 'turn':
     case 'reorder':
-    case 'deckOrder': {
-      // Actions that don't affect the main state
-      // or are handled by another reducer
+    case 'cardIdentities': {
+      // Some actions do not affect the main state or are handled by another reducer
       break;
     }
 

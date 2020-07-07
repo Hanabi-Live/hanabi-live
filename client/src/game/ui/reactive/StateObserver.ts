@@ -57,6 +57,9 @@ export default class StateObserver {
     // Each card will subscribe to changes to its own data
     sub((s) => s.visibleState.deck.length, cardsView.onDeckChanged);
 
+    // Card identities
+    // sub((s) => s.cardIdentities.length, ??? TODO
+
     this.unsubscribe = observeStore(store, subscriptions);
   }
 

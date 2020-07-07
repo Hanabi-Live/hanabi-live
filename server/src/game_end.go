@@ -18,16 +18,16 @@ func (g *Game) End() {
 
 	// Append a final action with a listing of every card in the deck
 	// (so that the client will have it for hypotheticals)
-	deck := make([]CardIdentity, 0)
+	cardIdentities := make([]CardIdentity, 0)
 	for _, c := range g.Deck {
-		deck = append(deck, CardIdentity{
+		cardIdentities = append(cardIdentities, CardIdentity{
 			SuitIndex: c.SuitIndex,
 			Rank:      c.Rank,
 		})
 	}
-	g.Actions = append(g.Actions, ActionDeckOrder{
-		Type: "deckOrder",
-		Deck: deck,
+	g.Actions = append(g.Actions, ActionCardIdentities{
+		Type:           "cardIdentities",
+		CardIdentities: cardIdentities,
 	})
 	t.NotifyGameAction()
 
@@ -70,25 +70,6 @@ func (g *Game) End() {
 
 	// Notify everyone that the game is over
 	t.NotifyGameOver()
-
-	// Send "reveal" messages to each player about the missing cards in their hand
-	for _, gp := range g.Players {
-		p := t.Players[gp.Index]
-		if p.Present {
-			for _, c := range gp.Hand {
-				type RevealMessage struct {
-					SuitIndex int `json:"suitIndex"`
-					Rank      int `json:"rank"`
-					Order     int `json:"order"` // The ID of the card (based on its order in the deck)
-				}
-				p.Session.Emit("reveal", &RevealMessage{
-					SuitIndex: c.SuitIndex,
-					Rank:      c.Rank,
-					Order:     c.Order,
-				})
-			}
-		}
-	}
 
 	// Notify everyone that the table was deleted
 	// (we will send a new table message later for the shared replay)
