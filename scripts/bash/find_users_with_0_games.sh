@@ -16,7 +16,7 @@ if [[ -z $DB_NAME ]]; then
   exit 1
 fi
 
-mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" <<EOF
+PGPASSWORD="$DB_PASS" psql --host="$DB_HOST" --port="$DB_PORT" --username="$DB_USER" --dbname="$DB_NAME" <<EOF
 SELECT users.id, users.username, (
   SELECT COUNT(game_participants.game_id)
   FROM game_participants
