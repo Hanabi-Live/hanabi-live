@@ -7,9 +7,6 @@ GOLANGCI_LINT_VERSION="v1.27.0"
 # https://stackoverflow.com/questions/59895/getting-the-source-directory-of-a-bash-script-from-within
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-# Import the linter version
-source "$DIR/.golangci-lint.version"
-
 # Install the Golang linter
 # (it is not recommended to install this with "go get")
 # https://github.com/golangci/golangci-lint#install
