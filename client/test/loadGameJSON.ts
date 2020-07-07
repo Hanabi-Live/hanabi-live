@@ -83,7 +83,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
 
   // Fix the last action (game over)
   actions[actions.length - 1] = { type: 'gameOver', endCondition: 0, playerIndex: who };
-  actions[actions.length - 1] = { type: 'turn', num: turn, who: -1 };
+  actions.push({ type: 'turn', num: turn, who: -1 });
 
   // Run the list of states through the state reducer
   // NOTE: we need to fix the list of cards touched in a clue,
