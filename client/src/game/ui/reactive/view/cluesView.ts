@@ -17,7 +17,7 @@ function updateArrows(clues: readonly StateClue[], turn: number) {
 
   const lastClue = clues[clues.length - 1];
   if (!lastClue || lastClue.turn !== turn - 1) {
-    // Initializing, or we just got removed the first clue
+    // We are initializing (or we rewinded and just removed the first clue)
     return;
   }
 
