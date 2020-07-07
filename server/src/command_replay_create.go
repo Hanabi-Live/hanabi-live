@@ -93,6 +93,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 
 	// Load the players and options from the database or JSON file
 	if d.Source == "id" {
+		logger.Debug("XXXXXXXXX", d.GameID)
 		if !loadDatabaseToTable(s, d, t) {
 			delete(tables, t.ID)
 			return
@@ -106,6 +107,11 @@ func commandReplayCreate(s *Session, d *CommandData) {
 		TableID: t.ID,
 	})
 	g := t.Game
+	if g == nil {
+		logger.Error("Failed to start the game for replay " + strconv.Itoa(d.GameID) + ".")
+		delete(tables, t.ID)
+		return
+	}
 	if d.Source == "id" {
 		g.ID = d.GameID
 	}
