@@ -57,7 +57,7 @@ for line in game_ids:
     cursor.close()
     max_turn = row[0]
 
-    for i in range(0, num_actions_to_delete):
+    for i in range(0, int(num_actions_to_delete)):
         cursor = conn.cursor()
         cursor.execute(
             "DELETE FROM game_actions WHERE game_id = %s AND turn = %s",
