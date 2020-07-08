@@ -78,7 +78,7 @@ export function onDiscardStacksChanged(discardStacks: ReadonlyArray<readonly num
 }
 
 export function onPlayStacksChanged(playStacks: ReadonlyArray<readonly number[]>) {
-  const childrenChanged = syncChildren(
+  syncChildren(
     playStacks,
     (i) => {
       const suit = globals.variant.suits[i];
@@ -86,11 +86,10 @@ export function onPlayStacksChanged(playStacks: ReadonlyArray<readonly number[]>
     },
     (card) => card.animateToPlayStacks(),
   );
-  console.log('onPlayStacksChanged:', childrenChanged);
-  childrenChanged.forEach((changed, i) => {
-    if (changed) {
-      const suit = globals.variant.suits[i];
-      const playStack = globals.elements.playStacks.get(suit)!;
+  globals.variant.suits.forEach((suit) => {
+    const playStack = globals.elements.playStacks.get(suit)!;
+    if (playStack.children.length === 1) {
+      // Only the stack base remains, make sure it's visible
       playStack.hideCardsUnderneathTheTopCard();
     }
   });
@@ -103,16 +102,13 @@ function syncChildren(
 ) {
   const getCard = (order: number) => globals.deck[order];
 
-  return collections.map((collection, i) => {
-    const oldParentElement = getCollectionUI(i);
-    const getCurrentSorting = () => (oldParentElement.children.toArray() as LayoutChild[])
+  collections.forEach((collection, i) => {
+    const getCurrentSorting = () => (getCollectionUI(i).children.toArray() as LayoutChild[])
       .map((layoutChild) => layoutChild.children[0] as unknown as HanabiCard)
       .filter((card) => card.state.rank !== STACK_BASE_RANK)
       .map((card) => card.state.order);
 
     let current = getCurrentSorting();
-
-    const changed = !equal(current, collection);
 
     // Remove the elements that were removed
     current
@@ -157,7 +153,5 @@ function syncChildren(
     if (!equal(current, collection)) {
       throw new Error('The UI collection is out of sync with the state.');
     }
-
-    return changed;
   });
 }
