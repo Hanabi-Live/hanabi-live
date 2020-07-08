@@ -420,9 +420,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     } else {
       suitIndex = this.variant.suits.indexOf(suitToShow);
     }
+
     this.setDirectionArrow(suitIndex);
     this.setFade();
     this.setCritical();
+
+    globals.layers.card.batchDraw();
   }
 
   // Show or hide the direction arrow (for specific variants)
