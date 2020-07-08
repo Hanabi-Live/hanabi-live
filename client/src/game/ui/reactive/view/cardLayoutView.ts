@@ -7,8 +7,6 @@ import globals from '../../globals';
 import HanabiCard from '../../HanabiCard';
 import LayoutChild from '../../LayoutChild';
 
-type SyncChildrenLocation = 'deck' | 'discard' | 'playStack' | 'hand';
-
 export function onStackDirectionsChanged(directions: readonly StackDirection[]) {
   if (!variantRules.hasReversedSuits(globals.variant)) {
     return;
@@ -62,7 +60,6 @@ export function onStackDirectionsChanged(directions: readonly StackDirection[]) 
 
 export function onHandsChanged(hands: ReadonlyArray<readonly number[]>) {
   syncChildren(
-    'hand',
     hands,
     (i) => globals.elements.playerHands[i] as unknown as Konva.Container,
     (card, i) => card.animateToPlayerHand(i),
@@ -71,7 +68,6 @@ export function onHandsChanged(hands: ReadonlyArray<readonly number[]>) {
 
 export function onDiscardStacksChanged(discardStacks: ReadonlyArray<readonly number[]>) {
   syncChildren(
-    'discard',
     discardStacks,
     (i) => {
       const suit = globals.variant.suits[i];
@@ -83,7 +79,6 @@ export function onDiscardStacksChanged(discardStacks: ReadonlyArray<readonly num
 
 export function onPlayStacksChanged(playStacks: ReadonlyArray<readonly number[]>) {
   const childrenChanged = syncChildren(
-    'playStack',
     playStacks,
     (i) => {
       const suit = globals.variant.suits[i];
@@ -92,27 +87,23 @@ export function onPlayStacksChanged(playStacks: ReadonlyArray<readonly number[]>
     (card) => card.animateToPlayStacks(),
   );
   console.log('onPlayStacksChanged:', childrenChanged);
-  for (let i = 0; i < childrenChanged.length; i++) {
-    if (!childrenChanged[i]) {
-      continue;
+  childrenChanged.forEach((changed, i) => {
+    if (changed) {
+      const suit = globals.variant.suits[i];
+      const playStack = globals.elements.playStacks.get(suit)!;
+      playStack.hideCardsUnderneathTheTopCard();
     }
-    const suit = globals.variant.suits[i];
-    const playStack = globals.elements.playStacks.get(suit)!;
-    playStack.hideCardsUnderneathTheTopCard();
-  }
+  });
 }
 
 function syncChildren(
-  oldLocation: SyncChildrenLocation,
   collections: ReadonlyArray<readonly number[]>,
   getCollectionUI: (i: number) => Konva.Container,
   addToCollectionUI: (card: HanabiCard, i: number) => void,
 ) {
-  console.log(oldLocation);
   const getCard = (order: number) => globals.deck[order];
 
   return collections.map((collection, i) => {
-    let changed = false;
     const oldParentElement = getCollectionUI(i);
     const getCurrentSorting = () => (oldParentElement.children.toArray() as LayoutChild[])
       .map((layoutChild) => layoutChild.children[0] as unknown as HanabiCard)
@@ -121,12 +112,13 @@ function syncChildren(
 
     let current = getCurrentSorting();
 
+    const changed = !equal(current, collection);
+
     // Remove the elements that were removed
     current
       .filter((n) => !collection.includes(n))
       .map(getCard)
       .forEach((card) => {
-        changed = true;
         const realState = globals.store?.getState().visibleState.deck[card.state.order];
         if (!realState || realState.location === 'deck') {
           card.animateToDeck();
@@ -139,10 +131,7 @@ function syncChildren(
     collection
       .filter((n) => !current.includes(n))
       .map(getCard)
-      .forEach((card) => {
-        changed = true;
-        return addToCollectionUI(card, i);
-      });
+      .forEach((card) => addToCollectionUI(card, i));
 
     // Reorder the elements to match the collection
     collection.forEach((order, pos) => {
@@ -154,12 +143,10 @@ function syncChildren(
       const layoutChild = getCard(order).parent as unknown as LayoutChild;
       let sourcePosition = current.indexOf(order);
       while (sourcePosition < pos) {
-        changed = true;
         layoutChild.moveUp();
         sourcePosition += 1;
       }
       while (sourcePosition > pos) {
-        changed = true;
         layoutChild.moveDown();
         sourcePosition -= 1;
       }
