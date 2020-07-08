@@ -75,7 +75,6 @@ export default class PlayStack extends Konva.Group {
 
   hideCardsUnderneathTheTopCard() {
     const stackLength = this.children.length;
-    console.log('hideCardsUnderneathTheTopCard', stackLength);
 
     for (let i = 0; i < stackLength; i++) {
       const node = this.children[i] as unknown as LayoutChild;
