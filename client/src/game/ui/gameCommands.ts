@@ -496,9 +496,6 @@ commands.set('gameActionList', (data: GameActionListData) => {
     }
   }
 
-  // The game is now initialized
-  globals.animateFast = false;
-
   // Initialize solo replays to the first turn (otherwise, nothing will be drawn)
   if (globals.replay && !globals.sharedReplay) {
     replay.goto(0, true);
@@ -512,8 +509,6 @@ commands.set('gameActionList', (data: GameActionListData) => {
     replay.goto(turnNum, true);
   }
 
-  globals.loading = false;
-
   // Subscribe to state changes
   // TODO: this is not a great place to do this
   if (globals.stateObserver) {
@@ -521,6 +516,10 @@ commands.set('gameActionList', (data: GameActionListData) => {
   } else {
     globals.stateObserver = new StateObserver(globals.store!);
   }
+
+  // The game is now initialized
+  globals.loading = false;
+  globals.animateFast = false;
 });
 
 interface PauseData {
