@@ -1,5 +1,5 @@
 import Konva from 'konva';
-import drawLayer from '../drawLayer';
+import { drawLayer } from '../konvaHelpers';
 import FitText from './FitText';
 
 export default class Button extends Konva.Group {

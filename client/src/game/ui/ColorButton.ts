@@ -2,9 +2,9 @@ import Konva from 'konva';
 import * as variantRules from '../rules/variant';
 import Clue from '../types/Clue';
 import Suit from '../types/Suit';
-import drawLayer from './drawLayer';
 import drawPip from './drawPip';
 import globals from './globals';
+import { drawLayer } from './konvaHelpers';
 
 export default class ColorButton extends Konva.Group {
   pressed: boolean = false;

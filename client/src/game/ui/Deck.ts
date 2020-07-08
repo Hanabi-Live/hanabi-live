@@ -6,6 +6,7 @@ import { ActionType } from '../types/ClientAction';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import * as arrows from './arrows';
 import globals from './globals';
+import { animate } from './konvaHelpers';
 import * as tooltips from './tooltips';
 import * as turn from './turn';
 
@@ -14,6 +15,7 @@ export default class Deck extends Konva.Group {
   numLeftText: Konva.Text;
   tooltipName: string = 'deck';
   tooltipContent: string = '';
+  tween: Konva.Tween | null = null;
 
   constructor(config: Konva.ContainerConfig) {
     super(config);
@@ -119,8 +121,7 @@ export default class Deck extends Konva.Group {
       turn.hideClueUIAndDisableDragging();
     } else {
       // The deck was dragged to an invalid location, so animate the card back to where it was
-      new Konva.Tween({
-        node: this,
+      animate(this, {
         duration: 0.5,
         x: 0,
         y: 0,
@@ -131,7 +132,7 @@ export default class Deck extends Konva.Group {
             layer.batchDraw();
           }
         },
-      }).play();
+      });
     }
   }
 

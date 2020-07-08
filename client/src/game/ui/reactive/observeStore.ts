@@ -2,7 +2,7 @@ import equal from 'fast-deep-equal';
 import { Store, Action } from 'redux';
 
 export type Selector<T, U> = (s: T) => U | undefined;
-export type Listener<U> = (prop: U) => void;
+export type Listener<U> = (prop: U, oldValue: U | undefined) => void;
 export type Subscription<T, U> = {
   select: Selector<T, U>;
   onChange: Listener<U>;
@@ -37,7 +37,11 @@ export default function observeStore<S, A extends Action<any>, T>(
         // Fire if any part of it changed
         return !equal(nextValue, s.select(currentState));
       })
-      .forEach((s) => s.onChange(s.select(nextState)!));
+      .forEach((s) => {
+        // currentState is undefined during initialization
+        const currentValue = currentState ? s.select(currentState) : undefined;
+        s.onChange(s.select(nextState)!, currentValue);
+      });
 
     currentState = nextState;
   }

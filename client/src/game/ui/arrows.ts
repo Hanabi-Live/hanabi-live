@@ -19,6 +19,7 @@ import StrikeSquare from './controls/StrikeSquare';
 import drawPip from './drawPip';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
+import * as konvaHelpers from './konvaHelpers';
 
 export const hideAll = () => {
   let changed = false;
@@ -262,13 +263,12 @@ const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, tur
   // (this must be done after the card is finished tweening)
   const pos = getPos(card, rot);
 
-  arrow.tween = new Konva.Tween({
-    node: arrow,
+  konvaHelpers.animate(arrow, {
     duration: 0.5,
     x: pos.x,
     y: pos.y,
     easing: Konva.Easings.EaseOut,
-  }).play();
+  });
 };
 
 export const click = (
