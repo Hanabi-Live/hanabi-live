@@ -29,7 +29,7 @@ export default class ButtonGroup extends Konva.Group {
         }
       }
 
-      self.fire('change', null);
+      self.fire('change', {});
     });
   }
 

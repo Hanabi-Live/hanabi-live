@@ -693,6 +693,7 @@ const drawDeck = () => {
     cornerRadius: 0.01 * winH,
     strokeWidth: 0.01056 * winH,
     visible: false,
+    listening: false,
   });
   globals.layers.UI.add(globals.elements.deckPlayAvailableLabel);
 };
@@ -888,7 +889,7 @@ const drawScoreArea = () => {
   globals.elements.cluesNumberLabelPulse.anim.addLayer(globals.layers.UI);
 
   // Draw the 3 strike (bomb) black squares / X's
-  function strikeClick(this: StrikeSquare | StrikeX, event: Konva.KonvaEventObject<MouseEvent>) {
+  function strikeClick(this: StrikeSquare, event: Konva.KonvaEventObject<MouseEvent>) {
     switch (event.evt.button) {
       case 0: { // Left-click
         // Left-clicking a strike X or a strike square takes us to the turn that the strike happened
@@ -960,7 +961,7 @@ const drawScoreArea = () => {
       height: 0.036 * winH,
       image: globals.imageLoader!.get('x')!,
       opacity: 0,
-      listening: true,
+      listening: false,
     }, i);
     globals.elements.scoreArea.add(strikeX);
     globals.elements.strikeXs.push(strikeX);
@@ -988,7 +989,6 @@ const drawScoreArea = () => {
     // Click on the strike to go to the turn that the strike happened, if any
     // (and highlight the card that misplayed)
     strikeSquare.on('click tap', strikeClick);
-    strikeX.on('click tap', strikeClick);
   }
 };
 
@@ -1392,6 +1392,7 @@ const drawDiscardArea = () => {
     fill: 'black',
     opacity: 0.2,
     cornerRadius: 0.01 * winW,
+    listening: false,
   });
   globals.layers.UI.add(discardAreaRect);
 

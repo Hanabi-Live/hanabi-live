@@ -1,9 +1,12 @@
 import Konva from 'konva';
-import * as KonvaBaseLayer from 'konva/types/BaseLayer';
 import globals from './globals';
 
-export const drawLayer = (node: Konva.Node) => {
-  const layer = node.getLayer() as KonvaBaseLayer.BaseLayer | null;
+function getLayer(node: Konva.Node) {
+  return node.getLayer() as Konva.Layer | null;
+}
+
+export function drawLayer(node: Konva.Node) {
+  const layer = getLayer(node);
   if (layer) {
     layer.batchDraw();
   }
