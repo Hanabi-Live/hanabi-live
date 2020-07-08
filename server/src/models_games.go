@@ -441,6 +441,7 @@ func (*Games) GetOptions(databaseID int) (*Options, error) {
 	var variantID int
 	if err := db.QueryRow(context.Background(), `
 		SELECT
+			num_players,
 			starting_player,
 			variant,
 			timed,
@@ -457,6 +458,7 @@ func (*Games) GetOptions(databaseID int) (*Options, error) {
 		FROM games
 		WHERE games.id = $1
 	`, databaseID).Scan(
+		&options.NumPlayers,
 		&options.StartingPlayer,
 		&variantID,
 		&options.Timed,
