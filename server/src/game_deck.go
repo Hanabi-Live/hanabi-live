@@ -78,5 +78,6 @@ func (g *Game) ShuffleDeck() {
 	for i := range g.Deck {
 		j := rand.Intn(i + 1)
 		g.Deck[i], g.Deck[j] = g.Deck[j], g.Deck[i]
+		g.CardIdentities[i], g.CardIdentities[j] = g.CardIdentities[j], g.CardIdentities[i]
 	}
 }
