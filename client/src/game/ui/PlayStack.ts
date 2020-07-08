@@ -37,7 +37,7 @@ export default class PlayStack extends Konva.Group {
         node.scaleY(scale);
         node.rotation(0);
         node.opacity(opacity);
-        this.hideUnder();
+        this.hideCardsUnderneathTheTopCard();
       } else {
         // Animate the card leaving the hand to the play stacks
         // (tweening from the hand to the discard pile is handled in
@@ -65,7 +65,7 @@ export default class PlayStack extends Konva.Group {
             } else {
               card.tweening = false;
               node.checkSetDraggable();
-              this.hideUnder();
+              this.hideCardsUnderneathTheTopCard();
             }
           },
         }).play();
@@ -73,28 +73,30 @@ export default class PlayStack extends Konva.Group {
     }
   }
 
-  hideUnder() {
-    const n = this.children.length;
+  hideCardsUnderneathTheTopCard() {
+    const stackLength = this.children.length;
 
     // If the play stack only has the stack base on it, then we do not need to hide anything
-    if (n === 1) {
+    if (stackLength === 1) {
       return;
     }
 
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < stackLength; i++) {
       const node = this.children[i] as unknown as LayoutChild;
-      if (!node.tween) {
-        continue;
-      }
       if (node.tween !== null) {
+        // Don't hide anything if one of the cards on the stack is still tweening
         return;
       }
     }
-    for (let i = 0; i < n - 1; i++) {
+
+    // Hide all of the cards
+    for (let i = 0; i < stackLength - 1; i++) {
       this.children[i].hide();
     }
-    if (n > 0) {
-      this.children[n - 1].show();
+
+    // Show the top card
+    if (stackLength > 0) {
+      this.children[stackLength - 1].show();
     }
   }
 
