@@ -38,6 +38,10 @@ export default class PlayStack extends Konva.Group {
         node.rotation(0);
         node.opacity(opacity);
         this.hideCardsUnderneathTheTopCard();
+        if (node.tween) {
+          node.tween.destroy();
+        }
+        node.tween = null;
       } else {
         // Animate the card leaving the hand to the play stacks
         // (tweening from the hand to the discard pile is handled in
@@ -63,6 +67,10 @@ export default class PlayStack extends Konva.Group {
               // the tween will still finish if the user goes backward in a replay
               // card.animateToDiscardPile(); // TODO
             } else {
+              if (node.tween) {
+                node.tween.destroy();
+              }
+              node.tween = null;
               card.tweening = false;
               node.checkSetDraggable();
               this.hideCardsUnderneathTheTopCard();
