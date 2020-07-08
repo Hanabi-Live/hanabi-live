@@ -51,8 +51,8 @@ const replayReducer = produce((
       break;
     }
     case 'hypoAction': {
-      // TODO: the game reducer doesn't care about the reveal action, yet
-      if (action.action.type === 'reveal') {
+      // TODO: the game reducer doesn't care about the morph action, yet
+      if (action.action.type === 'morph') {
         break;
       }
 

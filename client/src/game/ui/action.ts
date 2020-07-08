@@ -6,13 +6,13 @@ import * as variantRules from '../rules/variant';
 import {
   ActionDiscard,
   ActionDraw,
+  ActionIncludingHypothetical,
+  ActionMorph,
   ActionPlay,
   ActionReorder,
   ActionStatus,
   ActionStrike,
   ActionTurn,
-  ActionIncludingHypothetical,
-  ActionReveal,
 } from '../types/actions';
 import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
@@ -269,7 +269,7 @@ actionFunctions.set('text', () => {
   // Nothing! TODO: remove
 });
 
-actionFunctions.set('reveal', (data: ActionReveal) => {
+actionFunctions.set('morph', (data: ActionMorph) => {
   console.log(data, 'TODO');
   /*
   // This is the reveal for hypotheticals when a card is morphed

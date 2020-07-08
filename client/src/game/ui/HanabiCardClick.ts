@@ -218,7 +218,7 @@ const clickMorph = (order: number) => {
   if (cardText === 'blank') {
     // Don't bother with all of the text parsing below
     hypothetical.sendHypoAction({
-      type: 'reveal',
+      type: 'morph',
       order,
       suitIndex: -1,
       rank: -1,
@@ -235,7 +235,7 @@ const clickMorph = (order: number) => {
 
   // Tell the server that we are morphing a card
   hypothetical.sendHypoAction({
-    type: 'reveal',
+    type: 'morph',
     order,
     suitIndex: cardIdentity.suitIndex,
     rank: cardIdentity.rank,
