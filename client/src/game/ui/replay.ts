@@ -8,6 +8,7 @@ import action from './action';
 import cardStatusCheck from './cardStatusCheck';
 import Shuttle from './controls/Shuttle';
 import globals from './globals';
+import { animate } from './konvaHelpers';
 import * as tooltips from './tooltips';
 import * as turn from './turn';
 
@@ -302,26 +303,13 @@ const positionReplayShuttle = (
     y -= 0.003 * winH;
   }
   const scale = smaller ? 0.7 : 1;
-  if (fast) {
-    shuttle.x(x);
-    shuttle.y(y);
-    shuttle.scaleX(scale);
-    shuttle.scaleY(scale);
-  } else {
-    if (shuttle.tween !== null) {
-      shuttle.tween.destroy();
-      shuttle.tween = null;
-    }
-    shuttle.tween = new Konva.Tween({
-      x,
-      y,
-      scaleX: scale,
-      scaleY: scale,
-      node: shuttle,
-      duration: 0.25,
-      easing: Konva.Easings.EaseOut,
-    }).play();
-  }
+  animate(shuttle, {
+    duration: 0.25,
+    x,
+    y,
+    scale,
+    easing: Konva.Easings.EaseOut,
+  }, fast, true);
 };
 
 export const adjustShuttles = (fast: boolean) => {

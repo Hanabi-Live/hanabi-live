@@ -6,6 +6,7 @@ import * as variantRules from '../rules/variant';
 import { STACK_BASE_RANK } from '../types/constants';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
+import { animate } from './konvaHelpers';
 import LayoutChild from './LayoutChild';
 
 export default class PlayStack extends Konva.Group {
@@ -30,64 +31,36 @@ export default class PlayStack extends Konva.Group {
         && !stackBase // We want the stack bases to always be visible
       ) ? 0 : 1;
 
-      if (globals.animateFast) {
-        node.x(0);
-        node.y(0);
-        node.scaleX(scale);
-        node.scaleY(scale);
-        node.rotation(0);
-        node.opacity(opacity);
-        this.hideCardsUnderneathTheTopCard();
-        if (node.tween) {
-          node.tween.destroy();
-        }
-        node.tween = null;
-      } else {
-        // Animate the card leaving the hand to the play stacks
-        // (tweening from the hand to the discard pile is handled in
-        // the "CardLayout" object)
-        card.tweening = true;
-        node.tween = new Konva.Tween({
-          node,
-          duration: 0.8,
-          x: 0,
-          y: 0,
-          scaleX: scale,
-          scaleY: scale,
-          rotation: 0,
-          opacity,
-          easing: Konva.Easings.EaseOut,
-          onFinish: () => {
-            if (!node || !card || !card.parent) {
-              return;
-            }
-            if (card.state.isMisplayed && card.parent.parent) {
-              // If the card is misplayed, then tween it to the discard pile
-              // We check for "card.parent.parent" to fix the bug where
-              // the tween will still finish if the user goes backward in a replay
-              // card.animateToDiscardPile(); // TODO
-            } else {
-              if (node.tween) {
-                node.tween.destroy();
-              }
-              node.tween = null;
-              card.tweening = false;
-              node.checkSetDraggable();
-              this.hideCardsUnderneathTheTopCard();
-            }
-          },
-        }).play();
-      }
+      // Animate the card leaving the hand to the play stacks
+      // (tweening from the hand to the discard pile is handled in
+      // the "CardLayout" object)
+      card.tweening = true;
+      animate(node, {
+        duration: 0.8,
+        x: 0,
+        y: 0,
+        scale,
+        rotation: 0,
+        opacity,
+        easing: Konva.Easings.EaseOut,
+        onFinish: () => {
+          if (!node || !card || !card.parent) {
+            return;
+          }
+          if (node.tween) {
+            node.tween.destroy();
+            node.tween = null;
+          }
+          card.tweening = false;
+          node.checkSetDraggable();
+          this.hideCardsUnderneathTheTopCard();
+        },
+      });
     }
   }
 
   hideCardsUnderneathTheTopCard() {
     const stackLength = this.children.length;
-
-    // If the play stack only has the stack base on it, then we do not need to hide anything
-    if (stackLength === 1) {
-      return;
-    }
 
     for (let i = 0; i < stackLength; i++) {
       const node = this.children[i] as unknown as LayoutChild;

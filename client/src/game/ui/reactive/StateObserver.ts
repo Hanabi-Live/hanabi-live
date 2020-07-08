@@ -47,11 +47,13 @@ export default class StateObserver {
     // Logs
     sub((s) => s.visibleState.log, logView.onLogChanged);
 
-    // Card layout
-    sub((s) => s.visibleState.playStacksDirections, cardLayoutView.onStackDirectionsChanged);
+    // Card layout - the order of the following subscriptions matters
+    // Hands have to come first to perform the add-removes so we get nice animations
     sub((s) => s.visibleState.hands, cardLayoutView.onHandsChanged);
     sub((s) => s.visibleState.discardStacks, cardLayoutView.onDiscardStacksChanged);
+    // Play stacks come last so we can show the bases if they get empty
     sub((s) => s.visibleState.playStacks, cardLayoutView.onPlayStacksChanged);
+    sub((s) => s.visibleState.playStacksDirections, cardLayoutView.onStackDirectionsChanged);
 
     // Clues (arrows + log)
     sub((s) => ({

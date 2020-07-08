@@ -73,11 +73,20 @@ export function onDiscardStacksChanged(discardStacks: ReadonlyArray<readonly num
       const suit = globals.variant.suits[i];
       return globals.elements.discardStacks.get(suit)! as unknown as Konva.Container;
     },
-    (card) => card.animateToDiscardPile(),
+    (card) => {
+      if (card.state.isMisplayed) {
+        card.doMisplayAnimation = true;
+      }
+      card.animateToDiscardPile();
+    },
+
   );
 }
 
-export function onPlayStacksChanged(playStacks: ReadonlyArray<readonly number[]>) {
+export function onPlayStacksChanged(
+  playStacks: ReadonlyArray<readonly number[]>,
+  previousPlayStacks: ReadonlyArray<readonly number[]> | undefined,
+) {
   syncChildren(
     playStacks,
     (i) => {
@@ -86,6 +95,14 @@ export function onPlayStacksChanged(playStacks: ReadonlyArray<readonly number[]>
     },
     (card) => card.animateToPlayStacks(),
   );
+  playStacks.forEach((stack, i) => {
+    if (previousPlayStacks === undefined || !equal(stack, previousPlayStacks[i])) {
+      const suit = globals.variant.suits[i];
+      const playStack = globals.elements.playStacks.get(suit)!;
+      playStack.hideCardsUnderneathTheTopCard();
+    }
+  });
+  globals.layers.card.batchDraw();
 }
 
 function syncChildren(

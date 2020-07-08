@@ -5,6 +5,7 @@ import Konva from 'konva';
 import * as cardRules from '../rules/card';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
+import { animate } from './konvaHelpers';
 import LayoutChild from './LayoutChild';
 
 export default class CardLayout extends Konva.Group {
@@ -120,32 +121,55 @@ export default class CardLayout extends Konva.Group {
         // and animate the rest of the cards sliding over
         const card = node.children[0] as unknown as HanabiCard;
         card.tweening = true;
+
+        const animateToLayout = () => {
+          animate(node, {
+            duration: 0.5,
+            x: newX,
+            y: 0,
+            scale,
+            rotation: 0,
+            opacity: 1,
+            easing: Konva.Easings.EaseOut,
+            onFinish: () => {
+              if (!card || !node) {
+                return;
+              }
+              card.tweening = false;
+              node.checkSetDraggable();
+              if (!storedPostAnimationLayout) {
+                return;
+              }
+              storedPostAnimationLayout();
+            },
+          });
+        };
+
         if (card.doMisplayAnimation) {
           // If this card just misplayed, do a special animation
           card.doMisplayAnimation = false;
-          node.rotation(360);
+
+          const suit = globals.variant.suits[card.state.suitIndex!];
+          const playStack = globals.elements.playStacks.get(suit)!;
+          const pos = this.getAbsolutePosition();
+          const playStackPos = playStack.getAbsolutePosition();
+
+          animate(node, {
+            duration: 0.5,
+            x: playStackPos.x - pos.x,
+            y: playStackPos.y - pos.y,
+            scale: playStack.height() * scale / lh,
+            rotation: 0,
+            opacity: 1,
+            easing: Konva.Easings.EaseOut,
+            onFinish: () => {
+              node.rotation(360);
+              animateToLayout();
+            },
+          });
+        } else {
+          animateToLayout();
         }
-        node.tween = new Konva.Tween({
-          node,
-          duration: 0.5,
-          x: newX,
-          y: 0,
-          scaleX: scale,
-          scaleY: scale,
-          rotation: 0,
-          easing: Konva.Easings.EaseOut,
-          onFinish: () => {
-            if (!card || !node) {
-              return;
-            }
-            card.tweening = false;
-            node.checkSetDraggable();
-            if (!storedPostAnimationLayout) {
-              return;
-            }
-            storedPostAnimationLayout();
-          },
-        }).play();
       }
 
       x += ((scale * node.width()) + dist) * (this.reverse ? -1 : 1);

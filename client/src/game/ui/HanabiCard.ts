@@ -29,6 +29,7 @@ import globals from './globals';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
 import * as HanabiCardInit from './HanabiCardInit';
+import { animate } from './konvaHelpers';
 import LayoutChild from './LayoutChild';
 import * as notes from './notes';
 
@@ -622,12 +623,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
     // and the user rewinds to the beginning of the replay
     child!.visible(true);
+    child!.rotation(-globals.elements.playerHands[holder].rotation());
     child!.opacity(1); // Cards can be faded in certain variants
     if (!oldParent) {
       // Animate from the deck
       const deckPos = globals.elements.deck!.cardBack.getAbsolutePosition();
       child!.setAbsolutePosition(deckPos);
-      child!.rotation(-globals.elements.playerHands[holder].rotation());
       const scale = globals.elements.deck!.cardBack.width() / CARD_W;
       child!.scale({
         x: scale,
@@ -662,13 +663,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       child.setAbsolutePosition(pos);
       // Animate to the deck
       this.tweening = true;
-      child.tween = new Konva.Tween({
-        node: child,
+      animate(child, {
         duration: 0.5,
         x: 0,
         y: 0,
-        scaleX: scale,
-        scaleY: scale,
+        scale,
         rotation: 0,
         easing: Konva.Easings.EaseOut,
         onFinish: () => {
@@ -680,7 +679,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
           child.hide();
           this.removeFromParent();
         },
-      }).play();
+      });
     }
   }
 

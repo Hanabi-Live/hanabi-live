@@ -2,9 +2,9 @@
 
 import Konva from 'konva';
 import FitText from './controls/FitText';
-import drawLayer from './drawLayer';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
+import { drawLayer } from './konvaHelpers';
 import * as replay from './replay';
 
 export default class ClueEntry extends Konva.Group {

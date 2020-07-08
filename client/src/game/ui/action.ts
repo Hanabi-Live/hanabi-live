@@ -1,6 +1,5 @@
 // The "gameAction" WebSocket command communicate a change in the game state
 
-import Konva from 'konva';
 import { nullIfNegative } from '../../misc';
 // import { getCharacter } from '../data/gameData';
 import * as variantRules from '../rules/variant';
@@ -20,6 +19,7 @@ import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
+import { animate } from './konvaHelpers';
 import LayoutChild from './LayoutChild';
 import strikeRecord from './strikeRecord';
 import updateCurrentPlayerArea from './updateCurrentPlayerArea';
@@ -258,15 +258,7 @@ actionFunctions.set('strike', (data: ActionStrike) => {
   const strikeX = globals.elements.strikeXs[i];
 
   // Animate the strike square fading in
-  if (globals.animateFast) {
-    strikeX.opacity(1);
-  } else {
-    strikeX.tween = new Konva.Tween({
-      node: strikeX,
-      opacity: 1,
-      duration: 1,
-    }).play();
-  }
+  animate(strikeX, { duration: 1, opacity: 1 });
 
   // Record the turn that the strike happened and the card that was misplayed
   strikeRecord(data);

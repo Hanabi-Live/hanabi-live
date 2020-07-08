@@ -2,8 +2,8 @@
 
 import * as misc from '../../misc';
 import TimerDisplay from './controls/TimerDisplay';
-import drawLayer from './drawLayer';
 import globals from './globals';
+import { drawLayer } from './konvaHelpers';
 
 export interface ClockData {
   times: number[];
