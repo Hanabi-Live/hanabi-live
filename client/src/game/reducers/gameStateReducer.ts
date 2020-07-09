@@ -148,7 +148,10 @@ const gameStateReducer = produce((
     }
 
     case 'gameOver': {
-      if (action.endCondition !== EndCondition.Normal) {
+      if (
+        action.endCondition !== EndCondition.InProgress
+        && action.endCondition !== EndCondition.Normal
+      ) {
         state.score = 0;
       }
       break;
