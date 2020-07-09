@@ -9,6 +9,7 @@ import { ensureAllCases } from '../../misc';
 import { getVariant } from '../data/gameData';
 import * as clues from '../rules/clueTokens';
 import { GameAction } from '../types/actions';
+import EndCondition from '../types/EndCondition';
 import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
 import TurnState from '../types/TurnState';
@@ -146,7 +147,13 @@ const gameStateReducer = produce((
       break;
     }
 
-    case 'gameOver':
+    case 'gameOver': {
+      if (action.endCondition > EndCondition.Normal) {
+        state.score = 0;
+      }
+      break;
+    }
+
     case 'reorder':
     case 'turn': {
       // Some actions do not affect the main state or are handled by another reducer
