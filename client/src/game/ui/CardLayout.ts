@@ -120,7 +120,7 @@ export default class CardLayout extends Konva.Group {
         // (or from the hand to the discard pile)
         // and animate the rest of the cards sliding over
         const card = node.children[0] as unknown as HanabiCard;
-        card.tweening = true;
+        card.startedTweening();
 
         const animateToLayout = () => {
           animate(node, {
@@ -135,7 +135,7 @@ export default class CardLayout extends Konva.Group {
               if (!card || !node) {
                 return;
               }
-              card.tweening = false;
+              card.finishedTweening();
               node.checkSetDraggable();
               if (!storedPostAnimationLayout) {
                 return;

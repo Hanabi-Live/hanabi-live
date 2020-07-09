@@ -58,7 +58,31 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return this._variant;
   }
 
-  tweening: boolean = false;
+  private _tweening: boolean = false;
+  private tweenCallbacks: Function[] = [];
+
+  get tweening() {
+    return this._tweening;
+  }
+
+  startedTweening() {
+    this._tweening = true;
+  }
+
+  finishedTweening() {
+    this._tweening = false;
+    this.tweenCallbacks.forEach((callback) => { callback(); });
+    this.tweenCallbacks = [];
+  }
+
+  waitForTweening(callback: Function) {
+    if (!this.tweening) {
+      callback();
+      return;
+    }
+    this.tweenCallbacks.push(callback);
+  }
+
   wasRecentlyTapped: boolean = false;
   touchstartTimeout: ReturnType<typeof setTimeout> | null = null;
   doMisplayAnimation: boolean = false;
@@ -165,7 +189,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   // Erase all of the data on the card to make it like it was freshly drawn
   refresh(suitIndex: number | null, rank: number | null) {
     // Reset visual state
-    this.tweening = false;
     this.empathy = false;
     this.doMisplayAnimation = false;
 
@@ -665,7 +688,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       globals.elements.deck!.add(child as any);
       child.setAbsolutePosition(pos);
       // Animate to the deck
-      this.tweening = true;
+      this.startedTweening();
       animate(child, {
         duration: 0.5,
         x: 0,
@@ -677,7 +700,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
           if (!this || !child) {
             return;
           }
-          this.tweening = false;
+          this.finishedTweening();
           child.checkSetDraggable();
           child.hide();
           this.removeFromParent();

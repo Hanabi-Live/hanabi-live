@@ -291,7 +291,8 @@ func variantReversibleCheckAllDead(g *Game) bool {
 			for _, neededRank := range neededRanks {
 				if c.SuitIndex == suitIndex &&
 					c.Rank == neededRank &&
-					!c.Discarded {
+					!c.Discarded &&
+					!c.CannotBePlayed {
 
 					return false
 				}

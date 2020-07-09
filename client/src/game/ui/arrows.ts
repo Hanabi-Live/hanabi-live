@@ -248,9 +248,9 @@ const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, tur
   // Delay the animation if the card is currently tweening to avoid buggy behavior
   if (card.tweening) {
     arrow.hide();
-    setTimeout(() => {
+    card.waitForTweening(() => {
       animate(arrow, card, rot, giver, turn);
-    }, 20);
+    });
     return;
   }
   arrow.show();
@@ -307,17 +307,11 @@ export const send = (order: ReplayArrowOrder, element: any) => {
 };
 
 // This toggles the "highlight" arrow on a particular element
-export const toggle = (element: NodeWithTooltip | null, attempt: number = 0) => {
+export const toggle = (element: NodeWithTooltip | null) => {
   // If we are showing an arrow on a card that is currently tweening,
   // delay showing it until the tween is finished
-  if (attempt >= 100) {
-    // Give up after 100 attempts to prevent an infinite recursion
-    return;
-  }
   if (element instanceof HanabiCard && element.tweening) {
-    setTimeout(() => {
-      toggle(element, attempt + 1);
-    }, 5);
+    element.waitForTweening(() => toggle(element));
     return;
   }
 
