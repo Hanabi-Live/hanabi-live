@@ -82,7 +82,13 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   });
 
   // Fix the last action (game over)
-  actions[actions.length - 1] = { type: 'gameOver', endCondition: 0, playerIndex: who };
+  actions[actions.length - 1] = {
+    type: 'gameOver',
+    // Assume that the game ended normally;
+    // this is not necessarily the case and will break if e.g. a test game is added with a strikeout
+    endCondition: 1,
+    playerIndex: who,
+  };
   actions.push({ type: 'turn', num: turn, who: -1 });
 
   // Run the list of states through the state reducer
