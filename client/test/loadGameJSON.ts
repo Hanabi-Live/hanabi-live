@@ -90,9 +90,8 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   if (finalGameJSONAction.type !== ActionType.GameOver) {
     actions[actions.length - 1] = {
       type: 'gameOver',
-      // Assume that the game ended normally;
-      // this is not necessarily the case and will break if a test game is added with a strikeout,
-      // a termination, etc.
+      // Assume that the game ended normally; this is not necessarily the case and will break if a
+      // test game is added with a strikeout, a termination, etc.
       endCondition: 1,
       playerIndex: who,
     };
