@@ -10,4 +10,5 @@ export enum ActionType {
   Discard = 1,
   ColorClue = 2,
   RankClue = 3,
+  GameOver = 4,
 }
