@@ -206,6 +206,42 @@ export default function variantsInit(
       }
     }
 
+    const touchColors : boolean[][][] = [];
+    for (let c = 0; c < clueColors.length; c++) {
+      touchColors[c] = [];
+      for (let s = 0; s < suits.length; s++) {
+        touchColors[c][s] = [];
+        for (const r of ranks) {
+          touchColors[c][s][r] = suits[s].clueColors.includes(clueColors[c]);
+          if (specialRank === r) {
+            if (specialAllClueColors) touchColors[c][s][r] = true;
+            if (specialNoClueColors) touchColors[c][s][r] = false;
+          }
+          if (suits[s].allClueColors) touchColors[c][s][r] = true;
+          if (suits[s].noClueColors) touchColors[c][s][r] = false;
+          if (colorCluesTouchNothing) touchColors[c][s][r] = false;
+        }
+      }
+    }
+
+    const touchRanks : boolean[][][] = [];
+    for (let c = 0; c < clueRanks.length; c++) {
+      touchRanks[c] = [];
+      for (let s = 0; s < suits.length; s++) {
+        touchRanks[c][s] = [];
+        for (const r of ranks) {
+          touchRanks[c][s][r] = r === clueRanks[c];
+          if (specialRank === r) {
+            if (specialAllClueRanks) touchRanks[c][s][r] = true;
+            if (specialNoClueRanks) touchRanks[c][s][r] = false;
+          }
+          if (suits[s].allClueRanks) touchRanks[c][s][r] = true;
+          if (suits[s].noClueRanks) touchRanks[c][s][r] = false;
+          if (rankCluesTouchNothing) touchRanks[c][s][r] = false;
+        }
+      }
+    }
+
     // Validate the "spacing" property
     // If it is not specified, assume that there is no spacing
     if (
@@ -232,6 +268,8 @@ export default function variantsInit(
       ranks,
       clueColors,
       clueRanks,
+      touchColors,
+      touchRanks,
       colorCluesTouchNothing,
       rankCluesTouchNothing,
       specialRank,
