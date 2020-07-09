@@ -11,6 +11,7 @@ import {
   GameAction,
 } from '../src/game/types/actions';
 import CardIdentity from '../src/game/types/CardIdentity';
+import { ActionType } from '../src/game/types/ClientAction';
 import ClueType from '../src/game/types/ClueType';
 import { STACK_BASE_RANK } from '../src/game/types/constants';
 import GameMetadata from '../src/game/types/GameMetadata';
@@ -81,15 +82,22 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     actions.push({ type: 'turn', num: turn, who });
   });
 
-  // Fix the last action (game over)
-  actions[actions.length - 1] = {
-    type: 'gameOver',
-    // Assume that the game ended normally;
-    // this is not necessarily the case and will break if e.g. a test game is added with a strikeout
-    endCondition: 1,
-    playerIndex: who,
-  };
-  actions.push({ type: 'turn', num: turn, who: -1 });
+  // If the game was exported from the server and it ended in a specific way,
+  // the final action will be a "gameOver" action
+  // Otherwise, we need to insert one at the end,
+  // which matches what the server would do when emulating all of the database actions
+  const finalGameJSONAction = gameJSON.actions[gameJSON.actions.length - 1];
+  if (finalGameJSONAction.type !== ActionType.GameOver) {
+    actions[actions.length - 1] = {
+      type: 'gameOver',
+      // Assume that the game ended normally;
+      // this is not necessarily the case and will break if a test game is added with a strikeout,
+      // a termination, etc.
+      endCondition: 1,
+      playerIndex: who,
+    };
+    actions.push({ type: 'turn', num: turn, who: -1 });
+  }
 
   // Run the list of states through the state reducer
   // NOTE: we need to fix the list of cards touched in a clue,
