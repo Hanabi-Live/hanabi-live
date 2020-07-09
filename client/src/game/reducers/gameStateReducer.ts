@@ -126,7 +126,12 @@ const gameStateReducer = produce((
       state.score += 1;
 
       // Gain a clue token if the stack is complete
-      if (state.playStacks[card.suit].length === 5) { // Hard-code 5 cards per stack
+      if (
+        state.playStacks[card.suit].length === 5 // Hard-code 5 cards per stack
+        // In "Throw It in a Hole" variants, getting a clue back would reveal information about the
+        // card that is played, so finishing a stack does not grant a clue
+        && !options.variantName.startsWith('Throw It in a Hole')
+      ) {
         state.clueTokens = clues.gainClue(variant, state.clueTokens);
       }
 
