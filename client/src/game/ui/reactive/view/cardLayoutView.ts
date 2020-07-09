@@ -125,7 +125,7 @@ function syncChildren(
       .filter((n) => !collection.includes(n))
       .map(getCard)
       .forEach((card) => {
-        const realState = globals.store?.getState().visibleState.deck[card.state.order];
+        const realState = globals.store?.getState().visibleState?.deck[card.state.order];
         if (!realState || realState.location === 'deck') {
           card.animateToDeck();
         } else {

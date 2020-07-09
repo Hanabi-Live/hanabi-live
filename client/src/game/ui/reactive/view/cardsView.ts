@@ -30,7 +30,7 @@ function subscribeToCardChanges(order: number) {
   // Validates that a card exists in the visible state before firing a listener
   function checkOrderAndSelect<T>(s: Selector<State, T>): Selector<State, T> {
     return (state) => {
-      if (order >= state.visibleState.deck.length) {
+      if (order >= state.visibleState!.deck.length) {
       // This card was removed from visible state
       // Return undefined to prevent firing the listener
         return undefined;
@@ -41,7 +41,7 @@ function subscribeToCardChanges(order: number) {
 
   // Subscribes to a set of property changes from cards
   function sub<T>(s: Selector<CardState, T>, l: Listener<T>) {
-    const cardSelector = (state: State) => s(state.visibleState.deck[order]);
+    const cardSelector = (state: State) => s(state.visibleState!.deck[order]);
     subscriptions.push({ select: checkOrderAndSelect(cardSelector), onChange: l });
   }
 
@@ -49,7 +49,7 @@ function subscribeToCardChanges(order: number) {
   function subWithCardIdentity<T>(s: Selector<CardState, T>, l: Listener<T>) {
     const combinedSelector = (state: State) => ({
       identity: state.cardIdentities[order],
-      cardProperties: s(state.visibleState.deck[order]),
+      cardProperties: s(state.visibleState!.deck[order]),
     });
     subscriptions.push({ select: checkOrderAndSelect(combinedSelector), onChange: l });
   }
