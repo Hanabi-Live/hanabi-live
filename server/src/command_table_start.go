@@ -3,7 +3,6 @@ package main
 import (
 	"math/rand"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -125,18 +124,8 @@ func commandTableStart(s *Session, d *CommandData) {
 		// (e.g. playing a deal with a specific seed)
 		g.Seed = seedPrefix + t.ExtraOptions.SetSeedSuffix
 	} else if t.ExtraOptions.CustomDeck != nil {
-		// This is a replay of a game from JSON or
-		// a custom game created with the "!deal" prefix
-		dealPrefix := "!deal "
-		if strings.HasPrefix(t.Name, dealPrefix) {
-			// This is a "!deal" game
-			// Set the seed equal to the file name
-			g.Seed = strings.TrimPrefix(t.Name, dealPrefix)
-		} else {
-			// This is a replay of a game from JSON
-			// Set the seed equal to "JSON"
-			g.Seed = "JSON"
-		}
+		// This is a replay of a game from JSON
+		g.Seed = "JSON"
 		shuffleDeck = false
 		shufflePlayers = false
 	} else {
