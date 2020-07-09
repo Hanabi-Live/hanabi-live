@@ -34,7 +34,7 @@ export default class PlayStack extends Konva.Group {
       // Animate the card leaving the hand to the play stacks
       // (tweening from the hand to the discard pile is handled in
       // the "CardLayout" object)
-      card.tweening = true;
+      card.startedTweening();
       animate(node, {
         duration: 0.8,
         x: 0,
@@ -51,7 +51,7 @@ export default class PlayStack extends Konva.Group {
             node.tween.destroy();
             node.tween = null;
           }
-          card.tweening = false;
+          card.finishedTweening();
           node.checkSetDraggable();
           this.hideCardsUnderneathTheTopCard();
         },
