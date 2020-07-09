@@ -54,7 +54,7 @@ describe('cardPossibilitiesReducer', () => {
   });
 
   test.skip('check if we can combine information from a rank clue and color clue', () => {
-    let myVariant = getVariant('Rainbow-Ones & Brown (6 Suits)');
+    const myVariant = getVariant('Rainbow-Ones & Brown (6 Suits)');
     
     const red = colorClue(variant.clueColors[0]);
     const one = rankClue(variant.clueRanks[0]);
