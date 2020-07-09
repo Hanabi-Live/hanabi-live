@@ -5,7 +5,7 @@ import initialGameState from './initialGameState';
 export default function initialState(metadata: GameMetadata): State {
   const game = initialGameState(metadata);
   return {
-    visibleState: game,
+    visibleState: null,
     ongoingGame: game,
     replay: {
       active: false,

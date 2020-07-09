@@ -2,7 +2,7 @@ import equal from 'fast-deep-equal';
 import { Store, Action } from 'redux';
 
 export type Selector<T, U> = (s: T) => U | undefined;
-export type Listener<U> = (prop: U, oldValue: U | undefined) => void;
+export type Listener<U> = (currentValue: U, previousValue: U | undefined) => void;
 export type Subscription<T, U> = {
   select: Selector<T, U>;
   onChange: Listener<U>;

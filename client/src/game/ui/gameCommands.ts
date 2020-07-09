@@ -516,10 +516,6 @@ commands.set('gameActionList', (data: GameActionListData) => {
   } else {
     globals.stateObserver = new StateObserver(globals.store!);
   }
-
-  // The game is now initialized
-  globals.loading = false;
-  globals.animateFast = false;
 });
 
 interface PauseData {
@@ -824,6 +820,6 @@ commands.set('sound', (data: SoundData) => {
 // Allow TypeScript to modify the browser's "window" object
 declare global {
   interface Window {
-    state: GameState;
+    state: GameState | null;
   }
 }

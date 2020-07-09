@@ -31,6 +31,9 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       }, initial);
       state.ongoingGame = castDraft(game);
 
+      // Initialized, ready to show
+      state.visibleState = state.ongoingGame;
+
       // We copy the card identities to the global state for convenience
       updateCardIdentities(state);
 
@@ -73,10 +76,20 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
   }
 
   // Update the visible state to the game or replay state
-  if (state.replay.active) {
-    state.visibleState = state.replay.ongoingHypothetical ?? state.replay.states[state.replay.turn];
-  } else {
-    state.visibleState = state.ongoingGame;
+  // after it has been initialized
+  if (state.visibleState !== null) {
+    if (state.replay.active) {
+      if (state.replay.ongoingHypothetical === null) {
+        // Go to current replay turn
+        state.visibleState = state.replay.states[state.replay.turn];
+      } else {
+        // Show the current hypothetical
+        state.visibleState = state.replay.ongoingHypothetical;
+      }
+    } else {
+      // Default: the current game
+      state.visibleState = state.ongoingGame;
+    }
   }
 }, {} as State);
 

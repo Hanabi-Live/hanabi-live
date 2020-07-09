@@ -150,12 +150,14 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
   // Without this, we would observe glitchy behavior
   tooltips.resetActiveHover();
 
-  globals.animateFast = false;
-  cardStatusCheck();
-  globals.layers.card.batchDraw();
-  globals.layers.UI.batchDraw();
-  globals.layers.arrow.batchDraw();
-  globals.layers.UI2.batchDraw();
+  if (!globals.loading) {
+    globals.animateFast = false;
+    cardStatusCheck();
+    globals.layers.card.batchDraw();
+    globals.layers.UI.batchDraw();
+    globals.layers.arrow.batchDraw();
+    globals.layers.UI2.batchDraw();
+  }
 };
 
 const setVisibleButtons = () => {
