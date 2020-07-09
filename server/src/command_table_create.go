@@ -103,9 +103,10 @@ func commandTableCreate(s *Session, d *CommandData) {
 	createTable(s, d, true)
 }
 
-// This function is run after some validation in commandTableCreate
-// that may be bypassed if the server creates the game from a restart, for example
-// preGameVisible is false if this game should be hidden before it starts, such as a restarted game
+// This function is run after some validation in the "commandTableCreate()" function
+// Validation is bypassed if the server creates the game from a "restart" command
+// "preGameVisible" is false if this game should be hidden before it starts,
+// such as a restarted game
 func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	// Set default values for the custom game options
 	var customDeck []SimpleCard
