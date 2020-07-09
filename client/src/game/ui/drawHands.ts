@@ -289,9 +289,9 @@ export default function drawHands(winW: number, winH: number) {
     };
     if (globals.lobby.settings.keldonMode) {
       turnRectValues.x = handValues.x;
-      turnRectValues.w = handValues.w;
+      turnRectValues.w = handValues.w * 1.05;
       turnRectValues.h = handValues.h * 1.1;
-      turnRectValues.offsetX = 0;
+      turnRectValues.offsetX = handValues.w * 0.025;
       turnRectValues.offsetY = handValues.h * 0.05;
       if (numPlayers === 5) {
         turnRectValues.w += handValues.w * 0.03;
