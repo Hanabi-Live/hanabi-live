@@ -53,7 +53,7 @@ describe('cardPossibilitiesReducer', () => {
     expect(newCard.possibleCards.reduce(countPossibleCards, 0)).toBe(20);
   });
 
-  test.skip('a nontrivial example', () => {
+  test.skip('check if we can combine information from a rank clue and color clue', () => {
     let myVariant = getVariant('Rainbow-Ones & Brown (6 Suits)');
     
     const red = colorClue(variant.clueColors[0]);
