@@ -1,6 +1,6 @@
 import { initArray } from '../../misc';
 import { getVariant } from '../data/gameData';
-import { colorClue } from '../types/Clue';
+import { colorClue, rankClue } from '../types/Clue';
 import GameMetadata from '../types/GameMetadata';
 import Options from '../types/Options';
 import cardPossibilitiesReducer from './cardPossibilitiesReducer';
@@ -51,5 +51,19 @@ describe('cardPossibilitiesReducer', () => {
 
     // This card can be any color except red
     expect(newCard.possibleCards.reduce(countPossibleCards, 0)).toBe(20);
+  });
+
+  test.skip('check if we can combine information from a rank clue and color clue', () => {
+    const myVariant = getVariant('Rainbow-Ones & Brown (6 Suits)');
+
+    const red = colorClue(variant.clueColors[0]);
+    const one = rankClue(variant.clueRanks[0]);
+
+    let card = initialCardState(0, myVariant);
+    card = cardPossibilitiesReducer(card, red, true, defaultMetadata);
+    card = cardPossibilitiesReducer(card, one, false, defaultMetadata);
+
+    // a card with positive red and negative one can't be yellow
+    expect(card.colorClueMemory.possibilities.includes(1)).toBe(false);
   });
 });
