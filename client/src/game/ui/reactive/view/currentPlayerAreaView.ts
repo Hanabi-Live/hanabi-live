@@ -4,7 +4,7 @@ import { MAX_CLUE_NUM } from '../../../types/constants';
 import State from '../../../types/State';
 import globals from '../../globals';
 
-export function isCurrentPlayerAreaVisible(s: State) {
+export function isVisible(s: State) {
   return (
     // Don't show it we happen to have the in-game replay open
     !s.replay.active
@@ -18,26 +18,23 @@ export function isCurrentPlayerAreaVisible(s: State) {
   );
 }
 
-export function onCurrentPlayerAreaVisibilityChanged(visible: boolean) {
-  globals.elements.currentPlayerArea!.visible(visible);
-}
-
-export function onCurrentPlayerAreaContentChanged(data: {
+export function onChanged(data: {
   visible: boolean;
   currentPlayerIndex: number | null;
 }, previousData: {
   visible: boolean;
   currentPlayerIndex: number | null;
 } | undefined) {
+  const currentPlayerArea = globals.elements.currentPlayerArea!;
+  currentPlayerArea.visible(data.visible);
   if (!data.visible) {
     return;
   }
 
   // Local variables
-  const currentPlayerArea = globals.elements.currentPlayerArea!;
   const winW = globals.stage.width();
   const winH = globals.stage.height();
-  const state = globals.store?.getState();
+  const state = globals.store!.getState();
   const clueTokens = state!.ongoingGame!.clueTokens;
   const numPlayers = state!.metadata.options.numPlayers;
 
@@ -110,6 +107,10 @@ export function onCurrentPlayerAreaContentChanged(data: {
   let rotation = getArrowRotationCorrespondingToPlayer(data.currentPlayerIndex!);
 
   if (globals.animateFast || !previousData?.visible) {
+    // Immediately snap the arrow in position and do not tween if:
+    // 1) we performed an action on our turn and now the "Current Player" area is now visible again
+    //    after being hidden
+    // 2) we are exiting an in-game replay
     currentPlayerArea.arrow!.rotation(rotation);
   } else {
     if (currentPlayerArea.tween !== null) {
