@@ -36,8 +36,11 @@ export default class StateObserver {
     }
 
     // Game info
-    vs((s) => s.turn, gameInfoView.onTurnChanged);
-    vs((s) => s.currentPlayerIndex, gameInfoView.onCurrentPlayerIndexChanged);
+    vs((s) => ({
+      turn: s.turn.turnNum,
+      endTurn: s.turn.endTurnNum,
+    }), gameInfoView.onTurnChanged);
+    vs((s) => s.turn.currentPlayerIndex, gameInfoView.onCurrentPlayerIndexChanged);
     vs((s) => ({
       score: s.score,
       maxScore: s.maxScore,
@@ -65,7 +68,7 @@ export default class StateObserver {
     // Clues (arrows + log)
     vs((s) => ({
       clues: s.clues,
-      turn: s.turn,
+      turn: s.turn.turnNum,
     }), cluesView.onCluesChanged);
 
     // Cards

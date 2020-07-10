@@ -1,10 +1,26 @@
 import { LABEL_COLOR } from '../../../../constants';
 import globals from '../../globals';
 
-export function onTurnChanged(turn: number) {
+export function onTurnChanged(data: {
+  turn: number;
+  endTurn: number | null;
+}) {
   // On both the client and the server, the first turn of the game is represented as turn 0
   // However, turn 0 is represented to the end-user as turn 1, so we must add one
-  globals.elements.turnNumberLabel!.text(`${turn + 1}`);
+  globals.elements.turnNumberLabel!.text(`${data.turn + 1}`);
+
+  // If there are no cards left in the deck, update the "Turns left: #" label on the deck
+  if (data.endTurn !== null) {
+    let numTurnsLeft = data.endTurn - data.turn;
+
+    // Also account for the fact that in non-replays,
+    // an extra turn is sent to show the times separately from the final action
+    if (numTurnsLeft < 0) {
+      numTurnsLeft = 0;
+    }
+
+    globals.elements.deckTurnsRemainingLabel2!.text(`left: ${numTurnsLeft}`);
+  }
 }
 
 export function onCurrentPlayerIndexChanged(currentPlayerIndex: number | null) {
@@ -43,16 +59,16 @@ export function onClueTokensChanged(clueTokens: number) {
   }
 }
 
-export function onScoreOrMaxScoreChanged(scores: {
+export function onScoreOrMaxScoreChanged(data: {
   score: number;
   maxScore: number;
 }) {
   const scoreLabel = globals.elements.scoreNumberLabel!;
-  scoreLabel.text(scores.score.toString());
+  scoreLabel.text(data.score.toString());
 
   // Reposition the maximum score
   const maxScoreLabel = globals.elements.maxScoreNumberLabel!;
-  maxScoreLabel.text(` / ${scores.maxScore}`);
+  maxScoreLabel.text(` / ${data.maxScore}`);
   maxScoreLabel.width(maxScoreLabel.measureSize(maxScoreLabel.text()).width);
   const x = scoreLabel.x() + scoreLabel.measureSize(scoreLabel.text()).width as number;
   maxScoreLabel.x(x);

@@ -49,7 +49,7 @@ describe('gameStateReducer', () => {
       let state = initialGameState(defaultMetadata);
       const testClue = rankClue(5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue, defaultMetadata);
-      expect(state.turn).toBeGreaterThan(initialState.turn);
+      expect(state.turn.turnNum).toBeGreaterThan(initialState.turn.turnNum);
     });
   });
 
@@ -60,7 +60,7 @@ describe('gameStateReducer', () => {
       let state = initialGameState(defaultMetadata);
       const testClue = rankClue(5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue, defaultMetadata);
-      expect(state.currentPlayerIndex).not.toEqual(initialState.currentPlayerIndex);
+      expect(state.turn.currentPlayerIndex).not.toEqual(initialState.turn.currentPlayerIndex);
     });
   });
 

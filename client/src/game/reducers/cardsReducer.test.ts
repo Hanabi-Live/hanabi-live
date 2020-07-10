@@ -72,7 +72,7 @@ describe('cardsReducer', () => {
       deck = cardsReducer(deck, draw(0, -1, -1, 0), gameState, defaultMetadata);
 
       const newDeck = cardsReducer(deck, discard(false, 0, 1, 2, 0), gameState, defaultMetadata);
-      expect(newDeck[0].turnDiscarded).toBe(gameState.turn);
+      expect(newDeck[0].turnDiscarded).toBe(gameState.turn.turnNum);
     });
 
     test('is -1 when played', () => {
@@ -89,7 +89,7 @@ describe('cardsReducer', () => {
 
       const misplay = discard(true, 0, 1, 2, 0); // A misplay is a discard with failed = true
       const newDeck = cardsReducer(deck, misplay, gameState, defaultMetadata);
-      expect(newDeck[0].turnDiscarded).toBe(gameState.turn);
+      expect(newDeck[0].turnDiscarded).toBe(gameState.turn.turnNum);
     });
   });
 

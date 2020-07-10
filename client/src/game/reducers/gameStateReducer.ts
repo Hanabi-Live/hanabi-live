@@ -12,7 +12,6 @@ import { GameAction } from '../types/actions';
 import EndCondition from '../types/EndCondition';
 import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
-import TurnState from '../types/TurnState';
 import cardsReducer from './cardsReducer';
 import statsReducer from './statsReducer';
 import turnReducer from './turnReducer';
@@ -142,7 +141,10 @@ const gameStateReducer = produce((
     // {text: "Alice plays Red 2 from slot #1", type: "text"}
     case 'text': {
       // Add 1 to turn because server turns start counting from 0
-      state.log.push({ turn: state.turn + 1, text: action.text });
+      state.log.push({
+        turn: state.turn.turnNum + 1,
+        text: action.text,
+      });
       break;
     }
 
@@ -180,18 +182,13 @@ const gameStateReducer = produce((
   ));
 
   // Use a sub-reducer to calculate the turn
-  let turnState: TurnState = {
-    turn: state.turn,
-    currentPlayerIndex: state.currentPlayerIndex,
-    turnsInverted: state.turnsInverted,
-    cardsPlayedOrDiscardedThisTurn: state.cardsPlayedOrDiscardedThisTurn,
-    cluesGivenThisTurn: state.cluesGivenThisTurn,
-  };
-  turnState = turnReducer(turnState, action, metadata, state.deckSize, state.clueTokens);
-  state.turn = turnState.turn;
-  state.currentPlayerIndex = turnState.currentPlayerIndex;
-  state.turnsInverted = turnState.turnsInverted;
-  state.cardsPlayedOrDiscardedThisTurn = turnState.cardsPlayedOrDiscardedThisTurn;
+  state.turn = turnReducer(
+    original(state.turn),
+    action,
+    metadata,
+    state.deckSize,
+    state.clueTokens,
+  );
 
   // Use a sub-reducer to calculate some game statistics
   state.stats = statsReducer(

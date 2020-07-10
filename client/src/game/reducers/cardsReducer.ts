@@ -82,7 +82,7 @@ const cardsReducer = (
         newDeck[order] = {
           ...getCard(newDeck, order),
           numPositiveClues: card.numPositiveClues + 1,
-          turnsClued: [...card.turnsClued, game.turn],
+          turnsClued: [...card.turnsClued, game.turn.turnNum],
         };
         applyClue(order, true);
       });
@@ -125,10 +125,10 @@ const cardsReducer = (
       let isMisplayed = card.isMisplayed;
 
       if (action.type === 'play') {
-        turnPlayed = game.turn;
+        turnPlayed = game.turn.turnNum;
         location = 'playStack';
       } else {
-        turnDiscarded = game.turn;
+        turnDiscarded = game.turn.turnNum;
         location = 'discard';
         if (action.failed) {
           isMisplayed = true;
@@ -152,10 +152,10 @@ const cardsReducer = (
     // {order: 0, rank: 1, suitIndex: 4, type: "draw", who: 0}
     case 'draw': {
       // TEMP: At this point, check that the local state matches the server
-      if (game.currentPlayerIndex !== action.who && game.turn > 0) {
+      if (game.turn.currentPlayerIndex !== action.who && game.turn.turnNum > 0) {
         // NOTE: don't check this during the initial draw
         console.warn(`The currentPlayerIndex on a draw from the client and the server do not match on turn ${game.turn}`);
-        console.warn(`Client = ${game.currentPlayerIndex}, Server = ${action.who}`);
+        console.warn(`Client = ${game.turn.currentPlayerIndex}, Server = ${action.who}`);
       }
 
       const initial = initialCardState(action.order, variant);
@@ -187,7 +187,7 @@ const cardsReducer = (
         location: action.who,
         suitIndex: nullIfNegative(action.suitIndex),
         rank: nullIfNegative(action.rank),
-        turnDrawn: game.turn,
+        turnDrawn: game.turn.turnNum,
         colorClueMemory: {
           ...initial.colorClueMemory,
           pipStates: suitPipStates,

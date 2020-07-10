@@ -1,7 +1,8 @@
 export default interface TurnState {
-  readonly turn: number;
+  readonly turnNum: number;
   readonly currentPlayerIndex: number | null;
-  readonly turnsInverted: boolean;
+  readonly playOrderInverted: boolean;
+  readonly endTurnNum: number | null;
   readonly cardsPlayedOrDiscardedThisTurn: number;
   readonly cluesGivenThisTurn: number;
 }

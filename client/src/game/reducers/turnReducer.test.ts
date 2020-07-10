@@ -36,7 +36,7 @@ describe('turnReducer', () => {
         state = turnReducer(state, drawAction2, defaultMetadata, 1, MAX_CLUE_NUM);
       }
 
-      expect(state.turn).toBe(3);
+      expect(state.turnNum).toBe(3);
     });
   });
 

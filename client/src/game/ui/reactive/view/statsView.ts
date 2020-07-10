@@ -39,7 +39,7 @@ export function onEfficiencyChanged(efficiency: number) {
   effMinLabel.x(x);
 }
 
-export function onPaceOrPaceRiskChanged(p: {
+export function onPaceOrPaceRiskChanged(data: {
   pace: number | null;
   paceRisk: PaceRisk;
 }) {
@@ -58,19 +58,19 @@ export function onPaceOrPaceRiskChanged(p: {
   // Update the pace
   // (part of the efficiency statistics on the right-hand side of the screen)
   // If there are no cards left in the deck, pace is meaningless
-  if (p.pace === null) {
+  if (data.pace === null) {
     label.text('-');
     label.fill(LABEL_COLOR);
   } else {
-    let paceText = p.pace.toString();
-    if (p.pace > 0) {
-      paceText = `+${p.pace}`;
+    let paceText = data.pace.toString();
+    if (data.pace > 0) {
+      paceText = `+${data.pace}`;
     }
     label.text(paceText);
 
     // Color the pace label depending on how "risky" it would be to discard
     // (approximately)
-    switch (p.paceRisk) {
+    switch (data.paceRisk) {
       case 'Zero': {
         // No more discards can occur in order to get a maximum score
         label.fill('#df1c2d'); // Red
@@ -92,7 +92,7 @@ export function onPaceOrPaceRiskChanged(p: {
         break;
       }
       case 'Null': {
-        console.error(`An invalid value of pace / risk was detected. Pace = ${p.pace}, Risk = Null`);
+        console.error(`An invalid value of pace / risk was detected. Pace = ${data.pace}, Risk = Null`);
         break;
       }
     }

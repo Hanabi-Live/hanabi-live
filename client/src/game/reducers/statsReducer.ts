@@ -8,10 +8,11 @@ import * as clueTokensRules from '../rules/clueTokens';
 import * as statsRules from '../rules/stats';
 import { GameAction } from '../types/actions';
 import GameMetadata from '../types/GameMetadata';
-import GameState, { StateStats } from '../types/GameState';
+import GameState from '../types/GameState';
+import StatsState from '../types/StatsState';
 
 const statsReducer = produce((
-  stats: Draft<StateStats>,
+  stats: Draft<StatsState>,
   action: GameAction,
   originalState: GameState,
   currentState: GameState,
@@ -83,6 +84,6 @@ const statsReducer = produce((
   );
   stats.paceRisk = statsRules.paceRisk(stats.pace, metadata.options.numPlayers);
   stats.efficiency = statsRules.efficiency(stats.cardsGotten, stats.potentialCluesLost);
-}, {} as StateStats);
+}, {} as StatsState);
 
 export default statsReducer;
