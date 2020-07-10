@@ -107,6 +107,11 @@ func characterGenerate(g *Game) {
 
 		for i, p := range dbPlayers {
 			g.Players[i].Character = charactersID[p.CharacterAssignment]
+			// Make sure to clear the character metadata for characters that don't depend on
+			// a random rank or color as read from the database
+			if p.CharacterAssignment > 3 {
+				p.CharacterMetadata = -1
+			}
 			g.Players[i].CharacterMetadata = p.CharacterMetadata
 		}
 		return
