@@ -61,7 +61,6 @@ export class Globals {
   turn: number = 0;
   currentPlayerIndex: number = 0;
   ourTurn: boolean = false;
-  endTurn: number | null = null;
   deckSize: number = 0;
   indexOfLastDrawnCard: number = 0;
   score: number = 0;
@@ -175,7 +174,6 @@ export class Globals {
     this.turn = 0;
     this.currentPlayerIndex = 0;
     this.ourTurn = false;
-    this.endTurn = null;
     this.deckSize = 0;
     this.indexOfLastDrawnCard = 0;
     this.score = 0;
