@@ -26,7 +26,9 @@ export function onChanged(data: {
   currentPlayerIndex: number | null;
 } | undefined) {
   const currentPlayerArea = globals.elements.currentPlayerArea!;
-  currentPlayerArea.visible(data.visible);
+  if (data.visible !== previousData?.visible) {
+    currentPlayerArea.visible(data.visible);
+  }
   if (!data.visible) {
     return;
   }
