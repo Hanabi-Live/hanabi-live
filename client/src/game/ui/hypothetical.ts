@@ -174,7 +174,7 @@ export const beginTurn = () => {
 
   // Set the current player's hand to be draggable
   disableDragOnAllHands();
-  const hand = globals.elements.playerHands[globals.currentPlayerIndex];
+  const hand = globals.elements.playerHands[globals.currentPlayerIndex!];
   for (const layoutChild of hand.children.toArray() as LayoutChild[]) {
     layoutChild.checkSetDraggable();
   }
@@ -210,7 +210,7 @@ export const send = (hypoAction: ClientAction) => {
     sendHypoAction({
       type,
       clue,
-      giver: globals.currentPlayerIndex,
+      giver: globals.currentPlayerIndex!,
       list,
       target: hypoAction.target,
       turn: globals.turn,
@@ -218,7 +218,7 @@ export const send = (hypoAction: ClientAction) => {
     globals.clues -= 1;
 
     // Text
-    let text = `${globals.playerNames[globals.currentPlayerIndex]} tells `;
+    let text = `${globals.playerNames[globals.currentPlayerIndex!]} tells `;
     text += `${globals.playerNames[hypoAction.target]} about `;
     const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
     text += `${words[list.length]} `;
@@ -245,7 +245,7 @@ export const send = (hypoAction: ClientAction) => {
     sendHypoAction({
       type,
       which: {
-        index: globals.currentPlayerIndex,
+        index: globals.currentPlayerIndex!,
         order: hypoAction.target,
         rank: card.state.rank!,
         suitIndex: card.state.suitIndex!,
@@ -266,7 +266,7 @@ export const send = (hypoAction: ClientAction) => {
     }
 
     // Text
-    let text = `${globals.playerNames[globals.currentPlayerIndex]} ${type}s `;
+    let text = `${globals.playerNames[globals.currentPlayerIndex!]} ${type}s `;
     if (card.state.suitIndex && card.state.rank) {
       const suit = suitIndexToSuit(card.state.suitIndex!, globals.variant)!;
       text += `${suit.name} ${card.state.rank} `;
@@ -309,14 +309,14 @@ export const send = (hypoAction: ClientAction) => {
 
   // Turn
   globals.turn += 1;
-  globals.currentPlayerIndex += 1;
+  globals.currentPlayerIndex! += 1;
   if (globals.currentPlayerIndex === globals.playerNames.length) {
     globals.currentPlayerIndex = 0;
   }
   sendHypoAction({
     type: 'turn',
     num: globals.turn,
-    who: globals.currentPlayerIndex,
+    who: globals.currentPlayerIndex!,
   });
 };
 
@@ -384,7 +384,7 @@ const cycleHand = () => {
   }
 
   // Find the chop card
-  const hand = globals.elements.playerHands[globals.currentPlayerIndex];
+  const hand = globals.elements.playerHands[globals.currentPlayerIndex!];
   const chopIndex = hand.getChopIndex();
 
   // We don't need to reorder anything if the chop is slot 1 (the left-most card)
@@ -410,7 +410,7 @@ const cycleHand = () => {
 
   sendHypoAction({
     type: 'reorder',
-    target: globals.currentPlayerIndex,
+    target: globals.currentPlayerIndex!,
     handOrder: cardOrders,
   });
 };

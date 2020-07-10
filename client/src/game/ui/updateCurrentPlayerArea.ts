@@ -17,10 +17,10 @@ export default function updateCurrentPlayerArea() {
     && (!globals.ourTurn || globals.clues === 0)
     // Don't show it if the premove button is there
     && !globals.elements.premoveCancelButton!.visible()
-    && globals.currentPlayerIndex !== -1, // Don't show it if this is the end of the game
+    && globals.currentPlayerIndex !== null, // Don't show it if this is the end of the game
   );
 
-  if (globals.currentPlayerIndex === -1) {
+  if (globals.currentPlayerIndex === null) {
     // The game has ended
     return;
   }
@@ -53,7 +53,7 @@ export default function updateCurrentPlayerArea() {
   const setPlayerText = (threeLines: boolean) => {
     const { rect1, textValues, values } = currentPlayerArea;
 
-    text2.fitText(globals.playerNames[globals.currentPlayerIndex]);
+    text2.fitText(globals.playerNames[globals.currentPlayerIndex!]);
 
     let maxSize = (values.h / 3) * winH;
     if (threeLines) {

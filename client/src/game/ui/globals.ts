@@ -59,7 +59,7 @@ export class Globals {
 
   // Game state variables (reset when rewinding in a replay)
   turn: number = 0;
-  currentPlayerIndex: number = 0;
+  currentPlayerIndex: number | null = 0;
   ourTurn: boolean = false;
   deckSize: number = 0;
   indexOfLastDrawnCard: number = 0;

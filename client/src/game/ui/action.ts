@@ -235,7 +235,7 @@ actionFunctions.set('morph', (data: ActionMorph) => {
 actionFunctions.set('turn', (data: ActionTurn) => {
   // Store the current turn in memory
   globals.turn = data.num;
-  globals.currentPlayerIndex = data.who;
+  globals.currentPlayerIndex = nullIfNegative(data.who);
 
   // Update the "Current Player" area in the middle of the screen
   // Optimization: this function is expensive, so only
