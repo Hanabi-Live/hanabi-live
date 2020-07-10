@@ -18,6 +18,7 @@ import CardState, { PipState } from '../types/CardState';
 import Clue, { rankClue, colorClue } from '../types/Clue';
 import ClueType from '../types/ClueType';
 import GameMetadata from '../types/GameMetadata';
+import Variant from '../types/Variant';
 import { getIndexConverter } from './reducerHelpers';
 
 const cardPossibilitiesReducer = produce((
@@ -107,6 +108,7 @@ const cardPossibilitiesReducer = produce((
   state.colorClueMemory.possibilities = original(state.colorClueMemory.possibilities)!
     .filter((r) => !suitsRemoved.includes(r));
 
+  /* REMOVEME
   // Use the calculated information to hide/eliminate pips
   state.colorClueMemory.pipStates = updatePipStates(
     state.colorClueMemory.pipStates,
@@ -118,8 +120,19 @@ const cardPossibilitiesReducer = produce((
     ranksRemoved,
     ranksPossible,
   );
+  */
+  if (suitsPossible && ranksPossible) ranksPossible[0] = false; // trick the compiler for now
 
   state.possibleCardsByClues = possibleCardsByClues;
+  const { colorPipStates, rankPipStates } = recalculatePips(state, variant);
+  state.colorClueMemory.pipStates = colorPipStates;
+  state.rankClueMemory.pipStates = rankPipStates;
+  state.colorClueMemory.possibilities = colorPipStates
+    .map((pip, i) => ((pip !== 'Hidden') ? i : -1))
+    .filter((i) => i >= 0);
+  state.rankClueMemory.possibilities = rankPipStates
+    .map((pip, i) => ((pip !== 'Hidden') ? i : -1))
+    .filter((i) => i >= 0);
 
   updateIdentity(state);
 
@@ -182,7 +195,7 @@ function reapplyClues(state: CardState, clueType: ClueType, metadata: GameMetada
 
   return newState;
 }
-
+/* REMOVEME
 function updatePipStates(
   pipStates: readonly PipState[],
   pipsRemoved: number[],
@@ -199,7 +212,7 @@ function updatePipStates(
     }
     return pip;
   });
-}
+} */
 
 // Based on the current possibilities, updates the known identity of this card
 function updateIdentity(state: Draft<CardState>) {
@@ -217,4 +230,26 @@ function updateIdentity(state: Draft<CardState>) {
     && state.rankClueMemory.possibilities.length === 1) {
     state.identityDetermined = true;
   }
+}
+
+function pipStateMax(a : PipState, b : PipState) : PipState {
+  if (a === 'Visible' || b === 'Visible') return 'Visible';
+  if (a === 'Eliminated' || b === 'Eliminated') return 'Eliminated';
+  return 'Hidden';
+}
+
+function recalculatePips(
+  state: CardState,
+  variant: Variant,
+) {
+  const colorPipStates : PipState[] = variant.suits.map(() => 'Hidden');
+  const rankPipStates : PipState[] = [];
+  for (const rank of variant.ranks) rankPipStates[rank] = 'Hidden';
+  for (const [suitIndex, rank] of state.possibleCardsByClues) {
+    const pip = (state.possibleCards[suitIndex][rank] > 0) ? 'Visible' : 'Eliminated';
+    colorPipStates[suitIndex] = pipStateMax(colorPipStates[suitIndex], pip);
+    // if (rank >= 1 && rank <= 5)
+    rankPipStates[rank] = pipStateMax(rankPipStates[rank], pip);
+  }
+  return { colorPipStates, rankPipStates };
 }
