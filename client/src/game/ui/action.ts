@@ -8,7 +8,6 @@ import {
   ActionDraw,
   ActionIncludingHypothetical,
   ActionMorph,
-  ActionPlay,
   ActionReorder,
   ActionStatus,
   ActionStrike,
@@ -49,13 +48,6 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
     actionFunctions.get('play')!(data);
     return;
   }
-
-  // Local variables
-  const card = globals.deck[data.which.order];
-
-  // Turn off Empathy on this card
-  // It is redrawn in the reveal() function
-  card.empathy = false;
 
   // The fact that this card was discarded could make some other cards useless or critical
   statusCheckOnAllCards();
@@ -128,14 +120,7 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   card.parent!.show();
 });
 
-actionFunctions.set('play', (data: ActionPlay) => {
-  // Local variables
-  const card = globals.deck[data.which.order];
-
-  // Turn off Empathy on this card
-  // It is redrawn in the reveal() function
-  card.empathy = false;
-
+actionFunctions.set('play', () => {
   // The fact that this card was played could make some other cards useless or critical
   statusCheckOnAllCards();
 });
