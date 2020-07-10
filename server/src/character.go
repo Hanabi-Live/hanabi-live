@@ -106,9 +106,11 @@ func characterGenerate(g *Game) {
 			dbPlayers = v
 		}
 
-		for i, p := range dbPlayers {
-			g.Players[i].Character = charactersID[p.CharacterAssignment]
-			g.Players[i].CharacterMetadata = p.CharacterMetadata
+		for i, dbP := range dbPlayers {
+			g.Players[i].Character = charactersID[dbP.CharacterAssignment]
+
+			// Metadata is stored in the database as value + 1
+			g.Players[i].CharacterMetadata = dbP.CharacterMetadata - 1
 		}
 		return
 	}

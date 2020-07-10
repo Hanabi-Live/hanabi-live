@@ -188,8 +188,16 @@ func (g *Game) WriteDatabase() error {
 						" does not exist in the characters map")
 				} else {
 					characterID = v.ID
+
+					// -1 is considered to be "null" metadata
+					// Since most characters have null metadata,
+					// we save space in the database by storing -1 as 0
+					// However, if some characters have a metadata of 0, it is meaningful
+					// (e.g. corresponding to the 0th suit)
+					// Thus, we store meaningful metadata in the database as 1 + the value to make
+					// it clear that it is not a null value
 					if v.WriteMetadataToDatabase {
-						characterMetadata = gp.CharacterMetadata
+						characterMetadata = gp.CharacterMetadata + 1
 					}
 				}
 			}
