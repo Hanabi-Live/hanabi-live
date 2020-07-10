@@ -146,9 +146,6 @@ actionFunctions.set('play', (data: ActionPlay) => {
   // Local variables
   const card = globals.deck[data.which.order];
 
-  globals.numCardsPlayed += 1;
-  globals.elements.playsNumberLabel!.text(globals.numCardsPlayed.toString());
-
   // Clear all visible arrows when a new move occurs
   arrows.hideAll();
 

@@ -90,6 +90,9 @@ const gameStateReducer = produce((
       // Gain a point
       state.score += 1;
 
+      // Keep track of attempted plays
+      state.numAttemptedCardsPlayed += 1;
+
       // Gain a clue token if the stack is complete
       if (
         state.playStacks[action.which.suitIndex].length === 5 // Hard-code 5 cards per stack

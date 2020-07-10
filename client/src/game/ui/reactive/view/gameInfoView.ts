@@ -1,4 +1,5 @@
 import { LABEL_COLOR } from '../../../../constants';
+import { variantRules } from '../../../rules';
 import globals from '../../globals';
 
 export function onTurnChanged(data: {
@@ -44,21 +45,6 @@ export function onCurrentPlayerIndexChanged(currentPlayerIndex: number | null) {
   }
 }
 
-export function onClueTokensChanged(clueTokens: number) {
-  globals.elements.cluesNumberLabel!.text(clueTokens.toString());
-
-  if (!globals.lobby.settings.realLifeMode) {
-    if (clueTokens === 0) {
-      globals.elements.cluesNumberLabel!.fill('red');
-    } else if (clueTokens === 1) {
-      globals.elements.cluesNumberLabel!.fill('yellow');
-    } else {
-      globals.elements.cluesNumberLabel!.fill(LABEL_COLOR);
-    }
-    globals.elements.noClueBorder!.visible(clueTokens === 0);
-  }
-}
-
 export function onScoreOrMaxScoreChanged(data: {
   score: number;
   maxScore: number;
@@ -72,4 +58,25 @@ export function onScoreOrMaxScoreChanged(data: {
   maxScoreLabel.width(maxScoreLabel.measureSize(maxScoreLabel.text()).width);
   const x = scoreLabel.x() + scoreLabel.measureSize(scoreLabel.text()).width as number;
   maxScoreLabel.x(x);
+}
+
+export function onNumAttemptedCardsPlayedChanged(numAttemptedCardsPlayed: number) {
+  if (variantRules.isThrowItInAHole(globals.variant)) {
+    globals.elements.playsNumberLabel!.text(numAttemptedCardsPlayed.toString());
+  }
+}
+
+export function onClueTokensChanged(clueTokens: number) {
+  globals.elements.cluesNumberLabel!.text(clueTokens.toString());
+
+  if (!globals.lobby.settings.realLifeMode) {
+    if (clueTokens === 0) {
+      globals.elements.cluesNumberLabel!.fill('red');
+    } else if (clueTokens === 1) {
+      globals.elements.cluesNumberLabel!.fill('yellow');
+    } else {
+      globals.elements.cluesNumberLabel!.fill(LABEL_COLOR);
+    }
+    globals.elements.noClueBorder!.visible(clueTokens === 0);
+  }
 }

@@ -34,6 +34,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     deckSize: deck.totalCards(variant),
     score: 0,
     maxScore: variant.maxScore,
+    numAttemptedCardsPlayed: 0,
     clueTokens: MAX_CLUE_NUM,
     doubleDiscard: false,
     strikes: [],

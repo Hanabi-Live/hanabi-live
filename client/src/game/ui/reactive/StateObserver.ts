@@ -45,6 +45,7 @@ export default class StateObserver {
       score: s.score,
       maxScore: s.maxScore,
     }), gameInfoView.onScoreOrMaxScoreChanged);
+    vs((s) => s.numAttemptedCardsPlayed, gameInfoView.onNumAttemptedCardsPlayedChanged);
     vs((s) => s.clueTokens, gameInfoView.onClueTokensChanged);
 
     // Stats
