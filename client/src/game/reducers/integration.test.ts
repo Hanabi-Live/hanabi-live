@@ -102,8 +102,7 @@ describe('integration', () => {
           const expected = (upOrDownFinalCards as CardState[])[order];
           checkCluesAreRemembered(card, expected);
           checkPossibilitiesEliminatedByClues(card, expected);
-          // TODO have Rob fix this, the "up_or_down_final_cards.json" file has to be modified
-          // checkPossibilitiesEliminatedByObservation(card, expected);
+          checkPossibilitiesEliminatedByObservation(card, expected);
         },
       );
     });
