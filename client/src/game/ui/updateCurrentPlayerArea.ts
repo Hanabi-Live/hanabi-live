@@ -21,7 +21,11 @@ export default function updateCurrentPlayerArea(currentPlayerIndex: number | nul
     && currentPlayerIndex !== null // Don't show it if this is the end of the game
   ));
 
-  // When the game is over, "currentPlayerIndex" is set to null,
+  // Even if the "Current Player" area is not currently visible,
+  // we must continue to update it behind the scenes
+  // Otherwise, when the player exits out of the in-game replay,
+  // the arrow would be pointing to the wrong player
+  // However, when the game is over, "currentPlayerIndex" is set to null,
   // and the "Current Player" area will never be visible again
   if (currentPlayerIndex === null) {
     return;
