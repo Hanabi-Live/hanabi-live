@@ -57,16 +57,6 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
   // It is redrawn in the reveal() function
   card.empathy = false;
 
-  // TODO: migrate to states
-  // if (card.state.isMisplayed && !globals.animateFast && !globals.options.speedrun) {
-  //   // If this card was misplayed,
-  //   // it will automatically tween to the discard pile after reaching the play stacks
-  //   card.doMisplayAnimation = true;
-  //   card.animateToPlayStacks();
-  // } else {
-  //   card.animateToDiscardPile();
-  // }
-
   // The fact that this card was discarded could make some other cards useless or critical
   statusCheckOnAllCards();
 });
