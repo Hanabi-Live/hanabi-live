@@ -153,7 +153,6 @@ commands.set('gameOver', () => {
 
   // Turn off the "Throw It in a Hole" UI
   if (variantRules.isThrowItInAHole(globals.variant)) {
-    globals.elements.scoreNumberLabel!.text(globals.score.toString());
     globals.elements.maxScoreNumberLabel!.show();
   }
 

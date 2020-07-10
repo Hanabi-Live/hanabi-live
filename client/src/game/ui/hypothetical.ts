@@ -193,6 +193,7 @@ export const send = (hypoAction: ClientAction) => {
     type = 'clue';
   }
 
+  let newScore = globals.store!.getState().visibleState!.score;
   if (type === 'clue') {
     // Clue
     if (hypoAction.value === undefined) {
@@ -253,7 +254,7 @@ export const send = (hypoAction: ClientAction) => {
       failed: false,
     });
     if (type === 'play') {
-      globals.score += 1;
+      newScore += 1;
     }
     if (
       (type === 'play' && card.state.rank === 5 && globals.clues < MAX_CLUE_NUM)
@@ -303,7 +304,7 @@ export const send = (hypoAction: ClientAction) => {
     type: 'status',
     clues: variantRules.isClueStarved(globals.variant) ? globals.clues * 2 : globals.clues,
     doubleDiscard: false,
-    score: globals.score,
+    score: newScore,
     maxScore: globals.maxScore,
   });
 
