@@ -35,19 +35,14 @@ export default function action(data: ActionIncludingHypothetical) {
   }
 
   const actionFunction = actionFunctions.get(data.type);
-  if (actionFunction === undefined) {
-    throw new Error(`A WebSocket action function for "${data.type}" is not defined.`);
+  if (actionFunction !== undefined) {
+    actionFunction(data);
   }
-  actionFunction(data);
 }
 
 // Define a command handler map
 type ActionFunction = (data: any) => void;
 const actionFunctions = new Map<ActionIncludingHypothetical['type'], ActionFunction>();
-
-actionFunctions.set('clue', () => {
-  // Nothing! TODO: delete
-});
 
 actionFunctions.set('discard', (data: ActionDiscard) => {
   // In "Throw It in a Hole" variants, convert misplays to real plays
@@ -147,11 +142,6 @@ actionFunctions.set('draw', (data: ActionDraw) => {
   card.parent!.show();
 });
 
-actionFunctions.set('gameOver', () => {
-  // Do nothing
-  // (the "gameOver" command is handled inside the turn reducer)
-});
-
 actionFunctions.set('play', (data: ActionPlay) => {
   // Local variables
   const card = globals.deck[data.which.order];
@@ -201,11 +191,6 @@ actionFunctions.set('reorder', (data: ActionReorder) => {
       layoutChild.moveDown();
     }
   }
-});
-
-actionFunctions.set('stackDirections', () => {
-
-  // Nothing! TODO: delete this
 });
 
 actionFunctions.set('status', (data: ActionStatus) => {
@@ -262,11 +247,6 @@ actionFunctions.set('strike', (data: ActionStrike) => {
 
   // Record the turn that the strike happened and the card that was misplayed
   strikeRecord(data);
-});
-
-// A new line of text has appeared in the action log
-actionFunctions.set('text', () => {
-  // Nothing! TODO: remove
 });
 
 actionFunctions.set('morph', (data: ActionMorph) => {
