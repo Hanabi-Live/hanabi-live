@@ -6,6 +6,11 @@ import observeStore, { Selector, Listener, Subscription } from './observeStore';
 import * as cardLayoutView from './view/cardLayoutView';
 import * as cardsView from './view/cardsView';
 import * as cluesView from './view/cluesView';
+import {
+  isCurrentPlayerAreaVisible,
+  onCurrentPlayerAreaVisibilityChanged,
+  onCurrentPlayerAreaContentChanged,
+} from './view/currentPlayerAreaView';
 import * as gameInfoView from './view/gameInfoView';
 import * as initView from './view/initView';
 import * as logView from './view/logView';
@@ -75,6 +80,13 @@ export default class StateObserver {
     // Cards
     // Each card will subscribe to changes to its own data
     vs((s) => s.deck.length, cardsView.onDeckChanged);
+
+    // The "Current Player" area should only be shown under certain conditions
+    sub((s) => isCurrentPlayerAreaVisible(s), onCurrentPlayerAreaVisibilityChanged);
+    sub((s) => ({
+      visible: isCurrentPlayerAreaVisible(s),
+      currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
+    }), onCurrentPlayerAreaContentChanged);
 
     // Initialization finished: this will get called when the
     // visible state becomes valid and after all other view updates

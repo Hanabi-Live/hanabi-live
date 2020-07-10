@@ -1,4 +1,5 @@
 /* eslint-disable import/prefer-default-export */
+
 import { cluesRules } from '../../../rules';
 import Clue, { rankClue, colorClue } from '../../../types/Clue';
 import ClueType from '../../../types/ClueType';

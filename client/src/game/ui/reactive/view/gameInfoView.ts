@@ -1,7 +1,6 @@
 import { LABEL_COLOR } from '../../../../constants';
 import { variantRules } from '../../../rules';
 import globals from '../../globals';
-import updateCurrentPlayerArea from '../../updateCurrentPlayerArea';
 
 export function onTurnChanged(data: {
   turn: number;
@@ -39,9 +38,6 @@ export function onCurrentPlayerIndexChanged(currentPlayerIndex: number | null) {
     }
     globals.elements.playerHandTurnRects[currentPlayerIndex].show();
   }
-
-  // For ongoing games, update the "Current Player" area in the middle of the screen
-  updateCurrentPlayerArea(currentPlayerIndex);
 
   // For replay leaders, we want to disable entering a hypothetical if we are currently on a turn
   // where the game has already ended

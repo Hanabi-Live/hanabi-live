@@ -1,53 +1,59 @@
 import Konva from 'konva';
-import { LABEL_COLOR } from '../../constants';
-import { MAX_CLUE_NUM } from '../types/constants';
-import globals from './globals';
+import { LABEL_COLOR } from '../../../../constants';
+import { MAX_CLUE_NUM } from '../../../types/constants';
+import State from '../../../types/State';
+import globals from '../../globals';
 
-// Set the "Current Player" area up for this specific turn
-export default function updateCurrentPlayerArea(currentPlayerIndex: number | null) {
-  // The "Current Player" area is never visible in solo replays / shared replays
-  if (globals.replay) {
-    return;
-  }
-
-  const currentPlayerArea = globals.elements.currentPlayerArea!;
-  currentPlayerArea.visible((
+export function isCurrentPlayerAreaVisible(s: State) {
+  return (
     // Don't show it we happen to have the in-game replay open
-    !globals.inReplay
-    // Don't show it if the clue UI is there
-    && (!globals.ourTurn || globals.clues === 0)
-    // Don't show it if the premove button is there
+    !s.replay.active
+    // The clue UI should take precedence over the "Current Player" area
+    && (
+      s.ongoingGame?.turn.currentPlayerIndex !== s.metadata.playerSeat
+      && !globals.spectating
+    )
+    // The premove cancel button should take precedence over the "Current Player" area
     && !globals.elements.premoveCancelButton!.isVisible()
-    && currentPlayerIndex !== null // Don't show it if this is the end of the game
-  ));
+  );
+}
 
-  // Even if the "Current Player" area is not currently visible,
-  // we must continue to update it behind the scenes
-  // Otherwise, when the player exits out of the in-game replay,
-  // the arrow would be pointing to the wrong player
-  // However, when the game is over, "currentPlayerIndex" is set to null,
-  // and the "Current Player" area will never be visible again
-  if (currentPlayerIndex === null) {
+export function onCurrentPlayerAreaVisibilityChanged(visible: boolean) {
+  globals.elements.currentPlayerArea!.visible(visible);
+}
+
+export function onCurrentPlayerAreaContentChanged(data: {
+  visible: boolean;
+  currentPlayerIndex: number | null;
+}, previousData: {
+  visible: boolean;
+  currentPlayerIndex: number | null;
+} | undefined) {
+  if (!data.visible) {
     return;
   }
 
   // Local variables
+  const currentPlayerArea = globals.elements.currentPlayerArea!;
   const winW = globals.stage.width();
   const winH = globals.stage.height();
+  const state = globals.store?.getState();
+  const clueTokens = state!.ongoingGame!.clueTokens;
+  const numPlayers = state!.metadata.options.numPlayers;
 
   // Update the text
   const { text1, text2, text3 } = currentPlayerArea;
   let specialText = '';
   if (!globals.lobby.settings.realLifeMode) {
-    if (globals.clues === 0) {
+    if (clueTokens === 0) {
       specialText = '(cannot clue; 0 clues left)';
       text3.fill('red');
-    } else if (globals.clues === MAX_CLUE_NUM) {
+    } else if (clueTokens === MAX_CLUE_NUM) {
       specialText = `(cannot discard; at ${MAX_CLUE_NUM} clues)`;
       text3.fill(LABEL_COLOR);
     } else if (
       globals.lobby.settings.hyphenatedConventions
-      && globals.elements.playerHands[currentPlayerIndex].isLocked()
+      && globals.elements.playerHands[data.currentPlayerIndex!].isLocked()
     ) {
       specialText = '(locked; may not be able to discard)';
       text3.fill(LABEL_COLOR);
@@ -63,7 +69,7 @@ export default function updateCurrentPlayerArea(currentPlayerIndex: number | nul
   const setPlayerText = (threeLines: boolean) => {
     const { rect1, textValues, values } = currentPlayerArea;
 
-    text2.fitText(globals.playerNames[currentPlayerIndex]);
+    text2.fitText(globals.playerNames[data.currentPlayerIndex!]);
 
     let maxSize = (values.h / 3) * winH;
     if (threeLines) {
@@ -100,19 +106,10 @@ export default function updateCurrentPlayerArea(currentPlayerIndex: number | nul
     text3.show();
   }
 
-  // Make the arrow point to the current player
-  const hand = globals.elements.playerHands[currentPlayerIndex];
-  const centerPos = hand.getAbsoluteCenterPos();
-  const thisPos = currentPlayerArea.arrow.getAbsolutePosition();
-  const x = centerPos.x - thisPos.x;
-  const y = centerPos.y - thisPos.y;
-  const radians = Math.atan(y / x);
-  let rotation = radians * (180 / Math.PI);
-  if (x < 0) {
-    rotation += 180;
-  }
+  // Get the rotation that corresponds to the current player
+  let rotation = getArrowRotationCorrespondingToPlayer(data.currentPlayerIndex!);
 
-  if (globals.animateFast) {
+  if (globals.animateFast || !previousData?.visible) {
     currentPlayerArea.arrow!.rotation(rotation);
   } else {
     if (currentPlayerArea.tween !== null) {
@@ -120,10 +117,18 @@ export default function updateCurrentPlayerArea(currentPlayerIndex: number | nul
       currentPlayerArea.tween = null;
     }
 
+    // Since the "Current Player" area might have been hidden and/or not updated for a while,
+    // update the current arrow rotation to be equal to that of the previous player
+    let previousPlayerIndex = data.currentPlayerIndex! - 1;
+    if (previousPlayerIndex === -1) {
+      previousPlayerIndex = numPlayers - 1;
+    }
+    const previousRotation = getArrowRotationCorrespondingToPlayer(previousPlayerIndex);
+    currentPlayerArea.arrow!.rotation(previousRotation);
+
     // We want the arrow to always be moving clockwise
-    const oldRotation = currentPlayerArea.arrow.rotation();
     const unmodifiedRotation = rotation;
-    if (oldRotation > rotation) {
+    if (previousRotation > rotation) {
       rotation += 360;
     }
 
@@ -137,4 +142,24 @@ export default function updateCurrentPlayerArea(currentPlayerIndex: number | nul
       },
     }).play();
   }
+
+  globals.layers.UI.batchDraw();
 }
+
+const getArrowRotationCorrespondingToPlayer = (playerIndex: number) => {
+  const hand = globals.elements.playerHands[playerIndex];
+  if (hand === undefined) {
+    throw new Error(`Failed to get the arrow rotation corresponding to the player at index ${playerIndex}.`);
+  }
+  const centerPos = hand.getAbsoluteCenterPos();
+  const thisPos = globals.elements.currentPlayerArea!.arrow.getAbsolutePosition();
+  const x = centerPos.x - thisPos.x;
+  const y = centerPos.y - thisPos.y;
+  const radians = Math.atan(y / x);
+  let rotation = radians * (180 / Math.PI);
+  if (x < 0) {
+    rotation += 180;
+  }
+
+  return rotation;
+};
