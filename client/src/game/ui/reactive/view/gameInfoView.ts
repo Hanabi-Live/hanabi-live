@@ -14,11 +14,11 @@ export function onCurrentPlayerIndexChanged(currentPlayerIndex: number | null) {
   }
 
   // Show the black rectangle over a player's hand that signifies that it is their turn
-  if (globals.currentPlayerIndex !== -1) {
+  if (currentPlayerIndex !== null) {
     for (const rect of globals.elements.playerHandTurnRects) {
       rect.hide();
     }
-    globals.elements.playerHandTurnRects[globals.currentPlayerIndex].show();
+    globals.elements.playerHandTurnRects[currentPlayerIndex].show();
   }
 }
 
