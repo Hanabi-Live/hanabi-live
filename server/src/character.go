@@ -115,7 +115,6 @@ func characterGenerate(g *Game) {
 	for i, p := range g.Players {
 		// Initialize the metadata to -1 (it is 0 by default in order to save database space)
 		p.CharacterMetadata = -1
-		p.CharacterMetadata2 = -1
 
 		if stringInSlice(p.Name, debugUsernames) {
 			// Hard-code some character assignments for testing purposes
