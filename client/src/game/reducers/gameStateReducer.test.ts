@@ -165,7 +165,7 @@ describe('gameStateReducer', () => {
       state = gameStateReducer(state, drawRed1Action2, defaultMetadata);
 
       // Give a 1-for-1 clue
-      const clueAction = rankClue(0, 0, [1], 1, 0);
+      const clueAction = rankClue(3, 0, [1], 1, 0);
       state = gameStateReducer(state, clueAction, defaultMetadata);
 
       // Play the red 1
@@ -220,7 +220,7 @@ describe('gameStateReducer', () => {
         state = gameStateReducer(state, drawRed1Action3, clueStarvedMetadata);
 
         // Give a 1-for-1 clue
-        const clueAction = rankClue(0, 0, [1], 1, 0);
+        const clueAction = rankClue(3, 0, [1], 1, 0);
         state = gameStateReducer(state, clueAction, clueStarvedMetadata);
 
         // Play the red 1
