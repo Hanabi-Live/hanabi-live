@@ -41,7 +41,7 @@ export function onCurrentPlayerIndexChanged(currentPlayerIndex: number | null) {
   }
 
   // For ongoing games, update the "Current Player" area in the middle of the screen
-  updateCurrentPlayerArea();
+  updateCurrentPlayerArea(currentPlayerIndex);
 
   // For replay leaders, we want to disable entering a hypothetical if we are currently on a turn
   // where the game has already ended

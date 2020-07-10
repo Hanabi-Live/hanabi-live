@@ -4,30 +4,32 @@ import { MAX_CLUE_NUM } from '../types/constants';
 import globals from './globals';
 
 // Set the "Current Player" area up for this specific turn
-export default function updateCurrentPlayerArea() {
+export default function updateCurrentPlayerArea(currentPlayerIndex: number | null) {
   // The "Current Player" area is never visible in solo replays / shared replays
   if (globals.replay) {
     return;
   }
 
   const currentPlayerArea = globals.elements.currentPlayerArea!;
-  const winW = globals.stage.width();
-  const winH = globals.stage.height();
-
-  currentPlayerArea.visible(
+  currentPlayerArea.visible((
     // Don't show it we happen to have the in-game replay open
     !globals.inReplay
     // Don't show it if the clue UI is there
     && (!globals.ourTurn || globals.clues === 0)
     // Don't show it if the premove button is there
     && !globals.elements.premoveCancelButton!.isVisible()
-    && globals.currentPlayerIndex !== null, // Don't show it if this is the end of the game
-  );
+    && currentPlayerIndex !== null // Don't show it if this is the end of the game
+  ));
 
-  if (globals.currentPlayerIndex === null) {
-    // The game has ended
+  // When the game is over, "currentPlayerIndex" is set to null,
+  // and the "Current Player" area will never be visible again
+  if (currentPlayerIndex === null) {
     return;
   }
+
+  // Local variables
+  const winW = globals.stage.width();
+  const winH = globals.stage.height();
 
   // Update the text
   const { text1, text2, text3 } = currentPlayerArea;
@@ -41,7 +43,7 @@ export default function updateCurrentPlayerArea() {
       text3.fill(LABEL_COLOR);
     } else if (
       globals.lobby.settings.hyphenatedConventions
-      && globals.elements.playerHands[globals.currentPlayerIndex].isLocked()
+      && globals.elements.playerHands[currentPlayerIndex].isLocked()
     ) {
       specialText = '(locked; may not be able to discard)';
       text3.fill(LABEL_COLOR);
@@ -57,7 +59,7 @@ export default function updateCurrentPlayerArea() {
   const setPlayerText = (threeLines: boolean) => {
     const { rect1, textValues, values } = currentPlayerArea;
 
-    text2.fitText(globals.playerNames[globals.currentPlayerIndex!]);
+    text2.fitText(globals.playerNames[currentPlayerIndex]);
 
     let maxSize = (values.h / 3) * winH;
     if (threeLines) {
@@ -95,7 +97,7 @@ export default function updateCurrentPlayerArea() {
   }
 
   // Make the arrow point to the current player
-  const hand = globals.elements.playerHands[globals.currentPlayerIndex];
+  const hand = globals.elements.playerHands[currentPlayerIndex];
   const centerPos = hand.getAbsoluteCenterPos();
   const thisPos = currentPlayerArea.arrow.getAbsolutePosition();
   const x = centerPos.x - thisPos.x;
