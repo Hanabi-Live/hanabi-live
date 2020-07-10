@@ -15,7 +15,6 @@ import {
   ActionTurn,
 } from '../types/actions';
 import { MAX_CLUE_NUM } from '../types/constants';
-import * as arrows from './arrows';
 import cardStatusCheck from './cardStatusCheck';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
@@ -53,9 +52,6 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
 
   // Local variables
   const card = globals.deck[data.which.order];
-
-  // Clear all visible arrows when a new move occurs
-  arrows.hideAll();
 
   // Turn off Empathy on this card
   // It is redrawn in the reveal() function
@@ -145,9 +141,6 @@ actionFunctions.set('draw', (data: ActionDraw) => {
 actionFunctions.set('play', (data: ActionPlay) => {
   // Local variables
   const card = globals.deck[data.which.order];
-
-  // Clear all visible arrows when a new move occurs
-  arrows.hideAll();
 
   // Turn off Empathy on this card
   // It is redrawn in the reveal() function
