@@ -179,7 +179,6 @@ const reset = () => {
   globals.score = 0;
   globals.maxScore = globals.variant.maxScore;
   globals.clues = MAX_CLUE_NUM;
-  globals.cardsGotten = 0;
   globals.numCardsPlayed = 0;
 
   // Reset various UI elements

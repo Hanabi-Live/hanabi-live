@@ -66,7 +66,6 @@ export class Globals {
   score: number = 0;
   maxScore: number = 0;
   clues: number = 0;
-  cardsGotten: number = 0;
   stackDirections: StackDirection[] = [];
   numCardsPlayed: number = 0; // For "Throw It in a Hole" variants
 
@@ -139,7 +138,6 @@ export class Globals {
   postAnimationLayout: (() => void) | null = null;
   UIClickTime: number = 0; // Used to prevent accidental double clicks
   spectators: string[] = [];
-  chatUnread: number = 0;
 
   // State information
   store: Redux.Store<State, Action> | null = null;
@@ -179,7 +177,6 @@ export class Globals {
     this.score = 0;
     this.maxScore = 0;
     this.clues = 0;
-    this.cardsGotten = 0;
     this.stackDirections = [];
     this.numCardsPlayed = 0;
     this.imageLoader = null;
@@ -225,7 +222,7 @@ export class Globals {
     this.postAnimationLayout = null;
     this.UIClickTime = 0;
     this.spectators = [];
-    this.chatUnread = 0;
+
     this.stateObserver?.unregisterObservers();
     this.stateObserver = null;
     this.cardSubscriptions.forEach((u: Redux.Unsubscribe) => u());
