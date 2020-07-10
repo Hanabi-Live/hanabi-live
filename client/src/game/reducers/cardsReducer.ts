@@ -73,7 +73,7 @@ const cardsReducer = produce((
       action.list.forEach((order) => {
         const card = getCard(deck, order);
         card.numPositiveClues += 1;
-        card.turnsClued.push(game.turn);
+        card.turnsClued.push(game.turn.turnNum);
         applyClue(order, true);
       });
 
@@ -107,10 +107,10 @@ const cardsReducer = produce((
       }
 
       if (action.type === 'play') {
-        card.turnPlayed = game.turn;
+        card.turnPlayed = game.turn.turnNum;
         card.location = 'playStack';
       } else {
-        card.turnDiscarded = game.turn;
+        card.turnDiscarded = game.turn.turnNum;
         card.location = 'discard';
         if (action.failed) {
           card.isMisplayed = true;
@@ -123,10 +123,10 @@ const cardsReducer = produce((
     // {order: 0, rank: 1, suitIndex: 4, type: "draw", who: 0}
     case 'draw': {
       // TEMP: At this point, check that the local state matches the server
-      if (game.currentPlayerIndex !== action.who && game.turn > 0) {
+      if (game.turn.currentPlayerIndex !== action.who && game.turn.turnNum > 0) {
         // NOTE: don't check this during the initial draw
         console.warn(`The currentPlayerIndex on a draw from the client and the server do not match on turn ${game.turn}`);
-        console.warn(`Client = ${game.currentPlayerIndex}, Server = ${action.who}`);
+        console.warn(`Client = ${game.turn.currentPlayerIndex}, Server = ${action.who}`);
       }
 
       const drawnCard: Draft<CardState> = castDraft({
@@ -134,7 +134,7 @@ const cardsReducer = produce((
         location: action.who,
         suitIndex: nullIfNegative(action.suitIndex),
         rank: nullIfNegative(action.rank),
-        turnDrawn: game.turn,
+        turnDrawn: game.turn.turnNum,
       });
 
       // Remove all possibilities of all cards previously drawn and visible

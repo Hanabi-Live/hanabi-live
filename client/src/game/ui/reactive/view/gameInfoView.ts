@@ -1,10 +1,26 @@
 import { LABEL_COLOR } from '../../../../constants';
 import globals from '../../globals';
 
-export function onTurnChanged(turn: number) {
+export function onTurnChanged(args: {
+  turn: number;
+  endTurn: number | null;
+}) {
   // On both the client and the server, the first turn of the game is represented as turn 0
   // However, turn 0 is represented to the end-user as turn 1, so we must add one
-  globals.elements.turnNumberLabel!.text(`${turn + 1}`);
+  globals.elements.turnNumberLabel!.text(`${args.turn + 1}`);
+
+  // If there are no cards left in the deck, update the "Turns left: #" label on the deck
+  if (args.endTurn !== null) {
+    let numTurnsLeft = args.endTurn - args.turn;
+
+    // Also account for the fact that in non-replays,
+    // an extra turn is sent to show the times separately from the final action
+    if (numTurnsLeft < 0) {
+      numTurnsLeft = 0;
+    }
+
+    globals.elements.deckTurnsRemainingLabel2!.text(`left: ${numTurnsLeft}`);
+  }
 }
 
 export function onCurrentPlayerIndexChanged(currentPlayerIndex: number | null) {

@@ -28,7 +28,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   const discardStacks: number[][] = initArray(variant.suits.length, []);
 
   return {
-    turn: turnState.turn,
+    turn: turnState,
     log: [],
     deck: [],
     deckSize: deck.totalCards(variant),
@@ -37,8 +37,6 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     clueTokens: MAX_CLUE_NUM,
     doubleDiscard: false,
     strikes: [],
-    currentPlayerIndex: turnState.currentPlayerIndex,
-    turnsInverted: false,
     hands,
     playStacks,
     playStacksDirections,
@@ -51,7 +49,5 @@ export default function initialGameState(metadata: GameMetadata): GameState {
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),
     },
-    cardsPlayedOrDiscardedThisTurn: 0,
-    cluesGivenThisTurn: 0,
   };
 }

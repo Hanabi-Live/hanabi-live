@@ -31,8 +31,8 @@ function subscribeToCardChanges(order: number) {
   function checkOrderAndSelect<T>(s: Selector<State, T>): Selector<State, T> {
     return (state) => {
       if (order >= state.visibleState!.deck.length) {
-      // This card was removed from visible state
-      // Return undefined to prevent firing the listener
+        // This card was removed from visible state
+        // Return undefined to prevent firing the listener
         return undefined;
       }
       return s(state);

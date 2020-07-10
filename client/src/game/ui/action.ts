@@ -279,22 +279,6 @@ actionFunctions.set('turn', (data: ActionTurn) => {
     updateCurrentPlayerArea();
   }
 
-  // If there are no cards left in the deck, update the "Turns left: #" label
-  if (globals.deckSize === 0) {
-    if (globals.endTurn === null) {
-      globals.endTurn = globals.turn + globals.playerNames.length;
-    }
-    let numTurnsLeft = globals.endTurn - globals.turn;
-
-    // Also account for the fact that in non-replays,
-    // an extra turn is sent to show the times separately from the final action
-    if (numTurnsLeft < 0) {
-      numTurnsLeft = 0;
-    }
-
-    globals.elements.deckTurnsRemainingLabel2!.text(`left: ${numTurnsLeft}`);
-  }
-
   if (!globals.animateFast) {
     globals.layers.UI.batchDraw();
   }
