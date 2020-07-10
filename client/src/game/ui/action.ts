@@ -15,11 +15,11 @@ import {
   ActionTurn,
 } from '../types/actions';
 import { MAX_CLUE_NUM } from '../types/constants';
-import cardStatusCheck from './cardStatusCheck';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import { animate } from './konvaHelpers';
 import LayoutChild from './LayoutChild';
+import statusCheckOnAllCards from './statusCheckOnAllCards';
 import strikeRecord from './strikeRecord';
 import updateCurrentPlayerArea from './updateCurrentPlayerArea';
 
@@ -68,7 +68,7 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
   // }
 
   // The fact that this card was discarded could make some other cards useless or critical
-  cardStatusCheck();
+  statusCheckOnAllCards();
 });
 
 // A player just drew a card from the deck
@@ -147,7 +147,7 @@ actionFunctions.set('play', (data: ActionPlay) => {
   card.empathy = false;
 
   // The fact that this card was played could make some other cards useless or critical
-  cardStatusCheck();
+  statusCheckOnAllCards();
 });
 
 // Has the following data:

@@ -8,7 +8,6 @@ import ClueType from '../types/ClueType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import action from './action';
-import cardStatusCheck from './cardStatusCheck';
 import { getTouchedCardsFromClue } from './clues';
 import PlayerButton from './controls/PlayerButton';
 import { suitIndexToSuit } from './convert';
@@ -16,6 +15,7 @@ import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
 import * as replay from './replay';
+import statusCheckOnAllCards from './statusCheckOnAllCards';
 import * as turn from './turn';
 
 export const start = () => {
@@ -87,7 +87,7 @@ export const playThroughPastActions = () => {
       action(actionMessage);
     }
     globals.animateFast = false;
-    cardStatusCheck();
+    statusCheckOnAllCards();
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();
     globals.layers.arrow.batchDraw();

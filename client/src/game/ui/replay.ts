@@ -5,10 +5,10 @@ import * as deck from '../rules/deck';
 import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import action from './action';
-import cardStatusCheck from './cardStatusCheck';
 import Shuttle from './controls/Shuttle';
 import globals from './globals';
 import { animate } from './konvaHelpers';
+import statusCheckOnAllCards from './statusCheckOnAllCards';
 import * as tooltips from './tooltips';
 import * as turn from './turn';
 
@@ -152,7 +152,7 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
 
   if (!globals.loading) {
     globals.animateFast = false;
-    cardStatusCheck();
+    statusCheckOnAllCards();
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();
     globals.layers.arrow.batchDraw();
