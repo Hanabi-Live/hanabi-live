@@ -23,6 +23,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -57,6 +58,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -91,6 +93,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -125,6 +128,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -159,6 +163,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -193,6 +198,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -227,6 +233,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -261,6 +268,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -295,6 +303,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -329,6 +338,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -363,6 +373,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": true,
     "numPositiveClues": 1,
     "turnsClued": [1],
@@ -397,6 +408,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -431,6 +443,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -465,6 +478,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Eliminated", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 1,
     "turnsClued": [2],
@@ -499,6 +513,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": true,
     "numPositiveClues": 1,
     "turnsClued": [2],
@@ -533,6 +548,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -567,6 +583,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -601,6 +618,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],
@@ -635,6 +653,7 @@
         "negativeClues": [],
         "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
     },
+    "possibleCardsByClues": [],
     "identityDetermined": false,
     "numPositiveClues": 0,
     "turnsClued": [],

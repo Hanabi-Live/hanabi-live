@@ -5,9 +5,16 @@ import Variant from '../../types/Variant';
 export default function initialCardState(order: number, variant: Variant) : CardState {
   // Possible suits and ranks (based on clues given) are tracked separately
   // from knowledge of the true suit and rank
-  const possibleSuits = variant.suits.slice().map((_, i) => i);
-  const possibleRanks = variant.ranks.slice();
+  const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);
+  const possibleRanks: number[] = variant.ranks.slice();
   const possibleCards: number[][] = [];
+
+  const possibleCardsByClues: Array<[number, number]> = [];
+  for (const suitIndex of possibleSuits) {
+    for (const rank of possibleRanks) {
+      possibleCardsByClues.push([suitIndex, rank]);
+    }
+  }
 
   // Possible cards (based on both clues given and cards seen) are also tracked separately
   possibleSuits.forEach((suitIndex) => {
@@ -42,6 +49,7 @@ export default function initialCardState(order: number, variant: Variant) : Card
       negativeClues: [],
       pipStates: rankPipStates,
     },
+    possibleCardsByClues,
     identityDetermined: false,
     numPositiveClues: 0,
     turnsClued: [],

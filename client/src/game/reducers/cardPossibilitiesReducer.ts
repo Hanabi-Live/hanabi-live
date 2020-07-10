@@ -49,6 +49,7 @@ const cardPossibilitiesReducer = produce((
     suitsRemoved,
     ranksRemoved,
     impossibleCards,
+    possibleCardsByClues,
   } = clue.type === ClueType.Color
     ? applyColorClue(state, clue, positive, calculatePossibilities, variant)
     : applyRankClue(state, clue, positive, calculatePossibilities, variant);
@@ -117,6 +118,8 @@ const cardPossibilitiesReducer = produce((
     ranksRemoved,
     ranksPossible,
   );
+
+  state.possibleCardsByClues = possibleCardsByClues;
 
   updateIdentity(state);
 

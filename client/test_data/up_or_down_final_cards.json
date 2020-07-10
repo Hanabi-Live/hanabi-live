@@ -97,6 +97,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -204,6 +205,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -309,6 +311,8 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 2,
         "turnsClued": [
@@ -419,6 +423,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -524,6 +529,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 2,
         "turnsClued": [
@@ -637,6 +643,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -744,6 +751,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -856,6 +864,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -968,6 +977,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -1079,6 +1089,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -1185,6 +1196,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -1296,6 +1308,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -1405,6 +1418,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -1510,6 +1524,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 2,
         "turnsClued": [
@@ -1619,6 +1634,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -1731,6 +1747,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -1839,6 +1856,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -1946,6 +1964,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -2058,6 +2077,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -2166,6 +2186,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -2271,6 +2292,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -2381,6 +2403,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -2492,6 +2515,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -2600,6 +2624,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -2708,6 +2733,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -2816,6 +2842,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -2926,6 +2953,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -3036,6 +3064,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -3144,6 +3173,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -3247,6 +3277,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 2,
         "turnsClued": [
@@ -3359,6 +3390,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -3467,6 +3499,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -3578,6 +3611,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -3687,6 +3721,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -3794,6 +3829,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -3905,6 +3941,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -4015,6 +4052,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -4120,6 +4158,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -4228,6 +4267,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
@@ -4338,6 +4378,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -4446,6 +4487,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -4554,6 +4596,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -4662,6 +4705,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -4770,6 +4814,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
@@ -4878,6 +4923,7 @@
                 "Hidden"
             ]
         },
+        "possibleCardsByClues": [],
         "identityDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],

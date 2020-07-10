@@ -11,6 +11,14 @@ export interface PossibilityToRemove {
   readonly all: boolean;
 }
 
+function filterPossibilities(
+  possibilites: ReadonlyArray<readonly [number, number]>,
+  clue: ReadonlyArray<readonly boolean[]>,
+  positive: boolean,
+) : Array<[number, number]> {
+  return possibilites.filter(([x, y]) => clue[x][y] === positive).map(([x, y]) => [x, y]);
+}
+
 export function applyColorClue(
   state: CardState,
   clue: Readonly<ColorClue>,
@@ -142,7 +150,15 @@ export function applyColorClue(
       }
     }
   }
-  return { suitsRemoved, ranksRemoved, impossibleCards };
+
+  const cluePred = variant.touchColors[variant.clueColors.indexOf(clue.value)];
+  const possibleCardsByClues = filterPossibilities(state.possibleCardsByClues, cluePred, positive);
+  return {
+    suitsRemoved,
+    ranksRemoved,
+    impossibleCards,
+    possibleCardsByClues,
+  };
 }
 
 export function applyRankClue(
@@ -258,7 +274,14 @@ export function applyRankClue(
     ranksRemoved = [];
   }
 
-  return { suitsRemoved, ranksRemoved, impossibleCards };
+  const cluePred = variant.touchRanks[variant.clueRanks.indexOf(clue.value)];
+  const possibleCardsByClues = filterPossibilities(state.possibleCardsByClues, cluePred, positive);
+  return {
+    suitsRemoved,
+    ranksRemoved,
+    impossibleCards,
+    possibleCardsByClues,
+  };
 }
 
 export function removePossibilities(
