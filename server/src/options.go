@@ -31,11 +31,10 @@ type ExtraOptions struct {
 	Restarted bool // Whether or not this game was created by clicking "Restart" in a replay
 
 	// The rest of the options are parsed from the game name
-	// (for "!seed", "!replay", and "!deal" games respectively)
+	// (for "!seed" and "!replay" games respectively)
 	SetSeedSuffix string
 	SetReplay     bool
 	SetReplayTurn int
-	SetDeal       string
 }
 
 // To minimize JSON output, we need to use pointers to each option instead of the normal type

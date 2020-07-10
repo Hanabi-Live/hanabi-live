@@ -358,8 +358,14 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 		return
 	}
 
-	if command == "2pquestion" {
+	if command == "2pquestion" || command == "2player" || command == "2p" {
 		msg := "Ask questions about 2-player games in the #2-player channel."
+		discordSend(m.ChannelID, "", msg)
+		return
+	}
+
+	if command == "oop" {
+		msg := "It looks like you are asking a question about an *Out-of-Position Bluff* (or OOP for short). When asking such questions, **you must include** the condition that you think is satisfied (a, b, or c)."
 		discordSend(m.ChannelID, "", msg)
 		return
 	}

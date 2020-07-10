@@ -7,7 +7,7 @@ import produce, {
 } from 'immer';
 import { ensureAllCases } from '../../misc';
 import { getVariant } from '../data/gameData';
-import * as clues from '../rules/clueTokens';
+import { clueTokensRules, variantRules } from '../rules';
 import { GameAction } from '../types/actions';
 import EndCondition from '../types/EndCondition';
 import GameMetadata from '../types/GameMetadata';
@@ -56,7 +56,7 @@ const gameStateReducer = produce((
       state.discardStacks[action.which.suitIndex].push(action.which.order);
 
       if (!action.failed) {
-        state.clueTokens = clues.gainClue(variant, state.clueTokens);
+        state.clueTokens = clueTokensRules.gainClue(variant, state.clueTokens);
       }
 
       break;
@@ -92,8 +92,13 @@ const gameStateReducer = produce((
       state.score += 1;
 
       // Gain a clue token if the stack is complete
-      if (state.playStacks[action.which.suitIndex].length === 5) { // Hard-code 5 cards per stack
-        state.clueTokens = clues.gainClue(variant, state.clueTokens);
+      if (
+        state.playStacks[action.which.suitIndex].length === 5 // Hard-code 5 cards per stack
+        // In "Throw It in a Hole" variants, getting a clue back would reveal information about the
+        // card that is played, so finishing a stack does not grant a clue
+        && !variantRules.isThrowItInAHole(variant)
+      ) {
+        state.clueTokens = clueTokensRules.gainClue(variant, state.clueTokens);
       }
 
       break;
