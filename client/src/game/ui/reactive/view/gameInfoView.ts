@@ -12,6 +12,14 @@ export function onCurrentPlayerIndexChanged(currentPlayerIndex: number | null) {
   for (let i = 0; i < globals.elements.nameFrames.length; i++) {
     globals.elements.nameFrames[i].setActive(currentPlayerIndex === i);
   }
+
+  // Show the black rectangle over a player's hand that signifies that it is their turn
+  if (globals.currentPlayerIndex !== -1) {
+    for (const rect of globals.elements.playerHandTurnRects) {
+      rect.hide();
+    }
+    globals.elements.playerHandTurnRects[globals.currentPlayerIndex].show();
+  }
 }
 
 export function onClueTokensChanged(clueTokens: number) {

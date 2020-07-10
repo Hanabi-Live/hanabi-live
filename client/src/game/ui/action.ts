@@ -272,19 +272,11 @@ actionFunctions.set('turn', (data: ActionTurn) => {
   globals.turn = data.num;
   globals.currentPlayerIndex = data.who;
 
-  // Update the current player in the middle of the screen
+  // Update the "Current Player" area in the middle of the screen
   // Optimization: this function is expensive, so only
   // do it in replays if this is the correct turn
   if (!globals.replay || globals.replayTurn === globals.turn) {
     updateCurrentPlayerArea();
-  }
-
-  // Show the black rectangle over the hand that signifies that it is their turn
-  if (globals.currentPlayerIndex !== -1) {
-    for (const rect of globals.elements.playerHandTurnRects) {
-      rect.hide();
-    }
-    globals.elements.playerHandTurnRects[globals.currentPlayerIndex].show();
   }
 
   // If there are no cards left in the deck, update the "Turns left: #" label
