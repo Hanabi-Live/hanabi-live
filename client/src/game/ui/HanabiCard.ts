@@ -493,7 +493,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       // Instead, just use the the first gradient color
       this.arrowBase!.stroke(suit.fillColors[0]);
     }
-    if (this.rankPips!.visible()) {
+    if (this.rankPips!.isVisible()) {
       this.setArrowMiddleRight();
     } else {
       this.setArrowBottomRight();
@@ -535,7 +535,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     // Override the above logic and always fade the card if it is explicitly marked as known trash
-    if (this.trashcan!.visible() && this.state.numPositiveClues === 0) {
+    if (this.trashcan!.isVisible() && this.state.numPositiveClues === 0) {
       newOpacity = CARD_FADE;
     }
 
@@ -946,7 +946,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.tooltipName = `card-${this.state.order}`;
     this.on('mousemove', function cardMouseMove(this: HanabiCard) {
       // Don't do anything if there is not a note on this card
-      if (!this.noteIndicator!.visible()) {
+      if (!this.noteIndicator!.isVisible()) {
         return;
       }
 
@@ -1064,7 +1064,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Feature 2 - Give the card a special border if it is chop moved
     const showSpecialBorder = (
-      !this.cluedBorder!.visible()
+      !this.cluedBorder!.isVisible()
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
       && !globals.replay

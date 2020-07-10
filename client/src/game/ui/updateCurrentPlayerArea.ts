@@ -5,18 +5,22 @@ import globals from './globals';
 
 // Set the "Current Player" area up for this specific turn
 export default function updateCurrentPlayerArea() {
+  // The "Current Player" area is never visible in solo replays / shared replays
+  if (globals.replay) {
+    return;
+  }
+
   const currentPlayerArea = globals.elements.currentPlayerArea!;
   const winW = globals.stage.width();
   const winH = globals.stage.height();
 
   currentPlayerArea.visible(
-    // Don't show it if we are in a solo/shared replay
-    // or if we happen to have the in-game replay open
+    // Don't show it we happen to have the in-game replay open
     !globals.inReplay
     // Don't show it if the clue UI is there
     && (!globals.ourTurn || globals.clues === 0)
     // Don't show it if the premove button is there
-    && !globals.elements.premoveCancelButton!.visible()
+    && !globals.elements.premoveCancelButton!.isVisible()
     && globals.currentPlayerIndex !== null, // Don't show it if this is the end of the game
   );
 
@@ -43,7 +47,7 @@ export default function updateCurrentPlayerArea() {
       text3.fill(LABEL_COLOR);
     } else if (
       globals.lobby.settings.hyphenatedConventions
-      && globals.elements.noDoubleDiscardBorder!.visible()
+      && globals.elements.noDoubleDiscardBorder!.isVisible()
     ) {
       specialText = '(potentially in a "Double Discard" situation)';
       text3.fill('yellow');
