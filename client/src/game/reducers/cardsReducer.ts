@@ -1,6 +1,5 @@
 // Calculates the state of the deck after an action
 
-import produce, { castDraft, Draft } from 'immer';
 import { ensureAllCases, nullIfNegative } from '../../misc';
 import { getVariant } from '../data/gameData';
 import { removePossibilities, checkAllPipPossibilities } from '../rules/applyClueCore';
@@ -14,13 +13,14 @@ import Variant from '../types/Variant';
 import cardPossibilitiesReducer from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
 
-const cardsReducer = produce((
-  deck: Draft<CardState[]>,
+const cardsReducer = (
+  deck: readonly CardState[],
   action: GameAction,
   game: GameState,
   metadata: GameMetadata,
 ) => {
   const variant = getVariant(metadata.options.variantName);
+  const newDeck = deck.concat([]);
 
   switch (action.type) {
     // A player just gave a clue
@@ -44,14 +44,14 @@ const cardsReducer = produce((
           )
         */
 
-        const card = getCard(deck, order);
+        const card = getCard(newDeck, order);
         const wasKnown = (
           card.rankClueMemory.possibilities.length === 1
           && card.colorClueMemory.possibilities.length === 1
         );
 
         const newCard = cardPossibilitiesReducer(card, clue, positive, metadata);
-        deck[order] = newCard;
+        newDeck[order] = newCard;
 
         if (
           !wasKnown
@@ -64,16 +64,26 @@ const cardsReducer = produce((
             ? game.hands // All hands
             : [game.hands[card.location as number]]; // Just who's seeing this for the first time
           for (const hand of handsSeeingCardForFirstTime) {
-            removePossibilityOnHand(deck, hand, newCard, variant);
+            removePossibilityOnHand(
+              newDeck,
+              hand,
+              order,
+              newCard.suitIndex!,
+              newCard.rank!,
+              variant,
+            );
           }
         }
       };
 
       // Positive clues
       action.list.forEach((order) => {
-        const card = getCard(deck, order);
-        card.numPositiveClues += 1;
-        card.turnsClued.push(game.turn.turnNum);
+        const card = getCard(newDeck, order);
+        newDeck[order] = {
+          ...getCard(newDeck, order),
+          numPositiveClues: card.numPositiveClues + 1,
+          turnsClued: [...card.turnsClued, game.turn.turnNum],
+        };
         applyClue(order, true);
       });
 
@@ -86,36 +96,55 @@ const cardsReducer = produce((
 
     case 'discard':
     case 'play': {
-      const card = getCard(deck, action.which.order);
+      const order = action.which.order;
+      const card = getCard(deck, order);
 
       // Reveal all cards played and discarded
-      card.suitIndex = nullIfNegative(action.which.suitIndex);
-      card.rank = nullIfNegative(action.which.rank);
+      const suitIndex = nullIfNegative(action.which.suitIndex);
+      const rank = nullIfNegative(action.which.rank);
+
+      let identityDetermined = card.identityDetermined;
 
       // If the card was already fully-clued,
       // we already updated the possibilities for it on other cards
-      if (card.suitIndex != null && card.rank != null && !card.identityDetermined) {
-        card.identityDetermined = true;
+      if (suitIndex != null && rank != null && !identityDetermined) {
+        identityDetermined = true;
         // If we're currently playing this game, this is the first time
         // we see this card, from the point of view of all hands
         const handsSeeingCardForFirstTime = (metadata.playerSeat === card.location)
           ? game.hands // All hands
           : [game.hands[card.location as number]]; // Just who's seeing this for the first time
         for (const hand of handsSeeingCardForFirstTime) {
-          removePossibilityOnHand(deck, hand, card, variant);
+          removePossibilityOnHand(newDeck, hand, order, suitIndex, rank, variant);
         }
       }
 
+      let turnPlayed = card.turnPlayed;
+      let turnDiscarded = card.turnDiscarded;
+      let location = card.location;
+      let isMisplayed = card.isMisplayed;
+
       if (action.type === 'play') {
-        card.turnPlayed = game.turn.turnNum;
-        card.location = 'playStack';
+        turnPlayed = game.turn.turnNum;
+        location = 'playStack';
       } else {
-        card.turnDiscarded = game.turn.turnNum;
-        card.location = 'discard';
+        turnDiscarded = game.turn.turnNum;
+        location = 'discard';
         if (action.failed) {
-          card.isMisplayed = true;
+          isMisplayed = true;
         }
       }
+
+      newDeck[order] = {
+        ...card,
+        suitIndex,
+        rank,
+        identityDetermined,
+        turnPlayed,
+        turnDiscarded,
+        location,
+        isMisplayed,
+      };
       break;
     }
 
@@ -129,47 +158,61 @@ const cardsReducer = produce((
         console.warn(`Client = ${game.turn.currentPlayerIndex}, Server = ${action.who}`);
       }
 
-      const drawnCard: Draft<CardState> = castDraft({
-        ...initialCardState(action.order, variant),
-        location: action.who,
-        suitIndex: nullIfNegative(action.suitIndex),
-        rank: nullIfNegative(action.rank),
-        turnDrawn: game.turn.turnNum,
-      });
+      const initial = initialCardState(action.order, variant);
 
       // Remove all possibilities of all cards previously drawn and visible
 
       const possibilitiesToRemove = deck.slice(0, action.order)
         .filter((card) => card.suitIndex !== null && card.rank !== null)
-        .filter((card) => card.location !== drawnCard.location
+        .filter((card) => card.location !== action.who
         || (
           card.colorClueMemory.possibilities.length === 1
           && card.rankClueMemory.possibilities.length === 1
         ))
         .map((card) => ({ suitIndex: card.suitIndex!, rank: card.rank!, all: false }));
 
-      const possibleCards = removePossibilities(drawnCard.possibleCards, possibilitiesToRemove);
+      const possibleCards = removePossibilities(initial.possibleCards, possibilitiesToRemove);
       const pipPossibilities = checkAllPipPossibilities(possibleCards, variant);
 
-      const suitPipStates = drawnCard.colorClueMemory.pipStates.map(
+      const suitPipStates = initial.colorClueMemory.pipStates.map(
         (pipState, suitIndex) => (!pipPossibilities.suitsPossible[suitIndex] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
       );
 
-      const rankPipStates = drawnCard.rankClueMemory.pipStates.map(
+      const rankPipStates = initial.rankClueMemory.pipStates.map(
         (pipState, rank) => (!pipPossibilities.ranksPossible[rank] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
       );
 
-      drawnCard.colorClueMemory.pipStates = suitPipStates;
-      drawnCard.rankClueMemory.pipStates = rankPipStates;
-      drawnCard.possibleCards = possibleCards;
+      const drawnCard = {
+        ...initial,
+        location: action.who,
+        suitIndex: nullIfNegative(action.suitIndex),
+        rank: nullIfNegative(action.rank),
+        turnDrawn: game.turn.turnNum,
+        colorClueMemory: {
+          ...initial.colorClueMemory,
+          pipStates: suitPipStates,
+        },
+        rankClueMemory: {
+          ...initial.rankClueMemory,
+          pipStates: rankPipStates,
+        },
+        possibleCards,
+      };
 
-      deck[action.order] = drawnCard;
+      newDeck[action.order] = drawnCard;
 
       // If the card was drawn by a player we can see, update possibilities
       // on all hands, except for the player that didn't see it
       if (drawnCard.suitIndex != null && drawnCard.rank != null) {
         for (const hand of game.hands.filter((_, i) => i !== drawnCard.location)) {
-          removePossibilityOnHand(deck, hand, drawnCard, variant);
+          removePossibilityOnHand(
+            newDeck,
+            hand,
+            action.order,
+            drawnCard.suitIndex!,
+            drawnCard.rank!,
+            variant,
+          );
         }
       }
 
@@ -192,7 +235,8 @@ const cardsReducer = produce((
       break;
     }
   }
-}, {} as CardState[]);
+  return newDeck;
+};
 
 export default cardsReducer;
 
@@ -201,18 +245,20 @@ export default cardsReducer;
 // -------
 
 function removePossibilityOnHand(
-  deck: Draft<CardState[]>,
+  deck: CardState[],
   hand: readonly number[],
-  card: CardState,
+  order: number,
+  suitIndex: number,
+  rank: number,
   variant: Variant,
 ) {
   const cardsExceptCardBeingRemoved = hand
-    .filter((order) => order !== card.order)
-    .map((order) => deck[order]);
+    .filter((o) => o !== order)
+    .map((o) => deck[o]);
 
   for (const handCard of cardsExceptCardBeingRemoved) {
-    const newCard = removePossibility(handCard, card.suitIndex!, card.rank!, false, variant);
-    deck[handCard.order] = castDraft(newCard);
+    const newCard = removePossibility(handCard, suitIndex, rank, false, variant);
+    deck[handCard.order] = newCard;
   }
 }
 
@@ -267,7 +313,7 @@ function removePossibility(
   };
 }
 
-function getCard(deck: Draft<CardState[]>, order: number) {
+function getCard(deck: readonly CardState[], order: number) {
   const card = deck[order];
   if (!card) {
     console.error(`Failed to get the card for index ${order}.`);
