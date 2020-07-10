@@ -20,7 +20,6 @@ import { animate } from './konvaHelpers';
 import LayoutChild from './LayoutChild';
 import statusCheckOnAllCards from './statusCheckOnAllCards';
 import strikeRecord from './strikeRecord';
-import updateCurrentPlayerArea from './updateCurrentPlayerArea';
 
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list that was sent upon loading a new
@@ -236,13 +235,6 @@ actionFunctions.set('turn', (data: ActionTurn) => {
   // Store the current turn in memory
   globals.turn = data.num;
   globals.currentPlayerIndex = nullIfNegative(data.who);
-
-  // Update the "Current Player" area in the middle of the screen
-  // Optimization: this function is expensive, so only
-  // do it in replays if this is the correct turn
-  if (!globals.replay || globals.replayTurn === globals.turn) {
-    updateCurrentPlayerArea();
-  }
 
   if (!globals.animateFast) {
     globals.layers.UI.batchDraw();

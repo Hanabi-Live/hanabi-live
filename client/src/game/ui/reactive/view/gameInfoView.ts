@@ -1,11 +1,13 @@
 import { LABEL_COLOR } from '../../../../constants';
 import { variantRules } from '../../../rules';
 import globals from '../../globals';
+import updateCurrentPlayerArea from '../../updateCurrentPlayerArea';
 
 export function onTurnChanged(data: {
   turn: number;
   endTurn: number | null;
 }) {
+  // Update the "Turn" label
   // On both the client and the server, the first turn of the game is represented as turn 0
   // However, turn 0 is represented to the end-user as turn 1, so we must add one
   globals.elements.turnNumberLabel!.text(`${data.turn + 1}`);
@@ -25,17 +27,24 @@ export function onTurnChanged(data: {
 }
 
 export function onCurrentPlayerIndexChanged(currentPlayerIndex: number | null) {
-  // Bold the name frame of the current player to indicate that it is their turn
+  // Bold the name frame of the current player to signify that it is their turn
   for (let i = 0; i < globals.elements.nameFrames.length; i++) {
     globals.elements.nameFrames[i].setActive(currentPlayerIndex === i);
   }
 
-  // Show the black rectangle over a player's hand that signifies that it is their turn
+  // Additionally, show a black rectangle over a player's hand to signify that it is their turn
   if (currentPlayerIndex !== null) {
     for (const rect of globals.elements.playerHandTurnRects) {
       rect.hide();
     }
     globals.elements.playerHandTurnRects[currentPlayerIndex].show();
+  }
+
+  // For ongoing games, update the "Current Player" area in the middle of the screen
+  // Optimization: this function is expensive, so only
+  // do it in replays if this is the correct turn
+  if (!globals.replay || globals.replayTurn === globals.turn) {
+    updateCurrentPlayerArea();
   }
 
   // For replay leaders, we want to disable entering a hypothetical if we are currently on a turn
