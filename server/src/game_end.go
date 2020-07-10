@@ -176,6 +176,7 @@ func (g *Game) WriteDatabase() error {
 		p := t.Players[gp.Index]
 
 		characterID := 0
+		characterMetadata := 0
 		if t.Options.DetrimentalCharacters {
 			if gp.Character == "n/a" {
 				characterID = -1
@@ -187,6 +188,9 @@ func (g *Game) WriteDatabase() error {
 						" does not exist in the characters map")
 				} else {
 					characterID = v.ID
+					if v.WriteMetadataToDatabase {
+						characterMetadata = gp.CharacterMetadata
+					}
 				}
 			}
 		}
@@ -196,7 +200,7 @@ func (g *Game) WriteDatabase() error {
 			p.ID,
 			gp.Index,
 			characterID,
-			gp.CharacterMetadata,
+			characterMetadata,
 		); err != nil {
 			logger.Error("Failed to insert game participant row #"+strconv.Itoa(i)+":", err)
 			return err
