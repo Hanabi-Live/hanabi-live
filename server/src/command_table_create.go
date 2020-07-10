@@ -1,10 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
-	"os"
-	"path"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -15,10 +11,6 @@ import (
 const (
 	// The maximum number of characters that a game name can be
 	MaxGameNameLength = 45
-)
-
-var (
-	cardRegExp = regexp.MustCompile(`^(\w)(\d)$`)
 )
 
 // commandTableCreate is sent when the user submits the "Create a New Game" form
@@ -103,9 +95,10 @@ func commandTableCreate(s *Session, d *CommandData) {
 	createTable(s, d, true)
 }
 
-// This function is run after some validation in commandTableCreate
-// that may be bypassed if the server creates the game from a restart, for example
-// preGameVisible is false if this game should be hidden before it starts, such as a restarted game
+// This function is run after some validation in the "commandTableCreate()" function
+// Validation is bypassed if the server creates the game from a "restart" command
+// "preGameVisible" is false if this game should be hidden before it starts,
+// such as a restarted game
 func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	// Set default values for the custom game options
 	var customDeck []*CardIdentity
@@ -210,83 +203,6 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 			}
 
 			setReplay = true
-		} else if command == "deal" {
-			// !deal - Play a specific deal read from a text file
-			if len(args) != 1 {
-				s.Warning("Games on specific deals must be created in the form: !deal [filename]")
-				return
-			}
-
-			if !isAlphanumeric(args[0]) {
-				s.Warning("The filename must consist of only letters and numbers.")
-				return
-			}
-
-			// Check to see if the file exists on the server
-			filePath := path.Join(specificDealsPath, args[0]+".txt")
-			if _, err := os.Stat(filePath); err != nil {
-				s.Warning("That preset deal does not exist on the server.")
-				return
-			}
-
-			var lines []string
-			if v, err := ioutil.ReadFile(filePath); err != nil {
-				logger.Error("Failed to read \""+filePath+"\":", err)
-				s.Error(CreateGameFail)
-				return
-			} else {
-				lines = strings.Split(string(v), "\n")
-			}
-
-			customDeck = make([]*CardIdentity, 0)
-			for i, line := range lines {
-				// Ignore empty lines (the last line of the file might be empty)
-				if line == "" {
-					continue
-				}
-
-				// Parse the line for the suit and the rank
-				match := cardRegExp.FindStringSubmatch(line)
-				if match == nil {
-					s.Warning("Failed to parse line " + strconv.Itoa(i+1) + ": " + line)
-					return
-				}
-
-				// Parse the suit
-				suit := strings.ToLower(match[1])
-				var newSuit int
-				if suit == "r" {
-					newSuit = 0
-				} else if suit == "y" {
-					newSuit = 1
-				} else if suit == "g" {
-					newSuit = 2
-				} else if suit == "b" {
-					newSuit = 3
-				} else if suit == "p" {
-					newSuit = 4
-				} else if suit == "m" || suit == "t" {
-					newSuit = 5
-				} else {
-					s.Warning("Failed to parse the suit on line " + strconv.Itoa(i+1) + ": " + suit)
-					return
-				}
-
-				// Parse the rank
-				rank := match[2]
-				var newRank int
-				if v, err := strconv.Atoi(rank); err != nil {
-					s.Warning("Failed to parse the rank on line " + strconv.Itoa(i+1) + ": " + rank)
-					return
-				} else {
-					newRank = v
-				}
-
-				customDeck = append(customDeck, &CardIdentity{
-					SuitIndex: newSuit,
-					Rank:      newRank,
-				})
-			}
 		} else {
 			msg := "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command."
 			s.Warning(msg)
