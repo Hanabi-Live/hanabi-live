@@ -1,9 +1,9 @@
 // Functions for building a state table for every turn
 
 import produce, {
-  current,
   Draft,
   original,
+  castDraft,
 } from 'immer';
 import { ensureAllCases } from '../../misc';
 import { getVariant } from '../data/gameData';
@@ -172,12 +172,12 @@ const gameStateReducer = produce((
   }
 
   // Use a sub-reducer to calculate changes on cards
-  state.deck = cardsReducer(
-    original(state.deck),
+  state.deck = castDraft(cardsReducer(
+    original(state.deck)!,
     action,
-    current(state),
+    state,
     metadata,
-  );
+  ));
 
   // Use a sub-reducer to calculate the turn
   let turnState: TurnState = {
@@ -198,7 +198,7 @@ const gameStateReducer = produce((
     original(state.stats),
     action,
     original(state)!,
-    current(state),
+    state,
     metadata,
   );
 }, {} as GameState);
