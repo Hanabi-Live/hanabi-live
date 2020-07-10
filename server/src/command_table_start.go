@@ -302,8 +302,8 @@ func commandTableStart(s *Session, d *CommandData) {
 		}
 	}
 
-	// Start the timer
-	if t.Options.Timed {
+	// Start a timer to detect if the current player runs out of time
+	if t.Options.Timed && !t.Replay {
 		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayer])
 	}
 }
