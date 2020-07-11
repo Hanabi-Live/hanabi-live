@@ -78,9 +78,9 @@ export default class CardLayout extends Konva.Group {
     if (numCards > 1) {
       spacingBetweenCards = (handWidth - uw) / (numCards - 1);
     }
-    let maxSpacingBetweenCards = 0.04 * handWidth;
+    let maxSpacingBetweenCards = 0.04 * uw;
     if (globals.lobby.settings.keldonMode) {
-      maxSpacingBetweenCards = 0.025 * handWidth;
+      maxSpacingBetweenCards = 0.025 * uw;
     }
     if (spacingBetweenCards > maxSpacingBetweenCards) {
       spacingBetweenCards = maxSpacingBetweenCards;
@@ -145,7 +145,7 @@ export default class CardLayout extends Konva.Group {
               }
               storedPostAnimationLayout();
             },
-          });
+          }, true);
         };
 
         if (card.doMisplayAnimation) {
@@ -169,7 +169,7 @@ export default class CardLayout extends Konva.Group {
               layoutChild.rotation(360);
               animateToLayout();
             },
-          });
+          }, true);
         } else {
           animateToLayout();
         }

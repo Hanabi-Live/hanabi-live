@@ -28,6 +28,13 @@ export function onChanged(
     }
   } else if (action !== null && previousAction === null) {
     // We just specified a premove action
+    const ourPlayerIndex = globals.store!.getState().metadata.ourPlayerIndex;
+    const ourHand = globals.elements.playerHands[ourPlayerIndex];
+    if (!ourHand) {
+      throw new Error(`Failed to get our hand with an index of ${ourPlayerIndex}.`);
+    }
+    ourHand.checkSetDraggableAll();
+
     let text = 'Cancel Pre-';
     if (action.type === ActionType.Play) {
       text += 'Play';
