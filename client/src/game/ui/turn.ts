@@ -1,6 +1,7 @@
 import * as notifications from '../../notifications';
 import * as cardRules from '../rules/card';
-import { ActionType, ClientAction } from '../types/ClientAction';
+import ActionType from '../types/ActionType';
+import ClientAction from '../types/ClientAction';
 import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import globals from './globals';

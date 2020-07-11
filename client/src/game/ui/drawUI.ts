@@ -8,7 +8,7 @@ import * as debug from '../../debug';
 import * as deck from '../rules/deck';
 import * as stats from '../rules/stats';
 import * as variantRules from '../rules/variant';
-import { ActionType } from '../types/ClientAction';
+import ActionType from '../types/ActionType';
 import { colorClue, rankClue } from '../types/Clue';
 import { STACK_BASE_RANK } from '../types/constants';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';

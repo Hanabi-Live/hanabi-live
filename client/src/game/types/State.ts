@@ -1,4 +1,5 @@
 import CardIdentity from './CardIdentity';
+import ClientAction from './ClientAction';
 import GameMetadata from './GameMetadata';
 import GameState from './GameState';
 import ReplayState from './ReplayState';
@@ -9,4 +10,5 @@ export default interface State {
   readonly replay: ReplayState;
   readonly cardIdentities: readonly CardIdentity[];
   readonly metadata: GameMetadata;
+  readonly premove: ClientAction | null;
 }

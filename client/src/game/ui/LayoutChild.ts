@@ -4,7 +4,7 @@
 import Konva from 'konva';
 import * as sounds from '../../sounds';
 import * as variantRules from '../rules/variant';
-import { ActionType } from '../types/ClientAction';
+import ActionType from '../types/ActionType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import CardLayout from './CardLayout';
 import globals from './globals';

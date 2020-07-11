@@ -1,6 +1,6 @@
 import { getCharacter } from '../data/gameData';
+import ActionType from '../types/ActionType';
 import CardState from '../types/CardState';
-import { ActionType } from '../types/ClientAction';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
 import Color from '../types/Color';

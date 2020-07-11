@@ -10,8 +10,8 @@ import {
   ActionPlay,
   GameAction,
 } from '../src/game/types/actions';
+import ActionType from '../src/game/types/ActionType';
 import CardIdentity from '../src/game/types/CardIdentity';
-import { ActionType } from '../src/game/types/ClientAction';
 import ClueType from '../src/game/types/ClueType';
 import { STACK_BASE_RANK } from '../src/game/types/constants';
 import GameState from '../src/game/types/GameState';
@@ -156,6 +156,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     replay: { ...state.replay, states },
     cardIdentities: [],
     metadata,
+    premove: null,
   };
 }
 

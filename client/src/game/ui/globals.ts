@@ -9,7 +9,7 @@ import { VARIANTS } from '../data/gameData';
 import { GameExports } from '../main';
 import { GameAction, ActionIncludingHypothetical, Action } from '../types/actions';
 import CardIdentity from '../types/CardIdentity';
-import { ClientAction } from '../types/ClientAction';
+import ClientAction from '../types/ClientAction';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import Options from '../types/Options';
 import SpectatorNote from '../types/SpectatorNote';

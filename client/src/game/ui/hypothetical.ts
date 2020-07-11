@@ -3,7 +3,8 @@
 
 import * as variantRules from '../rules/variant';
 import { ActionIncludingHypothetical } from '../types/actions';
-import { ActionType, ClientAction } from '../types/ClientAction';
+import ActionType from '../types/ActionType';
+import ClientAction from '../types/ClientAction';
 import ClueType from '../types/ClueType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
