@@ -895,7 +895,9 @@ const drawScoreArea = () => {
       } else {
         replay.enter();
       }
-      replay.goto(this.turn + 1, true);
+      if (globals.inReplay) {
+        replay.goto(this.turn + 1, true);
+      }
 
       // Also highlight the card
       if (this.order !== null) {
@@ -1790,8 +1792,7 @@ const drawPreplayArea = () => {
   });
   globals.layers.UI.add(globals.elements.premoveCancelButton as any);
   globals.elements.premoveCancelButton.on('click tap', () => {
-    // TODO use premove state
-    globals.premove = null;
+    globals.store!.dispatch({ type: 'premove', premove: null });
   });
 };
 

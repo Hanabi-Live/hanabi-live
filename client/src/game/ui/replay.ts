@@ -68,10 +68,6 @@ export const exit = () => {
   if (globals.ourTurn) {
     turn.showClueUIAndEnableDragging();
   }
-  if (globals.premove !== null) {
-    globals.elements.currentPlayerArea!.hide();
-    globals.elements.premoveCancelButton!.show();
-  }
 
   for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
     globals.deck[i].setBareImage();

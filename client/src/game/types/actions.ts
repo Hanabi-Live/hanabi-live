@@ -1,11 +1,13 @@
 import CardIdentity from './CardIdentity';
+import ClientAction from './ClientAction';
 import MsgClue from './MsgClue';
 
 export type Action =
   | GameAction
   | ReplayAction
   | ActionListReceived
-  | ActionCardIdentities;
+  | ActionCardIdentities
+  | ActionPremove;
 
 export type GameAction =
   | ActionClue
@@ -81,6 +83,11 @@ export interface ActionGameOver {
 export interface ActionPlay {
   type: 'play';
   readonly which: Which;
+}
+
+export interface ActionPremove {
+  type: 'premove';
+  readonly premove: ClientAction | null;
 }
 
 export interface ActionReorder {

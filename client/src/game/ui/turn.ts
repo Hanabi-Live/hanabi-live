@@ -133,9 +133,9 @@ export const showClueUIAndEnableDragging = () => {
   globals.layers.UI.batchDraw();
 };
 
-export const end = (actionObject: ClientAction) => {
+export const end = (clientAction: ClientAction) => {
   if (globals.hypothetical) {
-    hypothetical.send(actionObject);
+    hypothetical.send(clientAction);
     hideClueUIAndDisableDragging();
     return;
   }
@@ -144,28 +144,13 @@ export const end = (actionObject: ClientAction) => {
     replay.exit(); // Close the in-game replay if we preplayed a card in the replay
     globals.lobby.conn!.send('action', {
       tableID: globals.lobby.tableID,
-      type: actionObject.type,
-      target: actionObject.target,
-      value: actionObject.value,
+      type: clientAction.type,
+      target: clientAction.target,
+      value: clientAction.value,
     });
     hideClueUIAndDisableDragging();
   } else {
-    globals.premove = actionObject;
-    let text = 'Cancel Pre-';
-    if (globals.premove.type === ActionType.Play) {
-      text += 'Play';
-    } else if (globals.premove.type === ActionType.Discard) {
-      text += 'Discard';
-    } else if (
-      globals.premove.type === ActionType.ColorClue
-      || globals.premove.type === ActionType.RankClue
-    ) {
-      text += 'Clue';
-    }
-    globals.elements.premoveCancelButton!.text(text);
-    globals.elements.premoveCancelButton!.show();
-    globals.elements.currentPlayerArea!.hide();
-    globals.layers.UI.batchDraw();
+    globals.store!.dispatch({ type: 'premove', premove: clientAction });
   }
 };
 

@@ -11,6 +11,7 @@ import * as gameInfoView from './view/gameInfoView';
 import * as initView from './view/initView';
 import * as logView from './view/logView';
 import * as premoveView from './view/premoveView';
+import * as replayView from './view/replayView';
 import * as statsView from './view/statsView';
 
 export default class StateObserver {
@@ -83,6 +84,9 @@ export default class StateObserver {
       visible: currentPlayerAreaView.isVisible(s),
       currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
     }), currentPlayerAreaView.onChanged);
+
+    // Replay
+    sub((s) => s.replay.active, replayView.onActiveChanged);
 
     // Premoves (e.g. queued actions)
     sub((s) => s.premove, premoveView.onChanged);

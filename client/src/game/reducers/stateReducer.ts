@@ -65,6 +65,11 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       break;
     }
 
+    case 'premove': {
+      state.premove = action.premove;
+      break;
+    }
+
     default: {
       // A new game action happened
       state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action, state.metadata)!;
