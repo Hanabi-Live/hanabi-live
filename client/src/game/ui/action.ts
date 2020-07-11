@@ -134,10 +134,10 @@ actionFunctions.set('reorder', (data: ActionReorder) => {
   // Make a list of card orders currently in the hand
   const hand = globals.elements.playerHands[data.target];
   const currentCardOrders: number[] = [];
-  for (const layoutChild of hand.children.toArray() as LayoutChild[]) {
+  hand.children.each((layoutChild) => {
     const card = layoutChild.children[0] as unknown as HanabiCard;
     currentCardOrders.push(card.state.order);
-  }
+  });
 
   for (let i = 0; i < data.handOrder.length; i++) {
     const newCardOrderForThisSlot = data.handOrder[i];

@@ -111,13 +111,12 @@ export const showClueUIAndEnableDragging = () => {
     && !globals.hypothetical
   ) {
     const ourHand = globals.elements.playerHands[globals.playerUs];
-    if (ourHand) {
-      for (const layoutChild of ourHand.children.toArray() as LayoutChild[]) {
-        layoutChild.checkSetDraggable();
-      }
-    } else {
+    if (!ourHand) {
       throw new Error(`Failed to get "globals.elements.playerHands[]" with an index of ${globals.playerUs}.`);
     }
+    ourHand.children.each((layoutChild) => {
+      (layoutChild as unknown as LayoutChild).checkSetDraggable();
+    });
   }
 
   if (globals.options.deckPlays) {

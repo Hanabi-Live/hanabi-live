@@ -175,9 +175,9 @@ export const beginTurn = () => {
   // Set the current player's hand to be draggable
   disableDragOnAllHands();
   const hand = globals.elements.playerHands[globals.currentPlayerIndex!];
-  for (const layoutChild of hand.children.toArray() as LayoutChild[]) {
-    layoutChild.checkSetDraggable();
-  }
+  hand.children.each((layoutChild) => {
+    (layoutChild as unknown as LayoutChild).checkSetDraggable();
+  });
 };
 
 export const send = (hypoAction: ClientAction) => {
