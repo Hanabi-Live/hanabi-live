@@ -8,7 +8,6 @@ import * as debug from '../../debug';
 import * as deck from '../rules/deck';
 import * as stats from '../rules/stats';
 import * as variantRules from '../rules/variant';
-import ActionType from '../types/ActionType';
 import { colorClue, rankClue } from '../types/Clue';
 import { STACK_BASE_RANK } from '../types/constants';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
@@ -1791,20 +1790,7 @@ const drawPreplayArea = () => {
   });
   globals.layers.UI.add(globals.elements.premoveCancelButton as any);
   globals.elements.premoveCancelButton.on('click tap', () => {
-    globals.elements.premoveCancelButton!.hide();
-    globals.elements.currentPlayerArea!.show();
-    globals.layers.UI.batchDraw();
-
-    if (globals.premove === null) {
-      return;
-    }
-
-    // If we dragged a card, we have to put the card back in the hand
-    if (globals.premove.type === ActionType.Play
-      || globals.premove.type === ActionType.Discard) {
-      globals.elements.playerHands[globals.playerUs].doLayout();
-    }
-
+    // TODO use premove state
     globals.premove = null;
   });
 };

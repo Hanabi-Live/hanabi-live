@@ -10,6 +10,7 @@ import * as currentPlayerAreaView from './view/currentPlayerAreaView';
 import * as gameInfoView from './view/gameInfoView';
 import * as initView from './view/initView';
 import * as logView from './view/logView';
+import * as premoveView from './view/premoveView';
 import * as statsView from './view/statsView';
 
 export default class StateObserver {
@@ -83,8 +84,11 @@ export default class StateObserver {
       currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
     }), currentPlayerAreaView.onChanged);
 
-    // Initialization finished: this will get called when the
-    // visible state becomes valid and after all other view updates
+    // Premoves (e.g. queued actions)
+    sub((s) => s.premove, premoveView.onChanged);
+
+    // Initialization finished
+    // (this will get called when the visible state becomes valid and after all other view updates)
     sub((s) => !!s.visibleState, initView.onInitializationChanged);
 
     this.unsubscribe = observeStore(store, subscriptions);

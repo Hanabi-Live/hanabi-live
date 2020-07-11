@@ -14,7 +14,7 @@ export function isVisible(s: State) {
       && !s.metadata.spectating
     )
     // The premove cancel button should take precedence over the "Current Player" area
-    && !globals.elements.premoveCancelButton!.isVisible()
+    && s.premove !== null
   );
 }
 
