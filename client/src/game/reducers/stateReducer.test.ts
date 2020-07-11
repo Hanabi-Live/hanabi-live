@@ -1,10 +1,10 @@
 import { text, startReplay } from '../../../test/testActions';
-import initialMetadata from './initialStates/initialMetadata';
+import testMetadata from '../../../test/testMetadata';
 import initialState from './initialStates/initialState';
 import stateReducer from './stateReducer';
 
 const numPlayers = 3;
-const defaultMetadata = initialMetadata(numPlayers);
+const defaultMetadata = testMetadata(numPlayers);
 
 describe('stateReducer', () => {
   test('does not mutate state', () => {

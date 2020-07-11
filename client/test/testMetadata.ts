@@ -1,9 +1,9 @@
-import { initArray } from '../../../misc';
-import { DEFAULT_VARIANT_NAME } from '../../types/constants';
-import GameMetadata from '../../types/GameMetadata';
-import Options from '../../types/Options';
+import { DEFAULT_VARIANT_NAME } from '../src/game/types/constants';
+import GameMetadata from '../src/game/types/GameMetadata';
+import Options from '../src/game/types/Options';
+import { initArray } from '../src/misc';
 
-export default function initialMetadata(
+export default function testMetadata(
   numPlayers: number,
   variantName: string = DEFAULT_VARIANT_NAME,
 ): GameMetadata {

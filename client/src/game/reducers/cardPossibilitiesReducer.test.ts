@@ -1,11 +1,11 @@
+import testMetadata from '../../../test/testMetadata';
 import { getVariant } from '../data/gameData';
 import { colorClue, rankClue } from '../types/Clue';
 import cardPossibilitiesReducer from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
-import initialMetadata from './initialStates/initialMetadata';
 
 const numPlayers = 3;
-const defaultMetadata = initialMetadata(numPlayers);
+const defaultMetadata = testMetadata(numPlayers);
 const variant = getVariant(defaultMetadata.options.variantName);
 const defaultCard = initialCardState(0, variant);
 
@@ -44,7 +44,7 @@ describe('cardPossibilitiesReducer', () => {
   });
 
   test.skip('removes possibilities based on previous rank and color clues', () => {
-    const metadata = initialMetadata(numPlayers, 'Rainbow-Ones & Brown (6 Suits)');
+    const metadata = testMetadata(numPlayers, 'Rainbow-Ones & Brown (6 Suits)');
     const rainbowOnesAndBrown = getVariant(metadata.options.variantName);
 
     const redClue = colorClue(variant.clueColors[0]);

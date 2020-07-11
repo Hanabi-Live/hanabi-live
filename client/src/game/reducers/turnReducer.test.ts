@@ -2,14 +2,14 @@ import { // Direct import instead of namespace import for compactness
   draw,
   play,
 } from '../../../test/testActions';
+import testMetadata from '../../../test/testMetadata';
 import { MAX_CLUE_NUM } from '../types/constants';
 import TurnState from '../types/TurnState';
-import initialMetadata from './initialStates/initialMetadata';
 import initialTurnState from './initialStates/initialTurnState';
 import turnReducer from './turnReducer';
 
 const numPlayers = 3;
-const defaultMetadata = initialMetadata(numPlayers);
+const defaultMetadata = testMetadata(numPlayers);
 
 describe('turnReducer', () => {
   describe('turn', () => {

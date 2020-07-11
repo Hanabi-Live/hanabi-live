@@ -68,7 +68,12 @@ export const rankClue = (
   turn,
 );
 
-export const draw = (who: number, suitIndex: number, rank: number, order: number): ActionDraw => ({
+export const draw = (
+  who: number,
+  suitIndex: number,
+  rank: number,
+  order: number,
+): ActionDraw => ({
   type: 'draw',
   who,
   suitIndex,

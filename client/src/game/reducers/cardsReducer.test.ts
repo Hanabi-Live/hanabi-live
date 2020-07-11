@@ -5,15 +5,15 @@ import {
   play,
   rankClue,
 } from '../../../test/testActions';
+import testMetadata from '../../../test/testMetadata';
 import { getVariant } from '../data/gameData';
 import CardState from '../types/CardState';
 import cardsReducer from './cardsReducer';
 import initialCardState from './initialStates/initialCardState';
 import initialGameState from './initialStates/initialGameState';
-import initialMetadata from './initialStates/initialMetadata';
 
 const numPlayers = 3;
-const defaultMetadata = initialMetadata(numPlayers);
+const defaultMetadata = testMetadata(numPlayers);
 const gameState = initialGameState(defaultMetadata);
 const variant = getVariant(defaultMetadata.options.variantName);
 const defaultCard = initialCardState(0, variant);

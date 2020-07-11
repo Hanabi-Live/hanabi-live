@@ -1,6 +1,5 @@
 import { getVariant } from '../src/game/data/gameData';
 import gameStateReducer from '../src/game/reducers/gameStateReducer';
-import initialMetadata from '../src/game/reducers/initialStates/initialMetadata';
 import initialState from '../src/game/reducers/initialStates/initialState';
 import * as handRules from '../src/game/rules/hand';
 import { hasReversedSuits } from '../src/game/rules/variant';
@@ -20,6 +19,7 @@ import MsgClue from '../src/game/types/MsgClue';
 import State from '../src/game/types/State';
 import Variant from '../src/game/types/Variant';
 import testGame from '../test_data/up_or_down.json';
+import testMetadata from './testMetadata';
 
 type JSONGame = typeof testGame;
 
@@ -39,7 +39,7 @@ interface JSONAction {
 
 export default function loadGameJSON(gameJSON: JSONGame): State {
   const numPlayers = gameJSON.players.length;
-  const metadata = initialMetadata(numPlayers, gameJSON.options.variant);
+  const metadata = testMetadata(numPlayers, gameJSON.options.variant);
   const variant = getVariant(metadata.options.variantName);
 
   const cardsPerHand = handRules.cardsPerHand(numPlayers, false, false);

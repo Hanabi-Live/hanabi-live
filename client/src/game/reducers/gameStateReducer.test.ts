@@ -7,14 +7,14 @@ import { // Direct import instead of namespace import for compactness
   strike,
   text,
 } from '../../../test/testActions';
+import testMetadata from '../../../test/testMetadata';
 import { MAX_CLUE_NUM } from '../types/constants';
 import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialStates/initialGameState';
-import initialMetadata from './initialStates/initialMetadata';
 
 const numPlayers = 3;
-const defaultMetadata = initialMetadata(numPlayers);
-const clueStarvedMetadata = initialMetadata(numPlayers, 'Clue Starved (6 Suits)');
+const defaultMetadata = testMetadata(numPlayers);
+const clueStarvedMetadata = testMetadata(numPlayers, 'Clue Starved (6 Suits)');
 
 describe('gameStateReducer', () => {
   test('does not mutate state', () => {
