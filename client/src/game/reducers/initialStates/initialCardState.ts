@@ -26,7 +26,6 @@ export default function initialCardState(order: number, variant: Variant) : Card
   return {
     order,
     location: 'deck',
-    blank: false,
     suitIndex: null,
     rank: null,
     possibleCards,

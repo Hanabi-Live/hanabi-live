@@ -50,7 +50,7 @@ export default class LayoutChild extends Konva.Group {
       if (
         globals.amSharedReplayLeader
         && globals.currentPlayerIndex === card.state.location
-        && !card.state.blank
+        && !card.blank
       ) {
         this.draggable(true);
         this.on('dragstart', this.dragStart);

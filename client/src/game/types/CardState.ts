@@ -4,7 +4,6 @@ export default interface CardState {
   readonly location: CardLocation;
   readonly suitIndex: number | null;
   readonly rank: number | null;
-  readonly blank: boolean;
 
   // The following are the variables that are refreshed
   readonly rankClueMemory: ClueMemory;

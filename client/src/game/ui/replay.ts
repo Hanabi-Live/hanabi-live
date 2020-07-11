@@ -2,7 +2,6 @@
 
 import Konva from 'konva';
 import * as deck from '../rules/deck';
-import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import action from './action';
 import Shuttle from './controls/Shuttle';
@@ -173,8 +172,6 @@ const reset = () => {
   // Reset some game state variables
   globals.turn = 0;
   globals.deckSize = deck.totalCards(globals.variant);
-  globals.maxScore = globals.variant.maxScore;
-  globals.clues = MAX_CLUE_NUM;
 
   // Reset various UI elements
   globals.postAnimationLayout = null;

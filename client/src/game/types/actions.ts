@@ -20,7 +20,7 @@ export type GameAction =
   | ActionText
   | ActionTurn;
 
-export type ActionIncludingHypothetical = GameAction | ActionMorph;
+export type ActionIncludingHypothetical = GameAction | ActionHypotheticalMorph;
 
 export type ReplayAction =
   | ActionStartReplay
@@ -29,7 +29,8 @@ export type ReplayAction =
   | ActionHypotheticalStart
   | ActionHypotheticalEnd
   | ActionHypotheticalBack
-  | ActionHypothetical;
+  | ActionHypothetical
+  | ActionHypotheticalShowDrawnCards;
 
 // ----------------------
 // Initialization actions
@@ -165,9 +166,14 @@ export interface ActionHypothetical {
   readonly action: ActionIncludingHypothetical;
 }
 
-export interface ActionMorph {
+export interface ActionHypotheticalMorph {
   type: 'morph';
   readonly suitIndex: number;
   readonly rank: number;
   readonly order: number;
+}
+
+export interface ActionHypotheticalShowDrawnCards {
+  type: 'hypoRevealed';
+  readonly showDrawnCards: boolean;
 }

@@ -49,7 +49,6 @@
         location: (s.holder !== null ? s.holder : s.isDiscarded ? 'discard' : s.isPlayed ? 'playStack' : 'deck'),
         suitIndex: globals.variant.suits.indexOf(s.suit),
         rank: s.rank,
-        blank: s.blank,
 
         rankClueMemory: {
           possibilities: s.possibleRanks,
