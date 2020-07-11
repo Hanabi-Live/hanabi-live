@@ -39,13 +39,11 @@ export default function initialCardState(order: number, variant: Variant) : Card
     colorClueMemory: {
       possibilities: possibleSuits,
       positiveClues: [],
-      negativeClues: [],
       pipStates: possibleSuits.map(() => 'Visible'),
     },
     rankClueMemory: {
       possibilities: possibleRanks,
       positiveClues: [],
-      negativeClues: [],
       pipStates: rankPipStates,
     },
     possibleCardsByClues,

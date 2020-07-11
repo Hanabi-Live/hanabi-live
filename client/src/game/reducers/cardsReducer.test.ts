@@ -153,9 +153,7 @@ describe('cardsReducer', () => {
     test('is empty initially', () => {
       const deck: CardState[] = [defaultCard];
       expect(deck[0].colorClueMemory.positiveClues.length).toBe(0);
-      expect(deck[0].colorClueMemory.negativeClues.length).toBe(0);
       expect(deck[0].rankClueMemory.positiveClues.length).toBe(0);
-      expect(deck[0].rankClueMemory.negativeClues.length).toBe(0);
     });
     test('remembers positive clues', () => {
       let deck: CardState[] = [defaultCard];
@@ -181,15 +179,11 @@ describe('cardsReducer', () => {
 
       const clueToCardOne = rankClue(1, 2, [1], 0, 0);
       deck = cardsReducer(deck, clueToCardOne, gameStateWithCorrectHands, defaultMetadata);
-      expect(deck[0].rankClueMemory.negativeClues.length).toBe(1);
-      expect(deck[0].rankClueMemory.negativeClues[0]).toBe(clueToCardOne.clue.value);
       expect(deck[1].rankClueMemory.positiveClues.length).toBe(1);
       expect(deck[1].rankClueMemory.positiveClues[0]).toBe(clueToCardOne.clue.value);
 
       const anotherClueToCardOne = colorClue(0, 1, [1], 0, 0);
       deck = cardsReducer(deck, anotherClueToCardOne, gameStateWithCorrectHands, defaultMetadata);
-      expect(deck[0].colorClueMemory.negativeClues.length).toBe(1);
-      expect(deck[0].colorClueMemory.negativeClues[0]).toBe(anotherClueToCardOne.clue.value);
       expect(deck[1].colorClueMemory.positiveClues.length).toBe(1);
       expect(deck[1].colorClueMemory.positiveClues[0]).toBe(anotherClueToCardOne.clue.value);
     });

@@ -36,7 +36,6 @@ export interface ClueMemory {
   // But to make this change safely, the applyClue function
   // has to be thoroughly covered by tests.
   readonly positiveClues: readonly number[];
-  readonly negativeClues: readonly number[];
   // TODO: pipStates is not really necessary to be stored in state
   // since it can be calculated from possibilities + possibleCards every time
   readonly pipStates: readonly PipState[];

@@ -60,7 +60,6 @@ describe('integration', () => {
           const turn5State = getStateAtTurn(testState, 4);
           const card = turn5State.deck[order];
           const expected = (upOrDownTurn5Cards as CardState[])[order];
-          checkCluesAreRemembered(card, expected);
           checkPossibilitiesEliminatedByClues(card, expected);
           checkPossibilitiesEliminatedByObservation(card, expected);
         },
@@ -102,7 +101,6 @@ describe('integration', () => {
           const finalState = getFinalState(testState);
           const card = finalState.deck[order];
           const expected = (upOrDownFinalCards as CardState[])[order];
-          checkCluesAreRemembered(card, expected);
           checkPossibilitiesEliminatedByClues(card, expected);
           checkPossibilitiesEliminatedByObservation(card, expected);
         },
@@ -137,17 +135,6 @@ describe('integration', () => {
     });
   });
 });
-
-function checkCluesAreRemembered(card: CardState, expected: CardState) {
-  expect(card.rankClueMemory.negativeClues)
-    .toEqual(expected.rankClueMemory.negativeClues);
-  expect(card.rankClueMemory.positiveClues)
-    .toEqual(expected.rankClueMemory.positiveClues);
-  expect(card.colorClueMemory.negativeClues)
-    .toEqual(expected.colorClueMemory.negativeClues);
-  expect(card.colorClueMemory.positiveClues)
-    .toEqual(expected.colorClueMemory.positiveClues);
-}
 
 function checkPossibilitiesEliminatedByClues(card: CardState, expected: CardState) {
   expect(card.rankClueMemory.possibilities)

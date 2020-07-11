@@ -2,15 +2,14 @@
 
 import { ensureAllCases, nullIfNegative } from '../../misc';
 import { getVariant } from '../data/gameData';
-import { removePossibilities, checkAllPipPossibilities } from '../rules/applyClueCore';
 import { GameAction } from '../types/actions';
-import CardState, { PipState } from '../types/CardState';
+import CardState from '../types/CardState';
 import { colorClue, rankClue } from '../types/Clue';
 import ClueType from '../types/ClueType';
 import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
 import Variant from '../types/Variant';
-import cardPossibilitiesReducer from './cardPossibilitiesReducer';
+import cardPossibilitiesReducer, { checkPips } from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
 
 const cardsReducer = (
@@ -159,27 +158,19 @@ const cardsReducer = (
       }
 
       const initial = initialCardState(action.order, variant);
-
+      const possibleCards = Array.from(initial.possibleCards, (arr) => Array.from(arr));
       // Remove all possibilities of all cards previously drawn and visible
-
-      const possibilitiesToRemove = deck.slice(0, action.order)
+      deck.slice(0, action.order)
         .filter((card) => card.suitIndex !== null && card.rank !== null)
         .filter((card) => card.location !== action.who
         || (
           card.colorClueMemory.possibilities.length === 1
           && card.rankClueMemory.possibilities.length === 1
         ))
-        .map((card) => ({ suitIndex: card.suitIndex!, rank: card.rank!, all: false }));
+        .forEach((card) => { possibleCards[card.suitIndex!][card.rank!] -= 1; });
 
-      const possibleCards = removePossibilities(initial.possibleCards, possibilitiesToRemove);
-      const pipPossibilities = checkAllPipPossibilities(possibleCards, variant);
-
-      const suitPipStates = initial.colorClueMemory.pipStates.map(
-        (pipState, suitIndex) => (!pipPossibilities.suitsPossible[suitIndex] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
-      );
-
-      const rankPipStates = initial.rankClueMemory.pipStates.map(
-        (pipState, rank) => (!pipPossibilities.ranksPossible[rank] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
+      const { suitPips, rankPips } = checkPips(
+        initial.possibleCardsByClues, possibleCards, variant,
       );
 
       const drawnCard = {
@@ -190,11 +181,11 @@ const cardsReducer = (
         turnDrawn: game.turn.turnNum,
         colorClueMemory: {
           ...initial.colorClueMemory,
-          pipStates: suitPipStates,
+          pipStates: suitPips,
         },
         rankClueMemory: {
           ...initial.rankClueMemory,
-          pipStates: rankPipStates,
+          pipStates: rankPips,
         },
         possibleCards,
       };
@@ -257,7 +248,7 @@ function removePossibilityOnHand(
     .map((o) => deck[o]);
 
   for (const handCard of cardsExceptCardBeingRemoved) {
-    const newCard = removePossibility(handCard, suitIndex, rank, false, variant);
+    const newCard = removePossibility(handCard, suitIndex, rank, variant);
     deck[handCard.order] = newCard;
   }
 }
@@ -266,49 +257,30 @@ function removePossibility(
   state: CardState,
   suitIndex: number,
   rank: number,
-  all: boolean,
   variant: Variant,
 ) {
   // Every card has a possibility map that maps card identities to count
   const possibleCards = Array.from(state.possibleCards, (arr) => Array.from(arr));
-  let cardsLeft = possibleCards[suitIndex][rank];
+  const cardsLeft = possibleCards[suitIndex][rank];
   if (cardsLeft === undefined) {
     throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${rank} from the "possibleCards" map for card.`);
   }
-  if (cardsLeft > 0) {
-    // Remove one or all possibilities for this card,
-    // (depending on whether the card was clued or if we saw someone draw a copy of this card)
-    cardsLeft = all ? 0 : cardsLeft - 1;
-  }
 
-  possibleCards[suitIndex][rank] = cardsLeft;
+  possibleCards[suitIndex][rank] = cardsLeft - 1;
 
   // Check to see if we can put an X over this suit pip or this rank pip
-  const suitPipStates = Array.from(state.colorClueMemory.pipStates);
-  const suitPossible = variant.ranks.some((r) => possibleCards[suitIndex][r] > 0);
-
-  if (!suitPossible && suitPipStates[suitIndex] !== 'Hidden') {
-    suitPipStates[suitIndex] = 'Eliminated';
-  }
-
-  const rankPipStates: PipState[] = [];
-  variant.ranks.forEach((r) => { rankPipStates[r] = state.rankClueMemory.pipStates[r]; });
-  const rankPossible = variant.suits.some((_, i) => possibleCards[i][rank] > 0);
-
-  if (!rankPossible && rankPipStates[rank] !== 'Hidden') {
-    rankPipStates[rank] = 'Eliminated';
-  }
+  const { suitPips, rankPips } = checkPips(state.possibleCardsByClues, possibleCards, variant);
 
   return {
     ...state,
     possibleCards,
     colorClueMemory: {
       ...state.colorClueMemory,
-      pipStates: suitPipStates,
+      pipStates: suitPips,
     },
     rankClueMemory: {
       ...state.rankClueMemory,
-      pipStates: rankPipStates,
+      pipStates: rankPips,
     },
   };
 }
