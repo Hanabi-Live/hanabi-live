@@ -55,12 +55,12 @@ export function animate(
       params.onFinish();
     }
 
-    // Since interactive is true, this node should be listening in its default state
+    // If interactive is true, the node should be listening in its default state
     // Ensure that the node is listening
     // (it might have had the listening disabled when it started to play an animation but never
     // ended up finishing the animation)
     if (interactive) {
-      node.listening(interactive);
+      node.listening(true);
     }
   } else {
     const config: any = {
