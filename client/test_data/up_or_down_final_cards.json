@@ -103,7 +103,8 @@
         "turnDrawn": 0,
         "turnDiscarded": 4,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 1,
@@ -210,7 +211,8 @@
         "turnDrawn": 0,
         "turnDiscarded": -1,
         "turnPlayed": 8,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 2,
@@ -314,7 +316,8 @@
         "turnDrawn": 0,
         "turnDiscarded": -1,
         "turnPlayed": 20,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 3,
@@ -421,7 +424,8 @@
         "turnDrawn": 0,
         "turnDiscarded": -1,
         "turnPlayed": 16,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 4,
@@ -525,7 +529,8 @@
         "turnDrawn": 0,
         "turnDiscarded": -1,
         "turnPlayed": 21,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 5,
@@ -633,7 +638,8 @@
         "turnDrawn": 0,
         "turnDiscarded": 13,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 6,
@@ -740,7 +746,8 @@
         "turnDrawn": 0,
         "turnDiscarded": -1,
         "turnPlayed": 17,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 7,
@@ -850,7 +857,8 @@
         "turnDrawn": 0,
         "turnDiscarded": -1,
         "turnPlayed": 49,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 8,
@@ -960,7 +968,8 @@
         "turnDrawn": 0,
         "turnDiscarded": -1,
         "turnPlayed": 38,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 9,
@@ -1067,7 +1076,8 @@
         "turnDrawn": 0,
         "turnDiscarded": 26,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 10,
@@ -1173,7 +1183,8 @@
         "turnDrawn": 0,
         "turnDiscarded": -1,
         "turnPlayed": 2,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 11,
@@ -1280,7 +1291,8 @@
         "turnDrawn": 0,
         "turnDiscarded": 30,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 12,
@@ -1387,7 +1399,8 @@
         "turnDrawn": 0,
         "turnDiscarded": 11,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 13,
@@ -1493,7 +1506,8 @@
         "turnDrawn": 0,
         "turnDiscarded": -1,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 14,
@@ -1599,7 +1613,8 @@
         "turnDrawn": 0,
         "turnDiscarded": -1,
         "turnPlayed": 3,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 15,
@@ -1707,7 +1722,8 @@
         "turnDrawn": 0,
         "turnDiscarded": 39,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 16,
@@ -1813,7 +1829,8 @@
         "turnDrawn": 3,
         "turnDiscarded": -1,
         "turnPlayed": 18,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 17,
@@ -1920,7 +1937,8 @@
         "turnDrawn": 4,
         "turnDiscarded": -1,
         "turnPlayed": 15,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 18,
@@ -2028,7 +2046,8 @@
         "turnDrawn": 5,
         "turnDiscarded": 36,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 19,
@@ -2134,7 +2153,8 @@
         "turnDrawn": 9,
         "turnDiscarded": -1,
         "turnPlayed": 12,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 20,
@@ -2239,7 +2259,8 @@
         "turnDrawn": 12,
         "turnDiscarded": -1,
         "turnPlayed": 43,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 21,
@@ -2347,7 +2368,8 @@
         "turnDrawn": 13,
         "turnDiscarded": -1,
         "turnPlayed": 28,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 22,
@@ -2454,7 +2476,8 @@
         "turnDrawn": 14,
         "turnDiscarded": -1,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 23,
@@ -2560,7 +2583,8 @@
         "turnDrawn": 16,
         "turnDiscarded": -1,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 24,
@@ -2668,7 +2692,8 @@
         "turnDrawn": 17,
         "turnDiscarded": -1,
         "turnPlayed": 32,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 25,
@@ -2774,7 +2799,8 @@
         "turnDrawn": 18,
         "turnDiscarded": -1,
         "turnPlayed": 29,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 26,
@@ -2880,7 +2906,8 @@
         "turnDrawn": 19,
         "turnDiscarded": -1,
         "turnPlayed": 22,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 27,
@@ -2988,7 +3015,8 @@
         "turnDrawn": 21,
         "turnDiscarded": -1,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 28,
@@ -3094,7 +3122,8 @@
         "turnDrawn": 22,
         "turnDiscarded": -1,
         "turnPlayed": 25,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 29,
@@ -3198,7 +3227,8 @@
         "turnDrawn": 23,
         "turnDiscarded": -1,
         "turnPlayed": 46,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 30,
@@ -3305,7 +3335,8 @@
         "turnDrawn": 26,
         "turnDiscarded": -1,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 31,
@@ -3413,7 +3444,8 @@
         "turnDrawn": 27,
         "turnDiscarded": -1,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 32,
@@ -3520,7 +3552,8 @@
         "turnDrawn": 29,
         "turnDiscarded": -1,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 33,
@@ -3627,7 +3660,8 @@
         "turnDrawn": 30,
         "turnDiscarded": 45,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 34,
@@ -3734,7 +3768,8 @@
         "turnDrawn": 31,
         "turnDiscarded": -1,
         "turnPlayed": 34,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 35,
@@ -3841,7 +3876,8 @@
         "turnDrawn": 33,
         "turnDiscarded": -1,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 36,
@@ -3949,7 +3985,8 @@
         "turnDrawn": 35,
         "turnDiscarded": -1,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 37,
@@ -4054,7 +4091,8 @@
         "turnDrawn": 37,
         "turnDiscarded": -1,
         "turnPlayed": 40,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 38,
@@ -4160,7 +4198,8 @@
         "turnDrawn": 39,
         "turnDiscarded": -1,
         "turnPlayed": 42,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 39,
@@ -4266,7 +4305,8 @@
         "turnDrawn": 40,
         "turnDiscarded": -1,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 40,
@@ -4372,7 +4412,8 @@
         "turnDrawn": 41,
         "turnDiscarded": -1,
         "turnPlayed": 48,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 41,
@@ -4478,7 +4519,8 @@
         "turnDrawn": 43,
         "turnDiscarded": -1,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 42,
@@ -4584,7 +4626,8 @@
         "turnDrawn": 44,
         "turnDiscarded": -1,
         "turnPlayed": 47,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 43,
@@ -4690,7 +4733,8 @@
         "turnDrawn": 46,
         "turnDiscarded": -1,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     },
     {
         "order": 44,
@@ -4796,6 +4840,7 @@
         "turnDrawn": 47,
         "turnDiscarded": -1,
         "turnPlayed": -1,
-        "isMisplayed": false
+        "isMisplayed": false,
+        "possibleCardsByClues": []
     }
 ]

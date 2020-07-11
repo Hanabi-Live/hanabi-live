@@ -94,15 +94,14 @@ const cardPossibilitiesReducer = (
     suitsPossible = pipPossibilities.suitsPossible;
     ranksPossible = pipPossibilities.ranksPossible;
   }
-
+  /*
   // Bring the result back to the state
   const rankPossibilities = state.rankClueMemory.possibilities
     .filter((r) => !ranksRemoved.includes(r));
 
   const suitPossibilities = state.colorClueMemory.possibilities
     .filter((r) => !suitsRemoved.includes(r));
-
-  /* REMOVEME
+  */
   // Use the calculated information to hide/eliminate pips
   const suitPips = updatePipStates(
     state.colorClueMemory.pipStates,
@@ -114,17 +113,17 @@ const cardPossibilitiesReducer = (
     ranksRemoved,
     ranksPossible,
   );
-  */
-  if (suitsPossible && ranksPossible) ranksPossible[0] = false; // trick the compiler for now
 
-  state.possibleCardsByClues = possibleCardsByClues;
-  const { colorPipStates, rankPipStates } = recalculatePips(state, variant);
-  state.colorClueMemory.pipStates = colorPipStates;
-  state.rankClueMemory.pipStates = rankPipStates;
-  state.colorClueMemory.possibilities = colorPipStates
+  // state.possibleCardsByClues = possibleCardsByClues;
+  const { colorPipStates, rankPipStates } = recalculatePips(
+    possibleCardsByClues, possibleCards, variant,
+  );
+  // state.colorClueMemory.pipStates = colorPipStates;
+  // state.rankClueMemory.pipStates = rankPipStates;
+  const suitPossibilities = colorPipStates
     .map((pip, i) => ((pip !== 'Hidden') ? i : -1))
     .filter((i) => i >= 0);
-  state.rankClueMemory.possibilities = rankPipStates
+  const rankPossibilities = rankPipStates
     .map((pip, i) => ((pip !== 'Hidden') ? i : -1))
     .filter((i) => i >= 0);
 
@@ -209,7 +208,7 @@ function reapplyClues(state: CardState, clueType: ClueType, metadata: GameMetada
 
   return newState;
 }
-/* REMOVEME
+
 function updatePipStates(
   pipStates: readonly PipState[],
   pipsRemoved: number[],
@@ -226,7 +225,7 @@ function updatePipStates(
     }
     return pip;
   });
-} */
+}
 
 // Based on the current possibilities, updates the known identity of this card
 function updateIdentity(
@@ -261,14 +260,15 @@ function pipStateMax(a : PipState, b : PipState) : PipState {
 }
 
 function recalculatePips(
-  state: CardState,
+  possibleCardsByClues: ReadonlyArray<readonly [number, number]>,
+  possibleCards: ReadonlyArray<readonly number[]>,
   variant: Variant,
 ) {
   const colorPipStates : PipState[] = variant.suits.map(() => 'Hidden');
   const rankPipStates : PipState[] = [];
   for (const rank of variant.ranks) rankPipStates[rank] = 'Hidden';
-  for (const [suitIndex, rank] of state.possibleCardsByClues) {
-    const pip = (state.possibleCards[suitIndex][rank] > 0) ? 'Visible' : 'Eliminated';
+  for (const [suitIndex, rank] of possibleCardsByClues) {
+    const pip = (possibleCards[suitIndex][rank] > 0) ? 'Visible' : 'Eliminated';
     colorPipStates[suitIndex] = pipStateMax(colorPipStates[suitIndex], pip);
     // if (rank >= 1 && rank <= 5)
     rankPipStates[rank] = pipStateMax(rankPipStates[rank], pip);
