@@ -3,12 +3,9 @@
 import { LogEntry } from '../../../types/GameState';
 import globals from '../../globals';
 
-// TODO we don't need to update full action log until it is actually opened
-// TODO we don't need to UI2.batchDraw() unless the full action log is visible/opened
 export function onLogChanged(log: readonly LogEntry[]) {
+  // Update the action log
   const actionLog = globals.elements.actionLog!;
-  const fullActionLog = globals.elements.fullActionLog!;
-
   const startingIndex = Math.max(0, log.length - actionLog.maxLines);
   for (let i = 0; i < actionLog.maxLines; i++) {
     const line = startingIndex + i > log.length - 1 ? '' : log[startingIndex + i].text;
@@ -18,6 +15,8 @@ export function onLogChanged(log: readonly LogEntry[]) {
   }
   actionLog.refreshText();
 
+  // Update the full action log
+  const fullActionLog = globals.elements.fullActionLog!;
   fullActionLog.reset();
   log.forEach((line) => fullActionLog.addMessage(line.turn, line.text));
 
