@@ -57,50 +57,53 @@ export default class CardLayout extends Konva.Group {
   }
 
   doLayout() {
+    // Local variables
+    const handWidth = this.width();
+    const handHeight = this.height();
+    const numCards = this.children.length;
+
     let uw = 0;
-    let dist = 0;
-    let x = 0;
-
-    const lw = this.width();
-    const lh = this.height();
-
-    const n = this.children.length;
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < numCards; i++) {
       const layoutChild = this.children[i] as unknown as LayoutChild;
 
       if (!layoutChild.height()) {
         continue;
       }
 
-      const scale = lh / layoutChild.height();
+      const scale = handHeight / layoutChild.height();
       uw += scale * layoutChild.width();
     }
 
-    if (n > 1) {
-      dist = (lw - uw) / (n - 1);
+    let spacingBetweenCards = 0;
+    if (numCards > 1) {
+      spacingBetweenCards = (handWidth - uw) / (numCards - 1);
     }
-    const maximumCardSpacing = 0.04 * uw;
-    if (dist > maximumCardSpacing) {
-      dist = maximumCardSpacing;
+    let maxSpacingBetweenCards = 0.04 * uw;
+    if (globals.lobby.settings.keldonMode) {
+      maxSpacingBetweenCards = 0.025 * uw;
     }
-    uw += dist * (n - 1);
+    if (spacingBetweenCards > maxSpacingBetweenCards) {
+      spacingBetweenCards = maxSpacingBetweenCards;
+    }
+    uw += spacingBetweenCards * (numCards - 1);
 
-    if (this.align === 'center' && uw < lw) {
-      x = (lw - uw) / 2;
+    let x = 0;
+    if (this.align === 'center' && uw < handWidth) {
+      x = (handWidth - uw) / 2;
     }
     if (this.reverse) {
-      x = lw - x;
+      x = handWidth - x;
     }
 
     const storedPostAnimationLayout = globals.postAnimationLayout;
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < numCards; i++) {
       const layoutChild = this.children[i] as unknown as LayoutChild;
 
       if (!layoutChild.height()) {
         continue;
       }
 
-      const scale = lh / layoutChild.height();
+      const scale = handHeight / layoutChild.height();
 
       if (layoutChild.tween !== null) {
         layoutChild.tween.destroy();
@@ -142,7 +145,7 @@ export default class CardLayout extends Konva.Group {
               }
               storedPostAnimationLayout();
             },
-          });
+          }, true);
         };
 
         if (card.doMisplayAnimation) {
@@ -158,7 +161,7 @@ export default class CardLayout extends Konva.Group {
             duration: 0.5,
             x: playStackPos.x - pos.x,
             y: playStackPos.y - pos.y,
-            scale: playStack.height() * scale / lh,
+            scale: playStack.height() * scale / handHeight,
             rotation: 0,
             opacity: 1,
             easing: Konva.Easings.EaseOut,
@@ -166,14 +169,20 @@ export default class CardLayout extends Konva.Group {
               layoutChild.rotation(360);
               animateToLayout();
             },
-          });
+          }, true);
         } else {
           animateToLayout();
         }
       }
 
-      x += ((scale * layoutChild.width()) + dist) * (this.reverse ? -1 : 1);
+      x += ((scale * layoutChild.width()) + spacingBetweenCards) * (this.reverse ? -1 : 1);
     }
+  }
+
+  checkSetDraggableAll() {
+    this.children.each((layoutChild) => {
+      (layoutChild as unknown as LayoutChild).checkSetDraggable();
+    });
   }
 
   getAbsoluteCenterPos() {

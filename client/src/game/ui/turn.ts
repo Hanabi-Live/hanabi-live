@@ -1,13 +1,11 @@
 import { PREPLAY_DELAY } from '../../constants';
 import * as notifications from '../../notifications';
-import * as cardRules from '../rules/card';
 import ActionType from '../types/ActionType';
 import ClientAction from '../types/ClientAction';
 import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
-import LayoutChild from './LayoutChild';
 import * as replay from './replay';
 
 export const begin = () => {
@@ -31,7 +29,7 @@ const handlePremove = () => {
   const premove = state.premove;
   const clueTokens = state.ongoingGame.clueTokens;
 
-  if (premove.action === null) {
+  if (premove === null) {
     return;
   }
 
@@ -40,23 +38,11 @@ const handlePremove = () => {
   globals.layers.UI.batchDraw();
 
   // Perform some validation
-  switch (premove.action.type) {
+  switch (premove.type) {
     case ActionType.ColorClue:
     case ActionType.RankClue: {
       // Prevent pre-cluing if the team is now at 0 clues
       if (clueTokens === 0) {
-        return;
-      }
-
-      // Prevent pre-cluing if the card is no longer in the hand
-      if (premove.cluedCardOrder === null) {
-        throw new Error('"cluedCardOrder" was null in the "handlePremove()" function.');
-      }
-      const card = globals.deck[premove.cluedCardOrder];
-      if (!card) {
-        throw new Error(`Failed to get card ${premove.cluedCardOrder} in the "handlePremove()" function.`);
-      }
-      if (cardRules.isPlayed(card.state) || cardRules.isDiscarded(card.state)) {
         return;
       }
 
@@ -79,19 +65,19 @@ const handlePremove = () => {
 
   // We don't want to send the queued action right away, or else it introduces bugs
   setTimeout(() => {
-    const premoveAction = globals.store!.getState().premove.action;
-    if (premoveAction === null) {
+    // As a sanity check, ensure that there is still a queued action
+    if (globals.store!.getState().premove === null) {
       return;
     }
 
     globals.lobby.conn!.send('action', {
       tableID: globals.lobby.tableID,
-      type: premoveAction.type,
-      target: premoveAction.target,
-      value: premoveAction.value,
+      type: premove.type,
+      target: premove.target,
+      value: premove.value,
     });
 
-    globals.store!.dispatch({ type: 'premove', action: null });
+    globals.store!.dispatch({ type: 'premove', premove: null });
     hideClueUIAndDisableDragging();
   }, PREPLAY_DELAY);
 };
@@ -126,25 +112,11 @@ export const showClueUIAndEnableDragging = () => {
     }
   }
 
-  // Set our hand to being draggable
-  if (
-    // This is unnecessary if the pre-play setting is enabled,
-    // as the hand will already be draggable
-    !globals.lobby.settings.speedrunPreplay
-    // This is unnecessary if this a speedrun,
-    // as clicking on cards takes priority over dragging cards
-    && !globals.options.speedrun
-    // In hypotheticals, setting cards to be draggable is handled elsewhere
-    && !globals.hypothetical
-  ) {
-    const ourHand = globals.elements.playerHands[globals.playerUs];
-    if (!ourHand) {
-      throw new Error(`Failed to get "globals.elements.playerHands[]" with an index of ${globals.playerUs}.`);
-    }
-    ourHand.children.each((layoutChild) => {
-      (layoutChild as unknown as LayoutChild).checkSetDraggable();
-    });
+  const ourHand = globals.elements.playerHands[globals.playerUs];
+  if (!ourHand) {
+    throw new Error(`Failed to get our hand with an index of ${globals.playerUs}.`);
   }
+  ourHand.checkSetDraggableAll();
 
   if (globals.options.deckPlays) {
     globals.elements.deck!.cardBack.draggable(globals.deckSize === 1);
@@ -176,7 +148,7 @@ export const end = (clientAction: ClientAction) => {
     });
     hideClueUIAndDisableDragging();
   } else {
-    globals.store!.dispatch({ type: 'premove', action: clientAction });
+    globals.store!.dispatch({ type: 'premove', premove: clientAction });
   }
 };
 

@@ -86,8 +86,6 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     && !event.altKey
     && !event.metaKey
   ) {
-    globals.store!.dispatch({ type: 'premoveCluedCardOrder', order: card.state.order });
-
     // A card may be cluable by more than one color,
     // so we need to figure out which color to use
     // First, find out if they have a clue color button selected
@@ -158,8 +156,6 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.altKey
     && !event.metaKey
   ) {
-    globals.store!.dispatch({ type: 'premoveCluedCardOrder', order: card.state.order });
-
     turn.end({
       type: ActionType.RankClue,
       target: card.state.location as number,

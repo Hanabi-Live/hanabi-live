@@ -686,8 +686,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToDeck() {
-    const child = this.parent as unknown as LayoutChild;
-    if (!child || !child.parent) {
+    const layoutChild = this.parent as unknown as LayoutChild;
+    if (!layoutChild || !layoutChild.parent) {
       // First initialization
       return;
     }
@@ -695,19 +695,20 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     const scale = globals.elements.deck!.cardBack.width() / CARD_W;
     if (globals.animateFast) {
-      child.checkSetDraggable();
-      child.hide();
+      layoutChild.checkSetDraggable();
+      layoutChild.hide();
     } else {
       // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
       // and the user rewinds to the beginning of the replay
-      child.show();
-      child.opacity(1); // Cards can be faded in certain variants
-      const pos = child.getAbsolutePosition();
-      globals.elements.deck!.add(child as any);
-      child.setAbsolutePosition(pos);
+      layoutChild.show();
+      layoutChild.opacity(1); // Cards can be faded in certain variants
+      const pos = layoutChild.getAbsolutePosition();
+      globals.elements.deck!.add(layoutChild as any);
+      layoutChild.setAbsolutePosition(pos);
+
       // Animate to the deck
       this.startedTweening();
-      animate(child, {
+      animate(layoutChild, {
         duration: 0.5,
         x: 0,
         y: 0,
@@ -715,15 +716,15 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         rotation: 0,
         easing: Konva.Easings.EaseOut,
         onFinish: () => {
-          if (!this || !child) {
+          if (!this || !layoutChild) {
             return;
           }
           this.finishedTweening();
-          child.checkSetDraggable();
-          child.hide();
+          layoutChild.checkSetDraggable();
+          layoutChild.hide();
           this.removeFromParent();
         },
-      });
+      }, true);
     }
   }
 

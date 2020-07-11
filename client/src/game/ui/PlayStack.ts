@@ -55,7 +55,7 @@ export default class PlayStack extends Konva.Group {
           layoutChild.checkSetDraggable();
           this.hideCardsUnderneathTheTopCard();
         },
-      });
+      }, true);
     }
   }
 

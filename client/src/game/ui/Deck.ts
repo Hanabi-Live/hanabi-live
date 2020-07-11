@@ -132,7 +132,7 @@ export default class Deck extends Konva.Group {
             layer.batchDraw();
           }
         },
-      });
+      }, true);
     }
   }
 

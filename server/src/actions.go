@@ -40,13 +40,19 @@ type ActionClue struct {
 	Turn int `json:"turn"`
 }
 type ActionPlay struct {
-	Type  string `json:"type"`
-	Which Which  `json:"which"`
+	Type        string `json:"type"`
+	PlayerIndex int    `json:"playerIndex"`
+	Order       int    `json:"order"` // The ID of the card (based on its order in the deck)
+	SuitIndex   int    `json:"suitIndex"`
+	Rank        int    `json:"rank"`
 }
 type ActionDiscard struct {
-	Type   string `json:"type"`
-	Failed bool   `json:"failed"`
-	Which  Which  `json:"which"`
+	Type        string `json:"type"`
+	PlayerIndex int    `json:"playerIndex"`
+	Order       int    `json:"order"` // The ID of the card (based on its order in the deck)
+	SuitIndex   int    `json:"suitIndex"`
+	Rank        int    `json:"rank"`
+	Failed      bool   `json:"failed"`
 }
 type ActionReorder struct {
 	Type      string `json:"type"`
@@ -63,12 +69,6 @@ type ActionGameOver struct {
 	Type         string `json:"type"`
 	EndCondition int    `json:"endCondition"`
 	PlayerIndex  int    `json:"playerIndex"`
-}
-type Which struct { // Used by "ActionPlay" and "ActionDiscard"
-	Index     int `json:"index"` // The index of the player
-	SuitIndex int `json:"suitIndex"`
-	Rank      int `json:"rank"`
-	Order     int `json:"order"` // The ID of the card (based on its order in the deck)
 }
 type Clue struct {
 	Type  int `json:"type"`

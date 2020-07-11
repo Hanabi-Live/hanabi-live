@@ -5,9 +5,9 @@ import MsgClue from './MsgClue';
 export type Action =
   | GameAction
   | ReplayAction
-  | PremoveAction
   | ActionListReceived
-  | ActionCardIdentities;
+  | ActionCardIdentities
+  | ActionPremove;
 
 export type GameAction =
   | ActionClue
@@ -34,10 +34,6 @@ export type ReplayAction =
   | ActionHypothetical
   | ActionHypotheticalShowDrawnCards;
 
-export type PremoveAction =
-  | ActionPremove
-  | ActionPremoveCluedCardOrder;
-
 // ----------------------
 // Initialization actions
 // ----------------------
@@ -47,9 +43,18 @@ export interface ActionListReceived {
   readonly actions: GameAction[];
 }
 
+// ---------------------
+// Miscellaneous actions
+// ---------------------
+
 export interface ActionCardIdentities {
   type: 'cardIdentities';
   readonly cardIdentities: CardIdentity[];
+}
+
+export interface ActionPremove {
+  type: 'premove';
+  readonly premove: ClientAction | null;
 }
 
 // ------------
@@ -68,7 +73,10 @@ export interface ActionClue {
 export interface ActionDiscard {
   type: 'discard';
   readonly failed: boolean;
-  readonly which: Which;
+  readonly playerIndex: number;
+  readonly order: number;
+  readonly suitIndex: number;
+  readonly rank: number;
 }
 
 export interface ActionDraw {
@@ -87,7 +95,10 @@ export interface ActionGameOver {
 
 export interface ActionPlay {
   type: 'play';
-  readonly which: Which;
+  readonly playerIndex: number;
+  readonly order: number;
+  readonly suitIndex: number;
+  readonly rank: number;
 }
 
 export interface ActionReorder {
@@ -125,13 +136,6 @@ export interface ActionTurn {
   type: 'turn';
   readonly num: number;
   readonly who: number;
-}
-
-export interface Which {
-  readonly index: number;
-  readonly suitIndex: number;
-  readonly rank: number;
-  readonly order: number;
 }
 
 // --------------
@@ -183,18 +187,4 @@ export interface ActionHypotheticalMorph {
 export interface ActionHypotheticalShowDrawnCards {
   type: 'hypoRevealed';
   readonly showDrawnCards: boolean;
-}
-
-// ---------------
-// Premove actions
-// ---------------
-
-export interface ActionPremove {
-  type: 'premove';
-  readonly action: ClientAction | null;
-}
-
-export interface ActionPremoveCluedCardOrder {
-  type: 'premoveCluedCardOrder';
-  readonly order: number | null;
 }

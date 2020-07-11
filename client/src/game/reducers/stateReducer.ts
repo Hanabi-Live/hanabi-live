@@ -10,7 +10,6 @@ import GameState from '../types/GameState';
 import State from '../types/State';
 import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialStates/initialGameState';
-import premoveReducer from './premoveReducer';
 import replayReducer from './replayReducer';
 
 const stateReducer = produce((state: Draft<State>, action: Action) => {
@@ -66,9 +65,8 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       break;
     }
 
-    case 'premove':
-    case 'premoveCluedCardOrder': {
-      state.premove = premoveReducer(state.premove, action);
+    case 'premove': {
+      state.premove = action.premove;
       break;
     }
 

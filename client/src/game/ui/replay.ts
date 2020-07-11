@@ -298,7 +298,7 @@ const positionReplayShuttle = (
     y,
     scale,
     easing: Konva.Easings.EaseOut,
-  }, fast, true);
+  }, true, fast);
 };
 
 export const adjustShuttles = (fast: boolean) => {

@@ -42,17 +42,17 @@ const gameStateReducer = produce((
     }
 
     // A player just discarded a card
-    // {failed: false, type: "discard", which: {index: 0, order: 4, rank: 1, suitIndex: 2}}
+    // {type: "discard", playerIndex: 0, order: 4, suitIndex: 2, rank: 1, failed: false, }}
     case 'discard': {
       // Remove it from the hand
-      const hand = state.hands[action.which.index];
-      const handIndex = hand.indexOf(action.which.order);
+      const hand = state.hands[action.playerIndex];
+      const handIndex = hand.indexOf(action.order);
       if (handIndex !== -1) {
         hand.splice(handIndex, 1);
       }
 
       // Add it to the discard stacks
-      state.discardStacks[action.which.suitIndex].push(action.which.order);
+      state.discardStacks[action.suitIndex].push(action.order);
 
       if (!action.failed) {
         state.clueTokens = clueTokensRules.gainClue(variant, state.clueTokens);
@@ -74,18 +74,18 @@ const gameStateReducer = produce((
     }
 
     // A player just played a card
-    // {type: "play", which: {index: 0, order: 4, rank: 1, suit: 2}}
+    // {type: "play", playerIndex: 0, order: 4, suitIndex: 2, rank: 1}}
     // (index is the player index)
     case 'play': {
       // Remove it from the hand
-      const hand = state.hands[action.which.index];
-      const handIndex = hand.indexOf(action.which.order);
+      const hand = state.hands[action.playerIndex];
+      const handIndex = hand.indexOf(action.order);
       if (handIndex !== -1) {
         hand.splice(handIndex, 1);
       }
 
       // Add it to the play stacks
-      state.playStacks[action.which.suitIndex].push(action.which.order);
+      state.playStacks[action.suitIndex].push(action.order);
 
       // Gain a point
       state.score += 1;
@@ -95,7 +95,7 @@ const gameStateReducer = produce((
 
       // Gain a clue token if the stack is complete
       if (
-        state.playStacks[action.which.suitIndex].length === 5 // Hard-code 5 cards per stack
+        state.playStacks[action.suitIndex].length === 5 // Hard-code 5 cards per stack
         // In "Throw It in a Hole" variants, getting a clue back would reveal information about the
         // card that is played, so finishing a stack does not grant a clue
         && !variantRules.isThrowItInAHole(variant)

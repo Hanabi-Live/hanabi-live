@@ -38,7 +38,7 @@ const statsReducer = produce((
     }
 
     case 'discard': {
-      const card = originalState.deck[action.which.order];
+      const card = originalState.deck[action.order];
       if (cardRules.isClued(card)) {
         // A clued card was discarded
         stats.cardsGotten -= 1;
@@ -55,7 +55,7 @@ const statsReducer = produce((
 
     case 'play': {
       if (
-        currentState.playStacks[action.which.suitIndex].length === 5
+        currentState.playStacks[action.suitIndex].length === 5
         && originalState.clueTokens === currentState.clueTokens
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted",
@@ -63,7 +63,7 @@ const statsReducer = produce((
         stats.potentialCluesLost += clueTokensRules.clueValue(variant);
       }
 
-      const card = originalState.deck[action.which.order];
+      const card = originalState.deck[action.order];
       if (!cardRules.isClued(card)) {
         // A card was blind played
         stats.cardsGotten += 1;

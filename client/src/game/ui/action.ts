@@ -205,7 +205,10 @@ actionFunctions.set('strike', (data: ActionStrike) => {
   const strikeX = globals.elements.strikeXs[i];
 
   // Animate the strike square fading in
-  animate(strikeX, { duration: 1, opacity: 1 });
+  animate(strikeX, {
+    duration: 1,
+    opacity: 1,
+  });
 
   // Record the turn that the strike happened and the card that was misplayed
   strikeRecord(data);

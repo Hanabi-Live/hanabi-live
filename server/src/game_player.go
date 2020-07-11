@@ -264,13 +264,11 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	g.Misplays = 0
 
 	g.Actions = append(g.Actions, ActionPlay{
-		Type: "play",
-		Which: Which{
-			Index:     p.Index,
-			SuitIndex: c.SuitIndex,
-			Rank:      c.Rank,
-			Order:     c.Order,
-		},
+		Type:        "play",
+		PlayerIndex: p.Index,
+		Order:       c.Order,
+		SuitIndex:   c.SuitIndex,
+		Rank:        c.Rank,
 	})
 	t.NotifyGameAction()
 
@@ -377,14 +375,12 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 	c.Discarded = true
 
 	g.Actions = append(g.Actions, ActionDiscard{
-		Type:   "discard",
-		Failed: c.Failed,
-		Which: Which{
-			Index:     p.Index,
-			Rank:      c.Rank,
-			SuitIndex: c.SuitIndex,
-			Order:     c.Order,
-		},
+		Type:        "discard",
+		PlayerIndex: p.Index,
+		Order:       c.Order,
+		Rank:        c.Rank,
+		SuitIndex:   c.SuitIndex,
+		Failed:      c.Failed,
 	})
 	t.NotifyGameAction()
 

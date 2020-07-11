@@ -83,34 +83,30 @@ export const draw = (
 
 export const discard = (
   failed: boolean,
-  index: number,
+  playerIndex: number,
   suitIndex: number,
   rank: number,
   order: number,
 ): ActionDiscard => ({
   type: 'discard',
+  playerIndex,
+  order,
+  suitIndex,
+  rank,
   failed,
-  which: {
-    index,
-    suitIndex,
-    rank,
-    order,
-  },
 });
 
 export const play = (
-  index: number,
+  playerIndex: number,
   suitIndex: number,
   rank: number,
   order: number,
 ): ActionPlay => ({
   type: 'play',
-  which: {
-    index,
-    suitIndex,
-    rank,
-    order,
-  },
+  playerIndex,
+  order,
+  suitIndex,
+  rank,
 });
 
 export const strike = (num: number, order: number, turn: number): ActionStrike => ({
