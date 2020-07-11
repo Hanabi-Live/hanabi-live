@@ -1,3 +1,4 @@
+import { PREPLAY_DELAY } from '../../constants';
 import * as notifications from '../../notifications';
 import * as cardRules from '../rules/card';
 import ActionType from '../types/ActionType';
@@ -20,54 +21,79 @@ export const begin = () => {
     notifications.send('It is your turn.', 'turn');
   }
 
-  // Handle pre-playing / pre-discarding / pre-cluing
-  if (globals.premove !== null) {
-    // Get rid of the pre-move button, since it is now our turn
-    globals.elements.premoveCancelButton!.hide();
-    globals.layers.UI.batchDraw();
+  handlePremove();
+};
 
-    if (
-      globals.premove.type === ActionType.ColorClue
-      || globals.premove.type === ActionType.RankClue
-    ) {
+// Handle pre-playing / pre-discarding / pre-cluing
+const handlePremove = () => {
+  // Local variables
+  const state = globals.store!.getState();
+  const premove = state.premove;
+  const clueTokens = state.ongoingGame.clueTokens;
+
+  if (premove.action === null) {
+    return;
+  }
+
+  // Get rid of the pre-move button, since it is now our turn
+  globals.elements.premoveCancelButton!.hide();
+  globals.layers.UI.batchDraw();
+
+  // Perform some validation
+  switch (premove.action.type) {
+    case ActionType.ColorClue:
+    case ActionType.RankClue: {
       // Prevent pre-cluing if the team is now at 0 clues
-      if (globals.clues === 0) {
+      if (clueTokens === 0) {
         return;
       }
 
       // Prevent pre-cluing if the card is no longer in the hand
-      if (globals.preCluedCardOrder === null) {
-        throw new Error('"globals.preCluedCardOrder" was null in the "turn.begin()" function.');
+      if (premove.cluedCardOrder === null) {
+        throw new Error('"cluedCardOrder" was null in the "handlePremove()" function.');
       }
-      const card = globals.deck[globals.preCluedCardOrder];
+      const card = globals.deck[premove.cluedCardOrder];
+      if (!card) {
+        throw new Error(`Failed to get card ${premove.cluedCardOrder} in the "handlePremove()" function.`);
+      }
       if (cardRules.isPlayed(card.state) || cardRules.isDiscarded(card.state)) {
         return;
       }
+
+      break;
     }
 
-    // Prevent discarding if the team is at the maximum amount of clues
-    if (globals.premove.type === ActionType.Discard && globals.clues === MAX_CLUE_NUM) {
-      return;
-    }
-
-    // We don't want to send the queued action right away, or else it introduces bugs
-    setTimeout(() => {
-      if (globals.premove === null) {
+    case ActionType.Discard: {
+      // Prevent discarding if the team is at the maximum amount of clues
+      if (clueTokens === MAX_CLUE_NUM) {
         return;
       }
 
-      globals.lobby.conn!.send('action', {
-        tableID: globals.lobby.tableID,
-        type: globals.premove.type,
-        target: globals.premove.target,
-        value: globals.premove.value,
-      });
+      break;
+    }
 
-      globals.premove = null;
-      globals.preCluedCardOrder = null;
-      hideClueUIAndDisableDragging();
-    }, 100);
+    default: {
+      break;
+    }
   }
+
+  // We don't want to send the queued action right away, or else it introduces bugs
+  setTimeout(() => {
+    const premoveAction = globals.store!.getState().premove.action;
+    if (premoveAction === null) {
+      return;
+    }
+
+    globals.lobby.conn!.send('action', {
+      tableID: globals.lobby.tableID,
+      type: premoveAction.type,
+      target: premoveAction.target,
+      value: premoveAction.value,
+    });
+
+    globals.store!.dispatch({ type: 'premove', action: null });
+    hideClueUIAndDisableDragging();
+  }, PREPLAY_DELAY);
 };
 
 export const showClueUIAndEnableDragging = () => {
@@ -150,7 +176,7 @@ export const end = (clientAction: ClientAction) => {
     });
     hideClueUIAndDisableDragging();
   } else {
-    globals.store!.dispatch({ type: 'premove', premove: clientAction });
+    globals.store!.dispatch({ type: 'premove', action: clientAction });
   }
 };
 

@@ -15,6 +15,9 @@ export default function initialState(metadata: GameMetadata): State {
     },
     cardIdentities: [],
     metadata,
-    premove: null,
+    premove: {
+      action: null,
+      cluedCardOrder: null,
+    },
   };
 }

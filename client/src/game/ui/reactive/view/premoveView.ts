@@ -5,35 +5,35 @@ import ClientAction from '../../../types/ClientAction';
 import globals from '../../globals';
 
 export function onChanged(
-  premove: ClientAction | null,
-  previousPremove: ClientAction | null | undefined,
+  action: ClientAction | null,
+  previousAction: ClientAction | null | undefined,
 ) {
-  if (previousPremove === undefined) {
-    // The state is initializing to a null value
+  if (previousAction === undefined) {
+    // The state is initializing to a null action
     return;
   }
 
-  if (premove === null && previousPremove !== null) {
-    // We just canceled a premove
+  if (action === null && previousAction !== null) {
+    // We just canceled a premove action
     globals.elements.premoveCancelButton!.hide();
     globals.elements.currentPlayerArea!.show();
     globals.layers.UI.batchDraw();
 
     // If we dragged a card, we have to make the card tween back to the hand
-    if (previousPremove.type === ActionType.Play || previousPremove.type === ActionType.Discard) {
+    if (previousAction.type === ActionType.Play || previousAction.type === ActionType.Discard) {
       const ourPlayerIndex = globals.store!.getState().metadata.ourPlayerIndex;
       const ourHand = globals.elements.playerHands[ourPlayerIndex];
       ourHand.doLayout();
       globals.layers.card.draw();
     }
-  } else if (premove !== null && previousPremove === null) {
-    // We just specified a premove
+  } else if (action !== null && previousAction === null) {
+    // We just specified a premove action
     let text = 'Cancel Pre-';
-    if (premove.type === ActionType.Play) {
+    if (action.type === ActionType.Play) {
       text += 'Play';
-    } else if (premove.type === ActionType.Discard) {
+    } else if (action.type === ActionType.Discard) {
       text += 'Discard';
-    } else if (premove.type === ActionType.ColorClue || premove.type === ActionType.RankClue) {
+    } else if (action.type === ActionType.ColorClue || action.type === ActionType.RankClue) {
       text += 'Clue';
     }
     globals.elements.premoveCancelButton!.text(text);

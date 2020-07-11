@@ -89,7 +89,7 @@ export default class StateObserver {
     sub((s) => s.replay.active, replayView.onActiveChanged);
 
     // Premoves (e.g. queued actions)
-    sub((s) => s.premove, premoveView.onChanged);
+    sub((s) => s.premove.action, premoveView.onChanged);
 
     // Initialization finished
     // (this will get called when the visible state becomes valid and after all other view updates)

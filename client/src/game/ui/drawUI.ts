@@ -1792,7 +1792,7 @@ const drawPreplayArea = () => {
   });
   globals.layers.UI.add(globals.elements.premoveCancelButton as any);
   globals.elements.premoveCancelButton.on('click tap', () => {
-    globals.store!.dispatch({ type: 'premove', premove: null });
+    globals.store!.dispatch({ type: 'premove', action: null });
   });
 };
 

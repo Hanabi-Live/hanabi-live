@@ -67,18 +67,18 @@ export default class LayoutChild extends Konva.Group {
       );
     }
 
-    // If it is not our turn, then the card does not need to be draggable yet
-    // (unless we have the "Enable pre-playing cards" feature enabled)
     return (
-      (!globals.ourTurn && !globals.lobby.settings.speedrunPreplay)
-      || globals.options.speedrun // Cards should never be draggable while speedrunning
-      || card.state.location !== globals.playerUs // Only our cards should be draggable
-      || globals.replay // Cards should not be draggable in solo or shared replays
+      // If it is not our turn, then the card should not need to be draggable yet
+      // (unless we have the "Enable pre-playing cards" feature enabled)
+      (globals.ourTurn || globals.lobby.settings.speedrunPreplay)
+      && !globals.options.speedrun // Cards should never be draggable while speedrunning
+      && card.state.location === globals.playerUs // Only our cards should be draggable
+      && !globals.replay // Cards should not be draggable in solo or shared replays
       // Cards should not be draggable if we are spectating an ongoing game
-      || globals.spectating
+      && !globals.spectating
       // Cards should not be draggable if they are currently playing an animation
       // (this function will be called again upon the completion of the animation)
-      || card.tweening
+      && !card.tweening
     );
   }
 
