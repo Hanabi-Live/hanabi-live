@@ -23,6 +23,8 @@ export function onTurnChanged(data: {
 
     globals.elements.deckTurnsRemainingLabel2!.text(`left: ${numTurnsLeft}`);
   }
+
+  globals.layers.UI.batchDraw();
 }
 
 export function onCurrentPlayerIndexChanged(currentPlayerIndex: number | null) {
@@ -44,6 +46,8 @@ export function onCurrentPlayerIndexChanged(currentPlayerIndex: number | null) {
   if (globals.sharedReplay && globals.amSharedReplayLeader) {
     globals.elements.enterHypoButton!.setEnabled(currentPlayerIndex !== null);
   }
+
+  globals.layers.UI.batchDraw();
 }
 
 export function onScoreOrMaxScoreChanged(data: {
@@ -59,12 +63,17 @@ export function onScoreOrMaxScoreChanged(data: {
   maxScoreLabel.width(maxScoreLabel.measureSize(maxScoreLabel.text()).width);
   const x = scoreLabel.x() + scoreLabel.measureSize(scoreLabel.text()).width as number;
   maxScoreLabel.x(x);
+
+  globals.layers.UI.batchDraw();
 }
 
 export function onNumAttemptedCardsPlayedChanged(numAttemptedCardsPlayed: number) {
-  if (variantRules.isThrowItInAHole(globals.variant)) {
-    globals.elements.playsNumberLabel!.text(numAttemptedCardsPlayed.toString());
+  if (!variantRules.isThrowItInAHole(globals.variant)) {
+    return;
   }
+
+  globals.elements.playsNumberLabel!.text(numAttemptedCardsPlayed.toString());
+  globals.layers.UI.batchDraw();
 }
 
 export function onClueTokensChanged(clueTokens: number) {
@@ -80,4 +89,6 @@ export function onClueTokensChanged(clueTokens: number) {
     }
     globals.elements.noClueBorder!.visible(clueTokens === 0);
   }
+
+  globals.layers.UI.batchDraw();
 }

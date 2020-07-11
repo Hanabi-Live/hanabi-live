@@ -573,6 +573,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       // Unmorph
       this.note.suitIndex = null;
       this.note.rank = null;
+      this.setBareImage();
     }
   }
 

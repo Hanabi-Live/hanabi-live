@@ -37,6 +37,8 @@ export function onEfficiencyChanged(efficiency: number) {
   // (since it should be directly to the right of the efficiency label)
   const x = effLabel.x() + effLabel.measureSize(effLabel.text()).width as number;
   effMinLabel.x(x);
+
+  globals.layers.UI.batchDraw();
 }
 
 export function onPaceOrPaceRiskChanged(data: {
@@ -97,4 +99,6 @@ export function onPaceOrPaceRiskChanged(data: {
       }
     }
   }
+
+  globals.layers.UI.batchDraw();
 }

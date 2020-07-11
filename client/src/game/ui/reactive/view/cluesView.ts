@@ -32,6 +32,8 @@ function updateArrows(clues: readonly StateClue[], turn: number) {
   lastClue.list.forEach((order, i) => {
     arrows.set(i, globals.deck[order], lastClue.giver, clue);
   });
+
+  globals.layers.arrow.batchDraw();
 }
 
 function updateLog(clues: readonly StateClue[]) {
@@ -63,4 +65,6 @@ function updateLog(clues: readonly StateClue[]) {
     clueLog.children.splice(clues.length, clueLog.children.length - clues.length);
   }
   clueLog.refresh();
+
+  globals.layers.UI.batchDraw();
 }
