@@ -1,21 +1,10 @@
 import { text, startReplay } from '../../../test/testActions';
-import { initArray } from '../../misc';
-import GameMetadata from '../types/GameMetadata';
-import Options from '../types/Options';
+import initialMetadata from './initialStates/initialMetadata';
 import initialState from './initialStates/initialState';
 import stateReducer from './stateReducer';
 
 const numPlayers = 3;
-const defaultMetadata: GameMetadata = {
-  options: {
-    ...(new Options()),
-    numPlayers,
-  },
-  playerSeat: null,
-  spectating: false,
-  characterAssignments: initArray(numPlayers, null),
-  characterMetadata: [],
-};
+const defaultMetadata = initialMetadata(numPlayers);
 
 describe('stateReducer', () => {
   test('does not mutate state', () => {

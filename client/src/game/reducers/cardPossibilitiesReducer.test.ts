@@ -1,22 +1,11 @@
-import { initArray } from '../../misc';
 import { getVariant } from '../data/gameData';
 import { colorClue, rankClue } from '../types/Clue';
-import GameMetadata from '../types/GameMetadata';
-import Options from '../types/Options';
 import cardPossibilitiesReducer from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
+import initialMetadata from './initialStates/initialMetadata';
 
 const numPlayers = 3;
-const defaultMetadata: GameMetadata = {
-  options: {
-    ...(new Options()),
-    numPlayers,
-  },
-  playerSeat: null,
-  spectating: false,
-  characterAssignments: initArray(numPlayers, null),
-  characterMetadata: [],
-};
+const defaultMetadata = initialMetadata(numPlayers);
 const variant = getVariant(defaultMetadata.options.variantName);
 const defaultCard = initialCardState(0, variant);
 
@@ -55,28 +44,17 @@ describe('cardPossibilitiesReducer', () => {
   });
 
   test.skip('removes possibilities based on previous rank and color clues', () => {
-    const variantName = 'Rainbow-Ones & Brown (6 Suits)';
-    const metadata: GameMetadata = {
-      options: {
-        ...(new Options()),
-        numPlayers,
-        variantName,
-      },
-      playerSeat: null,
-      spectating: false,
-      characterAssignments: initArray(numPlayers, null),
-      characterMetadata: [],
-    };
-    const myVariant = getVariant(metadata.options.variantName);
+    const metadata = initialMetadata(numPlayers, 'Rainbow-Ones & Brown (6 Suits)');
+    const rainbowOnesAndBrown = getVariant(metadata.options.variantName);
 
-    const red = colorClue(variant.clueColors[0]);
-    const one = rankClue(variant.clueRanks[0]);
+    const redClue = colorClue(variant.clueColors[0]);
+    const oneClue = rankClue(variant.clueRanks[0]);
 
-    let card = initialCardState(0, myVariant);
-    card = cardPossibilitiesReducer(card, red, true, metadata);
-    card = cardPossibilitiesReducer(card, one, false, metadata);
+    let card = initialCardState(0, rainbowOnesAndBrown);
+    card = cardPossibilitiesReducer(card, redClue, true, metadata);
+    card = cardPossibilitiesReducer(card, oneClue, false, metadata);
 
-    // a card with positive red and negative one can't be yellow
+    // A card with positive red and negative one cannot be yellow
     expect(card.colorClueMemory.possibilities.includes(1)).toBe(false);
   });
 });

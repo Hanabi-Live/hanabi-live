@@ -2,25 +2,14 @@ import { // Direct import instead of namespace import for compactness
   draw,
   play,
 } from '../../../test/testActions';
-import { initArray } from '../../misc';
 import { MAX_CLUE_NUM } from '../types/constants';
-import GameMetadata from '../types/GameMetadata';
-import Options from '../types/Options';
 import TurnState from '../types/TurnState';
+import initialMetadata from './initialStates/initialMetadata';
 import initialTurnState from './initialStates/initialTurnState';
 import turnReducer from './turnReducer';
 
 const numPlayers = 3;
-const defaultMetadata: GameMetadata = {
-  options: {
-    ...(new Options()),
-    numPlayers,
-  },
-  playerSeat: null,
-  spectating: false,
-  characterAssignments: initArray(numPlayers, null),
-  characterMetadata: [],
-};
+const defaultMetadata = initialMetadata(numPlayers);
 
 describe('turnReducer', () => {
   describe('turn', () => {
