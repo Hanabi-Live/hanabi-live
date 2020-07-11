@@ -160,10 +160,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     replay: { ...state.replay, states },
     cardIdentities: [],
     metadata,
-    premove: {
-      action: null,
-      cluedCardOrder: null,
-    },
+    premove: null,
   };
 }
 

@@ -72,7 +72,7 @@ export default class LayoutChild extends Konva.Group {
       // (unless we have the "Enable pre-playing cards" feature enabled)
       (globals.ourTurn || globals.lobby.settings.speedrunPreplay)
       // Cards should not be draggable if there is a queued move
-      && globals.store!.getState().premove.action === null
+      && globals.store!.getState().premove === null
       && !globals.options.speedrun // Cards should never be draggable while speedrunning
       && card.state.location === globals.playerUs // Only our cards should be draggable
       && !globals.replay // Cards should not be draggable in solo or shared replays

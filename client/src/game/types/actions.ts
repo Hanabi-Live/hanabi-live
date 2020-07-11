@@ -5,9 +5,9 @@ import MsgClue from './MsgClue';
 export type Action =
   | GameAction
   | ReplayAction
-  | PremoveAction
   | ActionListReceived
-  | ActionCardIdentities;
+  | ActionCardIdentities
+  | ActionPremove;
 
 export type GameAction =
   | ActionClue
@@ -34,10 +34,6 @@ export type ReplayAction =
   | ActionHypothetical
   | ActionHypotheticalShowDrawnCards;
 
-export type PremoveAction =
-  | ActionPremove
-  | ActionPremoveCluedCardOrder;
-
 // ----------------------
 // Initialization actions
 // ----------------------
@@ -47,9 +43,18 @@ export interface ActionListReceived {
   readonly actions: GameAction[];
 }
 
+// ---------------------
+// Miscellaneous actions
+// ---------------------
+
 export interface ActionCardIdentities {
   type: 'cardIdentities';
   readonly cardIdentities: CardIdentity[];
+}
+
+export interface ActionPremove {
+  type: 'premove';
+  readonly premove: ClientAction | null;
 }
 
 // ------------
@@ -183,18 +188,4 @@ export interface ActionHypotheticalMorph {
 export interface ActionHypotheticalShowDrawnCards {
   type: 'hypoRevealed';
   readonly showDrawnCards: boolean;
-}
-
-// ---------------
-// Premove actions
-// ---------------
-
-export interface ActionPremove {
-  type: 'premove';
-  readonly action: ClientAction | null;
-}
-
-export interface ActionPremoveCluedCardOrder {
-  type: 'premoveCluedCardOrder';
-  readonly order: number | null;
 }
