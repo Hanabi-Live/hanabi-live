@@ -17,6 +17,7 @@ const defaultMetadata: GameMetadata = {
     numPlayers,
   },
   playerSeat: null,
+  spectating: false,
   characterAssignments: initArray(numPlayers, null),
   characterMetadata: [],
 };

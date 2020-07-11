@@ -275,17 +275,19 @@ commands.set('init', (data: InitData) => {
   globals.variant = getVariant(globals.options.variantName);
 
   // Character settings
-  globals.characterAssignments = data.characterAssignments;
-  if (globals.characterAssignments.length === 0) {
-    globals.characterAssignments = initArray(globals.options.numPlayers, null);
+  let characterAssignments: Array<number | null> = data.characterAssignments.slice();
+  if (characterAssignments.length === 0) {
+    characterAssignments = initArray(globals.options.numPlayers, null);
   }
+  globals.characterAssignments = characterAssignments;
   globals.characterMetadata = data.characterMetadata;
 
   // Recreate the state store (using the Redux library)
   const metadata: GameMetadata = {
     options: data.options,
     playerSeat: data.seat >= 0 ? data.seat : null,
-    characterAssignments: globals.characterAssignments,
+    spectating: data.spectating,
+    characterAssignments,
     characterMetadata: data.characterMetadata,
   };
   globals.store = createStore(stateReducer, initialState(metadata));

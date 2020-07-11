@@ -13,6 +13,7 @@ const defaultMetadata: GameMetadata = {
     numPlayers,
   },
   playerSeat: null,
+  spectating: false,
   characterAssignments: initArray(numPlayers, null),
   characterMetadata: [],
 };
@@ -62,6 +63,7 @@ describe('cardPossibilitiesReducer', () => {
         variantName,
       },
       playerSeat: null,
+      spectating: false,
       characterAssignments: initArray(numPlayers, null),
       characterMetadata: [],
     };

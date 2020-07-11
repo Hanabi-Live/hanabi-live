@@ -48,6 +48,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       variantName: gameJSON.options.variant,
     },
     playerSeat: null,
+    spectating: false,
     characterAssignments: initArray(numPlayers, null),
     characterMetadata: [],
   };
