@@ -9,7 +9,7 @@ import { VARIANTS } from '../data/gameData';
 import { GameExports } from '../main';
 import { GameAction, ActionIncludingHypothetical, Action } from '../types/actions';
 import CardIdentity from '../types/CardIdentity';
-import { ClientAction } from '../types/ClientAction';
+import ClientAction from '../types/ClientAction';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import Options from '../types/Options';
 import SpectatorNote from '../types/SpectatorNote';
@@ -120,7 +120,7 @@ export class Globals {
   lastTimerUpdateTimeMS: number = 0;
 
   // Pre-move feature
-  queuedAction: ClientAction | null = null;
+  premove: ClientAction | null = null;
   preCluedCardOrder: number | null = null;
 
   // Pause feature
@@ -210,7 +210,7 @@ export class Globals {
     this.timeTaken = 0;
     this.startingTurnTime = 0;
     this.lastTimerUpdateTimeMS = 0;
-    this.queuedAction = null;
+    this.premove = null;
     this.preCluedCardOrder = 0;
     this.paused = false;
     this.pausePlayer = '';

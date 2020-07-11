@@ -1,6 +1,6 @@
 import { getCharacter } from '../data/gameData';
 import { cluesRules } from '../rules';
-import { ActionType } from '../types/ClientAction';
+import ActionType from '../types/ClientAction';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
 import Color from '../types/Color';

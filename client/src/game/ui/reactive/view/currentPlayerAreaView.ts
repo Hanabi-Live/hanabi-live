@@ -11,10 +11,10 @@ export function isVisible(s: State) {
     // The clue UI should take precedence over the "Current Player" area
     && (
       s.ongoingGame?.turn.currentPlayerIndex !== s.metadata.playerSeat
-      && !globals.spectating
+      && !s.metadata.spectating
     )
     // The premove cancel button should take precedence over the "Current Player" area
-    && !globals.elements.premoveCancelButton!.isVisible()
+    && s.premove !== null
   );
 }
 
@@ -28,6 +28,7 @@ export function onChanged(data: {
   const currentPlayerArea = globals.elements.currentPlayerArea!;
   if (data.visible !== previousData?.visible) {
     currentPlayerArea.visible(data.visible);
+    globals.layers.UI.batchDraw();
   }
   if (!data.visible) {
     return;

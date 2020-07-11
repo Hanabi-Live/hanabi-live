@@ -1,6 +1,7 @@
 import * as notifications from '../../notifications';
 import * as cardRules from '../rules/card';
-import { ActionType, ClientAction } from '../types/ClientAction';
+import ActionType from '../types/ActionType';
+import ClientAction from '../types/ClientAction';
 import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import globals from './globals';
@@ -20,14 +21,14 @@ export const begin = () => {
   }
 
   // Handle pre-playing / pre-discarding / pre-cluing
-  if (globals.queuedAction !== null) {
+  if (globals.premove !== null) {
     // Get rid of the pre-move button, since it is now our turn
     globals.elements.premoveCancelButton!.hide();
     globals.layers.UI.batchDraw();
 
     if (
-      globals.queuedAction.type === ActionType.ColorClue
-      || globals.queuedAction.type === ActionType.RankClue
+      globals.premove.type === ActionType.ColorClue
+      || globals.premove.type === ActionType.RankClue
     ) {
       // Prevent pre-cluing if the team is now at 0 clues
       if (globals.clues === 0) {
@@ -45,24 +46,24 @@ export const begin = () => {
     }
 
     // Prevent discarding if the team is at the maximum amount of clues
-    if (globals.queuedAction.type === ActionType.Discard && globals.clues === MAX_CLUE_NUM) {
+    if (globals.premove.type === ActionType.Discard && globals.clues === MAX_CLUE_NUM) {
       return;
     }
 
     // We don't want to send the queued action right away, or else it introduces bugs
     setTimeout(() => {
-      if (globals.queuedAction === null) {
+      if (globals.premove === null) {
         return;
       }
 
       globals.lobby.conn!.send('action', {
         tableID: globals.lobby.tableID,
-        type: globals.queuedAction.type,
-        target: globals.queuedAction.target,
-        value: globals.queuedAction.value,
+        type: globals.premove.type,
+        target: globals.premove.target,
+        value: globals.premove.value,
       });
 
-      globals.queuedAction = null;
+      globals.premove = null;
       globals.preCluedCardOrder = null;
       hideClueUIAndDisableDragging();
     }, 100);
@@ -111,13 +112,12 @@ export const showClueUIAndEnableDragging = () => {
     && !globals.hypothetical
   ) {
     const ourHand = globals.elements.playerHands[globals.playerUs];
-    if (ourHand) {
-      for (const layoutChild of ourHand.children.toArray() as LayoutChild[]) {
-        layoutChild.checkSetDraggable();
-      }
-    } else {
+    if (!ourHand) {
       throw new Error(`Failed to get "globals.elements.playerHands[]" with an index of ${globals.playerUs}.`);
     }
+    ourHand.children.each((layoutChild) => {
+      (layoutChild as unknown as LayoutChild).checkSetDraggable();
+    });
   }
 
   if (globals.options.deckPlays) {
@@ -150,15 +150,15 @@ export const end = (actionObject: ClientAction) => {
     });
     hideClueUIAndDisableDragging();
   } else {
-    globals.queuedAction = actionObject;
+    globals.premove = actionObject;
     let text = 'Cancel Pre-';
-    if (globals.queuedAction.type === ActionType.Play) {
+    if (globals.premove.type === ActionType.Play) {
       text += 'Play';
-    } else if (globals.queuedAction.type === ActionType.Discard) {
+    } else if (globals.premove.type === ActionType.Discard) {
       text += 'Discard';
     } else if (
-      globals.queuedAction.type === ActionType.ColorClue
-      || globals.queuedAction.type === ActionType.RankClue
+      globals.premove.type === ActionType.ColorClue
+      || globals.premove.type === ActionType.RankClue
     ) {
       text += 'Clue';
     }

@@ -2,7 +2,9 @@ import Options from './Options';
 
 export default interface GameMetadata {
   readonly options: Options;
-  readonly playerSeat: number | null; // Use null for spectating / replay
+  // Equal to the player index that we correspond to; is null when spectating or in a replay
+  readonly playerSeat: number | null;
+  readonly spectating: boolean;
   readonly characterAssignments: Readonly<Array<number | null>>;
   readonly characterMetadata: number[];
 }

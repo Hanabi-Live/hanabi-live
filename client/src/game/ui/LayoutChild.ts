@@ -4,7 +4,7 @@
 import Konva from 'konva';
 import * as sounds from '../../sounds';
 import * as variantRules from '../rules/variant';
-import { ActionType } from '../types/ClientAction';
+import ActionType from '../types/ActionType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import CardLayout from './CardLayout';
 import globals from './globals';
@@ -35,37 +35,41 @@ export default class LayoutChild extends Konva.Group {
     child.on('heightChange', change);
   }
 
-  // The card sliding animation is finished, so make the card draggable
+  // Note that this method cannot have a name of "setDraggable()",
+  // since that would overlap with the Konva function
   checkSetDraggable() {
+    if (this.shouldBeDraggable(globals.currentPlayerIndex)) {
+      this.draggable(true);
+      this.on('dragstart', this.dragStart);
+      this.on('dragend', this.dragEnd);
+    } else {
+      this.draggable(false);
+      this.off('dragstart');
+      this.off('dragend');
+    }
+  }
+
+  shouldBeDraggable(currentPlayerIndex: number | null) {
     // Cards should only be draggable in specific circumstances
     const card = this.children[0] as unknown as HanabiCard;
     if (!card) {
       // Rarely, if the game is restarted when a tween is happening,
       // we can get here without the card being defined
-      return;
+      return false;
     }
 
     // First, handle the special case of a hypothetical
     if (globals.hypothetical) {
-      if (
+      return (
         globals.amSharedReplayLeader
-        && globals.currentPlayerIndex === card.state.location
+        && currentPlayerIndex === card.state.location
         && !card.blank
-      ) {
-        this.draggable(true);
-        this.on('dragstart', this.dragStart);
-        this.on('dragend', this.dragEnd);
-      } else {
-        this.draggable(false);
-        this.off('dragstart');
-        this.off('dragend');
-      }
-      return;
+      );
     }
 
-    if (
-      // If it is not our turn, then the card does not need to be draggable yet
-      // (unless we have the "Enable pre-playing cards" feature enabled)
+    // If it is not our turn, then the card does not need to be draggable yet
+    // (unless we have the "Enable pre-playing cards" feature enabled)
+    return (
       (!globals.ourTurn && !globals.lobby.settings.speedrunPreplay)
       || globals.options.speedrun // Cards should never be draggable while speedrunning
       || card.state.location !== globals.playerUs // Only our cards should be draggable
@@ -75,16 +79,7 @@ export default class LayoutChild extends Konva.Group {
       // Cards should not be draggable if they are currently playing an animation
       // (this function will be called again upon the completion of the animation)
       || card.tweening
-    ) {
-      this.draggable(false);
-      this.off('dragstart');
-      this.off('dragend');
-      return;
-    }
-
-    this.draggable(true);
-    this.on('dragstart', this.dragStart);
-    this.on('dragend', this.dragEnd);
+    );
   }
 
   dragStart() {

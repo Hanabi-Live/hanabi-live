@@ -2,7 +2,7 @@
 
 import Konva from 'konva';
 import { cardRules } from '../rules';
-import { ActionType } from '../types/ClientAction';
+import ActionType from '../types/ActionType';
 import Color from '../types/Color';
 import {
   MAX_CLUE_NUM,

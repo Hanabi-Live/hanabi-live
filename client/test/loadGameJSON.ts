@@ -11,16 +11,13 @@ import {
   ActionPlay,
   GameAction,
 } from '../src/game/types/actions';
+import ActionType from '../src/game/types/ActionType';
 import CardIdentity from '../src/game/types/CardIdentity';
-import { ActionType } from '../src/game/types/ClientAction';
 import ClueType from '../src/game/types/ClueType';
 import { STACK_BASE_RANK } from '../src/game/types/constants';
-import GameMetadata from '../src/game/types/GameMetadata';
 import GameState from '../src/game/types/GameState';
-import Options from '../src/game/types/Options';
-import State from '../src/game/types/State';
-import { initArray } from '../src/misc';
 import testGame from '../test_data/up_or_down.json';
+import testMetadata from './testMetadata';
 
 type JSONGame = typeof testGame;
 
@@ -40,16 +37,7 @@ interface JSONAction {
 
 export default function loadGameJSON(gameJSON: JSONGame): State {
   const numPlayers = gameJSON.players.length;
-  const metadata: GameMetadata = {
-    options: {
-      ...(new Options()),
-      numPlayers,
-      variantName: gameJSON.options.variant,
-    },
-    playerSeat: null,
-    characterAssignments: initArray(numPlayers, null),
-    characterMetadata: [],
-  };
+  const metadata = testMetadata(numPlayers, gameJSON.options.variant);
   const variant = getVariant(metadata.options.variantName);
 
   const cardsPerHand = handRules.cardsPerHand(numPlayers, false, false);
@@ -171,6 +159,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     replay: { ...state.replay, states },
     cardIdentities: [],
     metadata,
+    premove: null,
   };
 }
 

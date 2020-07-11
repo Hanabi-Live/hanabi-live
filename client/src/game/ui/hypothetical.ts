@@ -4,7 +4,8 @@
 import { getVariant } from '../data/gameData';
 import * as variantRules from '../rules/variant';
 import { ActionIncludingHypothetical } from '../types/actions';
-import { ActionType, ClientAction } from '../types/ClientAction';
+import ActionType from '../types/ActionType';
+import ClientAction from '../types/ClientAction';
 import ClueType from '../types/ClueType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import MsgClue from '../types/MsgClue';
@@ -177,9 +178,9 @@ export const beginTurn = () => {
   // Set the current player's hand to be draggable
   disableDragOnAllHands();
   const hand = globals.elements.playerHands[globals.currentPlayerIndex!];
-  for (const layoutChild of hand.children.toArray() as LayoutChild[]) {
-    layoutChild.checkSetDraggable();
-  }
+  hand.children.each((layoutChild) => {
+    (layoutChild as unknown as LayoutChild).checkSetDraggable();
+  });
 };
 
 export const send = (hypoAction: ClientAction) => {

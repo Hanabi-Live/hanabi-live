@@ -590,6 +590,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       // Unmorph
       this.note.suitIndex = null;
       this.note.rank = null;
+      this.setBareImage();
     }
   }
 
@@ -936,19 +937,21 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       return;
     }
     const hand = this.parent.parent;
-    let hidden = false;
+    let hideArrows = false;
     for (const layoutChild of hand.children.toArray()) {
       const card: HanabiCard = (layoutChild as Konva.Node).children[0] as HanabiCard;
       for (const arrow of globals.elements.arrows) {
         if (arrow.pointingTo === card) {
-          hidden = true;
-          arrows.hideAll();
+          hideArrows = true;
           break;
         }
       }
-      if (hidden) {
+      if (hideArrows) {
         break;
       }
+    }
+    if (hideArrows) {
+      arrows.hideAll();
     }
 
     // Move this hand to the top

@@ -86,16 +86,20 @@ function subscribeToCardChanges(order: number) {
 
 function updateCluedBorder(order: number) {
   globals.deck[order].setClued();
+  globals.layers.card.batchDraw();
 }
 
 function updatePips(order: number, clueType: ClueType) {
   globals.deck[order].updatePips(clueType);
+  globals.layers.card.batchDraw();
 }
 
 function updateCardVisuals(order: number) {
   globals.deck[order].setBareImage();
+  globals.layers.card.batchDraw();
 }
 
 function updateNotePossibilities(order: number) {
   globals.deck[order].updateNotePossibilities();
+  globals.layers.card.batchDraw();
 }

@@ -2,7 +2,7 @@
 
 import Konva from 'konva';
 import { copyStringToClipboard } from '../../misc';
-import { ActionType } from '../types/ClientAction';
+import ActionType from '../types/ActionType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import backToLobby from './backToLobby';
