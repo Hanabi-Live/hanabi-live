@@ -63,7 +63,7 @@ export default class LayoutChild extends Konva.Group {
       return (
         globals.amSharedReplayLeader
         && currentPlayerIndex === card.state.location
-        && !card.state.blank
+        && !card.blank
       );
     }
 

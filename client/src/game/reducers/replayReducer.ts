@@ -1,8 +1,9 @@
 // The reducer for replays and hypotheticals
 
 import produce, { Draft, original } from 'immer';
-import { ensureAllCases } from '../../misc';
+import { ensureAllCases, nullIfNegative } from '../../misc';
 import { ReplayAction } from '../types/actions';
+import CardIdentity from '../types/CardIdentity';
 import GameMetadata from '../types/GameMetadata';
 import ReplayState from '../types/ReplayState';
 import gameStateReducer from './gameStateReducer';
@@ -10,6 +11,7 @@ import gameStateReducer from './gameStateReducer';
 const replayReducer = produce((
   state: Draft<ReplayState>,
   action: ReplayAction,
+  cardIdentities: readonly CardIdentity[],
   metadata: GameMetadata,
 ) => {
   // Validate current state
@@ -35,33 +37,93 @@ const replayReducer = produce((
       break;
     }
     case 'hypoStart': {
-      state.ongoingHypothetical = state.states[state.turn];
-      state.hypotheticalStates = [state.ongoingHypothetical];
+      const ongoing = state.states[state.turn];
+      state.hypothetical = {
+        ongoing,
+        states: [ongoing],
+        drawnCardsShown: false,
+        drawnCardsInHypothetical: [],
+        morphedIdentities: [],
+      };
       break;
     }
     case 'hypoEnd': {
-      state.ongoingHypothetical = null;
-      state.hypotheticalStates = [];
+      state.hypothetical = null;
       break;
     }
     case 'hypoBack': {
-      state.hypotheticalStates.pop();
-      const lastState = state.hypotheticalStates[state.hypotheticalStates.length - 1];
-      state.ongoingHypothetical = lastState;
+      const hypoStates = state.hypothetical!.states;
+      hypoStates.pop();
+      const lastState = hypoStates[hypoStates.length - 1];
+      state.hypothetical!.ongoing = lastState;
+      break;
+    }
+    case 'hypoRevealed': {
+      state.hypothetical!.drawnCardsShown = action.showDrawnCards;
+      // Filter out all identities morphed to blank
+      if (action.showDrawnCards) {
+        const morphed = original(state.hypothetical!.morphedIdentities)!;
+        for (let i = 0; i < morphed.length; i++) {
+          // Note: the for loop is necessary because the array is not contiguous
+          // Array.filter would change the indexes
+          state.hypothetical!.morphedIdentities = [];
+          if (morphed[i] && morphed[i].rank !== null && morphed[i].suitIndex !== null) {
+            state.hypothetical!.morphedIdentities[i] = morphed[i];
+          }
+        }
+      } else {
+        // Hide all cards drawn since the beginning of the hypothetical
+        original(state.hypothetical!.drawnCardsInHypothetical)!.forEach((order) => {
+          state.hypothetical!.morphedIdentities[order] = {
+            rank: null,
+            suitIndex: null,
+          };
+        });
+      }
       break;
     }
     case 'hypoAction': {
-      // TODO: the game reducer doesn't care about the morph action, yet
-      if (action.action.type === 'morph') {
+      const a = action.action;
+      // The morph action is handled here, exclusively
+      // Also take note of any draws that conflict with the known card identities
+      if (a.type === 'morph' || a.type === 'draw') {
+        let suitIndex = nullIfNegative(a.suitIndex);
+        let rank = nullIfNegative(a.rank);
+
+        if (a.type === 'draw') {
+          // Store drawn cards to be able to show/hide in the future
+          state.hypothetical!.drawnCardsInHypothetical.push(a.order);
+          if (!state.hypothetical!.drawnCardsShown) {
+            // Mark this one as blank
+            suitIndex = null;
+            rank = null;
+          }
+        }
+
+        if (
+          suitIndex !== cardIdentities[a.order].suitIndex
+          || rank !== cardIdentities[a.order].rank
+        ) {
+          // This card has been morphed or blanked
+          state.hypothetical!.morphedIdentities[a.order] = {
+            suitIndex,
+            rank,
+          };
+        }
+      }
+
+      // The game state doesn't care about morphed cards
+      if (a.type === 'morph') {
         break;
       }
 
-      const hypoState = original(state.ongoingHypothetical)!;
-      state.ongoingHypothetical = gameStateReducer(hypoState, action.action, metadata);
+      const hypoState = original(state.hypothetical?.ongoing)!;
+      const newState = gameStateReducer(hypoState, a, metadata);
+      state.hypothetical!.ongoing = newState;
 
-      if (action.action.type === 'turn') {
+      if (a.type === 'turn') {
         // Save it for going back
-        state.hypotheticalStates.push(state.ongoingHypothetical);
+        state.hypothetical!.states.push(newState);
       }
 
       break;

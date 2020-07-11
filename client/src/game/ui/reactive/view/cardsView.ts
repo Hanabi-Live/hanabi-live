@@ -45,13 +45,9 @@ function subscribeToCardChanges(order: number) {
     subscriptions.push({ select: checkOrderAndSelect(cardSelector), onChange: l });
   }
 
-  // Subscribes to a set of property changes from cards as well as the card identity
-  function subWithCardIdentity<T>(s: Selector<CardState, T>, l: Listener<T>) {
-    const combinedSelector = (state: State) => ({
-      identity: state.cardIdentities[order],
-      cardProperties: s(state.visibleState!.deck[order]),
-    });
-    subscriptions.push({ select: checkOrderAndSelect(combinedSelector), onChange: l });
+  // Subscribes to a set of property changes from cards as well as anywhere else in state
+  function subFullState<T>(s: Selector<State, T>, l: Listener<T>) {
+    subscriptions.push({ select: checkOrderAndSelect(s), onChange: l });
   }
 
   // TODO: all the properties!
@@ -69,14 +65,18 @@ function subscribeToCardChanges(order: number) {
     possibleSuits: c.colorClueMemory.possibilities,
   }), () => updateNotePossibilities(order));
   // Card visuals
-  subWithCardIdentity((c) => ({
-    rank: c.rank,
-    suitIndex: c.suitIndex,
-    location: c.location,
-    numPossibleRanks: c.rankClueMemory.possibilities.length,
-    numPossibleSuits: c.colorClueMemory.possibilities.length,
-    blank: c.blank,
-  }), () => updateCardVisuals(order));
+  subFullState((s) => {
+    const card = s.visibleState!.deck[order];
+    return {
+      rank: card.rank,
+      suitIndex: card.suitIndex,
+      location: card.location,
+      numPossibleRanks: card.rankClueMemory.possibilities.length,
+      numPossibleSuits: card.colorClueMemory.possibilities.length,
+      identity: s.cardIdentities[order],
+      morphedIdentity: s.replay.hypothetical?.morphedIdentities[order],
+    };
+  }, () => updateCardVisuals(order));
 
   return observeStore(globals.store!, subscriptions);
 }

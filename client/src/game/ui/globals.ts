@@ -63,9 +63,6 @@ export class Globals {
   ourTurn: boolean = false;
   deckSize: number = 0;
   indexOfLastDrawnCard: number = 0;
-  score: number = 0;
-  maxScore: number = 0;
-  clues: number = 0;
   stackDirections: StackDirection[] = [];
 
   // UI elements
@@ -144,6 +141,11 @@ export class Globals {
   cardSubscriptions: Redux.Unsubscribe[] = [];
   cardIdentitySubscriptions: Redux.Unsubscribe[] = [];
 
+  // TEMP: accessors to minimize churn while we don't re-architect user input
+  get clues() {
+    return this.store!.getState().visibleState!.clueTokens!;
+  }
+
   // We provide a method to reset every class variable to its initial value
   // This is called when the user goes into a new game
   // We cannot just create a new instantiation of the class,
@@ -173,9 +175,6 @@ export class Globals {
     this.ourTurn = false;
     this.deckSize = 0;
     this.indexOfLastDrawnCard = 0;
-    this.score = 0;
-    this.maxScore = 0;
-    this.clues = 0;
     this.stackDirections = [];
     this.imageLoader = null;
     this.stage = new Konva.Stage({ container: 'game' });

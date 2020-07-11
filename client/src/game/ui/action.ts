@@ -7,7 +7,7 @@ import {
   ActionDiscard,
   ActionDraw,
   ActionIncludingHypothetical,
-  ActionMorph,
+  ActionHypotheticalMorph,
   ActionReorder,
   ActionStatus,
   ActionStrike,
@@ -158,18 +158,16 @@ actionFunctions.set('reorder', (data: ActionReorder) => {
 });
 
 actionFunctions.set('status', (data: ActionStatus) => {
-  // Update internal state variables
-  globals.clues = data.clues;
+  // TEMP: the no discard / double discard border should be a reactive view
+  let clues = data.clues;
   if (variantRules.isClueStarved(globals.variant)) {
     // In "Clue Starved" variants, 1 clue is represented on the server by 2
     // Thus, in order to get the "real" clue count, we have to divide by 2
-    globals.clues /= 2;
+    clues /= 2;
   }
-  globals.score = data.score;
-  globals.maxScore = data.maxScore;
 
   if (!globals.lobby.settings.realLifeMode) {
-    if (globals.clues === MAX_CLUE_NUM) {
+    if (clues === MAX_CLUE_NUM) {
       // Show the red border around the discard pile
       // (to reinforce that the current player cannot discard)
       globals.elements.noDiscardBorder!.show();
@@ -213,7 +211,7 @@ actionFunctions.set('strike', (data: ActionStrike) => {
   strikeRecord(data);
 });
 
-actionFunctions.set('morph', (data: ActionMorph) => {
+actionFunctions.set('morph', (data: ActionHypotheticalMorph) => {
   console.log(data, 'TODO');
   /*
   // This is the reveal for hypotheticals when a card is morphed

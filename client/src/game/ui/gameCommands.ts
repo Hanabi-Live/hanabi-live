@@ -214,6 +214,9 @@ commands.set('hypoRevealed', (data: HypoRevealedData) => {
   checkLegal();
 
   globals.layers.card.batchDraw();
+
+  // Send to reducers
+  globals.store!.dispatch({ type: 'hypoRevealed', showDrawnCards: data.hypoRevealed });
 });
 
 commands.set('hypoStart', () => {
