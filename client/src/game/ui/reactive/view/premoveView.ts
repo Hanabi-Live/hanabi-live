@@ -16,8 +16,9 @@ export function onChanged(
 
     // If we dragged a card, we have to make the card tween back to the hand
     if (previousPremove.type === ActionType.Play || previousPremove.type === ActionType.Discard) {
-      const ourPlayerIndex = globals.store!.getState().metadata.playerSeat!;
-      globals.elements.playerHands[ourPlayerIndex].doLayout();
+      const ourPlayerIndex = globals.store!.getState().metadata.ourPlayerIndex;
+      const ourHand = globals.elements.playerHands[ourPlayerIndex];
+      ourHand.doLayout();
     }
   }
 }

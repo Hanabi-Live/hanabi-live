@@ -13,7 +13,7 @@ export default function testMetadata(
       numPlayers,
       variantName,
     },
-    playerSeat: null,
+    ourPlayerIndex: 0,
     spectating: false,
     characterAssignments: initArray(numPlayers, null),
     characterMetadata: [],

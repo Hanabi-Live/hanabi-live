@@ -10,7 +10,7 @@ export function isVisible(s: State) {
     !s.replay.active
     // The clue UI should take precedence over the "Current Player" area
     && (
-      s.ongoingGame?.turn.currentPlayerIndex !== s.metadata.playerSeat
+      s.ongoingGame?.turn.currentPlayerIndex !== s.metadata.ourPlayerIndex
       && !s.metadata.spectating
     )
     // The premove cancel button should take precedence over the "Current Player" area
