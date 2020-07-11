@@ -102,6 +102,16 @@ func commandTableRestart(s *Session, d *CommandData) {
 		return
 	}
 
+	// Validate that this is not a game with a custom prefix
+	if strings.HasPrefix(t.Name, "!seed") {
+		s.Warning("You are not allowed to restart \"!seed\" games.")
+		return
+	}
+	if strings.HasPrefix(t.Name, "!replay") {
+		s.Warning("You are not allowed to restart \"!replay\" games.")
+		return
+	}
+
 	// Validate that there is currently no-one on the waiting list
 	waitingListPurgeOld()
 	if t.AlertWaiters &&
