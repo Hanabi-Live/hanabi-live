@@ -18,6 +18,7 @@ import { STACK_BASE_RANK } from '../src/game/types/constants';
 import GameState from '../src/game/types/GameState';
 import testGame from '../test_data/up_or_down.json';
 import testMetadata from './testMetadata';
+import State from '../src/game/types/State';
 
 type JSONGame = typeof testGame;
 
