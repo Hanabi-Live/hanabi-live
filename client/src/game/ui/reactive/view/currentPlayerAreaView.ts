@@ -28,6 +28,7 @@ export function onChanged(data: {
   const currentPlayerArea = globals.elements.currentPlayerArea!;
   if (data.visible !== previousData?.visible) {
     currentPlayerArea.visible(data.visible);
+    globals.layers.UI.batchDraw();
   }
   if (!data.visible) {
     return;
