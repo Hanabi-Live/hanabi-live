@@ -177,10 +177,11 @@ export const beginTurn = () => {
 
   // Set the current player's hand to be draggable
   disableDragOnAllHands();
-  const hand = globals.elements.playerHands[globals.currentPlayerIndex!];
-  hand.children.each((layoutChild) => {
-    (layoutChild as unknown as LayoutChild).checkSetDraggable();
-  });
+  const currentPlayerHand = globals.elements.playerHands[globals.currentPlayerIndex!];
+  if (!currentPlayerHand) {
+    throw new Error(`Failed to get the current player's hand with an index of ${globals.currentPlayerIndex}.`);
+  }
+  currentPlayerHand.checkSetDraggableAll();
 };
 
 export const send = (hypoAction: ClientAction) => {

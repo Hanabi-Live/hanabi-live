@@ -176,6 +176,12 @@ export default class CardLayout extends Konva.Group {
     }
   }
 
+  checkSetDraggableAll() {
+    this.children.each((layoutChild) => {
+      (layoutChild as unknown as LayoutChild).checkSetDraggable();
+    });
+  }
+
   getAbsoluteCenterPos() {
     const pos = this.getAbsolutePosition(); // The top-left-hand corner
 
