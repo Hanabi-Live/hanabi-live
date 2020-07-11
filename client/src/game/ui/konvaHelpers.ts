@@ -30,6 +30,10 @@ export function animate(
   interactive: boolean = false,
   fast: boolean = globals.animateFast,
 ) {
+  if (!interactive && node.isListening()) {
+    throw new Error('A node that is about to animate is listening, but it should not be (because "interactive" was to set to be false or not specified).');
+  }
+
   if (node.tween !== null) {
     node.tween.destroy();
     node.tween = null;
