@@ -69,7 +69,7 @@ export const exit = () => {
   if (globals.ourTurn) {
     turn.showClueUIAndEnableDragging();
   }
-  if (globals.queuedAction !== null) {
+  if (globals.premove !== null) {
     globals.elements.currentPlayerArea!.hide();
     globals.elements.premoveCancelButton!.show();
   }

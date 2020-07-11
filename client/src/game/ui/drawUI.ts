@@ -1795,17 +1795,17 @@ const drawPreplayArea = () => {
     globals.elements.currentPlayerArea!.show();
     globals.layers.UI.batchDraw();
 
-    if (globals.queuedAction === null) {
+    if (globals.premove === null) {
       return;
     }
 
     // If we dragged a card, we have to put the card back in the hand
-    if (globals.queuedAction.type === ActionType.Play
-      || globals.queuedAction.type === ActionType.Discard) {
+    if (globals.premove.type === ActionType.Play
+      || globals.premove.type === ActionType.Discard) {
       globals.elements.playerHands[globals.playerUs].doLayout();
     }
 
-    globals.queuedAction = null;
+    globals.premove = null;
   });
 };
 
