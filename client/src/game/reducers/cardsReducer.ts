@@ -96,12 +96,12 @@ const cardsReducer = (
 
     case 'discard':
     case 'play': {
-      const order = action.which.order;
+      const order = action.order;
       const card = getCard(deck, order);
 
       // Reveal all cards played and discarded
-      const suitIndex = nullIfNegative(action.which.suitIndex);
-      const rank = nullIfNegative(action.which.rank);
+      const suitIndex = nullIfNegative(action.suitIndex);
+      const rank = nullIfNegative(action.rank);
 
       let identityDetermined = card.identityDetermined;
 

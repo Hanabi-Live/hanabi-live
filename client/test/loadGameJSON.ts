@@ -119,9 +119,9 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       }
       case 'play': {
         // Check if this is actually a play or a misplay
-        const jsonCard: CardIdentity = gameJSON.deck[a.which.order];
+        const jsonCard: CardIdentity = gameJSON.deck[a.order];
         if (jsonCard.suitIndex === null || jsonCard.rank === null) {
-          throw new Error(`Failed to get the rank or the suit for card ${a.which.order} in the JSON deck.`);
+          throw new Error(`Failed to get the rank or the suit for card ${a.order} in the JSON deck.`);
         }
         const playStack = s.playStacks[jsonCard.suitIndex];
         let topOfStackRank = STACK_BASE_RANK;
@@ -132,10 +132,17 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
         const successful = hasReversedSuits(variant) ? true : topOfStackRank === jsonCard.rank - 1;
         if (!successful) {
           // Send a discard and a strike
-          action = { type: 'discard', failed: true, which: a.which };
+          action = {
+            type: 'discard',
+            playerIndex: a.playerIndex,
+            order: a.order,
+            suitIndex: a.suitIndex,
+            rank: a.rank,
+            failed: true,
+          };
           nextState = gameStateReducer(s, action, state.metadata);
           action = {
-            type: 'strike', num: nextState.strikes.length, order: a.which.order, turn,
+            type: 'strike', num: nextState.strikes.length, order: a.order, turn,
           };
         }
 
@@ -210,12 +217,10 @@ function parseJSONAction(
       const isPlay = a.type === JSONActionType.ActionTypePlay;
       const action = {
         type: isPlay ? 'play' : 'discard',
-        which: {
-          order: a.target,
-          index: currentPlayer,
-          suitIndex: deck[a.target].suitIndex,
-          rank: deck[a.target].rank,
-        },
+        playerIndex: currentPlayer,
+        order: a.target,
+        suitIndex: deck[a.target].suitIndex,
+        rank: deck[a.target].rank,
       };
       return (isPlay ? action as ActionPlay : action as ActionDiscard);
     }

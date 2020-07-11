@@ -254,12 +254,10 @@ export const send = (hypoAction: ClientAction) => {
     // Play / Discard
     sendHypoAction({
       type,
-      which: {
-        index: gameState.turn.currentPlayerIndex!,
-        order: hypoAction.target,
-        rank: card.rank!,
-        suitIndex: card.suitIndex!,
-      },
+      playerIndex: gameState.turn.currentPlayerIndex!,
+      order: hypoAction.target,
+      suitIndex: card.suitIndex!,
+      rank: card.rank!,
       failed: false,
     });
     if (type === 'play') {
@@ -445,7 +443,7 @@ export const setHypoFirstDrawnIndex = (actionMessage: ActionIncludingHypothetica
 // It should also happen for misplays once those are implemented
 export const checkToggleRevealedButton = (actionMessage: ActionIncludingHypothetical) => {
   if (actionMessage.type === 'play' || actionMessage.type === 'discard') {
-    const cardOrder = actionMessage.which.order;
+    const cardOrder = actionMessage.order;
     if (globals.hypoFirstDrawnIndex && cardOrder >= globals.hypoFirstDrawnIndex) {
       globals.elements.toggleRevealedButton?.setEnabled(false);
     }

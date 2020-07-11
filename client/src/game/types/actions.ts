@@ -73,7 +73,10 @@ export interface ActionClue {
 export interface ActionDiscard {
   type: 'discard';
   readonly failed: boolean;
-  readonly which: Which;
+  readonly playerIndex: number;
+  readonly order: number;
+  readonly suitIndex: number;
+  readonly rank: number;
 }
 
 export interface ActionDraw {
@@ -92,7 +95,10 @@ export interface ActionGameOver {
 
 export interface ActionPlay {
   type: 'play';
-  readonly which: Which;
+  readonly playerIndex: number;
+  readonly order: number;
+  readonly suitIndex: number;
+  readonly rank: number;
 }
 
 export interface ActionReorder {
@@ -130,13 +136,6 @@ export interface ActionTurn {
   type: 'turn';
   readonly num: number;
   readonly who: number;
-}
-
-export interface Which {
-  readonly index: number;
-  readonly suitIndex: number;
-  readonly rank: number;
-  readonly order: number;
 }
 
 // --------------
