@@ -314,9 +314,9 @@ func (*Games) GetGameIDsFriends(
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
 		/*
-		* We must use the ANY operator for matching an array of IDs:
-		* https://github.com/jackc/pgx/issues/334
-		*/
+		 * We must use the ANY operator for matching an array of IDs:
+		 * https://github.com/jackc/pgx/issues/334
+		 */
 		WHERE game_participants.user_id = ANY($1)
 		EXCEPT
 		SELECT games.id
