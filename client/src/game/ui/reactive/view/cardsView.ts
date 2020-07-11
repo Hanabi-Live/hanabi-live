@@ -31,8 +31,8 @@ function subscribeToCardChanges(order: number) {
   function checkOrderAndSelect<T>(s: Selector<State, T>): Selector<State, T> {
     return (state) => {
       if (order >= state.visibleState!.deck.length) {
-      // This card was removed from visible state
-      // Return undefined to prevent firing the listener
+        // This card was removed from visible state
+        // Return undefined to prevent firing the listener
         return undefined;
       }
       return s(state);
@@ -45,13 +45,9 @@ function subscribeToCardChanges(order: number) {
     subscriptions.push({ select: checkOrderAndSelect(cardSelector), onChange: l });
   }
 
-  // Subscribes to a set of property changes from cards as well as the card identity
-  function subWithCardIdentity<T>(s: Selector<CardState, T>, l: Listener<T>) {
-    const combinedSelector = (state: State) => ({
-      identity: state.cardIdentities[order],
-      cardProperties: s(state.visibleState!.deck[order]),
-    });
-    subscriptions.push({ select: checkOrderAndSelect(combinedSelector), onChange: l });
+  // Subscribes to a set of property changes from cards as well as anywhere else in state
+  function subFullState<T>(s: Selector<State, T>, l: Listener<T>) {
+    subscriptions.push({ select: checkOrderAndSelect(s), onChange: l });
   }
 
   // TODO: all the properties!
@@ -69,14 +65,18 @@ function subscribeToCardChanges(order: number) {
     possibleSuits: c.colorClueMemory.possibilities,
   }), () => updateNotePossibilities(order));
   // Card visuals
-  subWithCardIdentity((c) => ({
-    rank: c.rank,
-    suitIndex: c.suitIndex,
-    location: c.location,
-    numPossibleRanks: c.rankClueMemory.possibilities.length,
-    numPossibleSuits: c.colorClueMemory.possibilities.length,
-    blank: c.blank,
-  }), () => updateCardVisuals(order));
+  subFullState((s) => {
+    const card = s.visibleState!.deck[order];
+    return {
+      rank: card.rank,
+      suitIndex: card.suitIndex,
+      location: card.location,
+      numPossibleRanks: card.rankClueMemory.possibilities.length,
+      numPossibleSuits: card.colorClueMemory.possibilities.length,
+      identity: s.cardIdentities[order],
+      morphedIdentity: s.replay.hypothetical?.morphedIdentities[order],
+    };
+  }, () => updateCardVisuals(order));
 
   return observeStore(globals.store!, subscriptions);
 }
@@ -86,16 +86,20 @@ function subscribeToCardChanges(order: number) {
 
 function updateCluedBorder(order: number) {
   globals.deck[order].setClued();
+  globals.layers.card.batchDraw();
 }
 
 function updatePips(order: number, clueType: ClueType) {
   globals.deck[order].updatePips(clueType);
+  globals.layers.card.batchDraw();
 }
 
 function updateCardVisuals(order: number) {
   globals.deck[order].setBareImage();
+  globals.layers.card.batchDraw();
 }
 
 function updateNotePossibilities(order: number) {
   globals.deck[order].updateNotePossibilities();
+  globals.layers.card.batchDraw();
 }

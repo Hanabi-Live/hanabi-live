@@ -153,7 +153,6 @@ commands.set('gameOver', () => {
 
   // Turn off the "Throw It in a Hole" UI
   if (variantRules.isThrowItInAHole(globals.variant)) {
-    globals.elements.scoreNumberLabel!.text(globals.score.toString());
     globals.elements.maxScoreNumberLabel!.show();
   }
 
@@ -215,6 +214,9 @@ commands.set('hypoRevealed', (data: HypoRevealedData) => {
   checkLegal();
 
   globals.layers.card.batchDraw();
+
+  // Send to reducers
+  globals.store!.dispatch({ type: 'hypoRevealed', showDrawnCards: data.hypoRevealed });
 });
 
 commands.set('hypoStart', () => {
@@ -276,17 +278,19 @@ commands.set('init', (data: InitData) => {
   globals.variant = getVariant(globals.options.variantName);
 
   // Character settings
-  globals.characterAssignments = data.characterAssignments;
-  if (globals.characterAssignments.length === 0) {
-    globals.characterAssignments = initArray(globals.options.numPlayers, null);
+  let characterAssignments: Array<number | null> = data.characterAssignments.slice();
+  if (characterAssignments.length === 0) {
+    characterAssignments = initArray(globals.options.numPlayers, null);
   }
+  globals.characterAssignments = characterAssignments;
   globals.characterMetadata = data.characterMetadata;
 
   // Recreate the state store (using the Redux library)
   const metadata: GameMetadata = {
     options: data.options,
-    playerSeat: data.seat >= 0 ? data.seat : null,
-    characterAssignments: globals.characterAssignments,
+    ourPlayerIndex: data.seat,
+    spectating: data.spectating,
+    characterAssignments,
     characterMetadata: data.characterMetadata,
   };
   globals.store = createStore(stateReducer, initialState(metadata));
@@ -626,7 +630,7 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
     globals.elements.useSharedTurnsButton!.setCenter();
   }
   globals.elements.enterHypoButton!.visible(globals.amSharedReplayLeader);
-  globals.elements.enterHypoButton!.setEnabled(globals.currentPlayerIndex !== -1);
+  globals.elements.enterHypoButton!.setEnabled(globals.currentPlayerIndex !== null);
 
   // Enable/disable the restart button
   globals.elements.restartButton!.visible(globals.amSharedReplayLeader);
@@ -724,29 +728,6 @@ commands.set('replayTurn', (data: ReplayTurnData) => {
 
     hypothetical.playThroughPastActions();
   }
-});
-
-// A "reveal" message is sent at the end of the game to reveal the remaining cards in a player's
-// hand
-interface RevealData {
-  suitIndex: number;
-  rank: number;
-  order: number;
-}
-commands.set('reveal', (data: RevealData) => {
-  console.log(data, 'TODO');
-  /*
-  let card = globals.deck[data.order];
-  if (!card) {
-    card = globals.stackBases[data.order - globals.deck.length];
-  }
-  if (!card) {
-    throw new Error('Failed to get the card in the "reveal" command.');
-  }
-
-  card.reveal(data.suitIndex, data.rank);
-  globals.layers.card.batchDraw();
-  */
 });
 
 // This is used to update the names of the people currently spectating the game

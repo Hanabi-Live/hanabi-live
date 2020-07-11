@@ -1,6 +1,7 @@
 import { getVariant } from '../src/game/data/gameData';
 import gameStateReducer from '../src/game/reducers/gameStateReducer';
 import initialState from '../src/game/reducers/initialStates/initialState';
+import { cluesRules } from '../src/game/rules';
 import * as handRules from '../src/game/rules/hand';
 import { hasReversedSuits } from '../src/game/rules/variant';
 import {
@@ -10,18 +11,14 @@ import {
   ActionPlay,
   GameAction,
 } from '../src/game/types/actions';
+import ActionType from '../src/game/types/ActionType';
 import CardIdentity from '../src/game/types/CardIdentity';
-import { ActionType } from '../src/game/types/ClientAction';
 import ClueType from '../src/game/types/ClueType';
 import { STACK_BASE_RANK } from '../src/game/types/constants';
-import GameMetadata from '../src/game/types/GameMetadata';
 import GameState from '../src/game/types/GameState';
-import MsgClue from '../src/game/types/MsgClue';
-import Options from '../src/game/types/Options';
 import State from '../src/game/types/State';
-import Variant from '../src/game/types/Variant';
-import { initArray } from '../src/misc';
 import testGame from '../test_data/up_or_down.json';
+import testMetadata from './testMetadata';
 
 type JSONGame = typeof testGame;
 
@@ -41,16 +38,7 @@ interface JSONAction {
 
 export default function loadGameJSON(gameJSON: JSONGame): State {
   const numPlayers = gameJSON.players.length;
-  const metadata: GameMetadata = {
-    options: {
-      ...(new Options()),
-      numPlayers,
-      variantName: gameJSON.options.variant,
-    },
-    playerSeat: null,
-    characterAssignments: initArray(numPlayers, null),
-    characterMetadata: [],
-  };
+  const metadata = testMetadata(numPlayers, gameJSON.options.variant);
   const variant = getVariant(metadata.options.variantName);
 
   const cardsPerHand = handRules.cardsPerHand(numPlayers, false, false);
@@ -119,7 +107,12 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
           .hands[a.target]
           .filter((order) => {
             const jsonCard = gameJSON.deck[order];
-            return variantIsCardTouched(variant, a.clue, jsonCard.suitIndex, jsonCard.rank);
+            return cluesRules.touchesCard(
+              variant,
+              cluesRules.msgClueToClue(a.clue, variant),
+              jsonCard.suitIndex,
+              jsonCard.rank,
+            );
           });
         action = { ...a, list };
         break;
@@ -167,6 +160,10 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     replay: { ...state.replay, states },
     cardIdentities: [],
     metadata,
+    premove: {
+      action: null,
+      cluedCardOrder: null,
+    },
   };
 }
 
@@ -250,64 +247,4 @@ function parseJSONAction(
       return null;
     }
   }
-}
-
-// A direct translation from the server function of the same name
-function variantIsCardTouched(
-  variant: Variant,
-  clue: MsgClue,
-  suitIndex: number,
-  rank: number,
-): boolean {
-  if (clue.type === ClueType.Color) {
-    if (variant.colorCluesTouchNothing) {
-      return false;
-    }
-
-    if (variant.suits[suitIndex].allClueColors) {
-      return true;
-    }
-    if (variant.suits[suitIndex].noClueColors) {
-      return false;
-    }
-
-    if (variant.specialRank === rank) {
-      if (variant.specialAllClueColors) {
-        return true;
-      }
-      if (variant.specialNoClueColors) {
-        return false;
-      }
-    }
-
-    const clueColor = variant.clueColors[clue.value];
-    const cardColors = variant.suits[suitIndex].clueColors;
-    return cardColors.map((c) => c.name).includes(clueColor.name);
-  }
-
-  if (clue.type === ClueType.Rank) {
-    if (variant.rankCluesTouchNothing) {
-      return false;
-    }
-
-    if (variant.suits[suitIndex].allClueRanks) {
-      return true;
-    }
-    if (variant.suits[suitIndex].noClueRanks) {
-      return false;
-    }
-
-    if (variant.specialRank === rank) {
-      if (variant.specialAllClueRanks) {
-        return true;
-      }
-      if (variant.specialNoClueRanks) {
-        return false;
-      }
-    }
-
-    return clue.value === rank;
-  }
-
-  return false;
 }

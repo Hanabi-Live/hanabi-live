@@ -20,4 +20,5 @@ export const ARROW_COLOR = {
 };
 export const FADE_TIME = 350; // In milliseconds
 
+export const PREPLAY_DELAY = 50; // In milliseconds
 export const SHUTDOWN_TIMEOUT = 30; // In minutes

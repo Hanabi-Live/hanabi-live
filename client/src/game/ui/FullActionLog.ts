@@ -152,6 +152,7 @@ export default class FullActionLog extends Konva.Group {
       this.logNumbers.show();
       this.hide();
       globals.elements.stageFade.hide();
+
       globals.layers.UI2.batchDraw();
     });
   }

@@ -9,7 +9,6 @@ import { VARIANTS } from '../data/gameData';
 import { GameExports } from '../main';
 import { GameAction, ActionIncludingHypothetical, Action } from '../types/actions';
 import CardIdentity from '../types/CardIdentity';
-import { ClientAction } from '../types/ClientAction';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import Options from '../types/Options';
 import SpectatorNote from '../types/SpectatorNote';
@@ -59,17 +58,11 @@ export class Globals {
 
   // Game state variables (reset when rewinding in a replay)
   turn: number = 0;
-  currentPlayerIndex: number = 0;
+  currentPlayerIndex: number | null = 0;
   ourTurn: boolean = false;
-  endTurn: number | null = null;
   deckSize: number = 0;
   indexOfLastDrawnCard: number = 0;
-  score: number = 0;
-  maxScore: number = 0;
-  clues: number = 0;
-  cardsGotten: number = 0;
   stackDirections: StackDirection[] = [];
-  numCardsPlayed: number = 0; // For "Throw It in a Hole" variants
 
   // UI elements
   imageLoader: Loader | null = null;
@@ -125,10 +118,6 @@ export class Globals {
   startingTurnTime: number = 0;
   lastTimerUpdateTimeMS: number = 0;
 
-  // Pre-move feature
-  queuedAction: ClientAction | null = null;
-  preCluedCardOrder: number | null = null;
-
   // Pause feature
   paused: boolean = false; // Whether or not the game is currently paused
   pausePlayer: string = ''; // The name of the player who paused the game
@@ -140,13 +129,17 @@ export class Globals {
   postAnimationLayout: (() => void) | null = null;
   UIClickTime: number = 0; // Used to prevent accidental double clicks
   spectators: string[] = [];
-  chatUnread: number = 0;
 
   // State information
   store: Redux.Store<State, Action> | null = null;
   stateObserver: StateObserver | null = null;
   cardSubscriptions: Redux.Unsubscribe[] = [];
   cardIdentitySubscriptions: Redux.Unsubscribe[] = [];
+
+  // TEMP: accessors to minimize churn while we don't re-architect user input
+  get clues() {
+    return this.store!.getState().visibleState!.clueTokens!;
+  }
 
   // We provide a method to reset every class variable to its initial value
   // This is called when the user goes into a new game
@@ -175,15 +168,9 @@ export class Globals {
     this.turn = 0;
     this.currentPlayerIndex = 0;
     this.ourTurn = false;
-    this.endTurn = null;
     this.deckSize = 0;
     this.indexOfLastDrawnCard = 0;
-    this.score = 0;
-    this.maxScore = 0;
-    this.clues = 0;
-    this.cardsGotten = 0;
     this.stackDirections = [];
-    this.numCardsPlayed = 0;
     this.imageLoader = null;
     this.stage = new Konva.Stage({ container: 'game' });
     this.layers = new Layers();
@@ -218,8 +205,6 @@ export class Globals {
     this.timeTaken = 0;
     this.startingTurnTime = 0;
     this.lastTimerUpdateTimeMS = 0;
-    this.queuedAction = null;
-    this.preCluedCardOrder = 0;
     this.paused = false;
     this.pausePlayer = '';
     this.pauseQueued = false;
@@ -227,7 +212,7 @@ export class Globals {
     this.postAnimationLayout = null;
     this.UIClickTime = 0;
     this.spectators = [];
-    this.chatUnread = 0;
+
     this.stateObserver?.unregisterObservers();
     this.stateObserver = null;
     this.cardSubscriptions.forEach((u: Redux.Unsubscribe) => u());

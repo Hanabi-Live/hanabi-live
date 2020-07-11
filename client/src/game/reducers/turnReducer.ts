@@ -26,7 +26,7 @@ const turnReducer = produce((
       state.cardsPlayedOrDiscardedThisTurn += 1;
 
       if (deckSize === 0) {
-        nextTurn(state, numPlayers, characterID);
+        nextTurn(state, numPlayers, deckSize, characterID);
       }
 
       break;
@@ -34,7 +34,7 @@ const turnReducer = produce((
 
     case 'clue': {
       if (turnRules.shouldEndTurnAfterClue(state.cluesGivenThisTurn, characterID)) {
-        nextTurn(state, numPlayers, characterID);
+        nextTurn(state, numPlayers, deckSize, characterID);
       }
       break;
     }
@@ -45,7 +45,7 @@ const turnReducer = produce((
         characterID,
         clueTokens,
       )) {
-        nextTurn(state, numPlayers, characterID);
+        nextTurn(state, numPlayers, deckSize, characterID);
       }
       break;
     }
@@ -59,9 +59,10 @@ const turnReducer = produce((
     // {num: 0, type: "turn", who: 1}
     case 'turn': {
       // TEMP: At this point, check that the local state matches the server
-      if (state.turn !== action.num && state.currentPlayerIndex !== null) { // Ignore end-game turns
-        console.warn(`The turns from the client and the server do not match on turn ${state.turn}.`);
-        console.warn(`Client = ${state.turn}, Server = ${action.num}`);
+      if (state.turnNum !== action.num && state.currentPlayerIndex !== null) {
+        // Ignore turns that occur after the game has already ended
+        console.warn(`The turns from the client and the server do not match on turn ${state.turnNum}.`);
+        console.warn(`Client = ${state.turnNum}, Server = ${action.num}`);
       }
 
       // TEMP: the client should set the "currentPlayerIndex" index to -1 when the game is over
@@ -74,7 +75,7 @@ const turnReducer = produce((
 
       if (state.currentPlayerIndex !== action.who && state.currentPlayerIndex !== null) {
         // TODO
-        console.warn(`The currentPlayerIndex from the client and the server do not match on turn ${state.turn}.`);
+        console.warn(`The currentPlayerIndex from the client and the server do not match on turn ${state.turnNum}.`);
         console.warn(`Client = ${state.currentPlayerIndex}, Server = ${action.who}`);
       }
       break;
@@ -88,15 +89,28 @@ const turnReducer = produce((
 
 export default turnReducer;
 
-function nextTurn(state: Draft<TurnState>, numPlayers: number, characterID: number | null) {
-  state.turn += 1;
-  if (turnRules.shouldTurnsInvert(characterID)) {
-    state.turnsInverted = !state.turnsInverted;
-  }
+function nextTurn(
+  state: Draft<TurnState>,
+  numPlayers: number,
+  deckSize: number,
+  characterID: number | null,
+) {
+  state.turnNum += 1;
+
   state.currentPlayerIndex = turnRules.getNextPlayerIndex(
     state.currentPlayerIndex,
     numPlayers,
-    state.turnsInverted,
+    state.playOrderInverted,
   );
+
+  if (turnRules.shouldPlayOrderInvert(characterID)) {
+    state.playOrderInverted = !state.playOrderInverted;
+  }
+
+  if (deckSize === 0 && state.endTurnNum === null) {
+    state.endTurnNum = state.turnNum + numPlayers;
+  }
+
   state.cardsPlayedOrDiscardedThisTurn = 0;
+  state.cluesGivenThisTurn = 0;
 }

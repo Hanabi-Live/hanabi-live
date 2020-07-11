@@ -7,24 +7,24 @@ import globals from '../../globals';
 import HanabiCard from '../../HanabiCard';
 import LayoutChild from '../../LayoutChild';
 
+const stackStringsReversed = new Map<StackDirection, string>([
+  [StackDirection.Undecided, ''],
+  [StackDirection.Up, ''],
+  [StackDirection.Down, 'Reversed'],
+  [StackDirection.Finished, 'Reversed'],
+]);
+
+const stackStringsUpOrDown = new Map<StackDirection, string>([
+  [StackDirection.Undecided, ''],
+  [StackDirection.Up, 'Up'],
+  [StackDirection.Down, 'Down'],
+  [StackDirection.Finished, 'Finished'],
+]);
+
 export function onStackDirectionsChanged(directions: readonly StackDirection[]) {
   if (!variantRules.hasReversedSuits(globals.variant)) {
     return;
   }
-
-  const stackStringsReversed = new Map<StackDirection, string>([
-    [StackDirection.Undecided, ''],
-    [StackDirection.Up, ''],
-    [StackDirection.Down, 'Reversed'],
-    [StackDirection.Finished, 'Reversed'],
-  ]);
-
-  const stackStringsUpOrDown = new Map<StackDirection, string>([
-    [StackDirection.Undecided, ''],
-    [StackDirection.Up, 'Up'],
-    [StackDirection.Down, 'Down'],
-    [StackDirection.Finished, 'Finished'],
-  ]);
 
   // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants)
   directions.forEach((direction, i) => {
@@ -46,9 +46,6 @@ export function onStackDirectionsChanged(directions: readonly StackDirection[]) 
     }
 
     globals.elements.suitLabelTexts[i].fitText(text);
-    if (!globals.animateFast) {
-      globals.layers.UI.batchDraw();
-    }
 
     // TODO: direction arrow should be in state,
     // or calculated from state
@@ -56,6 +53,8 @@ export function onStackDirectionsChanged(directions: readonly StackDirection[]) 
       .filter((c) => c.state?.suitIndex === i)
       .forEach((c) => c.setDirectionArrow(i));
   });
+
+  globals.layers.UI.batchDraw();
 }
 
 export function onHandsChanged(hands: ReadonlyArray<readonly number[]>) {
@@ -64,6 +63,8 @@ export function onHandsChanged(hands: ReadonlyArray<readonly number[]>) {
     (i) => globals.elements.playerHands[i] as unknown as Konva.Container,
     (card, i) => card.animateToPlayerHand(i),
   );
+
+  globals.layers.card.batchDraw();
 }
 
 export function onDiscardStacksChanged(discardStacks: ReadonlyArray<readonly number[]>) {
@@ -79,8 +80,9 @@ export function onDiscardStacksChanged(discardStacks: ReadonlyArray<readonly num
       }
       card.animateToDiscardPile();
     },
-
   );
+
+  globals.layers.card.batchDraw();
 }
 
 export function onPlayStacksChanged(
@@ -95,6 +97,7 @@ export function onPlayStacksChanged(
     },
     (card) => card.animateToPlayStacks(),
   );
+
   playStacks.forEach((stack, i) => {
     if (previousPlayStacks === undefined || !equal(stack, previousPlayStacks[i])) {
       const suit = globals.variant.suits[i];
@@ -102,6 +105,7 @@ export function onPlayStacksChanged(
       playStack.hideCardsUnderneathTheTopCard();
     }
   });
+
   globals.layers.card.batchDraw();
 }
 

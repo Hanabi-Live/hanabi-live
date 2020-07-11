@@ -197,7 +197,9 @@ const goToTurn = (turn: number, fast: boolean) => {
   } else {
     replay.enter();
   }
-  replay.goto(turn, fast);
+  if (globals.inReplay) {
+    replay.goto(turn, fast);
+  }
 };
 
 export const goToTurnAndIndicateCard = (turn: number, order: number) => {

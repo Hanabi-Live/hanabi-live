@@ -2,13 +2,12 @@
 
 import Konva from 'konva';
 import * as deck from '../rules/deck';
-import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import action from './action';
-import cardStatusCheck from './cardStatusCheck';
 import Shuttle from './controls/Shuttle';
 import globals from './globals';
 import { animate } from './konvaHelpers';
+import statusCheckOnAllCards from './statusCheckOnAllCards';
 import * as tooltips from './tooltips';
 import * as turn from './turn';
 
@@ -68,11 +67,6 @@ export const exit = () => {
 
   if (globals.ourTurn) {
     turn.showClueUIAndEnableDragging();
-  }
-  globals.elements.currentPlayerArea!.visible(!globals.elements.clueArea!.visible());
-  if (globals.queuedAction !== null) {
-    globals.elements.currentPlayerArea!.hide();
-    globals.elements.premoveCancelButton!.show();
   }
 
   for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
@@ -152,7 +146,7 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
 
   if (!globals.loading) {
     globals.animateFast = false;
-    cardStatusCheck();
+    statusCheckOnAllCards();
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();
     globals.layers.arrow.batchDraw();
@@ -173,14 +167,7 @@ const setVisibleButtons = () => {
 const reset = () => {
   // Reset some game state variables
   globals.turn = 0;
-  // "globals.currentPlayerIndex" is set in every "turn" command
   globals.deckSize = deck.totalCards(globals.variant);
-  // "globals.indexOfLastDrawnCard" is set in every "draw" command
-  globals.score = 0;
-  globals.maxScore = globals.variant.maxScore;
-  globals.clues = MAX_CLUE_NUM;
-  globals.cardsGotten = 0;
-  globals.numCardsPlayed = 0;
 
   // Reset various UI elements
   globals.postAnimationLayout = null;

@@ -7,30 +7,14 @@ import { // Direct import instead of namespace import for compactness
   strike,
   text,
 } from '../../../test/testActions';
-import { initArray } from '../../misc';
+import testMetadata from '../../../test/testMetadata';
 import { MAX_CLUE_NUM } from '../types/constants';
-import GameMetadata from '../types/GameMetadata';
-import Options from '../types/Options';
 import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialStates/initialGameState';
 
 const numPlayers = 3;
-const defaultMetadata: GameMetadata = {
-  options: {
-    ...(new Options()),
-    numPlayers,
-  },
-  playerSeat: null,
-  characterAssignments: initArray(numPlayers, null),
-  characterMetadata: [],
-};
-const clueStarvedMetadata: GameMetadata = {
-  ...defaultMetadata,
-  options: {
-    ...defaultMetadata.options,
-    variantName: 'Clue Starved (6 Suits)',
-  },
-};
+const defaultMetadata = testMetadata(numPlayers);
+const clueStarvedMetadata = testMetadata(numPlayers, 'Clue Starved (6 Suits)');
 
 describe('gameStateReducer', () => {
   test('does not mutate state', () => {
@@ -49,7 +33,7 @@ describe('gameStateReducer', () => {
       let state = initialGameState(defaultMetadata);
       const testClue = rankClue(5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue, defaultMetadata);
-      expect(state.turn).toBeGreaterThan(initialState.turn);
+      expect(state.turn.turnNum).toBeGreaterThan(initialState.turn.turnNum);
     });
   });
 
@@ -60,7 +44,7 @@ describe('gameStateReducer', () => {
       let state = initialGameState(defaultMetadata);
       const testClue = rankClue(5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue, defaultMetadata);
-      expect(state.currentPlayerIndex).not.toEqual(initialState.currentPlayerIndex);
+      expect(state.turn.currentPlayerIndex).not.toEqual(initialState.turn.currentPlayerIndex);
     });
   });
 

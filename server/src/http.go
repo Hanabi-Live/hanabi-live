@@ -103,10 +103,14 @@ func httpInit() {
 	// The limiter works per path request,
 	// meaning that a user can only request one specific path every X seconds
 	// Thus, this does not impact the ability of a user to download CSS and image files all at once
-	limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
-	limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
-	limiterMiddleware := tollbooth_gin.LimitHandler(limiter)
-	httpRouter.Use(limiterMiddleware)
+	// (However, we do not want to use the rate-limiter in development, since we might have multiple
+	// tabs open that are automatically-refreshing with webpack-dev-server)
+	if !isDev {
+		limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
+		limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
+		limiterMiddleware := tollbooth_gin.LimitHandler(limiter)
+		httpRouter.Use(limiterMiddleware)
+	}
 
 	// Create a session store
 	httpSessionStore := cookie.NewStore([]byte(sessionSecret))

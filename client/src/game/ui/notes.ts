@@ -262,8 +262,8 @@ export const update = (card: HanabiCard) => {
   // Update the card indicator
   const visibleOld = card.noteIndicator!.visible();
   const visibleNew = note.length > 0;
-  card.noteIndicator!.visible(visibleNew);
   if (visibleOld !== visibleNew) {
+    card.noteIndicator!.visible(visibleNew);
     globals.layers.card.batchDraw();
   }
 };

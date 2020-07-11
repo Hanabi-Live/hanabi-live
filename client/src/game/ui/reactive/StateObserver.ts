@@ -6,9 +6,12 @@ import observeStore, { Selector, Listener, Subscription } from './observeStore';
 import * as cardLayoutView from './view/cardLayoutView';
 import * as cardsView from './view/cardsView';
 import * as cluesView from './view/cluesView';
+import * as currentPlayerAreaView from './view/currentPlayerAreaView';
 import * as gameInfoView from './view/gameInfoView';
 import * as initView from './view/initView';
 import * as logView from './view/logView';
+import * as premoveView from './view/premoveView';
+import * as replayView from './view/replayView';
 import * as statsView from './view/statsView';
 
 export default class StateObserver {
@@ -36,12 +39,16 @@ export default class StateObserver {
     }
 
     // Game info
-    vs((s) => s.turn, gameInfoView.onTurnChanged);
-    vs((s) => s.currentPlayerIndex, gameInfoView.onCurrentPlayerIndexChanged);
+    vs((s) => ({
+      turn: s.turn.turnNum,
+      endTurn: s.turn.endTurnNum,
+    }), gameInfoView.onTurnChanged);
+    vs((s) => s.turn.currentPlayerIndex, gameInfoView.onCurrentPlayerIndexChanged);
     vs((s) => ({
       score: s.score,
       maxScore: s.maxScore,
     }), gameInfoView.onScoreOrMaxScoreChanged);
+    vs((s) => s.numAttemptedCardsPlayed, gameInfoView.onNumAttemptedCardsPlayedChanged);
     vs((s) => s.clueTokens, gameInfoView.onClueTokensChanged);
 
     // Stats
@@ -65,15 +72,27 @@ export default class StateObserver {
     // Clues (arrows + log)
     vs((s) => ({
       clues: s.clues,
-      turn: s.turn,
+      turn: s.turn.turnNum,
     }), cluesView.onCluesChanged);
 
     // Cards
     // Each card will subscribe to changes to its own data
     vs((s) => s.deck.length, cardsView.onDeckChanged);
 
-    // Initialization finished: this will get called when the
-    // visible state becomes valid and after all other view updates
+    // The "Current Player" area should only be shown under certain conditions
+    sub((s) => ({
+      visible: currentPlayerAreaView.isVisible(s),
+      currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
+    }), currentPlayerAreaView.onChanged);
+
+    // Replay
+    sub((s) => s.replay.active, replayView.onActiveChanged);
+
+    // Premoves (e.g. queued actions)
+    sub((s) => s.premove.action, premoveView.onChanged);
+
+    // Initialization finished
+    // (this will get called when the visible state becomes valid and after all other view updates)
     sub((s) => !!s.visibleState, initView.onInitializationChanged);
 
     this.unsubscribe = observeStore(store, subscriptions);

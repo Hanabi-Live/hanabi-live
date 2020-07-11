@@ -2,7 +2,7 @@
 
 import Konva from 'konva';
 import { cardRules } from '../rules';
-import { ActionType } from '../types/ClientAction';
+import ActionType from '../types/ActionType';
 import Color from '../types/Color';
 import {
   MAX_CLUE_NUM,
@@ -86,7 +86,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     && !event.altKey
     && !event.metaKey
   ) {
-    globals.preCluedCardOrder = card.state.order;
+    globals.store!.dispatch({ type: 'premoveCluedCardOrder', order: card.state.order });
 
     // A card may be cluable by more than one color,
     // so we need to figure out which color to use
@@ -158,7 +158,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.altKey
     && !event.metaKey
   ) {
-    globals.preCluedCardOrder = card.state.order;
+    globals.store!.dispatch({ type: 'premoveCluedCardOrder', order: card.state.order });
 
     turn.end({
       type: ActionType.RankClue,

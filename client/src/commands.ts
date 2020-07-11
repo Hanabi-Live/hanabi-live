@@ -28,8 +28,8 @@ commands.set('warning', (data: WarningData) => {
   // Re-activate in-game elements
   if (
     globals.currentScreen === 'game'
-      && globals.ui !== null
-      && globals.ui.globals.ourTurn
+    && globals.ui !== null
+    && globals.ui.globals.ourTurn
   ) {
     globals.ui.reshowClueUIAfterWarning();
   }
@@ -69,8 +69,8 @@ commands.set('chat', (data: ChatMessage) => {
       });
     } else if (
       globals.ui.globals.spectating
-        && !globals.ui.globals.sharedReplay
-        && !$('#game-chat-modal').is(':visible')
+      && !globals.ui.globals.sharedReplay
+      && !$('#game-chat-modal').is(':visible')
     ) {
       // The chat window was not open; pop open the chat window every time for spectators
       gameChat.toggle();
@@ -117,10 +117,7 @@ commands.set('chatList', (data: ChatListData) => {
   for (const line of data.list) {
     chat.add(line, true); // The second argument is "fast"
   }
-  if (
-    globals.ui !== null
-      && !$('#game-chat-modal').is(':visible')
-  ) {
+  if (globals.ui !== null && !$('#game-chat-modal').is(':visible')) {
     // If the UI is open, we assume that this is a list of in-game chat messages
     globals.chatUnread += data.unread;
     globals.ui.updateChatLabel();

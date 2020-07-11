@@ -65,6 +65,13 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return this._tweening;
   }
 
+  private _blank: boolean = false;
+
+  // TEMP: this is just for LayoutChild to know if this card was blanked
+  get blank() {
+    return this._blank;
+  }
+
   startedTweening() {
     this._tweening = true;
   }
@@ -195,7 +202,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.state = {
       ...initialCardState(this.state.order, this.variant),
       location: this.state.location,
-      blank: this.state.blank,
       // We might have some information about this card already
       suitIndex,
       rank,
@@ -282,7 +288,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // We may also know the identity from a future game state
     // (e.g. it is a card in our hand that we have learned about in the future)
     let cardIdentity: CardIdentity | undefined;
-    if (this.state.rank === STACK_BASE_RANK) {
+    // First check if we have an alternate identity (blank/morphed) for this card
+    const replayState = globals.store?.getState().replay!;
+    const morphedIdentity = replayState.hypothetical?.morphedIdentities[this.state.order];
+    if (morphedIdentity !== undefined) {
+      cardIdentity = morphedIdentity;
+    } else if (this.state.rank === STACK_BASE_RANK) {
       // We do not track the card identities for the stack base cards
       // For stack bases, the suit and rank is always baked into the state from the get-go
       cardIdentity = {
@@ -369,8 +380,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Set the name
     // (setting "this.bareName" will automatically update how the card appears the next time that
     // the "card" layer is drawn)
-    if (this.state.blank) {
-      // The "blank" property is set when the card should appear blank no matter what
+    this._blank = (
+      morphedIdentity !== undefined
+      && !morphedIdentity.rank
+      && !morphedIdentity.suitIndex
+    );
+
+    if (this._blank) {
+      // If a card is morphed to a null identity, the card should appear blank no matter what
       this.bareName = DECK_BACK_IMAGE;
 
       // Disable dragging of this card
@@ -408,7 +425,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       globals.lobby.settings.realLifeMode
       || variantRules.isCowAndPig(this.variant)
       || variantRules.isDuck(this.variant)
-      || this.state.blank
+      || this._blank
     ) {
       this.suitPips!.hide();
       this.rankPips!.hide();
@@ -493,7 +510,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       // Instead, just use the the first gradient color
       this.arrowBase!.stroke(suit.fillColors[0]);
     }
-    if (this.rankPips!.visible()) {
+    if (this.rankPips!.isVisible()) {
       this.setArrowMiddleRight();
     } else {
       this.setArrowBottomRight();
@@ -535,7 +552,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     // Override the above logic and always fade the card if it is explicitly marked as known trash
-    if (this.trashcan!.visible() && this.state.numPositiveClues === 0) {
+    if (this.trashcan!.isVisible() && this.state.numPositiveClues === 0) {
       newOpacity = CARD_FADE;
     }
 
@@ -573,6 +590,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       // Unmorph
       this.note.suitIndex = null;
       this.note.rank = null;
+      this.setBareImage();
     }
   }
 
@@ -919,19 +937,21 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       return;
     }
     const hand = this.parent.parent;
-    let hidden = false;
+    let hideArrows = false;
     for (const layoutChild of hand.children.toArray()) {
       const card: HanabiCard = (layoutChild as Konva.Node).children[0] as HanabiCard;
       for (const arrow of globals.elements.arrows) {
         if (arrow.pointingTo === card) {
-          hidden = true;
-          arrows.hideAll();
+          hideArrows = true;
           break;
         }
       }
-      if (hidden) {
+      if (hideArrows) {
         break;
       }
+    }
+    if (hideArrows) {
+      arrows.hideAll();
     }
 
     // Move this hand to the top
@@ -946,7 +966,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.tooltipName = `card-${this.state.order}`;
     this.on('mousemove', function cardMouseMove(this: HanabiCard) {
       // Don't do anything if there is not a note on this card
-      if (!this.noteIndicator!.visible()) {
+      if (!this.noteIndicator!.isVisible()) {
         return;
       }
 
@@ -1064,7 +1084,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Feature 2 - Give the card a special border if it is chop moved
     const showSpecialBorder = (
-      !this.cluedBorder!.visible()
+      !this.cluedBorder!.isVisible()
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
       && !globals.replay

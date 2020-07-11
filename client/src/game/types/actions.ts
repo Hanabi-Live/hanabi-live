@@ -1,9 +1,11 @@
 import CardIdentity from './CardIdentity';
+import ClientAction from './ClientAction';
 import MsgClue from './MsgClue';
 
 export type Action =
   | GameAction
   | ReplayAction
+  | PremoveAction
   | ActionListReceived
   | ActionCardIdentities;
 
@@ -20,7 +22,7 @@ export type GameAction =
   | ActionText
   | ActionTurn;
 
-export type ActionIncludingHypothetical = GameAction | ActionMorph;
+export type ActionIncludingHypothetical = GameAction | ActionHypotheticalMorph;
 
 export type ReplayAction =
   | ActionStartReplay
@@ -29,11 +31,17 @@ export type ReplayAction =
   | ActionHypotheticalStart
   | ActionHypotheticalEnd
   | ActionHypotheticalBack
-  | ActionHypothetical;
+  | ActionHypothetical
+  | ActionHypotheticalShowDrawnCards;
+
+export type PremoveAction =
+  | ActionPremove
+  | ActionPremoveCluedCardOrder;
 
 // ----------------------
 // Initialization actions
 // ----------------------
+
 export interface ActionListReceived {
   type: 'gameActionList';
   readonly actions: GameAction[];
@@ -165,9 +173,28 @@ export interface ActionHypothetical {
   readonly action: ActionIncludingHypothetical;
 }
 
-export interface ActionMorph {
+export interface ActionHypotheticalMorph {
   type: 'morph';
   readonly suitIndex: number;
   readonly rank: number;
   readonly order: number;
+}
+
+export interface ActionHypotheticalShowDrawnCards {
+  type: 'hypoRevealed';
+  readonly showDrawnCards: boolean;
+}
+
+// ---------------
+// Premove actions
+// ---------------
+
+export interface ActionPremove {
+  type: 'premove';
+  readonly action: ClientAction | null;
+}
+
+export interface ActionPremoveCluedCardOrder {
+  type: 'premoveCluedCardOrder';
+  readonly order: number | null;
 }

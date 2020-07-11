@@ -10,19 +10,19 @@ import { animate } from './konvaHelpers';
 import LayoutChild from './LayoutChild';
 
 export default class PlayStack extends Konva.Group {
-  addChild(child: LayoutChild) {
-    const pos = child.getAbsolutePosition();
-    this.add(child as any);
-    child.setAbsolutePosition(pos);
+  addChild(layoutChild: LayoutChild) {
+    const pos = layoutChild.getAbsolutePosition();
+    this.add(layoutChild as any);
+    layoutChild.setAbsolutePosition(pos);
     this.doLayout();
   }
 
   doLayout() {
     const lh = this.height();
 
-    for (const node of this.children.toArray() as LayoutChild[]) {
-      const scale = lh / node.height();
-      const card = node.children[0] as unknown as HanabiCard;
+    for (const layoutChild of this.children.toArray() as LayoutChild[]) {
+      const scale = lh / layoutChild.height();
+      const card = layoutChild.children[0] as unknown as HanabiCard;
       const stackBase = card.state.rank === STACK_BASE_RANK;
       const opacity = (
         // Hide cards in "Throw It in a Hole" variants
@@ -35,7 +35,7 @@ export default class PlayStack extends Konva.Group {
       // (tweening from the hand to the discard pile is handled in
       // the "CardLayout" object)
       card.startedTweening();
-      animate(node, {
+      animate(layoutChild, {
         duration: 0.8,
         x: 0,
         y: 0,
@@ -44,15 +44,15 @@ export default class PlayStack extends Konva.Group {
         opacity,
         easing: Konva.Easings.EaseOut,
         onFinish: () => {
-          if (!node || !card || !card.parent) {
+          if (!layoutChild || !card || !card.parent) {
             return;
           }
-          if (node.tween) {
-            node.tween.destroy();
-            node.tween = null;
+          if (layoutChild.tween !== null) {
+            layoutChild.tween.destroy();
+            layoutChild.tween = null;
           }
           card.finishedTweening();
-          node.checkSetDraggable();
+          layoutChild.checkSetDraggable();
           this.hideCardsUnderneathTheTopCard();
         },
       });
@@ -63,8 +63,8 @@ export default class PlayStack extends Konva.Group {
     const stackLength = this.children.length;
 
     for (let i = 0; i < stackLength; i++) {
-      const node = this.children[i] as unknown as LayoutChild;
-      if (node.tween !== null) {
+      const layoutChild = this.children[i] as unknown as LayoutChild;
+      if (layoutChild.tween !== null) {
         // Don't hide anything if one of the cards on the stack is still tweening
         return;
       }

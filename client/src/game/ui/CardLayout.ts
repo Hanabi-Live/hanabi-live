@@ -66,20 +66,20 @@ export default class CardLayout extends Konva.Group {
 
     const n = this.children.length;
     for (let i = 0; i < n; i++) {
-      const node = this.children[i] as unknown as LayoutChild;
+      const layoutChild = this.children[i] as unknown as LayoutChild;
 
-      if (!node.height()) {
+      if (!layoutChild.height()) {
         continue;
       }
 
-      const scale = lh / node.height();
-      uw += scale * node.width();
+      const scale = lh / layoutChild.height();
+      uw += scale * layoutChild.width();
     }
 
     if (n > 1) {
       dist = (lw - uw) / (n - 1);
     }
-    const maximumCardSpacing = 0.02 * uw;
+    const maximumCardSpacing = 0.04 * uw;
     if (dist > maximumCardSpacing) {
       dist = maximumCardSpacing;
     }
@@ -94,36 +94,36 @@ export default class CardLayout extends Konva.Group {
 
     const storedPostAnimationLayout = globals.postAnimationLayout;
     for (let i = 0; i < n; i++) {
-      const node = this.children[i] as unknown as LayoutChild;
+      const layoutChild = this.children[i] as unknown as LayoutChild;
 
-      if (!node.height()) {
+      if (!layoutChild.height()) {
         continue;
       }
 
-      const scale = lh / node.height();
+      const scale = lh / layoutChild.height();
 
-      if (node.tween !== null) {
-        node.tween.destroy();
-        node.tween = null;
+      if (layoutChild.tween !== null) {
+        layoutChild.tween.destroy();
+        layoutChild.tween = null;
       }
 
-      const newX = x - (this.reverse ? scale * node.width() : 0);
+      const newX = x - (this.reverse ? scale * layoutChild.width() : 0);
       if (globals.animateFast) {
-        node.x(newX);
-        node.y(0);
-        node.scaleX(scale);
-        node.scaleY(scale);
-        node.rotation(0);
-        node.checkSetDraggable();
+        layoutChild.x(newX);
+        layoutChild.y(0);
+        layoutChild.scaleX(scale);
+        layoutChild.scaleY(scale);
+        layoutChild.rotation(0);
+        layoutChild.checkSetDraggable();
       } else {
         // Animate the card going from the deck to the hand
         // (or from the hand to the discard pile)
         // and animate the rest of the cards sliding over
-        const card = node.children[0] as unknown as HanabiCard;
+        const card = layoutChild.children[0] as unknown as HanabiCard;
         card.startedTweening();
 
         const animateToLayout = () => {
-          animate(node, {
+          animate(layoutChild, {
             duration: 0.5,
             x: newX,
             y: 0,
@@ -132,11 +132,11 @@ export default class CardLayout extends Konva.Group {
             opacity: 1,
             easing: Konva.Easings.EaseOut,
             onFinish: () => {
-              if (!card || !node) {
+              if (!card || !layoutChild) {
                 return;
               }
               card.finishedTweening();
-              node.checkSetDraggable();
+              layoutChild.checkSetDraggable();
               if (!storedPostAnimationLayout) {
                 return;
               }
@@ -154,7 +154,7 @@ export default class CardLayout extends Konva.Group {
           const pos = this.getAbsolutePosition();
           const playStackPos = playStack.getAbsolutePosition();
 
-          animate(node, {
+          animate(layoutChild, {
             duration: 0.5,
             x: playStackPos.x - pos.x,
             y: playStackPos.y - pos.y,
@@ -163,7 +163,7 @@ export default class CardLayout extends Konva.Group {
             opacity: 1,
             easing: Konva.Easings.EaseOut,
             onFinish: () => {
-              node.rotation(360);
+              layoutChild.rotation(360);
               animateToLayout();
             },
           });
@@ -172,7 +172,7 @@ export default class CardLayout extends Konva.Group {
         }
       }
 
-      x += ((scale * node.width()) + dist) * (this.reverse ? -1 : 1);
+      x += ((scale * layoutChild.width()) + dist) * (this.reverse ? -1 : 1);
     }
   }
 

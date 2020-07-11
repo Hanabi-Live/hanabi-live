@@ -2,7 +2,7 @@
 
 import Konva from 'konva';
 import { copyStringToClipboard } from '../../misc';
-import { ActionType } from '../types/ClientAction';
+import ActionType from '../types/ActionType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import backToLobby from './backToLobby';
@@ -174,12 +174,15 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   } else {
     if (event.key === 'ArrowLeft') {
       replay.enter();
-      replay.back();
-      return;
+      if (globals.inReplay) {
+        replay.back();
+      }
     }
     if (event.key === 'ArrowRight') {
       replay.enter();
-      replay.forward();
+      if (globals.inReplay) {
+        replay.forward();
+      }
       return;
     }
     if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
@@ -192,22 +195,30 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     }
     if (event.key === '[') {
       replay.enter();
-      replay.backRound();
+      if (globals.inReplay) {
+        replay.backRound();
+      }
       return;
     }
     if (event.key === ']') {
       replay.enter();
-      replay.forwardRound();
+      if (globals.inReplay) {
+        replay.forwardRound();
+      }
       return;
     }
     if (event.key === 'Home') {
       replay.enter();
-      replay.backFull();
+      if (globals.inReplay) {
+        replay.backFull();
+      }
       return;
     }
     if (event.key === 'End') {
       replay.enter();
-      replay.forwardFull();
+      if (globals.inReplay) {
+        replay.forwardFull();
+      }
       return;
     }
   }

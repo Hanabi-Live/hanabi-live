@@ -2,7 +2,7 @@ import Konva from 'konva';
 import { TOOLTIP_DELAY } from '../../constants';
 import { timerFormatter } from '../../misc';
 import * as misc from '../../misc';
-import { ActionType } from '../types/ClientAction';
+import ActionType from '../types/ActionType';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import * as arrows from './arrows';
 import globals from './globals';
@@ -85,7 +85,7 @@ export default class Deck extends Konva.Group {
 
     // If the game ID is showing,
     // we want to center the deck count between it and the other labels
-    if (count === 0 && globals.elements.gameIDLabel!.visible()) {
+    if (count === 0 && globals.elements.gameIDLabel!.isVisible()) {
       this.nudgeCountDownwards();
     }
   }
@@ -143,7 +143,7 @@ export default class Deck extends Konva.Group {
     // "mouseover" event)
     this.on('mouseover touchstart', function mouseOver() {
       // Don't do anything if we might be dragging the deck
-      if (globals.elements.deckPlayAvailableLabel!.visible()) {
+      if (globals.elements.deckPlayAvailableLabel!.isVisible()) {
         return;
       }
 

@@ -4,5 +4,4 @@ enum StackDirection {
   Down = 2,
   Finished = 3,
 }
-
 export default StackDirection;

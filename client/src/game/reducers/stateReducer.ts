@@ -10,6 +10,7 @@ import GameState from '../types/GameState';
 import State from '../types/State';
 import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialStates/initialGameState';
+import premoveReducer from './premoveReducer';
 import replayReducer from './replayReducer';
 
 const stateReducer = produce((state: Draft<State>, action: Action) => {
@@ -54,8 +55,20 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     case 'hypoStart':
     case 'hypoBack':
     case 'hypoEnd':
-    case 'hypoAction': {
-      state.replay = replayReducer(state.replay, action, state.metadata);
+    case 'hypoAction':
+    case 'hypoRevealed': {
+      state.replay = replayReducer(
+        state.replay,
+        action,
+        original(state.cardIdentities)!,
+        state.metadata,
+      );
+      break;
+    }
+
+    case 'premove':
+    case 'premoveCluedCardOrder': {
+      state.premove = premoveReducer(state.premove, action);
       break;
     }
 
@@ -79,12 +92,12 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
   // after it has been initialized
   if (state.visibleState !== null) {
     if (state.replay.active) {
-      if (state.replay.ongoingHypothetical === null) {
+      if (state.replay.hypothetical === null) {
         // Go to current replay turn
         state.visibleState = state.replay.states[state.replay.turn];
       } else {
         // Show the current hypothetical
-        state.visibleState = state.replay.ongoingHypothetical;
+        state.visibleState = state.replay.hypothetical.ongoing;
       }
     } else {
       // Default: the current game

@@ -11,10 +11,13 @@ export default function initialState(metadata: GameMetadata): State {
       active: false,
       turn: 0,
       states: [],
-      ongoingHypothetical: null,
-      hypotheticalStates: [],
+      hypothetical: null,
     },
     cardIdentities: [],
     metadata,
+    premove: {
+      action: null,
+      cluedCardOrder: null,
+    },
   };
 }

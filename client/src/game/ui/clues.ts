@@ -1,6 +1,6 @@
 import { getCharacter } from '../data/gameData';
-import CardState from '../types/CardState';
-import { ActionType } from '../types/ClientAction';
+import { cluesRules } from '../rules';
+import ActionType from '../types/ActionType';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
 import Color from '../types/Color';
@@ -8,7 +8,7 @@ import MsgClue from '../types/MsgClue';
 import * as arrows from './arrows';
 import ColorButton from './ColorButton';
 import PlayerButton from './controls/PlayerButton';
-import { colorToColorIndex, msgClueToClue } from './convert';
+import { colorToColorIndex } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import RankButton from './RankButton';
@@ -80,7 +80,7 @@ const showClueMatch = (target: number, clue: Clue) => {
   for (let i = 0; i < hand.length; i++) {
     const child = globals.elements.playerHands[target].children[i];
     const card: HanabiCard = child.children[0] as HanabiCard;
-    if (variantIsCardTouched(clue, card.state)) {
+    if (cluesRules.touchesCard(globals.variant, clue, card.state.suitIndex, card.state.rank)) {
       touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue);
     }
@@ -94,72 +94,17 @@ export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
   const cardsTouched: number[] = []; // An array of the card orders
   hand.children.each((child) => {
     const card = child.children[0] as HanabiCard;
-    if (variantIsCardTouched(msgClueToClue(clue, globals.variant), card.state)) {
+    if (cluesRules.touchesCard(
+      globals.variant,
+      cluesRules.msgClueToClue(clue, globals.variant),
+      card.state.suitIndex,
+      card.state.rank,
+    )) {
       cardsTouched.push(card.state.order);
     }
   });
 
   return cardsTouched;
-};
-
-// This mirrors the function in "variants.go"
-const variantIsCardTouched = (clue: Clue, cardState: CardState) => {
-  // Some detrimental characters are not able to see other people's hands
-  if (cardState.suitIndex === null) {
-    return false;
-  }
-
-  const suitObject = globals.variant.suits[cardState.suitIndex];
-
-  if (clue.type === ClueType.Color) {
-    if (globals.variant.colorCluesTouchNothing) {
-      return false;
-    }
-
-    if (suitObject.allClueColors) {
-      return true;
-    }
-    if (suitObject.noClueColors) {
-      return false;
-    }
-
-    if (cardState.rank === globals.variant.specialRank) {
-      if (globals.variant.specialAllClueColors) {
-        return true;
-      }
-      if (globals.variant.specialNoClueColors) {
-        return false;
-      }
-    }
-
-    return suitObject.clueColors.includes(clue.value as Color);
-  }
-
-  if (clue.type === ClueType.Rank) {
-    if (globals.variant.rankCluesTouchNothing) {
-      return false;
-    }
-
-    if (suitObject.allClueRanks) {
-      return true;
-    }
-    if (suitObject.noClueRanks) {
-      return false;
-    }
-
-    if (cardState.rank === globals.variant.specialRank) {
-      if (globals.variant.specialAllClueRanks) {
-        return true;
-      }
-      if (globals.variant.specialNoClueRanks) {
-        return false;
-      }
-    }
-
-    return clue.value === cardState.rank;
-  }
-
-  return false;
 };
 
 export const give = () => {

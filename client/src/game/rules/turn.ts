@@ -37,8 +37,8 @@ export function shouldEndTurnAfterClue(
   return true;
 }
 
-export function shouldTurnsInvert(characterID: number | null) {
-  // Some "Detrimental Characters" are able to invert the turns
+export function shouldPlayOrderInvert(characterID: number | null) {
+  // Some "Detrimental Characters" are able to invert the play order
   if (characterID !== null) {
     const character = getCharacter(characterID);
 

@@ -1,14 +1,16 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen
 
+import { getVariant } from '../data/gameData';
 import * as variantRules from '../rules/variant';
 import { ActionIncludingHypothetical } from '../types/actions';
-import { ActionType, ClientAction } from '../types/ClientAction';
+import ActionType from '../types/ActionType';
+import ClientAction from '../types/ClientAction';
 import ClueType from '../types/ClueType';
 import { MAX_CLUE_NUM } from '../types/constants';
+import MsgClue from '../types/MsgClue';
 import ReplayActionType from '../types/ReplayActionType';
 import action from './action';
-import cardStatusCheck from './cardStatusCheck';
 import { getTouchedCardsFromClue } from './clues';
 import PlayerButton from './controls/PlayerButton';
 import { suitIndexToSuit } from './convert';
@@ -16,6 +18,7 @@ import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
 import * as replay from './replay';
+import statusCheckOnAllCards from './statusCheckOnAllCards';
 import * as turn from './turn';
 
 export const start = () => {
@@ -87,7 +90,7 @@ export const playThroughPastActions = () => {
       action(actionMessage);
     }
     globals.animateFast = false;
-    cardStatusCheck();
+    statusCheckOnAllCards();
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();
     globals.layers.arrow.batchDraw();
@@ -174,13 +177,18 @@ export const beginTurn = () => {
 
   // Set the current player's hand to be draggable
   disableDragOnAllHands();
-  const hand = globals.elements.playerHands[globals.currentPlayerIndex];
-  for (const layoutChild of hand.children.toArray() as LayoutChild[]) {
-    layoutChild.checkSetDraggable();
-  }
+  const hand = globals.elements.playerHands[globals.currentPlayerIndex!];
+  hand.children.each((layoutChild) => {
+    (layoutChild as unknown as LayoutChild).checkSetDraggable();
+  });
 };
 
 export const send = (hypoAction: ClientAction) => {
+  const state = globals.store!.getState();
+  const variant = getVariant(state.metadata.options.variantName);
+  const cardIdentities = state.cardIdentities;
+  const gameState = state.replay.hypothetical!.ongoing;
+
   let type = '';
   if (hypoAction.type === ActionType.Play) {
     type = 'play';
@@ -193,38 +201,39 @@ export const send = (hypoAction: ClientAction) => {
     type = 'clue';
   }
 
+  let newScore = gameState.score;
+  let newClueTokens = gameState.clueTokens;
+
   if (type === 'clue') {
     // Clue
     if (hypoAction.value === undefined) {
       throw new Error('The hypothetical action was a clue but it did not include a value.');
     }
-    let clue;
-    if (hypoAction.type === ActionType.ColorClue) {
-      clue = { type: ClueType.Color, value: hypoAction.value };
-    } else if (hypoAction.type === ActionType.RankClue) {
-      clue = { type: ClueType.Rank, value: hypoAction.value };
-    } else {
-      throw new Error('The hypothetical action had an invalid clue type.');
-    }
+
+    const clue: MsgClue = {
+      type: hypoAction.type === ActionType.ColorClue ? ClueType.Color : ClueType.Rank,
+      value: hypoAction.value,
+    };
+
     const list = getTouchedCardsFromClue(hypoAction.target, clue);
     sendHypoAction({
       type,
       clue,
-      giver: globals.currentPlayerIndex,
+      giver: gameState.turn.currentPlayerIndex!,
       list,
       target: hypoAction.target,
-      turn: globals.turn,
+      turn: gameState.turn.turnNum,
     });
-    globals.clues -= 1;
+    newClueTokens -= 1;
 
     // Text
-    let text = `${globals.playerNames[globals.currentPlayerIndex]} tells `;
+    let text = `${globals.playerNames[gameState.turn.currentPlayerIndex!]} tells `;
     text += `${globals.playerNames[hypoAction.target]} about `;
     const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
     text += `${words[list.length]} `;
 
     if (clue.type === ClueType.Color) {
-      text += globals.variant.clueColors[clue.value].name;
+      text += variant.clueColors[clue.value].name;
     } else if (clue.type === ClueType.Rank) {
       text += clue.value;
     }
@@ -239,50 +248,51 @@ export const send = (hypoAction: ClientAction) => {
 
     cycleHand();
   } else if (type === 'play' || type === 'discard') {
-    const card = globals.deck[hypoAction.target];
+    const card = gameState.deck[hypoAction.target];
 
     // Play / Discard
     sendHypoAction({
       type,
       which: {
-        index: globals.currentPlayerIndex,
+        index: gameState.turn.currentPlayerIndex!,
         order: hypoAction.target,
-        rank: card.state.rank!,
-        suitIndex: card.state.suitIndex!,
+        rank: card.rank!,
+        suitIndex: card.suitIndex!,
       },
       failed: false,
     });
     if (type === 'play') {
-      globals.score += 1;
+      newScore += 1;
     }
     if (
-      (type === 'play' && card.state.rank === 5 && globals.clues < MAX_CLUE_NUM)
+      (type === 'play' && card.rank === 5 && newClueTokens < MAX_CLUE_NUM)
       || type === 'discard'
     ) {
-      globals.clues += 1;
-      if (variantRules.isClueStarved(globals.variant)) {
-        globals.clues -= 0.5;
+      newClueTokens += 1;
+      if (variantRules.isClueStarved(variant)) {
+        newClueTokens -= 0.5;
       }
     }
 
     // Text
-    let text = `${globals.playerNames[globals.currentPlayerIndex]} ${type}s `;
-    if (card.state.suitIndex && card.state.rank) {
-      const suit = suitIndexToSuit(card.state.suitIndex!, globals.variant)!;
-      text += `${suit.name} ${card.state.rank} `;
+    let text = `${globals.playerNames[gameState.turn.currentPlayerIndex!]} ${type}s `;
+    if (card.suitIndex && card.rank) {
+      const suit = suitIndexToSuit(card.suitIndex!, variant)!;
+      text += `${suit.name} ${card.rank} `;
     } else {
       text += 'a card ';
     }
-    text += `from slot #${card.getSlotNum()}`;
+    const hand = gameState.hands[gameState.turn.currentPlayerIndex!];
+    const slot = hand.findIndex((o) => o === card.order) + 1;
+    text += `from slot #${slot}`;
     sendHypoAction({
       type: 'text',
       text,
     });
 
     // Draw
-    /*
-    const nextCardOrder = globals.indexOfLastDrawnCard + 1;
-    const nextCard = globals.cardIdentities[nextCardOrder];
+    const nextCardOrder = gameState.deck.length;
+    const nextCard = cardIdentities[nextCardOrder];
     if (nextCard) { // All the cards might have already been drawn
       if (nextCard.suitIndex === null || nextCard.rank === null) {
         throw new Error('Unable to find the suit or rank of the next card.');
@@ -290,33 +300,32 @@ export const send = (hypoAction: ClientAction) => {
       sendHypoAction({
         type: 'draw',
         order: nextCardOrder,
-        suitIndex: globals.hypoRevealed ? nextCard.suitIndex : -1,
-        rank: globals.hypoRevealed ? nextCard.rank : -1,
-        who: globals.currentPlayerIndex,
+        // Always send the correct suitIndex and rank, blank will be done on the client
+        suitIndex: nextCard.suitIndex,
+        rank: nextCard.rank,
+        who: gameState.turn.currentPlayerIndex!,
       });
     }
-    */
   }
 
   // Status
   sendHypoAction({
     type: 'status',
-    clues: variantRules.isClueStarved(globals.variant) ? globals.clues * 2 : globals.clues,
+    clues: variantRules.isClueStarved(variant) ? newClueTokens * 2 : newClueTokens,
     doubleDiscard: false,
-    score: globals.score,
-    maxScore: globals.maxScore,
+    score: newScore,
+    maxScore: gameState.maxScore,
   });
 
   // Turn
-  globals.turn += 1;
-  globals.currentPlayerIndex += 1;
-  if (globals.currentPlayerIndex === globals.playerNames.length) {
-    globals.currentPlayerIndex = 0;
+  let nextPlayerIndex = gameState.turn.currentPlayerIndex! + 1;
+  if (nextPlayerIndex === state.metadata.options.numPlayers) {
+    nextPlayerIndex = 0;
   }
   sendHypoAction({
     type: 'turn',
-    num: globals.turn,
-    who: globals.currentPlayerIndex,
+    num: gameState.turn.turnNum + 1,
+    who: nextPlayerIndex,
   });
 };
 
@@ -384,7 +393,7 @@ const cycleHand = () => {
   }
 
   // Find the chop card
-  const hand = globals.elements.playerHands[globals.currentPlayerIndex];
+  const hand = globals.elements.playerHands[globals.currentPlayerIndex!];
   const chopIndex = hand.getChopIndex();
 
   // We don't need to reorder anything if the chop is slot 1 (the left-most card)
@@ -410,7 +419,7 @@ const cycleHand = () => {
 
   sendHypoAction({
     type: 'reorder',
-    target: globals.currentPlayerIndex,
+    target: globals.currentPlayerIndex!,
     handOrder: cardOrders,
   });
 };

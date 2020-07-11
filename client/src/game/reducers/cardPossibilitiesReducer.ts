@@ -1,11 +1,5 @@
 // Calculates the state of a card after a clue
 
-import produce, {
-  castDraft,
-  castImmutable,
-  Draft,
-  original,
-} from 'immer';
 import { getVariant } from '../data/gameData';
 import {
   applyColorClue,
@@ -14,25 +8,25 @@ import {
   removePossibilities,
 } from '../rules/applyClueCore';
 import * as variantRules from '../rules/variant';
-import CardState, { PipState } from '../types/CardState';
+import CardState, { PipState, ClueMemory } from '../types/CardState';
 import Clue, { rankClue, colorClue } from '../types/Clue';
 import ClueType from '../types/ClueType';
 import GameMetadata from '../types/GameMetadata';
 import Variant from '../types/Variant';
 import { getIndexConverter } from './reducerHelpers';
 
-const cardPossibilitiesReducer = produce((
-  state: Draft<CardState>,
+const cardPossibilitiesReducer = (
+  state: CardState,
   clue: Clue,
   positive: boolean,
   metadata: GameMetadata,
-) => {
+): CardState => {
   if (
     state.colorClueMemory.possibilities.length === 1
     && state.rankClueMemory.possibilities.length === 1
   ) {
     // We already know all details about this card, no need to calculate
-    return;
+    return state;
   }
 
   const variant = getVariant(metadata.options.variantName);
@@ -59,18 +53,20 @@ const cardPossibilitiesReducer = produce((
   const isColorClue = clue.type === ClueType.Color;
   const valueIndex = clue.type === ClueType.Color ? getIndex(clue.value) : clue.value;
   const memory = isColorClue ? state.colorClueMemory : state.rankClueMemory;
+  let thisTypePositiveClues = memory.positiveClues;
+  let thisTypeNegativeClues = memory.negativeClues;
 
   if (positive && !memory.positiveClues.includes(valueIndex)) {
-    memory.positiveClues.push(valueIndex);
+    thisTypePositiveClues = [...memory.positiveClues, valueIndex];
   }
 
   if (!positive && !memory.negativeClues.includes(valueIndex)) {
-    memory.negativeClues.push(valueIndex);
+    thisTypeNegativeClues = [...memory.negativeClues, valueIndex];
   }
 
   let suitsPossible: boolean[] | null = null;
   let ranksPossible: boolean[] | null = null;
-  let possibleCards = original(state.possibleCards)!;
+  let possibleCards = state.possibleCards;
 
   if (calculatePossibilities) {
     // Now that this card has been given a clue and we have more information,
@@ -97,25 +93,23 @@ const cardPossibilitiesReducer = produce((
     const pipPossibilities = checkAllPipPossibilities(possibleCards, variant);
     suitsPossible = pipPossibilities.suitsPossible;
     ranksPossible = pipPossibilities.ranksPossible;
-
-    state.possibleCards = castDraft(possibleCards);
   }
 
   // Bring the result back to the state
-  state.rankClueMemory.possibilities = original(state.rankClueMemory.possibilities)!
+  const rankPossibilities = state.rankClueMemory.possibilities
     .filter((r) => !ranksRemoved.includes(r));
 
-  state.colorClueMemory.possibilities = original(state.colorClueMemory.possibilities)!
+  const suitPossibilities = state.colorClueMemory.possibilities
     .filter((r) => !suitsRemoved.includes(r));
 
   /* REMOVEME
   // Use the calculated information to hide/eliminate pips
-  state.colorClueMemory.pipStates = updatePipStates(
+  const suitPips = updatePipStates(
     state.colorClueMemory.pipStates,
     suitsRemoved,
     suitsPossible,
   );
-  state.rankClueMemory.pipStates = updatePipStates(
+  const rankPips = updatePipStates(
     state.rankClueMemory.pipStates,
     ranksRemoved,
     ranksPossible,
@@ -134,9 +128,31 @@ const cardPossibilitiesReducer = produce((
     .map((pip, i) => ((pip !== 'Hidden') ? i : -1))
     .filter((i) => i >= 0);
 
-  updateIdentity(state);
+  const {
+    suitIndex,
+    rank,
+    identityDetermined,
+  } = updateIdentity(state, suitPossibilities, rankPossibilities);
 
-  let newState = castImmutable(state);
+  let newState: CardState = {
+    ...state,
+    suitIndex,
+    rank,
+    identityDetermined,
+    possibleCards,
+    rankClueMemory: {
+      positiveClues: isColorClue ? state.rankClueMemory.positiveClues : thisTypePositiveClues,
+      negativeClues: isColorClue ? state.rankClueMemory.negativeClues : thisTypeNegativeClues,
+      possibilities: rankPossibilities,
+      pipStates: rankPips,
+    },
+    colorClueMemory: {
+      positiveClues: isColorClue ? thisTypePositiveClues : state.colorClueMemory.positiveClues,
+      negativeClues: isColorClue ? thisTypeNegativeClues : state.colorClueMemory.negativeClues,
+      possibilities: suitPossibilities,
+      pipStates: suitPips,
+    },
+  };
 
   // Reapply rank clues if we removed a special suit
   const shouldReapplyRankClues = calculatePossibilities
@@ -157,10 +173,8 @@ const cardPossibilitiesReducer = produce((
     newState = reapplyClues(newState, ClueType.Color, metadata);
   }
 
-  state.rankClueMemory = castDraft(newState.rankClueMemory);
-  state.colorClueMemory = castDraft(newState.colorClueMemory);
-  state.possibleCards = castDraft(newState.possibleCards);
-}, {} as CardState);
+  return newState;
+};
 
 export default cardPossibilitiesReducer;
 
@@ -172,7 +186,7 @@ function reapplyClues(state: CardState, clueType: ClueType, metadata: GameMetada
   const { positiveClues, negativeClues } = memory;
 
   // Reapplying clues means starting from scratch
-  const memoryWithoutClues = {
+  const memoryWithoutClues: ClueMemory = {
     ...memory,
     negativeClues: [],
     positiveClues: [],
@@ -215,21 +229,29 @@ function updatePipStates(
 } */
 
 // Based on the current possibilities, updates the known identity of this card
-function updateIdentity(state: Draft<CardState>) {
-  if (state.colorClueMemory.possibilities.length === 1) {
+function updateIdentity(
+  state: CardState,
+  possibleSuits: readonly number[],
+  possibleRanks: readonly number[],
+) {
+  let { suitIndex, rank, identityDetermined } = state;
+
+  if (possibleSuits.length === 1) {
     // We have discovered the true suit of the card
-    [state.suitIndex] = state.colorClueMemory.possibilities;
+    [suitIndex] = possibleSuits;
   }
 
-  if (state.rankClueMemory.possibilities.length === 1) {
+  if (possibleRanks.length === 1) {
     // We have discovered the true rank of the card
-    [state.rank] = state.rankClueMemory.possibilities;
+    [rank] = possibleRanks;
   }
 
-  if (state.colorClueMemory.possibilities.length === 1
-    && state.rankClueMemory.possibilities.length === 1) {
-    state.identityDetermined = true;
+  if (possibleSuits.length === 1
+    && possibleRanks.length === 1) {
+    identityDetermined = true;
   }
+
+  return { suitIndex, rank, identityDetermined };
 }
 
 function pipStateMax(a : PipState, b : PipState) : PipState {
