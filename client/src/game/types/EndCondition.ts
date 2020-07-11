@@ -7,5 +7,4 @@ enum EndCondition {
   SpeedrunFail = 5,
   IdleTimeout = 6,
 }
-
 export default EndCondition;
