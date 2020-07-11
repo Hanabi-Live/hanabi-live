@@ -16,9 +16,9 @@ import CardIdentity from '../src/game/types/CardIdentity';
 import ClueType from '../src/game/types/ClueType';
 import { STACK_BASE_RANK } from '../src/game/types/constants';
 import GameState from '../src/game/types/GameState';
+import State from '../src/game/types/State';
 import testGame from '../test_data/up_or_down.json';
 import testMetadata from './testMetadata';
-import State from '../src/game/types/State';
 
 type JSONGame = typeof testGame;
 
