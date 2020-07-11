@@ -30,7 +30,7 @@ export function animate(
   fast: boolean = globals.animateFast,
   interactive: boolean = false,
 ) {
-  if (node.tween) {
+  if (node.tween !== null) {
     node.tween.destroy();
     node.tween = null;
   }
@@ -59,14 +59,17 @@ export function animate(
     const config: any = {
       node,
       onFinish: () => {
-        if (node && node.tween) {
+        if (!node) {
+          return;
+        }
+        if (node.tween !== null) {
           node.tween.destroy();
           node.tween = null;
         }
         if (params.onFinish !== undefined) {
           params.onFinish();
         }
-        if (!interactive && node) {
+        if (!interactive) {
           node.listening(wasListening);
         }
       },

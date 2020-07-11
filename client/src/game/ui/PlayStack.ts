@@ -47,7 +47,7 @@ export default class PlayStack extends Konva.Group {
           if (!layoutChild || !card || !card.parent) {
             return;
           }
-          if (layoutChild.tween) {
+          if (layoutChild.tween !== null) {
             layoutChild.tween.destroy();
             layoutChild.tween = null;
           }
