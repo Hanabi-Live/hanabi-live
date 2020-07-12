@@ -39,7 +39,7 @@ export default function observeStore<S, A extends Action<any>, T>(
       })
       .forEach((s) => {
         // currentState is undefined during initialization
-        const currentValue = currentState ? s.select(currentState) : undefined;
+        const currentValue = currentState !== undefined ? s.select(currentState) : undefined;
         s.onChange(s.select(nextState)!, currentValue);
       });
 

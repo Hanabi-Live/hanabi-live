@@ -44,7 +44,7 @@ export default class PlayStack extends Konva.Group {
         opacity,
         easing: Konva.Easings.EaseOut,
         onFinish: () => {
-          if (!layoutChild || !card || !card.parent) {
+          if (layoutChild === undefined || card === undefined || card.parent === undefined) {
             return;
           }
           if (layoutChild.tween !== null) {

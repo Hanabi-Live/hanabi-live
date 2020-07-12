@@ -17,7 +17,7 @@ function updateArrows(clues: readonly StateClue[], turn: number) {
   arrows.hideAll();
 
   const lastClue = clues[clues.length - 1];
-  if (!lastClue || lastClue.turn !== turn - 1) {
+  if (lastClue === undefined || lastClue.turn !== turn - 1) {
     // We are initializing (or we rewinded and just removed the first clue)
     return;
   }

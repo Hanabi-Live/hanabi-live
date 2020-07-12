@@ -66,7 +66,7 @@ const gameStateReducer = produce((
     case 'draw': {
       state.deckSize -= 1;
       const hand = state.hands[action.who];
-      if (hand) {
+      if (hand !== undefined) {
         hand.push(action.order);
       }
 

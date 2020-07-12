@@ -656,13 +656,14 @@ export default function drawPip(
   }
 
   // Handle the shadow
-  if (shadow) {
+  if (shadow === true) {
     ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
   }
 
-  if (customFill) {
+  const hasCustomFill = customFill !== undefined && customFill !== '';
+  if (hasCustomFill) {
     // The parent function has specified a custom fill color
-    ctx.fillStyle = customFill;
+    ctx.fillStyle = customFill!;
     shapeFunction(ctx);
     ctx.fill();
   } else if (suit.fill === 'multi') {
@@ -677,8 +678,8 @@ export default function drawPip(
   }
 
   // Draw a black border around the shape
-  ctx.lineWidth = customFill ? 8 : 5;
-  if (shadow) {
+  ctx.lineWidth = hasCustomFill ? 8 : 5;
+  if (shadow === true) {
     ctx.shadowColor = 'rgba(0, 0, 0, 0)';
   }
   ctx.stroke();

@@ -29,7 +29,7 @@ export default function suitsInit(COLORS: Map<string, Color>) {
     // If it is not specified, assume that it is the same as the key
     // (the name can sometimes be different from the key because
     // multiple suits share the same name for some specific variants)
-    const name: string = suitJSON.name || suitName;
+    const name: string = suitJSON.name ?? suitName;
     if (name === '') {
       throw new Error('There is a suit with an empty name in the "suits.json" file.');
     }
@@ -37,7 +37,7 @@ export default function suitsInit(COLORS: Map<string, Color>) {
     // Validate the abbreviation
     // If it is not specified, use the abbreviation of the color with the same name
     // Otherwise, use the first letter of the suit
-    let abbreviation: string = suitJSON.abbreviation || '';
+    let abbreviation: string = suitJSON.abbreviation ?? '';
     if (abbreviation === '') {
       const color = COLORS.get(name);
       if (typeof color !== 'undefined') {
@@ -56,19 +56,19 @@ export default function suitsInit(COLORS: Map<string, Color>) {
     if (Object.hasOwnProperty.call(suitJSON, 'allClueColors') && suitJSON.allClueColors !== true) {
       throw new Error(`The "allClueColors" property for the suit "${suitName}" must be set to true.`);
     }
-    const allClueColors: boolean = suitJSON.allClueColors || false;
+    const allClueColors: boolean = suitJSON.allClueColors ?? false;
     if (Object.hasOwnProperty.call(suitJSON, 'allClueRanks') && suitJSON.allClueRanks !== true) {
       throw new Error(`The "allClueRanks" property for the suit "${suitName}" must be set to true.`);
     }
-    const allClueRanks: boolean = suitJSON.allClueRanks || false;
+    const allClueRanks: boolean = suitJSON.allClueRanks ?? false;
     if (Object.hasOwnProperty.call(suitJSON, 'noClueColors') && suitJSON.noClueColors !== true) {
       throw new Error(`The "noClueColors" property for the suit "${suitName}" must be set to true.`);
     }
-    const noClueColors: boolean = suitJSON.noClueColors || false;
+    const noClueColors: boolean = suitJSON.noClueColors ?? false;
     if (Object.hasOwnProperty.call(suitJSON, 'noClueRanks') && suitJSON.noClueRanks !== true) {
       throw new Error(`The "noClueRanks" property for the suit "${suitName}" must be set to true.`);
     }
-    const noClueRanks: boolean = suitJSON.noClueRanks || false;
+    const noClueRanks: boolean = suitJSON.noClueRanks ?? false;
 
     // Validate the clue colors (the colors that touch this suit)
     // If it is not specified, use the color of the same name
@@ -92,7 +92,8 @@ export default function suitsInit(COLORS: Map<string, Color>) {
           throw new Error(`The color "${colorString}" in the suit "${suitName}" does not exist.`);
         }
       }
-    } else if (!suitJSON.allClueColors && !suitJSON.noClueColors) {
+    } else if (suitJSON.allClueColors !== true && suitJSON.noClueColors !== true) {
+      // We check for !== true because they could be undefined or false
       // The clue colors were not specified; by default, use the color of the same name
       const color = COLORS.get(name);
       if (typeof color !== 'undefined') {
@@ -108,7 +109,7 @@ export default function suitsInit(COLORS: Map<string, Color>) {
     // Validate the fill and colorblind fill
     // If it is not specified, use the fill of the color with the same name
     // Otherwise, assume the fill of the first clue color
-    let fill: string = suitJSON.fill || '';
+    let fill: string = suitJSON.fill ?? '';
     let fillColorblind = '';
     if (fill === '') {
       const color = COLORS.get(name);
@@ -142,7 +143,7 @@ export default function suitsInit(COLORS: Map<string, Color>) {
     if (Object.hasOwnProperty.call(suitJSON, 'oneOfEach') && suitJSON.oneOfEach !== true) {
       throw new Error(`The "oneOfEach" property for the suit "${suitName}" must be set to true.`);
     }
-    const oneOfEach: boolean = suitJSON.oneOfEach || false;
+    const oneOfEach: boolean = suitJSON.oneOfEach ?? false;
 
     // Validate the "pip" property
     const pip: string = suitJSON.pip || '';
