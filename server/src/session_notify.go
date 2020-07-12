@@ -82,9 +82,6 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 	}
 
 	numPlayers := len(t.Players)
-	if t.Replay {
-		numPlayers = len(t.Spectators)
-	}
 
 	players := make([]string, 0)
 	for _, p := range t.Players {
