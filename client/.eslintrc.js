@@ -61,7 +61,7 @@ module.exports = {
     // Prevent using falsy/truthy to compare against null/undefined
     // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/strict-boolean-expressions.md
     // We allow 'any' values because Konva uses them a lot.
-    '@typescript-eslint/strict-boolean-expressions': ['error', { allowAny: false }],
+    '@typescript-eslint/strict-boolean-expressions': ['error', { allowAny: true }],
 
     // ESLint does not like TypeScript 3.8 syntax, e.g. "import { module } from 'file'"
     'import/named': ['off'],
