@@ -104,7 +104,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 1,
@@ -211,7 +212,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 2,
@@ -318,7 +320,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 3,
@@ -425,7 +428,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 4,
@@ -532,7 +536,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 5,
@@ -639,7 +644,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 6,
@@ -746,7 +752,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 7,
@@ -853,7 +860,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 8,
@@ -961,7 +969,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 9,
@@ -1069,7 +1078,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 10,
@@ -1176,7 +1186,8 @@
         "turnDiscarded": -1,
         "turnPlayed": 2,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 11,
@@ -1284,7 +1295,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 12,
@@ -1392,7 +1404,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 13,
@@ -1499,7 +1512,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 14,
@@ -1606,7 +1620,8 @@
         "turnDiscarded": -1,
         "turnPlayed": 3,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 15,
@@ -1714,7 +1729,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 16,
@@ -1821,7 +1837,8 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     },
     {
         "order": 17,
@@ -1928,6 +1945,7 @@
         "turnDiscarded": -1,
         "turnPlayed": -1,
         "isMisplayed": false,
-        "possibleCardsByClues": []
+        "matchingCards": [],
+        "matchingCardsArray": []
     }
 ]

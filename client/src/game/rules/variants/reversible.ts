@@ -135,54 +135,39 @@ export const isPotentiallyPlayable = (
   stackDirections: readonly StackDirection[],
   cardState: CardState,
 ) => {
-  let potentiallyPlayable = false;
-  for (const [suitIndex, rank] of cardState.possibleCardsByClues) {
-    const count = cardState.unseenCards[suitIndex][rank];
-    if (count === undefined) {
-      throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${rank} from the "unseenCards" map for card ${cardState.order}.`);
-    }
-    if (count === 0) {
-      continue;
-    }
+  for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
     const playStack = playStacks[suitIndex];
     const lastPlayedRank = playStacksRules.lastPlayedRank(playStack, deck);
+    const nextRanksNeeded : number[] = [];
 
     if (stackDirections[suitIndex] === StackDirection.Undecided) {
       if (lastPlayedRank === STACK_BASE_RANK) {
-        // The "START" card has not been played
-        if ([START_CARD_RANK, 1, 5].includes(rank)) {
-          potentiallyPlayable = true;
-          break;
-        }
+        nextRanksNeeded.push(START_CARD_RANK, 1, 5);
       } else if (lastPlayedRank === START_CARD_RANK) {
-        if ([2, 4].includes(rank)) {
-          potentiallyPlayable = true;
-          break;
-        }
+        nextRanksNeeded.push(2, 4);
       }
     } else if (stackDirections[suitIndex] === StackDirection.Up) {
-      const nextRankNeeded = lastPlayedRank! + 1;
-      if (rank === nextRankNeeded) {
-        potentiallyPlayable = true;
-        break;
-      }
+      nextRanksNeeded.push(lastPlayedRank! + 1);
     } else if (stackDirections[suitIndex] === StackDirection.Down) {
       let nextRankNeeded = lastPlayedRank! - 1;
-      if (!variantRules.isUpOrDown(variant) && lastPlayedRank === 0) {
+      if (!variantRules.isUpOrDown(variant) && lastPlayedRank === STACK_BASE_RANK) {
         // Reversed stacks start with 5, except in "Up or Down"
         nextRankNeeded = 5;
       }
-      if (rank === nextRankNeeded) {
-        potentiallyPlayable = true;
-        break;
-      }
+      nextRanksNeeded.push(nextRankNeeded);
     } else if (stackDirections[suitIndex] === StackDirection.Finished) {
       // Nothing can play on this stack because it is finished
       continue;
     }
+    for (const nextRankNeeded of nextRanksNeeded) {
+      if (cardState.matchingCards[suitIndex][nextRankNeeded]
+        && cardState.unseenCards[suitIndex][nextRankNeeded] > 0) {
+        return true;
+      }
+    }
   }
 
-  return potentiallyPlayable;
+  return false;
 };
 
 export const isCardCritical = (

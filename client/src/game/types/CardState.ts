@@ -8,12 +8,15 @@ export default interface CardState {
   // The following are the variables that are refreshed
   readonly rankClueMemory: ClueMemory;
   readonly colorClueMemory: ClueMemory;
-  readonly possibleCardsByClues: ReadonlyArray<readonly [number, number]>;
 
+  // matching[suitIndex][rank] = does the card of this suitIndex and rank match our clues?
   // unseenCards[suitIndex][rank] = how many cards of this suitIndex and rank could this be?
   // NOTE: we're using an array as a map, so there will be empty spaces for ranks
   // that are not valid card ranks (e.g. 0, or 6 in Up or Down)
+  readonly matchingCards: ReadonlyArray<readonly boolean[]>;
   readonly unseenCards: ReadonlyArray<readonly number[]>;
+  readonly matchingCardsArray: ReadonlyArray<readonly [number, number]>;
+
   readonly identityDetermined: boolean;
   readonly numPositiveClues: number;
   readonly turnsClued: readonly number[]; // TODO: seems like the UI only reads the 1st turn clued?

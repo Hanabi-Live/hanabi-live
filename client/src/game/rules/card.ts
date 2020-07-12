@@ -131,15 +131,7 @@ export function isPotentiallyPlayable(
     return reversibleRules.isPotentiallyPlayable(variant, deck, playStacks, stackDirections, card);
   }
 
-  let potentiallyPlayable = false;
-  for (const [suitIndex, rank] of card.possibleCardsByClues) {
-    const count = card.unseenCards[suitIndex][rank];
-    if (count === undefined) {
-      throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${rank} from the "unseenCards" map for card ${card.order}.`);
-    }
-    if (count === 0) {
-      continue;
-    }
+  for (const [suitIndex] of variant.suits.entries()) {
     let lastPlayedRank = playStacksRules.lastPlayedRank(playStacks[suitIndex], deck);
     if (lastPlayedRank === 5) {
       continue;
@@ -148,11 +140,11 @@ export function isPotentiallyPlayable(
       lastPlayedRank = 0;
     }
     const nextRankNeeded = lastPlayedRank + 1;
-    if (rank === nextRankNeeded) {
-      potentiallyPlayable = true;
-      break;
+    if (card.matchingCards[suitIndex][nextRankNeeded]
+      && card.unseenCards[suitIndex][nextRankNeeded] > 0) {
+      return true;
     }
   }
 
-  return potentiallyPlayable;
+  return false;
 }

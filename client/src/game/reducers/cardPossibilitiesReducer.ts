@@ -15,7 +15,7 @@ const cardPossibilitiesReducer = (
   metadata: GameMetadata,
 ): CardState => {
   if (
-    state.possibleCardsByClues.length === 1
+    state.matchingCardsArray.length === 1
   ) {
     // We already know all details about this card, no need to calculate
     return state;
@@ -25,8 +25,13 @@ const cardPossibilitiesReducer = (
 
   // Apply the clue and check what is eliminated
   const clueTouch = variant.touchedCards.get(clue.value)!;
-  const possibleCardsByClues = state.possibleCardsByClues.filter(
+  const matchingCardsArray = state.matchingCardsArray.filter(
     ([x, y]) => clueTouch[x][y] === positive,
+  );
+  const matchingCards = state.matchingCards.map(
+    (arr, suitIndex) => arr.map(
+      (bool, rank) => bool && (clueTouch[suitIndex][rank] === positive),
+    ),
   );
 
   const getIndex = getIndexConverter(variant);
@@ -44,7 +49,7 @@ const cardPossibilitiesReducer = (
   }
 
   const { suitPips, rankPips } = checkPips(
-    possibleCardsByClues, state.unseenCards, variant,
+    matchingCardsArray, state.unseenCards, variant,
   );
   const suitsPossible = suitPips
     .map((pip, i) => ((pip !== 'Hidden') ? i : -1))
@@ -74,7 +79,8 @@ const cardPossibilitiesReducer = (
       possibilities: suitsPossible,
       pipStates: suitPips,
     },
-    possibleCardsByClues,
+    matchingCards,
+    matchingCardsArray,
   };
 
   return newState;
@@ -115,14 +121,14 @@ function pipStateMax(a : PipState, b : PipState) : PipState {
 }
 
 export function checkPips(
-  possibleCardsByClues: ReadonlyArray<readonly [number, number]>,
+  matchingCards: ReadonlyArray<readonly [number, number]>,
   unseenCards: ReadonlyArray<readonly number[]>,
   variant: Variant,
 ) {
   const suitPips : PipState[] = variant.suits.map(() => 'Hidden');
   const rankPips : PipState[] = [];
   for (const rank of variant.ranks) rankPips[rank] = 'Hidden';
-  for (const [suitIndex, rank] of possibleCardsByClues) {
+  for (const [suitIndex, rank] of matchingCards) {
     const pip = (unseenCards[suitIndex][rank] > 0) ? 'Visible' : 'Eliminated';
     suitPips[suitIndex] = pipStateMax(suitPips[suitIndex], pip);
     rankPips[rank] = pipStateMax(rankPips[rank], pip);

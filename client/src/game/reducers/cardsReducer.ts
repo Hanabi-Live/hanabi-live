@@ -169,7 +169,7 @@ const cardsReducer = (
         ))
         .forEach((card) => { unseenCards[card.suitIndex!][card.rank!] -= 1; });
 
-      const { suitPips, rankPips } = checkPips(initial.possibleCardsByClues, unseenCards, variant);
+      const { suitPips, rankPips } = checkPips(initial.matchingCardsArray, unseenCards, variant);
 
       const drawnCard = {
         ...initial,
@@ -267,7 +267,7 @@ function removePossibility(
   unseenCards[suitIndex][rank] = cardsLeft - 1;
 
   // Check to see if we can put an X over this suit pip or this rank pip
-  const { suitPips, rankPips } = checkPips(state.possibleCardsByClues, unseenCards, variant);
+  const { suitPips, rankPips } = checkPips(state.matchingCardsArray, unseenCards, variant);
 
   return {
     ...state,
