@@ -25,6 +25,7 @@ import NodeWithTooltip from './controls/NodeWithTooltip';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';
 import { suitIndexToSuit } from './convert';
+import * as cursor from './cursor';
 import globals from './globals';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
@@ -190,7 +191,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Register mouse events
     this.initTooltip();
     this.initEmpathy();
-    this.registerClick();
+    this.registerMouseHandlers();
   }
 
   // Erase all of the data on the card to make it like it was freshly drawn
@@ -216,11 +217,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     if (!globals.replay && !globals.spectating) {
       // If it has a "chop move" note on it, we want to keep the chop move border turned on
-      if (this.note?.chopMoved) {
+      if (this.note.chopMoved) {
         this.chopMoveBorder!.show();
       }
       // If it has a "finessed" note on it, we want to keep the finesse border turned on
-      if (this.note?.finessed) {
+      if (this.note.finessed) {
         this.finesseBorder!.show();
       }
     }
@@ -231,10 +232,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     // Hide the pips if we have full knowledge of the suit / rank
-    if (suitIndex) {
+    if (suitIndex !== null) {
       this.suitPips!.hide();
     }
-    if (rank) {
+    if (rank !== null) {
       this.rankPips!.hide();
     }
   }
@@ -330,7 +331,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
       if (
         this.state.rank === STACK_BASE_RANK
-        && this.note?.suitIndex !== null
+        && this.note.suitIndex !== null
         && !globals.replay
       ) {
         // Show the suit corresponding to the note
@@ -338,7 +339,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         // but only for the stack bases (and not in replays)
         suitToShow = this.variant.suits[this.note.suitIndex];
       }
-      if (suitToShow === null && this.note?.suitIndex !== null) {
+      if (suitToShow === null && this.note.suitIndex !== null) {
         // Show the suit corresponding to the note
         suitToShow = this.variant.suits[this.note.suitIndex];
       }
@@ -362,15 +363,15 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       rankToShow = cardIdentity.rank;
       if (
         this.state.rank === STACK_BASE_RANK
-        && this.note?.rank !== null
+        && this.note.rank !== null
         && !globals.replay
       ) {
         // The card note rank has precedence over the "real" rank,
         // but only for the stack bases (and not in replays)
-        rankToShow = this.note?.rank;
+        rankToShow = this.note.rank;
       }
       if (rankToShow === null) {
-        rankToShow = this.note?.rank;
+        rankToShow = this.note.rank;
       }
       if (rankToShow === null) {
         rankToShow = 6;
@@ -382,8 +383,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // the "card" layer is drawn)
     this._blank = (
       morphedIdentity !== undefined
-      && !morphedIdentity.rank
-      && !morphedIdentity.suitIndex
+      && morphedIdentity.rank === null
+      && morphedIdentity.suitIndex === null
     );
 
     if (this._blank) {
@@ -436,7 +437,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Show or hide the "trash" image
     this.trashcan!.visible((
-      (this.note ? this.note.knownTrash : false)
+      this.note.knownTrash
       && !this.empathy
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
@@ -446,7 +447,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Show or hide the "fixme" image
     this.wrench!.visible((
-      (this.note ? this.note.needsFix : false)
+      this.note.needsFix
       && !this.empathy
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
@@ -455,7 +456,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     ));
 
     let suitIndex: number | null = null;
-    if (!suitToShow || suitToShow === unknownSuit) {
+    if (suitToShow === undefined || suitToShow === unknownSuit) {
       suitIndex = null;
     } else {
       suitIndex = this.variant.suits.indexOf(suitToShow);
@@ -687,7 +688,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   animateToDeck() {
     const layoutChild = this.parent as unknown as LayoutChild;
-    if (!layoutChild || !layoutChild.parent) {
+    if (
+      layoutChild === undefined
+      || layoutChild.parent === null
+      || layoutChild.parent === undefined
+    ) {
       // First initialization
       return;
     }
@@ -716,7 +721,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         rotation: 0,
         easing: Konva.Easings.EaseOut,
         onFinish: () => {
-          if (!this || !layoutChild) {
+          if (this === undefined || layoutChild === undefined) {
             return;
           }
           this.finishedTweening();
@@ -776,7 +781,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     for (const stack of globals.elements.discardStacks) {
       // Since "discardStacks" is a Map(),
       // "stack" is an array containing a Suit and CardLayout
-      if (stack[1]) {
+      if (stack[1] !== undefined) {
         stack[1].moveToTop();
       }
     }
@@ -907,7 +912,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  private registerClick() {
+  private registerMouseHandlers() {
     // Define the clue log mouse handlers
     this.on('mousemove tap', () => {
       globals.elements.clueLog!.showMatches(this);
@@ -922,6 +927,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.on('click tap', HanabiCardClick);
     this.on('mousedown', HanabiCardClickSpeedrun);
     this.on('mousedown', this.cardStartDrag);
+    this.on('mouseenter', () => {
+      if (typeof this.state.location === 'number' && this.state.location !== globals.playerUs) {
+        cursor.set('look');
+      }
+    });
+    this.on('mouseleave', () => {
+      cursor.set('default');
+    });
   }
 
   private cardStartDrag(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -934,7 +947,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     // Hide any visible arrows on the rest of a hand when the card begins to be dragged
-    if (!this.parent || !this.parent.parent) {
+    if (
+      this.parent === undefined
+      || this.parent.parent === undefined
+      || this.parent.parent === null
+    ) {
       return;
     }
     const hand = this.parent.parent;
@@ -1054,14 +1071,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         return;
       }
       const hand = this.parent.parent as unknown as CardLayout;
-      if (!hand || hand.children.length === 0 || hand.empathy === enabled) {
+      if (hand === undefined || hand.children.length === 0 || hand.empathy === enabled) {
         return;
       }
 
       hand.empathy = enabled;
       hand.children.each((layoutChild) => {
         const card = layoutChild.children[0] as HanabiCard;
-        if (!card) {
+        if (card === undefined) {
           // When rewinding, sometimes the card can be undefined
           return;
         }

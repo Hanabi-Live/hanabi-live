@@ -70,7 +70,7 @@ export function animate(
     const config: any = {
       node,
       onFinish: () => {
-        if (!node) {
+        if (node === undefined) {
           return;
         }
         if (node.tween !== null) {

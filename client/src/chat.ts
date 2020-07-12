@@ -8,6 +8,7 @@ import chatCommands from './chatCommands';
 import ChatMessage from './ChatMessage';
 import { FADE_TIME } from './constants';
 import globals from './globals';
+import { isEmpty } from './misc';
 import * as modals from './modals';
 
 // Variables
@@ -50,7 +51,7 @@ export const init = () => {
 
 const input = function input(this: HTMLElement, event: JQuery.Event) {
   const element = $(this);
-  if (!element) {
+  if (element === undefined) {
     throw new Error('Failed to get the element for the input function.');
   }
   const text = element.val();
@@ -105,7 +106,7 @@ const keypress = (room: string) => function keypressFunction(
   event: JQuery.Event,
 ) {
   const element = $(this);
-  if (!element) {
+  if (element === undefined) {
     throw new Error('Failed to get the element for the keypress function.');
   }
 
@@ -116,7 +117,7 @@ const keypress = (room: string) => function keypressFunction(
 
 const submit = (room: string, element: JQuery<HTMLElement>) => {
   const msg = element.val();
-  if (!msg) {
+  if (isEmpty(msg)) {
     return;
   }
   if (typeof msg !== 'string') {
@@ -175,7 +176,7 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
 
 const keydown = function keydown(this: HTMLElement, event: JQuery.Event) {
   const element = $(this);
-  if (!element) {
+  if (element === undefined) {
     throw new Error('Failed to get the element for the keydown function.');
   }
 
@@ -335,7 +336,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
   } else {
     chat = $('#game-chat-text');
   }
-  if (!chat) {
+  if (chat === undefined) {
     throw new Error('Failed to get the chat element in the "chat.add()" function.');
   }
 
@@ -367,7 +368,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
       line += `<span class="red">[PM to <strong>${data.recipient}</strong>]</span>&nbsp; `;
     }
   }
-  if (data.server || data.recipient) {
+  if (data.server === true || (data.recipient !== undefined && data.recipient !== '')) {
     line += data.msg;
   } else if (data.who) {
     line += `&lt;<strong>${data.who}</strong>&gt;&nbsp; `;
@@ -375,7 +376,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
   } else {
     line += data.msg;
   }
-  if (data.server && line.includes('[Server Notice]')) {
+  if (data.server === true && line.includes('[Server Notice]')) {
     line = line.replace('[Server Notice]', '<span class="red">[Server Notice]</span>');
   }
   line += '</span><br />';
@@ -384,8 +385,8 @@ export const add = (data: ChatMessage, fast: boolean) => {
   // https://stackoverflow.com/questions/6271237/detecting-when-user-scrolls-to-bottom-of-div-with-jquery
   // If we are already scrolled to the bottom, then it is ok to automatically scroll
   let autoScroll = false;
-  const topPositionOfScrollBar = chat.scrollTop() || 0;
-  const innerHeight = chat.innerHeight() || 0;
+  const topPositionOfScrollBar = chat.scrollTop() ?? 0;
+  const innerHeight = chat.innerHeight() ?? 0;
   if (topPositionOfScrollBar + Math.ceil(innerHeight) >= chat[0].scrollHeight) {
     autoScroll = true;
   }

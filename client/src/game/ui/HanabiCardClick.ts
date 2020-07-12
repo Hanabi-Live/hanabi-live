@@ -230,7 +230,7 @@ const clickMorph = (order: number) => {
 
   // We want an exact match, so fullNote is sent as an empty string
   const cardIdentity = notes.cardIdentityFromNote(globals.variant, cardText, '');
-  if (!cardIdentity.suitIndex || !cardIdentity.rank) {
+  if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
     window.alert('You entered an invalid card.');
     return;
   }

@@ -20,7 +20,7 @@ export default class CardLayout extends Konva.Group {
     // Class variables
     this.align = (config.align || 'left') as string;
     this.reverse = (config.reverse || false) as boolean;
-    this.origRotation = config.rotation || 0;
+    this.origRotation = config.rotation ?? 0;
     this.empathy = false;
 
     if (config.width === undefined) {
@@ -135,7 +135,7 @@ export default class CardLayout extends Konva.Group {
             opacity: 1,
             easing: Konva.Easings.EaseOut,
             onFinish: () => {
-              if (!card || !layoutChild) {
+              if (card === undefined || layoutChild === undefined) {
                 return;
               }
               card.finishedTweening();

@@ -235,7 +235,13 @@ const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, tur
 
   // Don't bother doing the animation if the card is no longer part of a hand
   // (which can happen when jumping quickly through a replay)
-  if (!card || !card.parent || !card.parent.parent) {
+  if (
+    card === undefined
+    || card.parent === undefined
+    || card.parent === null
+    || card.parent.parent === undefined
+    || card.parent.parent === null
+  ) {
     return;
   }
 
@@ -322,7 +328,7 @@ export const toggle = (element: NodeWithTooltip | null) => {
     set(0, element, null, null);
 
     // If this element has a tooltip and it is open, close it
-    if (element && element.tooltipName) {
+    if (element !== null && element.tooltipName !== undefined && element.tooltipName !== '') {
       const tooltip = $(`#tooltip-${element.tooltipName}`);
       tooltip.tooltipster('close');
     }

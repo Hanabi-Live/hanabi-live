@@ -428,7 +428,7 @@ const scaleCardImage = (
     sw = Math.floor(sw / 2);
     sh = Math.floor(sh / 2);
 
-    if (!scaledCardImage) {
+    if (scaledCardImage === undefined) {
       scaledCardImage = document.createElement('canvas');
       scaledCardImage.width = sw;
       scaledCardImage.height = sh;

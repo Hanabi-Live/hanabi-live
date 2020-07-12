@@ -126,7 +126,7 @@ export default function variantsInit(
     ) {
       throw new Error(`The "colorCluesTouchNothing" property for the variant "${variantName}" must be set to true.`);
     }
-    const colorCluesTouchNothing: boolean = variantJSON.colorCluesTouchNothing || false;
+    const colorCluesTouchNothing: boolean = variantJSON.colorCluesTouchNothing ?? false;
 
     // Validate the "rankCluesTouchNothing" property
     // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
@@ -136,7 +136,7 @@ export default function variantsInit(
     ) {
       throw new Error(`The "rankCluesTouchNothing" property for the variant "${variantName}" must be set to true.`);
     }
-    const rankCluesTouchNothing: boolean = variantJSON.rankCluesTouchNothing || false;
+    const rankCluesTouchNothing: boolean = variantJSON.rankCluesTouchNothing ?? false;
 
     // Validate the "specialRank" property (e.g. for "Rainbow-Ones")
     // If it is not specified, assume -1 (e.g. there are no special ranks)
@@ -146,7 +146,7 @@ export default function variantsInit(
     ) {
       throw new Error(`The "specialRank" property for the variant "${variantName}" must be set to true.`);
     }
-    const specialRank: number = variantJSON.specialRank || -1;
+    const specialRank: number = variantJSON.specialRank ?? -1;
 
     // Validate the "specialAllClueColors" property
     // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
@@ -156,7 +156,7 @@ export default function variantsInit(
     ) {
       throw new Error(`The "specialAllClueColors" property for the variant "${variantName}" must be set to true.`);
     }
-    const specialAllClueColors: boolean = variantJSON.specialAllClueColors || false;
+    const specialAllClueColors: boolean = variantJSON.specialAllClueColors ?? false;
 
     // Validate the "specialAllClueRanks" property
     // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
@@ -166,7 +166,7 @@ export default function variantsInit(
     ) {
       throw new Error(`The "specialAllClueRanks" property for the variant "${variantName}" must be set to true.`);
     }
-    const specialAllClueRanks: boolean = variantJSON.specialAllClueRanks || false;
+    const specialAllClueRanks: boolean = variantJSON.specialAllClueRanks ?? false;
 
     // Validate the "specialNoClueColors" property
     // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
@@ -176,7 +176,7 @@ export default function variantsInit(
     ) {
       throw new Error(`The "specialNoClueColors" property for the variant "${variantName}" must be set to true.`);
     }
-    const specialNoClueColors: boolean = variantJSON.specialNoClueColors || false;
+    const specialNoClueColors: boolean = variantJSON.specialNoClueColors ?? false;
 
     // Validate the "specialNoClueRanks" property
     // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
@@ -186,7 +186,7 @@ export default function variantsInit(
     ) {
       throw new Error(`The "specialNoClueRanks" property for the variant "${variantName}" must be set to true.`);
     }
-    const specialNoClueRanks: boolean = variantJSON.specialNoClueRanks || false;
+    const specialNoClueRanks: boolean = variantJSON.specialNoClueRanks ?? false;
 
     // Validate the "showSuitNames" property
     // If it is not specified, assume that we are not showing the suit names
@@ -196,7 +196,7 @@ export default function variantsInit(
     ) {
       throw new Error(`The "showSuitNames" property for the variant "${variantName}" must be set to true.`);
     }
-    let showSuitNames: boolean = variantJSON.showSuitNames || false;
+    let showSuitNames: boolean = variantJSON.showSuitNames ?? false;
 
     // Always set "showSuitNames" to true if it has one or more reversed suits
     for (const suit of suits) {
@@ -252,7 +252,7 @@ export default function variantsInit(
     ) {
       throw new Error(`The "spacing" property for the variant "${variantName}" must be set to true.`);
     }
-    const spacing: boolean = variantJSON.spacing || false;
+    const spacing: boolean = variantJSON.spacing ?? false;
 
     // Assume 5 cards per stack
     const maxScore = suits.length * 5;

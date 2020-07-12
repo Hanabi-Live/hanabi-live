@@ -118,7 +118,7 @@ export function onChanged(data: {
   // Get the rotation that corresponds to the current player
   let rotation = getArrowRotationCorrespondingToPlayer(data.currentPlayerIndex!);
 
-  if (globals.animateFast || !previousData?.visible) {
+  if (globals.animateFast || previousData === undefined || !previousData.visible) {
     // Immediately snap the arrow in position and do not tween if:
     // 1) we performed an action on our turn and now the "Current Player" area is now visible again
     //    after being hidden

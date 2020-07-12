@@ -20,7 +20,7 @@ export default function colorsInit() {
 
     // Validate the abbreviation
     // If it is not specified, assume that it is the first letter of the color
-    const abbreviation: string = colorJSON.abbreviation || name.charAt(0);
+    const abbreviation: string = colorJSON.abbreviation ?? name.charAt(0);
     if (abbreviation.length !== 1) {
       throw new Error(`The "${name}" color has an abbreviation with more than one letter.`);
     }
@@ -33,7 +33,7 @@ export default function colorsInit() {
 
     // Validate the colorblind fill
     // (optionally, there can be an alternate fill when "Colorblind Mode" is enabled)
-    const fillColorblind: string = colorJSON.fillColorblind || fill;
+    const fillColorblind: string = colorJSON.fillColorblind ?? fill;
     // (if it is not specified, then just use the default fill)
 
     // Add it to the map

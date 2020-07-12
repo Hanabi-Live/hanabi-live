@@ -113,7 +113,7 @@ export const showClueUIAndEnableDragging = () => {
   }
 
   const ourHand = globals.elements.playerHands[globals.playerUs];
-  if (!ourHand) {
+  if (ourHand === undefined) {
     throw new Error(`Failed to get our hand with an index of ${globals.playerUs}.`);
   }
   ourHand.checkSetDraggableAll();

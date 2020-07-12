@@ -894,7 +894,7 @@ const drawScoreArea = () => {
       if (this.order !== null) {
         // Ensure that the card exists as a sanity-check
         const card = globals.deck[this.order];
-        if (!card) {
+        if (card === undefined) {
           return;
         }
 

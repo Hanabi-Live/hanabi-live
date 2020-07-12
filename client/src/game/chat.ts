@@ -85,9 +85,9 @@ export const init = () => {
       localStorage.setItem('chatWindowWidth', event.target.style.width);
       localStorage.setItem('chatWindowHeight', event.target.style.height);
       const chatElement = $(`#${event.target.id}`);
-      if (chatElement) {
-        localStorage.setItem('chatWindowX', chatElement.attr('data-x') || '0');
-        localStorage.setItem('chatWindowY', chatElement.attr('data-y') || '0');
+      if (chatElement !== undefined) {
+        localStorage.setItem('chatWindowX', chatElement.attr('data-x') ?? '0');
+        localStorage.setItem('chatWindowY', chatElement.attr('data-y') ?? '0');
       } else {
         throw new Error(`Failed to get the "${event.target.id}" element.`);
       }

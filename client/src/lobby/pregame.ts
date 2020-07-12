@@ -252,7 +252,7 @@ export const draw = () => {
     const div = $(`#lobby-pregame-player-${(i + 1)}`);
 
     const player = globals.game.players[i];
-    if (!player) {
+    if (player === undefined) {
       div.html('');
       div.hide();
       continue;

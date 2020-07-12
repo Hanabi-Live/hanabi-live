@@ -86,3 +86,10 @@ export const timerFormatter = (milliseconds: number) => {
   const secondsFormatted = seconds < 10 ? `0${seconds}` : seconds;
   return `${minutes}:${secondsFormatted}`;
 };
+
+// This is a helper to check for empty/invalid HTML elements without
+// worrying about the linter
+export function isEmpty(value: string | string[] | number | undefined) {
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+  return !value;
+}
