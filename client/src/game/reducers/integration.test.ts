@@ -54,8 +54,7 @@ describe('integration', () => {
         ]);
         */
       });
-      // TODO rob fix this test by making card possibility code account for spectators
-      test.skip.each([...Array(18).keys()])(
+      test.each([...Array(18).keys()])(
         'card %i has the correct pips and possibilities', (order) => {
           const turn5State = getStateAtTurn(testState, 4);
           const card = turn5State.deck[order];
@@ -96,8 +95,7 @@ describe('integration', () => {
         ]);
         */
       });
-      // TODO rob fix this test by making card possibility code account for spectators
-      test.skip.each([...Array(45).keys()])(
+      test.each([...Array(45).keys()])(
         'card %i has the correct pips and possibilities', (order) => {
           const finalState = getFinalState(testState);
           const card = finalState.deck[order];
