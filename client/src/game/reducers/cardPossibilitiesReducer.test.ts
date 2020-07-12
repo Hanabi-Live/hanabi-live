@@ -13,7 +13,7 @@ const defaultCard = initialCardState(0, variant);
 // Count possible cards, respecting both clues and observations.
 function countPossibleCards(state: CardState) {
   return state.possibleCardsByClues.filter(
-    ([suitIndex, rank]) => state.possibleCards[suitIndex][rank] > 0,
+    ([suitIndex, rank]) => state.unseenCards[suitIndex][rank] > 0,
   ).length;
 }
 

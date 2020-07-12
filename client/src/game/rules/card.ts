@@ -132,7 +132,14 @@ export function isPotentiallyPlayable(
   }
 
   let potentiallyPlayable = false;
-  for (const [suitIndex] of variant.suits.entries()) {
+  for (const [suitIndex, rank] of card.possibleCardsByClues) {
+    const count = card.unseenCards[suitIndex][rank];
+    if (count === undefined) {
+      throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${rank} from the "unseenCards" map for card ${card.order}.`);
+    }
+    if (count === 0) {
+      continue;
+    }
     let lastPlayedRank = playStacksRules.lastPlayedRank(playStacks[suitIndex], deck);
     if (lastPlayedRank === 5) {
       continue;
@@ -141,11 +148,7 @@ export function isPotentiallyPlayable(
       lastPlayedRank = 0;
     }
     const nextRankNeeded = lastPlayedRank + 1;
-    const count = card.possibleCards[suitIndex][nextRankNeeded];
-    if (count === undefined) {
-      throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${nextRankNeeded} from the "possibleCards" map for card ${card.order}.`);
-    }
-    if (count > 0) {
+    if (rank === nextRankNeeded) {
       potentiallyPlayable = true;
       break;
     }

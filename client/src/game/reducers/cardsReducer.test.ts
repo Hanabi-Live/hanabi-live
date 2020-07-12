@@ -203,7 +203,7 @@ describe('cardsReducer', () => {
 
       // Expect the remaining card to remove a possibility for a red 1
       // So there are 2 red ones remaining in the deck
-      expect(deck[0].possibleCards[0][1]).toBe(2);
+      expect(deck[0].unseenCards[0][1]).toBe(2);
     });
     describe('draw', () => {
       test('eliminates a possibility on other players\' cards', () => {
@@ -216,7 +216,7 @@ describe('cardsReducer', () => {
         deck = cardsReducer(deck, draw(1, 0, 5, 1), gameStateDrawP1, defaultMetadata);
 
         // Expect the remaining card to remove a possibility for a red 5
-        expect(deck[0].possibleCards[0][5]).toBe(0);
+        expect(deck[0].unseenCards[0][5]).toBe(0);
       });
       test('eliminates possibilities from previously drawn cards', () => {
         let deck: CardState[] = [defaultCard, secondCard];
@@ -228,7 +228,7 @@ describe('cardsReducer', () => {
         deck = cardsReducer(deck, draw(1, 0, 1, 1), gameStateDrawP1, defaultMetadata);
 
         // Expect the newly drawn card to remove a possibility for a red 5
-        expect(deck[1].possibleCards[0][5]).toBe(0);
+        expect(deck[1].unseenCards[0][5]).toBe(0);
       });
     });
   });

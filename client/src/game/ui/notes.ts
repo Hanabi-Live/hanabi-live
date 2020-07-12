@@ -195,19 +195,10 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
   // Validate that the note does not contain an impossibility
   if (note.suitIndex !== null && note.rank === null) {
     // Only the suit was specified
-    // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
-    let suitPossible = false;
-    for (const rank of cardState.rankClueMemory.possibilities) {
-      const count = cardState.possibleCards[note.suitIndex][rank];
-      if (count === undefined) {
-        throw new Error(`The card of Suit: ${note.suitIndex} and Rank: ${rank} does not exist in the possibleCards map.`);
-      }
-      if (count > 0) {
-        suitPossible = true;
-        break;
-      }
-    }
-    if (!suitPossible && cardState.location === globals.playerUs) {
+    if (
+      cardState.colorClueMemory.pipStates[note.suitIndex] !== 'Visible'
+      && cardState.location === globals.playerUs
+    ) {
       const suitName = variant.suits[note.suitIndex].name;
       window.alert(`That card cannot possibly be ${suitName.toLowerCase()}.`);
       note.suitIndex = null;
@@ -216,19 +207,10 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
   }
   if (note.suitIndex === null && note.rank !== null) {
     // Only the rank was specified
-    // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
-    let rankPossible = false;
-    for (const suitIndex of cardState.colorClueMemory.possibilities) {
-      const count = cardState.possibleCards[suitIndex][note.rank];
-      if (count === undefined) {
-        throw new Error(`The card of Suit: ${suitIndex} and Rank: ${note.rank} does not exist in the possibleCards map.`);
-      }
-      if (count > 0) {
-        rankPossible = true;
-        break;
-      }
-    }
-    if (!rankPossible && cardState.location === globals.playerUs) {
+    if (
+      cardState.rankClueMemory.pipStates[note.rank] !== 'Visible'
+      && cardState.location === globals.playerUs
+    ) {
       window.alert(`That card cannot possibly be a ${note.rank}.`);
       note.rank = null;
       return;
@@ -237,8 +219,10 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
   if (note.suitIndex !== null && note.rank !== null) {
     // Both the suit and the rank were specified
     if (
-      cardState.possibleCards[note.suitIndex][note.rank] === 0
-      && cardState.location === globals.playerUs
+      (
+        cardState.colorClueMemory.pipStates[note.suitIndex] !== 'Visible'
+        || cardState.rankClueMemory.pipStates[note.rank] !== 'Visible'
+      ) && cardState.location === globals.playerUs
     ) {
       const suitName = variant.suits[note.suitIndex].name;
       window.alert(`That card cannot possibly be a ${suitName.toLowerCase()} ${note.rank}.`);

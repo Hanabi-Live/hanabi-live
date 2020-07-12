@@ -10,10 +10,10 @@ export default interface CardState {
   readonly colorClueMemory: ClueMemory;
   readonly possibleCardsByClues: ReadonlyArray<readonly [number, number]>;
 
-  // possibleCards[suitIndex][rank] = how many cards of this suitIndex and rank could this be?
+  // unseenCards[suitIndex][rank] = how many cards of this suitIndex and rank could this be?
   // NOTE: we're using an array as a map, so there will be empty spaces for ranks
   // that are not valid card ranks (e.g. 0, or 6 in Up or Down)
-  readonly possibleCards: ReadonlyArray<readonly number[]>;
+  readonly unseenCards: ReadonlyArray<readonly number[]>;
   readonly identityDetermined: boolean;
   readonly numPositiveClues: number;
   readonly turnsClued: readonly number[]; // TODO: seems like the UI only reads the 1st turn clued?

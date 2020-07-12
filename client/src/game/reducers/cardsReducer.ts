@@ -158,7 +158,7 @@ const cardsReducer = (
       }
 
       const initial = initialCardState(action.order, variant);
-      const possibleCards = Array.from(initial.possibleCards, (arr) => Array.from(arr));
+      const unseenCards = Array.from(initial.unseenCards, (arr) => Array.from(arr));
       // Remove all possibilities of all cards previously drawn and visible
       deck.slice(0, action.order)
         .filter((card) => card.suitIndex !== null && card.rank !== null)
@@ -167,11 +167,9 @@ const cardsReducer = (
           card.colorClueMemory.possibilities.length === 1
           && card.rankClueMemory.possibilities.length === 1
         ))
-        .forEach((card) => { possibleCards[card.suitIndex!][card.rank!] -= 1; });
+        .forEach((card) => { unseenCards[card.suitIndex!][card.rank!] -= 1; });
 
-      const { suitPips, rankPips } = checkPips(
-        initial.possibleCardsByClues, possibleCards, variant,
-      );
+      const { suitPips, rankPips } = checkPips(initial.possibleCardsByClues, unseenCards, variant);
 
       const drawnCard = {
         ...initial,
@@ -187,7 +185,7 @@ const cardsReducer = (
           ...initial.rankClueMemory,
           pipStates: rankPips,
         },
-        possibleCards,
+        unseenCards,
       };
 
       newDeck[action.order] = drawnCard;
@@ -260,20 +258,20 @@ function removePossibility(
   variant: Variant,
 ) {
   // Every card has a possibility map that maps card identities to count
-  const possibleCards = Array.from(state.possibleCards, (arr) => Array.from(arr));
-  const cardsLeft = possibleCards[suitIndex][rank];
+  const unseenCards = Array.from(state.unseenCards, (arr) => Array.from(arr));
+  const cardsLeft = unseenCards[suitIndex][rank];
   if (cardsLeft === undefined) {
-    throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${rank} from the "possibleCards" map for card.`);
+    throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${rank} from the "unseenCards" map for card.`);
   }
 
-  possibleCards[suitIndex][rank] = cardsLeft - 1;
+  unseenCards[suitIndex][rank] = cardsLeft - 1;
 
   // Check to see if we can put an X over this suit pip or this rank pip
-  const { suitPips, rankPips } = checkPips(state.possibleCardsByClues, possibleCards, variant);
+  const { suitPips, rankPips } = checkPips(state.possibleCardsByClues, unseenCards, variant);
 
   return {
     ...state,
-    possibleCards,
+    unseenCards,
     colorClueMemory: {
       ...state.colorClueMemory,
       pipStates: suitPips,

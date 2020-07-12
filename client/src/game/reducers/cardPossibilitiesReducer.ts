@@ -47,7 +47,7 @@ const cardPossibilitiesReducer = (
   }
 
   const { suitPips, rankPips } = checkPips(
-    possibleCardsByClues, state.possibleCards, variant,
+    possibleCardsByClues, state.unseenCards, variant,
   );
   const suitsPossible = suitPips
     .map((pip, i) => ((pip !== 'Hidden') ? i : -1))
@@ -119,14 +119,14 @@ function pipStateMax(a : PipState, b : PipState) : PipState {
 
 export function checkPips(
   possibleCardsByClues: ReadonlyArray<readonly [number, number]>,
-  possibleCards: ReadonlyArray<readonly number[]>,
+  unseenCards: ReadonlyArray<readonly number[]>,
   variant: Variant,
 ) {
   const suitPips : PipState[] = variant.suits.map(() => 'Hidden');
   const rankPips : PipState[] = [];
   for (const rank of variant.ranks) rankPips[rank] = 'Hidden';
   for (const [suitIndex, rank] of possibleCardsByClues) {
-    const pip = (possibleCards[suitIndex][rank] > 0) ? 'Visible' : 'Eliminated';
+    const pip = (unseenCards[suitIndex][rank] > 0) ? 'Visible' : 'Eliminated';
     suitPips[suitIndex] = pipStateMax(suitPips[suitIndex], pip);
     // if (rank >= 1 && rank <= 5)
     rankPips[rank] = pipStateMax(rankPips[rank], pip);

@@ -136,49 +136,33 @@ export const isPotentiallyPlayable = (
   cardState: CardState,
 ) => {
   let potentiallyPlayable = false;
-  for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
+  for (const [suitIndex, rank] of cardState.possibleCardsByClues) {
+    const count = cardState.unseenCards[suitIndex][rank];
+    if (count === undefined) {
+      throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${rank} from the "unseenCards" map for card ${cardState.order}.`);
+    }
+    if (count === 0) {
+      continue;
+    }
     const playStack = playStacks[suitIndex];
     const lastPlayedRank = playStacksRules.lastPlayedRank(playStack, deck);
 
     if (stackDirections[suitIndex] === StackDirection.Undecided) {
       if (lastPlayedRank === STACK_BASE_RANK) {
         // The "START" card has not been played
-        for (const rank of [START_CARD_RANK, 1, 5]) {
-          const count = cardState.possibleCards[suitIndex][rank];
-          if (count === undefined) {
-            throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${rank} from the "possibleCards" map for card ${cardState.order}.`);
-          }
-          if (count > 0) {
-            potentiallyPlayable = true;
-            break;
-          }
-        }
-        if (potentiallyPlayable) {
+        if ([START_CARD_RANK, 1, 5].includes(rank)) {
+          potentiallyPlayable = true;
           break;
         }
       } else if (lastPlayedRank === START_CARD_RANK) {
-        // The "START" card has been played
-        for (const rank of [2, 4]) {
-          const count = cardState.possibleCards[suitIndex][rank];
-          if (count === undefined) {
-            throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${rank} from the "possibleCards" map for card ${cardState.order}.`);
-          }
-          if (count > 0) {
-            potentiallyPlayable = true;
-            break;
-          }
-        }
-        if (potentiallyPlayable) {
+        if ([2, 4].includes(rank)) {
+          potentiallyPlayable = true;
           break;
         }
       }
     } else if (stackDirections[suitIndex] === StackDirection.Up) {
       const nextRankNeeded = lastPlayedRank! + 1;
-      const count = cardState.possibleCards[suitIndex][nextRankNeeded];
-      if (count === undefined) {
-        throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${nextRankNeeded} from the "possibleCards" map for card ${cardState.order}.`);
-      }
-      if (count > 0) {
+      if (rank === nextRankNeeded) {
         potentiallyPlayable = true;
         break;
       }
@@ -188,11 +172,7 @@ export const isPotentiallyPlayable = (
         // Reversed stacks start with 5, except in "Up or Down"
         nextRankNeeded = 5;
       }
-      const count = cardState.possibleCards[suitIndex][nextRankNeeded];
-      if (count === undefined) {
-        throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${nextRankNeeded} from the "possibleCards" map for card ${cardState.order}.`);
-      }
-      if (count > 0) {
+      if (rank === nextRankNeeded) {
         potentiallyPlayable = true;
         break;
       }
