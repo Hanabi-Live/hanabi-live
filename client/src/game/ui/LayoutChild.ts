@@ -10,6 +10,7 @@ import CardLayout from './CardLayout';
 import cursorSet from './cursorSet';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
+import isOurTurn from './isOurTurn';
 import PlayStack from './PlayStack';
 import * as turn from './turn';
 
@@ -92,14 +93,14 @@ export default class LayoutChild extends Konva.Group {
     }
 
     const state = globals.store!.getState();
-    const ourTurn = state.ongoingGame.turn.currentPlayerIndex === state.metadata.ourPlayerIndex;
     return (
       // If it is not our turn, then the card should not need to be draggable yet
       // (unless we have the "Enable pre-playing cards" feature enabled)
-      (ourTurn || globals.lobby.settings.speedrunPreplay)
+      (isOurTurn() || globals.lobby.settings.speedrunPreplay)
       // Cards should not be draggable if there is a queued move
       && state.premove === null
       && !globals.options.speedrun // Cards should never be draggable while speedrunning
+      && !globals.lobby.settings.speedrunMode // Cards should never be draggable while speedrunning
       && card.state.location === globals.playerUs // Only our cards should be draggable
       && !globals.replay // Cards should not be draggable in solo or shared replays
       // Cards should not be draggable if we are spectating an ongoing game

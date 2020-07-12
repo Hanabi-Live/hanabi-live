@@ -61,7 +61,7 @@ export default class HanabiUI {
   }
 
   reshowClueUIAfterWarning() { // eslint-disable-line class-methods-use-this
-    turn.showClueUIAndEnableDragging();
+    turn.showClueUI();
   }
 }
 

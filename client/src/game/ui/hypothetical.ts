@@ -172,7 +172,7 @@ export const beginTurn = () => {
     }
   }
 
-  turn.showClueUIAndEnableDragging();
+  turn.showClueUI();
   globals.elements.hypoBackButton!.visible(globals.hypoActions.length > 0);
 
   // Set the current player's hand to be draggable
