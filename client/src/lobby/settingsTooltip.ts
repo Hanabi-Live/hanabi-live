@@ -7,7 +7,7 @@ import * as notifications from '../notifications';
 export const init = () => {
   $('#settings-volume-slider').change(function settingsVolumeSliderChange() {
     const element = $(this);
-    if (!element) {
+    if (element === undefined) {
       throw new Error('Failed to get the "settings-volume-slider" element.');
     }
     const volumeString = element.val();
@@ -26,7 +26,7 @@ export const init = () => {
   $('#settings-volume-test').click(() => {
     const audio = new Audio('/public/sounds/turn_us.mp3');
     const element = $('#settings-volume-slider');
-    if (!element) {
+    if (element === undefined) {
       throw new Error('Failed to get the "settings-volume-slider" element.');
     }
     const volumeString = element.val();
@@ -54,7 +54,7 @@ export const setSettingsTooltip = () => {
       $('#settings-volume-slider-value').html(`${value}%`);
     } else {
       const element = $(`#${setting}`);
-      if (!element) {
+      if (element === undefined) {
         throw new Error(`Failed to get the "${setting}" element.`);
       }
       if (typeof value !== 'boolean') {
@@ -68,11 +68,11 @@ export const setSettingsTooltip = () => {
 
 function changeSetting(this: HTMLElement) {
   const element = $(this);
-  if (!element) {
+  if (element === undefined) {
     throw new Error('Failed to get the element in the "changeSetting()" function.');
   }
   const settingName = element.attr('id');
-  if (!settingName) {
+  if (settingName === undefined || settingName === '') {
     throw new Error('Failed to get the ID of the element in the "changeSetting()" function.');
   }
   if (!misc.isKeyOf(settingName, globals.settings)) {

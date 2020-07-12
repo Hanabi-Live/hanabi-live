@@ -52,7 +52,7 @@ export default class LayoutChild extends Konva.Group {
   shouldBeDraggable(currentPlayerIndex: number | null) {
     // Cards should only be draggable in specific circumstances
     const card = this.children[0] as unknown as HanabiCard;
-    if (!card) {
+    if (card === undefined) {
       // Rarely, if the game is restarted when a tween is happening,
       // we can get here without the card being defined
       return false;

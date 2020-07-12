@@ -4,11 +4,11 @@ import globals from './globals';
 export default function strikeRecord(data: ActionStrike) {
   const i = data.num - 1;
   const strikeX = globals.elements.strikeXs[i];
-  if (!strikeX) {
+  if (strikeX === undefined) {
     return;
   }
   const strikeSquare = globals.elements.strikeSquares[i];
-  if (!strikeSquare) {
+  if (strikeSquare === undefined) {
     return;
   }
 

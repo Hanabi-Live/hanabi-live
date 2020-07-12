@@ -78,7 +78,7 @@ export const exit = () => {
 };
 
 export const goto = (target: number, fast: boolean, force?: boolean) => {
-  if (globals.hypothetical && !force) {
+  if (globals.hypothetical && (force === undefined || force === false)) {
     // Don't allow the user to "break free" in a hypothetical
     // (e.g. by clicking on a clue entry in the top-right hand corner)
     // "force" will be set to true if this function is being called from hypothetical functions
@@ -124,7 +124,7 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
     globals.replayPos += 1;
 
     // Stop at the end of the replay
-    if (!msg) {
+    if (msg === undefined) {
       break;
     }
 

@@ -10,5 +10,5 @@ export function lastPlayedRank(
   if (playStack.length === 0) {
     return STACK_BASE_RANK;
   }
-  return deck[playStack[playStack.length - 1]].rank || UNKNOWN_CARD_RANK;
+  return deck[playStack[playStack.length - 1]].rank ?? UNKNOWN_CARD_RANK;
 }

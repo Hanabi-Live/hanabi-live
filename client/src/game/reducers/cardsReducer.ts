@@ -107,7 +107,7 @@ const cardsReducer = (
 
       // If the card was already fully-clued,
       // we already updated the possibilities for it on other cards
-      if (suitIndex != null && rank != null && !identityDetermined) {
+      if (suitIndex !== null && rank !== null && !identityDetermined) {
         identityDetermined = true;
         // If we're currently playing this game, this is the first time
         // we see this card, from the point of view of all hands
@@ -315,7 +315,7 @@ function removePossibility(
 
 function getCard(deck: readonly CardState[], order: number) {
   const card = deck[order];
-  if (!card) {
+  if (card === undefined) {
     console.error(`Failed to get the card for index ${order}.`);
   }
   return card;

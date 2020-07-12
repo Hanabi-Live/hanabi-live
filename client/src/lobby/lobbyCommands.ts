@@ -345,12 +345,12 @@ commands.set('welcome', (data: WelcomeData) => {
       || window.location.pathname === '/dev/create-table'
   ) {
     const urlParams = new URLSearchParams(window.location.search);
-    const name = urlParams.get('name') || globals.randomName;
-    const variantName = urlParams.get('variantName') || DEFAULT_VARIANT_NAME;
+    const name = urlParams.get('name') ?? globals.randomName;
+    const variantName = urlParams.get('variantName') ?? DEFAULT_VARIANT_NAME;
     const timed = urlParams.get('timed') === 'true';
-    const timeBaseString = urlParams.get('timeBase') || '120';
+    const timeBaseString = urlParams.get('timeBase') ?? '120';
     const timeBase = parseInt(timeBaseString, 10);
-    const timePerTurnString = urlParams.get('timePerTurn') || '20';
+    const timePerTurnString = urlParams.get('timePerTurn') ?? '20';
     const timePerTurn = parseInt(timePerTurnString, 10);
     const speedrun = urlParams.get('speedrun') === 'true';
     const cardCycle = urlParams.get('cardCycle') === 'true';
@@ -360,7 +360,7 @@ commands.set('welcome', (data: WelcomeData) => {
     const oneLessCard = urlParams.get('oneLessCard') === 'true';
     const allOrNothing = urlParams.get('allOrNothing') === 'true';
     const detrimentalCharacters = urlParams.get('detrimentalCharacters') === 'true';
-    const password = urlParams.get('password') || '';
+    const password = urlParams.get('password') ?? '';
 
     setTimeout(() => {
       globals.conn!.send('tableCreate', {

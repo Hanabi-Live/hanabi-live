@@ -178,7 +178,7 @@ export const beginTurn = () => {
   // Set the current player's hand to be draggable
   disableDragOnAllHands();
   const currentPlayerHand = globals.elements.playerHands[globals.currentPlayerIndex!];
-  if (!currentPlayerHand) {
+  if (currentPlayerHand === undefined) {
     throw new Error(`Failed to get the current player's hand with an index of ${globals.currentPlayerIndex}.`);
   }
   currentPlayerHand.checkSetDraggableAll();
@@ -275,7 +275,7 @@ export const send = (hypoAction: ClientAction) => {
 
     // Text
     let text = `${globals.playerNames[gameState.turn.currentPlayerIndex!]} ${type}s `;
-    if (card.suitIndex && card.rank) {
+    if (card.suitIndex !== null && card.rank !== null) {
       const suit = suitIndexToSuit(card.suitIndex!, variant)!;
       text += `${suit.name} ${card.rank} `;
     } else {
@@ -292,7 +292,7 @@ export const send = (hypoAction: ClientAction) => {
     // Draw
     const nextCardOrder = gameState.deck.length;
     const nextCard = cardIdentities[nextCardOrder];
-    if (nextCard) { // All the cards might have already been drawn
+    if (nextCard !== undefined) { // All the cards might have already been drawn
       if (nextCard.suitIndex === null || nextCard.rank === null) {
         throw new Error('Unable to find the suit or rank of the next card.');
       }

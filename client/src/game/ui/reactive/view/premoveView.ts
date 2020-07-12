@@ -30,7 +30,7 @@ export function onChanged(
     // We just specified a premove action
     const ourPlayerIndex = globals.store!.getState().metadata.ourPlayerIndex;
     const ourHand = globals.elements.playerHands[ourPlayerIndex];
-    if (!ourHand) {
+    if (ourHand === undefined) {
       throw new Error(`Failed to get our hand with an index of ${ourPlayerIndex}.`);
     }
     ourHand.checkSetDraggableAll();

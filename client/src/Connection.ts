@@ -43,7 +43,7 @@ export default class Connection {
   onMessage(evt: MessageEvent) {
     const data = unpack(evt.data);
     const command = data[0];
-    if (this.callbacks[command]) {
+    if (this.callbacks[command] !== undefined) {
       const obj = unmarshal(data[1]);
       if (this.debug) {
         console.log(`%cReceived ${command}:`, 'color: blue;');

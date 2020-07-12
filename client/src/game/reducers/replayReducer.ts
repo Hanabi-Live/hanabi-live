@@ -67,7 +67,11 @@ const replayReducer = produce((
           // Note: the for loop is necessary because the array is not contiguous
           // Array.filter would change the indexes
           state.hypothetical!.morphedIdentities = [];
-          if (morphed[i] && morphed[i].rank !== null && morphed[i].suitIndex !== null) {
+          if (
+            morphed[i] !== undefined
+            && morphed[i].rank !== null
+            && morphed[i].suitIndex !== null
+          ) {
             state.hypothetical!.morphedIdentities[i] = morphed[i];
           }
         }

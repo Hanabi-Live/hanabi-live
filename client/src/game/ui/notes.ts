@@ -63,7 +63,7 @@ export const set = (order: number, note: string) => {
   }
 
   let card = globals.deck[order];
-  if (!card) {
+  if (card === undefined) {
     card = globals.stackBases[order - globals.deck.length];
   }
   card.checkSpecialNote();
@@ -336,7 +336,7 @@ export const openEditTooltip = (card: HanabiCard) => {
     } else if (keyEvent.key === 'Enter') {
       // Get the value of the input box
       const element = $(`#tooltip-${card.tooltipName}-input`);
-      if (!element) {
+      if (element === undefined) {
         throw new Error('Failed to get the element for the keydown function.');
       }
       newNote = element.val();
@@ -394,7 +394,7 @@ export const setAllCardIndicators = () => {
 export const setCardIndicator = (order: number) => {
   const visible = shouldShowIndicator(order);
   let card = globals.deck[order];
-  if (!card) {
+  if (card === undefined) {
     card = globals.stackBases[order - globals.deck.length];
   }
   card.noteIndicator!.visible(visible);
@@ -422,5 +422,5 @@ export const shouldShowIndicator = (order: number) => {
 
 const stripHTMLTags = (input: string) => {
   const doc = new DOMParser().parseFromString(input, 'text/html');
-  return doc.body.textContent || '';
+  return doc.body.textContent ?? '';
 };

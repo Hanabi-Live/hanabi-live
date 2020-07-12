@@ -69,7 +69,7 @@ commands.set('connected', (data: ConnectedData) => {
 
   for (let i = 0; i < data.list.length; i++) {
     const nameFrame = globals.elements.nameFrames[i];
-    if (nameFrame) {
+    if (nameFrame !== undefined) {
       nameFrame.setConnected(data.list[i]);
     }
   }
@@ -561,10 +561,10 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
     // Ensure that the card exists as a sanity-check
     // (the server does not validate the order that the leader sends)
     let card = globals.deck[data.order];
-    if (!card) {
+    if (card === undefined) {
       card = globals.stackBases[data.order - globals.deck.length];
     }
-    if (!card) {
+    if (card === undefined) {
       return;
     }
 
