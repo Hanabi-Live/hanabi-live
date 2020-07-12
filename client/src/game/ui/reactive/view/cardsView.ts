@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
+import CardIdentity from '../../../types/CardIdentity';
 import CardState from '../../../types/CardState';
 import ClueType from '../../../types/ClueType';
 import State from '../../../types/State';
@@ -20,6 +21,43 @@ export function onDeckChanged(length: number) {
     while (globals.cardSubscriptions.length > length) {
       const unsubscribe = globals.cardSubscriptions.pop()!;
       unsubscribe();
+    }
+  }
+}
+
+export function onMorphedIdentitiesChanged(data: {
+  hypotheticalActive: boolean;
+  morphedIdentities: readonly CardIdentity[] | undefined;
+}, previousData: {
+  hypotheticalActive: boolean;
+  morphedIdentities: readonly CardIdentity[] | undefined;
+} | undefined) {
+  if (previousData === undefined || !previousData.hypotheticalActive) {
+    // Initializing, or entering hypothetical
+    return;
+  }
+
+  if (!data.hypotheticalActive) {
+    if (!previousData.hypotheticalActive) {
+      // Something is wrong, we're exiting a hypothetical that wasn't there
+      throw new Error('Trying to unmorph cards but we were not in a hypothetical.');
+    }
+    // Exiting hypothetical, update all morphed
+    for (let i = 0; i < previousData.morphedIdentities!.length; i++) {
+      if (previousData.morphedIdentities![i] !== undefined) {
+        updateCardVisuals(i);
+      }
+    }
+    return;
+  }
+
+  // Update the card visuals when a card is morphed
+  const currentLength = data.morphedIdentities!.length;
+  const previousLength = previousData.morphedIdentities!.length;
+  const maxLength = Math.max(currentLength, previousLength);
+  for (let i = 0; i < maxLength; i++) {
+    if (data.morphedIdentities![i] !== previousData.morphedIdentities![i]) {
+      updateCardVisuals(i);
     }
   }
 }
@@ -74,7 +112,6 @@ function subscribeToCardChanges(order: number) {
       numPossibleRanks: card.rankClueMemory.possibilities.length,
       numPossibleSuits: card.colorClueMemory.possibilities.length,
       identity: s.cardIdentities[order],
-      morphedIdentity: s.replay.hypothetical?.morphedIdentities[order],
     };
   }, () => updateCardVisuals(order));
 
@@ -95,7 +132,12 @@ function updatePips(order: number, clueType: ClueType) {
 }
 
 function updateCardVisuals(order: number) {
-  globals.deck[order].setBareImage();
+  // Card visuals are updated for both the deck and stack bases when morphed
+  if (order < globals.deck.length) {
+    globals.deck[order].setBareImage();
+  } else {
+    globals.stackBases[order - globals.deck.length].setBareImage();
+  }
   globals.layers.card.batchDraw();
 }
 

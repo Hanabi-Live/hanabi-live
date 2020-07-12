@@ -79,6 +79,12 @@ export default class StateObserver {
     // Each card will subscribe to changes to its own data
     vs((s) => s.deck.length, cardsView.onDeckChanged);
 
+    // Card and stack base morphing
+    sub((s) => ({
+      hypotheticalActive: s.replay.hypothetical !== null,
+      morphedIdentities: s.replay.hypothetical?.morphedIdentities,
+    }), cardsView.onMorphedIdentitiesChanged);
+
     // The "Current Player" area should only be shown under certain conditions
     sub((s) => ({
       visible: currentPlayerAreaView.isVisible(s),
