@@ -25,7 +25,7 @@ import NodeWithTooltip from './controls/NodeWithTooltip';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';
 import { suitIndexToSuit } from './convert';
-import * as cursor from './cursor';
+import cursorSet from './cursorSet';
 import globals from './globals';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
@@ -927,14 +927,46 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.on('click tap', HanabiCardClick);
     this.on('mousedown', HanabiCardClickSpeedrun);
     this.on('mousedown', this.cardStartDrag);
-    this.on('mouseenter', () => {
-      if (typeof this.state.location === 'number' && this.state.location !== globals.playerUs) {
-        cursor.set('look');
-      }
-    });
+    this.on('mousemove', this.setCursor);
     this.on('mouseleave', () => {
-      cursor.set('default');
+      cursorSet('default');
     });
+  }
+
+  setCursor() {
+    const cursorType = this.shouldShowLookCursor() ? 'look' : 'default';
+    cursorSet(cursorType);
+  }
+
+  shouldShowLookCursor() {
+    // Don't show the cursor if the card is draggable
+    // (the hand cursor takes precedence over the look cursor)
+    if (this.parent !== null && this.parent.draggable()) {
+      return false;
+    }
+
+    // If we are in a replay, always show the cursor
+    if (globals.replay || globals.inReplay) {
+      return true;
+    }
+
+    // For ongoing games, always show the cursor for other people's hands
+    const ourPlayerIndex = globals.store!.getState().metadata.ourPlayerIndex;
+    if (typeof this.state.location === 'number' && this.state.location !== ourPlayerIndex) {
+      return true;
+    }
+
+    // For ongoing games, only show the cursor for our hand if it has a custom card identity
+    if (
+      (this.note.suitIndex !== null && this.note.suitIndex !== this.state.suitIndex)
+      || (this.note.rank !== null && this.note.rank !== this.state.rank)
+      || this.note.blank
+      || this.note.unclued
+    ) {
+      return true;
+    }
+
+    return false;
   }
 
   private cardStartDrag(event: Konva.KonvaEventObject<MouseEvent>) {
@@ -1121,5 +1153,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     ));
 
     globals.layers.card.batchDraw();
+    this.setCursor();
   }
 }

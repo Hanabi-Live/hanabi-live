@@ -68,7 +68,7 @@ export const show = () => {
   globals.elements.hypoCircle!.visible(!globals.amSharedReplayLeader);
 
   if (!globals.amSharedReplayLeader) {
-    disableDragOnAllHands();
+    checkSetDraggableAllHands();
   }
 
   globals.layers.UI.batchDraw();
@@ -120,7 +120,7 @@ export const end = () => {
     globals.elements.toggleRevealedButton!.hide();
 
     // Furthermore, disable dragging and get rid of the clue UI
-    disableDragOnAllHands();
+    checkSetDraggableAllHands();
     turn.hideClueUIAndDisableDragging();
   } else {
     globals.elements.hypoCircle!.hide();
@@ -176,12 +176,7 @@ export const beginTurn = () => {
   globals.elements.hypoBackButton!.visible(globals.hypoActions.length > 0);
 
   // Set the current player's hand to be draggable
-  disableDragOnAllHands();
-  const currentPlayerHand = globals.elements.playerHands[globals.currentPlayerIndex!];
-  if (currentPlayerHand === undefined) {
-    throw new Error(`Failed to get the current player's hand with an index of ${globals.currentPlayerIndex}.`);
-  }
-  currentPlayerHand.checkSetDraggableAll();
+  checkSetDraggableAllHands();
 };
 
 export const send = (hypoAction: ClientAction) => {
@@ -336,12 +331,9 @@ export const sendHypoAction = (hypoAction: ActionIncludingHypothetical) => {
   });
 };
 
-const disableDragOnAllHands = () => {
+const checkSetDraggableAllHands = () => {
   for (const hand of globals.elements.playerHands) {
-    hand.children.each((layoutChild) => {
-      layoutChild.draggable(false);
-      layoutChild.off('dragend');
-    });
+    hand.checkSetDraggableAll();
   }
 };
 

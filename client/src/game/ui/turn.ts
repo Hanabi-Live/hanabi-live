@@ -112,12 +112,6 @@ export const showClueUIAndEnableDragging = () => {
     }
   }
 
-  const ourHand = globals.elements.playerHands[globals.playerUs];
-  if (ourHand === undefined) {
-    throw new Error(`Failed to get our hand with an index of ${globals.playerUs}.`);
-  }
-  ourHand.checkSetDraggableAll();
-
   if (globals.options.deckPlays) {
     globals.elements.deck!.cardBack.draggable(globals.deckSize === 1);
     globals.elements.deckPlayAvailableLabel!.visible(globals.deckSize === 1);
@@ -168,6 +162,9 @@ export const hideClueUIAndDisableDragging = () => {
   // (but we need to keep them draggable if the pre-play setting is enabled)
   if (!globals.lobby.settings.speedrunPreplay) {
     const ourHand = globals.elements.playerHands[globals.playerUs];
+    if (ourHand === undefined) {
+      throw new Error(`Failed to get our hand with an index of ${globals.playerUs}.`);
+    }
     ourHand.children.each((child) => {
       // This is a LayoutChild
       child.off('dragend');
