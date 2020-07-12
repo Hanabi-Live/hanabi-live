@@ -15,6 +15,8 @@ export function isVisible(s: State) {
     )
     // The premove cancel button should take precedence over the "Current Player" area
     && s.premove === null
+    // Don't show it if the game is over
+    && s.ongoingGame?.turn.currentPlayerIndex !== null
   );
 }
 
@@ -77,7 +79,14 @@ export function onChanged(data: {
     }
     text2.width(textValues.w * winW);
     text2.resize();
-    while (text2.measureSize(text2.text()).height > maxSize) {
+
+    // We need to adjust the font size of the player name, depending on how long the name is
+    // Continue to shrink the text until it reaches the maximum size
+    // Run at most 100 times; in most cases, it will take around 15
+    for (let i = 0; i < 100; i++) {
+      if (text2.measureSize(text2.text()).height <= maxSize) {
+        break;
+      }
       text2.width(text2.width() * 0.9);
       text2.resize();
     }
