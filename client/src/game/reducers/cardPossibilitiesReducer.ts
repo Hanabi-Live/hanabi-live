@@ -128,7 +128,6 @@ export function checkPips(
   for (const [suitIndex, rank] of possibleCardsByClues) {
     const pip = (unseenCards[suitIndex][rank] > 0) ? 'Visible' : 'Eliminated';
     suitPips[suitIndex] = pipStateMax(suitPips[suitIndex], pip);
-    // if (rank >= 1 && rank <= 5)
     rankPips[rank] = pipStateMax(rankPips[rank], pip);
   }
   return { suitPips, rankPips };
