@@ -137,16 +137,7 @@ const drawBackground = () => {
     width: winW,
     height: winH,
     image: globals.imageLoader!.get('background')!,
-    listening: true,
-  });
-  background.on('click tap', tooltips.resetActiveHover);
-  // Double-tapping the background will close the note we are currently editing
-  background.on('dbltap', () => {
-    if (globals.editingNote !== null) {
-      const tooltip = $(`#tooltip-card-${globals.editingNote}`);
-      tooltip.tooltipster('close');
-      globals.editingNote = null;
-    }
+    listening: false,
   });
 
   globals.layers.UI.add(background);
