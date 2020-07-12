@@ -1,5 +1,4 @@
 // Index for all rules exports
-export * as applyClueCore from './rules/applyClueCore';
 export * as cardRules from './rules/card';
 export * as cluesRules from './rules/clues';
 export * as clueTokensRules from './rules/clueTokens';

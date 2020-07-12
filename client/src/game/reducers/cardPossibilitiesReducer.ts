@@ -1,10 +1,6 @@
 // Calculates the state of a card after a clue
 
 import { getVariant } from '../data/gameData';
-import {
-  applyColorClue,
-  applyRankClue,
-} from '../rules/applyClueCore';
 import CardState, { PipState } from '../types/CardState';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
@@ -28,9 +24,10 @@ const cardPossibilitiesReducer = (
   const variant = getVariant(metadata.options.variantName);
 
   // Apply the clue and check what is eliminated
-  const possibleCardsByClues = (clue.type === ClueType.Color)
-    ? applyColorClue(state, clue, positive, variant)
-    : applyRankClue(state, clue, positive, variant);
+  const clueTouch = variant.touchedCards.get(clue.value)!;
+  const possibleCardsByClues = state.possibleCardsByClues.filter(
+    ([x, y]) => clueTouch[x][y] === positive,
+  );
 
   const getIndex = getIndexConverter(variant);
 
