@@ -208,7 +208,7 @@ actionFunctions.set('strike', (data: ActionStrike) => {
   animate(strikeX, {
     duration: 1,
     opacity: 1,
-  });
+  }, true);
 
   // Record the turn that the strike happened and the card that was misplayed
   strikeRecord(data);
