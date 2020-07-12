@@ -121,14 +121,14 @@ function pipStateMax(a : PipState, b : PipState) : PipState {
 }
 
 export function checkPips(
-  matchingCards: ReadonlyArray<readonly [number, number]>,
+  matchingCardsArray: ReadonlyArray<readonly [number, number]>,
   unseenCards: ReadonlyArray<readonly number[]>,
   variant: Variant,
 ) {
   const suitPips : PipState[] = variant.suits.map(() => 'Hidden');
   const rankPips : PipState[] = [];
   for (const rank of variant.ranks) rankPips[rank] = 'Hidden';
-  for (const [suitIndex, rank] of matchingCards) {
+  for (const [suitIndex, rank] of matchingCardsArray) {
     const pip = (unseenCards[suitIndex][rank] > 0) ? 'Visible' : 'Eliminated';
     suitPips[suitIndex] = pipStateMax(suitPips[suitIndex], pip);
     rankPips[rank] = pipStateMax(rankPips[rank], pip);
