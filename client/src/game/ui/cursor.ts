@@ -1,32 +1,17 @@
 import globals from './globals';
 
-type CursorType = 'default' | 'grab' | 'grabbing';
+type CursorType = 'default' | 'grab' | 'grabbing' | 'look';
 
-const urlPrefix = '/public/img/cursors';
+const filenameMap = {
+  default: 'cursor',
+  grab: 'hand',
+  grabbing: 'clenched-fist',
+  look: 'magnifying-glass',
+};
 
 export function set(cursorType: CursorType) {
-  let url;
-  switch (cursorType) {
-    case 'default': {
-      url = `${urlPrefix}/cursor.png`;
-      break;
-    }
-
-    case 'grab': {
-      url = `${urlPrefix}/hand.png`;
-      break;
-    }
-
-    case 'grabbing': {
-      url = `${urlPrefix}/clenched-fist.png`;
-      break;
-    }
-
-    default: {
-      throw new Error('Unknown cursor type.');
-    }
-  }
-
+  const filename = filenameMap[cursorType];
+  const url = `/public/img/cursors/${filename}.png`;
   globals.stage.container().style.cursor = `url('${url}'), auto`;
 }
 

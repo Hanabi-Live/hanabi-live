@@ -25,6 +25,7 @@ import NodeWithTooltip from './controls/NodeWithTooltip';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';
 import { suitIndexToSuit } from './convert';
+import * as cursor from './cursor';
 import globals from './globals';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
@@ -190,7 +191,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Register mouse events
     this.initTooltip();
     this.initEmpathy();
-    this.registerClick();
+    this.registerMouseHandlers();
   }
 
   // Erase all of the data on the card to make it like it was freshly drawn
@@ -911,7 +912,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  private registerClick() {
+  private registerMouseHandlers() {
     // Define the clue log mouse handlers
     this.on('mousemove tap', () => {
       globals.elements.clueLog!.showMatches(this);
@@ -926,6 +927,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.on('click tap', HanabiCardClick);
     this.on('mousedown', HanabiCardClickSpeedrun);
     this.on('mousedown', this.cardStartDrag);
+    this.on('mouseenter', () => {
+      if (typeof this.state.location === 'number' && this.state.location !== globals.playerUs) {
+        cursor.set('look');
+      }
+    });
+    this.on('mouseleave', () => {
+      cursor.set('default');
+    });
   }
 
   private cardStartDrag(event: Konva.KonvaEventObject<MouseEvent>) {
