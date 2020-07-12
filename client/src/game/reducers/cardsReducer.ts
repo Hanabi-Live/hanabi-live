@@ -44,18 +44,14 @@ const cardsReducer = (
         */
 
         const card = getCard(newDeck, order);
-        const wasKnown = (
-          card.rankClueMemory.possibilities.length === 1
-          && card.colorClueMemory.possibilities.length === 1
-        );
+        const wasKnown = (card.matchingCardsArray.length === 1);
 
         const newCard = cardPossibilitiesReducer(card, clue, positive, metadata);
         newDeck[order] = newCard;
 
         if (
           !wasKnown
-          && newCard.rankClueMemory.possibilities.length === 1
-          && newCard.colorClueMemory.possibilities.length === 1
+          && newCard.matchingCardsArray.length === 1
         ) {
           // If we're currently playing this game and we got clued, this is the first time
           // we identify this card, from the point of view of all hands
@@ -162,11 +158,7 @@ const cardsReducer = (
       // Remove all possibilities of all cards previously drawn and visible
       deck.slice(0, action.order)
         .filter((card) => card.suitIndex !== null && card.rank !== null)
-        .filter((card) => card.location !== action.who
-        || (
-          card.colorClueMemory.possibilities.length === 1
-          && card.rankClueMemory.possibilities.length === 1
-        ))
+        .filter((card) => card.location !== action.who || card.matchingCardsArray.length === 1)
         .forEach((card) => { unseenCards[card.suitIndex!][card.rank!] -= 1; });
 
       const { suitPips, rankPips } = checkPips(initial.matchingCardsArray, unseenCards, variant);
