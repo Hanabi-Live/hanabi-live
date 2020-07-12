@@ -3,6 +3,5 @@
 import * as ourHand from '../../ourHand';
 
 export function onCurrentPlayerIndexChanged() {
-  console.log('XXX onCurrentPlayerIndexChanged FIRED');
   ourHand.checkSetDraggableAll();
 }
