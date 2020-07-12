@@ -46,7 +46,7 @@ describe('cardPossibilitiesReducer', () => {
     expect(countPossibleCards(newCard)).toBe(20);
   });
 
-  test.skip('removes possibilities based on previous rank and color clues', () => {
+  test('removes possibilities based on previous rank and color clues', () => {
     const metadata = testMetadata(numPlayers, 'Rainbow-Ones & Brown (6 Suits)');
     const rainbowOnesAndBrown = getVariant(metadata.options.variantName);
 
