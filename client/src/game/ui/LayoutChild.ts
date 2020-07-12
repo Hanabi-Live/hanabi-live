@@ -7,6 +7,7 @@ import * as variantRules from '../rules/variant';
 import ActionType from '../types/ActionType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import CardLayout from './CardLayout';
+import * as cursor from './cursor';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import PlayStack from './PlayStack';
@@ -42,10 +43,26 @@ export default class LayoutChild extends Konva.Group {
       this.draggable(true);
       this.on('dragstart', this.dragStart);
       this.on('dragend', this.dragEnd);
+      this.on('mouseenter', () => {
+        cursor.set('grab');
+      });
+      this.on('mouseleave', () => {
+        cursor.set('default');
+      });
+      this.on('mousedown', () => {
+        cursor.set('grabbing');
+      });
+      this.on('mouseup', () => {
+        cursor.set('default');
+      });
     } else {
       this.draggable(false);
       this.off('dragstart');
       this.off('dragend');
+      this.off('mouseenter');
+      this.off('mouseleave');
+      this.off('mouseenter');
+      this.off('mouseleave');
     }
   }
 
@@ -97,6 +114,10 @@ export default class LayoutChild extends Konva.Group {
   }
 
   dragEnd() {
+    // We have released the mouse button, so immediately set the cursor back to the default
+    cursor.set('default');
+    cursor.update();
+
     const card = this.children[0] as unknown as HanabiCard;
 
     const pos = this.getAbsolutePosition();
