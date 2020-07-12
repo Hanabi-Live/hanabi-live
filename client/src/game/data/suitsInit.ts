@@ -93,6 +93,7 @@ export default function suitsInit(COLORS: Map<string, Color>) {
         }
       }
     } else if (suitJSON.allClueColors !== true && suitJSON.noClueColors !== true) {
+      // We check for !== true because they could be undefined or false
       // The clue colors were not specified; by default, use the color of the same name
       const color = COLORS.get(name);
       if (typeof color !== 'undefined') {

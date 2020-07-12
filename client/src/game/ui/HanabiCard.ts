@@ -687,7 +687,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   animateToDeck() {
     const layoutChild = this.parent as unknown as LayoutChild;
-    if (layoutChild === undefined || !layoutChild.parent) {
+    if (
+      layoutChild === undefined
+      || layoutChild.parent === null
+      || layoutChild.parent === undefined
+    ) {
       // First initialization
       return;
     }
