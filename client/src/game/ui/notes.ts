@@ -219,9 +219,9 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
   if (note.suitIndex !== null && note.rank !== null) {
     // Both the suit and the rank were specified
     if (
-      (
-        cardState.colorClueMemory.pipStates[note.suitIndex] !== 'Visible'
-        || cardState.rankClueMemory.pipStates[note.rank] !== 'Visible'
+      !(
+        cardState.matchingCards[note.suitIndex][note.rank]
+        && cardState.unseenCards[note.suitIndex][note.rank] > 0
       ) && cardState.location === globals.playerUs
     ) {
       const suitName = variant.suits[note.suitIndex].name;
