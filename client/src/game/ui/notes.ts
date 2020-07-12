@@ -360,6 +360,12 @@ export const openEditTooltip = (card: HanabiCard) => {
     update(card);
   });
 
+  // Automatically close the tooltip if we click elsewhere on the screen
+  $(`#tooltip-${card.tooltipName}-input`).on('focusout', () => {
+    globals.editingNote = null;
+    tooltip.tooltipster('close');
+  });
+
   // Automatically highlight all of the existing text when a note input box is focused
   $(`#tooltip-${card.tooltipName}-input`).focus(function tooltipCardInputFocus() {
     $(this).select();
