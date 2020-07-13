@@ -6,6 +6,7 @@ export default interface GameMetadata {
   // If spectating an ongoing game or a replay, equal to the player index that we are observing from
   readonly ourPlayerIndex: number;
   readonly spectating: boolean;
+  readonly replay: boolean;
   readonly characterAssignments: Readonly<Array<number | null>>;
   readonly characterMetadata: number[];
 }

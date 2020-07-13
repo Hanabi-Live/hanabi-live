@@ -56,7 +56,7 @@ const cardsReducer = (
           // If we're currently playing this game and we got clued, this is the first time
           // we identify this card, from the point of view of all hands
           const handsSeeingCardForFirstTime = (
-            !metadata.spectating
+            !metadata.spectating && !metadata.replay
             && metadata.ourPlayerIndex === card.location
           )
             ? game.hands // All hands
@@ -110,7 +110,7 @@ const cardsReducer = (
         // If we're currently playing this game, this is the first time
         // we see this card, from the point of view of all hands
         const handsSeeingCardForFirstTime = (
-          !metadata.spectating
+          !metadata.spectating && !metadata.replay
           && metadata.ourPlayerIndex === card.location
         )
           ? game.hands // All hands

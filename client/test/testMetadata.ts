@@ -15,6 +15,7 @@ export default function testMetadata(
     },
     ourPlayerIndex: 0,
     spectating: true,
+    replay: false,
     characterAssignments: initArray(numPlayers, null),
     characterMetadata: [],
   };

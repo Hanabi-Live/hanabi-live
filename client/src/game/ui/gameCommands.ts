@@ -290,6 +290,7 @@ commands.set('init', (data: InitData) => {
     options: data.options,
     ourPlayerIndex: data.seat,
     spectating: data.spectating,
+    replay: data.replay,
     characterAssignments,
     characterMetadata: data.characterMetadata,
   };
