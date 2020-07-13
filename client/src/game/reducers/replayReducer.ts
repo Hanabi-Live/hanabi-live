@@ -105,7 +105,9 @@ const replayReducer = produce((
         }
 
         if (
-          suitIndex !== cardIdentities[a.order].suitIndex
+          // Stack bases can be morphed, but their orders are higher than the deck size
+          a.order >= cardIdentities.length
+          || suitIndex !== cardIdentities[a.order].suitIndex
           || rank !== cardIdentities[a.order].rank
         ) {
           // This card has been morphed or blanked

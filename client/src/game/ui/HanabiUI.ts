@@ -4,7 +4,7 @@
 
 import { Globals as LobbyGlobals } from '../../globals';
 import { GameExports } from '../main';
-import * as cursor from './cursor';
+import cursorSet from './cursorSet';
 import globals, { Globals } from './globals';
 import * as keyboard from './keyboard';
 import * as timer from './timer';
@@ -30,7 +30,7 @@ export default class HanabiUI {
     // We should also combine this with the UI object in the future
 
     initStageSize();
-    cursor.set('default');
+    cursorSet('default');
 
     // The HanabiUI object is now instantiated, but none of the actual UI elements are drawn yet
     // We must wait for the "init" message from the server in order to know how many players are in
@@ -61,7 +61,7 @@ export default class HanabiUI {
   }
 
   reshowClueUIAfterWarning() { // eslint-disable-line class-methods-use-this
-    turn.showClueUIAndEnableDragging();
+    turn.showClueUI();
   }
 }
 

@@ -8,8 +8,8 @@
 export const init = () => {
   // Add a function to the jQuery object to detect if an element is off screen
   // https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen
-  ($.expr as any).filters.offscreen = (el: Element) => {
-    const rect = el.getBoundingClientRect();
+  ($.expr as any).filters.offscreen = (element: Element) => {
+    const rect = element.getBoundingClientRect();
     return (
       rect.top < 0 // Above the top
       || rect.bottom > window.innerHeight // Below the bottom

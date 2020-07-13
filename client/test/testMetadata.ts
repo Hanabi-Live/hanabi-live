@@ -14,7 +14,7 @@ export default function testMetadata(
       variantName,
     },
     ourPlayerIndex: 0,
-    spectating: false,
+    spectating: true,
     characterAssignments: initArray(numPlayers, null),
     characterMetadata: [],
   };

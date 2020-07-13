@@ -3,6 +3,7 @@
 import ActionType from '../../../types/ActionType';
 import ClientAction from '../../../types/ClientAction';
 import globals from '../../globals';
+import * as ourHand from '../../ourHand';
 
 export function onChanged(
   action: ClientAction | null,
@@ -21,18 +22,11 @@ export function onChanged(
 
     // If we dragged a card, we have to make the card tween back to the hand
     if (previousAction.type === ActionType.Play || previousAction.type === ActionType.Discard) {
-      const ourPlayerIndex = globals.store!.getState().metadata.ourPlayerIndex;
-      const ourHand = globals.elements.playerHands[ourPlayerIndex];
-      ourHand.doLayout();
+      ourHand.get().doLayout();
       globals.layers.card.draw();
     }
   } else if (action !== null && previousAction === null) {
     // We just specified a premove action
-    const ourPlayerIndex = globals.store!.getState().metadata.ourPlayerIndex;
-    const ourHand = globals.elements.playerHands[ourPlayerIndex];
-    if (ourHand === undefined) {
-      throw new Error(`Failed to get our hand with an index of ${ourPlayerIndex}.`);
-    }
     ourHand.checkSetDraggableAll();
 
     let text = 'Cancel Pre-';

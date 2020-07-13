@@ -26,8 +26,8 @@ export const checkLegal = () => {
   const clueButton = clueTypeButtonGroup!.getPressed() as ColorButton | RankButton;
 
   if (
-    target === undefined // They have not selected a target player
-    || clueButton === undefined // They have not selected a clue type
+    target === undefined || target === null// They have not selected a target player
+    || clueButton === undefined || clueButton === null // They have not selected a clue type
   ) {
     globals.elements.giveClueButton!.setEnabled(false);
     return;
@@ -120,8 +120,8 @@ export const give = () => {
   if (
     (!globals.ourTurn && !globals.hypothetical) // We can only give clues on our turn
     || globals.clues === 0 // We can only give a clue if there is one available
-    || target === undefined // We might have not selected a clue recipient
-    || clueButton === undefined // We might have not selected a type of clue
+    || target === undefined || target === null // We might have not selected a clue recipient
+    || clueButton === undefined || clueButton === null // We might have not selected a type of clue
     // We might be trying to give an invalid clue (e.g. an Empty Clue)
     || !globals.elements.giveClueButton!.enabled
     // Prevent the user from accidentally giving a clue

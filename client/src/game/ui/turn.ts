@@ -6,10 +6,11 @@ import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
+import * as ourHand from './ourHand';
 import * as replay from './replay';
 
 export const begin = () => {
-  showClueUIAndEnableDragging();
+  showClueUI();
 
   if (globals.animateFast) {
     return;
@@ -82,7 +83,7 @@ const handlePremove = () => {
   }, PREPLAY_DELAY);
 };
 
-export const showClueUIAndEnableDragging = () => {
+export const showClueUI = () => {
   if (globals.inReplay && !globals.hypothetical) {
     return;
   }
@@ -111,12 +112,6 @@ export const showClueUIAndEnableDragging = () => {
       globals.elements.clueAreaDisabled!.show();
     }
   }
-
-  const ourHand = globals.elements.playerHands[globals.playerUs];
-  if (ourHand === undefined) {
-    throw new Error(`Failed to get our hand with an index of ${globals.playerUs}.`);
-  }
-  ourHand.checkSetDraggableAll();
 
   if (globals.options.deckPlays) {
     globals.elements.deck!.cardBack.draggable(globals.deckSize === 1);
@@ -167,12 +162,7 @@ export const hideClueUIAndDisableDragging = () => {
   // Make all of the cards in our hand not draggable
   // (but we need to keep them draggable if the pre-play setting is enabled)
   if (!globals.lobby.settings.speedrunPreplay) {
-    const ourHand = globals.elements.playerHands[globals.playerUs];
-    ourHand.children.each((child) => {
-      // This is a LayoutChild
-      child.off('dragend');
-      child.draggable(false);
-    });
+    ourHand.checkSetDraggableAll();
   }
 
   globals.elements.deck!.cardBack.draggable(false);

@@ -7,9 +7,10 @@ import * as variantRules from '../rules/variant';
 import ActionType from '../types/ActionType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import CardLayout from './CardLayout';
-import * as cursor from './cursor';
+import cursorSet from './cursorSet';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
+import isOurTurn from './isOurTurn';
 import PlayStack from './PlayStack';
 import * as turn from './turn';
 
@@ -43,26 +44,33 @@ export default class LayoutChild extends Konva.Group {
       this.draggable(true);
       this.on('dragstart', this.dragStart);
       this.on('dragend', this.dragEnd);
-      this.on('mouseenter', () => {
-        cursor.set('grab');
+      this.on('mousemove', (event: Konva.KonvaEventObject<MouseEvent>) => {
+        if (event.evt.buttons % 2 === 1) {
+          // Left-click is being held down
+          cursorSet('dragging');
+        } else {
+          cursorSet('hand');
+        }
       });
       this.on('mouseleave', () => {
-        cursor.set('default');
+        cursorSet('default');
       });
-      this.on('mousedown', () => {
-        cursor.set('grabbing');
+      this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
+        if (event.evt.buttons % 2 === 1) {
+          cursorSet('dragging');
+        }
       });
       this.on('mouseup', () => {
-        cursor.set('default');
+        cursorSet('hand');
       });
     } else {
       this.draggable(false);
       this.off('dragstart');
       this.off('dragend');
-      this.off('mouseenter');
+      this.off('mousemove');
       this.off('mouseleave');
-      this.off('mouseenter');
-      this.off('mouseleave');
+      this.off('mousedown');
+      this.off('mouseup');
     }
   }
 
@@ -84,17 +92,19 @@ export default class LayoutChild extends Konva.Group {
       );
     }
 
+    const state = globals.store!.getState();
     return (
       // If it is not our turn, then the card should not need to be draggable yet
       // (unless we have the "Enable pre-playing cards" feature enabled)
-      (globals.ourTurn || globals.lobby.settings.speedrunPreplay)
+      (isOurTurn() || globals.lobby.settings.speedrunPreplay)
       // Cards should not be draggable if there is a queued move
-      && globals.store!.getState().premove === null
+      && state.premove === null
       && !globals.options.speedrun // Cards should never be draggable while speedrunning
+      && !globals.lobby.settings.speedrunMode // Cards should never be draggable while speedrunning
       && card.state.location === globals.playerUs // Only our cards should be draggable
       && !globals.replay // Cards should not be draggable in solo or shared replays
       // Cards should not be draggable if we are spectating an ongoing game
-      && !globals.spectating
+      && !state.metadata.spectating
       // Cards should not be draggable if they are currently playing an animation
       // (this function will be called again upon the completion of the animation)
       && !card.tweening
@@ -115,8 +125,7 @@ export default class LayoutChild extends Konva.Group {
 
   dragEnd() {
     // We have released the mouse button, so immediately set the cursor back to the default
-    cursor.set('default');
-    cursor.update();
+    cursorSet('default');
 
     const card = this.children[0] as unknown as HanabiCard;
 
