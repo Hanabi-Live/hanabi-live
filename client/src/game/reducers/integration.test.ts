@@ -58,7 +58,8 @@ describe('integration', () => {
         'card %i has the correct pips and possibilities', (order) => {
           const turn5State = getStateAtTurn(testState, 4);
           const card = turn5State.deck[order];
-          const expected = (upOrDownTurn5Cards as CardState[])[order];
+          // ugly trick because the compiler won't accept list of tuples from JSON
+          const expected = (upOrDownTurn5Cards as unknown as CardState[])[order];
           checkPossibilitiesEliminatedByClues(card, expected);
           checkPossibilitiesEliminatedByObservation(card, expected);
         },
@@ -98,7 +99,7 @@ describe('integration', () => {
         'card %i has the correct pips and possibilities', (order) => {
           const finalState = getFinalState(testState);
           const card = finalState.deck[order];
-          const expected = (upOrDownFinalCards as CardState[])[order];
+          const expected = (upOrDownFinalCards as unknown as CardState[])[order];
           checkPossibilitiesEliminatedByClues(card, expected);
           checkPossibilitiesEliminatedByObservation(card, expected);
         },

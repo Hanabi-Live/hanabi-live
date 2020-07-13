@@ -2,6 +2,9 @@
 // then paste the following on the console
 // Tested at commit 47e68f701825ed36f22af5edd2c7a061bb6b21c7
 
+// To grab a test state from a recent build, just paste the following line:
+// JSON.stringify(globals.deck.map(x => x.state).filter(x => x.location !== "deck"),null,4)
+
 {
   function getPossibleCards(cardState) {
     const possibleCards = [];
