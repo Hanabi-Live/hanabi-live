@@ -23,14 +23,13 @@ type GamePlayer struct {
 	Game *Game `json:"-"` // Skip circular references when encoding
 
 	// These relate to the game state
-	Hand               []*Card
-	Time               time.Duration
-	Notes              []string
-	RequestedPause     bool
-	Character          string
-	CharacterMetadata  int
-	CharacterMetadata2 int
-	Surprised          bool
+	Hand              []*Card
+	Time              time.Duration
+	Notes             []string
+	RequestedPause    bool
+	Character         string
+	CharacterMetadata int
+	Surprised         bool
 }
 
 var (

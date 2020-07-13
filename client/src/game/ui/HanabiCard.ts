@@ -939,6 +939,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   shouldShowLookCursor() {
+    // Don't show the cursor if this is a stack base
+    if (this.state.rank === STACK_BASE_RANK) {
+      return false;
+    }
+
     // Don't show the cursor if the card is draggable
     // (the hand cursor takes precedence over the look cursor)
     if (this.parent !== null && this.parent.draggable()) {

@@ -528,11 +528,6 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 		actions = d.GameJSON.Actions
 	}
 
-	// Store the actions on the game
-	// (in the future, this will be sent to and used by the client,
-	// making the below emulation unnecessary)
-	g.Actions2 = actions
-
 	// Make the appropriate moves in the game to match what is listed in the database
 	for i, action := range actions {
 		if t.ExtraOptions.SetReplay && t.ExtraOptions.SetReplayTurn == i {

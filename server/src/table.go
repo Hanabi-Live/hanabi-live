@@ -109,6 +109,11 @@ func NewTable(name string, owner int) *Table {
 
 // CheckIdle is meant to be called in a new goroutine
 func (t *Table) CheckIdle() {
+	// Disable idle timeouts in development
+	if isDev {
+		return
+	}
+
 	// Set the last action
 	commandMutex.Lock()
 	t.DatetimeLastAction = time.Now()

@@ -69,18 +69,17 @@ const (
 	ReplayActionTypeToggleRevealed
 )
 
-var (
-	// The amount of time that a game is inactive before it is killed by the server
-	idleGameTimeout    = time.Minute * 30
-	idleGameTimeoutDev = time.Hour * 24 * 7 // 7 days
-)
-
 const (
 	ScoreModifierDeckPlays Bitmask = 1 << iota // e.g. 1, 2, 4, and so forth
 	ScoreModifierEmptyClues
 	ScoreModifierOneExtraCard
 	ScoreModifierOneLessCard
 	ScoreModifierAllOrNothing
+)
+
+var (
+	// The amount of time that a game is inactive before it is killed by the server
+	idleGameTimeout = time.Minute * 30
 )
 
 const (

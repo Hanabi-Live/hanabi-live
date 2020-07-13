@@ -444,12 +444,12 @@ const fillLocalEmotes = (message: string) => {
   }
 
   // Also handle emotes that have special characters in them
-  if (filledMessage.indexOf('&lt;3') !== -1) {
+  if (filledMessage.indexOf('&lt;3') !== -1) { // The Twitch heart emote
     const emoteTag = '<img class="chat-emote" src="/public/img/emotes/other/3.png" title="&lt;3" />';
     const re = new RegExp('&lt;3', 'g'); // "\b" won't work with a semicolon
     filledMessage = filledMessage.replace(re, emoteTag);
   }
-  if (filledMessage.indexOf('D:') !== -1) {
+  if (filledMessage.indexOf('D:') !== -1) { // A BetterTwitchTV emote
     const emoteTag = '<img class="chat-emote" src="/public/img/emotes/other/D.png" title="D:" />';
     // From: https://stackoverflow.com/questions/4134605/regex-and-the-colon
     const re = new RegExp(/(^|\s)D:(\s|$)/, 'g'); // "\b" won't work with a colon
