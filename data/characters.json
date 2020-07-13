@@ -133,7 +133,7 @@
   },
   "Contrarian": {
     "id": 27,
-    "description": "Play order inverts after taking a turn, 2-turn end game",
+    "description": "Play order inverts after taking a turn; 2-turn end game",
     "emoji": "🙅",
     "not2P": true
   },
