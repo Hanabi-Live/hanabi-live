@@ -359,7 +359,8 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 	}
 
 	if command == "2pquestion" || command == "2player" || command == "2p" {
-		msg := "Ask questions about 2-player games in the #2-player channel."
+		// This includes a discord link to the #2-player channel
+		msg := "Ask questions about 2-player games in the <#712153960709881888> channel."
 		discordSend(m.ChannelID, "", msg)
 		return
 	}
