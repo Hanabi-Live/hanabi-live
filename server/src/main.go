@@ -135,11 +135,6 @@ func main() {
 		isDev = true
 	}
 
-	// If we are running in a development environment, change some constants
-	if isDev {
-		idleGameTimeout = idleGameTimeoutDev
-	}
-
 	// Initialize Sentry (in "sentry.go")
 	usingSentry = sentryInit()
 	if usingSentry {

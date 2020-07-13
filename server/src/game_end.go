@@ -145,6 +145,7 @@ func (g *Game) WriteDatabase() error {
 		p := t.Players[gp.Index]
 
 		characterID := 0
+		characterMetadata := 0
 		if t.Options.DetrimentalCharacters {
 			if gp.Character == "n/a" {
 				characterID = -1
@@ -156,6 +157,17 @@ func (g *Game) WriteDatabase() error {
 						" does not exist in the characters map")
 				} else {
 					characterID = v.ID
+
+					// -1 is considered to be "null" metadata
+					// Since most characters have null metadata,
+					// we save space in the database by storing -1 as 0
+					// However, if some characters have a metadata of 0, it is meaningful
+					// (e.g. corresponding to the 0th suit)
+					// Thus, we store meaningful metadata in the database as 1 + the value to make
+					// it clear that it is not a null value
+					if v.WriteMetadataToDatabase {
+						characterMetadata = gp.CharacterMetadata + 1
+					}
 				}
 			}
 		}
@@ -165,7 +177,7 @@ func (g *Game) WriteDatabase() error {
 			p.ID,
 			gp.Index,
 			characterID,
-			gp.CharacterMetadata,
+			characterMetadata,
 		); err != nil {
 			logger.Error("Failed to insert game participant row #"+strconv.Itoa(i)+":", err)
 			return err

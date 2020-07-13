@@ -2,22 +2,26 @@
   "Fuming": {
     "id": 0,
     "description": "Can only clue numbers and [random color]",
-    "emoji": "🌋"
+    "emoji": "🌋",
+    "writeMetadataToDatabase": true
   },
   "Dumbfounded": {
     "id": 1,
     "description": "Can only clue colors and [random number]",
-    "emoji": "🤯"
+    "emoji": "🤯",
+    "writeMetadataToDatabase": true
   },
   "Inept": {
     "id": 2,
     "description": "Cannot give any clues that touch [random color] cards",
-    "emoji": "🤔"
+    "emoji": "🤔",
+    "writeMetadataToDatabase": true
   },
   "Awkward": {
     "id": 3,
     "description": "Cannot give any clues that touch [random number]s",
-    "emoji": "😬"
+    "emoji": "😬",
+    "writeMetadataToDatabase": true
   },
   "Conservative": {
     "id": 4,

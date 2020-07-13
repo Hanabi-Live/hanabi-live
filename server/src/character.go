@@ -11,10 +11,11 @@ import (
 
 type Character struct {
 	// Similar to variants, each character must have a unique numerical ID (for the database)
-	ID          int    `json:"id"`
-	Description string `json:"description"`
-	Emoji       string `json:"emoji"`
-	Not2P       bool   `json:"not2P"`
+	ID                      int    `json:"id"`
+	Description             string `json:"description"`
+	Emoji                   string `json:"emoji"`
+	WriteMetadataToDatabase bool   `json:"writeMetadataToDatabase"`
+	Not2P                   bool   `json:"not2P"`
 }
 
 var (
@@ -105,9 +106,11 @@ func characterGenerate(g *Game) {
 			dbPlayers = v
 		}
 
-		for i, p := range dbPlayers {
-			g.Players[i].Character = charactersID[p.CharacterAssignment]
-			g.Players[i].CharacterMetadata = p.CharacterMetadata
+		for i, dbP := range dbPlayers {
+			g.Players[i].Character = charactersID[dbP.CharacterAssignment]
+
+			// Metadata is stored in the database as value + 1
+			g.Players[i].CharacterMetadata = dbP.CharacterMetadata - 1
 		}
 		return
 	}
@@ -115,7 +118,6 @@ func characterGenerate(g *Game) {
 	for i, p := range g.Players {
 		// Initialize the metadata to -1 (it is 0 by default in order to save database space)
 		p.CharacterMetadata = -1
-		p.CharacterMetadata2 = -1
 
 		if stringInSlice(p.Name, debugUsernames) {
 			// Hard-code some character assignments for testing purposes

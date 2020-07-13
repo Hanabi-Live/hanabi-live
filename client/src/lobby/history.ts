@@ -128,13 +128,17 @@ export const draw = (friends: boolean) => {
     // Column 4 - Variant
     $('<td>').html(gameData.options.variantName).appendTo(row);
 
-    // Column 5 - Other Players
-    // Remove our name from the list of players
-    const ourIndex = gameData.playerNames.indexOf(globals.username);
+    // Column 5 - Other Players / Players
+    // (depending on if we are in the "Friends" view or not)
     const playerNames = gameData.playerNames.slice();
-    playerNames.splice(ourIndex, 1);
-    const playerNamesWithoutUsString = playerNames.join(', ');
-    $('<td>').html(playerNamesWithoutUsString).appendTo(row);
+    let playerNamesString = playerNames.join(', ');
+    if (!friends) {
+      // Remove our name from the list of players
+      const ourIndex = gameData.playerNames.indexOf(globals.username);
+      playerNames.splice(ourIndex, 1);
+      playerNamesString = playerNames.join(', ');
+    }
+    $('<td>').html(playerNamesString).appendTo(row);
 
     // Column 6 - Date Played
     const datePlayed = misc.dateTimeFormatter.format(new Date(gameData.datetimeFinished));

@@ -58,8 +58,8 @@ func httpExport(c *gin.Context) {
 
 	// Make a list of their names
 	playerNames := make([]string, 0)
-	for _, p := range dbPlayers {
-		playerNames = append(playerNames, p.Name)
+	for _, dbP := range dbPlayers {
+		playerNames = append(playerNames, dbP.Name)
 	}
 
 	// Get the options from the database
@@ -156,10 +156,11 @@ func httpExport(c *gin.Context) {
 	var playerCharacters []*CharacterJSON
 	if options.DetrimentalCharacters {
 		playerCharacters = make([]*CharacterJSON, 0)
-		for _, p := range dbPlayers {
+		for _, dbP := range dbPlayers {
 			playerCharacters = append(playerCharacters, &CharacterJSON{
-				Name:     charactersID[p.CharacterAssignment],
-				Metadata: p.CharacterMetadata,
+				Name: charactersID[dbP.CharacterAssignment],
+				// Metadata is stored in the database as value + 1
+				Metadata: dbP.CharacterMetadata - 1,
 			})
 		}
 	}

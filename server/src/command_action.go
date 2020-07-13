@@ -235,7 +235,7 @@ func commandAction(s *Session, d *CommandData) {
 	// Send everyone new clock values
 	t.NotifyTime()
 
-	if t.Options.Timed && !t.Replay {
+	if t.Options.Timed && !t.ExtraOptions.Replay {
 		// Start the function that will check to see if the current player has run out of time
 		// (since it just got to be their turn)
 		go g.CheckTimer(g.Turn, g.PauseCount, np)
