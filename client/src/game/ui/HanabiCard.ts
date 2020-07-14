@@ -864,7 +864,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   // Update all UI pips to their state
   updatePips() {
-    enum PipState {Hidden, Eliminated, Visible} // the order is important here
+    enum PipState {Hidden = 0, Eliminated = 1, Visible = 2} // the order is important here
     function updatePip(
       pipState: PipState,
       hasPositiveClues: boolean,
