@@ -17,16 +17,27 @@ function countPossibleCards(state: CardState) {
   ).length;
 }
 
+function possibilities(possibleCardsFromClues: ReadonlyArray<readonly [number, number]>) {
+  const possibleSuits : Set<number> = new Set();
+  const possibleRanks : Set<number> = new Set();
+  for (const [suit, rank] of possibleCardsFromClues) {
+    possibleSuits.add(suit);
+    possibleRanks.add(rank);
+  }
+  return { possibleSuits, possibleRanks };
+}
+
 describe('cardPossibilitiesReducer', () => {
   test('applies a simple positive clue', () => {
     const red = colorClue(variant.clueColors[0]);
 
     const newCard = cardPossibilitiesReducer(defaultCard, red, true, defaultMetadata);
 
-    expect(newCard.colorClueMemory.possibilities.includes(0)).toBe(true);
-    expect(newCard.colorClueMemory.possibilities.length).toBe(1);
+    const { possibleSuits, possibleRanks } = possibilities(newCard.possibleCardsFromClues);
+    expect(possibleSuits.has(0)).toBe(true);
+    expect(possibleSuits.size).toBe(1);
 
-    expect(newCard.rankClueMemory.possibilities.length).toBe(5);
+    expect(possibleRanks.size).toBe(5);
 
     // This card can only be red
     expect(countPossibleCards(newCard)).toBe(5);
@@ -37,10 +48,11 @@ describe('cardPossibilitiesReducer', () => {
 
     const newCard = cardPossibilitiesReducer(defaultCard, red, false, defaultMetadata);
 
-    expect(newCard.colorClueMemory.possibilities.includes(0)).toBe(false);
-    expect(newCard.colorClueMemory.possibilities.length).toBe(4);
+    const { possibleSuits, possibleRanks } = possibilities(newCard.possibleCardsFromClues);
+    expect(possibleSuits.has(0)).toBe(false);
+    expect(possibleSuits.size).toBe(4);
 
-    expect(newCard.rankClueMemory.possibilities.length).toBe(5);
+    expect(possibleRanks.size).toBe(5);
 
     // This card can be any color except red
     expect(countPossibleCards(newCard)).toBe(20);
@@ -57,7 +69,8 @@ describe('cardPossibilitiesReducer', () => {
     card = cardPossibilitiesReducer(card, redClue, true, metadata);
     card = cardPossibilitiesReducer(card, oneClue, false, metadata);
 
+    const { possibleSuits } = possibilities(card.possibleCardsFromClues);
     // A card with positive red and negative one cannot be yellow
-    expect(card.colorClueMemory.possibilities.includes(1)).toBe(false);
+    expect(possibleSuits.has(1)).toBe(false);
   });
 });

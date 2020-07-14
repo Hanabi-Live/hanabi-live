@@ -13,8 +13,7 @@ import * as cardRules from '../rules/card';
 import * as variantRules from '../rules/variant';
 import CardIdentity from '../types/CardIdentity';
 import CardNote from '../types/CardNote';
-import CardState, { PipState } from '../types/CardState';
-import ClueType from '../types/ClueType';
+import CardState from '../types/CardState';
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
 import StackDirection from '../types/StackDirection';
 import Suit from '../types/Suit';
@@ -316,8 +315,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     let suitToShow: Suit | null | undefined;
     if (this.empathy) {
       // If we are in Empathy mode, only show the suit if there is only one possibility left
-      if (this.state.colorClueMemory.possibilities.length === 1) {
-        const [suitIndex] = this.state.colorClueMemory.possibilities;
+      if (this.state.suitDetermined) {
+        const suitIndex = this.state.suitIndex!;
         suitToShow = this.variant.suits[suitIndex];
       } else {
         suitToShow = unknownSuit;
@@ -353,8 +352,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     let rankToShow;
     if (this.empathy) {
       // If we are in Empathy mode, only show the rank if there is only one possibility left
-      if (this.state.rankClueMemory.possibilities.length === 1) {
-        [rankToShow] = this.state.rankClueMemory.possibilities;
+      if (this.state.rankDetermined) {
+        rankToShow = this.state.rank;
       } else {
         rankToShow = 6;
       }
@@ -568,7 +567,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   setCritical() {
     this.criticalIndicator!.visible((
       this.isCritical()
-      && (!this.empathy || this.state.identityDetermined)
+      && (!this.empathy || this.state.possibleCardsFromClues.length === 1)
       && !globals.lobby.settings.realLifeMode
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
@@ -582,10 +581,16 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // e.g. a note of "r1" is now impossible because red 1 has 0 cards left
 
     const isSuitImpossible = this.note.suitIndex !== null
-      && !this.state.colorClueMemory.possibilities.includes(this.note.suitIndex);
+      && !this.state.possibleCardsFromClues.some(
+        ([suitIndex, rank]) => suitIndex === this.note.suitIndex
+          && this.state.possibleCardsFromObservation[suitIndex][rank] > 0,
+      );
 
     const isRankImpossible = this.note.rank !== null
-      && !this.state.rankClueMemory.possibilities.includes(this.note.rank);
+    && !this.state.possibleCardsFromClues.some(
+      ([suitIndex, rank]) => rank === this.note.rank
+          && this.state.possibleCardsFromObservation[suitIndex][rank] > 0,
+    );
 
     if (isSuitImpossible || isRankImpossible) {
       // Unmorph
@@ -858,7 +863,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   // Update all UI pips to their state
-  updatePips(clueType: ClueType | null = null) {
+  updatePips() {
+    enum PipState {Hidden, Eliminated, Visible} // the order is important here
     function updatePip(
       pipState: PipState,
       hasPositiveClues: boolean,
@@ -866,17 +872,17 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       x : Konva.Shape,
     ) {
       switch (pipState) {
-        case 'Visible': {
+        case PipState.Visible: {
           pip.show();
           x.hide();
           break;
         }
-        case 'Hidden': {
+        case PipState.Hidden: {
           pip.hide();
           x.hide();
           break;
         }
-        case 'Eliminated': {
+        case PipState.Eliminated: {
           pip.show();
           x.show();
           break;
@@ -886,7 +892,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
       // TODO: Positive clues on suits
       if (pip instanceof RankPip) {
-        if (hasPositiveClues && pipState !== 'Hidden') {
+        if (hasPositiveClues && pipState !== PipState.Hidden) {
           pip.showPositiveClue();
         } else {
           pip.hidePositiveClue();
@@ -894,21 +900,30 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
     }
 
-    if (clueType === null || clueType === ClueType.Color) {
-      for (const [suit, pipState] of this.state.colorClueMemory.pipStates.entries()) {
-        const pip = this.suitPipsMap.get(suit)!;
-        const x = this.suitPipsXMap.get(suit)!;
-        // TODO: Positive clues on suits
-        updatePip(pipState, false, pip, x);
-      }
+    const suitPipStates : PipState[] = this.variant.suits.map(() => PipState.Hidden);
+    const rankPipStates : PipState[] = [];
+    for (const rank of this.variant.ranks) rankPipStates[rank] = PipState.Hidden;
+
+    for (const [suitIndex, rank] of this.state.possibleCardsFromClues) {
+      const pipState = this.state.possibleCardsFromObservation[suitIndex][rank]
+        ? PipState.Visible : PipState.Eliminated;
+      suitPipStates[suitIndex] = Math.max(suitPipStates[suitIndex], pipState);
+      rankPipStates[rank] = Math.max(rankPipStates[rank], pipState);
     }
-    if (clueType === null || clueType === ClueType.Rank) {
-      for (const [rank, pipState] of this.state.rankClueMemory.pipStates.entries()) {
-        const pip = this.rankPipsMap.get(rank)!;
-        const x = this.rankPipsXMap.get(rank)!;
-        const hasPositiveClues = this.state.rankClueMemory.positiveClues.includes(rank);
-        updatePip(pipState, hasPositiveClues, pip, x);
-      }
+
+    for (const [suit, pipState] of suitPipStates.entries()) {
+      const pip = this.suitPipsMap.get(suit)!;
+      const x = this.suitPipsXMap.get(suit)!;
+      // TODO: Positive clues on suits
+      updatePip(pipState, false, pip, x);
+    }
+
+    for (const [rank, pipState] of rankPipStates.entries()) {
+      if (rank > 5) continue; // Don't show pip from start card (in "Up or Down" games)
+      const pip = this.rankPipsMap.get(rank)!;
+      const x = this.rankPipsXMap.get(rank)!;
+      const hasPositiveClues = this.state.positiveRankClues.includes(rank);
+      updatePip(pipState, hasPositiveClues, pip, x);
     }
   }
 

@@ -149,45 +149,6 @@ describe('cardsReducer', () => {
     });
   });
 
-  describe('clue memory', () => {
-    test('is empty initially', () => {
-      const deck: CardState[] = [defaultCard];
-      expect(deck[0].colorClueMemory.positiveClues.length).toBe(0);
-      expect(deck[0].rankClueMemory.positiveClues.length).toBe(0);
-    });
-    test('remembers positive clues', () => {
-      let deck: CardState[] = [defaultCard];
-      deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
-
-      const clueToCardZero = rankClue(1, 2, [0], 0, 0);
-      deck = cardsReducer(deck, clueToCardZero, gameState, defaultMetadata);
-      expect(deck[0].rankClueMemory.positiveClues.length).toBe(1);
-      expect(deck[0].rankClueMemory.positiveClues[0]).toBe(clueToCardZero.clue.value);
-
-      const anotherClueToCardZero = colorClue(0, 1, [0], 0, 0);
-      deck = cardsReducer(deck, anotherClueToCardZero, gameState, defaultMetadata);
-      expect(deck[0].colorClueMemory.positiveClues.length).toBe(1);
-      expect(deck[0].colorClueMemory.positiveClues[0]).toBe(anotherClueToCardZero.clue.value);
-    });
-    test('remembers negative clues and positive clues in the right cards', () => {
-      let deck: CardState[] = [defaultCard, secondCard];
-      deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
-      deck = cardsReducer(deck, draw(0, 1), gameState, defaultMetadata);
-
-      // In order to apply negative clues, the hand must be correct
-      const gameStateWithCorrectHands = { ...gameState, hands: [[0, 1]] };
-
-      const clueToCardOne = rankClue(1, 2, [1], 0, 0);
-      deck = cardsReducer(deck, clueToCardOne, gameStateWithCorrectHands, defaultMetadata);
-      expect(deck[1].rankClueMemory.positiveClues.length).toBe(1);
-      expect(deck[1].rankClueMemory.positiveClues[0]).toBe(clueToCardOne.clue.value);
-
-      const anotherClueToCardOne = colorClue(0, 1, [1], 0, 0);
-      deck = cardsReducer(deck, anotherClueToCardOne, gameStateWithCorrectHands, defaultMetadata);
-      expect(deck[1].colorClueMemory.positiveClues.length).toBe(1);
-      expect(deck[1].colorClueMemory.positiveClues[0]).toBe(anotherClueToCardOne.clue.value);
-    });
-  });
   describe('discard', () => {
     test('eliminates a possibility on other cards', () => {
       let deck: CardState[] = [defaultCard, secondCard];

@@ -178,45 +178,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                null,
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 0,
@@ -303,42 +267,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                2
-            ],
-            "possibilities": [
-                2
-            ],
-            "pipStates": [
-                "Hidden",
-                "Hidden",
-                "Visible",
-                "Hidden",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Hidden",
-                "Visible",
-                "Visible",
-                "Visible",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             5
@@ -411,40 +342,11 @@
                 2
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                2
-            ],
-            "possibilities": [
-                2
-            ],
-            "pipStates": [
-                "Hidden",
-                "Hidden",
-                "Visible",
-                "Hidden",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [
-                2
-            ],
-            "possibilities": [
-                2
-            ],
-            "pipStates": [
-                null,
-                "Hidden",
-                "Visible",
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                null,
-                "Hidden"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [
+            2
+        ],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 2,
         "turnsClued": [
             5,
@@ -534,42 +436,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                2
-            ],
-            "possibilities": [
-                2
-            ],
-            "pipStates": [
-                "Hidden",
-                "Hidden",
-                "Visible",
-                "Hidden",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Hidden",
-                "Visible",
-                "Visible",
-                "Eliminated",
-                null,
-                "Eliminated"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             5
@@ -642,40 +511,11 @@
                 4
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                0
-            ],
-            "possibilities": [
-                0
-            ],
-            "pipStates": [
-                "Visible",
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [
-                4
-            ],
-            "possibilities": [
-                4
-            ],
-            "pipStates": [
-                null,
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Visible",
-                "Hidden",
-                null,
-                "Hidden"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [
+            4
+        ],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 2,
         "turnsClued": [
             6,
@@ -825,43 +665,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                4
-            ],
-            "pipStates": [
-                "Hidden",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Visible",
-                "Visible",
-                "Hidden",
-                "Visible",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 0,
@@ -948,42 +754,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                0
-            ],
-            "possibilities": [
-                0
-            ],
-            "pipStates": [
-                "Visible",
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Eliminated",
-                "Visible",
-                "Hidden",
-                "Visible",
-                null,
-                "Eliminated"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             6
@@ -1072,42 +845,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                3
-            ],
-            "possibilities": [
-                3
-            ],
-            "pipStates": [
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Visible",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Hidden",
-                "Eliminated",
-                null,
-                "Eliminated"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             44
@@ -1192,41 +932,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                4
-            ],
-            "possibilities": [
-                4
-            ],
-            "pipStates": [
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                3,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Hidden",
-                "Visible",
-                "Hidden",
-                "Eliminated",
-                null,
-                "Eliminated"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             24
@@ -1367,43 +1075,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                0,
-                2,
-                3
-            ],
-            "pipStates": [
-                "Visible",
-                "Hidden",
-                "Visible",
-                "Visible",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 0,
@@ -1494,43 +1168,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                1
-            ],
-            "possibilities": [
-                1
-            ],
-            "pipStates": [
-                "Hidden",
-                "Visible",
-                "Hidden",
-                "Hidden",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             0
@@ -1671,43 +1311,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                0,
-                2,
-                3
-            ],
-            "pipStates": [
-                "Visible",
-                "Hidden",
-                "Visible",
-                "Visible",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 0,
@@ -1846,43 +1452,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                4
-            ],
-            "pipStates": [
-                "Hidden",
-                "Visible",
-                "Visible",
-                "Hidden",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 0,
@@ -1953,40 +1525,11 @@
                 1
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                3
-            ],
-            "possibilities": [
-                3
-            ],
-            "pipStates": [
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Visible",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [
-                1
-            ],
-            "possibilities": [
-                1
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                null,
-                "Hidden"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [
+            1
+        ],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 2,
         "turnsClued": [
             1,
@@ -2080,43 +1623,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                3
-            ],
-            "possibilities": [
-                3
-            ],
-            "pipStates": [
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Visible",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             1
@@ -2245,42 +1754,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                4
-            ],
-            "pipStates": [
-                "Hidden",
-                "Visible",
-                "Visible",
-                "Hidden",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Hidden",
-                "Visible",
-                "Eliminated",
-                "Visible",
-                "Eliminated",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 0,
@@ -2467,45 +1943,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                null,
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 2,
@@ -2592,42 +2032,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                0
-            ],
-            "possibilities": [
-                0
-            ],
-            "pipStates": [
-                "Visible",
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Hidden",
-                "Visible",
-                "Eliminated",
-                "Eliminated",
-                "Visible",
-                null,
-                "Eliminated"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             9
@@ -2756,42 +2163,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                0,
-                1,
-                3
-            ],
-            "pipStates": [
-                "Eliminated",
-                "Visible",
-                "Hidden",
-                "Visible",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Hidden",
-                "Visible",
-                "Visible",
-                "Eliminated",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 4,
@@ -2978,45 +2352,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                null,
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 8,
@@ -3103,42 +2441,11 @@
                 1
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "pipStates": [
-                "Eliminated",
-                "Visible",
-                "Eliminated",
-                "Eliminated",
-                "Eliminated"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [
-                1
-            ],
-            "possibilities": [
-                1
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                null,
-                "Hidden"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [
+            1
+        ],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             14
@@ -3231,43 +2538,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                4
-            ],
-            "possibilities": [
-                4
-            ],
-            "pipStates": [
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Eliminated",
-                "Eliminated",
-                "Visible",
-                "Eliminated",
-                null,
-                "Eliminated"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             23
@@ -3408,43 +2681,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                0,
-                2,
-                4
-            ],
-            "pipStates": [
-                "Visible",
-                "Hidden",
-                "Eliminated",
-                "Hidden",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Eliminated",
-                "Eliminated",
-                "Eliminated",
-                "Eliminated",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": false,
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 13,
@@ -3631,45 +2870,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Eliminated",
-                "Eliminated"
-            ]
-        },
-        "rankClueMemory": {
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Visible",
-                "Eliminated",
-                "Eliminated",
-                "Eliminated",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": false,
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 15,
@@ -3760,43 +2963,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                2
-            ],
-            "possibilities": [
-                2
-            ],
-            "pipStates": [
-                "Hidden",
-                "Hidden",
-                "Visible",
-                "Hidden",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Eliminated",
-                null,
-                "Eliminated"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             27
@@ -3889,43 +3058,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                1
-            ],
-            "possibilities": [
-                1
-            ],
-            "pipStates": [
-                "Hidden",
-                "Visible",
-                "Hidden",
-                "Hidden",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Eliminated",
-                null,
-                "Eliminated"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             19
@@ -4114,45 +3249,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                null,
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 18,
@@ -4279,42 +3378,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                0,
-                1,
-                3
-            ],
-            "pipStates": [
-                "Eliminated",
-                "Visible",
-                "Hidden",
-                "Visible",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Hidden",
-                "Eliminated",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": false,
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 20,
@@ -4501,45 +3567,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                null,
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Visible",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 21,
@@ -4610,40 +3640,11 @@
                 2
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                4
-            ],
-            "possibilities": [
-                4
-            ],
-            "pipStates": [
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [
-                2
-            ],
-            "possibilities": [
-                2
-            ],
-            "pipStates": [
-                null,
-                "Hidden",
-                "Visible",
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                null,
-                "Hidden"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [
+            2
+        ],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 2,
         "turnsClued": [
             24,
@@ -4809,44 +3810,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                0,
-                1,
-                2,
-                4
-            ],
-            "pipStates": [
-                "Visible",
-                "Eliminated",
-                "Eliminated",
-                "Hidden",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Eliminated",
-                "Eliminated",
-                "Eliminated",
-                "Eliminated",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": false,
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 25,
@@ -4925,40 +3891,11 @@
                 4
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                2,
-                3,
-                4
-            ],
-            "pipStates": [
-                "Hidden",
-                "Hidden",
-                "Visible",
-                "Visible",
-                "Eliminated"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [
-                4
-            ],
-            "possibilities": [
-                4
-            ],
-            "pipStates": [
-                null,
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Visible",
-                "Hidden",
-                null,
-                "Hidden"
-            ]
-        },
-        "identityDetermined": false,
+        "positiveRankClues": [
+            4
+        ],
+        "suitDetermined": false,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             35
@@ -5127,44 +4064,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "pipStates": [
-                "Eliminated",
-                "Visible",
-                "Eliminated",
-                "Visible",
-                "Eliminated"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Hidden",
-                "Eliminated",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": false,
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 28,
@@ -5327,44 +4229,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                0,
-                1,
-                2,
-                4
-            ],
-            "pipStates": [
-                "Visible",
-                "Eliminated",
-                "Visible",
-                "Hidden",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Visible",
-                "Visible",
-                "Eliminated",
-                "Visible",
-                "Eliminated",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 29,
@@ -5451,42 +4318,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                0
-            ],
-            "possibilities": [
-                0
-            ],
-            "pipStates": [
-                "Visible",
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Hidden",
-                "Eliminated",
-                "Eliminated",
-                "Visible",
-                null,
-                "Eliminated"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             33
@@ -5655,44 +4489,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "pipStates": [
-                "Eliminated",
-                "Visible",
-                "Eliminated",
-                "Visible",
-                "Eliminated"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Hidden",
-                "Eliminated",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": false,
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 32,
@@ -5839,43 +4638,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                0,
-                2,
-                3,
-                4
-            ],
-            "pipStates": [
-                "Eliminated",
-                "Hidden",
-                "Visible",
-                "Eliminated",
-                "Eliminated"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Eliminated",
-                "Visible",
-                "Hidden",
-                "Eliminated",
-                null,
-                "Eliminated"
-            ]
-        },
-        "identityDetermined": false,
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 34,
@@ -5962,42 +4727,11 @@
                 4
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "pipStates": [
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Eliminated"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [
-                4
-            ],
-            "possibilities": [
-                4
-            ],
-            "pipStates": [
-                null,
-                "Hidden",
-                "Hidden",
-                "Hidden",
-                "Visible",
-                "Hidden",
-                null,
-                "Hidden"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [
+            4
+        ],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             37
@@ -6090,43 +4824,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "positiveClues": [
-                1
-            ],
-            "possibilities": [
-                1
-            ],
-            "pipStates": [
-                "Hidden",
-                "Visible",
-                "Hidden",
-                "Hidden",
-                "Hidden"
-            ]
-        },
-        "rankClueMemory": {
-            "positiveClues": [],
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Visible",
-                "Eliminated",
-                "Visible",
-                "Eliminated",
-                null,
-                "Eliminated"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 1,
         "turnsClued": [
             41
@@ -6315,45 +5015,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Eliminated",
-                "Eliminated"
-            ]
-        },
-        "rankClueMemory": {
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Visible",
-                "Eliminated",
-                "Eliminated",
-                "Eliminated",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": false,
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 39,
@@ -6540,45 +5204,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                "Eliminated",
-                "Visible",
-                "Eliminated",
-                "Visible",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                null,
-                "Visible",
-                "Visible",
-                "Visible",
-                "Eliminated",
-                "Eliminated",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 40,
@@ -6765,45 +5393,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Eliminated"
-            ]
-        },
-        "rankClueMemory": {
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Eliminated",
-                null,
-                "Eliminated"
-            ]
-        },
-        "identityDetermined": false,
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 42,
@@ -6990,45 +5582,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Eliminated"
-            ]
-        },
-        "rankClueMemory": {
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Eliminated",
-                "Eliminated",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": true,
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 43,
@@ -7215,45 +5771,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                "Visible",
-                "Eliminated",
-                "Eliminated",
-                "Visible",
-                "Visible"
-            ]
-        },
-        "rankClueMemory": {
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                null,
-                "Visible",
-                "Eliminated",
-                "Visible",
-                "Eliminated",
-                "Eliminated",
-                null,
-                "Visible"
-            ]
-        },
-        "identityDetermined": false,
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 45,
@@ -7440,45 +5960,9 @@
                 7
             ]
         ],
-        "colorClueMemory": {
-            "possibilities": [
-                0,
-                1,
-                2,
-                3,
-                4
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Visible",
-                "Eliminated"
-            ]
-        },
-        "rankClueMemory": {
-            "possibilities": [
-                1,
-                2,
-                3,
-                4,
-                5,
-                7
-            ],
-            "positiveClues": [],
-            "pipStates": [
-                null,
-                "Eliminated",
-                "Eliminated",
-                "Visible",
-                "Visible",
-                "Eliminated",
-                null,
-                "Eliminated"
-            ]
-        },
-        "identityDetermined": false,
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
         "numPositiveClues": 0,
         "turnsClued": [],
         "turnDrawn": 46,

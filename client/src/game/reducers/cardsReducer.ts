@@ -8,8 +8,7 @@ import { colorClue, rankClue } from '../types/Clue';
 import ClueType from '../types/ClueType';
 import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
-import Variant from '../types/Variant';
-import cardPossibilitiesReducer, { checkPips } from './cardPossibilitiesReducer';
+import cardPossibilitiesReducer from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
 
 const cardsReducer = (
@@ -66,7 +65,6 @@ const cardsReducer = (
               order,
               newCard.suitIndex!,
               newCard.rank!,
-              variant,
             );
           }
         }
@@ -99,12 +97,11 @@ const cardsReducer = (
       const suitIndex = nullIfNegative(action.suitIndex);
       const rank = nullIfNegative(action.rank);
 
-      let identityDetermined = card.identityDetermined;
+      const identityDetermined = card.possibleCardsFromClues.length === 1;
 
       // If the card was already fully-clued,
       // we already updated the possibilities for it on other cards
       if (suitIndex !== null && rank !== null && !identityDetermined) {
-        identityDetermined = true;
         // If we're currently playing this game, this is the first time
         // we see this card, from the point of view of all hands
         const handsSeeingCardForFirstTime = (
@@ -114,7 +111,7 @@ const cardsReducer = (
           ? game.hands // All hands
           : [game.hands[card.location as number]]; // Just who's seeing this for the first time
         for (const hand of handsSeeingCardForFirstTime) {
-          removePossibilityOnHand(newDeck, hand, order, suitIndex, rank, variant);
+          removePossibilityOnHand(newDeck, hand, order, suitIndex, rank);
         }
       }
 
@@ -138,11 +135,12 @@ const cardsReducer = (
         ...card,
         suitIndex,
         rank,
-        identityDetermined,
         turnPlayed,
         turnDiscarded,
         location,
         isMisplayed,
+        suitDetermined: card.suitDetermined || suitIndex !== null,
+        rankDetermined: card.rankDetermined || rank !== null,
       };
       break;
     }
@@ -171,26 +169,12 @@ const cardsReducer = (
           || card.possibleCardsFromClues.length === 1)
         .forEach((card) => { possibleCardsFromObservation[card.suitIndex!][card.rank!] -= 1; });
 
-      const { suitPips, rankPips } = checkPips(
-        initial.possibleCardsFromClues,
-        possibleCardsFromObservation,
-        variant,
-      );
-
       const drawnCard = {
         ...initial,
         location: action.playerIndex,
         suitIndex: nullIfNegative(action.suitIndex),
         rank: nullIfNegative(action.rank),
         turnDrawn: game.turn.turnNum,
-        colorClueMemory: {
-          ...initial.colorClueMemory,
-          pipStates: suitPips,
-        },
-        rankClueMemory: {
-          ...initial.rankClueMemory,
-          pipStates: rankPips,
-        },
         possibleCardsFromObservation,
       };
 
@@ -206,7 +190,6 @@ const cardsReducer = (
             action.order,
             drawnCard.suitIndex!,
             drawnCard.rank!,
-            variant,
           );
         }
       }
@@ -245,14 +228,13 @@ function removePossibilityOnHand(
   order: number,
   suitIndex: number,
   rank: number,
-  variant: Variant,
 ) {
   const cardsExceptCardBeingRemoved = hand
     .filter((o) => o !== order)
     .map((o) => deck[o]);
 
   for (const handCard of cardsExceptCardBeingRemoved) {
-    const newCard = removePossibility(handCard, suitIndex, rank, variant);
+    const newCard = removePossibility(handCard, suitIndex, rank);
     deck[handCard.order] = newCard;
   }
 }
@@ -261,7 +243,6 @@ function removePossibility(
   state: CardState,
   suitIndex: number,
   rank: number,
-  variant: Variant,
 ) {
   // Every card has a possibility map that maps card identities to count
   const possibleCardsFromObservation = Array.from(
@@ -275,24 +256,9 @@ function removePossibility(
 
   possibleCardsFromObservation[suitIndex][rank] = cardsLeft - 1;
 
-  // Check to see if we can put an X over this suit pip or this rank pip
-  const { suitPips, rankPips } = checkPips(
-    state.possibleCardsFromClues,
-    possibleCardsFromObservation,
-    variant,
-  );
-
   return {
     ...state,
     possibleCardsFromObservation,
-    colorClueMemory: {
-      ...state.colorClueMemory,
-      pipStates: suitPips,
-    },
-    rankClueMemory: {
-      ...state.rankClueMemory,
-      pipStates: rankPips,
-    },
   };
 }
 

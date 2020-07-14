@@ -6,8 +6,6 @@ export default interface CardState {
   readonly rank: number | null;
 
   // The following are the variables that are refreshed
-  readonly rankClueMemory: ClueMemory;
-  readonly colorClueMemory: ClueMemory;
 
   // possibleCardsFromObservation[suitIndex][rank]
   //  = how many cards of this suitIndex and rank could this be? (excluding clue information)
@@ -16,7 +14,11 @@ export default interface CardState {
   readonly possibleCardsFromObservation: ReadonlyArray<readonly number[]>;
   readonly possibleCardsFromClues: ReadonlyArray<readonly [number, number]>;
 
-  readonly identityDetermined: boolean;
+  // we need this to highlight pips on pink cards
+  readonly positiveRankClues : number[];
+
+  readonly suitDetermined: boolean;
+  readonly rankDetermined: boolean;
   readonly numPositiveClues: number;
   readonly turnsClued: readonly number[]; // TODO: seems like the UI only reads the 1st turn clued?
   readonly turnDrawn: number;
@@ -26,19 +28,3 @@ export default interface CardState {
 }
 
 export type CardLocation = 'deck' | 'discard' | 'playStack' | number;
-export type PipState = 'Visible' | 'Hidden' | 'Eliminated';
-
-export interface ClueMemory {
-  // NOTE: we're using arrays as maps, so there will be empty spaces for ranks
-  // that are not valid card ranks (e.g. 0, or 6 in Up or Down)
-  readonly possibilities: readonly number[];
-  // TODO: positiveClues and negativeClues should be used like maps
-  // of booleans so you can quickly check if a particular color/rank
-  // has a positive/negative clue without searching the array.
-  // But to make this change safely, the applyClue function
-  // has to be thoroughly covered by tests.
-  readonly positiveClues: readonly number[];
-  // TODO: pipStates is not really necessary to be stored in state
-  // since it can be calculated from possibilities + possibleCards every time
-  readonly pipStates: readonly PipState[];
-}

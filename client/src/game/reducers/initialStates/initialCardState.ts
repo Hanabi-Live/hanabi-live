@@ -1,5 +1,5 @@
 import * as deckRules from '../../rules/deck';
-import CardState, { PipState } from '../../types/CardState';
+import CardState from '../../types/CardState';
 import Variant from '../../types/Variant';
 
 export default function initialCardState(order: number, variant: Variant) : CardState {
@@ -29,13 +29,6 @@ export default function initialCardState(order: number, variant: Variant) : Card
     });
   });
 
-  // Mark all rank pips as visible
-  // Note that since we are using an array as a map, there will be gaps on the values
-  const rankPipStates: PipState[] = [];
-  possibleRanks.forEach((r) => {
-    rankPipStates[r] = r >= 1 && r <= 5 ? 'Visible' : 'Hidden';
-  });
-
   return {
     order,
     location: 'deck',
@@ -43,17 +36,9 @@ export default function initialCardState(order: number, variant: Variant) : Card
     rank: null,
     possibleCardsFromObservation,
     possibleCardsFromClues,
-    colorClueMemory: {
-      possibilities: possibleSuits,
-      positiveClues: [],
-      pipStates: possibleSuits.map(() => 'Visible'),
-    },
-    rankClueMemory: {
-      possibilities: possibleRanks,
-      positiveClues: [],
-      pipStates: rankPipStates,
-    },
-    identityDetermined: false,
+    positiveRankClues: [],
+    suitDetermined: false,
+    rankDetermined: false,
     numPositiveClues: 0,
     turnsClued: [],
     turnDrawn: -1,

@@ -2,7 +2,6 @@
 
 import CardIdentity from '../../../types/CardIdentity';
 import CardState from '../../../types/CardState';
-import ClueType from '../../../types/ClueType';
 import State from '../../../types/State';
 import globals from '../../globals';
 import observeStore, { Subscription, Selector, Listener } from '../observeStore';
@@ -95,13 +94,18 @@ function subscribeToCardChanges(order: number) {
     location: c.location,
   }), () => updateCluedBorder(order));
   // Pips
-  sub((c) => c.rankClueMemory.pipStates, () => updatePips(order, ClueType.Rank));
-  sub((c) => c.colorClueMemory.pipStates, () => updatePips(order, ClueType.Color));
-  // Notes
   sub((c) => ({
-    possibleRanks: c.rankClueMemory.possibilities,
-    possibleSuits: c.colorClueMemory.possibilities,
-  }), () => updateNotePossibilities(order));
+    possibleCardsFromClues: c.possibleCardsFromClues,
+    possibleCardsFromObservation: c.possibleCardsFromObservation,
+    positiveRankClues: c.positiveRankClues,
+  }), () => updatePips(order));
+  // Notes
+  sub(
+    (c) => ({
+      possibleCardsFromClues: c.possibleCardsFromClues,
+      possibleCardsFromObservation: c.possibleCardsFromObservation,
+    }), () => updateNotePossibilities(order),
+  );
   // Card visuals
   subFullState((s) => {
     const card = s.visibleState!.deck[order];
@@ -109,8 +113,6 @@ function subscribeToCardChanges(order: number) {
       rank: card.rank,
       suitIndex: card.suitIndex,
       location: card.location,
-      numPossibleRanks: card.rankClueMemory.possibilities.length,
-      numPossibleSuits: card.colorClueMemory.possibilities.length,
       identity: s.cardIdentities[order],
     };
   }, () => updateCardVisuals(order));
@@ -126,8 +128,8 @@ function updateCluedBorder(order: number) {
   globals.layers.card.batchDraw();
 }
 
-function updatePips(order: number, clueType: ClueType) {
-  globals.deck[order].updatePips(clueType);
+function updatePips(order: number) {
+  globals.deck[order].updatePips();
   globals.layers.card.batchDraw();
 }
 

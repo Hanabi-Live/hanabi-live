@@ -196,7 +196,10 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
   if (note.suitIndex !== null && note.rank === null) {
     // Only the suit was specified
     if (
-      cardState.colorClueMemory.pipStates[note.suitIndex] !== 'Visible'
+      cardState.possibleCardsFromClues.some(
+        ([suitIndex, rank]) => suitIndex === note.suitIndex
+          && cardState.possibleCardsFromObservation[suitIndex][rank] > 0,
+      )
       && cardState.location === globals.playerUs
     ) {
       const suitName = variant.suits[note.suitIndex].name;
@@ -208,7 +211,10 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
   if (note.suitIndex === null && note.rank !== null) {
     // Only the rank was specified
     if (
-      cardState.rankClueMemory.pipStates[note.rank] !== 'Visible'
+      cardState.possibleCardsFromClues.some(
+        ([suitIndex, rank]) => rank === note.rank
+          && cardState.possibleCardsFromObservation[suitIndex][rank] > 0,
+      )
       && cardState.location === globals.playerUs
     ) {
       window.alert(`That card cannot possibly be a ${note.rank}.`);

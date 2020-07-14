@@ -136,10 +136,8 @@ describe('integration', () => {
 });
 
 function checkPossibilitiesEliminatedByClues(card: CardState, expected: CardState) {
-  expect(card.rankClueMemory.possibilities)
-    .toEqual(expected.rankClueMemory.possibilities);
-  expect(card.colorClueMemory.possibilities)
-    .toEqual(expected.colorClueMemory.possibilities);
+  expect(card.possibleCardsFromClues)
+    .toEqual(expected.possibleCardsFromClues);
 }
 
 function checkPossibilitiesEliminatedByObservation(card: CardState, expected: CardState) {
@@ -149,8 +147,4 @@ function checkPossibilitiesEliminatedByObservation(card: CardState, expected: Ca
   }
   expect(card.possibleCardsFromObservation.map(validRanks))
     .toEqual(expected.possibleCardsFromObservation.map(validRanks));
-  expect(validRanks(card.rankClueMemory.pipStates))
-    .toEqual(validRanks(expected.rankClueMemory.pipStates));
-  expect(card.colorClueMemory.pipStates)
-    .toEqual(expected.colorClueMemory.pipStates);
 }
