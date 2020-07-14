@@ -147,8 +147,8 @@ function checkPossibilitiesEliminatedByObservation(card: CardState, expected: Ca
     // Ensure Start is counted as a valid rank
     return arr.length > 6 ? arr.slice(1, 6).concat(arr[7]) : arr.slice(1, 6);
   }
-  expect(card.unseenCards.map(validRanks))
-    .toEqual(expected.unseenCards.map(validRanks));
+  expect(card.possibleCardsFromObservation.map(validRanks))
+    .toEqual(expected.possibleCardsFromObservation.map(validRanks));
   expect(validRanks(card.rankClueMemory.pipStates))
     .toEqual(validRanks(expected.rankClueMemory.pipStates));
   expect(card.colorClueMemory.pipStates)

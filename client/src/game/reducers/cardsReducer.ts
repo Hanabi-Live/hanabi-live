@@ -42,14 +42,14 @@ const cardsReducer = (
         */
 
         const card = getCard(newDeck, order);
-        const wasKnown = (card.matchingCardsArray.length === 1);
+        const wasKnown = (card.possibleCardsFromClues.length === 1);
 
         const newCard = cardPossibilitiesReducer(card, clue, positive, metadata);
         newDeck[order] = newCard;
 
         if (
           !wasKnown
-          && newCard.matchingCardsArray.length === 1
+          && newCard.possibleCardsFromClues.length === 1
         ) {
           // If we're currently playing this game and we got clued, this is the first time
           // we identify this card, from the point of view of all hands
@@ -160,15 +160,22 @@ const cardsReducer = (
       }
 
       const initial = initialCardState(action.order, variant);
-      const unseenCards = Array.from(initial.unseenCards, (arr) => Array.from(arr));
+      const possibleCardsFromObservation = Array.from(
+        initial.possibleCardsFromObservation,
+        (arr) => Array.from(arr),
+      );
       // Remove all possibilities of all cards previously drawn and visible
       deck.slice(0, action.order)
         .filter((card) => card.suitIndex !== null && card.rank !== null)
         .filter((card) => card.location !== action.playerIndex
-          || card.matchingCardsArray.length === 1)
-        .forEach((card) => { unseenCards[card.suitIndex!][card.rank!] -= 1; });
+          || card.possibleCardsFromClues.length === 1)
+        .forEach((card) => { possibleCardsFromObservation[card.suitIndex!][card.rank!] -= 1; });
 
-      const { suitPips, rankPips } = checkPips(initial.matchingCardsArray, unseenCards, variant);
+      const { suitPips, rankPips } = checkPips(
+        initial.possibleCardsFromClues,
+        possibleCardsFromObservation,
+        variant,
+      );
 
       const drawnCard = {
         ...initial,
@@ -184,7 +191,7 @@ const cardsReducer = (
           ...initial.rankClueMemory,
           pipStates: rankPips,
         },
-        unseenCards,
+        possibleCardsFromObservation,
       };
 
       newDeck[action.order] = drawnCard;
@@ -257,20 +264,27 @@ function removePossibility(
   variant: Variant,
 ) {
   // Every card has a possibility map that maps card identities to count
-  const unseenCards = Array.from(state.unseenCards, (arr) => Array.from(arr));
-  const cardsLeft = unseenCards[suitIndex][rank];
+  const possibleCardsFromObservation = Array.from(
+    state.possibleCardsFromObservation,
+    (arr) => Array.from(arr),
+  );
+  const cardsLeft = possibleCardsFromObservation[suitIndex][rank];
   if (cardsLeft === undefined) {
-    throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${rank} from the "unseenCards" map for card.`);
+    throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${rank} from the "possibleCardsFromObservation" map for card.`);
   }
 
-  unseenCards[suitIndex][rank] = cardsLeft - 1;
+  possibleCardsFromObservation[suitIndex][rank] = cardsLeft - 1;
 
   // Check to see if we can put an X over this suit pip or this rank pip
-  const { suitPips, rankPips } = checkPips(state.matchingCardsArray, unseenCards, variant);
+  const { suitPips, rankPips } = checkPips(
+    state.possibleCardsFromClues,
+    possibleCardsFromObservation,
+    variant,
+  );
 
   return {
     ...state,
-    unseenCards,
+    possibleCardsFromObservation,
     colorClueMemory: {
       ...state.colorClueMemory,
       pipStates: suitPips,

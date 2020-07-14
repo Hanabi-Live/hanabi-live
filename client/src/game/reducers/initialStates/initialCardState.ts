@@ -7,21 +7,25 @@ export default function initialCardState(order: number, variant: Variant) : Card
   // from knowledge of the true suit and rank
   const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);
   const possibleRanks: number[] = variant.ranks.slice();
-  const unseenCards: number[][] = [];
+  const possibleCardsFromObservation: number[][] = [];
 
-  const matchingCardsArray: Array<[number, number]> = [];
+  const possibleCardsFromClues: Array<[number, number]> = [];
   for (const suitIndex of possibleSuits) {
     for (const rank of possibleRanks) {
-      matchingCardsArray.push([suitIndex, rank]);
+      possibleCardsFromClues.push([suitIndex, rank]);
     }
   }
 
   // Possible cards (based on both clues given and cards seen) are also tracked separately
   possibleSuits.forEach((suitIndex) => {
-    unseenCards[suitIndex] = [];
+    possibleCardsFromObservation[suitIndex] = [];
     const suit = variant.suits[suitIndex];
     possibleRanks.forEach((rank) => {
-      unseenCards[suitIndex][rank] = deckRules.numCopiesOfCard(variant, suit, rank);
+      possibleCardsFromObservation[suitIndex][rank] = deckRules.numCopiesOfCard(
+        variant,
+        suit,
+        rank,
+      );
     });
   });
 
@@ -35,8 +39,8 @@ export default function initialCardState(order: number, variant: Variant) : Card
     location: 'deck',
     suitIndex: null,
     rank: null,
-    unseenCards,
-    matchingCardsArray,
+    possibleCardsFromObservation,
+    possibleCardsFromClues,
     colorClueMemory: {
       possibilities: possibleSuits,
       positiveClues: [],

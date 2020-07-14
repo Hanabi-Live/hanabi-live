@@ -220,9 +220,9 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
     // Both the suit and the rank were specified
     if (
       !(
-        cardState.matchingCardsArray.some(
+        cardState.possibleCardsFromClues.some(
           ([suitIndex, rank]) => suitIndex === note.suitIndex && rank === note.rank,
-        ) && cardState.unseenCards[note.suitIndex][note.rank] > 0
+        ) && cardState.possibleCardsFromObservation[note.suitIndex][note.rank] > 0
       ) && cardState.location === globals.playerUs
     ) {
       const suitName = variant.suits[note.suitIndex].name;

@@ -15,7 +15,7 @@ const cardPossibilitiesReducer = (
   metadata: GameMetadata,
 ): CardState => {
   if (
-    state.matchingCardsArray.length === 1
+    state.possibleCardsFromClues.length === 1
   ) {
     // We already know all details about this card, no need to calculate
     return state;
@@ -25,7 +25,7 @@ const cardPossibilitiesReducer = (
 
   // Apply the clue and check what is eliminated
   const clueTouch = variant.touchedCards.get(clue.value)!;
-  const matchingCardsArray = state.matchingCardsArray.filter(
+  const possibleCardsFromClues = state.possibleCardsFromClues.filter(
     ([x, y]) => clueTouch[x][y] === positive,
   );
 
@@ -44,7 +44,7 @@ const cardPossibilitiesReducer = (
   }
 
   const { suitPips, rankPips } = checkPips(
-    matchingCardsArray, state.unseenCards, variant,
+    possibleCardsFromClues, state.possibleCardsFromObservation, variant,
   );
   const suitsPossible = suitPips
     .map((pip, i) => ((pip !== 'Hidden') ? i : -1))
@@ -74,7 +74,7 @@ const cardPossibilitiesReducer = (
       possibilities: suitsPossible,
       pipStates: suitPips,
     },
-    matchingCardsArray,
+    possibleCardsFromClues,
   };
 
   return newState;
@@ -115,15 +115,15 @@ function pipStateMax(a : PipState, b : PipState) : PipState {
 }
 
 export function checkPips(
-  matchingCardsArray: ReadonlyArray<readonly [number, number]>,
-  unseenCards: ReadonlyArray<readonly number[]>,
+  possibleCardsFromClues: ReadonlyArray<readonly [number, number]>,
+  possibleCardsFromObservation: ReadonlyArray<readonly number[]>,
   variant: Variant,
 ) {
   const suitPips : PipState[] = variant.suits.map(() => 'Hidden');
   const rankPips : PipState[] = [];
   for (const rank of variant.ranks) rankPips[rank] = 'Hidden';
-  for (const [suitIndex, rank] of matchingCardsArray) {
-    const pip = (unseenCards[suitIndex][rank] > 0) ? 'Visible' : 'Eliminated';
+  for (const [suitIndex, rank] of possibleCardsFromClues) {
+    const pip = (possibleCardsFromObservation[suitIndex][rank] > 0) ? 'Visible' : 'Eliminated';
     suitPips[suitIndex] = pipStateMax(suitPips[suitIndex], pip);
     rankPips[rank] = pipStateMax(rankPips[rank], pip);
   }

@@ -4,7 +4,7 @@
         "location": "discard",
         "suitIndex": 0,
         "rank": 4,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -56,7 +56,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -229,7 +229,7 @@
         "location": "playStack",
         "suitIndex": 2,
         "rank": 5,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -281,7 +281,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 2,
                 1
@@ -353,7 +353,7 @@
         "location": "playStack",
         "suitIndex": 2,
         "rank": 2,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -405,7 +405,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 2,
                 2
@@ -460,7 +460,7 @@
         "location": "playStack",
         "suitIndex": 2,
         "rank": 4,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -512,7 +512,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 2,
                 1
@@ -584,7 +584,7 @@
         "location": "playStack",
         "suitIndex": 0,
         "rank": 4,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -636,7 +636,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 4
@@ -691,7 +691,7 @@
         "location": "discard",
         "suitIndex": 4,
         "rank": 3,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -743,7 +743,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 1,
                 1
@@ -874,7 +874,7 @@
         "location": "playStack",
         "suitIndex": 0,
         "rank": 3,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -926,7 +926,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -998,7 +998,7 @@
         "location": "playStack",
         "suitIndex": 3,
         "rank": 2,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -1050,7 +1050,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 3,
                 1
@@ -1122,7 +1122,7 @@
         "location": "playStack",
         "suitIndex": 4,
         "rank": 3,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -1174,7 +1174,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 4,
                 1
@@ -1241,7 +1241,7 @@
         "location": "discard",
         "suitIndex": 0,
         "rank": 3,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -1293,7 +1293,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -1416,7 +1416,7 @@
         "location": "playStack",
         "suitIndex": 1,
         "rank": 5,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -1468,7 +1468,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 1,
                 1
@@ -1545,7 +1545,7 @@
         "location": "discard",
         "suitIndex": 0,
         "rank": 2,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -1597,7 +1597,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -1720,7 +1720,7 @@
         "location": "discard",
         "suitIndex": 4,
         "rank": 2,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -1772,7 +1772,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 1,
                 1
@@ -1895,7 +1895,7 @@
         "location": 3,
         "suitIndex": 3,
         "rank": 1,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -1947,7 +1947,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 3,
                 1
@@ -2002,7 +2002,7 @@
         "location": "playStack",
         "suitIndex": 3,
         "rank": 5,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -2054,7 +2054,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 3,
                 1
@@ -2131,7 +2131,7 @@
         "location": "discard",
         "suitIndex": 4,
         "rank": 4,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -2183,7 +2183,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 1,
                 2
@@ -2293,7 +2293,7 @@
         "location": "playStack",
         "suitIndex": 2,
         "rank": 3,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -2345,7 +2345,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -2518,7 +2518,7 @@
         "location": "playStack",
         "suitIndex": 0,
         "rank": 2,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -2570,7 +2570,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 2
@@ -2642,7 +2642,7 @@
         "location": "discard",
         "suitIndex": 1,
         "rank": 7,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -2694,7 +2694,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -2804,7 +2804,7 @@
         "location": "playStack",
         "suitIndex": 0,
         "rank": 7,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -2856,7 +2856,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -3029,7 +3029,7 @@
         "location": "playStack",
         "suitIndex": 1,
         "rank": 1,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -3081,7 +3081,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -3153,7 +3153,7 @@
         "location": "playStack",
         "suitIndex": 4,
         "rank": 4,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -3205,7 +3205,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 4,
                 1
@@ -3282,7 +3282,7 @@
         "location": 1,
         "suitIndex": 0,
         "rank": 1,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -3334,7 +3334,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -3457,7 +3457,7 @@
         "location": 3,
         "suitIndex": 2,
         "rank": 7,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -3509,7 +3509,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -3682,7 +3682,7 @@
         "location": "playStack",
         "suitIndex": 2,
         "rank": 1,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -3734,7 +3734,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 2,
                 1
@@ -3811,7 +3811,7 @@
         "location": "playStack",
         "suitIndex": 1,
         "rank": 3,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -3863,7 +3863,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 1,
                 1
@@ -3940,7 +3940,7 @@
         "location": "playStack",
         "suitIndex": 1,
         "rank": 4,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -3992,7 +3992,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -4165,7 +4165,7 @@
         "location": 0,
         "suitIndex": 3,
         "rank": 2,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -4217,7 +4217,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -4327,7 +4327,7 @@
         "location": "playStack",
         "suitIndex": 4,
         "rank": 5,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -4379,7 +4379,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -4552,7 +4552,7 @@
         "location": "playStack",
         "suitIndex": 4,
         "rank": 2,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -4604,7 +4604,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 4,
                 2
@@ -4659,7 +4659,7 @@
         "location": 1,
         "suitIndex": 4,
         "rank": 7,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -4711,7 +4711,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -4859,7 +4859,7 @@
         "location": 2,
         "suitIndex": 3,
         "rank": 4,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -4911,7 +4911,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 2,
                 4
@@ -4973,7 +4973,7 @@
         "location": 0,
         "suitIndex": 1,
         "rank": 3,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -5025,7 +5025,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -5177,7 +5177,7 @@
         "location": "discard",
         "suitIndex": 2,
         "rank": 2,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -5229,7 +5229,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -5377,7 +5377,7 @@
         "location": "playStack",
         "suitIndex": 0,
         "rank": 5,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -5429,7 +5429,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -5501,7 +5501,7 @@
         "location": 0,
         "suitIndex": 3,
         "rank": 7,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -5553,7 +5553,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -5705,7 +5705,7 @@
         "location": 2,
         "suitIndex": 2,
         "rank": 3,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -5757,7 +5757,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -5888,7 +5888,7 @@
         "location": "playStack",
         "suitIndex": 3,
         "rank": 4,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -5940,7 +5940,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 4
@@ -6012,7 +6012,7 @@
         "location": "playStack",
         "suitIndex": 1,
         "rank": 2,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -6064,7 +6064,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 1,
                 1
@@ -6141,7 +6141,7 @@
         "location": 3,
         "suitIndex": 1,
         "rank": 2,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -6193,7 +6193,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -6366,7 +6366,7 @@
         "location": "playStack",
         "suitIndex": 4,
         "rank": 1,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -6418,7 +6418,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -6591,7 +6591,7 @@
         "location": 2,
         "suitIndex": 1,
         "rank": 4,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -6643,7 +6643,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -6816,7 +6816,7 @@
         "location": "playStack",
         "suitIndex": 3,
         "rank": 3,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -6868,7 +6868,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -7041,7 +7041,7 @@
         "location": 1,
         "suitIndex": 3,
         "rank": 3,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 1,
@@ -7093,7 +7093,7 @@
                 1
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1
@@ -7266,7 +7266,7 @@
         "location": 2,
         "suitIndex": 2,
         "rank": 4,
-        "unseenCards": [
+        "possibleCardsFromObservation": [
             [
                 null,
                 0,
@@ -7318,7 +7318,7 @@
                 0
             ]
         ],
-        "matchingCardsArray": [
+        "possibleCardsFromClues": [
             [
                 0,
                 1

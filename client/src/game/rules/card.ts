@@ -131,8 +131,8 @@ export function isPotentiallyPlayable(
     return reversibleRules.isPotentiallyPlayable(variant, deck, playStacks, stackDirections, card);
   }
 
-  for (const [suitIndex, rank] of card.matchingCardsArray) {
-    if (card.unseenCards[suitIndex][rank] <= 0) {
+  for (const [suitIndex, rank] of card.possibleCardsFromClues) {
+    if (card.possibleCardsFromObservation[suitIndex][rank] <= 0) {
       continue;
     }
     let lastPlayedRank = playStacksRules.lastPlayedRank(playStacks[suitIndex], deck);

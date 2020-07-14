@@ -135,8 +135,8 @@ export const isPotentiallyPlayable = (
   stackDirections: readonly StackDirection[],
   cardState: CardState,
 ) => {
-  for (const [suitIndex, rank] of cardState.matchingCardsArray) {
-    if (cardState.unseenCards[suitIndex][rank] <= 0) {
+  for (const [suitIndex, rank] of cardState.possibleCardsFromClues) {
+    if (cardState.possibleCardsFromObservation[suitIndex][rank] <= 0) {
       continue;
     }
     const playStack = playStacks[suitIndex];
