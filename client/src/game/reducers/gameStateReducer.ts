@@ -51,8 +51,6 @@ const gameStateReducer = produce((
         text,
       });
 
-      state.doubleDiscard = false;
-
       break;
     }
 
@@ -167,7 +165,6 @@ const gameStateReducer = produce((
       }
 
       state.maxScore = statsRules.getMaxScore(state.deck, state.playStackDirections, variant);
-      state.doubleDiscard = false;
 
       break;
     }
