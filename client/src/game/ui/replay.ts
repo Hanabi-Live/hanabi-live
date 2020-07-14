@@ -163,7 +163,6 @@ const reset = () => {
 
   // Reset various UI elements
   globals.postAnimationLayout = null;
-  globals.elements.deck!.setCount(globals.deckSize);
 };
 
 // -----------------------------
