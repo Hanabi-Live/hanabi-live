@@ -623,9 +623,6 @@ func characterAdjustEndTurn(g *Game) {
 }
 
 func characterCheckSoftlock(g *Game, p *GamePlayer) {
-	// Local variables
-	t := g.Table
-
 	if !g.Options.DetrimentalCharacters {
 		return
 	}
@@ -635,14 +632,7 @@ func characterCheckSoftlock(g *Game, p *GamePlayer) {
 		(p.Character == "Vindictive" || // 9
 			p.Character == "Insistent") { // 13
 
-		g.Strikes = 3
-
-		text := p.Name + " was left with 0 clues!"
-		g.Actions = append(g.Actions, ActionText{
-			Type: "text",
-			Text: text,
-		})
-		t.NotifyGameAction()
+		g.EndCondition = EndConditionCharacterSoftlock
 	}
 }
 

@@ -113,6 +113,10 @@ export function getGameOver(
       return 'Players were idle for too long.';
     }
 
+    case EndCondition.CharacterSoftlock: {
+      return `${playerName} was left with 0 clues!`;
+    }
+
     default: {
       ensureAllCases(endCondition);
       break;
@@ -120,4 +124,8 @@ export function getGameOver(
   }
 
   return 'Players lose!';
+}
+
+export function getPlay() {
+  return '';
 }

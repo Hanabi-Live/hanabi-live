@@ -207,6 +207,10 @@ func (g *Game) CheckEnd() bool {
 		return true
 	}
 
+	if g.EndCondition == EndConditionCharacterSoftlock {
+		return true
+	}
+
 	// Check for 3 strikes
 	if g.Strikes == MaxStrikeNum {
 		logger.Info(t.GetName() + "3 strike maximum reached; ending the game.")
