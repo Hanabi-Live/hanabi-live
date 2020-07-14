@@ -298,7 +298,6 @@ describe('gameStateReducer', () => {
       expect(state.clues.length).toBe(initialState.clues.length + 1);
       expect(state.clues[0].giver).toBe(testClue.giver);
       expect(state.clues[0].target).toBe(testClue.target);
-      expect(state.clues[0].turn).toBe(testClue.turn);
       expect(state.clues[0].type).toBe(testClue.clue.type);
       expect(state.clues[0].value).toBe(testClue.clue.value);
       expect(state.clues[0].list).toEqual([]);

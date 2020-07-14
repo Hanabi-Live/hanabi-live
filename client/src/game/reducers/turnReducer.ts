@@ -33,6 +33,8 @@ const turnReducer = produce((
     }
 
     case 'clue': {
+      turn.cluesGivenThisTurn += 1;
+
       if (turn.gameSegment === null) {
         throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
@@ -98,11 +100,10 @@ const turnReducer = produce((
       // TEMP: the client should set the "currentPlayerIndex" index to -1 when the game is over
       if (action.currentPlayerIndex === -1 && turn.currentPlayerIndex !== null) {
         turn.currentPlayerIndex = null;
-        console.log('The "turnReducer()" function had to manually set the "currentPlayerIndex" to null.');
-        // This condition will be triggered in Jest tests because the "loadGameJSON.ts" file does
-        // not know how to properly create a "gameOver" action
+        console.warn('The "turnReducer()" function had to manually set the "currentPlayerIndex" to null.');
       }
 
+      // TEMP: At this point, check that the local state matches the server
       if (
         turn.currentPlayerIndex !== action.currentPlayerIndex
         && turn.currentPlayerIndex !== null

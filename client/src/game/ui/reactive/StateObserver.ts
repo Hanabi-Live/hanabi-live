@@ -96,7 +96,7 @@ const visibleStateObservers: Subscriptions = [
   // Clues (arrows + log)
   vs((s) => ({
     clues: s.clues,
-    turn: s.turn.turnNum,
+    gameSegment: s.turn.gameSegment,
   }), cluesView.onCluesChanged),
 
   // Cards
