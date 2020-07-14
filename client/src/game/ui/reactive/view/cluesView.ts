@@ -48,7 +48,7 @@ function updateLog(clues: readonly StateClue[]) {
       height: 0.017 * globals.stage.height(),
       giver: globals.playerNames[clue.giver],
       target: globals.playerNames[clue.target],
-      clueName: cluesRules.getClueName(clue, globals.variant, characterID),
+      clueName: cluesRules.getClueName(clue.type, clue.value, globals.variant, characterID),
       list: clue.list,
       negativeList: clue.negativeList,
       turn: clue.turn,

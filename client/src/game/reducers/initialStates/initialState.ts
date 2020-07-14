@@ -11,6 +11,7 @@ export default function initialState(metadata: GameMetadata): State {
       active: false,
       turn: 0,
       states: [],
+      actions: [],
       hypothetical: null,
     },
     cardIdentities: [],

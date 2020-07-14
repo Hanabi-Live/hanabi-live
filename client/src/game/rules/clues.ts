@@ -4,12 +4,16 @@
 import { getCharacter } from '../data/gameData';
 import Clue, { colorClue, rankClue } from '../types/Clue';
 import ClueType from '../types/ClueType';
-import { StateClue } from '../types/GameState';
 import MsgClue from '../types/MsgClue';
 import Variant from '../types/Variant';
 import * as variantRules from './variant';
 
-export function getClueName(clue: StateClue, variant: Variant, characterID: number | null) {
+export function getClueName(
+  clueType: ClueType,
+  clueValue: number,
+  variant: Variant,
+  characterID: number | null,
+) {
   let characterName = '';
   if (characterID !== null) {
     const character = getCharacter(characterID);
@@ -17,15 +21,15 @@ export function getClueName(clue: StateClue, variant: Variant, characterID: numb
   }
 
   let clueName;
-  if (clue.type === ClueType.Color) {
-    clueName = variant.clueColors[clue.value].name;
-  } else if (clue.type === ClueType.Rank) {
-    clueName = clue.value.toString();
+  if (clueType === ClueType.Color) {
+    clueName = variant.clueColors[clueValue].name;
+  } else if (clueType === ClueType.Rank) {
+    clueName = clueValue.toString();
   }
   if (variantRules.isCowAndPig(variant)) {
-    if (clue.type === ClueType.Color) {
+    if (clueType === ClueType.Color) {
       clueName = 'Moo';
-    } else if (clue.type === ClueType.Rank) {
+    } else if (clueType === ClueType.Rank) {
       clueName = 'Oink';
     }
   } else if (

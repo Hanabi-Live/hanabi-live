@@ -171,14 +171,14 @@ func (t *Table) NotifyStackDirections() {
 // NotifyTurn appends a new "turn" action and alerts everyone
 func (t *Table) NotifyTurn() {
 	g := t.Game
-	who := g.ActivePlayer
+	currentPlayerIndex := g.ActivePlayer
 	if g.EndCondition > EndConditionInProgress {
-		who = -1
+		currentPlayerIndex = -1
 	}
 	g.Actions = append(g.Actions, ActionTurn{
-		Type: "turn",
-		Num:  g.Turn,
-		Who:  who,
+		Type:               "turn",
+		Num:                g.Turn,
+		CurrentPlayerIndex: currentPlayerIndex,
 	})
 	t.NotifyGameAction()
 }

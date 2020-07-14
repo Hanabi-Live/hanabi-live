@@ -55,10 +55,10 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		Provide the info
 	*/
 
-	// Create a list of names of the users in this game
-	names := make([]string, 0)
+	// Create a list of names of the players in this game
+	playerNames := make([]string, 0)
 	for _, p := range t.Players {
-		names = append(names, p.Name)
+		playerNames = append(playerNames, p.Name)
 	}
 
 	// Create a list of the "Detrimental Character Assignments", if enabled
@@ -89,7 +89,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 
 		// If a spectator is viewing a replay of a game that they played in,
 		// we want to put them in the same seat
-		for k, name := range names {
+		for k, name := range playerNames {
 			if name == s.Username() {
 				seat = k
 				break
@@ -111,7 +111,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 	type InitMessage struct {
 		// Game settings
 		TableID          int       `json:"tableID"`
-		Names            []string  `json:"names"`
+		PlayerNames      []string  `json:"playerNames"`
 		Variant          string    `json:"variant"`
 		Seat             int       `json:"seat"`
 		Spectating       bool      `json:"spectating"`
@@ -142,7 +142,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 	s.Emit("init", &InitMessage{
 		// Game settings
 		TableID:          t.ID, // The client needs to know the table ID for chat to work properly
-		Names:            names,
+		PlayerNames:      playerNames,
 		Seat:             seat,
 		Spectating:       !t.Replay && j != -1,
 		Replay:           t.Replay,

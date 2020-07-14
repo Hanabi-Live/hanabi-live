@@ -188,24 +188,9 @@ func commandAction(s *Session, d *CommandData) {
 			PlayerIndex:  g.EndPlayer,
 		})
 		t.NotifyGameAction()
-
-		var text string
-		if g.EndCondition > EndConditionNormal {
-			text = "Players lose!"
-		} else {
-			text = "Players score " + strconv.Itoa(g.Score) + " points."
-		}
-		g.Actions = append(g.Actions, ActionText{
-			Type: "text",
-			Text: text,
-		})
-		t.NotifyGameAction()
-		logger.Info(t.GetName() + " " + text)
 	}
 
 	// Send the new turn
-	// This must be below the end-game text (e.g. "Players lose!"),
-	// so that it is combined with the final action
 	t.NotifyTurn()
 
 	if g.EndCondition == EndConditionInProgress {
@@ -424,9 +409,6 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 }
 
 func commandActionGameOver(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
-	// Local variables
-	t := g.Table
-
 	// A "gameOver" action is a special action type sent by the server to itself when it needs to
 	// end an ongoing game
 	// The value will correspond to the end condition (see "endCondition" in "constants.go")
@@ -442,18 +424,6 @@ func commandActionGameOver(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 	g.Strikes = 3
 	g.EndCondition = d.Value
 	g.EndPlayer = g.ActivePlayer
-
-	var text string
-	if d.Value == EndConditionTimeout {
-		text = p.Name + " ran out of time!"
-	} else if d.Value == EndConditionIdleTimeout {
-		text = "Players were idle for too long."
-	}
-	g.Actions = append(g.Actions, ActionText{
-		Type: "text",
-		Text: text,
-	})
-	t.NotifyGameAction()
 
 	return true
 }

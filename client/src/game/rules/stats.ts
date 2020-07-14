@@ -19,7 +19,12 @@ export function pace(
   deckSize: number,
   maxScore: number,
   numPlayers: number,
+  gameOver: boolean,
 ): number | null {
+  if (gameOver) {
+    return null;
+  }
+
   if (deckSize <= 0) {
     return null;
   }

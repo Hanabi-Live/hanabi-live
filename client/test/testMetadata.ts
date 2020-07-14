@@ -13,9 +13,16 @@ export default function testMetadata(
       numPlayers,
       variantName,
     },
+    playerNames: [
+      'Alice',
+      'Bob',
+      'Cathy',
+      'Donald',
+      'Emily',
+      'Frank',
+    ].slice(0, numPlayers),
     ourPlayerIndex: 0,
     spectating: true,
-    replay: false,
     characterAssignments: initArray(numPlayers, null),
     characterMetadata: [],
   };

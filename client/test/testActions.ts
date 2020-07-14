@@ -69,24 +69,24 @@ export const rankClue = (
 );
 
 export const draw = (
-  who: number,
+  playerIndex: number,
+  order: number,
   suitIndex: number,
   rank: number,
-  order: number,
 ): ActionDraw => ({
   type: 'draw',
-  who,
+  playerIndex,
+  order,
   suitIndex,
   rank,
-  order,
 });
 
 export const discard = (
-  failed: boolean,
   playerIndex: number,
+  order: number,
   suitIndex: number,
   rank: number,
-  order: number,
+  failed: boolean,
 ): ActionDiscard => ({
   type: 'discard',
   playerIndex,
@@ -98,9 +98,9 @@ export const discard = (
 
 export const play = (
   playerIndex: number,
+  order: number,
   suitIndex: number,
   rank: number,
-  order: number,
 ): ActionPlay => ({
   type: 'play',
   playerIndex,
@@ -121,10 +121,10 @@ export const text = (textContent: string): ActionText => ({
   text: textContent,
 });
 
-export const turn = (num: number, who: number): ActionTurn => ({
+export const turn = (num: number, currentPlayerIndex: number): ActionTurn => ({
   type: 'turn',
   num,
-  who,
+  currentPlayerIndex,
 });
 
 export const startReplay = (turnNumber: number): ActionStartReplay => ({

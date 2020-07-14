@@ -1,5 +1,4 @@
 // Miscellaneous helpers used by several reducers
-/* eslint-disable import/prefer-default-export */
 
 import Color from '../types/Color';
 import Suit from '../types/Suit';
@@ -20,4 +19,19 @@ export function getIndexConverter(variant: Variant) {
   }
 
   return getIndex;
+}
+
+export function getCharacterIDForPlayer(
+  playerIndex: number | null,
+  characterAssignments: Readonly<Array<number | null>>,
+) {
+  if (playerIndex === null) {
+    return null;
+  }
+
+  const characterID = characterAssignments[playerIndex];
+  if (characterID === undefined) {
+    throw new Error(`The character ID for player ${playerIndex} was undefined.`);
+  }
+  return characterID;
 }

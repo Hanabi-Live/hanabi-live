@@ -294,10 +294,11 @@ export const send = (hypoAction: ClientAction) => {
       sendHypoAction({
         type: 'draw',
         order: nextCardOrder,
-        // Always send the correct suitIndex and rank, blank will be done on the client
+        playerIndex: gameState.turn.currentPlayerIndex!,
+        // Always send the correct suitIndex and rank;
+        // the blanking of the card will be performed on the client
         suitIndex: nextCard.suitIndex,
         rank: nextCard.rank,
-        who: gameState.turn.currentPlayerIndex!,
       });
     }
   }
@@ -319,7 +320,7 @@ export const send = (hypoAction: ClientAction) => {
   sendHypoAction({
     type: 'turn',
     num: gameState.turn.turnNum + 1,
-    who: nextPlayerIndex,
+    currentPlayerIndex: nextPlayerIndex,
   });
 };
 

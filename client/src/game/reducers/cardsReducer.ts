@@ -22,8 +22,6 @@ const cardsReducer = (
   const newDeck = deck.concat([]);
 
   switch (action.type) {
-    // A player just gave a clue
-    // {clue: {type: 0, value: 1}, giver: 1, list: [11], target: 2, turn: 0, type: "clue"}
     case 'clue': {
       const clue = action.clue.type === ClueType.Color
         ? colorClue(variant.clueColors[action.clue.value])
@@ -56,7 +54,7 @@ const cardsReducer = (
           // If we're currently playing this game and we got clued, this is the first time
           // we identify this card, from the point of view of all hands
           const handsSeeingCardForFirstTime = (
-            !metadata.spectating && !metadata.replay
+            !metadata.spectating
             && metadata.ourPlayerIndex === card.location
           )
             ? game.hands // All hands
@@ -110,7 +108,7 @@ const cardsReducer = (
         // If we're currently playing this game, this is the first time
         // we see this card, from the point of view of all hands
         const handsSeeingCardForFirstTime = (
-          !metadata.spectating && !metadata.replay
+          !metadata.spectating
           && metadata.ourPlayerIndex === card.location
         )
           ? game.hands // All hands
@@ -149,14 +147,16 @@ const cardsReducer = (
       break;
     }
 
-    // A player just drew a card from the deck
-    // {order: 0, rank: 1, suitIndex: 4, type: "draw", who: 0}
     case 'draw': {
       // TEMP: At this point, check that the local state matches the server
-      if (game.turn.currentPlayerIndex !== action.who && game.turn.turnNum > 0) {
-        // NOTE: don't check this during the initial draw
-        console.warn(`The currentPlayerIndex on a draw from the client and the server do not match on turn ${game.turn}`);
-        console.warn(`Client = ${game.turn.currentPlayerIndex}, Server = ${action.who}`);
+      if (
+        game.turn.currentPlayerIndex !== action.playerIndex
+        // Prevent validation during the initial draw; during this phase of the game, the person
+        // drawing cards will not necessarily correspond to the person whose turn it is
+        && game.turn.turnNum > 0
+      ) {
+        console.warn(`The currentPlayerIndex on a draw from the client and the server do not match on turn ${game.turn.turnNum}`);
+        console.warn(`Client = ${game.turn.currentPlayerIndex}, Server = ${action.playerIndex}`);
       }
 
       const initial = initialCardState(action.order, variant);
@@ -164,14 +164,14 @@ const cardsReducer = (
       // Remove all possibilities of all cards previously drawn and visible
       deck.slice(0, action.order)
         .filter((card) => card.suitIndex !== null && card.rank !== null)
-        .filter((card) => card.location !== action.who || card.matchingCardsArray.length === 1)
+        .filter((card) => card.location !== action.playerIndex || card.matchingCardsArray.length === 1)
         .forEach((card) => { unseenCards[card.suitIndex!][card.rank!] -= 1; });
 
       const { suitPips, rankPips } = checkPips(initial.matchingCardsArray, unseenCards, variant);
 
       const drawnCard = {
         ...initial,
-        location: action.who,
+        location: action.playerIndex,
         suitIndex: nullIfNegative(action.suitIndex),
         rank: nullIfNegative(action.rank),
         turnDrawn: game.turn.turnNum,
@@ -206,6 +206,7 @@ const cardsReducer = (
       break;
     }
 
+    // Some actions do not affect the card state
     case 'gameOver':
     case 'strike':
     case 'turn':
@@ -213,7 +214,6 @@ const cardsReducer = (
     case 'status':
     case 'stackDirections':
     case 'reorder': {
-      // Actions that don't affect the card state
       break;
     }
 
