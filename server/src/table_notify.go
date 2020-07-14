@@ -158,11 +158,11 @@ func (t *Table) NotifyStackDirections() {
 		// Since StackDirections is a slice, it will be stored as a pointer
 		// (unlike the primitive values that we used for the ActionStatus message above)
 		// So, make a copy to preserve the stack directions for this exact moment in time
-		stackDirections := make([]int, len(g.StackDirections))
-		copy(stackDirections, g.StackDirections)
-		g.Actions = append(g.Actions, ActionStackDirections{
-			Type:       "stackDirections",
-			Directions: stackDirections,
+		playStackDirections := make([]int, len(g.PlayStackDirections))
+		copy(playStackDirections, g.PlayStackDirections)
+		g.Actions = append(g.Actions, ActionPlayStackDirections{
+			Type:       "playStackDirections",
+			Directions: playStackDirections,
 		})
 		t.NotifyGameAction()
 	}

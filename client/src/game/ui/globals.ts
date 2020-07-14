@@ -62,7 +62,7 @@ export class Globals {
   ourTurn: boolean = false;
   deckSize: number = 0;
   indexOfLastDrawnCard: number = 0;
-  stackDirections: StackDirection[] = [];
+  playStackDirections: StackDirection[] = [];
 
   // UI elements
   imageLoader: Loader | null = null;
@@ -170,7 +170,7 @@ export class Globals {
     this.ourTurn = false;
     this.deckSize = 0;
     this.indexOfLastDrawnCard = 0;
-    this.stackDirections = [];
+    this.playStackDirections = [];
     this.imageLoader = null;
     this.stage = new Konva.Stage({ container: 'game' });
     this.layers = new Layers();

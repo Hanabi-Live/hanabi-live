@@ -45,7 +45,7 @@ describe('integration', () => {
         expect(turn5State.stats.potentialCluesLost).toBe(2);
 
         /* TODO: stack directions on the test loader
-        expect(turn5State.playStacksDirections).toEqual([
+        expect(turn5State.playStackDirections).toEqual([
           StackDirection.Undecided,
           StackDirection.Down,
           StackDirection.Undecided,
@@ -86,7 +86,7 @@ describe('integration', () => {
         expect(finalState.stats.potentialCluesLost).toBe(18);
 
         /* TODO: stack directions on the test loader
-        expect(finalState.playStacksDirections).toEqual([
+        expect(finalState.playStackDirections).toEqual([
           StackDirection.Finished,
           StackDirection.Finished,
           StackDirection.Finished,

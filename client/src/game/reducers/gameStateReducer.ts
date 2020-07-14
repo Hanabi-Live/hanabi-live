@@ -10,9 +10,9 @@ import { getVariant } from '../data/gameData';
 import {
   clueTokensRules,
   deckRules,
+  statsRules,
   textRules,
   variantRules,
-  statsRules,
 } from '../rules';
 import { GameAction } from '../types/actions';
 import EndCondition from '../types/EndCondition';
@@ -51,6 +51,8 @@ const gameStateReducer = produce((
         text,
       });
 
+      state.doubleDiscard = false;
+
       break;
     }
 
@@ -80,7 +82,17 @@ const gameStateReducer = produce((
         text,
       });
 
-      state.maxScore = statsRules.getMaxScore(state.deck, state.playStacksDirections, variant);
+      // TODO find out why this is breaking tests
+      /*
+      state.doubleDiscard = statsRules.doubleDiscard(
+        variant,
+        action.order,
+        state.deck,
+        state.playStacks,
+        state.playStackDirections,
+      );
+      */
+      state.maxScore = statsRules.getMaxScore(state.deck, state.playStackDirections, variant);
 
       break;
     }
@@ -166,7 +178,8 @@ const gameStateReducer = produce((
         state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
       }
 
-      state.maxScore = statsRules.getMaxScore(state.deck, state.playStacksDirections, variant);
+      state.maxScore = statsRules.getMaxScore(state.deck, state.playStackDirections, variant);
+      state.doubleDiscard = false;
 
       break;
     }
@@ -197,8 +210,8 @@ const gameStateReducer = produce((
     // { type: 'stackDirections', directions: [0, 0, 0, 0, 0] }
     // TODO: This message is unnecessary and will be removed in a future version of the code
     // (the client should be able to determine the stack directions directly)
-    case 'stackDirections': {
-      state.playStacksDirections = action.directions;
+    case 'playStackDirections': {
+      state.playStackDirections = action.directions;
       break;
     }
 
@@ -218,14 +231,17 @@ const gameStateReducer = produce((
         console.warn(`Client = ${state.score}, Server = ${action.score}`);
       }
 
-      // TODO: calculate maxScore instead of using the server one
+      // TEMP: At this point, check that the local state matches the server
       if (state.maxScore !== action.maxScore) {
         console.warn(`The max scores from the client and the server do not match on turn ${state.turn.turnNum}.`);
         console.warn(`Client = ${state.maxScore}, Server = ${action.maxScore}`);
       }
 
-      // TODO: calculate doubleDiscard instead of using the server value
-      state.doubleDiscard = action.doubleDiscard;
+      // TEMP: At this point, check that the local state matches the server
+      if (state.doubleDiscard !== action.doubleDiscard) {
+        console.warn(`The double discard from the client and the server do not match on turn ${state.turn.turnNum}.`);
+        console.warn(`Client = ${state.doubleDiscard}, Server = ${action.doubleDiscard}`);
+      }
 
       break;
     }

@@ -215,7 +215,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	// Handle custom variants that do not play in order from 1 to 5
 	if variants[g.Options.VariantName].HasReversedSuits() {
 		extraClue = (c.Rank == 5 || c.Rank == 1) &&
-			g.StackDirections[c.SuitIndex] == StackDirectionFinished
+			g.PlayStackDirections[c.SuitIndex] == StackDirectionFinished
 	}
 
 	if extraClue {

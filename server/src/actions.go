@@ -60,7 +60,7 @@ type ActionReorder struct {
 	HandOrder []int  `json:"handOrder"`
 }
 
-type ActionStackDirections struct {
+type ActionPlayStackDirections struct {
 	Type       string `json:"type"`
 	Directions []int  `json:"directions"`
 }
