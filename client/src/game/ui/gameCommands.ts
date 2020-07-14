@@ -26,7 +26,6 @@ import * as notes from './notes';
 import pause from './pause';
 import StateObserver from './reactive/StateObserver';
 import * as replay from './replay';
-import strikeRecord from './strikeRecord';
 import * as timer from './timer';
 import * as tooltips from './tooltips';
 import * as turn from './turn';
@@ -493,16 +492,6 @@ commands.set('gameActionList', (data: GameActionListData) => {
   // Play through all of the turns
   for (const actionMessage of data.list) {
     processNewAction(actionMessage);
-
-    // Some specific messages contain global state information that we need to record
-    // (since we might be in a replay that is starting on the first turn,
-    // the respective action functions will not be reached until
-    // we actually progress to that turn of the replay)
-    if (actionMessage.type === 'strike') {
-      // Record the turns that the strikes happen
-      // (or else clicking on the strike squares won't work on a freshly initialized replay)
-      strikeRecord(actionMessage);
-    }
   }
 
   // Initialize solo replays to the first turn (otherwise, nothing will be drawn)

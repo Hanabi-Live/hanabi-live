@@ -10,16 +10,13 @@ import {
   ActionHypotheticalMorph,
   ActionReorder,
   ActionStatus,
-  ActionStrike,
   ActionTurn,
 } from '../types/actions';
 import { MAX_CLUE_NUM } from '../types/constants';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
-import { animate } from './konvaHelpers';
 import LayoutChild from './LayoutChild';
 import statusCheckOnAllCards from './statusCheckOnAllCards';
-import strikeRecord from './strikeRecord';
 
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list that was sent upon loading a new
@@ -186,32 +183,6 @@ actionFunctions.set('status', (data: ActionStatus) => {
   if (!globals.animateFast) {
     globals.layers.UI.batchDraw();
   }
-});
-
-// Data is as follows:
-// {
-//   type: 'strike',
-//   num: 1,
-//   order: 4, // The order of the card that was misplayed
-//   turn: 2,
-// }
-actionFunctions.set('strike', (data: ActionStrike) => {
-  if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
-    return;
-  }
-
-  // Local variables
-  const i = data.num - 1;
-  const strikeX = globals.elements.strikeXs[i];
-
-  // Animate the strike square fading in
-  animate(strikeX, {
-    duration: 1,
-    opacity: 1,
-  }, true);
-
-  // Record the turn that the strike happened and the card that was misplayed
-  strikeRecord(data);
 });
 
 actionFunctions.set('morph', (data: ActionHypotheticalMorph) => {

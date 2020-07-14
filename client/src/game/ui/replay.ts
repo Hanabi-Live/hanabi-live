@@ -168,16 +168,6 @@ const reset = () => {
   // Reset various UI elements
   globals.postAnimationLayout = null;
   globals.elements.deck!.setCount(globals.deckSize);
-
-  // Reset the strikes
-  for (const strikeX of globals.elements.strikeXs) {
-    if (strikeX.tween !== null) {
-      strikeX.tween.destroy();
-      strikeX.tween = null;
-    }
-    strikeX.opacity(0);
-    strikeX.setFaded();
-  }
 };
 
 // -----------------------------

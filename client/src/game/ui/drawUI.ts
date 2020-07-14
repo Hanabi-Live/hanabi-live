@@ -876,44 +876,60 @@ const drawScoreArea = () => {
 
   // Draw the 3 strike (bomb) black squares / X's
   function strikeClick(this: StrikeSquare | StrikeX, event: Konva.KonvaEventObject<MouseEvent>) {
-    if (event.evt.button === 0) { // Left-click
-      // Left-clicking a strike X or a strike square takes us to the turn that the strike happened
-      if (this.turn === null) {
-        return;
-      }
-      if (globals.replay) {
-        replay.checkDisableSharedTurns();
-      } else {
-        replay.enter();
-      }
-      if (globals.inReplay) {
-        replay.goto(this.turn + 1, true);
-      }
+    switch (event.evt.button) {
+      case 0: { // Left-click
+        // Left-clicking a strike X or a strike square takes us to the turn that the strike happened
+        const strikes = globals.store!.getState().ongoingGame.strikes;
+        const strike = strikes[this.num];
+        if (strike === undefined) {
+          // There is no strike yet that corresponds to this black square / X, so do nothing
+          return;
+        }
 
-      // Also highlight the card
-      if (this.order !== null) {
+        if (globals.replay) {
+          replay.checkDisableSharedTurns();
+        } else {
+          replay.enter();
+        }
+        if (!globals.inReplay) {
+          return;
+        }
+        replay.goto(strike.turn, true);
+
         // Ensure that the card exists as a sanity-check
-        const card = globals.deck[this.order];
+        const card = globals.deck[strike.order];
         if (card === undefined) {
           return;
         }
 
+        // Highlight the card
         arrows.toggle(card);
+
+        break;
       }
-    } else if (event.evt.button === 2) { // Right-click
-      // Right-clicking a strike X or a strike square shows an arrow over the strike square
-      let order;
-      if (this.num === 1) {
-        order = ReplayArrowOrder.Strike1;
-      } else if (this.num === 2) {
-        order = ReplayArrowOrder.Strike2;
-      } else if (this.num === 3) {
-        order = ReplayArrowOrder.Strike3;
-      } else {
-        throw new Error(`Unknown strike number of ${this.num}" in the "strickClick()" function.`);
+
+      case 2: { // Right-click
+        // Right-clicking a strike X or a strike square shows an arrow over the strike square
+        let order;
+        if (this.num === 0) {
+          order = ReplayArrowOrder.Strike1;
+        } else if (this.num === 1) {
+          order = ReplayArrowOrder.Strike2;
+        } else if (this.num === 2) {
+          order = ReplayArrowOrder.Strike3;
+        } else {
+          throw new Error(`Unknown strike number of ${this.num}".`);
+        }
+
+        const element = globals.elements.strikeSquares[this.num];
+        arrows.click(event, order, element);
+
+        break;
       }
-      const element = globals.elements.strikeSquares[this.num - 1];
-      arrows.click(event, order, element);
+
+      default: {
+        break;
+      }
     }
   }
   for (let i = 0; i < 3; i++) {
@@ -927,9 +943,9 @@ const drawScoreArea = () => {
       opacity: 0.6,
       cornerRadius: 0.005 * winW,
       listening: true,
-    });
-    strikeSquare.num = i + 1;
+    }, i);
     globals.elements.scoreArea.add(strikeSquare);
+    globals.elements.strikeSquares.push(strikeSquare);
 
     // Draw the red X that indicates the strike
     const strikeX = new StrikeX({
@@ -940,9 +956,9 @@ const drawScoreArea = () => {
       image: globals.imageLoader!.get('x')!,
       opacity: 0,
       listening: true,
-    });
-    strikeX.num = i + 1;
+    }, i);
     globals.elements.scoreArea.add(strikeX);
+    globals.elements.strikeXs.push(strikeX);
 
     // Handle the tooltips
     strikeSquare.tooltipName = 'strikes';
@@ -954,15 +970,8 @@ const drawScoreArea = () => {
 
     // Click on the strike to go to the turn that the strike happened, if any
     // (and highlight the card that misplayed)
-    strikeSquare.turn = null;
-    strikeX.turn = null;
-    strikeSquare.order = null;
-    strikeX.order = null;
     strikeSquare.on('click tap', strikeClick);
     strikeX.on('click tap', strikeClick);
-
-    globals.elements.strikeSquares[i] = strikeSquare;
-    globals.elements.strikeXs[i] = strikeX;
   }
 };
 

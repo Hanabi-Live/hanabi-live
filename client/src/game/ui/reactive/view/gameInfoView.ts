@@ -1,6 +1,9 @@
-import { LABEL_COLOR } from '../../../../constants';
+import { LABEL_COLOR, STRIKE_FADE } from '../../../../constants';
 import { variantRules } from '../../../rules';
+import { MAX_STRIKES } from '../../../types/constants';
+import { StateStrike } from '../../../types/GameState';
 import globals from '../../globals';
+import { animate } from '../../konvaHelpers';
 
 export function onTurnChanged(data: {
   turn: number;
@@ -91,4 +94,63 @@ export function onClueTokensChanged(clueTokens: number) {
   }
 
   globals.layers.UI.batchDraw();
+}
+
+export function onStrikesChanged(
+  strikes: readonly StateStrike[],
+  previousStrikes: readonly StateStrike[] | undefined,
+) {
+  // Strikes are hidden from the end-user in "Throw It in a Hole" variants
+  if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
+    return;
+  }
+
+  // If there is no previous state, we are viewing the visible state for the first time
+  // If a strike happened in the future, we want to show a faded X on the UI
+  // The user will be able to click on the X in order to jump directly to the turn where the
+  // strike happened
+  if (previousStrikes === undefined) {
+    for (let i = 0; i < globals.store!.getState().ongoingGame.strikes.length; i++) {
+      const strikeX = globals.elements.strikeXs[i];
+      if (strikeX === undefined) {
+        continue;
+      }
+      strikeX.opacity(STRIKE_FADE);
+    }
+
+    return;
+  }
+
+  for (let i = 0; i < MAX_STRIKES; i++) {
+    // Check to see if this strike has changed
+    if (typeof strikes[i] === typeof previousStrikes[i]) {
+      continue;
+    }
+
+    const strikeX = globals.elements.strikeXs[i];
+    if (strikeX === undefined) {
+      continue;
+    }
+    const strikeSquare = globals.elements.strikeSquares[i];
+    if (strikeSquare === undefined) {
+      continue;
+    }
+
+    if (strikes[i] === undefined) {
+      // We are going backwards in a replay and this strike should now be faded
+      if (strikeX.tween !== null) {
+        strikeX.tween.destroy();
+        strikeX.tween = null;
+      }
+      strikeX.opacity(STRIKE_FADE);
+      continue;
+    }
+
+    // Animate the strike square fading in
+    animate(strikeX, {
+      duration: 1,
+      opacity: 1,
+    }, true);
+    console.log('ANIMATED');
+  }
 }
