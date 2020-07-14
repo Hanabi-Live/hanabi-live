@@ -43,6 +43,7 @@ const statsReducer = produce((
         // A clued card was discarded
         stats.cardsGotten -= 1;
       }
+
       break;
     }
 

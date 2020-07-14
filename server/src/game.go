@@ -324,7 +324,7 @@ func (g *Game) GetHandSizeForNormalGame() int {
 // accounting for stacks that cannot be completed due to discarded cards
 func (g *Game) GetMaxScore() int {
 	// Getting the maximum score is much more complicated if we are playing a
-	// "Up or Down" or "Reversed" variant
+	// "Reversed" or "Up or Down" variant
 	if variants[g.Options.VariantName].HasReversedSuits() {
 		return variantReversibleGetMaxScore(g)
 	}

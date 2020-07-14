@@ -12,6 +12,7 @@ import {
   deckRules,
   textRules,
   variantRules,
+  statsRules,
 } from '../rules';
 import { GameAction } from '../types/actions';
 import EndCondition from '../types/EndCondition';
@@ -78,6 +79,8 @@ const gameStateReducer = produce((
         turn: state.turn.turnNum + 1,
         text,
       });
+
+      state.maxScore = statsRules.getMaxScore(state.deck, state.playStacksDirections, variant);
 
       break;
     }
@@ -163,6 +166,8 @@ const gameStateReducer = produce((
         state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
       }
 
+      state.maxScore = statsRules.getMaxScore(state.deck, state.playStacksDirections, variant);
+
       break;
     }
 
@@ -214,7 +219,10 @@ const gameStateReducer = produce((
       }
 
       // TODO: calculate maxScore instead of using the server one
-      state.maxScore = action.maxScore;
+      if (state.maxScore !== action.maxScore) {
+        console.warn(`The max scores from the client and the server do not match on turn ${state.turn.turnNum}.`);
+        console.warn(`Client = ${state.maxScore}, Server = ${action.maxScore}`);
+      }
 
       // TODO: calculate doubleDiscard instead of using the server value
       state.doubleDiscard = action.doubleDiscard;
