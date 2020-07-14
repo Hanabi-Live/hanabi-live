@@ -1,6 +1,6 @@
 import { LABEL_COLOR, STRIKE_FADE } from '../../../../constants';
 import { variantRules } from '../../../rules';
-import { MAX_STRIKES } from '../../../types/constants';
+import { MAX_STRIKES, MAX_CLUE_NUM } from '../../../types/constants';
 import { StateStrike } from '../../../types/GameState';
 import globals from '../../globals';
 import { animate } from '../../konvaHelpers';
@@ -96,6 +96,32 @@ export function onClueTokensChanged(clueTokens: number) {
   globals.layers.UI.batchDraw();
 }
 
+export function onClueTokensOrDoubleDiscardChanged(data: {
+  clueTokens: number;
+  doubleDiscard: boolean;
+}) {
+  if (globals.lobby.settings.realLifeMode) {
+    return;
+  }
+
+  if (data.clueTokens === MAX_CLUE_NUM) {
+    // Show the red border around the discard pile
+    // (to reinforce that the current player cannot discard)
+    globals.elements.noDiscardBorder!.show();
+    globals.elements.noDoubleDiscardBorder!.hide();
+  } else if (data.doubleDiscard && globals.lobby.settings.hyphenatedConventions) {
+    // Show a yellow border around the discard pile
+    // (to reinforce that this is a "Double Discard" situation)
+    globals.elements.noDiscardBorder!.hide();
+    globals.elements.noDoubleDiscardBorder!.show();
+  } else {
+    globals.elements.noDiscardBorder!.hide();
+    globals.elements.noDoubleDiscardBorder!.hide();
+  }
+
+  globals.layers.UI.batchDraw();
+}
+
 export function onStrikesChanged(
   strikes: readonly StateStrike[],
   previousStrikes: readonly StateStrike[] | undefined,
@@ -152,4 +178,6 @@ export function onStrikesChanged(
       opacity: 1,
     }, true);
   }
+
+  globals.layers.UI.batchDraw();
 }

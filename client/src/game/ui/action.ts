@@ -9,10 +9,8 @@ import {
   ActionIncludingHypothetical,
   ActionHypotheticalMorph,
   ActionReorder,
-  ActionStatus,
   ActionTurn,
 } from '../types/actions';
-import { MAX_CLUE_NUM } from '../types/constants';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
@@ -151,37 +149,6 @@ actionFunctions.set('reorder', (data: ActionReorder) => {
     for (let j = 0; j < numMoveDown; j++) {
       layoutChild.moveDown();
     }
-  }
-});
-
-actionFunctions.set('status', (data: ActionStatus) => {
-  // TEMP: the no discard / double discard border should be a reactive view
-  let clues = data.clues;
-  if (variantRules.isClueStarved(globals.variant)) {
-    // In "Clue Starved" variants, 1 clue is represented on the server by 2
-    // Thus, in order to get the "real" clue count, we have to divide by 2
-    clues /= 2;
-  }
-
-  if (!globals.lobby.settings.realLifeMode) {
-    if (clues === MAX_CLUE_NUM) {
-      // Show the red border around the discard pile
-      // (to reinforce that the current player cannot discard)
-      globals.elements.noDiscardBorder!.show();
-      globals.elements.noDoubleDiscardBorder!.hide();
-    } else if (data.doubleDiscard && globals.lobby.settings.hyphenatedConventions) {
-      // Show a yellow border around the discard pile
-      // (to reinforce that this is a "Double Discard" situation)
-      globals.elements.noDiscardBorder!.hide();
-      globals.elements.noDoubleDiscardBorder!.show();
-    } else {
-      globals.elements.noDiscardBorder!.hide();
-      globals.elements.noDoubleDiscardBorder!.hide();
-    }
-  }
-
-  if (!globals.animateFast) {
-    globals.layers.UI.batchDraw();
   }
 });
 

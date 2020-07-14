@@ -69,6 +69,10 @@ const visibleStateObservers: Subscriptions = [
   }), gameInfoView.onScoreOrMaxScoreChanged),
   vs((s) => s.numAttemptedCardsPlayed, gameInfoView.onNumAttemptedCardsPlayedChanged),
   vs((s) => s.clueTokens, gameInfoView.onClueTokensChanged),
+  vs((s) => ({
+    clueTokens: s.clueTokens,
+    doubleDiscard: s.doubleDiscard,
+  }), gameInfoView.onClueTokensOrDoubleDiscardChanged),
   vs((s) => s.strikes, gameInfoView.onStrikesChanged),
 
   // Stats
