@@ -65,10 +65,6 @@ export const exit = () => {
   // TEMP: eventually, move code from this file to reducers and observers
   globals.store!.dispatch({ type: 'endReplay' });
 
-  for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
-    globals.deck[i].setBareImage();
-  }
-
   globals.layers.UI.batchDraw();
   globals.layers.card.batchDraw();
 };

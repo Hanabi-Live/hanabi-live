@@ -5,7 +5,6 @@ import { nullIfNegative } from '../../misc';
 import * as variantRules from '../rules/variant';
 import {
   ActionDiscard,
-  ActionDraw,
   ActionIncludingHypothetical,
   ActionHypotheticalMorph,
   ActionReorder,
@@ -45,73 +44,6 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
 
   // The fact that this card was discarded could make some other cards useless or critical
   statusCheckOnAllCards();
-});
-
-// A player just drew a card from the deck
-actionFunctions.set('draw', (data: ActionDraw) => {
-  // Local variables
-  const { order } = data;
-  // Suit and rank come from the server as -1 if the card is unknown
-  // (e.g. being drawn to the current player's hand)
-  // We want to convert this to just being null
-  const suitIndex = nullIfNegative(data.suitIndex);
-  const rank = nullIfNegative(data.rank);
-  // const holder = data.who;
-
-  // If we are the "Slow-Witted" character, we are not supposed to be able to see other people's
-  // cards that are in slot 1
-  /*
-  const ourCharacterID = globals.characterAssignments[globals.playerUs];
-  if (ourCharacterID !== null) {
-    const ourCharacter = getCharacter(ourCharacterID);
-    if (ourCharacter.name === 'Slow-Witted') {
-      if (suitIndex !== null || rank !== null) {
-        globals.characterRememberedCards[order] = {
-          suitIndex,
-          rank,
-        };
-        suitIndex = null;
-        rank = null;
-      }
-
-      // Since someone is drawing a card, we can potentially reveal the other cards in the hand
-      const hand = globals.elements.playerHands[holder];
-      hand.children.each((layoutChild) => {
-        const card: HanabiCard = layoutChild.children[0] as HanabiCard;
-        const rememberedCard = globals.characterRememberedCards[card.state.order];
-        if (rememberedCard && rememberedCard.suitIndex !== null && rememberedCard.rank !== null) {
-          card.reveal(rememberedCard.suitIndex, rememberedCard.rank);
-        }
-      });
-    }
-  }
-  */
-
-  /*
-  if (globals.cardIdentities.length !== 0) {
-    // If we are in a shared replay that was converted from a game in which we were one of the
-    // players, then suit and rank will be still be null for the cards that were dealt to us
-    // Since we are in a shared replay, this is a mistake, because we should have full knowledge of
-    // what the card is (from the "cardIdentities" message that is sent at the end of the game)
-    const card = globals.deck[order];
-    card.replayRedraw();
-    suitIndex = card.state.suitIndex;
-    rank = card.state.rank;
-  }
-  */
-
-  // Remove one card from the deck
-  globals.deckSize -= 1;
-  globals.indexOfLastDrawnCard = order;
-  globals.elements.deck!.setCount(globals.deckSize);
-
-  // Cards are created on first initialization for performance reasons
-  // So, since this card was just drawn, refresh all the variables on the card
-  // (this is necessary because we might be rewinding in a replay)
-  const card = globals.deck[order];
-  // Suit and rank will be null if we don't know the suit/rank
-  card.refresh(suitIndex, rank);
-  card.parent!.show();
 });
 
 actionFunctions.set('play', () => {

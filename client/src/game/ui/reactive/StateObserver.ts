@@ -8,6 +8,7 @@ import * as cardsView from './view/cardsView';
 import * as cluesView from './view/cluesView';
 import * as currentPlayerAreaView from './view/currentPlayerAreaView';
 import * as currentPlayerView from './view/currentPlayerView';
+import * as deckView from './view/deckView';
 import * as gameInfoView from './view/gameInfoView';
 import * as initView from './view/initView';
 import * as logView from './view/logView';
@@ -102,6 +103,9 @@ const visibleStateObservers: Subscriptions = [
   // Cards
   // Each card will subscribe to changes to its own data
   vs((s) => s.deck.length, cardsView.onDeckChanged),
+
+  // Deck
+  vs((s) => s.deckSize, deckView.onDeckSizeChanged),
 
   // Initialization finished
   // (this will get called when the visible state becomes valid and after all other view updates)

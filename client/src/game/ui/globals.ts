@@ -61,7 +61,6 @@ export class Globals {
   currentPlayerIndex: number | null = 0;
   ourTurn: boolean = false;
   deckSize: number = 0;
-  indexOfLastDrawnCard: number = 0;
   playStackDirections: StackDirection[] = [];
 
   // UI elements
@@ -169,7 +168,6 @@ export class Globals {
     this.currentPlayerIndex = 0;
     this.ourTurn = false;
     this.deckSize = 0;
-    this.indexOfLastDrawnCard = 0;
     this.playStackDirections = [];
     this.imageLoader = null;
     this.stage = new Konva.Stage({ container: 'game' });

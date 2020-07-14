@@ -8,6 +8,7 @@ import globals from '../../globals';
 import observeStore, { Subscription, Selector, Listener } from '../observeStore';
 
 export function onDeckChanged(length: number) {
+  // Handle card subscriptions
   // TODO: this could be used to create/destroy HanabiCards / card UI
   // on the fly based on state which would make loading a lot faster
   if (globals.cardSubscriptions.length < length) {
