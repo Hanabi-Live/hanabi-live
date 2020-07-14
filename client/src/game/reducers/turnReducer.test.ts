@@ -15,7 +15,10 @@ const defaultGameState = initialGameState(defaultMetadata);
 describe('turnReducer', () => {
   describe('turn', () => {
     test('is properly incremented', () => {
-      let state = initialTurnState();
+      let state: TurnState = {
+        ...initialTurnState(),
+        gameSegment: 0,
+      };
 
       const drawAction = draw(0, 0, 0, 1); // Draw a red 1
       state = turnReducer(state, drawAction, defaultGameState, defaultMetadata);
@@ -33,7 +36,11 @@ describe('turnReducer', () => {
 
   describe('currentPlayerIndex', () => {
     test('is properly incremented', () => {
-      let state = initialTurnState();
+      let state: TurnState = {
+        ...initialTurnState(),
+        gameSegment: 0,
+      };
+
       const drawAction = draw(0, 0, 0, 1); // Draw a red 1
       state = turnReducer(state, drawAction, defaultGameState, defaultMetadata);
 
@@ -47,7 +54,10 @@ describe('turnReducer', () => {
     });
 
     test('is properly incremented for a legacy game with a custom starting player', () => {
-      let state = initialTurnState(1);
+      let state: TurnState = {
+        ...initialTurnState(1),
+        gameSegment: 0,
+      };
       const drawAction = draw(0, 0, 0, 1); // Draw a red 1
       state = turnReducer(state, drawAction, defaultGameState, defaultMetadata);
 

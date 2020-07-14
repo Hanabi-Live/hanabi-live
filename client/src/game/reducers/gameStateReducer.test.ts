@@ -9,8 +9,10 @@ import { // Direct import instead of namespace import for compactness
 } from '../../../test/testActions';
 import testMetadata from '../../../test/testMetadata';
 import { MAX_CLUE_NUM } from '../types/constants';
+import GameState from '../types/GameState';
 import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialStates/initialGameState';
+import initialTurnState from './initialStates/initialTurnState';
 
 const numPlayers = 3;
 const defaultMetadata = testMetadata(numPlayers);
@@ -29,8 +31,14 @@ describe('gameStateReducer', () => {
   describe('turn', () => {
     test('is properly incremented (integration test)', () => {
       const initialState = initialGameState(defaultMetadata);
+      let state: GameState = {
+        ...initialGameState(defaultMetadata),
+        turn: {
+          ...initialTurnState(),
+          gameSegment: 0,
+        },
+      };
 
-      let state = initialGameState(defaultMetadata);
       const testClue = rankClue(5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue, defaultMetadata);
       expect(state.turn.turnNum).toBeGreaterThan(initialState.turn.turnNum);
@@ -40,8 +48,14 @@ describe('gameStateReducer', () => {
   describe('currentPlayerIndex', () => {
     test('is properly incremented (integration test)', () => {
       const initialState = initialGameState(defaultMetadata);
+      let state: GameState = {
+        ...initialGameState(defaultMetadata),
+        turn: {
+          ...initialTurnState(),
+          gameSegment: 0,
+        },
+      };
 
-      let state = initialGameState(defaultMetadata);
       const testClue = rankClue(5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue, defaultMetadata);
       expect(state.turn.currentPlayerIndex).not.toEqual(initialState.turn.currentPlayerIndex);
@@ -83,7 +97,13 @@ describe('gameStateReducer', () => {
     });
 
     test('is 3 after a 3-for-1 clue', () => {
-      let state = initialGameState(defaultMetadata);
+      let state: GameState = {
+        ...initialGameState(defaultMetadata),
+        turn: {
+          ...initialTurnState(),
+          gameSegment: 0,
+        },
+      };
 
       // Draw a red 1, a red 2, and a red 3
       for (let i = 0; i < 3; i++) {
@@ -99,7 +119,13 @@ describe('gameStateReducer', () => {
     });
 
     test('is decreased after a misplay', () => {
-      let state = initialGameState(defaultMetadata);
+      let state: GameState = {
+        ...initialGameState(defaultMetadata),
+        turn: {
+          ...initialTurnState(),
+          gameSegment: 0,
+        },
+      };
 
       // Draw a yellow 2 to player 0
       const drawYellow2Action = draw(0, 0, 1, 2);
@@ -130,7 +156,13 @@ describe('gameStateReducer', () => {
     });
 
     test('is decreased after a clue from playing a 5 is wasted', () => {
-      let state = initialGameState(defaultMetadata);
+      let state: GameState = {
+        ...initialGameState(defaultMetadata),
+        turn: {
+          ...initialTurnState(),
+          gameSegment: 0,
+        },
+      };
 
       // Draw a red 2, a red 4, and a red 5 to player 0
       const drawRed2Action = draw(0, 2, 0, 2);
@@ -184,7 +216,13 @@ describe('gameStateReducer', () => {
 
     describe('Clue Starved', () => {
       test('is decreased after a clue from playing a 5 is wasted', () => {
-        let state = initialGameState(clueStarvedMetadata);
+        let state: GameState = {
+          ...initialGameState(defaultMetadata),
+          turn: {
+            ...initialTurnState(),
+            gameSegment: 0,
+          },
+        };
 
         // Draw a red 2, a red 4, and a red 5 to player 0
         const drawRed2Action = draw(0, 2, 0, 2);
@@ -246,9 +284,15 @@ describe('gameStateReducer', () => {
   describe('clues', () => {
     test('are added to the list of clues', () => {
       const initialState = initialGameState(defaultMetadata);
+      let state: GameState = {
+        ...initialGameState(defaultMetadata),
+        turn: {
+          ...initialTurnState(),
+          gameSegment: 0,
+        },
+      };
 
       // Player 1 gives a random clue to player 0
-      let state = initialGameState(defaultMetadata);
       const testClue = rankClue(5, 1, [], 0, 2);
       state = gameStateReducer(state, testClue, defaultMetadata);
 
@@ -261,12 +305,19 @@ describe('gameStateReducer', () => {
       expect(state.clues[0].list).toEqual([]);
       expect(state.clues[0].negativeList).toEqual([]);
     });
+
     test('are remembered with the correct positive and negative cards', () => {
-      let state = initialGameState(defaultMetadata);
+      let state: GameState = {
+        ...initialGameState(defaultMetadata),
+        turn: {
+          ...initialTurnState(),
+          gameSegment: 0,
+        },
+      };
 
       // Draw 5 cards (red 1-3, yellow 4-5)
       for (let i = 0; i <= 4; i++) {
-        const drawAction = draw(1, i <= 2 ? 0 : 1, i + 1, i);
+        const drawAction = draw(1, i, i <= 2 ? 0 : 1, i + 1);
         state = gameStateReducer(state, drawAction, defaultMetadata);
       }
 
@@ -279,7 +330,13 @@ describe('gameStateReducer', () => {
     });
 
     test('decrement clueTokens', () => {
-      let state = initialGameState(defaultMetadata);
+      let state: GameState = {
+        ...initialGameState(defaultMetadata),
+        turn: {
+          ...initialTurnState(),
+          gameSegment: 0,
+        },
+      };
 
       // Player 1 gives a random clue to player 0
       const testClue = rankClue(5, 1, [], 0, 2);
