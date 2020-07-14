@@ -208,38 +208,6 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	})
 	t.NotifyGameAction()
 
-	// Send the "message" about the play
-	text := p.Name + " plays "
-	if strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") {
-		text += "a card"
-	} else {
-		text += c.Name(g)
-	}
-	text += " from "
-	if c.Slot == -1 {
-		text += "the deck"
-	} else {
-		text += "slot #" + strconv.Itoa(c.Slot)
-	}
-	if c.Touched {
-		// Mark that the blind-play streak has ended
-		g.BlindPlays = 0
-	} else {
-		text += " (blind)"
-		g.BlindPlays++
-		if g.BlindPlays > 4 {
-			// There is no sound effect for more than 4 blind plays in a row
-			g.BlindPlays = 4
-		}
-		g.Sound = "blind" + strconv.Itoa(g.BlindPlays)
-	}
-	g.Actions = append(g.Actions, ActionText{
-		Type: "text",
-		Text: text,
-	})
-	t.NotifyGameAction()
-	logger.Info(t.GetName() + text)
-
 	// Give the team a clue if the final card of the suit was played
 	// (this will always be a 5 unless it is a custom variant)
 	extraClue := c.Rank == 5
@@ -319,43 +287,6 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 		Failed:      c.Failed,
 	})
 	t.NotifyGameAction()
-
-	text := p.Name + " "
-	if c.Failed {
-		if strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") {
-			text += "plays"
-		} else {
-			text += "fails to play"
-		}
-	} else {
-		text += "discards"
-	}
-	text += " "
-	if strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") && c.Failed {
-		text += "a card"
-	} else {
-		text += c.Name(g)
-	}
-	text += " from "
-	if c.Slot == -1 {
-		text += "the deck"
-	} else {
-		text += "slot #" + strconv.Itoa(c.Slot)
-	}
-	if !c.Failed && c.Touched {
-		text += " (clued)"
-		g.Sound = "turn_discard_clued"
-	}
-	if c.Failed && c.Slot != -1 && !c.Touched {
-		text += " (blind)"
-	}
-
-	g.Actions = append(g.Actions, ActionText{
-		Type: "text",
-		Text: text,
-	})
-	t.NotifyGameAction()
-	logger.Info(t.GetName() + text)
 
 	// Check to see if revealing this card would surprise the player
 	// (we want to have it in the middle of the function so that it will

@@ -44,7 +44,7 @@ const gameStateReducer = produce((
       });
 
       const targetHand = state.hands[action.target];
-      const text = textRules.getClue(action, targetHand, metadata);
+      const text = textRules.clue(action, targetHand, metadata);
       state.log.push({
         turn: state.turn.turnNum + 1,
         text,
@@ -59,7 +59,9 @@ const gameStateReducer = produce((
       // Remove it from the hand
       const hand = state.hands[action.playerIndex];
       const handIndex = hand.indexOf(action.order);
-      if (handIndex !== -1) {
+      let slot = null;
+      if (handIndex !== -1) { // It is possible for players to misplay the deck
+        slot = hand.length - handIndex;
         hand.splice(handIndex, 1);
       }
 
@@ -69,6 +71,13 @@ const gameStateReducer = produce((
       if (!action.failed) {
         state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
       }
+
+      const touched = state.deck[action.order].numPositiveClues > 0;
+      const text = textRules.discard(action, slot, touched, metadata);
+      state.log.push({
+        turn: state.turn.turnNum + 1,
+        text,
+      });
 
       break;
     }
@@ -189,7 +198,7 @@ const gameStateReducer = produce((
         state.score = 0;
       }
 
-      const text = textRules.getGameOver(
+      const text = textRules.gameOver(
         action.endCondition,
         action.playerIndex,
         state.score,

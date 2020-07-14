@@ -3,13 +3,18 @@
 import { ensureAllCases } from '../../misc';
 import { getVariant, getCharacter } from '../data/gameData';
 import { getCharacterIDForPlayer } from '../reducers/reducerHelpers';
-import { variantRules, handRules, cluesRules } from '../rules';
-import { ActionClue } from '../types/actions';
+import {
+  cardRules,
+  cluesRules,
+  handRules,
+  variantRules,
+} from '../rules';
+import { ActionClue, ActionDiscard, ActionPlay } from '../types/actions';
 import ClueType from '../types/ClueType';
 import EndCondition from '../types/EndCondition';
 import GameMetadata from '../types/GameMetadata';
 
-export function getClue(action: ActionClue, targetHand: number[], metadata: GameMetadata) {
+export function clue(action: ActionClue, targetHand: number[], metadata: GameMetadata) {
   const giver = metadata.playerNames[action.giver];
   let target = metadata.playerNames[action.target];
   const words = [
@@ -76,7 +81,7 @@ export function getClue(action: ActionClue, targetHand: number[], metadata: Game
   return `${giver} tells ${target} about ${word} ${clueName}`;
 }
 
-export function getGameOver(
+export function gameOver(
   endCondition: EndCondition,
   playerIndex: number,
   score: number,
@@ -126,6 +131,79 @@ export function getGameOver(
   return 'Players lose!';
 }
 
-export function getPlay() {
-  return '';
+export function play(
+  action: ActionPlay,
+  slot: number | null,
+  touched: boolean,
+  metadata: GameMetadata,
+) {
+  const variant = getVariant(metadata.options.variantName);
+
+  let playerName = metadata.playerNames[action.playerIndex];
+  if (playerName === undefined) {
+    playerName = 'Hanabi Live';
+  }
+
+  let card = cardRules.name(action.suitIndex, action.rank, variant);
+  if (variantRules.isThrowItInAHole(variant)) {
+    card = 'a card';
+  }
+
+  let location;
+  if (slot === null) {
+    location = 'the deck';
+  } else {
+    location = `slot #${slot}`;
+  }
+
+  let suffix = '';
+  if (!touched) {
+    suffix = ' (blind)';
+  }
+
+  return `${playerName} plays ${card} from ${location}${suffix}`;
+}
+
+export function discard(
+  action: ActionDiscard,
+  slot: number | null,
+  touched: boolean,
+  metadata: GameMetadata,
+) {
+  const variant = getVariant(metadata.options.variantName);
+
+  let playerName = metadata.playerNames[action.playerIndex];
+  if (playerName === undefined) {
+    playerName = 'Hanabi Live';
+  }
+
+  let verb = 'discards';
+  if (action.failed) {
+    verb = 'fails to play';
+    if (variantRules.isThrowItInAHole(variant)) {
+      verb = 'plays';
+    }
+  }
+
+  let card = cardRules.name(action.suitIndex, action.rank, variant);
+  if (variantRules.isThrowItInAHole(variant) && action.failed) {
+    card = 'a card';
+  }
+
+  let location;
+  if (slot === null) {
+    location = 'the deck';
+  } else {
+    location = `slot #${slot}`;
+  }
+
+  let suffix = '';
+  if (action.failed && touched) {
+    suffix = ' (clued)';
+  }
+  if (action.failed && slot !== null && !touched) {
+    suffix = ' (blind)';
+  }
+
+  return `${playerName} ${verb} ${card} from ${location}${suffix}`;
 }
