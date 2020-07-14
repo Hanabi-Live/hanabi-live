@@ -1,9 +1,9 @@
 import Konva from 'konva';
+import { CLUED_COLOR } from '../../../constants';
 
-export default class RankPip extends Konva.Rect {
+export default class RankPip extends Konva.Text {
   showPositiveClue() {
-    this.fill('#ffdf00'); // Yellow
-    // (the same color as the "clued" border around a card)
+    this.fill(CLUED_COLOR);
   }
 
   hidePositiveClue() {
