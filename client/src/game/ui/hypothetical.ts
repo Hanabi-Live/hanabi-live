@@ -1,13 +1,10 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen
 
-import { getVariant } from '../data/gameData';
-import * as variantRules from '../rules/variant';
 import { ActionIncludingHypothetical } from '../types/actions';
 import ActionType from '../types/ActionType';
 import ClientAction from '../types/ClientAction';
 import ClueType from '../types/ClueType';
-import { MAX_CLUE_NUM } from '../types/constants';
 import MsgClue from '../types/MsgClue';
 import ReplayActionType from '../types/ReplayActionType';
 import action from './action';
@@ -180,7 +177,6 @@ export const beginTurn = () => {
 
 export const send = (hypoAction: ClientAction) => {
   const state = globals.store!.getState();
-  const variant = getVariant(state.metadata.options.variantName);
   const cardIdentities = state.cardIdentities;
   const gameState = state.replay.hypothetical!.ongoing;
 
@@ -195,9 +191,6 @@ export const send = (hypoAction: ClientAction) => {
   ) {
     type = 'clue';
   }
-
-  let newScore = gameState.score;
-  let newClueTokens = gameState.clueTokens;
 
   if (type === 'clue') {
     // Clue
@@ -219,7 +212,6 @@ export const send = (hypoAction: ClientAction) => {
       target: hypoAction.target,
       turn: gameState.turn.turnNum,
     });
-    newClueTokens -= 1;
 
     cycleHand();
   } else if (type === 'play' || type === 'discard') {
@@ -234,18 +226,6 @@ export const send = (hypoAction: ClientAction) => {
       rank: card.rank!,
       failed: false,
     });
-    if (type === 'play') {
-      newScore += 1;
-    }
-    if (
-      (type === 'play' && card.rank === 5 && newClueTokens < MAX_CLUE_NUM)
-      || type === 'discard'
-    ) {
-      newClueTokens += 1;
-      if (variantRules.isClueStarved(variant)) {
-        newClueTokens -= 0.5;
-      }
-    }
 
     // Draw
     const nextCardOrder = gameState.deck.length;
@@ -265,15 +245,6 @@ export const send = (hypoAction: ClientAction) => {
       });
     }
   }
-
-  // Status
-  sendHypoAction({
-    type: 'status',
-    clues: variantRules.isClueStarved(variant) ? newClueTokens * 2 : newClueTokens,
-    doubleDiscard: false,
-    score: newScore,
-    maxScore: gameState.maxScore,
-  });
 
   // Turn
   let nextPlayerIndex = gameState.turn.currentPlayerIndex! + 1;

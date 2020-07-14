@@ -77,11 +77,33 @@ const statsReducer = produce((
     }
   }
 
+  // Handle double discard calculation
+  if (action.type === 'discard') {
+    stats.doubleDiscard = statsRules.doubleDiscard(
+      variant,
+      action.order,
+      currentState.deck,
+      currentState.playStacks,
+      currentState.playStackDirections,
+    );
+  } else if (action.type === 'play' || action.type === 'clue') {
+    stats.doubleDiscard = false;
+  }
+
+  // Handle max score calculation
+  if (action.type === 'play' || action.type === 'discard') {
+    stats.maxScore = statsRules.getMaxScore(
+      currentState.deck,
+      currentState.playStackDirections,
+      variant,
+    );
+  }
+
   // Now that the action has occurred, update the stats relating to the current game state
   stats.pace = statsRules.pace(
     currentState.score,
     currentState.deckSize,
-    currentState.maxScore,
+    stats.maxScore,
     metadata.options.numPlayers,
     // currentPlayerIndex will be null if the game is over
     currentState.turn.currentPlayerIndex === null,

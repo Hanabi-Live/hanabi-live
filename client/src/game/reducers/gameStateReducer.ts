@@ -10,7 +10,6 @@ import { getVariant } from '../data/gameData';
 import {
   clueTokensRules,
   deckRules,
-  statsRules,
   textRules,
   variantRules,
 } from '../rules';
@@ -164,8 +163,6 @@ const gameStateReducer = produce((
         state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
       }
 
-      state.maxScore = statsRules.getMaxScore(state.deck, state.playStackDirections, variant);
-
       break;
     }
 
@@ -217,15 +214,15 @@ const gameStateReducer = produce((
       }
 
       // TEMP: At this point, check that the local state matches the server
-      if (state.maxScore !== action.maxScore) {
+      if (state.stats.maxScore !== action.maxScore) {
         console.warn(`The max scores from the client and the server do not match on turn ${state.turn.turnNum}.`);
-        console.warn(`Client = ${state.maxScore}, Server = ${action.maxScore}`);
+        console.warn(`Client = ${state.stats.maxScore}, Server = ${action.maxScore}`);
       }
 
       // TEMP: At this point, check that the local state matches the server
-      if (state.doubleDiscard !== action.doubleDiscard) {
+      if (state.stats.doubleDiscard !== action.doubleDiscard) {
         console.warn(`The double discard from the client and the server do not match on turn ${state.turn.turnNum}.`);
-        console.warn(`Client = ${state.doubleDiscard}, Server = ${action.doubleDiscard}`);
+        console.warn(`Client = ${state.stats.doubleDiscard}, Server = ${action.doubleDiscard}`);
       }
 
       break;
@@ -269,20 +266,6 @@ const gameStateReducer = produce((
     state,
     metadata,
   );
-
-  // Handle double discard calculation
-  if (action.type === 'discard') {
-    state.doubleDiscard = statsRules.doubleDiscard(
-      variant,
-      action.order,
-      state.deck,
-      state.playStacks,
-      state.playStackDirections,
-    );
-    state.maxScore = statsRules.getMaxScore(state.deck, state.playStackDirections, variant);
-  } else if (action.type === 'play' || action.type === 'clue') {
-    state.doubleDiscard = false;
-  }
 
   // Use a sub-reducer to calculate some game statistics
   state.stats = statsReducer(
