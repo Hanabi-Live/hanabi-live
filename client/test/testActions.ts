@@ -71,8 +71,8 @@ export const rankClue = (
 export const draw = (
   playerIndex: number,
   order: number,
-  suitIndex: number,
-  rank: number,
+  suitIndex: number = -1,
+  rank: number = -1,
 ): ActionDraw => ({
   type: 'draw',
   playerIndex,

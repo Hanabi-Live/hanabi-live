@@ -21,7 +21,9 @@ export default function initialCardState(order: number, variant: Variant) : Card
   // Mark all rank pips as visible
   // Note that since we are using an array as a map, there will be gaps on the values
   const rankPipStates: PipState[] = [];
-  possibleRanks.forEach((r) => { rankPipStates[r] = r >= 1 && r <= 5 ? 'Visible' : 'Hidden'; });
+  possibleRanks.forEach((r) => {
+    rankPipStates[r] = r >= 1 && r <= 5 ? 'Visible' : 'Hidden';
+  });
 
   return {
     order,

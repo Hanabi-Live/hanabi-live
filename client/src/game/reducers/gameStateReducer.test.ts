@@ -53,11 +53,11 @@ describe('gameStateReducer', () => {
       let state = initialGameState(defaultMetadata);
 
       // Draw a red 1
-      const drawAction = draw(0, 0, 1, 0);
+      const drawAction = draw(0, 0, 0, 1);
       state = gameStateReducer(state, drawAction, defaultMetadata);
 
       // Blind-play that red 1
-      const playAction = play(0, 0, 1, 0);
+      const playAction = play(0, 0, 0, 1);
       state = gameStateReducer(state, playAction, defaultMetadata);
 
       expect(state.stats.efficiency).toBe(Infinity);
@@ -87,7 +87,7 @@ describe('gameStateReducer', () => {
 
       // Draw a red 1, a red 2, and a red 3
       for (let i = 0; i < 3; i++) {
-        const drawAction = draw(0, 0, i + 1, i);
+        const drawAction = draw(0, i, 0, i + 1);
         state = gameStateReducer(state, drawAction, defaultMetadata);
       }
 
@@ -102,11 +102,11 @@ describe('gameStateReducer', () => {
       let state = initialGameState(defaultMetadata);
 
       // Draw a yellow 2 to player 0
-      const drawYellow2Action = draw(1, 1, 2, 1);
+      const drawYellow2Action = draw(0, 0, 1, 2);
       state = gameStateReducer(state, drawYellow2Action, defaultMetadata);
 
       // Draw a red 1 to player 1
-      const drawRed1Action = draw(1, 0, 1, 0);
+      const drawRed1Action = draw(1, 1, 0, 1);
       state = gameStateReducer(state, drawRed1Action, defaultMetadata);
 
       // Give a 1-for-1 clue
@@ -114,11 +114,11 @@ describe('gameStateReducer', () => {
       state = gameStateReducer(state, clueAction, defaultMetadata);
 
       // Play that red 1
-      const playAction = play(1, 0, 1, 0);
+      const playAction = play(1, 1, 0, 1);
       state = gameStateReducer(state, playAction, defaultMetadata);
 
       // Misplay the yellow 2
-      const discardAction = discard(0, 1, 2, 1, true);
+      const discardAction = discard(0, 0, 1, 2, true);
       state = gameStateReducer(state, discardAction, defaultMetadata);
 
       // TODO remove this when misplays are calculated from an ActionPlay
@@ -133,19 +133,19 @@ describe('gameStateReducer', () => {
       let state = initialGameState(defaultMetadata);
 
       // Draw a red 2, a red 4, and a red 5 to player 0
-      const drawRed2Action = draw(0, 0, 2, 2);
+      const drawRed2Action = draw(0, 2, 0, 2);
       state = gameStateReducer(state, drawRed2Action, defaultMetadata);
-      const drawRed4Action = draw(0, 0, 4, 4);
+      const drawRed4Action = draw(0, 4, 0, 4);
       state = gameStateReducer(state, drawRed4Action, defaultMetadata);
-      const drawRed5Action = draw(1, 0, 5, 5);
+      const drawRed5Action = draw(1, 5, 0, 5);
       state = gameStateReducer(state, drawRed5Action, defaultMetadata);
 
       // Draw a red 1, a red 3, and a red 1 to player 1
-      const drawRed1Action = draw(1, 0, 1, 1);
+      const drawRed1Action = draw(1, 1, 0, 1);
       state = gameStateReducer(state, drawRed1Action, defaultMetadata);
-      const drawRed3Action = draw(1, 0, 3, 3);
+      const drawRed3Action = draw(1, 3, 0, 3);
       state = gameStateReducer(state, drawRed3Action, defaultMetadata);
-      const drawRed1Action2 = draw(0, 0, 1, 11);
+      const drawRed1Action2 = draw(0, 11, 0, 1);
       state = gameStateReducer(state, drawRed1Action2, defaultMetadata);
 
       // Give a 1-for-1 clue
@@ -153,30 +153,31 @@ describe('gameStateReducer', () => {
       state = gameStateReducer(state, clueAction, defaultMetadata);
 
       // Play the red 1
-      const playRed1Action = play(1, 0, 1, 1);
+      const playRed1Action = play(1, 1, 0, 1);
       state = gameStateReducer(state, playRed1Action, defaultMetadata);
 
       // Play the red 2
-      const playRed2Action = play(0, 0, 2, 2);
+      const playRed2Action = play(0, 2, 0, 2);
       state = gameStateReducer(state, playRed2Action, defaultMetadata);
 
       // Play the red 3
-      const playRed3Action = play(1, 0, 3, 3);
+      const playRed3Action = play(1, 3, 0, 3);
       state = gameStateReducer(state, playRed3Action, defaultMetadata);
 
       // Play the red 4
-      const playRed4Action = play(0, 0, 4, 4);
+      const playRed4Action = play(0, 4, 0, 4);
       state = gameStateReducer(state, playRed4Action, defaultMetadata);
 
       // Discard the other red 1
-      const discardAction = discard(1, 0, 1, 11, false);
+      const discardAction = discard(1, 11, 0, 1, false);
       state = gameStateReducer(state, discardAction, defaultMetadata);
 
       expect(state.clueTokens).toBe(MAX_CLUE_NUM);
       expect(state.stats.efficiency).toBe(4); // e.g. 4 / 1
 
       // Play the red 5
-      state = gameStateReducer(state, play(0, 0, 5, 5), defaultMetadata);
+      const playRed5Action = play(0, 5, 0, 5);
+      state = gameStateReducer(state, playRed5Action, defaultMetadata);
 
       expect(state.stats.efficiency).toBe(2.5); // e.g. 5 / 2 (because we wasted a clue)
     });
@@ -186,21 +187,21 @@ describe('gameStateReducer', () => {
         let state = initialGameState(clueStarvedMetadata);
 
         // Draw a red 2, a red 4, and a red 5 to player 0
-        const drawRed2Action = draw(0, 0, 2, 2);
+        const drawRed2Action = draw(0, 2, 0, 2);
         state = gameStateReducer(state, drawRed2Action, clueStarvedMetadata);
-        const drawRed4Action = draw(0, 0, 4, 4);
+        const drawRed4Action = draw(0, 4, 0, 4);
         state = gameStateReducer(state, drawRed4Action, clueStarvedMetadata);
-        const drawRed5Action = draw(1, 0, 5, 5);
+        const drawRed5Action = draw(1, 5, 0, 5);
         state = gameStateReducer(state, drawRed5Action, clueStarvedMetadata);
 
         // Draw a red 1, a red 3, a red 1, and a red 1 to player 1
-        const drawRed1Action = draw(1, 0, 1, 1);
+        const drawRed1Action = draw(1, 1, 0, 1);
         state = gameStateReducer(state, drawRed1Action, clueStarvedMetadata);
-        const drawRed3Action = draw(1, 0, 3, 3);
+        const drawRed3Action = draw(1, 3, 0, 3);
         state = gameStateReducer(state, drawRed3Action, clueStarvedMetadata);
-        const drawRed1Action2 = draw(0, 0, 1, 11);
+        const drawRed1Action2 = draw(0, 11, 0, 1);
         state = gameStateReducer(state, drawRed1Action2, clueStarvedMetadata);
-        const drawRed1Action3 = draw(0, 0, 1, 12);
+        const drawRed1Action3 = draw(0, 12, 0, 1);
         state = gameStateReducer(state, drawRed1Action3, clueStarvedMetadata);
 
         // Give a 1-for-1 clue
@@ -208,32 +209,32 @@ describe('gameStateReducer', () => {
         state = gameStateReducer(state, clueAction, clueStarvedMetadata);
 
         // Play the red 1
-        const playRed1Action = play(1, 0, 1, 1);
+        const playRed1Action = play(1, 1, 0, 1);
         state = gameStateReducer(state, playRed1Action, clueStarvedMetadata);
 
         // Play the red 2
-        const playRed2Action = play(0, 0, 2, 2);
+        const playRed2Action = play(0, 2, 0, 2);
         state = gameStateReducer(state, playRed2Action, clueStarvedMetadata);
 
         // Play the red 3
-        const playRed3Action = play(1, 0, 3, 3);
+        const playRed3Action = play(1, 3, 0, 3);
         state = gameStateReducer(state, playRed3Action, clueStarvedMetadata);
 
         // Play the red 4
-        const playRed4Action = play(0, 0, 4, 4);
+        const playRed4Action = play(0, 4, 0, 4);
         state = gameStateReducer(state, playRed4Action, clueStarvedMetadata);
 
         // Discard the other two red 1s
-        const discardAction1 = discard(1, 0, 1, 11, false);
+        const discardAction1 = discard(1, 11, 0, 1, false);
         state = gameStateReducer(state, discardAction1, clueStarvedMetadata);
-        const discardAction2 = discard(1, 0, 1, 12, false);
+        const discardAction2 = discard(1, 12, 0, 1, false);
         state = gameStateReducer(state, discardAction2, clueStarvedMetadata);
 
         expect(state.clueTokens).toBe(MAX_CLUE_NUM);
         expect(state.stats.efficiency).toBe(4); // e.g. 4 / 1
 
         // Play the red 5
-        const playRed5Action = play(0, 0, 5, 5);
+        const playRed5Action = play(0, 5, 0, 5);
         state = gameStateReducer(state, playRed5Action, clueStarvedMetadata);
 
         expect(state.stats.efficiency).toBeCloseTo(3.33);
@@ -306,11 +307,11 @@ describe('gameStateReducer', () => {
       let state = initialGameState(defaultMetadata);
 
       // Draw a red 1
-      const drawAction = draw(0, 0, 1, 0);
+      const drawAction = draw(0, 0, 0, 1);
       state = gameStateReducer(state, drawAction, defaultMetadata);
 
       // Play a red 1
-      const playAction = play(0, 0, 1, 0);
+      const playAction = play(0, 0, 0, 1);
       state = gameStateReducer(state, playAction, defaultMetadata);
 
       expect(state.score).toBe(1);
