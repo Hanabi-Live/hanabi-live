@@ -7,7 +7,6 @@ import {
   ActionDraw,
   ActionPlay,
   ActionStrike,
-  ActionText,
   ActionHypotheticalStart,
   ActionHypotheticalBack,
   ActionHypotheticalEnd,
@@ -114,11 +113,6 @@ export const strike = (num: number, order: number, turn: number): ActionStrike =
   num,
   order,
   turn,
-});
-
-export const text = (textContent: string): ActionText => ({
-  type: 'text',
-  text: textContent,
 });
 
 export const turn = (num: number, currentPlayerIndex: number): ActionTurn => ({

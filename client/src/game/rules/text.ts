@@ -12,7 +12,7 @@ import {
 import { ActionClue, ActionDiscard, ActionPlay } from '../types/actions';
 import ClueType from '../types/ClueType';
 import EndCondition from '../types/EndCondition';
-import GameMetadata from '../types/GameMetadata';
+import GameMetadata, { getPlayerName } from '../types/GameMetadata';
 
 export function clue(action: ActionClue, targetHand: number[], metadata: GameMetadata) {
   const giver = metadata.playerNames[action.giver];
@@ -87,10 +87,7 @@ export function gameOver(
   score: number,
   metadata: GameMetadata,
 ) {
-  let playerName = 'Hanabi Live';
-  if (playerIndex >= 0) {
-    playerName = metadata.playerNames[playerIndex];
-  }
+  const playerName = getPlayerName(playerIndex, metadata);
 
   switch (endCondition) {
     case EndCondition.InProgress:
@@ -138,11 +135,7 @@ export function play(
   metadata: GameMetadata,
 ) {
   const variant = getVariant(metadata.options.variantName);
-
-  let playerName = metadata.playerNames[action.playerIndex];
-  if (playerName === undefined) {
-    playerName = 'Hanabi Live';
-  }
+  const playerName = getPlayerName(action.playerIndex, metadata);
 
   let card = cardRules.name(action.suitIndex, action.rank, variant);
   if (variantRules.isThrowItInAHole(variant)) {
@@ -171,11 +164,7 @@ export function discard(
   metadata: GameMetadata,
 ) {
   const variant = getVariant(metadata.options.variantName);
-
-  let playerName = metadata.playerNames[action.playerIndex];
-  if (playerName === undefined) {
-    playerName = 'Hanabi Live';
-  }
+  const playerName = getPlayerName(action.playerIndex, metadata);
 
   let verb = 'discards';
   if (action.failed) {

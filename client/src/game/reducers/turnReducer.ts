@@ -34,7 +34,7 @@ const turnReducer = produce((
 
     case 'clue': {
       if (turn.gameSegment === null) {
-        throw new Error('A clue happened before all of the initial cards were dealt.');
+        throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
       turn.gameSegment += 1;
 
@@ -64,9 +64,20 @@ const turnReducer = produce((
       break;
     }
 
+    case 'gameDuration': {
+      // At the end of the game, the server will send us how much time each player finished with
+      // as well as the total game duration; we want all of this text on its own replay segment to
+      // avoid cluttering the final turn of the game
+      if (turn.gameSegment === null) {
+        throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
+      }
+      turn.gameSegment += 1;
+      break;
+    }
+
     case 'gameOver': {
       if (turn.gameSegment === null) {
-        throw new Error('A game over happened before all of the initial cards were dealt.');
+        throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
       turn.gameSegment += 1;
       turn.currentPlayerIndex = null;

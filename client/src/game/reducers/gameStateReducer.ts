@@ -5,7 +5,7 @@ import produce, {
   original,
   castDraft,
 } from 'immer';
-import { ensureAllCases } from '../../misc';
+import { ensureAllCases, millisecondsToClockString } from '../../misc';
 import { getVariant } from '../data/gameData';
 import {
   clueTokensRules,
@@ -15,7 +15,7 @@ import {
 } from '../rules';
 import { GameAction } from '../types/actions';
 import EndCondition from '../types/EndCondition';
-import GameMetadata from '../types/GameMetadata';
+import GameMetadata, { getPlayerName } from '../types/GameMetadata';
 import GameState from '../types/GameState';
 import cardsReducer from './cardsReducer';
 import statsReducer from './statsReducer';
@@ -102,6 +102,38 @@ const gameStateReducer = produce((
       break;
     }
 
+    case 'gameDuration': {
+      const clockString = millisecondsToClockString(action.duration);
+      const text = `The total game duration was: ${clockString}`;
+      state.log.push({
+        turn: state.turn.turnNum + 1,
+        text,
+      });
+      break;
+    }
+
+    // The game has ended, either by normal means (e.g. max score), or someone ran out of time in a
+    // timed game, someone terminated, etc.
+    // { type: 'gameOver', endCondition: 1, playerIndex: 0 }
+    case 'gameOver': {
+      if (action.endCondition !== EndCondition.Normal) {
+        state.score = 0;
+      }
+
+      const text = textRules.gameOver(
+        action.endCondition,
+        action.playerIndex,
+        state.score,
+        metadata,
+      );
+      state.log.push({
+        turn: state.turn.turnNum + 1,
+        text,
+      });
+
+      break;
+    }
+
     // A player just played a card
     // { type: 'play', playerIndex: 0, order: 4, suitIndex: 2, rank: 1 }
     case 'play': {
@@ -131,6 +163,37 @@ const gameStateReducer = produce((
         state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
       }
 
+      break;
+    }
+
+    case 'playerTimes': {
+      for (let i = 0; i < action.playerTimes.length; i++) {
+        // Player times are negative in untimed games
+        const modifier = metadata.options.timed ? 1 : -1;
+        const milliseconds = action.playerTimes[i] * modifier;
+        const durationString = millisecondsToClockString(milliseconds);
+        const playerName = getPlayerName(i, metadata);
+
+        let text;
+        if (metadata.options.timed) {
+          text = `${playerName} had ${durationString} left`;
+        } else {
+          text = `${playerName} took: ${durationString}`;
+        }
+        state.log.push({
+          turn: state.turn.turnNum + 1,
+          text,
+        });
+      }
+      break;
+    }
+
+    // At the end of every turn, the server informs us of the stack directions for each suit
+    // { type: 'stackDirections', directions: [0, 0, 0, 0, 0] }
+    // TODO: This message is unnecessary and will be removed in a future version of the code
+    // (the client should be able to determine the stack directions directly)
+    case 'stackDirections': {
+      state.playStacksDirections = action.directions;
       break;
     }
 
@@ -167,48 +230,6 @@ const gameStateReducer = produce((
         order: action.order,
         turn: action.turn,
       });
-      break;
-    }
-
-    // A line of text was received from the server
-    // { type: 'text', text: 'Alice plays Red 2 from slot #1' }
-    case 'text': {
-      // Add 1 to the turn because turns are represented client-side as starting from 1 instead of 0
-      state.log.push({
-        turn: state.turn.turnNum + 1,
-        text: action.text,
-      });
-      break;
-    }
-
-    // At the end of every turn, the server informs us of the stack directions for each suit
-    // { type: 'stackDirections', directions: [0, 0, 0, 0, 0] }
-    // TODO: This message is unnecessary and will be removed in a future version of the code
-    // (the client should be able to determine the stack directions directly)
-    case 'stackDirections': {
-      state.playStacksDirections = action.directions;
-      break;
-    }
-
-    // The game has ended, either by normal means (e.g. max score), or someone ran out of time in a
-    // timed game, someone terminated, etc.
-    // { type: 'gameOver', endCondition: 1, playerIndex: 0 }
-    case 'gameOver': {
-      if (action.endCondition !== EndCondition.Normal) {
-        state.score = 0;
-      }
-
-      const text = textRules.gameOver(
-        action.endCondition,
-        action.playerIndex,
-        state.score,
-        metadata,
-      );
-      state.log.push({
-        turn: state.turn.turnNum + 1,
-        text,
-      });
-
       break;
     }
 
