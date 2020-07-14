@@ -151,6 +151,5 @@ export function onStrikesChanged(
       duration: 1,
       opacity: 1,
     }, true);
-    console.log('ANIMATED');
   }
 }

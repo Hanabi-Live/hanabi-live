@@ -882,7 +882,7 @@ const drawScoreArea = () => {
         const strikes = globals.store!.getState().ongoingGame.strikes;
         const strike = strikes[this.num];
         if (strike === undefined) {
-          // There is no strike yet that corresponds to this black square / X, so do nothing
+          // There is no strike yet that corresponds to this square / X, so do nothing
           return;
         }
 
