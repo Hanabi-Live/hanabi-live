@@ -3,33 +3,6 @@
 
 package main
 
-type ActionDraw struct {
-	Type        string `json:"type"`
-	PlayerIndex int    `json:"playerIndex"`
-	Order       int    `json:"order"` // The ID of the card, based on its ordering in the deck
-	SuitIndex   int    `json:"suitIndex"`
-	Rank        int    `json:"rank"`
-}
-type ActionStatus struct {
-	Type          string `json:"type"`
-	Clues         int    `json:"clues"`
-	Score         int    `json:"score"`
-	MaxScore      int    `json:"maxScore"`
-	DoubleDiscard bool   `json:"doubleDiscard"`
-}
-type ActionStackDirections struct {
-	Type       string `json:"type"`
-	Directions []int  `json:"directions"`
-}
-type ActionText struct {
-	Type string `json:"type"`
-	Text string `json:"text"`
-}
-type ActionTurn struct {
-	Type               string `json:"type"`
-	Num                int    `json:"num"`
-	CurrentPlayerIndex int    `json:"currentPlayerIndex"`
-}
 type ActionClue struct {
 	Type   string `json:"type"`
 	Clue   Clue   `json:"clue"`
@@ -39,13 +12,7 @@ type ActionClue struct {
 	// The client records the turn that each clue is given (for the clue log)
 	Turn int `json:"turn"`
 }
-type ActionPlay struct {
-	Type        string `json:"type"`
-	PlayerIndex int    `json:"playerIndex"`
-	Order       int    `json:"order"` // The ID of the card (based on its order in the deck)
-	SuitIndex   int    `json:"suitIndex"`
-	Rank        int    `json:"rank"`
-}
+
 type ActionDiscard struct {
 	Type        string `json:"type"`
 	PlayerIndex int    `json:"playerIndex"`
@@ -54,22 +21,71 @@ type ActionDiscard struct {
 	Rank        int    `json:"rank"`
 	Failed      bool   `json:"failed"`
 }
+
+type ActionDraw struct {
+	Type        string `json:"type"`
+	PlayerIndex int    `json:"playerIndex"`
+	Order       int    `json:"order"` // The ID of the card, based on its ordering in the deck
+	SuitIndex   int    `json:"suitIndex"`
+	Rank        int    `json:"rank"`
+}
+
+type ActionGameDuration struct {
+	Type     string `json:"type"`
+	Duration int64  `json:"duration"`
+}
+
+type ActionGameOver struct {
+	Type         string `json:"type"`
+	EndCondition int    `json:"endCondition"`
+	PlayerIndex  int    `json:"playerIndex"`
+}
+
+type ActionPlay struct {
+	Type        string `json:"type"`
+	PlayerIndex int    `json:"playerIndex"`
+	Order       int    `json:"order"` // The ID of the card (based on its order in the deck)
+	SuitIndex   int    `json:"suitIndex"`
+	Rank        int    `json:"rank"`
+}
+
+type ActionPlayerTimes struct {
+	Type        string  `json:"type"`
+	PlayerTimes []int64 `json:"playerTimes"`
+}
+
 type ActionReorder struct {
 	Type      string `json:"type"`
 	Target    int    `json:"target"`
 	HandOrder []int  `json:"handOrder"`
 }
+
+type ActionStackDirections struct {
+	Type       string `json:"type"`
+	Directions []int  `json:"directions"`
+}
+
+type ActionStatus struct {
+	Type          string `json:"type"`
+	Clues         int    `json:"clues"`
+	Score         int    `json:"score"`
+	MaxScore      int    `json:"maxScore"`
+	DoubleDiscard bool   `json:"doubleDiscard"`
+}
+
 type ActionStrike struct {
 	Type  string `json:"type"`
 	Num   int    `json:"num"`   // Whether it was the first strike, the second strike, etc.
 	Turn  int    `json:"turn"`  // The turn that the strike happened
 	Order int    `json:"order"` // The order of the card that was played
 }
-type ActionGameOver struct {
-	Type         string `json:"type"`
-	EndCondition int    `json:"endCondition"`
-	PlayerIndex  int    `json:"playerIndex"`
+
+type ActionTurn struct {
+	Type               string `json:"type"`
+	Num                int    `json:"num"`
+	CurrentPlayerIndex int    `json:"currentPlayerIndex"`
 }
+
 type Clue struct {
 	Type  int `json:"type"`
 	Value int `json:"value"`

@@ -207,6 +207,10 @@ func (g *Game) CheckEnd() bool {
 		return true
 	}
 
+	if g.EndCondition == EndConditionCharacterSoftlock {
+		return true
+	}
+
 	// Check for 3 strikes
 	if g.Strikes == MaxStrikeNum {
 		logger.Info(t.GetName() + "3 strike maximum reached; ending the game.")
@@ -320,7 +324,7 @@ func (g *Game) GetHandSizeForNormalGame() int {
 // accounting for stacks that cannot be completed due to discarded cards
 func (g *Game) GetMaxScore() int {
 	// Getting the maximum score is much more complicated if we are playing a
-	// "Up or Down" or "Reversed" variant
+	// "Reversed" or "Up or Down" variant
 	if variants[g.Options.VariantName].HasReversedSuits() {
 		return variantReversibleGetMaxScore(g)
 	}

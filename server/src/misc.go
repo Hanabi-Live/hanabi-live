@@ -20,14 +20,6 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-// From: https://stackoverflow.com/questions/47341278/how-to-format-a-duration-in-golang
-func durationToString(d time.Duration) string {
-	m := d / time.Minute
-	d -= m * time.Minute
-	s := d / time.Second
-	return fmt.Sprintf("%02d:%02d", m, s)
-}
-
 func executeScript(script string) error {
 	cmd := exec.Command(path.Join(projectPath, script)) // nolint:gosec
 	cmd.Dir = projectPath

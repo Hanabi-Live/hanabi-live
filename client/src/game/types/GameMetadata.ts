@@ -10,3 +10,7 @@ export default interface GameMetadata {
   readonly characterAssignments: Readonly<Array<number | null>>;
   readonly characterMetadata: number[];
 }
+
+export function getPlayerName(playerIndex: number, metadata: GameMetadata) {
+  return metadata.playerNames[playerIndex] ?? 'Hanabi Live';
+}

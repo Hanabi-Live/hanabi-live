@@ -48,6 +48,7 @@ const (
 	EndConditionTerminated
 	EndConditionSpeedrunFail
 	EndConditionIdleTimeout
+	EndConditionCharacterSoftlock
 )
 
 const (

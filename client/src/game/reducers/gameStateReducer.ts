@@ -5,17 +5,18 @@ import produce, {
   original,
   castDraft,
 } from 'immer';
-import { ensureAllCases } from '../../misc';
+import { ensureAllCases, millisecondsToClockString } from '../../misc';
 import { getVariant } from '../data/gameData';
 import {
   clueTokensRules,
   deckRules,
   textRules,
   variantRules,
+  statsRules,
 } from '../rules';
 import { GameAction } from '../types/actions';
 import EndCondition from '../types/EndCondition';
-import GameMetadata from '../types/GameMetadata';
+import GameMetadata, { getPlayerName } from '../types/GameMetadata';
 import GameState from '../types/GameState';
 import cardsReducer from './cardsReducer';
 import statsReducer from './statsReducer';
@@ -44,7 +45,7 @@ const gameStateReducer = produce((
       });
 
       const targetHand = state.hands[action.target];
-      const text = textRules.getClue(action, targetHand, metadata);
+      const text = textRules.clue(action, targetHand, metadata);
       state.log.push({
         turn: state.turn.turnNum + 1,
         text,
@@ -59,7 +60,9 @@ const gameStateReducer = produce((
       // Remove it from the hand
       const hand = state.hands[action.playerIndex];
       const handIndex = hand.indexOf(action.order);
-      if (handIndex !== -1) {
+      let slot = null;
+      if (handIndex !== -1) { // It is possible for players to misplay the deck
+        slot = hand.length - handIndex;
         hand.splice(handIndex, 1);
       }
 
@@ -69,6 +72,15 @@ const gameStateReducer = produce((
       if (!action.failed) {
         state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
       }
+
+      const touched = state.deck[action.order].numPositiveClues > 0;
+      const text = textRules.discard(action, slot, touched, metadata);
+      state.log.push({
+        turn: state.turn.turnNum + 1,
+        text,
+      });
+
+      state.maxScore = statsRules.getMaxScore(state.deck, state.playStacksDirections, variant);
 
       break;
     }
@@ -89,6 +101,38 @@ const gameStateReducer = produce((
           text,
         });
       }
+
+      break;
+    }
+
+    case 'gameDuration': {
+      const clockString = millisecondsToClockString(action.duration);
+      const text = `The total game duration was: ${clockString}`;
+      state.log.push({
+        turn: state.turn.turnNum + 1,
+        text,
+      });
+      break;
+    }
+
+    // The game has ended, either by normal means (e.g. max score), or someone ran out of time in a
+    // timed game, someone terminated, etc.
+    // { type: 'gameOver', endCondition: 1, playerIndex: 0 }
+    case 'gameOver': {
+      if (action.endCondition !== EndCondition.Normal) {
+        state.score = 0;
+      }
+
+      const text = textRules.gameOver(
+        action.endCondition,
+        action.playerIndex,
+        state.score,
+        metadata,
+      );
+      state.log.push({
+        turn: state.turn.turnNum + 1,
+        text,
+      });
 
       break;
     }
@@ -122,6 +166,39 @@ const gameStateReducer = produce((
         state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
       }
 
+      state.maxScore = statsRules.getMaxScore(state.deck, state.playStacksDirections, variant);
+
+      break;
+    }
+
+    case 'playerTimes': {
+      for (let i = 0; i < action.playerTimes.length; i++) {
+        // Player times are negative in untimed games
+        const modifier = metadata.options.timed ? 1 : -1;
+        const milliseconds = action.playerTimes[i] * modifier;
+        const durationString = millisecondsToClockString(milliseconds);
+        const playerName = getPlayerName(i, metadata);
+
+        let text;
+        if (metadata.options.timed) {
+          text = `${playerName} had ${durationString} left`;
+        } else {
+          text = `${playerName} took: ${durationString}`;
+        }
+        state.log.push({
+          turn: state.turn.turnNum + 1,
+          text,
+        });
+      }
+      break;
+    }
+
+    // At the end of every turn, the server informs us of the stack directions for each suit
+    // { type: 'stackDirections', directions: [0, 0, 0, 0, 0] }
+    // TODO: This message is unnecessary and will be removed in a future version of the code
+    // (the client should be able to determine the stack directions directly)
+    case 'stackDirections': {
+      state.playStacksDirections = action.directions;
       break;
     }
 
@@ -142,7 +219,10 @@ const gameStateReducer = produce((
       }
 
       // TODO: calculate maxScore instead of using the server one
-      state.maxScore = action.maxScore;
+      if (state.maxScore !== action.maxScore) {
+        console.warn(`The max scores from the client and the server do not match on turn ${state.turn.turnNum}.`);
+        console.warn(`Client = ${state.maxScore}, Server = ${action.maxScore}`);
+      }
 
       // TODO: calculate doubleDiscard instead of using the server value
       state.doubleDiscard = action.doubleDiscard;
@@ -158,48 +238,6 @@ const gameStateReducer = produce((
         order: action.order,
         turn: action.turn,
       });
-      break;
-    }
-
-    // A line of text was received from the server
-    // { type: 'text', text: 'Alice plays Red 2 from slot #1' }
-    case 'text': {
-      // Add 1 to the turn because turns are represented client-side as starting from 1 instead of 0
-      state.log.push({
-        turn: state.turn.turnNum + 1,
-        text: action.text,
-      });
-      break;
-    }
-
-    // At the end of every turn, the server informs us of the stack directions for each suit
-    // { type: 'stackDirections', directions: [0, 0, 0, 0, 0] }
-    // TODO: This message is unnecessary and will be removed in a future version of the code
-    // (the client should be able to determine the stack directions directly)
-    case 'stackDirections': {
-      state.playStacksDirections = action.directions;
-      break;
-    }
-
-    // The game has ended, either by normal means (e.g. max score), or someone ran out of time in a
-    // timed game, someone terminated, etc.
-    // { type: 'gameOver', endCondition: 1, playerIndex: 0 }
-    case 'gameOver': {
-      if (action.endCondition !== EndCondition.Normal) {
-        state.score = 0;
-      }
-
-      const text = textRules.getGameOver(
-        action.endCondition,
-        action.playerIndex,
-        state.score,
-        metadata,
-      );
-      state.log.push({
-        turn: state.turn.turnNum + 1,
-        text,
-      });
-
       break;
     }
 

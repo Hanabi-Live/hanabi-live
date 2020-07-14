@@ -177,7 +177,7 @@ func variantReversibleIsDead(g *Game, c *Card) bool {
 // accounting for stacks that cannot be completed due to discarded cards
 func variantReversibleGetMaxScore(g *Game) int {
 	maxScore := 0
-	for suit := range g.Stacks {
+	for suitIndex := range g.Stacks {
 		// Make a map that shows if all of some particular rank in this suit has been discarded
 		ranks := []int{1, 2, 3, 4, 5}
 		if isUpOrDown(g) {
@@ -186,19 +186,19 @@ func variantReversibleGetMaxScore(g *Game) int {
 
 		allDiscarded := make(map[int]bool)
 		for _, rank := range ranks {
-			total, discarded := g.GetSpecificCardNum(suit, rank)
+			total, discarded := g.GetSpecificCardNum(suitIndex, rank)
 			allDiscarded[rank] = total == discarded
 		}
 
-		if g.StackDirections[suit] == StackDirectionUndecided {
-			upWalk := variantReversibleWalkUp(g, suit, allDiscarded)
-			downWalk := variantReversibleWalkDown(g, suit, allDiscarded)
+		if g.StackDirections[suitIndex] == StackDirectionUndecided {
+			upWalk := variantReversibleWalkUp(g, allDiscarded)
+			downWalk := variantReversibleWalkDown(g, allDiscarded)
 			maxScore += max(upWalk, downWalk)
-		} else if g.StackDirections[suit] == StackDirectionUp {
-			maxScore += variantReversibleWalkUp(g, suit, allDiscarded)
-		} else if g.StackDirections[suit] == StackDirectionDown {
-			maxScore += variantReversibleWalkDown(g, suit, allDiscarded)
-		} else if g.StackDirections[suit] == StackDirectionFinished {
+		} else if g.StackDirections[suitIndex] == StackDirectionUp {
+			maxScore += variantReversibleWalkUp(g, allDiscarded)
+		} else if g.StackDirections[suitIndex] == StackDirectionDown {
+			maxScore += variantReversibleWalkDown(g, allDiscarded)
+		} else if g.StackDirections[suitIndex] == StackDirectionFinished {
 			maxScore += 5
 		}
 	}
@@ -206,13 +206,13 @@ func variantReversibleGetMaxScore(g *Game) int {
 	return maxScore
 }
 
-func variantReversibleWalkUp(g *Game, suit int, allDiscarded map[int]bool) int {
+func variantReversibleWalkUp(g *Game, allDiscarded map[int]bool) int {
 	cardsThatCanStillBePlayed := 0
 
 	// First, check to see if the stack can still be started
 	if isUpOrDown(g) {
 		if allDiscarded[1] && allDiscarded[StartCardRank] {
-			// On "Up or Down", you can start with 1 or Start
+			// In "Up or Down" variants, you can start with 1 or START when going up
 			return 0
 		}
 	} else {
@@ -234,13 +234,13 @@ func variantReversibleWalkUp(g *Game, suit int, allDiscarded map[int]bool) int {
 	return cardsThatCanStillBePlayed
 }
 
-func variantReversibleWalkDown(g *Game, suit int, allDiscarded map[int]bool) int {
+func variantReversibleWalkDown(g *Game, allDiscarded map[int]bool) int {
 	cardsThatCanStillBePlayed := 0
 
 	// First, check to see if the stack can still be started
 	if isUpOrDown(g) {
 		if allDiscarded[5] && allDiscarded[StartCardRank] {
-			// On "Up or Down", you can start with 5 or Start
+			// In "Up or Down" variants, you can start with 5 or START when going down
 			return 0
 		}
 	} else {

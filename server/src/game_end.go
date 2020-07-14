@@ -23,31 +23,26 @@ func (g *Game) End() {
 
 	// Send text messages showing how much time each player finished with
 	// (this won't appear initially unless the user clicks back and then forward again)
+	playerTimes := make([]int64, 0)
 	for _, p := range g.Players {
-		text := p.Name + " "
-		if g.Options.Timed {
-			text += "had " + durationToString(p.Time) + " left"
-		} else {
-			// Player times are negative in untimed games
-			text += "took: " + durationToString(p.Time*-1)
-		}
-		g.Actions = append(g.Actions, ActionText{
-			Type: "text",
-			Text: text,
-		})
-		t.NotifyGameAction()
-		logger.Info(t.GetName() + text)
+		// JavaScript expects time in milliseconds
+		milliseconds := int64(p.Time / time.Millisecond)
+		playerTimes = append(playerTimes, milliseconds)
 	}
-
-	// Send a text message showing how much time the game took in total
-	totalTime := g.DatetimeFinished.Sub(g.DatetimeStarted)
-	text := "The total game duration was: " + durationToString(totalTime)
-	g.Actions = append(g.Actions, ActionText{
-		Type: "text",
-		Text: text,
+	g.Actions = append(g.Actions, ActionPlayerTimes{
+		Type:        "playerTimes",
+		PlayerTimes: playerTimes,
 	})
 	t.NotifyGameAction()
-	logger.Info(t.GetName() + text)
+
+	// Send a text message showing how much time the game took in total
+	// JavaScript expects time in milliseconds
+	duration := int64(g.DatetimeFinished.Sub(g.DatetimeStarted) / time.Millisecond)
+	g.Actions = append(g.Actions, ActionGameDuration{
+		Type:     "gameDuration",
+		Duration: duration,
+	})
+	t.NotifyGameAction()
 
 	// Advance a turn so that the finishing times are separated from the final action of the game
 	g.Turn++

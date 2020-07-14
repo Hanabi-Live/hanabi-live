@@ -1,13 +1,22 @@
 /* eslint-disable import/prefer-default-export */
 
 import CardState from '../types/CardState';
-import { STACK_BASE_RANK } from '../types/constants';
+import { STACK_BASE_RANK, START_CARD_RANK } from '../types/constants';
 import StackDirection from '../types/StackDirection';
 import Variant from '../types/Variant';
 import * as deckRules from './deck';
 import * as playStacksRules from './playStacks';
 import * as variantRules from './variant';
 import * as reversibleRules from './variants/reversible';
+
+export function name(suitIndex: number, rank: number, variant: Variant) {
+  const suitName = variant.suits[suitIndex].name;
+  let rankName = rank.toString();
+  if (rank === START_CARD_RANK) {
+    rankName = 'START';
+  }
+  return `${suitName} ${rankName}`;
+}
 
 export function isClued(card: CardState) {
   return card.numPositiveClues > 0;

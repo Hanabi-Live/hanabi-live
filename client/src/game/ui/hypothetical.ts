@@ -13,7 +13,6 @@ import ReplayActionType from '../types/ReplayActionType';
 import action from './action';
 import { getTouchedCardsFromClue } from './clues';
 import PlayerButton from './controls/PlayerButton';
-import { suitIndexToSuit } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import LayoutChild from './LayoutChild';
@@ -222,26 +221,6 @@ export const send = (hypoAction: ClientAction) => {
     });
     newClueTokens -= 1;
 
-    // Text
-    let text = `${globals.playerNames[gameState.turn.currentPlayerIndex!]} tells `;
-    text += `${globals.playerNames[hypoAction.target]} about `;
-    const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six'];
-    text += `${words[list.length]} `;
-
-    if (clue.type === ClueType.Color) {
-      text += variant.clueColors[clue.value].name;
-    } else if (clue.type === ClueType.Rank) {
-      text += clue.value;
-    }
-    if (list.length !== 1) {
-      text += 's';
-    }
-
-    sendHypoAction({
-      type: 'text',
-      text,
-    });
-
     cycleHand();
   } else if (type === 'play' || type === 'discard') {
     const card = gameState.deck[hypoAction.target];
@@ -267,22 +246,6 @@ export const send = (hypoAction: ClientAction) => {
         newClueTokens -= 0.5;
       }
     }
-
-    // Text
-    let text = `${globals.playerNames[gameState.turn.currentPlayerIndex!]} ${type}s `;
-    if (card.suitIndex !== null && card.rank !== null) {
-      const suit = suitIndexToSuit(card.suitIndex!, variant)!;
-      text += `${suit.name} ${card.rank} `;
-    } else {
-      text += 'a card ';
-    }
-    const hand = gameState.hands[gameState.turn.currentPlayerIndex!];
-    const slot = hand.findIndex((o) => o === card.order) + 1;
-    text += `from slot #${slot}`;
-    sendHypoAction({
-      type: 'text',
-      text,
-    });
 
     // Draw
     const nextCardOrder = gameState.deck.length;

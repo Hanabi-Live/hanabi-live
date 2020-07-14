@@ -174,6 +174,7 @@ func httpInit() {
 	// Path handlers (for development)
 	// ("/dev" is the same as "/" but uses webpack-dev-server to serve JavaScript)
 	httpRouter.GET("/dev", httpMain)
+	httpRouter.GET("/dev/", httpMain)
 	httpRouter.GET("/dev/replay", httpMain)
 	httpRouter.GET("/dev/replay/:gameID", httpMain)
 	httpRouter.GET("/dev/replay/:gameID/:turn", httpMain)

@@ -199,12 +199,13 @@ const cardsReducer = (
 
     // Some actions do not affect the card state
     case 'gameOver':
-    case 'strike':
-    case 'turn':
-    case 'text':
-    case 'status':
+    case 'gameDuration':
+    case 'playerTimes':
+    case 'reorder':
     case 'stackDirections':
-    case 'reorder': {
+    case 'status':
+    case 'strike':
+    case 'turn': {
       break;
     }
 

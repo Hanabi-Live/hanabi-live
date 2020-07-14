@@ -5,7 +5,6 @@ import { // Direct import instead of namespace import for compactness
   play,
   rankClue,
   strike,
-  text,
 } from '../../../test/testActions';
 import testMetadata from '../../../test/testMetadata';
 import { MAX_CLUE_NUM } from '../types/constants';
@@ -22,7 +21,7 @@ describe('gameStateReducer', () => {
   test('does not mutate state', () => {
     const state = initialGameState(defaultMetadata);
     const unchangedState = initialGameState(defaultMetadata);
-    const newState = gameStateReducer(state, text('testing'), defaultMetadata);
+    const newState = gameStateReducer(state, draw(0, 0), defaultMetadata);
     expect(newState).not.toEqual(state);
     expect(newState).not.toStrictEqual(state);
     expect(state).toStrictEqual(unchangedState);
@@ -343,19 +342,6 @@ describe('gameStateReducer', () => {
       state = gameStateReducer(state, testClue, defaultMetadata);
 
       expect(state.clueTokens).toBe(MAX_CLUE_NUM - 1);
-    });
-  });
-
-  describe('texts', () => {
-    test('are added to the log', () => {
-      const initialState = initialGameState(defaultMetadata);
-      let state = initialGameState(defaultMetadata);
-
-      const textAction = text('testing');
-      state = gameStateReducer(state, textAction, defaultMetadata);
-
-      expect(state.log.length).toBe(initialState.log.length + 1);
-      expect(state.log[0]).toEqual({ turn: 1, text: textAction.text });
     });
   });
 

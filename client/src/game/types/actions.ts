@@ -14,13 +14,14 @@ export type GameAction =
   | ActionClue
   | ActionDiscard
   | ActionDraw
+  | ActionGameDuration
   | ActionGameOver
   | ActionPlay
+  | ActionPlayerTimes
   | ActionReorder
   | ActionStackDirections
   | ActionStatus
   | ActionStrike
-  | ActionText
   | ActionTurn;
 
 export type ActionIncludingHypothetical = GameAction | ActionHypotheticalMorph;
@@ -88,6 +89,11 @@ export interface ActionDraw {
   readonly rank: number;
 }
 
+export interface ActionGameDuration {
+  type: 'gameDuration';
+  duration: number;
+}
+
 export interface ActionGameOver {
   type: 'gameOver';
   readonly endCondition: EndCondition;
@@ -100,6 +106,11 @@ export interface ActionPlay {
   readonly order: number;
   readonly suitIndex: number;
   readonly rank: number;
+}
+
+export interface ActionPlayerTimes {
+  type: 'playerTimes';
+  readonly playerTimes: number[];
 }
 
 export interface ActionReorder {
@@ -126,11 +137,6 @@ export interface ActionStrike {
   readonly num: number; // 1 for the first strike, 2 for the second strike, etc.
   readonly order: number; // The order of the card that was misplayed
   readonly turn: number;
-}
-
-export interface ActionText {
-  type: 'text';
-  readonly text: string;
 }
 
 export interface ActionTurn {
