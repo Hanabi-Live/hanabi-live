@@ -20,7 +20,7 @@ export default function testMetadata(
       'Donald',
       'Emily',
       'Frank',
-    ].slice(0, numPlayers - 1),
+    ].slice(0, numPlayers),
     ourPlayerIndex: 0,
     spectating: true,
     characterAssignments: initArray(numPlayers, null),

@@ -189,48 +189,12 @@ const gameStateReducer = produce((
         state.score = 0;
       }
 
-      let playerName = 'Hanabi Live';
-      if (action.playerIndex >= 0) {
-        playerName = metadata.playerNames[action.playerIndex];
-      }
-
-      let text = 'Players lose!';
-      switch (action.endCondition) {
-        case EndCondition.InProgress:
-        case EndCondition.Normal: {
-          text = `Players score ${state.score} points.`;
-          break;
-        }
-
-        case EndCondition.Strikeout: {
-          break;
-        }
-
-        case EndCondition.Timeout: {
-          text = `${playerName} ran out of time!`;
-          break;
-        }
-
-        case EndCondition.Terminated: {
-          text = `${playerName} terminated the game!`;
-          break;
-        }
-
-        case EndCondition.SpeedrunFail: {
-          break;
-        }
-
-        case EndCondition.IdleTimeout: {
-          text = 'Players were idle for too long.';
-          break;
-        }
-
-        default: {
-          ensureAllCases(action.endCondition);
-          break;
-        }
-      }
-
+      const text = textRules.getGameOver(
+        action.endCondition,
+        action.playerIndex,
+        state.score,
+        metadata,
+      );
       state.log.push({
         turn: state.turn.turnNum + 1,
         text,

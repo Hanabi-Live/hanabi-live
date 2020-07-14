@@ -2,7 +2,7 @@ import { VARIANTS } from '../data/gameData';
 import { DEFAULT_VARIANT_NAME, MAX_CLUE_NUM } from '../types/constants';
 import { gain } from './clueTokens';
 
-describe('gainClue', () => {
+describe('gain', () => {
   test.each([...Array(8).keys()])('adds a clue when there are %i clues', (n) => {
     expect(gain(VARIANTS.get(DEFAULT_VARIANT_NAME)!, n)).toBe(n + 1);
   });

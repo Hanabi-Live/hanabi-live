@@ -85,7 +85,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
     default: {
       // A new game action happened
-      const oldGameSegment = state.ongoingGame.turn.gameSegment;
+      const previousGameSegment = state.ongoingGame.turn.gameSegment;
       state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action, state.metadata)!;
 
       // We copy the card identities to the global state for convenience
@@ -94,7 +94,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       // When the game state reducer sets "gameSegment" to a new number,
       // it is a signal to record the current state of the game (for the purposes of replays)
       if (
-        state.ongoingGame.turn.gameSegment !== oldGameSegment
+        state.ongoingGame.turn.gameSegment !== previousGameSegment
         && state.ongoingGame.turn.gameSegment !== null
       ) {
         state.replay.states[state.ongoingGame.turn.gameSegment] = state.ongoingGame;

@@ -5,6 +5,7 @@ import { GameAction } from '../types/actions';
 import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
 import TurnState from '../types/TurnState';
+import { getCharacterIDForPlayer } from './reducerHelpers';
 
 const turnReducer = produce((
   turn: Draft<TurnState>,
@@ -13,13 +14,10 @@ const turnReducer = produce((
   metadata: GameMetadata,
 ) => {
   const numPlayers = metadata.options.numPlayers;
-  let characterID = null;
-  if (turn.currentPlayerIndex !== null) {
-    characterID = metadata.characterAssignments[turn.currentPlayerIndex];
-    if (characterID === undefined) {
-      throw new Error(`The character ID for player ${turn.currentPlayerIndex} was undefined in the "turnReducer()" function.`);
-    }
-  }
+  const characterID = getCharacterIDForPlayer(
+    turn.currentPlayerIndex,
+    metadata.characterAssignments,
+  );
 
   switch (action.type) {
     case 'play':

@@ -7,7 +7,7 @@ export default interface TurnState {
   //    game
   // The client makes a copy of the entire game state whenever "gameSegment" changes
   readonly gameSegment: number | null; // Null when dealing the initial cards, then set to 0
-  readonly turnNum: number; // Null when dealing the initial cards, then set to 0
+  readonly turnNum: number;
   readonly currentPlayerIndex: number | null;
   readonly playOrderInverted: boolean;
   readonly endTurnNum: number | null;

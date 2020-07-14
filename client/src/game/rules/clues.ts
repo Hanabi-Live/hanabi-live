@@ -9,7 +9,7 @@ import Variant from '../types/Variant';
 import * as variantRules from './variant';
 
 export function getClueName(
-  clueType: number,
+  clueType: ClueType,
   clueValue: number,
   variant: Variant,
   characterID: number | null,

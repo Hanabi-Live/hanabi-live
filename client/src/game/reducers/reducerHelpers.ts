@@ -21,18 +21,17 @@ export function getIndexConverter(variant: Variant) {
   return getIndex;
 }
 
-export function getCharacterIDOfCurrentPlayer(
-  currentPlayerIndex: number | null,
+export function getCharacterIDForPlayer(
+  playerIndex: number | null,
   characterAssignments: Readonly<Array<number | null>>,
 ) {
-  if (currentPlayerIndex === null) {
-    // We are at the end of the game, so no character is active
+  if (playerIndex === null) {
     return null;
   }
 
-  const characterID = characterAssignments[currentPlayerIndex];
+  const characterID = characterAssignments[playerIndex];
   if (characterID === undefined) {
-    throw new Error(`The character ID for player ${currentPlayerIndex} was undefined.`);
+    throw new Error(`The character ID for player ${playerIndex} was undefined.`);
   }
   return characterID;
 }
