@@ -429,21 +429,8 @@ const processNewAction = (actionMessage: GameAction) => {
 
   if (actionMessage.type === 'turn') {
     // Keep track of whether it is our turn or not
+    // TODO: Legacy code, remove this
     globals.ourTurn = actionMessage.currentPlayerIndex === globals.playerUs && !globals.spectating;
-
-    // We need to update the replay slider, based on the new amount of turns
-    globals.replayMax = actionMessage.num;
-    if (globals.inReplay) {
-      replay.adjustShuttles(false);
-      globals.elements.replayForwardButton!.setEnabled(true);
-      globals.elements.replayForwardFullButton!.setEnabled(true);
-      globals.layers.UI.batchDraw();
-    }
-
-    // On the second turn and beyond, ensure that the "In-Game Replay" button is enabled
-    if (!globals.replay && globals.replayMax > 0) {
-      globals.elements.replayButton!.setEnabled(true);
-    }
   } else if (actionMessage.type === 'clue' && variantRules.isAlternatingClues(globals.variant)) {
     if (actionMessage.clue.type === ClueType.Color) {
       for (const button of globals.elements.colorClueButtons) {

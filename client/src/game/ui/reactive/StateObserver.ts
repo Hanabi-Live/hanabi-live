@@ -121,6 +121,9 @@ const ongoingGameObservers: Subscriptions = [
     visible: currentPlayerAreaView.isVisible(s),
     currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
   }), currentPlayerAreaView.onChanged),
+
+  // Replay sliders
+  sub((s) => s.ongoingGame.turn.gameSegment, replayView.onGameSegmentChanged),
 ];
 
 const replayObservers: Subscriptions = [
