@@ -6,6 +6,7 @@ import produce, {
   original,
 } from 'immer';
 import { Action, GameAction } from '../types/actions';
+import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
 import State from '../types/State';
 import gameStateReducer from './gameStateReducer';
@@ -16,19 +17,13 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
   switch (action.type) {
     case 'gameActionList': {
       // Calculate all the intermediate states
-      const initial = initialGameState(state.metadata);
-      const states: GameState[] = [initial];
+      const initialState = initialGameState(state.metadata);
 
-      const game = action.actions.reduce((s: GameState, a: GameAction) => {
-        const nextState = gameStateReducer(s, a, state.metadata);
+      const {
+        game,
+        states,
+      } = reduceGameActions(action.actions, initialState, state.metadata);
 
-        if (a.type === 'turn') {
-          // Store the current state in the state table to enable replays
-          states[a.num] = nextState;
-        }
-
-        return nextState;
-      }, initial);
       state.ongoingGame = castDraft(game);
 
       // Initialized, ready to show
@@ -38,6 +33,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       updateCardIdentities(state);
 
       state.replay.states = castDraft(states);
+      state.replay.actions = action.actions;
       break;
     }
 
@@ -45,6 +41,23 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       // Either we just entered a new replay or an ongoing game ended,
       // so the server sent us a list of the identities for every card in the deck
       state.cardIdentities = action.cardIdentities;
+
+      // If the game just ended, recalculate the whole game as spectator to fix possibilities
+      if (!state.metadata.spectating) {
+        state.metadata.spectating = true;
+
+        const initialState = initialGameState(state.metadata);
+        const {
+          game,
+          states,
+        } = reduceGameActions(state.replay.actions, initialState, state.metadata);
+
+        // Update the visible game and replay states
+        state.ongoingGame = castDraft(game);
+        state.visibleState = state.ongoingGame;
+        state.replay.states = castDraft(states);
+      }
+
       break;
     }
 
@@ -82,6 +95,9 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
         state.replay.states[action.num] = state.ongoingGame;
       }
 
+      // Also save the action to replay the whole game later
+      state.replay.actions.push(action);
+
       break;
     }
   }
@@ -105,6 +121,23 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 }, {} as State);
 
 export default stateReducer;
+
+// Runs through a list of actions from an initial state, and returns the final state
+// and all intermediate states
+function reduceGameActions(actions: GameAction[], initialState: GameState, metadata: GameMetadata) {
+  const states: GameState[] = [initialState];
+  const game = actions.reduce((s: GameState, a: GameAction) => {
+    const nextState = gameStateReducer(s, a, metadata);
+
+    if (a.type === 'turn') {
+      // Store the current state in the state table to enable replays
+      states[a.num] = nextState;
+    }
+
+    return nextState;
+  }, initialState);
+  return { game, states };
+}
 
 // We keep a copy of each card identity in the global state for convenience
 // After each game action, check to see if we can add any new card identities

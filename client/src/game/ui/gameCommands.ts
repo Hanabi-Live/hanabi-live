@@ -289,7 +289,7 @@ commands.set('init', (data: InitData) => {
   const metadata: GameMetadata = {
     options: data.options,
     ourPlayerIndex: data.seat,
-    spectating: data.spectating,
+    spectating: data.spectating || data.replay || data.sharedReplay,
     characterAssignments,
     characterMetadata: data.characterMetadata,
   };
