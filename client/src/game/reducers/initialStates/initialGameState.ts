@@ -42,7 +42,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     discardStacks,
     clues: [],
     stats: {
-      maxScore: 0,
+      maxScore: variant.maxScore,
       doubleDiscard: false,
       cardsGotten: 0,
       potentialCluesLost: 0,
