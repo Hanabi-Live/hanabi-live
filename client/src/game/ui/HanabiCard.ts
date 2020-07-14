@@ -579,7 +579,20 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // If we wrote a card identity note and all the possibilities for that note have been
     // eliminated, unmorph the card
     // e.g. a note of "r1" is now impossible because red 1 has 0 cards left
-    if (!cardRules.canPossiblyBe(this.state, this.note.suitIndex, this.note.rank)) {
+
+    const isSuitImpossible = this.note.suitIndex !== null
+      && !this.state.possibleCardsFromClues.some(
+        ([suitIndex, rank]) => suitIndex === this.note.suitIndex
+          && this.state.possibleCardsFromObservation[suitIndex][rank] > 0,
+      );
+
+    const isRankImpossible = this.note.rank !== null
+    && !this.state.possibleCardsFromClues.some(
+      ([suitIndex, rank]) => rank === this.note.rank
+          && this.state.possibleCardsFromObservation[suitIndex][rank] > 0,
+    );
+
+    if (isSuitImpossible || isRankImpossible) {
       // Unmorph
       this.note.suitIndex = null;
       this.note.rank = null;
@@ -851,7 +864,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   // Update all UI pips to their state
   updatePips() {
-    enum PipState {Hidden = 0, Eliminated = 1, Visible = 2} // the order is important here
+    enum PipState {Hidden, Eliminated, Visible} // the order is important here
     function updatePip(
       pipState: PipState,
       hasPositiveClues: boolean,
@@ -892,10 +905,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     for (const rank of this.variant.ranks) rankPipStates[rank] = PipState.Hidden;
 
     for (const [suitIndex, rank] of this.state.possibleCardsFromClues) {
-      const pipState = this.state.possibleCardsFromObservation[suitIndex][rank]
+      const pipState = this.state.possibleCardsFromObservation[suitIndex][rank] > 0
         ? PipState.Visible : PipState.Eliminated;
-      suitPipStates[suitIndex] = Math.max(suitPipStates[suitIndex], pipState);
-      rankPipStates[rank] = Math.max(rankPipStates[rank], pipState);
+      suitPipStates[suitIndex] = suitPipStates[suitIndex] === PipState.Visible
+        ? PipState.Visible : pipState;
+      rankPipStates[rank] = rankPipStates[rank] === PipState.Visible
+        ? PipState.Visible : pipState;
     }
 
     for (const [suit, pipState] of suitPipStates.entries()) {
