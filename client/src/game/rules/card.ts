@@ -165,3 +165,10 @@ export function isPotentiallyPlayable(
 
   return false;
 }
+
+export function canPossiblyBe(card: CardState, suitIndex: number | null, rank: number | null) {
+  return card.possibleCardsFromClues.some(
+    ([s, r]) => (suitIndex === null || suitIndex === s) && (rank === null || rank === r)
+      && card.possibleCardsFromObservation[r][s] > 0,
+  );
+}

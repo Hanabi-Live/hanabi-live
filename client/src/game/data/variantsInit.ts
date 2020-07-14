@@ -206,44 +206,6 @@ export default function variantsInit(
       }
     }
 
-    const touchedCards = new Map<number | Color, readonly boolean[][]>();
-
-    for (const color of clueColors) {
-      const touch : boolean[][] = [];
-      for (let s = 0; s < suits.length; s++) {
-        touch[s] = [];
-        for (const r of ranks) {
-          touch[s][r] = suits[s].clueColors.includes(color);
-          if (specialRank === r) {
-            if (specialAllClueColors) touch[s][r] = true;
-            if (specialNoClueColors) touch[s][r] = false;
-          }
-          if (suits[s].allClueColors) touch[s][r] = true;
-          if (suits[s].noClueColors) touch[s][r] = false;
-          if (colorCluesTouchNothing) touch[s][r] = false;
-        }
-      }
-      touchedCards.set(color, touch);
-    }
-
-    for (const rank of clueRanks) {
-      const touch : boolean[][] = [];
-      for (let s = 0; s < suits.length; s++) {
-        touch[s] = [];
-        for (const r of ranks) {
-          touch[s][r] = r === rank;
-          if (specialRank === r) {
-            if (specialAllClueRanks) touch[s][r] = true;
-            if (specialNoClueRanks) touch[s][r] = false;
-          }
-          if (suits[s].allClueRanks) touch[s][r] = true;
-          if (suits[s].noClueRanks) touch[s][r] = false;
-          if (rankCluesTouchNothing) touch[s][r] = false;
-        }
-      }
-      touchedCards.set(rank, touch);
-    }
-
     // Validate the "spacing" property
     // If it is not specified, assume that there is no spacing
     if (
@@ -270,7 +232,6 @@ export default function variantsInit(
       ranks,
       clueColors,
       clueRanks,
-      touchedCards,
       colorCluesTouchNothing,
       rankCluesTouchNothing,
       specialRank,

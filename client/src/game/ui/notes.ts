@@ -1,5 +1,6 @@
 // Users can right-click cards to record information on them
 
+import { canPossiblyBe } from '../rules/card';
 import * as variantRules from '../rules/variant';
 import CardIdentity from '../types/CardIdentity';
 import CardNote from '../types/CardNote';
@@ -193,49 +194,29 @@ export const cardIdentityFromNote = (
 
 export const checkNoteImpossibility = (variant: Variant, cardState: CardState, note: CardNote) => {
   // Validate that the note does not contain an impossibility
+  if (!(cardState.location === globals.playerUs)
+    || canPossiblyBe(cardState, note.suitIndex, note.rank)) {
+    return;
+  }
   if (note.suitIndex !== null && note.rank === null) {
     // Only the suit was specified
-    if (
-      cardState.possibleCardsFromClues.some(
-        ([suitIndex, rank]) => suitIndex === note.suitIndex
-          && cardState.possibleCardsFromObservation[suitIndex][rank] > 0,
-      )
-      && cardState.location === globals.playerUs
-    ) {
-      const suitName = variant.suits[note.suitIndex].name;
-      window.alert(`That card cannot possibly be ${suitName.toLowerCase()}.`);
-      note.suitIndex = null;
-      return;
-    }
+    const suitName = variant.suits[note.suitIndex].name;
+    window.alert(`That card cannot possibly be ${suitName.toLowerCase()}.`);
+    note.suitIndex = null;
+    return;
   }
   if (note.suitIndex === null && note.rank !== null) {
     // Only the rank was specified
-    if (
-      cardState.possibleCardsFromClues.some(
-        ([suitIndex, rank]) => rank === note.rank
-          && cardState.possibleCardsFromObservation[suitIndex][rank] > 0,
-      )
-      && cardState.location === globals.playerUs
-    ) {
-      window.alert(`That card cannot possibly be a ${note.rank}.`);
-      note.rank = null;
-      return;
-    }
+    window.alert(`That card cannot possibly be a ${note.rank}.`);
+    note.rank = null;
+    return;
   }
   if (note.suitIndex !== null && note.rank !== null) {
     // Both the suit and the rank were specified
-    if (
-      !(
-        cardState.possibleCardsFromClues.some(
-          ([suitIndex, rank]) => suitIndex === note.suitIndex && rank === note.rank,
-        ) && cardState.possibleCardsFromObservation[note.suitIndex][note.rank] > 0
-      ) && cardState.location === globals.playerUs
-    ) {
-      const suitName = variant.suits[note.suitIndex].name;
-      window.alert(`That card cannot possibly be a ${suitName.toLowerCase()} ${note.rank}.`);
-      note.suitIndex = null;
-      note.rank = null;
-    }
+    const suitName = variant.suits[note.suitIndex].name;
+    window.alert(`That card cannot possibly be a ${suitName.toLowerCase()} ${note.rank}.`);
+    note.suitIndex = null;
+    note.rank = null;
   }
 };
 

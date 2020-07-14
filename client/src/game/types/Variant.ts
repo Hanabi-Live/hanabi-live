@@ -9,7 +9,6 @@ export default interface Variant {
   readonly ranks: number[];
   readonly clueColors: Color[];
   readonly clueRanks: number[];
-  readonly touchedCards: ReadonlyMap<number | Color, ReadonlyArray<readonly boolean[]>>;
 
   readonly colorCluesTouchNothing: boolean;
   readonly rankCluesTouchNothing: boolean;

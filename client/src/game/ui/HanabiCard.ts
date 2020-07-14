@@ -579,20 +579,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // If we wrote a card identity note and all the possibilities for that note have been
     // eliminated, unmorph the card
     // e.g. a note of "r1" is now impossible because red 1 has 0 cards left
-
-    const isSuitImpossible = this.note.suitIndex !== null
-      && !this.state.possibleCardsFromClues.some(
-        ([suitIndex, rank]) => suitIndex === this.note.suitIndex
-          && this.state.possibleCardsFromObservation[suitIndex][rank] > 0,
-      );
-
-    const isRankImpossible = this.note.rank !== null
-    && !this.state.possibleCardsFromClues.some(
-      ([suitIndex, rank]) => rank === this.note.rank
-          && this.state.possibleCardsFromObservation[suitIndex][rank] > 0,
-    );
-
-    if (isSuitImpossible || isRankImpossible) {
+    if (!cardRules.canPossiblyBe(this.state, this.note.suitIndex, this.note.rank)) {
       // Unmorph
       this.note.suitIndex = null;
       this.note.rank = null;
