@@ -1,6 +1,8 @@
 // Functions to calculate game stats such as pace and efficiency
 
-import { deckRules, handRules, variantRules } from '../rules';
+import {
+  deckRules, handRules, variantRules, cardRules,
+} from '../rules';
 import CardState from '../types/CardState';
 import { MAX_CLUE_NUM, START_CARD_RANK } from '../types/constants';
 import { PaceRisk } from '../types/GameState';
@@ -9,7 +11,7 @@ import Variant from '../types/Variant';
 
 export function getMaxScore(
   deck: readonly CardState[],
-  playStacksDirections: readonly StackDirection[],
+  playStackDirections: readonly StackDirection[],
   variant: Variant,
 ): number {
   let maxScore = 0;
@@ -17,7 +19,7 @@ export function getMaxScore(
   // Getting the maximum score is much more complicated if we are playing a
   // "Reversed" or "Up or Down" variant
   if (variantRules.hasReversedSuits(variant)) {
-    return getMaxScoreReversible(deck, playStacksDirections, variant);
+    return getMaxScoreReversible(deck, playStackDirections, variant);
   }
 
   for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
@@ -39,7 +41,7 @@ export function getMaxScore(
 
 const getMaxScoreReversible = (
   deck: readonly CardState[],
-  playStacksDirections: readonly StackDirection[],
+  playStackDirections: readonly StackDirection[],
   variant: Variant,
 ): number => {
   let maxScore = 0;
@@ -60,15 +62,15 @@ const getMaxScoreReversible = (
       allDiscarded.set(rank, total === discarded);
     }
 
-    if (playStacksDirections[suitIndex] === StackDirection.Undecided) {
+    if (playStackDirections[suitIndex] === StackDirection.Undecided) {
       const upWalk = reversibleWalkUp(allDiscarded, variant);
       const downWalk = reversibleWalkDown(allDiscarded, variant);
       maxScore += Math.max(upWalk, downWalk);
-    } else if (playStacksDirections[suitIndex] === StackDirection.Up) {
+    } else if (playStackDirections[suitIndex] === StackDirection.Up) {
       maxScore += reversibleWalkUp(allDiscarded, variant);
-    } else if (playStacksDirections[suitIndex] === StackDirection.Down) {
+    } else if (playStackDirections[suitIndex] === StackDirection.Down) {
       maxScore += reversibleWalkDown(allDiscarded, variant);
-    } else if (playStacksDirections[suitIndex] === StackDirection.Finished) {
+    } else if (playStackDirections[suitIndex] === StackDirection.Finished) {
       maxScore += 5;
     }
   }
@@ -244,4 +246,31 @@ export function minEfficiency(
   );
 
   return minEfficiencyNumerator / minEfficiencyDenominator;
+}
+
+// After a discard, it is a "double discard situation" if there is only one other copy of this card
+// and it needs to be played
+export function doubleDiscard(
+  variant: Variant,
+  order: number,
+  deck: readonly CardState[],
+  playStacks: ReadonlyArray<readonly number[]>,
+  playStackDirections: readonly StackDirection[],
+) {
+  const card = deck[order];
+  if (card.suitIndex === null || card.rank === null) {
+    throw new Error(`Unable to find the information for card ${order} in the state deck.`);
+  }
+  const suit = variant.suits[card.suitIndex];
+  const total = deckRules.numCopiesOfCard(variant, suit, card.rank);
+  const discarded = deckRules.discardedCopies(deck, card.suitIndex, card.rank);
+  const needsToBePlayed = cardRules.needsToBePlayed(
+    variant,
+    deck,
+    playStacks,
+    playStackDirections,
+    card,
+  );
+
+  return total === discarded + 1 && needsToBePlayed;
 }

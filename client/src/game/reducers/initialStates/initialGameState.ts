@@ -20,7 +20,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   );
   const startingPace = statsRules.startingPace(options.numPlayers, cardsPerHand, variant);
   const hands: number[][] = initArray(options.numPlayers, []);
-  const playStacksDirections: StackDirection[] = initArray(
+  const playStackDirections: StackDirection[] = initArray(
     variant.suits.length,
     StackDirection.Undecided,
   );
@@ -40,7 +40,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     strikes: [],
     hands,
     playStacks,
-    playStacksDirections,
+    playStackDirections,
     discardStacks,
     clues: [],
     stats: {

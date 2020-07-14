@@ -19,10 +19,10 @@ export const needsToBePlayed = (
   variant: Variant,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
-  stackDirections: readonly StackDirection[],
+  playStackDirections: readonly StackDirection[],
   cardState: CardState,
 ) => {
-  const direction = stackDirections[cardState.suitIndex!];
+  const direction = playStackDirections[cardState.suitIndex!];
   // First, check to see if the stack is already finished
   if (direction === StackDirection.Finished) {
     return false;
@@ -30,7 +30,7 @@ export const needsToBePlayed = (
 
   // Second, check to see if this card is dead
   // (meaning that all of a previous card in the suit have been discarded already)
-  if (isDead(variant, deck, playStacks, stackDirections, cardState)) {
+  if (isDead(variant, deck, playStacks, playStackDirections, cardState)) {
     return false;
   }
 
@@ -70,7 +70,7 @@ const isDead = (
   variant: Variant,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
-  stackDirections: readonly StackDirection[],
+  playStackDirections: readonly StackDirection[],
   cardState: CardState,
 ) => {
   const { isAllDiscarded } = discardedHelpers(variant, deck);
@@ -83,7 +83,7 @@ const isDead = (
   }
 
   // Start by handling the easy cases of up and down
-  if (stackDirections[cardState.suitIndex!] === StackDirection.Up) {
+  if (playStackDirections[cardState.suitIndex!] === StackDirection.Up) {
     let rank = variantRules.isUpOrDown(variant) ? 2 : 1;
     for (rank; rank < cardState.rank!; rank++) {
       if (allDiscarded.get(rank)) {
@@ -92,7 +92,7 @@ const isDead = (
     }
     return false;
   }
-  if (stackDirections[cardState.suitIndex!] === StackDirection.Down) {
+  if (playStackDirections[cardState.suitIndex!] === StackDirection.Down) {
     let rank = variantRules.isUpOrDown(variant) ? 4 : 5;
     for (rank; rank > cardState.rank!; rank--) {
       if (allDiscarded.get(rank)) {
@@ -132,7 +132,7 @@ export const isPotentiallyPlayable = (
   variant: Variant,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
-  stackDirections: readonly StackDirection[],
+  playStackDirections: readonly StackDirection[],
   cardState: CardState,
 ) => {
   let potentiallyPlayable = false;
@@ -140,7 +140,7 @@ export const isPotentiallyPlayable = (
     const playStack = playStacks[suitIndex];
     const lastPlayedRank = playStacksRules.lastPlayedRank(playStack, deck);
 
-    if (stackDirections[suitIndex] === StackDirection.Undecided) {
+    if (playStackDirections[suitIndex] === StackDirection.Undecided) {
       if (lastPlayedRank === STACK_BASE_RANK) {
         // The "START" card has not been played
         for (const rank of [START_CARD_RANK, 1, 5]) {
@@ -172,7 +172,7 @@ export const isPotentiallyPlayable = (
           break;
         }
       }
-    } else if (stackDirections[suitIndex] === StackDirection.Up) {
+    } else if (playStackDirections[suitIndex] === StackDirection.Up) {
       const nextRankNeeded = lastPlayedRank! + 1;
       const count = cardState.possibleCards[suitIndex][nextRankNeeded];
       if (count === undefined) {
@@ -182,7 +182,7 @@ export const isPotentiallyPlayable = (
         potentiallyPlayable = true;
         break;
       }
-    } else if (stackDirections[suitIndex] === StackDirection.Down) {
+    } else if (playStackDirections[suitIndex] === StackDirection.Down) {
       let nextRankNeeded = lastPlayedRank! - 1;
       if (!variantRules.isUpOrDown(variant) && lastPlayedRank === 0) {
         // Reversed stacks start with 5, except in "Up or Down"
@@ -196,7 +196,7 @@ export const isPotentiallyPlayable = (
         potentiallyPlayable = true;
         break;
       }
-    } else if (stackDirections[suitIndex] === StackDirection.Finished) {
+    } else if (playStackDirections[suitIndex] === StackDirection.Finished) {
       // Nothing can play on this stack because it is finished
       continue;
     }
@@ -208,7 +208,7 @@ export const isPotentiallyPlayable = (
 export const isCardCritical = (
   variant: Variant,
   deck: readonly CardState[],
-  stackDirections: readonly StackDirection[],
+  playStackDirections: readonly StackDirection[],
   cardState: CardState,
 ) : boolean => {
   const { isLastCopy, isAllDiscarded } = discardedHelpers(variant, deck);
@@ -223,7 +223,7 @@ export const isCardCritical = (
     return false;
   }
 
-  const direction = stackDirections[cardState.suitIndex!];
+  const direction = playStackDirections[cardState.suitIndex!];
 
   // Start is only critical if all 1's and 5's are discarded
   // and the stack didn't start

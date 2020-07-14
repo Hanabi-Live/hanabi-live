@@ -16,7 +16,7 @@ export default interface GameState {
   readonly strikes: readonly StateStrike[];
   readonly hands: ReadonlyArray<readonly number[]>;
   readonly playStacks: ReadonlyArray<readonly number[]>;
-  readonly playStacksDirections: readonly StackDirection[];
+  readonly playStackDirections: readonly StackDirection[];
   readonly discardStacks: ReadonlyArray<readonly number[]>;
   readonly clues: readonly StateClue[];
   readonly stats: StatsState;

@@ -21,18 +21,18 @@ const stackStringsUpOrDown = new Map<StackDirection, string>([
   [StackDirection.Finished, 'Finished'],
 ]);
 
-export function onStackDirectionsChanged(directions: readonly StackDirection[]) {
+export function onPlayStackDirectionsChanged(directions: readonly StackDirection[]) {
   if (!variantRules.hasReversedSuits(globals.variant)) {
     return;
   }
 
   // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants)
   directions.forEach((direction, i) => {
-    if (globals.stackDirections[i] === direction) {
+    if (globals.playStackDirections[i] === direction) {
       return;
     }
 
-    globals.stackDirections[i] = direction;
+    globals.playStackDirections[i] = direction;
 
     const suit = globals.variant.suits[i];
     let text = '';

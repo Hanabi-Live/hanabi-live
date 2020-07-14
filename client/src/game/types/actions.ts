@@ -19,7 +19,7 @@ export type GameAction =
   | ActionPlay
   | ActionPlayerTimes
   | ActionReorder
-  | ActionStackDirections
+  | ActionPlayStackDirections
   | ActionStatus
   | ActionStrike
   | ActionTurn;
@@ -119,8 +119,8 @@ export interface ActionReorder {
   readonly handOrder: number[];
 }
 
-export interface ActionStackDirections {
-  type: 'stackDirections';
+export interface ActionPlayStackDirections {
+  type: 'playStackDirections';
   readonly directions: number[];
 }
 

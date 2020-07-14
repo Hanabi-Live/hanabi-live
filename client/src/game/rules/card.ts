@@ -38,7 +38,7 @@ export function isCritical(
   variant: Variant,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
-  stackDirections: readonly StackDirection[],
+  playStackDirections: readonly StackDirection[],
   card: CardState,
 ) {
   if (
@@ -47,7 +47,7 @@ export function isCritical(
     || card.rank === 0 // Base
     || isPlayed(card)
     || isDiscarded(card)
-    || !needsToBePlayed(variant, deck, playStacks, stackDirections, card)
+    || !needsToBePlayed(variant, deck, playStacks, playStackDirections, card)
   ) {
     return false;
   }
@@ -57,7 +57,7 @@ export function isCritical(
     return reversibleRules.isCardCritical(
       variant,
       deck,
-      stackDirections,
+      playStackDirections,
       card,
     );
   }
@@ -78,7 +78,7 @@ export function needsToBePlayed(
   variant: Variant,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
-  stackDirections: readonly StackDirection[],
+  playStackDirections: readonly StackDirection[],
   card: CardState,
 ) {
   // First, check to see if a copy of this card has already been played
@@ -102,7 +102,7 @@ export function needsToBePlayed(
       variant,
       deck,
       playStacks,
-      stackDirections,
+      playStackDirections,
       card,
     );
   }
@@ -132,12 +132,18 @@ export function isPotentiallyPlayable(
   variant: Variant,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
-  stackDirections: readonly StackDirection[],
+  playStackDirections: readonly StackDirection[],
   card: CardState,
 ) {
   // Calculating this in an Up or Down variant is more complicated
   if (variantRules.hasReversedSuits(variant)) {
-    return reversibleRules.isPotentiallyPlayable(variant, deck, playStacks, stackDirections, card);
+    return reversibleRules.isPotentiallyPlayable(
+      variant,
+      deck,
+      playStacks,
+      playStackDirections,
+      card,
+    );
   }
 
   let potentiallyPlayable = false;

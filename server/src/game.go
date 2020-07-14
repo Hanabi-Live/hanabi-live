@@ -32,22 +32,22 @@ type Game struct {
 	// The seed specifies how the deck is dealt
 	// It is either entered manually by players before the game starts or
 	// randomly selected by the server upon starting a game
-	Seed              string
-	Deck              []*Card
-	CardIdentities    []*CardIdentity // A bare-bones version of the deck
-	DeckIndex         int
-	Stacks            []int
-	StackDirections   []int // The values for this are listed in "constants.go"
-	Turn              int   // Starts at 0; the client will represent turn 0 as turn 1 to the user
-	DatetimeTurnBegin time.Time
-	TurnsInverted     bool
-	ActivePlayer      int // Every game always starts with the 0th player going first
-	ClueTokens        int
-	Score             int
-	MaxScore          int
-	Strikes           int
-	LastClueTypeGiven int
-	DoubleDiscard     bool
+	Seed                string
+	Deck                []*Card
+	CardIdentities      []*CardIdentity // A bare-bones version of the deck
+	DeckIndex           int
+	Stacks              []int
+	PlayStackDirections []int // The values for this are listed in "constants.go"
+	Turn                int   // Starts at 0; the client will represent turn 0 as turn 1 to the user
+	DatetimeTurnBegin   time.Time
+	TurnsInverted       bool
+	ActivePlayer        int // Every game always starts with the 0th player going first
+	ClueTokens          int
+	Score               int
+	MaxScore            int
+	Strikes             int
+	LastClueTypeGiven   int
+	DoubleDiscard       bool
 	// Actions is a list of all of the in-game moves that players have taken thus far
 	// Different actions will have different fields, so we need this to be an generic interface
 	// Furthermore, we do not want this to be a pointer of interfaces because
@@ -94,18 +94,18 @@ func NewGame(t *Table) *Game {
 		Options:      t.Options,
 		ExtraOptions: t.ExtraOptions,
 
-		Players:           make([]*GamePlayer, 0),
-		Deck:              make([]*Card, 0),
-		CardIdentities:    make([]*CardIdentity, 0),
-		Stacks:            make([]int, len(variants[t.Options.VariantName].Suits)),
-		StackDirections:   make([]int, len(variants[t.Options.VariantName].Suits)),
-		DatetimeTurnBegin: time.Now(),
-		ClueTokens:        MaxClueNum,
-		MaxScore:          len(variants[t.Options.VariantName].Suits) * PointsPerSuit,
-		LastClueTypeGiven: -1,
-		Actions:           make([]interface{}, 0),
-		Actions2:          make([]*GameAction, 0),
-		EndTurn:           -1,
+		Players:             make([]*GamePlayer, 0),
+		Deck:                make([]*Card, 0),
+		CardIdentities:      make([]*CardIdentity, 0),
+		Stacks:              make([]int, len(variants[t.Options.VariantName].Suits)),
+		PlayStackDirections: make([]int, len(variants[t.Options.VariantName].Suits)),
+		DatetimeTurnBegin:   time.Now(),
+		ClueTokens:          MaxClueNum,
+		MaxScore:            len(variants[t.Options.VariantName].Suits) * PointsPerSuit,
+		LastClueTypeGiven:   -1,
+		Actions:             make([]interface{}, 0),
+		Actions2:            make([]*GameAction, 0),
+		EndTurn:             -1,
 
 		HypoActions: make([]string, 0),
 		Tags:        make(map[string]int),
@@ -124,9 +124,9 @@ func NewGame(t *Table) *Game {
 	if v.HasReversedSuits() && !v.IsUpOrDown() {
 		for i, s := range v.Suits {
 			if s.Reversed {
-				g.StackDirections[i] = StackDirectionDown
+				g.PlayStackDirections[i] = StackDirectionDown
 			} else {
-				g.StackDirections[i] = StackDirectionUp
+				g.PlayStackDirections[i] = StackDirectionUp
 			}
 		}
 	}

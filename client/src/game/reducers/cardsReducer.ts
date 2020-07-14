@@ -229,8 +229,8 @@ const cardsReducer = (
     case 'gameOver':
     case 'gameDuration':
     case 'playerTimes':
+    case 'playStackDirections':
     case 'reorder':
-    case 'stackDirections':
     case 'status':
     case 'strike':
     case 'turn': {
