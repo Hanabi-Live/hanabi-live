@@ -131,7 +131,10 @@ export function isPotentiallyPlayable(
     return reversibleRules.isPotentiallyPlayable(variant, deck, playStacks, stackDirections, card);
   }
 
-  for (const [suitIndex] of variant.suits.entries()) {
+  for (const [suitIndex, rank] of card.matchingCardsArray) {
+    if (card.unseenCards[suitIndex][rank] <= 0) {
+      continue;
+    }
     let lastPlayedRank = playStacksRules.lastPlayedRank(playStacks[suitIndex], deck);
     if (lastPlayedRank === 5) {
       continue;
@@ -140,8 +143,7 @@ export function isPotentiallyPlayable(
       lastPlayedRank = 0;
     }
     const nextRankNeeded = lastPlayedRank + 1;
-    if (card.matchingCards[suitIndex][nextRankNeeded]
-      && card.unseenCards[suitIndex][nextRankNeeded] > 0) {
+    if (nextRankNeeded === rank) {
       return true;
     }
   }

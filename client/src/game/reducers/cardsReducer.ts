@@ -164,7 +164,8 @@ const cardsReducer = (
       // Remove all possibilities of all cards previously drawn and visible
       deck.slice(0, action.order)
         .filter((card) => card.suitIndex !== null && card.rank !== null)
-        .filter((card) => card.location !== action.playerIndex || card.matchingCardsArray.length === 1)
+        .filter((card) => card.location !== action.playerIndex
+          || card.matchingCardsArray.length === 1)
         .forEach((card) => { unseenCards[card.suitIndex!][card.rank!] -= 1; });
 
       const { suitPips, rankPips } = checkPips(initial.matchingCardsArray, unseenCards, variant);

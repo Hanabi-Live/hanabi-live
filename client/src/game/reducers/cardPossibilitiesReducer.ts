@@ -28,11 +28,6 @@ const cardPossibilitiesReducer = (
   const matchingCardsArray = state.matchingCardsArray.filter(
     ([x, y]) => clueTouch[x][y] === positive,
   );
-  const matchingCards = state.matchingCards.map(
-    (arr, suitIndex) => arr.map(
-      (bool, rank) => bool && (clueTouch[suitIndex][rank] === positive),
-    ),
-  );
 
   const getIndex = getIndexConverter(variant);
 
@@ -79,7 +74,6 @@ const cardPossibilitiesReducer = (
       possibilities: suitsPossible,
       pipStates: suitPips,
     },
-    matchingCards,
     matchingCardsArray,
   };
 

@@ -9,11 +9,9 @@ export default interface CardState {
   readonly rankClueMemory: ClueMemory;
   readonly colorClueMemory: ClueMemory;
 
-  // matching[suitIndex][rank] = does the card of this suitIndex and rank match our clues?
   // unseenCards[suitIndex][rank] = how many cards of this suitIndex and rank could this be?
   // NOTE: we're using an array as a map, so there will be empty spaces for ranks
   // that are not valid card ranks (e.g. 0, or 6 in Up or Down)
-  readonly matchingCards: ReadonlyArray<readonly boolean[]>;
   readonly unseenCards: ReadonlyArray<readonly number[]>;
   readonly matchingCardsArray: ReadonlyArray<readonly [number, number]>;
 

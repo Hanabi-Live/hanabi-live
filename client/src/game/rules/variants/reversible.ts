@@ -135,7 +135,10 @@ export const isPotentiallyPlayable = (
   stackDirections: readonly StackDirection[],
   cardState: CardState,
 ) => {
-  for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
+  for (const [suitIndex, rank] of cardState.matchingCardsArray) {
+    if (cardState.unseenCards[suitIndex][rank] <= 0) {
+      continue;
+    }
     const playStack = playStacks[suitIndex];
     const lastPlayedRank = playStacksRules.lastPlayedRank(playStack, deck);
     const nextRanksNeeded : number[] = [];
@@ -159,11 +162,8 @@ export const isPotentiallyPlayable = (
       // Nothing can play on this stack because it is finished
       continue;
     }
-    for (const nextRankNeeded of nextRanksNeeded) {
-      if (cardState.matchingCards[suitIndex][nextRankNeeded]
-        && cardState.unseenCards[suitIndex][nextRankNeeded] > 0) {
-        return true;
-      }
+    if (nextRanksNeeded.includes(rank)) {
+      return true;
     }
   }
 
