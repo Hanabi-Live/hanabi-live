@@ -51,8 +51,6 @@ const gameStateReducer = produce((
         text,
       });
 
-      state.doubleDiscard = false;
-
       break;
     }
 
@@ -81,18 +79,6 @@ const gameStateReducer = produce((
         turn: state.turn.turnNum + 1,
         text,
       });
-
-      // TODO find out why this is breaking tests
-      /*
-      state.doubleDiscard = statsRules.doubleDiscard(
-        variant,
-        action.order,
-        state.deck,
-        state.playStacks,
-        state.playStackDirections,
-      );
-      */
-      state.maxScore = statsRules.getMaxScore(state.deck, state.playStackDirections, variant);
 
       break;
     }
@@ -179,7 +165,6 @@ const gameStateReducer = produce((
       }
 
       state.maxScore = statsRules.getMaxScore(state.deck, state.playStackDirections, variant);
-      state.doubleDiscard = false;
 
       break;
     }
@@ -267,6 +252,20 @@ const gameStateReducer = produce((
       ensureAllCases(action);
       break;
     }
+  }
+
+  // Handle double discard calculation
+  if (action.type === 'discard') {
+    state.doubleDiscard = statsRules.doubleDiscard(
+      variant,
+      action.order,
+      state.deck,
+      state.playStacks,
+      state.playStackDirections,
+    );
+    state.maxScore = statsRules.getMaxScore(state.deck, state.playStackDirections, variant);
+  } else if (action.type === 'play' || action.type === 'clue') {
+    state.doubleDiscard = false;
   }
 
   // Use a sub-reducer to calculate changes on cards

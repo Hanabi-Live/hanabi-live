@@ -160,7 +160,9 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
 
         break;
       }
-      default: { break; }
+      default: {
+        break;
+      }
     }
 
     nextState = gameStateReducer(nextState, action, state.metadata);

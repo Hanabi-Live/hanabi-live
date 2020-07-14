@@ -72,8 +72,9 @@ const statsReducer = produce((
       break;
     }
 
-    default:
+    default: {
       break;
+    }
   }
 
   // Now that the action has occurred, update the stats relating to the current game state
