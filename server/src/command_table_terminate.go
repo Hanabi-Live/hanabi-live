@@ -74,14 +74,7 @@ func terminate(t *Table, username string, endPlayerIndex int) {
 	})
 	t.NotifyGameAction()
 
-	// Add a text message for the termination
-	// and put it on its own turn so that it is separate from the final times
-	text := username + " terminated the game!"
-	g.Actions = append(g.Actions, ActionText{
-		Type: "text",
-		Text: text,
-	})
-	t.NotifyGameAction()
+	// TODO remove this when the client uses state for the replays instead of "globals.replayLog"
 	g.Turn++
 	t.NotifyTurn()
 

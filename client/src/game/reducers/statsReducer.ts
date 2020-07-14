@@ -49,7 +49,7 @@ const statsReducer = produce((
     case 'strike': {
       // TODO move this check to the play action when we have logic for knowing which cards play
       // A strike is equivalent to losing a clue
-      stats.potentialCluesLost += clueTokensRules.clueValue(variant);
+      stats.potentialCluesLost += clueTokensRules.value(variant);
       break;
     }
 
@@ -60,7 +60,7 @@ const statsReducer = produce((
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted",
         // similar to what happens when the team gets a strike
-        stats.potentialCluesLost += clueTokensRules.clueValue(variant);
+        stats.potentialCluesLost += clueTokensRules.value(variant);
       }
 
       const card = originalState.deck[action.order];
@@ -81,6 +81,8 @@ const statsReducer = produce((
     currentState.deckSize,
     currentState.maxScore,
     metadata.options.numPlayers,
+    // currentPlayerIndex will be null if the game is over
+    currentState.turn.currentPlayerIndex === null,
   );
   stats.paceRisk = statsRules.paceRisk(stats.pace, metadata.options.numPlayers);
   stats.efficiency = statsRules.efficiency(stats.cardsGotten, stats.potentialCluesLost);

@@ -1,10 +1,13 @@
 // Functions related to deck information: total cards, drawing cards
 
+import { getVariant } from '../data/gameData';
 import CardState from '../types/CardState';
 import { START_CARD_RANK } from '../types/constants';
+import GameMetadata from '../types/GameMetadata';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
 import * as cardRules from './card';
+import * as handRules from './hand';
 import * as variantRules from './variant';
 
 export function totalCards(variant: Variant) {
@@ -63,3 +66,14 @@ export const discardedCopies = (
   }
   return discarded;
 }, 0);
+
+export function isInitialDealFinished(currentDeckSize: number, metadata: GameMetadata) {
+  const variant = getVariant(metadata.options.variantName);
+  const totalCardsInTheDeck = totalCards(variant);
+  const numCardsPerHand = handRules.cardsPerHand(
+    metadata.options.numPlayers,
+    metadata.options.oneExtraCard,
+    metadata.options.oneLessCard,
+  );
+  return currentDeckSize === totalCardsInTheDeck - (metadata.options.numPlayers * numCardsPerHand);
+}

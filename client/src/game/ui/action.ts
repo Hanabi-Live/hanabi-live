@@ -235,7 +235,7 @@ actionFunctions.set('morph', (data: ActionHypotheticalMorph) => {
 actionFunctions.set('turn', (data: ActionTurn) => {
   // Store the current turn in memory
   globals.turn = data.num;
-  globals.currentPlayerIndex = nullIfNegative(data.who);
+  globals.currentPlayerIndex = nullIfNegative(data.currentPlayerIndex);
 
   if (!globals.animateFast) {
     globals.layers.UI.batchDraw();

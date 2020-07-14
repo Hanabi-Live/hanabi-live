@@ -4,11 +4,11 @@
 package main
 
 type ActionDraw struct {
-	Type      string `json:"type"`
-	Who       int    `json:"who"` // Who got dealt the card
-	SuitIndex int    `json:"suitIndex"`
-	Rank      int    `json:"rank"`
-	Order     int    `json:"order"` // The ID of the card, based on its ordering in the deck
+	Type        string `json:"type"`
+	PlayerIndex int    `json:"playerIndex"`
+	Order       int    `json:"order"` // The ID of the card, based on its ordering in the deck
+	SuitIndex   int    `json:"suitIndex"`
+	Rank        int    `json:"rank"`
 }
 type ActionStatus struct {
 	Type          string `json:"type"`
@@ -26,9 +26,9 @@ type ActionText struct {
 	Text string `json:"text"`
 }
 type ActionTurn struct {
-	Type string `json:"type"`
-	Num  int    `json:"num"`
-	Who  int    `json:"who"` // The index of which player's turn it is
+	Type               string `json:"type"`
+	Num                int    `json:"num"`
+	CurrentPlayerIndex int    `json:"currentPlayerIndex"`
 }
 type ActionClue struct {
 	Type   string `json:"type"`
@@ -99,7 +99,7 @@ func (a *ActionDraw) Scrub(t *Table, userID int) {
 		return
 	}
 
-	if a.Who == p.Index || // They are drawing the card
+	if a.PlayerIndex == p.Index || // They are drawing the card
 		// They are playing a special character that should not be able to see the card
 		characterHideCard(a, g, p) {
 

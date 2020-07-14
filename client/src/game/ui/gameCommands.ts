@@ -136,6 +136,7 @@ commands.set('gameOver', () => {
   // The final turn displays how long everyone took,
   // so we want to go to the turn before that, which we recorded earlier
   replay.goto(globals.finalReplayTurn, true);
+  console.log('Going to the finalReplayTurn:', globals.finalReplayTurn);
 
   // Hide the "Exit Replay" button in the center of the screen, since it is no longer necessary
   globals.elements.replayExitButton!.hide();
@@ -229,7 +230,7 @@ commands.set('hypoStart', () => {
 interface InitData {
   // Game settings
   tableID: number;
-  names: string[];
+  playerNames: string[];
   seat: number;
   spectating: boolean;
   replay: boolean;
@@ -262,7 +263,7 @@ commands.set('init', (data: InitData) => {
 
   // Game settings
   globals.lobby.tableID = data.tableID; // Equal to the table ID on the server
-  globals.playerNames = data.names;
+  globals.playerNames = data.playerNames;
   globals.playerUs = data.seat; // 0 if a spectator or a replay of a game that we were not in
   globals.spectating = data.spectating;
   globals.replay = data.replay;
@@ -288,6 +289,7 @@ commands.set('init', (data: InitData) => {
   // Recreate the state store (using the Redux library)
   const metadata: GameMetadata = {
     options: data.options,
+    playerNames: data.playerNames,
     ourPlayerIndex: data.seat,
     spectating: data.spectating || data.replay,
     characterAssignments,
@@ -427,7 +429,7 @@ const processNewAction = (actionMessage: GameAction) => {
 
   if (actionMessage.type === 'turn') {
     // Keep track of whether it is our turn or not
-    globals.ourTurn = actionMessage.who === globals.playerUs && !globals.spectating;
+    globals.ourTurn = actionMessage.currentPlayerIndex === globals.playerUs && !globals.spectating;
 
     // We need to update the replay slider, based on the new amount of turns
     globals.replayMax = actionMessage.num;
@@ -468,9 +470,12 @@ const processNewAction = (actionMessage: GameAction) => {
     action(actionMessage);
   }
 
-  // If the game is over,
-  // don't immediately draw the subsequent turns that contain the game times
-  if (!globals.gameOver && actionMessage.type === 'turn' && actionMessage.who === -1) {
+  // If the game is over, do not immediately draw the subsequent turns that contain the game times
+  if (
+    !globals.gameOver
+    && actionMessage.type === 'turn'
+    && actionMessage.currentPlayerIndex === -1
+  ) {
     globals.gameOver = true;
     globals.finalReplayPos = globals.replayLog.length;
     globals.finalReplayTurn = actionMessage.num;

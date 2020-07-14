@@ -230,7 +230,7 @@ func debugFunction() {
 		if i > 1000 {
 			break
 		}
-		logger.Debug("XXXXX GAME:", id)
+		logger.Debug("ON GAME:", id)
 		s := newFakeSession(1, "Server")
 		commandReplayCreate(s, &CommandData{
 			Source:     "id",

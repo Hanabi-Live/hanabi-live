@@ -47,27 +47,35 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
 
   // Parse all plays/discards/clues
   let turn = 0; // Start on the 0th turn
-  let who = 0; // The player at index 0 goes first
+  let currentPlayerIndex = 0; // The player at index 0 goes first
 
   // Make a "turn" action for the initial turn, before any players have taken any actions yet
-  actions.push({ type: 'turn', num: turn, who });
+  actions.push({
+    type: 'turn',
+    num: turn,
+    currentPlayerIndex,
+  });
 
   gameJSON.actions.forEach((a) => {
-    const action = parseJSONAction(who, turn, gameJSON.deck, a);
+    const action = parseJSONAction(currentPlayerIndex, turn, gameJSON.deck, a);
     if (action) {
       actions.push(action);
       if (
         topOfDeck < gameJSON.deck.length
         && (action.type === 'discard' || action.type === 'play')
       ) {
-        actions.push(drawCard(who, topOfDeck, gameJSON.deck));
+        actions.push(drawCard(currentPlayerIndex, topOfDeck, gameJSON.deck));
         topOfDeck += 1;
       }
     }
 
     turn += 1;
-    who = (who + 1) % numPlayers;
-    actions.push({ type: 'turn', num: turn, who });
+    currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+    actions.push({
+      type: 'turn',
+      num: turn,
+      currentPlayerIndex,
+    });
   });
 
   // If the game was exported from the server and it ended in a specific way,
@@ -81,9 +89,13 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       // Assume that the game ended normally; this is not necessarily the case and will break if a
       // test game is added with a strikeout, a termination, etc.
       endCondition: 1,
-      playerIndex: who,
+      playerIndex: currentPlayerIndex,
     };
-    actions.push({ type: 'turn', num: turn, who: -1 });
+    actions.push({
+      type: 'turn',
+      num: turn,
+      currentPlayerIndex: -1,
+    });
   }
 
   // Run the list of states through the state reducer
@@ -171,9 +183,9 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   };
 }
 
-function drawCard(who: number, order: number, deck: CardIdentity[]): ActionDraw {
+function drawCard(playerIndex: number, order: number, deck: CardIdentity[]): ActionDraw {
   const cardIdentity = deck[order];
-  if (!cardIdentity) {
+  if (cardIdentity === undefined) {
     throw new Error(`Failed to find the ${order} card in the deck in the "drawCard()" function.`);
   }
   if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
@@ -182,7 +194,7 @@ function drawCard(who: number, order: number, deck: CardIdentity[]): ActionDraw 
 
   return {
     type: 'draw',
-    who,
+    playerIndex,
     order,
     suitIndex: cardIdentity.suitIndex,
     rank: cardIdentity.rank,

@@ -7,7 +7,12 @@ import produce, {
 } from 'immer';
 import { ensureAllCases } from '../../misc';
 import { getVariant } from '../data/gameData';
-import { clueTokensRules, variantRules } from '../rules';
+import {
+  clueTokensRules,
+  deckRules,
+  textRules,
+  variantRules,
+} from '../rules';
 import { GameAction } from '../types/actions';
 import EndCondition from '../types/EndCondition';
 import GameMetadata from '../types/GameMetadata';
@@ -25,7 +30,7 @@ const gameStateReducer = produce((
 
   switch (action.type) {
     // A player just gave a clue
-    // {clue: {type: 0, value: 1}, giver: 1, list: [11], target: 2, turn: 0, type: "clue"}
+    // { type: 'clue', clue: { type: 0, value: 1 }, giver: 1, list: [11], target: 2, turn: 0 }
     case 'clue': {
       state.clueTokens -= 1;
       state.clues.push({
@@ -38,11 +43,18 @@ const gameStateReducer = produce((
         negativeList: state.hands[action.target].filter((i) => !action.list.includes(i)),
       });
 
+      const targetHand = state.hands[action.target];
+      const text = textRules.getClue(action, targetHand, metadata);
+      state.log.push({
+        turn: state.turn.turnNum + 1,
+        text,
+      });
+
       break;
     }
 
     // A player just discarded a card
-    // {type: "discard", playerIndex: 0, order: 4, suitIndex: 2, rank: 1, failed: false, }}
+    // { type: 'discard', playerIndex: 0, order: 4, suitIndex: 2, rank: 1, failed: false }
     case 'discard': {
       // Remove it from the hand
       const hand = state.hands[action.playerIndex];
@@ -55,27 +67,34 @@ const gameStateReducer = produce((
       state.discardStacks[action.suitIndex].push(action.order);
 
       if (!action.failed) {
-        state.clueTokens = clueTokensRules.gainClue(variant, state.clueTokens);
+        state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
       }
 
       break;
     }
 
     // A player just drew a card from the deck
-    // {order: 0, rank: 1, suit: 4, type: "draw", who: 0}
+    // { type: 'draw', playerIndex: 0, order: 0, rank: 1, suitIndex: 4 }
     case 'draw': {
       state.deckSize -= 1;
-      const hand = state.hands[action.who];
+      const hand = state.hands[action.playerIndex];
       if (hand !== undefined) {
         hand.push(action.order);
+      }
+
+      if (deckRules.isInitialDealFinished(state.deckSize, metadata)) {
+        const text = `${metadata.playerNames[state.turn.currentPlayerIndex!]} goes first`;
+        state.log.push({
+          turn: state.turn.turnNum + 1,
+          text,
+        });
       }
 
       break;
     }
 
     // A player just played a card
-    // {type: "play", playerIndex: 0, order: 4, suitIndex: 2, rank: 1}}
-    // (index is the player index)
+    // { type: 'play', playerIndex: 0, order: 4, suitIndex: 2, rank: 1 }
     case 'play': {
       // Remove it from the hand
       const hand = state.hands[action.playerIndex];
@@ -100,24 +119,25 @@ const gameStateReducer = produce((
         // card that is played, so finishing a stack does not grant a clue
         && !variantRules.isThrowItInAHole(variant)
       ) {
-        state.clueTokens = clueTokensRules.gainClue(variant, state.clueTokens);
+        state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
       }
 
       break;
     }
 
     // An action has been taken, so there may be a change to game state variables
-    // {clues: 5, doubleDiscard: false, maxScore: 24, score: 18, type: "status"}
+    // { type: 'status', clues: 5, score: 18, maxScore: 24, doubleDiscard: false }
+    // TODO: This message is unnecessary and will be removed in a future version of the code
     case 'status': {
       // TEMP: At this point, check that the local state matches the server
       if (state.clueTokens !== action.clues) {
-        console.warn(`The clues from the client and the server do not match on turn ${state.turn}.`);
+        console.warn(`The clues from the client and the server do not match on turn ${state.turn.turnNum}.`);
         console.warn(`Client = ${state.clueTokens}, Server = ${action.clues}`);
       }
 
       // TEMP: At this point, check that the local state matches the server
       if (state.score !== action.score) {
-        console.warn(`The scores from the client and the server do not match on turn ${state.turn}.`);
+        console.warn(`The scores from the client and the server do not match on turn ${state.turn.turnNum}.`);
         console.warn(`Client = ${state.score}, Server = ${action.score}`);
       }
 
@@ -131,7 +151,8 @@ const gameStateReducer = produce((
     }
 
     // A player failed to play a card
-    // {num: 1, order: 24, turn: 32, type: "strike"}
+    // { type: 'strike', num: 1, turn: 32, order: 24 }
+    // TODO: This message is unnecessary and will be removed in a future version of the code
     case 'strike': {
       state.strikes.push({
         order: action.order,
@@ -141,9 +162,9 @@ const gameStateReducer = produce((
     }
 
     // A line of text was received from the server
-    // {text: "Alice plays Red 2 from slot #1", type: "text"}
+    // { type: 'text', text: 'Alice plays Red 2 from slot #1' }
     case 'text': {
-      // Add 1 to turn because server turns start counting from 0
+      // Add 1 to the turn because turns are represented client-side as starting from 1 instead of 0
       state.log.push({
         turn: state.turn.turnNum + 1,
         text: action.text,
@@ -151,22 +172,76 @@ const gameStateReducer = produce((
       break;
     }
 
+    // At the end of every turn, the server informs us of the stack directions for each suit
+    // { type: 'stackDirections', directions: [0, 0, 0, 0, 0] }
+    // TODO: This message is unnecessary and will be removed in a future version of the code
+    // (the client should be able to determine the stack directions directly)
     case 'stackDirections': {
-      // TODO: The client should be able to determine the stack directions directly
       state.playStacksDirections = action.directions;
       break;
     }
 
+    // The game has ended, either by normal means (e.g. max score), or someone ran out of time in a
+    // timed game, someone terminated, etc.
+    // { type: 'gameOver', endCondition: 1, playerIndex: 0 }
     case 'gameOver': {
       if (action.endCondition !== EndCondition.Normal) {
         state.score = 0;
       }
+
+      let playerName = 'Hanabi Live';
+      if (action.playerIndex >= 0) {
+        playerName = metadata.playerNames[action.playerIndex];
+      }
+
+      let text = 'Players lose!';
+      switch (action.endCondition) {
+        case EndCondition.InProgress:
+        case EndCondition.Normal: {
+          text = `Players score ${state.score} points.`;
+          break;
+        }
+
+        case EndCondition.Strikeout: {
+          break;
+        }
+
+        case EndCondition.Timeout: {
+          text = `${playerName} ran out of time!`;
+          break;
+        }
+
+        case EndCondition.Terminated: {
+          text = `${playerName} terminated the game!`;
+          break;
+        }
+
+        case EndCondition.SpeedrunFail: {
+          break;
+        }
+
+        case EndCondition.IdleTimeout: {
+          text = 'Players were idle for too long.';
+          break;
+        }
+
+        default: {
+          ensureAllCases(action.endCondition);
+          break;
+        }
+      }
+
+      state.log.push({
+        turn: state.turn.turnNum + 1,
+        text,
+      });
+
       break;
     }
 
+    // Some actions do not affect the main state or are handled by another reducer
     case 'reorder':
     case 'turn': {
-      // Some actions do not affect the main state or are handled by another reducer
       break;
     }
 
@@ -188,9 +263,8 @@ const gameStateReducer = produce((
   state.turn = turnReducer(
     original(state.turn),
     action,
+    state,
     metadata,
-    state.deckSize,
-    state.clueTokens,
   );
 
   // Use a sub-reducer to calculate some game statistics

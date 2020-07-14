@@ -599,9 +599,9 @@ func characterHideCard(a *ActionDraw, g *Game, p *GamePlayer) bool {
 		return false
 	}
 
-	if p.Character == "Blind Spot" && a.Who == p.GetLeftPlayer() { // 29
+	if p.Character == "Blind Spot" && a.PlayerIndex == p.GetLeftPlayer() { // 29
 		return true
-	} else if p.Character == "Oblivious" && a.Who == p.GetRightPlayer() { // 30
+	} else if p.Character == "Oblivious" && a.PlayerIndex == p.GetRightPlayer() { // 30
 		return true
 	}
 

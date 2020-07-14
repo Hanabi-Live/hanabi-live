@@ -6,7 +6,6 @@ package main
 import (
 	"math"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -86,68 +85,6 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 		Turn:   g.Turn,
 	})
 	t.NotifyGameAction()
-
-	// Send the "message" message about the clue
-	text := p.Name + " tells " + p2.Name + " about "
-	words := []string{
-		"zero",
-		"one",
-		"two",
-		"three",
-		"four",
-		"five",
-		"six",
-	}
-	text += words[len(cardsTouched)] + " "
-
-	if clue.Type == ClueTypeColor {
-		text += variants[g.Options.VariantName].ClueColors[clue.Value]
-	} else if clue.Type == ClueTypeRank {
-		text += strconv.Itoa(clue.Value)
-	}
-	if len(cardsTouched) != 1 {
-		text += "s"
-	}
-
-	if strings.HasPrefix(g.Options.VariantName, "Cow & Pig") ||
-		strings.HasPrefix(g.Options.VariantName, "Duck") ||
-		p.Character == "Quacker" { // 34
-
-		// Create a list of slot numbers that correspond to the cards touched
-		slots := make([]string, 0)
-		for _, order := range cardsTouched {
-			slots = append(slots, strconv.Itoa(p2.GetCardSlot(order)))
-		}
-		sort.Strings(slots)
-
-		text = p.Name + " "
-		if strings.HasPrefix(g.Options.VariantName, "Cow & Pig") {
-			if clue.Type == ClueTypeColor {
-				text += "moos"
-				g.Sound = "moo"
-			} else if clue.Type == ClueTypeRank {
-				text += "oinks"
-				g.Sound = "oink"
-			}
-		} else if strings.HasPrefix(g.Options.VariantName, "Duck") ||
-			p.Character == "Quacker" { // 34
-
-			text += "quacks"
-			g.Sound = "quack"
-		}
-		text += " at " + p2.Name + "'"
-		if !strings.HasSuffix(p2.Name, "s") {
-			text += "s"
-		}
-		text += " slot " + strings.Join(slots, "/")
-	}
-
-	g.Actions = append(g.Actions, ActionText{
-		Type: "text",
-		Text: text,
-	})
-	t.NotifyGameAction()
-	logger.Info(t.GetName() + text)
 
 	// Do post-clue tasks
 	characterPostClue(d, g, p)
@@ -462,11 +399,11 @@ func (p *GamePlayer) DrawCard() {
 	p.Hand = append(p.Hand, c)
 
 	g.Actions = append(g.Actions, ActionDraw{
-		Type:      "draw",
-		Who:       p.Index,
-		SuitIndex: c.SuitIndex,
-		Rank:      c.Rank,
-		Order:     c.Order,
+		Type:        "draw",
+		PlayerIndex: p.Index,
+		Order:       c.Order,
+		SuitIndex:   c.SuitIndex,
+		Rank:        c.Rank,
 	})
 	if t.Running {
 		t.NotifyGameAction()

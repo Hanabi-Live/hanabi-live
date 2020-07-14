@@ -85,18 +85,20 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
     default: {
       // A new game action happened
+      const oldGameSegment = state.ongoingGame.turn.gameSegment;
       state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action, state.metadata)!;
 
       // We copy the card identities to the global state for convenience
       updateCardIdentities(state);
 
-      // Save a copy of the game state on every turn (for the purposes of in-game replays)
-      if (action.type === 'turn') {
-        state.replay.states[action.num] = state.ongoingGame;
+      // When the game state reducer sets "gameSegment" to a new number,
+      // it is a signal to record the current state of the game (for the purposes of replays)
+      if (
+        state.ongoingGame.turn.gameSegment !== oldGameSegment
+        && state.ongoingGame.turn.gameSegment !== null
+      ) {
+        state.replay.states[state.ongoingGame.turn.gameSegment] = state.ongoingGame;
       }
-
-      // Also save the action to replay the whole game later
-      state.replay.actions.push(action);
 
       break;
     }
@@ -129,9 +131,13 @@ function reduceGameActions(actions: GameAction[], initialState: GameState, metad
   const game = actions.reduce((s: GameState, a: GameAction) => {
     const nextState = gameStateReducer(s, a, metadata);
 
-    if (a.type === 'turn') {
-      // Store the current state in the state table to enable replays
-      states[a.num] = nextState;
+    // When the game state reducer sets "gameSegment" to a new number,
+    // it is a signal to record the current state of the game (for the purposes of replays)
+    if (
+      nextState.turn.gameSegment !== s.turn.gameSegment
+        && nextState.turn.gameSegment !== null
+    ) {
+      states[nextState.turn.gameSegment] = nextState;
     }
 
     return nextState;

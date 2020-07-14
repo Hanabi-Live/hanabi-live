@@ -56,10 +56,10 @@ describe('minEfficiency', () => {
 
 describe('pace', () => {
   test('is null when deckSize is 0', () => {
-    expect(pace(25, 0, 25, 4)).toBeNull();
+    expect(pace(25, 0, 25, 4, false)).toBeNull();
   });
   test('returns +13 at the beginning of a 4-player No Variant game', () => {
-    expect(pace(0, 34, 25, 4)).toBe(13);
+    expect(pace(0, 34, 25, 4, false)).toBe(13);
   });
 });
 

@@ -71,7 +71,7 @@ describe('gameStateReducer', () => {
       state = gameStateReducer(state, drawAction, defaultMetadata);
 
       // Misplay the red 1
-      const discardAction = discard(true, 0, 0, 1, 0);
+      const discardAction = discard(0, 0, 1, 0, true);
       state = gameStateReducer(state, discardAction, defaultMetadata);
 
       // TODO remove this when misplays are calculated from an ActionPlay
@@ -118,7 +118,7 @@ describe('gameStateReducer', () => {
       state = gameStateReducer(state, playAction, defaultMetadata);
 
       // Misplay the yellow 2
-      const discardAction = discard(true, 0, 1, 2, 1);
+      const discardAction = discard(0, 1, 2, 1, true);
       state = gameStateReducer(state, discardAction, defaultMetadata);
 
       // TODO remove this when misplays are calculated from an ActionPlay
@@ -169,7 +169,7 @@ describe('gameStateReducer', () => {
       state = gameStateReducer(state, playRed4Action, defaultMetadata);
 
       // Discard the other red 1
-      const discardAction = discard(false, 1, 0, 1, 11);
+      const discardAction = discard(1, 0, 1, 11, false);
       state = gameStateReducer(state, discardAction, defaultMetadata);
 
       expect(state.clueTokens).toBe(MAX_CLUE_NUM);
@@ -224,9 +224,9 @@ describe('gameStateReducer', () => {
         state = gameStateReducer(state, playRed4Action, clueStarvedMetadata);
 
         // Discard the other two red 1s
-        const discardAction1 = discard(false, 1, 0, 1, 11);
+        const discardAction1 = discard(1, 0, 1, 11, false);
         state = gameStateReducer(state, discardAction1, clueStarvedMetadata);
-        const discardAction2 = discard(false, 1, 0, 1, 12);
+        const discardAction2 = discard(1, 0, 1, 12, false);
         state = gameStateReducer(state, discardAction2, clueStarvedMetadata);
 
         expect(state.clueTokens).toBe(MAX_CLUE_NUM);
