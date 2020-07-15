@@ -836,8 +836,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     if (cursor === this.visualEffectCursor) {
       return;
     }
-
     this.visualEffectCursor = cursor;
+
     // Shadow special effects
     const shadowOffset = cursor === 'dragging' ? Math.floor(0.1 * CARD_W) : Math.floor(0.04 * CARD_W);
     this.bare.to({

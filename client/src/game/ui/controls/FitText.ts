@@ -6,6 +6,7 @@ export default class FitText extends Konva.Text {
 
   constructor(config: Konva.TextConfig) {
     super(config);
+
     // Never listen on the text object, listen on the parent instead
     this.listening(false);
 
