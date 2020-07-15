@@ -22,19 +22,25 @@ export function onActiveChanged(active: boolean, previousActive: boolean | undef
   }
 }
 
-export function onOngoingGameSegmentChanged(segment: number | null) {
-  if (segment === null) {
+export function onActiveOrOngoingGameSegmentChanged(data: {
+  active: boolean;
+  segment: number | null;
+}) {
+  if (!data.active) {
+    return;
+  }
+
+  if (data.segment === null) {
     return;
   }
 
   // We need to update the replay slider, based on the new amount of segments
-  if (!globals.store!.getState().replay.active) {
-    return;
-  }
-
   replay.adjustShuttles(false);
-  globals.elements.replayForwardButton!.setEnabled(true);
-  globals.elements.replayForwardFullButton!.setEnabled(true);
+
+  // If we are on the last segment, disable the forward replay buttons
+  const replaySegment = globals.store!.getState().replay.segment;
+  globals.elements.replayForwardButton!.setEnabled(replaySegment !== data.segment);
+  globals.elements.replayForwardFullButton!.setEnabled(replaySegment !== data.segment);
 
   globals.layers.UI.batchDraw();
 }
