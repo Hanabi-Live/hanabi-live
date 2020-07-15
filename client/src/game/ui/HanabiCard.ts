@@ -900,8 +900,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     // For ongoing games, always show the cursor for other people's hands
-    const ourPlayerIndex = state.metadata.ourPlayerIndex;
-    if (typeof this.state.location === 'number' && this.state.location !== ourPlayerIndex) {
+    if (
+      typeof this.state.location === 'number'
+      && this.state.location !== state.metadata.ourPlayerIndex
+    ) {
       return true;
     }
 
