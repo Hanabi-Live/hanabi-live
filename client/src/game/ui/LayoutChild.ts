@@ -60,20 +60,25 @@ export default class LayoutChild extends Konva.Group {
         if (event.evt.buttons % 2 === 1) {
           // Left-click is being held down
           cursorSet('dragging');
+          this.card.setVisualEffect('dragging');
         } else {
           cursorSet('hand');
+          this.card.setVisualEffect('hand');
         }
       });
       this.on('mouseleave', () => {
         cursorSet('default');
+        this.card.setVisualEffect('default');
       });
       this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
         if (event.evt.buttons % 2 === 1) {
           cursorSet('dragging');
+          this.card.setVisualEffect('dragging');
         }
       });
       this.on('mouseup', () => {
         cursorSet('hand');
+        this.card.setVisualEffect('hand');
       });
     } else {
       this.draggable(false);

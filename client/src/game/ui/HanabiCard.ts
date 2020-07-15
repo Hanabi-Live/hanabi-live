@@ -25,7 +25,7 @@ import NodeWithTooltip from './controls/NodeWithTooltip';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';
 import { suitIndexToSuit } from './convert';
-import cursorSet from './cursorSet';
+import cursorSet, { CursorType } from './cursorSet';
 import globals from './globals';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
@@ -515,6 +515,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !cardRules.isDiscarded(this.state)
       && !this.empathy
       && !this.needsToBePlayed()
+      && this.bareName !== DECK_BACK_IMAGE // Blank cards should not fade
     ) {
       newOpacity = CARD_FADE;
     }
@@ -540,6 +541,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
       && !this.note.blank
+      && this.bareName !== DECK_BACK_IMAGE // Blank cards should not be critical
     ));
   }
 
@@ -827,6 +829,28 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         updatePip(pipState, hasPositiveClues, pip, x);
       }
     }
+  }
+
+  visualEffectCursor: CursorType = 'default';
+  setVisualEffect(cursor: CursorType) {
+    if (cursor === this.visualEffectCursor) {
+      return;
+    }
+
+    this.visualEffectCursor = cursor;
+    // Shadow special effects
+    const shadowOffset = cursor === 'dragging' ? Math.floor(0.1 * CARD_W) : Math.floor(0.04 * CARD_W);
+    this.bare.to({
+      shadowOffsetX: shadowOffset,
+      shadowOffsetY: shadowOffset,
+      shadowBlur: cursor === 'dragging' ? Math.floor(0.06 * CARD_W) : Math.floor(0.03 * CARD_W),
+      duration: 0.1,
+    });
+    this.to({
+      offsetX: cursor === 'dragging' ? 0.52 * CARD_W : 0.5 * CARD_W,
+      offsetY: cursor === 'dragging' ? 0.52 * CARD_H : 0.5 * CARD_H,
+      duration: 0.1,
+    });
   }
 
   private registerMouseHandlers() {
