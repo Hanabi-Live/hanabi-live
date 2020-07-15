@@ -110,8 +110,8 @@ function subscribeToCardChanges(order: number) {
       rank: card.rank,
       suitIndex: card.suitIndex,
       location: card.location,
-      numPossibleRanks: card.rankClueMemory.possibilities.length,
-      numPossibleSuits: card.colorClueMemory.possibilities.length,
+      rankDetermined: card.rankClueMemory.possibilities.length === 1,
+      suitDetermined: card.colorClueMemory.possibilities.length === 1,
       identity: s.cardIdentities[order],
     };
   }, () => updateCardVisuals(order));
