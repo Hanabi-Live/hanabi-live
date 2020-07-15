@@ -537,34 +537,12 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 
 		p := t.Players[g.ActivePlayer]
 
-		if action.Type == ActionTypeGameOver && action.Value == EndConditionTerminated {
-			// Terminations do not flow through the "commandAction()" function,
-			// so this is a special case
-			// (this is because any player can terminate the game, even if it is not their turn)
-			var ps *Session
-			var serverTermination bool
-			if action.Target < 0 {
-				// A target of "-1" indicates that this was a termination initiated by the server
-				// itself, so just use the session of the 1st player to send the termination
-				ps = t.Players[0].Session
-				serverTermination = true
-			} else {
-				ps = t.Players[action.Target].Session
-				serverTermination = false
-			}
-			commandTableTerminate(ps, &CommandData{
-				TableID: t.ID,
-				Server:  serverTermination,
-			})
-		} else {
-			// A normal action (e.g. play, discard, or clue)
-			commandAction(p.Session, &CommandData{
-				TableID: t.ID,
-				Type:    action.Type,
-				Target:  action.Target,
-				Value:   action.Value,
-			})
-		}
+		commandAction(p.Session, &CommandData{
+			TableID: t.ID,
+			Type:    action.Type,
+			Target:  action.Target,
+			Value:   action.Value,
+		})
 
 		if g.InvalidActionOccurred {
 			logger.Info("An invalid action occurred for game " + strconv.Itoa(d.GameID) + "; " +

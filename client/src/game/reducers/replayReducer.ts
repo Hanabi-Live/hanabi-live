@@ -17,8 +17,23 @@ const replayReducer = produce((
   // Validate current state
   if (state.active && action.type === 'startReplay') {
     throw new Error('Tried to start a replay but replay was already active.');
+  } else if (!state.active && action.type === 'endReplay') {
+    throw new Error('Tried to end a replay but replay was not active.');
   } else if (!state.active && action.type !== 'startReplay') {
-    throw new Error('Tried perform a replay action but replay was not active.');
+    throw new Error(`Tried to perform a replay action of ${action.type} but replay was not active.`);
+  } else if (state.hypothetical !== null && action.type === 'hypoStart') {
+    throw new Error('Tried to start a hypothetical but hypothetical was already active.');
+  } else if (state.hypothetical === null && action.type === 'hypoEnd') {
+    throw new Error('Tried to end a hypothetical but hypothetical was not active.');
+  } else if (
+    state.hypothetical === null
+    && (
+      action.type === 'hypoBack'
+      || action.type === 'hypoRevealed'
+      || action.type === 'hypoAction'
+    )
+  ) {
+    throw new Error(`Tried to perform a hypothetical action of ${action.type} but hypothetical was not active.`);
   }
 
   switch (action.type) {
@@ -27,15 +42,18 @@ const replayReducer = produce((
       state.segment = action.segment;
       break;
     }
+
     case 'endReplay': {
       state.active = false;
       state.segment = 0;
       break;
     }
+
     case 'goToSegment': {
       state.segment = action.segment;
       break;
     }
+
     case 'hypoStart': {
       const ongoing = state.states[state.segment];
       state.hypothetical = {
@@ -47,10 +65,12 @@ const replayReducer = produce((
       };
       break;
     }
+
     case 'hypoEnd': {
       state.hypothetical = null;
       break;
     }
+
     case 'hypoBack': {
       const hypoStates = state.hypothetical!.states;
       hypoStates.pop();
@@ -58,6 +78,7 @@ const replayReducer = produce((
       state.hypothetical!.ongoing = lastState;
       break;
     }
+
     case 'hypoRevealed': {
       state.hypothetical!.drawnCardsShown = action.showDrawnCards;
       // Filter out all identities morphed to blank
@@ -86,6 +107,7 @@ const replayReducer = produce((
       }
       break;
     }
+
     case 'hypoAction': {
       const a = action.action;
       // The morph action is handled here, exclusively
@@ -134,6 +156,7 @@ const replayReducer = produce((
 
       break;
     }
+
     default: {
       ensureAllCases(action);
       break;

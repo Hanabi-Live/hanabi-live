@@ -73,7 +73,6 @@ export class Globals {
   scaledCardImages: Map<string, HTMLCanvasElement[]> = new Map<string, HTMLCanvasElement[]>();
 
   // Replay feature
-  inReplay: boolean = false; // Whether or not the replay controls are currently showing
   replayLog: GameAction[] = []; // Contains all of the "action" messages for the game
   replayPos: number = 0; // The current index of the "globals.replayLog" array
   replayTurn: number = 0; // The current game turn
@@ -175,7 +174,6 @@ export class Globals {
     this.activeHover = null;
     this.cardImages = new Map<string, HTMLCanvasElement>();
     this.scaledCardImages = new Map<string, HTMLCanvasElement[]>();
-    this.inReplay = false;
     this.replayLog = [];
     this.replayPos = 0;
     this.replayTurn = 0;

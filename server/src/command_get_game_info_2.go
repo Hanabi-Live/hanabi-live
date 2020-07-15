@@ -55,6 +55,12 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 				drawAction.Scrub(t, s.UserID())
 				a = drawAction
 			}
+			playAction, ok := a.(ActionPlay)
+			if ok && playAction.Type == "play" {
+				playAction.Scrub(t)
+				a = playAction
+			}
+
 			scrubbedActions = append(scrubbedActions, a)
 		}
 	} else {

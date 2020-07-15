@@ -3,6 +3,7 @@ import globals from './globals';
 export type CursorType = 'default' | 'hand' | 'dragging' | 'look';
 
 // Module variables
+// (this does not have to be on the globals because it is explicitly reset in HanabiUI constructor)
 let currentCursorType = 'default';
 
 export default function cursorSet(cursorType: CursorType) {

@@ -119,9 +119,7 @@ commands.set('gameOver', () => {
   // (we add one to account for the text that the server sends at the end of a game)
 
   // Open the replay UI if we were not in an in-game replay when the game ended
-  if (!globals.inReplay) {
-    replay.enter();
-  }
+  replay.enter();
 
   // Turn off the flag that tracks when the game is over
   // (before the "gameOver" command is received)
@@ -307,7 +305,6 @@ commands.set('init', (data: InitData) => {
   globals.pauseQueued = data.pauseQueued;
 
   // Open the replay UI if we are in a replay
-  globals.inReplay = globals.replay;
   if (globals.replay) {
     globals.replayTurn = -1;
 
@@ -443,7 +440,7 @@ const processNewAction = (actionMessage: GameAction) => {
 
   // Now that it is recorded, change the actual drawn game state
   if (
-    !globals.inReplay // Unless we are in an in-game replay
+    !globals.store!.getState().replay.active // Unless we are in an in-game replay
     && !globals.gameOver // Unless it is the miscellaneous data sent at the end of a game
   ) {
     action(actionMessage);

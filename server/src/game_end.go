@@ -223,7 +223,7 @@ func (g *Game) WriteDatabase() error {
 	} else if g.EndCondition == EndConditionIdleTimeout {
 		gameOverAction = &GameAction{
 			Type:   ActionTypeGameOver,
-			Target: 0,
+			Target: -1,
 			Value:  EndConditionIdleTimeout,
 		}
 	}

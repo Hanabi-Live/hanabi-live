@@ -9,66 +9,50 @@ import globals from './globals';
 import { animate } from './konvaHelpers';
 import statusCheckOnAllCards from './statusCheckOnAllCards';
 import * as tooltips from './tooltips';
-import * as turn from './turn';
 
 // ---------------------
 // Main replay functions
 // ---------------------
 
 export const enter = () => {
-  if (globals.hypothetical) {
-    // Don't allow replay navigation while in a hypothetical
-    return;
-  }
-  if (globals.store!.getState().replay.actions.length === 0) {
-    // No actions have been taken yet, so we cannot enter a replay
-    return;
-  }
-  if (globals.store!.getState().replay.active) {
+  // Local variables
+  const state = globals.store!.getState();
+
+  if (state.replay.active) {
     // We are already in a replay
     return;
   }
-  globals.inReplay = true;
 
-  // Start by putting us at the end of the replay (the current game state)
-  globals.replayPos = globals.replayLog.length;
-  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
-  globals.replayTurn = finalSegment;
-
-  // TEMP: eventually, move code from this file to reducers and observers
-  globals.store!.dispatch({ type: 'startReplay', segment: globals.replayTurn });
-
-  // However, if the game just ended,
-  // we want to go to the turn before the miscellaneous data sent at the end of the game
-  if (globals.gameOver) {
-    globals.replayPos = globals.finalReplayPos;
-    globals.replayTurn = globals.finalReplayTurn;
-  }
-
-  // Hide the UI elements that overlap with the replay area
-  turn.hideClueUIAndDisableDragging();
-
-  // Next, show the replay area and initialize some UI elements
-  globals.elements.replayArea!.show();
-  adjustShuttles(true); // We want it to immediately snap to the end
-  globals.layers.UI.batchDraw();
-};
-
-export const exit = () => {
-  if (!globals.inReplay) {
+  if (state.replay.actions.length === 0) {
+    // No actions have been taken yet, so we cannot enter a replay
     return;
   }
 
-  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  if (state.replay.hypothetical !== null) {
+    // Don't allow replay navigation while in a hypothetical
+    return;
+  }
+
+  globals.store!.dispatch({ type: 'startReplay', segment: globals.replayTurn });
+};
+
+export const exit = () => {
+  // Local variables
+  const state = globals.store!.getState();
+
+  if (!state.replay.active) {
+    // We are not in a replay
+    return;
+  }
+
+  // Fast-forward to the final (current) turn, if we are not already there
+  // TODO move this code to the replay view
+  // For now, this must be before the "endReplay" dispatch, because we cannot advance the replay
+  // if the replay itself is not active
+  const finalSegment = state.ongoingGame.turn.segment!;
   goto(finalSegment, true);
-  globals.inReplay = false;
-  globals.elements.replayArea!.hide();
 
-  // TEMP: eventually, move code from this file to reducers and observers
   globals.store!.dispatch({ type: 'endReplay' });
-
-  globals.layers.UI.batchDraw();
-  globals.layers.card.batchDraw();
 };
 
 export const goto = (target: number, fast: boolean, force?: boolean) => {

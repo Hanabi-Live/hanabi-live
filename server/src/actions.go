@@ -3,6 +3,8 @@
 
 package main
 
+import "strings"
+
 type ActionClue struct {
 	Type   string `json:"type"`
 	Clue   Clue   `json:"clue"`
@@ -91,15 +93,11 @@ type Clue struct {
 	Value int `json:"value"`
 }
 
-// Scrub removes some information from an action so that we do not reveal
-// to the client anything about the cards that they are drawing
+// Scrub removes some information from an action so that we do not reveal to the client anything
+// about the cards that they are drawing
 func (a *ActionDraw) Scrub(t *Table, userID int) {
+	// Local variables
 	g := t.Game
-
-	// Don't scrub in replays
-	if t.Replay {
-		return
-	}
 
 	// Find their player index
 	var p *GamePlayer
@@ -122,6 +120,17 @@ func (a *ActionDraw) Scrub(t *Table, userID int) {
 		a.Rank = -1
 		a.SuitIndex = -1
 	}
+}
+
+// Scrub removes some information from played cards so that we do not reveal to the client anything
+// about the cards that are played (in some specific variants)
+func (a *ActionPlay) Scrub(t *Table) {
+	if !strings.HasPrefix(t.Options.VariantName, "Throw It in a Hole") {
+		return
+	}
+
+	a.Rank = -1
+	a.SuitIndex = -1
 }
 
 func NewClue(d *CommandData) Clue {

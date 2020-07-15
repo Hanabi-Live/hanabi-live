@@ -215,6 +215,11 @@ func (s *Session) NotifyGameAction(action interface{}, t *Table) {
 		drawAction.Scrub(t, s.UserID())
 		action = drawAction
 	}
+	playAction, ok := action.(ActionPlay)
+	if ok && playAction.Type == "play" {
+		playAction.Scrub(t)
+		action = playAction
+	}
 
 	type GameActionMessage struct {
 		TableID int         `json:"tableID"`

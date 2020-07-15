@@ -73,7 +73,13 @@ func shutdownWait() {
 			// so automatically terminate any remaining ongoing games
 			for _, t := range tables {
 				if t.Running && !t.Replay {
-					terminate(t, "Hanabi Live", -1)
+					s := t.GetOwnerSession()
+					commandAction(s, &CommandData{
+						TableID: t.ID,
+						Type:    ActionTypeGameOver,
+						Target:  -1,
+						Value:   EndConditionTerminated,
+					})
 				}
 			}
 		}

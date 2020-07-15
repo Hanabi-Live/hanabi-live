@@ -51,37 +51,10 @@ func commandTableTerminate(s *Session, d *CommandData) {
 		Terminate
 	*/
 
-	if d.Server {
-		i = -1
-	}
-	terminate(t, s.Username(), i)
-}
-
-func terminate(t *Table, username string, endPlayerIndex int) {
-	// Local variables
-	g := t.Game
-
-	// We want to set the end condition before advancing the turn to ensure that
-	// no active player will show
-	g.EndCondition = EndConditionTerminated
-	g.EndPlayer = endPlayerIndex
-
-	// Append a game over action
-	g.Actions = append(g.Actions, ActionGameOver{
-		Type:         "gameOver",
-		EndCondition: g.EndCondition,
-		PlayerIndex:  g.EndPlayer,
+	commandAction(s, &CommandData{
+		TableID: t.ID,
+		Type:    ActionTypeGameOver,
+		Target:  i,
+		Value:   EndConditionTerminated,
 	})
-	t.NotifyGameAction()
-
-	// TODO remove this when the client uses state for the replays instead of "globals.replayLog"
-	g.Turn++
-	t.NotifyTurn()
-
-	// Play a sound to indicate that the game was terminated
-	g.Sound = "finished_fail"
-	t.NotifySound()
-
-	// End the game and write it to the database
-	g.End()
 }

@@ -189,25 +189,22 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 	commandAction(s, &CommandData{
 		TableID: t.ID,
 		Type:    ActionTypeGameOver,
+		Target:  gp.Index,
 		Value:   EndConditionTimeout,
 	})
 }
 
+// CheckEnd examines the game state and sets "EndCondition" to the appropriate value, if any
 func (g *Game) CheckEnd() bool {
 	// Local variables
 	t := g.Table
 
-	// Check to see if one of the players ran out of time
-	if g.EndCondition == EndConditionTimeout {
-		return true
-	}
+	// Some ending conditions will already be set by the time we get here
+	if g.EndCondition == EndConditionTimeout ||
+		g.EndCondition == EndConditionTerminated ||
+		g.EndCondition == EndConditionIdleTimeout ||
+		g.EndCondition == EndConditionCharacterSoftlock {
 
-	// Check to see if the game ended to idleness
-	if g.EndCondition == EndConditionIdleTimeout {
-		return true
-	}
-
-	if g.EndCondition == EndConditionCharacterSoftlock {
 		return true
 	}
 
@@ -220,6 +217,7 @@ func (g *Game) CheckEnd() bool {
 
 	// In a speedrun, check to see if a perfect score can still be achieved
 	if g.Options.Speedrun && g.MaxScore < variants[g.Options.VariantName].MaxScore {
+		logger.Info(t.GetName() + "A perfect score is impossible in a speedrun; ending the game.")
 		g.EndCondition = EndConditionSpeedrunFail
 		return true
 	}
@@ -227,15 +225,15 @@ func (g *Game) CheckEnd() bool {
 	// In an "All or Nothing" game, check to see if a maximum score can still be reached
 	if g.Options.AllOrNothing && g.MaxScore < variants[g.Options.VariantName].MaxScore {
 		logger.Info(t.GetName() + "A perfect score is impossible in an \"All or Nothing\" game; ending the game.")
-		g.EndCondition = EndConditionStrikeout
+		g.EndCondition = EndConditionAllOrNothingFail
 		return true
 	}
 
 	// In an "All or Nothing game",
-	// handle the case where a player would handle to discard without any cards in their hand
+	// handle the case where a player would have to discard without any cards in their hand
 	if g.Options.AllOrNothing && len(g.Players[g.ActivePlayer].Hand) == 0 && g.ClueTokens == 0 {
-		logger.Info(t.GetName() + "The current player has no cards and no clue tokens; ending the game.")
-		g.EndCondition = EndConditionStrikeout
+		logger.Info(t.GetName() + "The current player has no cards and no clue tokens in an \"All or Nothing\" game; ending the game.")
+		g.EndCondition = EndConditionAllOrNothingSoftlock
 		return true
 	}
 
