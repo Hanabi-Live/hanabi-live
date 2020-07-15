@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
-import { cluesRules } from '../../../rules';
+import equal from 'fast-deep-equal';
 import Clue, { rankClue, colorClue } from '../../../types/Clue';
 import ClueType from '../../../types/ClueType';
 import { StateClue } from '../../../types/GameState';
@@ -8,16 +8,20 @@ import * as arrows from '../../arrows';
 import ClueEntry from '../../ClueEntry';
 import globals from '../../globals';
 
-export function onCluesChanged(data: { clues: readonly StateClue[]; turn: number }) {
-  updateArrows(data.clues, data.turn);
+export function onCluesChanged(data: { clues: readonly StateClue[]; segment: number | null }) {
+  updateArrows(data.clues, data.segment);
   updateLog(data.clues);
 }
 
-function updateArrows(clues: readonly StateClue[], turn: number) {
+function updateArrows(clues: readonly StateClue[], segment: number | null) {
   arrows.hideAll();
 
+  if (segment === null) {
+    return;
+  }
+
   const lastClue = clues[clues.length - 1];
-  if (lastClue === undefined || lastClue.turn !== turn - 1) {
+  if (lastClue === undefined || lastClue.segment !== segment - 1) {
     // We are initializing (or we rewinded and just removed the first clue)
     return;
   }
@@ -40,18 +44,17 @@ function updateLog(clues: readonly StateClue[]) {
   const clueLog = globals.elements.clueLog!;
   const startingIndex = Math.max(0, clues.length - clueLog.maxLength);
   clues.slice(startingIndex).forEach((clue, i) => {
-    // TODO: use character and playerNames from state
-    const characterID = globals.characterAssignments[clue.giver];
+    if (i < clueLog.children.length) {
+      const clueEntry = clueLog.children[i] as unknown as ClueEntry;
+      if (equal(clue, clueEntry.clue)) {
+        // No change
+        return;
+      }
+    }
 
-    const entry = new ClueEntry({
+    const entry = new ClueEntry(clue, {
       width: clueLog.width(),
       height: 0.017 * globals.stage.height(),
-      giver: globals.playerNames[clue.giver],
-      target: globals.playerNames[clue.target],
-      clueName: cluesRules.getClueName(clue.type, clue.value, globals.variant, characterID),
-      list: clue.list,
-      negativeList: clue.negativeList,
-      turn: clue.turn,
     });
     if (i < clueLog.children.length) {
       clueLog.updateClue(i, entry);

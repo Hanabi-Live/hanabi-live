@@ -24,7 +24,7 @@ import NodeWithTooltip from './controls/NodeWithTooltip';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';
 import { suitIndexToSuit } from './convert';
-import cursorSet from './cursorSet';
+import cursorSet, { CursorType } from './cursorSet';
 import globals from './globals';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
@@ -65,18 +65,19 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return this._tweening;
   }
 
-  private _blank: boolean = false;
-
-  // TEMP: this is just for LayoutChild to know if this card was blanked
-  get blank() {
-    return this._blank;
-  }
-
   startedTweening() {
     this._tweening = true;
+
+    // HACK: since Konva doesn't propagate listening hierarchically until v7,
+    // stop the image from listening
+    this.bare.listening(false);
   }
 
   finishedTweening() {
+    // HACK: since Konva doesn't propagate listening hierarchically until v7,
+    // stop the image from listening
+    this.bare.listening(true);
+
     this._tweening = false;
     this.tweenCallbacks.forEach((callback) => { callback(); });
     this.tweenCallbacks = [];
@@ -127,6 +128,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   private arrow: Konva.Group | null = null;
   private arrowBase: Konva.Arrow | null = null;
 
+  private _layout: LayoutChild;
+  get layout() {
+    return this._layout;
+  }
+
   constructor(config: Konva.ContainerConfig) {
     super(config);
     this.listening(true);
@@ -141,12 +147,21 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       y: 0.5 * CARD_H,
     });
 
-    // Most class variables are defined below in the "refresh()" function
     // Order is defined upon first initialization
-    this._state = initialCardState(config.order, this.variant);
+    // This state is only used by stack bases
+    // TODO: move stack bases to be a separate class that shares code with HanabiCard
+    const initialState = initialCardState(config.order, this.variant);
+    this._state = {
+      ...initialState,
+      suitIndex: typeof config.suitIndex === 'number' ? config.suitIndex : initialState.suitIndex,
+      rank: typeof config.rank === 'number' ? config.rank : initialState.rank,
+    };
 
     // Initialize various elements/features of the card
-    this.bare = HanabiCardInit.image(() => this.bareName);
+    this.bare = HanabiCardInit.image(
+      () => this.bareName,
+      () => this.bareName.endsWith(`-${STACK_BASE_RANK}`),
+    );
     this.add(this.bare);
 
     this.cluedBorder = HanabiCardInit.cluedBorder();
@@ -191,51 +206,13 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.initTooltip();
     this.initEmpathy();
     this.registerMouseHandlers();
-  }
 
-  // Erase all of the data on the card to make it like it was freshly drawn
-  refresh(suitIndex: number | null, rank: number | null) {
-    // Reset visual state
-    this.empathy = false;
-    this.doMisplayAnimation = false;
+    // Add a parent layout
+    this._layout = new LayoutChild(this);
 
-    this.state = {
-      ...initialCardState(this.state.order, this.variant),
-      location: this.state.location,
-      // We might have some information about this card already
-      suitIndex,
-      rank,
-      // We have to add one to the turn drawn because
-      // the "draw" command comes before the "turn" command
-      // However, if it was part of the initial deal, then it will correctly be set as turn 0
-      turnDrawn: globals.turn === 0 ? 0 : globals.turn + 1,
-    };
-
-    // Some variants disable listening on cards
-    this.listening(true);
-
-    if (!globals.replay && !globals.spectating) {
-      // If it has a "chop move" note on it, we want to keep the chop move border turned on
-      if (this.note.chopMoved) {
-        this.chopMoveBorder!.show();
-      }
-      // If it has a "finessed" note on it, we want to keep the finesse border turned on
-      if (this.note.finessed) {
-        this.finesseBorder!.show();
-      }
-    }
-
-    // TODO: remove this, state should also set the initial image
-    if (this.bareName === '') {
+    // Initialize the bare image for stack bases
+    if (typeof config.suitIndex === 'number' || typeof config.rank === 'number') {
       this.setBareImage();
-    }
-
-    // Hide the pips if we have full knowledge of the suit / rank
-    if (suitIndex !== null) {
-      this.suitPips!.hide();
-    }
-    if (rank !== null) {
-      this.rankPips!.hide();
     }
   }
 
@@ -269,19 +246,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   setBareImage() {
-    // Optimization: This function is expensive, so don't do it in replays
-    // unless we got to the final destination
-    // However, if an action happens before the "turn" message is sent,
-    // we still need to redraw any affected cards
-    if (
-      this.bareName !== ''
-      && globals.replay
-      && globals.turn < globals.replayTurn - 1
-    ) {
-      console.warn(`Unnecessary setBareImage call. Order: ${this.state.order}`);
-      return;
-    }
-
     // Retrieve the identity of the card
     // We may know the identity through normal means
     // (e.g. it is a card that is currently in someone else's hand)
@@ -380,13 +344,16 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Set the name
     // (setting "this.bareName" will automatically update how the card appears the next time that
     // the "card" layer is drawn)
-    this._blank = (
+    const blank = (
       morphedIdentity !== undefined
       && morphedIdentity.rank === null
       && morphedIdentity.suitIndex === null
     );
 
-    if (this._blank) {
+    // Let the LayoutChild know about it
+    this.layout.blank = blank;
+
+    if (blank) {
       // If a card is morphed to a null identity, the card should appear blank no matter what
       this.bareName = DECK_BACK_IMAGE;
 
@@ -425,7 +392,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       globals.lobby.settings.realLifeMode
       || variantRules.isCowAndPig(this.variant)
       || variantRules.isDuck(this.variant)
-      || this._blank
+      || blank
     ) {
       this.suitPips!.hide();
       this.rankPips!.hide();
@@ -547,6 +514,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !cardRules.isDiscarded(this.state)
       && !this.empathy
       && !this.needsToBePlayed()
+      && this.bareName !== DECK_BACK_IMAGE // Blank cards should not fade
     ) {
       newOpacity = CARD_FADE;
     }
@@ -572,6 +540,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
       && !this.note.blank
+      && this.bareName !== DECK_BACK_IMAGE // Blank cards should not be critical
     ));
   }
 
@@ -585,56 +554,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this.note.rank = null;
       this.setBareImage();
     }
-  }
-
-  // We need to redraw this card's suit and rank in a shared replay or hypothetical
-  // based on deckOrder and hypoRevealed
-  /* eslint-disable */
-  replayRedraw() {
-    /*
-    const cardIdentity = globals.deckOrder[this.state.order];
-    if (!cardIdentity) {
-      throw new Error(`The identity for card ${this.state.order} was not found in the "replayRedraw()" function.`);
-    }
-    const trueSuitIndex = cardIdentity.suitIndex;
-    if (trueSuitIndex === null) {
-      throw new Error(`The suit identity for card ${this.state.order} was not found in the "replayRedraw() function.`);
-    }
-    const trueSuit = suitIndexToSuit(trueSuitIndex, globals.variant);
-    const trueRank = globals.deckOrder[this.state.order].rank;
-    if (trueRank === null) {
-      throw new Error(`The rank identity for card ${this.state.order} was not found in the "replayRedraw() function.`);
-    }
-
-    if (
-      // If we are in a hypothetical and "hypoRevealed" is turned off
-      // and this card was drawn from the deck since the hypothetical started
-      globals.hypothetical
-      && !globals.hypoRevealed
-      && globals.hypoFirstDrawnIndex
-      && this.state.order >= globals.hypoFirstDrawnIndex
-    ) {
-      if (
-        (this.state.suitIndex === trueSuit && this.state.rank === trueRank)
-        || (this.state.suitIndex === null && this.state.rank === null)
-      ) {
-        // We need to hide this card unless it was morphed from its real identity
-        // -1 is used for null suits and ranks
-        this.convert(-1, -1);
-      }
-    } else if (this.state.suitIndex === null || this.state.rank === null) {
-      // Otherwise, we should make sure to fill in information from deckOrder
-      // unless this card is fully known, possibly morphed
-      this.convert(trueSuitIndex, trueRank);
-
-      // Check if we can drag this card now
-      const layoutChild = this.parent as unknown as LayoutChild;
-      if (layoutChild) {
-        layoutChild.checkSetDraggable();
-      }
-    }
-    */
-    /* eslint-enable */
   }
 
   removeFromParent() {
@@ -916,6 +835,28 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
+  visualEffectCursor: CursorType = 'default';
+  setVisualEffect(cursor: CursorType) {
+    if (cursor === this.visualEffectCursor) {
+      return;
+    }
+    this.visualEffectCursor = cursor;
+
+    // Shadow special effects
+    const shadowOffset = cursor === 'dragging' ? Math.floor(0.1 * CARD_W) : Math.floor(0.04 * CARD_W);
+    this.bare.to({
+      shadowOffsetX: shadowOffset,
+      shadowOffsetY: shadowOffset,
+      shadowBlur: cursor === 'dragging' ? Math.floor(0.06 * CARD_W) : Math.floor(0.03 * CARD_W),
+      duration: 0.1,
+    });
+    this.to({
+      offsetX: cursor === 'dragging' ? 0.52 * CARD_W : 0.5 * CARD_W,
+      offsetY: cursor === 'dragging' ? 0.52 * CARD_H : 0.5 * CARD_H,
+      duration: 0.1,
+    });
+  }
+
   private registerMouseHandlers() {
     // Define the clue log mouse handlers
     this.on('mousemove tap', () => {
@@ -1113,6 +1054,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
       const hand = this.parent.parent as unknown as CardLayout;
       if (hand === undefined || hand.children.length === 0 || hand.empathy === enabled) {
+        return;
+      }
+
+      if (enabled === hand.empathy) {
+        // No change
         return;
       }
 

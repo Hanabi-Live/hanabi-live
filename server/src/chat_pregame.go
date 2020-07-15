@@ -243,6 +243,21 @@ func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
 		return
 	}
 
+	if len(d.Args) > 0 {
+		// They specific an argument, so make this take priority
+		if v, err := strconv.Atoi(d.Args[0]); err != nil {
+			chatServerSend("\""+d.Args[0]+"\" is not a number.", d.Room)
+			return
+		} else {
+			numPlayers = v
+		}
+
+		if numPlayers < 2 || numPlayers > 6 {
+			chatServerSend("You can only start a table with 2 to 6 players.", d.Room)
+			return
+		}
+	}
+
 	if len(t.Players) == numPlayers {
 		commandTableStart(s, &CommandData{
 			TableID: t.ID,

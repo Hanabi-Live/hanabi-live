@@ -8,6 +8,7 @@ import * as cardsView from './view/cardsView';
 import * as cluesView from './view/cluesView';
 import * as currentPlayerAreaView from './view/currentPlayerAreaView';
 import * as currentPlayerView from './view/currentPlayerView';
+import * as deckView from './view/deckView';
 import * as gameInfoView from './view/gameInfoView';
 import * as initView from './view/initView';
 import * as logView from './view/logView';
@@ -65,10 +66,15 @@ const visibleStateObservers: Subscriptions = [
   vs((s) => s.turn.currentPlayerIndex, gameInfoView.onCurrentPlayerIndexChanged),
   vs((s) => ({
     score: s.score,
-    maxScore: s.maxScore,
+    maxScore: s.stats.maxScore,
   }), gameInfoView.onScoreOrMaxScoreChanged),
   vs((s) => s.numAttemptedCardsPlayed, gameInfoView.onNumAttemptedCardsPlayedChanged),
   vs((s) => s.clueTokens, gameInfoView.onClueTokensChanged),
+  vs((s) => ({
+    clueTokens: s.clueTokens,
+    doubleDiscard: s.stats.doubleDiscard,
+  }), gameInfoView.onClueTokensOrDoubleDiscardChanged),
+  vs((s) => s.strikes, gameInfoView.onStrikesChanged),
 
   // Stats
   vs((s) => s.stats.efficiency, statsView.onEfficiencyChanged),
@@ -91,12 +97,15 @@ const visibleStateObservers: Subscriptions = [
   // Clues (arrows + log)
   vs((s) => ({
     clues: s.clues,
-    turn: s.turn.turnNum,
+    segment: s.turn.segment,
   }), cluesView.onCluesChanged),
 
   // Cards
   // Each card will subscribe to changes to its own data
   vs((s) => s.deck.length, cardsView.onDeckChanged),
+
+  // Deck
+  vs((s) => s.deckSize, deckView.onDeckSizeChanged),
 
   // Initialization finished
   // (this will get called when the visible state becomes valid and after all other view updates)
@@ -117,6 +126,16 @@ const ongoingGameObservers: Subscriptions = [
 const replayObservers: Subscriptions = [
   // Replay entered or exited
   sub((s) => s.replay.active, replayView.onActiveChanged),
+
+  // Replay sliders
+  sub((s) => ({
+    active: s.replay.active,
+    segment: s.ongoingGame.turn.segment,
+  }), replayView.onActiveOrOngoingGameSegmentChanged),
+
+  // Replay buttons
+  sub((s) => s.replay.actions.length > 0, replayView.onFirstReplayAction),
+  sub((s) => s.replay.segment, replayView.onReplaySegmentChanged),
 
   // Card and stack base morphing
   sub((s) => ({

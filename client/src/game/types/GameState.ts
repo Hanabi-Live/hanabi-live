@@ -9,10 +9,8 @@ export default interface GameState {
   readonly deck: readonly CardState[];
   readonly deckSize: number;
   readonly score: number;
-  readonly maxScore: number;
   readonly numAttemptedCardsPlayed: number; // For "Throw It in a Hole" variants
   readonly clueTokens: number;
-  readonly doubleDiscard: boolean;
   readonly strikes: readonly StateStrike[];
   readonly hands: ReadonlyArray<readonly number[]>;
   readonly playStacks: ReadonlyArray<readonly number[]>;
@@ -27,8 +25,8 @@ export interface LogEntry {
 }
 
 export interface StateStrike {
-  readonly order: number;
   readonly turn: number;
+  readonly order: number;
 }
 
 export interface StateClue {
@@ -36,7 +34,7 @@ export interface StateClue {
   readonly value: number;
   readonly giver: number;
   readonly target: number;
-  readonly turn: number;
+  readonly segment: number;
   readonly list: readonly number[];
   readonly negativeList: readonly number[];
 }

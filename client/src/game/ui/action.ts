@@ -5,21 +5,15 @@ import { nullIfNegative } from '../../misc';
 import * as variantRules from '../rules/variant';
 import {
   ActionDiscard,
-  ActionDraw,
   ActionIncludingHypothetical,
   ActionHypotheticalMorph,
   ActionReorder,
-  ActionStatus,
-  ActionStrike,
   ActionTurn,
 } from '../types/actions';
-import { MAX_CLUE_NUM } from '../types/constants';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
-import { animate } from './konvaHelpers';
 import LayoutChild from './LayoutChild';
 import statusCheckOnAllCards from './statusCheckOnAllCards';
-import strikeRecord from './strikeRecord';
 
 // The server has sent us a new game action
 // (either during an ongoing game or as part of a big list that was sent upon loading a new
@@ -50,73 +44,6 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
 
   // The fact that this card was discarded could make some other cards useless or critical
   statusCheckOnAllCards();
-});
-
-// A player just drew a card from the deck
-actionFunctions.set('draw', (data: ActionDraw) => {
-  // Local variables
-  const { order } = data;
-  // Suit and rank come from the server as -1 if the card is unknown
-  // (e.g. being drawn to the current player's hand)
-  // We want to convert this to just being null
-  const suitIndex = nullIfNegative(data.suitIndex);
-  const rank = nullIfNegative(data.rank);
-  // const holder = data.who;
-
-  // If we are the "Slow-Witted" character, we are not supposed to be able to see other people's
-  // cards that are in slot 1
-  /*
-  const ourCharacterID = globals.characterAssignments[globals.playerUs];
-  if (ourCharacterID !== null) {
-    const ourCharacter = getCharacter(ourCharacterID);
-    if (ourCharacter.name === 'Slow-Witted') {
-      if (suitIndex !== null || rank !== null) {
-        globals.characterRememberedCards[order] = {
-          suitIndex,
-          rank,
-        };
-        suitIndex = null;
-        rank = null;
-      }
-
-      // Since someone is drawing a card, we can potentially reveal the other cards in the hand
-      const hand = globals.elements.playerHands[holder];
-      hand.children.each((layoutChild) => {
-        const card: HanabiCard = layoutChild.children[0] as HanabiCard;
-        const rememberedCard = globals.characterRememberedCards[card.state.order];
-        if (rememberedCard && rememberedCard.suitIndex !== null && rememberedCard.rank !== null) {
-          card.reveal(rememberedCard.suitIndex, rememberedCard.rank);
-        }
-      });
-    }
-  }
-  */
-
-  /*
-  if (globals.cardIdentities.length !== 0) {
-    // If we are in a shared replay that was converted from a game in which we were one of the
-    // players, then suit and rank will be still be null for the cards that were dealt to us
-    // Since we are in a shared replay, this is a mistake, because we should have full knowledge of
-    // what the card is (from the "cardIdentities" message that is sent at the end of the game)
-    const card = globals.deck[order];
-    card.replayRedraw();
-    suitIndex = card.state.suitIndex;
-    rank = card.state.rank;
-  }
-  */
-
-  // Remove one card from the deck
-  globals.deckSize -= 1;
-  globals.indexOfLastDrawnCard = order;
-  globals.elements.deck!.setCount(globals.deckSize);
-
-  // Cards are created on first initialization for performance reasons
-  // So, since this card was just drawn, refresh all the variables on the card
-  // (this is necessary because we might be rewinding in a replay)
-  const card = globals.deck[order];
-  // Suit and rank will be null if we don't know the suit/rank
-  card.refresh(suitIndex, rank);
-  card.parent!.show();
 });
 
 actionFunctions.set('play', () => {
@@ -155,63 +82,6 @@ actionFunctions.set('reorder', (data: ActionReorder) => {
       layoutChild.moveDown();
     }
   }
-});
-
-actionFunctions.set('status', (data: ActionStatus) => {
-  // TEMP: the no discard / double discard border should be a reactive view
-  let clues = data.clues;
-  if (variantRules.isClueStarved(globals.variant)) {
-    // In "Clue Starved" variants, 1 clue is represented on the server by 2
-    // Thus, in order to get the "real" clue count, we have to divide by 2
-    clues /= 2;
-  }
-
-  if (!globals.lobby.settings.realLifeMode) {
-    if (clues === MAX_CLUE_NUM) {
-      // Show the red border around the discard pile
-      // (to reinforce that the current player cannot discard)
-      globals.elements.noDiscardBorder!.show();
-      globals.elements.noDoubleDiscardBorder!.hide();
-    } else if (data.doubleDiscard && globals.lobby.settings.hyphenatedConventions) {
-      // Show a yellow border around the discard pile
-      // (to reinforce that this is a "Double Discard" situation)
-      globals.elements.noDiscardBorder!.hide();
-      globals.elements.noDoubleDiscardBorder!.show();
-    } else {
-      globals.elements.noDiscardBorder!.hide();
-      globals.elements.noDoubleDiscardBorder!.hide();
-    }
-  }
-
-  if (!globals.animateFast) {
-    globals.layers.UI.batchDraw();
-  }
-});
-
-// Data is as follows:
-// {
-//   type: 'strike',
-//   num: 1,
-//   order: 4, // The order of the card that was misplayed
-//   turn: 2,
-// }
-actionFunctions.set('strike', (data: ActionStrike) => {
-  if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
-    return;
-  }
-
-  // Local variables
-  const i = data.num - 1;
-  const strikeX = globals.elements.strikeXs[i];
-
-  // Animate the strike square fading in
-  animate(strikeX, {
-    duration: 1,
-    opacity: 1,
-  }, true);
-
-  // Record the turn that the strike happened and the card that was misplayed
-  strikeRecord(data);
 });
 
 actionFunctions.set('morph', (data: ActionHypotheticalMorph) => {

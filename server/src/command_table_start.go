@@ -163,7 +163,7 @@ func commandTableStart(s *Session, d *CommandData) {
 	}
 	logger.Info(t.GetName()+"Using seed:", g.Seed)
 
-	g.InitSeed() // Seed the random number generator
+	setSeed(g.Seed) // Seed the random number generator
 	if shuffleDeck {
 		g.ShuffleDeck()
 	}

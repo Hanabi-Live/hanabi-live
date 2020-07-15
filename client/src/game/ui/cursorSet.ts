@@ -1,6 +1,6 @@
 import globals from './globals';
 
-type CursorType = 'default' | 'hand' | 'dragging' | 'look';
+export type CursorType = 'default' | 'hand' | 'dragging' | 'look';
 
 // Module variables
 let currentCursorType = 'default';

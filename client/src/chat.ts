@@ -170,7 +170,7 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
   // This is not a command, so send a the chat message to the server
   globals.conn!.send('chat', {
     msg,
-    room,
+    room: roomID,
   });
 };
 

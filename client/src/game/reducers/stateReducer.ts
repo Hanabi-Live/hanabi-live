@@ -67,7 +67,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
     case 'startReplay':
     case 'endReplay':
-    case 'goToTurn':
+    case 'goToSegment':
     case 'hypoStart':
     case 'hypoBack':
     case 'hypoEnd':
@@ -89,19 +89,19 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
     default: {
       // A new game action happened
-      const previousGameSegment = state.ongoingGame.turn.gameSegment;
+      const previousSegment = state.ongoingGame.turn.segment;
       state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action, state.metadata)!;
 
       // We copy the card identities to the global state for convenience
       updateCardIdentities(state);
 
-      // When the game state reducer sets "gameSegment" to a new number,
+      // When the game state reducer sets "segment" to a new number,
       // it is a signal to record the current state of the game (for the purposes of replays)
       if (
-        state.ongoingGame.turn.gameSegment !== previousGameSegment
-        && state.ongoingGame.turn.gameSegment !== null
+        state.ongoingGame.turn.segment !== previousSegment
+        && state.ongoingGame.turn.segment !== null
       ) {
-        state.replay.states[state.ongoingGame.turn.gameSegment] = state.ongoingGame;
+        state.replay.states[state.ongoingGame.turn.segment] = state.ongoingGame;
       }
 
       break;
@@ -114,7 +114,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     if (state.replay.active) {
       if (state.replay.hypothetical === null) {
         // Go to current replay turn
-        state.visibleState = state.replay.states[state.replay.turn];
+        state.visibleState = state.replay.states[state.replay.segment];
       } else {
         // Show the current hypothetical
         state.visibleState = state.replay.hypothetical.ongoing;
@@ -135,13 +135,13 @@ function reduceGameActions(actions: GameAction[], initialState: GameState, metad
   const game = actions.reduce((s: GameState, a: GameAction) => {
     const nextState = gameStateReducer(s, a, metadata);
 
-    // When the game state reducer sets "gameSegment" to a new number,
+    // When the game state reducer sets "segment" to a new number,
     // it is a signal to record the current state of the game (for the purposes of replays)
     if (
-      nextState.turn.gameSegment !== s.turn.gameSegment
-        && nextState.turn.gameSegment !== null
+      nextState.turn.segment !== s.turn.segment
+        && nextState.turn.segment !== null
     ) {
-      states[nextState.turn.gameSegment] = nextState;
+      states[nextState.turn.segment] = nextState;
     }
 
     return nextState;

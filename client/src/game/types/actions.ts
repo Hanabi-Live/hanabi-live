@@ -151,7 +151,7 @@ export interface ActionTurn {
 
 export interface ActionStartReplay {
   type: 'startReplay';
-  readonly turn: number;
+  readonly segment: number;
 }
 
 export interface ActionEndReplay {
@@ -159,8 +159,8 @@ export interface ActionEndReplay {
 }
 
 export interface ActionGoToTurn {
-  type: 'goToTurn';
-  readonly turn: number;
+  type: 'goToSegment';
+  readonly segment: number;
 }
 
 // --------------------

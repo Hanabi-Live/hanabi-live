@@ -4,7 +4,13 @@ import Konva from 'konva';
 import * as KonvaContext from 'konva/types/Context';
 import { RectConfig } from 'konva/types/shapes/Rect';
 import * as KonvaUtil from 'konva/types/Util';
-import { CARD_H, CARD_W } from '../../constants';
+import {
+  CARD_H,
+  CARD_W,
+  CLUED_COLOR,
+  CHOP_MOVE_COLOR,
+  FINESSE_COLOR,
+} from '../../constants';
 import * as variantRules from '../rules/variant';
 import { START_CARD_RANK } from '../types/constants';
 import Variant from '../types/Variant';
@@ -13,23 +19,34 @@ import RankPip from './controls/RankPip';
 import drawPip from './drawPip';
 import globals from './globals';
 
-export function image(getBareName: () => string) {
+export function image(getBareName: () => string, isStackBase: () => boolean) {
   // Create the "bare" card image, which is the main card graphic
   // If the card is not revealed, it will just be a gray rectangle
   // The pips and other elements of a card are drawn on top of the bare image
-  const bare = new Konva.Image({
+  const imageConfig: Konva.ImageConfig = {
     width: CARD_W,
     height: CARD_H,
     image: null as unknown as ImageBitmapSource,
-  });
+    shadowEnabled: false,
+    shadowColor: 'black',
+    shadowBlur: Math.floor(0.03 * CARD_W),
+    shadowOffset: {
+      x: Math.floor(0.04 * CARD_W),
+      y: Math.floor(0.04 * CARD_W),
+    },
+    shadowOpacity: 0.4,
+  };
+  const bare = new Konva.Image(imageConfig);
   (bare as Konva.Shape).sceneFunc((ctx: KonvaContext.Context) => {
     scaleCardImage(
       ctx._context,
       getBareName(),
-      bare!.width(),
-      bare!.height(),
-      bare!.getAbsoluteTransform(),
+      bare.width(),
+      bare.height(),
+      bare.getAbsoluteTransform(),
     );
+
+    bare.shadowEnabled(!isStackBase());
   });
   return bare;
 }
@@ -64,9 +81,9 @@ function makeBorder(color: string) {
   return border;
 }
 
-export const cluedBorder = () => makeBorder('orange');
-export const chopMoveBorder = () => makeBorder('#fffce6'); // White with a yellow tint
-export const finesseBorder = () => makeBorder('aqua');
+export const cluedBorder = () => makeBorder(CLUED_COLOR);
+export const chopMoveBorder = () => makeBorder(CHOP_MOVE_COLOR);
+export const finesseBorder = () => makeBorder(FINESSE_COLOR);
 
 export function directionArrow(variant: Variant) {
   if (!variantRules.hasReversedSuits(variant)) {
@@ -80,6 +97,7 @@ export function directionArrow(variant: Variant) {
       x: 0,
       y: 0.14 * CARD_H,
     },
+    listening: false,
   });
 
   const arrowHeight = 0.25;
@@ -97,6 +115,7 @@ export function directionArrow(variant: Variant) {
     fill: 'black',
     stroke: 'black',
     strokeWidth: pointerLength * 2,
+    listening: false,
   });
   arrow.add(border);
 
@@ -110,6 +129,7 @@ export function directionArrow(variant: Variant) {
     fill: 'black',
     stroke: 'black',
     strokeWidth: pointerLength * 0.75,
+    listening: false,
   });
   arrow.add(edge);
 
@@ -125,6 +145,7 @@ export function directionArrow(variant: Variant) {
     fill: 'white',
     stroke: 'white', // This should match the color of the suit; it will be manually set later on
     strokeWidth: pointerLength * 1.25,
+    listening: false,
   });
   arrow.add(arrowBase);
 
@@ -235,7 +256,7 @@ export function pips(variant: Variant) {
   // Initialize the rank pips, which are black squares along the bottom of the card
   const rankPips = new Konva.Group({
     x: 0,
-    y: Math.floor(CARD_H * 0.85),
+    y: Math.floor(CARD_H * 0.81),
     width: CARD_W,
     height: Math.floor(CARD_H * 0.15),
     visible: false,
@@ -255,11 +276,16 @@ export function pips(variant: Variant) {
     const rankPip = new RankPip({
       x,
       y,
+      fontFamily: 'Arial',
+      fontStyle: 'bold',
+      fontSize: 63,
+      align: 'center',
+      text: rank.toString(),
       width: Math.floor(CARD_H * 0.1),
       height: Math.floor(CARD_H * 0.1),
       fill: 'black',
       stroke: 'black',
-      strokeWidth: 4,
+      strokeWidth: 2,
       cornerRadius: 0.02 * CARD_H,
       opacity,
       listening: false,
@@ -275,7 +301,7 @@ export function pips(variant: Variant) {
     }
     const rankPipX = new Konva.Shape({
       x,
-      y,
+      y: Math.floor(CARD_H * 0.02),
       fill: '#e6e6e6',
       stroke: 'black',
       strokeWidth: 2,
@@ -388,6 +414,7 @@ export function wrench() {
     width: 0.8 * CARD_W,
     image: globals.imageLoader!.get('wrench')!,
     visible: false,
+    listening: false,
   });
 }
 

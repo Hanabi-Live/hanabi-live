@@ -10,7 +10,8 @@ export default function statusCheckOnAllCards() {
     return;
   }
 
-  for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
+  const indexOfLastDrawnCard = globals.store!.getState().visibleState!.deck.length - 1;
+  for (let i = 0; i <= indexOfLastDrawnCard; i++) {
     const card = globals.deck[i];
     card.setFade();
     card.setCritical();

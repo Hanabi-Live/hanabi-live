@@ -25,7 +25,7 @@ const turnReducer = produce((
       turn.cardsPlayedOrDiscardedThisTurn += 1;
 
       if (currentState.deckSize === 0) {
-        turn.gameSegment! += 1;
+        turn.segment! += 1;
         nextTurn(turn, numPlayers, currentState.deckSize, characterID);
       }
 
@@ -33,10 +33,12 @@ const turnReducer = produce((
     }
 
     case 'clue': {
-      if (turn.gameSegment === null) {
+      turn.cluesGivenThisTurn += 1;
+
+      if (turn.segment === null) {
         throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
-      turn.gameSegment += 1;
+      turn.segment += 1;
 
       if (turnRules.shouldEndTurnAfterClue(turn.cluesGivenThisTurn, characterID)) {
         nextTurn(turn, numPlayers, currentState.deckSize, characterID);
@@ -45,12 +47,12 @@ const turnReducer = produce((
     }
 
     case 'draw': {
-      if (turn.gameSegment === null) { // If the initial deal is still going on
+      if (turn.segment === null) { // If the initial deal is still going on
         if (deckRules.isInitialDealFinished(currentState.deckSize, metadata)) {
-          turn.gameSegment = 0;
+          turn.segment = 0;
         }
       } else {
-        turn.gameSegment += 1;
+        turn.segment += 1;
 
         if (turnRules.shouldEndTurnAfterDraw(
           turn.cardsPlayedOrDiscardedThisTurn,
@@ -68,18 +70,18 @@ const turnReducer = produce((
       // At the end of the game, the server will send us how much time each player finished with
       // as well as the total game duration; we want all of this text on its own replay segment to
       // avoid cluttering the final turn of the game
-      if (turn.gameSegment === null) {
+      if (turn.segment === null) {
         throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
-      turn.gameSegment += 1;
+      turn.segment += 1;
       break;
     }
 
     case 'gameOver': {
-      if (turn.gameSegment === null) {
+      if (turn.segment === null) {
         throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
-      turn.gameSegment += 1;
+      turn.segment += 1;
       turn.currentPlayerIndex = null;
       break;
     }
@@ -98,11 +100,10 @@ const turnReducer = produce((
       // TEMP: the client should set the "currentPlayerIndex" index to -1 when the game is over
       if (action.currentPlayerIndex === -1 && turn.currentPlayerIndex !== null) {
         turn.currentPlayerIndex = null;
-        console.log('The "turnReducer()" function had to manually set the "currentPlayerIndex" to null.');
-        // This condition will be triggered in Jest tests because the "loadGameJSON.ts" file does
-        // not know how to properly create a "gameOver" action
+        console.warn('The "turnReducer()" function had to manually set the "currentPlayerIndex" to null.');
       }
 
+      // TEMP: At this point, check that the local state matches the server
       if (
         turn.currentPlayerIndex !== action.currentPlayerIndex
         && turn.currentPlayerIndex !== null

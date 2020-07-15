@@ -10,7 +10,6 @@ import { getVariant } from '../data/gameData';
 import {
   clueTokensRules,
   deckRules,
-  statsRules,
   textRules,
   variantRules,
 } from '../rules';
@@ -34,12 +33,17 @@ const gameStateReducer = produce((
     // { type: 'clue', clue: { type: 0, value: 1 }, giver: 1, list: [11], target: 2, turn: 0 }
     case 'clue': {
       state.clueTokens -= 1;
+
+      if (state.turn.segment === null) {
+        throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
+      }
+
       state.clues.push({
         type: action.clue.type,
         value: action.clue.value,
         giver: action.giver,
         target: action.target,
-        turn: action.turn,
+        segment: state.turn.segment,
         list: action.list,
         negativeList: state.hands[action.target].filter((i) => !action.list.includes(i)),
       });
@@ -141,7 +145,9 @@ const gameStateReducer = produce((
       // Remove it from the hand
       const hand = state.hands[action.playerIndex];
       const handIndex = hand.indexOf(action.order);
+      let slot = null;
       if (handIndex !== -1) {
+        slot = hand.length - handIndex;
         hand.splice(handIndex, 1);
       }
 
@@ -164,7 +170,12 @@ const gameStateReducer = produce((
         state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
       }
 
-      state.maxScore = statsRules.getMaxScore(state.deck, state.playStackDirections, variant);
+      const touched = state.deck[action.order].numPositiveClues > 0;
+      const text = textRules.play(action, slot, touched, metadata);
+      state.log.push({
+        turn: state.turn.turnNum + 1,
+        text,
+      });
 
       break;
     }
@@ -217,15 +228,15 @@ const gameStateReducer = produce((
       }
 
       // TEMP: At this point, check that the local state matches the server
-      if (state.maxScore !== action.maxScore) {
+      if (state.stats.maxScore !== action.maxScore) {
         console.warn(`The max scores from the client and the server do not match on turn ${state.turn.turnNum}.`);
-        console.warn(`Client = ${state.maxScore}, Server = ${action.maxScore}`);
+        console.warn(`Client = ${state.stats.maxScore}, Server = ${action.maxScore}`);
       }
 
       // TEMP: At this point, check that the local state matches the server
-      if (state.doubleDiscard !== action.doubleDiscard) {
+      if (state.stats.doubleDiscard !== action.doubleDiscard) {
         console.warn(`The double discard from the client and the server do not match on turn ${state.turn.turnNum}.`);
-        console.warn(`Client = ${state.doubleDiscard}, Server = ${action.doubleDiscard}`);
+        console.warn(`Client = ${state.stats.doubleDiscard}, Server = ${action.doubleDiscard}`);
       }
 
       break;
@@ -252,20 +263,6 @@ const gameStateReducer = produce((
       ensureAllCases(action);
       break;
     }
-  }
-
-  // Handle double discard calculation
-  if (action.type === 'discard') {
-    state.doubleDiscard = statsRules.doubleDiscard(
-      variant,
-      action.order,
-      state.deck,
-      state.playStacks,
-      state.playStackDirections,
-    );
-    state.maxScore = statsRules.getMaxScore(state.deck, state.playStackDirections, variant);
-  } else if (action.type === 'play' || action.type === 'clue') {
-    state.doubleDiscard = false;
   }
 
   // Use a sub-reducer to calculate changes on cards

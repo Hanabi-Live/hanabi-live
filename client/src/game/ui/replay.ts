@@ -20,21 +20,23 @@ export const enter = () => {
     // Don't allow replay navigation while in a hypothetical
     return;
   }
-  if (globals.replayMax === 0) {
+  if (globals.store!.getState().replay.actions.length === 0) {
     // No actions have been taken yet, so we cannot enter a replay
     return;
   }
-  if (globals.inReplay) {
+  if (globals.store!.getState().replay.active) {
+    // We are already in a replay
     return;
   }
   globals.inReplay = true;
 
   // Start by putting us at the end of the replay (the current game state)
   globals.replayPos = globals.replayLog.length;
-  globals.replayTurn = globals.replayMax;
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  globals.replayTurn = finalSegment;
 
   // TEMP: eventually, move code from this file to reducers and observers
-  globals.store!.dispatch({ type: 'startReplay', turn: globals.replayTurn });
+  globals.store!.dispatch({ type: 'startReplay', segment: globals.replayTurn });
 
   // However, if the game just ended,
   // we want to go to the turn before the miscellaneous data sent at the end of the game
@@ -49,7 +51,6 @@ export const enter = () => {
   // Next, show the replay area and initialize some UI elements
   globals.elements.replayArea!.show();
   adjustShuttles(true); // We want it to immediately snap to the end
-  setVisibleButtons();
   globals.layers.UI.batchDraw();
 };
 
@@ -58,16 +59,13 @@ export const exit = () => {
     return;
   }
 
-  goto(globals.replayMax, true);
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  goto(finalSegment, true);
   globals.inReplay = false;
   globals.elements.replayArea!.hide();
 
   // TEMP: eventually, move code from this file to reducers and observers
   globals.store!.dispatch({ type: 'endReplay' });
-
-  for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
-    globals.deck[i].setBareImage();
-  }
 
   globals.layers.UI.batchDraw();
   globals.layers.card.batchDraw();
@@ -81,12 +79,14 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
     return;
   }
 
-  // Validate function arguments: target must be between 0 and replayMax
+  // Validate function arguments
+  // The target must be between 0 and the final replay segment
   const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max));
-  const targetTurn = clamp(target, 0, globals.replayMax);
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  const targetTurn = clamp(target, 0, finalSegment);
   if (targetTurn === globals.replayTurn) {
     // TEMP: eventually, move code from this file to reducers and observers
-    globals.store!.dispatch({ type: 'goToTurn', turn: globals.replayTurn });
+    globals.store!.dispatch({ type: 'goToSegment', segment: globals.replayTurn });
 
     return;
   }
@@ -103,7 +103,6 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
 
   globals.replayTurn = targetTurn;
 
-  setVisibleButtons();
   adjustShuttles(false);
   if (fast) {
     globals.animateFast = true;
@@ -134,7 +133,7 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
   }
 
   // TEMP: eventually, move code from this file to reducers and observers
-  globals.store!.dispatch({ type: 'goToTurn', turn: globals.replayTurn });
+  globals.store!.dispatch({ type: 'goToSegment', segment: globals.replayTurn });
 
   // Automatically close any tooltips and disable all Empathy when we jump to a particular turn
   // Without this, we would observe glitchy behavior
@@ -150,16 +149,6 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
   }
 };
 
-const setVisibleButtons = () => {
-  // If we are on the first turn, disable the rewind replay buttons
-  globals.elements.replayBackFullButton!.setEnabled(globals.replayTurn !== 0);
-  globals.elements.replayBackButton!.setEnabled(globals.replayTurn !== 0);
-
-  // If we are on the last turn, disable the forward replay buttons
-  globals.elements.replayForwardButton!.setEnabled(globals.replayTurn !== globals.replayMax);
-  globals.elements.replayForwardFullButton!.setEnabled(globals.replayTurn !== globals.replayMax);
-};
-
 const reset = () => {
   // Reset some game state variables
   globals.turn = 0;
@@ -167,17 +156,6 @@ const reset = () => {
 
   // Reset various UI elements
   globals.postAnimationLayout = null;
-  globals.elements.deck!.setCount(globals.deckSize);
-
-  // Reset the strikes
-  for (const strikeX of globals.elements.strikeXs) {
-    if (strikeX.tween !== null) {
-      strikeX.tween.destroy();
-      strikeX.tween = null;
-    }
-    strikeX.opacity(0);
-    strikeX.setFaded();
-  }
 };
 
 // -----------------------------
@@ -201,7 +179,8 @@ export const forward = () => {
 
 export const forwardFull = () => {
   checkDisableSharedTurns();
-  goto(globals.replayMax, true);
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  goto(finalSegment, true);
 };
 
 // ----------------------
@@ -237,7 +216,8 @@ export const exitButton = () => {
 export function barClick(this: Konva.Rect) {
   const rectX = globals.stage.getPointerPosition().x - this.getAbsolutePosition().x;
   const w = this.width();
-  const step = w / globals.replayMax;
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  const step = w / finalSegment;
   const newTurn = Math.floor((rectX + (step / 2)) / step);
   if (newTurn !== globals.replayTurn) {
     checkDisableSharedTurns();
@@ -256,7 +236,8 @@ export function barDrag(this: Konva.Rect, pos: Konva.Vector2d) {
   if (shuttleX > w) {
     shuttleX = w;
   }
-  const step = w / globals.replayMax;
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  const step = w / finalSegment;
   const newTurn = Math.floor((shuttleX + (step / 2)) / step);
   if (newTurn !== globals.replayTurn) {
     checkDisableSharedTurns();
@@ -275,10 +256,11 @@ const positionReplayShuttle = (
   smaller: boolean,
   fast: boolean,
 ) => {
-  // During initialization, the turn will be -1 and the maximum number of replay turns will be 0
+  // During initialization, the target segment will be -1 and the final segment will be null
   // Account for this and provide sane defaults
-  const targetTurn = (target === -1) ? 0 : target;
-  const max = (globals.replayMax === 0) ? 1 : globals.replayMax;
+  const targetTurn = target === -1 ? 0 : target;
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  const max = finalSegment === null ? 1 : finalSegment;
 
   const winH = globals.stage.height();
   const sliderW = globals.elements.replayBar!.width() - shuttle.width();

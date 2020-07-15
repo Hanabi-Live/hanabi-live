@@ -9,7 +9,7 @@ export default function initialState(metadata: GameMetadata): State {
     ongoingGame: game,
     replay: {
       active: false,
-      turn: 0,
+      segment: 0,
       states: [],
       actions: [],
       hypothetical: null,

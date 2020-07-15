@@ -26,7 +26,6 @@ import * as notes from './notes';
 import pause from './pause';
 import StateObserver from './reactive/StateObserver';
 import * as replay from './replay';
-import strikeRecord from './strikeRecord';
 import * as timer from './timer';
 import * as tooltips from './tooltips';
 import * as turn from './turn';
@@ -203,14 +202,6 @@ commands.set('hypoRevealed', (data: HypoRevealedData) => {
   globals.elements.toggleRevealedButton!.setText({ line1: text });
   globals.layers.UI.batchDraw();
 
-  // Redraw the cards drawn after the hypothetical started
-  if (globals.hypoFirstDrawnIndex) {
-    const deckSize = globals.store?.getState().ongoingGame.deckSize!;
-    for (let i = globals.hypoFirstDrawnIndex; i < deckSize; i++) {
-      globals.deck[i].replayRedraw();
-    }
-  }
-
   // Check if the ability to give a clue changed
   checkLegal();
 
@@ -321,7 +312,7 @@ commands.set('init', (data: InitData) => {
     globals.replayTurn = -1;
 
     // HACK: also let the state know this is a replay
-    globals.store!.dispatch({ type: 'startReplay', turn: 0 });
+    globals.store!.dispatch({ type: 'startReplay', segment: 0 });
   }
 
   // Now that we know the number of players and the variant, we can start to load & draw the UI
@@ -400,7 +391,8 @@ commands.set('noteListPlayer', (data: NoteListPlayerData) => {
   notes.setAllCardIndicators();
 
   // Check for special notes
-  for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
+  const indexOfLastDrawnCard = globals.store!.getState().visibleState!.deck.length - 1;
+  for (let i = 0; i <= indexOfLastDrawnCard; i++) {
     const card = globals.deck[i];
     card.checkSpecialNote();
   }
@@ -429,21 +421,8 @@ const processNewAction = (actionMessage: GameAction) => {
 
   if (actionMessage.type === 'turn') {
     // Keep track of whether it is our turn or not
+    // TODO: Legacy code, remove this
     globals.ourTurn = actionMessage.currentPlayerIndex === globals.playerUs && !globals.spectating;
-
-    // We need to update the replay slider, based on the new amount of turns
-    globals.replayMax = actionMessage.num;
-    if (globals.inReplay) {
-      replay.adjustShuttles(false);
-      globals.elements.replayForwardButton!.setEnabled(true);
-      globals.elements.replayForwardFullButton!.setEnabled(true);
-      globals.layers.UI.batchDraw();
-    }
-
-    // On the second turn and beyond, ensure that the "In-Game Replay" button is enabled
-    if (!globals.replay && globals.replayMax > 0) {
-      globals.elements.replayButton!.setEnabled(true);
-    }
   } else if (actionMessage.type === 'clue' && variantRules.isAlternatingClues(globals.variant)) {
     if (actionMessage.clue.type === ClueType.Color) {
       for (const button of globals.elements.colorClueButtons) {
@@ -493,16 +472,6 @@ commands.set('gameActionList', (data: GameActionListData) => {
   // Play through all of the turns
   for (const actionMessage of data.list) {
     processNewAction(actionMessage);
-
-    // Some specific messages contain global state information that we need to record
-    // (since we might be in a replay that is starting on the first turn,
-    // the respective action functions will not be reached until
-    // we actually progress to that turn of the replay)
-    if (actionMessage.type === 'strike') {
-      // Record the turns that the strikes happen
-      // (or else clicking on the strike squares won't work on a freshly initialized replay)
-      strikeRecord(actionMessage);
-    }
   }
 
   // Initialize solo replays to the first turn (otherwise, nothing will be drawn)

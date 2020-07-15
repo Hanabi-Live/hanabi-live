@@ -295,7 +295,6 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 	g.ClueTokens++
 	c := p.RemoveCard(d.Target)
 	g.DoubleDiscard = p.DiscardCard(c)
-	characterShuffle(g, p)
 	p.DrawCard()
 
 	// Mark that the blind-play streak has ended
