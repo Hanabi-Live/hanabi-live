@@ -270,6 +270,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   setBareImage() {
+    const oldBareName = this.bareName;
+
     // Retrieve the identity of the card
     // We may know the identity through normal means
     // (e.g. it is a card that is currently in someone else's hand)
@@ -454,6 +456,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.setCritical();
 
     globals.layers.card.batchDraw();
+
+    if (this.bareName === oldBareName) {
+      console.warn(`Unnecessary setBareImage call. Order: ${this.state.order}`);
+    }
   }
 
   // Show or hide the direction arrow (for specific variants)
