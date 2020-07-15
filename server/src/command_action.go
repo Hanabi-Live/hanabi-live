@@ -82,7 +82,7 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Validate that the game is not paused
-	if g.Paused {
+	if g.Paused && d.Type != ActionTypeGameOver {
 		s.Warning("You cannot perform a game action when the game is paused.")
 		g.InvalidActionOccurred = true
 		return
@@ -411,8 +411,10 @@ func commandActionGameOver(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 	// A "gameOver" action is a special action type sent by the server to itself when it needs to
 	// end an ongoing game
 	// The value will correspond to the end condition (see "endCondition" in "constants.go")
+	// The target will correspond to the index of the player who ended the game
 	// Validate the value
 	if d.Value != EndConditionTimeout &&
+		d.Value != EndConditionTerminated &&
 		d.Value != EndConditionIdleTimeout {
 
 		s.Warning("That is not a valid value for the game over action.")
@@ -420,9 +422,8 @@ func commandActionGameOver(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		return false
 	}
 
-	g.Strikes = 3
 	g.EndCondition = d.Value
-	g.EndPlayer = g.ActivePlayer
+	g.EndPlayer = d.Target
 
 	return true
 }

@@ -49,5 +49,10 @@ func httpLocalhostTerminate(c *gin.Context) {
 	}
 
 	// Terminate it
-	terminate(matchingTable, "Hanabi Live", -1)
+	commandAction(s, &CommandData{
+		TableID: matchingTable.ID,
+		Type:    ActionTypeGameOver,
+		Target:  -1,
+		Value:   EndConditionTerminate,
+	})
 }
