@@ -38,7 +38,6 @@ import FullActionLog from './FullActionLog';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import * as hypothetical from './hypothetical';
-import LayoutChild from './LayoutChild';
 import MultiFitText from './MultiFitText';
 import PlayStack from './PlayStack';
 import RankButton from './RankButton';
@@ -336,10 +335,7 @@ const drawPlayStacks = () => {
     globals.stackBases.push(stackBase);
     stackBase.refresh(i, STACK_BASE_RANK);
 
-    // Create the LayoutChild that will be the parent of the stack base
-    const child = new LayoutChild();
-    child.addCard(stackBase);
-    playStack.addChild(child);
+    playStack.addChild(stackBase.layout);
 
     // Draw the suit name next to each suit
     // (a text description of the suit)

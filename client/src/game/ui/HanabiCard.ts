@@ -66,13 +66,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return this._tweening;
   }
 
-  private _blank: boolean = false;
-
-  // TEMP: this is just for LayoutChild to know if this card was blanked
-  get blank() {
-    return this._blank;
-  }
-
   startedTweening() {
     this._tweening = true;
   }
@@ -127,6 +120,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   private arrow: Konva.Group | null = null;
   private arrowBase: Konva.Arrow | null = null;
+
+  private _layout: LayoutChild;
+  get layout() {
+    return this._layout;
+  }
 
   constructor(config: Konva.ContainerConfig) {
     super(config);
@@ -195,6 +193,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.initTooltip();
     this.initEmpathy();
     this.registerMouseHandlers();
+
+    // Add a parent layout
+    this._layout = new LayoutChild(this);
   }
 
   // Erase all of the data on the card to make it like it was freshly drawn
@@ -373,13 +374,16 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Set the name
     // (setting "this.bareName" will automatically update how the card appears the next time that
     // the "card" layer is drawn)
-    this._blank = (
+    const blank = (
       morphedIdentity !== undefined
       && morphedIdentity.rank === null
       && morphedIdentity.suitIndex === null
     );
 
-    if (this._blank) {
+    // Let the LayoutChild know about it
+    this.layout.blank = blank;
+
+    if (blank) {
       // If a card is morphed to a null identity, the card should appear blank no matter what
       this.bareName = DECK_BACK_IMAGE;
 
@@ -418,7 +422,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       globals.lobby.settings.realLifeMode
       || variantRules.isCowAndPig(this.variant)
       || variantRules.isDuck(this.variant)
-      || this._blank
+      || blank
     ) {
       this.suitPips!.hide();
       this.rankPips!.hide();

@@ -16,8 +16,20 @@ import * as turn from './turn';
 
 export default class LayoutChild extends Konva.Group {
   tween: Konva.Tween | null = null;
+  blank: boolean = false;
 
-  addCard(child: HanabiCard) {
+  private _card: HanabiCard;
+  get card() {
+    return this._card;
+  }
+
+  constructor(child: HanabiCard, config?: Konva.ContainerConfig | undefined) {
+    super(config);
+    this._card = child;
+    this.addCard(child);
+  }
+
+  private addCard(child: HanabiCard) {
     this.add(child as any);
     this.width(child.width());
     this.height(child.height());
@@ -76,8 +88,7 @@ export default class LayoutChild extends Konva.Group {
 
   shouldBeDraggable(currentPlayerIndex: number | null) {
     // Cards should only be draggable in specific circumstances
-    const card = this.children[0] as unknown as HanabiCard;
-    if (card === undefined) {
+    if (this.card === null || this.card === undefined) {
       // Rarely, if the game is restarted when a tween is happening,
       // we can get here without the card being defined
       return false;
@@ -87,8 +98,8 @@ export default class LayoutChild extends Konva.Group {
     if (globals.hypothetical) {
       return (
         globals.amSharedReplayLeader
-        && currentPlayerIndex === card.state.location
-        && !card.blank
+        && currentPlayerIndex === this.card.state.location
+        && !this.blank
       );
     }
 
@@ -101,13 +112,13 @@ export default class LayoutChild extends Konva.Group {
       && state.premove === null
       && !globals.options.speedrun // Cards should never be draggable while speedrunning
       && !globals.lobby.settings.speedrunMode // Cards should never be draggable while speedrunning
-      && card.state.location === globals.playerUs // Only our cards should be draggable
+      && this.card.state.location === globals.playerUs // Only our cards should be draggable
       && !globals.replay // Cards should not be draggable in solo or shared replays
       // Cards should not be draggable if we are spectating an ongoing game
       && !state.metadata.spectating
       // Cards should not be draggable if they are currently playing an animation
       // (this function will be called again upon the completion of the animation)
-      && !card.tweening
+      && !this.card.tweening
     );
   }
 
