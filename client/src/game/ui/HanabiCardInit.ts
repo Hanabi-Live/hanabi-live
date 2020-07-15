@@ -5,7 +5,11 @@ import * as KonvaContext from 'konva/types/Context';
 import { RectConfig } from 'konva/types/shapes/Rect';
 import * as KonvaUtil from 'konva/types/Util';
 import {
-  CARD_H, CARD_W, CLUED_COLOR, CHOP_MOVE_COLOR, FINESSE_COLOR,
+  CARD_H,
+  CARD_W,
+  CLUED_COLOR,
+  CHOP_MOVE_COLOR,
+  FINESSE_COLOR,
 } from '../../constants';
 import * as variantRules from '../rules/variant';
 import { START_CARD_RANK } from '../types/constants';
