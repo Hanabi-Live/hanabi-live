@@ -28,13 +28,15 @@ export function onOngoingGameSegmentChanged(segment: number | null) {
   }
 
   // We need to update the replay slider, based on the new amount of segments
-  globals.replayMax = segment;
-  if (globals.inReplay) {
-    replay.adjustShuttles(false);
-    globals.elements.replayForwardButton!.setEnabled(true);
-    globals.elements.replayForwardFullButton!.setEnabled(true);
-    globals.layers.UI.batchDraw();
+  if (!globals.store!.getState().replay.active) {
+    return;
   }
+
+  replay.adjustShuttles(false);
+  globals.elements.replayForwardButton!.setEnabled(true);
+  globals.elements.replayForwardFullButton!.setEnabled(true);
+
+  globals.layers.UI.batchDraw();
 }
 
 export function onReplaySegmentChanged(segment: number | null) {
@@ -50,6 +52,8 @@ export function onReplaySegmentChanged(segment: number | null) {
   const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
   globals.elements.replayForwardButton!.setEnabled(segment !== finalSegment);
   globals.elements.replayForwardFullButton!.setEnabled(segment !== finalSegment);
+
+  globals.layers.UI.batchDraw();
 }
 
 export function onMultipleGameSegments(multipleGameSegments: boolean | undefined) {
@@ -60,4 +64,5 @@ export function onMultipleGameSegments(multipleGameSegments: boolean | undefined
   // The in-game replay button starts off disabled
   // Enable it once there is at least one segment to rewind to
   globals.elements.replayButton!.setEnabled(multipleGameSegments);
+  globals.layers.UI.batchDraw();
 }

@@ -179,7 +179,8 @@ export const forward = () => {
 
 export const forwardFull = () => {
   checkDisableSharedTurns();
-  goto(globals.replayMax, true);
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  goto(finalSegment, true);
 };
 
 // ----------------------
@@ -215,7 +216,8 @@ export const exitButton = () => {
 export function barClick(this: Konva.Rect) {
   const rectX = globals.stage.getPointerPosition().x - this.getAbsolutePosition().x;
   const w = this.width();
-  const step = w / globals.replayMax;
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  const step = w / finalSegment;
   const newTurn = Math.floor((rectX + (step / 2)) / step);
   if (newTurn !== globals.replayTurn) {
     checkDisableSharedTurns();
@@ -234,7 +236,8 @@ export function barDrag(this: Konva.Rect, pos: Konva.Vector2d) {
   if (shuttleX > w) {
     shuttleX = w;
   }
-  const step = w / globals.replayMax;
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  const step = w / finalSegment;
   const newTurn = Math.floor((shuttleX + (step / 2)) / step);
   if (newTurn !== globals.replayTurn) {
     checkDisableSharedTurns();
@@ -253,10 +256,11 @@ const positionReplayShuttle = (
   smaller: boolean,
   fast: boolean,
 ) => {
-  // During initialization, the turn will be -1 and the maximum number of replay turns will be 0
+  // During initialization, the target segment will be -1 and the final segment will be null
   // Account for this and provide sane defaults
-  const targetTurn = (target === -1) ? 0 : target;
-  const max = (globals.replayMax === 0) ? 1 : globals.replayMax;
+  const targetTurn = target === -1 ? 0 : target;
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  const max = finalSegment === null ? 1 : finalSegment;
 
   const winH = globals.stage.height();
   const sliderW = globals.elements.replayBar!.width() - shuttle.width();

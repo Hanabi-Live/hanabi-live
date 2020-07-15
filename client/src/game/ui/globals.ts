@@ -77,7 +77,6 @@ export class Globals {
   replayLog: GameAction[] = []; // Contains all of the "action" messages for the game
   replayPos: number = 0; // The current index of the "globals.replayLog" array
   replayTurn: number = 0; // The current game turn
-  replayMax: number = 0; // The maximum turn recorded so fast
   // Used to keep track of when the game ends (before the "gameOver" command has arrived)
   gameOver: boolean = false;
   finalReplayPos: number = 0;
@@ -180,7 +179,6 @@ export class Globals {
     this.replayLog = [];
     this.replayPos = 0;
     this.replayTurn = 0;
-    this.replayMax = 0;
     this.gameOver = false;
     this.finalReplayPos = 0;
     this.finalReplayTurn = 0;
