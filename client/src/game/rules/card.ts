@@ -167,8 +167,12 @@ export function isPotentiallyPlayable(
 }
 
 export function canPossiblyBe(card: CardState, suitIndex: number | null, rank: number | null) {
+  if (suitIndex === null && rank === null) {
+    // We have nothing to check
+    return true;
+  }
   return card.possibleCardsFromClues.some(
     ([s, r]) => (suitIndex === null || suitIndex === s) && (rank === null || rank === r)
-      && card.possibleCardsFromObservation[r][s] > 0,
+      && card.possibleCardsFromObservation[s][r] > 0,
   );
 }
