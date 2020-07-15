@@ -202,14 +202,6 @@ commands.set('hypoRevealed', (data: HypoRevealedData) => {
   globals.elements.toggleRevealedButton!.setText({ line1: text });
   globals.layers.UI.batchDraw();
 
-  // Redraw the cards drawn after the hypothetical started
-  if (globals.hypoFirstDrawnIndex) {
-    const deckSize = globals.store?.getState().ongoingGame.deckSize!;
-    for (let i = globals.hypoFirstDrawnIndex; i < deckSize; i++) {
-      globals.deck[i].replayRedraw();
-    }
-  }
-
   // Check if the ability to give a clue changed
   checkLegal();
 

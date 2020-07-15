@@ -133,20 +133,6 @@ export const end = () => {
   const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
   globals.replayTurn = finalSegment;
   replay.goto(globals.sharedReplayTurn, true, true);
-
-  // In case we blanked out any cards in the hypothetical,
-  // unset the "blank" property of all cards
-  // We need to actually redraw all the cards in case they were morphed
-  // In addition to visible cards, it is also possible that a card drawn in the future was morphed.
-  // If we don't redraw it now, it might still appear as morphed if we jump ahead in the replay.
-  for (const card of globals.deck) {
-    // TODO: card.unsetBlank();
-    card.setBareImage();
-  }
-  for (const card of globals.stackBases) {
-    // TODO: card.unsetBlank();
-    card.setBareImage();
-  }
 };
 
 export const beginTurn = () => {

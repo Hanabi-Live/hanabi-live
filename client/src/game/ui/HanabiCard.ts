@@ -595,56 +595,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  // We need to redraw this card's suit and rank in a shared replay or hypothetical
-  // based on deckOrder and hypoRevealed
-  /* eslint-disable */
-  replayRedraw() {
-    /*
-    const cardIdentity = globals.deckOrder[this.state.order];
-    if (!cardIdentity) {
-      throw new Error(`The identity for card ${this.state.order} was not found in the "replayRedraw()" function.`);
-    }
-    const trueSuitIndex = cardIdentity.suitIndex;
-    if (trueSuitIndex === null) {
-      throw new Error(`The suit identity for card ${this.state.order} was not found in the "replayRedraw() function.`);
-    }
-    const trueSuit = suitIndexToSuit(trueSuitIndex, globals.variant);
-    const trueRank = globals.deckOrder[this.state.order].rank;
-    if (trueRank === null) {
-      throw new Error(`The rank identity for card ${this.state.order} was not found in the "replayRedraw() function.`);
-    }
-
-    if (
-      // If we are in a hypothetical and "hypoRevealed" is turned off
-      // and this card was drawn from the deck since the hypothetical started
-      globals.hypothetical
-      && !globals.hypoRevealed
-      && globals.hypoFirstDrawnIndex
-      && this.state.order >= globals.hypoFirstDrawnIndex
-    ) {
-      if (
-        (this.state.suitIndex === trueSuit && this.state.rank === trueRank)
-        || (this.state.suitIndex === null && this.state.rank === null)
-      ) {
-        // We need to hide this card unless it was morphed from its real identity
-        // -1 is used for null suits and ranks
-        this.convert(-1, -1);
-      }
-    } else if (this.state.suitIndex === null || this.state.rank === null) {
-      // Otherwise, we should make sure to fill in information from deckOrder
-      // unless this card is fully known, possibly morphed
-      this.convert(trueSuitIndex, trueRank);
-
-      // Check if we can drag this card now
-      const layoutChild = this.parent as unknown as LayoutChild;
-      if (layoutChild) {
-        layoutChild.checkSetDraggable();
-      }
-    }
-    */
-    /* eslint-enable */
-  }
-
   removeFromParent() {
     // Remove the card from the player's hand in preparation of adding it to either
     // the play stacks or the discard pile
