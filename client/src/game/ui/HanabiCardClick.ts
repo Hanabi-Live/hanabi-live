@@ -197,7 +197,7 @@ const goToTurn = (turn: number, fast: boolean) => {
   } else {
     replay.enter();
   }
-  if (globals.inReplay) {
+  if (globals.store!.getState().replay.active) {
     replay.goto(turn, fast);
   }
 };

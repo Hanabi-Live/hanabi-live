@@ -174,13 +174,13 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   } else {
     if (event.key === 'ArrowLeft') {
       replay.enter();
-      if (globals.inReplay) {
+      if (globals.store!.getState().replay.active) {
         replay.back();
       }
     }
     if (event.key === 'ArrowRight') {
       replay.enter();
-      if (globals.inReplay) {
+      if (globals.store!.getState().replay.active) {
         replay.forward();
       }
       return;
@@ -195,28 +195,28 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     }
     if (event.key === '[') {
       replay.enter();
-      if (globals.inReplay) {
+      if (globals.store!.getState().replay.active) {
         replay.backRound();
       }
       return;
     }
     if (event.key === ']') {
       replay.enter();
-      if (globals.inReplay) {
+      if (globals.store!.getState().replay.active) {
         replay.forwardRound();
       }
       return;
     }
     if (event.key === 'Home') {
       replay.enter();
-      if (globals.inReplay) {
+      if (globals.store!.getState().replay.active) {
         replay.backFull();
       }
       return;
     }
     if (event.key === 'End') {
       replay.enter();
-      if (globals.inReplay) {
+      if (globals.store!.getState().replay.active) {
         replay.forwardFull();
       }
       return;
@@ -224,7 +224,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   }
 
   // Check for other keyboard hotkeys
-  if (globals.inReplay || globals.currentPlayerIndex !== globals.playerUs) {
+  if (globals.store!.getState().replay.active || globals.ourTurn) {
     return;
   }
 

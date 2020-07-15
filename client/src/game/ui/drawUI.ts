@@ -114,7 +114,7 @@ export default function drawUI() {
   drawPauseArea();
   drawExtraAnimations();
 
-  if (globals.inReplay) {
+  if (globals.store!.getState().replay.active) {
     globals.elements.replayArea!.show();
   }
 
@@ -450,7 +450,7 @@ const drawBottomLeftButtons = () => {
     if (!replayButton.enabled) {
       return;
     }
-    if (globals.inReplay) {
+    if (globals.store!.getState().replay.active) {
       replay.exit();
     } else {
       replay.enter();
@@ -888,7 +888,7 @@ const drawScoreArea = () => {
         } else {
           replay.enter();
         }
-        if (!globals.inReplay) {
+        if (!globals.store!.getState().replay.active) {
           return;
         }
         replay.goto(strike.turn, true);

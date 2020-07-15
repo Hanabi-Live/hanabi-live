@@ -15,7 +15,6 @@ export function onActiveChanged(active: boolean, previousActive: boolean | undef
   if (active) {
     // We are entering a replay
     // Start by putting us at the end of the replay (the current game state)
-    globals.inReplay = true;
     globals.replayPos = globals.replayLog.length;
     const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
     globals.replayTurn = finalSegment;

@@ -84,7 +84,8 @@ const handlePremove = () => {
 };
 
 export const showClueUI = () => {
-  if (globals.inReplay && !globals.hypothetical) {
+  const state = globals.store!.getState();
+  if (state.replay.active && state.replay.hypothetical === null) {
     return;
   }
 

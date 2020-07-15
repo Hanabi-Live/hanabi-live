@@ -880,6 +880,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   shouldShowLookCursor() {
+    // Local variables
+    const state = globals.store!.getState();
+
     // Don't show the cursor if this is a stack base
     if (this.state.rank === STACK_BASE_RANK) {
       return false;
@@ -892,12 +895,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     // If we are in a replay, always show the cursor
-    if (globals.replay || globals.inReplay) {
+    if (globals.replay || state.replay.active) {
       return true;
     }
 
     // For ongoing games, always show the cursor for other people's hands
-    const ourPlayerIndex = globals.store!.getState().metadata.ourPlayerIndex;
+    const ourPlayerIndex = state.metadata.ourPlayerIndex;
     if (typeof this.state.location === 'number' && this.state.location !== ourPlayerIndex) {
       return true;
     }

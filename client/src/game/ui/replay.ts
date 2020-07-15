@@ -51,7 +51,6 @@ export const exit = () => {
   // if the replay itself is not active
   const finalSegment = state.ongoingGame.turn.segment!;
   goto(finalSegment, true);
-  globals.inReplay = false;
 
   globals.store!.dispatch({ type: 'endReplay' });
 };
