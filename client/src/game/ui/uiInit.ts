@@ -6,7 +6,6 @@ import drawUI from './drawUI';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import * as keyboard from './keyboard';
-import LayoutChild from './LayoutChild';
 import pause from './pause';
 
 // When the HanabiUI object is instantiated,
@@ -126,10 +125,6 @@ const initCards = () => {
       order,
     });
     globals.deck.push(card);
-
-    // Create the LayoutChild that will be the parent of the card
-    const child = new LayoutChild();
-    child.addCard(card);
   }
 
   // Also create objects for the stack bases

@@ -79,5 +79,7 @@ export default class PlayStack extends Konva.Group {
     if (stackLength > 0) {
       this.children[stackLength - 1].show();
     }
+
+    globals.layers.card.batchDraw();
   }
 }

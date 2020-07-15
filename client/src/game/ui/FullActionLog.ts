@@ -4,6 +4,7 @@ import globals from './globals';
 import MultiFitText from './MultiFitText';
 
 export default class FullActionLog extends Konva.Group {
+  buffer: Array<{turnNum: number; text: string}> = [];
   logText: MultiFitText;
   logNumbers: MultiFitText;
   playerLogEmptyMessage: FitText;
@@ -93,18 +94,7 @@ export default class FullActionLog extends Konva.Group {
   }
 
   addMessage(turn: number, msg: string) {
-    const appendLine = (log: MultiFitText, numbers: MultiFitText, line: string) => {
-      log.setMultiText(line);
-      numbers.setMultiText(turn.toString());
-    };
-
-    appendLine(this.logText, this.logNumbers, msg);
-    for (let i = 0; i < globals.playerNames.length; i++) {
-      if (msg.startsWith(globals.playerNames[i])) {
-        appendLine(this.playerLogs[i], this.playerLogNumbers[i], msg);
-        break;
-      }
-    }
+    this.buffer.push({ turnNum: turn, text: msg });
     this.needsRefresh = true;
   }
 
@@ -124,6 +114,11 @@ export default class FullActionLog extends Konva.Group {
     }
     this.logText.hide();
     this.logNumbers.hide();
+
+    if (this.needsRefresh) {
+      this.refreshText();
+    }
+
     if (this.playerLogs[playerIndex].isEmpty()) {
       this.playerLogEmptyMessage.show();
     } else {
@@ -158,21 +153,39 @@ export default class FullActionLog extends Konva.Group {
   }
 
   private refreshText() {
+    const appendLine = (log: MultiFitText, numbers: MultiFitText, turn: number, line: string) => {
+      log.setMultiText(line);
+      numbers.setMultiText(turn.toString());
+    };
+
+    this.buffer.forEach((logEntry) => {
+      appendLine(this.logText, this.logNumbers, logEntry.turnNum, logEntry.text);
+      for (let i = 0; i < globals.playerNames.length; i++) {
+        if (logEntry.text.startsWith(globals.playerNames[i])) {
+          appendLine(this.playerLogs[i], this.playerLogNumbers[i], logEntry.turnNum, logEntry.text);
+          break;
+        }
+      }
+    });
+
     this.logText.refreshText();
     this.logNumbers.refreshText();
     for (let i = 0; i < globals.playerNames.length; i++) {
       this.playerLogs[i].refreshText();
       this.playerLogNumbers[i].refreshText();
     }
+    this.buffer = [];
     this.needsRefresh = false;
   }
 
   reset() {
+    this.buffer = [];
     this.logText.reset();
     this.logNumbers.reset();
     for (let i = 0; i < globals.playerNames.length; i++) {
       this.playerLogs[i].reset();
       this.playerLogNumbers[i].reset();
     }
+    this.needsRefresh = true;
   }
 }
