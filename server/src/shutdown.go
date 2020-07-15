@@ -77,7 +77,7 @@ func shutdownWait() {
 						TableID: t.ID,
 						Type:    ActionTypeGameOver,
 						Target:  -1,
-						Value:   EndConditionTerminate,
+						Value:   EndConditionTerminated,
 					})
 				}
 			}

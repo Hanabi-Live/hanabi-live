@@ -53,6 +53,6 @@ func httpLocalhostTerminate(c *gin.Context) {
 		TableID: matchingTable.ID,
 		Type:    ActionTypeGameOver,
 		Target:  -1,
-		Value:   EndConditionTerminate,
+		Value:   EndConditionTerminated,
 	})
 }

@@ -55,6 +55,6 @@ func commandTableTerminate(s *Session, d *CommandData) {
 		TableID: t.ID,
 		Type:    ActionTypeGameOver,
 		Target:  i,
-		Value:   EndConditionTerminate,
+		Value:   EndConditionTerminated,
 	})
 }

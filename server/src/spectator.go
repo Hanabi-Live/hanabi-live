@@ -7,7 +7,7 @@ import (
 type Spectator struct {
 	ID   int // This is equal to the database ID for the user
 	Name string
-	// The user session corresponding to the spectator is copied here for convienence
+	// The user session corresponding to the spectator is copied here for convenience
 	// The session should always be valid because when a user disconnects,
 	// they will automatically stop spectating all games
 	Session   *Session
