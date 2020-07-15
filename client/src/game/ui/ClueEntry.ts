@@ -29,7 +29,7 @@ export default class ClueEntry extends Konva.Group {
     }
     this.list = config.list as number[];
     this.negativeList = config.negativeList as number[];
-    this.segment = config.turn as number;
+    this.segment = config.segment as number;
 
     this.background = new Konva.Rect({
       x: 0,
