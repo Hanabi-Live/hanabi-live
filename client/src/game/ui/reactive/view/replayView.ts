@@ -7,19 +7,51 @@ import * as replay from '../../replay';
 import * as turn from '../../turn';
 
 export function onActiveChanged(active: boolean, previousActive: boolean | undefined) {
-  ourHand.checkSetDraggableAll();
+  // Do not do anything on first initialization
+  if (previousActive === undefined) {
+    return;
+  }
 
-  if (!active && previousActive === true) {
-    // We are exiting from a replay
+  if (active) {
+    // We are entering a replay
+    // Start by putting us at the end of the replay (the current game state)
+    globals.inReplay = true;
+    globals.replayPos = globals.replayLog.length;
+    const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+    globals.replayTurn = finalSegment;
+
+    // However, if the game just ended,
+    // we want to go to the turn before the miscellaneous data sent at the end of the game
+    if (globals.gameOver) {
+      globals.replayPos = globals.finalReplayPos;
+      globals.replayTurn = globals.finalReplayTurn;
+    }
+
+    // Hide the UI elements that overlap with the replay area
+    turn.hideClueUIAndDisableDragging();
+
+    // Next, show the replay area and initialize some UI elements
+    globals.elements.replayArea!.show();
+    replay.adjustShuttles(true); // We want it to immediately snap to the end
+    globals.layers.UI.batchDraw();
+  } else if (!active) {
+    // We are exiting a replay
+    const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+    replay.goto(finalSegment, true);
+    globals.inReplay = false;
+
+    globals.elements.replayArea!.hide();
     if (globals.store!.getState().premove !== null) {
       globals.elements.premoveCancelButton!.show();
     }
     if (isOurTurn()) {
       turn.showClueUI();
     }
-
-    globals.layers.UI.batchDraw();
   }
+
+  ourHand.checkSetDraggableAll();
+
+  globals.layers.UI.batchDraw();
 }
 
 export function onActiveOrOngoingGameSegmentChanged(data: {
@@ -27,7 +59,6 @@ export function onActiveOrOngoingGameSegmentChanged(data: {
   segment: number | null;
 }) {
   if (!data.active) {
-    // TODO add replay exit code here
     return;
   }
 

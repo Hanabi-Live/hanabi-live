@@ -42,15 +42,18 @@ const replayReducer = produce((
       state.segment = action.segment;
       break;
     }
+
     case 'endReplay': {
       state.active = false;
       state.segment = 0;
       break;
     }
+
     case 'goToSegment': {
       state.segment = action.segment;
       break;
     }
+
     case 'hypoStart': {
       const ongoing = state.states[state.segment];
       state.hypothetical = {
@@ -62,10 +65,12 @@ const replayReducer = produce((
       };
       break;
     }
+
     case 'hypoEnd': {
       state.hypothetical = null;
       break;
     }
+
     case 'hypoBack': {
       const hypoStates = state.hypothetical!.states;
       hypoStates.pop();
@@ -73,6 +78,7 @@ const replayReducer = produce((
       state.hypothetical!.ongoing = lastState;
       break;
     }
+
     case 'hypoRevealed': {
       state.hypothetical!.drawnCardsShown = action.showDrawnCards;
       // Filter out all identities morphed to blank
@@ -101,6 +107,7 @@ const replayReducer = produce((
       }
       break;
     }
+
     case 'hypoAction': {
       const a = action.action;
       // The morph action is handled here, exclusively
@@ -149,6 +156,7 @@ const replayReducer = produce((
 
       break;
     }
+
     default: {
       ensureAllCases(action);
       break;
