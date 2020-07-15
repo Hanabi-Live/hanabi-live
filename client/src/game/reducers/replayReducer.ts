@@ -17,10 +17,23 @@ const replayReducer = produce((
   // Validate current state
   if (state.active && action.type === 'startReplay') {
     throw new Error('Tried to start a replay but replay was already active.');
-  } else if (!state.active && action.type !== 'startReplay') {
-    throw new Error('Tried perform a replay action but replay was not active.');
   } else if (!state.active && action.type === 'endReplay') {
     throw new Error('Tried to end a replay but replay was not active.');
+  } else if (!state.active && action.type !== 'startReplay') {
+    throw new Error(`Tried to perform a replay action of ${action.type} but replay was not active.`);
+  } else if (state.hypothetical !== null && action.type === 'hypoStart') {
+    throw new Error('Tried to start a hypothetical but hypothetical was already active.');
+  } else if (state.hypothetical === null && action.type === 'hypoEnd') {
+    throw new Error('Tried to end a hypothetical but hypothetical was not active.');
+  } else if (
+    state.hypothetical === null
+    && (
+      action.type === 'hypoBack'
+      || action.type === 'hypoRevealed'
+      || action.type === 'hypoAction'
+    )
+  ) {
+    throw new Error(`Tried to perform a hypothetical action of ${action.type} but hypothetical was not active.`);
   }
 
   switch (action.type) {
