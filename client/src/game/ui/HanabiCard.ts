@@ -68,9 +68,17 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   startedTweening() {
     this._tweening = true;
+
+    // HACK: since Konva doesn't propagate listening hierarchically until v7,
+    // stop the image from listening
+    this.bare.listening(false);
   }
 
   finishedTweening() {
+    // HACK: since Konva doesn't propagate listening hierarchically until v7,
+    // stop the image from listening
+    this.bare.listening(true);
+
     this._tweening = false;
     this.tweenCallbacks.forEach((callback) => { callback(); });
     this.tweenCallbacks = [];

@@ -97,6 +97,7 @@ export function directionArrow(variant: Variant) {
       x: 0,
       y: 0.14 * CARD_H,
     },
+    listening: false,
   });
 
   const arrowHeight = 0.25;
@@ -114,6 +115,7 @@ export function directionArrow(variant: Variant) {
     fill: 'black',
     stroke: 'black',
     strokeWidth: pointerLength * 2,
+    listening: false,
   });
   arrow.add(border);
 
@@ -127,6 +129,7 @@ export function directionArrow(variant: Variant) {
     fill: 'black',
     stroke: 'black',
     strokeWidth: pointerLength * 0.75,
+    listening: false,
   });
   arrow.add(edge);
 
@@ -142,6 +145,7 @@ export function directionArrow(variant: Variant) {
     fill: 'white',
     stroke: 'white', // This should match the color of the suit; it will be manually set later on
     strokeWidth: pointerLength * 1.25,
+    listening: false,
   });
   arrow.add(arrowBase);
 
@@ -410,6 +414,7 @@ export function wrench() {
     width: 0.8 * CARD_W,
     image: globals.imageLoader!.get('wrench')!,
     visible: false,
+    listening: false,
   });
 }
 
