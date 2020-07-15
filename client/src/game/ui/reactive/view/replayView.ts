@@ -34,12 +34,8 @@ export function onActiveChanged(active: boolean, previousActive: boolean | undef
     globals.elements.replayArea!.show();
     replay.adjustShuttles(true); // We want it to immediately snap to the end
     globals.layers.UI.batchDraw();
-  } else if (!active) {
+  } else {
     // We are exiting a replay
-    const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
-    replay.goto(finalSegment, true);
-    globals.inReplay = false;
-
     globals.elements.replayArea!.hide();
     if (globals.store!.getState().premove !== null) {
       globals.elements.premoveCancelButton!.show();

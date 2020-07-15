@@ -45,6 +45,14 @@ export const exit = () => {
     return;
   }
 
+  // Fast-forward to the final (current) turn, if we are not already there
+  // TODO move this code to the replay view
+  // For now, this must be before the "endReplay" dispatch, because we cannot advance the replay
+  // if the replay itself is not active
+  const finalSegment = state.ongoingGame.turn.segment!;
+  goto(finalSegment, true);
+  globals.inReplay = false;
+
   globals.store!.dispatch({ type: 'endReplay' });
 };
 
