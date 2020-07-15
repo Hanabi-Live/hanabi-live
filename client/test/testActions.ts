@@ -121,9 +121,9 @@ export const turn = (num: number, currentPlayerIndex: number): ActionTurn => ({
   currentPlayerIndex,
 });
 
-export const startReplay = (turnNumber: number): ActionStartReplay => ({
+export const startReplay = (segment: number): ActionStartReplay => ({
   type: 'startReplay',
-  turn: turnNumber,
+  segment,
 });
 
 export const endReplay = (): ActionEndReplay => ({ type: 'endReplay' });

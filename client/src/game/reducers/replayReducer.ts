@@ -24,20 +24,20 @@ const replayReducer = produce((
   switch (action.type) {
     case 'startReplay': {
       state.active = true;
-      state.turn = action.turn;
+      state.segment = action.segment;
       break;
     }
     case 'endReplay': {
       state.active = false;
-      state.turn = 0;
+      state.segment = 0;
       break;
     }
-    case 'goToTurn': {
-      state.turn = action.turn;
+    case 'goToSegment': {
+      state.segment = action.segment;
       break;
     }
     case 'hypoStart': {
-      const ongoing = state.states[state.turn];
+      const ongoing = state.states[state.segment];
       state.hypothetical = {
         ongoing,
         states: [ongoing],

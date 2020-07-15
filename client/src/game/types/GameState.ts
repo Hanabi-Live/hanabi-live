@@ -34,7 +34,7 @@ export interface StateClue {
   readonly value: number;
   readonly giver: number;
   readonly target: number;
-  readonly gameSegment: number;
+  readonly segment: number;
   readonly list: readonly number[];
   readonly negativeList: readonly number[];
 }

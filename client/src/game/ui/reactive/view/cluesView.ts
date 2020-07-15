@@ -8,20 +8,20 @@ import * as arrows from '../../arrows';
 import ClueEntry from '../../ClueEntry';
 import globals from '../../globals';
 
-export function onCluesChanged(data: { clues: readonly StateClue[]; gameSegment: number | null }) {
-  updateArrows(data.clues, data.gameSegment);
+export function onCluesChanged(data: { clues: readonly StateClue[]; segment: number | null }) {
+  updateArrows(data.clues, data.segment);
   updateLog(data.clues);
 }
 
-function updateArrows(clues: readonly StateClue[], gameSegment: number | null) {
+function updateArrows(clues: readonly StateClue[], segment: number | null) {
   arrows.hideAll();
 
-  if (gameSegment === null) {
+  if (segment === null) {
     return;
   }
 
   const lastClue = clues[clues.length - 1];
-  if (lastClue === undefined || lastClue.gameSegment !== gameSegment - 1) {
+  if (lastClue === undefined || lastClue.segment !== segment - 1) {
     // We are initializing (or we rewinded and just removed the first clue)
     return;
   }
@@ -55,7 +55,7 @@ function updateLog(clues: readonly StateClue[]) {
       clueName: cluesRules.getClueName(clue.type, clue.value, globals.variant, characterID),
       list: clue.list,
       negativeList: clue.negativeList,
-      gameSegment: clue.gameSegment,
+      segment: clue.segment,
     });
     if (i < clueLog.children.length) {
       clueLog.updateClue(i, entry);

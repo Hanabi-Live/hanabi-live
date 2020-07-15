@@ -25,7 +25,7 @@ const turnReducer = produce((
       turn.cardsPlayedOrDiscardedThisTurn += 1;
 
       if (currentState.deckSize === 0) {
-        turn.gameSegment! += 1;
+        turn.segment! += 1;
         nextTurn(turn, numPlayers, currentState.deckSize, characterID);
       }
 
@@ -35,10 +35,10 @@ const turnReducer = produce((
     case 'clue': {
       turn.cluesGivenThisTurn += 1;
 
-      if (turn.gameSegment === null) {
+      if (turn.segment === null) {
         throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
-      turn.gameSegment += 1;
+      turn.segment += 1;
 
       if (turnRules.shouldEndTurnAfterClue(turn.cluesGivenThisTurn, characterID)) {
         nextTurn(turn, numPlayers, currentState.deckSize, characterID);
@@ -47,12 +47,12 @@ const turnReducer = produce((
     }
 
     case 'draw': {
-      if (turn.gameSegment === null) { // If the initial deal is still going on
+      if (turn.segment === null) { // If the initial deal is still going on
         if (deckRules.isInitialDealFinished(currentState.deckSize, metadata)) {
-          turn.gameSegment = 0;
+          turn.segment = 0;
         }
       } else {
-        turn.gameSegment += 1;
+        turn.segment += 1;
 
         if (turnRules.shouldEndTurnAfterDraw(
           turn.cardsPlayedOrDiscardedThisTurn,
@@ -70,18 +70,18 @@ const turnReducer = produce((
       // At the end of the game, the server will send us how much time each player finished with
       // as well as the total game duration; we want all of this text on its own replay segment to
       // avoid cluttering the final turn of the game
-      if (turn.gameSegment === null) {
+      if (turn.segment === null) {
         throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
-      turn.gameSegment += 1;
+      turn.segment += 1;
       break;
     }
 
     case 'gameOver': {
-      if (turn.gameSegment === null) {
+      if (turn.segment === null) {
         throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
-      turn.gameSegment += 1;
+      turn.segment += 1;
       turn.currentPlayerIndex = null;
       break;
     }

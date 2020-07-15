@@ -10,7 +10,7 @@ import * as replay from './replay';
 export default class ClueEntry extends Konva.Group {
   list: number[];
   negativeList: number[];
-  gameSegment: number;
+  segment: number;
 
   background: Konva.Rect;
   negativeMarker: Konva.Text;
@@ -29,7 +29,7 @@ export default class ClueEntry extends Konva.Group {
     }
     this.list = config.list as number[];
     this.negativeList = config.negativeList as number[];
-    this.gameSegment = config.turn as number;
+    this.segment = config.turn as number;
 
     this.background = new Konva.Rect({
       x: 0,
@@ -107,7 +107,7 @@ export default class ClueEntry extends Konva.Group {
 
     // Click an entry in the clue log to go to that turn in the replay
     this.background.on('click tap', () => {
-      replay.clueLogClickHandler(this.gameSegment);
+      replay.clueLogClickHandler(this.segment);
     });
   }
 

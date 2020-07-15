@@ -34,7 +34,7 @@ const gameStateReducer = produce((
     case 'clue': {
       state.clueTokens -= 1;
 
-      if (state.turn.gameSegment === null) {
+      if (state.turn.segment === null) {
         throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
 
@@ -43,7 +43,7 @@ const gameStateReducer = produce((
         value: action.clue.value,
         giver: action.giver,
         target: action.target,
-        gameSegment: state.turn.gameSegment,
+        segment: state.turn.segment,
         list: action.list,
         negativeList: state.hands[action.target].filter((i) => !action.list.includes(i)),
       });

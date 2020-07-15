@@ -28,7 +28,7 @@ describe('replayReducer', () => {
   describe('hypothetical', () => {
     test('can start', () => {
       const state = replayReducer(testState.replay, hypoStart(), [], metadata);
-      expect(state.hypothetical?.ongoing).toBe(testState.replay.states[testState.replay.turn]);
+      expect(state.hypothetical?.ongoing).toBe(testState.replay.states[testState.replay.segment]);
       expect(state.hypothetical?.states.length).toBe(1);
       expect(state.hypothetical?.states[0]).toBe(state.hypothetical!.ongoing);
     });
@@ -44,7 +44,7 @@ describe('replayReducer', () => {
       state = replayReducer(state, hypoAction(turn(1, 1)), [], metadata);
 
       // Using "?" is better than "!" since it will fail with a a slightly better error message
-      const expectedClues = testState.replay.states[testState.replay.turn].clueTokens - 1;
+      const expectedClues = testState.replay.states[testState.replay.segment].clueTokens - 1;
       expect(state.hypothetical?.ongoing.clueTokens).toBe(expectedClues);
     });
 

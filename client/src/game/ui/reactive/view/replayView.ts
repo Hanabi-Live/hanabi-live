@@ -22,22 +22,42 @@ export function onActiveChanged(active: boolean, previousActive: boolean | undef
   }
 }
 
-export function onGameSegmentChanged(gameSegment: number | null) {
-  if (gameSegment === null) {
+export function onOngoingGameSegmentChanged(segment: number | null) {
+  if (segment === null) {
     return;
   }
 
   // We need to update the replay slider, based on the new amount of segments
-  globals.replayMax = gameSegment;
+  globals.replayMax = segment;
   if (globals.inReplay) {
     replay.adjustShuttles(false);
     globals.elements.replayForwardButton!.setEnabled(true);
     globals.elements.replayForwardFullButton!.setEnabled(true);
     globals.layers.UI.batchDraw();
   }
+}
 
-  // If there is something to rewind to, ensure that the "In-Game Replay" button is enabled
-  if (!globals.replay && gameSegment > 0) {
-    globals.elements.replayButton!.setEnabled(true);
+export function onReplaySegmentChanged(segment: number | null) {
+  if (segment === null) {
+    return;
   }
+
+  // If we are on the first segment, disable the rewind replay buttons
+  globals.elements.replayBackFullButton!.setEnabled(segment !== 0);
+  globals.elements.replayBackButton!.setEnabled(segment !== 0);
+
+  // If we are on the last segment, disable the forward replay buttons
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  globals.elements.replayForwardButton!.setEnabled(segment !== finalSegment);
+  globals.elements.replayForwardFullButton!.setEnabled(segment !== finalSegment);
+}
+
+export function onMultipleGameSegments(multipleGameSegments: boolean | undefined) {
+  if (multipleGameSegments === undefined) {
+    return;
+  }
+
+  // The in-game replay button starts off disabled
+  // Enable it once there is at least one segment to rewind to
+  globals.elements.replayButton!.setEnabled(multipleGameSegments);
 }

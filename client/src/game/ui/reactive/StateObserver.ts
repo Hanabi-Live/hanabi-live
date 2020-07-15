@@ -97,7 +97,7 @@ const visibleStateObservers: Subscriptions = [
   // Clues (arrows + log)
   vs((s) => ({
     clues: s.clues,
-    gameSegment: s.turn.gameSegment,
+    segment: s.turn.segment,
   }), cluesView.onCluesChanged),
 
   // Cards
@@ -121,14 +121,21 @@ const ongoingGameObservers: Subscriptions = [
     visible: currentPlayerAreaView.isVisible(s),
     currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
   }), currentPlayerAreaView.onChanged),
-
-  // Replay sliders
-  sub((s) => s.ongoingGame.turn.gameSegment, replayView.onGameSegmentChanged),
 ];
 
 const replayObservers: Subscriptions = [
   // Replay entered or exited
   sub((s) => s.replay.active, replayView.onActiveChanged),
+
+  // Replay sliders
+  sub((s) => s.ongoingGame.turn.segment, replayView.onOngoingGameSegmentChanged),
+
+  // Replay buttons
+  sub((s) => (
+    s.ongoingGame.turn.segment !== null
+    && s.ongoingGame.turn.segment > 0
+  ), replayView.onMultipleGameSegments),
+  sub((s) => s.replay.segment, replayView.onReplaySegmentChanged),
 
   // Card and stack base morphing
   sub((s) => ({

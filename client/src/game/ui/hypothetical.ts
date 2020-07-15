@@ -130,7 +130,8 @@ export const end = () => {
   // The "replay.goto()" function will do nothing if we are already at the target turn,
   // so set the current replay turn to the end of the game to force it to draw/compute the
   // game from the beginning
-  globals.replayTurn = globals.replayMax;
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  globals.replayTurn = finalSegment;
   replay.goto(globals.sharedReplayTurn, true, true);
 
   // In case we blanked out any cards in the hypothetical,
@@ -305,8 +306,9 @@ export const backOneTurn = () => {
     && globals.hypoActions.length > 0
   ));
 
-  // Reset to the turn where the hypothetical started
-  globals.replayTurn = globals.replayMax;
+  // Reset to the segment where the hypothetical started
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  globals.replayTurn = finalSegment;
   replay.goto(globals.sharedReplayTurn, true, true);
 
   // Replay all of the hypothetical actions

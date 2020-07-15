@@ -2,7 +2,7 @@ import TurnState from '../../types/TurnState';
 
 export default function initialTurnState(startingPlayer: number = 0): TurnState {
   return {
-    gameSegment: null,
+    segment: null,
     turnNum: 0,
     currentPlayerIndex: startingPlayer,
     playOrderInverted: false,
