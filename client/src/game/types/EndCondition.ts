@@ -7,5 +7,7 @@ enum EndCondition {
   SpeedrunFail = 5,
   IdleTimeout = 6,
   CharacterSoftlock = 7,
+  AllOrNothingFail = 8,
+  AllOrNothingSoftlock = 9,
 }
 export default EndCondition;

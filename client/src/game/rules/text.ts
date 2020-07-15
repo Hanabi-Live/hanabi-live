@@ -119,6 +119,14 @@ export function gameOver(
       return `${playerName} was left with 0 clues!`;
     }
 
+    case EndCondition.AllOrNothingFail: {
+      break;
+    }
+
+    case EndCondition.AllOrNothingSoftlock: {
+      return `${playerName} was left with 0 clues and 0 cards!`;
+    }
+
     default: {
       ensureAllCases(endCondition);
       break;
