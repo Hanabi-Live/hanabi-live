@@ -27,6 +27,7 @@ export function onActiveOrOngoingGameSegmentChanged(data: {
   segment: number | null;
 }) {
   if (!data.active) {
+    // TODO add replay exit code here
     return;
   }
 
@@ -62,13 +63,9 @@ export function onReplaySegmentChanged(segment: number | null) {
   globals.layers.UI.batchDraw();
 }
 
-export function onMultipleGameSegments(multipleGameSegments: boolean | undefined) {
-  if (multipleGameSegments === undefined) {
-    return;
-  }
-
+export function onFirstReplayAction(firstReplayAction: boolean) {
   // The in-game replay button starts off disabled
   // Enable it once there is at least one segment to rewind to
-  globals.elements.replayButton!.setEnabled(multipleGameSegments);
+  globals.elements.replayButton!.setEnabled(firstReplayAction);
   globals.layers.UI.batchDraw();
 }

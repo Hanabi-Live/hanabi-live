@@ -134,10 +134,7 @@ const replayObservers: Subscriptions = [
   }), replayView.onActiveOrOngoingGameSegmentChanged),
 
   // Replay buttons
-  sub((s) => (
-    s.ongoingGame.turn.segment !== null
-    && s.ongoingGame.turn.segment > 0
-  ), replayView.onMultipleGameSegments),
+  sub((s) => s.replay.actions.length > 0, replayView.onFirstReplayAction),
   sub((s) => s.replay.segment, replayView.onReplaySegmentChanged),
 
   // Card and stack base morphing
