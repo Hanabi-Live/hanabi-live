@@ -73,6 +73,7 @@ func shutdownWait() {
 			// so automatically terminate any remaining ongoing games
 			for _, t := range tables {
 				if t.Running && !t.Replay {
+					s := t.GetOwnerSession()
 					commandAction(s, &CommandData{
 						TableID: t.ID,
 						Type:    ActionTypeGameOver,
