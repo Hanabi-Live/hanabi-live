@@ -145,7 +145,9 @@ const gameStateReducer = produce((
       // Remove it from the hand
       const hand = state.hands[action.playerIndex];
       const handIndex = hand.indexOf(action.order);
+      let slot = null;
       if (handIndex !== -1) {
+        slot = hand.length - handIndex;
         hand.splice(handIndex, 1);
       }
 
@@ -167,6 +169,13 @@ const gameStateReducer = produce((
       ) {
         state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
       }
+
+      const touched = state.deck[action.order].numPositiveClues > 0;
+      const text = textRules.play(action, slot, touched, metadata);
+      state.log.push({
+        turn: state.turn.turnNum + 1,
+        text,
+      });
 
       break;
     }

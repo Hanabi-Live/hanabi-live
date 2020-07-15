@@ -270,19 +270,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   setBareImage() {
-    // Optimization: This function is expensive, so don't do it in replays
-    // unless we got to the final destination
-    // However, if an action happens before the "turn" message is sent,
-    // we still need to redraw any affected cards
-    if (
-      this.bareName !== ''
-      && globals.replay
-      && globals.turn < globals.replayTurn - 1
-    ) {
-      console.warn(`Unnecessary setBareImage call. Order: ${this.state.order}`);
-      return;
-    }
-
     // Retrieve the identity of the card
     // We may know the identity through normal means
     // (e.g. it is a card that is currently in someone else's hand)
