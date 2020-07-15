@@ -19,6 +19,8 @@ const replayReducer = produce((
     throw new Error('Tried to start a replay but replay was already active.');
   } else if (!state.active && action.type !== 'startReplay') {
     throw new Error('Tried perform a replay action but replay was not active.');
+  } else if (!state.active && action.type === 'endReplay') {
+    throw new Error('Tried to end a replay but replay was not active.');
   }
 
   switch (action.type) {
