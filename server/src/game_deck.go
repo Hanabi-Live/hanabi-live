@@ -1,7 +1,6 @@
 package main
 
 import (
-	"hash/crc64"
 	"math/rand"
 )
 
@@ -61,16 +60,6 @@ func (g *Game) InitDeck() {
 			}
 		}
 	}
-}
-
-// InitSeed seeds the random number generator with the game seed
-// Golang's "rand.Seed()" function takes an int64, so we need to convert a string to an int64
-// We use the CRC64 hash function to do this
-// Also note that seeding with negative numbers will not work
-func (g *Game) InitSeed() {
-	crc64Table := crc64.MakeTable(crc64.ECMA)
-	intSeed := crc64.Checksum([]byte(g.Seed), crc64Table)
-	rand.Seed(int64(intSeed))
 }
 
 func (g *Game) ShuffleDeck() {

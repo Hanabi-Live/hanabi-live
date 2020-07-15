@@ -3,7 +3,6 @@
 package main
 
 import (
-	"math/rand"
 	"strconv"
 	"strings"
 	"time"
@@ -223,39 +222,4 @@ func (p *GamePlayer) CycleHand() {
 
 	t.NotifyGameAction()
 	logger.Info("Reordered the cards for player:", p.Name)
-}
-
-func (p *GamePlayer) ShuffleHand() {
-	// Local variables
-	g := p.Game
-	t := g.Table
-
-	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
-	rand.Seed(time.Now().UTC().UnixNano())
-	for i := range p.Hand {
-		j := rand.Intn(i + 1)
-		p.Hand[i], p.Hand[j] = p.Hand[j], p.Hand[i]
-	}
-
-	for _, c := range p.Hand {
-		// Remove all clues from cards in the hand
-		c.Touched = false
-
-		// Remove all notes from cards in the hand
-		p.Notes[c.Order] = ""
-	}
-
-	// Make an array that represents the order of the player's hand
-	handOrder := make([]int, 0)
-	for _, c := range p.Hand {
-		handOrder = append(handOrder, c.Order)
-	}
-
-	// Notify everyone about the shuffling
-	g.Actions = append(g.Actions, ActionReorder{
-		Type:      "reorder",
-		Target:    p.Index,
-		HandOrder: handOrder,
-	})
-	t.NotifyGameAction()
 }

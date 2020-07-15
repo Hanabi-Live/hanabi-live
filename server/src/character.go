@@ -584,16 +584,6 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 	return false
 }
 
-func characterShuffle(g *Game, p *GamePlayer) {
-	if !g.Options.DetrimentalCharacters {
-		return
-	}
-
-	if p.Character == "Forgetful" { // 32
-		p.ShuffleHand()
-	}
-}
-
 func characterHideCard(a *ActionDraw, g *Game, p *GamePlayer) bool {
 	if !g.Options.DetrimentalCharacters {
 		return false
