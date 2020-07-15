@@ -140,9 +140,15 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       y: 0.5 * CARD_H,
     });
 
-    // Most class variables are defined below in the "refresh()" function
     // Order is defined upon first initialization
-    this._state = initialCardState(config.order, this.variant);
+    // This state is only used by stack bases
+    // TODO: move stack bases to be a separate class that shares code with HanabiCard
+    const initialState = initialCardState(config.order, this.variant);
+    this._state = {
+      ...initialState,
+      suitIndex: typeof config.suitIndex === 'number' ? config.suitIndex : initialState.suitIndex,
+      rank: typeof config.rank === 'number' ? config.rank : initialState.rank,
+    };
 
     // Initialize various elements/features of the card
     this.bare = HanabiCardInit.image(
@@ -196,51 +202,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Add a parent layout
     this._layout = new LayoutChild(this);
-  }
 
-  // Erase all of the data on the card to make it like it was freshly drawn
-  refresh(suitIndex: number | null, rank: number | null) {
-    // Reset visual state
-    this.empathy = false;
-    this.doMisplayAnimation = false;
-
-    this.state = {
-      ...initialCardState(this.state.order, this.variant),
-      location: this.state.location,
-      // We might have some information about this card already
-      suitIndex,
-      rank,
-      // We have to add one to the turn drawn because
-      // the "draw" command comes before the "turn" command
-      // However, if it was part of the initial deal, then it will correctly be set as turn 0
-      turnDrawn: globals.turn === 0 ? 0 : globals.turn + 1,
-    };
-
-    // Some variants disable listening on cards
-    this.listening(true);
-
-    if (!globals.replay && !globals.spectating) {
-      // If it has a "chop move" note on it, we want to keep the chop move border turned on
-      if (this.note.chopMoved) {
-        this.chopMoveBorder!.show();
-      }
-      // If it has a "finessed" note on it, we want to keep the finesse border turned on
-      if (this.note.finessed) {
-        this.finesseBorder!.show();
-      }
-    }
-
-    // TODO: remove this, state should also set the initial image
-    if (this.bareName === '') {
+    // Initialize the bare image for stack bases
+    if (typeof config.suitIndex === 'number' || typeof config.rank === 'number') {
       this.setBareImage();
-    }
-
-    // Hide the pips if we have full knowledge of the suit / rank
-    if (suitIndex !== null) {
-      this.suitPips!.hide();
-    }
-    if (rank !== null) {
-      this.rankPips!.hide();
     }
   }
 
