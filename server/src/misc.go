@@ -219,7 +219,7 @@ func secondsToDurationString(seconds int) (string, error) {
 	return msg, nil
 }
 
-// InitSeed seeds the random number generator with the game seed
+// setSeed seeds the random number generator with a string
 // Golang's "rand.Seed()" function takes an int64, so we need to convert a string to an int64
 // We use the CRC64 hash function to do this
 // Also note that seeding with negative numbers will not work
