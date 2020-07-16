@@ -52,9 +52,9 @@ describe('cardsReducer', () => {
   });
 
   describe('turnDiscarded', () => {
-    test('is -1 while on the deck', () => {
+    test('is null while on the deck', () => {
       const deck: CardState[] = [defaultCard];
-      expect(deck[0].turnDiscarded).toBe(-1);
+      expect(deck[0].turnDiscarded).toBe(null);
     });
 
     test('is correct when discarded', () => {
@@ -65,12 +65,12 @@ describe('cardsReducer', () => {
       expect(newDeck[0].turnDiscarded).toBe(gameState.turn.turnNum);
     });
 
-    test('is -1 when played', () => {
+    test('is null when played', () => {
       let deck: CardState[] = [defaultCard];
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const newDeck = cardsReducer(deck, play(0, 0, 1, 2), gameState, defaultMetadata);
-      expect(newDeck[0].turnDiscarded).toBe(-1);
+      expect(newDeck[0].turnDiscarded).toBe(null);
     });
 
     test('is correct when misplayed', () => {
