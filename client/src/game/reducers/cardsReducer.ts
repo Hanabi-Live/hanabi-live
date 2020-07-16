@@ -167,7 +167,6 @@ const cardsReducer = (
       const initial = initialCardState(action.order, variant);
 
       // Remove all possibilities of all cards previously drawn and visible
-
       const possibilitiesToRemove = deck.slice(0, action.order)
         .filter((card) => card.suitIndex !== null && card.rank !== null)
         .filter((card) => card.location !== action.playerIndex
@@ -181,11 +180,19 @@ const cardsReducer = (
       const pipPossibilities = checkAllPipPossibilities(possibleCards, variant);
 
       const suitPipStates = initial.colorClueMemory.pipStates.map(
-        (pipState, suitIndex) => (!pipPossibilities.suitsPossible[suitIndex] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
+        (pipState, suitIndex) => (
+          !pipPossibilities.suitsPossible[suitIndex] && pipState !== 'Hidden'
+            ? 'Eliminated'
+            : pipState
+        ),
       );
 
       const rankPipStates = initial.rankClueMemory.pipStates.map(
-        (pipState, rank) => (!pipPossibilities.ranksPossible[rank] && pipState !== 'Hidden' ? 'Eliminated' : pipState),
+        (pipState, rank) => (
+          !pipPossibilities.ranksPossible[rank] && pipState !== 'Hidden'
+            ? 'Eliminated'
+            : pipState
+        ),
       );
 
       const drawnCard = {
