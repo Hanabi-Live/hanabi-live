@@ -217,29 +217,33 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  setClued() {
-    const isClued = (
+  private shouldShowClueBorder() {
+    return (
       this.state.numPositiveClues > 0
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
       && !this.note.unclued
     );
+  }
 
+  private isRaisedBecauseOfClues() {
+    return this.shouldShowClueBorder()
+    && (
+      !globals.lobby.settings.keldonMode
+      || (this.state.location === globals.playerUs && !globals.replay)
+    );
+  }
+
+  setClued() {
     // When cards are clued,
     // they should raise up a little bit to make it clear that they are touched
     // However, don't do this for other people's hands in Keldon mode
     this.offsetY(0.5 * CARD_H); // The default offset
-    if (
-      isClued
-      && (
-        !globals.lobby.settings.keldonMode
-        || (this.state.location === globals.playerUs && !globals.replay)
-      )
-    ) {
+    if (this.isRaisedBecauseOfClues()) {
       this.offsetY(0.6 * CARD_H);
     }
 
-    this.cluedBorder!.visible(isClued);
+    this.cluedBorder!.visible(this.shouldShowClueBorder());
 
     // Remove all special borders when a card is clued, played, discarded
     this.chopMoveBorder!.hide();
@@ -846,9 +850,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       shadowBlur: cursor === 'dragging' ? Math.floor(0.06 * CARD_W) : Math.floor(0.03 * CARD_W),
       duration: 0.1,
     });
+    const baseOffsetY = this.isRaisedBecauseOfClues() ? 0.6 * CARD_H : 0.5 * CARD_H;
     this.to({
       offsetX: cursor === 'dragging' ? 0.52 * CARD_W : 0.5 * CARD_W,
-      offsetY: cursor === 'dragging' ? 0.52 * CARD_H : 0.5 * CARD_H,
+      offsetY: baseOffsetY + (cursor === 'dragging' ? 0.02 * CARD_H : 0),
       duration: 0.1,
     });
   }

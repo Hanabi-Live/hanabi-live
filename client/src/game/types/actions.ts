@@ -8,7 +8,8 @@ export type Action =
   | ReplayAction
   | ActionListReceived
   | ActionCardIdentities
-  | ActionPremove;
+  | ActionPremove
+  | ActionFinishOngoingGame;
 
 export type GameAction =
   | ActionClue
@@ -59,6 +60,9 @@ export interface ActionPremove {
   readonly premove: ClientAction | null;
 }
 
+export interface ActionFinishOngoingGame {
+  type: 'finishOngoingGame';
+}
 // ------------
 // Game actions
 // ------------

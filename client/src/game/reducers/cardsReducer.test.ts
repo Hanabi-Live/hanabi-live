@@ -193,6 +193,24 @@ describe('cardsReducer', () => {
       expect(deck[1].colorClueMemory.positiveClues.length).toBe(1);
       expect(deck[1].colorClueMemory.positiveClues[0]).toBe(anotherClueToCardOne.clue.value);
     });
+    test('getting the same clue twice does not change possibilities', () => {
+      let deck: CardState[] = [defaultCard, secondCard];
+      deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
+      deck = cardsReducer(deck, draw(0, 1), gameState, defaultMetadata);
+
+      // In order to apply negative clues, the hand must be correct
+      const gameStateWithCorrectHands = { ...gameState, hands: [[0, 1]] };
+
+      // Apply the same clue twice
+      const clueToCardOne = rankClue(1, 2, [1], 0, 0);
+      deck = cardsReducer(deck, clueToCardOne, gameStateWithCorrectHands, defaultMetadata);
+      deck = cardsReducer(deck, clueToCardOne, gameStateWithCorrectHands, defaultMetadata);
+
+      expect(deck[1].rankClueMemory.positiveClues.length).toBe(1);
+      expect(deck[1].rankClueMemory.positiveClues[0]).toBe(clueToCardOne.clue.value);
+      expect(deck[1].colorClueMemory.possibilities.length).toBe(5);
+      expect(deck[1].rankClueMemory.possibilities.length).toBe(1);
+    });
   });
   describe('discard', () => {
     test('eliminates a possibility on other cards', () => {

@@ -38,13 +38,13 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     }
 
     case 'cardIdentities': {
-      // This code causes the game to crash upon terminating with an obscure error message
-      // TODO rob should fix and uncomment
-      /*
       // Either we just entered a new replay or an ongoing game ended,
       // so the server sent us a list of the identities for every card in the deck
       state.cardIdentities = action.cardIdentities;
+      break;
+    }
 
+    case 'finishOngoingGame': {
       // If the game just ended, recalculate the whole game as spectator to fix possibilities
       if (!state.metadata.spectating) {
         state.metadata.spectating = true;
@@ -60,8 +60,6 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
         state.visibleState = state.ongoingGame;
         state.replay.states = castDraft(states);
       }
-      */
-
       break;
     }
 
@@ -103,6 +101,8 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       ) {
         state.replay.states[state.ongoingGame.turn.segment] = state.ongoingGame;
       }
+
+      state.replay.actions.push(action);
 
       break;
     }
