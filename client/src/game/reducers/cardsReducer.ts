@@ -24,24 +24,30 @@ const cardsReducer = (
 
   switch (action.type) {
     case 'clue': {
+      // Clues do not have to be applied in certain situations
+      // TODO rob would be mad if I added globals here
+      /*
+      const giverCharacterID = getCharacterIDForPlayer(action.giver, metadata.characterAssignments);
+      let giverCharacterName = '';
+      if (giverCharacterID !== null) {
+        const giverCharacter = getCharacter(giverCharacterID);
+        giverCharacterName = giverCharacter.name;
+      }
+      if (
+        globals.lobby.settings.realLifeMode
+        || variantRules.isCowAndPig(variant)
+        || variantRules.isDuck(variant)
+        || giverCharacterName === 'Quacker'
+      ) {
+        break;
+      }
+      */
+
       const clue = action.clue.type === ClueType.Color
         ? colorClue(variant.clueColors[action.clue.value])
         : rankClue(action.clue.value);
 
       const applyClue = (order: number, positive: boolean) => {
-        // TODO: conditions to applyClue
-        /*
-          if (
-          !globals.lobby.settings.realLifeMode
-          && !variantRules.isCowAndPig(globals.variant)
-          && !variantRules.isDuck(globals.variant)
-          && !(
-            globals.characterAssignments[data.giver!] === 'Quacker'
-            && card.state.holder === globals.playerUs
-            && !globals.replay
-          )
-        */
-
         const card = getCard(newDeck, order);
         const wasKnown = (
           card.rankClueMemory.possibilities.length === 1
@@ -92,6 +98,7 @@ const cardsReducer = (
       game.hands[action.target]
         .filter((order) => !action.list.includes(order))
         .forEach((order) => applyClue(order, false));
+
       break;
     }
 
