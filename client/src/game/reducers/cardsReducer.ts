@@ -1,7 +1,8 @@
 // Calculates the state of the deck after an action
 
 import { ensureAllCases, nullIfNegative } from '../../misc';
-import { getVariant } from '../data/gameData';
+import { getVariant, getCharacter } from '../data/gameData';
+import { variantRules } from '../rules';
 import { removePossibilities, checkAllPipPossibilities } from '../rules/applyClueCore';
 import { GameAction } from '../types/actions';
 import CardState, { PipState } from '../types/CardState';
@@ -12,6 +13,7 @@ import GameState from '../types/GameState';
 import Variant from '../types/Variant';
 import cardPossibilitiesReducer from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
+import { getCharacterIDForPlayer } from './reducerHelpers';
 
 const cardsReducer = (
   deck: readonly CardState[],
@@ -24,30 +26,29 @@ const cardsReducer = (
 
   switch (action.type) {
     case 'clue': {
-      // Clues do not have to be applied in certain situations
-      // TODO rob would be mad if I added globals here
-      /*
-      const giverCharacterID = getCharacterIDForPlayer(action.giver, metadata.characterAssignments);
-      let giverCharacterName = '';
-      if (giverCharacterID !== null) {
-        const giverCharacter = getCharacter(giverCharacterID);
-        giverCharacterName = giverCharacter.name;
-      }
-      if (
-        globals.lobby.settings.realLifeMode
-        || variantRules.isCowAndPig(variant)
-        || variantRules.isDuck(variant)
-        || giverCharacterName === 'Quacker'
-      ) {
-        break;
-      }
-      */
-
       const clue = action.clue.type === ClueType.Color
         ? colorClue(variant.clueColors[action.clue.value])
         : rankClue(action.clue.value);
 
       const applyClue = (order: number, positive: boolean) => {
+        // Clues do not have to be applied in certain situations
+        const giverCharacterID = getCharacterIDForPlayer(
+          action.giver,
+          metadata.characterAssignments,
+        );
+        let giverCharacterName = '';
+        if (giverCharacterID !== null) {
+          const giverCharacter = getCharacter(giverCharacterID);
+          giverCharacterName = giverCharacter.name;
+        }
+        if (
+          variantRules.isCowAndPig(variant)
+        || variantRules.isDuck(variant)
+        || giverCharacterName === 'Quacker'
+        ) {
+          return;
+        }
+
         const card = getCard(newDeck, order);
         const wasKnown = (
           card.rankClueMemory.possibilities.length === 1
