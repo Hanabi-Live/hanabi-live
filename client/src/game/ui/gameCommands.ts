@@ -155,6 +155,8 @@ commands.set('gameOver', () => {
   }
 
   globals.layers.UI.batchDraw();
+
+  globals.store!.dispatch({ type: 'finishOngoingGame' });
 });
 
 commands.set('hypoAction', (data: string) => {
