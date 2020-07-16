@@ -3,6 +3,7 @@
 
 import produce, { Draft } from 'immer';
 import { getVariant } from '../data/gameData';
+import { variantRules } from '../rules';
 import * as cardRules from '../rules/card';
 import * as clueTokensRules from '../rules/clueTokens';
 import * as statsRules from '../rules/stats';
@@ -56,7 +57,8 @@ const statsReducer = produce((
 
     case 'play': {
       if (
-        currentState.playStacks[action.suitIndex].length === 5
+        !variantRules.isThrowItInAHole(variant) // We don't get an extra clue in these variants
+        && currentState.playStacks[action.suitIndex].length === 5
         && originalState.clueTokens === currentState.clueTokens
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted",

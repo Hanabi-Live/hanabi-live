@@ -145,9 +145,11 @@ export function play(
   const variant = getVariant(metadata.options.variantName);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
-  let card = cardRules.name(action.suitIndex, action.rank, variant);
+  let card;
   if (variantRules.isThrowItInAHole(variant)) {
     card = 'a card';
+  } else {
+    card = cardRules.name(action.suitIndex, action.rank, variant);
   }
 
   let location;
