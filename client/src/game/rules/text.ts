@@ -41,17 +41,6 @@ export function clue(action: ActionClue, targetHand: number[], metadata: GameMet
     || variantRules.isDuck(variant)
     || characterName === 'Quacker'
   ) {
-    // Create a list of slot numbers that correspond to the cards touched
-    const slots: number[] = [];
-    for (const order of action.list) {
-      const slot = handRules.cardSlot(order, targetHand);
-      if (slot === null) {
-        throw new Error(`Failed to get the slot for card ${order}.`);
-      }
-      slots.push(slot);
-    }
-    slots.sort();
-
     let actionName = 'clues';
     if (variantRules.isCowAndPig(variant)) {
       if (action.clue.type === ClueType.Color) {
@@ -67,9 +56,26 @@ export function clue(action: ActionClue, targetHand: number[], metadata: GameMet
     if (!target.endsWith('s')) {
       target += 's';
     }
+
+    // Create a list of slot numbers that correspond to the cards touched
+    const slots: number[] = [];
+    for (const order of action.list) {
+      const slot = handRules.cardSlot(order, targetHand);
+      if (slot === null) {
+        throw new Error(`Failed to get the slot for card ${order}.`);
+      }
+      slots.push(slot);
+    }
+    slots.sort();
+
+    let slotWord = 'slot';
+    if (slots.length !== 1) {
+      slotWord += 's';
+    }
+
     const slotsText = slots.join('/');
 
-    return `${giver} ${actionName} at ${target} ${slotsText}'`;
+    return `${giver} ${actionName} at ${target} ${slotWord} ${slotsText}`;
   }
 
   // Handle the default case of a normal clue
@@ -145,9 +151,11 @@ export function play(
   const variant = getVariant(metadata.options.variantName);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
-  let card = cardRules.name(action.suitIndex, action.rank, variant);
+  let card;
   if (variantRules.isThrowItInAHole(variant)) {
     card = 'a card';
+  } else {
+    card = cardRules.name(action.suitIndex, action.rank, variant);
   }
 
   let location;

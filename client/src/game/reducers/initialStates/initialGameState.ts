@@ -39,6 +39,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     hands,
     playStacks,
     playStackDirections,
+    hole: [],
     discardStacks,
     clues: [],
     stats: {

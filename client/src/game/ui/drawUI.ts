@@ -1,9 +1,7 @@
 // This function draws the UI when going into a game for the first time
 
 import Konva from 'konva';
-import {
-  LABEL_COLOR,
-} from '../../constants';
+import { LABEL_COLOR } from '../../constants';
 import * as debug from '../../debug';
 import * as deck from '../rules/deck';
 import * as stats from '../rules/stats';
@@ -956,6 +954,17 @@ const drawScoreArea = () => {
     }, i);
     globals.elements.scoreArea.add(strikeX);
     globals.elements.strikeXs.push(strikeX);
+
+    // For variants where the strikes are hidden, draw a "?"
+    const questionMarkLabel = basicTextLabel.clone({
+      text: '?',
+      fontSize: 0.032 * winH,
+      x: (0.0205 + (0.04 * i)) * winW,
+      y: 0.128 * winH,
+      visible: variantRules.isThrowItInAHole(globals.variant),
+      listening: false,
+    }) as Konva.Text;
+    globals.elements.scoreArea.add(questionMarkLabel);
 
     // Handle the tooltips
     strikeSquare.tooltipName = 'strikes';

@@ -152,23 +152,24 @@ const gameStateReducer = produce((
       }
 
       // Add it to the play stacks
-      state.playStacks[action.suitIndex].push(action.order);
+      if (variantRules.isThrowItInAHole(variant)) {
+        // In "Throw It in a Hole" variants, played cards to go the hole instead of the play stacks
+        state.hole.push(action.order);
+      } else {
+        const playStack = state.playStacks[action.suitIndex];
+        playStack.push(action.order);
+
+        // Gain a clue token if the stack is complete
+        if (playStack.length === 5) { // Hard-code 5 cards per stack
+          state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
+        }
+      }
 
       // Gain a point
       state.score += 1;
 
       // Keep track of attempted plays
       state.numAttemptedCardsPlayed += 1;
-
-      // Gain a clue token if the stack is complete
-      if (
-        state.playStacks[action.suitIndex].length === 5 // Hard-code 5 cards per stack
-        // In "Throw It in a Hole" variants, getting a clue back would reveal information about the
-        // card that is played, so finishing a stack does not grant a clue
-        && !variantRules.isThrowItInAHole(variant)
-      ) {
-        state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
-      }
 
       const touched = state.deck[action.order].numPositiveClues > 0;
       const text = textRules.play(action, slot, touched, metadata);

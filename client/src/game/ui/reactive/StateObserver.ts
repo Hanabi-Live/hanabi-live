@@ -93,6 +93,7 @@ const visibleStateObservers: Subscriptions = [
   // Play stacks come last so we can show the bases if they get empty
   vs((s) => s.playStacks, cardLayoutView.onPlayStacksChanged),
   vs((s) => s.playStackDirections, cardLayoutView.onPlayStackDirectionsChanged),
+  vs((s) => s.hole, cardLayoutView.onHoleChanged),
 
   // Clues (arrows + log)
   vs((s) => ({

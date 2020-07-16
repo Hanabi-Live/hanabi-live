@@ -1,7 +1,8 @@
 // Calculates the state of the deck after an action
 
 import { ensureAllCases, nullIfNegative } from '../../misc';
-import { getVariant } from '../data/gameData';
+import { getVariant, getCharacter } from '../data/gameData';
+import { variantRules } from '../rules';
 import { GameAction } from '../types/actions';
 import CardState from '../types/CardState';
 import { colorClue, rankClue } from '../types/Clue';
@@ -10,6 +11,7 @@ import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
 import cardPossibilitiesReducer from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
+import { getCharacterIDForPlayer } from './reducerHelpers';
 
 const cardsReducer = (
   deck: readonly CardState[],
@@ -27,18 +29,23 @@ const cardsReducer = (
         : rankClue(action.clue.value);
 
       const applyClue = (order: number, positive: boolean) => {
-        // TODO: conditions to applyClue
-        /*
-          if (
-          !globals.lobby.settings.realLifeMode
-          && !variantRules.isCowAndPig(globals.variant)
-          && !variantRules.isDuck(globals.variant)
-          && !(
-            globals.characterAssignments[data.giver!] === 'Quacker'
-            && card.state.holder === globals.playerUs
-            && !globals.replay
-          )
-        */
+        // Clues do not have to be applied in certain situations
+        const giverCharacterID = getCharacterIDForPlayer(
+          action.giver,
+          metadata.characterAssignments,
+        );
+        let giverCharacterName = '';
+        if (giverCharacterID !== null) {
+          const giverCharacter = getCharacter(giverCharacterID);
+          giverCharacterName = giverCharacter.name;
+        }
+        if (
+          variantRules.isCowAndPig(variant)
+        || variantRules.isDuck(variant)
+        || giverCharacterName === 'Quacker'
+        ) {
+          return;
+        }
 
         const card = getCard(newDeck, order);
         const wasKnown = (card.possibleCardsFromClues.length === 1);
@@ -85,6 +92,7 @@ const cardsReducer = (
       game.hands[action.target]
         .filter((order) => !action.list.includes(order))
         .forEach((order) => applyClue(order, false));
+
       break;
     }
 
