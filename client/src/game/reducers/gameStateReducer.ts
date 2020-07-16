@@ -304,7 +304,6 @@ const cardCycle = (hand: number[], deck: readonly CardState[], metadata: GameMet
 
   // We don't need to reorder anything if the chop is slot 1 (the left-most card)
   const chopIndex = handRules.chopIndex(hand, deck);
-  console.log('CHOP INDEX:', chopIndex);
   if (chopIndex === hand.length - 1) {
     return;
   }
@@ -314,8 +313,6 @@ const cardCycle = (hand: number[], deck: readonly CardState[], metadata: GameMet
 
   // Add it to the end (the left-most position)
   hand.push(removedCardOrder);
-
-  console.log('CYCLED!!!!!!!!!!!!!!!');
 };
 
 export default gameStateReducer;

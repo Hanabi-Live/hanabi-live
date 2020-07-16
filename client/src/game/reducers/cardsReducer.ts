@@ -1,8 +1,8 @@
 // Calculates the state of the deck after an action
 
 import { ensureAllCases, nullIfNegative } from '../../misc';
-import { getVariant, getCharacter } from '../data/gameData';
-import { variantRules } from '../rules';
+import { getVariant } from '../data/gameData';
+import { cluesRules } from '../rules';
 import { removePossibilities, checkAllPipPossibilities } from '../rules/applyClueCore';
 import { GameAction } from '../types/actions';
 import CardState, { PipState } from '../types/CardState';
@@ -13,7 +13,6 @@ import GameState from '../types/GameState';
 import Variant from '../types/Variant';
 import cardPossibilitiesReducer from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
-import { getCharacterIDForPlayer } from './reducerHelpers';
 
 const cardsReducer = (
   deck: readonly CardState[],
@@ -32,20 +31,7 @@ const cardsReducer = (
 
       const applyClue = (order: number, positive: boolean) => {
         // Clues do not have to be applied in certain situations
-        const giverCharacterID = getCharacterIDForPlayer(
-          action.giver,
-          metadata.characterAssignments,
-        );
-        let giverCharacterName = '';
-        if (giverCharacterID !== null) {
-          const giverCharacter = getCharacter(giverCharacterID);
-          giverCharacterName = giverCharacter.name;
-        }
-        if (
-          variantRules.isCowAndPig(variant)
-        || variantRules.isDuck(variant)
-        || giverCharacterName === 'Quacker'
-        ) {
+        if (!cluesRules.shouldApplyClue(action.giver, metadata, variant)) {
           return;
         }
 

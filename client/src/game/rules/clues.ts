@@ -2,8 +2,10 @@
 /* eslint-disable import/prefer-default-export */
 
 import { getCharacter } from '../data/gameData';
+import { getCharacterIDForPlayer } from '../reducers/reducerHelpers';
 import Clue, { colorClue, rankClue } from '../types/Clue';
 import ClueType from '../types/ClueType';
+import GameMetadata from '../types/GameMetadata';
 import MsgClue from '../types/MsgClue';
 import Variant from '../types/Variant';
 import * as variantRules from './variant';
@@ -120,3 +122,25 @@ export function touchesCard(
 
   return false;
 }
+
+export const shouldApplyClue = (
+  giverIndex: number,
+  metadata: GameMetadata,
+  variant: Variant,
+) => {
+  const giverCharacterID = getCharacterIDForPlayer(
+    giverIndex,
+    metadata.characterAssignments,
+  );
+  let giverCharacterName = '';
+  if (giverCharacterID !== null) {
+    const giverCharacter = getCharacter(giverCharacterID);
+    giverCharacterName = giverCharacter.name;
+  }
+
+  return (
+    !variantRules.isCowAndPig(variant)
+    && !variantRules.isDuck(variant)
+    && giverCharacterName !== 'Quacker'
+  );
+};
