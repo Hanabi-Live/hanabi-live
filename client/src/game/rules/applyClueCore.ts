@@ -78,6 +78,7 @@ export function applyColorClue(
     if (variant.specialAllClueColors) {
       if (positive) {
         if (state.colorClueMemory.positiveClues.length >= 1
+          && !state.colorClueMemory.positiveClues.includes(getIndex(clue.value))
           && !possibleSuits.some((suit) => suit.allClueColors)) {
           // Two positive color clues should "fill in" a special rank that is touched by all
           // color clues (that cannot be a multi-color suit)
@@ -130,7 +131,10 @@ export function applyColorClue(
             impossibleCards.push({ suitIndex, rank: variant.specialRank });
           }
         }
-      } else if (state.colorClueMemory.negativeClues.length === variant.clueColors.length - 1) {
+      } else if (
+        state.colorClueMemory.negativeClues.length === variant.clueColors.length - 1
+        && !state.colorClueMemory.negativeClues.includes(getIndex(clue.value))
+      ) {
         if (!possibleSuits.some((suit) => suit.noClueColors)) {
           // All negative colors means that the card must be the special rank
           // (as long as it cannot be a suit that is never touched by color clues)
@@ -207,6 +211,7 @@ export function applyRankClue(
   if (
     positive
     && state.rankClueMemory.positiveClues.length >= 1
+    && !state.rankClueMemory.positiveClues.includes(clue.value)
     && !(
       possibleRanks.includes(variant.specialRank)
       && variant.specialAllClueRanks
@@ -222,7 +227,10 @@ export function applyRankClue(
 
   // Handle the special case where all negative rank clues should "fill in" a card of a
   // rank-less suit
-  const allNegatives = state.rankClueMemory.negativeClues.length === variant.ranks.length - 1;
+  const allNegatives = (
+    state.rankClueMemory.negativeClues.length === variant.ranks.length - 1
+    && !state.rankClueMemory.negativeClues.includes(clue.value)
+  );
 
   if (
     !positive
