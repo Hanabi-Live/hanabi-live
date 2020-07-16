@@ -762,22 +762,22 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   // Gathers all the appropriate state and passes as arguments to
   // a function from cardRules.ts
   private cardRule(fn: (
-    variant: Variant,
+    card: CardState,
     deck: readonly CardState[],
     playStacks: ReadonlyArray<readonly number[]>,
     playStackDirections: readonly StackDirection[],
-    card: CardState,
+    variant: Variant,
   ) => boolean) {
     const visibleState = globals.store!.getState().visibleState;
     if (!visibleState) {
       return false;
     }
-    const variant = this.variant;
+    const state = this.state;
     const deck = visibleState.deck;
     const playStacks = visibleState.playStacks;
     const playStackDirections = visibleState.playStackDirections;
-    const state = this.state;
-    return fn(variant, deck, playStacks, playStackDirections, state);
+    const variant = this.variant;
+    return fn(state, deck, playStacks, playStackDirections, variant);
   }
 
   // Update all UI pips to their state

@@ -34,10 +34,10 @@ function HanabiCardTapAction(this: HanabiCard) {
 
   if (cardRules.isPlayed(this.state)) {
     // Clicking on played cards goes to the turn immediately before they were played
-    goToTurnAndIndicateCard(this.state.turnPlayed, this.state.order);
+    goToTurnAndIndicateCard(this.state.turnPlayed!, this.state.order);
   } else if (cardRules.isDiscarded(this.state)) {
     // Clicking on discarded cards goes to the turn immediately before they were discarded
-    goToTurnAndIndicateCard(this.state.turnDiscarded, this.state.order);
+    goToTurnAndIndicateCard(this.state.turnDiscarded!, this.state.order);
   }
 }
 

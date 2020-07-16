@@ -7,7 +7,6 @@ import action from './action';
 import Shuttle from './controls/Shuttle';
 import globals from './globals';
 import { animate } from './konvaHelpers';
-import statusCheckOnAllCards from './statusCheckOnAllCards';
 import * as tooltips from './tooltips';
 
 // ---------------------
@@ -125,7 +124,6 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
 
   if (!globals.loading) {
     globals.animateFast = false;
-    statusCheckOnAllCards();
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();
     globals.layers.arrow.batchDraw();

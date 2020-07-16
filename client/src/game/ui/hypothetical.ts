@@ -12,7 +12,6 @@ import { getTouchedCardsFromClue } from './clues';
 import PlayerButton from './controls/PlayerButton';
 import globals from './globals';
 import * as replay from './replay';
-import statusCheckOnAllCards from './statusCheckOnAllCards';
 import * as turn from './turn';
 
 export const start = () => {
@@ -84,7 +83,6 @@ export const playThroughPastActions = () => {
       action(actionMessage);
     }
     globals.animateFast = false;
-    statusCheckOnAllCards();
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();
     globals.layers.arrow.batchDraw();

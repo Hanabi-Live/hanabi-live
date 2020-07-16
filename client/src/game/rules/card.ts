@@ -35,11 +35,11 @@ export function isInPlayerHand(card: CardState) {
 }
 
 export function isCritical(
-  variant: Variant,
+  card: CardState,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
-  card: CardState,
+  variant: Variant,
 ) {
   if (
     card.suitIndex === null
@@ -47,7 +47,7 @@ export function isCritical(
     || card.rank === 0 // Base
     || isPlayed(card)
     || isDiscarded(card)
-    || !needsToBePlayed(variant, deck, playStacks, playStackDirections, card)
+    || !needsToBePlayed(card, deck, playStacks, playStackDirections, variant)
   ) {
     return false;
   }
@@ -75,11 +75,11 @@ export function isCritical(
 // and is still needed to be played in order to get the maximum score
 // (this mirrors the server function in "card.go")
 export function needsToBePlayed(
-  variant: Variant,
+  card: CardState,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
-  card: CardState,
+  variant: Variant,
 ) {
   // First, check to see if a copy of this card has already been played
   for (const otherCard of deck) {
@@ -129,20 +129,20 @@ export function needsToBePlayed(
 }
 
 export function isPotentiallyPlayable(
-  variant: Variant,
+  card: CardState,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
-  card: CardState,
+  variant: Variant,
 ) {
   // Calculating this in an Up or Down variant is more complicated
   if (variantRules.hasReversedSuits(variant)) {
     return reversibleRules.isPotentiallyPlayable(
-      variant,
+      card,
       deck,
       playStacks,
       playStackDirections,
-      card,
+      variant,
     );
   }
 

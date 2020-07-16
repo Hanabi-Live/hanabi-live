@@ -76,7 +76,7 @@ const cardsReducer = (
         newDeck[order] = {
           ...getCard(newDeck, order),
           numPositiveClues: card.numPositiveClues + 1,
-          turnsClued: [...card.turnsClued, game.turn.turnNum],
+          turnFirstClued: game.turn.turnNum,
         };
         applyClue(order, true);
       });
@@ -123,11 +123,11 @@ const cardsReducer = (
       let isMisplayed = card.isMisplayed;
 
       if (action.type === 'play') {
-        turnPlayed = game.turn.turnNum;
         location = 'playStack';
+        turnPlayed = game.turn.turnNum;
       } else {
-        turnDiscarded = game.turn.turnNum;
         location = 'discard';
+        turnDiscarded = game.turn.turnNum;
         if (action.failed) {
           isMisplayed = true;
         }

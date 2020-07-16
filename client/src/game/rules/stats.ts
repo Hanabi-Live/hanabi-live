@@ -265,11 +265,11 @@ export function doubleDiscard(
   const total = deckRules.numCopiesOfCard(variant, suit, card.rank);
   const discarded = deckRules.discardedCopies(deck, card.suitIndex, card.rank);
   const needsToBePlayed = cardRules.needsToBePlayed(
-    variant,
+    card,
     deck,
     playStacks,
     playStackDirections,
-    card,
+    variant,
   );
 
   return total === discarded + 1 && needsToBePlayed;

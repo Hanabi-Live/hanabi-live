@@ -10,15 +10,17 @@ export default interface CardState {
   readonly colorClueMemory: ClueMemory;
 
   // possibleCards[suitIndex][rank] = how many cards of this suitIndex and rank could this be?
-  // NOTE: we're using an array as a map, so there will be empty spaces for ranks
-  // that are not valid card ranks (e.g. 0, or 6 in Up or Down)
+  // Note that we are using an array as a map, so there will be empty spaces for ranks that are not
+  // valid card ranks (e.g. 0, or 6 in Up or Down)
   readonly possibleCards: ReadonlyArray<readonly number[]>;
   readonly identityDetermined: boolean;
   readonly numPositiveClues: number;
-  readonly turnsClued: readonly number[]; // TODO: seems like the UI only reads the 1st turn clued?
-  readonly turnDrawn: number;
-  readonly turnDiscarded: number;
-  readonly turnPlayed: number;
+  readonly turnFirstClued: number | null;
+  readonly turnDrawn: number | null;
+  readonly turnDiscarded: number | null;
+  readonly turnPlayed: number | null;
+
+  // Needed so that we can animate a misplayed card different from a discarded card
   readonly isMisplayed: boolean;
 }
 

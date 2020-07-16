@@ -54,35 +54,32 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     // Alt + clicking a card goes to the turn it was drawn
     // (we want to go to the turn before it is drawn, tween the card being drawn,
     // and then indicate the card)
-    const turnBeforeDrawn = card.state.turnDrawn === 0 ? 0 : card.state.turnDrawn - 1;
-    goToTurn(turnBeforeDrawn, true);
-    goToTurn(card.state.turnDrawn, false);
-    goToTurnAndIndicateCard(card.state.turnDrawn, card.state.order);
+    if (card.state.turnDrawn! > 0) {
+      goToTurn(card.state.turnDrawn! - 1, true);
+    }
+    goToTurnAndIndicateCard(card.state.turnDrawn!, card.state.order);
   } else if (cardRules.isPlayed(card.state)) {
     // Clicking on played cards goes to the turn immediately before they were played
-    goToTurnAndIndicateCard(card.state.turnPlayed, card.state.order);
+    goToTurnAndIndicateCard(card.state.turnPlayed!, card.state.order);
   } else if (cardRules.isDiscarded(card.state)) {
     // Clicking on discarded cards goes to the turn immediately before they were discarded
-    goToTurnAndIndicateCard(card.state.turnDiscarded, card.state.order);
+    goToTurnAndIndicateCard(card.state.turnDiscarded!, card.state.order);
   }
 };
 
 const clickMiddle = (card: HanabiCard, event: MouseEvent) => {
-  // Disable this for the stack base
-  if (card.state.rank === STACK_BASE_RANK) {
-    return;
-  }
-
   // No actions in this function use modifiers
   if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) {
     return;
   }
 
   // Middle clicking on a card goes to the turn it was first clued
-  if (card.state.turnsClued.length === 0) {
-    return;
+  if (
+    card.state.turnFirstClued !== null
+    && card.state.rank !== STACK_BASE_RANK // Disable this functionality for the stack base
+  ) {
+    goToTurn(card.state.turnFirstClued, true);
   }
-  goToTurn(card.state.turnsClued[0], true);
 };
 
 const clickRight = (card: HanabiCard, event: MouseEvent) => {

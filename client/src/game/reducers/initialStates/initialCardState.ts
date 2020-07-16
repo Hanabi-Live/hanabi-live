@@ -45,10 +45,10 @@ export default function initialCardState(order: number, variant: Variant) : Card
     },
     identityDetermined: false,
     numPositiveClues: 0,
-    turnsClued: [],
-    turnDrawn: -1,
-    turnDiscarded: -1,
-    turnPlayed: -1,
+    turnDrawn: null,
+    turnFirstClued: null,
+    turnDiscarded: null,
+    turnPlayed: null,
     isMisplayed: false,
   };
 }
