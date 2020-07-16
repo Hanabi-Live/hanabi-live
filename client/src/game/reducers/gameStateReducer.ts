@@ -152,7 +152,12 @@ const gameStateReducer = produce((
       }
 
       // Add it to the play stacks
-      state.playStacks[action.suitIndex].push(action.order);
+      if (variantRules.isThrowItInAHole(variant)) {
+        // In "Throw It in a Hole" variants, played cards to go the hole instead of the play stacks
+        state.hole.push(action.order);
+      } else {
+        state.playStacks[action.suitIndex].push(action.order);
+      }
 
       // Gain a point
       state.score += 1;

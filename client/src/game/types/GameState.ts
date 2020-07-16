@@ -15,6 +15,7 @@ export default interface GameState {
   readonly hands: ReadonlyArray<readonly number[]>;
   readonly playStacks: ReadonlyArray<readonly number[]>;
   readonly playStackDirections: readonly StackDirection[];
+  readonly hole: readonly number[]; // For "Throw It in a Hole" variants
   readonly discardStacks: ReadonlyArray<readonly number[]>;
   readonly clues: readonly StateClue[];
   readonly stats: StatsState;
