@@ -19,7 +19,6 @@ export type GameAction =
   | ActionGameOver
   | ActionPlay
   | ActionPlayerTimes
-  | ActionReorder
   | ActionPlayStackDirections
   | ActionStatus
   | ActionStrike
@@ -115,12 +114,6 @@ export interface ActionPlay {
 export interface ActionPlayerTimes {
   type: 'playerTimes';
   readonly playerTimes: number[];
-}
-
-export interface ActionReorder {
-  type: 'reorder';
-  readonly target: number;
-  readonly handOrder: number[];
 }
 
 export interface ActionPlayStackDirections {

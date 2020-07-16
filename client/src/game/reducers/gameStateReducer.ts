@@ -12,8 +12,10 @@ import {
   deckRules,
   textRules,
   variantRules,
+  handRules,
 } from '../rules';
 import { GameAction } from '../types/actions';
+import CardState from '../types/CardState';
 import EndCondition from '../types/EndCondition';
 import GameMetadata, { getPlayerName } from '../types/GameMetadata';
 import GameState from '../types/GameState';
@@ -54,6 +56,10 @@ const gameStateReducer = produce((
         turn: state.turn.turnNum + 1,
         text,
       });
+
+      // Handle the "Card Cycling" game option
+      const giverHand = state.hands[action.giver];
+      cardCycle(giverHand, castDraft(state.deck), metadata);
 
       break;
     }
@@ -255,7 +261,6 @@ const gameStateReducer = produce((
     }
 
     // Some actions do not affect the main state or are handled by another reducer
-    case 'reorder':
     case 'turn': {
       break;
     }
@@ -291,5 +296,26 @@ const gameStateReducer = produce((
     metadata,
   );
 }, {} as GameState);
+
+const cardCycle = (hand: number[], deck: readonly CardState[], metadata: GameMetadata) => {
+  if (!metadata.options.cardCycle) {
+    return;
+  }
+
+  // We don't need to reorder anything if the chop is slot 1 (the left-most card)
+  const chopIndex = handRules.chopIndex(hand, deck);
+  console.log('CHOP INDEX:', chopIndex);
+  if (chopIndex === hand.length - 1) {
+    return;
+  }
+
+  // Remove the chop card from their hand
+  const removedCardOrder = hand.splice(chopIndex, 1)[0];
+
+  // Add it to the end (the left-most position)
+  hand.push(removedCardOrder);
+
+  console.log('CYCLED!!!!!!!!!!!!!!!');
+};
 
 export default gameStateReducer;

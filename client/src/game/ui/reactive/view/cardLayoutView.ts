@@ -113,6 +113,10 @@ export function onHoleChanged(
   hole: readonly number[],
   previousHole: readonly number[] | undefined,
 ) {
+  if (previousHole === undefined) {
+    return;
+  }
+
   console.log('HOLE:', hole);
   console.log('PREVIOUS HOLE:', previousHole);
 

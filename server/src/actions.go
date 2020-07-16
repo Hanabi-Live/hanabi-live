@@ -56,12 +56,6 @@ type ActionPlayerTimes struct {
 	PlayerTimes []int64 `json:"playerTimes"`
 }
 
-type ActionReorder struct {
-	Type      string `json:"type"`
-	Target    int    `json:"target"`
-	HandOrder []int  `json:"handOrder"`
-}
-
 type ActionPlayStackDirections struct {
 	Type       string `json:"type"`
 	Directions []int  `json:"directions"`

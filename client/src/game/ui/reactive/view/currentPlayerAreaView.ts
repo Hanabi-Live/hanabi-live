@@ -1,5 +1,6 @@
 import Konva from 'konva';
 import { LABEL_COLOR } from '../../../../constants';
+import { handRules } from '../../../rules';
 import { MAX_CLUE_NUM } from '../../../types/constants';
 import State from '../../../types/State';
 import globals from '../../globals';
@@ -40,8 +41,14 @@ export function onChanged(data: {
   const winW = globals.stage.width();
   const winH = globals.stage.height();
   const state = globals.store!.getState();
-  const clueTokens = state!.ongoingGame!.clueTokens;
-  const numPlayers = state!.metadata.options.numPlayers;
+  const clueTokens = state.ongoingGame!.clueTokens;
+  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
+  if (currentPlayerIndex === null) {
+    return;
+  }
+  const currentPlayerHand = state.ongoingGame.hands[currentPlayerIndex];
+  const isLocked = handRules.isLocked(currentPlayerHand, state.ongoingGame.deck);
+  const numPlayers = state.metadata.options.numPlayers;
 
   // Update the text
   const { text1, text2, text3 } = currentPlayerArea;
@@ -53,10 +60,7 @@ export function onChanged(data: {
     } else if (clueTokens === MAX_CLUE_NUM) {
       specialText = `(cannot discard; at ${MAX_CLUE_NUM} clues)`;
       text3.fill(LABEL_COLOR);
-    } else if (
-      globals.lobby.settings.hyphenatedConventions
-      && globals.elements.playerHands[data.currentPlayerIndex!].isLocked()
-    ) {
+    } else if (isLocked && globals.lobby.settings.hyphenatedConventions) {
       specialText = '(locked; may not be able to discard)';
       text3.fill(LABEL_COLOR);
     } else if (

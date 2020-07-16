@@ -11,8 +11,6 @@ import action from './action';
 import { getTouchedCardsFromClue } from './clues';
 import PlayerButton from './controls/PlayerButton';
 import globals from './globals';
-import HanabiCard from './HanabiCard';
-import LayoutChild from './LayoutChild';
 import * as replay from './replay';
 import statusCheckOnAllCards from './statusCheckOnAllCards';
 import * as turn from './turn';
@@ -199,8 +197,6 @@ export const send = (hypoAction: ClientAction) => {
       target: hypoAction.target,
       turn: gameState.turn.turnNum,
     });
-
-    cycleHand();
   } else if (type === 'play' || type === 'discard') {
     const card = gameState.deck[hypoAction.target];
 
@@ -299,43 +295,6 @@ export const backOneTurn = () => {
 
   // Replay all of the hypothetical actions
   playThroughPastActions();
-};
-
-const cycleHand = () => {
-  if (!globals.options.cardCycle) {
-    return;
-  }
-
-  // Find the chop card
-  const hand = globals.elements.playerHands[globals.currentPlayerIndex!];
-  const chopIndex = hand.getChopIndex();
-
-  // We don't need to reorder anything if the chop is slot 1 (the left-most card)
-  const layoutChilds = hand.children.toArray() as LayoutChild[];
-  if (chopIndex === layoutChilds.length - 1) {
-    return;
-  }
-
-  // Make a list of the card orders
-  const cardOrders: number[] = [];
-  for (const layoutChild of layoutChilds) {
-    const card = layoutChild.children[0] as unknown as HanabiCard;
-    cardOrders.push(card.state.order);
-  }
-
-  // Remove the chop card
-  const chopCard = layoutChilds[chopIndex].children[0] as unknown as HanabiCard;
-  const chopCardOrder = chopCard.state.order;
-  cardOrders.splice(chopIndex, 1);
-
-  // Add it to the end (the left-most position)
-  cardOrders.push(chopCardOrder);
-
-  sendHypoAction({
-    type: 'reorder',
-    target: globals.currentPlayerIndex!,
-    handOrder: cardOrders,
-  });
 };
 
 export const toggleRevealed = () => {

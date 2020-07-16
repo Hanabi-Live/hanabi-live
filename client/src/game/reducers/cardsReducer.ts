@@ -63,14 +63,14 @@ const cardsReducer = (
           && newCard.rankClueMemory.possibilities.length === 1
           && newCard.colorClueMemory.possibilities.length === 1
         ) {
-          // If we're currently playing this game and we got clued, this is the first time
-          // we identify this card, from the point of view of all hands
+          // If we are currently playing this game and we got clued,
+          // this is the first time we identify this card, from the point of view of all hands
           const handsSeeingCardForFirstTime = (
             !metadata.spectating
             && metadata.ourPlayerIndex === card.location
           )
             ? game.hands // All hands
-            : [game.hands[card.location as number]]; // Just who's seeing this for the first time
+            : [game.hands[card.location as number]]; // Just who is seeing this for the first time
           for (const hand of handsSeeingCardForFirstTime) {
             removePossibilityOnHand(
               newDeck,
@@ -118,7 +118,7 @@ const cardsReducer = (
       // we already updated the possibilities for it on other cards
       if (suitIndex !== null && rank !== null && !identityDetermined) {
         identityDetermined = true;
-        // If we're currently playing this game, this is the first time
+        // If we are currently playing this game, this is the first time
         // we see this card, from the point of view of all hands
         const handsSeeingCardForFirstTime = (
           !metadata.spectating
@@ -164,8 +164,8 @@ const cardsReducer = (
       // TEMP: At this point, check that the local state matches the server
       if (
         game.turn.currentPlayerIndex !== action.playerIndex
-        // Prevent validation during the initial draw; during this phase of the game, the person
-        // drawing cards will not necessarily correspond to the person whose turn it is
+        // Prevent validation during the initial draw; during this phase of the game,
+        // the person drawing cards will not necessarily correspond to the person whose turn it is
         && game.turn.turnNum > 0
       ) {
         console.warn(`The currentPlayerIndex on a draw from the client and the server do not match on turn ${game.turn.turnNum}`);
@@ -245,7 +245,6 @@ const cardsReducer = (
     case 'gameDuration':
     case 'playerTimes':
     case 'playStackDirections':
-    case 'reorder':
     case 'status':
     case 'strike':
     case 'turn': {

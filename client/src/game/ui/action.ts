@@ -6,13 +6,9 @@ import * as variantRules from '../rules/variant';
 import {
   ActionDiscard,
   ActionIncludingHypothetical,
-  ActionHypotheticalMorph,
-  ActionReorder,
   ActionTurn,
 } from '../types/actions';
 import globals from './globals';
-import HanabiCard from './HanabiCard';
-import LayoutChild from './LayoutChild';
 import statusCheckOnAllCards from './statusCheckOnAllCards';
 
 // The server has sent us a new game action
@@ -49,57 +45,6 @@ actionFunctions.set('discard', (data: ActionDiscard) => {
 actionFunctions.set('play', () => {
   // The fact that this card was played could make some other cards useless or critical
   statusCheckOnAllCards();
-});
-
-// Has the following data:
-// {
-//   type: 'reorder',
-//   target: 0, // The index of the player
-//   handOrder: [1, 2, 3, 4, 0], // An array of card orders
-// }
-actionFunctions.set('reorder', (data: ActionReorder) => {
-  // Make a list of card orders currently in the hand
-  const hand = globals.elements.playerHands[data.target];
-  const currentCardOrders: number[] = [];
-  hand.children.each((layoutChild) => {
-    const card = layoutChild.children[0] as unknown as HanabiCard;
-    currentCardOrders.push(card.state.order);
-  });
-
-  for (let i = 0; i < data.handOrder.length; i++) {
-    const newCardOrderForThisSlot = data.handOrder[i];
-    if (typeof newCardOrderForThisSlot !== 'number') {
-      throw new Error(`Received an invalid card order of ${newCardOrderForThisSlot} in the "reorder" action.`);
-    }
-    const currentIndexOfNewCard = currentCardOrders.indexOf(newCardOrderForThisSlot);
-    const numMoveDown = currentIndexOfNewCard - i;
-    const card = globals.deck[newCardOrderForThisSlot];
-    if (card === undefined) {
-      throw new Error(`Received an invalid card order of ${newCardOrderForThisSlot} in the "reorder" action.`);
-    }
-    const layoutChild = card.parent as unknown as LayoutChild; // All cards should have parents
-    for (let j = 0; j < numMoveDown; j++) {
-      layoutChild.moveDown();
-    }
-  }
-});
-
-actionFunctions.set('morph', (data: ActionHypotheticalMorph) => {
-  console.log(data, 'TODO');
-  /*
-  // This is the reveal for hypotheticals when a card is morphed
-  // The code here is copied from the "websocket.ts" file
-  let card = globals.deck[data.order];
-  if (!card) {
-    card = globals.stackBases[data.order - globals.deck.length];
-  }
-  if (!card) {
-    throw new Error('Failed to get the card in the "reveal" command.');
-  }
-
-  card.convert(data.suitIndex, data.rank);
-  globals.layers.card.batchDraw();
-  */
 });
 
 actionFunctions.set('turn', (data: ActionTurn) => {
