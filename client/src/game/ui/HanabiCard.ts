@@ -531,35 +531,41 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.setCritical(status === CardStatus.Critical);
   }
 
-  private setFade(fade: boolean) {
-    let shouldFadeCard = false;
+  private setFade(isTrash: boolean) {
+    const opacity = this.shouldSetFade(isTrash) ? CARD_FADE : 1;
+    this.opacity(opacity);
+  }
 
+  private shouldSetFade(isTrash: boolean) {
     // Override any logic and always fade the card if it is explicitly marked as known trash
     if (this.trashcan!.isVisible() && this.state.numPositiveClues === 0) {
-      shouldFadeCard = true;
-    } else {
-      shouldFadeCard = (
-        fade
-        && !cardRules.isClued(this.state)
-        && !cardRules.isPlayed(this.state)
-        && !cardRules.isDiscarded(this.state)
-        && !this.note.blank
-        && !variantRules.isThrowItInAHole(this.variant)
-        && !globals.options.speedrun
-        && !globals.lobby.settings.realLifeMode
-      );
+      return true;
     }
 
-    this.opacity(shouldFadeCard ? CARD_FADE : 1);
+    return (
+      isTrash
+      && !cardRules.isClued(this.state)
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
+      && !this.note.blank
+      && !variantRules.isThrowItInAHole(this.variant)
+      && !globals.options.speedrun
+      && !globals.lobby.settings.realLifeMode
+    );
   }
 
   private setCritical(critical: boolean) {
-    this.criticalIndicator!.visible((
+    const visible = this.shouldSetCritical(critical);
+    this.criticalIndicator!.visible(visible);
+  }
+
+  private shouldSetCritical(critical: boolean) {
+    return (
       critical
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
       && !globals.lobby.settings.realLifeMode
-    ));
+    );
   }
 
   updateNotePossibilities() {

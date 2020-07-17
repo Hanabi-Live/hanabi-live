@@ -1,7 +1,10 @@
 import { initArray } from '../../../misc';
 import { getVariant } from '../../data/gameData';
 import {
-  cardRules, deckRules, handRules, statsRules,
+  cardRules,
+  deckRules,
+  handRules,
+  statsRules,
 } from '../../rules';
 import CardStatus from '../../types/CardStatus';
 import { MAX_CLUE_NUM } from '../../types/constants';
