@@ -17,7 +17,6 @@ import GameState from '../types/GameState';
 import Options from '../types/Options';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import SpectatorNote from '../types/SpectatorNote';
-import action from './action';
 import * as arrows from './arrows';
 import { checkLegal } from './clues';
 import globals from './globals';
@@ -85,7 +84,8 @@ commands.set('databaseID', (data: DatabaseIDData) => {
   globals.elements.gameIDLabel!.show();
 
   // Also move the card count label on the deck downwards
-  if (globals.deckSize === 0) {
+  const deckSize = globals.store!.getState().visibleState!.deckSize;
+  if (deckSize === 0) {
     globals.elements.deck!.nudgeCountDownwards();
   }
 
@@ -170,7 +170,6 @@ commands.set('hypoAction', (data: string) => {
 
   hypothetical.setHypoFirstDrawnIndex(actionMessage);
   hypothetical.checkToggleRevealedButton(actionMessage);
-  action(actionMessage);
 
   if (actionMessage.type === 'turn') {
     hypothetical.beginTurn();
@@ -418,11 +417,8 @@ const processNewAction = (actionMessage: GameAction) => {
   // TEMP: We need to save this game state change for the purposes of the in-game replay
   globals.replayLog.push(actionMessage);
 
-  if (actionMessage.type === 'turn') {
-    // Keep track of whether it is our turn or not
-    // TODO: Legacy code, remove this
-    globals.ourTurn = actionMessage.currentPlayerIndex === globals.playerUs && !globals.spectating;
-  } else if (actionMessage.type === 'clue' && variantRules.isAlternatingClues(globals.variant)) {
+  // TODO: legacy code, move this
+  if (actionMessage.type === 'clue' && variantRules.isAlternatingClues(globals.variant)) {
     if (actionMessage.clue.type === ClueType.Color) {
       for (const button of globals.elements.colorClueButtons) {
         button.hide();
@@ -438,14 +434,6 @@ const processNewAction = (actionMessage: GameAction) => {
         button.hide();
       }
     }
-  }
-
-  // Now that it is recorded, change the actual drawn game state
-  if (
-    !globals.store!.getState().replay.active // Unless we are in an in-game replay
-    && !globals.gameOver // Unless it is the miscellaneous data sent at the end of a game
-  ) {
-    action(actionMessage);
   }
 
   // If the game is over, do not immediately draw the subsequent turns that contain the game times

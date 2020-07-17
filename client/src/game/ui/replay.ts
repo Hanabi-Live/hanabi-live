@@ -1,9 +1,7 @@
 // Functions for progressing forward and backward through time
 
 import Konva from 'konva';
-import * as deck from '../rules/deck';
 import ReplayActionType from '../types/ReplayActionType';
-import action from './action';
 import Shuttle from './controls/Shuttle';
 import globals from './globals';
 import { animate } from './konvaHelpers';
@@ -92,27 +90,7 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
   }
 
   if (rewind) {
-    reset();
     globals.replayPos = 0;
-  }
-
-  // Iterate over the replay and stop at the current turn or at the end, whichever comes first
-  while (true) {
-    const msg = globals.replayLog[globals.replayPos];
-    globals.replayPos += 1;
-
-    // Stop at the end of the replay
-    if (msg === undefined) {
-      break;
-    }
-
-    // Re-process all game actions; this will correctly position cards and text
-    action(msg);
-
-    // Stop if you're at the current turn
-    if (msg.type === 'turn' && msg.num === globals.replayTurn) {
-      break;
-    }
   }
 
   // TEMP: eventually, move code from this file to reducers and observers
@@ -129,15 +107,6 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
     globals.layers.arrow.batchDraw();
     globals.layers.UI2.batchDraw();
   }
-};
-
-const reset = () => {
-  // Reset some game state variables
-  globals.turn = 0;
-  globals.deckSize = deck.totalCards(globals.variant);
-
-  // Reset various UI elements
-  globals.postAnimationLayout = null;
 };
 
 // -----------------------------

@@ -58,6 +58,9 @@ export const destroy = () => {
 };
 
 const keydown = (event: JQuery.KeyDownEvent) => {
+  // Local variables
+  const state = globals.store!.getState();
+
   // Disable hotkeys if we not currently in a game
   // (this should not be possible, as the handler gets unregistered upon going back to the lobby,
   // but double check just in case)
@@ -174,13 +177,13 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   } else {
     if (event.key === 'ArrowLeft') {
       replay.enter();
-      if (globals.store!.getState().replay.active) {
+      if (state.replay.active) {
         replay.back();
       }
     }
     if (event.key === 'ArrowRight') {
       replay.enter();
-      if (globals.store!.getState().replay.active) {
+      if (state.replay.active) {
         replay.forward();
       }
       return;
@@ -195,28 +198,28 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     }
     if (event.key === '[') {
       replay.enter();
-      if (globals.store!.getState().replay.active) {
+      if (state.replay.active) {
         replay.backRound();
       }
       return;
     }
     if (event.key === ']') {
       replay.enter();
-      if (globals.store!.getState().replay.active) {
+      if (state.replay.active) {
         replay.forwardRound();
       }
       return;
     }
     if (event.key === 'Home') {
       replay.enter();
-      if (globals.store!.getState().replay.active) {
+      if (state.replay.active) {
         replay.backFull();
       }
       return;
     }
     if (event.key === 'End') {
       replay.enter();
-      if (globals.store!.getState().replay.active) {
+      if (state.replay.active) {
         replay.forwardFull();
       }
       return;
@@ -224,7 +227,9 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   }
 
   // Check for other keyboard hotkeys
-  if (globals.store!.getState().replay.active || globals.ourTurn) {
+  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
+  const ourPlayerIndex = state.metadata.ourPlayerIndex;
+  if (state.replay.active || currentPlayerIndex === ourPlayerIndex) {
     return;
   }
 

@@ -89,37 +89,45 @@ export const showClueUI = () => {
     return;
   }
 
-  if (globals.ourTurn || globals.hypothetical) {
-    // Reset and show the clue UI
-    if (globals.playerNames.length === 2) {
-      // In 2-player games,
-      // default the clue recipient button to the only other player available
-      // Otherwise, leave the last player selected
-      globals.elements.clueTargetButtonGroup!.list[0].setPressed(true);
-    }
-    globals.elements.clueTypeButtonGroup!.clearPressed();
-    globals.elements.clueArea!.show();
-    if (globals.elements.yourTurn !== null && !globals.hypothetical) {
-      globals.elements.yourTurn.show();
-    }
-    globals.elements.currentPlayerArea!.hide();
+  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
+  const ourPlayerIndex = state.metadata.ourPlayerIndex;
+  if (
+    currentPlayerIndex !== ourPlayerIndex
+    && (state.replay.hypothetical === null || !globals.amSharedReplayLeader)
+  ) {
+    return;
+  }
 
-    // Fade the clue UI if there is not a clue available
-    if (globals.clues >= 1) {
-      globals.elements.clueArea!.opacity(1);
-      globals.elements.clueAreaDisabled!.hide();
-    } else {
-      globals.elements.clueArea!.opacity(0.2);
-      globals.elements.clueAreaDisabled!.show();
-    }
+  // Reset and show the clue UI
+  if (globals.playerNames.length === 2) {
+    // In 2-player games,
+    // default the clue recipient button to the only other player available
+    // Otherwise, leave the last player selected
+    globals.elements.clueTargetButtonGroup!.list[0].setPressed(true);
+  }
+  globals.elements.clueTypeButtonGroup!.clearPressed();
+  globals.elements.clueArea!.show();
+  if (globals.elements.yourTurn !== null && !globals.hypothetical) {
+    globals.elements.yourTurn.show();
+  }
+  globals.elements.currentPlayerArea!.hide();
+
+  // Fade the clue UI if there is not a clue available
+  if (globals.clues >= 1) {
+    globals.elements.clueArea!.opacity(1);
+    globals.elements.clueAreaDisabled!.hide();
+  } else {
+    globals.elements.clueArea!.opacity(0.2);
+    globals.elements.clueAreaDisabled!.show();
   }
 
   if (globals.options.deckPlays) {
-    globals.elements.deck!.cardBack.draggable(globals.deckSize === 1);
-    globals.elements.deckPlayAvailableLabel!.visible(globals.deckSize === 1);
+    const deckSize = globals.store!.getState().ongoingGame.deckSize;
+    globals.elements.deck!.cardBack.draggable(deckSize === 1);
+    globals.elements.deckPlayAvailableLabel!.visible(deckSize === 1);
 
     // Ensure the deck is above other cards and UI elements
-    if (globals.deckSize === 1) {
+    if (deckSize === 1) {
       globals.elements.deck!.moveToTop();
     }
   }
@@ -128,13 +136,16 @@ export const showClueUI = () => {
 };
 
 export const end = (clientAction: ClientAction) => {
-  if (globals.hypothetical) {
+  const state = globals.store!.getState();
+  if (state.replay.hypothetical !== null) {
     hypothetical.send(clientAction);
     hideClueUIAndDisableDragging();
     return;
   }
 
-  if (globals.ourTurn) {
+  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
+  const ourPlayerIndex = state.metadata.ourPlayerIndex;
+  if (currentPlayerIndex === ourPlayerIndex) {
     replay.exit(); // Close the in-game replay if we preplayed a card in the replay
     globals.lobby.conn!.send('action', {
       tableID: globals.lobby.tableID,

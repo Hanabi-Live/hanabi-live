@@ -7,7 +7,6 @@ import ClientAction from '../types/ClientAction';
 import ClueType from '../types/ClueType';
 import MsgClue from '../types/MsgClue';
 import ReplayActionType from '../types/ReplayActionType';
-import action from './action';
 import { getTouchedCardsFromClue } from './clues';
 import PlayerButton from './controls/PlayerButton';
 import globals from './globals';
@@ -69,6 +68,7 @@ export const show = () => {
   beginTurn();
 };
 
+// TODO: delete this function?
 export const playThroughPastActions = () => {
   // If we are joining a hypothetical that is already in progress
   // or we are going backwards in an existing hypothetical,
@@ -80,7 +80,6 @@ export const playThroughPastActions = () => {
     for (const actionMessage of globals.hypoActions) {
       setHypoFirstDrawnIndex(actionMessage);
       checkToggleRevealedButton(actionMessage);
-      action(actionMessage);
     }
     globals.animateFast = false;
     globals.layers.card.batchDraw();
