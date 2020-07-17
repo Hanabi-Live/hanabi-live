@@ -16,7 +16,7 @@ export default interface CardState {
   readonly identityDetermined: boolean;
   readonly numPositiveClues: number;
   readonly segmentFirstClued: number | null;
-  readonly turnDrawn: number | null;
+  readonly segmentDrawn: number | null;
   readonly turnDiscarded: number | null;
   readonly turnPlayed: number | null;
 

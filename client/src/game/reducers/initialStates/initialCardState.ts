@@ -45,7 +45,7 @@ export default function initialCardState(order: number, variant: Variant) : Card
     },
     identityDetermined: false,
     numPositiveClues: 0,
-    turnDrawn: null,
+    segmentDrawn: null,
     segmentFirstClued: null,
     turnDiscarded: null,
     turnPlayed: null,

@@ -54,10 +54,18 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     // Alt + clicking a card goes to the turn it was drawn
     // (we want to go to the turn before it is drawn, tween the card being drawn,
     // and then indicate the card)
-    if (card.state.turnDrawn! > 0) {
-      goToTurn(card.state.turnDrawn! - 1, true);
+    if (card.state.segmentDrawn === null) {
+      // The card was drawn during the initial deal before the first turn
+      goToTurnAndIndicateCard(0, card.state.order);
+    } else {
+      // The card was drawn after the initial deal
+      // Go to the segment that it was drawn and then fast-forward one segment in order to show the
+      // card tweening into the hand
+      // We have to record the segment because it will be cleared after the first "goToTurn()"
+      const segmentDrawn = card.state.segmentDrawn;
+      goToTurn(segmentDrawn, true);
+      goToTurnAndIndicateCard(segmentDrawn + 1, card.state.order, false);
     }
-    goToTurnAndIndicateCard(card.state.turnDrawn!, card.state.order);
   } else if (cardRules.isPlayed(card.state)) {
     // Clicking on played cards goes to the turn immediately before they were played
     goToTurnAndIndicateCard(card.state.turnPlayed!, card.state.order);
@@ -78,7 +86,9 @@ const clickMiddle = (card: HanabiCard, event: MouseEvent) => {
     card.state.segmentFirstClued !== null
     && card.state.rank !== STACK_BASE_RANK // Disable this functionality for the stack base
   ) {
-    goToTurn(card.state.segmentFirstClued, true);
+    // We add one to the segment so that the clue is visible
+    // (if we go to the turn that the card was clued, then the actual clue has not happened yet)
+    goToTurn(card.state.segmentFirstClued + 1, true);
   }
 };
 
@@ -199,8 +209,8 @@ const goToTurn = (turn: number, fast: boolean) => {
   }
 };
 
-export const goToTurnAndIndicateCard = (turn: number, order: number) => {
-  goToTurn(turn, true);
+export const goToTurnAndIndicateCard = (turn: number, order: number, fast: boolean = true) => {
+  goToTurn(turn, fast);
 
   // We indicate the card to make it easier to find
   arrows.hideAll(); // We hide all the arrows first to ensure that the arrow is always shown

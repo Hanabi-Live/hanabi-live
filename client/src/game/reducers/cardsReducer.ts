@@ -76,8 +76,7 @@ const cardsReducer = (
         newDeck[order] = {
           ...getCard(newDeck, order),
           numPositiveClues: card.numPositiveClues + 1,
-          // We need to add one because the segment is only incremented later on in the turn reducer
-          segmentFirstClued: game.turn.segment! + 1,
+          segmentFirstClued: game.turn.segment!,
         };
         applyClue(order, true);
       });
@@ -195,7 +194,7 @@ const cardsReducer = (
         location: action.playerIndex,
         suitIndex: nullIfNegative(action.suitIndex),
         rank: nullIfNegative(action.rank),
-        turnDrawn: game.turn.turnNum,
+        segmentDrawn: game.turn.segment,
         colorClueMemory: {
           ...initial.colorClueMemory,
           pipStates: suitPipStates,
