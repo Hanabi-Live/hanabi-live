@@ -196,16 +196,16 @@ export const send = (hypoAction: ClientAction) => {
       turn: gameState.turn.turnNum,
     });
   } else if (type === 'play' || type === 'discard') {
-    const card = gameState.deck[hypoAction.target];
+    const card = globals.deck[hypoAction.target];
 
     // Play / Discard
     sendHypoAction({
       type,
       playerIndex: gameState.turn.currentPlayerIndex!,
       order: hypoAction.target,
-      suitIndex: card.suitIndex!,
-      rank: card.rank!,
-      failed: false,
+      suitIndex: card.visibleSuitIndex!,
+      rank: card.visibleRank!,
+      failed: false, // TODO: misplays
     });
 
     // Draw

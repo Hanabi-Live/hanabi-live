@@ -53,14 +53,6 @@ export const numCopiesOfCard = (suit: Suit, rank: number, variant: Variant) => {
   return amountToAdd;
 };
 
-// Returns if a specific suit/rank has already been played
-export const isPlayed = (
-  deck: readonly CardState[],
-  playStacks: ReadonlyArray<readonly number[]>,
-  suitIndex: number,
-  rank: number,
-) => playStacks[suitIndex].some((order) => deck[order].rank === rank);
-
 // Returns how many cards of a specific suit/rank that have been already discarded
 export const discardedCopies = (
   deck: readonly CardState[],
