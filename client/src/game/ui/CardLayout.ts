@@ -94,7 +94,6 @@ export default class CardLayout extends Konva.Group {
       x = handWidth - x;
     }
 
-    const storedPostAnimationLayout = globals.postAnimationLayout;
     for (let i = 0; i < numCards; i++) {
       const layoutChild = this.children[i] as unknown as LayoutChild;
 
@@ -140,10 +139,6 @@ export default class CardLayout extends Konva.Group {
               }
               card.finishedTweening();
               layoutChild.checkSetDraggable();
-              if (!storedPostAnimationLayout) {
-                return;
-              }
-              storedPostAnimationLayout();
             },
           }, true);
         };

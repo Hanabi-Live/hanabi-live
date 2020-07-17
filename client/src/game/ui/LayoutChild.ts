@@ -53,7 +53,11 @@ export default class LayoutChild extends Konva.Group {
   // Note that this method cannot have a name of "setDraggable()",
   // since that would overlap with the Konva function
   checkSetDraggable() {
-    if (this.shouldBeDraggable(globals.currentPlayerIndex)) {
+    const state = globals.store!.getState();
+    if (state.visibleState === null) {
+      return;
+    }
+    if (this.shouldBeDraggable(state.visibleState.turn.currentPlayerIndex)) {
       this.draggable(true);
       this.on('dragstart', this.dragStart);
       this.on('dragend', this.dragEnd);
@@ -165,17 +169,19 @@ export default class LayoutChild extends Konva.Group {
     // Before we play a card,
     // do a check to ensure that it is actually playable to prevent silly mistakes from players
     // (but disable this in speedruns and certain variants)
-    const ongoingGame = globals.store!.getState().ongoingGame;
+    const state = globals.store!.getState();
+    const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
+    const ourPlayerIndex = state.metadata.ourPlayerIndex;
     if (
       draggedTo === 'playArea'
       && !globals.options.speedrun
       && !variantRules.isThrowItInAHole(globals.variant)
-      && globals.ourTurn // Don't use warnings for preplays
+      && currentPlayerIndex === ourPlayerIndex // Don't use warnings for preplays
       && !cardRules.isPotentiallyPlayable(
         card.state,
-        ongoingGame.deck,
-        ongoingGame.playStacks,
-        ongoingGame.playStackDirections,
+        state.ongoingGame.deck,
+        state.ongoingGame.playStacks,
+        state.ongoingGame.playStackDirections,
         globals.variant,
       )
     ) {

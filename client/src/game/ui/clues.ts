@@ -34,7 +34,11 @@ export const checkLegal = () => {
   }
 
   const who = (target as PlayerButton).targetIndex;
-  if (who === globals.currentPlayerIndex) {
+  const currentPlayerIndex = globals.store!.getState().visibleState!.turn.currentPlayerIndex;
+  if (currentPlayerIndex === null) {
+    return;
+  }
+  if (who === currentPlayerIndex) {
     // They are in a hypothetical and trying to give a clue to the current player
     globals.elements.giveClueButton!.setEnabled(false);
     return;
@@ -117,16 +121,8 @@ export const give = () => {
   const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
   const { clueTypeButtonGroup } = globals.elements;
   const clueButton = clueTypeButtonGroup!.getPressed() as ColorButton | RankButton;
-  if (
-    (!globals.ourTurn && !globals.hypothetical) // We can only give clues on our turn
-    || globals.clues === 0 // We can only give a clue if there is one available
-    || target === undefined || target === null // We might have not selected a clue recipient
-    || clueButton === undefined || clueButton === null // We might have not selected a type of clue
-    // We might be trying to give an invalid clue (e.g. an Empty Clue)
-    || !globals.elements.giveClueButton!.enabled
-    // Prevent the user from accidentally giving a clue
-    || (Date.now() - globals.UIClickTime < 1000)
-  ) {
+
+  if (!shouldGiveClue(target, clueButton)) {
     return;
   }
 
@@ -148,4 +144,23 @@ export const give = () => {
     target: target.targetIndex,
     value,
   });
+};
+
+const shouldGiveClue = (target: PlayerButton, clueButton: ColorButton | RankButton) => {
+  const state = globals.store!.getState();
+  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
+  const ourPlayerIndex = state.metadata.ourPlayerIndex;
+
+  return (
+    // We can only give clues on our turn
+    (currentPlayerIndex === ourPlayerIndex || state.replay.hypothetical !== null)
+    && globals.clues > 0 // We can only give a clue if there is one available
+    && target !== undefined // We might have not selected a clue recipient
+    && target !== null // We might have not selected a clue recipient
+    && clueButton !== undefined // We might have not selected a type of clue
+    && clueButton !== null // We might have not selected a type of clue
+    // We might be trying to give an invalid clue (e.g. an Empty Clue)
+    && globals.elements.giveClueButton!.enabled
+    && (Date.now() - globals.UIClickTime > 1000) // Prevent the user from accidentally giving a clue
+  );
 };

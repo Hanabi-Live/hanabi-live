@@ -57,10 +57,6 @@ export class Globals {
   stackBases: HanabiCard[] = [];
 
   // Game state variables (reset when rewinding in a replay)
-  turn: number = 0;
-  currentPlayerIndex: number | null = 0;
-  ourTurn: boolean = false;
-  deckSize: number = 0;
   playStackDirections: StackDirection[] = [];
 
   // UI elements
@@ -122,8 +118,6 @@ export class Globals {
 
   // Miscellaneous
   animateFast: boolean = true;
-  // A function called after an action from the server moves cards
-  postAnimationLayout: (() => void) | null = null;
   UIClickTime: number = 0; // Used to prevent accidental double clicks
   spectators: string[] = [];
 
@@ -162,10 +156,6 @@ export class Globals {
     this.characterRememberedCards = [];
     this.deck = [];
     this.stackBases = [];
-    this.turn = 0;
-    this.currentPlayerIndex = 0;
-    this.ourTurn = false;
-    this.deckSize = 0;
     this.playStackDirections = [];
     this.imageLoader = null;
     this.stage = new Konva.Stage({ container: 'game' });
@@ -203,7 +193,6 @@ export class Globals {
     this.pausePlayer = '';
     this.pauseQueued = false;
     this.animateFast = true;
-    this.postAnimationLayout = null;
     this.UIClickTime = 0;
     this.spectators = [];
 

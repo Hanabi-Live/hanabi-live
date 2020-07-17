@@ -29,7 +29,6 @@ commands.set('warning', (data: WarningData) => {
   if (
     globals.currentScreen === 'game'
     && globals.ui !== null
-    && globals.ui.globals.ourTurn
   ) {
     globals.ui.reshowClueUIAfterWarning();
   }

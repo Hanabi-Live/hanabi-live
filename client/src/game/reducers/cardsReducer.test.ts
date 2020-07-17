@@ -51,10 +51,10 @@ describe('cardsReducer', () => {
     });
   });
 
-  describe('turnDiscarded', () => {
+  describe('segmentDiscarded', () => {
     test('is null while on the deck', () => {
       const deck: CardState[] = [defaultCard];
-      expect(deck[0].turnDiscarded).toBe(null);
+      expect(deck[0].segmentDiscarded).toBe(null);
     });
 
     test('is correct when discarded', () => {
@@ -62,7 +62,7 @@ describe('cardsReducer', () => {
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const newDeck = cardsReducer(deck, discard(0, 0, 1, 2, false), gameState, defaultMetadata);
-      expect(newDeck[0].turnDiscarded).toBe(gameState.turn.turnNum);
+      expect(newDeck[0].segmentDiscarded).toBe(gameState.turn.segment);
     });
 
     test('is null when played', () => {
@@ -70,7 +70,7 @@ describe('cardsReducer', () => {
       deck = cardsReducer(deck, draw(0, 0), gameState, defaultMetadata);
 
       const newDeck = cardsReducer(deck, play(0, 0, 1, 2), gameState, defaultMetadata);
-      expect(newDeck[0].turnDiscarded).toBe(null);
+      expect(newDeck[0].segmentDiscarded).toBe(null);
     });
 
     test('is correct when misplayed', () => {
@@ -79,7 +79,7 @@ describe('cardsReducer', () => {
 
       const misplay = discard(0, 0, 1, 2, true); // A misplay is a discard with "failed = true"
       const newDeck = cardsReducer(deck, misplay, gameState, defaultMetadata);
-      expect(newDeck[0].turnDiscarded).toBe(gameState.turn.turnNum);
+      expect(newDeck[0].segmentDiscarded).toBe(gameState.turn.segment);
     });
   });
 

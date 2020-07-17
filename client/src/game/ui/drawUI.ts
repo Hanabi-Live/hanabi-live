@@ -1457,7 +1457,10 @@ const drawTimers = () => {
       return;
     }
     let setting;
-    if (globals.ourTurn) {
+    const state = globals.store!.getState();
+    const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
+    const ourPlayerIndex = state.metadata.ourPlayerIndex;
+    if (currentPlayerIndex === ourPlayerIndex) {
       setting = 'pause';
     } else if (globals.pauseQueued) {
       setting = 'pause-unqueue';

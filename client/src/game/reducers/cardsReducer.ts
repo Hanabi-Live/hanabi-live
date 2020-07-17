@@ -76,7 +76,7 @@ const cardsReducer = (
         newDeck[order] = {
           ...getCard(newDeck, order),
           numPositiveClues: card.numPositiveClues + 1,
-          turnFirstClued: game.turn.turnNum,
+          segmentFirstClued: game.turn.segment!,
         };
         applyClue(order, true);
       });
@@ -117,17 +117,17 @@ const cardsReducer = (
         }
       }
 
-      let turnPlayed = card.turnPlayed;
-      let turnDiscarded = card.turnDiscarded;
+      let segmentPlayed = card.segmentPlayed;
+      let segmentDiscarded = card.segmentDiscarded;
       let location = card.location;
       let isMisplayed = card.isMisplayed;
 
       if (action.type === 'play') {
         location = 'playStack';
-        turnPlayed = game.turn.turnNum;
+        segmentPlayed = game.turn.segment;
       } else {
         location = 'discard';
-        turnDiscarded = game.turn.turnNum;
+        segmentDiscarded = game.turn.segment;
         if (action.failed) {
           isMisplayed = true;
         }
@@ -138,8 +138,8 @@ const cardsReducer = (
         suitIndex,
         rank,
         identityDetermined,
-        turnPlayed,
-        turnDiscarded,
+        segmentPlayed,
+        segmentDiscarded,
         location,
         isMisplayed,
       };
@@ -194,7 +194,7 @@ const cardsReducer = (
         location: action.playerIndex,
         suitIndex: nullIfNegative(action.suitIndex),
         rank: nullIfNegative(action.rank),
-        turnDrawn: game.turn.turnNum,
+        segmentDrawn: game.turn.segment,
         colorClueMemory: {
           ...initial.colorClueMemory,
           pipStates: suitPipStates,

@@ -182,7 +182,8 @@ export const set = (
     const pos = getPos(element!, rot);
     arrow.setAbsolutePosition(pos);
   } else {
-    animate(arrow, element as HanabiCard, rot, giver, globals.turn);
+    const visibleSegment = globals.store!.getState().visibleState!.turn.segment!;
+    animate(arrow, element as HanabiCard, rot, giver, visibleSegment);
   }
   if (!globals.animateFast) {
     globals.layers.arrow.batchDraw();
@@ -227,9 +228,10 @@ const getPos = (element: Konva.Node, rot: number) => {
 };
 
 // Animate the arrow to fly from the player who gave the clue to the card
-const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, turn: number) => {
-  // Don't bother doing the animation if it is delayed by more than one turn
-  if (globals.turn > turn + 1 || globals.turn < turn - 1) {
+const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, segment: number) => {
+  // Don't bother doing the animation if it is delayed by more than one segment
+  const visibleSegment = globals.store!.getState().visibleState!.turn.segment!;
+  if (visibleSegment > segment + 1 || visibleSegment < segment - 1) {
     return;
   }
 
@@ -255,7 +257,7 @@ const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, tur
   if (card.tweening) {
     arrow.hide();
     card.waitForTweening(() => {
-      animate(arrow, card, rot, giver, turn);
+      animate(arrow, card, rot, giver, segment);
     });
     return;
   }

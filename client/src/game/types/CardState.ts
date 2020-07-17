@@ -15,10 +15,10 @@ export default interface CardState {
   readonly possibleCards: ReadonlyArray<readonly number[]>;
   readonly identityDetermined: boolean;
   readonly numPositiveClues: number;
-  readonly turnFirstClued: number | null;
-  readonly turnDrawn: number | null;
-  readonly turnDiscarded: number | null;
-  readonly turnPlayed: number | null;
+  readonly segmentFirstClued: number | null;
+  readonly segmentDrawn: number | null;
+  readonly segmentDiscarded: number | null;
+  readonly segmentPlayed: number | null;
 
   // Needed so that we can animate a misplayed card different from a discarded card
   readonly isMisplayed: boolean;
