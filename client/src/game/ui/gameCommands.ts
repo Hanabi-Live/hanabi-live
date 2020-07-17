@@ -603,7 +603,8 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
     globals.elements.useSharedTurnsButton!.setCenter();
   }
   globals.elements.enterHypoButton!.visible(globals.amSharedReplayLeader);
-  globals.elements.enterHypoButton!.setEnabled(globals.currentPlayerIndex !== null);
+  const currentPlayerIndex = globals.store!.getState().visibleState!.turn.currentPlayerIndex;
+  globals.elements.enterHypoButton!.setEnabled(currentPlayerIndex !== null);
 
   // Enable/disable the restart button
   globals.elements.restartButton!.visible(globals.amSharedReplayLeader);

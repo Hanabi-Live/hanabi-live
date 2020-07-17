@@ -34,7 +34,11 @@ export const checkLegal = () => {
   }
 
   const who = (target as PlayerButton).targetIndex;
-  if (who === globals.currentPlayerIndex) {
+  const currentPlayerIndex = globals.store!.getState().visibleState!.turn.currentPlayerIndex;
+  if (currentPlayerIndex === null) {
+    return;
+  }
+  if (who === currentPlayerIndex) {
     // They are in a hypothetical and trying to give a clue to the current player
     globals.elements.giveClueButton!.setEnabled(false);
     return;

@@ -53,7 +53,8 @@ export default class LayoutChild extends Konva.Group {
   // Note that this method cannot have a name of "setDraggable()",
   // since that would overlap with the Konva function
   checkSetDraggable() {
-    if (this.shouldBeDraggable(globals.currentPlayerIndex)) {
+    const currentPlayerIndex = globals.store!.getState().visibleState!.turn.currentPlayerIndex;
+    if (this.shouldBeDraggable(currentPlayerIndex)) {
       this.draggable(true);
       this.on('dragstart', this.dragStart);
       this.on('dragend', this.dragEnd);

@@ -141,7 +141,8 @@ export const beginTurn = () => {
   const buttons = buttonGroup.children.toArray() as PlayerButton[];
   for (const button of buttons) {
     button.setPressed(false);
-    const enabled = button.targetIndex !== globals.currentPlayerIndex;
+    const currentPlayerIndex = globals.store!.getState().visibleState!.turn.currentPlayerIndex;
+    const enabled = button.targetIndex !== currentPlayerIndex;
     button.setEnabled(enabled);
 
     // In 2-player games,

@@ -1,7 +1,5 @@
 // The "gameAction" WebSocket command communicate a change in the game state
 
-import { nullIfNegative } from '../../misc';
-// import { getCharacter } from '../data/gameData';
 import {
   ActionIncludingHypothetical,
   ActionTurn,
@@ -31,9 +29,4 @@ const actionFunctions = new Map<ActionIncludingHypothetical['type'], ActionFunct
 actionFunctions.set('turn', (data: ActionTurn) => {
   // Store the current turn in memory
   globals.turn = data.num;
-  globals.currentPlayerIndex = nullIfNegative(data.currentPlayerIndex);
-
-  if (!globals.animateFast) {
-    globals.layers.UI.batchDraw();
-  }
 });
