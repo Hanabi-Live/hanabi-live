@@ -45,7 +45,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     }
 
     case 'finishOngoingGame': {
-      // If the game just ended, recalculate the whole game as spectator to fix possibilities
+      // If the game just ended, recalculate the whole game as a spectator to fix card possibilities
       if (!state.metadata.spectating) {
         state.metadata.spectating = true;
 
@@ -87,19 +87,13 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
     default: {
       // A new game action happened
-      const previousSegment = state.ongoingGame.turn.segment;
       state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action, state.metadata)!;
 
       // We copy the card identities to the global state for convenience
       updateCardIdentities(state);
 
-      // When the game state reducer sets "segment" to a new number,
-      // it is a signal to record the current state of the game (for the purposes of replays)
-      if (
-        state.ongoingGame.turn.segment !== previousSegment
-        && state.ongoingGame.turn.segment !== null
-      ) {
-        state.replay.states[state.ongoingGame.turn.segment] = state.ongoingGame;
+      if (shouldStoreSegment(state.ongoingGame, original(state.ongoingGame)!)) {
+        state.replay.states[state.ongoingGame.turn.segment!] = state.ongoingGame;
       }
 
       state.replay.actions.push(action);
@@ -139,15 +133,23 @@ const reduceGameActions = (
   const game = actions.reduce((s: GameState, a: GameAction) => {
     const nextState = gameStateReducer(s, a, metadata);
 
-    // When the game state reducer sets "segment" to a new number,
-    // it is a signal to record the current state of the game (for the purposes of replays)
-    if (nextState.turn.segment !== s.turn.segment && nextState.turn.segment !== null) {
-      states[nextState.turn.segment] = nextState;
+    if (shouldStoreSegment(nextState, s)) {
+      states[nextState.turn.segment!] = nextState;
     }
 
     return nextState;
   }, initialState);
   return { game, states };
+};
+
+// When the game state reducer sets "segment" to a new number,
+// it is a signal to record the current state of the game (for the purposes of replays)
+const shouldStoreSegment = (state: GameState, previousState: GameState) => {
+  if (state.turn.segment === null) {
+    // The game is still doing the initial deal
+    return false;
+  }
+  return state.turn.segment !== previousState.turn.segment;
 };
 
 // We keep a copy of each card identity in the global state for convenience
