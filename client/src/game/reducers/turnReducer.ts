@@ -81,8 +81,14 @@ const turnReducer = produce((
       if (turn.segment === null) {
         throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
-      turn.segment += 1;
+
+      // We do not want to increment the segment here because we want the "gameOver" text to appear
+      // on the same segment as the final action of the game
+
+      // Setting the current player index to null signifies that the game is over and will prevent
+      // any name frames from being highlighted on subsequent segments
       turn.currentPlayerIndex = null;
+
       break;
     }
 

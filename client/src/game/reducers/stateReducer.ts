@@ -87,12 +87,13 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
     default: {
       // A new game action happened
+      const previousSegment = state.ongoingGame.turn.segment;
       state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action, state.metadata)!;
 
       // We copy the card identities to the global state for convenience
       updateCardIdentities(state);
 
-      if (shouldStoreSegment(state.ongoingGame, original(state.ongoingGame)!)) {
+      if (shouldStoreSegment(state.ongoingGame.turn.segment, previousSegment, action)) {
         state.replay.states[state.ongoingGame.turn.segment!] = state.ongoingGame;
       }
 
@@ -133,7 +134,7 @@ const reduceGameActions = (
   const game = actions.reduce((s: GameState, a: GameAction) => {
     const nextState = gameStateReducer(s, a, metadata);
 
-    if (shouldStoreSegment(nextState, s)) {
+    if (shouldStoreSegment(nextState.turn.segment, s.turn.segment, a)) {
       states[nextState.turn.segment!] = nextState;
     }
 
@@ -144,12 +145,25 @@ const reduceGameActions = (
 
 // When the game state reducer sets "segment" to a new number,
 // it is a signal to record the current state of the game (for the purposes of replays)
-const shouldStoreSegment = (state: GameState, previousState: GameState) => {
-  if (state.turn.segment === null) {
+const shouldStoreSegment = (
+  segment: number | null,
+  previousSegment: number | null,
+  action: GameAction,
+) => {
+  if (segment === null) {
     // The game is still doing the initial deal
     return false;
   }
-  return state.turn.segment !== previousState.turn.segment;
+
+  if (action.type === 'gameOver') {
+    // Handle the special case of the last action being a "gameOver"
+    // We want this to meld together with the previous segment so that the game over text appears
+    // on the same segment as the game action of the final turn
+    return true;
+  }
+
+  // By default, store a new segment whenever the turn reducer changes the segment number
+  return segment !== previousSegment;
 };
 
 // We keep a copy of each card identity in the global state for convenience
