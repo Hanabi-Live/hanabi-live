@@ -23,7 +23,7 @@ var (
 	characterNames  []string
 	charactersID    map[int]string
 	debugCharacters = []string{
-		"Panicky",
+		"Contrarian",
 		"n/a",
 		"n/a",
 		"n/a",

@@ -140,15 +140,15 @@ const nextTurn = (
 ) => {
   state.turnNum += 1;
 
+  if (turnRules.shouldPlayOrderInvert(characterID)) {
+    state.playOrderInverted = !state.playOrderInverted;
+  }
+
   state.currentPlayerIndex = turnRules.getNextPlayerIndex(
     state.currentPlayerIndex,
     numPlayers,
     state.playOrderInverted,
   );
-
-  if (turnRules.shouldPlayOrderInvert(characterID)) {
-    state.playOrderInverted = !state.playOrderInverted;
-  }
 
   if (deckSize === 0 && state.endTurnNum === null) {
     state.endTurnNum = state.turnNum + numPlayers;
