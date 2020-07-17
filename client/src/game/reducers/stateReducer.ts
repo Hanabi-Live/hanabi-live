@@ -158,7 +158,7 @@ const shouldStoreSegment = (
   if (action.type === 'gameOver') {
     // Handle the special case of the last action being a "gameOver"
     // We want this to meld together with the previous segment so that the game over text appears
-    // on the same segment as the game action of the final turn
+    // on the same segment as the final game action
     return true;
   }
 
