@@ -24,6 +24,39 @@ const cardsReducer = (
   const newDeck = deck.concat([]);
 
   switch (action.type) {
+    // The server just told us about a card that was previously hidden
+    // { type: 'cardIdentity', playerIndex: 0, order: 0, rank: 1, suitIndex: 4 }
+    case 'cardIdentity': {
+      if (action.suitIndex === -1 || action.rank === -1) {
+        // The server scrubbed the identity information to prevent leaking information
+        // (e.g. the card happens to be in our own hand and we are not supposed to know the identity
+        // yet)
+        break;
+      }
+
+      const order = action.order;
+      const card = getCard(deck, order);
+      if (card.identityDetermined) {
+        // We already know the full identity of this card, so we can safely ignore this action
+        break;
+      }
+
+      const suitIndex = action.suitIndex;
+      const rank = action.rank;
+
+      // Now that we know the identity of this card, we can remove card possibilities on other cards
+      revealCard(suitIndex, rank, card, newDeck, game, metadata);
+
+      newDeck[order] = {
+        ...card,
+        suitIndex,
+        rank,
+        identityDetermined: true,
+      };
+
+      break;
+    }
+
     case 'clue': {
       const clue = action.clue.type === ClueType.Color
         ? colorClue(variant.clueColors[action.clue.value])
@@ -93,29 +126,11 @@ const cardsReducer = (
     case 'play': {
       const order = action.order;
       const card = getCard(deck, order);
-
-      // Reveal all cards played and discarded
       const suitIndex = nullIfNegative(action.suitIndex);
       const rank = nullIfNegative(action.rank);
 
-      let identityDetermined = card.identityDetermined;
-
-      // If the card was already fully-clued,
-      // we already updated the possibilities for it on other cards
-      if (suitIndex !== null && rank !== null && !identityDetermined) {
-        identityDetermined = true;
-        // If we are currently playing this game, this is the first time
-        // we see this card, from the point of view of all hands
-        const handsSeeingCardForFirstTime = (
-          !metadata.spectating
-          && metadata.ourPlayerIndex === card.location
-        )
-          ? game.hands // All hands
-          : [game.hands[card.location as number]]; // Just who's seeing this for the first time
-        for (const hand of handsSeeingCardForFirstTime) {
-          removePossibilityOnHand(newDeck, hand, order, suitIndex, rank, variant);
-        }
-      }
+      // If we know the full identity of this card, we can remove card possibilities on other cards
+      const identityDetermined = revealCard(suitIndex, rank, card, newDeck, game, metadata);
 
       let segmentPlayed = card.segmentPlayed;
       let segmentDiscarded = card.segmentDiscarded;
@@ -242,6 +257,7 @@ const cardsReducer = (
       break;
     }
   }
+
   return newDeck;
 };
 
@@ -323,7 +339,45 @@ const removePossibility = (
 const getCard = (deck: readonly CardState[], order: number) => {
   const card = deck[order];
   if (card === undefined) {
-    console.error(`Failed to get the card for index ${order}.`);
+    throw new Error(`Failed to get the card for index ${order}.`);
   }
   return card;
+};
+
+const revealCard = (
+  suitIndex: number | null,
+  rank: number | null,
+  card: CardState,
+  newDeck: CardState[],
+  game: GameState,
+  metadata: GameMetadata,
+) => {
+  // Local variables
+  const variant = getVariant(metadata.options.variantName);
+
+  // The action from the server did not specify the identity of the card, so we cannot reveal it
+  // (e.g. we are playing a special variant where cards are not revealed when they are played)
+  if (suitIndex === null || rank === null) {
+    return false;
+  }
+
+  // If the card was already fully-clued,
+  // we have already revealed it and updated the possibilities on other cards
+  if (card.identityDetermined) {
+    return true;
+  }
+
+  // If we are currently playing this game, this is the first time we see this card,
+  // from the point of view of all hands
+  const handsSeeingCardForFirstTime = (
+    !metadata.spectating
+    && metadata.ourPlayerIndex === card.location
+  )
+    ? game.hands // All hands
+    : [game.hands[card.location as number]]; // Just who's seeing this for the first time
+  for (const hand of handsSeeingCardForFirstTime) {
+    removePossibilityOnHand(newDeck, hand, card.order, suitIndex, rank, variant);
+  }
+
+  return true;
 };

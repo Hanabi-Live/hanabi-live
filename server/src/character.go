@@ -23,7 +23,7 @@ var (
 	characterNames  []string
 	charactersID    map[int]string
 	debugCharacters = []string{
-		"Contrarian",
+		"Slow-Witted",
 		"n/a",
 		"n/a",
 		"n/a",
@@ -593,6 +593,22 @@ func characterHideCard(a *ActionDraw, g *Game, p *GamePlayer) bool {
 		return true
 	} else if p.Character == "Oblivious" && a.PlayerIndex == p.GetRightPlayer() { // 30
 		return true
+	} else if p.Character == "Slow-Witted" { // 33
+		return true
+	}
+
+	return false
+}
+
+func characterShouldSendCardIdentityOfSlot2(g *Game) bool {
+	if !g.Options.DetrimentalCharacters {
+		return false
+	}
+
+	for _, p := range g.Players {
+		if p.Character == "Slow-Witted" { // 33
+			return true
+		}
 	}
 
 	return false

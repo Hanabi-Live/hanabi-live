@@ -24,7 +24,7 @@ export default interface CardState {
   readonly isMisplayed: boolean;
 }
 
-export type CardLocation = 'deck' | 'discard' | 'playStack' | number;
+export type CardLocation = 'deck' | 'discard' | 'playStack' | 'hole' | number;
 export type PipState = 'Visible' | 'Hidden' | 'Eliminated';
 
 export interface ClueMemory {

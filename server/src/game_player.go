@@ -336,7 +336,19 @@ func (p *GamePlayer) DrawCard() {
 		SuitIndex:   c.SuitIndex,
 		Rank:        c.Rank,
 	})
-	if t.Running {
+	t.NotifyGameAction()
+
+	// If a card slides from slot 1 to slot 2,
+	// we might need to reveal the identity of the card to another player on the team
+	if len(p.Hand) > 1 && characterShouldSendCardIdentityOfSlot2(g) {
+		c2 := p.Hand[len(p.Hand)-2]
+		g.Actions = append(g.Actions, ActionCardIdentity{
+			Type:        "cardIdentity",
+			PlayerIndex: p.Index,
+			Order:       c2.Order,
+			SuitIndex:   c2.SuitIndex,
+			Rank:        c2.Rank,
+		})
 		t.NotifyGameAction()
 	}
 

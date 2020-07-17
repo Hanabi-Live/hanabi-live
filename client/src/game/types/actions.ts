@@ -12,6 +12,7 @@ export type Action =
   | ActionFinishOngoingGame;
 
 export type GameAction =
+  | ActionCardIdentity
   | ActionClue
   | ActionDiscard
   | ActionDraw
@@ -65,6 +66,15 @@ export interface ActionFinishOngoingGame {
 // ------------
 // Game actions
 // ------------
+
+// Used to implement the "Slow-Witted" detrimental character
+export interface ActionCardIdentity {
+  type: 'cardIdentity';
+  readonly playerIndex: number;
+  readonly order: number;
+  readonly suitIndex: number;
+  readonly rank: number;
+}
 
 export interface ActionClue {
   type: 'clue';

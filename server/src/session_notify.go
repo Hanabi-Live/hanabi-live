@@ -208,18 +208,8 @@ func (s *Session) NotifyYourTurn(t *Table) {
 	})
 }
 
-func (s *Session) NotifyGameAction(action interface{}, t *Table) {
-	// Check to see if we need to remove some card information
-	drawAction, ok := action.(ActionDraw)
-	if ok && drawAction.Type == "draw" {
-		drawAction.Scrub(t, s.UserID())
-		action = drawAction
-	}
-	playAction, ok := action.(ActionPlay)
-	if ok && playAction.Type == "play" {
-		playAction.Scrub(t)
-		action = playAction
-	}
+func (s *Session) NotifyGameAction(t *Table, action interface{}) {
+	scrubbedAction := CheckScrub(t, action, s.UserID())
 
 	type GameActionMessage struct {
 		TableID int         `json:"tableID"`
@@ -227,7 +217,7 @@ func (s *Session) NotifyGameAction(action interface{}, t *Table) {
 	}
 	s.Emit("gameAction", &GameActionMessage{
 		TableID: t.ID,
-		Action:  action,
+		Action:  scrubbedAction,
 	})
 }
 

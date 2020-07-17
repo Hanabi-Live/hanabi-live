@@ -199,13 +199,13 @@ func (t *Table) NotifyGameAction() {
 	for _, gp := range g.Players {
 		p := t.Players[gp.Index]
 		if p.Present {
-			p.Session.NotifyGameAction(a, t)
+			p.Session.NotifyGameAction(t, a)
 		}
 	}
 
 	// Also send the spectators an update
 	for _, sp := range t.Spectators {
-		sp.Session.NotifyGameAction(a, t)
+		sp.Session.NotifyGameAction(t, a)
 	}
 }
 

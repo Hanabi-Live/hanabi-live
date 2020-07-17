@@ -224,7 +224,6 @@ const gameStateReducer = produce((
     // At the end of every turn, the server informs us of the stack directions for each suit
     // { type: 'stackDirections', directions: [0, 0, 0, 0, 0] }
     // TODO: This message is unnecessary and will be removed in a future version of the code
-    // (the client should be able to determine the stack directions directly)
     case 'playStackDirections': {
       // TEMP: At this point, check that the local state matches the server
       if (!equal(state.playStackDirections, action.directions)) {
@@ -277,6 +276,7 @@ const gameStateReducer = produce((
     }
 
     // Some actions do not affect the main state or are handled by another reducer
+    case 'cardIdentity':
     case 'turn': {
       break;
     }
