@@ -68,7 +68,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     }
   } else if (cardRules.isPlayed(card.state)) {
     // Clicking on played cards goes to the turn immediately before they were played
-    goToTurnAndIndicateCard(card.state.turnPlayed!, card.state.order);
+    goToTurnAndIndicateCard(card.state.segmentPlayed!, card.state.order);
   } else if (cardRules.isDiscarded(card.state)) {
     // Clicking on discarded cards goes to the turn immediately before they were discarded
     goToTurnAndIndicateCard(card.state.segmentDiscarded!, card.state.order);

@@ -69,7 +69,7 @@
         segmentFirstClued: s.segmentFirstClued,
         segmentDrawn: s.segmentDrawn,
         segmentDiscarded: s.segmentDiscarded,
-        turnPlayed: s.turnPlayed,
+        segmentPlayed: s.segmentPlayed,
         isMisplayed: s.isMisplayed,
       });
     }).filter(c => c.location !== 'deck');

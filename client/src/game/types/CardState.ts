@@ -17,8 +17,8 @@ export default interface CardState {
   readonly numPositiveClues: number;
   readonly segmentFirstClued: number | null;
   readonly segmentDrawn: number | null;
-  readonly turnDiscarded: number | null;
-  readonly turnPlayed: number | null;
+  readonly segmentDiscarded: number | null;
+  readonly segmentPlayed: number | null;
 
   // Needed so that we can animate a misplayed card different from a discarded card
   readonly isMisplayed: boolean;
