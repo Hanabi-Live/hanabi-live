@@ -19,13 +19,6 @@ export const onActiveChanged = (active: boolean, previousActive: boolean | undef
     const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
     globals.replayTurn = finalSegment;
 
-    // However, if the game just ended,
-    // we want to go to the turn before the miscellaneous data sent at the end of the game
-    if (globals.gameOver) {
-      globals.replayPos = globals.finalReplayPos;
-      globals.replayTurn = globals.finalReplayTurn;
-    }
-
     // Hide the UI elements that overlap with the replay area
     turn.hideClueUIAndDisableDragging();
 

@@ -121,19 +121,13 @@ commands.set('gameOver', () => {
   // Open the replay UI if we were not in an in-game replay when the game ended
   replay.enter();
 
-  // Turn off the flag that tracks when the game is over
-  // (before the "gameOver" command is received)
-  // (this must be after the "replay.enter()" function)
-  globals.gameOver = false;
-
-  // If the user is in an in-game replay when the game ends, we need to jerk them away from it
-  // and go to the end of the game. This is because we need to process all of the queued "action"
-  // messages (otherwise, the code will try to "reveal" cards that might be undefined)
-
-  // The final turn displays how long everyone took,
-  // so we want to go to the turn before that, which we recorded earlier
-  replay.goto(globals.finalReplayTurn, true);
-  console.log('Going to the finalReplayTurn:', globals.finalReplayTurn);
+  // We want to set the replay segment to the segment before all the times display so that the
+  // player can see why the game ended
+  // (otherwise, the text of the times will drown out the reason and force the user to rewind)
+  globals.store!.dispatch({
+    type: 'replayGoToSegment',
+    segment: globals.store!.getState().visibleState!.turn.segment! - 1,
+  });
 
   // Hide the "Exit Replay" button in the center of the screen, since it is no longer necessary
   globals.elements.replayExitButton!.hide();
@@ -310,7 +304,10 @@ commands.set('init', (data: InitData) => {
     globals.replayTurn = -1;
 
     // HACK: also let the state know this is a replay
-    globals.store!.dispatch({ type: 'startReplay', segment: 0 });
+    globals.store!.dispatch({
+      type: 'replayStart',
+      segment: 0,
+    });
   }
 
   // Now that we know the number of players and the variant, we can start to load & draw the UI
@@ -434,17 +431,6 @@ const processNewAction = (actionMessage: GameAction) => {
         button.hide();
       }
     }
-  }
-
-  // If the game is over, do not immediately draw the subsequent turns that contain the game times
-  if (
-    !globals.gameOver
-    && actionMessage.type === 'turn'
-    && actionMessage.currentPlayerIndex === -1
-  ) {
-    globals.gameOver = true;
-    globals.finalReplayPos = globals.replayLog.length;
-    globals.finalReplayTurn = actionMessage.num;
   }
 };
 

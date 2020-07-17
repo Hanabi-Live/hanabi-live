@@ -63,9 +63,9 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       break;
     }
 
-    case 'startReplay':
-    case 'endReplay':
-    case 'goToSegment':
+    case 'replayStart':
+    case 'replayEnd':
+    case 'replayGoToSegment':
     case 'hypoStart':
     case 'hypoBack':
     case 'hypoEnd':
@@ -103,22 +103,8 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     }
   }
 
-  // Update the visible state to the game or replay state
-  // after it has been initialized
-  if (state.visibleState !== null) {
-    if (state.replay.active) {
-      if (state.replay.hypothetical === null) {
-        // Go to current replay turn
-        state.visibleState = state.replay.states[state.replay.segment];
-      } else {
-        // Show the current hypothetical
-        state.visibleState = state.replay.hypothetical.ongoing;
-      }
-    } else {
-      // Default: the current game
-      state.visibleState = state.ongoingGame;
-    }
-  }
+  // Show the appropriate state depending on the situation
+  state.visibleState = visualStateToShow(state);
 }, {} as State);
 
 export default stateReducer;
@@ -190,4 +176,24 @@ const updateCardIdentities = (state: Draft<State>) => {
       }
     }
   });
+};
+
+const visualStateToShow = (state: Draft<State>) => {
+  if (state.visibleState === null) {
+    // The state is still initializing, so do not show anything
+    return null;
+  }
+
+  if (state.replay.active) {
+    if (state.replay.hypothetical === null) {
+      // Show the current replay segment
+      return state.replay.states[state.replay.segment];
+    }
+
+    // Show the current hypothetical
+    return state.replay.hypothetical.ongoing;
+  }
+
+  // Show the final segment of the current game
+  return state.ongoingGame;
 };

@@ -5,15 +5,15 @@ import {
   ActionClue,
   ActionDiscard,
   ActionDraw,
-  ActionPlay,
-  ActionStrike,
   ActionHypotheticalStart,
   ActionHypotheticalBack,
   ActionHypotheticalEnd,
   ActionHypothetical,
   ActionIncludingHypothetical,
-  ActionStartReplay,
-  ActionEndReplay,
+  ActionPlay,
+  ActionReplayStart,
+  ActionReplayEnd,
+  ActionStrike,
   ActionTurn,
 } from '../src/game/types/actions';
 import ClueType from '../src/game/types/ClueType';
@@ -121,19 +121,16 @@ export const turn = (num: number, currentPlayerIndex: number): ActionTurn => ({
   currentPlayerIndex,
 });
 
-export const startReplay = (segment: number): ActionStartReplay => ({
-  type: 'startReplay',
+export const startReplay = (segment: number): ActionReplayStart => ({
+  type: 'replayStart',
   segment,
 });
-
-export const endReplay = (): ActionEndReplay => ({ type: 'endReplay' });
+export const endReplay = (): ActionReplayEnd => ({ type: 'replayEnd' });
 
 export const hypoStart = (): ActionHypotheticalStart => ({ type: 'hypoStart' });
 export const hypoEnd = (): ActionHypotheticalEnd => ({ type: 'hypoEnd' });
 export const hypoBack = (): ActionHypotheticalBack => ({ type: 'hypoBack' });
-export const hypoAction = (action: ActionIncludingHypothetical): ActionHypothetical => (
-  {
-    type: 'hypoAction',
-    action,
-  }
-);
+export const hypoAction = (action: ActionIncludingHypothetical): ActionHypothetical => ({
+  type: 'hypoAction',
+  action,
+});

@@ -15,11 +15,11 @@ const replayReducer = produce((
   metadata: GameMetadata,
 ) => {
   // Validate current state
-  if (state.active && action.type === 'startReplay') {
+  if (state.active && action.type === 'replayStart') {
     throw new Error('Tried to start a replay but replay was already active.');
-  } else if (!state.active && action.type === 'endReplay') {
+  } else if (!state.active && action.type === 'replayEnd') {
     throw new Error('Tried to end a replay but replay was not active.');
-  } else if (!state.active && action.type !== 'startReplay') {
+  } else if (!state.active && action.type !== 'replayStart') {
     throw new Error(`Tried to perform a replay action of ${action.type} but replay was not active.`);
   } else if (state.hypothetical !== null && action.type === 'hypoStart') {
     throw new Error('Tried to start a hypothetical but hypothetical was already active.');
@@ -37,22 +37,30 @@ const replayReducer = produce((
   }
 
   switch (action.type) {
-    case 'startReplay': {
+    // --------------
+    // Replay actions
+    // --------------
+
+    case 'replayStart': {
       state.active = true;
       state.segment = action.segment;
       break;
     }
 
-    case 'endReplay': {
+    case 'replayEnd': {
       state.active = false;
       state.segment = 0;
       break;
     }
 
-    case 'goToSegment': {
+    case 'replayGoToSegment': {
       state.segment = action.segment;
       break;
     }
+
+    // --------------------
+    // Hypothetical actions
+    // --------------------
 
     case 'hypoStart': {
       const ongoing = state.states[state.segment];

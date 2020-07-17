@@ -30,7 +30,10 @@ export const enter = () => {
     return;
   }
 
-  globals.store!.dispatch({ type: 'startReplay', segment: globals.replayTurn });
+  globals.store!.dispatch({
+    type: 'replayStart',
+    segment: state.visibleState!.turn.segment!,
+  });
 };
 
 export const exit = () => {
@@ -49,7 +52,9 @@ export const exit = () => {
   const finalSegment = state.ongoingGame.turn.segment!;
   goto(finalSegment, true);
 
-  globals.store!.dispatch({ type: 'endReplay' });
+  globals.store!.dispatch({
+    type: 'replayEnd',
+  });
 };
 
 export const goto = (target: number, fast: boolean, force?: boolean) => {
@@ -67,7 +72,10 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
   const targetTurn = clamp(target, 0, finalSegment);
   if (targetTurn === globals.replayTurn) {
     // TEMP: eventually, move code from this file to reducers and observers
-    globals.store!.dispatch({ type: 'goToSegment', segment: globals.replayTurn });
+    globals.store!.dispatch({
+      type: 'replayGoToSegment',
+      segment: globals.replayTurn,
+    });
 
     return;
   }
@@ -94,7 +102,10 @@ export const goto = (target: number, fast: boolean, force?: boolean) => {
   }
 
   // TEMP: eventually, move code from this file to reducers and observers
-  globals.store!.dispatch({ type: 'goToSegment', segment: globals.replayTurn });
+  globals.store!.dispatch({
+    type: 'replayGoToSegment',
+    segment: globals.replayTurn,
+  });
 
   // Automatically close any tooltips and disable all Empathy when we jump to a particular turn
   // Without this, we would observe glitchy behavior
