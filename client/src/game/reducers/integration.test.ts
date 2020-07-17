@@ -6,6 +6,7 @@ import upOrDownGame from '../../../test_data/up_or_down.json';
 import upOrDownFinalCards from '../../../test_data/up_or_down_final_cards.json';
 import upOrDownTurn5Cards from '../../../test_data/up_or_down_turn5.json';
 import CardState from '../types/CardState';
+import StackDirection from '../types/StackDirection';
 import State from '../types/State';
 
 let testState: State;
@@ -39,7 +40,6 @@ describe('integration', () => {
         expect(turn5State.stats.cardsGotten).toBe(3);
         expect(turn5State.stats.potentialCluesLost).toBe(2);
 
-        /* TODO: stack directions on the test loader
         expect(turn5State.playStackDirections).toEqual([
           StackDirection.Undecided,
           StackDirection.Down,
@@ -47,7 +47,6 @@ describe('integration', () => {
           StackDirection.Down,
           StackDirection.Undecided,
         ]);
-        */
       });
       test.each([...Array(18).keys()])(
         'card %i has the correct pips and possibilities', (order) => {
@@ -80,7 +79,6 @@ describe('integration', () => {
         expect(finalState.stats.cardsGotten).toBe(26);
         expect(finalState.stats.potentialCluesLost).toBe(18);
 
-        /* TODO: stack directions on the test loader
         expect(finalState.playStackDirections).toEqual([
           StackDirection.Finished,
           StackDirection.Finished,
@@ -88,7 +86,6 @@ describe('integration', () => {
           StackDirection.Down,
           StackDirection.Finished,
         ]);
-        */
       });
       test.each([...Array(45).keys()])(
         'card %i has the correct pips and possibilities', (order) => {

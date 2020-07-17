@@ -1,5 +1,6 @@
 // Functions for building a state table for every turn
 
+import equal from 'fast-deep-equal';
 import produce, {
   Draft,
   original,
@@ -14,6 +15,7 @@ import {
   handRules,
   textRules,
   variantRules,
+  playStacksRules,
 } from '../rules';
 import { GameAction } from '../types/actions';
 import CardState from '../types/CardState';
@@ -166,6 +168,15 @@ const gameStateReducer = produce((
         const playStack = state.playStacks[action.suitIndex];
         playStack.push(action.order);
 
+        // Resolve the stack direction
+        const direction = playStacksRules.direction(
+          action.suitIndex,
+          playStack,
+          state.deck,
+          variant,
+        );
+        state.playStackDirections[action.suitIndex] = direction;
+
         // Gain a clue token if the stack is complete
         if (playStack.length === 5) { // Hard-code 5 cards per stack
           state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
@@ -215,7 +226,11 @@ const gameStateReducer = produce((
     // TODO: This message is unnecessary and will be removed in a future version of the code
     // (the client should be able to determine the stack directions directly)
     case 'playStackDirections': {
-      state.playStackDirections = action.directions;
+      // TEMP: At this point, check that the local state matches the server
+      if (!equal(state.playStackDirections, action.directions)) {
+        console.warn(`The stack directions from the client and the server do not match on turn ${state.turn.turnNum}.`);
+        console.warn(`Client = ${state.playStackDirections}, Server = ${action.directions}`);
+      }
       break;
     }
 
