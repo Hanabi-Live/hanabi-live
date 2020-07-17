@@ -11,14 +11,14 @@ export const shouldEndTurnAfterDraw = (
 
     // TODO fix this to be 8 when clue tokens are doubled
     if (character.name === 'Panicky' && clueTokens <= 4) {
-      return cardsPlayedOrDiscardedThisTurn === 2;
+      return cardsPlayedOrDiscardedThisTurn >= 2;
     }
   }
 
   // Otherwise, the turn always increments when:
   // 1) a play or discard happens and
   // 2) a card is drawn
-  return cardsPlayedOrDiscardedThisTurn === 1;
+  return cardsPlayedOrDiscardedThisTurn >= 1;
 };
 
 export const shouldEndTurnAfterClue = (
