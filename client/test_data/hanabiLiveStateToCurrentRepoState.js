@@ -66,10 +66,10 @@
         possibleCards: possibleCards,
         identityDetermined: s.identityDetermined,
         numPositiveClues: s.numPositiveClues,
-        segmentFirstClued: s.segmentFirstClued,
-        segmentDrawn: s.segmentDrawn,
-        segmentDiscarded: s.segmentDiscarded,
-        segmentPlayed: s.segmentPlayed,
+        segmentFirstClued: s.turnsClued.length > 0 ? s.turnsClued[0] : null,
+        segmentDrawn: s.turnDrawn,
+        segmentDiscarded: s.turnDiscarded,
+        segmentPlayed: s.turnPlayed,
         isMisplayed: s.isMisplayed,
       });
     }).filter(c => c.location !== 'deck');
