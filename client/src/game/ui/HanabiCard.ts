@@ -73,6 +73,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // HACK: since Konva doesn't propagate listening hierarchically until v7,
     // stop the image from listening
     this.bare.listening(false);
+
+    // Ensure any cursor visual effects are reset when animating
+    this.setVisualEffect('default');
   }
 
   finishedTweening() {
@@ -614,6 +617,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     const scale = globals.elements.deck!.cardBack.width() / CARD_W;
     if (globals.animateFast) {
       layoutChild.checkSetDraggable();
+      this.setVisualEffect('default');
       layoutChild.hide();
     } else {
       // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
@@ -805,13 +809,13 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       shadowOffsetX: shadowOffset,
       shadowOffsetY: shadowOffset,
       shadowBlur: cursor === 'dragging' ? Math.floor(0.06 * CARD_W) : Math.floor(0.03 * CARD_W),
-      duration: 0.1,
+      duration: globals.animateFast ? 0 : 0.1,
     });
     const baseOffsetY = this.isRaisedBecauseOfClues() ? 0.6 * CARD_H : 0.5 * CARD_H;
     this.to({
       offsetX: cursor === 'dragging' ? 0.52 * CARD_W : 0.5 * CARD_W,
       offsetY: baseOffsetY + (cursor === 'dragging' ? 0.02 * CARD_H : 0),
-      duration: 0.1,
+      duration: globals.animateFast ? 0 : 0.1,
     });
   }
 

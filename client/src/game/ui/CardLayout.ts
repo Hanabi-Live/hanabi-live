@@ -117,6 +117,7 @@ export default class CardLayout extends Konva.Group {
         layoutChild.scaleY(scale);
         layoutChild.rotation(0);
         layoutChild.checkSetDraggable();
+        layoutChild.card.setVisualEffect('default');
       } else {
         // Animate the card going from the deck to the hand
         // (or from the hand to the discard pile)
