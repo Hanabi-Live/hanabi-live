@@ -264,6 +264,13 @@ commands.set('init', (data: InitData) => {
 
   // Character settings
   let characterAssignments: Array<number | null> = data.characterAssignments.slice();
+  for (let i = 0; i < characterAssignments.length; i++) {
+    if (characterAssignments[i]! < 0) {
+      // Handle the special case of when players can be given assignments of "-1" during debugging
+      // (which corresponds to a null character)
+      characterAssignments[i] = null;
+    }
+  }
   if (characterAssignments.length === 0) {
     characterAssignments = initArray(globals.options.numPlayers, null);
   }

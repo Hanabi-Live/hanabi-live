@@ -425,72 +425,71 @@ const drawDetrimentalCharacters = (
     playerNamePos = namePosBGA;
   }
 
-  if (globals.options.detrimentalCharacters) {
-    const characterID = globals.characterAssignments[i];
-    if (characterID === null) {
-      throw new Error(`The character ID for player ${i} is null.`);
-    }
-    let character: Character | undefined;
-    if (characterID === -1) {
-      // A character with the ID of -1 may be assigned when debugging
-      character = {
-        id: -1,
-        name: 'n/a',
-        description: '',
-        emoji: '',
-      };
-    } else {
-      character = getCharacter(characterID);
-    }
-
-    const width2 = 0.03 * winW;
-    const height2 = 0.03 * winH;
-    const charIcon = new TextWithTooltip({
-      width: width2,
-      height: height2,
-      x: (playerNamePos[numPlayers][j].x * winW) - (width2 / 2),
-      y: (playerNamePos[numPlayers][j].y * winH) - (height2 / 2),
-      fontSize: 0.03 * winH,
-      fontFamily: 'Verdana',
-      align: 'center',
-      text: character.emoji,
-      fill: 'yellow',
-      shadowColor: 'black',
-      shadowBlur: 10,
-      shadowOffset: {
-        x: 0,
-        y: 0,
-      },
-      shadowOpacity: 0.9,
-      listening: true,
-    });
-    globals.layers.UI.add(charIcon);
-
-    charIcon.tooltipName = `character-assignment-${i}`;
-    const metadata = globals.characterMetadata[i];
-    let tooltipContent = `<strong>#${character.id} - ${character.name}</strong><br />${character.description}`;
-    if (tooltipContent.includes('[random color]')) {
-      // Replace "[random color]" with the selected color
-      tooltipContent = tooltipContent.replace(
-        '[random color]',
-        globals.variant.clueColors[metadata].name.toLowerCase(),
-      );
-    } else if (tooltipContent.includes('[random number]')) {
-      // Replace "[random number]" with the selected number
-      tooltipContent = tooltipContent.replace(
-        '[random number]',
-        metadata.toString(),
-      );
-    } else if (tooltipContent.includes('[random suit]')) {
-      // Replace "[random suit]" with the selected suit name
-      tooltipContent = tooltipContent.replace(
-        '[random suit]',
-        globals.variant.suits[metadata].name,
-      );
-    }
-    charIcon.tooltipContent = tooltipContent;
-    tooltips.init(charIcon, false, true);
+  if (!globals.options.detrimentalCharacters) {
+    return;
   }
+
+  const characterID = globals.characterAssignments[i];
+  let character: Character | undefined;
+  if (characterID === null) {
+    // A character with an ID of null may be assigned when debugging
+    character = {
+      id: -1,
+      name: 'n/a',
+      description: '',
+      emoji: '',
+    };
+  } else {
+    character = getCharacter(characterID);
+  }
+
+  const width2 = 0.03 * winW;
+  const height2 = 0.03 * winH;
+  const charIcon = new TextWithTooltip({
+    width: width2,
+    height: height2,
+    x: (playerNamePos[numPlayers][j].x * winW) - (width2 / 2),
+    y: (playerNamePos[numPlayers][j].y * winH) - (height2 / 2),
+    fontSize: 0.03 * winH,
+    fontFamily: 'Verdana',
+    align: 'center',
+    text: character.emoji,
+    fill: 'yellow',
+    shadowColor: 'black',
+    shadowBlur: 10,
+    shadowOffset: {
+      x: 0,
+      y: 0,
+    },
+    shadowOpacity: 0.9,
+    listening: true,
+  });
+  globals.layers.UI.add(charIcon);
+
+  charIcon.tooltipName = `character-assignment-${i}`;
+  const metadata = globals.characterMetadata[i];
+  let tooltipContent = `<strong>#${character.id} - ${character.name}</strong><br />${character.description}`;
+  if (tooltipContent.includes('[random color]')) {
+    // Replace "[random color]" with the selected color
+    tooltipContent = tooltipContent.replace(
+      '[random color]',
+      globals.variant.clueColors[metadata].name.toLowerCase(),
+    );
+  } else if (tooltipContent.includes('[random number]')) {
+    // Replace "[random number]" with the selected number
+    tooltipContent = tooltipContent.replace(
+      '[random number]',
+      metadata.toString(),
+    );
+  } else if (tooltipContent.includes('[random suit]')) {
+    // Replace "[random suit]" with the selected suit name
+    tooltipContent = tooltipContent.replace(
+      '[random suit]',
+      globals.variant.suits[metadata].name,
+    );
+  }
+  charIcon.tooltipContent = tooltipContent;
+  tooltips.init(charIcon, false, true);
 };
 
 const isHandReversed = (j: number) => {
