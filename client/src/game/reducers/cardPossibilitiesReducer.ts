@@ -162,7 +162,7 @@ const cardPossibilitiesReducer = (
 
 export default cardPossibilitiesReducer;
 
-function reapplyClues(state: CardState, clueType: ClueType, metadata: GameMetadata) {
+const reapplyClues = (state: CardState, clueType: ClueType, metadata: GameMetadata) => {
   const isColorType = clueType === ClueType.Color;
   const colors = isColorType ? getVariant(metadata.options.variantName).clueColors : null;
 
@@ -192,32 +192,30 @@ function reapplyClues(state: CardState, clueType: ClueType, metadata: GameMetada
   }
 
   return newState;
-}
+};
 
-function updatePipStates(
+const updatePipStates = (
   pipStates: readonly PipState[],
   pipsRemoved: number[],
   pipsPossible: boolean[] | null,
-) {
-  return pipStates.map((pip, i) => {
-    // Hide the removed pips
-    if (pipsRemoved.includes(i)) {
-      return 'Hidden';
-    }
-    // Mark pips that are not hidden but not possible as eliminated
-    if (pipsPossible !== null && !pipsPossible[i] && pip !== 'Hidden') {
-      return 'Eliminated';
-    }
-    return pip;
-  });
-}
+) => pipStates.map((pip, i) => {
+  // Hide the removed pips
+  if (pipsRemoved.includes(i)) {
+    return 'Hidden';
+  }
+  // Mark pips that are not hidden but not possible as eliminated
+  if (pipsPossible !== null && !pipsPossible[i] && pip !== 'Hidden') {
+    return 'Eliminated';
+  }
+  return pip;
+});
 
 // Based on the current possibilities, updates the known identity of this card
-function updateIdentity(
+const updateIdentity = (
   state: CardState,
   possibleSuits: readonly number[],
   possibleRanks: readonly number[],
-) {
+) => {
   let { suitIndex, rank, identityDetermined } = state;
 
   if (possibleSuits.length === 1) {
@@ -236,4 +234,4 @@ function updateIdentity(
   }
 
   return { suitIndex, rank, identityDetermined };
-}
+};

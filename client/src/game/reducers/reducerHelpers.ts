@@ -4,7 +4,7 @@ import Color from '../types/Color';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
 
-export function getIndexConverter(variant: Variant) {
+export const getIndexConverter = (variant: Variant) => {
   const suitIndexes: Map<string, number> = new Map<string, number>();
   const colorIndexes: Map<Color, number> = new Map<Color, number>();
   variant.suits.forEach((suit, index) => suitIndexes.set(suit.name, index));
@@ -19,12 +19,12 @@ export function getIndexConverter(variant: Variant) {
   }
 
   return getIndex;
-}
+};
 
-export function getCharacterIDForPlayer(
+export const getCharacterIDForPlayer = (
   playerIndex: number | null,
   characterAssignments: Readonly<Array<number | null>>,
-) {
+) => {
   if (playerIndex === null) {
     return null;
   }
@@ -34,4 +34,4 @@ export function getCharacterIDForPlayer(
     throw new Error(`The character ID for player ${playerIndex} was undefined.`);
   }
   return characterID;
-}
+};

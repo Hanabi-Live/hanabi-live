@@ -94,7 +94,7 @@ export const stop = () => {
   }
 };
 
-function setTickingDownTime(timer: TimerDisplay) {
+const setTickingDownTime = (timer: TimerDisplay) => {
   // Calculate the elapsed time since the last timer update
   const now = new Date().getTime();
   const elapsedTime = now - globals.lastTimerUpdateTimeMS;
@@ -136,9 +136,9 @@ function setTickingDownTime(timer: TimerDisplay) {
   ) {
     globals.game!.sounds.play('tone');
   }
-}
+};
 
-function setTickingDownTimeTooltip(i: number) {
+const setTickingDownTimeTooltip = (i: number) => {
   // This tooltip is disabled in speedrun mode
   if (globals.lobby.settings.speedrunMode || globals.options.speedrun) {
     return;
@@ -161,7 +161,7 @@ function setTickingDownTimeTooltip(i: number) {
   content += misc.millisecondsToClockString(time);
   content += '</strong>';
   $(`#tooltip-player-${i}`).tooltipster('instance').content(content);
-}
+};
 
 const setTickingDownTimeCPTooltip = () => {
   // This tooltip is disabled in non-timed games

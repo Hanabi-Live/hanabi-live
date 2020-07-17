@@ -739,12 +739,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   // Update all UI pips to their state
   updatePips(clueType: ClueType | null = null) {
-    function updatePip(
+    const updatePip = (
       pipState: PipState,
       hasPositiveClues: boolean,
       pip: Konva.Shape | RankPip,
       x : Konva.Shape,
-    ) {
+    ) => {
       switch (pipState) {
         case 'Visible': {
           pip.show();
@@ -772,7 +772,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
           pip.hidePositiveClue();
         }
       }
-    }
+    };
 
     if (clueType === null || clueType === ClueType.Color) {
       for (const [suit, pipState] of this.state.colorClueMemory.pipStates.entries()) {

@@ -130,24 +130,25 @@ export default stateReducer;
 
 // Runs through a list of actions from an initial state, and returns the final state
 // and all intermediate states
-function reduceGameActions(actions: GameAction[], initialState: GameState, metadata: GameMetadata) {
+const reduceGameActions = (
+  actions: GameAction[],
+  initialState: GameState,
+  metadata: GameMetadata,
+) => {
   const states: GameState[] = [initialState];
   const game = actions.reduce((s: GameState, a: GameAction) => {
     const nextState = gameStateReducer(s, a, metadata);
 
     // When the game state reducer sets "segment" to a new number,
     // it is a signal to record the current state of the game (for the purposes of replays)
-    if (
-      nextState.turn.segment !== s.turn.segment
-        && nextState.turn.segment !== null
-    ) {
+    if (nextState.turn.segment !== s.turn.segment && nextState.turn.segment !== null) {
       states[nextState.turn.segment] = nextState;
     }
 
     return nextState;
   }, initialState);
   return { game, states };
-}
+};
 
 // We keep a copy of each card identity in the global state for convenience
 // After each game action, check to see if we can add any new card identities

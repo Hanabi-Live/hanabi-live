@@ -122,12 +122,12 @@ const turnReducer = produce((
 
 export default turnReducer;
 
-function nextTurn(
+const nextTurn = (
   state: Draft<TurnState>,
   numPlayers: number,
   deckSize: number,
   characterID: number | null,
-) {
+) => {
   state.turnNum += 1;
 
   state.currentPlayerIndex = turnRules.getNextPlayerIndex(
@@ -146,4 +146,4 @@ function nextTurn(
 
   state.cardsPlayedOrDiscardedThisTurn = 0;
   state.cluesGivenThisTurn = 0;
-}
+};

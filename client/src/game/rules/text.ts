@@ -14,7 +14,7 @@ import ClueType from '../types/ClueType';
 import EndCondition from '../types/EndCondition';
 import GameMetadata, { getPlayerName } from '../types/GameMetadata';
 
-export function clue(action: ActionClue, targetHand: number[], metadata: GameMetadata) {
+export const clue = (action: ActionClue, targetHand: number[], metadata: GameMetadata) => {
   const giver = metadata.playerNames[action.giver];
   let target = metadata.playerNames[action.target];
   const words = [
@@ -85,14 +85,14 @@ export function clue(action: ActionClue, targetHand: number[], metadata: GameMet
   }
 
   return `${giver} tells ${target} about ${word} ${clueName}`;
-}
+};
 
-export function gameOver(
+export const gameOver = (
   endCondition: EndCondition,
   playerIndex: number,
   score: number,
   metadata: GameMetadata,
-) {
+) => {
   const playerName = getPlayerName(playerIndex, metadata);
 
   switch (endCondition) {
@@ -140,14 +140,14 @@ export function gameOver(
   }
 
   return 'Players lose!';
-}
+};
 
-export function play(
+export const play = (
   action: ActionPlay,
   slot: number | null,
   touched: boolean,
   metadata: GameMetadata,
-) {
+) => {
   const variant = getVariant(metadata.options.variantName);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
@@ -171,14 +171,14 @@ export function play(
   }
 
   return `${playerName} plays ${card} from ${location}${suffix}`;
-}
+};
 
-export function discard(
+export const discard = (
   action: ActionDiscard,
   slot: number | null,
   touched: boolean,
   metadata: GameMetadata,
-) {
+) => {
   const variant = getVariant(metadata.options.variantName);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
@@ -211,4 +211,4 @@ export function discard(
   }
 
   return `${playerName} ${verb} ${card} from ${location}${suffix}`;
-}
+};

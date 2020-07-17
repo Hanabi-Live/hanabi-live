@@ -14,16 +14,12 @@ export interface ColorClue {
 type Clue = RankClue | ColorClue;
 export default Clue;
 
-export function rankClue(rank: number): RankClue {
-  return {
-    type: ClueType.Rank,
-    value: rank,
-  };
-}
+export const rankClue = (rank: number): RankClue => ({
+  type: ClueType.Rank,
+  value: rank,
+});
 
-export function colorClue(color: Color): ColorClue {
-  return {
-    type: ClueType.Color,
-    value: color,
-  };
-}
+export const colorClue = (color: Color): ColorClue => ({
+  type: ClueType.Color,
+  value: color,
+});

@@ -5,7 +5,7 @@ import * as misc from '../misc';
 import * as notifications from '../notifications';
 
 export const init = () => {
-  $('#settings-volume-slider').change(function settingsVolumeSliderChange() {
+  $('#settings-volume-slider').change(function settingsVolumeSliderChange(this: HTMLElement) {
     const element = $(this);
     if (element === undefined) {
       throw new Error('Failed to get the "settings-volume-slider" element.');

@@ -10,9 +10,10 @@ const variant = getVariant(defaultMetadata.options.variantName);
 const defaultCard = initialCardState(0, variant);
 
 // Can be used to count possible cards in a possibleCards array using a reduce function
-function countPossibleCards(count: number, arr: readonly number[]) {
-  return count + arr.filter((c) => c > 0).length;
-}
+const countPossibleCards = (
+  count: number,
+  arr: readonly number[],
+) => count + arr.filter((c) => c > 0).length;
 
 describe('cardPossibilitiesReducer', () => {
   test('applies a simple positive clue', () => {

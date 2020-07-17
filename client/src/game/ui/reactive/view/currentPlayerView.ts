@@ -2,6 +2,6 @@
 
 import * as ourHand from '../../ourHand';
 
-export function onCurrentPlayerIndexChanged() {
+export const onCurrentPlayerIndexChanged = () => {
   ourHand.checkSetDraggableAll();
-}
+};

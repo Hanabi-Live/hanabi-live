@@ -141,7 +141,7 @@ export default class Deck extends Konva.Group {
     // If the user hovers over the deck, show a tooltip that shows extra game options, if any
     // (we don't use the "tooltip.init()" function because we need the extra condition in the
     // "mouseover" event)
-    this.on('mouseover touchstart', function mouseOver() {
+    this.on('mouseover touchstart', function mouseOver(this: Deck) {
       // Don't do anything if we might be dragging the deck
       if (globals.elements.deckPlayAvailableLabel!.isVisible()) {
         return;

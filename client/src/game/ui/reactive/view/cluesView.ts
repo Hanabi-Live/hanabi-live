@@ -8,12 +8,15 @@ import * as arrows from '../../arrows';
 import ClueEntry from '../../ClueEntry';
 import globals from '../../globals';
 
-export function onCluesChanged(data: { clues: readonly StateClue[]; segment: number | null }) {
+export const onCluesChanged = (data: {
+  clues: readonly StateClue[];
+  segment: number | null;
+}) => {
   updateArrows(data.clues, data.segment);
   updateLog(data.clues);
-}
+};
 
-function updateArrows(clues: readonly StateClue[], segment: number | null) {
+const updateArrows = (clues: readonly StateClue[], segment: number | null) => {
   arrows.hideAll();
 
   if (segment === null) {
@@ -38,9 +41,9 @@ function updateArrows(clues: readonly StateClue[], segment: number | null) {
   });
 
   globals.layers.arrow.batchDraw();
-}
+};
 
-function updateLog(clues: readonly StateClue[]) {
+const updateLog = (clues: readonly StateClue[]) => {
   const clueLog = globals.elements.clueLog!;
   const startingIndex = Math.max(0, clues.length - clueLog.maxLength);
   clues.slice(startingIndex).forEach((clue, i) => {
@@ -70,4 +73,4 @@ function updateLog(clues: readonly StateClue[]) {
   clueLog.refresh();
 
   globals.layers.UI.batchDraw();
-}
+};

@@ -10,12 +10,12 @@ import MsgClue from '../types/MsgClue';
 import Variant from '../types/Variant';
 import * as variantRules from './variant';
 
-export function getClueName(
+export const getClueName = (
   clueType: ClueType,
   clueValue: number,
   variant: Variant,
   characterID: number | null,
-) {
+) => {
   let characterName = '';
   if (characterID !== null) {
     const character = getCharacter(characterID);
@@ -41,7 +41,7 @@ export function getClueName(
     clueName = 'Quack';
   }
   return clueName;
-}
+};
 
 // Convert a clue from the format used by the server to the format used by the client
 // On the client, the color is a rich object
@@ -59,12 +59,12 @@ export const msgClueToClue = (msgClue: MsgClue, variant: Variant) => {
 };
 
 // This mirrors the function "variantIsCardTouched" in "variants.go"
-export function touchesCard(
+export const touchesCard = (
   variant: Variant,
   clue: Clue,
   suitIndex: number | null,
   rank: number | null,
-) {
+) => {
   // Some detrimental characters are not able to see other people's hands
   if (suitIndex === null) {
     return false;
@@ -121,7 +121,7 @@ export function touchesCard(
   }
 
   return false;
-}
+};
 
 export const shouldApplyClue = (
   giverIndex: number,

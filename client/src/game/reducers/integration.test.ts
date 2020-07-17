@@ -10,13 +10,8 @@ import State from '../types/State';
 
 let testState: State;
 
-function getStateAtTurn(state: State, turn: number) {
-  return state.replay.states[turn];
-}
-
-function getFinalState(state: State) {
-  return state.replay.states[state.replay.states.length - 1];
-}
+const getStateAtTurn = (state: State, turn: number) => state.replay.states[turn];
+const getFinalState = (state: State) => state.replay.states[state.replay.states.length - 1];
 
 describe('integration', () => {
   describe('up_or_down test game', () => {
@@ -143,7 +138,7 @@ describe('integration', () => {
 });
 
 /*
-function checkCluesAreRemembered(card: CardState, expected: CardState) {
+const checkCluesAreRemembered = (card: CardState, expected: CardState) => {
   expect(card.rankClueMemory.negativeClues)
     .toEqual(expected.rankClueMemory.negativeClues);
   expect(card.rankClueMemory.positiveClues)
@@ -152,16 +147,16 @@ function checkCluesAreRemembered(card: CardState, expected: CardState) {
     .toEqual(expected.colorClueMemory.negativeClues);
   expect(card.colorClueMemory.positiveClues)
     .toEqual(expected.colorClueMemory.positiveClues);
-}
+};
 
-function checkPossibilitiesEliminatedByClues(card: CardState, expected: CardState) {
+const checkPossibilitiesEliminatedByClues = (card: CardState, expected: CardState) => {
   expect(card.rankClueMemory.possibilities)
     .toEqual(expected.rankClueMemory.possibilities);
   expect(card.colorClueMemory.possibilities)
     .toEqual(expected.colorClueMemory.possibilities);
-}
+};
 
-function checkPossibilitiesEliminatedByObservation(card: CardState, expected: CardState) {
+const checkPossibilitiesEliminatedByObservation = (card: CardState, expected: CardState) => {
   function validRanks<T>(arr: readonly T[]) {
     // Ensure Start is counted as a valid rank
     return arr.length > 6 ? arr.slice(1, 6).concat(arr[7]) : arr.slice(1, 6);
@@ -172,5 +167,5 @@ function checkPossibilitiesEliminatedByObservation(card: CardState, expected: Ca
     .toEqual(validRanks(expected.rankClueMemory.pipStates));
   expect(card.colorClueMemory.pipStates)
     .toEqual(expected.colorClueMemory.pipStates);
-}
+};
 */

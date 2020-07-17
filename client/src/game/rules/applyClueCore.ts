@@ -11,13 +11,13 @@ export interface PossibilityToRemove {
   readonly all: boolean;
 }
 
-export function applyColorClue(
+export const applyColorClue = (
   state: CardState,
   clue: Readonly<ColorClue>,
   positive: boolean,
   calculatePossibilities: boolean,
   variant: Variant,
-) {
+) => {
   const possibleSuits = state.colorClueMemory.possibilities.map((p) => variant.suits[p]);
   const possibleRanks = state.rankClueMemory.possibilities.map((i) => i);
   const getIndex = getIndexHelper(variant);
@@ -147,15 +147,15 @@ export function applyColorClue(
     }
   }
   return { suitsRemoved, ranksRemoved, impossibleCards };
-}
+};
 
-export function applyRankClue(
+export const applyRankClue = (
   state: CardState,
   clue: Readonly<RankClue>,
   positive: boolean,
   calculatePossibilities: boolean,
   variant: Variant,
-) {
+) => {
   const possibleSuits = state.colorClueMemory.possibilities.map((p) => variant.suits[p]);
   const possibleRanks = state.rankClueMemory.possibilities.map((i) => i);
   const getIndex = getIndexHelper(variant);
@@ -267,26 +267,26 @@ export function applyRankClue(
   }
 
   return { suitsRemoved, ranksRemoved, impossibleCards };
-}
+};
 
-export function removePossibilities(
+export const removePossibilities = (
   possibleCards: ReadonlyArray<readonly number[]>,
   possibilitiesToRemove: PossibilityToRemove[],
-) {
+) => {
   // Make a copy here for quick modification
   const possibleCardsCopy: number[][] = Array.from(possibleCards, (arr) => Array.from(arr));
   for (const { suitIndex, rank, all } of possibilitiesToRemove) {
     possibleCardsCopy[suitIndex][rank] = removePossibility(possibleCardsCopy, suitIndex, rank, all);
   }
   return possibleCardsCopy;
-}
+};
 
-function removePossibility(
+const removePossibility = (
   possibleCards: number[][],
   suitIndex: number,
   rank: number,
   all: boolean,
-) {
+) => {
   // Every card has a possibility map that maps card identities to count
   let cardsLeft = possibleCards[suitIndex][rank];
   if (cardsLeft === undefined) {
@@ -299,13 +299,13 @@ function removePossibility(
     cardsLeft = all ? 0 : cardsLeft - 1;
   }
   return cardsLeft;
-}
+};
 
 // Check to see if we can put an X over all suits pip and rank pips
-export function checkAllPipPossibilities(
+export const checkAllPipPossibilities = (
   possibleCards: ReadonlyArray<readonly number[]>,
   variant: Variant,
-) {
+) => {
   const suitsPossible = variant.suits.map(
     (_, suitIndex) => variant.ranks.some((rank) => possibleCards[suitIndex][rank] > 0),
   );
@@ -314,7 +314,7 @@ export function checkAllPipPossibilities(
     ranksPossible[rank] = variant.suits.some((_, suitIndex) => possibleCards[suitIndex][rank] > 0);
   });
   return { suitsPossible, ranksPossible };
-}
+};
 
 // ---------------
 // Misc. functions
@@ -338,7 +338,7 @@ function removeDuplicatesFromArray<T>(array: T[]) {
   return array.filter((item, index) => array.indexOf(item) === index);
 }
 
-function getIndexHelper(variant: Variant) {
+const getIndexHelper = (variant: Variant) => {
   const suitIndexes: Map<string, number> = new Map<string, number>();
   const colorIndexes: Map<Color, number> = new Map<Color, number>();
   variant.suits.forEach((suit, index) => suitIndexes.set(suit.name, index));
@@ -353,4 +353,4 @@ function getIndexHelper(variant: Variant) {
   }
 
   return getIndex;
-}
+};

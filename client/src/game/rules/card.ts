@@ -9,42 +9,34 @@ import * as deckRules from './deck';
 import * as variantRules from './variant';
 import * as reversibleRules from './variants/reversible';
 
-export function name(suitIndex: number, rank: number, variant: Variant) {
+export const name = (suitIndex: number, rank: number, variant: Variant) => {
   const suitName = variant.suits[suitIndex].name;
   let rankName = rank.toString();
   if (rank === START_CARD_RANK) {
     rankName = 'START';
   }
   return `${suitName} ${rankName}`;
-}
+};
 
-export function isClued(card: CardState) {
-  return card.numPositiveClues > 0;
-}
+export const isClued = (card: CardState) => card.numPositiveClues > 0;
 
-export function isPlayed(card: CardState) {
-  return card.location === 'playStack';
-}
+export const isPlayed = (card: CardState) => card.location === 'playStack';
 
-export function isDiscarded(card: CardState) {
-  return card.location === 'discard';
-}
+export const isDiscarded = (card: CardState) => card.location === 'discard';
 
-export function isInPlayerHand(card: CardState) {
-  return typeof card.location === 'number';
-}
+export const isInPlayerHand = (card: CardState) => typeof card.location === 'number';
 
 // needsToBePlayed returns true if the card is not yet played
 // and is still needed to be played in order to get the maximum score
 // This mirrors the server function "Card.NeedsToBePlayed()"
-export function needsToBePlayed(
+export const needsToBePlayed = (
   suitIndex: number,
   rank: number,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-) {
+) => {
   // First, check to see if a copy of this card has already been played
   for (const otherCard of deck) {
     if (
@@ -87,7 +79,7 @@ export function needsToBePlayed(
 
   // By default, all cards not yet played will need to be played
   return true;
-}
+};
 
 export const status = (
   suitIndex: number,
@@ -116,14 +108,14 @@ export const status = (
 };
 
 // This does not mirror any function on the server
-export function isCritical(
+export const isCritical = (
   suitIndex: number,
   rank: number,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-) {
+) => {
   if (!needsToBePlayed(suitIndex, rank, deck, playStacks, playStackDirections, variant)) {
     return false;
   }
@@ -146,15 +138,15 @@ export function isCritical(
   );
   const discarded = deckRules.discardedCopies(deck, suitIndex, rank);
   return total === discarded + 1;
-}
+};
 
-export function isPotentiallyPlayable(
+export const isPotentiallyPlayable = (
   card: CardState,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-) {
+) => {
   for (let suitIndex = 0; suitIndex < card.possibleCards.length; suitIndex++) {
     const possibleCardsOfSuit = card.possibleCards[suitIndex];
     for (let rank = 0; rank < possibleCardsOfSuit.length; rank++) {
@@ -169,4 +161,4 @@ export function isPotentiallyPlayable(
   }
 
   return false;
-}
+};

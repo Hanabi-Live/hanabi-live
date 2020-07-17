@@ -7,7 +7,7 @@ import State from '../../../types/State';
 import globals from '../../globals';
 import observeStore, { Subscription, Selector, Listener } from '../observeStore';
 
-export function onDeckChanged(length: number) {
+export const onDeckChanged = (length: number) => {
   // Handle card subscriptions
   // TODO: this could be used to create/destroy HanabiCards / card UI
   // on the fly based on state which would make loading a lot faster
@@ -24,15 +24,15 @@ export function onDeckChanged(length: number) {
       unsubscribe();
     }
   }
-}
+};
 
-export function onMorphedIdentitiesChanged(data: {
+export const onMorphedIdentitiesChanged = (data: {
   hypotheticalActive: boolean;
   morphedIdentities: readonly CardIdentity[] | undefined;
 }, previousData: {
   hypotheticalActive: boolean;
   morphedIdentities: readonly CardIdentity[] | undefined;
-} | undefined) {
+} | undefined) => {
   if (previousData === undefined || !previousData.hypotheticalActive) {
     // Initializing, or entering hypothetical
     return;
@@ -61,9 +61,9 @@ export function onMorphedIdentitiesChanged(data: {
       updateCardVisuals(i);
     }
   }
-}
+};
 
-function subscribeToCardChanges(order: number) {
+const subscribeToCardChanges = (order: number) => {
   const subscriptions: Array<Subscription<State, any>> = [];
 
   // Validates that a card exists in the visible state before firing a listener
@@ -119,22 +119,22 @@ function subscribeToCardChanges(order: number) {
   }, () => updateCardVisuals(order));
 
   return observeStore(globals.store!, subscriptions);
-}
+};
 
 // TODO: these functions should pass the value of the changed properties,
 // and not let the UI query the whole state object
 
-function updateCluedBorder(order: number) {
+const updateCluedBorder = (order: number) => {
   globals.deck[order].setClued();
   globals.layers.card.batchDraw();
-}
+};
 
-function updatePips(order: number, clueType: ClueType) {
+const updatePips = (order: number, clueType: ClueType) => {
   globals.deck[order].updatePips(clueType);
   globals.layers.card.batchDraw();
-}
+};
 
-function updateCardVisuals(order: number) {
+const updateCardVisuals = (order: number) => {
   // Card visuals are updated for both the deck and stack bases when morphed
   if (order < globals.deck.length) {
     globals.deck[order].setBareImage();
@@ -142,12 +142,12 @@ function updateCardVisuals(order: number) {
     globals.stackBases[order - globals.deck.length].setBareImage();
   }
   globals.layers.card.batchDraw();
-}
+};
 
-function updateNotePossibilities(order: number) {
+const updateNotePossibilities = (order: number) => {
   globals.deck[order].updateNotePossibilities();
   globals.layers.card.batchDraw();
-}
+};
 
 export const onCardStatusChanged = () => {
   globals.deck.forEach((card) => card.setStatus());

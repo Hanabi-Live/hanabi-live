@@ -11,6 +11,7 @@ export default interface GameMetadata {
   readonly characterMetadata: number[];
 }
 
-export function getPlayerName(playerIndex: number, metadata: GameMetadata) {
-  return metadata.playerNames[playerIndex] ?? 'Hanabi Live';
-}
+export const getPlayerName = (
+  playerIndex: number,
+  metadata: GameMetadata,
+) => metadata.playerNames[playerIndex] ?? 'Hanabi Live';

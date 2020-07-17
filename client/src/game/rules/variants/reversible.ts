@@ -271,10 +271,10 @@ export const isCritical = (
   return true;
 };
 
-function discardedHelpers(variant: Variant, deck: readonly CardState[]) {
+const discardedHelpers = (variant: Variant, deck: readonly CardState[]) => {
   const total = (s: number, r: number) => deckRules.numCopiesOfCard(variant.suits[s], r, variant);
   const discarded = (s: number, r: number) => deckRules.discardedCopies(deck, s, r);
   const isLastCopy = (s: number, r: number) => total(s, r) === discarded(s, r) + 1;
   const isAllDiscarded = (s: number, r: number) => total(s, r) === discarded(s, r);
   return { isLastCopy, isAllDiscarded };
-}
+};

@@ -367,7 +367,7 @@ export const openEditTooltip = (card: HanabiCard) => {
   });
 
   // Automatically highlight all of the existing text when a note input box is focused
-  $(`#tooltip-${card.tooltipName}-input`).focus(function tooltipCardInputFocus() {
+  $(`#tooltip-${card.tooltipName}-input`).focus(function tooltipCardInputFocus(this: HTMLElement) {
     $(this).select();
   });
 

@@ -3,7 +3,7 @@
 // Tested at commit 47e68f701825ed36f22af5edd2c7a061bb6b21c7
 
 {
-  function getPossibleCards(cardState) {
+  const getPossibleCards = (cardState) => {
     const possibleCards = [];
     globals.variant.suits.forEach((suit, suitIndex) => {
       possibleCards[suitIndex] = [];
@@ -14,7 +14,7 @@
     return possibleCards;
   }
 
-  function getPipStates(possibleCards, possibilities, isRank) {
+  const getPipStates = (possibleCards, possibilities, isRank) => {
     const pipStates = [];
     if (isRank) {
       globals.variant.ranks.forEach((rank) => {
@@ -40,7 +40,7 @@
     return pipStates;
   }
 
-  function getCards() {
+  const getCards = () => {
     return globals.deck.map(c => {
       const s = c.state;
       const possibleCards = getPossibleCards(s);
@@ -74,5 +74,6 @@
       });
     }).filter(c => c.location !== 'deck');
   }
+
   JSON.stringify(getCards());
 }

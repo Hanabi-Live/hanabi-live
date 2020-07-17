@@ -2,12 +2,12 @@ import Konva from 'konva';
 import * as KonvaBaseLayer from 'konva/types/BaseLayer';
 import globals from './globals';
 
-export function drawLayer(node: Konva.Node) {
+export const drawLayer = (node: Konva.Node) => {
   const layer = node.getLayer() as KonvaBaseLayer.BaseLayer | null;
   if (layer) {
     layer.batchDraw();
   }
-}
+};
 
 interface CanTween {
   tween: Konva.Tween | null;
@@ -24,12 +24,12 @@ interface TweenConfig {
   onFinish?: () => void;
 }
 
-export function animate(
+export const animate = (
   node: Konva.Node & CanTween,
   params: TweenConfig,
   interactive: boolean = false,
   fast: boolean = globals.animateFast,
-) {
+) => {
   if (!interactive && node.isListening()) {
     throw new Error('A node that is about to animate is listening, but it should not be (because "interactive" was to set to be false or not specified).');
   }
@@ -124,4 +124,4 @@ export function animate(
 
     node.tween = new Konva.Tween(config).play();
   }
-}
+};

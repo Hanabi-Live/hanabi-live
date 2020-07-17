@@ -251,14 +251,14 @@ export default cardsReducer;
 // Helpers
 // -------
 
-function removePossibilityOnHand(
+const removePossibilityOnHand = (
   deck: CardState[],
   hand: readonly number[],
   order: number,
   suitIndex: number,
   rank: number,
   variant: Variant,
-) {
+) => {
   const cardsExceptCardBeingRemoved = hand
     .filter((o) => o !== order)
     .map((o) => deck[o]);
@@ -267,15 +267,15 @@ function removePossibilityOnHand(
     const newCard = removePossibility(handCard, suitIndex, rank, false, variant);
     deck[handCard.order] = newCard;
   }
-}
+};
 
-function removePossibility(
+const removePossibility = (
   state: CardState,
   suitIndex: number,
   rank: number,
   all: boolean,
   variant: Variant,
-) {
+) => {
   // Every card has a possibility map that maps card identities to count
   const possibleCards = Array.from(state.possibleCards, (arr) => Array.from(arr));
   let cardsLeft = possibleCards[suitIndex][rank];
@@ -318,12 +318,12 @@ function removePossibility(
       pipStates: rankPipStates,
     },
   };
-}
+};
 
-function getCard(deck: readonly CardState[], order: number) {
+const getCard = (deck: readonly CardState[], order: number) => {
   const card = deck[order];
   if (card === undefined) {
     console.error(`Failed to get the card for index ${order}.`);
   }
   return card;
-}
+};
