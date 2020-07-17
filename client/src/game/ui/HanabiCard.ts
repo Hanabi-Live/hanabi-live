@@ -498,15 +498,18 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   };
 
   setStatus() {
-    const cardStatus = globals.store!.getState().visibleState!.cardStatus;
+    const visibleState = globals.store!.getState().visibleState;
+    if (visibleState === null) {
+      return;
+    }
 
     let status;
     if (this.note.blank) {
       status = CardStatus.NeedsToBePlayed;
     } else if (this.state.suitIndex !== null && this.state.rank !== null) {
-      status = cardStatus[this.state.suitIndex][this.state.rank];
+      status = visibleState.cardStatus[this.state.suitIndex][this.state.rank];
     } else if (this.note.suitIndex !== null && this.note.rank !== null) {
-      status = cardStatus[this.note.suitIndex][this.note.rank];
+      status = visibleState.cardStatus[this.note.suitIndex][this.note.rank];
     } else {
       status = CardStatus.NeedsToBePlayed;
     }

@@ -36,7 +36,7 @@ export function isInPlayerHand(card: CardState) {
 
 // needsToBePlayed returns true if the card is not yet played
 // and is still needed to be played in order to get the maximum score
-// This mirrors the server function "Game.NeedsToBePlayed()"
+// This mirrors the server function "Card.NeedsToBePlayed()"
 export function needsToBePlayed(
   suitIndex: number,
   rank: number,
