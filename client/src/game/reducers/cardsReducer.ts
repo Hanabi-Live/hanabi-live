@@ -118,7 +118,7 @@ const cardsReducer = (
       }
 
       let turnPlayed = card.turnPlayed;
-      let turnDiscarded = card.turnDiscarded;
+      let segmentDiscarded = card.segmentDiscarded;
       let location = card.location;
       let isMisplayed = card.isMisplayed;
 
@@ -127,7 +127,7 @@ const cardsReducer = (
         turnPlayed = game.turn.turnNum;
       } else {
         location = 'discard';
-        turnDiscarded = game.turn.turnNum;
+        segmentDiscarded = game.turn.segment;
         if (action.failed) {
           isMisplayed = true;
         }
@@ -139,7 +139,7 @@ const cardsReducer = (
         rank,
         identityDetermined,
         turnPlayed,
-        turnDiscarded,
+        segmentDiscarded,
         location,
         isMisplayed,
       };

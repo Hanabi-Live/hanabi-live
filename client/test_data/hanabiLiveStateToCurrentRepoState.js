@@ -68,7 +68,7 @@
         numPositiveClues: s.numPositiveClues,
         segmentFirstClued: s.segmentFirstClued,
         segmentDrawn: s.segmentDrawn,
-        turnDiscarded: s.turnDiscarded,
+        segmentDiscarded: s.segmentDiscarded,
         turnPlayed: s.turnPlayed,
         isMisplayed: s.isMisplayed,
       });
