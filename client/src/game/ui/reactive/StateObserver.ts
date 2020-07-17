@@ -15,6 +15,7 @@ import * as logView from './view/logView';
 import * as premoveView from './view/premoveView';
 import * as replayView from './view/replayView';
 import * as statsView from './view/statsView';
+import * as tooltipsView from './view/tooltipsView';
 
 type Subscriptions = Array<Subscription<State, any>>;
 
@@ -110,6 +111,9 @@ const visibleStateObservers: Subscriptions = [
 
   // Card fade and critical indicator
   vs((s) => s.cardStatus, cardsView.onCardStatusChanged),
+
+  // Tooltips
+  vs((s) => s.turn.segment, tooltipsView.onSegmentChanged),
 
   // Initialization finished
   // (this will get called when the visible state becomes valid and after all other view updates)
