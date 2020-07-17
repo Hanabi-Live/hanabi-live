@@ -75,10 +75,10 @@ const clickMiddle = (card: HanabiCard, event: MouseEvent) => {
 
   // Middle clicking on a card goes to the turn it was first clued
   if (
-    card.state.turnFirstClued !== null
+    card.state.segmentFirstClued !== null
     && card.state.rank !== STACK_BASE_RANK // Disable this functionality for the stack base
   ) {
-    goToTurn(card.state.turnFirstClued, true);
+    goToTurn(card.state.segmentFirstClued, true);
   }
 };
 
