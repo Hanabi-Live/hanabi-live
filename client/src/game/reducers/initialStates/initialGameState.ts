@@ -1,20 +1,20 @@
 import { initArray } from '../../../misc';
 import { getVariant } from '../../data/gameData';
-import * as deck from '../../rules/deck';
-import * as hand from '../../rules/hand';
-import * as statsRules from '../../rules/stats';
+import {
+  cardRules, deckRules, handRules, statsRules,
+} from '../../rules';
+import CardStatus from '../../types/CardStatus';
 import { MAX_CLUE_NUM } from '../../types/constants';
 import GameMetadata from '../../types/GameMetadata';
 import GameState from '../../types/GameState';
 import StackDirection from '../../types/StackDirection';
-import initialCardStatus from './initialCardStatus';
 import initialTurnState from './initialTurnState';
 
 export default function initialGameState(metadata: GameMetadata): GameState {
   const options = metadata.options;
   const variant = getVariant(options.variantName);
   const turnState = initialTurnState(options.startingPlayer);
-  const cardsPerHand = hand.cardsPerHand(
+  const cardsPerHand = handRules.cardsPerHand(
     options.numPlayers,
     options.oneExtraCard,
     options.oneLessCard,
@@ -28,12 +28,27 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   const playStacks: number[][] = initArray(variant.suits.length, []);
   const discardStacks: number[][] = initArray(variant.suits.length, []);
 
+  const cardStatus: CardStatus[][] = [];
+  variant.suits.forEach((_, suitIndex) => {
+    cardStatus[suitIndex] = [];
+    variant.ranks.forEach((rank) => {
+      cardStatus[suitIndex][rank] = cardRules.status(
+        suitIndex,
+        rank,
+        [],
+        playStacks,
+        playStackDirections,
+        variant,
+      );
+    });
+  });
+
   return {
     turn: turnState,
     log: [],
     deck: [],
-    deckSize: deck.totalCards(variant),
-    cardStatus: initialCardStatus(variant),
+    deckSize: deckRules.totalCards(variant),
+    cardStatus,
     score: 0,
     numAttemptedCardsPlayed: 0,
     clueTokens: MAX_CLUE_NUM,

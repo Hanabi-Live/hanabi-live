@@ -104,7 +104,6 @@ const visibleStateObservers: Subscriptions = [
   // Cards
   // Each card will subscribe to changes to its own data
   vs((s) => s.deck.length, cardsView.onDeckChanged),
-  vs((s) => s.cardStatus, cardsView.onCardStatusChanged),
 
   // Deck
   vs((s) => s.deckSize, deckView.onDeckSizeChanged),

@@ -61,11 +61,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   private _tweening: boolean = false;
-  private tweenCallbacks: Function[] = [];
+  get tweening() { return this._tweening; }
 
-  get tweening() {
-    return this._tweening;
-  }
+  private tweenCallbacks: Function[] = [];
 
   startedTweening() {
     this._tweening = true;
@@ -101,7 +99,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   doMisplayAnimation: boolean = false;
   tooltipName: string = '';
   noteIndicator: NoteIndicator;
-  empathy: boolean = false;
+
+  private _visibleSuitIndex: number | null = null;
+  get visibleSuitIndex() { return this._visibleSuitIndex; }
+
+  private _visibleRank: number | null = null;
+  get visibleRank() { return this._visibleRank; }
+
+  private empathy: boolean = false;
 
   private note: CardNote = {
     suitIndex: null,
@@ -387,7 +392,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         globals.lobby.settings.realLifeMode
         || variantRules.isCowAndPig(this.variant)
         || variantRules.isDuck(this.variant)
-      ) && (suitToShow === unknownSuit || rankToShow === 6)
+      ) && (suitToShow === unknownSuit || rankToShow === UNKNOWN_CARD_RANK)
     ) {
       // In Real-Life mode or Cow & Pig / Duck variants,
       // always show the vanilla card back if the card is not fully revealed
@@ -430,14 +435,19 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !globals.spectating
     ));
 
-    let suitIndex: number | null = null;
     if (suitToShow === undefined || suitToShow === unknownSuit) {
-      suitIndex = null;
+      this._visibleSuitIndex = null;
     } else {
-      suitIndex = this.variant.suits.indexOf(suitToShow);
+      this._visibleSuitIndex = this.variant.suits.indexOf(suitToShow);
     }
 
-    this.setDirectionArrow(suitIndex);
+    if (rankToShow === undefined || rankToShow === UNKNOWN_CARD_RANK) {
+      this._visibleRank = null;
+    } else {
+      this._visibleRank = rankToShow;
+    }
+
+    this.setDirectionArrow(this.visibleSuitIndex);
     this.setStatus();
 
     globals.layers.card.batchDraw();
@@ -507,14 +517,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     let status;
-    if (this.note.blank) {
-      status = CardStatus.NeedsToBePlayed;
-    } else if (this.state.suitIndex !== null && this.state.rank !== null) {
-      status = visibleState.cardStatus[this.state.suitIndex][this.state.rank];
-    } else if (this.note.suitIndex !== null && this.note.rank !== null) {
-      status = visibleState.cardStatus[this.note.suitIndex][this.note.rank];
+    if (
+      this.visibleSuitIndex === null
+      || this.visibleRank === null
+      || this.visibleRank === STACK_BASE_RANK
+    ) {
+      status = CardStatus.NeedsToBePlayed; // Default status, not faded and not critical
     } else {
-      status = CardStatus.NeedsToBePlayed;
+      status = visibleState.cardStatus[this.visibleSuitIndex][this.visibleRank];
     }
 
     this.setFade(status === CardStatus.Trash);
@@ -522,14 +532,23 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   private setFade(fade: boolean) {
-    const shouldFadeCard = (
-      fade
-      && !cardRules.isClued(this.state)
-      && !this.note.blank
-      && !variantRules.isThrowItInAHole(this.variant)
-      && !globals.options.speedrun
-      && !globals.lobby.settings.realLifeMode
-    );
+    let shouldFadeCard = false;
+
+    // Override any logic and always fade the card if it is explicitly marked as known trash
+    if (this.trashcan!.isVisible() && this.state.numPositiveClues === 0) {
+      shouldFadeCard = true;
+    } else {
+      shouldFadeCard = (
+        fade
+        && !cardRules.isClued(this.state)
+        && !cardRules.isPlayed(this.state)
+        && !cardRules.isDiscarded(this.state)
+        && !this.note.blank
+        && !variantRules.isThrowItInAHole(this.variant)
+        && !globals.options.speedrun
+        && !globals.lobby.settings.realLifeMode
+      );
+    }
 
     this.opacity(shouldFadeCard ? CARD_FADE : 1);
   }
@@ -537,7 +556,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   private setCritical(critical: boolean) {
     this.criticalIndicator!.visible((
       critical
-      && !cardRules.isClued(this.state)
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
       && !globals.lobby.settings.realLifeMode
     ));
   }

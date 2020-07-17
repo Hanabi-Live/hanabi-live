@@ -38,14 +38,8 @@ export const needsToBePlayed = (
   variant: Variant,
 ) => {
   // First, check to see if a copy of this card has already been played
-  for (const otherCard of deck) {
-    if (
-      otherCard.suitIndex === suitIndex
-      && otherCard.rank === rank
-      && isPlayed(otherCard)
-    ) {
-      return false;
-    }
+  if (playStacks[suitIndex].some((order) => deck[order].rank === rank)) {
+    return false;
   }
 
   // Determining if the card needs to be played in variants with reversed suits is more complicated
@@ -99,7 +93,7 @@ export const status = (
   );
 
   if (cardNeedsToBePlayed) {
-    if (isCritical(suitIndex, rank, deck, playStacks, playStackDirections, variant)) {
+    if (isCritical(suitIndex, rank, deck, playStackDirections, variant)) {
       return CardStatus.Critical;
     }
     return CardStatus.NeedsToBePlayed;
@@ -112,14 +106,9 @@ export const isCritical = (
   suitIndex: number,
   rank: number,
   deck: readonly CardState[],
-  playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   variant: Variant,
 ) => {
-  if (!needsToBePlayed(suitIndex, rank, deck, playStacks, playStackDirections, variant)) {
-    return false;
-  }
-
   // "Up or Down" has some special cases for critical cards
   if (variantRules.hasReversedSuits(variant)) {
     return reversibleRules.isCritical(

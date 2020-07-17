@@ -84,7 +84,7 @@ const showClueMatch = (target: number, clue: Clue) => {
   for (let i = 0; i < hand.length; i++) {
     const child = globals.elements.playerHands[target].children[i];
     const card: HanabiCard = child.children[0] as HanabiCard;
-    if (cluesRules.touchesCard(globals.variant, clue, card.state.suitIndex, card.state.rank)) {
+    if (cluesRules.touchesCard(globals.variant, clue, card.visibleSuitIndex, card.visibleRank)) {
       touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue);
     }
@@ -101,8 +101,8 @@ export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
     if (cluesRules.touchesCard(
       globals.variant,
       cluesRules.msgClueToClue(clue, globals.variant),
-      card.state.suitIndex,
-      card.state.rank,
+      card.visibleSuitIndex,
+      card.visibleRank,
     )) {
       cardsTouched.push(card.state.order);
     }
