@@ -89,20 +89,22 @@ function subscribeToCardChanges(order: number) {
     subscriptions.push({ select: checkOrderAndSelect(s), onChange: l });
   }
 
-  // TODO: all the properties!
   // Clued border
   sub((c) => ({
     numPositiveClues: c.numPositiveClues,
     location: c.location,
   }), () => updateCluedBorder(order));
+
   // Pips
   sub((c) => c.rankClueMemory.pipStates, () => updatePips(order, ClueType.Rank));
   sub((c) => c.colorClueMemory.pipStates, () => updatePips(order, ClueType.Color));
+
   // Notes
   sub((c) => ({
     possibleRanks: c.rankClueMemory.possibilities,
     possibleSuits: c.colorClueMemory.possibilities,
   }), () => updateNotePossibilities(order));
+
   // Card visuals
   subFullState((s) => {
     const card = s.visibleState!.deck[order];
@@ -146,3 +148,8 @@ function updateNotePossibilities(order: number) {
   globals.deck[order].updateNotePossibilities();
   globals.layers.card.batchDraw();
 }
+
+export const onCardStatusChanged = () => {
+  globals.deck.forEach((card) => card.setStatus());
+  globals.layers.card.batchDraw();
+};

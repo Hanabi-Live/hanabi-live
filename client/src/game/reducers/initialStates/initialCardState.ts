@@ -14,7 +14,7 @@ export default function initialCardState(order: number, variant: Variant) : Card
     possibleCards[suitIndex] = [];
     const suit = variant.suits[suitIndex];
     possibleRanks.forEach((rank) => {
-      possibleCards[suitIndex][rank] = deckRules.numCopiesOfCard(variant, suit, rank);
+      possibleCards[suitIndex][rank] = deckRules.numCopiesOfCard(suit, rank, variant);
     });
   });
 

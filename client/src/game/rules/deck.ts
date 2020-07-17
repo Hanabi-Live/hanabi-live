@@ -25,7 +25,7 @@ export function totalCards(variant: Variant) {
 
 // Given a variant, and a card's rank and suit, returns how many copies of
 // this card exist in the deck
-export function numCopiesOfCard(variant: Variant, suit: Suit, rank: number) {
+export function numCopiesOfCard(suit: Suit, rank: number, variant: Variant) {
   // In a normal suit of Hanabi,
   // there are three 1's, two 2's, two 3's, two 4's, and one 5
   let amountToAdd = 2;
@@ -53,9 +53,15 @@ export function numCopiesOfCard(variant: Variant, suit: Suit, rank: number) {
   return amountToAdd;
 }
 
+// Returns if a specific suit/rank has already been played
+export const isPlayed = (
+  deck: readonly CardState[],
+  playStacks: ReadonlyArray<readonly number[]>,
+  suitIndex: number,
+  rank: number,
+) => playStacks[suitIndex].some((order) => deck[order].rank === rank);
+
 // Returns how many cards of a specific suit/rank that have been already discarded
-// (this DOES NOT mirror the server function "getSpecificCardNum" in "game.go",
-// because the client does not have the full deck)
 export const discardedCopies = (
   deck: readonly CardState[],
   suitIndex: number,

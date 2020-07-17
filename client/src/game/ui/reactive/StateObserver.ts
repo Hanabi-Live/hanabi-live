@@ -104,9 +104,13 @@ const visibleStateObservers: Subscriptions = [
   // Cards
   // Each card will subscribe to changes to its own data
   vs((s) => s.deck.length, cardsView.onDeckChanged),
+  vs((s) => s.cardStatus, cardsView.onCardStatusChanged),
 
   // Deck
   vs((s) => s.deckSize, deckView.onDeckSizeChanged),
+
+  // Card fade and critical indicator
+  vs((s) => s.cardStatus, cardsView.onCardStatusChanged),
 
   // Initialization finished
   // (this will get called when the visible state becomes valid and after all other view updates)

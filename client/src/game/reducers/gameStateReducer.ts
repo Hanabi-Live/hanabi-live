@@ -83,6 +83,11 @@ const gameStateReducer = produce((
         state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
       }
 
+      // Discarding cards can make other card cards not playable anymore
+      // and can make other cards critical
+      // TODO use rules to see if we should mark the other cards as critical
+      // TODO use rules to find out if this discard killed a suit
+
       const touched = state.deck[action.order].numPositiveClues > 0;
       const text = textRules.discard(action, slot, touched, metadata);
       state.log.push({
@@ -176,6 +181,11 @@ const gameStateReducer = produce((
 
       // Keep track of attempted plays
       state.numAttemptedCardsPlayed += 1;
+
+      // Playing cards can make other card cards not playable anymore
+      // and can make other cards critical (in specific variants)
+      // TODO use rules to see if we should mark the other cards as critical
+      // TODO use rules to find out if this discard killed a suit
 
       const touched = state.deck[action.order].numPositiveClues > 0;
       const text = textRules.play(action, slot, touched, metadata);

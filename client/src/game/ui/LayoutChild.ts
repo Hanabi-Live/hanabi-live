@@ -3,6 +3,7 @@
 
 import Konva from 'konva';
 import * as sounds from '../../sounds';
+import { cardRules } from '../rules';
 import * as variantRules from '../rules/variant';
 import ActionType from '../types/ActionType';
 import { MAX_CLUE_NUM } from '../types/constants';
@@ -164,12 +165,19 @@ export default class LayoutChild extends Konva.Group {
     // Before we play a card,
     // do a check to ensure that it is actually playable to prevent silly mistakes from players
     // (but disable this in speedruns and certain variants)
+    const ongoingGame = globals.store!.getState().ongoingGame;
     if (
       draggedTo === 'playArea'
       && !globals.options.speedrun
       && !variantRules.isThrowItInAHole(globals.variant)
       && globals.ourTurn // Don't use warnings for preplays
-      && !card.isPotentiallyPlayable()
+      && !cardRules.isPotentiallyPlayable(
+        card.state,
+        ongoingGame.deck,
+        ongoingGame.playStacks,
+        ongoingGame.playStackDirections,
+        globals.variant,
+      )
     ) {
       let text = 'Are you sure you want to play this card?\n';
       text += 'It is known to be unplayable based on the current information\n';

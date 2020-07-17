@@ -1,5 +1,5 @@
 enum ClueType {
-  Color = 0,
-  Rank = 1,
+  Color,
+  Rank,
 }
 export default ClueType;

@@ -14,6 +14,7 @@ import * as variantRules from '../rules/variant';
 import CardIdentity from '../types/CardIdentity';
 import CardNote from '../types/CardNote';
 import CardState, { PipState } from '../types/CardState';
+import CardStatus from '../types/CardStatus';
 import ClueType from '../types/ClueType';
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
 import StackDirection from '../types/StackDirection';
@@ -434,8 +435,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     this.setDirectionArrow(suitIndex);
-    this.setFade();
-    this.setCritical();
+    this.setStatus();
 
     globals.layers.card.batchDraw();
   }
@@ -497,55 +497,42 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.arrow!.y(0.79 * CARD_H);
   };
 
-  // Fade this card if it is useless, fully revealed, and still in a player's hand
-  setFade() {
-    if (
-      globals.lobby.settings.realLifeMode
-      || globals.options.speedrun
-      || variantRules.isThrowItInAHole(this.variant)
-      || this.state.rank === STACK_BASE_RANK
-    ) {
-      return;
+  setStatus() {
+    const cardStatus = globals.store!.getState().visibleState!.cardStatus;
+
+    let status;
+    if (this.note.blank) {
+      status = CardStatus.NeedsToBePlayed;
+    } else if (this.state.suitIndex !== null && this.state.rank !== null) {
+      status = cardStatus[this.state.suitIndex][this.state.rank];
+    } else if (this.note.suitIndex !== null && this.note.rank !== null) {
+      status = cardStatus[this.note.suitIndex][this.note.rank];
+    } else {
+      status = CardStatus.NeedsToBePlayed;
     }
 
-    const oldOpacity = this.opacity();
-
-    let newOpacity = 1;
-    if (
-      this.state.suitIndex !== null
-      && this.state.rank !== null
-      && !cardRules.isClued(this.state)
-      && !cardRules.isPlayed(this.state)
-      && !cardRules.isDiscarded(this.state)
-      && !this.empathy
-      && !this.needsToBePlayed()
-      && this.bareName !== DECK_BACK_IMAGE // Blank cards should not fade
-    ) {
-      newOpacity = CARD_FADE;
-    }
-
-    // Override the above logic and always fade the card if it is explicitly marked as known trash
-    if (this.trashcan!.isVisible() && this.state.numPositiveClues === 0) {
-      newOpacity = CARD_FADE;
-    }
-
-    if (oldOpacity === newOpacity) {
-      return;
-    }
-
-    this.opacity(newOpacity);
+    this.setFade(status === CardStatus.Trash);
+    this.setCritical(status === CardStatus.Critical);
   }
 
-  // Show an indicator if this card is critical, unclued, unmarked, and still in a player's hand
-  setCritical() {
-    this.criticalIndicator!.visible((
-      this.isCritical()
-      && (!this.empathy || this.state.identityDetermined)
-      && !globals.lobby.settings.realLifeMode
-      && !cardRules.isPlayed(this.state)
-      && !cardRules.isDiscarded(this.state)
+  private setFade(fade: boolean) {
+    const shouldFadeCard = (
+      fade
+      && !cardRules.isClued(this.state)
       && !this.note.blank
-      && this.bareName !== DECK_BACK_IMAGE // Blank cards should not be critical
+      && !variantRules.isThrowItInAHole(this.variant)
+      && !globals.options.speedrun
+      && !globals.lobby.settings.realLifeMode
+    );
+
+    this.opacity(shouldFadeCard ? CARD_FADE : 1);
+  }
+
+  private setCritical(critical: boolean) {
+    this.criticalIndicator!.visible((
+      critical
+      && !cardRules.isClued(this.state)
+      && !globals.lobby.settings.realLifeMode
     ));
   }
 
@@ -745,39 +732,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     return -1;
-  }
-
-  private isCritical() {
-    return this.cardRule(cardRules.isCritical);
-  }
-
-  private needsToBePlayed() {
-    return this.cardRule(cardRules.needsToBePlayed);
-  }
-
-  isPotentiallyPlayable() {
-    return this.cardRule(cardRules.isPotentiallyPlayable);
-  }
-
-  // Gathers all the appropriate state and passes as arguments to
-  // a function from cardRules.ts
-  private cardRule(fn: (
-    card: CardState,
-    deck: readonly CardState[],
-    playStacks: ReadonlyArray<readonly number[]>,
-    playStackDirections: readonly StackDirection[],
-    variant: Variant,
-  ) => boolean) {
-    const visibleState = globals.store!.getState().visibleState;
-    if (!visibleState) {
-      return false;
-    }
-    const state = this.state;
-    const deck = visibleState.deck;
-    const playStacks = visibleState.playStacks;
-    const playStackDirections = visibleState.playStackDirections;
-    const variant = this.variant;
-    return fn(state, deck, playStacks, playStackDirections, variant);
   }
 
   // Update all UI pips to their state

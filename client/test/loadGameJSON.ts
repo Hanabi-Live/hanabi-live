@@ -23,11 +23,11 @@ import testMetadata from './testMetadata';
 type JSONGame = typeof testGame;
 
 enum JSONActionType {
-  ActionTypePlay = 0,
-  ActionTypeDiscard = 1,
-  ActionTypeColorClue = 2,
-  ActionTypeRankClue = 3,
-  ActionTypeGameOver = 4,
+  ActionTypePlay,
+  ActionTypeDiscard,
+  ActionTypeColorClue,
+  ActionTypeRankClue,
+  ActionTypeGameOver,
 }
 
 interface JSONAction {

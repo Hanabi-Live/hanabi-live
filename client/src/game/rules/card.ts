@@ -1,11 +1,11 @@
 /* eslint-disable import/prefer-default-export */
 
 import CardState from '../types/CardState';
-import { STACK_BASE_RANK, START_CARD_RANK } from '../types/constants';
+import CardStatus from '../types/CardStatus';
+import { START_CARD_RANK } from '../types/constants';
 import StackDirection from '../types/StackDirection';
 import Variant from '../types/Variant';
 import * as deckRules from './deck';
-import * as playStacksRules from './playStacks';
 import * as variantRules from './variant';
 import * as reversibleRules from './variants/reversible';
 
@@ -34,48 +34,12 @@ export function isInPlayerHand(card: CardState) {
   return typeof card.location === 'number';
 }
 
-export function isCritical(
-  card: CardState,
-  deck: readonly CardState[],
-  playStacks: ReadonlyArray<readonly number[]>,
-  playStackDirections: readonly StackDirection[],
-  variant: Variant,
-) {
-  if (
-    card.suitIndex === null
-    || card.rank === null
-    || card.rank === 0 // Base
-    || isPlayed(card)
-    || isDiscarded(card)
-    || !needsToBePlayed(card, deck, playStacks, playStackDirections, variant)
-  ) {
-    return false;
-  }
-
-  // "Up or Down" has some special cases for critical cards
-  if (variantRules.hasReversedSuits(variant)) {
-    return reversibleRules.isCardCritical(
-      variant,
-      deck,
-      playStackDirections,
-      card,
-    );
-  }
-
-  const total = deckRules.numCopiesOfCard(
-    variant,
-    variant.suits[card.suitIndex],
-    card.rank,
-  );
-  const discarded = deckRules.discardedCopies(deck, card.suitIndex, card.rank);
-  return total === discarded + 1;
-}
-
 // needsToBePlayed returns true if the card is not yet played
 // and is still needed to be played in order to get the maximum score
-// (this mirrors the server function in "card.go")
+// This mirrors the server function "Game.NeedsToBePlayed()"
 export function needsToBePlayed(
-  card: CardState,
+  suitIndex: number,
+  rank: number,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
@@ -83,42 +47,39 @@ export function needsToBePlayed(
 ) {
   // First, check to see if a copy of this card has already been played
   for (const otherCard of deck) {
-    if (otherCard.order === card.order) {
-      continue;
-    }
     if (
-      otherCard.suitIndex === card.suitIndex
-      && otherCard.rank === card.rank
+      otherCard.suitIndex === suitIndex
+      && otherCard.rank === rank
       && isPlayed(otherCard)
     ) {
       return false;
     }
   }
 
-  // Determining if the card needs to be played in variants with reversed suits is more
-  // complicated
+  // Determining if the card needs to be played in variants with reversed suits is more complicated
   if (variantRules.hasReversedSuits(variant)) {
     return reversibleRules.needsToBePlayed(
-      variant,
+      suitIndex,
+      rank,
       deck,
       playStacks,
       playStackDirections,
-      card,
+      variant,
     );
   }
 
   const total = (s: number, r: number) => deckRules.numCopiesOfCard(
-    variant,
     variant.suits[s],
     r,
+    variant,
   );
   const discarded = (s: number, r: number) => deckRules.discardedCopies(deck, s, r);
   const isAllDiscarded = (s: number, r: number) => total(s, r) === discarded(s, r);
 
   // Second, check to see if it is still possible to play this card
   // (the preceding cards in the suit might have already been discarded)
-  for (let i = 1; i < card.rank!; i++) {
-    if (isAllDiscarded(card.suitIndex!, i)) {
+  for (let i = 1; i < rank; i++) {
+    if (isAllDiscarded(suitIndex, i)) {
       // The suit is "dead", so this card does not need to be played anymore
       return false;
     }
@@ -128,6 +89,65 @@ export function needsToBePlayed(
   return true;
 }
 
+export const status = (
+  suitIndex: number,
+  rank: number,
+  deck: readonly CardState[],
+  playStacks: ReadonlyArray<readonly number[]>,
+  playStackDirections: readonly StackDirection[],
+  variant: Variant,
+) => {
+  const cardNeedsToBePlayed = needsToBePlayed(
+    suitIndex,
+    rank,
+    deck,
+    playStacks,
+    playStackDirections,
+    variant,
+  );
+
+  if (cardNeedsToBePlayed) {
+    if (isCritical(suitIndex, rank, deck, playStacks, playStackDirections, variant)) {
+      return CardStatus.Critical;
+    }
+    return CardStatus.NeedsToBePlayed;
+  }
+  return CardStatus.Trash;
+};
+
+// This does not mirror any function on the server
+export function isCritical(
+  suitIndex: number,
+  rank: number,
+  deck: readonly CardState[],
+  playStacks: ReadonlyArray<readonly number[]>,
+  playStackDirections: readonly StackDirection[],
+  variant: Variant,
+) {
+  if (!needsToBePlayed(suitIndex, rank, deck, playStacks, playStackDirections, variant)) {
+    return false;
+  }
+
+  // "Up or Down" has some special cases for critical cards
+  if (variantRules.hasReversedSuits(variant)) {
+    return reversibleRules.isCritical(
+      suitIndex,
+      rank,
+      deck,
+      playStackDirections,
+      variant,
+    );
+  }
+
+  const total = deckRules.numCopiesOfCard(
+    variant.suits[suitIndex],
+    rank,
+    variant,
+  );
+  const discarded = deckRules.discardedCopies(deck, suitIndex, rank);
+  return total === discarded + 1;
+}
+
 export function isPotentiallyPlayable(
   card: CardState,
   deck: readonly CardState[],
@@ -135,36 +155,18 @@ export function isPotentiallyPlayable(
   playStackDirections: readonly StackDirection[],
   variant: Variant,
 ) {
-  // Calculating this in an Up or Down variant is more complicated
-  if (variantRules.hasReversedSuits(variant)) {
-    return reversibleRules.isPotentiallyPlayable(
-      card,
-      deck,
-      playStacks,
-      playStackDirections,
-      variant,
-    );
-  }
-
-  let potentiallyPlayable = false;
-  for (const [suitIndex] of variant.suits.entries()) {
-    let lastPlayedRank = playStacksRules.lastPlayedRank(playStacks[suitIndex], deck);
-    if (lastPlayedRank === 5) {
-      continue;
-    }
-    if (lastPlayedRank === STACK_BASE_RANK) {
-      lastPlayedRank = 0;
-    }
-    const nextRankNeeded = lastPlayedRank + 1;
-    const count = card.possibleCards[suitIndex][nextRankNeeded];
-    if (count === undefined) {
-      throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${nextRankNeeded} from the "possibleCards" map for card ${card.order}.`);
-    }
-    if (count > 0) {
-      potentiallyPlayable = true;
-      break;
+  for (let suitIndex = 0; suitIndex < card.possibleCards.length; suitIndex++) {
+    const possibleCardsOfSuit = card.possibleCards[suitIndex];
+    for (let rank = 0; rank < possibleCardsOfSuit.length; rank++) {
+      if (
+        // It is possible for this card to be this suit and rank combination
+        possibleCardsOfSuit[rank] > 0
+        && needsToBePlayed(suitIndex, rank, deck, playStacks, playStackDirections, variant)
+      ) {
+        return true;
+      }
     }
   }
 
-  return potentiallyPlayable;
+  return false;
 }

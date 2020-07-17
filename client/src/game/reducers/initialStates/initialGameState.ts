@@ -7,6 +7,7 @@ import { MAX_CLUE_NUM } from '../../types/constants';
 import GameMetadata from '../../types/GameMetadata';
 import GameState from '../../types/GameState';
 import StackDirection from '../../types/StackDirection';
+import initialCardStatus from './initialCardStatus';
 import initialTurnState from './initialTurnState';
 
 export default function initialGameState(metadata: GameMetadata): GameState {
@@ -32,6 +33,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     log: [],
     deck: [],
     deckSize: deck.totalCards(variant),
+    cardStatus: initialCardStatus(variant),
     score: 0,
     numAttemptedCardsPlayed: 0,
     clueTokens: MAX_CLUE_NUM,
