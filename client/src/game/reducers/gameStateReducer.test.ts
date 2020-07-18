@@ -35,6 +35,18 @@ describe('gameStateReducer', () => {
       state = gameStateReducer(state, testClue, defaultMetadata);
       expect(state.turn.turnNum).toBeGreaterThan(initialState.turn.turnNum);
     });
+    test('does segmentFirstClued keep the first clue', () => {
+      let state = initialGameStateTest(defaultMetadata);
+      state = gameStateReducer(state, draw(0, 0, undefined, undefined), defaultMetadata);
+      expect(state.deck[0].segmentFirstClued).toBeNull();
+      const clue1Segment = state.turn.segment;
+      const testClue1 = rankClue(5, 1, [0], 0, state.turn.turnNum);
+      state = gameStateReducer(state, testClue1, defaultMetadata);
+      expect(state.deck[0].segmentFirstClued).toEqual(clue1Segment);
+      const testClue2 = colorClue(2, 2, [0], 0, state.turn.turnNum);
+      state = gameStateReducer(state, testClue2, defaultMetadata);
+      expect(state.deck[0].segmentFirstClued).toEqual(clue1Segment);
+    });
   });
 
   describe('currentPlayerIndex', () => {
