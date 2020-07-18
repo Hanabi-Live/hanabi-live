@@ -24,7 +24,9 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   );
   const startingPace = statsRules.startingPace(options.numPlayers, cardsPerHand, variant);
   const hands: number[][] = initArray(options.numPlayers, []);
-  const playStackDirections = variant.suits.map((_, i) => playStacksRules.direction(i, [], [], variant));
+  const playStackDirections = variant.suits.map((_, i) => (
+    playStacksRules.direction(i, [], [], variant)
+  ));
   const playStacks: number[][] = initArray(variant.suits.length, []);
   const discardStacks: number[][] = initArray(variant.suits.length, []);
 
