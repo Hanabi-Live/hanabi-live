@@ -170,7 +170,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Initialize various elements/features of the card
     this.bare = HanabiCardInit.image(
       () => this.bareName,
-      () => this.bareName.endsWith(`-${STACK_BASE_RANK}`),
+      () => this.visibleRank === STACK_BASE_RANK,
     );
     this.add(this.bare);
 
@@ -830,18 +830,17 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.visualEffectCursor = cursor;
 
     // Shadow special effects
-    const shadowOffset = cursor === 'dragging' ? Math.floor(0.1 * CARD_W) : Math.floor(0.04 * CARD_W);
+    const shadowOffset = cursor === 'dragging' ? Math.floor(0.12 * CARD_W) : Math.floor(0.04 * CARD_W);
     this.bare.to({
       shadowOffsetX: shadowOffset,
       shadowOffsetY: shadowOffset,
-      shadowBlur: cursor === 'dragging' ? Math.floor(0.06 * CARD_W) : Math.floor(0.03 * CARD_W),
-      duration: globals.animateFast ? 0 : 0.1,
+      duration: globals.animateFast ? 0 : 0.05,
     });
     const baseOffsetY = this.isRaisedBecauseOfClues() ? 0.6 * CARD_H : 0.5 * CARD_H;
     this.to({
       offsetX: cursor === 'dragging' ? 0.52 * CARD_W : 0.5 * CARD_W,
       offsetY: baseOffsetY + (cursor === 'dragging' ? 0.02 * CARD_H : 0),
-      duration: globals.animateFast ? 0 : 0.1,
+      duration: globals.animateFast ? 0 : 0.05,
     });
   }
 

@@ -5,12 +5,12 @@ import {
   deckRules,
   handRules,
   statsRules,
+  playStacksRules,
 } from '../../rules';
 import CardStatus from '../../types/CardStatus';
 import { MAX_CLUE_NUM } from '../../types/constants';
 import GameMetadata from '../../types/GameMetadata';
 import GameState from '../../types/GameState';
-import StackDirection from '../../types/StackDirection';
 import initialTurnState from './initialTurnState';
 
 export default function initialGameState(metadata: GameMetadata): GameState {
@@ -24,10 +24,9 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   );
   const startingPace = statsRules.startingPace(options.numPlayers, cardsPerHand, variant);
   const hands: number[][] = initArray(options.numPlayers, []);
-  const playStackDirections: StackDirection[] = initArray(
-    variant.suits.length,
-    StackDirection.Undecided,
-  );
+  const playStackDirections = variant.suits.map((_, i) => (
+    playStacksRules.direction(i, [], [], variant)
+  ));
   const playStacks: number[][] = initArray(variant.suits.length, []);
   const discardStacks: number[][] = initArray(variant.suits.length, []);
 
