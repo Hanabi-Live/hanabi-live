@@ -49,19 +49,9 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	// Check to see if we need to remove some card information
 	var scrubbedActions []interface{}
 	if !t.Replay {
-		for _, a := range g.Actions {
-			drawAction, ok := a.(ActionDraw)
-			if ok && drawAction.Type == "draw" {
-				drawAction.Scrub(t, s.UserID())
-				a = drawAction
-			}
-			playAction, ok := a.(ActionPlay)
-			if ok && playAction.Type == "play" {
-				playAction.Scrub(t)
-				a = playAction
-			}
-
-			scrubbedActions = append(scrubbedActions, a)
+		for _, action := range g.Actions {
+			scrubbedAction := CheckScrub(t, action, s.UserID())
+			scrubbedActions = append(scrubbedActions, scrubbedAction)
 		}
 	} else {
 		// The person requesting the game state is not an active player

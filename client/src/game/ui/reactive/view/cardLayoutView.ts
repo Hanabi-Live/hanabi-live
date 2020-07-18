@@ -21,7 +21,7 @@ const stackStringsUpOrDown = new Map<StackDirection, string>([
   [StackDirection.Finished, 'Finished'],
 ]);
 
-export function onPlayStackDirectionsChanged(directions: readonly StackDirection[]) {
+export const onPlayStackDirectionsChanged = (directions: readonly StackDirection[]) => {
   if (!variantRules.hasReversedSuits(globals.variant)) {
     return;
   }
@@ -55,9 +55,9 @@ export function onPlayStackDirectionsChanged(directions: readonly StackDirection
   });
 
   globals.layers.UI.batchDraw();
-}
+};
 
-export function onHandsChanged(hands: ReadonlyArray<readonly number[]>) {
+export const onHandsChanged = (hands: ReadonlyArray<readonly number[]>) => {
   syncChildren(
     hands,
     (i) => globals.elements.playerHands[i] as unknown as Konva.Container,
@@ -65,9 +65,9 @@ export function onHandsChanged(hands: ReadonlyArray<readonly number[]>) {
   );
 
   globals.layers.card.batchDraw();
-}
+};
 
-export function onDiscardStacksChanged(discardStacks: ReadonlyArray<readonly number[]>) {
+export const onDiscardStacksChanged = (discardStacks: ReadonlyArray<readonly number[]>) => {
   syncChildren(
     discardStacks,
     (i) => {
@@ -83,12 +83,12 @@ export function onDiscardStacksChanged(discardStacks: ReadonlyArray<readonly num
   );
 
   globals.layers.card.batchDraw();
-}
+};
 
-export function onPlayStacksChanged(
+export const onPlayStacksChanged = (
   playStacks: ReadonlyArray<readonly number[]>,
   previousPlayStacks: ReadonlyArray<readonly number[]> | undefined,
-) {
+) => {
   syncChildren(
     playStacks,
     (i) => {
@@ -107,12 +107,16 @@ export function onPlayStacksChanged(
   });
 
   globals.layers.card.batchDraw();
-}
+};
 
-export function onHoleChanged(
+export const onHoleChanged = (
   hole: readonly number[],
   previousHole: readonly number[] | undefined,
-) {
+) => {
+  if (previousHole === undefined) {
+    return;
+  }
+
   console.log('HOLE:', hole);
   console.log('PREVIOUS HOLE:', previousHole);
 
@@ -137,13 +141,13 @@ export function onHoleChanged(
 
   globals.layers.card.batchDraw();
   */
-}
+};
 
-function syncChildren(
+const syncChildren = (
   collections: ReadonlyArray<readonly number[]>,
   getCollectionUI: (i: number) => Konva.Container,
   addToCollectionUI: (card: HanabiCard, i: number) => void,
-) {
+) => {
   const getCard = (order: number) => globals.deck[order];
 
   collections.forEach((collection, i) => {
@@ -198,4 +202,4 @@ function syncChildren(
       throw new Error('The UI collection is out of sync with the state.');
     }
   });
-}
+};

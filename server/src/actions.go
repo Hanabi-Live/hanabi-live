@@ -3,7 +3,14 @@
 
 package main
 
-import "strings"
+// Used to implement the "Slow-Witted" detrimental character
+type ActionCardIdentity struct {
+	Type        string `json:"type"`
+	PlayerIndex int    `json:"playerIndex"` // Needed so that we can validate who holds the card
+	Order       int    `json:"order"`
+	SuitIndex   int    `json:"suitIndex"`
+	Rank        int    `json:"rank"`
+}
 
 type ActionClue struct {
 	Type   string `json:"type"`
@@ -56,12 +63,6 @@ type ActionPlayerTimes struct {
 	PlayerTimes []int64 `json:"playerTimes"`
 }
 
-type ActionReorder struct {
-	Type      string `json:"type"`
-	Target    int    `json:"target"`
-	HandOrder []int  `json:"handOrder"`
-}
-
 type ActionPlayStackDirections struct {
 	Type       string `json:"type"`
 	Directions []int  `json:"directions"`
@@ -91,46 +92,6 @@ type ActionTurn struct {
 type Clue struct {
 	Type  int `json:"type"`
 	Value int `json:"value"`
-}
-
-// Scrub removes some information from an action so that we do not reveal to the client anything
-// about the cards that they are drawing
-func (a *ActionDraw) Scrub(t *Table, userID int) {
-	// Local variables
-	g := t.Game
-
-	// Find their player index
-	var p *GamePlayer
-	i := t.GetPlayerIndexFromID(userID)
-	j := t.GetSpectatorIndexFromID(userID)
-	if i > -1 {
-		// The person requesting the draw action is one of the active players
-		p = g.Players[i]
-	} else if j > -1 && t.Spectators[j].Shadowing {
-		// The person requesting the draw action is shadowing one of the active players
-		p = g.Players[t.Spectators[j].PlayerIndex]
-	} else {
-		return
-	}
-
-	if a.PlayerIndex == p.Index || // They are drawing the card
-		// They are playing a special character that should not be able to see the card
-		characterHideCard(a, g, p) {
-
-		a.Rank = -1
-		a.SuitIndex = -1
-	}
-}
-
-// Scrub removes some information from played cards so that we do not reveal to the client anything
-// about the cards that are played (in some specific variants)
-func (a *ActionPlay) Scrub(t *Table) {
-	if !strings.HasPrefix(t.Options.VariantName, "Throw It in a Hole") {
-		return
-	}
-
-	a.Rank = -1
-	a.SuitIndex = -1
 }
 
 func NewClue(d *CommandData) Clue {

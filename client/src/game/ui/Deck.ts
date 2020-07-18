@@ -2,6 +2,7 @@ import Konva from 'konva';
 import { TOOLTIP_DELAY } from '../../constants';
 import { timerFormatter } from '../../misc';
 import * as misc from '../../misc';
+import { deckRules } from '../rules';
 import ActionType from '../types/ActionType';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import * as arrows from './arrows';
@@ -44,7 +45,7 @@ export default class Deck extends Konva.Group {
       fontSize: 0.4 * this.height(),
       fontFamily: 'Verdana',
       fontStyle: 'bold',
-      text: globals.deckSize.toString(),
+      text: deckRules.totalCards(globals.variant).toString(),
       listening: false,
     });
     this.add(this.numLeftText);
@@ -102,13 +103,6 @@ export default class Deck extends Konva.Group {
     pos.y += this.height() * this.scaleY() / 2;
 
     if (globals.elements.playArea!.isOver(pos)) {
-      // We need to remove the card from the screen once the animation is finished
-      // (otherwise, the card will be stuck in the in-game replay)
-      globals.postAnimationLayout = () => {
-        (this.parent as unknown as Deck).doLayout();
-        globals.postAnimationLayout = null;
-      };
-
       this.draggable(false);
       globals.elements.deckPlayAvailableLabel!.hide();
 
@@ -141,7 +135,7 @@ export default class Deck extends Konva.Group {
     // If the user hovers over the deck, show a tooltip that shows extra game options, if any
     // (we don't use the "tooltip.init()" function because we need the extra condition in the
     // "mouseover" event)
-    this.on('mouseover touchstart', function mouseOver() {
+    this.on('mouseover touchstart', function mouseOver(this: Deck) {
       // Don't do anything if we might be dragging the deck
       if (globals.elements.deckPlayAvailableLabel!.isVisible()) {
         return;

@@ -2,27 +2,26 @@
 // Currently used for "Up Or Down" and "Reversed" variants
 
 import CardState from '../../types/CardState';
-import {
-  STACK_BASE_RANK,
-  START_CARD_RANK,
-} from '../../types/constants';
+import { START_CARD_RANK } from '../../types/constants';
 import StackDirection from '../../types/StackDirection';
 import Variant from '../../types/Variant';
 import * as deckRules from '../deck';
 import * as playStacksRules from '../playStacks';
 import * as variantRules from '../variant';
 
-// needsToBePlayed returns true if this card still needs to be played
-// in order to get the maximum score (taking into account the stack direction)
+// needsToBePlayed returns true if this card still needs to be played in order to get the maximum
+// score (taking the stack direction into account)
 // (before getting here, we already checked to see if the card has already been played)
+// This function mirrors the server function "variantReversibleNeedsToBePlayed()"
 export const needsToBePlayed = (
-  variant: Variant,
+  suitIndex: number,
+  rank: number,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
-  cardState: CardState,
+  variant: Variant,
 ) => {
-  const direction = playStackDirections[cardState.suitIndex!];
+  const direction = playStackDirections[suitIndex];
   // First, check to see if the stack is already finished
   if (direction === StackDirection.Finished) {
     return false;
@@ -30,30 +29,30 @@ export const needsToBePlayed = (
 
   // Second, check to see if this card is dead
   // (meaning that all of a previous card in the suit have been discarded already)
-  if (isDead(variant, deck, playStacks, playStackDirections, cardState)) {
+  if (isDead(suitIndex, rank, deck, playStacks, playStackDirections, variant)) {
     return false;
   }
 
   // The "Up or Down" variants have specific requirements to start the pile
   if (variantRules.isUpOrDown(variant)) {
     // All 2's, 3's, and 4's must be played
-    if (cardState.rank === 2 || cardState.rank === 3 || cardState.rank === 4) {
+    if (rank === 2 || rank === 3 || rank === 4) {
       return true;
     }
 
-    if (cardState.rank === 1) {
+    if (rank === 1) {
     // 1's do not need to be played if the stack is going up
       if (direction === StackDirection.Up) {
         return false;
       }
-    } else if (cardState.rank === 5) {
+    } else if (rank === 5) {
     // 5's do not need to be played if the stack is going down
       if (direction === StackDirection.Down) {
         return false;
       }
-    } else if (cardState.rank === START_CARD_RANK) {
+    } else if (rank === START_CARD_RANK) {
     // START cards do not need to be played if there are any cards played on the stack
-      const playStack = playStacks[cardState.suitIndex!];
+      const playStack = playStacks[suitIndex];
       if (playStack.length > 0) {
         return false;
       }
@@ -63,39 +62,39 @@ export const needsToBePlayed = (
   return true;
 };
 
-// isDead returns true if it is no longer possible to play this card by
-// looking to see if all of the previous cards in the stack have been discarded
-// (taking into account the stack direction)
+// isDead returns true if it is no longer possible to play this card by looking to see if all of the
+// previous cards in the stack have been discarded (taking into account the stack direction)
+// This function mirrors the server function "variantReversibleIsDeadIsDead()"
 const isDead = (
-  variant: Variant,
+  suitIndex: number,
+  rank: number,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
-  cardState: CardState,
+  variant: Variant,
 ) => {
   const { isAllDiscarded } = discardedHelpers(variant, deck);
 
   // Make a map that shows if all of some particular rank in this suit has been discarded
-  const ranks = variant.ranks.slice();
   const allDiscarded = new Map();
-  for (const rank of ranks) {
-    allDiscarded.set(rank, isAllDiscarded(cardState.suitIndex!, rank));
+  for (const variantRank of variant.ranks.slice()) {
+    allDiscarded.set(variantRank, isAllDiscarded(suitIndex, variantRank));
   }
 
   // Start by handling the easy cases of up and down
-  if (playStackDirections[cardState.suitIndex!] === StackDirection.Up) {
-    let rank = variantRules.isUpOrDown(variant) ? 2 : 1;
-    for (rank; rank < cardState.rank!; rank++) {
-      if (allDiscarded.get(rank)) {
+  if (playStackDirections[suitIndex] === StackDirection.Up) {
+    let nextRank = variantRules.isUpOrDown(variant) ? 2 : 1;
+    for (nextRank; nextRank < rank; nextRank++) {
+      if (allDiscarded.get(nextRank)) {
         return true;
       }
     }
     return false;
   }
-  if (playStackDirections[cardState.suitIndex!] === StackDirection.Down) {
-    let rank = variantRules.isUpOrDown(variant) ? 4 : 5;
-    for (rank; rank > cardState.rank!; rank--) {
-      if (allDiscarded.get(rank)) {
+  if (playStackDirections[suitIndex] === StackDirection.Down) {
+    let nextRank = variantRules.isUpOrDown(variant) ? 4 : 5;
+    for (nextRank; nextRank > rank; nextRank--) {
+      if (allDiscarded.get(nextRank)) {
         return true;
       }
     }
@@ -117,9 +116,9 @@ const isDead = (
   // If the "START" card is played on the stack,
   // then this card will be dead if all of the 2's and all of the 4's have been discarded
   // (this situation also applies to 3's when no cards have been played on the stack)
-  const playStack = playStacks[cardState.suitIndex!];
+  const playStack = playStacks[suitIndex];
   const lastPlayedRank = playStacksRules.lastPlayedRank(playStack, deck);
-  if (lastPlayedRank === START_CARD_RANK || cardState.rank === 3) {
+  if (lastPlayedRank === START_CARD_RANK || rank === 3) {
     if (allDiscarded.get(2) && allDiscarded.get(4)) {
       return true;
     }
@@ -128,96 +127,154 @@ const isDead = (
   return false;
 };
 
-export const isPotentiallyPlayable = (
-  variant: Variant,
+// variantReversibleGetMaxScore calculates what the maximum score is,
+// accounting for stacks that cannot be completed due to discarded cards
+// This function mirrors the server function "variantReversibleGetMaxScore()"
+export const getMaxScore = (
   deck: readonly CardState[],
-  playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
-  cardState: CardState,
-) => {
-  for (const [suitIndex, rank] of cardState.possibleCardsFromClues) {
-    if (cardState.possibleCardsFromObservation[suitIndex][rank] <= 0) {
-      continue;
+  variant: Variant,
+): number => {
+  let maxScore = 0;
+
+  for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
+    const suit = variant.suits[suitIndex];
+
+    // Make a map that shows if all of some particular rank in this suit has been discarded
+    const ranks = [1, 2, 3, 4, 5];
+    if (variantRules.isUpOrDown(variant)) {
+      ranks.push(START_CARD_RANK);
     }
-    const playStack = playStacks[suitIndex];
-    const lastPlayedRank = playStacksRules.lastPlayedRank(playStack, deck);
-    const nextRanksNeeded : number[] = [];
+
+    const allDiscarded = new Map<number, boolean>();
+    for (const rank of ranks) {
+      const total = deckRules.numCopiesOfCard(suit, rank, variant);
+      const discarded = deckRules.discardedCopies(deck, suitIndex, rank);
+      allDiscarded.set(rank, total === discarded);
+    }
 
     if (playStackDirections[suitIndex] === StackDirection.Undecided) {
-      if (lastPlayedRank === STACK_BASE_RANK) {
-        nextRanksNeeded.push(START_CARD_RANK, 1, 5);
-      } else if (lastPlayedRank === START_CARD_RANK) {
-        nextRanksNeeded.push(2, 4);
-      }
+      const upWalk = walkUp(allDiscarded, variant);
+      const downWalk = walkDown(allDiscarded, variant);
+      maxScore += Math.max(upWalk, downWalk);
     } else if (playStackDirections[suitIndex] === StackDirection.Up) {
-      nextRanksNeeded.push(lastPlayedRank! + 1);
+      maxScore += walkUp(allDiscarded, variant);
     } else if (playStackDirections[suitIndex] === StackDirection.Down) {
-      let nextRankNeeded = lastPlayedRank! - 1;
-      if (!variantRules.isUpOrDown(variant) && lastPlayedRank === STACK_BASE_RANK) {
-        // Reversed stacks start with 5, except in "Up or Down"
-        nextRankNeeded = 5;
-      }
-      nextRanksNeeded.push(nextRankNeeded);
+      maxScore += walkDown(allDiscarded, variant);
     } else if (playStackDirections[suitIndex] === StackDirection.Finished) {
-      // Nothing can play on this stack because it is finished
-      continue;
-    }
-    if (nextRanksNeeded.includes(rank)) {
-      return true;
+      maxScore += 5;
     }
   }
 
-  return false;
+  return maxScore;
 };
 
-export const isCardCritical = (
-  variant: Variant,
-  deck: readonly CardState[],
-  playStackDirections: readonly StackDirection[],
-  cardState: CardState,
-) : boolean => {
-  const { isLastCopy, isAllDiscarded } = discardedHelpers(variant, deck);
+// A helper function for "getMaxScore()"
+const walkUp = (allDiscarded: Map<number, boolean>, variant: Variant) => {
+  let cardsThatCanStillBePlayed = 0;
 
-  const isThisCritical = isLastCopy(cardState.suitIndex!, cardState.rank!);
-  if (!variantRules.isUpOrDown(variant)) {
-    return isThisCritical;
+  // First, check to see if the stack can still be started
+  if (variantRules.isUpOrDown(variant)) {
+    if (allDiscarded.get(1)! && allDiscarded.get(START_CARD_RANK)!) {
+      // In "Up or Down" variants, you can start with 1 or START when going up
+      return 0;
+    }
+  } else if (allDiscarded.get(1)!) {
+    // Otherwise, only 1
+    return 0;
+  }
+  cardsThatCanStillBePlayed += 1;
+
+  // Second, walk upwards
+  for (let rank = 2; rank <= 5; rank++) {
+    if (allDiscarded.get(rank)!) {
+      break;
+    }
+    cardsThatCanStillBePlayed += 1;
   }
 
-  if (!isThisCritical) {
-    // There are more copies of this card, so no worries
+  return cardsThatCanStillBePlayed;
+};
+
+// A helper function for "getMaxScore()"
+const walkDown = (allDiscarded: Map<number, boolean>, variant: Variant) => {
+  let cardsThatCanStillBePlayed = 0;
+
+  // First, check to see if the stack can still be started
+  if (variantRules.isUpOrDown(variant)) {
+    if (allDiscarded.get(5)! && allDiscarded.get(START_CARD_RANK)!) {
+      // In "Up or Down" variants, you can start with 5 or START when going down
+      return 0;
+    }
+  } else if (allDiscarded.get(5)!) {
+    // Otherwise, only 5
+    return 0;
+  }
+  cardsThatCanStillBePlayed += 1;
+
+  // Second, walk downwards
+  for (let rank = 4; rank >= 1; rank--) {
+    if (allDiscarded.get(rank)!) {
+      break;
+    }
+    cardsThatCanStillBePlayed += 1;
+  }
+
+  return cardsThatCanStillBePlayed;
+};
+
+// This does not mirror any function on the server
+export const isCritical = (
+  suitIndex: number,
+  rank: number,
+  deck: readonly CardState[],
+  playStackDirections: readonly StackDirection[],
+  variant: Variant,
+) => {
+  const { isLastCopy, isAllDiscarded } = discardedHelpers(variant, deck);
+
+  const lastCopy = isLastCopy(suitIndex, rank);
+  if (!variantRules.isUpOrDown(variant)) {
+    return lastCopy;
+  }
+
+  if (!lastCopy) {
+    // There are more copies of this card
     return false;
   }
 
-  const direction = playStackDirections[cardState.suitIndex!];
+  const direction = playStackDirections[suitIndex];
 
-  // Start is only critical if all 1's and 5's are discarded
-  // and the stack didn't start
-  if (cardState.rank === START_CARD_RANK) {
-    return direction === StackDirection.Undecided
-      && (isAllDiscarded(cardState.suitIndex!, 1) || isAllDiscarded(cardState.suitIndex!, 5));
+  // The START card is only critical if all 1's and 5's are discarded and the stack didn't start
+  if (rank === START_CARD_RANK) {
+    return (
+      direction === StackDirection.Undecided
+      && (isAllDiscarded(suitIndex, 1) || isAllDiscarded(suitIndex, 5))
+    );
   }
 
-  // 1's and 5's are only critical to begin if Start is discarded
-  if ((cardState.rank === 1 || cardState.rank === 5) && direction === StackDirection.Undecided) {
-    return isAllDiscarded(cardState.suitIndex!, START_CARD_RANK);
+  // 1's and 5's are only critical to begin if the START card is discarded
+  if ((rank === 1 || rank === 5) && direction === StackDirection.Undecided) {
+    return isAllDiscarded(suitIndex, START_CARD_RANK);
   }
 
   // 1's and 5's are critical to end if the direction requires them in the end
-  if (cardState.rank === 1) {
+  if (rank === 1) {
     return direction === StackDirection.Down;
   }
 
-  if (cardState.rank === 5) {
+  if (rank === 5) {
     return direction === StackDirection.Up;
   }
 
   // Default case: all other ranks
   return true;
 };
-function discardedHelpers(variant: Variant, deck: readonly CardState[]) {
-  const total = (s: number, r: number) => deckRules.numCopiesOfCard(variant, variant.suits[s], r);
+
+const discardedHelpers = (variant: Variant, deck: readonly CardState[]) => {
+  const total = (s: number, r: number) => deckRules.numCopiesOfCard(variant.suits[s], r, variant);
   const discarded = (s: number, r: number) => deckRules.discardedCopies(deck, s, r);
   const isLastCopy = (s: number, r: number) => total(s, r) === discarded(s, r) + 1;
   const isAllDiscarded = (s: number, r: number) => total(s, r) === discarded(s, r);
   return { isLastCopy, isAllDiscarded };
-}
+};

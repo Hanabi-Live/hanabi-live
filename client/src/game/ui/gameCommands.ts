@@ -17,7 +17,6 @@ import GameState from '../types/GameState';
 import Options from '../types/Options';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import SpectatorNote from '../types/SpectatorNote';
-import action from './action';
 import * as arrows from './arrows';
 import { checkLegal } from './clues';
 import globals from './globals';
@@ -85,7 +84,8 @@ commands.set('databaseID', (data: DatabaseIDData) => {
   globals.elements.gameIDLabel!.show();
 
   // Also move the card count label on the deck downwards
-  if (globals.deckSize === 0) {
+  const deckSize = globals.store!.getState().visibleState!.deckSize;
+  if (deckSize === 0) {
     globals.elements.deck!.nudgeCountDownwards();
   }
 
@@ -121,19 +121,13 @@ commands.set('gameOver', () => {
   // Open the replay UI if we were not in an in-game replay when the game ended
   replay.enter();
 
-  // Turn off the flag that tracks when the game is over
-  // (before the "gameOver" command is received)
-  // (this must be after the "replay.enter()" function)
-  globals.gameOver = false;
-
-  // If the user is in an in-game replay when the game ends, we need to jerk them away from it
-  // and go to the end of the game. This is because we need to process all of the queued "action"
-  // messages (otherwise, the code will try to "reveal" cards that might be undefined)
-
-  // The final turn displays how long everyone took,
-  // so we want to go to the turn before that, which we recorded earlier
-  replay.goto(globals.finalReplayTurn, true);
-  console.log('Going to the finalReplayTurn:', globals.finalReplayTurn);
+  // We want to set the replay segment to the segment before all the times display so that the
+  // player can see why the game ended
+  // (otherwise, the text of the times will drown out the reason and force the user to rewind)
+  globals.store!.dispatch({
+    type: 'replayGoToSegment',
+    segment: globals.store!.getState().visibleState!.turn.segment! - 1,
+  });
 
   // Hide the "Exit Replay" button in the center of the screen, since it is no longer necessary
   globals.elements.replayExitButton!.hide();
@@ -170,7 +164,6 @@ commands.set('hypoAction', (data: string) => {
 
   hypothetical.setHypoFirstDrawnIndex(actionMessage);
   hypothetical.checkToggleRevealedButton(actionMessage);
-  action(actionMessage);
 
   if (actionMessage.type === 'turn') {
     hypothetical.beginTurn();
@@ -271,6 +264,13 @@ commands.set('init', (data: InitData) => {
 
   // Character settings
   let characterAssignments: Array<number | null> = data.characterAssignments.slice();
+  for (let i = 0; i < characterAssignments.length; i++) {
+    if (characterAssignments[i]! < 0) {
+      // Handle the special case of when players can be given assignments of "-1" during debugging
+      // (which corresponds to a null character)
+      characterAssignments[i] = null;
+    }
+  }
   if (characterAssignments.length === 0) {
     characterAssignments = initArray(globals.options.numPlayers, null);
   }
@@ -311,7 +311,10 @@ commands.set('init', (data: InitData) => {
     globals.replayTurn = -1;
 
     // HACK: also let the state know this is a replay
-    globals.store!.dispatch({ type: 'startReplay', segment: 0 });
+    globals.store!.dispatch({
+      type: 'replayStart',
+      segment: 0,
+    });
   }
 
   // Now that we know the number of players and the variant, we can start to load & draw the UI
@@ -418,11 +421,8 @@ const processNewAction = (actionMessage: GameAction) => {
   // TEMP: We need to save this game state change for the purposes of the in-game replay
   globals.replayLog.push(actionMessage);
 
-  if (actionMessage.type === 'turn') {
-    // Keep track of whether it is our turn or not
-    // TODO: Legacy code, remove this
-    globals.ourTurn = actionMessage.currentPlayerIndex === globals.playerUs && !globals.spectating;
-  } else if (actionMessage.type === 'clue' && variantRules.isAlternatingClues(globals.variant)) {
+  // TODO: legacy code, move this
+  if (actionMessage.type === 'clue' && variantRules.isAlternatingClues(globals.variant)) {
     if (actionMessage.clue.type === ClueType.Color) {
       for (const button of globals.elements.colorClueButtons) {
         button.hide();
@@ -438,25 +438,6 @@ const processNewAction = (actionMessage: GameAction) => {
         button.hide();
       }
     }
-  }
-
-  // Now that it is recorded, change the actual drawn game state
-  if (
-    !globals.store!.getState().replay.active // Unless we are in an in-game replay
-    && !globals.gameOver // Unless it is the miscellaneous data sent at the end of a game
-  ) {
-    action(actionMessage);
-  }
-
-  // If the game is over, do not immediately draw the subsequent turns that contain the game times
-  if (
-    !globals.gameOver
-    && actionMessage.type === 'turn'
-    && actionMessage.currentPlayerIndex === -1
-  ) {
-    globals.gameOver = true;
-    globals.finalReplayPos = globals.replayLog.length;
-    globals.finalReplayTurn = actionMessage.num;
   }
 };
 
@@ -603,7 +584,8 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
     globals.elements.useSharedTurnsButton!.setCenter();
   }
   globals.elements.enterHypoButton!.visible(globals.amSharedReplayLeader);
-  globals.elements.enterHypoButton!.setEnabled(globals.currentPlayerIndex !== null);
+  const currentPlayerIndex = globals.store!.getState().visibleState!.turn.currentPlayerIndex;
+  globals.elements.enterHypoButton!.setEnabled(currentPlayerIndex !== null);
 
   // Enable/disable the restart button
   globals.elements.restartButton!.visible(globals.amSharedReplayLeader);

@@ -57,10 +57,6 @@ export class Globals {
   stackBases: HanabiCard[] = [];
 
   // Game state variables (reset when rewinding in a replay)
-  turn: number = 0;
-  currentPlayerIndex: number | null = 0;
-  ourTurn: boolean = false;
-  deckSize: number = 0;
   playStackDirections: StackDirection[] = [];
 
   // UI elements
@@ -76,8 +72,6 @@ export class Globals {
   replayLog: GameAction[] = []; // Contains all of the "action" messages for the game
   replayPos: number = 0; // The current index of the "globals.replayLog" array
   replayTurn: number = 0; // The current game turn
-  // Used to keep track of when the game ends (before the "gameOver" command has arrived)
-  gameOver: boolean = false;
   finalReplayPos: number = 0;
   finalReplayTurn: number = 0;
 
@@ -122,8 +116,6 @@ export class Globals {
 
   // Miscellaneous
   animateFast: boolean = true;
-  // A function called after an action from the server moves cards
-  postAnimationLayout: (() => void) | null = null;
   UIClickTime: number = 0; // Used to prevent accidental double clicks
   spectators: string[] = [];
 
@@ -162,10 +154,6 @@ export class Globals {
     this.characterRememberedCards = [];
     this.deck = [];
     this.stackBases = [];
-    this.turn = 0;
-    this.currentPlayerIndex = 0;
-    this.ourTurn = false;
-    this.deckSize = 0;
     this.playStackDirections = [];
     this.imageLoader = null;
     this.stage = new Konva.Stage({ container: 'game' });
@@ -177,7 +165,6 @@ export class Globals {
     this.replayLog = [];
     this.replayPos = 0;
     this.replayTurn = 0;
-    this.gameOver = false;
     this.finalReplayPos = 0;
     this.finalReplayTurn = 0;
     this.sharedReplayLeader = '';
@@ -203,7 +190,6 @@ export class Globals {
     this.pausePlayer = '';
     this.pauseQueued = false;
     this.animateFast = true;
-    this.postAnimationLayout = null;
     this.UIClickTime = 0;
     this.spectators = [];
 

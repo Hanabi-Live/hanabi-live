@@ -132,7 +132,7 @@
   },
   "Panicky": {
     "id": 26,
-    "description": "When discarding, discards twice if 4 clues or less",
+    "description": "After discarding, discards again if there are 4 clues or less",
     "emoji": "😳"
   },
   "Contrarian": {

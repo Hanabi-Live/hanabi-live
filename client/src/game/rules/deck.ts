@@ -10,7 +10,7 @@ import * as cardRules from './card';
 import * as handRules from './hand';
 import * as variantRules from './variant';
 
-export function totalCards(variant: Variant) {
+export const totalCards = (variant: Variant) => {
   let totalCardsInTheDeck = 0;
   for (const suit of variant.suits) {
     totalCardsInTheDeck += 10;
@@ -21,11 +21,11 @@ export function totalCards(variant: Variant) {
     }
   }
   return totalCardsInTheDeck;
-}
+};
 
 // Given a variant, and a card's rank and suit, returns how many copies of
 // this card exist in the deck
-export function numCopiesOfCard(variant: Variant, suit: Suit, rank: number) {
+export const numCopiesOfCard = (suit: Suit, rank: number, variant: Variant) => {
   // In a normal suit of Hanabi,
   // there are three 1's, two 2's, two 3's, two 4's, and one 5
   let amountToAdd = 2;
@@ -51,11 +51,9 @@ export function numCopiesOfCard(variant: Variant, suit: Suit, rank: number) {
     amountToAdd = 1;
   }
   return amountToAdd;
-}
+};
 
 // Returns how many cards of a specific suit/rank that have been already discarded
-// (this DOES NOT mirror the server function "getSpecificCardNum" in "game.go",
-// because the client does not have the full deck)
 export const discardedCopies = (
   deck: readonly CardState[],
   suitIndex: number,
@@ -67,7 +65,7 @@ export const discardedCopies = (
   return discarded;
 }, 0);
 
-export function isInitialDealFinished(currentDeckSize: number, metadata: GameMetadata) {
+export const isInitialDealFinished = (currentDeckSize: number, metadata: GameMetadata) => {
   const variant = getVariant(metadata.options.variantName);
   const totalCardsInTheDeck = totalCards(variant);
   const numCardsPerHand = handRules.cardsPerHand(
@@ -76,4 +74,4 @@ export function isInitialDealFinished(currentDeckSize: number, metadata: GameMet
     metadata.options.oneLessCard,
   );
   return currentDeckSize === totalCardsInTheDeck - (metadata.options.numPlayers * numCardsPerHand);
-}
+};

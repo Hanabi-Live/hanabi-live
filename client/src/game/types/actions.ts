@@ -12,6 +12,7 @@ export type Action =
   | ActionFinishOngoingGame;
 
 export type GameAction =
+  | ActionCardIdentity
   | ActionClue
   | ActionDiscard
   | ActionDraw
@@ -19,7 +20,6 @@ export type GameAction =
   | ActionGameOver
   | ActionPlay
   | ActionPlayerTimes
-  | ActionReorder
   | ActionPlayStackDirections
   | ActionStatus
   | ActionStrike
@@ -28,9 +28,9 @@ export type GameAction =
 export type ActionIncludingHypothetical = GameAction | ActionHypotheticalMorph;
 
 export type ReplayAction =
-  | ActionStartReplay
-  | ActionEndReplay
-  | ActionGoToTurn
+  | ActionReplayStart
+  | ActionReplayEnd
+  | ActionReplayGoToSegment
   | ActionHypotheticalStart
   | ActionHypotheticalEnd
   | ActionHypotheticalBack
@@ -66,6 +66,15 @@ export interface ActionFinishOngoingGame {
 // ------------
 // Game actions
 // ------------
+
+// Used to implement the "Slow-Witted" detrimental character
+export interface ActionCardIdentity {
+  type: 'cardIdentity';
+  readonly playerIndex: number;
+  readonly order: number;
+  readonly suitIndex: number;
+  readonly rank: number;
+}
 
 export interface ActionClue {
   type: 'clue';
@@ -117,12 +126,6 @@ export interface ActionPlayerTimes {
   readonly playerTimes: number[];
 }
 
-export interface ActionReorder {
-  type: 'reorder';
-  readonly target: number;
-  readonly handOrder: number[];
-}
-
 export interface ActionPlayStackDirections {
   type: 'playStackDirections';
   readonly directions: number[];
@@ -153,17 +156,17 @@ export interface ActionTurn {
 // Replay actions
 // --------------
 
-export interface ActionStartReplay {
-  type: 'startReplay';
+export interface ActionReplayStart {
+  type: 'replayStart';
   readonly segment: number;
 }
 
-export interface ActionEndReplay {
-  type: 'endReplay';
+export interface ActionReplayEnd {
+  type: 'replayEnd';
 }
 
-export interface ActionGoToTurn {
-  type: 'goToSegment';
+export interface ActionReplayGoToSegment {
+  type: 'replayGoToSegment';
   readonly segment: number;
 }
 

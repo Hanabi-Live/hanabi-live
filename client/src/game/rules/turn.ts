@@ -1,30 +1,30 @@
 import { getCharacter } from '../data/gameData';
 
-export function shouldEndTurnAfterDraw(
+export const shouldEndTurnAfterDraw = (
   cardsPlayedOrDiscardedThisTurn: number,
   characterID: number | null,
   clueTokens: number,
-) {
+) => {
   // Some "Detrimental Characters" are able to perform two actions
   if (characterID !== null) {
     const character = getCharacter(characterID);
 
     // TODO fix this to be 8 when clue tokens are doubled
     if (character.name === 'Panicky' && clueTokens <= 4) {
-      return cardsPlayedOrDiscardedThisTurn === 2;
+      return cardsPlayedOrDiscardedThisTurn >= 2;
     }
   }
 
   // Otherwise, the turn always increments when:
   // 1) a play or discard happens and
   // 2) a card is drawn
-  return cardsPlayedOrDiscardedThisTurn === 1;
-}
+  return cardsPlayedOrDiscardedThisTurn >= 1;
+};
 
-export function shouldEndTurnAfterClue(
+export const shouldEndTurnAfterClue = (
   cluesGivenThisTurn: number,
   characterID: number | null,
-) {
+) => {
   // Some "Detrimental Characters" are able to perform two clues
   if (characterID !== null) {
     const character = getCharacter(characterID);
@@ -36,9 +36,9 @@ export function shouldEndTurnAfterClue(
 
   // Otherwise, the turn always increments when a clue is given
   return true;
-}
+};
 
-export function shouldPlayOrderInvert(characterID: number | null) {
+export const shouldPlayOrderInvert = (characterID: number | null) => {
   // Some "Detrimental Characters" are able to invert the play order
   if (characterID !== null) {
     const character = getCharacter(characterID);
@@ -49,13 +49,13 @@ export function shouldPlayOrderInvert(characterID: number | null) {
   }
 
   return false;
-}
+};
 
-export function getNextPlayerIndex(
+export const getNextPlayerIndex = (
   currentPlayerIndex: number | null,
   numPlayers: number,
   turnsInverted: boolean,
-) {
+) => {
   if (currentPlayerIndex === null) {
     // If the game is already over, then there is no next player
     return null;
@@ -75,4 +75,4 @@ export function getNextPlayerIndex(
   }
 
   return nextPlayerIndex;
-}
+};

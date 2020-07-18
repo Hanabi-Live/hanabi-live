@@ -5,10 +5,10 @@ import { StateStrike } from '../../../types/GameState';
 import globals from '../../globals';
 import { animate } from '../../konvaHelpers';
 
-export function onTurnChanged(data: {
+export const onTurnChanged = (data: {
   turn: number;
   endTurn: number | null;
-}) {
+}) => {
   // Update the "Turn" label
   // On both the client and the server, the first turn of the game is represented as turn 0
   // However, turn 0 is represented to the end-user as turn 1, so we must add one
@@ -28,9 +28,9 @@ export function onTurnChanged(data: {
   }
 
   globals.layers.UI.batchDraw();
-}
+};
 
-export function onCurrentPlayerIndexChanged(currentPlayerIndex: number | null) {
+export const onCurrentPlayerIndexChanged = (currentPlayerIndex: number | null) => {
   // Bold the name frame of the current player to signify that it is their turn
   for (let i = 0; i < globals.elements.nameFrames.length; i++) {
     globals.elements.nameFrames[i].setActive(currentPlayerIndex === i);
@@ -51,12 +51,12 @@ export function onCurrentPlayerIndexChanged(currentPlayerIndex: number | null) {
   }
 
   globals.layers.UI.batchDraw();
-}
+};
 
-export function onScoreOrMaxScoreChanged(data: {
+export const onScoreOrMaxScoreChanged = (data: {
   score: number;
   maxScore: number;
-}) {
+}) => {
   const scoreLabel = globals.elements.scoreNumberLabel!;
   scoreLabel.text(data.score.toString());
 
@@ -68,18 +68,18 @@ export function onScoreOrMaxScoreChanged(data: {
   maxScoreLabel.x(x);
 
   globals.layers.UI.batchDraw();
-}
+};
 
-export function onNumAttemptedCardsPlayedChanged(numAttemptedCardsPlayed: number) {
+export const onNumAttemptedCardsPlayedChanged = (numAttemptedCardsPlayed: number) => {
   if (!variantRules.isThrowItInAHole(globals.variant)) {
     return;
   }
 
   globals.elements.playsNumberLabel!.text(numAttemptedCardsPlayed.toString());
   globals.layers.UI.batchDraw();
-}
+};
 
-export function onClueTokensChanged(clueTokens: number) {
+export const onClueTokensChanged = (clueTokens: number) => {
   globals.elements.cluesNumberLabel!.text(clueTokens.toString());
 
   if (!globals.lobby.settings.realLifeMode) {
@@ -94,12 +94,12 @@ export function onClueTokensChanged(clueTokens: number) {
   }
 
   globals.layers.UI.batchDraw();
-}
+};
 
-export function onClueTokensOrDoubleDiscardChanged(data: {
+export const onClueTokensOrDoubleDiscardChanged = (data: {
   clueTokens: number;
   doubleDiscard: boolean;
-}) {
+}) => {
   if (globals.lobby.settings.realLifeMode) {
     return;
   }
@@ -120,12 +120,12 @@ export function onClueTokensOrDoubleDiscardChanged(data: {
   }
 
   globals.layers.UI.batchDraw();
-}
+};
 
-export function onStrikesChanged(
+export const onStrikesChanged = (
   strikes: readonly StateStrike[],
   previousStrikes: readonly StateStrike[] | undefined,
-) {
+) => {
   // Strikes are hidden from the end-user in "Throw It in a Hole" variants
   if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
     return;
@@ -180,4 +180,4 @@ export function onStrikesChanged(
   }
 
   globals.layers.UI.batchDraw();
-}
+};

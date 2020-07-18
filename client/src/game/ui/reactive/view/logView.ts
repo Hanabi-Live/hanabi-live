@@ -3,10 +3,10 @@
 import { LogEntry } from '../../../types/GameState';
 import globals from '../../globals';
 
-export function onLogChanged(log: readonly LogEntry[]) {
+export const onLogChanged = (log: readonly LogEntry[]) => {
   updateActionLog(log);
   updateFullActionLog(log);
-}
+};
 
 const updateActionLog = (log: readonly LogEntry[]) => {
   const actionLog = globals.elements.actionLog!;

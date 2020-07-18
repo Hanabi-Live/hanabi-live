@@ -20,10 +20,12 @@ export default interface CardState {
   readonly suitDetermined: boolean;
   readonly rankDetermined: boolean;
   readonly numPositiveClues: number;
-  readonly turnsClued: readonly number[]; // TODO: seems like the UI only reads the 1st turn clued?
-  readonly turnDrawn: number;
-  readonly turnDiscarded: number;
-  readonly turnPlayed: number;
+  readonly segmentFirstClued: number | null;
+  readonly segmentDrawn: number | null;
+  readonly segmentDiscarded: number | null;
+  readonly segmentPlayed: number | null;
+
+  // Needed so that we can animate a misplayed card different from a discarded card
   readonly isMisplayed: boolean;
 }
 

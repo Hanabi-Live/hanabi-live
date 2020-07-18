@@ -1,5 +1,6 @@
 // Functions for building a state table for every turn
 
+import equal from 'fast-deep-equal';
 import produce, {
   Draft,
   original,
@@ -8,12 +9,16 @@ import produce, {
 import { ensureAllCases, millisecondsToClockString } from '../../misc';
 import { getVariant } from '../data/gameData';
 import {
+  cardRules,
   clueTokensRules,
   deckRules,
+  handRules,
   textRules,
   variantRules,
+  playStacksRules,
 } from '../rules';
 import { GameAction } from '../types/actions';
+import CardState from '../types/CardState';
 import EndCondition from '../types/EndCondition';
 import GameMetadata, { getPlayerName } from '../types/GameMetadata';
 import GameState from '../types/GameState';
@@ -54,6 +59,10 @@ const gameStateReducer = produce((
         turn: state.turn.turnNum + 1,
         text,
       });
+
+      // Handle the "Card Cycling" game option
+      const giverHand = state.hands[action.giver];
+      cardCycle(giverHand, castDraft(state.deck), metadata);
 
       break;
     }
@@ -117,8 +126,8 @@ const gameStateReducer = produce((
       break;
     }
 
-    // The game has ended, either by normal means (e.g. max score), or someone ran out of time in a
-    // timed game, someone terminated, etc.
+    // The game has ended, either by normal means (e.g. max score),
+    // or someone ran out of time in a timed game, someone terminated, etc.
     // { type: 'gameOver', endCondition: 1, playerIndex: 0 }
     case 'gameOver': {
       if (action.endCondition !== EndCondition.Normal) {
@@ -158,6 +167,15 @@ const gameStateReducer = produce((
       } else {
         const playStack = state.playStacks[action.suitIndex];
         playStack.push(action.order);
+
+        // Resolve the stack direction
+        const direction = playStacksRules.direction(
+          action.suitIndex,
+          playStack,
+          state.deck,
+          variant,
+        );
+        state.playStackDirections[action.suitIndex] = direction;
 
         // Gain a clue token if the stack is complete
         if (playStack.length === 5) { // Hard-code 5 cards per stack
@@ -206,9 +224,12 @@ const gameStateReducer = produce((
     // At the end of every turn, the server informs us of the stack directions for each suit
     // { type: 'stackDirections', directions: [0, 0, 0, 0, 0] }
     // TODO: This message is unnecessary and will be removed in a future version of the code
-    // (the client should be able to determine the stack directions directly)
     case 'playStackDirections': {
-      state.playStackDirections = action.directions;
+      // TEMP: At this point, check that the local state matches the server
+      if (!equal(state.playStackDirections, action.directions)) {
+        console.warn(`The stack directions from the client and the server do not match on turn ${state.turn.turnNum}.`);
+        console.warn(`Client = ${state.playStackDirections}, Server = ${action.directions}`);
+      }
       break;
     }
 
@@ -255,7 +276,7 @@ const gameStateReducer = produce((
     }
 
     // Some actions do not affect the main state or are handled by another reducer
-    case 'reorder':
+    case 'cardIdentity':
     case 'turn': {
       break;
     }
@@ -274,6 +295,21 @@ const gameStateReducer = produce((
     metadata,
   ));
 
+  // Discarding or playing cards can make other card cards in that suit
+  // not playable anymore and can make other cards critical
+  if (action.type === 'play' || action.type === 'discard') {
+    variant.ranks.forEach((rank) => {
+      state.cardStatus[action.suitIndex][rank] = cardRules.status(
+        action.suitIndex,
+        rank,
+        state.deck,
+        state.playStacks,
+        state.playStackDirections,
+        variant,
+      );
+    });
+  }
+
   // Use a sub-reducer to calculate the turn
   state.turn = turnReducer(
     original(state.turn),
@@ -291,5 +327,23 @@ const gameStateReducer = produce((
     metadata,
   );
 }, {} as GameState);
+
+const cardCycle = (hand: number[], deck: readonly CardState[], metadata: GameMetadata) => {
+  if (!metadata.options.cardCycle) {
+    return;
+  }
+
+  // We don't need to reorder anything if the chop is slot 1 (the left-most card)
+  const chopIndex = handRules.chopIndex(hand, deck);
+  if (chopIndex === hand.length - 1) {
+    return;
+  }
+
+  // Remove the chop card from their hand
+  const removedCardOrder = hand.splice(chopIndex, 1)[0];
+
+  // Add it to the end (the left-most position)
+  hand.push(removedCardOrder);
+};
 
 export default gameStateReducer;

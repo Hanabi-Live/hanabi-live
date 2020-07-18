@@ -4,7 +4,7 @@ import { PaceRisk } from '../../../types/GameState';
 import globals from '../../globals';
 
 // onEfficiencyChanged updates the labels on the right-hand side of the screen
-export function onEfficiencyChanged(efficiency: number) {
+export const onEfficiencyChanged = (efficiency: number) => {
   const effLabel = globals.elements.efficiencyNumberLabel;
   if (!effLabel) {
     throw new Error('efficiencyNumberLabel is not initialized in the "onEfficiencyChanged()" function.');
@@ -39,12 +39,12 @@ export function onEfficiencyChanged(efficiency: number) {
   effMinLabel.x(x);
 
   globals.layers.UI.batchDraw();
-}
+};
 
-export function onPaceOrPaceRiskChanged(data: {
+export const onPaceOrPaceRiskChanged = (data: {
   pace: number | null;
   paceRisk: PaceRisk;
-}) {
+}) => {
   const label = globals.elements.paceNumberLabel;
   if (!label) {
     throw new Error('paceNumberLabel is not initialized.');
@@ -101,4 +101,4 @@ export function onPaceOrPaceRiskChanged(data: {
   }
 
   globals.layers.UI.batchDraw();
-}
+};

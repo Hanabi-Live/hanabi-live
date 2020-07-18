@@ -6,7 +6,7 @@ import * as ourHand from '../../ourHand';
 import * as replay from '../../replay';
 import * as turn from '../../turn';
 
-export function onActiveChanged(active: boolean, previousActive: boolean | undefined) {
+export const onActiveChanged = (active: boolean, previousActive: boolean | undefined) => {
   // Do not do anything on first initialization
   if (previousActive === undefined) {
     return;
@@ -18,13 +18,6 @@ export function onActiveChanged(active: boolean, previousActive: boolean | undef
     globals.replayPos = globals.replayLog.length;
     const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
     globals.replayTurn = finalSegment;
-
-    // However, if the game just ended,
-    // we want to go to the turn before the miscellaneous data sent at the end of the game
-    if (globals.gameOver) {
-      globals.replayPos = globals.finalReplayPos;
-      globals.replayTurn = globals.finalReplayTurn;
-    }
 
     // Hide the UI elements that overlap with the replay area
     turn.hideClueUIAndDisableDragging();
@@ -47,12 +40,12 @@ export function onActiveChanged(active: boolean, previousActive: boolean | undef
   ourHand.checkSetDraggableAll();
 
   globals.layers.UI.batchDraw();
-}
+};
 
-export function onActiveOrOngoingGameSegmentChanged(data: {
+export const onActiveOrOngoingGameSegmentChanged = (data: {
   active: boolean;
   segment: number | null;
-}) {
+}) => {
   if (!data.active) {
     return;
   }
@@ -70,9 +63,9 @@ export function onActiveOrOngoingGameSegmentChanged(data: {
   globals.elements.replayForwardFullButton!.setEnabled(replaySegment !== data.segment);
 
   globals.layers.UI.batchDraw();
-}
+};
 
-export function onReplaySegmentChanged(segment: number | null) {
+export const onReplaySegmentChanged = (segment: number | null) => {
   if (segment === null) {
     return;
   }
@@ -87,11 +80,11 @@ export function onReplaySegmentChanged(segment: number | null) {
   globals.elements.replayForwardFullButton!.setEnabled(segment !== finalSegment);
 
   globals.layers.UI.batchDraw();
-}
+};
 
-export function onFirstReplayAction(firstReplayAction: boolean) {
+export const onFirstReplayAction = (firstReplayAction: boolean) => {
   // The in-game replay button starts off disabled
   // Enable it once there is at least one segment to rewind to
   globals.elements.replayButton!.setEnabled(firstReplayAction);
   globals.layers.UI.batchDraw();
-}
+};

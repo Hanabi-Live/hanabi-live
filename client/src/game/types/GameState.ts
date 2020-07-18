@@ -1,4 +1,5 @@
 import CardState from './CardState';
+import CardStatus from './CardStatus';
 import StackDirection from './StackDirection';
 import StatsState from './StatsState';
 import TurnState from './TurnState';
@@ -8,6 +9,7 @@ export default interface GameState {
   readonly log: readonly LogEntry[];
   readonly deck: readonly CardState[];
   readonly deckSize: number;
+  readonly cardStatus: ReadonlyArray<readonly CardStatus[]>;
   readonly score: number;
   readonly numAttemptedCardsPlayed: number; // For "Throw It in a Hole" variants
   readonly clueTokens: number;

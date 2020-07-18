@@ -7,14 +7,10 @@ import ClientAction from '../types/ClientAction';
 import ClueType from '../types/ClueType';
 import MsgClue from '../types/MsgClue';
 import ReplayActionType from '../types/ReplayActionType';
-import action from './action';
 import { getTouchedCardsFromClue } from './clues';
 import PlayerButton from './controls/PlayerButton';
 import globals from './globals';
-import HanabiCard from './HanabiCard';
-import LayoutChild from './LayoutChild';
 import * as replay from './replay';
-import statusCheckOnAllCards from './statusCheckOnAllCards';
 import * as turn from './turn';
 
 export const start = () => {
@@ -72,6 +68,7 @@ export const show = () => {
   beginTurn();
 };
 
+// TODO: delete this function?
 export const playThroughPastActions = () => {
   // If we are joining a hypothetical that is already in progress
   // or we are going backwards in an existing hypothetical,
@@ -83,10 +80,8 @@ export const playThroughPastActions = () => {
     for (const actionMessage of globals.hypoActions) {
       setHypoFirstDrawnIndex(actionMessage);
       checkToggleRevealedButton(actionMessage);
-      action(actionMessage);
     }
     globals.animateFast = false;
-    statusCheckOnAllCards();
     globals.layers.card.batchDraw();
     globals.layers.UI.batchDraw();
     globals.layers.arrow.batchDraw();
@@ -145,7 +140,8 @@ export const beginTurn = () => {
   const buttons = buttonGroup.children.toArray() as PlayerButton[];
   for (const button of buttons) {
     button.setPressed(false);
-    const enabled = button.targetIndex !== globals.currentPlayerIndex;
+    const currentPlayerIndex = globals.store!.getState().visibleState!.turn.currentPlayerIndex;
+    const enabled = button.targetIndex !== currentPlayerIndex;
     button.setEnabled(enabled);
 
     // In 2-player games,
@@ -199,19 +195,17 @@ export const send = (hypoAction: ClientAction) => {
       target: hypoAction.target,
       turn: gameState.turn.turnNum,
     });
-
-    cycleHand();
   } else if (type === 'play' || type === 'discard') {
-    const card = gameState.deck[hypoAction.target];
+    const card = globals.deck[hypoAction.target];
 
     // Play / Discard
     sendHypoAction({
       type,
       playerIndex: gameState.turn.currentPlayerIndex!,
       order: hypoAction.target,
-      suitIndex: card.suitIndex!,
-      rank: card.rank!,
-      failed: false,
+      suitIndex: card.visibleSuitIndex!,
+      rank: card.visibleRank!,
+      failed: false, // TODO: misplays
     });
 
     // Draw
@@ -299,43 +293,6 @@ export const backOneTurn = () => {
 
   // Replay all of the hypothetical actions
   playThroughPastActions();
-};
-
-const cycleHand = () => {
-  if (!globals.options.cardCycle) {
-    return;
-  }
-
-  // Find the chop card
-  const hand = globals.elements.playerHands[globals.currentPlayerIndex!];
-  const chopIndex = hand.getChopIndex();
-
-  // We don't need to reorder anything if the chop is slot 1 (the left-most card)
-  const layoutChilds = hand.children.toArray() as LayoutChild[];
-  if (chopIndex === layoutChilds.length - 1) {
-    return;
-  }
-
-  // Make a list of the card orders
-  const cardOrders: number[] = [];
-  for (const layoutChild of layoutChilds) {
-    const card = layoutChild.children[0] as unknown as HanabiCard;
-    cardOrders.push(card.state.order);
-  }
-
-  // Remove the chop card
-  const chopCard = layoutChilds[chopIndex].children[0] as unknown as HanabiCard;
-  const chopCardOrder = chopCard.state.order;
-  cardOrders.splice(chopIndex, 1);
-
-  // Add it to the end (the left-most position)
-  cardOrders.push(chopCardOrder);
-
-  sendHypoAction({
-    type: 'reorder',
-    target: globals.currentPlayerIndex!,
-    handOrder: cardOrders,
-  });
 };
 
 export const toggleRevealed = () => {

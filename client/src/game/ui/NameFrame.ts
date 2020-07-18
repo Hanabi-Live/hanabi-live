@@ -55,7 +55,10 @@ export default class NameFrame extends Konva.Group {
     }
     this.playerName.offsetX(w / 2);
 
-    this.playerName.on('click tap', function click(event: Konva.KonvaEventObject<MouseEvent>) {
+    this.playerName.on('click tap', function click(
+      this: Konva.Text,
+      event: Konva.KonvaEventObject<MouseEvent>,
+    ) {
       const username = this.text();
       const mouseEvent = event.evt as MouseEvent;
       if (mouseEvent.button === 0) { // Left-click
@@ -174,7 +177,7 @@ export default class NameFrame extends Konva.Group {
     // Draw the tooltips on the player names that show the time
     // (we don't use the "tooltip.init()" function because we need the extra condition in the
     // "mouseover" and "mouseout" event)
-    this.on('mouseover touchstart', function mouseOver() {
+    this.on('mouseover touchstart', function mouseOver(this: NameFrame) {
       globals.activeHover = this;
 
       // Don't do anything if we are in a solo/shared replay

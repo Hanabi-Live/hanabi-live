@@ -6,7 +6,7 @@
 // JSON.stringify(globals.deck.map(x => x.state).filter(x => x.location !== "deck"),null,4)
 
 {
-  function getPossibleCards(cardState) {
+  const getPossibleCards = (cardState) => {
     const possibleCards = [];
     globals.variant.suits.forEach((suit, suitIndex) => {
       possibleCards[suitIndex] = [];
@@ -17,7 +17,7 @@
     return possibleCards;
   }
 
-  function getPipStates(possibleCards, possibilities, isRank) {
+  const getPipStates = (possibleCards, possibilities, isRank) => {
     const pipStates = [];
     if (isRank) {
       globals.variant.ranks.forEach((rank) => {
@@ -43,7 +43,7 @@
     return pipStates;
   }
 
-  function getCards() {
+  const getCards = () => {
     return globals.deck.map(c => {
       const s = c.state;
       const possibleCards = getPossibleCards(s);
@@ -69,13 +69,14 @@
         possibleCards: possibleCards,
         identityDetermined: s.identityDetermined,
         numPositiveClues: s.numPositiveClues,
-        turnsClued: s.turnsClued,
-        turnDrawn: s.turnDrawn,
-        turnDiscarded: s.turnDiscarded,
-        turnPlayed: s.turnPlayed,
+        segmentFirstClued: s.turnsClued.length > 0 ? s.turnsClued[0] : null,
+        segmentDrawn: s.turnDrawn,
+        segmentDiscarded: s.turnDiscarded,
+        segmentPlayed: s.turnPlayed,
         isMisplayed: s.isMisplayed,
       });
     }).filter(c => c.location !== 'deck');
   }
+
   JSON.stringify(getCards());
 }

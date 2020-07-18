@@ -84,9 +84,10 @@ func variantReversiblePlay(g *Game, c *Card) bool {
 	return failed
 }
 
-// variantReversibleNeedsToBePlayed returns true if this card still needs to be played
-// in order to get the maximum score (taking into account the stack direction)
+// variantReversibleNeedsToBePlayed returns true if this card still needs to be played in order to
+// get the maximum score (taking the stack direction into account)
 // (before getting here, we already checked to see if the card has already been played)
+// This function mirrors the client function "reversible.needsToBePlayed()"
 func variantReversibleNeedsToBePlayed(g *Game, c *Card) bool {
 	// First, check to see if the stack is already finished
 	if g.PlayStackDirections[c.SuitIndex] == StackDirectionFinished {
@@ -104,9 +105,10 @@ func variantReversibleNeedsToBePlayed(g *Game, c *Card) bool {
 	return true
 }
 
-// variantReversibleIsDead returns true if it is no longer possible to play this card by
-// looking to see if all of the previous cards in the stack have been discarded
+// variantReversibleIsDead returns true if it is no longer possible to play this card by looking to
+// see if all of the previous cards in the stack have been discarded
 // (taking into account the stack direction)
+// This function mirrors the client function "reversible.isDead()"
 func variantReversibleIsDead(g *Game, c *Card) bool {
 	// Make a map that shows if all of some particular rank in this suit has been discarded
 	ranks := []int{1, 2, 3, 4, 5}
@@ -206,6 +208,7 @@ func variantReversibleGetMaxScore(g *Game) int {
 	return maxScore
 }
 
+// A helper function for "variantReversibleGetMaxScore()"
 func variantReversibleWalkUp(g *Game, allDiscarded map[int]bool) int {
 	cardsThatCanStillBePlayed := 0
 
@@ -234,6 +237,7 @@ func variantReversibleWalkUp(g *Game, allDiscarded map[int]bool) int {
 	return cardsThatCanStillBePlayed
 }
 
+// A helper function for "variantReversibleGetMaxScore()"
 func variantReversibleWalkDown(g *Game, allDiscarded map[int]bool) int {
 	cardsThatCanStillBePlayed := 0
 

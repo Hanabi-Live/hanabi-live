@@ -1,7 +1,7 @@
 enum StackDirection {
-  Undecided = 0,
-  Up = 1,
-  Down = 2,
-  Finished = 3,
+  Undecided,
+  Up,
+  Down,
+  Finished,
 }
 export default StackDirection;

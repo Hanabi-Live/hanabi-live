@@ -52,7 +52,11 @@ const turnReducer = produce((
           turn.segment = 0;
         }
       } else {
-        turn.segment += 1;
+        // We do not want to increment the segment if we are drawing the final card of the deck in
+        // order to perform a bottom-deck blind-play
+        if (turn.cardsPlayedOrDiscardedThisTurn > 0) {
+          turn.segment += 1;
+        }
 
         if (turnRules.shouldEndTurnAfterDraw(
           turn.cardsPlayedOrDiscardedThisTurn,
@@ -81,8 +85,14 @@ const turnReducer = produce((
       if (turn.segment === null) {
         throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
-      turn.segment += 1;
+
+      // We do not want to increment the segment here because we want the "gameOver" text to appear
+      // on the same segment as the final action of the game
+
+      // Setting the current player index to null signifies that the game is over and will prevent
+      // any name frames from being highlighted on subsequent segments
       turn.currentPlayerIndex = null;
+
       break;
     }
 
@@ -122,13 +132,17 @@ const turnReducer = produce((
 
 export default turnReducer;
 
-function nextTurn(
+const nextTurn = (
   state: Draft<TurnState>,
   numPlayers: number,
   deckSize: number,
   characterID: number | null,
-) {
+) => {
   state.turnNum += 1;
+
+  if (turnRules.shouldPlayOrderInvert(characterID)) {
+    state.playOrderInverted = !state.playOrderInverted;
+  }
 
   state.currentPlayerIndex = turnRules.getNextPlayerIndex(
     state.currentPlayerIndex,
@@ -136,14 +150,10 @@ function nextTurn(
     state.playOrderInverted,
   );
 
-  if (turnRules.shouldPlayOrderInvert(characterID)) {
-    state.playOrderInverted = !state.playOrderInverted;
-  }
-
   if (deckSize === 0 && state.endTurnNum === null) {
     state.endTurnNum = state.turnNum + numPlayers;
   }
 
   state.cardsPlayedOrDiscardedThisTurn = 0;
   state.cluesGivenThisTurn = 0;
-}
+};

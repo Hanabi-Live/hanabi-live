@@ -2,9 +2,9 @@
 
 import globals from '../../globals';
 
-export function onInitializationChanged(initialized: boolean) {
+export const onInitializationChanged = (initialized: boolean) => {
   if (initialized) {
     globals.loading = false;
     globals.animateFast = false;
   }
-}
+};

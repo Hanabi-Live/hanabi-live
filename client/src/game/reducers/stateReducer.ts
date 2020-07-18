@@ -45,7 +45,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     }
 
     case 'finishOngoingGame': {
-      // If the game just ended, recalculate the whole game as spectator to fix possibilities
+      // If the game just ended, recalculate the whole game as a spectator to fix card possibilities
       if (!state.metadata.spectating) {
         state.metadata.spectating = true;
 
@@ -63,9 +63,9 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       break;
     }
 
-    case 'startReplay':
-    case 'endReplay':
-    case 'goToSegment':
+    case 'replayStart':
+    case 'replayEnd':
+    case 'replayGoToSegment':
     case 'hypoStart':
     case 'hypoBack':
     case 'hypoEnd':
@@ -93,13 +93,8 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       // We copy the card identities to the global state for convenience
       updateCardIdentities(state);
 
-      // When the game state reducer sets "segment" to a new number,
-      // it is a signal to record the current state of the game (for the purposes of replays)
-      if (
-        state.ongoingGame.turn.segment !== previousSegment
-        && state.ongoingGame.turn.segment !== null
-      ) {
-        state.replay.states[state.ongoingGame.turn.segment] = state.ongoingGame;
+      if (shouldStoreSegment(state.ongoingGame.turn.segment, previousSegment, action)) {
+        state.replay.states[state.ongoingGame.turn.segment!] = state.ongoingGame;
       }
 
       state.replay.actions.push(action);
@@ -108,46 +103,54 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     }
   }
 
-  // Update the visible state to the game or replay state
-  // after it has been initialized
-  if (state.visibleState !== null) {
-    if (state.replay.active) {
-      if (state.replay.hypothetical === null) {
-        // Go to current replay turn
-        state.visibleState = state.replay.states[state.replay.segment];
-      } else {
-        // Show the current hypothetical
-        state.visibleState = state.replay.hypothetical.ongoing;
-      }
-    } else {
-      // Default: the current game
-      state.visibleState = state.ongoingGame;
-    }
-  }
+  // Show the appropriate state depending on the situation
+  state.visibleState = visualStateToShow(state);
 }, {} as State);
 
 export default stateReducer;
 
 // Runs through a list of actions from an initial state, and returns the final state
 // and all intermediate states
-function reduceGameActions(actions: GameAction[], initialState: GameState, metadata: GameMetadata) {
+const reduceGameActions = (
+  actions: GameAction[],
+  initialState: GameState,
+  metadata: GameMetadata,
+) => {
   const states: GameState[] = [initialState];
   const game = actions.reduce((s: GameState, a: GameAction) => {
     const nextState = gameStateReducer(s, a, metadata);
 
-    // When the game state reducer sets "segment" to a new number,
-    // it is a signal to record the current state of the game (for the purposes of replays)
-    if (
-      nextState.turn.segment !== s.turn.segment
-        && nextState.turn.segment !== null
-    ) {
-      states[nextState.turn.segment] = nextState;
+    if (shouldStoreSegment(nextState.turn.segment, s.turn.segment, a)) {
+      states[nextState.turn.segment!] = nextState;
     }
 
     return nextState;
   }, initialState);
   return { game, states };
-}
+};
+
+// When the game state reducer sets "segment" to a new number,
+// it is a signal to record the current state of the game (for the purposes of replays)
+const shouldStoreSegment = (
+  segment: number | null,
+  previousSegment: number | null,
+  action: GameAction,
+) => {
+  if (segment === null) {
+    // The game is still doing the initial deal
+    return false;
+  }
+
+  if (action.type === 'gameOver') {
+    // Handle the special case of the last action being a "gameOver"
+    // We want this to meld together with the previous segment so that the game over text appears
+    // on the same segment as the final game action
+    return true;
+  }
+
+  // By default, store a new segment whenever the turn reducer changes the segment number
+  return segment !== previousSegment;
+};
 
 // We keep a copy of each card identity in the global state for convenience
 // After each game action, check to see if we can add any new card identities
@@ -173,4 +176,24 @@ const updateCardIdentities = (state: Draft<State>) => {
       }
     }
   });
+};
+
+const visualStateToShow = (state: Draft<State>) => {
+  if (state.visibleState === null) {
+    // The state is still initializing, so do not show anything
+    return null;
+  }
+
+  if (state.replay.active) {
+    if (state.replay.hypothetical === null) {
+      // Show the current replay segment
+      return state.replay.states[state.replay.segment];
+    }
+
+    // Show the current hypothetical
+    return state.replay.hypothetical.ongoing;
+  }
+
+  // Show the final segment of the current game
+  return state.ongoingGame;
 };

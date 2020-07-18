@@ -1,32 +1,36 @@
 // Functions to calculate game stats such as pace and efficiency
 
 import {
-  deckRules, handRules, variantRules, cardRules,
+  deckRules,
+  handRules,
+  variantRules,
+  cardRules,
 } from '../rules';
 import CardState from '../types/CardState';
-import { MAX_CLUE_NUM, START_CARD_RANK } from '../types/constants';
+import { MAX_CLUE_NUM } from '../types/constants';
 import { PaceRisk } from '../types/GameState';
 import StackDirection from '../types/StackDirection';
 import Variant from '../types/Variant';
+import * as reversibleRules from './variants/reversible';
 
-export function getMaxScore(
+export const getMaxScore = (
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-): number {
+): number => {
   let maxScore = 0;
 
   // Getting the maximum score is much more complicated if we are playing a
   // "Reversed" or "Up or Down" variant
   if (variantRules.hasReversedSuits(variant)) {
-    return getMaxScoreReversible(deck, playStackDirections, variant);
+    return reversibleRules.getMaxScore(deck, playStackDirections, variant);
   }
 
   for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
     const suit = variant.suits[suitIndex];
     for (let rank = 1; rank <= 5; rank++) {
       // Search through the deck to see if all the copies of this card are discarded already
-      const total = deckRules.numCopiesOfCard(variant, suit, rank);
+      const total = deckRules.numCopiesOfCard(suit, rank, variant);
       const discarded = deckRules.discardedCopies(deck, suitIndex, rank);
       if (total > discarded) {
         maxScore += 1;
@@ -37,109 +41,16 @@ export function getMaxScore(
   }
 
   return maxScore;
-}
-
-const getMaxScoreReversible = (
-  deck: readonly CardState[],
-  playStackDirections: readonly StackDirection[],
-  variant: Variant,
-): number => {
-  let maxScore = 0;
-
-  for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
-    const suit = variant.suits[suitIndex];
-
-    // Make a map that shows if all of some particular rank in this suit has been discarded
-    const ranks = [1, 2, 3, 4, 5];
-    if (variantRules.isUpOrDown(variant)) {
-      ranks.push(START_CARD_RANK);
-    }
-
-    const allDiscarded = new Map<number, boolean>();
-    for (const rank of ranks) {
-      const total = deckRules.numCopiesOfCard(variant, suit, rank);
-      const discarded = deckRules.discardedCopies(deck, suitIndex, rank);
-      allDiscarded.set(rank, total === discarded);
-    }
-
-    if (playStackDirections[suitIndex] === StackDirection.Undecided) {
-      const upWalk = reversibleWalkUp(allDiscarded, variant);
-      const downWalk = reversibleWalkDown(allDiscarded, variant);
-      maxScore += Math.max(upWalk, downWalk);
-    } else if (playStackDirections[suitIndex] === StackDirection.Up) {
-      maxScore += reversibleWalkUp(allDiscarded, variant);
-    } else if (playStackDirections[suitIndex] === StackDirection.Down) {
-      maxScore += reversibleWalkDown(allDiscarded, variant);
-    } else if (playStackDirections[suitIndex] === StackDirection.Finished) {
-      maxScore += 5;
-    }
-  }
-
-  return maxScore;
-};
-
-// A helper function for "getMaxScoreReversible()"
-const reversibleWalkUp = (allDiscarded: Map<number, boolean>, variant: Variant) => {
-  let cardsThatCanStillBePlayed = 0;
-
-  // First, check to see if the stack can still be started
-  if (variantRules.isUpOrDown(variant)) {
-    if (allDiscarded.get(1)! && allDiscarded.get(START_CARD_RANK)!) {
-      // In "Up or Down" variants, you can start with 1 or START when going up
-      return 0;
-    }
-  } else if (allDiscarded.get(1)!) {
-    // Otherwise, only 1
-    return 0;
-  }
-  cardsThatCanStillBePlayed += 1;
-
-  // Second, walk upwards
-  for (let rank = 2; rank <= 5; rank++) {
-    if (allDiscarded.get(rank)!) {
-      break;
-    }
-    cardsThatCanStillBePlayed += 1;
-  }
-
-  return cardsThatCanStillBePlayed;
-};
-
-// A helper function for "getMaxScoreReversible()"
-const reversibleWalkDown = (allDiscarded: Map<number, boolean>, variant: Variant) => {
-  let cardsThatCanStillBePlayed = 0;
-
-  // First, check to see if the stack can still be started
-  if (variantRules.isUpOrDown(variant)) {
-    if (allDiscarded.get(5)! && allDiscarded.get(START_CARD_RANK)!) {
-      // In "Up or Down" variants, you can start with 5 or START when going down
-      return 0;
-    }
-  } else if (allDiscarded.get(5)!) {
-    // Otherwise, only 5
-    return 0;
-  }
-  cardsThatCanStillBePlayed += 1;
-
-  // Second, walk downwards
-  for (let rank = 4; rank >= 1; rank--) {
-    if (allDiscarded.get(rank)!) {
-      break;
-    }
-    cardsThatCanStillBePlayed += 1;
-  }
-
-  return cardsThatCanStillBePlayed;
 };
 
 // Pace is the number of discards that can happen while still getting the maximum score
-export function pace(
+export const pace = (
   score: number,
   deckSize: number,
   maxScore: number,
   numPlayers: number,
   gameOver: boolean,
-): number | null {
+): number | null => {
   if (gameOver) {
     return null;
   }
@@ -151,10 +62,10 @@ export function pace(
   // The formula for pace was derived by Libster
   const adjustedScorePlusDeck = score + deckSize - maxScore;
   return adjustedScorePlusDeck + numPlayers;
-}
+};
 
 // A measure of how risky a discard would be right now, using different heuristics
-export function paceRisk(currentPace: number | null, numPlayers: number): PaceRisk {
+export const paceRisk = (currentPace: number | null, numPlayers: number): PaceRisk => {
   if (currentPace === null) {
     return 'Null';
   }
@@ -176,25 +87,25 @@ export function paceRisk(currentPace: number | null, numPlayers: number): PaceRi
   }
 
   return 'LowRisk';
-}
+};
 
 // Calculate the starting pace with the following formula:
 //   total cards in the deck -
 //   ((number of cards in a player's hand - 1) * number of players) -
 //   (5 * number of suits)
 // https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
-export function startingPace(
+export const startingPace = (
   numPlayers: number,
   cardsPerHand: number,
   variant: Variant,
-): number {
-  let p = deckRules.totalCards(variant);
-  p -= (cardsPerHand - 1) * numPlayers;
-  p -= 5 * variant.suits.length;
-  return p;
-}
+): number => {
+  const totalCards = deckRules.totalCards(variant);
+  const middleTerm = (cardsPerHand - 1) * numPlayers;
+  const totalCardsToBePlayed = 5 * variant.suits.length;
+  return totalCards - middleTerm - totalCardsToBePlayed;
+};
 
-export function efficiency(cardsGotten: number, potentialCluesLost: number): number {
+export const efficiency = (cardsGotten: number, potentialCluesLost: number): number => {
   // First, handle the case where no clues have been given yet
   // Infinity is normal and expected in this case (on e.g. the first turn of the game)
   // We must explicitly check for this because while e.g. "1 / 0" in JavaScript is infinity,
@@ -204,15 +115,15 @@ export function efficiency(cardsGotten: number, potentialCluesLost: number): num
   }
 
   return cardsGotten / potentialCluesLost;
-}
+};
 
 // Calculate the minimum amount of efficiency needed in order to win this variant
-export function minEfficiency(
+export const minEfficiency = (
   numPlayers: number,
   variant: Variant,
   oneExtraCard: boolean,
   oneLessCard: boolean,
-): number {
+): number => {
   // First, calculate the starting pace:
   const cardsPerHand = handRules.cardsPerHand(numPlayers, oneExtraCard, oneLessCard);
   const initialPace = startingPace(numPlayers, cardsPerHand, variant);
@@ -246,31 +157,32 @@ export function minEfficiency(
   );
 
   return minEfficiencyNumerator / minEfficiencyDenominator;
-}
+};
 
 // After a discard, it is a "double discard situation" if there is only one other copy of this card
 // and it needs to be played
-export function doubleDiscard(
-  variant: Variant,
+export const doubleDiscard = (
   order: number,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
-) {
+  variant: Variant,
+) => {
   const card = deck[order];
   if (card.suitIndex === null || card.rank === null) {
     throw new Error(`Unable to find the information for card ${order} in the state deck.`);
   }
   const suit = variant.suits[card.suitIndex];
-  const total = deckRules.numCopiesOfCard(variant, suit, card.rank);
+  const total = deckRules.numCopiesOfCard(suit, card.rank, variant);
   const discarded = deckRules.discardedCopies(deck, card.suitIndex, card.rank);
   const needsToBePlayed = cardRules.needsToBePlayed(
-    variant,
+    card.suitIndex,
+    card.rank,
     deck,
     playStacks,
     playStackDirections,
-    card,
+    variant,
   );
 
   return total === discarded + 1 && needsToBePlayed;
-}
+};

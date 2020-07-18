@@ -44,6 +44,7 @@ func (c *Card) Name(g *Game) string {
 
 // NeedsToBePlayed returns true if the card is not yet played
 // and is still needed to be played in order to get the maximum score
+// This mirrors the client function "cardRules.needsToBePlayed()"
 func (c *Card) NeedsToBePlayed(g *Game) bool {
 	// First, check to see if a copy of this card has already been played
 	for _, c2 := range g.Deck {

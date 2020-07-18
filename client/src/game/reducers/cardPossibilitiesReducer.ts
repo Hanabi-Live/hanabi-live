@@ -56,10 +56,10 @@ const cardPossibilitiesReducer = (
 export default cardPossibilitiesReducer;
 
 // Based on the current possibilities, updates the known identity of this card
-function updateIdentity(
+const updateIdentity = (
   state: CardState,
   possibleCardsFromClues: ReadonlyArray<readonly [number, number]>,
-) {
+) => {
   let { suitIndex, rank } = state;
 
   const possibleSuits = new Set(possibleCardsFromClues.map((x) => x[0]));
@@ -81,4 +81,4 @@ function updateIdentity(
     suitDetermined: possibleSuits.size === 1,
     rankDetermined: possibleRanks.size === 1,
   };
-}
+};

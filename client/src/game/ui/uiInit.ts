@@ -113,8 +113,8 @@ const finishedDownloadingImages = () => {
 };
 
 const initCards = () => {
-  globals.deckSize = deck.totalCards(globals.variant);
-  for (let order = 0; order < globals.deckSize; order++) {
+  const deckSize = deck.totalCards(globals.variant);
+  for (let order = 0; order < deckSize; order++) {
     // Create the notes for this card
     // (this must be done before creating the HanabiCard object)
     globals.ourNotes.push('');

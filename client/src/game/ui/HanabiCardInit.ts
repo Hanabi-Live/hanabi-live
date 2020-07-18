@@ -19,7 +19,7 @@ import RankPip from './controls/RankPip';
 import drawPip from './drawPip';
 import globals from './globals';
 
-export function image(getBareName: () => string, isStackBase: () => boolean) {
+export const image = (getBareName: () => string, isStackBase: () => boolean) => {
   // Create the "bare" card image, which is the main card graphic
   // If the card is not revealed, it will just be a gray rectangle
   // The pips and other elements of a card are drawn on top of the bare image
@@ -29,7 +29,6 @@ export function image(getBareName: () => string, isStackBase: () => boolean) {
     image: null as unknown as ImageBitmapSource,
     shadowEnabled: false,
     shadowColor: 'black',
-    shadowBlur: Math.floor(0.03 * CARD_W),
     shadowOffset: {
       x: Math.floor(0.04 * CARD_W),
       y: Math.floor(0.04 * CARD_W),
@@ -49,7 +48,7 @@ export function image(getBareName: () => string, isStackBase: () => boolean) {
     bare.shadowEnabled(!isStackBase());
   });
   return bare;
-}
+};
 
 const borderCornerRadius = 6;
 const borderStrokeWidth = 20;
@@ -57,7 +56,7 @@ const borderStrokeWidthInside = borderStrokeWidth * 0.6;
 const borderOffset = 2;
 const borderOutsideColor = '#0d0d0d'; // Off-black
 
-function makeBorder(color: string) {
+const makeBorder = (color: string) => {
   const border = new Konva.Group({
     visible: false,
     listening: false,
@@ -79,13 +78,13 @@ function makeBorder(color: string) {
   border.add(borderInside);
 
   return border;
-}
+};
 
 export const cluedBorder = () => makeBorder(CLUED_COLOR);
 export const chopMoveBorder = () => makeBorder(CHOP_MOVE_COLOR);
 export const finesseBorder = () => makeBorder(FINESSE_COLOR);
 
-export function directionArrow(variant: Variant) {
+export const directionArrow = (variant: Variant) => {
   if (!variantRules.hasReversedSuits(variant)) {
     return null;
   }
@@ -150,9 +149,9 @@ export function directionArrow(variant: Variant) {
   arrow.add(arrowBase);
 
   return { arrow, arrowBase };
-}
+};
 
-export function pips(variant: Variant) {
+export const pips = (variant: Variant) => {
   // Initialize the suit pips (colored shapes) on the back of the card,
   // which will be removed one by one as the card gains negative information
   const suitPips = new Konva.Group({
@@ -283,10 +282,9 @@ export function pips(variant: Variant) {
       text: rank.toString(),
       width: Math.floor(CARD_H * 0.1),
       height: Math.floor(CARD_H * 0.1),
-      fill: 'black',
+      fill: 'white',
       stroke: 'black',
-      strokeWidth: 2,
-      cornerRadius: 0.02 * CARD_H,
+      strokeWidth: 3,
       opacity,
       listening: false,
     });
@@ -302,16 +300,16 @@ export function pips(variant: Variant) {
     const rankPipX = new Konva.Shape({
       x,
       y: Math.floor(CARD_H * 0.02),
-      fill: '#e6e6e6',
+      fill: 'black',
       stroke: 'black',
       strokeWidth: 2,
       opacity: 0.8,
       visible: false,
       sceneFunc: (ctx, shape) => {
-        const width = 20;
-        const xx = Math.floor(CARD_W * 0.035);
+        const width = 13;
+        const xx = Math.floor(CARD_W * 0.05);
         const xy = Math.floor(CARD_H * 0.047);
-        drawX(ctx, shape, xx, xy, 10, width);
+        drawX(ctx, shape, xx, xy, 13, width);
       },
       listening: false,
     });
@@ -327,9 +325,9 @@ export function pips(variant: Variant) {
     rankPipsMap,
     rankPipsXMap,
   };
-}
+};
 
-export function note(offsetCornerElements: boolean, shouldShowIndicator: () => boolean) {
+export const note = (offsetCornerElements: boolean, shouldShowIndicator: () => boolean) => {
   // Define the note indicator image
   const noteX = 0.78;
   const noteY = 0.03;
@@ -361,9 +359,9 @@ export function note(offsetCornerElements: boolean, shouldShowIndicator: () => b
   });
 
   return noteIndicator;
-}
+};
 
-export function criticalIndicator(offsetCornerElements: boolean) {
+export const criticalIndicator = (offsetCornerElements: boolean) => {
   // Define the critical indicator image
   const critX = 0.06;
   const critY = 0.82;
@@ -394,29 +392,25 @@ export function criticalIndicator(offsetCornerElements: boolean) {
     y: -1,
   });
   return indicator;
-}
+};
 
-export function trashcan() {
-  return new Konva.Image({
-    x: 0.15 * CARD_W,
-    y: 0.2 * CARD_H,
-    width: 0.7 * CARD_W,
-    height: 0.6 * CARD_H,
-    image: globals.imageLoader!.get('trashcan2')!,
-    visible: false,
-  });
-}
+export const trashcan = () => new Konva.Image({
+  x: 0.15 * CARD_W,
+  y: 0.2 * CARD_H,
+  width: 0.7 * CARD_W,
+  height: 0.6 * CARD_H,
+  image: globals.imageLoader!.get('trashcan2')!,
+  visible: false,
+});
 
-export function wrench() {
-  return new Konva.Image({
-    x: 0.1 * CARD_W,
-    y: 0.33 * CARD_H,
-    width: 0.8 * CARD_W,
-    image: globals.imageLoader!.get('wrench')!,
-    visible: false,
-    listening: false,
-  });
-}
+export const wrench = () => new Konva.Image({
+  x: 0.1 * CARD_W,
+  y: 0.33 * CARD_H,
+  width: 0.8 * CARD_W,
+  image: globals.imageLoader!.get('wrench')!,
+  visible: false,
+  listening: false,
+});
 
 const scaleCardImage = (
   ctx: CanvasRenderingContext2D,

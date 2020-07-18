@@ -22,9 +22,9 @@ export default function initialCardState(order: number, variant: Variant) : Card
     const suit = variant.suits[suitIndex];
     possibleRanks.forEach((rank) => {
       possibleCardsFromObservation[suitIndex][rank] = deckRules.numCopiesOfCard(
-        variant,
         suit,
         rank,
+        variant,
       );
     });
   });
@@ -40,10 +40,10 @@ export default function initialCardState(order: number, variant: Variant) : Card
     suitDetermined: false,
     rankDetermined: false,
     numPositiveClues: 0,
-    turnsClued: [],
-    turnDrawn: -1,
-    turnDiscarded: -1,
-    turnPlayed: -1,
+    segmentDrawn: null,
+    segmentFirstClued: null,
+    segmentPlayed: null,
+    segmentDiscarded: null,
     isMisplayed: false,
   };
 }

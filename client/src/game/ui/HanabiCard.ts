@@ -14,6 +14,7 @@ import * as variantRules from '../rules/variant';
 import CardIdentity from '../types/CardIdentity';
 import CardNote from '../types/CardNote';
 import CardState from '../types/CardState';
+import CardStatus from '../types/CardStatus';
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
 import StackDirection from '../types/StackDirection';
 import Suit from '../types/Suit';
@@ -59,11 +60,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   private _tweening: boolean = false;
-  private tweenCallbacks: Function[] = [];
+  get tweening() { return this._tweening; }
 
-  get tweening() {
-    return this._tweening;
-  }
+  private tweenCallbacks: Function[] = [];
 
   startedTweening() {
     this._tweening = true;
@@ -71,6 +70,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // HACK: since Konva doesn't propagate listening hierarchically until v7,
     // stop the image from listening
     this.bare.listening(false);
+
+    // Ensure any cursor visual effects are reset when animating
+    this.setVisualEffect('default');
   }
 
   finishedTweening() {
@@ -96,7 +98,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   doMisplayAnimation: boolean = false;
   tooltipName: string = '';
   noteIndicator: NoteIndicator;
-  empathy: boolean = false;
+
+  private _visibleSuitIndex: number | null = null;
+  get visibleSuitIndex() { return this._visibleSuitIndex; }
+
+  private _visibleRank: number | null = null;
+  get visibleRank() { return this._visibleRank; }
+
+  private empathy: boolean = false;
 
   private note: CardNote = {
     suitIndex: null,
@@ -160,7 +169,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Initialize various elements/features of the card
     this.bare = HanabiCardInit.image(
       () => this.bareName,
-      () => this.bareName.endsWith(`-${STACK_BASE_RANK}`),
+      () => this.visibleRank === STACK_BASE_RANK,
     );
     this.add(this.bare);
 
@@ -382,7 +391,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         globals.lobby.settings.realLifeMode
         || variantRules.isCowAndPig(this.variant)
         || variantRules.isDuck(this.variant)
-      ) && (suitToShow === unknownSuit || rankToShow === 6)
+      ) && (suitToShow === unknownSuit || rankToShow === UNKNOWN_CARD_RANK)
     ) {
       // In Real-Life mode or Cow & Pig / Duck variants,
       // always show the vanilla card back if the card is not fully revealed
@@ -425,16 +434,20 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !globals.spectating
     ));
 
-    let suitIndex: number | null = null;
     if (suitToShow === undefined || suitToShow === unknownSuit) {
-      suitIndex = null;
+      this._visibleSuitIndex = null;
     } else {
-      suitIndex = this.variant.suits.indexOf(suitToShow);
+      this._visibleSuitIndex = this.variant.suits.indexOf(suitToShow);
     }
 
-    this.setDirectionArrow(suitIndex);
-    this.setFade();
-    this.setCritical();
+    if (rankToShow === undefined || rankToShow === UNKNOWN_CARD_RANK) {
+      this._visibleRank = null;
+    } else {
+      this._visibleRank = rankToShow;
+    }
+
+    this.setDirectionArrow(this.visibleSuitIndex);
+    this.setStatus();
 
     globals.layers.card.batchDraw();
   }
@@ -496,56 +509,62 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.arrow!.y(0.79 * CARD_H);
   };
 
-  // Fade this card if it is useless, fully revealed, and still in a player's hand
-  setFade() {
-    if (
-      globals.lobby.settings.realLifeMode
-      || globals.options.speedrun
-      || variantRules.isThrowItInAHole(this.variant)
-      || this.state.rank === STACK_BASE_RANK
-    ) {
+  setStatus() {
+    const visibleState = globals.store!.getState().visibleState;
+    if (visibleState === null) {
       return;
     }
 
-    const oldOpacity = this.opacity();
-
-    let newOpacity = 1;
+    let status;
     if (
-      this.state.suitIndex !== null
-      && this.state.rank !== null
+      this.visibleSuitIndex === null
+      || this.visibleRank === null
+      || this.visibleRank === STACK_BASE_RANK
+    ) {
+      status = CardStatus.NeedsToBePlayed; // Default status, not faded and not critical
+    } else {
+      status = visibleState.cardStatus[this.visibleSuitIndex][this.visibleRank];
+    }
+
+    this.setFade(status === CardStatus.Trash);
+    this.setCritical(status === CardStatus.Critical);
+  }
+
+  private setFade(isTrash: boolean) {
+    const opacity = this.shouldSetFade(isTrash) ? CARD_FADE : 1;
+    this.opacity(opacity);
+  }
+
+  private shouldSetFade(isTrash: boolean) {
+    // Override any logic and always fade the card if it is explicitly marked as known trash
+    if (this.trashcan!.isVisible() && this.state.numPositiveClues === 0) {
+      return true;
+    }
+
+    return (
+      isTrash
       && !cardRules.isClued(this.state)
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
-      && !this.empathy
-      && !this.needsToBePlayed()
-      && this.bareName !== DECK_BACK_IMAGE // Blank cards should not fade
-    ) {
-      newOpacity = CARD_FADE;
-    }
-
-    // Override the above logic and always fade the card if it is explicitly marked as known trash
-    if (this.trashcan!.isVisible() && this.state.numPositiveClues === 0) {
-      newOpacity = CARD_FADE;
-    }
-
-    if (oldOpacity === newOpacity) {
-      return;
-    }
-
-    this.opacity(newOpacity);
+      && !this.note.blank
+      && !variantRules.isThrowItInAHole(this.variant)
+      && !globals.options.speedrun
+      && !globals.lobby.settings.realLifeMode
+    );
   }
 
-  // Show an indicator if this card is critical, unclued, unmarked, and still in a player's hand
-  setCritical() {
-    this.criticalIndicator!.visible((
-      this.isCritical()
-      && (!this.empathy || this.state.possibleCardsFromClues.length === 1)
-      && !globals.lobby.settings.realLifeMode
+  private setCritical(critical: boolean) {
+    const visible = this.shouldSetCritical(critical);
+    this.criticalIndicator!.visible(visible);
+  }
+
+  private shouldSetCritical(critical: boolean) {
+    return (
+      critical
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
-      && !this.note.blank
-      && this.bareName !== DECK_BACK_IMAGE // Blank cards should not be critical
-    ));
+      && !globals.lobby.settings.realLifeMode
+    );
   }
 
   updateNotePossibilities() {
@@ -616,6 +635,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     const scale = globals.elements.deck!.cardBack.width() / CARD_W;
     if (globals.animateFast) {
       layoutChild.checkSetDraggable();
+      this.setVisualEffect('default');
       layoutChild.hide();
     } else {
       // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
@@ -739,48 +759,15 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return -1;
   }
 
-  private isCritical() {
-    return this.cardRule(cardRules.isCritical);
-  }
-
-  private needsToBePlayed() {
-    return this.cardRule(cardRules.needsToBePlayed);
-  }
-
-  isPotentiallyPlayable() {
-    return this.cardRule(cardRules.isPotentiallyPlayable);
-  }
-
-  // Gathers all the appropriate state and passes as arguments to
-  // a function from cardRules.ts
-  private cardRule(fn: (
-    variant: Variant,
-    deck: readonly CardState[],
-    playStacks: ReadonlyArray<readonly number[]>,
-    playStackDirections: readonly StackDirection[],
-    card: CardState,
-  ) => boolean) {
-    const visibleState = globals.store!.getState().visibleState;
-    if (!visibleState) {
-      return false;
-    }
-    const variant = this.variant;
-    const deck = visibleState.deck;
-    const playStacks = visibleState.playStacks;
-    const playStackDirections = visibleState.playStackDirections;
-    const state = this.state;
-    return fn(variant, deck, playStacks, playStackDirections, state);
-  }
-
   // Update all UI pips to their state
   updatePips() {
     enum PipState {Hidden, Eliminated, Visible} // the order is important here
-    function updatePip(
+    const updatePip = (
       pipState: PipState,
       hasPositiveClues: boolean,
       pip: Konva.Shape | RankPip,
       x : Konva.Shape,
-    ) {
+    ) => {
       switch (pipState) {
         case PipState.Visible: {
           pip.show();
@@ -808,7 +795,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
           pip.hidePositiveClue();
         }
       }
-    }
+    };
 
     const suitPipStates : PipState[] = this.variant.suits.map(() => PipState.Hidden);
     const rankPipStates : PipState[] = [];
@@ -847,18 +834,17 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.visualEffectCursor = cursor;
 
     // Shadow special effects
-    const shadowOffset = cursor === 'dragging' ? Math.floor(0.1 * CARD_W) : Math.floor(0.04 * CARD_W);
+    const shadowOffset = cursor === 'dragging' ? Math.floor(0.12 * CARD_W) : Math.floor(0.04 * CARD_W);
     this.bare.to({
       shadowOffsetX: shadowOffset,
       shadowOffsetY: shadowOffset,
-      shadowBlur: cursor === 'dragging' ? Math.floor(0.06 * CARD_W) : Math.floor(0.03 * CARD_W),
-      duration: 0.1,
+      duration: globals.animateFast ? 0 : 0.05,
     });
     const baseOffsetY = this.isRaisedBecauseOfClues() ? 0.6 * CARD_H : 0.5 * CARD_H;
     this.to({
       offsetX: cursor === 'dragging' ? 0.52 * CARD_W : 0.5 * CARD_W,
       offsetY: baseOffsetY + (cursor === 'dragging' ? 0.02 * CARD_H : 0),
-      duration: 0.1,
+      duration: globals.animateFast ? 0 : 0.05,
     });
   }
 

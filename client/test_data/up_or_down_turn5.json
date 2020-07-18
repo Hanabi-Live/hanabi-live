@@ -182,10 +182,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -371,10 +371,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -560,10 +560,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -749,10 +749,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -938,10 +938,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -1127,10 +1127,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -1316,10 +1316,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -1505,10 +1505,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -1670,10 +1670,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -1835,10 +1835,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -1928,12 +1928,10 @@
         "suitDetermined": true,
         "rankDetermined": true,
         "numPositiveClues": 1,
-        "turnsClued": [
-            0
-        ],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": 2,
+        "segmentDrawn": null,
+        "segmentFirstClued": 0,
+        "segmentPlayed": 2,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -2095,10 +2093,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -2260,10 +2258,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -2353,12 +2351,10 @@
         "suitDetermined": true,
         "rankDetermined": false,
         "numPositiveClues": 1,
-        "turnsClued": [
-            1
-        ],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": null,
+        "segmentFirstClued": 1,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -2448,12 +2444,10 @@
         "suitDetermined": true,
         "rankDetermined": true,
         "numPositiveClues": 1,
-        "turnsClued": [
-            1
-        ],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": 3,
+        "segmentDrawn": null,
+        "segmentFirstClued": 1,
+        "segmentPlayed": 3,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -2615,10 +2609,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 0,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -2804,10 +2798,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 2,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": 2,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     },
     {
@@ -2993,10 +2987,10 @@
         "suitDetermined": false,
         "rankDetermined": false,
         "numPositiveClues": 0,
-        "turnsClued": [],
-        "turnDrawn": 3,
-        "turnDiscarded": -1,
-        "turnPlayed": -1,
+        "segmentDrawn": 3,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
         "isMisplayed": false
     }
 ]

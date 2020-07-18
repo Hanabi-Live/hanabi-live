@@ -23,11 +23,11 @@ import testMetadata from './testMetadata';
 type JSONGame = typeof testGame;
 
 enum JSONActionType {
-  ActionTypePlay = 0,
-  ActionTypeDiscard = 1,
-  ActionTypeColorClue = 2,
-  ActionTypeRankClue = 3,
-  ActionTypeGameOver = 4,
+  ActionTypePlay,
+  ActionTypeDiscard,
+  ActionTypeColorClue,
+  ActionTypeRankClue,
+  ActionTypeGameOver,
 }
 
 interface JSONAction {
@@ -185,7 +185,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   };
 }
 
-function drawCard(playerIndex: number, order: number, deck: CardIdentity[]): ActionDraw {
+const drawCard = (playerIndex: number, order: number, deck: CardIdentity[]): ActionDraw => {
   const cardIdentity = deck[order];
   if (cardIdentity === undefined) {
     throw new Error(`Failed to find the ${order} card in the deck in the "drawCard()" function.`);
@@ -201,14 +201,14 @@ function drawCard(playerIndex: number, order: number, deck: CardIdentity[]): Act
     suitIndex: cardIdentity.suitIndex,
     rank: cardIdentity.rank,
   };
-}
+};
 
-function dealInitialCards(
+const dealInitialCards = (
   numPlayers: number,
   cardsPerHand: number,
   actions: GameAction[],
   deck: CardIdentity[],
-) {
+) => {
   let topOfDeck = 0;
   for (let player = 0; player < numPlayers; player++) {
     for (let card = 0; card < cardsPerHand; card++) {
@@ -217,14 +217,14 @@ function dealInitialCards(
     }
   }
   return topOfDeck;
-}
+};
 
-function parseJSONAction(
+const parseJSONAction = (
   currentPlayer: number,
   turn: number,
   deck: CardIdentity[],
   a: JSONAction,
-): GameAction | null {
+): GameAction | null => {
   switch (a.type) {
     case JSONActionType.ActionTypePlay:
     case JSONActionType.ActionTypeDiscard: {
@@ -263,4 +263,4 @@ function parseJSONAction(
       return null;
     }
   }
-}
+};

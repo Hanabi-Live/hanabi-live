@@ -185,7 +185,6 @@ func (p *GamePlayer) CheckSurprise(c *Card) {
 func (p *GamePlayer) CycleHand() {
 	// Local variables
 	g := p.Game
-	t := g.Table
 
 	if !g.Options.CardCycle {
 		return
@@ -206,20 +205,4 @@ func (p *GamePlayer) CycleHand() {
 
 	// Add it to the end (the left-most position)
 	p.Hand = append(p.Hand, chopCard)
-
-	// Make an array that represents the order of the player's hand
-	handOrder := make([]int, 0)
-	for _, c := range p.Hand {
-		handOrder = append(handOrder, c.Order)
-	}
-
-	// Notify everyone about the reordering
-	g.Actions = append(g.Actions, ActionReorder{
-		Type:      "reorder",
-		Target:    p.Index,
-		HandOrder: handOrder,
-	})
-
-	t.NotifyGameAction()
-	logger.Info("Reordered the cards for player:", p.Name)
 }

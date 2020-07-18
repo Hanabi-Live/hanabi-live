@@ -2,7 +2,6 @@
 // It is composed of LayoutChild objects
 
 import Konva from 'konva';
-import * as cardRules from '../rules/card';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import { animate } from './konvaHelpers';
@@ -95,7 +94,6 @@ export default class CardLayout extends Konva.Group {
       x = handWidth - x;
     }
 
-    const storedPostAnimationLayout = globals.postAnimationLayout;
     for (let i = 0; i < numCards; i++) {
       const layoutChild = this.children[i] as unknown as LayoutChild;
 
@@ -118,6 +116,7 @@ export default class CardLayout extends Konva.Group {
         layoutChild.scaleY(scale);
         layoutChild.rotation(0);
         layoutChild.checkSetDraggable();
+        layoutChild.card.setVisualEffect('default');
       } else {
         // Animate the card going from the deck to the hand
         // (or from the hand to the discard pile)
@@ -140,10 +139,6 @@ export default class CardLayout extends Konva.Group {
               }
               card.finishedTweening();
               layoutChild.checkSetDraggable();
-              if (!storedPostAnimationLayout) {
-                return;
-              }
-              storedPostAnimationLayout();
             },
           }, true);
         };
@@ -198,30 +193,5 @@ export default class CardLayout extends Konva.Group {
     pos.y += (w / 2 * Math.sin(rot)) + (h / 2 * Math.cos(rot));
 
     return pos;
-  }
-
-  isLocked() {
-    for (const layoutChild of this.children.toArray() as Konva.Node[]) {
-      const card = layoutChild.children[0] as HanabiCard;
-      if (!cardRules.isClued(card.state)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  getChopIndex() {
-    const hand = this.children.toArray() as Konva.Node[];
-    for (let i = 0; i < hand.length; i++) {
-      const layoutChild = hand[i];
-      const card = layoutChild.children[0] as HanabiCard;
-      if (!cardRules.isClued(card.state)) {
-        return i;
-      }
-    }
-
-    // Their hand is filled with clued cards,
-    // so the chop is considered to be their newest (left-most) card
-    return hand.length - 1;
   }
 }
