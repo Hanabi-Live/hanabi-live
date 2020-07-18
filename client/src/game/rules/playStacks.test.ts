@@ -15,6 +15,9 @@ describe('direction', () => {
   test('returns Down for the reversed suit', () => {
     expect(direction(5, [], [], reversed)).toBe(StackDirection.Down);
   });
+  test('returns Up for the non-reversed suits in Reversed', () => {
+    expect(direction(0, [], [], reversed)).toBe(StackDirection.Up);
+  });
   test('returns Finished for No Variant, 5 cards played', () => {
     expect(direction(0, [1, 2, 3, 4, 5], [], noVariant)).toBe(StackDirection.Finished);
   });

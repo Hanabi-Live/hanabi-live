@@ -28,8 +28,8 @@ export const direction = (
     return StackDirection.Up;
   }
 
-  if (variant.suits[suitIndex].reversed) {
-    return StackDirection.Down;
+  if (!variantRules.isUpOrDown(variant)) {
+    return variant.suits[suitIndex].reversed ? StackDirection.Down : StackDirection.Up;
   }
 
   const top = lastPlayedRank(playStack, deck);
