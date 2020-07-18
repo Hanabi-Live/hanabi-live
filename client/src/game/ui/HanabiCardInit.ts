@@ -29,7 +29,6 @@ export const image = (getBareName: () => string, isStackBase: () => boolean) => 
     image: null as unknown as ImageBitmapSource,
     shadowEnabled: false,
     shadowColor: 'black',
-    shadowBlur: Math.floor(0.03 * CARD_W),
     shadowOffset: {
       x: Math.floor(0.04 * CARD_W),
       y: Math.floor(0.04 * CARD_W),
