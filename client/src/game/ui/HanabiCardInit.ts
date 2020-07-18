@@ -282,10 +282,9 @@ export const pips = (variant: Variant) => {
       text: rank.toString(),
       width: Math.floor(CARD_H * 0.1),
       height: Math.floor(CARD_H * 0.1),
-      fill: 'black',
+      fill: 'white',
       stroke: 'black',
-      strokeWidth: 2,
-      cornerRadius: 0.02 * CARD_H,
+      strokeWidth: 3,
       opacity,
       listening: false,
     });
@@ -301,16 +300,16 @@ export const pips = (variant: Variant) => {
     const rankPipX = new Konva.Shape({
       x,
       y: Math.floor(CARD_H * 0.02),
-      fill: '#e6e6e6',
+      fill: 'black',
       stroke: 'black',
       strokeWidth: 2,
       opacity: 0.8,
       visible: false,
       sceneFunc: (ctx, shape) => {
-        const width = 20;
-        const xx = Math.floor(CARD_W * 0.035);
+        const width = 13;
+        const xx = Math.floor(CARD_W * 0.05);
         const xy = Math.floor(CARD_H * 0.047);
-        drawX(ctx, shape, xx, xy, 10, width);
+        drawX(ctx, shape, xx, xy, 13, width);
       },
       listening: false,
     });
