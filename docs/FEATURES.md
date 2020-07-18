@@ -17,7 +17,7 @@
 9. [Chat](#chat)
 10. [Friends](#friends)
 11. [Tags](#tags)
-12. [Webpage Endpoints](#webpage-endpoints)
+12. [Website Endpoints](#website-endpoints)
 13. [Research & Bots](#research--bots)
 
 <br />
