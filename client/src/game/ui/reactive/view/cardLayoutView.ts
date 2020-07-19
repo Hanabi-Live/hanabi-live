@@ -119,7 +119,7 @@ export const onHoleChanged = (
   syncChildren(
     [hole],
     () => globals.elements.playStacks.get('hole') as unknown as Konva.Container,
-    (card) => card.animateToPlayStacks(),
+    (card) => card.animateToHole(),
   );
 
   globals.layers.card.batchDraw();

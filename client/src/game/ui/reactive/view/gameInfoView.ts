@@ -71,7 +71,7 @@ export const onScoreOrMaxScoreChanged = (data: {
 };
 
 export const onNumAttemptedCardsPlayedChanged = (numAttemptedCardsPlayed: number) => {
-  if (!variantRules.isThrowItInAHole(globals.variant)) {
+  if (!variantRules.isThrowItInAHole(globals.variant) || globals.replay) {
     return;
   }
 

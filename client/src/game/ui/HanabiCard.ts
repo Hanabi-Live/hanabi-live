@@ -678,28 +678,30 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   animateToPlayStacks() {
     this.removeFromParent();
-    // We add a LayoutChild to a PlayStack
-    if (variantRules.isThrowItInAHole(this.variant) && !globals.replay) {
-      // The act of adding it will automatically tween the card
-      const hole = globals.elements.playStacks.get('hole')!;
-      hole.addChild(this.layout);
 
-      // We do not want this card to interfere with writing notes on the stack bases
-      this.listening(false);
-    } else {
-      // The act of adding it will automatically tween the card
-      const suit = this.variant.suits[this.state.suitIndex!];
-      const playStack = globals.elements.playStacks.get(suit);
-      if (!playStack) {
-        // We might have played a hidden card in a hypothetical
-        return;
-      }
-      playStack.addChild(this.layout);
-
-      // We also want to move this stack to the top so that
-      // cards do not tween behind the other play stacks when travelling to this stack
-      playStack.moveToTop();
+    // The act of adding it will automatically tween the card
+    const suit = this.variant.suits[this.state.suitIndex!];
+    const playStack = globals.elements.playStacks.get(suit);
+    if (!playStack) {
+      // We might have played a hidden card in a hypothetical
+      return;
     }
+    playStack.addChild(this.layout);
+
+    // We also want to move this stack to the top so that
+    // cards do not tween behind the other play stacks when travelling to this stack
+    playStack.moveToTop();
+  }
+
+  animateToHole() {
+    this.removeFromParent();
+
+    // The act of adding it will automatically tween the card
+    const hole = globals.elements.playStacks.get('hole')!;
+    hole.addChild(this.layout);
+
+    // We do not want this card to interfere with writing notes on the stack bases
+    this.listening(false);
   }
 
   animateToDiscardPile() {

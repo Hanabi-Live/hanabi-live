@@ -240,6 +240,13 @@ const gameStateReducer = produce((
         console.warn(`Client = ${state.clueTokens}, Server = ${action.clues}`);
       }
 
+      // On Throw It In a Hole, the client is missing some key pieces of information about
+      // the stats.
+      // TODO: the status message shouldn't be sent, so we don't leak info to the client
+      if (variantRules.isThrowItInAHole(variant) && !metadata.spectating) {
+        break;
+      }
+
       // TEMP: At this point, check that the local state matches the server
       if (state.score !== action.score) {
         console.warn(`The scores from the client and the server do not match on turn ${state.turn.turnNum}.`);
@@ -358,8 +365,8 @@ const throwItInAHolePlayedOrMisplayed = (
     (action.type === 'discard' && action.failed)
     || action.type === 'play'
   ) {
-  // In "Throw It in a Hole" variants, plays and unknown misplayed cards
-  // go the hole instead of the play stack / discard pile
+    // In "Throw It in a Hole" variants, plays and unknown misplayed cards
+    // go the hole instead of the play stack / discard pile
     state.hole.push(action.order);
 
     // Keep track of attempted plays
