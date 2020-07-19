@@ -765,15 +765,15 @@ const drawScoreArea = () => {
   });
   globals.elements.turnNumberLabel.on('tap', replay.promptTurn);
 
-  const scoreTextLabel = basicTextLabel.clone({
+  globals.elements.scoreTextLabel = basicTextLabel.clone({
     text: 'Score',
     x: labelX * winW,
     y: 0.045 * winH,
     listening: true,
     visible: !variantRules.isThrowItInAHole(globals.variant) || globals.replay,
   }) as Konva.Text;
-  globals.elements.scoreArea.add(scoreTextLabel);
-  scoreTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
+  globals.elements.scoreArea.add(globals.elements.scoreTextLabel!);
+  globals.elements.scoreTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Score, globals.elements.scoreNumberLabel);
   });
 
@@ -805,15 +805,15 @@ const drawScoreArea = () => {
     },
   );
 
-  const playsTextLabel = basicTextLabel.clone({
+  globals.elements.playsTextLabel = basicTextLabel.clone({
     text: 'Plays',
     x: labelX * winW,
     y: 0.045 * winH,
     listening: true,
     visible: variantRules.isThrowItInAHole(globals.variant) && !globals.replay,
   }) as Konva.Text;
-  globals.elements.scoreArea.add(playsTextLabel);
-  playsTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
+  globals.elements.scoreArea.add(globals.elements.playsTextLabel!);
+  globals.elements.playsTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
     arrows.click(event, ReplayArrowOrder.Clues, globals.elements.playsNumberLabel);
   });
 
@@ -961,10 +961,11 @@ const drawScoreArea = () => {
       fontSize: 0.032 * winH,
       x: (0.0205 + (0.04 * i)) * winW,
       y: 0.128 * winH,
-      visible: variantRules.isThrowItInAHole(globals.variant),
+      visible: variantRules.isThrowItInAHole(globals.variant) && !globals.replay,
       listening: false,
     }) as Konva.Text;
     globals.elements.scoreArea.add(questionMarkLabel);
+    globals.elements.questionMarkLabels.push(questionMarkLabel);
 
     // Handle the tooltips
     strikeSquare.tooltipName = 'strikes';

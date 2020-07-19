@@ -126,8 +126,10 @@ const cardsReducer = (
     case 'play': {
       const order = action.order;
       const card = getCard(deck, order);
-      const suitIndex = nullIfNegative(action.suitIndex);
-      const rank = nullIfNegative(action.rank);
+
+      // If the rank or suit coming from the action is null, prefer what we already had inferred
+      const suitIndex = nullIfNegative(action.suitIndex) ?? card.suitIndex;
+      const rank = nullIfNegative(action.rank) ?? card.rank;
 
       // If we know the full identity of this card, we can remove card possibilities on other cards
       const identityDetermined = revealCard(suitIndex, rank, card, newDeck, game, metadata);

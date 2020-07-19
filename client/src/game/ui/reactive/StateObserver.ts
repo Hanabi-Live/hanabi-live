@@ -91,10 +91,10 @@ const visibleStateObservers: Subscriptions = [
   // Hands have to come first to perform the add-removes so we get nice animations
   vs((s) => s.hands, cardLayoutView.onHandsChanged),
   vs((s) => s.discardStacks, cardLayoutView.onDiscardStacksChanged),
+  vs((s) => s.hole, cardLayoutView.onHoleChanged),
   // Play stacks come last so we can show the bases if they get empty
   vs((s) => s.playStacks, cardLayoutView.onPlayStacksChanged),
   vs((s) => s.playStackDirections, cardLayoutView.onPlayStackDirectionsChanged),
-  vs((s) => s.hole, cardLayoutView.onHoleChanged),
 
   // Clues (arrows + log)
   vs((s) => ({

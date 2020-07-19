@@ -57,11 +57,14 @@ export default class Elements {
   noClueBorder: Konva.Rect | null = null;
   scoreArea: Konva.Group | null = null;
   turnNumberLabel: Konva.Text | null = null;
+  scoreTextLabel: Konva.Text | null = null;
   scoreNumberLabel: Konva.Text | null = null;
   maxScoreNumberLabel: Konva.Text | null = null;
+  playsTextLabel: Konva.Text | null = null;
   playsNumberLabel: Konva.Text | null = null;
   cluesNumberLabel: Konva.Text | null = null;
   cluesNumberLabelPulse: Konva.Tween | null = null;
+  questionMarkLabels: Konva.Text[] = [];
   strikeXs: StrikeX[] = [];
   strikeSquares: StrikeSquare[] = [];
   spectatorsLabel: Konva.Image | null = null;
