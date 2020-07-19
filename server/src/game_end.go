@@ -48,11 +48,11 @@ func (g *Game) End() {
 	g.Turn++
 	t.NotifyTurn()
 
-	// Notify everyone that the game is over
-	t.NotifyGameOver()
-
 	// Give all of the players and spectators the full listing of the cards in the deck
 	t.NotifyCardIdentities()
+
+	// Notify everyone that the game is over
+	t.NotifyGameOver()
 
 	// Notify everyone that the table was deleted
 	// (we will send a new table message later for the shared replay)
