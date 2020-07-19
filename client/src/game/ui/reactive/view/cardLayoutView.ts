@@ -116,31 +116,13 @@ export const onHoleChanged = (
   if (previousHole === undefined) {
     return;
   }
-
-  console.log('HOLE:', hole);
-  console.log('PREVIOUS HOLE:', previousHole);
-
-  // TODO rob fix this so that it syncs with "globals.elements.playStacks.get('hole')"
-  /*
   syncChildren(
-    playStacks,
-    (i) => {
-      const suit = globals.variant.suits[i];
-      return globals.elements.playStacks.get(suit)! as unknown as Konva.Container;
-    },
+    [hole],
+    () => globals.elements.playStacks.get('hole') as unknown as Konva.Container,
     (card) => card.animateToPlayStacks(),
   );
 
-  playStacks.forEach((stack, i) => {
-    if (previousPlayStacks === undefined || !equal(stack, previousPlayStacks[i])) {
-      const suit = globals.variant.suits[i];
-      const playStack = globals.elements.playStacks.get(suit)!;
-      playStack.hideCardsUnderneathTheTopCard();
-    }
-  });
-
   globals.layers.card.batchDraw();
-  */
 };
 
 const syncChildren = (

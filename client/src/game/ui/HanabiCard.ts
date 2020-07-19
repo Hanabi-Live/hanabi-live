@@ -682,7 +682,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     if (variantRules.isThrowItInAHole(this.variant) && !globals.replay) {
       // The act of adding it will automatically tween the card
       const hole = globals.elements.playStacks.get('hole')!;
-      hole.addChild(this.parent as any);
+      hole.addChild(this.layout);
 
       // We do not want this card to interfere with writing notes on the stack bases
       this.listening(false);
@@ -694,7 +694,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         // We might have played a hidden card in a hypothetical
         return;
       }
-      playStack.addChild(this.parent as any);
+      playStack.addChild(this.layout);
 
       // We also want to move this stack to the top so that
       // cards do not tween behind the other play stacks when travelling to this stack

@@ -961,7 +961,7 @@ const drawScoreArea = () => {
       fontSize: 0.032 * winH,
       x: (0.0205 + (0.04 * i)) * winW,
       y: 0.128 * winH,
-      visible: variantRules.isThrowItInAHole(globals.variant),
+      visible: variantRules.isThrowItInAHole(globals.variant) && !globals.replay,
       listening: false,
     }) as Konva.Text;
     globals.elements.scoreArea.add(questionMarkLabel);

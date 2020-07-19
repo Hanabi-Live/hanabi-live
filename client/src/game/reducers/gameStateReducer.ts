@@ -17,11 +17,12 @@ import {
   variantRules,
   playStacksRules,
 } from '../rules';
-import { GameAction } from '../types/actions';
+import { GameAction, ActionPlay, ActionDiscard } from '../types/actions';
 import CardState from '../types/CardState';
 import EndCondition from '../types/EndCondition';
 import GameMetadata, { getPlayerName } from '../types/GameMetadata';
 import GameState from '../types/GameState';
+import Variant from '../types/Variant';
 import cardsReducer from './cardsReducer';
 import statsReducer from './statsReducer';
 import turnReducer from './turnReducer';
@@ -79,11 +80,13 @@ const gameStateReducer = produce((
         hand.splice(handIndex, 1);
       }
 
-      // Add it to the discard stacks
-      state.discardStacks[action.suitIndex].push(action.order);
+      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, metadata.spectating)) {
+        // Add it to the discard stacks
+        state.discardStacks[action.suitIndex].push(action.order);
 
-      if (!action.failed) {
-        state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
+        if (!action.failed) {
+          state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
+        }
       }
 
       const touched = state.deck[action.order].numPositiveClues > 0;
@@ -161,10 +164,7 @@ const gameStateReducer = produce((
       }
 
       // Add it to the play stacks
-      if (variantRules.isThrowItInAHole(variant)) {
-        // In "Throw It in a Hole" variants, played cards to go the hole instead of the play stacks
-        state.hole.push(action.order);
-      } else {
+      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, metadata.spectating)) {
         const playStack = state.playStacks[action.suitIndex];
         playStack.push(action.order);
 
@@ -185,9 +185,6 @@ const gameStateReducer = produce((
 
       // Gain a point
       state.score += 1;
-
-      // Keep track of attempted plays
-      state.numAttemptedCardsPlayed += 1;
 
       const touched = state.deck[action.order].numPositiveClues > 0;
       const text = textRules.play(action, slot, touched, metadata);
@@ -297,7 +294,8 @@ const gameStateReducer = produce((
 
   // Discarding or playing cards can make other card cards in that suit
   // not playable anymore and can make other cards critical
-  if (action.type === 'play' || action.type === 'discard') {
+  if ((action.type === 'play' || action.type === 'discard')
+      && (action.suitIndex >= 0 && action.rank >= 0)) {
     variant.ranks.forEach((rank) => {
       state.cardStatus[action.suitIndex][rank] = cardRules.status(
         action.suitIndex,
@@ -344,6 +342,32 @@ const cardCycle = (hand: number[], deck: readonly CardState[], metadata: GameMet
 
   // Add it to the end (the left-most position)
   hand.push(removedCardOrder);
+};
+
+const throwItInAHolePlayedOrMisplayed = (
+  state: Draft<GameState>,
+  action: ActionPlay | ActionDiscard,
+  variant: Variant,
+  spectating: boolean,
+) => {
+  if (!variantRules.isThrowItInAHole(variant) || spectating) {
+    return false;
+  }
+
+  if (
+    (action.type === 'discard' && action.failed)
+    || action.type === 'play'
+  ) {
+  // In "Throw It in a Hole" variants, plays and unknown misplayed cards
+  // go the hole instead of the play stack / discard pile
+    state.hole.push(action.order);
+
+    // Keep track of attempted plays
+    state.numAttemptedCardsPlayed += 1;
+
+    return true;
+  }
+  return false;
 };
 
 export default gameStateReducer;
