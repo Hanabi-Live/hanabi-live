@@ -97,6 +97,9 @@ export default class CardLayout extends Konva.Group {
     for (let i = 0; i < numCards; i++) {
       const layoutChild = this.children[i] as unknown as LayoutChild;
 
+      // Ensure this card is not hidden at the bottom of a play stack
+      layoutChild.show();
+
       if (!layoutChild.height()) {
         continue;
       }
@@ -115,6 +118,7 @@ export default class CardLayout extends Konva.Group {
         layoutChild.scaleX(scale);
         layoutChild.scaleY(scale);
         layoutChild.rotation(0);
+        layoutChild.opacity(1);
         layoutChild.checkSetDraggable();
         layoutChild.card.setVisualEffect('default');
       } else {

@@ -5,7 +5,10 @@ import produce, {
   Draft,
   original,
 } from 'immer';
+import { getVariant } from '../data/gameData';
+import { variantRules } from '../rules';
 import { Action, GameAction } from '../types/actions';
+import CardIdentity from '../types/CardIdentity';
 import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
 import State from '../types/State';
@@ -41,6 +44,10 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       // Either we just entered a new replay or an ongoing game ended,
       // so the server sent us a list of the identities for every card in the deck
       state.cardIdentities = action.cardIdentities;
+
+      // If we were in a variant that scrubbed plays and discards, rehydrate them now
+      state.replay.actions = castDraft(rehydrateScrubbedActions(state, action.cardIdentities));
+
       break;
     }
 
@@ -196,4 +203,25 @@ const visualStateToShow = (state: Draft<State>) => {
 
   // Show the final segment of the current game
   return state.ongoingGame;
+};
+
+const rehydrateScrubbedActions = (state: State, cardIdentities: readonly CardIdentity[]) => {
+  const variant = getVariant(state.metadata.options.variantName);
+  if (!variantRules.isThrowItInAHole(variant)) {
+    return state.replay.actions;
+  }
+
+  return state.replay.actions.map((a) => {
+    if (
+      (a.type === 'play' || a.type === 'discard')
+      && (a.suitIndex === -1 || a.rank === -1)
+    ) {
+      return ({
+        ...a,
+        suitIndex: cardIdentities[a.order].suitIndex!,
+        rank: cardIdentities[a.order].rank!,
+      });
+    }
+    return a;
+  });
 };
