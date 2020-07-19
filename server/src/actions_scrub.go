@@ -15,7 +15,7 @@ func CheckScrub(t *Table, action interface{}, userID int) interface{} {
 
 	playAction, ok := action.(ActionPlay)
 	if ok && playAction.Type == "play" {
-		playAction.Scrub(t)
+		playAction.Scrub(t, userID)
 		return playAction
 	}
 
@@ -35,6 +35,11 @@ func (a *ActionDraw) Scrub(t *Table, userID int) {
 	g := t.Game
 	p := getEquivalentPlayer(t, userID)
 
+	if p == nil {
+		// Spectators get to see the identities of all drawn cards
+		return
+	}
+
 	if a.PlayerIndex == p.Index || // They are drawing the card
 		// They are playing a special character that should not be able to see the card
 		characterHideCard(a, g, p) {
@@ -46,8 +51,16 @@ func (a *ActionDraw) Scrub(t *Table, userID int) {
 
 // Scrub removes some information from played cards so that we do not reveal the identity of played
 // cards to anybody (in some specific variants)
-func (a *ActionPlay) Scrub(t *Table) {
+func (a *ActionPlay) Scrub(t *Table, userID int) {
 	if !strings.HasPrefix(t.Options.VariantName, "Throw It in a Hole") {
+		// In normal variants, everyone gets to see the identities of played cards
+		return
+	}
+
+	p := getEquivalentPlayer(t, userID)
+
+	if p == nil {
+		// Spectators get to see the identities of played cards
 		return
 	}
 
@@ -60,6 +73,11 @@ func (a *ActionPlay) Scrub(t *Table) {
 func (a *ActionCardIdentity) Scrub(t *Table, userID int) {
 	// Local variables
 	p := getEquivalentPlayer(t, userID)
+
+	if p == nil {
+		// Spectators get to see the identities of all cards
+		return
+	}
 
 	if a.PlayerIndex == p.Index { // They are holding the card
 		a.Rank = -1
