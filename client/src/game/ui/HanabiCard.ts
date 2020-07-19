@@ -626,6 +626,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Add it to the player's hand (which will automatically tween the card)
     globals.elements.playerHands[holder].addChild(child);
     globals.elements.playerHands[holder].moveToTop();
+
+    // In case listening was disabled, which happens in some variants
+    this.listening(true);
   }
 
   animateToDeck() {
@@ -691,6 +694,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // We also want to move this stack to the top so that
     // cards do not tween behind the other play stacks when travelling to this stack
     playStack.moveToTop();
+
+    // In case listening was disabled, which happens in some variants
+    this.listening(true);
   }
 
   animateToHole() {
@@ -730,6 +736,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         stack[1].moveToTop();
       }
     }
+
+    // In case listening was disabled, which happens in some variants
+    this.listening(true);
   }
 
   setNote(note: string) {

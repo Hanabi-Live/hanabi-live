@@ -145,9 +145,12 @@ commands.set('gameOver', () => {
 
   // Turn off the "Throw It in a Hole" UI
   if (variantRules.isThrowItInAHole(globals.variant)) {
+    globals.elements.scoreTextLabel!.show();
+    globals.elements.scoreNumberLabel!.show();
     globals.elements.maxScoreNumberLabel!.show();
-    // TODO: there's quite a few more elements to toggle here
-    // scoreTextLabel, scoreNumberLabel, playsTextLabel, playsNumberLabel, questionMarkLabel
+    globals.elements.playsTextLabel!.hide();
+    globals.elements.playsNumberLabel!.hide();
+    globals.elements.questionMarkLabels.forEach((label) => label.hide());
   }
 
   globals.layers.UI.batchDraw();
