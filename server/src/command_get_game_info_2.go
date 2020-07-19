@@ -143,11 +143,11 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 		s.NotifyReplayLeader(t, false)
 
 		// Send them to the current turn that everyone else is at
-		type ReplayTurnMessage struct {
-			Turn int `json:"turn"`
+		type ReplaySegmentMessage struct {
+			Segment int `json:"segment"`
 		}
-		s.Emit("replayTurn", &ReplayTurnMessage{
-			Turn: g.Turn,
+		s.Emit("replaySegment", &ReplaySegmentMessage{
+			Segment: g.Turn,
 		})
 	}
 }

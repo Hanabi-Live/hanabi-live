@@ -448,6 +448,7 @@ const drawBottomLeftButtons = () => {
     if (!replayButton.enabled) {
       return;
     }
+
     if (globals.store!.getState().replay.active) {
       replay.exit();
     } else {
@@ -881,15 +882,7 @@ const drawScoreArea = () => {
           return;
         }
 
-        if (globals.replay) {
-          replay.checkDisableSharedTurns();
-        } else {
-          replay.enter();
-        }
-        if (!globals.store!.getState().replay.active) {
-          return;
-        }
-        replay.goto(strike.turn, true);
+        replay.goToSegment(strike.segment, true);
 
         // Ensure that the card exists as a sanity-check
         const card = globals.deck[strike.order];
@@ -1802,7 +1795,10 @@ const drawPreplayArea = () => {
   });
   globals.layers.UI.add(globals.elements.premoveCancelButton as any);
   globals.elements.premoveCancelButton.on('click tap', () => {
-    globals.store!.dispatch({ type: 'premove', premove: null });
+    globals.store!.dispatch({
+      type: 'premove',
+      premove: null,
+    });
   });
 };
 
@@ -1867,7 +1863,7 @@ const drawHypotheticalArea = () => {
     text: 'Back 1',
     visible: false,
   });
-  globals.elements.hypoBackButton.on('click tap', hypothetical.sendBackOneTurn);
+  globals.elements.hypoBackButton.on('click tap', hypothetical.sendBack);
   globals.layers.UI.add(globals.elements.hypoBackButton as any);
 
   // The "Toggle Revealed Cards" / "Toggle Hidden Cards" button
@@ -2001,8 +1997,9 @@ const drawExtraAnimations = () => {
     y: y * winH,
     width: size * winW,
     height: size * winH,
-    image: globals.imageLoader!.get('replay-forward')!,
+    image: globals.imageLoader!.get('replay-forward-border')!,
     opacity: 0,
+    border: 100,
   });
   globals.layers.UI2.add(globals.elements.sharedReplayForward);
   globals.elements.sharedReplayForwardTween = new Konva.Tween({
@@ -2021,7 +2018,7 @@ const drawExtraAnimations = () => {
     y: y * winH,
     width: size * winW,
     height: size * winH,
-    image: globals.imageLoader!.get('replay-back')!,
+    image: globals.imageLoader!.get('replay-back-border')!,
     opacity: 0,
   });
   globals.layers.UI2.add(globals.elements.sharedReplayBackward);

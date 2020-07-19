@@ -9,6 +9,7 @@ import { getVariant } from '../data/gameData';
 import { variantRules } from '../rules';
 import { Action, GameAction } from '../types/actions';
 import CardIdentity from '../types/CardIdentity';
+import EndCondition from '../types/EndCondition';
 import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
 import State from '../types/State';
@@ -62,17 +63,22 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
           states,
         } = reduceGameActions(state.replay.actions, initialState, state.metadata);
 
-        // Update the visible game and replay states
         state.ongoingGame = castDraft(game);
         state.visibleState = state.ongoingGame;
         state.replay.states = castDraft(states);
       }
+
+      // The finished view will take care of converting this game to a shared replay
+      state.metadata.finished = true;
+
       break;
     }
 
-    case 'replayStart':
-    case 'replayEnd':
-    case 'replayGoToSegment':
+    case 'replayEnter':
+    case 'replayExit':
+    case 'replaySegment':
+    case 'replaySharedSegment':
+    case 'replayUseSharedSegments':
     case 'hypoStart':
     case 'hypoBack':
     case 'hypoEnd':
@@ -104,6 +110,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
         state.replay.states[state.ongoingGame.turn.segment!] = state.ongoingGame;
       }
 
+      // Save the action so that we can recompute the state at the end of the game
       state.replay.actions.push(action);
 
       break;
@@ -116,8 +123,8 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
 export default stateReducer;
 
-// Runs through a list of actions from an initial state, and returns the final state
-// and all intermediate states
+// Runs through a list of actions from an initial state,
+// and returns the final state and all intermediate states
 const reduceGameActions = (
   actions: GameAction[],
   initialState: GameState,
@@ -148,10 +155,15 @@ const shouldStoreSegment = (
     return false;
   }
 
-  if (action.type === 'gameOver') {
-    // Handle the special case of the last action being a "gameOver"
-    // We want this to meld together with the previous segment so that the game over text appears
-    // on the same segment as the final game action
+  // The types of "gameOver" that have to do with the previous action should meld together with the
+  // segment of the previous action
+  // Any new end conditions must also be updated in the "gameOver" block in "turnReducer.ts"
+  if (
+    action.type === 'gameOver'
+    && action.endCondition !== EndCondition.Timeout
+    && action.endCondition !== EndCondition.Terminated
+    && action.endCondition !== EndCondition.IdleTimeout
+  ) {
     return true;
   }
 
@@ -194,7 +206,11 @@ const visualStateToShow = (state: Draft<State>) => {
   if (state.replay.active) {
     if (state.replay.hypothetical === null) {
       // Show the current replay segment
-      return state.replay.states[state.replay.segment];
+      const currentReplayState = state.replay.states[state.replay.segment];
+      if (currentReplayState === undefined) {
+        throw new Error(`Failed to find the replay state for segment ${state.replay.segment}.`);
+      }
+      return currentReplayState;
     }
 
     // Show the current hypothetical

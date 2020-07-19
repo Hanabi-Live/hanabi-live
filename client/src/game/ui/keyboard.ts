@@ -171,58 +171,54 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   // Replay hotkeys
   if (globals.hypothetical) {
     if (event.key === 'ArrowLeft') {
-      hypothetical.sendBackOneTurn();
+      hypothetical.sendBack();
       return;
     }
   } else {
-    if (event.key === 'ArrowLeft') {
-      replay.enter();
-      if (state.replay.active) {
+    switch (event.key) {
+      case 'ArrowLeft': {
         replay.back();
+        return;
       }
-    }
-    if (event.key === 'ArrowRight') {
-      replay.enter();
-      if (state.replay.active) {
+
+      case 'ArrowRight': {
         replay.forward();
+        return;
       }
-      return;
-    }
-    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-      if (globals.sharedReplay) {
-        replay.toggleSharedTurns();
-      } else if (!globals.replay) {
-        replay.exit();
+
+      case 'ArrowUp':
+      case 'ArrowDown': {
+        if (globals.sharedReplay) {
+          replay.toggleSharedSegments();
+        } else if (!globals.replay) {
+          replay.exit();
+        }
+        return;
       }
-      return;
-    }
-    if (event.key === '[') {
-      replay.enter();
-      if (state.replay.active) {
+
+      case '[': {
         replay.backRound();
+        return;
       }
-      return;
-    }
-    if (event.key === ']') {
-      replay.enter();
-      if (state.replay.active) {
+
+      case ']': {
         replay.forwardRound();
+        return;
       }
-      return;
-    }
-    if (event.key === 'Home') {
-      replay.enter();
-      if (state.replay.active) {
+
+      case 'Home': {
         replay.backFull();
+        return;
       }
-      return;
-    }
-    if (event.key === 'End') {
-      replay.enter();
-      if (state.replay.active) {
+
+      case 'End': {
         replay.forwardFull();
+        return;
       }
-      return;
+
+      default: {
+        break;
+      }
     }
   }
 

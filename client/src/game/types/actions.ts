@@ -28,9 +28,14 @@ export type GameAction =
 export type ActionIncludingHypothetical = GameAction | ActionHypotheticalMorph;
 
 export type ReplayAction =
-  | ActionReplayStart
-  | ActionReplayEnd
-  | ActionReplayGoToSegment
+  | ActionReplayEnter
+  | ActionReplayExit
+  | ActionReplaySegment
+  | ActionReplaySharedSegment
+  | ActionReplayUseSharedSegments
+  | HypotheticalAction;
+
+export type HypotheticalAction =
   | ActionHypotheticalStart
   | ActionHypotheticalEnd
   | ActionHypotheticalBack
@@ -156,18 +161,28 @@ export interface ActionTurn {
 // Replay actions
 // --------------
 
-export interface ActionReplayStart {
-  type: 'replayStart';
+export interface ActionReplayEnter {
+  type: 'replayEnter';
+  segment: number;
+}
+
+export interface ActionReplayExit {
+  type: 'replayExit';
+}
+
+export interface ActionReplaySegment {
+  type: 'replaySegment';
   readonly segment: number;
 }
 
-export interface ActionReplayEnd {
-  type: 'replayEnd';
+export interface ActionReplaySharedSegment {
+  type: 'replaySharedSegment';
+  readonly segment: number;
 }
 
-export interface ActionReplayGoToSegment {
-  type: 'replayGoToSegment';
-  readonly segment: number;
+export interface ActionReplayUseSharedSegments {
+  type: 'replayUseSharedSegments';
+  readonly useSharedSegments: boolean;
 }
 
 // --------------------

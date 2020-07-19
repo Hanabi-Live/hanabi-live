@@ -8,15 +8,13 @@ import * as sentry from '../../sentry';
 import { getVariant } from '../data/gameData';
 import initialState from '../reducers/initialStates/initialState';
 import stateReducer from '../reducers/stateReducer';
-import * as variantRules from '../rules/variant';
 import { GameAction, ActionIncludingHypothetical } from '../types/actions';
 import CardIdentity from '../types/CardIdentity';
-import ClueType from '../types/ClueType';
 import GameMetadata from '../types/GameMetadata';
-import GameState from '../types/GameState';
 import Options from '../types/Options';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import SpectatorNote from '../types/SpectatorNote';
+import State from '../types/State';
 import * as arrows from './arrows';
 import { checkLegal } from './clues';
 import globals from './globals';
@@ -26,7 +24,6 @@ import pause from './pause';
 import StateObserver from './reactive/StateObserver';
 import * as replay from './replay';
 import * as timer from './timer';
-import * as tooltips from './tooltips';
 import * as turn from './turn';
 import uiInit from './uiInit';
 
@@ -49,10 +46,6 @@ commands.set('boot', () => {
 // Updates the clocks to show how much time people are taking
 // or how much time people have left
 commands.set('clock', (data: timer.ClockData) => {
-  if (globals.loading) {
-    // We have not loaded everything yet
-    return;
-  }
   timer.update(data);
 });
 
@@ -60,11 +53,6 @@ interface ConnectedData {
   list: boolean[];
 }
 commands.set('connected', (data: ConnectedData) => {
-  if (globals.loading) {
-    // We have not loaded everything yet
-    return;
-  }
-
   for (let i = 0; i < data.list.length; i++) {
     const nameFrame = globals.elements.nameFrames[i];
     if (nameFrame !== undefined) {
@@ -97,72 +85,55 @@ interface CardIdentitiesData {
   cardIdentities: CardIdentity[];
 }
 commands.set('cardIdentities', (data: CardIdentitiesData) => {
-  globals.store!.dispatch({ type: 'cardIdentities', cardIdentities: data.cardIdentities });
+  globals.store!.dispatch({
+    type: 'cardIdentities',
+    cardIdentities: data.cardIdentities,
+  });
 });
 
 commands.set('gameOver', () => {
-  // If any tooltips are open, close them
-  tooltips.resetActiveHover();
+  // Local variables
+  const state = globals.store!.getState();
+  const wasInReplay = state.replay.active;
 
-  // If the timers are showing, hide them
-  if (globals.elements.timer1) {
-    globals.elements.timer1.hide();
-    globals.elements.timer2!.hide();
-  }
-  timer.stop();
-  globals.layers.timer.batchDraw();
-
-  // Transform this game into a shared replay
-  globals.replay = true;
-  globals.sharedReplay = true;
-  globals.sharedReplayTurn = globals.replayTurn + 1;
-  // (we add one to account for the text that the server sends at the end of a game)
-
-  // Open the replay UI if we were not in an in-game replay when the game ended
-  replay.enter();
-
-  // We want to set the replay segment to the segment before all the times display so that the
-  // player can see why the game ended
-  // (otherwise, the text of the times will drown out the reason and force the user to rewind)
   globals.store!.dispatch({
-    type: 'replayGoToSegment',
-    segment: globals.store!.getState().visibleState!.turn.segment! - 1,
+    type: 'finishOngoingGame',
   });
 
-  // Hide the "Exit Replay" button in the center of the screen, since it is no longer necessary
-  globals.elements.replayExitButton!.hide();
+  // By default, we will enter the replay on the final segment,
+  // which is the segment that all the times display
+  // We do not want the text of the times to drown out the reason that the game ended
+  // So enter the replay on the turn prior so that the player can see why the game ended
+  const segmentBeforeTimes = state.ongoingGame.turn.segment! - 1;
 
-  // Hide/show some buttons in the bottom-left-hand corner
-  globals.elements.replayButton!.hide();
-  globals.elements.killButton!.hide();
-  globals.elements.lobbyButtonSmall!.hide();
-  globals.elements.lobbyButtonBig!.show();
-
-  // Re-draw the deck tooltip
-  // (it will show more information when you are in a replay)
-  globals.datetimeFinished = new Date();
-  globals.elements.deck!.initTooltip();
-
-  // Turn off the "Throw It in a Hole" UI
-  if (variantRules.isThrowItInAHole(globals.variant)) {
-    globals.elements.scoreTextLabel!.show();
-    globals.elements.scoreNumberLabel!.show();
-    globals.elements.maxScoreNumberLabel!.show();
-    globals.elements.playsTextLabel!.hide();
-    globals.elements.playsNumberLabel!.hide();
-    globals.elements.questionMarkLabels.forEach((label) => label.hide());
+  // If we were not already in an in-game replay, open the replay UI
+  if (!wasInReplay) {
+    replay.enter(segmentBeforeTimes);
   }
 
-  globals.layers.UI.batchDraw();
+  // Update the shared segment
+  globals.store!.dispatch({
+    type: 'replaySharedSegment',
+    segment: segmentBeforeTimes,
+  });
 
-  globals.store!.dispatch({ type: 'finishOngoingGame' });
+  // By default, we want to use shared turns if we were not in an in-game replay
+  if (!wasInReplay) {
+    globals.store!.dispatch({
+      type: 'replayUseSharedSegments',
+      useSharedSegments: true,
+    });
+  }
 });
 
 commands.set('hypoAction', (data: string) => {
   const actionMessage = JSON.parse(data) as ActionIncludingHypothetical;
 
   // Pass it along to the reducers
-  globals.store!.dispatch({ type: 'hypoAction', action: actionMessage });
+  globals.store!.dispatch({
+    type: 'hypoAction',
+    action: actionMessage,
+  });
 
   // We need to save this game state change for the purposes of the in-game hypothetical
   globals.hypoActions.push(actionMessage);
@@ -176,18 +147,18 @@ commands.set('hypoAction', (data: string) => {
 });
 
 commands.set('hypoBack', () => {
-  hypothetical.backOneTurn();
-  if (!globals.amSharedReplayLeader) {
-    globals.elements.sharedReplayBackwardTween!.play();
-  }
-  globals.store!.dispatch({ type: 'hypoBack' });
+  globals.store!.dispatch({
+    type: 'hypoBack',
+  });
 });
 
 commands.set('hypoEnd', () => {
   if (!globals.amSharedReplayLeader) {
     hypothetical.end();
   }
-  globals.store!.dispatch({ type: 'hypoEnd' });
+  globals.store!.dispatch({
+    type: 'hypoEnd',
+  });
 });
 
 interface HypoRevealedData {
@@ -206,14 +177,19 @@ commands.set('hypoRevealed', (data: HypoRevealedData) => {
   globals.layers.card.batchDraw();
 
   // Send to reducers
-  globals.store!.dispatch({ type: 'hypoRevealed', showDrawnCards: data.hypoRevealed });
+  globals.store!.dispatch({
+    type: 'hypoRevealed',
+    showDrawnCards: data.hypoRevealed,
+  });
 });
 
 commands.set('hypoStart', () => {
   if (!globals.amSharedReplayLeader) {
     hypothetical.start();
   }
-  globals.store!.dispatch({ type: 'hypoStart' });
+  globals.store!.dispatch({
+    type: 'hypoStart',
+  });
 });
 
 interface InitData {
@@ -250,77 +226,8 @@ commands.set('init', (data: InitData) => {
   // attach this to the Sentry context to make debugging easier
   sentry.setGameContext(data);
 
-  // Game settings
-  globals.lobby.tableID = data.tableID; // Equal to the table ID on the server
-  globals.playerNames = data.playerNames;
-  globals.playerUs = data.seat; // 0 if a spectator or a replay of a game that we were not in
-  globals.spectating = data.spectating;
-  globals.replay = data.replay;
-  globals.sharedReplay = data.sharedReplay;
-  globals.databaseID = data.databaseID; // 0 if this is an ongoing game
-  globals.seed = data.seed;
-  globals.seeded = data.seeded; // If playing a table started with the "!seed" prefix
-  globals.datetimeStarted = data.datetimeStarted;
-  globals.datetimeFinished = data.datetimeFinished;
-  globals.options = data.options;
-
-  // Set the variant
-  globals.variant = getVariant(globals.options.variantName);
-
-  // Character settings
-  let characterAssignments: Array<number | null> = data.characterAssignments.slice();
-  for (let i = 0; i < characterAssignments.length; i++) {
-    if (characterAssignments[i]! < 0) {
-      // Handle the special case of when players can be given assignments of "-1" during debugging
-      // (which corresponds to a null character)
-      characterAssignments[i] = null;
-    }
-  }
-  if (characterAssignments.length === 0) {
-    characterAssignments = initArray(globals.options.numPlayers, null);
-  }
-  globals.characterAssignments = characterAssignments;
-  globals.characterMetadata = data.characterMetadata;
-
-  // Recreate the state store (using the Redux library)
-  const metadata: GameMetadata = {
-    options: data.options,
-    playerNames: data.playerNames,
-    ourPlayerIndex: data.seat,
-    spectating: data.spectating || data.replay,
-    characterAssignments,
-    characterMetadata: data.characterMetadata,
-  };
-  globals.store = createStore(stateReducer, initialState(metadata));
-
-  // Make the current visible state available from the JavaScript console (for debugging purposes)
-  globals.store.subscribe(() => {
-    window.state = globals.store!.getState().visibleState;
-  });
-
-  // Hypothetical settings
-  globals.hypothetical = data.hypothetical;
-  globals.hypoActions = [];
-  for (let i = 0; i < data.hypoActions.length; i++) {
-    globals.hypoActions[i] = JSON.parse(data.hypoActions[i]) as ActionIncludingHypothetical;
-  }
-  globals.hypoRevealed = data.hypoRevealed;
-
-  // Other features
-  globals.paused = data.paused;
-  globals.pausePlayer = data.pausePlayer;
-  globals.pauseQueued = data.pauseQueued;
-
-  // Open the replay UI if we are in a replay
-  if (globals.replay) {
-    globals.replayTurn = -1;
-
-    // HACK: also let the state know this is a replay
-    globals.store!.dispatch({
-      type: 'replayStart',
-      segment: 0,
-    });
-  }
+  copyInitDataToGlobals(data);
+  initStateStore(data);
 
   // Now that we know the number of players and the variant, we can start to load & draw the UI
   uiInit();
@@ -418,67 +325,20 @@ interface GameActionData {
 commands.set('gameAction', (data: GameActionData) => {
   // Update the game state
   globals.store!.dispatch(data.action);
-
-  processNewAction(data.action);
 });
-
-const processNewAction = (actionMessage: GameAction) => {
-  // TEMP: We need to save this game state change for the purposes of the in-game replay
-  globals.replayLog.push(actionMessage);
-
-  // TODO: legacy code, move this
-  if (actionMessage.type === 'clue' && variantRules.isAlternatingClues(globals.variant)) {
-    if (actionMessage.clue.type === ClueType.Color) {
-      for (const button of globals.elements.colorClueButtons) {
-        button.hide();
-      }
-      for (const button of globals.elements.rankClueButtons) {
-        button.show();
-      }
-    } else if (actionMessage.clue.type === ClueType.Rank) {
-      for (const button of globals.elements.colorClueButtons) {
-        button.show();
-      }
-      for (const button of globals.elements.rankClueButtons) {
-        button.hide();
-      }
-    }
-  }
-};
 
 interface GameActionListData {
   tableID: number;
   list: GameAction[];
 }
 commands.set('gameActionList', (data: GameActionListData) => {
-  // Send the list to the reducers
-  globals.store!.dispatch({ type: 'gameActionList', actions: data.list });
-
-  // Play through all of the turns
-  for (const actionMessage of data.list) {
-    processNewAction(actionMessage);
-  }
-
-  // Initialize solo replays to the first turn (otherwise, nothing will be drawn)
-  if (globals.replay && !globals.sharedReplay) {
-    replay.goto(0, true);
-  }
-
-  // Check to see if we are loading a replay to a specific turn
-  // (specified in the URL; e.g. "/replay/150/10" for game 150 turn 10)
-  const match = window.location.pathname.match(/\/replay\/\d+\/(\d+)/);
-  if (match) {
-    const turnNum = parseInt(match[1], 10) - 1;
-    replay.goto(turnNum, true);
-  }
-
-  // Subscribe to state changes
-  // TODO: this is not a great place to do this
-  if (globals.stateObserver) {
-    globals.stateObserver.registerObservers(globals.store!);
-  } else {
-    globals.stateObserver = new StateObserver(globals.store!);
-  }
+  // The server has sent us the list of the game actions that have occurred in the game thus far
+  // (in response to the "getGameInfo2" command)
+  // Send this list to the reducers
+  globals.store!.dispatch({
+    type: 'gameActionList',
+    actions: data.list,
+  });
 });
 
 interface PauseData {
@@ -498,20 +358,15 @@ interface ReplayIndicatorData {
   order: ReplayArrowOrder;
 }
 commands.set('replayIndicator', (data: ReplayIndicatorData) => {
-  if (globals.loading) {
-    // We have not loaded everything yet, so don't bother with shared replay features
-    return;
-  }
-
   if (globals.amSharedReplayLeader) {
     // We don't have to draw any indicator arrows;
     // we already drew it after sending the "replayAction" message
     return;
   }
 
-  if (!globals.useSharedTurns) {
-    // We are not currently using the shared turns,
-    // so the arrow won't apply to what we are looking at
+  if (!globals.store!.getState().replay.useSharedSegments) {
+    // We are not currently using the shared segments,
+    // so the arrow that the shared replay leader is highlighting will not be applicable
     return;
   }
 
@@ -562,6 +417,9 @@ interface ReplayLeaderData {
   playAnimation: boolean;
 }
 commands.set('replayLeader', (data: ReplayLeaderData) => {
+  // Local variables
+  const state = globals.store!.getState();
+
   // Store who the shared replay leader is
   globals.sharedReplayLeader = data.name;
   globals.amSharedReplayLeader = globals.sharedReplayLeader === globals.lobby.username;
@@ -579,8 +437,8 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
 
   // Arrange the center buttons in a certain way depending on
   // whether we are the shared replay leader
-  globals.elements.pauseSharedTurnsButton!.visible(globals.useSharedTurns);
-  globals.elements.useSharedTurnsButton!.visible(!globals.useSharedTurns);
+  globals.elements.pauseSharedTurnsButton!.visible(state.replay.useSharedSegments);
+  globals.elements.useSharedTurnsButton!.visible(!state.replay.useSharedSegments);
   if (globals.amSharedReplayLeader) {
     globals.elements.pauseSharedTurnsButton!.setLeft();
     globals.elements.useSharedTurnsButton!.setLeft();
@@ -610,84 +468,49 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
   $('#tooltip-leader').tooltipster('instance').content(content);
 });
 
+// This is used in shared replays to change the segment (e.g. turn)
+interface ReplaySegmentData {
+  segment: number;
+}
+commands.set('replaySegment', (data: ReplaySegmentData) => {
+  if (typeof data.segment !== 'number' || data.segment < 0) {
+    throw new Error('Received an invalid segment from the "replaySegment" command.');
+  }
+
+  // If we are the replay leader,
+  // we will already have the shared segment set to be equal to what the server is broadcasting
+  // (unless we had to refresh mid-replay and need to go back to the turn that we left off)
+  if (!globals.amSharedReplayLeader || globals.sharedReplayFirstLoading) {
+    globals.sharedReplayFirstLoading = false;
+    globals.store!.dispatch({
+      type: 'replaySharedSegment',
+      segment: data.segment,
+    });
+  }
+
+  // It is normally impossible to receive a "replaySegment" message while in a hypothetical
+  // Thus, this must be the initial "replayTurn" message that occurs when the client is first
+  // loading
+  // We need to "catch up" to everyone else and play all of the existing hypothetical actions
+  // that have taken place
+  // TODO: Put this somewhere else?
+  if (globals.hypothetical) {
+    globals.store!.dispatch({
+      type: 'hypoStart',
+    });
+    globals.hypoActions.forEach((action) => globals.store!.dispatch({
+      type: 'hypoAction',
+      action,
+    }));
+  }
+});
+
 // This is used in shared replays to make fun sounds
 interface ReplaySoundData {
   sound: string;
 }
 commands.set('replaySound', (data: ReplaySoundData) => {
-  if (globals.loading) {
-    // We have not loaded everything yet, so don't bother with shared replay features
-    return;
-  }
-
   globals.game!.sounds.play(data.sound);
-});
-
-// This is used in shared replays to change the turn
-interface ReplayTurnData {
-  turn: number;
-}
-commands.set('replayTurn', (data: ReplayTurnData) => {
-  if (globals.loading) {
-    // We have not loaded everything yet, so do not bother with shared replay features
-    return;
-  }
-
-  if (
-    // If we are the replay leader, then we don't have to do anything
-    globals.amSharedReplayLeader
-    // Make an exception for when we are first loading the game
-    && globals.sharedReplayTurn !== -1
-  ) {
-    return;
-  }
-
-  const oldTurn = globals.sharedReplayTurn;
-  globals.sharedReplayTurn = data.turn;
-  replay.adjustShuttles(false);
-  if (globals.useSharedTurns) {
-    const animateFast = (
-      // First loading into a shared replay should always be fast
-      globals.sharedReplayLoading
-      // Going into the past by 2 or more turns should always be fast
-      || oldTurn - globals.sharedReplayTurn > 2
-      // Going into the future by 2 or more turns should always be fast
-      || globals.sharedReplayTurn - oldTurn > 2
-    );
-    // We need "force" to be true here in case we are refreshing the page in the middle of a
-    // hypothetical
-    replay.goto(globals.sharedReplayTurn, animateFast, true);
-
-    if (globals.sharedReplayLoading) {
-      globals.sharedReplayLoading = false;
-    } else {
-      // Play an animation to indicate the direction that the leader has taken us in
-      if (oldTurn > globals.sharedReplayTurn && oldTurn !== -1) {
-        globals.elements.sharedReplayBackwardTween!.play();
-      } else if (oldTurn < globals.sharedReplayTurn && oldTurn !== -1) {
-        globals.elements.sharedReplayForwardTween!.play();
-      }
-      globals.layers.UI.batchDraw();
-    }
-  } else {
-    // Even though we are not using the shared turns,
-    // we need to update the slider to show where the replay leader changed the turn to
-    globals.layers.UI.batchDraw();
-  }
-
-  if (globals.hypothetical) {
-    // It is normally impossible to receive a "replayTurn" message while in a hypothetical
-    // Thus, this must be the initial "replayTurn" message that occurs when the client is first
-    // loading
-    // We need to "catch up" to everyone else and play all of the existing hypothetical actions
-    // that have taken place
-
-    // TEMP: Pass the actions along to the reducers
-    globals.store!.dispatch({ type: 'hypoStart' });
-    globals.hypoActions.forEach((a) => globals.store!.dispatch({ type: 'hypoAction', action: a }));
-
-    hypothetical.playThroughPastActions();
-  }
 });
 
 // This is used to update the names of the people currently spectating the game
@@ -695,23 +518,14 @@ interface SpectatorsData {
   names: string[];
 }
 commands.set('spectators', (data: SpectatorsData) => {
-  if (
-    globals.loading
-    || !globals.elements.spectatorsLabel
-    || !globals.elements.spectatorsNumLabel
-  ) {
-    // We have not loaded everything yet
-    return;
-  }
-
   // Remember the current list of spectators
   globals.spectators = data.names;
 
   const visible = data.names.length > 0;
-  globals.elements.spectatorsLabel.visible(visible);
-  globals.elements.spectatorsNumLabel.visible(visible);
+  globals.elements.spectatorsLabel!.visible(visible);
+  globals.elements.spectatorsNumLabel!.visible(visible);
   if (visible) {
-    globals.elements.spectatorsNumLabel.text(data.names.length.toString());
+    globals.elements.spectatorsNumLabel!.text(data.names.length.toString());
 
     // Build the string that shows all the names
     let nameEntries = '';
@@ -758,9 +572,94 @@ commands.set('sound', (data: SoundData) => {
   }
 });
 
+const copyInitDataToGlobals = (data: InitData) => {
+  // TODO: this is messy; make a globals.init object and just copy it directly
+
+  // Game settings
+  globals.lobby.tableID = data.tableID; // Equal to the table ID on the server
+  globals.playerNames = data.playerNames;
+  globals.playerUs = data.seat; // 0 if a spectator or a replay of a game that we were not in
+  globals.spectating = data.spectating;
+  globals.replay = data.replay;
+  globals.sharedReplay = data.sharedReplay;
+  globals.databaseID = data.databaseID; // 0 if this is an ongoing game
+  globals.seed = data.seed;
+  globals.seeded = data.seeded; // If playing a table started with the "!seed" prefix
+  globals.datetimeStarted = data.datetimeStarted;
+  globals.datetimeFinished = data.datetimeFinished;
+  globals.options = data.options;
+
+  // Set the variant
+  globals.variant = getVariant(globals.options.variantName);
+
+  // Character settings
+  let characterAssignments: Array<number | null> = data.characterAssignments.slice();
+  for (let i = 0; i < characterAssignments.length; i++) {
+    if (characterAssignments[i]! < 0) {
+      // Handle the special case of when players can be given assignments of "-1" during debugging
+      // (which corresponds to a null character)
+      characterAssignments[i] = null;
+    }
+  }
+  if (characterAssignments.length === 0) {
+    characterAssignments = initArray(globals.options.numPlayers, null);
+  }
+  globals.characterAssignments = characterAssignments;
+  globals.characterMetadata = data.characterMetadata;
+
+  // Hypothetical settings
+  globals.hypothetical = data.hypothetical;
+  globals.hypoActions = [];
+  for (let i = 0; i < data.hypoActions.length; i++) {
+    globals.hypoActions[i] = JSON.parse(data.hypoActions[i]) as ActionIncludingHypothetical;
+  }
+  globals.hypoRevealed = data.hypoRevealed;
+
+  // Other features
+  globals.paused = data.paused;
+  globals.pausePlayer = data.pausePlayer;
+  globals.pauseQueued = data.pauseQueued;
+};
+
+const initStateStore = (data: InitData) => {
+  // Create the state store (using the Redux library)
+  const metadata: GameMetadata = {
+    options: data.options,
+    playerNames: data.playerNames,
+    ourPlayerIndex: data.seat,
+    spectating: data.spectating || data.replay,
+    finished: data.replay,
+    // We need to use the "nullified" version, so we access the globals
+    characterAssignments: globals.characterAssignments,
+    characterMetadata: data.characterMetadata,
+  };
+  globals.store = createStore(stateReducer, initialState(metadata));
+
+  // The various UI views subscribe to the state store
+  globals.stateObserver = new StateObserver(globals.store);
+
+  // Make the current visible state available from the JavaScript console (for debugging purposes)
+  globals.store.subscribe(() => {
+    window.state = globals.store!.getState();
+  });
+
+  if (data.replay) {
+    // Set "state.replay.active" to true
+    replay.enter();
+
+    // By default, we use shared segments when first loading a shared replay
+    if (data.sharedReplay) {
+      globals.store.dispatch({
+        type: 'replayUseSharedSegments',
+        useSharedSegments: true,
+      });
+    }
+  }
+};
+
 // Allow TypeScript to modify the browser's "window" object
 declare global {
   interface Window {
-    state: GameState | null;
+    state: State;
   }
 }

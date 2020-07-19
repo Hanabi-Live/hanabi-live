@@ -14,7 +14,7 @@ var (
 
 func replayActionsFunctionsInit() {
 	replayActionFunctions = map[int]func(*Session, *CommandData, *Table){
-		ReplayActionTypeTurn:           commandReplayActionTurn,
+		ReplayActionTypeSegment:        commandReplayActionSegment,
 		ReplayActionTypeArrow:          commandReplayActionArrow,
 		ReplayActionTypeSound:          commandReplayActionSound,
 		ReplayActionTypeHypoStart:      commandReplayActionHypoStart,
@@ -84,18 +84,21 @@ func commandReplayAction(s *Session, d *CommandData) {
 	}
 }
 
-func commandReplayActionTurn(s *Session, d *CommandData, t *Table) {
+func commandReplayActionSegment(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
-	// Change the turn
-	g.Turn = d.Turn
+	// Change the segment
+	// (we borrow the turn variable to use as a stand-in for the current shared replay segment)
+	g.Turn = d.Segment
+
+	// Notify everyone
 	for _, sp := range t.Spectators {
-		type ReplayTurnMessage struct {
-			Turn int `json:"turn"`
+		type ReplaySegmentMessage struct {
+			Segment int `json:"segment"`
 		}
-		sp.Session.Emit("replayTurn", &ReplayTurnMessage{
-			Turn: d.Turn,
+		sp.Session.Emit("replaySegment", &ReplaySegmentMessage{
+			Segment: d.Segment,
 		})
 	}
 
@@ -103,11 +106,14 @@ func commandReplayActionTurn(s *Session, d *CommandData, t *Table) {
 	progressFloat := float64(g.Turn) / float64(g.EndTurn) * 100 // In percent
 	progress := int(math.Round(progressFloat))
 	if progress > 100 {
-		// It is possible to go past the last turn,
-		// since an extra turn is appended to the end of every game with timing information
+		// The server has no notion of game segments, it knows about the total number of turns
+		// (e.g. some detrimental characters can take two actions on the same turn)
+		// Thus, since turn is being used as a stand-in for segment,
+		// it is possible to go past the last turn
+		// (since the segment number only indirectly corresponds to the turn number)
 		progress = 100
 	} else if progress < 0 {
-		// This can happen if the maximum turn is 0
+		// This can happen if the end turn is 0
 		progress = 0
 	}
 	oldProgress := t.Progress

@@ -78,7 +78,10 @@ const handlePremove = () => {
       value: premove.value,
     });
 
-    globals.store!.dispatch({ type: 'premove', premove: null });
+    globals.store!.dispatch({
+      type: 'premove',
+      premove: null,
+    });
     hideClueUIAndDisableDragging();
   }, PREPLAY_DELAY);
 };
@@ -155,7 +158,10 @@ export const end = (clientAction: ClientAction) => {
     });
     hideClueUIAndDisableDragging();
   } else {
-    globals.store!.dispatch({ type: 'premove', premove: clientAction });
+    globals.store!.dispatch({
+      type: 'premove',
+      premove: clientAction,
+    });
   }
 };
 

@@ -34,7 +34,7 @@ export const hideAll = () => {
       }
     }
   }
-  if (!globals.animateFast && changed) {
+  if (changed) {
     globals.layers.arrow.batchDraw();
   }
 };
@@ -291,7 +291,7 @@ export const click = (
   if (
     globals.sharedReplay
     && globals.amSharedReplayLeader
-    && globals.useSharedTurns
+    && globals.store!.getState().replay.useSharedSegments
   ) {
     // The shared replay leader is clicking on a UI element, so send this action to the server
     send(order, element);

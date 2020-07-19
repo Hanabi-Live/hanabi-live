@@ -111,6 +111,7 @@ export default class CardLayout extends Konva.Group {
         layoutChild.tween = null;
       }
 
+      const card = layoutChild.children[0] as unknown as HanabiCard;
       const newX = x - (this.reverse ? scale * layoutChild.width() : 0);
       if (globals.animateFast) {
         layoutChild.x(newX);
@@ -121,11 +122,12 @@ export default class CardLayout extends Konva.Group {
         layoutChild.opacity(1);
         layoutChild.checkSetDraggable();
         layoutChild.card.setVisualEffect('default');
+
+        card.doMisplayAnimation = false;
       } else {
         // Animate the card going from the deck to the hand
         // (or from the hand to the discard pile)
         // and animate the rest of the cards sliding over
-        const card = layoutChild.children[0] as unknown as HanabiCard;
         card.startedTweening();
 
         const animateToLayout = () => {

@@ -2,6 +2,7 @@ import produce, { Draft } from 'immer';
 import { deckRules } from '../rules';
 import * as turnRules from '../rules/turn';
 import { GameAction } from '../types/actions';
+import EndCondition from '../types/EndCondition';
 import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
 import TurnState from '../types/TurnState';
@@ -82,16 +83,28 @@ const turnReducer = produce((
     }
 
     case 'gameOver': {
+      // Setting the current player index to null signifies that the game is over and will prevent
+      // any name frames from being highlighted on subsequent segments
+      turn.currentPlayerIndex = null;
+
+      // For some types of game overs,
+      // we want the explanation text to appear on its own replay segment
       if (turn.segment === null) {
         throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
 
-      // We do not want to increment the segment here because we want the "gameOver" text to appear
-      // on the same segment as the final action of the game
-
-      // Setting the current player index to null signifies that the game is over and will prevent
-      // any name frames from being highlighted on subsequent segments
-      turn.currentPlayerIndex = null;
+      // The types of "gameOver" that do not have to do with the previous action should be on
+      // their own separate replay segment
+      // Otherwise, we want the "gameOver" explanation to be on the same segment as the final action
+      // Any new end conditions must also be updated in the "shouldStoreSegment()" function in
+      // "stateReducer.ts"
+      if (
+        action.endCondition === EndCondition.Timeout
+        || action.endCondition === EndCondition.Terminated
+        || action.endCondition === EndCondition.IdleTimeout
+      ) {
+        turn.segment += 1;
+      }
 
       break;
     }

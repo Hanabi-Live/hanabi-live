@@ -1,11 +1,11 @@
 import loadGameJSON from '../../../test/loadGameJSON';
 import { // Direct import instead of namespace import for compactness
+  enterReplay,
   hypoStart,
   hypoAction,
   hypoBack,
   hypoEnd,
   rankClue,
-  startReplay,
   turn,
 } from '../../../test/testActions';
 import testGame from '../../../test_data/up_or_down.json';
@@ -22,12 +22,13 @@ describe('replayReducer', () => {
   beforeAll(() => {
     // Load the game and start a replay
     testState = loadGameJSON(testGame);
-    testState = stateReducer(testState, startReplay(0));
+    testState = stateReducer(testState, enterReplay());
     metadata = testState.metadata;
   });
   describe('hypothetical', () => {
     test('can start', () => {
       const state = replayReducer(testState.replay, hypoStart(), [], metadata);
+
       expect(state.hypothetical?.ongoing).toBe(testState.replay.states[testState.replay.segment]);
       expect(state.hypothetical?.states.length).toBe(1);
       expect(state.hypothetical?.states[0]).toBe(state.hypothetical!.ongoing);
@@ -50,6 +51,7 @@ describe('replayReducer', () => {
 
     test('can go back on a hypothetical after giving a clue', () => {
       let state = replayReducer(testState.replay, hypoStart(), [], metadata);
+
       const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
       state = replayReducer(state, hypoClue, [], metadata);
       state = replayReducer(state, hypoAction(turn(1, 1)), [], metadata);
@@ -61,6 +63,7 @@ describe('replayReducer', () => {
 
     test('can end hypothetical after giving a clue', () => {
       let state = replayReducer(testState.replay, hypoStart(), [], metadata);
+
       const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
       state = replayReducer(state, hypoClue, [], metadata);
       state = replayReducer(state, hypoAction(turn(1, 1)), [], metadata);

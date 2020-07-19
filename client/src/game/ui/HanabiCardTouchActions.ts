@@ -3,8 +3,8 @@
 
 import { cardRules } from '../rules';
 import HanabiCard from './HanabiCard';
-import { goToTurnAndIndicateCard } from './HanabiCardClick';
 import * as notes from './notes';
+import * as replay from './replay';
 
 export function HanabiCardTap(this: HanabiCard) {
   // We must delay the action by a bit to make sure it isn't a double tap
@@ -34,10 +34,10 @@ function HanabiCardTapAction(this: HanabiCard) {
 
   if (cardRules.isPlayed(this.state)) {
     // Clicking on played cards goes to the turn immediately before they were played
-    goToTurnAndIndicateCard(this.state.segmentPlayed!, this.state.order);
+    replay.goToSegmentAndIndicateCard(this.state.segmentPlayed!, this.state.order);
   } else if (cardRules.isDiscarded(this.state)) {
     // Clicking on discarded cards goes to the turn immediately before they were discarded
-    goToTurnAndIndicateCard(this.state.segmentDiscarded!, this.state.order);
+    replay.goToSegmentAndIndicateCard(this.state.segmentDiscarded!, this.state.order);
   }
 }
 

@@ -191,10 +191,10 @@ export const discard = (
   }
 
   let card = '';
-  if (variantRules.isThrowItInAHole(variant) && action.failed && !metadata.spectating) {
+  if (action.suitIndex === -1 || action.rank === -1) {
     card = 'a card';
   } else {
-    cardRules.name(action.suitIndex, action.rank, variant);
+    card = cardRules.name(action.suitIndex, action.rank, variant);
   }
 
   let location;

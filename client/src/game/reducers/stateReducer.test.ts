@@ -1,4 +1,4 @@
-import { draw, startReplay } from '../../../test/testActions';
+import { draw, enterReplay } from '../../../test/testActions';
 import testMetadata from '../../../test/testMetadata';
 import initialState from './initialStates/initialState';
 import stateReducer from './stateReducer';
@@ -22,7 +22,7 @@ describe('stateReducer', () => {
     state = stateReducer(state, draw(0, 0));
     expect(state.visibleState).toBeNull();
 
-    state = stateReducer(state, startReplay(0));
+    state = stateReducer(state, enterReplay());
     expect(state.visibleState).toBeNull();
 
     state = stateReducer(state, { type: 'gameActionList', actions: [] });

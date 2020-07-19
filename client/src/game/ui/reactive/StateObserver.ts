@@ -3,6 +3,7 @@ import { Action } from '../../types/actions';
 import GameState from '../../types/GameState';
 import State from '../../types/State';
 import observeStore, { Selector, Listener, Subscription } from './observeStore';
+import * as animateFastView from './view/animateFastView';
 import * as cardLayoutView from './view/cardLayoutView';
 import * as cardsView from './view/cardsView';
 import * as cluesView from './view/cluesView';
@@ -32,7 +33,8 @@ export default class StateObserver {
     this.unregisterObservers();
 
     const subscriptions: Subscriptions = (
-      visibleStateObservers
+      animateObservers
+        .concat(visibleStateObservers)
         .concat(ongoingGameObservers)
         .concat(replayObservers)
         .concat(otherObservers)
@@ -48,105 +50,140 @@ export default class StateObserver {
   }
 }
 
-// Shorthand function for a nicer syntax and type checking when registering subscriptions
+// ----------------------
+// Subscription functions
+// ----------------------
+
+// A shorthand function used to subscribe an observer to the state store
 function sub<T>(s: Selector<State, T>, l: Listener<T>) {
-  return { select: s, onChange: l };
+  return {
+    select: s,
+    onChange: l,
+  };
 }
 
-// Same as sub, but even shorter for selectors on visibleState
-function vs<T>(s: Selector<GameState, T>, l: Listener<T>) {
-  return sub((state) => s(state.visibleState!), l);
+// A shorthand function used to subscribe an observer to the visible state
+function subVS<T>(s: Selector<GameState, T>, l: Listener<T>) {
+  // We do not want anything to fire if the visible state is null
+  // (e.g. when the UI is still initializing)
+  const selector = (state: State) => (
+    state.visibleState === null ? undefined : s(state.visibleState!)
+  );
+  return sub(selector, l);
 }
+
+// A shorthand function used to subscribe an observer to the state,
+// but only when the visible state has already been initialized
+function subAfterInit<T>(s: Selector<State, T>, l: Listener<T>) {
+  const selector = (state: State) => (
+    state.visibleState === null ? undefined : s(state)
+  );
+  return {
+    select: selector,
+    onChange: l,
+  };
+}
+
+// ------------------------------
+// List of observer subscriptions
+// ------------------------------
+
+const animateObservers: Subscriptions = [
+  subAfterInit((s) => s, animateFastView.onObserversStarted),
+];
 
 const visibleStateObservers: Subscriptions = [
   // Game info
-  vs((s) => ({
+  subVS((s) => ({
     turn: s.turn.turnNum,
     endTurn: s.turn.endTurnNum,
   }), gameInfoView.onTurnChanged),
-  vs((s) => s.turn.currentPlayerIndex, gameInfoView.onCurrentPlayerIndexChanged),
-  vs((s) => ({
+  subVS((s) => s.turn.currentPlayerIndex, gameInfoView.onCurrentPlayerIndexChanged),
+  subVS((s) => ({
     score: s.score,
     maxScore: s.stats.maxScore,
   }), gameInfoView.onScoreOrMaxScoreChanged),
-  vs((s) => s.numAttemptedCardsPlayed, gameInfoView.onNumAttemptedCardsPlayedChanged),
-  vs((s) => s.clueTokens, gameInfoView.onClueTokensChanged),
-  vs((s) => ({
+  subVS((s) => s.numAttemptedCardsPlayed, gameInfoView.onNumAttemptedCardsPlayedChanged),
+  subVS((s) => s.clueTokens, gameInfoView.onClueTokensChanged),
+  subVS((s) => ({
     clueTokens: s.clueTokens,
     doubleDiscard: s.stats.doubleDiscard,
   }), gameInfoView.onClueTokensOrDoubleDiscardChanged),
-  vs((s) => s.strikes, gameInfoView.onStrikesChanged),
+  subVS((s) => s.strikes, gameInfoView.onStrikesChanged),
 
   // Stats
-  vs((s) => s.stats.efficiency, statsView.onEfficiencyChanged),
-  vs((s) => ({
+  subVS((s) => s.stats.efficiency, statsView.onEfficiencyChanged),
+  subVS((s) => ({
     pace: s.stats.pace,
     paceRisk: s.stats.paceRisk,
   }), statsView.onPaceOrPaceRiskChanged),
 
   // Logs
-  vs((s) => s.log, logView.onLogChanged),
+  subVS((s) => s.log, logView.onLogChanged),
 
   // Card layout - the order of the following subscriptions matters
   // Hands have to come first to perform the add-removes so we get nice animations
-  vs((s) => s.hands, cardLayoutView.onHandsChanged),
-  vs((s) => s.discardStacks, cardLayoutView.onDiscardStacksChanged),
-  vs((s) => s.hole, cardLayoutView.onHoleChanged),
+  subVS((s) => s.hands, cardLayoutView.onHandsChanged),
+  subVS((s) => s.discardStacks, cardLayoutView.onDiscardStacksChanged),
+  subVS((s) => s.hole, cardLayoutView.onHoleChanged),
   // Play stacks come last so we can show the bases if they get empty
-  vs((s) => s.playStacks, cardLayoutView.onPlayStacksChanged),
-  vs((s) => s.playStackDirections, cardLayoutView.onPlayStackDirectionsChanged),
+  subVS((s) => s.playStacks, cardLayoutView.onPlayStacksChanged),
+  subVS((s) => s.playStackDirections, cardLayoutView.onPlayStackDirectionsChanged),
 
   // Clues (arrows + log)
-  vs((s) => ({
+  subVS((s) => ({
     clues: s.clues,
     segment: s.turn.segment,
   }), cluesView.onCluesChanged),
 
   // Cards
   // Each card will subscribe to changes to its own data
-  vs((s) => s.deck.length, cardsView.onDeckChanged),
+  subVS((s) => s.deck.length, cardsView.onDeckChanged),
 
   // Deck
-  vs((s) => s.deckSize, deckView.onDeckSizeChanged),
+  subVS((s) => s.deckSize, deckView.onDeckSizeChanged),
 
   // Card fade and critical indicator
-  vs((s) => s.cardStatus, cardsView.onCardStatusChanged),
+  subVS((s) => s.cardStatus, cardsView.onCardStatusChanged),
 
   // Tooltips
-  vs((s) => s.turn.segment, tooltipsView.onSegmentChanged),
-
-  // Initialization finished
-  // (this will get called when the visible state becomes valid and after all other view updates)
-  sub((s) => !!s.visibleState, initView.onInitializationChanged),
+  subVS((s) => s.turn.segment, tooltipsView.onSegmentChanged),
 ];
 
 const ongoingGameObservers: Subscriptions = [
   // Current player index
-  sub((s) => s.ongoingGame.turn.currentPlayerIndex, currentPlayerView.onCurrentPlayerIndexChanged),
+  subAfterInit(
+    (s) => s.ongoingGame.turn.currentPlayerIndex,
+    currentPlayerView.onOngoingCurrentPlayerIndexChanged,
+  ),
 
   // The "Current Player" area should only be shown under certain conditions
   sub((s) => ({
     visible: currentPlayerAreaView.isVisible(s),
     currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
   }), currentPlayerAreaView.onChanged),
+
+  subAfterInit((s) => s.metadata.finished, replayView.onFinishedChanged),
 ];
 
 const replayObservers: Subscriptions = [
   // Replay entered or exited
-  sub((s) => s.replay.active, replayView.onActiveChanged),
+  subAfterInit((s) => s.replay.active, replayView.onActiveChanged),
 
-  // Replay sliders
-  sub((s) => ({
+  // Replay sliders and buttons
+  subAfterInit((s) => ({
     active: s.replay.active,
     segment: s.ongoingGame.turn.segment,
   }), replayView.onActiveOrOngoingGameSegmentChanged),
-
-  // Replay buttons
-  sub((s) => s.replay.actions.length > 0, replayView.onFirstReplayAction),
-  sub((s) => s.replay.segment, replayView.onReplaySegmentChanged),
+  sub((s) => s.replay.states.length >= 2, replayView.onSecondRecordedSegment),
+  subAfterInit((s) => s.replay.segment, replayView.onReplaySegmentChanged),
+  subAfterInit((s) => ({
+    sharedSegment: s.replay.sharedSegment,
+    useSharedSegments: s.replay.useSharedSegments,
+  }), replayView.onSharedSegmentOrUseSharedSegmentsChanged),
 
   // Card and stack base morphing
-  sub((s) => ({
+  subAfterInit((s) => ({
     hypotheticalActive: s.replay.hypothetical !== null,
     morphedIdentities: s.replay.hypothetical?.morphedIdentities,
   }), cardsView.onMorphedIdentitiesChanged),
@@ -154,5 +191,12 @@ const replayObservers: Subscriptions = [
 
 const otherObservers = [
   // Premoves (e.g. queued actions)
-  sub((s) => s.premove, premoveView.onChanged),
+  subAfterInit((s) => s.premove, premoveView.onChanged),
+
+  // Reset animations back to the default
+  subAfterInit((s) => s, animateFastView.onObserversFinished),
+
+  // Initialization finished
+  // (this will get called when the visible state becomes valid and after all other view updates)
+  sub((s) => !!s.visibleState, initView.onInitializationChanged),
 ];

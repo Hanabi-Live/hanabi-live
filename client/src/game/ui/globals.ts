@@ -70,17 +70,13 @@ export class Globals {
 
   // Replay feature
   replayLog: GameAction[] = []; // Contains all of the "action" messages for the game
-  replayPos: number = 0; // The current index of the "globals.replayLog" array
-  replayTurn: number = 0; // The current game turn
   finalReplayPos: number = 0;
   finalReplayTurn: number = 0;
 
   // Shared replay feature
   sharedReplayLeader: string = ''; // Equal to the username of the leader
   amSharedReplayLeader: boolean = false;
-  sharedReplayTurn: number = -1;
-  useSharedTurns: boolean = false;
-  sharedReplayLoading: boolean = false; // This is used to not animate cards when loading in
+  sharedReplayFirstLoading: boolean = false;
   hypothetical: boolean = false; // Whether or not we are in a hypothetical
   hypoActions: ActionIncludingHypothetical[] = []; // Actions in the current hypothetical
   hypoRevealed: boolean = true; // Whether or not drawn cards should be revealed when drawn
@@ -163,15 +159,11 @@ export class Globals {
     this.cardImages = new Map<string, HTMLCanvasElement>();
     this.scaledCardImages = new Map<string, HTMLCanvasElement[]>();
     this.replayLog = [];
-    this.replayPos = 0;
-    this.replayTurn = 0;
     this.finalReplayPos = 0;
     this.finalReplayTurn = 0;
     this.sharedReplayLeader = '';
     this.amSharedReplayLeader = false;
-    this.sharedReplayTurn = -1;
-    this.useSharedTurns = true;
-    this.sharedReplayLoading = true;
+    this.sharedReplayFirstLoading = true;
     this.hypothetical = false;
     this.hypoActions = [];
     this.hypoRevealed = true;

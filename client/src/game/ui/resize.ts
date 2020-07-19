@@ -77,9 +77,6 @@ const redraw = () => {
         // self.handleClock.call(self, self.activeClockIndex);
     }
 
-    // Restore Drag and Drop Functionality
-    self.animateFast = false;
-
     // Restore Replay Button if applicable
     if (!globals.replay && globals.replayMax > 0) {
         replayButton.show();

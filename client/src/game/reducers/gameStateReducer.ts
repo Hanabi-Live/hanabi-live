@@ -81,6 +81,10 @@ const gameStateReducer = produce((
       }
 
       if (!throwItInAHolePlayedOrMisplayed(state, action, variant, metadata.spectating)) {
+        if (typeof action.suitIndex !== 'number' || action.suitIndex < 0) {
+          throw new Error(`The suit index for the discarded card was ${action.suitIndex}.`);
+        }
+
         // Add it to the discard stacks
         state.discardStacks[action.suitIndex].push(action.order);
 
@@ -165,6 +169,10 @@ const gameStateReducer = produce((
 
       // Add it to the play stacks
       if (!throwItInAHolePlayedOrMisplayed(state, action, variant, metadata.spectating)) {
+        if (typeof action.suitIndex !== 'number' || action.suitIndex < 0) {
+          throw new Error(`The suit index for the played card was ${action.suitIndex}.`);
+        }
+
         const playStack = state.playStacks[action.suitIndex];
         playStack.push(action.order);
 
@@ -274,7 +282,9 @@ const gameStateReducer = produce((
     case 'strike': {
       state.strikes.push({
         order: action.order,
-        turn: action.turn,
+        // TODO: this is wrong because turns do not equal segments
+        // This will be automatically fixed once the client can calculate the strikes on its own
+        segment: action.turn,
       });
       break;
     }

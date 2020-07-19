@@ -28,7 +28,7 @@ export interface LogEntry {
 }
 
 export interface StateStrike {
-  readonly turn: number;
+  readonly segment: number;
   readonly order: number;
 }
 
