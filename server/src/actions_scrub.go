@@ -7,6 +7,18 @@ import (
 // CheckScrub removes some information from the action to prevent players having more knowledge
 // than they should have, if necessary (e.g. when a card is drawn to a player's hand)
 func CheckScrub(t *Table, action interface{}, userID int) interface{} {
+	cardIdentityAction, ok := action.(ActionCardIdentity)
+	if ok && cardIdentityAction.Type == "cardIdentity" {
+		cardIdentityAction.Scrub(t, userID)
+		return cardIdentityAction
+	}
+
+	discardAction, ok := action.(ActionDiscard)
+	if ok && discardAction.Type == "discard" {
+		discardAction.Scrub(t, userID)
+		return discardAction
+	}
+
 	drawAction, ok := action.(ActionDraw)
 	if ok && drawAction.Type == "draw" {
 		drawAction.Scrub(t, userID)
@@ -19,16 +31,10 @@ func CheckScrub(t *Table, action interface{}, userID int) interface{} {
 		return playAction
 	}
 
-	cardIdentityAction, ok := action.(ActionCardIdentity)
-	if ok && cardIdentityAction.Type == "cardIdentity" {
-		cardIdentityAction.Scrub(t, userID)
-		return cardIdentityAction
-	}
-
 	return action
 }
 
-// Scrub removes some information from an action so that we do not reveal the identity of drawn
+// Scrub removes some information from a draw so that we do not reveal the identity of drawn
 // cards to the players drawing those cards
 func (a *ActionDraw) Scrub(t *Table, userID int) {
 	// Local variables
@@ -52,11 +58,7 @@ func (a *ActionDraw) Scrub(t *Table, userID int) {
 // Scrub removes some information from played cards so that we do not reveal the identity of played
 // cards to anybody (in some specific variants)
 func (a *ActionPlay) Scrub(t *Table, userID int) {
-	if !strings.HasPrefix(t.Options.VariantName, "Throw It in a Hole") {
-		// In normal variants, everyone gets to see the identities of played cards
-		return
-	}
-
+	// Local variables
 	p := getEquivalentPlayer(t, userID)
 
 	if p == nil {
@@ -64,12 +66,32 @@ func (a *ActionPlay) Scrub(t *Table, userID int) {
 		return
 	}
 
-	a.Rank = -1
-	a.SuitIndex = -1
+	if strings.HasPrefix(t.Options.VariantName, "Throw It in a Hole") {
+		a.Rank = -1
+		a.SuitIndex = -1
+	}
 }
 
-// Scrub removes some information from an action so that we do not reveal the identity of sliding
-// cards to the players who are holding those cards
+// Scrub removes some information from discarded cards so that we do not reveal the identity of
+// discarded cards to anybody (in some specific variants)
+func (a *ActionDiscard) Scrub(t *Table, userID int) {
+	// Local variables
+	p := getEquivalentPlayer(t, userID)
+
+	if p == nil {
+		// Spectators get to see the identities of discarded cards
+		return
+	}
+
+	if strings.HasPrefix(t.Options.VariantName, "Throw It in a Hole") && a.Failed {
+		// For the purposes of hiding information, failed discards are equivalent to plays
+		a.Rank = -1
+		a.SuitIndex = -1
+	}
+}
+
+// Scrub removes some information from a card identity action so that we do not reveal the identity
+// of sliding cards to the players who are holding those cards
 func (a *ActionCardIdentity) Scrub(t *Table, userID int) {
 	// Local variables
 	p := getEquivalentPlayer(t, userID)
