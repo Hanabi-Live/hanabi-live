@@ -177,7 +177,7 @@ const replayObservers: Subscriptions = [
   // Replay sliders and buttons
   subAfterInit((s) => ({
     active: s.replay.active,
-    segment: s.ongoingGame.turn.segment,
+    ongoingGameSegment: s.ongoingGame.turn.segment,
   }), replayView.onActiveOrOngoingGameSegmentChanged),
   sub((s) => s.replay.states.length >= 2, replayView.onSecondRecordedSegment),
   subAfterInit((s) => s.replay.segment, replayView.onReplaySegmentChanged),

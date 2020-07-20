@@ -98,11 +98,6 @@ commands.set('cardIdentities', (data: CardIdentitiesData) => {
 commands.set('gameOver', () => {
   // Local variables
   const state = globals.store!.getState();
-  const wasInReplay = state.replay.active;
-
-  globals.store!.dispatch({
-    type: 'finishOngoingGame',
-  });
 
   // By default, we will enter the replay on the final segment,
   // which is the segment that all the times display
@@ -110,19 +105,23 @@ commands.set('gameOver', () => {
   // So enter the replay on the turn prior so that the player can see why the game ended
   const segmentBeforeTimes = state.ongoingGame.turn.segment! - 1;
 
-  // If we were not already in an in-game replay, open the replay UI
-  if (!wasInReplay) {
-    replay.enter(segmentBeforeTimes);
-  }
-
-  // Update the shared segment
+  // Update the shared segment before we end the game
+  // (in order to prevent it from tweening from the left side of the bar)
   globals.store!.dispatch({
     type: 'replaySharedSegment',
     segment: segmentBeforeTimes,
   });
 
-  // By default, we want to use shared turns if we were not in an in-game replay
-  if (!wasInReplay) {
+  // Change UI elements to reflect that we are in a replay instead of an ongoing game
+  globals.store!.dispatch({
+    type: 'finishOngoingGame',
+  });
+
+  // If we were not already in an in-game replay, open the replay UI
+  if (!state.replay.active) {
+    replay.enter(segmentBeforeTimes);
+
+    // By default, we want to use shared turns if we were not in an in-game replay
     globals.store!.dispatch({
       type: 'replayUseSharedSegments',
       useSharedSegments: true,

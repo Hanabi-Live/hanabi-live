@@ -43,9 +43,9 @@ export const onActiveChanged = (active: boolean, previousActive: boolean | undef
 
 export const onActiveOrOngoingGameSegmentChanged = (data: {
   active: boolean;
-  segment: number | null;
+  ongoingGameSegment: number | null;
 }) => {
-  if (!data.active || data.segment === null) {
+  if (!data.active || data.ongoingGameSegment === null) {
     return;
   }
 
@@ -53,9 +53,9 @@ export const onActiveOrOngoingGameSegmentChanged = (data: {
   replay.adjustShuttles(false);
 
   // If we are on the last segment, disable the forward replay buttons
-  const state = globals.store!.getState();
-  globals.elements.replayForwardButton!.setEnabled(state.replay.segment !== data.segment);
-  globals.elements.replayForwardFullButton!.setEnabled(state.replay.segment !== data.segment);
+  const enabled = globals.store!.getState().replay.segment !== data.ongoingGameSegment;
+  globals.elements.replayForwardButton!.setEnabled(enabled);
+  globals.elements.replayForwardFullButton!.setEnabled(enabled);
 
   globals.layers.UI.batchDraw();
 };
