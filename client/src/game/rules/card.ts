@@ -141,8 +141,8 @@ export const isPotentiallyPlayable = (
   for (const [suitIndex, rank] of card.possibleCardsFromClues) {
     if (card.possibleCardsFromObservation[suitIndex][rank] === 0) continue;
     if (
-      // It is possible for this card to be this suit and rank combination
-      needsToBePlayed(suitIndex, rank, deck, playStacks, playStackDirections, variant)
+      playStacksRules.nextRanks(playStacks[suitIndex], playStackDirections[suitIndex], deck)
+        .includes(rank)
     ) {
       return true;
     }
