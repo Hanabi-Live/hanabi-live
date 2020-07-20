@@ -141,6 +141,7 @@ const updateCardVisuals = (order: number) => {
   } else {
     globals.stackBases[order - globals.deck.length].setBareImage();
   }
+
   globals.layers.card.batchDraw();
 };
 

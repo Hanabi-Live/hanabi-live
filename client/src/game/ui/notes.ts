@@ -4,7 +4,7 @@ import * as variantRules from '../rules/variant';
 import CardIdentity from '../types/CardIdentity';
 import CardNote from '../types/CardNote';
 import CardState from '../types/CardState';
-import { START_CARD_RANK, STACK_BASE_RANK } from '../types/constants';
+import { STACK_BASE_RANK, START_CARD_RANK } from '../types/constants';
 import Variant from '../types/Variant';
 import { suitToSuitIndex } from './convert';
 import globals from './globals';
@@ -191,22 +191,22 @@ export const cardIdentityFromNote = (
   };
 };
 
+// Validate that the note does not contain an impossibility
 export const checkNoteImpossibility = (variant: Variant, cardState: CardState, note: CardNote) => {
-  // Validate that the note does not contain an impossibility
+  // Only the suit was specified
   if (note.suitIndex !== null && note.rank === null) {
-    // Only the suit was specified
-    // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
     let suitPossible = false;
     for (const rank of cardState.rankClueMemory.possibilities) {
       const count = cardState.possibleCards[note.suitIndex][rank];
       if (count === undefined) {
-        throw new Error(`The card of Suit: ${note.suitIndex} and Rank: ${rank} does not exist in the possibleCards map.`);
+        throw new Error(`The card of Suit: ${note.suitIndex} and Rank: ${rank} does not exist in the possibleCards array.`);
       }
       if (count > 0) {
         suitPossible = true;
         break;
       }
     }
+
     if (!suitPossible && cardState.location === globals.metadata.ourPlayerIndex) {
       const suitName = variant.suits[note.suitIndex].name;
       window.alert(`That card cannot possibly be ${suitName.toLowerCase()}.`);
@@ -214,14 +214,14 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
       return;
     }
   }
+
+  // Only the rank was specified
   if (note.suitIndex === null && note.rank !== null) {
-    // Only the rank was specified
-    // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
     let rankPossible = false;
     for (const suitIndex of cardState.colorClueMemory.possibilities) {
       const count = cardState.possibleCards[suitIndex][note.rank];
       if (count === undefined) {
-        throw new Error(`The card of Suit: ${suitIndex} and Rank: ${note.rank} does not exist in the possibleCards map.`);
+        throw new Error(`The card of Suit: ${suitIndex} and Rank: ${note.rank} does not exist in the possibleCards array.`);
       }
       if (count > 0) {
         rankPossible = true;
@@ -234,8 +234,18 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
       return;
     }
   }
+
+  // Both the suit and the rank were specified
   if (note.suitIndex !== null && note.rank !== null) {
-    // Both the suit and the rank were specified
+    // First, validate that we cannot put the wrong suit on a stack base
+    // (stack bases have all the card possibilities and they are never decremented)
+    if (cardState.rank === STACK_BASE_RANK && cardState.suitIndex !== note.suitIndex) {
+      window.alert('You cannot morph a stack base to have a different suit.');
+      note.suitIndex = null;
+      note.rank = null;
+      return;
+    }
+
     if (
       cardState.possibleCards[note.suitIndex][note.rank] === 0
       && cardState.location === globals.metadata.ourPlayerIndex
