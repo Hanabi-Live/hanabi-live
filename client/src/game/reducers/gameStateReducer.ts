@@ -248,9 +248,8 @@ const gameStateReducer = produce((
         console.warn(`Client = ${state.clueTokens}, Server = ${action.clues}`);
       }
 
-      // On Throw It In a Hole, the client is missing some key pieces of information about
-      // the stats.
-      // TODO: the status message shouldn't be sent, so we don't leak info to the client
+      // In "Throw It In a Hole" variants, the client is missing some information about the stats
+      // TODO: the status message should not be sent, so we do not leak information to the client
       if (variantRules.isThrowItInAHole(variant) && !metadata.spectating) {
         break;
       }

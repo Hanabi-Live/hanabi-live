@@ -171,7 +171,7 @@ export const doubleDiscard = (
   const card = deck[order];
   if (card.suitIndex === null || card.rank === null) {
     if (variantRules.isThrowItInAHole(variant)) {
-      // In "Throw It In A Hole", it's expected to get scrubbed discards
+      // In "Throw It In A Hole", it is expected to get scrubbed discards
       return false;
     }
     throw new Error(`Unable to find the information for card ${order} in the state deck.`);
