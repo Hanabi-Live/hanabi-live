@@ -823,6 +823,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         default:
           break;
       }
+
       // TODO: Positive clues on suits
       if (pip instanceof RankPip) {
         if (hasPositiveClues && pipState !== 'Hidden') {
@@ -843,7 +844,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
     if (clueType === null || clueType === ClueType.Rank) {
       for (const [rank, pipState] of this.state.rankClueMemory.pipStates.entries()) {
-        const pip = this.rankPipsMap.get(rank)!;
+        const pip = this.rankPipsMap.get(rank);
+        if (pip === undefined) {
+          // There is no rank pip for START cards
+          continue;
+        }
         const x = this.rankPipsXMap.get(rank)!;
         const hasPositiveClues = this.state.rankClueMemory.positiveClues.includes(rank);
         updatePip(pipState, hasPositiveClues, pip, x);

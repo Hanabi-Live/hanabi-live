@@ -263,13 +263,13 @@ export const pips = (variant: Variant) => {
   const rankPipsMap = new Map<number, RankPip>();
   const rankPipsXMap = new Map<number, Konva.Shape>();
   for (const rank of variant.ranks) {
-    const x = Math.floor(CARD_W * ((rank * 0.19) - 0.14));
-    const y = 0;
-    let opacity = 1;
     if (rank === START_CARD_RANK) {
       // We don't want to show the rank pip that represents a "START" card
-      opacity = 0;
+      continue;
     }
+
+    const x = Math.floor(CARD_W * ((rank * 0.19) - 0.14));
+    const y = 0;
     const rankPip = new RankPip({
       x,
       y,
@@ -283,18 +283,12 @@ export const pips = (variant: Variant) => {
       fill: 'white',
       stroke: 'black',
       strokeWidth: 3,
-      opacity,
       listening: false,
     });
     rankPips.add(rankPip);
     rankPipsMap.set(rank, rankPip);
 
     // Also create the X that will show when a certain rank can be ruled out
-    opacity = 0.8;
-    if (rank === START_CARD_RANK) {
-      // We don't want to show the rank pip that represents a "START" card
-      opacity = 0;
-    }
     const rankPipX = new Konva.Shape({
       x,
       y: Math.floor(CARD_H * 0.02),
