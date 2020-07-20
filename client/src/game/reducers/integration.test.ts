@@ -1,7 +1,7 @@
 // Integration tests, involving loading a full game and checking state at different points
 
 import loadGameJSON from '../../../test/loadGameJSON';
-import pinkRainbowOnesGame from '../../../test_data/pink_rainbow_ones.json';
+import pinkRainbowOnesGame from '../../../test_data/rainbow-ones_and_pink.json';
 import upOrDownGame from '../../../test_data/up_or_down.json';
 import upOrDownFinalCards from '../../../test_data/up_or_down_final_cards.json';
 import upOrDownTurn5Cards from '../../../test_data/up_or_down_turn5.json';
