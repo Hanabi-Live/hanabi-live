@@ -413,12 +413,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this.suitPips!.hide();
       this.rankPips!.hide();
     } else {
-      this.suitPips!.visible(suitToShow === unknownSuit);
-      this.rankPips!.visible(rankToShow === UNKNOWN_CARD_RANK);
+      const suitUnknown = suitToShow === unknownSuit;
+      const rankUnknown = rankToShow === UNKNOWN_CARD_RANK;
+      this.suitPips!.visible(suitUnknown);
+      this.rankPips!.visible(rankUnknown);
 
       // Color the rank pips if we are showing a suit
-      if (this.rankPips!.visible()) {
-        const fillValue = (suitToShow !== null && suitToShow !== unknownSuit) ? suitToShow!.fill : 'white';
+      if (rankUnknown) {
+        const fillValue = suitUnknown ? 'white' : suitToShow.fill;
         this.rankPipsMap.forEach((pip) => pip.setFillValue(fillValue));
       }
     }
