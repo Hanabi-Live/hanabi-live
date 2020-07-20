@@ -144,6 +144,7 @@ const firstVariantDropdownInit = () => {
       dropdown1.hide();
       dropdown2.show();
       dropdown2.val('');
+      dropdown2.focus();
       $('#create-game-variant-dropdown2-icon').show();
       $('#dice').show();
     } else {
