@@ -137,7 +137,6 @@ export const beginTurn = () => {
 
 export const send = (hypoAction: ClientAction) => {
   const state = globals.store!.getState();
-  const cardIdentities = state.cardIdentities;
   const gameState = state.replay.hypothetical!.ongoing;
 
   let type;
@@ -166,21 +165,28 @@ export const send = (hypoAction: ClientAction) => {
   switch (type) {
     case 'play':
     case 'discard': {
-      const card = globals.deck[hypoAction.target];
+      const card = state.cardIdentities[hypoAction.target];
+
+      if (card.suitIndex === null) {
+        throw new Error(`Card ${hypoAction.target} has an unknown suit index.`);
+      }
+      if (card.rank === null) {
+        throw new Error(`Card ${hypoAction.target} has an unknown rank.`);
+      }
 
       // Play / Discard
       sendHypoAction({
         type,
         playerIndex: gameState.turn.currentPlayerIndex!,
         order: hypoAction.target,
-        suitIndex: card.visibleSuitIndex!,
-        rank: card.visibleRank!,
+        suitIndex: card.suitIndex,
+        rank: card.rank,
         failed: false, // TODO: misplays
       });
 
       // Draw
       const nextCardOrder = gameState.deck.length;
-      const nextCard = cardIdentities[nextCardOrder];
+      const nextCard = state.cardIdentities[nextCardOrder];
       if (nextCard !== undefined) { // All the cards might have already been drawn
         if (nextCard.suitIndex === null || nextCard.rank === null) {
           throw new Error('Unable to find the suit or rank of the next card.');

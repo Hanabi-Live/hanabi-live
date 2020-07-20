@@ -100,22 +100,15 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   tooltipName: string = '';
   noteIndicator: NoteIndicator;
 
-  // Setting "_visibleSuitIndex" and "_visibleRank" to private crashes hypotheticals when discarding
-  // a card
-  // Steps to repro:
-  // 1) make shared JSON replay of the following:
-  // eslint-disable-next-line
-  // {"id":2912,"players":["Zamiel","GamerSKTrashCan","RaKXeR","postmans"],"deck":[{"suitIndex":4,"rank":4},{"suitIndex":3,"rank":2},{"suitIndex":1,"rank":1},{"suitIndex":3,"rank":2},{"suitIndex":3,"rank":3},{"suitIndex":2,"rank":1},{"suitIndex":1,"rank":1},{"suitIndex":4,"rank":3},{"suitIndex":4,"rank":1},{"suitIndex":5,"rank":1},{"suitIndex":0,"rank":2},{"suitIndex":4,"rank":4},{"suitIndex":1,"rank":1},{"suitIndex":0,"rank":3},{"suitIndex":1,"rank":3},{"suitIndex":5,"rank":4},{"suitIndex":4,"rank":2},{"suitIndex":4,"rank":2},{"suitIndex":1,"rank":3},{"suitIndex":2,"rank":2},{"suitIndex":1,"rank":4},{"suitIndex":0,"rank":3},{"suitIndex":3,"rank":3},{"suitIndex":4,"rank":1},{"suitIndex":5,"rank":5},{"suitIndex":5,"rank":1},{"suitIndex":3,"rank":1},{"suitIndex":2,"rank":3},{"suitIndex":1,"rank":4},{"suitIndex":4,"rank":3},{"suitIndex":2,"rank":4},{"suitIndex":0,"rank":5},{"suitIndex":1,"rank":5},{"suitIndex":2,"rank":3},{"suitIndex":3,"rank":1},{"suitIndex":5,"rank":3},{"suitIndex":5,"rank":2},{"suitIndex":1,"rank":2},{"suitIndex":0,"rank":1},{"suitIndex":0,"rank":4},{"suitIndex":0,"rank":2},{"suitIndex":5,"rank":3},{"suitIndex":3,"rank":5},{"suitIndex":5,"rank":4},{"suitIndex":0,"rank":1},{"suitIndex":2,"rank":4},{"suitIndex":3,"rank":4},{"suitIndex":0,"rank":4},{"suitIndex":2,"rank":1},{"suitIndex":3,"rank":1},{"suitIndex":2,"rank":2},{"suitIndex":0,"rank":1},{"suitIndex":1,"rank":2},{"suitIndex":5,"rank":2},{"suitIndex":3,"rank":4},{"suitIndex":5,"rank":1},{"suitIndex":2,"rank":1},{"suitIndex":4,"rank":1},{"suitIndex":4,"rank":5},{"suitIndex":2,"rank":5}],"actions":[{"type":3,"target":2,"value":1},{"type":0,"target":8,"value":0},{"type":3,"target":1,"value":1},{"type":3,"target":2,"value":4},{"type":0,"target":6,"value":0},{"type":0,"target":9,"value":0},{"type":3,"target":2,"value":2},{"type":1,"target":0,"value":0},{"type":0,"target":5,"value":0},{"type":0,"target":16,"value":0},{"type":2,"target":2,"value":1},{"type":0,"target":19,"value":0},{"type":0,"target":7,"value":0},{"type":0,"target":11,"value":0},{"type":1,"target":12,"value":0},{"type":1,"target":1,"value":0},{"type":0,"target":17,"value":0},{"type":2,"target":0,"value":3},{"type":2,"target":1,"value":2},{"type":0,"target":26,"value":0},{"type":0,"target":27,"value":0},{"type":1,"target":21,"value":0},{"type":3,"target":2,"value":5},{"type":2,"target":2,"value":2},{"type":3,"target":3,"value":3},{"type":0,"target":30,"value":0},{"type":1,"target":15,"value":0},{"type":0,"target":3,"value":0},{"type":3,"target":2,"value":5},{"type":1,"target":18,"value":0},{"type":1,"target":25,"value":0},{"type":0,"target":22,"value":0},{"type":1,"target":4,"value":0},{"type":3,"target":3,"value":5},{"type":2,"target":0,"value":3},{"type":2,"target":2,"value":0},{"type":0,"target":37,"value":0},{"type":3,"target":3,"value":3},{"type":3,"target":1,"value":1},{"type":0,"target":36,"value":0},{"type":0,"target":38,"value":0},{"type":0,"target":10,"value":0},{"type":0,"target":13,"value":0},{"type":1,"target":2,"value":0},{"type":3,"target":0,"value":4},{"type":1,"target":34,"value":0},{"type":0,"target":14,"value":0},{"type":2,"target":1,"value":1},{"type":1,"target":20,"value":0},{"type":2,"target":3,"value":3},{"type":0,"target":35,"value":0},{"type":0,"target":28,"value":0},{"type":0,"target":46,"value":0},{"type":1,"target":41,"value":0},{"type":0,"target":32,"value":0},{"type":0,"target":39,"value":0},{"type":1,"target":23,"value":0},{"type":0,"target":31,"value":0},{"type":0,"target":42,"value":0},{"type":0,"target":43,"value":0},{"type":1,"target":29,"value":0},{"type":0,"target":24,"value":0},{"type":0,"target":59,"value":0},{"type":3,"target":2,"value":5},{"type":1,"target":40,"value":0},{"type":0,"target":58,"value":0}],"options":{"startingPlayer":1,"variant":"Rainbow (6 Suits)","timed":true,"timeBase":120,"timePerTurn":20,"deckPlays":true}}
-  // 2) enter hypo
-  // 3) give 1s clue to Rak
-  // 4) play a 1
-  // 5) discard yellow 1
-  // TODO: Rob fix
-  _visibleSuitIndex: number | null = null;
-  get visibleSuitIndex() { return this._visibleSuitIndex; }
+  private _visibleSuitIndex: number | null = null;
+  get visibleSuitIndex() {
+    return this._visibleSuitIndex;
+  }
 
-  _visibleRank: number | null = null;
-  get visibleRank() { return this._visibleRank; }
+  private _visibleRank: number | null = null;
+  get visibleRank() {
+    return this._visibleRank;
+  }
 
   private empathy: boolean = false;
 
