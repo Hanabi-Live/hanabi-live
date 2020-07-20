@@ -454,9 +454,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this._visibleRank = rankToShow;
     }
 
-    if (state.visibleState !== null) {
+    if (this.arrow !== null && state.visibleState !== null) {
       if (this.visibleSuitIndex === null || this.visibleRank === STACK_BASE_RANK) {
-        this.arrow!.hide();
+        this.arrow.hide();
       } else {
         this.setDirectionArrow(
           this.visibleSuitIndex,
