@@ -50,6 +50,7 @@ export default class ClueEntry extends Konva.Group {
       fontFamily: 'Verdana',
       fill: 'white',
       text: globals.metadata.playerNames[clue.giver],
+      verticalAlign: 'middle',
     });
     this.add(giver);
 
@@ -62,6 +63,7 @@ export default class ClueEntry extends Konva.Group {
       fontFamily: 'Verdana',
       fill: 'white',
       text: globals.metadata.playerNames[clue.target],
+      verticalAlign: 'middle',
     });
     this.add(target);
 
@@ -77,6 +79,7 @@ export default class ClueEntry extends Konva.Group {
       fontFamily: 'Verdana',
       fill: 'white',
       text: cluesRules.getClueName(clue.type, clue.value, globals.variant, characterID),
+      verticalAlign: 'middle',
     });
     this.add(name);
 
