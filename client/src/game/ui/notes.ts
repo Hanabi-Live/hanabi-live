@@ -195,16 +195,20 @@ export const cardIdentityFromNote = (
 // Validate that the note does not contain an impossibility
 export const checkNoteImpossibility = (variant: Variant, cardState: CardState, note: CardNote) => {
   // Validate that the note does not contain an impossibility
-  if (cardState.rank === STACK_BASE_RANK
+  if (
+    cardState.rank === STACK_BASE_RANK
     && note.suitIndex !== null
-    && note.suitIndex !== cardState.suitIndex) {
+    && note.suitIndex !== cardState.suitIndex
+  ) {
     window.alert('You cannot morph a stack base to have a different suit.');
     note.suitIndex = null;
     note.rank = null;
     return;
   }
-  if (!(cardState.location === globals.metadata.ourPlayerIndex)
-    || canPossiblyBe(cardState, note.suitIndex, note.rank)) {
+  if (
+    !(cardState.location === globals.metadata.ourPlayerIndex)
+    || canPossiblyBe(cardState, note.suitIndex, note.rank)
+  ) {
     return;
   }
   if (note.suitIndex !== null && note.rank === null) {
