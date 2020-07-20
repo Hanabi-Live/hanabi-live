@@ -939,10 +939,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     // Hide any visible arrows on the rest of a hand when the card begins to be dragged
-    if (
-      this.layout.parent === undefined
-      || this.layout.parent === null
-    ) {
+    if (this.layout.parent === undefined || this.layout.parent === null) {
       return;
     }
     const hand = this.layout.parent;

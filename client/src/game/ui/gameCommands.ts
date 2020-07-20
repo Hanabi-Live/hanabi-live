@@ -3,7 +3,7 @@
 // for e.g. in-game replays
 
 import { createStore } from 'redux';
-import { initArray } from '../../misc';
+import { initArray, trimReplaySuffixFromURL } from '../../misc';
 import * as sentry from '../../sentry';
 import { getVariant } from '../data/gameData';
 import initialState from '../reducers/initialStates/initialState';
@@ -633,30 +633,21 @@ const checkLoadSpecificReplayTurn = () => {
   // We minus one from the segment since turns are represented to the user as starting from 1
   // (instead of from 0)
   let segment;
-  let urlSuffix;
   const match1 = window.location.pathname.match(/\/replay\/(\d+)\/(\d+)/);
   const match2 = window.location.pathname.match(/\/shared-replay\/(\d+)\/(\d+)/);
   if (match1) {
     databaseID = parseInt(match1[1], 10);
     segment = parseInt(match1[2], 10) - 1;
-    urlSuffix = window.location.pathname.match(/(\/replay\/\d+\/\d+)/);
   } else if (match2) {
     databaseID = parseInt(match2[1], 10);
     segment = parseInt(match2[2], 10) - 1;
-    urlSuffix = window.location.pathname.match(/(\/shared-replay\/\d+\/\d+)/);
   } else {
     return;
   }
   if (databaseID === globals.metadata.databaseID) {
     replay.goToSegment(segment, true);
   } else {
-    // Remove the replay suffix from the URL
-    if (!urlSuffix) {
-      return;
-    }
-    const finalCharacterIndex = window.location.pathname.indexOf(urlSuffix[0]);
-    const newURL = window.location.pathname.substring(0, finalCharacterIndex);
-    window.history.pushState({}, '', newURL);
+    trimReplaySuffixFromURL();
   }
 };
 

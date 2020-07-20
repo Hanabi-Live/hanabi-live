@@ -59,6 +59,10 @@ export function initArray<T>(length: number, value: T): T[] {
   return Array.from({ length }, () => value);
 }
 
+// This is a helper to check for empty/invalid HTML elements without worrying about the linter
+// eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+export const isEmpty = (value: string | string[] | number | undefined) => !value;
+
 // From: https://stackoverflow.com/questions/61526746
 export const isKeyOf = <T>(p: PropertyKey, target: T): p is keyof T => p in target;
 
@@ -87,6 +91,20 @@ export const timerFormatter = (milliseconds: number) => {
   return `${minutes}:${secondsFormatted}`;
 };
 
-// This is a helper to check for empty/invalid HTML elements without worrying about the linter
-// eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-export const isEmpty = (value: string | string[] | number | undefined) => !value;
+// Remove the replay suffix from the URL without reloading the page
+export const trimReplaySuffixFromURL = () => {
+  const match1 = window.location.pathname.match(/\/replay\/\d+\/\d+/);
+  const match2 = window.location.pathname.match(/\/shared-replay\/\d+\/\d+/);
+  let urlSuffix;
+  if (match1) {
+    urlSuffix = match1[0];
+  } else if (match2) {
+    urlSuffix = match2[0];
+  } else {
+    return;
+  }
+
+  const finalCharacterIndex = window.location.pathname.indexOf(urlSuffix);
+  const newURL = window.location.pathname.substring(0, finalCharacterIndex);
+  window.history.pushState({}, '', newURL);
+};
