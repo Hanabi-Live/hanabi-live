@@ -449,12 +449,17 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this._visibleRank = rankToShow;
     }
 
-    if (this.visibleSuitIndex !== null && state.visibleState !== null) {
-      this.setDirectionArrow(
-        this.visibleSuitIndex,
-        state.visibleState!.playStackDirections[this.visibleSuitIndex],
-      );
+    if (state.visibleState !== null) {
+      if (this.visibleSuitIndex === null || this.visibleRank === STACK_BASE_RANK) {
+        this.arrow!.hide();
+      } else {
+        this.setDirectionArrow(
+          this.visibleSuitIndex,
+          state.visibleState!.playStackDirections[this.visibleSuitIndex],
+        );
+      }
     }
+
     this.setStatus();
 
     // Enable/disable shadow on card
@@ -467,13 +472,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   // Show or hide the direction arrow (for specific variants)
-  setDirectionArrow(suitIndex: number | null, direction: StackDirection) {
+  setDirectionArrow(suitIndex: number, direction: StackDirection) {
     if (!variantRules.hasReversedSuits(this.variant)) {
-      return;
-    }
-
-    if (suitIndex === null || this.state.rank === STACK_BASE_RANK) {
-      this.arrow!.hide();
       return;
     }
 
