@@ -11,7 +11,6 @@ import { GameAction, ActionIncludingHypothetical, Action } from '../types/action
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import LegacyGameMetadata from '../types/LegacyGameMetadata';
 import SpectatorNote from '../types/SpectatorNote';
-import StackDirection from '../types/StackDirection';
 import State from '../types/State';
 import Variant from '../types/Variant';
 import Elements from './Elements';
@@ -35,9 +34,6 @@ export class Globals {
   // Game constants (set upon first initialization)
   deck: HanabiCard[] = [];
   stackBases: HanabiCard[] = [];
-
-  // Game state variables
-  playStackDirections: StackDirection[] = [];
 
   // UI elements
   imageLoader: Loader | null = null;
@@ -116,7 +112,6 @@ export class Globals {
     this.variant = VARIANTS.get(DEFAULT_VARIANT_NAME)!;
     this.deck = [];
     this.stackBases = [];
-    this.playStackDirections = [];
     this.imageLoader = null;
     this.stage = new Konva.Stage({ container: 'game' });
     this.layers = new Layers();

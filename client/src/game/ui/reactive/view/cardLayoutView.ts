@@ -21,18 +21,23 @@ const stackStringsUpOrDown = new Map<StackDirection, string>([
   [StackDirection.Finished, 'Finished'],
 ]);
 
-export const onPlayStackDirectionsChanged = (directions: readonly StackDirection[]) => {
+export const onPlayStackDirectionsChanged = (
+  directions: readonly StackDirection[],
+  previousDirections: readonly StackDirection[] | undefined,
+) => {
+  if (previousDirections === undefined) {
+    return;
+  }
+
   if (!variantRules.hasReversedSuits(globals.variant)) {
     return;
   }
 
   // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants)
   directions.forEach((direction, i) => {
-    if (globals.playStackDirections[i] === direction) {
+    if (direction === previousDirections[i]) {
       return;
     }
-
-    globals.playStackDirections[i] = direction;
 
     const suit = globals.variant.suits[i];
     let text = '';
@@ -40,7 +45,7 @@ export const onPlayStackDirectionsChanged = (directions: readonly StackDirection
     if (isUpOrDown || suit.reversed) {
       const stackStrings = isUpOrDown ? stackStringsUpOrDown : stackStringsReversed;
       if (stackStrings.get(direction) === undefined) {
-        throw new Error(`Not a valid stackDirection: ${direction}`);
+        throw new Error(`The stack direction of ${direction} is not valid.`);
       }
       text = stackStrings.get(direction)!;
     }
@@ -51,7 +56,7 @@ export const onPlayStackDirectionsChanged = (directions: readonly StackDirection
     // or calculated from state
     globals.deck
       .filter((c) => c.state?.suitIndex === i)
-      .forEach((c) => c.setDirectionArrow(i));
+      .forEach((c) => c.setDirectionArrow(i, direction));
   });
 
   globals.layers.UI.batchDraw();

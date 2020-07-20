@@ -264,6 +264,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   setBareImage() {
+    // Local variables
+    const state = globals.store!.getState();
+
     // Retrieve the identity of the card
     // We may know the identity through normal means
     // (e.g. it is a card that is currently in someone else's hand)
@@ -271,8 +274,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // (e.g. it is a card in our hand that we have learned about in the future)
     let cardIdentity: CardIdentity | undefined;
     // First check if we have an alternate identity (blank/morphed) for this card
-    const replayState = globals.store?.getState().replay!;
-    const morphedIdentity = replayState.hypothetical?.morphedIdentities[this.state.order];
+    const morphedIdentity = state.replay.hypothetical?.morphedIdentities[this.state.order];
     if (morphedIdentity !== undefined) {
       cardIdentity = morphedIdentity;
     } else if (this.state.rank === STACK_BASE_RANK) {
@@ -284,7 +286,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       };
     } else {
       // Card identities are stored on the global state for convenience
-      cardIdentity = globals.store?.getState().cardIdentities[this.state.order];
+      cardIdentity = state.cardIdentities[this.state.order];
       if (cardIdentity === undefined) {
         throw new Error(`Failed to get the previously known card identity for card ${this.state.order}.`);
       }
@@ -451,14 +453,19 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this._visibleRank = rankToShow;
     }
 
-    this.setDirectionArrow(this.visibleSuitIndex);
+    if (this.visibleSuitIndex !== null && state.visibleState !== null) {
+      this.setDirectionArrow(
+        this.visibleSuitIndex,
+        state.visibleState!.playStackDirections[this.visibleSuitIndex],
+      );
+    }
     this.setStatus();
 
     globals.layers.card.batchDraw();
   }
 
   // Show or hide the direction arrow (for specific variants)
-  setDirectionArrow(suitIndex: number | null) {
+  setDirectionArrow(suitIndex: number | null, direction: StackDirection) {
     if (!variantRules.hasReversedSuits(this.variant)) {
       return;
     }
@@ -468,7 +475,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       return;
     }
 
-    const direction = globals.playStackDirections[suitIndex];
     const suit = this.variant.suits[suitIndex];
 
     let shouldShowArrow;
