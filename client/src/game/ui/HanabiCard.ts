@@ -339,7 +339,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       if (this.state.rankClueMemory.possibilities.length === 1) {
         [rankToShow] = this.state.rankClueMemory.possibilities;
       } else {
-        rankToShow = 6;
+        rankToShow = UNKNOWN_CARD_RANK;
       }
     } else {
       // If we are not in Empathy mode, then show the rank if it is known
@@ -357,7 +357,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         rankToShow = this.note.rank;
       }
       if (rankToShow === null) {
-        rankToShow = 6;
+        rankToShow = UNKNOWN_CARD_RANK;
       }
     }
 
@@ -457,6 +457,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       );
     }
     this.setStatus();
+
+    // Enable/disable shadow on card
+    const isStackBase = this.visibleRank === STACK_BASE_RANK;
+    if (this.bare.shadowEnabled() === isStackBase) {
+      this.bare.shadowEnabled(!isStackBase);
+    }
 
     globals.layers.card.batchDraw();
   }

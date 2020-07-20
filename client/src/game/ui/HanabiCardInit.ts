@@ -19,7 +19,7 @@ import RankPip from './controls/RankPip';
 import drawPip from './drawPip';
 import globals from './globals';
 
-export const image = (getBareName: () => string, isStackBase: () => boolean) => {
+export const image = (getBareName: () => string) => {
   // Create the "bare" card image, which is the main card graphic
   // If the card is not revealed, it will just be a gray rectangle
   // The pips and other elements of a card are drawn on top of the bare image
@@ -44,8 +44,6 @@ export const image = (getBareName: () => string, isStackBase: () => boolean) => 
       bare.height(),
       bare.getAbsoluteTransform(),
     );
-
-    bare.shadowEnabled(!isStackBase());
   });
   return bare;
 };
