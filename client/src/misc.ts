@@ -91,20 +91,20 @@ export const timerFormatter = (milliseconds: number) => {
   return `${minutes}:${secondsFormatted}`;
 };
 
-// Remove the replay suffix from the URL without reloading the page
+// Remove any replay suffixes from the URL without reloading the page, if any
 export const trimReplaySuffixFromURL = () => {
-  const match1 = window.location.pathname.match(/\/replay\/\d+\/\d+/);
-  const match2 = window.location.pathname.match(/\/shared-replay\/\d+\/\d+/);
-  let urlSuffix;
-  if (match1) {
-    urlSuffix = match1[0];
-  } else if (match2) {
-    urlSuffix = match2[0];
+  let finalCharacterIndex;
+  if (window.location.pathname.includes('/replay')) {
+    finalCharacterIndex = window.location.pathname.indexOf('/replay');
+  } else if (window.location.pathname.includes('/shared-replay')) {
+    finalCharacterIndex = window.location.pathname.indexOf('/shared-replay');
   } else {
     return;
   }
 
-  const finalCharacterIndex = window.location.pathname.indexOf(urlSuffix);
-  const newURL = window.location.pathname.substring(0, finalCharacterIndex);
+  let newURL = window.location.pathname.substring(0, finalCharacterIndex);
+  if (newURL === '') {
+    newURL = '/';
+  }
   window.history.pushState({}, '', newURL);
 };

@@ -319,7 +319,9 @@ commands.set('gameActionList', (data: GameActionListData) => {
     actions: data.list,
   });
 
-  checkLoadSpecificReplayTurn();
+  if (validateReplayURL()) {
+    checkLoadSpecificReplayTurn();
+  }
 });
 
 interface PauseData {
@@ -636,33 +638,42 @@ const initStateStore = (data: LegacyGameMetadata) => {
   }
 };
 
-// Check to see if we are loading a replay to a specific turn
-// (specified in the URL; e.g. "/replay/150/10" for game 150 turn 10)
-const checkLoadSpecificReplayTurn = () => {
-  if (!globals.metadata.replay) {
-    return;
-  }
-
+// Validate that the database ID in the URL matches the one in the game that just loaded
+// (e.g. "/replay/150" for database game 150)
+const validateReplayURL = () => {
+  const match1 = window.location.pathname.match(/\/replay\/(\d+).*/);
+  const match2 = window.location.pathname.match(/\/shared-replay\/(\d+).*/);
   let databaseID;
-  // We minus one from the segment since turns are represented to the user as starting from 1
-  // (instead of from 0)
-  let segment;
-  const match1 = window.location.pathname.match(/\/replay\/(\d+)\/(\d+)/);
-  const match2 = window.location.pathname.match(/\/shared-replay\/(\d+)\/(\d+)/);
-  if (match1) {
+  if (match1 && globals.metadata.replay && !globals.metadata.sharedReplay) {
     databaseID = parseInt(match1[1], 10);
-    segment = parseInt(match1[2], 10) - 1;
-  } else if (match2) {
+  } else if (match2 && globals.metadata.replay && globals.metadata.sharedReplay) {
     databaseID = parseInt(match2[1], 10);
-    segment = parseInt(match2[2], 10) - 1;
-  } else {
-    return;
   }
   if (databaseID === globals.metadata.databaseID) {
-    replay.goToSegment(segment, true);
-  } else {
-    trimReplaySuffixFromURL();
+    return true;
   }
+
+  trimReplaySuffixFromURL();
+  return false;
+};
+
+// Check to see if we are loading a specific replay to a specific turn
+// (as specified in the URL; e.g. "/replay/150/10" for game 150 turn 10)
+const checkLoadSpecificReplayTurn = () => {
+  // If we get here, we should be in a replay that matches the database ID
+  let segment;
+  const match1 = window.location.pathname.match(/\/replay\/\d+\/(\d+)/);
+  const match2 = window.location.pathname.match(/\/shared-replay\/\d+\/(\d+)/);
+  // We minus one from the segment since turns are represented to the user as starting from 1
+  // (instead of from 0)
+  if (match1) {
+    segment = parseInt(match1[1], 10) - 1;
+  } else if (match2) {
+    segment = parseInt(match2[1], 10) - 1;
+  } else {
+    return;
+  }
+  replay.goToSegment(segment, true);
 };
 
 // Allow TypeScript to modify the browser's "window" object
