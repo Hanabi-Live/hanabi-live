@@ -9,6 +9,37 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func httpParsePlayerName(c *gin.Context) (User, bool) {
+	// Local variables
+	w := c.Writer
+
+	// Parse the player name from the URL
+	player := c.Param("player")
+	if player == "" {
+		http.Error(w, "Error: You must specify a player.", http.StatusNotFound)
+		return User{}, false
+	}
+	normalizedUsername := normalizeString(player)
+
+	// Check if the player exists
+	if exists, v, err := models.Users.GetUserFromNormalizedUsername(
+		normalizedUsername,
+	); err != nil {
+		logger.Error("Failed to check to see if player \""+player+"\" exists:", err)
+		http.Error(
+			w,
+			http.StatusText(http.StatusInternalServerError),
+			http.StatusInternalServerError,
+		)
+		return User{}, false
+	} else if exists {
+		return v, true
+	} else {
+		http.Error(w, "Error: That player does not exist in the database.", http.StatusNotFound)
+		return User{}, false
+	}
+}
+
 func httpParsePlayerNames(c *gin.Context) ([]int, []string, bool) {
 	// Local variables
 	w := c.Writer

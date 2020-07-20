@@ -10,43 +10,11 @@ func httpMissingScores(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	/*
-		// Parse the player name(s) from the URL
-		var playerIDs []int
-		var playerNames []string
-		if v1, v2, ok := httpParsePlayerNames(c); !ok {
-			return
-		} else {
-			playerIDs = v1
-			playerNames = v2
-		}
-	*/
-
-	// Parse the player name from the URL
-	player := c.Param("player")
-	if player == "" {
-		http.Error(w, "Error: You must specify a player.", http.StatusNotFound)
-		return
-	}
-	normalizedUsername := normalizeString(player)
-
-	// Check if the player exists
 	var user User
-	if exists, v, err := models.Users.GetUserFromNormalizedUsername(
-		normalizedUsername,
-	); err != nil {
-		logger.Error("Failed to check to see if player \""+player+"\" exists:", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
+	if v, ok := httpParsePlayerName(c); !ok {
 		return
-	} else if exists {
-		user = v
 	} else {
-		http.Error(w, "Error: That player does not exist in the database.", http.StatusNotFound)
-		return
+		user = v
 	}
 
 	// Get all of the variant-specific stats for this player

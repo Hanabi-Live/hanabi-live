@@ -13,31 +13,11 @@ func httpTags(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
-	// Parse the player from the URL
-	player := c.Param("player")
-	if player == "" {
-		http.Error(w, "Error: You must specify a player.", http.StatusNotFound)
-		return
-	}
-	normalizedUsername := normalizeString(player)
-
-	// Check if the player exists
 	var user User
-	if exists, v, err := models.Users.GetUserFromNormalizedUsername(
-		normalizedUsername,
-	); err != nil {
-		logger.Error("Failed to check to see if player \""+player+"\" exists:", err)
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
+	if v, ok := httpParsePlayerName(c); !ok {
 		return
-	} else if exists {
-		user = v
 	} else {
-		http.Error(w, "Error: That player does not exist in the database.", http.StatusNotFound)
-		return
+		user = v
 	}
 
 	// Search through the database for tags matching this user ID
