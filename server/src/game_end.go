@@ -377,10 +377,11 @@ func (t *Table) ConvertToSharedReplay() {
 
 		// Add the new spectator
 		sp := &Spectator{
-			ID:      p.ID,
-			Name:    p.Name,
-			Session: p.Session,
-			Notes:   make([]string, g.GetNotesSize()),
+			ID:          p.ID,
+			Name:        p.Name,
+			Session:     p.Session,
+			PlayerIndex: -1, // To indicate that they are not shadowing anyone
+			Notes:       make([]string, g.GetNotesSize()),
 		}
 		t.Spectators = append(t.Spectators, sp)
 		logger.Info("Converted " + p.Name + " to a spectator.")

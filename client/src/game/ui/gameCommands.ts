@@ -517,23 +517,25 @@ commands.set('spectators', (data: SpectatorsData) => {
     // Build the string that shows all the names
     let nameEntries = '';
     for (let i = 0; i < data.names.length; i++) {
-      const name = data.names[i];
+      const spectatorName = data.names[i];
       const shadowing = data.shadowingPlayers[i];
 
       let nameEntry = '<li>';
-      if (name === globals.lobby.username) {
-        nameEntry += `<span class="name-me">${name}</span>`;
-      } else if (globals.lobby.friends.includes(name)) {
-        nameEntry += `<span class="friend">${name}</span>`;
+      if (spectatorName === globals.lobby.username) {
+        nameEntry += `<span class="name-me">${spectatorName}</span>`;
+      } else if (globals.lobby.friends.includes(spectatorName)) {
+        nameEntry += `<span class="friend">${spectatorName}</span>`;
       } else {
-        nameEntry += name;
+        nameEntry += spectatorName;
       }
       if (shadowing !== -1) {
         const shadowedPlayerName = globals.metadata.playerNames[shadowing];
         if (shadowedPlayerName === undefined) {
           throw new Error(`Unable to find the player name at index ${shadowing}.`);
         }
-        nameEntry += ` (🕵️ <em>${shadowedPlayerName}</em>)`;
+        if (shadowedPlayerName !== spectatorName) {
+          nameEntry += ` (🕵️ <em>${shadowedPlayerName}</em>)`;
+        }
       }
       nameEntry += '</li>';
       nameEntries += nameEntry;
