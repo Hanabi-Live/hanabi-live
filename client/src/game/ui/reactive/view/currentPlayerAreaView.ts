@@ -13,7 +13,7 @@ export const isVisible = (s: State) => (
   // The clue UI should take precedence over the "Current Player" area
   && (
     s.ongoingGame.turn.currentPlayerIndex !== s.metadata.ourPlayerIndex
-    && !s.metadata.spectating
+    || s.metadata.spectating
   )
   // The premove cancel button should take precedence over the "Current Player" area
   && s.premove === null
@@ -28,12 +28,10 @@ export const onChanged = (data: {
   visible: boolean;
   currentPlayerIndex: number | null;
 } | undefined) => {
-  if (previousData === undefined) {
-    return;
-  }
-
+  // Local variables
   const currentPlayerArea = globals.elements.currentPlayerArea!;
-  if (data.visible !== previousData.visible) {
+
+  if (previousData === undefined || data.visible !== previousData.visible) {
     currentPlayerArea.visible(data.visible);
     globals.layers.UI.batchDraw();
   }
@@ -170,7 +168,7 @@ export const onChanged = (data: {
 const getArrowRotationCorrespondingToPlayer = (playerIndex: number) => {
   const hand = globals.elements.playerHands[playerIndex];
   if (hand === undefined) {
-    throw new Error(`Failed to get the arrow rotation corresponding to the player at index ${playerIndex}.`);
+    throw new Error(`Failed to get the hand corresponding to the player at index ${playerIndex}.`);
   }
   const centerPos = hand.getAbsoluteCenterPos();
   const thisPos = globals.elements.currentPlayerArea!.arrow.getAbsolutePosition();

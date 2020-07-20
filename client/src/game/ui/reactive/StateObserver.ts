@@ -164,7 +164,7 @@ const ongoingGameObservers: Subscriptions = [
   ),
 
   // The "Current Player" area should only be shown under certain conditions
-  sub((s) => ({
+  subAfterInit((s) => ({
     visible: currentPlayerAreaView.isVisible(s),
     currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
   }), currentPlayerAreaView.onChanged),

@@ -1782,10 +1782,7 @@ const drawCurrentPlayerArea = () => {
     spacing: 0.006,
   };
   globals.elements.currentPlayerArea = new CurrentPlayerArea(currentPlayerAreaValues, winW, winH);
-  if (globals.metadata.replay) {
-    globals.elements.currentPlayerArea.hide();
-  }
-  globals.layers.UI.add(globals.elements.currentPlayerArea as any);
+  globals.layers.UI.add(globals.elements.currentPlayerArea as unknown as Konva.Group);
 };
 
 const drawPreplayArea = () => {
