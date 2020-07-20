@@ -49,7 +49,7 @@ const statsReducer = produce((
     }
 
     case 'strike': {
-      // TODO move this check to the play action when we have logic for knowing which cards play
+      // TODO: move this check to the play action when we have logic for knowing which cards play
       // A strike is equivalent to losing a clue
       stats.potentialCluesLost += clueTokensRules.value(variant);
       break;

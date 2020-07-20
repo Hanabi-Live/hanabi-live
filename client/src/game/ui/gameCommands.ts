@@ -499,12 +499,13 @@ commands.set('replaySegment', (data: ReplaySegmentData) => {
       type: 'hypoStart',
     });
     globals.hypoActions.forEach((action) => {
-      // TODO we want this to animate fast but I have no idea how to do that
+      // TODO: we want this to animate fast but I have no idea how to do that
       globals.store!.dispatch({
         type: 'hypoAction',
         action,
       });
     });
+    hypothetical.beginTurn();
   }
 });
 

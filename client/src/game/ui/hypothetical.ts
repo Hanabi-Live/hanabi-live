@@ -75,7 +75,7 @@ export const show = () => {
   beginTurn();
 };
 
-// TODO move this function to a view
+// TODO: move this function to a view
 export const end = () => {
   if (!globals.hypothetical) {
     return;

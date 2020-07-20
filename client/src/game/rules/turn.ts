@@ -9,7 +9,7 @@ export const shouldEndTurnAfterDraw = (
   if (characterID !== null) {
     const character = getCharacter(characterID);
 
-    // TODO fix this to be 8 when clue tokens are doubled
+    // TODO: fix this to be 8 when clue tokens are doubled
     if (character.name === 'Panicky' && clueTokens <= 4) {
       return cardsPlayedOrDiscardedThisTurn >= 2;
     }

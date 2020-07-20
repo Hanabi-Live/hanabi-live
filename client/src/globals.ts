@@ -56,7 +56,7 @@ export class Globals {
 
   game: Game | null = null; // Equal to the data from the "game" command
 
-  currentScreen: Screen = 'login'; // See "screen" declaration above
+  currentScreen: Screen = 'login';
   modalShowing: boolean = false;
   tableID: number = -1; // Equal to the table we are joined to or -1 if no table
   errorOccurred: boolean = false;
