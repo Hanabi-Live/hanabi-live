@@ -264,7 +264,7 @@ export const pips = (variant: Variant) => {
   const rankPipsXMap = new Map<number, Konva.Shape>();
   for (const rank of variant.ranks) {
     if (rank === START_CARD_RANK) {
-      // We don't want to show the rank pip that represents a "START" card
+      // We don't want to create a rank pip that corresponds to the "START" card
       continue;
     }
 
