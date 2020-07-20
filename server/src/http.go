@@ -187,9 +187,9 @@ func httpInit() {
 
 	// Path handlers for other URLs
 	httpRouter.GET("/scores", httpScores)
-	httpRouter.GET("/scores/:player", httpScores)
+	httpRouter.GET("/scores/:player1", httpScores)
 	httpRouter.GET("/profile", httpScores) // "/profile" is an alias for "/scores"
-	httpRouter.GET("/profile/:player", httpScores)
+	httpRouter.GET("/profile/:player1", httpScores)
 	httpRouter.GET("/history", httpHistory)
 	httpRouter.GET("/history/:player1", httpHistory)
 	httpRouter.GET("/history/:player1/:player2", httpHistory)
@@ -198,14 +198,14 @@ func httpInit() {
 	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5", httpHistory)
 	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5/:player6", httpHistory)
 	httpRouter.GET("/missing-scores", httpMissingScores)
-	httpRouter.GET("/missing-scores/:player", httpMissingScores)
+	httpRouter.GET("/missing-scores/:player1", httpMissingScores)
 	httpRouter.GET("/missing-scores/:player1/:player2", httpMissingScoresMultiple)
 	httpRouter.GET("/missing-scores/:player1/:player2/:player3", httpMissingScoresMultiple)
 	httpRouter.GET("/missing-scores/:player1/:player2/:player3/:player4", httpMissingScoresMultiple)
 	httpRouter.GET("/missing-scores/:player1/:player2/:player3/:player4/:player5", httpMissingScoresMultiple)
 	httpRouter.GET("/missing-scores/:player1/:player2/:player3/:player4/:player5/:player6", httpMissingScoresMultiple)
 	httpRouter.GET("/tags", httpTags)
-	httpRouter.GET("/tags/:player", httpTags)
+	httpRouter.GET("/tags/:player1", httpTags)
 	httpRouter.GET("/seed", httpSeed)
 	httpRouter.GET("/seed/:seed", httpSeed) // Display all games played on a given seed
 	httpRouter.GET("/stats", httpStats)

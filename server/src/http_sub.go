@@ -14,7 +14,7 @@ func httpParsePlayerName(c *gin.Context) (User, bool) {
 	w := c.Writer
 
 	// Parse the player name from the URL
-	player := c.Param("player")
+	player := c.Param("player1")
 	if player == "" {
 		http.Error(w, "Error: You must specify a player.", http.StatusNotFound)
 		return User{}, false

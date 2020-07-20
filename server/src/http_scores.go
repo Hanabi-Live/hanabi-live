@@ -22,6 +22,7 @@ type ProfileData struct {
 	PercentageMaxScores        string
 	NumMaxScoresPerType        []int    // Used on the "Missing Scores" page
 	PercentageMaxScoresPerType []string // Used on the "Missing Scores" page
+	NumTotalPlayers            int      // Used on the "Missing Scores" page (for multiple people)
 
 	VariantStats []UserVariantStats
 }

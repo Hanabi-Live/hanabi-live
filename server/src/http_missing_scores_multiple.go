@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,13 +21,9 @@ func httpMissingScoresMultiple(c *gin.Context) {
 		playerNames = v2
 	}
 
-	var numMaxScores int
-	var numMaxScoresPerType []int
-	var variantStatsList []UserVariantStats
-	var percentageMaxScoresString string
-	var percentageMaxScoresPerType []string
+	// Get all of the variant-specific stats for each player
+	variantStatsListList := make([][]UserVariantStats, 0)
 	for i, playerID := range playerIDs {
-		// Get all of the variant-specific stats for this player
 		var statsMap map[int]UserStatsRow
 		if v, err := models.UserStats.GetAll(playerID); err != nil {
 			logger.Error("Failed to get all of the variant-specific stats for player "+
@@ -41,22 +38,33 @@ func httpMissingScoresMultiple(c *gin.Context) {
 			statsMap = v
 		}
 
-		numMaxScores, numMaxScoresPerType, variantStatsList = httpGetVariantStatsList(statsMap)
-		percentageMaxScoresString, percentageMaxScoresPerType = httpGetPercentageMaxScores(
-			numMaxScores,
-			numMaxScoresPerType,
-		)
+		_, _, variantStatsList := httpGetVariantStatsList(statsMap)
+		variantStatsListList = append(variantStatsListList, variantStatsList)
+	}
+
+	// Make a combined list that always uses the maximum score from any player
+	// Start by copying the list for the 0th player
+	combinedVariantStatsList := variantStatsListList[0]
+	for i, variantStatsList := range variantStatsListList {
+		if i == 0 {
+			// We skip the 0th list because this is the one that we are using as a baseline
+			continue
+		}
+		for j, variantStats := range variantStatsList {
+			for k, bestScore := range variantStats.BestScores {
+				if bestScore.Score > combinedVariantStatsList[j].BestScores[k].Score {
+					combinedVariantStatsList[j].BestScores[k] = bestScore
+				}
+			}
+		}
 	}
 
 	data := ProfileData{
-		Title:                      "Missing Scores",
-		Name:                       playerNames[0],
-		NumMaxScores:               numMaxScores,
-		PercentageMaxScores:        percentageMaxScoresString,
-		NumMaxScoresPerType:        numMaxScoresPerType,
-		PercentageMaxScoresPerType: percentageMaxScoresPerType,
+		Title:           "Missing Scores",
+		NamesTitle:      "Missing Scores for [" + strings.Join(playerNames, ", ") + "]",
+		NumTotalPlayers: len(playerIDs),
 
-		VariantStats: variantStatsList,
+		VariantStats: combinedVariantStatsList,
 	}
 	httpServeTemplate(w, data, "profile", "missing-scores")
 }
