@@ -140,10 +140,12 @@ export const isPotentiallyPlayable = (
 ) => {
   for (const [suitIndex, rank] of card.possibleCardsFromClues) {
     if (card.possibleCardsFromObservation[suitIndex][rank] === 0) continue;
-    if (
-      playStacksRules.nextRanks(playStacks[suitIndex], playStackDirections[suitIndex], deck)
-        .includes(rank)
-    ) {
+    const nextRanksArray = playStacksRules.nextRanks(
+      playStacks[suitIndex],
+      playStackDirections[suitIndex],
+      deck,
+    );
+    if (nextRanksArray.includes(rank)) {
       return true;
     }
   }
