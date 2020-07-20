@@ -33,11 +33,12 @@ export default class StateObserver {
     this.unregisterObservers();
 
     const subscriptions: Subscriptions = (
-      animateObservers
+      earlyObservers
         .concat(visibleStateObservers)
         .concat(ongoingGameObservers)
         .concat(replayObservers)
         .concat(otherObservers)
+        .concat(lateObservers)
     );
 
     this.unsubscribe = observeStore(store, subscriptions);
@@ -88,8 +89,13 @@ function subAfterInit<T>(s: Selector<State, T>, l: Listener<T>) {
 // List of observer subscriptions
 // ------------------------------
 
-const animateObservers: Subscriptions = [
+// These observers need to run before other observers
+const earlyObservers: Subscriptions = [
+  // This has to come first because it sets up animateFast correctly
   subAfterInit((s) => s, animateFastView.onObserversStarted),
+
+  // This has to come first because it tells the UI that we're changing to a shared replay
+  subAfterInit((s) => s.metadata.finished, replayView.onFinishedChanged),
 ];
 
 const visibleStateObservers: Subscriptions = [
@@ -162,8 +168,6 @@ const ongoingGameObservers: Subscriptions = [
     visible: currentPlayerAreaView.isVisible(s),
     currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
   }), currentPlayerAreaView.onChanged),
-
-  subAfterInit((s) => s.metadata.finished, replayView.onFinishedChanged),
 ];
 
 const replayObservers: Subscriptions = [
@@ -192,7 +196,10 @@ const replayObservers: Subscriptions = [
 const otherObservers = [
   // Premoves (e.g. queued actions)
   subAfterInit((s) => s.premove, premoveView.onChanged),
+];
 
+// These observers need to run after all other observers
+const lateObservers = [
   // Reset animations back to the default
   subAfterInit((s) => s, animateFastView.onObserversFinished),
 
