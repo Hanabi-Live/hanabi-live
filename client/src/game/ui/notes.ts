@@ -4,7 +4,7 @@ import * as variantRules from '../rules/variant';
 import CardIdentity from '../types/CardIdentity';
 import CardNote from '../types/CardNote';
 import CardState from '../types/CardState';
-import { START_CARD_RANK } from '../types/constants';
+import { START_CARD_RANK, STACK_BASE_RANK } from '../types/constants';
 import Variant from '../types/Variant';
 import { suitToSuitIndex } from './convert';
 import globals from './globals';
@@ -297,6 +297,11 @@ export const show = (card: HanabiCard) => {
 export const openEditTooltip = (card: HanabiCard) => {
   // Don't edit any notes in replays
   if (globals.metadata.replay) {
+    return;
+  }
+
+  // Disable making notes on the stack bases outside of special variants
+  if (card.state.rank === STACK_BASE_RANK && !variantRules.isThrowItInAHole(globals.variant)) {
     return;
   }
 
