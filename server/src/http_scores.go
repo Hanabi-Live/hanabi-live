@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -148,73 +146,14 @@ func httpScores(c *gin.Context) {
 		statsMap = v
 	}
 
-	// Convert the map (statsMap) to a slice (variantStatsList),
-	// filling in any non-played variants with 0 values
-	numMaxScores := 0
-	numMaxScoresPerType := make([]int, 5) // For 2-player, 3-player, etc.
-	variantStatsList := make([]UserVariantStats, 0)
-	for _, name := range variantsList {
-		variant := variants[name]
-		maxScore := len(variant.Suits) * PointsPerSuit
-		variantStats := UserVariantStats{
-			ID:       variant.ID,
-			Name:     name,
-			MaxScore: maxScore,
-		}
-
-		if stats, ok := statsMap[variant.ID]; ok {
-			// This player has played at least one game in this particular variant
-			for j, bestScore := range stats.BestScores {
-				if bestScore.Score == maxScore {
-					numMaxScores++
-					numMaxScoresPerType[j]++
-				}
-			}
-
-			variantStats.NumGames = stats.NumGames
-			variantStats.BestScores = stats.BestScores
-			variantStats.NumStrikeouts = stats.NumStrikeouts
-
-			// Round the average score to 1 decimal place
-			variantStats.AverageScore = fmt.Sprintf("%.1f", stats.AverageScore)
-			if variantStats.AverageScore == "0.0" {
-				variantStats.AverageScore = "-"
-			}
-
-			if stats.NumGames > 0 {
-				strikeoutRate := float64(stats.NumStrikeouts) / float64(stats.NumGames) * 100
-
-				// Round the strikeout rate to 1 decimal place
-				variantStats.StrikeoutRate = fmt.Sprintf("%.1f", strikeoutRate)
-
-				// If it ends in ".0", remove the unnecessary digits
-				variantStats.StrikeoutRate = strings.TrimSuffix(variantStats.StrikeoutRate, ".0")
-			}
-		} else {
-			// They have not played any games in this particular variant,
-			// so initialize the stats object with zero values
-			variantStats.BestScores = NewBestScores()
-			variantStats.AverageScore = "-"
-			variantStats.StrikeoutRate = "-"
-		}
-
-		variantStatsList = append(variantStatsList, variantStats)
-	}
-
-	percentageMaxScoresPerType := make([]string, 0)
-	for _, maxScores := range numMaxScoresPerType {
-		percentage := float64(maxScores) / float64(len(variantsList)) * 100
-		percentageString := fmt.Sprintf("%.1f", percentage)
-		percentageString = strings.TrimSuffix(percentageString, ".0")
-		percentageMaxScoresPerType = append(percentageMaxScoresPerType, percentageString)
-	}
-
-	percentageMaxScores := float64(numMaxScores) / float64(len(variantsList)*5) * 100
-	// (we multiply by 5 because there are max scores for 2 to 6 players)
-	percentageMaxScoresString := fmt.Sprintf("%.1f", percentageMaxScores)
-	percentageMaxScoresString = strings.TrimSuffix(percentageMaxScoresString, ".0")
+	numMaxScores, numMaxScoresPerType, variantStatsList := httpGetVariantStatsList(statsMap)
+	percentageMaxScoresString, percentageMaxScoresPerType := httpGetPercentageMaxScores(
+		numMaxScores,
+		numMaxScoresPerType,
+	)
 
 	data := ProfileData{
+		Title:                      "Scores",
 		Name:                       user.Username,
 		DateJoined:                 dateJoined,
 		NumGames:                   profileStats.NumGames,
@@ -229,14 +168,5 @@ func httpScores(c *gin.Context) {
 
 		VariantStats: variantStatsList,
 	}
-
-	if strings.HasPrefix(c.Request.URL.Path, "/scores/") {
-		data.Title = "Scores"
-		httpServeTemplate(w, data, "profile", "scores")
-	} else if strings.HasPrefix(c.Request.URL.Path, "/missing-scores/") {
-		data.Title = "Missing Scores"
-		httpServeTemplate(w, data, "profile", "missing-scores")
-	} else {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-	}
+	httpServeTemplate(w, data, "profile", "scores")
 }
