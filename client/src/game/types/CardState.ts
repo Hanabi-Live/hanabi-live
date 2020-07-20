@@ -13,6 +13,7 @@ export default interface CardState {
   // Note that we are using an array as a map, so there will be empty spaces for ranks that are not
   // valid card ranks (e.g. 0, or 6 in Up or Down)
   readonly possibleCards: ReadonlyArray<readonly number[]>;
+
   readonly identityDetermined: boolean;
   readonly numPositiveClues: number;
   readonly segmentFirstClued: number | null;

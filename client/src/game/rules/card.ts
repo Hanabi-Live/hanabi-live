@@ -139,13 +139,12 @@ export const isPotentiallyPlayable = (
   playStackDirections: readonly StackDirection[],
 ) => {
   for (let suitIndex = 0; suitIndex < card.possibleCards.length; suitIndex++) {
-    const possibleCardsOfSuit = card.possibleCards[suitIndex];
     const playStack = playStacks[suitIndex];
     const playStackDirection = playStackDirections[suitIndex];
     const nextRanks = playStacksRules.nextRanks(playStack, playStackDirection, deck);
     for (const nextRank of nextRanks) {
       // It is possible for this card to be this suit and rank combination
-      if (possibleCardsOfSuit[nextRank] > 0) {
+      if (card.possibleCards[suitIndex][nextRank] > 0) {
         return true;
       }
     }

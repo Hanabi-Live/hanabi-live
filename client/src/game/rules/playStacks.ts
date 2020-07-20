@@ -12,7 +12,9 @@ export const lastPlayedRank = (
   if (playStack.length === 0) {
     return STACK_BASE_RANK;
   }
-  return deck[playStack[playStack.length - 1]].rank ?? UNKNOWN_CARD_RANK;
+
+  const orderOfTopCard = playStack[playStack.length - 1];
+  return deck[orderOfTopCard].rank ?? UNKNOWN_CARD_RANK;
 };
 
 export const nextRanks = (
@@ -21,17 +23,29 @@ export const nextRanks = (
   deck: readonly CardState[],
 ): number[] => {
   const currentlyPlayedRank = lastPlayedRank(playStack, deck);
+  if (currentlyPlayedRank === UNKNOWN_CARD_RANK) {
+    return [];
+  }
 
   switch (playStackDirection) {
     case StackDirection.Undecided: {
+      if (currentlyPlayedRank === START_CARD_RANK) {
+        return [2, 4];
+      }
       return [1, 5, START_CARD_RANK];
     }
 
     case StackDirection.Up: {
+      if (currentlyPlayedRank === STACK_BASE_RANK) {
+        return [1];
+      }
       return [currentlyPlayedRank + 1];
     }
 
     case StackDirection.Down: {
+      if (currentlyPlayedRank === STACK_BASE_RANK) {
+        return [5];
+      }
       return [currentlyPlayedRank - 1];
     }
 
