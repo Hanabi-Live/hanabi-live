@@ -52,10 +52,8 @@ export const onPlayStackDirectionsChanged = (
 
     globals.elements.suitLabelTexts[i].fitText(text);
 
-    // TODO: direction arrow should be in state,
-    // or calculated from state
     globals.deck
-      .filter((c) => c.state?.suitIndex === i)
+      .filter((c) => c.visibleSuitIndex === i)
       .forEach((c) => c.setDirectionArrow(i, direction));
   });
 
