@@ -238,14 +238,17 @@ export const adjustShuttles = (fast: boolean) => {
     smaller = true;
   }
 
-  // Adjust the shuttles along the replay bar based on the current segment
+  // Adjust the two shuttles along the replay bar based on the current segment
   // If it is smaller, we need to nudge it to the right a bit in order to center it
-  positionReplayShuttle(
-    globals.elements.replayShuttleShared!,
-    state.replay.sharedSegment,
-    false,
-    fast,
-  );
+  globals.elements.replayShuttleShared!.visible(globals.metadata.sharedReplay);
+  if (globals.metadata.sharedReplay) {
+    positionReplayShuttle(
+      globals.elements.replayShuttleShared!,
+      state.replay.sharedSegment,
+      false,
+      fast,
+    );
+  }
   positionReplayShuttle(
     globals.elements.replayShuttle!,
     state.replay.segment,

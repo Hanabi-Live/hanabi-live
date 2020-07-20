@@ -148,7 +148,6 @@ export const onSharedSegmentOrUseSharedSegmentsChanged = (data: {
 
   globals.elements.pauseSharedTurnsButton!.visible(data.useSharedSegments);
   globals.elements.useSharedTurnsButton!.visible(!data.useSharedSegments);
-  globals.elements.replayShuttleShared!.visible(!data.useSharedSegments);
 
   // There are two replay shuttles,
   // so we have to adjust them whenever the "segment" or the "sharedSegment" changes

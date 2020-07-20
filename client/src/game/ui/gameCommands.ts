@@ -32,6 +32,10 @@ type CommandCallback = (data: any) => void;
 const commands = new Map<string, CommandCallback>();
 export default commands;
 
+// ----------------
+// Command handlers
+// ----------------
+
 // Received when it is our turn
 commands.set('yourTurn', () => {
   turn.begin();
@@ -315,28 +319,7 @@ commands.set('gameActionList', (data: GameActionListData) => {
     actions: data.list,
   });
 
-  // Check to see if we are loading a replay to a specific turn
-  // (specified in the URL; e.g. "/replay/150/10" for game 150 turn 10)
-  if (globals.metadata.replay) {
-    let databaseID;
-    // We minus one from the segment since turns are represented to the user as starting from 1
-    // (instead of from 0)
-    let segment;
-    const match1 = window.location.pathname.match(/\/replay\/(\d+)\/(\d+)/);
-    const match2 = window.location.pathname.match(/\/shared-replay\/(\d+)\/(\d+)/);
-    if (match1) {
-      databaseID = parseInt(match1[1], 10);
-      segment = parseInt(match1[2], 10) - 1;
-    } else if (match2) {
-      databaseID = parseInt(match2[1], 10);
-      segment = parseInt(match2[2], 10) - 1;
-    } else {
-      return;
-    }
-    if (databaseID === globals.metadata.databaseID) {
-      replay.goToSegment(segment, true);
-    }
-  }
+  checkLoadSpecificReplayTurn();
 });
 
 interface PauseData {
@@ -574,6 +557,10 @@ commands.set('sound', (data: SoundData) => {
   }
 });
 
+// -----------
+// Subroutines
+// -----------
+
 const copyMetadataToGlobals = (metadata: LegacyGameMetadata) => {
   globals.metadata = metadata;
 
@@ -632,6 +619,44 @@ const initStateStore = (data: LegacyGameMetadata) => {
         useSharedSegments: true,
       });
     }
+  }
+};
+
+// Check to see if we are loading a replay to a specific turn
+// (specified in the URL; e.g. "/replay/150/10" for game 150 turn 10)
+const checkLoadSpecificReplayTurn = () => {
+  if (!globals.metadata.replay) {
+    return;
+  }
+
+  let databaseID;
+  // We minus one from the segment since turns are represented to the user as starting from 1
+  // (instead of from 0)
+  let segment;
+  let urlSuffix;
+  const match1 = window.location.pathname.match(/\/replay\/(\d+)\/(\d+)/);
+  const match2 = window.location.pathname.match(/\/shared-replay\/(\d+)\/(\d+)/);
+  if (match1) {
+    databaseID = parseInt(match1[1], 10);
+    segment = parseInt(match1[2], 10) - 1;
+    urlSuffix = window.location.pathname.match(/(\/replay\/\d+\/\d+)/);
+  } else if (match2) {
+    databaseID = parseInt(match2[1], 10);
+    segment = parseInt(match2[2], 10) - 1;
+    urlSuffix = window.location.pathname.match(/(\/shared-replay\/\d+\/\d+)/);
+  } else {
+    return;
+  }
+  if (databaseID === globals.metadata.databaseID) {
+    replay.goToSegment(segment, true);
+  } else {
+    // Remove the replay suffix from the URL
+    if (!urlSuffix) {
+      return;
+    }
+    const finalCharacterIndex = window.location.pathname.indexOf(urlSuffix[0]);
+    const newURL = window.location.pathname.substring(0, finalCharacterIndex);
+    window.history.pushState({}, '', newURL);
   }
 };
 
