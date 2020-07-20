@@ -29,7 +29,7 @@ export type CardLocation = 'deck' | 'discard' | 'playStack' | number;
 export type PipState = 'Visible' | 'Hidden' | 'Eliminated';
 
 export interface ClueMemory {
-  // NOTE: we're using arrays as maps, so there will be empty spaces for ranks
+  // NOTE: we are using arrays as maps, so there will be empty spaces for ranks
   // that are not valid card ranks (e.g. 0, or 6 in Up or Down)
   readonly possibilities: readonly number[];
   // TODO: positiveClues and negativeClues should be used like maps

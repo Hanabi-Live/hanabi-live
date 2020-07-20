@@ -122,7 +122,7 @@ export const animate = (
       node.listening(false);
     }
 
-    // Since we're animating, ensure the node is visible
+    // Since we are animating, ensure the node is visible
     if (!node.isVisible()) {
       node.show();
     }

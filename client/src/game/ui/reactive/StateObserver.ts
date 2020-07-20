@@ -94,7 +94,7 @@ const earlyObservers: Subscriptions = [
   // This has to come first because it sets up animateFast correctly
   subAfterInit((s) => s, animateFastView.onObserversStarted),
 
-  // This has to come first because it tells the UI that we're changing to a shared replay
+  // This has to come first because it tells the UI that we are changing to a shared replay
   subAfterInit((s) => s.metadata.finished, replayView.onFinishedChanged),
 ];
 
