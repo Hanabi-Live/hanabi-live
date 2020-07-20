@@ -42,7 +42,12 @@ const statsReducer = produce((
       const card = originalState.deck[action.order];
       if (cardRules.isClued(card)) {
         // A clued card was discarded
-        stats.cardsGotten -= 1;
+        // If this was a misplay that was supposed to go to the hole, then treat this as a play
+        if (action.failed && variantRules.isThrowItInAHole(variant) && !metadata.spectating) {
+          stats.cardsGotten += 1;
+        } else {
+          stats.cardsGotten -= 1;
+        }
       }
 
       break;

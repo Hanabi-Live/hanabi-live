@@ -1,5 +1,4 @@
 import { LABEL_COLOR } from '../../../../constants';
-import * as variantRules from '../../../rules/variant';
 import { PaceRisk } from '../../../types/GameState';
 import globals from '../../globals';
 
@@ -12,13 +11,6 @@ export const onEfficiencyChanged = (efficiency: number) => {
   const effMinLabel = globals.elements.efficiencyNumberLabelMinNeeded;
   if (!effMinLabel) {
     throw new Error('efficiencyNumberLabelMinNeeded is not initialized in the "onEfficiencyChanged()" function.');
-  }
-
-  // In "Throw It in a Hole" variants,
-  // efficiency will leak information that the player is not supposed to know
-  if (variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay) {
-    effLabel.text('? / ');
-    return;
   }
 
   if (efficiency === Infinity) {
