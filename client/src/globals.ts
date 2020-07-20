@@ -61,18 +61,11 @@ export class Globals {
   tableID: number = -1; // Equal to the table we are joined to or -1 if no table
   errorOccurred: boolean = false;
 
-  // Legacy UI variables
+  // UI variables
   imageLoader: Loader | null = null;
   ui: HanabiUI | null = null;
   // Used to keep track of how many in-game chat messages are currently unread
   chatUnread: number = 0;
-
-  // Phaser UI variables
-  ui2: any | null = null;
-  phaser: any | null = null; // TODO convert to a PhaserUI object
-  // TODO convert to an Init object
-  init: any | null = null; // Equal to the data from the "init" command
-  // ui: null, // The various graphics objects used, initialized in the "commands.init()" function
 }
 
 const globals = new Globals();
