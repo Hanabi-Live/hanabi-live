@@ -50,13 +50,6 @@ export const onPaceOrPaceRiskChanged = (data: {
     throw new Error('paceNumberLabel is not initialized.');
   }
 
-  if (variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay) {
-    // In "Throw It in a Hole" variants,
-    // pace will leak information that the player is not supposed to know
-    label.text('?');
-    return;
-  }
-
   // Update the pace
   // (part of the efficiency statistics on the right-hand side of the screen)
   // If there are no cards left in the deck, pace is meaningless

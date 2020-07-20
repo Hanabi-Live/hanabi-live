@@ -102,8 +102,11 @@ const statsReducer = produce((
   }
 
   // Now that the action has occurred, update the stats relating to the current game state
+  const score = variantRules.isThrowItInAHole(variant) && !metadata.spectating
+    ? currentState.numAttemptedCardsPlayed
+    : currentState.score;
   stats.pace = statsRules.pace(
-    currentState.score,
+    score,
     currentState.deckSize,
     stats.maxScore,
     metadata.options.numPlayers,

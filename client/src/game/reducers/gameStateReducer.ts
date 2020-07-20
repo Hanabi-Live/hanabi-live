@@ -311,8 +311,10 @@ const gameStateReducer = produce((
 
   // Discarding or playing cards can make other card cards in that suit
   // not playable anymore and can make other cards critical
-  if ((action.type === 'play' || action.type === 'discard')
-      && (action.suitIndex >= 0 && action.rank >= 0)) {
+  if (
+    (action.type === 'play' || action.type === 'discard')
+    && (action.suitIndex >= 0 && action.rank >= 0)
+  ) {
     variant.ranks.forEach((rank) => {
       state.cardStatus[action.suitIndex][rank] = cardRules.status(
         action.suitIndex,
