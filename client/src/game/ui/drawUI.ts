@@ -66,6 +66,7 @@ let clueAreaValues: Values;
 let finalColorButtonValues: Values;
 let finalRankButtonValues: Values;
 let clueLogValues: Values;
+let giveClueValues: Values;
 let spectatorsLabelValues: Values;
 
 export default function drawUI() {
@@ -1679,13 +1680,17 @@ const drawClueArea = () => {
   globals.elements.clueArea.add(globals.elements.clueTypeButtonGroup as any);
 
   // The "Give Clue" button
-  const giveClueW = 0.236;
-  const giveClueX = (clueAreaValues.w! * 0.5) - (giveClueW * 0.5);
-  const giveClueY = rankY + buttonH + buttonYSpacing;
+  giveClueValues = {
+    x: 0,
+    y: rankY + buttonH + buttonYSpacing,
+    w: 0.236,
+  };
+  giveClueValues.x = (clueAreaValues.w! * 0.5) - (giveClueValues.w! * 0.5);
+
   globals.elements.giveClueButton = new Button({
-    x: giveClueX * winW,
-    y: giveClueY * winH,
-    width: giveClueW * winW,
+    x: giveClueValues.x * winW,
+    y: giveClueValues.y * winH,
+    width: giveClueValues.w! * winW,
     height: 0.051 * winH,
     text: 'Give Clue',
   });
@@ -1848,11 +1853,14 @@ const drawHypotheticalArea = () => {
     y: bottomLeftButtonValues.y,
   };
   if (globals.lobby.settings.keldonMode) {
-    if (finalColorButtonValues.x > finalRankButtonValues.x) {
-      hypoBackButtonValues.x = clueAreaValues.x + finalColorButtonValues.x;
-    } else {
-      hypoBackButtonValues.x = clueAreaValues.x + finalRankButtonValues.x;
-    }
+    // The button should be aligned with the right-most element between the color buttons,
+    // the rank buttons, and the "Give Clue" button, whichever one that is
+    const furthestRightElementX = Math.max(
+      finalColorButtonValues.x,
+      finalRankButtonValues.x,
+      giveClueValues.x + giveClueValues.w! + 0.01,
+    );
+    hypoBackButtonValues.x = clueAreaValues.x + furthestRightElementX;
     hypoBackButtonValues.y = clueAreaValues.y + finalColorButtonValues.y + 0.008;
   }
   globals.elements.hypoBackButton = new Button({
@@ -1876,7 +1884,7 @@ const drawHypotheticalArea = () => {
     y: toggleHiddenButtonValues.y * winH,
     width: 0.07 * winW,
     height: 0.1226 * winH,
-    text: globals.hypoRevealed ? 'Hide' : 'Show',
+    text: 'Show',
     text2: 'Drawn',
     text3: 'Cards',
     visible: false,
