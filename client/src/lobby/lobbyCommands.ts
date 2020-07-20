@@ -337,6 +337,7 @@ commands.set('welcome', (data: WelcomeData) => {
         visibility: 'shared',
       });
     }, 10);
+    return;
   }
 
   // Automatically create a table if we are using a "/create-table" URL
