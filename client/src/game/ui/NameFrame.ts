@@ -177,7 +177,7 @@ export default class NameFrame extends Konva.Group {
     globals.elements.fullActionLog!.showPlayerActions(username);
   }
 
-  // Players can right-click on the name frame to assume their perspective
+  // Players can right-click on the name frame to assume the perspective of the respective player
   // This function calls "backToLobby()" inside of a "setTimeout" callback to avoid having the
   // right-click context menu come up (the right-click context menu will be enabled as soon as we
   // execute the "backToLobby()" function)
