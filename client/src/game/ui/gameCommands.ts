@@ -314,6 +314,18 @@ commands.set('gameActionList', (data: GameActionListData) => {
     type: 'gameActionList',
     actions: data.list,
   });
+
+  // Check to see if we are loading a replay to a specific turn
+  // (specified in the URL; e.g. "/replay/150/10" for game 150 turn 10)
+  const match = window.location.pathname.match(/\/replay\/(\d+)\/(\d+)/);
+  if (match) {
+    const databaseID = parseInt(match[1], 10);
+    if (databaseID === globals.metadata.databaseID) {
+      // We minus one since turns are represented to the user as starting from 1 (instead of from 0)
+      const segmentNum = parseInt(match[2], 10) - 1;
+      replay.goToSegment(segmentNum, true);
+    }
+  }
 });
 
 interface PauseData {
