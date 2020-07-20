@@ -14,10 +14,10 @@ import * as replay from './replay';
 import * as turn from './turn';
 
 export const start = () => {
-  if (globals.hypothetical) {
+  if (globals.metadata.hypothetical) {
     return;
   }
-  globals.hypothetical = true;
+  globals.metadata.hypothetical = true;
 
   if (globals.amSharedReplayLeader) {
     globals.lobby.conn!.send('replayAction', {
@@ -45,7 +45,7 @@ export const show = () => {
   globals.elements.replayArea!.hide();
 
   // Modify the clue UI
-  if (globals.playerNames.length !== 2) {
+  if (globals.metadata.playerNames.length !== 2) {
     globals.elements.clueTargetButtonGroup!.hide();
     globals.elements.clueTargetButtonGroup2!.show();
   }
@@ -77,10 +77,10 @@ export const show = () => {
 
 // TODO: move this function to a view
 export const end = () => {
-  if (!globals.hypothetical) {
+  if (!globals.metadata.hypothetical) {
     return;
   }
-  globals.hypothetical = false;
+  globals.metadata.hypothetical = false;
   globals.hypoActions = [];
   globals.hypoFirstDrawnIndex = 0;
 
@@ -123,7 +123,7 @@ export const beginTurn = () => {
 
     // In 2-player games,
     // default the clue recipient button to the only other player available
-    if (globals.playerNames.length === 2 && enabled) {
+    if (globals.metadata.playerNames.length === 2 && enabled) {
       button.setPressed(true);
     }
   }
@@ -308,7 +308,7 @@ export const toggleRevealed = () => {
 // Set hypoFirstDrawnIndex if this is the first card we drew in the hypothetical
 // This check should only run if the draw action is a hypoAction
 export const setHypoFirstDrawnIndex = (actionMessage: ActionIncludingHypothetical) => {
-  if (actionMessage.type === 'draw' && globals.hypothetical && !globals.hypoFirstDrawnIndex) {
+  if (actionMessage.type === 'draw' && globals.metadata.hypothetical && !globals.hypoFirstDrawnIndex) {
     globals.hypoFirstDrawnIndex = actionMessage.order;
   }
 };

@@ -15,9 +15,9 @@ export default function HanabiCardClick(this: HanabiCard, event: Konva.KonvaEven
   // (but do not use the speedrunning behavior if we are in a
   // solo replay / shared replay / spectating)
   if (
-    (globals.options.speedrun || globals.lobby.settings.speedrunMode)
-    && !globals.replay
-    && !globals.spectating
+    (globals.metadata.options.speedrun || globals.lobby.settings.speedrunMode)
+    && !globals.metadata.replay
+    && !globals.metadata.spectating
   ) {
     return;
   }
@@ -45,7 +45,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     || event.shiftKey
     || event.metaKey
     || card.state.rank === STACK_BASE_RANK // Disable clicking on the stack base
-    || globals.hypothetical // No replay actions should happen in a hypothetical
+    || globals.metadata.hypothetical // No replay actions should happen in a hypothetical
   ) {
     return;
   }
@@ -95,10 +95,10 @@ const clickMiddle = (card: HanabiCard, event: MouseEvent) => {
 const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // Alt + right-click is a card morph (in a hypothetical)
   if (
-    globals.replay
-    && globals.sharedReplay
+    globals.metadata.replay
+    && globals.metadata.sharedReplay
     && globals.amSharedReplayLeader
-    && globals.hypothetical
+    && globals.metadata.hypothetical
     && !event.ctrlKey
     && !event.shiftKey
     && event.altKey
@@ -113,8 +113,8 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // (we want it to work no matter what modifiers are being pressed,
   // in case someone is pushing their push-to-talk hotkey while highlighting cards)
   if (
-    globals.replay
-    && globals.sharedReplay
+    globals.metadata.replay
+    && globals.metadata.sharedReplay
     && globals.amSharedReplayLeader
     && globals.store!.getState().replay.useSharedSegments
   ) {
@@ -123,7 +123,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
   }
 
   // Right-click in a solo replay just displays what card order (in the deck) that it is
-  if (globals.replay && !globals.sharedReplay) {
+  if (globals.metadata.replay && !globals.metadata.sharedReplay) {
     console.log(`This card's order is: ${card.state.order}`);
     return;
   }
@@ -135,8 +135,8 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.replay
-    && !globals.spectating
+    && !globals.metadata.replay
+    && !globals.metadata.spectating
   ) {
     card.setNote(globals.lastNote);
     return;
@@ -149,8 +149,8 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.replay
-    && !globals.spectating
+    && !globals.metadata.replay
+    && !globals.metadata.spectating
   ) {
     card.appendNote('f');
     return;
@@ -163,8 +163,8 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.shiftKey
     && event.altKey
     && !event.metaKey
-    && !globals.replay
-    && !globals.spectating
+    && !globals.metadata.replay
+    && !globals.metadata.spectating
   ) {
     card.appendNote('cm');
     return;
@@ -180,7 +180,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.sharedReplay
+    && !globals.metadata.sharedReplay
   ) {
     arrows.toggle(card);
     return;
@@ -192,7 +192,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.replay
+    && !globals.metadata.replay
   ) {
     notes.openEditTooltip(card);
   }

@@ -11,7 +11,7 @@ export default function cursorSet(cursorType: CursorType) {
     return;
   }
 
-  if (globals.options.speedrun || globals.lobby.settings.speedrunMode) {
+  if (globals.metadata.options.speedrun || globals.lobby.settings.speedrunMode) {
     return;
   }
 

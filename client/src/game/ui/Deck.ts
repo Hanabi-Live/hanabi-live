@@ -75,11 +75,11 @@ export default class Deck extends Konva.Group {
     this.numLeftText.y(h * this.height());
     globals.elements.deckTurnsRemainingLabel1!.visible(
       count === 0
-      && !globals.options.allOrNothing,
+      && !globals.metadata.options.allOrNothing,
     );
     globals.elements.deckTurnsRemainingLabel2!.visible(
       count === 0
-      && !globals.options.allOrNothing,
+      && !globals.metadata.options.allOrNothing,
     );
 
     // If the game ID is showing,
@@ -157,26 +157,27 @@ export default class Deck extends Konva.Group {
     content += '<strong>Game Info:</strong>';
     content += '<ul class="game-tooltips-ul">';
 
-    if (globals.replay && globals.databaseID !== 0) { // Disable this row in JSON replays
+    // Disable this row in JSON replays
+    if (globals.metadata.replay && globals.metadata.databaseID !== 0) {
       const formattedDatetimeFinished = misc.dateTimeFormatter.format(
-        new Date(globals.datetimeFinished),
+        new Date(globals.metadata.datetimeFinished),
       );
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-calendar"></i></span>';
       content += `&nbsp; Date Played: &nbsp;<strong>${formattedDatetimeFinished}</strong></li>`;
 
-      const startedDate = new Date(globals.datetimeStarted);
-      const finishedDate = new Date(globals.datetimeFinished);
+      const startedDate = new Date(globals.metadata.datetimeStarted);
+      const finishedDate = new Date(globals.metadata.datetimeFinished);
       const elapsedMilliseconds = finishedDate.getTime() - startedDate.getTime();
       const clockString = misc.millisecondsToClockString(elapsedMilliseconds);
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-stopwatch"></i></span>';
       content += `&nbsp; Game Length: &nbsp;<strong>${clockString}</strong></li>`;
     }
 
-    if (globals.replay || globals.seeded) {
+    if (globals.metadata.replay || globals.metadata.seeded) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-seedling"></i></span>';
-      const seed = globals.seed === 'JSON' ? 'n/a' : globals.seed;
+      const seed = globals.metadata.seed === 'JSON' ? 'n/a' : globals.metadata.seed;
       content += `&nbsp; Seed: &nbsp;<strong>${seed}</strong>`;
-      if (globals.seed === 'JSON') {
+      if (globals.metadata.seed === 'JSON') {
         content += ' (JSON game)';
       }
       content += '</li>';
@@ -185,53 +186,53 @@ export default class Deck extends Konva.Group {
     content += '<li><span class="game-tooltips-icon"><i class="fas fa-rainbow"></i></span>';
     content += `&nbsp; Variant: &nbsp;<strong>${globals.variant.name}</strong></li>`;
 
-    if (globals.options.timed) {
+    if (globals.metadata.options.timed) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-clock"></i></span>';
       content += '&nbsp; Timed: ';
-      content += timerFormatter(globals.options.timeBase * 1000);
+      content += timerFormatter(globals.metadata.options.timeBase * 1000);
       content += ' + ';
-      content += timerFormatter(globals.options.timePerTurn * 1000);
+      content += timerFormatter(globals.metadata.options.timePerTurn * 1000);
       content += '</li>';
     }
 
-    if (globals.options.speedrun) {
+    if (globals.metadata.options.speedrun) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-running"></i></span>';
       content += '&nbsp; Speedrun</li>';
     }
 
-    if (globals.options.cardCycle) {
+    if (globals.metadata.options.cardCycle) {
       content += '<li><span class="game-tooltips-icon">';
       content += '<i class="fas fa-sync-alt" style="position: relative; left: 0.2em;"></i></span>';
       content += '&nbsp; Card Cycling</li>';
     }
 
-    if (globals.options.deckPlays) {
+    if (globals.metadata.options.deckPlays) {
       content += '<li><span class="game-tooltips-icon">';
       content += '<i class="fas fa-blind" style="position: relative; left: 0.2em;"></i></span>';
       content += '&nbsp; Bottom-Deck Blind Plays</li>';
     }
 
-    if (globals.options.emptyClues) {
+    if (globals.metadata.options.emptyClues) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-expand"></i></span>';
       content += '&nbsp; Empty Clues</li>';
     }
 
-    if (globals.options.oneExtraCard) {
+    if (globals.metadata.options.oneExtraCard) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-plus-circle"></i></span>';
       content += '&nbsp; One Extra Card</li>';
     }
 
-    if (globals.options.oneLessCard) {
+    if (globals.metadata.options.oneLessCard) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-minus-circle"></i></span>';
       content += '&nbsp; One Less Card</li>';
     }
 
-    if (globals.options.allOrNothing) {
+    if (globals.metadata.options.allOrNothing) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-layer-group"></i></span>';
       content += '&nbsp; All or Nothing</li>';
     }
 
-    if (globals.options.detrimentalCharacters) {
+    if (globals.metadata.options.detrimentalCharacters) {
       content += '<li><span class="game-tooltips-icon">';
       content += '<span style="position: relative; right: 0.4em;">🤔</span></span>';
       content += '&nbsp; Detrimental Characters</li>';

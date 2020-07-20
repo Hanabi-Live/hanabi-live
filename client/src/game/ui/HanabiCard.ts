@@ -243,7 +243,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return this.shouldShowClueBorder()
     && (
       !globals.lobby.settings.keldonMode
-      || (this.state.location === globals.playerUs && !globals.replay)
+      || (this.state.location === globals.metadata.ourPlayerIndex && !globals.metadata.replay)
     );
   }
 
@@ -313,7 +313,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       if (
         this.state.rank === STACK_BASE_RANK
         && this.note.suitIndex !== null
-        && !globals.replay
+        && !globals.metadata.replay
       ) {
         // Show the suit corresponding to the note
         // The note has precedence over the "real" suit,
@@ -345,7 +345,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       if (
         this.state.rank === STACK_BASE_RANK
         && this.note.rank !== null
-        && !globals.replay
+        && !globals.metadata.replay
       ) {
         // The card note rank has precedence over the "real" rank,
         // but only for the stack bases (and not in replays)
@@ -387,8 +387,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !this.empathy
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
-      && !globals.replay
-      && !globals.spectating
+      && !globals.metadata.replay
+      && !globals.metadata.spectating
     ) {
       this.bareName = DECK_BACK_IMAGE;
     } else if (
@@ -425,8 +425,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !this.empathy
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
-      && !globals.replay
-      && !globals.spectating
+      && !globals.metadata.replay
+      && !globals.metadata.spectating
     ));
 
     // Show or hide the "fixme" image
@@ -435,8 +435,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !this.empathy
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
-      && !globals.replay
-      && !globals.spectating
+      && !globals.metadata.replay
+      && !globals.metadata.spectating
     ));
 
     if (suitToShow === undefined || suitToShow === unknownSuit) {
@@ -553,7 +553,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !cardRules.isDiscarded(this.state)
       && !this.note.blank
       && !variantRules.isThrowItInAHole(this.variant)
-      && !globals.options.speedrun
+      && !globals.metadata.options.speedrun
       && !globals.lobby.settings.realLifeMode
     );
   }
@@ -901,7 +901,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     // If we are in a replay, always show the cursor
-    if (globals.replay || state.replay.active) {
+    if (globals.metadata.replay || state.replay.active) {
       return true;
     }
 
@@ -1015,12 +1015,16 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         event.evt.button !== 0 // Only enable Empathy for left-clicks
         // Disable Empathy if a modifier key is pressed
         // (unless we are in a speedrun, because then Empathy is mapped to Ctrl + left click)
-        || (event.evt.ctrlKey && !globals.options.speedrun && !globals.lobby.settings.speedrunMode)
+        || (
+          event.evt.ctrlKey
+          && !globals.metadata.options.speedrun
+          && !globals.lobby.settings.speedrunMode
+        )
         || (
           !event.evt.ctrlKey
-          && (globals.options.speedrun || globals.lobby.settings.speedrunMode)
-          && !globals.replay
-          && !globals.spectating
+          && (globals.metadata.options.speedrun || globals.lobby.settings.speedrunMode)
+          && !globals.metadata.replay
+          && !globals.metadata.spectating
         )
         || event.evt.shiftKey
         || event.evt.altKey
@@ -1099,8 +1103,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       !this.cluedBorder!.isVisible()
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
-      && !globals.replay
-      && !globals.spectating
+      && !globals.metadata.replay
+      && !globals.metadata.spectating
     );
 
     this.chopMoveBorder!.visible((

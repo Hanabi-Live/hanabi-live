@@ -81,17 +81,16 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		}
 	}
 
-	// The seat number is equal to the index of the player in the Players slice
-	seat := i
-	if seat == -1 {
+	ourPlayerIndex := i
+	if ourPlayerIndex == -1 {
 		// By default, spectators view the game from the first player's perspective
-		seat = 0
+		ourPlayerIndex = 0
 
 		// If a spectator is viewing a replay of a game that they played in,
 		// we want to put them in the same seat
 		for k, name := range playerNames {
 			if name == s.Username() {
-				seat = k
+				ourPlayerIndex = k
 				break
 			}
 		}
@@ -99,7 +98,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 
 	// Account for if a spectator is shadowing a specific player
 	if j != -1 && t.Spectators[j].Shadowing {
-		seat = t.Spectators[j].PlayerIndex
+		ourPlayerIndex = t.Spectators[j].PlayerIndex
 	}
 
 	pauseQueued := false
@@ -113,7 +112,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		TableID          int       `json:"tableID"`
 		PlayerNames      []string  `json:"playerNames"`
 		Variant          string    `json:"variant"`
-		Seat             int       `json:"seat"`
+		OurPlayerIndex   int       `json:"ourPlayerIndex"`
 		Spectating       bool      `json:"spectating"`
 		Replay           bool      `json:"replay"`
 		SharedReplay     bool      `json:"sharedReplay"`
@@ -143,7 +142,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		// Game settings
 		TableID:          t.ID, // The client needs to know the table ID for chat to work properly
 		PlayerNames:      playerNames,
-		Seat:             seat,
+		OurPlayerIndex:   ourPlayerIndex,
 		Spectating:       !t.Replay && j != -1,
 		Replay:           t.Replay,
 		SharedReplay:     t.Replay && t.Visible,

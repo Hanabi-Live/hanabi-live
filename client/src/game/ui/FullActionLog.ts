@@ -80,7 +80,7 @@ export default class FullActionLog extends Konva.Group {
     this.playerLogEmptyMessage.hide();
     this.add(this.playerLogEmptyMessage as any);
 
-    for (let i = 0; i < globals.playerNames.length; i++) {
+    for (let i = 0; i < globals.metadata.playerNames.length; i++) {
       const playerLog = new MultiFitText(textOptions, maxLines);
       playerLog.hide();
       this.playerLogs.push(playerLog);
@@ -108,7 +108,7 @@ export default class FullActionLog extends Konva.Group {
   }
 
   showPlayerActions(playerName: string) {
-    const playerIndex = globals.playerNames.findIndex((name) => name === playerName);
+    const playerIndex = globals.metadata.playerNames.findIndex((name) => name === playerName);
     if (playerIndex === -1) {
       throw new Error(`Failed to find player "${playerName}" in the player names.`);
     }
@@ -160,8 +160,8 @@ export default class FullActionLog extends Konva.Group {
 
     this.buffer.forEach((logEntry) => {
       appendLine(this.logText, this.logNumbers, logEntry.turnNum, logEntry.text);
-      for (let i = 0; i < globals.playerNames.length; i++) {
-        if (logEntry.text.startsWith(globals.playerNames[i])) {
+      for (let i = 0; i < globals.metadata.playerNames.length; i++) {
+        if (logEntry.text.startsWith(globals.metadata.playerNames[i])) {
           appendLine(this.playerLogs[i], this.playerLogNumbers[i], logEntry.turnNum, logEntry.text);
           break;
         }
@@ -170,7 +170,7 @@ export default class FullActionLog extends Konva.Group {
 
     this.logText.refreshText();
     this.logNumbers.refreshText();
-    for (let i = 0; i < globals.playerNames.length; i++) {
+    for (let i = 0; i < globals.metadata.playerNames.length; i++) {
       this.playerLogs[i].refreshText();
       this.playerLogNumbers[i].refreshText();
     }
@@ -182,7 +182,7 @@ export default class FullActionLog extends Konva.Group {
     this.buffer = [];
     this.logText.reset();
     this.logNumbers.reset();
-    for (let i = 0; i < globals.playerNames.length; i++) {
+    for (let i = 0; i < globals.metadata.playerNames.length; i++) {
       this.playerLogs[i].reset();
       this.playerLogNumbers[i].reset();
     }

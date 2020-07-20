@@ -46,7 +46,7 @@ export const onCurrentPlayerIndexChanged = (currentPlayerIndex: number | null) =
 
   // For replay leaders, we want to disable entering a hypothetical if we are currently on a turn
   // where the game has already ended
-  if (globals.sharedReplay && globals.amSharedReplayLeader) {
+  if (globals.metadata.sharedReplay && globals.amSharedReplayLeader) {
     globals.elements.enterHypoButton!.setEnabled(currentPlayerIndex !== null);
   }
 
@@ -71,7 +71,7 @@ export const onScoreOrMaxScoreChanged = (data: {
 };
 
 export const onNumAttemptedCardsPlayedChanged = (numAttemptedCardsPlayed: number) => {
-  if (!variantRules.isThrowItInAHole(globals.variant) || globals.replay) {
+  if (!variantRules.isThrowItInAHole(globals.variant) || globals.metadata.replay) {
     return;
   }
 
@@ -127,7 +127,7 @@ export const onStrikesChanged = (
   previousStrikes: readonly StateStrike[] | undefined,
 ) => {
   // Strikes are hidden from the end-user in "Throw It in a Hole" variants
-  if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
+  if (variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay) {
     return;
   }
 

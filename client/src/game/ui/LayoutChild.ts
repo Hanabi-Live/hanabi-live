@@ -105,7 +105,7 @@ export default class LayoutChild extends Konva.Group {
     }
 
     // First, handle the special case of a hypothetical
-    if (globals.hypothetical) {
+    if (globals.metadata.hypothetical) {
       return (
         globals.amSharedReplayLeader
         && currentPlayerIndex === this.card.state.location
@@ -120,10 +120,11 @@ export default class LayoutChild extends Konva.Group {
       (isOurTurn() || globals.lobby.settings.speedrunPreplay)
       // Cards should not be draggable if there is a queued move
       && state.premove === null
-      && !globals.options.speedrun // Cards should never be draggable while speedrunning
+      && !globals.metadata.options.speedrun // Cards should never be draggable while speedrunning
       && !globals.lobby.settings.speedrunMode // Cards should never be draggable while speedrunning
-      && this.card.state.location === globals.playerUs // Only our cards should be draggable
-      && !globals.replay // Cards should not be draggable in solo or shared replays
+      // Only our cards should be draggable
+      && this.card.state.location === globals.metadata.ourPlayerIndex
+      && !globals.metadata.replay // Cards should not be draggable in solo or shared replays
       // Cards should not be draggable if we are spectating an ongoing game
       && !state.metadata.spectating
       // Cards should not be draggable if they are currently playing an animation
@@ -139,7 +140,7 @@ export default class LayoutChild extends Konva.Group {
     // In a hypothetical, dragging a rotated card from another person's hand is frustrating,
     // so temporarily remove all rotation (for the duration of the drag)
     // The rotation will be automatically reset if the card tweens back to the hand
-    if (globals.hypothetical) {
+    if (globals.metadata.hypothetical) {
       this.rotation(this.parent!.rotation() * -1);
     }
   }
@@ -174,7 +175,7 @@ export default class LayoutChild extends Konva.Group {
     const ourPlayerIndex = state.metadata.ourPlayerIndex;
     if (
       draggedTo === 'playArea'
-      && !globals.options.speedrun
+      && !globals.metadata.options.speedrun
       && !variantRules.isThrowItInAHole(globals.variant)
       && currentPlayerIndex === ourPlayerIndex // Don't use warnings for preplays
       && !cardRules.isPotentiallyPlayable(

@@ -65,7 +65,7 @@ export default class NameFrame extends Konva.Group {
         // Left-click on the name frame to see a log of only their actions
         globals.elements.fullActionLog!.showPlayerActions(username);
       } else if (mouseEvent.button === 2) { // Right-click
-        if (!globals.replay && globals.spectating) {
+        if (!globals.metadata.replay && globals.metadata.spectating) {
           // As a spectator in an ongoing game, right-clicking on a name frame reloads the
           // page, shifting the seat and hiding the appropriate cards
           // (so that you can spectate from a specific player's perspective)
@@ -77,11 +77,11 @@ export default class NameFrame extends Konva.Group {
             });
           }, 20);
           backToLobby();
-        } else if (globals.replay) {
+        } else if (globals.metadata.replay) {
           // In a replay, right-clicking on a name frame reloads the page and shifts the
           // seat (so that you can view the game from a specific player's perspective)
-          if (!globals.sharedReplay || globals.spectators.length === 1) {
-            if (globals.databaseID === 0) {
+          if (!globals.metadata.sharedReplay || globals.spectators.length === 1) {
+            if (globals.metadata.databaseID === 0) {
               const msg = 'Due to technical limitations, you cannot shift your perspective if you are the only person in a JSON replay.';
               setTimeout(() => {
                 // Show the warning modal in a callback so that the right-click context menu does
@@ -99,8 +99,8 @@ export default class NameFrame extends Konva.Group {
             setTimeout(() => {
               globals.lobby.conn!.send('replayCreate', {
                 source: 'id',
-                gameID: globals.databaseID,
-                visibility: globals.sharedReplay ? 'shared' : 'solo',
+                gameID: globals.metadata.databaseID,
+                visibility: globals.metadata.sharedReplay ? 'shared' : 'solo',
                 player: username,
               });
             }, 20);
@@ -181,7 +181,7 @@ export default class NameFrame extends Konva.Group {
       globals.activeHover = this;
 
       // Don't do anything if we are in a solo/shared replay
-      if (globals.replay) {
+      if (globals.metadata.replay) {
         return;
       }
 
@@ -194,7 +194,7 @@ export default class NameFrame extends Konva.Group {
       globals.activeHover = null;
 
       // Don't do anything if we are in a solo/shared replay
-      if (globals.replay) {
+      if (globals.metadata.replay) {
         return;
       }
 

@@ -4,7 +4,7 @@ import globals from './globals';
 import { drawLayer } from './konvaHelpers';
 
 export default function pause() {
-  if (!globals.options.timed || globals.replay) {
+  if (!globals.metadata.options.timed || globals.metadata.replay) {
     return;
   }
 
@@ -27,7 +27,7 @@ export default function pause() {
 
     globals.elements.pauseArea!.show();
     globals.elements.pauseText!.text(`by: ${globals.pausePlayer}`);
-    if (globals.spectating) {
+    if (globals.metadata.spectating) {
       globals.elements.pauseButton!.setEnabled(false);
       globals.elements.pauseButton!.opacity(0.2);
     } else {
@@ -40,7 +40,7 @@ export default function pause() {
     globals.elements.stageFade!.hide();
     drawLayer(globals.elements.stageFade!);
 
-    globals.elements.timer1!.visible(!globals.spectating);
+    globals.elements.timer1!.visible(!globals.metadata.spectating);
     globals.elements.timer2!.show();
     drawLayer(globals.elements.timer1!);
 

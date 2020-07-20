@@ -67,8 +67,8 @@ commands.set('chat', (data: ChatMessage) => {
         tableID: globals.tableID,
       });
     } else if (
-      globals.ui.globals.spectating
-      && !globals.ui.globals.sharedReplay
+      globals.ui.globals.metadata.spectating
+      && !globals.ui.globals.metadata.sharedReplay
       && !$('#game-chat-modal').is(':visible')
     ) {
       // The chat window was not open; pop open the chat window every time for spectators

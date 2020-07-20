@@ -79,7 +79,7 @@ export const onChanged = (data: {
   const setPlayerText = (threeLines: boolean) => {
     const { rect1, textValues, values } = currentPlayerArea;
 
-    text2.fitText(globals.playerNames[data.currentPlayerIndex!]);
+    text2.fitText(globals.metadata.playerNames[data.currentPlayerIndex!]);
 
     let maxSize = (values.h / 3) * winH;
     if (threeLines) {

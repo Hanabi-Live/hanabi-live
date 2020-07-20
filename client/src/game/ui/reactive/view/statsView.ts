@@ -16,7 +16,7 @@ export const onEfficiencyChanged = (efficiency: number) => {
 
   // In "Throw It in a Hole" variants,
   // efficiency will leak information that the player is not supposed to know
-  if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
+  if (variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay) {
     effLabel.text('? / ');
     return;
   }
@@ -50,7 +50,7 @@ export const onPaceOrPaceRiskChanged = (data: {
     throw new Error('paceNumberLabel is not initialized.');
   }
 
-  if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
+  if (variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay) {
     // In "Throw It in a Hole" variants,
     // pace will leak information that the player is not supposed to know
     label.text('?');

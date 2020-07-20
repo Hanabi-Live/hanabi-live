@@ -65,10 +65,13 @@ export const set = (
     if (
       (
         !globals.lobby.settings.keldonMode
-        && element.state.location === globals.playerUs
+        && element.state.location === globals.metadata.ourPlayerIndex
       ) || (
         globals.lobby.settings.keldonMode
-        && (element.state.location !== globals.playerUs && cardRules.isInPlayerHand(element.state))
+        && (
+          element.state.location !== globals.metadata.ourPlayerIndex
+          && cardRules.isInPlayerHand(element.state)
+        )
       )
     ) {
       // In BGA mode, invert the arrows on our hand
@@ -108,7 +111,7 @@ export const set = (
     // Clue arrows have a circle that shows the type of clue given
     let giverCharacterName = '';
     if (giver !== null) {
-      const giverCharacterID = globals.characterAssignments[giver!];
+      const giverCharacterID = globals.metadata.characterAssignments[giver!];
       if (giverCharacterID !== null) {
         const giverCharacter = getCharacter(giverCharacterID);
         giverCharacterName = giverCharacter.name;
@@ -116,7 +119,7 @@ export const set = (
     }
     if (
       variantRules.isDuck(globals.variant)
-      || (giverCharacterName === 'Quacker' && !globals.replay)
+      || (giverCharacterName === 'Quacker' && !globals.metadata.replay)
     ) {
       // Don't show the circle in variants where the clue types are supposed to be hidden
       arrow.circle.hide();
@@ -289,13 +292,13 @@ export const click = (
   }
 
   if (
-    globals.sharedReplay
+    globals.metadata.sharedReplay
     && globals.amSharedReplayLeader
     && globals.store!.getState().replay.useSharedSegments
   ) {
     // The shared replay leader is clicking on a UI element, so send this action to the server
     send(order, element);
-  } else if (!globals.sharedReplay) {
+  } else if (!globals.metadata.sharedReplay) {
     // Otherwise, toggle the arrow locally
     // However, we don't want to enable this functionality in shared replays because it could be
     // misleading as to who the real replay leader is

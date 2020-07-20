@@ -111,7 +111,7 @@ export const onSharedSegmentOrUseSharedSegmentsChanged = (data: {
   // Local variables
   const state = globals.store!.getState();
 
-  if (previousData === undefined || !state.replay.active || !globals.sharedReplay) {
+  if (previousData === undefined || !state.replay.active || !globals.metadata.sharedReplay) {
     return;
   }
 
@@ -173,8 +173,8 @@ export const onFinishedChanged = (finished: boolean, previousFinished: boolean |
   timer.stop();
 
   // Transform this game into a shared replay
-  globals.replay = true;
-  globals.sharedReplay = true;
+  globals.metadata.replay = true;
+  globals.metadata.sharedReplay = true;
 
   // Hide the "Exit Replay" button in the center of the screen, since it is no longer necessary
   globals.elements.replayExitButton!.hide();
@@ -187,7 +187,7 @@ export const onFinishedChanged = (finished: boolean, previousFinished: boolean |
 
   // Re-draw the deck tooltip
   // (it will show more information when you are in a replay)
-  globals.datetimeFinished = new Date();
+  globals.metadata.datetimeFinished = new Date();
   globals.elements.deck!.initTooltip();
 
   // Turn off the "Throw It in a Hole" UI

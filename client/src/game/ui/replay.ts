@@ -64,7 +64,7 @@ export const goToSegment = (
 
   // Disable replay navigation while we are in a hypothetical
   // (hypothetical navigation functions will set "force" equal to true)
-  if (globals.hypothetical && !force) {
+  if (globals.metadata.hypothetical && !force) {
     return;
   }
 
@@ -76,7 +76,7 @@ export const goToSegment = (
   // However, if we are navigating to a new segment as the shared replay leader,
   // do not disable shared segments
   if (
-    globals.sharedReplay
+    globals.metadata.sharedReplay
     && breakFree
     && state.replay.useSharedSegments
     && !globals.amSharedReplayLeader
@@ -92,7 +92,11 @@ export const goToSegment = (
     segment: newSegment,
   });
 
-  if (globals.sharedReplay && globals.amSharedReplayLeader && state.replay.useSharedSegments) {
+  if (
+    globals.metadata.sharedReplay
+    && globals.amSharedReplayLeader
+    && state.replay.useSharedSegments
+  ) {
     globals.store!.dispatch({
       type: 'replaySharedSegment',
       segment: newSegment,
@@ -121,11 +125,11 @@ export const forward = () => {
 };
 
 export const backRound = () => {
-  goToSegment(getCurrentReplaySegment() - globals.options.numPlayers, true);
+  goToSegment(getCurrentReplaySegment() - globals.metadata.options.numPlayers, true);
 };
 
 export const forwardRound = () => {
-  goToSegment(getCurrentReplaySegment() + globals.options.numPlayers, true);
+  goToSegment(getCurrentReplaySegment() + globals.metadata.options.numPlayers, true);
 };
 
 export const backFull = () => {
@@ -227,7 +231,7 @@ export const adjustShuttles = (fast: boolean) => {
   // If the two shuttles are overlapping, then make the normal shuttle a little bit smaller
   let smaller = false;
   if (
-    globals.sharedReplay
+    globals.metadata.sharedReplay
     && !state.replay.useSharedSegments
     && state.replay.segment === state.replay.sharedSegment
   ) {

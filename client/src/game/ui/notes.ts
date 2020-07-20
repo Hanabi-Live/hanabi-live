@@ -15,7 +15,7 @@ const get = (order: number, our: boolean) => {
   // If we are a player in an ongoing game, return our note
   // (we don't have to check to see if the element exists because
   // all notes are initialized to an empty string)
-  if (our || (!globals.replay && !globals.spectating)) {
+  if (our || (!globals.metadata.replay && !globals.metadata.spectating)) {
     return globals.ourNotes[order];
   }
 
@@ -39,7 +39,7 @@ const get = (order: number, our: boolean) => {
 export const set = (order: number, note: string) => {
   const oldNote = globals.ourNotes[order];
   globals.ourNotes[order] = note;
-  if (globals.spectating) {
+  if (globals.metadata.spectating) {
     for (const noteObject of globals.allNotes[order]) {
       if (noteObject.name === globals.lobby.username) {
         noteObject.note = note;
@@ -49,7 +49,7 @@ export const set = (order: number, note: string) => {
   globals.lastNote = note;
 
   // Send the note to the server
-  if (!globals.replay && note !== oldNote) {
+  if (!globals.metadata.replay && note !== oldNote) {
     globals.lobby.conn!.send('note', {
       tableID: globals.lobby.tableID,
       order,
@@ -58,7 +58,7 @@ export const set = (order: number, note: string) => {
   }
 
   // The note identity features do not apply to spectators and replays
-  if (globals.spectating || globals.replay) {
+  if (globals.metadata.spectating || globals.metadata.replay) {
     return;
   }
 
@@ -207,7 +207,7 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
         break;
       }
     }
-    if (!suitPossible && cardState.location === globals.playerUs) {
+    if (!suitPossible && cardState.location === globals.metadata.ourPlayerIndex) {
       const suitName = variant.suits[note.suitIndex].name;
       window.alert(`That card cannot possibly be ${suitName.toLowerCase()}.`);
       note.suitIndex = null;
@@ -228,7 +228,7 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
         break;
       }
     }
-    if (!rankPossible && cardState.location === globals.playerUs) {
+    if (!rankPossible && cardState.location === globals.metadata.ourPlayerIndex) {
       window.alert(`That card cannot possibly be a ${note.rank}.`);
       note.rank = null;
       return;
@@ -238,7 +238,7 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
     // Both the suit and the rank were specified
     if (
       cardState.possibleCards[note.suitIndex][note.rank] === 0
-      && cardState.location === globals.playerUs
+      && cardState.location === globals.metadata.ourPlayerIndex
     ) {
       const suitName = variant.suits[note.suitIndex].name;
       window.alert(`That card cannot possibly be a ${suitName.toLowerCase()} ${note.rank}.`);
@@ -296,7 +296,7 @@ export const show = (card: HanabiCard) => {
 
 export const openEditTooltip = (card: HanabiCard) => {
   // Don't edit any notes in replays
-  if (globals.replay) {
+  if (globals.metadata.replay) {
     return;
   }
 
@@ -399,7 +399,12 @@ export const setCardIndicator = (order: number) => {
   }
   card.noteIndicator!.visible(visible);
 
-  if (visible && globals.spectating && !globals.replay && !card.noteIndicator!.rotated) {
+  if (
+    visible
+    && globals.metadata.spectating
+    && !globals.metadata.replay
+    && !card.noteIndicator!.rotated
+  ) {
     card.noteIndicator!.rotate(15);
     card.noteIndicator!.rotated = true;
   }
@@ -408,7 +413,7 @@ export const setCardIndicator = (order: number) => {
 };
 
 export const shouldShowIndicator = (order: number) => {
-  if (globals.replay || globals.spectating) {
+  if (globals.metadata.replay || globals.metadata.spectating) {
     for (const noteObject of globals.allNotes[order]) {
       if (noteObject.note.length > 0) {
         return true;

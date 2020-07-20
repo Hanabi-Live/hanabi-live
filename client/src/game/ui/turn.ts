@@ -104,7 +104,7 @@ export const showClueUI = () => {
   }
 
   // Reset and show the clue UI
-  if (globals.playerNames.length === 2) {
+  if (globals.metadata.playerNames.length === 2) {
     // In 2-player games,
     // default the clue recipient button to the only other player available
     // Otherwise, leave the last player selected
@@ -112,7 +112,7 @@ export const showClueUI = () => {
   }
   globals.elements.clueTypeButtonGroup!.clearPressed();
   globals.elements.clueArea!.show();
-  if (globals.elements.yourTurn !== null && !globals.hypothetical) {
+  if (globals.elements.yourTurn !== null && !globals.metadata.hypothetical) {
     globals.elements.yourTurn.show();
   }
   globals.elements.currentPlayerArea!.hide();
@@ -146,7 +146,7 @@ export const showClueUI = () => {
     globals.elements.clueAreaDisabled!.show();
   }
 
-  if (globals.options.deckPlays) {
+  if (globals.metadata.options.deckPlays) {
     const deckSize = globals.store!.getState().ongoingGame.deckSize;
     globals.elements.deck!.cardBack.draggable(deckSize === 1);
     globals.elements.deckPlayAvailableLabel!.visible(deckSize === 1);

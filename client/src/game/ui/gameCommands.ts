@@ -11,7 +11,7 @@ import stateReducer from '../reducers/stateReducer';
 import { GameAction, ActionIncludingHypothetical } from '../types/actions';
 import CardIdentity from '../types/CardIdentity';
 import GameMetadata from '../types/GameMetadata';
-import Options from '../types/Options';
+import LegacyGameMetadata from '../types/LegacyGameMetadata';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import SpectatorNote from '../types/SpectatorNote';
 import State from '../types/State';
@@ -67,8 +67,8 @@ interface DatabaseIDData {
   databaseID: number;
 }
 commands.set('databaseID', (data: DatabaseIDData) => {
-  globals.databaseID = data.databaseID;
-  globals.elements.gameIDLabel!.text(`ID: ${globals.databaseID}`);
+  globals.metadata.databaseID = data.databaseID;
+  globals.elements.gameIDLabel!.text(`ID: ${globals.metadata.databaseID}`);
   globals.elements.gameIDLabel!.show();
 
   // Also move the card count label on the deck downwards
@@ -165,9 +165,9 @@ interface HypoRevealedData {
   hypoRevealed: boolean;
 }
 commands.set('hypoRevealed', (data: HypoRevealedData) => {
-  globals.hypoRevealed = data.hypoRevealed;
+  globals.metadata.hypoRevealed = data.hypoRevealed;
 
-  const text = globals.hypoRevealed ? 'Hide' : 'Show';
+  const text = globals.metadata.hypoRevealed ? 'Hide' : 'Show';
   globals.elements.toggleRevealedButton!.setText({ line1: text });
   globals.layers.UI.batchDraw();
 
@@ -192,42 +192,13 @@ commands.set('hypoStart', () => {
   });
 });
 
-interface InitData {
-  // Game settings
-  tableID: number;
-  playerNames: string[];
-  seat: number;
-  spectating: boolean;
-  replay: boolean;
-  sharedReplay: boolean;
-  databaseID: number;
-  seed: string;
-  seeded: boolean;
-  datetimeStarted: Date;
-  datetimeFinished: Date;
-  options: Options;
-
-  // Character settings
-  characterAssignments: number[];
-  characterMetadata: number[];
-
-  // Hypothetical settings
-  hypothetical: boolean;
-  hypoActions: string[];
-  hypoRevealed: boolean;
-
-  // Other features
-  paused: boolean;
-  pausePlayer: string;
-  pauseQueued: boolean;
-}
-commands.set('init', (data: InitData) => {
+commands.set('init', (metadata: LegacyGameMetadata) => {
   // Data contains the game settings for the game we are entering;
   // attach this to the Sentry context to make debugging easier
-  sentry.setGameContext(data);
+  sentry.setGameContext(metadata);
 
-  copyInitDataToGlobals(data);
-  initStateStore(data);
+  copyMetadataToGlobals(metadata);
+  initStateStore(metadata);
 
   // Now that we know the number of players and the variant, we can start to load & draw the UI
   uiInit();
@@ -240,7 +211,7 @@ interface NoteData {
 }
 commands.set('note', (data: NoteData) => {
   // If we are not spectating and we got this message, something has gone wrong
-  if (!globals.spectating) {
+  if (!globals.metadata.spectating) {
     return;
   }
 
@@ -275,7 +246,11 @@ commands.set('noteList', (data: NoteListData) => {
   // We want to convert this to an array of objects for each card
   for (const noteList of data.notes) {
     // If we are a spectator, copy our notes from the combined list
-    if (!globals.replay && globals.spectating && noteList.name === globals.lobby.username) {
+    if (
+      !globals.metadata.replay
+      && globals.metadata.spectating
+      && noteList.name === globals.lobby.username
+    ) {
       globals.ourNotes = noteList.notes;
     }
 
@@ -454,7 +429,7 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
   globals.elements.restartButton!.visible(globals.amSharedReplayLeader);
 
   // Hide the replay area if we are in a hypothetical
-  if (globals.hypothetical) {
+  if (globals.metadata.hypothetical) {
     hypothetical.show();
   }
   globals.layers.UI.batchDraw();
@@ -494,7 +469,7 @@ commands.set('replaySegment', (data: ReplaySegmentData) => {
   // We need to "catch up" to everyone else and play all of the existing hypothetical actions
   // that have taken place
   // TODO: Put this somewhere else?
-  if (globals.hypothetical) {
+  if (globals.metadata.hypothetical) {
     globals.store!.dispatch({
       type: 'hypoStart',
     });
@@ -543,7 +518,7 @@ commands.set('spectators', (data: SpectatorsData) => {
       }
     }
     let content = '<strong>';
-    if (globals.replay) {
+    if (globals.metadata.replay) {
       content += 'Shared Replay Viewers';
     } else {
       content += 'Spectators';
@@ -555,7 +530,7 @@ commands.set('spectators', (data: SpectatorsData) => {
   }
 
   // We might also need to update the content of replay leader icon
-  if (globals.sharedReplay) {
+  if (globals.metadata.sharedReplay) {
     let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
     if (!globals.spectators.includes(globals.sharedReplayLeader)) {
       // Check to see if the leader is away
@@ -576,65 +551,41 @@ commands.set('sound', (data: SoundData) => {
   }
 });
 
-const copyInitDataToGlobals = (data: InitData) => {
-  // TODO: this is messy; make a globals.init object and just copy it directly
-
-  // Game settings
-  globals.lobby.tableID = data.tableID; // Equal to the table ID on the server
-  globals.playerNames = data.playerNames;
-  globals.playerUs = data.seat; // 0 if a spectator or a replay of a game that we were not in
-  globals.spectating = data.spectating;
-  globals.replay = data.replay;
-  globals.sharedReplay = data.sharedReplay;
-  globals.databaseID = data.databaseID; // 0 if this is an ongoing game
-  globals.seed = data.seed;
-  globals.seeded = data.seeded; // If playing a table started with the "!seed" prefix
-  globals.datetimeStarted = data.datetimeStarted;
-  globals.datetimeFinished = data.datetimeFinished;
-  globals.options = data.options;
+const copyMetadataToGlobals = (metadata: LegacyGameMetadata) => {
+  globals.metadata = metadata;
 
   // Set the variant
-  globals.variant = getVariant(globals.options.variantName);
+  globals.variant = getVariant(globals.metadata.options.variantName);
 
-  // Character settings
-  let characterAssignments: Array<number | null> = data.characterAssignments.slice();
-  for (let i = 0; i < characterAssignments.length; i++) {
-    if (characterAssignments[i]! < 0) {
-      // Handle the special case of when players can be given assignments of "-1" during debugging
-      // (which corresponds to a null character)
-      characterAssignments[i] = null;
+  // Handle the special case of when players can be given assignments of "-1" during debugging
+  // (which corresponds to a null character)
+  for (let i = 0; i < globals.metadata.characterAssignments.length; i++) {
+    if (globals.metadata.characterAssignments[i]! === -1) {
+      globals.metadata.characterAssignments[i] = null;
     }
   }
-  if (characterAssignments.length === 0) {
-    characterAssignments = initArray(globals.options.numPlayers, null);
+  if (globals.metadata.characterAssignments.length === 0) {
+    globals.metadata.characterAssignments = initArray(globals.metadata.options.numPlayers, null);
   }
-  globals.characterAssignments = characterAssignments;
-  globals.characterMetadata = data.characterMetadata;
 
   // Hypothetical settings
-  globals.hypothetical = data.hypothetical;
   globals.hypoActions = [];
-  for (let i = 0; i < data.hypoActions.length; i++) {
-    globals.hypoActions[i] = JSON.parse(data.hypoActions[i]) as ActionIncludingHypothetical;
+  for (let i = 0; i < globals.metadata.hypoActions.length; i++) {
+    const action = JSON.parse(globals.metadata.hypoActions[i]) as ActionIncludingHypothetical;
+    globals.hypoActions[i] = action;
   }
-  globals.hypoRevealed = data.hypoRevealed;
-
-  // Other features
-  globals.paused = data.paused;
-  globals.pausePlayer = data.pausePlayer;
-  globals.pauseQueued = data.pauseQueued;
 };
 
-const initStateStore = (data: InitData) => {
+const initStateStore = (data: LegacyGameMetadata) => {
   // Create the state store (using the Redux library)
   const metadata: GameMetadata = {
     options: data.options,
     playerNames: data.playerNames,
-    ourPlayerIndex: data.seat,
+    ourPlayerIndex: data.ourPlayerIndex,
     spectating: data.spectating || data.replay,
     finished: data.replay,
     // We need to use the "nullified" version, so we access the globals
-    characterAssignments: globals.characterAssignments,
+    characterAssignments: globals.metadata.characterAssignments,
     characterMetadata: data.characterMetadata,
   };
   globals.store = createStore(stateReducer, initialState(metadata));

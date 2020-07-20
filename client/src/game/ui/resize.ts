@@ -47,7 +47,7 @@ const redraw = () => {
     // This resets all the messages so that everything shows up again,
     // since the server doesn't replay them and the client only draws streamed
     // information and doesn't maintain a full game state
-    if (globals.replay) {
+    if (globals.metadata.replay) {
         rebuildReplay();
     } else {
         // Rebuilds for a game
@@ -55,8 +55,8 @@ const redraw = () => {
         let whoseTurn = 0;
 
         // Iterate over all moves to date
-        for (let i = 0; i < globals.replayLog.length; i++) {
-            msg = globals.replayLog[i];
+        for (let i = 0; i < globals.metadata.replayLog.length; i++) {
+            msg = globals.metadata.replayLog[i];
 
             // Re-process all game actions; this will correctly position cards and text
             action(msg);
@@ -68,7 +68,7 @@ const redraw = () => {
         }
 
         // If it's your turn, setup the clue area
-        if (whoseTurn === globals.playerUs && !globals.spectating) {
+        if (whoseTurn === globals.metadata.ourPlayerIndex && !globals.metadata.spectating) {
             ui.handleAction();
         }
 
@@ -78,12 +78,12 @@ const redraw = () => {
     }
 
     // Restore Replay Button if applicable
-    if (!globals.replay && globals.replayMax > 0) {
+    if (!globals.metadata.replay && globals.metadata.replayMax > 0) {
         replayButton.show();
     }
 
     // Restore Shared Replay Button if applicable
-    if (globals.sharedReplay) {
+    if (globals.metadata.sharedReplay) {
         commands.replayLeader({
             name: globals.sharedReplayLeader,
         });
