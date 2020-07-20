@@ -498,10 +498,13 @@ commands.set('replaySegment', (data: ReplaySegmentData) => {
     globals.store!.dispatch({
       type: 'hypoStart',
     });
-    globals.hypoActions.forEach((action) => globals.store!.dispatch({
-      type: 'hypoAction',
-      action,
-    }));
+    globals.hypoActions.forEach((action) => {
+      // TODO we want this to animate fast but I have no idea how to do that
+      globals.store!.dispatch({
+        type: 'hypoAction',
+        action,
+      });
+    });
   }
 });
 
