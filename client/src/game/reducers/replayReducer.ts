@@ -15,25 +15,18 @@ const replayReducer = produce((
   metadata: GameMetadata,
 ) => {
   // Validate current state
-  if (state.active && action.type === 'replayStart') {
-    throw new Error('Tried to start a replay but replay was already active.');
-  } else if (!state.active && action.type === 'replayEnd') {
-    throw new Error('Tried to end a replay but replay was not active.');
-  } else if (!state.active && action.type !== 'replayStart') {
-    throw new Error(`Tried to perform a replay action of ${action.type} but replay was not active.`);
-  } else if (state.hypothetical !== null && action.type === 'hypoStart') {
-    throw new Error('Tried to start a hypothetical but hypothetical was already active.');
-  } else if (state.hypothetical === null && action.type === 'hypoEnd') {
-    throw new Error('Tried to end a hypothetical but hypothetical was not active.');
-  } else if (
-    state.hypothetical === null
-    && (
-      action.type === 'hypoBack'
+  if (!state.active && action.type !== 'replayEnter') {
+    throw new Error(`Tried to perform a replay action of ${action.type}, but we are not in a replay.`);
+  }
+  if (
+    state.hypothetical === null && (
+      action.type === 'hypoEnd'
+      || action.type === 'hypoBack'
       || action.type === 'hypoRevealed'
       || action.type === 'hypoAction'
     )
   ) {
-    throw new Error(`Tried to perform a hypothetical action of ${action.type} but hypothetical was not active.`);
+    throw new Error(`Tried to perform a hypothetical action of ${action.type}, but we are not in a hypothetical.`);
   }
 
   switch (action.type) {
@@ -41,20 +34,60 @@ const replayReducer = produce((
     // Replay actions
     // --------------
 
-    case 'replayStart': {
+    case 'replayEnter': {
+      if (state.active) {
+        throw new Error('Tried to enter a replay, but we are already in a replay.');
+      }
       state.active = true;
+
+      if (typeof action.segment !== 'number') {
+        throw new Error('The "replayEnter" segment was not a number.');
+      }
+      if (action.segment < 0) {
+        throw new Error('The "replayEnter" segment was less than 0.');
+      }
       state.segment = action.segment;
+
       break;
     }
 
-    case 'replayEnd': {
+    case 'replayExit': {
       state.active = false;
       state.segment = 0;
+
       break;
     }
 
-    case 'replayGoToSegment': {
+    case 'replaySegment': {
+      if (typeof action.segment !== 'number') {
+        throw new Error('The "replaySegment" segment was not a number.');
+      }
+      if (action.segment < 0) {
+        throw new Error('The "replaySegment" segment was less than 0.');
+      }
       state.segment = action.segment;
+
+      break;
+    }
+
+    case 'replaySharedSegment': {
+      if (typeof action.segment !== 'number') {
+        throw new Error('The "replaySharedSegment" segment was not a number.');
+      }
+      if (action.segment < 0) {
+        throw new Error('The "replaySharedSegment" segment was less than 0.');
+      }
+      state.sharedSegment = action.segment;
+
+      if (state.useSharedSegments) {
+        state.segment = action.segment;
+      }
+
+      break;
+    }
+
+    case 'replayUseSharedSegments': {
+      state.useSharedSegments = action.useSharedSegments;
       break;
     }
 
@@ -63,6 +96,10 @@ const replayReducer = produce((
     // --------------------
 
     case 'hypoStart': {
+      if (state.hypothetical !== null) {
+        throw new Error('Tried to start a hypothetical, but we are already in a hypothetical.');
+      }
+
       const ongoing = state.states[state.segment];
       state.hypothetical = {
         ongoing,
@@ -71,6 +108,7 @@ const replayReducer = produce((
         drawnCardsInHypothetical: [],
         morphedIdentities: [],
       };
+
       break;
     }
 
@@ -113,6 +151,7 @@ const replayReducer = produce((
           };
         });
       }
+
       break;
     }
 

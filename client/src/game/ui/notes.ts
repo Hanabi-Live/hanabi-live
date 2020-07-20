@@ -5,7 +5,7 @@ import * as variantRules from '../rules/variant';
 import CardIdentity from '../types/CardIdentity';
 import CardNote from '../types/CardNote';
 import CardState from '../types/CardState';
-import { START_CARD_RANK } from '../types/constants';
+import { STACK_BASE_RANK, START_CARD_RANK } from '../types/constants';
 import Variant from '../types/Variant';
 import { suitToSuitIndex } from './convert';
 import globals from './globals';
@@ -16,7 +16,7 @@ const get = (order: number, our: boolean) => {
   // If we are a player in an ongoing game, return our note
   // (we don't have to check to see if the element exists because
   // all notes are initialized to an empty string)
-  if (our || (!globals.replay && !globals.spectating)) {
+  if (our || (!globals.metadata.replay && !globals.metadata.spectating)) {
     return globals.ourNotes[order];
   }
 
@@ -40,7 +40,7 @@ const get = (order: number, our: boolean) => {
 export const set = (order: number, note: string) => {
   const oldNote = globals.ourNotes[order];
   globals.ourNotes[order] = note;
-  if (globals.spectating) {
+  if (globals.metadata.spectating) {
     for (const noteObject of globals.allNotes[order]) {
       if (noteObject.name === globals.lobby.username) {
         noteObject.note = note;
@@ -50,7 +50,7 @@ export const set = (order: number, note: string) => {
   globals.lastNote = note;
 
   // Send the note to the server
-  if (!globals.replay && note !== oldNote) {
+  if (!globals.metadata.replay && note !== oldNote) {
     globals.lobby.conn!.send('note', {
       tableID: globals.lobby.tableID,
       order,
@@ -59,7 +59,7 @@ export const set = (order: number, note: string) => {
   }
 
   // The note identity features do not apply to spectators and replays
-  if (globals.spectating || globals.replay) {
+  if (globals.metadata.spectating || globals.metadata.replay) {
     return;
   }
 
@@ -192,6 +192,7 @@ export const cardIdentityFromNote = (
   };
 };
 
+// Validate that the note does not contain an impossibility
 export const checkNoteImpossibility = (variant: Variant, cardState: CardState, note: CardNote) => {
   // Validate that the note does not contain an impossibility
   if (!(cardState.location === globals.playerUs)
@@ -205,12 +206,16 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
     note.suitIndex = null;
     return;
   }
+
+  // Only the rank was specified
   if (note.suitIndex === null && note.rank !== null) {
     // Only the rank was specified
     window.alert(`That card cannot possibly be a ${note.rank}.`);
     note.rank = null;
     return;
   }
+
+  // Both the suit and the rank were specified
   if (note.suitIndex !== null && note.rank !== null) {
     // Both the suit and the rank were specified
     const suitName = variant.suits[note.suitIndex].name;
@@ -268,21 +273,13 @@ export const show = (card: HanabiCard) => {
 
 export const openEditTooltip = (card: HanabiCard) => {
   // Don't edit any notes in replays
-  if (globals.replay) {
+  if (globals.metadata.replay) {
     return;
   }
 
-  if (globals.editingNote !== null) {
-    // Close any existing note tooltips
-    const tooltip = $(`#tooltip-card-${globals.editingNote}`);
-    tooltip.tooltipster('close');
-
-    // If we are right clicking the card that we were already editing,
-    // then just close the existing tooltip and don't do anything else
-    if (card.state.order === globals.editingNote) {
-      globals.editingNote = null;
-      return;
-    }
+  // Disable making notes on the stack bases outside of special variants
+  if (card.state.rank === STACK_BASE_RANK && !variantRules.isThrowItInAHole(globals.variant)) {
+    return;
   }
 
   show(card);
@@ -371,7 +368,12 @@ export const setCardIndicator = (order: number) => {
   }
   card.noteIndicator!.visible(visible);
 
-  if (visible && globals.spectating && !globals.replay && !card.noteIndicator!.rotated) {
+  if (
+    visible
+    && globals.metadata.spectating
+    && !globals.metadata.replay
+    && !card.noteIndicator!.rotated
+  ) {
     card.noteIndicator!.rotate(15);
     card.noteIndicator!.rotated = true;
   }
@@ -380,7 +382,7 @@ export const setCardIndicator = (order: number) => {
 };
 
 export const shouldShowIndicator = (order: number) => {
-  if (globals.replay || globals.spectating) {
+  if (globals.metadata.replay || globals.metadata.spectating) {
     for (const noteObject of globals.allNotes[order]) {
       if (noteObject.note.length > 0) {
         return true;

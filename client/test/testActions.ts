@@ -11,8 +11,8 @@ import {
   ActionHypothetical,
   ActionIncludingHypothetical,
   ActionPlay,
-  ActionReplayStart,
-  ActionReplayEnd,
+  ActionReplayEnter,
+  ActionReplayExit,
   ActionStrike,
   ActionTurn,
 } from '../src/game/types/actions';
@@ -121,15 +121,27 @@ export const turn = (num: number, currentPlayerIndex: number): ActionTurn => ({
   currentPlayerIndex,
 });
 
-export const startReplay = (segment: number): ActionReplayStart => ({
-  type: 'replayStart',
-  segment,
+export const enterReplay = (): ActionReplayEnter => ({
+  type: 'replayEnter',
+  segment: 0,
 });
-export const endReplay = (): ActionReplayEnd => ({ type: 'replayEnd' });
 
-export const hypoStart = (): ActionHypotheticalStart => ({ type: 'hypoStart' });
-export const hypoEnd = (): ActionHypotheticalEnd => ({ type: 'hypoEnd' });
-export const hypoBack = (): ActionHypotheticalBack => ({ type: 'hypoBack' });
+export const endReplay = (): ActionReplayExit => ({
+  type: 'replayExit',
+});
+
+export const hypoStart = (): ActionHypotheticalStart => ({
+  type: 'hypoStart',
+});
+
+export const hypoEnd = (): ActionHypotheticalEnd => ({
+  type: 'hypoEnd',
+});
+
+export const hypoBack = (): ActionHypotheticalBack => ({
+  type: 'hypoBack',
+});
+
 export const hypoAction = (action: ActionIncludingHypothetical): ActionHypothetical => ({
   type: 'hypoAction',
   action,

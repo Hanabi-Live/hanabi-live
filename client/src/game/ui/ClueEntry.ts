@@ -49,7 +49,8 @@ export default class ClueEntry extends Konva.Group {
       fontSize: 0.9 * h,
       fontFamily: 'Verdana',
       fill: 'white',
-      text: globals.playerNames[clue.giver],
+      text: globals.metadata.playerNames[clue.giver],
+      verticalAlign: 'middle',
     });
     this.add(giver);
 
@@ -61,12 +62,13 @@ export default class ClueEntry extends Konva.Group {
       fontSize: 0.9 * h,
       fontFamily: 'Verdana',
       fill: 'white',
-      text: globals.playerNames[clue.target],
+      text: globals.metadata.playerNames[clue.target],
+      verticalAlign: 'middle',
     });
     this.add(target);
 
     // TODO: use character and playerNames from state
-    const characterID = globals.characterAssignments[clue.giver];
+    const characterID = globals.metadata.characterAssignments[clue.giver];
     const name = new Konva.Text({
       x: 0.75 * w,
       y: 0,
@@ -77,6 +79,7 @@ export default class ClueEntry extends Konva.Group {
       fontFamily: 'Verdana',
       fill: 'white',
       text: cluesRules.getClueName(clue.type, clue.value, globals.variant, characterID),
+      verticalAlign: 'middle',
     });
     this.add(name);
 
@@ -108,7 +111,7 @@ export default class ClueEntry extends Konva.Group {
 
     // Click an entry in the clue log to go to that turn in the replay
     this.background.on('click tap', () => {
-      replay.clueLogClickHandler(this.clue.segment);
+      replay.goToSegment(this.clue.segment + 1, true);
     });
   }
 

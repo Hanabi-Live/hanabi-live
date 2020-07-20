@@ -80,7 +80,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
       return;
     }
 
-    if (globals.replay) {
+    if (globals.metadata.replay) {
       // Escape = If in a replay, exit back to the lobby
       backToLobby();
       return;
@@ -102,10 +102,10 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     // Ctrl + c = Copy the current game ID
     if (
       event.key === 'c'
-      && globals.replay
+      && globals.metadata.replay
       && !($('#game-chat-modal').is(':visible'))
     ) {
-      copyStringToClipboard(globals.databaseID.toString());
+      copyStringToClipboard(globals.metadata.databaseID.toString());
       return;
     }
   }
@@ -169,60 +169,56 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   }
 
   // Replay hotkeys
-  if (globals.hypothetical) {
+  if (globals.metadata.hypothetical) {
     if (event.key === 'ArrowLeft') {
-      hypothetical.sendBackOneTurn();
+      hypothetical.sendBack();
       return;
     }
   } else {
-    if (event.key === 'ArrowLeft') {
-      replay.enter();
-      if (state.replay.active) {
+    switch (event.key) {
+      case 'ArrowLeft': {
         replay.back();
+        return;
       }
-    }
-    if (event.key === 'ArrowRight') {
-      replay.enter();
-      if (state.replay.active) {
+
+      case 'ArrowRight': {
         replay.forward();
+        return;
       }
-      return;
-    }
-    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-      if (globals.sharedReplay) {
-        replay.toggleSharedTurns();
-      } else if (!globals.replay) {
-        replay.exit();
+
+      case 'ArrowUp':
+      case 'ArrowDown': {
+        if (globals.metadata.sharedReplay) {
+          replay.toggleSharedSegments();
+        } else if (!globals.metadata.replay) {
+          replay.exit();
+        }
+        return;
       }
-      return;
-    }
-    if (event.key === '[') {
-      replay.enter();
-      if (state.replay.active) {
+
+      case '[': {
         replay.backRound();
+        return;
       }
-      return;
-    }
-    if (event.key === ']') {
-      replay.enter();
-      if (state.replay.active) {
+
+      case ']': {
         replay.forwardRound();
+        return;
       }
-      return;
-    }
-    if (event.key === 'Home') {
-      replay.enter();
-      if (state.replay.active) {
+
+      case 'Home': {
         replay.backFull();
+        return;
       }
-      return;
-    }
-    if (event.key === 'End') {
-      replay.enter();
-      if (state.replay.active) {
+
+      case 'End': {
         replay.forwardFull();
+        return;
       }
-      return;
+
+      default: {
+        break;
+      }
     }
   }
 
@@ -249,7 +245,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
 
 const sharedReplaySendSound = (sound: string) => {
   // Only enable sound effects in a shared replay
-  if (!globals.replay || !globals.sharedReplay) {
+  if (!globals.metadata.replay || !globals.metadata.sharedReplay) {
     return;
   }
 
@@ -305,7 +301,7 @@ const performAction = (playAction = true) => {
 
 // Keyboard actions for playing and discarding cards
 const promptOwnHandOrder = (actionString: string) : string | number | null => {
-  const playerCards = globals.elements.playerHands[globals.playerUs].children;
+  const playerCards = globals.elements.playerHands[globals.metadata.ourPlayerIndex].children;
   const maxSlotIndex = playerCards.length;
   const msg = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${actionString}.`;
   const response = window.prompt(msg);

@@ -1,5 +1,6 @@
 import Konva from 'konva';
 import { LABEL_COLOR } from '../../../constants';
+import globals from '../globals';
 import FitText from './FitText';
 
 interface ElementValues {
@@ -33,6 +34,7 @@ export default class CurrentPlayerArea extends Konva.Group {
       y: values.y * winH,
       width: values.w * winW,
       height: values.h * winH,
+      visible: !globals.metadata.replay,
     });
 
     this.values = values;

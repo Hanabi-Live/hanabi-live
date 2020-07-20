@@ -6,17 +6,19 @@ import State from '../../../types/State';
 import globals from '../../globals';
 
 export const isVisible = (s: State) => (
+  // Don't show it if the UI is still initializing
+  s.visibleState !== null
   // Don't show it we happen to have the in-game replay open
-  !s.replay.active
-    // The clue UI should take precedence over the "Current Player" area
-    && (
-      s.ongoingGame?.turn.currentPlayerIndex !== s.metadata.ourPlayerIndex
-      && !s.metadata.spectating
-    )
-    // The premove cancel button should take precedence over the "Current Player" area
-    && s.premove === null
-    // Don't show it if the game is over
-    && s.ongoingGame?.turn.currentPlayerIndex !== null
+  && !s.replay.active
+  // The clue UI should take precedence over the "Current Player" area
+  && (
+    s.ongoingGame.turn.currentPlayerIndex !== s.metadata.ourPlayerIndex
+    || s.metadata.spectating
+  )
+  // The premove cancel button should take precedence over the "Current Player" area
+  && s.premove === null
+  // Don't show it if the game is over
+  && s.ongoingGame.turn.currentPlayerIndex !== null
 );
 
 export const onChanged = (data: {
@@ -26,8 +28,10 @@ export const onChanged = (data: {
   visible: boolean;
   currentPlayerIndex: number | null;
 } | undefined) => {
+  // Local variables
   const currentPlayerArea = globals.elements.currentPlayerArea!;
-  if (data.visible !== previousData?.visible) {
+
+  if (previousData === undefined || data.visible !== previousData.visible) {
     currentPlayerArea.visible(data.visible);
     globals.layers.UI.batchDraw();
   }
@@ -73,7 +77,7 @@ export const onChanged = (data: {
   const setPlayerText = (threeLines: boolean) => {
     const { rect1, textValues, values } = currentPlayerArea;
 
-    text2.fitText(globals.playerNames[data.currentPlayerIndex!]);
+    text2.fitText(globals.metadata.playerNames[data.currentPlayerIndex!]);
 
     let maxSize = (values.h / 3) * winH;
     if (threeLines) {
@@ -164,7 +168,7 @@ export const onChanged = (data: {
 const getArrowRotationCorrespondingToPlayer = (playerIndex: number) => {
   const hand = globals.elements.playerHands[playerIndex];
   if (hand === undefined) {
-    throw new Error(`Failed to get the arrow rotation corresponding to the player at index ${playerIndex}.`);
+    throw new Error(`Failed to get the hand corresponding to the player at index ${playerIndex}.`);
   }
   const centerPos = hand.getAbsoluteCenterPos();
   const thisPos = globals.elements.currentPlayerArea!.arrow.getAbsolutePosition();

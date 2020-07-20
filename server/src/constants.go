@@ -55,7 +55,7 @@ const (
 
 const (
 	// Changing the shared turn
-	ReplayActionTypeTurn = iota
+	ReplayActionTypeSegment = iota
 	// Highlighting a card with an indicator arrow
 	ReplayActionTypeArrow
 	// Play one of the arbitrary sound effects included on the server

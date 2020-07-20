@@ -1,7 +1,9 @@
 import { PREPLAY_DELAY } from '../../constants';
 import * as notifications from '../../notifications';
+import { variantRules } from '../rules';
 import ActionType from '../types/ActionType';
 import ClientAction from '../types/ClientAction';
+import ClueType from '../types/ClueType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import globals from './globals';
@@ -78,7 +80,10 @@ const handlePremove = () => {
       value: premove.value,
     });
 
-    globals.store!.dispatch({ type: 'premove', premove: null });
+    globals.store!.dispatch({
+      type: 'premove',
+      premove: null,
+    });
     hideClueUIAndDisableDragging();
   }, PREPLAY_DELAY);
 };
@@ -99,7 +104,7 @@ export const showClueUI = () => {
   }
 
   // Reset and show the clue UI
-  if (globals.playerNames.length === 2) {
+  if (globals.metadata.playerNames.length === 2) {
     // In 2-player games,
     // default the clue recipient button to the only other player available
     // Otherwise, leave the last player selected
@@ -107,10 +112,35 @@ export const showClueUI = () => {
   }
   globals.elements.clueTypeButtonGroup!.clearPressed();
   globals.elements.clueArea!.show();
-  if (globals.elements.yourTurn !== null && !globals.hypothetical) {
+  if (globals.elements.yourTurn !== null && !globals.metadata.hypothetical) {
     globals.elements.yourTurn.show();
   }
   globals.elements.currentPlayerArea!.hide();
+
+  // Hide some specific clue buttons in certain variants with clue restrictions
+  if (variantRules.isAlternatingClues(globals.variant)) {
+    const ongoingGameState = globals.metadata.hypothetical
+      ? state.replay.hypothetical!.ongoing
+      : state.ongoingGame;
+    if (ongoingGameState.clues.length > 0) {
+      const lastClue = ongoingGameState.clues[ongoingGameState.clues.length - 1];
+      if (lastClue.type === ClueType.Color) {
+        for (const button of globals.elements.colorClueButtons) {
+          button.hide();
+        }
+        for (const button of globals.elements.rankClueButtons) {
+          button.show();
+        }
+      } else if (lastClue.type === ClueType.Rank) {
+        for (const button of globals.elements.colorClueButtons) {
+          button.show();
+        }
+        for (const button of globals.elements.rankClueButtons) {
+          button.hide();
+        }
+      }
+    }
+  }
 
   // Fade the clue UI if there is not a clue available
   if (globals.clues >= 1) {
@@ -121,7 +151,7 @@ export const showClueUI = () => {
     globals.elements.clueAreaDisabled!.show();
   }
 
-  if (globals.options.deckPlays) {
+  if (globals.metadata.options.deckPlays) {
     const deckSize = globals.store!.getState().ongoingGame.deckSize;
     globals.elements.deck!.cardBack.draggable(deckSize === 1);
     globals.elements.deckPlayAvailableLabel!.visible(deckSize === 1);
@@ -155,7 +185,10 @@ export const end = (clientAction: ClientAction) => {
     });
     hideClueUIAndDisableDragging();
   } else {
-    globals.store!.dispatch({ type: 'premove', premove: clientAction });
+    globals.store!.dispatch({
+      type: 'premove',
+      premove: clientAction,
+    });
   }
 };
 

@@ -122,6 +122,11 @@ export const animate = (
       node.listening(false);
     }
 
+    // Since we are animating, ensure the node is visible
+    if (!node.isVisible()) {
+      node.show();
+    }
+
     node.tween = new Konva.Tween(config).play();
   }
 };

@@ -14,10 +14,10 @@ import * as replay from './replay';
 import * as turn from './turn';
 
 export const start = () => {
-  if (globals.hypothetical) {
+  if (globals.metadata.hypothetical) {
     return;
   }
-  globals.hypothetical = true;
+  globals.metadata.hypothetical = true;
 
   if (globals.amSharedReplayLeader) {
     globals.lobby.conn!.send('replayAction', {
@@ -27,11 +27,15 @@ export const start = () => {
   }
 
   // Bring us to the current shared replay turn, if we are not already there
-  if (!globals.useSharedTurns) {
-    replay.toggleSharedTurns();
+  const state = globals.store!.getState();
+  if (!state.replay.useSharedSegments) {
+    globals.store!.dispatch({
+      type: 'replayUseSharedSegments',
+      useSharedSegments: true,
+    });
   }
 
-  globals.elements.toggleRevealedButton?.setEnabled(true);
+  globals.elements.toggleRevealedButton!.setEnabled(true);
 
   show();
 };
@@ -41,7 +45,7 @@ export const show = () => {
   globals.elements.replayArea!.hide();
 
   // Modify the clue UI
-  if (globals.playerNames.length !== 2) {
+  if (globals.metadata.playerNames.length !== 2) {
     globals.elements.clueTargetButtonGroup!.hide();
     globals.elements.clueTargetButtonGroup2!.show();
   }
@@ -52,7 +56,10 @@ export const show = () => {
 
   // These elements are visible only for the leader
   globals.elements.endHypotheticalButton!.visible(globals.amSharedReplayLeader);
-  globals.elements.hypoBackButton!.visible(globals.amSharedReplayLeader && globals.hypoActions.length > 0); // eslint-disable-line max-len
+  globals.elements.hypoBackButton!.visible((
+    globals.amSharedReplayLeader
+    && globals.hypoActions.length > 0
+  ));
   globals.elements.toggleRevealedButton!.visible(globals.amSharedReplayLeader);
   globals.elements.clueArea!.visible(globals.amSharedReplayLeader);
 
@@ -68,34 +75,14 @@ export const show = () => {
   beginTurn();
 };
 
-// TODO: delete this function?
-export const playThroughPastActions = () => {
-  // If we are joining a hypothetical that is already in progress
-  // or we are going backwards in an existing hypothetical,
-  // play all of the existing hypothetical actions that have taken place so far, if any
-  globals.elements.toggleRevealedButton?.setEnabled(true);
-  if (globals.hypoActions.length > 0) {
-    // This is a mini-version of what happens in the "replay.goto()" function
-    globals.animateFast = true;
-    for (const actionMessage of globals.hypoActions) {
-      setHypoFirstDrawnIndex(actionMessage);
-      checkToggleRevealedButton(actionMessage);
-    }
-    globals.animateFast = false;
-    globals.layers.card.batchDraw();
-    globals.layers.UI.batchDraw();
-    globals.layers.arrow.batchDraw();
-    globals.layers.UI2.batchDraw();
-  }
-
-  beginTurn();
-};
-
+// TODO: move this function to a view
 export const end = () => {
-  if (!globals.hypothetical) {
+  if (!globals.metadata.hypothetical) {
     return;
   }
-  globals.hypothetical = false;
+  globals.metadata.hypothetical = false;
+  globals.hypoActions = [];
+  globals.hypoFirstDrawnIndex = 0;
 
   // Adjust the UI, depending on whether or not we are the replay leader
   globals.elements.replayArea!.show();
@@ -116,18 +103,8 @@ export const end = () => {
   } else {
     globals.elements.hypoCircle!.hide();
   }
+
   globals.layers.UI.batchDraw();
-
-  globals.hypoActions = [];
-
-  globals.hypoFirstDrawnIndex = 0;
-
-  // The "replay.goto()" function will do nothing if we are already at the target turn,
-  // so set the current replay turn to the end of the game to force it to draw/compute the
-  // game from the beginning
-  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
-  globals.replayTurn = finalSegment;
-  replay.goto(globals.sharedReplayTurn, true, true);
 };
 
 export const beginTurn = () => {
@@ -146,7 +123,7 @@ export const beginTurn = () => {
 
     // In 2-player games,
     // default the clue recipient button to the only other player available
-    if (globals.playerNames.length === 2 && enabled) {
+    if (globals.metadata.playerNames.length === 2 && enabled) {
       button.setPressed(true);
     }
   }
@@ -160,74 +137,104 @@ export const beginTurn = () => {
 
 export const send = (hypoAction: ClientAction) => {
   const state = globals.store!.getState();
-  const cardIdentities = state.cardIdentities;
   const gameState = state.replay.hypothetical!.ongoing;
 
-  let type = '';
-  if (hypoAction.type === ActionType.Play) {
-    type = 'play';
-  } else if (hypoAction.type === ActionType.Discard) {
-    type = 'discard';
-  } else if (
-    hypoAction.type === ActionType.ColorClue
-    || hypoAction.type === ActionType.RankClue
-  ) {
-    type = 'clue';
-  }
-
-  if (type === 'clue') {
-    // Clue
-    if (hypoAction.value === undefined) {
-      throw new Error('The hypothetical action was a clue but it did not include a value.');
+  let type;
+  switch (hypoAction.type) {
+    case ActionType.Play: {
+      type = 'play';
+      break;
     }
 
-    const clue: MsgClue = {
-      type: hypoAction.type === ActionType.ColorClue ? ClueType.Color : ClueType.Rank,
-      value: hypoAction.value,
-    };
+    case ActionType.Discard: {
+      type = 'discard';
+      break;
+    }
 
-    const list = getTouchedCardsFromClue(hypoAction.target, clue);
-    sendHypoAction({
-      type,
-      clue,
-      giver: gameState.turn.currentPlayerIndex!,
-      list,
-      target: hypoAction.target,
-      turn: gameState.turn.turnNum,
-    });
-  } else if (type === 'play' || type === 'discard') {
-    const card = globals.deck[hypoAction.target];
+    case ActionType.ColorClue:
+    case ActionType.RankClue: {
+      type = 'clue';
+      break;
+    }
 
-    // Play / Discard
-    sendHypoAction({
-      type,
-      playerIndex: gameState.turn.currentPlayerIndex!,
-      order: hypoAction.target,
-      suitIndex: card.visibleSuitIndex!,
-      rank: card.visibleRank!,
-      failed: false, // TODO: misplays
-    });
+    default: {
+      throw new Error(`Unknown hypothetical action of ${hypoAction.type}.`);
+    }
+  }
 
-    // Draw
-    const nextCardOrder = gameState.deck.length;
-    const nextCard = cardIdentities[nextCardOrder];
-    if (nextCard !== undefined) { // All the cards might have already been drawn
-      if (nextCard.suitIndex === null || nextCard.rank === null) {
-        throw new Error('Unable to find the suit or rank of the next card.');
+  switch (type) {
+    case 'play':
+    case 'discard': {
+      const card = state.cardIdentities[hypoAction.target];
+
+      if (card.suitIndex === null) {
+        throw new Error(`Card ${hypoAction.target} has an unknown suit index.`);
       }
+      if (card.rank === null) {
+        throw new Error(`Card ${hypoAction.target} has an unknown rank.`);
+      }
+
+      // Play / Discard
       sendHypoAction({
-        type: 'draw',
-        order: nextCardOrder,
+        type,
         playerIndex: gameState.turn.currentPlayerIndex!,
-        // Always send the correct suitIndex and rank;
-        // the blanking of the card will be performed on the client
-        suitIndex: nextCard.suitIndex,
-        rank: nextCard.rank,
+        order: hypoAction.target,
+        suitIndex: card.suitIndex,
+        rank: card.rank,
+        failed: false, // TODO: misplays
       });
+
+      // Draw
+      const nextCardOrder = gameState.deck.length;
+      const nextCard = state.cardIdentities[nextCardOrder];
+      if (nextCard !== undefined) { // All the cards might have already been drawn
+        if (nextCard.suitIndex === null || nextCard.rank === null) {
+          throw new Error('Unable to find the suit or rank of the next card.');
+        }
+        sendHypoAction({
+          type: 'draw',
+          order: nextCardOrder,
+          playerIndex: gameState.turn.currentPlayerIndex!,
+          // Always send the correct suitIndex and rank;
+          // the blanking of the card will be performed on the client
+          suitIndex: nextCard.suitIndex,
+          rank: nextCard.rank,
+        });
+      }
+      break;
+    }
+
+    case 'clue': {
+      if (hypoAction.value === undefined) {
+        throw new Error('The hypothetical action was a clue but it did not include a value.');
+      }
+
+      const clue: MsgClue = {
+        type: hypoAction.type === ActionType.ColorClue ? ClueType.Color : ClueType.Rank,
+        value: hypoAction.value,
+      };
+
+      const list = getTouchedCardsFromClue(hypoAction.target, clue);
+      sendHypoAction({
+        type,
+        clue,
+        giver: gameState.turn.currentPlayerIndex!,
+        list,
+        target: hypoAction.target,
+        turn: gameState.turn.turnNum,
+      });
+
+      break;
+    }
+
+    default: {
+      throw new Error(`Unknown hypothetical type of ${type}.`);
     }
   }
 
-  // Turn
+  // Finally, send a turn action
+  // Even though this action is unnecessary from the point of the reducers,
+  // for now we MUST send it so that the "hypoAction" command handler knows when to begin a turn
   let nextPlayerIndex = gameState.turn.currentPlayerIndex! + 1;
   if (nextPlayerIndex === state.metadata.options.numPlayers) {
     nextPlayerIndex = 0;
@@ -253,7 +260,7 @@ const checkSetDraggableAllHands = () => {
   }
 };
 
-export const sendBackOneTurn = () => {
+export const sendBack = () => {
   if (!globals.amSharedReplayLeader) {
     return;
   }
@@ -264,7 +271,7 @@ export const sendBackOneTurn = () => {
   });
 };
 
-export const backOneTurn = () => {
+export const back = () => {
   if (globals.hypoActions.length === 0) {
     return;
   }
@@ -288,11 +295,7 @@ export const backOneTurn = () => {
 
   // Reset to the segment where the hypothetical started
   const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
-  globals.replayTurn = finalSegment;
-  replay.goto(globals.sharedReplayTurn, true, true);
-
-  // Replay all of the hypothetical actions
-  playThroughPastActions();
+  replay.goToSegment(finalSegment, false, true);
 };
 
 export const toggleRevealed = () => {
@@ -305,7 +308,7 @@ export const toggleRevealed = () => {
 // Set hypoFirstDrawnIndex if this is the first card we drew in the hypothetical
 // This check should only run if the draw action is a hypoAction
 export const setHypoFirstDrawnIndex = (actionMessage: ActionIncludingHypothetical) => {
-  if (actionMessage.type === 'draw' && globals.hypothetical && !globals.hypoFirstDrawnIndex) {
+  if (actionMessage.type === 'draw' && globals.metadata.hypothetical && !globals.hypoFirstDrawnIndex) {
     globals.hypoFirstDrawnIndex = actionMessage.order;
   }
 };

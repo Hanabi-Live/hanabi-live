@@ -297,17 +297,20 @@ func (s *Session) NotifyPause(t *Table) {
 }
 
 func (s *Session) NotifySpectators(t *Table) {
-	// Build an array with the names of all of the spectators
 	names := make([]string, 0)
+	shadowingPlayers := make([]int, 0)
 	for _, sp := range t.Spectators {
 		names = append(names, sp.Name)
+		shadowingPlayers = append(shadowingPlayers, sp.PlayerIndex)
 	}
 
 	type SpectatorsMessage struct {
-		Names []string `json:"names"`
+		Names            []string `json:"names"`
+		ShadowingPlayers []int    `json:"shadowingPlayers"`
 	}
 	s.Emit("spectators", &SpectatorsMessage{
-		Names: names,
+		Names:            names,
+		ShadowingPlayers: shadowingPlayers,
 	})
 }
 

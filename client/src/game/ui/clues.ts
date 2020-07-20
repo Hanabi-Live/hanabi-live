@@ -16,7 +16,7 @@ import * as turn from './turn';
 
 export const checkLegal = () => {
   let clueTargetButtonGroup;
-  if (globals.hypothetical) {
+  if (globals.metadata.hypothetical) {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
   } else {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
@@ -46,7 +46,7 @@ export const checkLegal = () => {
 
   const touchedAtLeastOneCard = showClueMatch(who, clueButton.clue);
 
-  const ourCharacterID = globals.characterAssignments[globals.playerUs];
+  const ourCharacterID = globals.metadata.characterAssignments[globals.metadata.ourPlayerIndex];
   let ourCharacterName = '';
   if (ourCharacterID !== null) {
     const ourCharacter = getCharacter(ourCharacterID);
@@ -57,7 +57,7 @@ export const checkLegal = () => {
   // one or more cards in the hand
   const enabled = touchedAtLeastOneCard
     // Make an exception if they have the optional setting for "Empty Clues" turned on
-    || globals.options.emptyClues
+    || globals.metadata.options.emptyClues
     // Make an exception for variants where color clues are always allowed
     || (globals.variant.colorCluesTouchNothing && clueButton.clue.type === ClueType.Color)
     // Make an exception for variants where number clues are always allowed
@@ -65,12 +65,12 @@ export const checkLegal = () => {
     // Make an exception for certain characters
     || (
       ourCharacterName === 'Blind Spot'
-      && who === (globals.playerUs + 1) % globals.playerNames.length
+      && who === (globals.metadata.ourPlayerIndex + 1) % globals.metadata.playerNames.length
     )
     || (
       ourCharacterName === 'Oblivious'
-      && who === (globals.playerUs - 1 + globals.playerNames.length)
-        % globals.playerNames.length
+      && who === (globals.metadata.ourPlayerIndex - 1 + globals.metadata.playerNames.length)
+        % globals.metadata.playerNames.length
     );
 
   globals.elements.giveClueButton!.setEnabled(enabled);
@@ -113,7 +113,7 @@ export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
 
 export const give = () => {
   let clueTargetButtonGroup;
-  if (globals.hypothetical) {
+  if (globals.metadata.hypothetical) {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
   } else {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;

@@ -86,7 +86,7 @@ describe('gameStateReducer', () => {
       const discardAction = discard(0, 0, 1, 0, true);
       state = gameStateReducer(state, discardAction, defaultMetadata);
 
-      // TODO remove this when misplays are calculated from an ActionPlay
+      // TODO: remove this when misplays are calculated from an ActionPlay
       // Mark a strike
       const strikeAction = strike(1, 0, 1);
       state = gameStateReducer(state, strikeAction, defaultMetadata);
@@ -133,7 +133,7 @@ describe('gameStateReducer', () => {
       const discardAction = discard(0, 0, 1, 2, true);
       state = gameStateReducer(state, discardAction, defaultMetadata);
 
-      // TODO remove this when misplays are calculated from an ActionPlay
+      // TODO: remove this when misplays are calculated from an ActionPlay
       // Mark a strike
       const strikeAction = strike(1, 1, 2);
       state = gameStateReducer(state, strikeAction, defaultMetadata);

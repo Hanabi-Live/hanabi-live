@@ -1,5 +1,5 @@
 enum ReplayActionType {
-  Turn,
+  Segment,
   Arrow,
   Sound,
   HypoStart,

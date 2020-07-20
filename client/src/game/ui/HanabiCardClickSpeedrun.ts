@@ -24,9 +24,9 @@ export default function HanabiCardClickSpeedrun(
   // (but don't use the speedrunning behavior if we are in a
   // solo replay / shared replay / spectating / clicking on the stack base)
   if (
-    (!globals.options.speedrun && !globals.lobby.settings.speedrunMode)
-    || globals.replay
-    || globals.spectating
+    (!globals.metadata.options.speedrun && !globals.lobby.settings.speedrunMode)
+    || globals.metadata.replay
+    || globals.metadata.spectating
     || this.state.rank === STACK_BASE_RANK
   ) {
     return;
@@ -61,7 +61,7 @@ export default function HanabiCardClickSpeedrun(
 const clickLeft = (card: HanabiCard, event: MouseEvent) => {
   // Left-clicking on cards in our own hand is a play action
   if (
-    card.state.location === globals.playerUs
+    card.state.location === globals.metadata.ourPlayerIndex
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
@@ -77,7 +77,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
   // Left-clicking on cards in other people's hands is a color clue action
   // (but if we are holding Ctrl, then we are using Empathy)
   if (
-    card.state.location !== globals.playerUs
+    card.state.location !== globals.metadata.ourPlayerIndex
     && cardRules.isInPlayerHand(card.state)
     && card.state.suitIndex !== null
     && globals.clues !== 0
@@ -126,7 +126,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
 const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // Right-clicking on cards in our own hand is a discard action
   if (
-    card.state.location === globals.playerUs
+    card.state.location === globals.metadata.ourPlayerIndex
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
@@ -145,7 +145,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
 
   // Right-clicking on cards in other people's hands is a rank clue action
   if (
-    card.state.location !== globals.playerUs
+    card.state.location !== globals.metadata.ourPlayerIndex
     && cardRules.isInPlayerHand(card.state)
     && card.state.rank !== null
     // It is not possible to clue a Start Card with a rank clue

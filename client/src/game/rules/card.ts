@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
+import { playStacksRules } from '../rules';
 import CardState from '../types/CardState';
 import CardStatus from '../types/CardStatus';
 import { START_CARD_RANK } from '../types/constants';
@@ -129,12 +130,13 @@ export const isCritical = (
   return total === discarded + 1;
 };
 
+// isPotentiallyPlayable checks to see if every card possibility would misplay if the card was
+// played right now
 export const isPotentiallyPlayable = (
   card: CardState,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
-  variant: Variant,
 ) => {
   for (const [suitIndex, rank] of card.possibleCardsFromClues) {
     if (card.possibleCardsFromObservation[suitIndex][rank] === 0) continue;

@@ -33,21 +33,22 @@ export const onMorphedIdentitiesChanged = (data: {
   morphedIdentities: readonly CardIdentity[] | undefined;
 } | undefined) => {
   if (previousData === undefined || !previousData.hypotheticalActive) {
-    // Initializing, or entering hypothetical
+    // Initializing or entering a hypothetical
     return;
   }
 
   if (!data.hypotheticalActive) {
     if (!previousData.hypotheticalActive) {
-      // Something is wrong, we're exiting a hypothetical that wasn't there
       throw new Error('Trying to unmorph cards but we were not in a hypothetical.');
     }
+
     // Exiting hypothetical, update all morphed
     for (let i = 0; i < previousData.morphedIdentities!.length; i++) {
       if (previousData.morphedIdentities![i] !== undefined) {
         updateCardVisuals(i);
       }
     }
+
     return;
   }
 
@@ -73,6 +74,7 @@ const subscribeToCardChanges = (order: number) => {
         // Return undefined to prevent firing the listener
         return undefined;
       }
+
       return s(state);
     };
   }
@@ -143,6 +145,7 @@ const updateCardVisuals = (order: number) => {
   } else {
     globals.stackBases[order - globals.deck.length].setBareImage();
   }
+
   globals.layers.card.batchDraw();
 };
 

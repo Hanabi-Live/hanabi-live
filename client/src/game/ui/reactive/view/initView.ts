@@ -3,8 +3,10 @@
 import globals from '../../globals';
 
 export const onInitializationChanged = (initialized: boolean) => {
-  if (initialized) {
-    globals.loading = false;
-    globals.animateFast = false;
+  if (!initialized) {
+    return;
   }
+
+  globals.loading = false;
+  globals.animateFast = false;
 };

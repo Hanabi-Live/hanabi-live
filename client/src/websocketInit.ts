@@ -74,7 +74,22 @@ const initCommands = (conn: Connection) => {
   for (const [commandName, commandFunction] of gameCommands) {
     conn.on(commandName, (data: any) => {
       // As a safety precaution, ignore any game-related commands if we are not inside of a game
-      if (globals.currentScreen !== 'game') {
+      if (
+        globals.currentScreen !== 'game'
+        || globals.ui === null
+      ) {
+        return;
+      }
+
+      // As a safety precaution, ignore any game-related commands if we are still loading the UI
+      // The only commands that we should receive while loading are:
+      // 1) "init" (in response to a "getGameInfo1") and
+      // 2) "gameActionList" (in response to a "getGameInfo2")
+      if (
+        globals.ui.globals.loading
+        && commandName !== 'init'
+        && commandName !== 'gameActionList'
+      ) {
         return;
       }
 

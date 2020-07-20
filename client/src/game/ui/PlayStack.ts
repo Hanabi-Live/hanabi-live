@@ -27,7 +27,7 @@ export default class PlayStack extends Konva.Group {
       const opacity = (
         // Hide cards in "Throw It in a Hole" variants
         variantRules.isThrowItInAHole(globals.variant)
-        && !globals.replay // Revert to the normal behavior for replays
+        && !globals.metadata.replay // Revert to the normal behavior for replays
         && !stackBase // We want the stack bases to always be visible
       ) ? 0 : 1;
 
@@ -35,8 +35,10 @@ export default class PlayStack extends Konva.Group {
       // (tweening from the hand to the discard pile is handled in
       // the "CardLayout" object)
       card.startedTweening();
+      const duration = 0.8;
+      card.setVisualEffect('default', duration);
       animate(layoutChild, {
-        duration: 0.8,
+        duration,
         x: 0,
         y: 0,
         scale,

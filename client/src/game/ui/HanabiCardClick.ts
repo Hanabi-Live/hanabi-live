@@ -15,9 +15,9 @@ export default function HanabiCardClick(this: HanabiCard, event: Konva.KonvaEven
   // (but do not use the speedrunning behavior if we are in a
   // solo replay / shared replay / spectating)
   if (
-    (globals.options.speedrun || globals.lobby.settings.speedrunMode)
-    && !globals.replay
-    && !globals.spectating
+    (globals.metadata.options.speedrun || globals.lobby.settings.speedrunMode)
+    && !globals.metadata.replay
+    && !globals.metadata.spectating
   ) {
     return;
   }
@@ -45,7 +45,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     || event.shiftKey
     || event.metaKey
     || card.state.rank === STACK_BASE_RANK // Disable clicking on the stack base
-    || globals.hypothetical // No replay actions should happen in a hypothetical
+    || globals.metadata.hypothetical // No replay actions should happen in a hypothetical
   ) {
     return;
   }
@@ -56,22 +56,22 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     // and then indicate the card)
     if (card.state.segmentDrawn === null) {
       // The card was drawn during the initial deal before the first turn
-      goToTurnAndIndicateCard(0, card.state.order);
+      replay.goToSegmentAndIndicateCard(0, card.state.order);
     } else {
       // The card was drawn after the initial deal
       // Go to the segment that it was drawn and then fast-forward one segment in order to show the
       // card tweening into the hand
-      // We have to record the segment because it will be cleared after the first "goToTurn()"
+      // (we have to record the segment because it will be cleared after the first "goToTurn()")
       const segmentDrawn = card.state.segmentDrawn;
-      goToTurn(segmentDrawn, true);
-      goToTurnAndIndicateCard(segmentDrawn + 1, card.state.order, false);
+      replay.goToSegment(segmentDrawn, true);
+      replay.goToSegmentAndIndicateCard(segmentDrawn + 1, card.state.order);
     }
   } else if (cardRules.isPlayed(card.state)) {
     // Clicking on played cards goes to the turn immediately before they were played
-    goToTurnAndIndicateCard(card.state.segmentPlayed!, card.state.order);
+    replay.goToSegmentAndIndicateCard(card.state.segmentPlayed!, card.state.order);
   } else if (cardRules.isDiscarded(card.state)) {
     // Clicking on discarded cards goes to the turn immediately before they were discarded
-    goToTurnAndIndicateCard(card.state.segmentDiscarded!, card.state.order);
+    replay.goToSegmentAndIndicateCard(card.state.segmentDiscarded!, card.state.order);
   }
 };
 
@@ -88,18 +88,17 @@ const clickMiddle = (card: HanabiCard, event: MouseEvent) => {
   ) {
     // We add one to the segment so that the clue is visible
     // (if we go to the turn that the card was clued, then the actual clue has not happened yet)
-    goToTurn(card.state.segmentFirstClued + 1, true);
+    replay.goToSegment(card.state.segmentFirstClued + 1, true);
   }
 };
 
 const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // Alt + right-click is a card morph (in a hypothetical)
   if (
-    globals.replay
-    && globals.sharedReplay
+    globals.metadata.replay
+    && globals.metadata.sharedReplay
     && globals.amSharedReplayLeader
-    && globals.useSharedTurns
-    && globals.hypothetical
+    && globals.metadata.hypothetical
     && !event.ctrlKey
     && !event.shiftKey
     && event.altKey
@@ -114,18 +113,19 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // (we want it to work no matter what modifiers are being pressed,
   // in case someone is pushing their push-to-talk hotkey while highlighting cards)
   if (
-    globals.replay
-    && globals.sharedReplay
+    globals.metadata.replay
+    && globals.metadata.sharedReplay
     && globals.amSharedReplayLeader
-    && globals.useSharedTurns
+    && globals.store!.getState().replay.useSharedSegments
   ) {
     arrows.send(card.state.order, card);
     return;
   }
 
   // Right-click in a solo replay just displays what card order (in the deck) that it is
-  if (globals.replay && !globals.sharedReplay) {
+  if (globals.metadata.replay && !globals.metadata.sharedReplay) {
     console.log(`This card's order is: ${card.state.order}`);
+    return;
   }
 
   // Ctrl + shift + right-click is a shortcut for entering the same note as previously entered
@@ -135,8 +135,8 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.replay
-    && !globals.spectating
+    && !globals.metadata.replay
+    && !globals.metadata.spectating
   ) {
     card.setNote(globals.lastNote);
     return;
@@ -149,8 +149,8 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.replay
-    && !globals.spectating
+    && !globals.metadata.replay
+    && !globals.metadata.spectating
   ) {
     card.appendNote('f');
     return;
@@ -163,8 +163,8 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.shiftKey
     && event.altKey
     && !event.metaKey
-    && !globals.replay
-    && !globals.spectating
+    && !globals.metadata.replay
+    && !globals.metadata.spectating
   ) {
     card.appendNote('cm');
     return;
@@ -180,7 +180,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.sharedReplay
+    && !globals.metadata.sharedReplay
   ) {
     arrows.toggle(card);
     return;
@@ -192,29 +192,10 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.replay
+    && !globals.metadata.replay
   ) {
     notes.openEditTooltip(card);
   }
-};
-
-const goToTurn = (turn: number, fast: boolean) => {
-  if (globals.replay) {
-    replay.checkDisableSharedTurns();
-  } else {
-    replay.enter();
-  }
-  if (globals.store!.getState().replay.active) {
-    replay.goto(turn, fast);
-  }
-};
-
-export const goToTurnAndIndicateCard = (turn: number, order: number, fast: boolean = true) => {
-  goToTurn(turn, fast);
-
-  // We indicate the card to make it easier to find
-  arrows.hideAll(); // We hide all the arrows first to ensure that the arrow is always shown
-  arrows.toggle(globals.deck[order]);
 };
 
 // Morphing cards allows for creation of hypothetical situations

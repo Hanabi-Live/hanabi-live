@@ -23,6 +23,7 @@ export default function testMetadata(
     ].slice(0, numPlayers),
     ourPlayerIndex: 0,
     spectating: true,
+    finished: false,
     characterAssignments: initArray(numPlayers, null),
     characterMetadata: [],
   };
