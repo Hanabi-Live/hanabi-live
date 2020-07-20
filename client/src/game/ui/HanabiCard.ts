@@ -71,9 +71,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // HACK: since Konva doesn't propagate listening hierarchically until v7,
     // stop the image from listening
     this.bare.listening(false);
-
-    // Ensure any cursor visual effects are reset when animating
-    this.setVisualEffect('default');
   }
 
   finishedTweening() {
@@ -846,25 +843,28 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  visualEffectCursor: CursorType = 'default';
-  setVisualEffect(cursor: CursorType) {
+  private visualEffectCursor: CursorType = 'default';
+  setVisualEffect(cursor: CursorType, duration?: number) {
     if (cursor === this.visualEffectCursor) {
       return;
     }
     this.visualEffectCursor = cursor;
+
+    const defaultDuration = 0.05;
+    const actualDuration = globals.animateFast ? 0 : (duration ?? defaultDuration);
 
     // Shadow special effects
     const shadowOffset = cursor === 'dragging' ? Math.floor(0.12 * CARD_W) : Math.floor(0.04 * CARD_W);
     this.bare.to({
       shadowOffsetX: shadowOffset,
       shadowOffsetY: shadowOffset,
-      duration: globals.animateFast ? 0 : 0.05,
+      duration: actualDuration,
     });
     const baseOffsetY = this.isRaisedBecauseOfClues() ? 0.6 * CARD_H : 0.5 * CARD_H;
     this.to({
       offsetX: cursor === 'dragging' ? 0.52 * CARD_W : 0.5 * CARD_W,
       offsetY: baseOffsetY + (cursor === 'dragging' ? 0.02 * CARD_H : 0),
-      duration: globals.animateFast ? 0 : 0.05,
+      duration: actualDuration,
     });
   }
 
