@@ -1,7 +1,9 @@
 import { PREPLAY_DELAY } from '../../constants';
 import * as notifications from '../../notifications';
+import { variantRules } from '../rules';
 import ActionType from '../types/ActionType';
 import ClientAction from '../types/ClientAction';
+import ClueType from '../types/ClueType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import globals from './globals';
@@ -114,6 +116,26 @@ export const showClueUI = () => {
     globals.elements.yourTurn.show();
   }
   globals.elements.currentPlayerArea!.hide();
+
+  // Hide some specific clue buttons in certain variants with clue restrictions
+  if (variantRules.isAlternatingClues(globals.variant) && state.ongoingGame.clues.length > 0) {
+    const lastClue = state.ongoingGame.clues[state.ongoingGame.clues.length - 1];
+    if (lastClue.type === ClueType.Color) {
+      for (const button of globals.elements.colorClueButtons) {
+        button.hide();
+      }
+      for (const button of globals.elements.rankClueButtons) {
+        button.show();
+      }
+    } else if (lastClue.type === ClueType.Rank) {
+      for (const button of globals.elements.colorClueButtons) {
+        button.show();
+      }
+      for (const button of globals.elements.rankClueButtons) {
+        button.hide();
+      }
+    }
+  }
 
   // Fade the clue UI if there is not a clue available
   if (globals.clues >= 1) {
