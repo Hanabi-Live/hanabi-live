@@ -250,7 +250,7 @@ export const pips = (variant: Variant) => {
     suitPipsXMap.set(i, suitPipX);
   }
 
-  // Initialize the rank pips, which are black squares along the bottom of the card
+  // Initialize the rank pips (along the bottom of the card)
   const rankPips = new Konva.Group({
     x: 0,
     y: Math.floor(CARD_H * 0.81),
