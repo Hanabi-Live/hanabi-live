@@ -35,8 +35,10 @@ export default class PlayStack extends Konva.Group {
       // (tweening from the hand to the discard pile is handled in
       // the "CardLayout" object)
       card.startedTweening();
+      const duration = 0.8;
+      card.setVisualEffect('default', duration);
       animate(layoutChild, {
-        duration: 0.8,
+        duration,
         x: 0,
         y: 0,
         scale,
