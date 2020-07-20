@@ -600,41 +600,42 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   removeFromParent() {
     // Remove the card from the player's hand in preparation of adding it to either
     // the play stacks or the discard pile
-    const layoutChild = this.parent;
-    if (!layoutChild || !layoutChild.parent) {
+    if (!this.layout.parent) {
       // If a tween is destroyed in the middle of animation,
       // it can cause a card to be orphaned
+      // Ensure the position is reset to the deck, if unset
+      if (this.layout.x() === 0 && this.layout.y() === 0) {
+        this.moveToDeckPosition();
+      }
       return;
     }
-    const pos = layoutChild.getAbsolutePosition();
-    layoutChild.rotation(layoutChild.parent.rotation());
-    layoutChild.remove();
-    layoutChild.setAbsolutePosition(pos);
+    const pos = this.layout.getAbsolutePosition();
+    this.layout.rotation(this.layout.parent.rotation());
+    this.layout.remove();
+    this.layout.setAbsolutePosition(pos);
+  }
+
+  private moveToDeckPosition() {
+    const deckPos = globals.elements.deck!.cardBack.getAbsolutePosition();
+    this.layout.setAbsolutePosition(deckPos);
+    const scale = globals.elements.deck!.cardBack.width() / CARD_W;
+    this.layout.scale({
+      x: scale,
+      y: scale,
+    });
   }
 
   animateToPlayerHand(holder: number) {
-    const child = this.parent as unknown as LayoutChild;
-    const oldParent = child!.parent;
     this.removeFromParent();
 
     // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
     // and the user rewinds to the beginning of the replay
-    child!.visible(true);
-    child!.rotation(-globals.elements.playerHands[holder].rotation());
-    child!.opacity(1); // Cards can be faded in certain variants
-    if (!oldParent) {
-      // Animate from the deck
-      const deckPos = globals.elements.deck!.cardBack.getAbsolutePosition();
-      child!.setAbsolutePosition(deckPos);
-      const scale = globals.elements.deck!.cardBack.width() / CARD_W;
-      child!.scale({
-        x: scale,
-        y: scale,
-      });
-    }
+    this.layout.visible(true);
+    this.layout.rotation(-globals.elements.playerHands[holder].rotation());
+    this.layout.opacity(1); // Cards can be faded in certain variants
 
     // Add it to the player's hand (which will automatically tween the card)
-    globals.elements.playerHands[holder].addChild(child);
+    globals.elements.playerHands[holder].addChild(this.layout);
     globals.elements.playerHands[holder].moveToTop();
 
     // In case listening was disabled, which happens in some variants
