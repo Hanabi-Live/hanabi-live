@@ -501,6 +501,7 @@ commands.set('replaySound', (data: ReplaySoundData) => {
 // This is used to update the names of the people currently spectating the game
 interface SpectatorsData {
   names: string[];
+  shadowingPlayers: number[];
 }
 commands.set('spectators', (data: SpectatorsData) => {
   // Remember the current list of spectators
@@ -514,14 +515,27 @@ commands.set('spectators', (data: SpectatorsData) => {
 
     // Build the string that shows all the names
     let nameEntries = '';
-    for (const name of data.names) {
+    for (let i = 0; i < data.names.length; i++) {
+      const name = data.names[i];
+      const shadowing = data.shadowingPlayers[i];
+
+      let nameEntry = '<li>';
       if (name === globals.lobby.username) {
-        nameEntries += `<li><span class="name-me">${name}</span></li>`;
+        nameEntry += `<span class="name-me">${name}</span>`;
       } else if (globals.lobby.friends.includes(name)) {
-        nameEntries += `<li><span class="friend">${name}</span></li>`;
+        nameEntry += `<span class="friend">${name}</span>`;
       } else {
-        nameEntries += `<li>${name}</li>`;
+        nameEntry += name;
       }
+      if (shadowing !== -1) {
+        const shadowedPlayerName = globals.metadata.playerNames[shadowing];
+        if (shadowedPlayerName === undefined) {
+          throw new Error(`Unable to find the player name at index ${shadowing}.`);
+        }
+        nameEntry += ` (🕵️ <em>${shadowedPlayerName}</em>)`;
+      }
+      nameEntry += '</li>';
+      nameEntries += nameEntry;
     }
     let content = '<strong>';
     if (globals.metadata.replay) {
