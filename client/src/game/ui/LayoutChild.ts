@@ -149,8 +149,12 @@ export default class LayoutChild extends Konva.Group {
     // We have released the mouse button, so immediately set the cursor back to the default
     cursorSet('default');
 
-    const card = this.children[0] as unknown as HanabiCard;
+    // We have to unregister the handler or else it will send multiple actions for one drag
+    this.draggable(false);
+    this.off('dragstart');
+    this.off('dragend');
 
+    // Find out where we dragged this card to
     const pos = this.getAbsolutePosition();
     pos.x += this.width() * this.scaleX() / 2;
     pos.y += this.height() * this.scaleY() / 2;
@@ -167,17 +171,46 @@ export default class LayoutChild extends Konva.Group {
       }
     }
 
-    // Before we play a card,
-    // do a check to ensure that it is actually playable to prevent silly mistakes from players
-    // (but disable this in speedruns and certain variants)
+    draggedTo = this.checkMisplay(draggedTo);
+
+    if (draggedTo === null) {
+      // The card was dragged to an invalid location; tween it back to the hand
+      (this.parent as unknown as CardLayout | PlayStack).doLayout();
+      return;
+    }
+
+    let type;
+    if (draggedTo === 'playArea') {
+      type = ActionType.Play;
+    } else if (draggedTo === 'discardArea') {
+      type = ActionType.Discard;
+    } else {
+      throw new Error(`Unknown drag location of "${draggedTo}".`);
+    }
+
+    const card = this.children[0] as unknown as HanabiCard;
+    turn.end({
+      type,
+      target: card.state.order,
+    });
+  }
+
+  // Before we play a card,
+  // do a check to ensure that it is actually playable to prevent silly mistakes from players
+  // (but disable this in speedruns and certain variants)
+  checkMisplay(draggedTo: string | null) {
+    // Local variables
     const state = globals.store!.getState();
     const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
     const ourPlayerIndex = state.metadata.ourPlayerIndex;
+    const card = this.children[0] as unknown as HanabiCard;
+
     if (
       draggedTo === 'playArea'
       && !globals.metadata.options.speedrun
       && !variantRules.isThrowItInAHole(globals.variant)
-      && currentPlayerIndex === ourPlayerIndex // Don't use warnings for preplays
+      // Don't use warnings for preplays unless we are at 2 strikes
+      && (currentPlayerIndex === ourPlayerIndex || state.ongoingGame.strikes.length === 2)
       && !cardRules.isPotentiallyPlayable(
         card.state,
         state.ongoingGame.deck,
@@ -190,24 +223,10 @@ export default class LayoutChild extends Konva.Group {
       text += 'It is known to be unplayable based on the current information\n';
       text += 'available to you. (e.g. positive clues, negative clues, cards seen, etc.)';
       if (!window.confirm(text)) {
-        draggedTo = null;
+        return null;
       }
     }
 
-    // We have to unregister the handler or else it will send multiple actions for one drag
-    this.draggable(false);
-    this.off('dragstart');
-    this.off('dragend');
-
-    if (draggedTo === null) {
-      // The card was dragged to an invalid location; tween it back to the hand
-      (this.parent as unknown as CardLayout | PlayStack).doLayout();
-      return;
-    }
-
-    turn.end({
-      type: draggedTo === 'playArea' ? ActionType.Play : ActionType.Discard,
-      target: card.state.order,
-    });
+    return draggedTo;
   }
 }
