@@ -174,7 +174,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Initialize various elements/features of the card
     this.bare = HanabiCardInit.image(
       () => this.bareName,
-      () => this.visibleRank === STACK_BASE_RANK,
     );
     this.add(this.bare);
 
