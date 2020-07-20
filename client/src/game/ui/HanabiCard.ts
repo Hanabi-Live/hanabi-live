@@ -378,11 +378,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this.bareName = DECK_BACK_IMAGE;
 
       // Disable dragging of this card
-      const layoutChild = this.parent;
-      if (layoutChild) {
-        layoutChild.draggable(false);
-        layoutChild.off('dragend');
-      }
+      this.layout.draggable(false);
+      this.layout.off('dragend');
     } else if (
       // A "blank" note means that the user wants to force the card to appear blank
       this.note?.blank
@@ -643,7 +640,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToDeck() {
-    const layoutChild = this.parent as unknown as LayoutChild;
+    const layoutChild = this.layout;
     if (
       layoutChild === undefined
       || layoutChild.parent === null
@@ -731,7 +728,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       // We might have discarded a hidden card in a hypothetical
       return;
     }
-    discardStack.addChild(this.parent as any);
+    discardStack.addChild(this.layout);
 
     // We need to bring the discarded card to the top so that when it tweens to the discard
     // pile, it will fly on top of the play stacks and other player's hands
@@ -774,14 +771,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   getSlotNum() {
-    if (!this.parent || !this.parent.parent) {
+    if (!this.layout.parent) {
       return -1;
     }
 
-    const numCardsInHand = this.parent.parent.children.length;
+    const numCardsInHand = this.layout.parent.children.length;
     for (let i = 0; i < numCardsInHand; i++) {
-      const layoutChild = this.parent.parent.children[i];
-      if ((layoutChild.children[0] as HanabiCard).state.order === this.state.order) {
+      const layoutChild = this.layout.parent.children[i] as LayoutChild;
+      if (layoutChild.card.state.order === this.state.order) {
         return numCardsInHand - i;
       }
     }
@@ -903,7 +900,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Don't show the cursor if the card is draggable
     // (the hand cursor takes precedence over the look cursor)
-    if (this.parent !== null && this.parent.draggable()) {
+    if (this.layout !== null && this.layout.draggable()) {
       return false;
     }
 
@@ -936,21 +933,19 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   private cardStartDrag(event: Konva.KonvaEventObject<MouseEvent>) {
     if (
       event.evt.button !== 0 // Dragging uses left click
-      || !this.parent
-      || !this.parent.draggable()
+      || !this.layout.draggable()
     ) {
       return;
     }
 
     // Hide any visible arrows on the rest of a hand when the card begins to be dragged
     if (
-      this.parent === undefined
-      || this.parent.parent === undefined
-      || this.parent.parent === null
+      this.layout.parent === undefined
+      || this.layout.parent === null
     ) {
       return;
     }
-    const hand = this.parent.parent;
+    const hand = this.layout.parent;
     let hideArrows = false;
     for (const layoutChild of hand.children.toArray()) {
       const card: HanabiCard = (layoutChild as Konva.Node).children[0] as HanabiCard;
@@ -1067,10 +1062,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         return;
       }
 
-      if (!this.parent || !this.parent.parent) {
+      if (!this.layout.parent) {
         return;
       }
-      const hand = this.parent.parent as unknown as CardLayout;
+      const hand = this.layout.parent as unknown as CardLayout;
       if (hand === undefined || hand.children.length === 0 || hand.empathy === enabled) {
         return;
       }
