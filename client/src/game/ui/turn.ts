@@ -118,21 +118,26 @@ export const showClueUI = () => {
   globals.elements.currentPlayerArea!.hide();
 
   // Hide some specific clue buttons in certain variants with clue restrictions
-  if (variantRules.isAlternatingClues(globals.variant) && state.ongoingGame.clues.length > 0) {
-    const lastClue = state.ongoingGame.clues[state.ongoingGame.clues.length - 1];
-    if (lastClue.type === ClueType.Color) {
-      for (const button of globals.elements.colorClueButtons) {
-        button.hide();
-      }
-      for (const button of globals.elements.rankClueButtons) {
-        button.show();
-      }
-    } else if (lastClue.type === ClueType.Rank) {
-      for (const button of globals.elements.colorClueButtons) {
-        button.show();
-      }
-      for (const button of globals.elements.rankClueButtons) {
-        button.hide();
+  if (variantRules.isAlternatingClues(globals.variant)) {
+    const ongoingGameState = globals.metadata.hypothetical
+      ? state.replay.hypothetical!.ongoing
+      : state.ongoingGame;
+    if (ongoingGameState.clues.length > 0) {
+      const lastClue = ongoingGameState.clues[ongoingGameState.clues.length - 1];
+      if (lastClue.type === ClueType.Color) {
+        for (const button of globals.elements.colorClueButtons) {
+          button.hide();
+        }
+        for (const button of globals.elements.rankClueButtons) {
+          button.show();
+        }
+      } else if (lastClue.type === ClueType.Rank) {
+        for (const button of globals.elements.colorClueButtons) {
+          button.show();
+        }
+        for (const button of globals.elements.rankClueButtons) {
+          button.hide();
+        }
       }
     }
   }
