@@ -216,7 +216,6 @@ export default class LayoutChild extends Konva.Group {
         state.ongoingGame.deck,
         state.ongoingGame.playStacks,
         state.ongoingGame.playStackDirections,
-        globals.variant,
       )
     ) {
       let text = 'Are you sure you want to play this card?\n';

@@ -1,3 +1,4 @@
+import { ensureAllCases } from '../../misc';
 import { variantRules } from '../rules';
 import CardState from '../types/CardState';
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK, START_CARD_RANK } from '../types/constants';
@@ -12,6 +13,38 @@ export const lastPlayedRank = (
     return STACK_BASE_RANK;
   }
   return deck[playStack[playStack.length - 1]].rank ?? UNKNOWN_CARD_RANK;
+};
+
+export const nextRanks = (
+  playStack: readonly number[],
+  playStackDirection: StackDirection,
+  deck: readonly CardState[],
+): number[] => {
+  const currentlyPlayedRank = lastPlayedRank(playStack, deck);
+
+  switch (playStackDirection) {
+    case StackDirection.Undecided: {
+      return [1, 5, START_CARD_RANK];
+    }
+
+    case StackDirection.Up: {
+      return [currentlyPlayedRank + 1];
+    }
+
+    case StackDirection.Down: {
+      return [currentlyPlayedRank - 1];
+    }
+
+    case StackDirection.Finished: {
+      return [];
+    }
+
+    default: {
+      ensureAllCases(playStackDirection);
+    }
+  }
+
+  return [];
 };
 
 export const direction = (

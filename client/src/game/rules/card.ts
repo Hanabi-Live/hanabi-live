@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
+import { playStacksRules } from '../rules';
 import CardState from '../types/CardState';
 import CardStatus from '../types/CardStatus';
 import { START_CARD_RANK } from '../types/constants';
@@ -129,21 +130,22 @@ export const isCritical = (
   return total === discarded + 1;
 };
 
+// isPotentiallyPlayable checks to see if every card possibility would misplay if the card was
+// played right now
 export const isPotentiallyPlayable = (
   card: CardState,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
-  variant: Variant,
 ) => {
   for (let suitIndex = 0; suitIndex < card.possibleCards.length; suitIndex++) {
     const possibleCardsOfSuit = card.possibleCards[suitIndex];
-    for (let rank = 0; rank < possibleCardsOfSuit.length; rank++) {
-      if (
-        // It is possible for this card to be this suit and rank combination
-        possibleCardsOfSuit[rank] > 0
-        && needsToBePlayed(suitIndex, rank, deck, playStacks, playStackDirections, variant)
-      ) {
+    const playStack = playStacks[suitIndex];
+    const playStackDirection = playStackDirections[suitIndex];
+    const nextRanks = playStacksRules.nextRanks(playStack, playStackDirection, deck);
+    for (const nextRank of nextRanks) {
+      // It is possible for this card to be this suit and rank combination
+      if (possibleCardsOfSuit[nextRank] > 0) {
         return true;
       }
     }
