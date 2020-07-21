@@ -1,7 +1,7 @@
 // Integration tests, involving loading a full game and checking state at different points
 
 import loadGameJSON from '../../../test/loadGameJSON';
-import pinkRainbowOnesGame from '../../../test_data/rainbow-ones_and_pink.json';
+import rainbowOnesAndPinkGame from '../../../test_data/rainbow-ones_and_pink.json';
 import upOrDownGame from '../../../test_data/up_or_down.json';
 import upOrDownFinalCards from '../../../test_data/up_or_down_final_cards.json';
 import upOrDownTurn5Cards from '../../../test_data/up_or_down_turn5.json';
@@ -15,7 +15,7 @@ const getStateAtTurn = (state: State, turn: number) => state.replay.states[turn]
 const getFinalState = (state: State) => state.replay.states[state.replay.states.length - 1];
 
 describe('integration', () => {
-  describe('up_or_down test game', () => {
+  describe('Up or Down test game', () => {
     beforeAll(() => {
       // Load the game and get the final state
       testState = loadGameJSON(upOrDownGame);
@@ -104,10 +104,10 @@ describe('integration', () => {
     });
   });
 
-  describe('pink_rainbow_ones test game', () => {
+  describe('Rainbow-Ones & Pink test game', () => {
     beforeAll(() => {
       // Load the game and get the final state
-      testState = loadGameJSON(pinkRainbowOnesGame);
+      testState = loadGameJSON(rainbowOnesAndPinkGame);
     });
 
     describe('final state', () => {

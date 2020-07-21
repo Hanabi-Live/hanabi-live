@@ -141,7 +141,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
   * The numerator (first number) shows the efficiency of the current game.
   * The denominator (second number) shows the minimum possible efficiency needed to win with the current number of players and the current variant. (This number is statically calculated at the beginning of the game - it will not adjust if the maximum achievable score lowers.)
   * Note that this measure of efficiency assumes *Good Touch Principle* - that all clued cards will eventually be played. If your team does not play with *Good Touch Principle*, then these numbers won't be useful.
-  * Even known useless cards with a clue on them will be counted.
+  * Efficiency will automatically account for clued cards that are globally known to be trash. Such cards will not be included in the "number of unplayed cards with one or more clues on them" term.
 
 #### 6-Player Games
 
