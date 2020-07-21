@@ -115,24 +115,21 @@ func httpInit() {
 	// Create a session store
 	httpSessionStore := cookie.NewStore([]byte(sessionSecret))
 	options := gsessions.Options{
-		Path:   "/",
-		Domain: domain,
-		// After getting a cookie via "/login", the client will immediately
-		// establish a WebSocket connection via "/ws", so the cookie only needs
-		// to exist for that time frame
+		Path:   "/",                // The cookie should apply to the entire domain
 		MaxAge: HTTPSessionTimeout, // In seconds
+	}
+	if !isDev {
+		// Bind the cookie to this specific domain for security purposes
+		options.Domain = domain
 		// Only send the cookie over HTTPS:
 		// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
-		Secure: true,
+		options.Secure = useTLS
 		// Mitigate XSS attacks:
 		// https://www.owasp.org/index.php/HttpOnly
-		HttpOnly: true,
+		options.HttpOnly = true
 		// Mitigate CSRF attacks:
 		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#SameSite_cookies
-		SameSite: http.SameSiteStrictMode,
-	}
-	if !useTLS {
-		options.Secure = false
+		options.SameSite = http.SameSiteStrictMode
 	}
 	httpSessionStore.Options(options)
 
