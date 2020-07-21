@@ -94,14 +94,14 @@ const statsReducer = produce((
   stats.paceRisk = statsRules.paceRisk(stats.pace, metadata.options.numPlayers);
 
   // Handle efficiency calculation
-  stats.cardsGotten = statsRules.cardsGotten(
+  const cardsGotten = statsRules.cardsGotten(
     currentState.deck,
     currentState.playStacks,
     currentState.playStackDirections,
     metadata,
     variant,
   );
-  stats.efficiency = statsRules.efficiency(stats.cardsGotten, stats.potentialCluesLost);
+  stats.efficiency = statsRules.efficiency(cardsGotten, stats.potentialCluesLost);
 }, {} as StatsState);
 
 export default statsReducer;
