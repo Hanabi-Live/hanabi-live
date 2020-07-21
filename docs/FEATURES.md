@@ -413,16 +413,18 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 
 * As mentioned previously, Hanabi Live offers webpage endpoints to show statistics on specific players, variants, and so forth.
 
-| URL                          | Description
-| ---------------------------- | -----------
-| `/scores/[username]`         | Lists the player's profile and best scores.
-| `/history/[username]`        | Lists the player's past games.
-| `/missing-scores/[username]` | Lists the player's remaining non-max scores.
-| `/tags/[username]`           | Lists the player's tagged games.
-| `/seed/[seed]`               | Lists the games played on a specific seed.
-| `/stats`                     | Lists stats for the entire website.
-| `/variant/[id]`              | Lists stats for a specific variant.
-| `/tag/[tag]`                 | Lists all the games that match the specified tag.
+| URL                                       | Description
+| ----------------------------------------- | -----------
+| `/scores/[username]`                      | Lists the player's profile and best scores.
+| `/history/[username]`                     | Lists the player's past games.
+| `/history/[username1]/[username2]`        | Lists the past games that 2 players were in together. (You can specify up to 6 players.)
+| `/missing-scores/[username]`              | Lists the player's remaining non-max scores.
+| `/missing-scores/[username1]/[username2]` | Lists the remaining non-max scores that 2 players both need. (You can specify up to 6 players.)
+| `/tags/[username]`                        | Lists the player's tagged games.
+| `/seed/[seed]`                            | Lists the games played on a specific seed.
+| `/stats`                                  | Lists stats for the entire website.
+| `/variant/[id]`                           | Lists stats for a specific variant.
+| `/tag/[tag]`                              | Lists all the games that match the specified tag.
 
 <br />
 
@@ -440,12 +442,11 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 
 ### JSON Endpoints
 
-| URL                                                | Description
-| -------------------------------------------------- | -----------
-| `/history/[username]?api`                          | Provides all of the games played by a user.
-| `/history/[username1]/[username2]?api`             | Provides all of the games played in by both users.
-| `/history/[username1]/[username2]/[username3]?api` | Provides all of the games played in by all three users, and so forth.
-| `/seed/[seed]?api`                                 | Provides all of the games played on the specified seed.
-| `/export/[game ID]`                                | Provides the data for an arbitrary game from the database.
+| URL                                    | Description
+| -------------------------------------- | -----------
+| `/history/[username]?api`              | Provides all of the games played by a user.
+| `/history/[username1]/[username2]?api` | Provides all of the games played in by both users. (You can specify up to 6 players.)
+| `/seed/[seed]?api`                     | Provides all of the games played on the specified seed.
+| `/export/[game ID]`                    | Provides the data for an arbitrary game from the database.
 
 <br />
