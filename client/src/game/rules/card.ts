@@ -152,3 +152,25 @@ export const isPotentiallyPlayable = (
 
   return false;
 };
+
+export const allPossibilitiesTrash = (
+  card: CardState,
+  deck: readonly CardState[],
+  playStacks: ReadonlyArray<readonly number[]>,
+  playStackDirections: readonly StackDirection[],
+  variant: Variant,
+) => {
+  for (let suitIndex = 0; suitIndex < card.possibleCards.length; suitIndex++) {
+    const possibleCardsOfSuit = card.possibleCards[suitIndex];
+    for (let rank = 0; rank < possibleCardsOfSuit.length; rank++) {
+      if (
+        card.possibleCards[suitIndex][rank] > 0
+        && needsToBePlayed(suitIndex, rank, deck, playStacks, playStackDirections, variant)
+      ) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+};

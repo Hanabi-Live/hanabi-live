@@ -4,7 +4,6 @@
 import produce, { Draft } from 'immer';
 import { getVariant } from '../data/gameData';
 import { variantRules } from '../rules';
-import * as cardRules from '../rules/card';
 import * as clueTokensRules from '../rules/clueTokens';
 import * as statsRules from '../rules/stats';
 import { GameAction } from '../types/actions';
@@ -26,44 +25,23 @@ const statsReducer = produce((
       // A clue was spent
       stats.potentialCluesLost += 1;
 
-      // Count cards that were newly gotten
-      for (let i = 0; i < action.list.length; i++) {
-        const order = action.list[i];
-        const card = originalState.deck[order];
-        if (!cardRules.isClued(card)) {
-          // A card was newly clued
-          stats.cardsGotten += 1;
-        }
-      }
-      break;
-    }
-
-    case 'discard': {
-      const card = originalState.deck[action.order];
-      if (cardRules.isClued(card)) {
-        // A clued card was discarded
-        // If this was a misplay that was supposed to go to the hole, then treat this as a play
-        if (action.failed && variantRules.isThrowItInAHole(variant) && !metadata.spectating) {
-          stats.cardsGotten += 1;
-        } else {
-          stats.cardsGotten -= 1;
-        }
-      }
-
       break;
     }
 
     case 'strike': {
       // TODO: move this check to the play action when we have logic for knowing which cards play
       // A strike is equivalent to losing a clue
-      stats.potentialCluesLost += clueTokensRules.value(variant);
+      if (!variantRules.isThrowItInAHole(variant) || metadata.spectating) {
+        stats.potentialCluesLost += clueTokensRules.value(variant);
+      }
+
       break;
     }
 
     case 'play': {
       if (
         !variantRules.isThrowItInAHole(variant) // We don't get an extra clue in these variants
-        && currentState.playStacks[action.suitIndex].length === 5
+        && currentState.playStacks[action.suitIndex].length === 5 // Hard code stack length to 5
         && originalState.clueTokens === currentState.clueTokens
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted",
@@ -71,11 +49,6 @@ const statsReducer = produce((
         stats.potentialCluesLost += clueTokensRules.value(variant);
       }
 
-      const card = originalState.deck[action.order];
-      if (!cardRules.isClued(card)) {
-        // A card was blind played
-        stats.cardsGotten += 1;
-      }
       break;
     }
 
@@ -106,7 +79,7 @@ const statsReducer = produce((
     );
   }
 
-  // Now that the action has occurred, update the stats relating to the current game state
+  // Handle pace calculation
   const score = variantRules.isThrowItInAHole(variant) && !metadata.spectating
     ? currentState.numAttemptedCardsPlayed
     : currentState.score;
@@ -119,6 +92,15 @@ const statsReducer = produce((
     currentState.turn.currentPlayerIndex === null,
   );
   stats.paceRisk = statsRules.paceRisk(stats.pace, metadata.options.numPlayers);
+
+  // Handle efficiency calculation
+  stats.cardsGotten = statsRules.cardsGotten(
+    currentState.deck,
+    currentState.playStacks,
+    currentState.playStackDirections,
+    metadata,
+    variant,
+  );
   stats.efficiency = statsRules.efficiency(stats.cardsGotten, stats.potentialCluesLost);
 }, {} as StatsState);
 
