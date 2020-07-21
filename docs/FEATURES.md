@@ -204,6 +204,11 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 ## Custom Game Options
 
+* In a pre-game, the custom game options (if any) can be seen on the left side of the screen.
+* In a game, the custom game (if any) can be seen by hovering over the deck.
+
+<br />
+
 #### Variants
 
 * The server implements several official and unofficial Hanabi variants, which are listed on [a separate page](https://github.com/Zamiell/hanabi-live/tree/master/docs/VARIANTS.md).
