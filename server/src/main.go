@@ -1,6 +1,6 @@
 package main // In Go, executable commands must always use package main
 
-// This file contains the entry point for the Hanabi server software
+// This file contains the entry point for the server software
 
 import (
 	"io/ioutil"
@@ -13,6 +13,10 @@ import (
 
 	"github.com/getsentry/sentry-go"
 	"github.com/joho/godotenv"
+)
+
+const (
+	websiteName = "Hanab Live"
 )
 
 var (
@@ -38,9 +42,11 @@ func main() {
 	logger = NewLogger()
 
 	// Welcome message
-	logger.Info("+-----------------------+")
-	logger.Info("| Starting hanabi-live. |")
-	logger.Info("+-----------------------+")
+	startText := "| Starting " + websiteName + " |"
+	borderText := "+" + strings.Repeat("-", len(startText)-2) + "+"
+	logger.Info(borderText)
+	logger.Info(startText)
+	logger.Info(borderText)
 
 	// Get the project path
 	// https://stackoverflow.com/questions/18537257/

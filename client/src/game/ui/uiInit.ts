@@ -126,8 +126,7 @@ const initCardsMap = () => {
       globals.cardsMap.set(key, 1);
     }
     for (let rank = 1; rank <= 5; rank++) {
-      // In a normal suit of Hanabi,
-      // there are three 1's, two 2's, two 3's, two 4's, and one five
+      // In a normal suit, there are three 1's, two 2's, two 3's, two 4's, and one five
       let amountToAdd = 2;
       if (rank === 1) {
         amountToAdd = 3;

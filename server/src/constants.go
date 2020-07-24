@@ -122,5 +122,5 @@ const (
 	ChatCommandStartedFail    = "The game is already started, so you cannot use that command."
 	ChatCommandNotStartedFail = "The game has not started yet, so you cannot use that command."
 	ChatCommandNotOwnerFail   = "Only the table owner can use that command."
-	ChatCommandNotDiscordFail = "You can only perform this command from the Hanabi Discord server."
+	ChatCommandNotDiscordFail = "You can only perform this command from the Discord server."
 )

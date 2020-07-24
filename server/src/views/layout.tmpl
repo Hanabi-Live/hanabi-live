@@ -10,16 +10,16 @@
 <head>
   <title>
     {{if eq .Title "Dev"}}
-      Hanabi Test
+      Test
     {{else}}
-      Hanabi Live{{if ne .Title "Main"}} - {{.Title}}{{end}}
+      {{.WebsiteName}}{{if ne .Title "Main"}} - {{.Title}}{{end}}
     {{end}}
   </title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- We remove "user-scalable=no" since we are removing the mobile nav and want them to be able to zoom -->
-  <meta name="description" content="A place to play Hanabi online, a cooperative card game of logic and reasoning.">
-  <meta name="keywords" content="hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning">
+  <meta name="description" content="A place to play Hanab online, a cooperative card game of logic and reasoning.">
+  <meta name="keywords" content="hanab,hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning">
   <!-- Load the Critical CSS first -->
   {{if ne .Title "Dev"}}
     <link rel="stylesheet" type="text/css" href="/public/css/critical.min.css" />

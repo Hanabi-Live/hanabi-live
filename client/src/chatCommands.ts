@@ -217,7 +217,7 @@ chatCommands.set('unfriend', (_room: string, args: string[]) => {
 // /version
 chatCommands.set('version', (room: string) => {
   chat.add({
-    msg: `You are running version <strong>${globals.version}</strong> of the Hanabi Live client.`,
+    msg: `You are running version <strong>${globals.version}</strong> of the client.`,
     who: '',
     server: true,
     datetime: new Date().getTime(),

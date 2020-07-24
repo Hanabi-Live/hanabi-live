@@ -49,5 +49,5 @@ func httpLocalhostTerminate(c *gin.Context) {
 	}
 
 	// Terminate it
-	terminate(matchingTable, "Hanabi Live", -1)
+	terminate(matchingTable, websiteName, -1)
 }

@@ -16,7 +16,7 @@ export const test = () => {
     // If they have previously denied the permission pop-up dialog, then nothing will appear when
     // "Notification.requestPermission()" is invoked
     if (permission !== 'granted') {
-      modals.warningShow('Hanabi Live does not have permissions to send desktop notifications. You may have previously denied notifications for this page. Please explicitly enable permission. For example, on Google Chrome, click the lock in the top-left hand corner.');
+      modals.warningShow('The website does not have permissions to send desktop notifications. You may have previously denied notifications for this page. Please explicitly enable permission. For example, on Google Chrome, click the lock in the top-left hand corner.');
     }
   });
 };
@@ -31,7 +31,7 @@ export const send = (msg: string, tag: string | undefined) => {
     return;
   }
 
-  new Notification(`Hanabi Live: ${msg}`, { // eslint-disable-line no-new
+  new Notification(`Hanab Live: ${msg}`, { // eslint-disable-line no-new
     tag,
   });
 };

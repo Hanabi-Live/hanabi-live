@@ -12,7 +12,7 @@ export default function websocketInit() {
   // Ensure that we are connecting to the right URL
   const domain = $('#domain').html();
   if (window.location.hostname !== domain) {
-    modals.errorShow(`You are supposed to connect to Hanabi Live using the URL of: ${domain}`);
+    modals.errorShow(`You are supposed to connect using the URL of: ${domain}`);
     return;
   }
 

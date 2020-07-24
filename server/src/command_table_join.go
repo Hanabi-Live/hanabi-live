@@ -47,7 +47,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 
 	// Validate that this table does not already have 6 players
 	if len(t.Players) >= 6 {
-		s.Warning("That table is already full. (You can not play Hanabi with more than 6 players.)")
+		s.Warning("That table is already full. (You can not play with more than 6 players.)")
 		return
 	}
 

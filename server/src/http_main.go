@@ -34,10 +34,11 @@ func httpMain(c *gin.Context) {
 	}
 
 	data := TemplateData{
-		Title:     title,
-		Domain:    domain,
-		Version:   getVersion(),
-		Compiling: compiling,
+		WebsiteName: websiteName,
+		Title:       title,
+		Domain:      domain,
+		Version:     getVersion(),
+		Compiling:   compiling,
 	}
 	httpServeTemplate(w, data, "main")
 }
