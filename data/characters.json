@@ -72,7 +72,7 @@
   },
   "Insistent": {
     "id": 13,
-    "description": "Must continue to clue the same card until it is played or discarded",
+    "description": "Must continue to clue the same card(s) until one of them is played or discarded",
     "emoji": "😣"
   },
   "Quacker": {
