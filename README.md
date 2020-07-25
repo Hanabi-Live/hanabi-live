@@ -6,7 +6,7 @@
 ## Description
 
 * This is the source code for [Hanab Live](http://hanab.live/), which is a website that allows people to play a cooperative card game online. It is similar to the card game [Hanabi](https://boardgamegeek.com/boardgame/98778/hanabi).
-* This site is a fan-made creation and has no affiliation with the card game Hanabi, [Antoine Bauza](https://en.wikipedia.org/wiki/Antoine_Bauza) (the creator of Hanabi), or any of the the real-life publishers of the game (of which there are many).
+* This project has no affiliation with the card game Hanabi, [Antoine Bauza](https://en.wikipedia.org/wiki/Antoine_Bauza) (the creator of Hanabi), or any of the the real-life publishers of the game (of which there are many).
 * The client is programmed in [TypeScript](https://www.typescriptlang.org/). It is located in the `client` directory.
   * A lot of the code was originally taken from [Keldon Jones'](http://keldon.net/) implementation of the game. (His site no longer exists.)
 * The server is programmed in [Go](https://golang.org/). It is located in the `server` subdirectory.
