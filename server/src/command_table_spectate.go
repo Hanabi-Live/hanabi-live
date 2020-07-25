@@ -54,15 +54,15 @@ func commandTableSpectate(s *Session, d *CommandData) {
 
 	// Validate the player name
 	// (if provided, they want to spectate from a specific player's perspective)
-	playerIndex := -1
+	shadowPlayerIndex := -1
 	if d.Player != "" {
 		for i, p := range t.Players {
 			if p.Name == d.Player {
-				playerIndex = i
+				shadowPlayerIndex = i
 				break
 			}
 		}
-		if playerIndex == -1 {
+		if shadowPlayerIndex == -1 {
 			s.Warning("That is an invalid player name.")
 			return
 		}
@@ -80,12 +80,12 @@ func commandTableSpectate(s *Session, d *CommandData) {
 
 	// Add them to the spectators object
 	sp := &Spectator{
-		ID:          s.UserID(),
-		Name:        s.Username(),
-		Session:     s,
-		Shadowing:   playerIndex != -1,
-		PlayerIndex: playerIndex,
-		Notes:       make([]string, g.GetNotesSize()),
+		ID:                s.UserID(),
+		Name:              s.Username(),
+		Session:           s,
+		Shadowing:         shadowPlayerIndex != -1,
+		ShadowPlayerIndex: shadowPlayerIndex,
+		Notes:             make([]string, g.GetNotesSize()),
 	}
 	t.Spectators = append(t.Spectators, sp)
 	notifyAllTable(t)    // Update the spectator list for the row in the lobby

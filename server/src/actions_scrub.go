@@ -118,7 +118,7 @@ func getEquivalentPlayer(t *Table, userID int) *GamePlayer {
 		return g.Players[i]
 	} else if j > -1 && t.Spectators[j].Shadowing {
 		// The action is going to be sent to a spectator that is shadowing one of the active players
-		return g.Players[t.Spectators[j].PlayerIndex]
+		return g.Players[t.Spectators[j].ShadowPlayerIndex]
 	}
 
 	return nil

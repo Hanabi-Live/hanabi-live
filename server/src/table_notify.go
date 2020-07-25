@@ -274,32 +274,38 @@ func (t *Table) NotifyPause() {
 func (t *Table) NotifySpectatorsNote(order int) {
 	g := t.Game
 
-	// Make an array that contains the combined notes for all the players & spectators
-	// (for a specific card)
-	type Note struct {
-		Name string `json:"name"`
-		Note string `json:"note"`
-	}
-	notes := make([]Note, 0)
-	for _, p := range g.Players {
-		notes = append(notes, Note{
-			Name: p.Name,
-			Note: p.Notes[order],
-		})
-	}
 	for _, sp := range t.Spectators {
-		notes = append(notes, Note{
-			Name: sp.Name,
-			Note: sp.Notes[order],
-		})
-	}
+		// Make an array that contains the combined notes for all the players & spectators
+		// (for a specific card)
+		// However, if this spectator is shadowing a specific player, then only include the note for
+		// the shadowed player
+		type Note struct {
+			Name string `json:"name"`
+			Note string `json:"note"`
+		}
+		notes := make([]Note, 0)
+		for _, p := range g.Players {
+			if sp.ShadowPlayerIndex == -1 || sp.ShadowPlayerIndex == p.Index {
+				notes = append(notes, Note{
+					Name: p.Name,
+					Note: p.Notes[order],
+				})
+			}
+		}
+		if sp.ShadowPlayerIndex == -1 {
+			for _, sp2 := range t.Spectators {
+				notes = append(notes, Note{
+					Name: sp2.Name,
+					Note: sp2.Notes[order],
+				})
+			}
+		}
 
-	type NoteMessage struct {
-		// The order of the card in the deck that these notes correspond to
-		Order int    `json:"order"`
-		Notes []Note `json:"notes"`
-	}
-	for _, sp := range t.Spectators {
+		type NoteMessage struct {
+			// The order of the card in the deck that these notes correspond to
+			Order int    `json:"order"`
+			Notes []Note `json:"notes"`
+		}
 		sp.Session.Emit("note", &NoteMessage{
 			Order: order,
 			Notes: notes,

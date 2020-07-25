@@ -377,11 +377,11 @@ func (t *Table) ConvertToSharedReplay() {
 
 		// Add the new spectator
 		sp := &Spectator{
-			ID:          p.ID,
-			Name:        p.Name,
-			Session:     p.Session,
-			PlayerIndex: -1, // To indicate that they are not shadowing anyone
-			Notes:       make([]string, g.GetNotesSize()),
+			ID:                p.ID,
+			Name:              p.Name,
+			Session:           p.Session,
+			ShadowPlayerIndex: -1, // To indicate that they are not shadowing anyone
+			Notes:             make([]string, g.GetNotesSize()),
 		}
 		t.Spectators = append(t.Spectators, sp)
 		logger.Info("Converted " + p.Name + " to a spectator.")
@@ -433,7 +433,7 @@ func (t *Table) ConvertToSharedReplay() {
 		sp.Session.NotifyReplayLeader(t, false)
 
 		// Send them the notes from all the players & spectators
-		sp.Session.NotifyNoteList(t)
+		sp.Session.NotifyNoteList(t, -1)
 
 		// Send them the database ID
 		type DatabaseIDMessage struct {

@@ -98,7 +98,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 
 	// Account for if a spectator is shadowing a specific player
 	if j != -1 && t.Spectators[j].Shadowing {
-		ourPlayerIndex = t.Spectators[j].PlayerIndex
+		ourPlayerIndex = t.Spectators[j].ShadowPlayerIndex
 	}
 
 	pauseQueued := false
