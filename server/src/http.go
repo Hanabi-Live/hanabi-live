@@ -73,6 +73,7 @@ const (
 
 var (
 	domain       string
+	useTLS       bool
 	GATrackingID string
 	webpackPort  int
 
@@ -112,7 +113,6 @@ func httpInit() {
 	}
 	tlsCertFile := os.Getenv("TLS_CERT_FILE")
 	tlsKeyFile := os.Getenv("TLS_KEY_FILE")
-	useTLS := false
 	if len(tlsCertFile) != 0 && len(tlsKeyFile) != 0 {
 		useTLS = true
 		if port == 80 {

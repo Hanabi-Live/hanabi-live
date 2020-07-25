@@ -41,7 +41,7 @@ func chatS6(s *Session, d *CommandData, t *Table) {
 
 // /startin [minutes]
 func chatStartIn(s *Session, d *CommandData, t *Table) {
-	if d.Room == "lobby" {
+	if t == nil || d.Room == "lobby" {
 		chatServerSend(ChatCommandNotInGameFail, d.Room)
 		return
 	}
@@ -95,7 +95,7 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 }
 
 func chatKick(s *Session, d *CommandData, t *Table) {
-	if d.Room == "lobby" {
+	if t == nil || d.Room == "lobby" {
 		chatServerSend(ChatCommandNotInGameFail, d.Room)
 		return
 	}
@@ -156,7 +156,7 @@ func chatKick(s *Session, d *CommandData, t *Table) {
 // /findvariant
 // This function does not consider modifiers (e.g. "Empty Clues")
 func chatFindVariant(s *Session, d *CommandData, t *Table) {
-	if d.Room == "lobby" {
+	if t == nil || d.Room == "lobby" {
 		chatServerSend(ChatCommandNotInGameFail, d.Room)
 		return
 	}
@@ -228,7 +228,7 @@ func chatFindVariant(s *Session, d *CommandData, t *Table) {
 */
 
 func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
-	if t == nil {
+	if t == nil || d.Room == "lobby" {
 		chatServerSend(ChatCommandNotInGameFail, d.Room)
 		return
 	}

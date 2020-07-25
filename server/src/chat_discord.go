@@ -9,6 +9,11 @@ import (
 
 // /here
 func chatHere(s *Session, d *CommandData, t *Table) {
+	if t != nil {
+		chatServerSend(ChatCommandNotInLobbyFail, d.Room)
+		return
+	}
+
 	// Validate that this is coming from a Discord user
 	if d.DiscordID == "" {
 		chatServerSend(ChatCommandNotDiscordFail, d.Room)
@@ -64,6 +69,11 @@ func chatHere(s *Session, d *CommandData, t *Table) {
 
 // /last
 func chatLast(s *Session, d *CommandData, t *Table) {
+	if t != nil {
+		chatServerSend(ChatCommandNotInLobbyFail, d.Room)
+		return
+	}
+
 	// Validate that this is coming from a Discord user
 	if d.DiscordID == "" {
 		chatServerSend(ChatCommandNotDiscordFail, d.Room)
@@ -78,6 +88,11 @@ func chatLast(s *Session, d *CommandData, t *Table) {
 
 // /next
 func chatNext(s *Session, d *CommandData, t *Table) {
+	if t != nil {
+		chatServerSend(ChatCommandNotInLobbyFail, d.Room)
+		return
+	}
+
 	// Validate that this is coming from a Discord user
 	if d.DiscordID == "" {
 		chatServerSend(ChatCommandNotDiscordFail, d.Room)
@@ -89,6 +104,11 @@ func chatNext(s *Session, d *CommandData, t *Table) {
 
 // /unnext
 func chatUnnext(s *Session, d *CommandData, t *Table) {
+	if t != nil {
+		chatServerSend(ChatCommandNotInLobbyFail, d.Room)
+		return
+	}
+
 	// Validate that this is coming from a Discord user
 	if d.DiscordID == "" {
 		chatServerSend(ChatCommandNotDiscordFail, d.Room)
@@ -100,6 +120,11 @@ func chatUnnext(s *Session, d *CommandData, t *Table) {
 
 // /list
 func chatList(s *Session, d *CommandData, t *Table) {
+	if t != nil {
+		chatServerSend(ChatCommandNotInLobbyFail, d.Room)
+		return
+	}
+
 	// Validate that this is coming from a Discord user
 	if d.DiscordID == "" {
 		chatServerSend(ChatCommandNotDiscordFail, d.Room)
