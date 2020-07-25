@@ -98,7 +98,10 @@ const subscribeToCardChanges = (order: number) => {
   }), () => updateCluedBorder(order));
 
   // Pips
-  sub((c) => c.rankClueMemory.pipStates, () => updatePips(order, ClueType.Rank));
+  sub((c) => ({
+    pipStates: c.rankClueMemory.pipStates,
+    numPositiveRankClues: c.rankClueMemory.positiveClues.length,
+  }), () => updatePips(order, ClueType.Rank));
   sub((c) => c.colorClueMemory.pipStates, () => updatePips(order, ClueType.Color));
 
   // Notes
