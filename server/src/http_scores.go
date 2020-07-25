@@ -9,25 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ProfileData struct {
-	Title string
-
-	Name                       string
-	NamesTitle                 string // Used on the "History" page
-	DateJoined                 string
-	NumGames                   int
-	TimePlayed                 string
-	NumGamesSpeedrun           int
-	TimePlayedSpeedrun         string
-	NumMaxScores               int
-	TotalMaxScores             int
-	PercentageMaxScores        string
-	NumMaxScoresPerType        []int    // Used on the "Missing Scores" page
-	PercentageMaxScoresPerType []string // Used on the "Missing Scores" page
-
-	VariantStats []UserVariantStats
-}
-
 type UserVariantStats struct {
 	ID            int
 	Name          string
@@ -214,7 +195,7 @@ func httpScores(c *gin.Context) {
 	percentageMaxScoresString := fmt.Sprintf("%.1f", percentageMaxScores)
 	percentageMaxScoresString = strings.TrimSuffix(percentageMaxScoresString, ".0")
 
-	data := ProfileData{
+	data := TemplateData{
 		Name:                       user.Username,
 		DateJoined:                 dateJoined,
 		NumGames:                   profileStats.NumGames,
