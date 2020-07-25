@@ -18,11 +18,49 @@ import (
 )
 
 type TemplateData struct {
+	// Shared
+	WebsiteName string
 	Title       string // Used to populate the "<title>" tag
 	Domain      string // Used to validate that the user is going to the correct URL
 	Version     int
 	Compiling   bool // True if we are currently recompiling the TypeScript client
 	WebpackPort int
+
+	// Profile
+	Name       string
+	NamesTitle string
+
+	// History
+	History      []*GameHistory
+	SpecificSeed bool
+	Tags         map[int][]string
+
+	// Scores
+	DateJoined                 string
+	NumGames                   int
+	TimePlayed                 string
+	NumGamesSpeedrun           int
+	TimePlayedSpeedrun         string
+	NumMaxScores               int
+	TotalMaxScores             int
+	PercentageMaxScores        string
+	NumMaxScoresPerType        []int    // Used on the "Missing Scores" page
+	PercentageMaxScoresPerType []string // Used on the "Missing Scores" page
+	NumTotalPlayers            int      // Used on the "Missing Scores" page
+	VariantStats               []UserVariantStats
+
+	// Stats
+	NumVariants int
+	Variants    []VariantStatsData
+
+	// Variants
+	BestScores    []int
+	MaxScoreRate  string
+	MaxScore      int
+	AverageScore  string
+	NumStrikeouts int
+	StrikeoutRate string
+	RecentGames   []*GameHistory
 }
 
 const (
@@ -220,7 +258,7 @@ func httpInit() {
 
 	// Other
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
-	httpRouter.StaticFile("/favicon.ico", path.Join(projectPath, "public", "img", "favicon.png"))
+	httpRouter.StaticFile("/favicon.ico", path.Join(projectPath, "public", "img", "favicon.ico"))
 
 	if useTLS {
 		// Create the LetsEncrypt directory structure
@@ -310,7 +348,7 @@ func httpInit() {
 
 // httpServeTemplate combines a standard HTML header with the body for a specific page
 // (we want the same HTML header for all pages)
-func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...string) {
+func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ...string) {
 	viewsPath := path.Join(projectPath, "server", "src", "views")
 	layoutPath := path.Join(viewsPath, "layout.tmpl")
 	logoPath := path.Join(viewsPath, "logo.tmpl")
@@ -363,6 +401,9 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 	// Since we are using the GZip middleware, we have to specify the content type,
 	// or else the page will be downloaded by the browser as "download.gz"
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// Add extra data that should be the same for every page request
+	data.WebsiteName = websiteName
 
 	// Execute the template and send it to the user
 	if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {

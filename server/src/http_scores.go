@@ -7,26 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ProfileData struct {
-	Title string
-
-	Name                       string
-	NamesTitle                 string // Used on the "History" page
-	DateJoined                 string
-	NumGames                   int
-	TimePlayed                 string
-	NumGamesSpeedrun           int
-	TimePlayedSpeedrun         string
-	NumMaxScores               int
-	TotalMaxScores             int
-	PercentageMaxScores        string
-	NumMaxScoresPerType        []int    // Used on the "Missing Scores" page
-	PercentageMaxScoresPerType []string // Used on the "Missing Scores" page
-	NumTotalPlayers            int      // Used on the "Missing Scores" page (for multiple people)
-
-	VariantStats []UserVariantStats
-}
-
 type UserVariantStats struct {
 	ID            int
 	Name          string
@@ -133,8 +113,7 @@ func httpScores(c *gin.Context) {
 		numMaxScoresPerType,
 	)
 
-	data := ProfileData{
-		Title:                      "Scores",
+	data := TemplateData{
 		Name:                       user.Username,
 		DateJoined:                 dateJoined,
 		NumGames:                   profileStats.NumGames,

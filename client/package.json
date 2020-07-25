@@ -1,11 +1,7 @@
 {
-  "name": "hanabi-live-client",
+  "name": "hanab-live-client",
   "version": "0.0.1",
-  "description": "The client for Hanabi Live",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Zamiell/hanabi-live.git"
-  },
+  "description": "",
   "license": "GPL-3.0",
   "scripts": {
     "lint": "eslint \"src/**/*.ts\"",

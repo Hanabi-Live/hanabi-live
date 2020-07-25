@@ -56,7 +56,7 @@ func httpSeed(c *gin.Context) {
 		return
 	}
 
-	data := HistoryData{
+	data := TemplateData{
 		Title:        "History",
 		History:      gameHistoryList,
 		NamesTitle:   "seed: " + seed,

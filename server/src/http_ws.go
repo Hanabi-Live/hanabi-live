@@ -22,10 +22,10 @@ var (
 // the cookie (this is done implicitly because JavaScript will automatically use any current cookies
 // for the website when establishing a WebSocket connection)
 // So, before allowing anyone to open a WebSocket connection, we need to validate that they have
-// gone through part 1 (e.g. they have a valid cookie that was created N seconds ago)
+// gone through part 1 (e.g. they have a valid cookie that was created at some point in the past)
 // We also do a few other checks to be thorough
 // If all of the checks pass, the WebSocket connection will be established,
-// and then the user's Hanabi data will be initialized in "websocketConnect.go"
+// and then the user's website data will be initialized in "websocketConnect.go"
 // If anything fails in this function, we want to delete the user's cookie in order to force them to
 // start authentication from the beginning
 func httpWS(c *gin.Context) {

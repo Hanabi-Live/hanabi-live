@@ -14,21 +14,21 @@ func chatHelp(s *Session, d *CommandData, t *Table) {
 
 // /rules
 func chatRules(s *Session, d *CommandData, t *Table) {
-	msg := "Please follow the Hanabi Live community guidelines: " +
+	msg := "Please follow the community guidelines: " +
 		"https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md"
 	chatServerSend(msg, d.Room)
 }
 
 // /new
 func chatNew(s *Session, d *CommandData, t *Table) {
-	msg := "If you are looking to \"get into\" Hanabi and spend a lot of time to play with experienced players, the Hyphen-ated group is always looking for more members. To start with, please read the beginners guide, which goes over how we play and how to join our next game: " +
+	msg := "If you are looking to \"get into\" the game and spend a lot of time to play with experienced players, the Hyphen-ated group is always looking for more members. To start with, please read the beginners guide, which goes over how we play and how to join our next game: " +
 		"https://github.com/Zamiell/hanabi-conventions/blob/master/Beginner.md"
 	chatServerSend(msg, d.Room)
 }
 
 // /discord
 func chatDiscord(s *Session, d *CommandData, t *Table) {
-	msg := "Join the Hanabi Discord server: https://discord.gg/FADvkJp"
+	msg := "Join the Discord server: https://discord.gg/FADvkJp"
 	chatServerSend(msg, d.Room)
 }
 
@@ -61,7 +61,7 @@ func chatReplay(s *Session, d *CommandData, t *Table) {
 
 	if len(d.Args) == 0 {
 		// They specified an ID but not a turn
-		msg := "https://hanabi.live/replay/" + strconv.Itoa(id)
+		msg := "https://hanab.live/replay/" + strconv.Itoa(id)
 		chatServerSend(msg, d.Room)
 		return
 	}
@@ -83,7 +83,7 @@ func chatReplay(s *Session, d *CommandData, t *Table) {
 	}
 
 	// They specified an ID and a turn
-	msg := "https://hanabi.live/replay/" + strconv.Itoa(id) + "/" + strconv.Itoa(turn)
+	msg := "https://hanab.live/replay/" + strconv.Itoa(id) + "/" + strconv.Itoa(turn)
 	chatServerSend(msg, d.Room)
 }
 

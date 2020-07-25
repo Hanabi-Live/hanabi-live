@@ -108,7 +108,7 @@ export const init = () => {
   $('#create-game-submit').on('click', submit);
 };
 
-// There are over 1000+ variants on Hanabi Live
+// The website offers over 1000+ variants
 // To prevent confusion, only show the basic variants to the user by default
 // They can select "Search custom variants..." if they want access to the "full" dropdown
 //

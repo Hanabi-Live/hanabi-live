@@ -56,7 +56,7 @@ func chatServerSendAll(msg string) {
 func chatServerSendPM(s *Session, msg string, room string) {
 	s.Emit("chat", &ChatMessage{
 		Msg:       msg,
-		Who:       "Hanabi Live",
+		Who:       websiteName,
 		Datetime:  time.Now(),
 		Room:      room,
 		Recipient: s.Username(),

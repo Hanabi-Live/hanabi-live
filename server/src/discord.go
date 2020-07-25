@@ -145,8 +145,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	// We want to replicate Discord messages to the Hanabi Live lobby,
-	// but only from specific channels
+	// We want to replicate Discord messages to the lobby, but only from specific channels
 	if !stringInSlice(m.ChannelID, discordListenChannels) {
 		// Handle specific commands in non-listening channels
 		// (to replicate lobby functionality to the Discord server more generally)
@@ -325,7 +324,7 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 		// We enclose the link in "<>" to prevent Discord from generating a link preview
 		if len(args) == 0 {
 			// They specified an ID but not a turn
-			msg := "<https://hanabi.live/replay/" + strconv.Itoa(id) + ">"
+			msg := "<https://" + domain + "/replay/" + strconv.Itoa(id) + ">"
 			discordSend(m.ChannelID, "", msg)
 			return
 		}
@@ -347,7 +346,7 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 		}
 
 		// They specified an ID and a turn
-		msg := "<https://hanabi.live/replay/" + strconv.Itoa(id) + "/" + strconv.Itoa(turn) + ">"
+		msg := "<https://" + domain + "/replay/" + strconv.Itoa(id) + "/" + strconv.Itoa(turn) + ">"
 		discordSend(m.ChannelID, "", msg)
 		return
 	}

@@ -38,7 +38,7 @@ func httpMissingScores(c *gin.Context) {
 		numMaxScoresPerType,
 	)
 
-	data := ProfileData{
+	data := TemplateData{
 		Title:                      "Missing Scores",
 		Name:                       user.Username,
 		NumMaxScores:               numMaxScores,

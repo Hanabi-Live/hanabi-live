@@ -1,4 +1,4 @@
-# Hanabi Live Chat Commands
+# Hanab Live Chat Commands
 
 If you need general help with the website, then read the [features page](FEATURES.md). If you need the list of chat commands, read on.
 
@@ -9,8 +9,8 @@ If you need general help with the website, then read the [features page](FEATURE
 | Command                               | Description
 | ------------------------------------- | -----------
 | `/help`                               | Get the link to this page
-| `/discord`                            | Get the link for the [Hanabi Discord server](https://discord.gg/FADvkJp)
-| `/rules`                              | Get the link for the [Hanabi Community Guidelines](https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md)
+| `/discord`                            | Get the link for the [Discord server](https://discord.gg/FADvkJp)
+| `/rules`                              | Get the link for the [Community Guidelines](https://github.com/Zamiell/hanabi-live/blob/master/docs/COMMUNITY_GUIDELINES.md)
 | `/new`                                | Displays a stock message for new users, encouraging them to join the Hyphen-ated group
 | `/replay [game ID] [turn]`            | Generate a link to a replay so that you can share it with others
 | `/playerinfo`                         | Get the number of games played for all the players in the current game

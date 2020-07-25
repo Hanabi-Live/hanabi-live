@@ -1,5 +1,5 @@
 // This is a JSON object that represents a game of Hanabi
-// This also matches how games are stored in the Hanabi Live database
+// This also matches how games are stored in the database for the website
 // Created by Zamiel
 // Format version: 3.0.0
 {
@@ -143,7 +143,7 @@
     // If this value is not specified, "No Variant" will be assumed
     "variant": "No Variant",
 
-    // Any other Hanabi Live option can be specified, such as "cardCycle" or "emptyClues"
+    // Any other website option can be specified, such as "cardCycle" or "emptyClues"
     // A full list of options can be found in the "OptionsJSON" struct, located here:
     // https://github.com/Zamiell/hanabi-live/blob/master/src/options.go
     // The various options are documented here:
@@ -167,7 +167,7 @@
 
   // "characters" is an array of character objects,
   // containing the "Detrimental Character" specification for each player
-  // "Detrimental Characters" is an optional setting used on Hanabi Live that is based on a
+  // "Detrimental Characters" is an optional setting used on the website that is based on a
   // a post from Sean McCarthy: https://boardgamegeek.com/thread/1688194/hanabi-characters-variant
   // This field is optional
   "characters": [

@@ -1,4 +1,4 @@
-// This is the main entry point for the Hanabi client code
+// This is the main entry point for the client code
 // The client code is split up into multiple files and bundled together with Webpack
 
 // Tooltipster is a jQuery library, so we import it purely for the side-effects
@@ -36,9 +36,14 @@ import * as sounds from './sounds';
 // Initialize logging to Sentry.io
 sentry.init();
 
-// Manually redirect users that go to "www.hanabi.live" instead of "hanabi.live"
-if (window.location.hostname === 'www.hanabi.live') {
-  window.location.replace('https://hanabi.live');
+// Manually redirect users that go to the old domain
+if (window.location.hostname === 'hanabi.live' || window.location.hostname === 'www.hanabi.live') {
+  window.location.replace('https://hanab.live');
+}
+
+// Manually redirect users that go to "www.hanab.live" instead of "hanab.live"
+if (window.location.hostname === 'www.hanab.live') {
+  window.location.replace('https://hanab.live');
 }
 
 $(document).ready(() => {

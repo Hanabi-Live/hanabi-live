@@ -7,15 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type HistoryData struct {
-	Title        string
-	Name         string
-	NamesTitle   string
-	History      []*GameHistory
-	SpecificSeed bool
-	Tags         map[int][]string
-}
-
 func httpHistory(c *gin.Context) {
 	// Local variables
 	w := c.Writer
@@ -64,7 +55,7 @@ func httpHistory(c *gin.Context) {
 		return
 	}
 
-	data := HistoryData{
+	data := TemplateData{
 		Title:   "History",
 		Name:    playerNames[0],
 		History: gameHistoryList,

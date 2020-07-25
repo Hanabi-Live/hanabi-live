@@ -59,7 +59,7 @@ func httpMissingScoresMultiple(c *gin.Context) {
 		}
 	}
 
-	data := ProfileData{
+	data := TemplateData{
 		Title:           "Missing Scores",
 		NamesTitle:      "Missing Scores for [" + strings.Join(playerNames, ", ") + "]",
 		NumTotalPlayers: len(playerIDs),

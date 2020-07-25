@@ -89,7 +89,7 @@ func main() {
 	httpRouter.Use(gzip.Gzip(gzip.DefaultCompression)) // Add GZip compression middleware
 	httpRouter.StaticFile("/", path.Join(projectPath, "maintenance", "index.html"))
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
-	httpRouter.StaticFile("/favicon.ico", path.Join(projectPath, "public", "img", "favicon.png"))
+	httpRouter.StaticFile("/favicon.ico", path.Join(projectPath, "public", "img", "favicon.ico"))
 
 	if useTLS {
 		// We want all HTTP requests to be redirected to HTTPS
