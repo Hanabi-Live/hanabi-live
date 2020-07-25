@@ -285,7 +285,7 @@ This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
 This assumes that your domain names are "hanab.live" and "www.hanab.live". It also assumes that you installed the server to "/root/hanabi-live". Adjust if needed.
 
 * `sudo apt install certbot -y`
-* `certbot certonly --standalone -d hanab.live -d www.hanab.live` <br />
+* `certbot certonly --standalone -d hanab.live -d www.hanab.live -d hanabi.live -d www.hanabi.live` <br />
   (this creates "/etc/letsencrypt/live/hanab.live/")
 * In the `.env` file:
   * Set `TLS_CERT_FILE` to: `/etc/letsencrypt/live/hanab.live/fullchain.pem`
