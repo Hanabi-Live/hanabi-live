@@ -193,6 +193,11 @@ export const pips = (variant: Variant) => {
       fill,
       stroke: 'black',
       strokeWidth: 5,
+      shadowColor: 'black',
+      shadowOffsetX: 15,
+      shadowOffsetY: 15,
+      shadowOpacity: 0.4,
+      shadowForStrokeEnabled: true,
       sceneFunc: (ctx: any) => { // Konva.Context does not exist for some reason
         drawPip(ctx, suit, false);
       },
@@ -284,6 +289,11 @@ export const pips = (variant: Variant) => {
       stroke: 'black',
       strokeWidth: 3,
       listening: false,
+      shadowColor: 'black',
+      shadowOffsetX: 5,
+      shadowOffsetY: 5,
+      shadowOpacity: 0.4,
+      shadowForStrokeEnabled: true,
     });
     rankPips.add(rankPip);
     rankPipsMap.set(rank, rankPip);
