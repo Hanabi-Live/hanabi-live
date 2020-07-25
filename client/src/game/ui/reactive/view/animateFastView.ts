@@ -18,8 +18,12 @@ export const onObserversStarted = (state: State, previousState: State | undefine
     || (state.replay.hypothetical !== null && previousState!.replay.hypothetical === null)
     // Exiting a hypothetical should always be fast
     || (state.replay.hypothetical === null && previousState!.replay.hypothetical !== null)
+    // Converting a game to a replay should always be fast
+    || (state.metadata.spectating !== previousState!.metadata.spectating)
     // Jumping ahead or behind in a replay by 2 or more segments should always be fast
     || segmentDifference >= 2
+    // If the replay shuttle is being dragged, always animate fast (note: it can be null)
+    || globals.elements.replayShuttle?.isDragging() === true
   );
 };
 

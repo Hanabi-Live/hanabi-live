@@ -52,6 +52,7 @@ export default function drawReplayArea(winW: number, winH: number) {
     listening: true,
   });
   replayBarClickRect.on('click tap', replay.barClick);
+  replayBarClickRect.on('wheel', replay.barScroll);
   globals.elements.replayArea.add(replayBarClickRect);
 
   const shuttleValues = {
@@ -97,11 +98,13 @@ export default function drawReplayArea(winW: number, winH: number) {
     cornerRadius: shuttleValues.cornerRadius * winW,
     fill: '#0000cc', // Blue
     draggable: true,
-    dragBoundFunc: replay.barDrag,
+    dragBoundFunc: replay.shuttleDragBound,
     stroke: shuttleValues.stroke,
     strokeWidth: shuttleValues.strokeWidth * winW,
     listening: true,
   });
+  globals.elements.replayShuttle.on('dragmove', replay.shuttleDragMove);
+  globals.elements.replayShuttle.on('wheel', replay.barScroll);
   globals.elements.replayArea.add(globals.elements.replayShuttle);
 
   const replayButtonValues = {
