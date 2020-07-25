@@ -598,7 +598,17 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  removeFromParent() {
+  // A card's parent is a LayoutChild
+  // The parent of the LayoutChild is the location of the card
+  // (e.g. a player's hand, the play stacks, etc.)
+  // The LayoutChild is removed from the parent prior to the card changing location
+  removeLayoutChildFromParent() {
+    // Ensure that empathy is disabled prior to removing a card from a player's hand
+    if (this.empathy) {
+      this.empathy = false;
+      this.setBareImage();
+    }
+
     // Remove the card from the player's hand in preparation of adding it to either
     // the play stacks or the discard pile
     if (!this.layout.parent) {
@@ -627,8 +637,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToPlayerHand(holder: number) {
-    this.disableEmpathy();
-    this.removeFromParent();
+    this.removeLayoutChildFromParent();
 
     // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
     // and the user rewinds to the beginning of the replay
@@ -645,7 +654,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToDeck() {
-    this.disableEmpathy();
     const layoutChild = this.layout;
     if (
       layoutChild === undefined
@@ -655,7 +663,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       // First initialization
       return;
     }
-    this.removeFromParent();
+    this.removeLayoutChildFromParent();
 
     const scale = globals.elements.deck!.cardBack.width() / CARD_W;
     if (globals.animateFast) {
@@ -687,15 +695,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
           this.finishedTweening();
           layoutChild.checkSetDraggable();
           layoutChild.hide();
-          this.removeFromParent();
+          this.removeLayoutChildFromParent();
         },
       }, true);
     }
   }
 
   animateToPlayStacks() {
-    this.disableEmpathy();
-    this.removeFromParent();
+    this.removeLayoutChildFromParent();
 
     // The act of adding it will automatically tween the card
     const suit = this.variant.suits[this.state.suitIndex!];
@@ -715,8 +722,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToHole() {
-    this.disableEmpathy();
-    this.removeFromParent();
+    this.removeLayoutChildFromParent();
 
     // The act of adding it will automatically tween the card
     const hole = globals.elements.playStacks.get('hole')!;
@@ -727,8 +733,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToDiscardPile() {
-    this.disableEmpathy();
-    this.removeFromParent();
+    this.removeLayoutChildFromParent();
 
     // We add a LayoutChild to a CardLayout
     const suit = this.variant.suits[this.state.suitIndex!];
@@ -1071,14 +1076,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     });
   }
 
-  disableEmpathy() {
-    if (this.empathy) {
-      this.empathy = false;
-      this.setBareImage();
-    }
-  }
-
-  setEmpathyOnHand(enabled: boolean) {
+  private setEmpathyOnHand(enabled: boolean) {
     // Disable Empathy for the stack bases
     if (this.state.order > globals.deck.length - 1) {
       return;

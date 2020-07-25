@@ -152,7 +152,7 @@ const syncChildren = (
         if (!realState || realState.location === 'deck') {
           card.animateToDeck();
         } else {
-          card.removeFromParent();
+          card.removeLayoutChildFromParent();
         }
       });
 
