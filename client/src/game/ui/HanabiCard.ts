@@ -627,6 +627,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToPlayerHand(holder: number) {
+    this.disableEmpathy();
     this.removeFromParent();
 
     // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
@@ -644,6 +645,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToDeck() {
+    this.disableEmpathy();
     const layoutChild = this.layout;
     if (
       layoutChild === undefined
@@ -692,6 +694,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToPlayStacks() {
+    this.disableEmpathy();
     this.removeFromParent();
 
     // The act of adding it will automatically tween the card
@@ -712,6 +715,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToHole() {
+    this.disableEmpathy();
     this.removeFromParent();
 
     // The act of adding it will automatically tween the card
@@ -723,6 +727,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToDiscardPile() {
+    this.disableEmpathy();
     this.removeFromParent();
 
     // We add a LayoutChild to a CardLayout
@@ -1051,7 +1056,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
 
       globals.activeHover = this;
-      setEmpathyOnHand(true);
+      this.setEmpathyOnHand(true);
     });
 
     this.on('mouseup mouseout', (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -1062,40 +1067,45 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
 
       globals.activeHover = null;
-      setEmpathyOnHand(false);
+      this.setEmpathyOnHand(false);
     });
+  }
 
-    const setEmpathyOnHand = (enabled: boolean) => {
-      // Disable Empathy for the stack bases
-      if (this.state.order > globals.deck.length - 1) {
+  disableEmpathy() {
+    if (this.empathy) {
+      this.empathy = false;
+      this.setBareImage();
+    }
+  }
+
+  setEmpathyOnHand(enabled: boolean) {
+    // Disable Empathy for the stack bases
+    if (this.state.order > globals.deck.length - 1) {
+      return;
+    }
+
+    // If the card is not attached to a hand, then we don't need to do anything
+    const hand = this.layout.parent as unknown as CardLayout;
+    if (hand === undefined || hand === null || hand.children.length === 0) {
+      return;
+    }
+
+    if (enabled === hand.empathy) {
+      // No change
+      return;
+    }
+
+    hand.empathy = enabled;
+    hand.children.each((layoutChild) => {
+      const card = layoutChild.children[0] as HanabiCard;
+      if (card === undefined) {
+        // When rewinding, sometimes the card can be undefined
         return;
       }
-
-      if (!this.layout.parent) {
-        return;
-      }
-      const hand = this.layout.parent as unknown as CardLayout;
-      if (hand === undefined || hand.children.length === 0 || hand.empathy === enabled) {
-        return;
-      }
-
-      if (enabled === hand.empathy) {
-        // No change
-        return;
-      }
-
-      hand.empathy = enabled;
-      hand.children.each((layoutChild) => {
-        const card = layoutChild.children[0] as HanabiCard;
-        if (card === undefined) {
-          // When rewinding, sometimes the card can be undefined
-          return;
-        }
-        card.empathy = enabled;
-        card.setBareImage();
-      });
-      globals.layers.card.batchDraw();
-    };
+      card.empathy = enabled;
+      card.setBareImage();
+    });
+    globals.layers.card.batchDraw();
   }
 
   checkSpecialNote() {
