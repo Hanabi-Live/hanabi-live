@@ -114,6 +114,7 @@ func httpScores(c *gin.Context) {
 	)
 
 	data := TemplateData{
+		Title:                      "Scores",
 		Name:                       user.Username,
 		DateJoined:                 dateJoined,
 		NumGames:                   profileStats.NumGames,
