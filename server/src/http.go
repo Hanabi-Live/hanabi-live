@@ -237,7 +237,7 @@ func httpInit() {
 
 	// Other
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
-	httpRouter.StaticFile("/favicon.ico", path.Join(projectPath, "public", "img", "favicon.png"))
+	httpRouter.StaticFile("/favicon.ico", path.Join(projectPath, "public", "img", "favicon.ico"))
 
 	if useTLS {
 		// Create the LetsEncrypt directory structure
