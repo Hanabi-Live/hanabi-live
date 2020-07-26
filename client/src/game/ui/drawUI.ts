@@ -417,7 +417,6 @@ const drawDiscardStacks = () => {
       width: 0.17 * winW,
       height: 0.17 * winH,
       listening: false,
-      rotation: 0,
     });
     globals.elements.discardStacks.set(suit, discardStack);
     globals.layers.card.add(discardStack as any);

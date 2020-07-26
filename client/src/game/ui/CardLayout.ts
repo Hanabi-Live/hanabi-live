@@ -22,17 +22,11 @@ export default class CardLayout extends Konva.Group {
     this.origRotation = config.rotation ?? 0;
     this.empathy = false;
 
-    if (config.x === undefined) {
-      throw new Error('An x was not defined for a CardLayout.');
-    }
     if (config.width === undefined) {
       throw new Error('A width was not defined for a CardLayout.');
     }
     if (config.height === undefined) {
       throw new Error('A height was not defined for a CardLayout.');
-    }
-    if (config.rotation === undefined) {
-      throw new Error('A rotation was not defined for a CardLayout.');
     }
 
     // Debug rectangle (uncomment to show the size of the hand)
