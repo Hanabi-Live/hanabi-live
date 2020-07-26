@@ -65,6 +65,7 @@ func (g *Game) End() {
 	for _, p := range t.Players {
 		if p.Session != nil {
 			p.Session.Set("status", StatusLobby)
+			p.Session.Set("table", -1)
 			notifyAllUser(p.Session)
 		}
 	}
@@ -377,10 +378,11 @@ func (t *Table) ConvertToSharedReplay() {
 
 		// Add the new spectator
 		sp := &Spectator{
-			ID:      p.ID,
-			Name:    p.Name,
-			Session: p.Session,
-			Notes:   make([]string, g.GetNotesSize()),
+			ID:                p.ID,
+			Name:              p.Name,
+			Session:           p.Session,
+			ShadowPlayerIndex: -1, // To indicate that they are not shadowing anyone
+			Notes:             make([]string, g.GetNotesSize()),
 		}
 		t.Spectators = append(t.Spectators, sp)
 		logger.Info("Converted " + p.Name + " to a spectator.")
@@ -425,6 +427,7 @@ func (t *Table) ConvertToSharedReplay() {
 		// Reset everyone's status (both players and spectators are now spectators)
 		if sp.Session != nil {
 			sp.Session.Set("status", StatusSharedReplay)
+			sp.Session.Set("table", t.ID)
 			notifyAllUser(sp.Session)
 		}
 
@@ -432,7 +435,7 @@ func (t *Table) ConvertToSharedReplay() {
 		sp.Session.NotifyReplayLeader(t, false)
 
 		// Send them the notes from all the players & spectators
-		sp.Session.NotifyNoteList(t)
+		sp.Session.NotifyNoteList(t, -1)
 
 		// Send them the database ID
 		type DatabaseIDMessage struct {

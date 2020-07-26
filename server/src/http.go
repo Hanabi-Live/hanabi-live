@@ -18,11 +18,49 @@ import (
 )
 
 type TemplateData struct {
+	// Shared
+	WebsiteName string
 	Title       string // Used to populate the "<title>" tag
 	Domain      string // Used to validate that the user is going to the correct URL
 	Version     int
 	Compiling   bool // True if we are currently recompiling the TypeScript client
 	WebpackPort int
+
+	// Profile
+	Name       string
+	NamesTitle string
+
+	// History
+	History      []*GameHistory
+	SpecificSeed bool
+	Tags         map[int][]string
+
+	// Scores
+	DateJoined                 string
+	NumGames                   int
+	TimePlayed                 string
+	NumGamesSpeedrun           int
+	TimePlayedSpeedrun         string
+	NumMaxScores               int
+	TotalMaxScores             int
+	PercentageMaxScores        string
+	NumMaxScoresPerType        []int    // Used on the "Missing Scores" page
+	PercentageMaxScoresPerType []string // Used on the "Missing Scores" page
+	NumTotalPlayers            int      // Used on the "Missing Scores" page
+	VariantStats               []UserVariantStats
+
+	// Stats
+	NumVariants int
+	Variants    []VariantStatsData
+
+	// Variants
+	BestScores    []int
+	MaxScoreRate  string
+	MaxScore      int
+	AverageScore  string
+	NumStrikeouts int
+	StrikeoutRate string
+	RecentGames   []*GameHistory
 }
 
 const (
@@ -35,6 +73,7 @@ const (
 
 var (
 	domain       string
+	useTLS       bool
 	GATrackingID string
 	webpackPort  int
 
@@ -74,7 +113,6 @@ func httpInit() {
 	}
 	tlsCertFile := os.Getenv("TLS_CERT_FILE")
 	tlsKeyFile := os.Getenv("TLS_KEY_FILE")
-	useTLS := false
 	if len(tlsCertFile) != 0 && len(tlsKeyFile) != 0 {
 		useTLS = true
 		if port == 80 {
@@ -115,24 +153,21 @@ func httpInit() {
 	// Create a session store
 	httpSessionStore := cookie.NewStore([]byte(sessionSecret))
 	options := gsessions.Options{
-		Path:   "/",
-		Domain: domain,
-		// After getting a cookie via "/login", the client will immediately
-		// establish a WebSocket connection via "/ws", so the cookie only needs
-		// to exist for that time frame
+		Path:   "/",                // The cookie should apply to the entire domain
 		MaxAge: HTTPSessionTimeout, // In seconds
+	}
+	if !isDev {
+		// Bind the cookie to this specific domain for security purposes
+		options.Domain = domain
 		// Only send the cookie over HTTPS:
 		// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
-		Secure: true,
+		options.Secure = useTLS
 		// Mitigate XSS attacks:
 		// https://www.owasp.org/index.php/HttpOnly
-		HttpOnly: true,
+		options.HttpOnly = true
 		// Mitigate CSRF attacks:
 		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#SameSite_cookies
-		SameSite: http.SameSiteStrictMode,
-	}
-	if !useTLS {
-		options.Secure = false
+		options.SameSite = http.SameSiteStrictMode
 	}
 	httpSessionStore.Options(options)
 
@@ -187,9 +222,9 @@ func httpInit() {
 
 	// Path handlers for other URLs
 	httpRouter.GET("/scores", httpScores)
-	httpRouter.GET("/scores/:player", httpScores)
+	httpRouter.GET("/scores/:player1", httpScores)
 	httpRouter.GET("/profile", httpScores) // "/profile" is an alias for "/scores"
-	httpRouter.GET("/profile/:player", httpScores)
+	httpRouter.GET("/profile/:player1", httpScores)
 	httpRouter.GET("/history", httpHistory)
 	httpRouter.GET("/history/:player1", httpHistory)
 	httpRouter.GET("/history/:player1/:player2", httpHistory)
@@ -197,10 +232,15 @@ func httpInit() {
 	httpRouter.GET("/history/:player1/:player2/:player3/:player4", httpHistory)
 	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5", httpHistory)
 	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5/:player6", httpHistory)
-	httpRouter.GET("/missing-scores", httpScores)
-	httpRouter.GET("/missing-scores/:player", httpScores)
+	httpRouter.GET("/missing-scores", httpMissingScores)
+	httpRouter.GET("/missing-scores/:player1", httpMissingScores)
+	httpRouter.GET("/missing-scores/:player1/:player2", httpMissingScoresMultiple)
+	httpRouter.GET("/missing-scores/:player1/:player2/:player3", httpMissingScoresMultiple)
+	httpRouter.GET("/missing-scores/:player1/:player2/:player3/:player4", httpMissingScoresMultiple)
+	httpRouter.GET("/missing-scores/:player1/:player2/:player3/:player4/:player5", httpMissingScoresMultiple)
+	httpRouter.GET("/missing-scores/:player1/:player2/:player3/:player4/:player5/:player6", httpMissingScoresMultiple)
 	httpRouter.GET("/tags", httpTags)
-	httpRouter.GET("/tags/:player", httpTags)
+	httpRouter.GET("/tags/:player1", httpTags)
 	httpRouter.GET("/seed", httpSeed)
 	httpRouter.GET("/seed/:seed", httpSeed) // Display all games played on a given seed
 	httpRouter.GET("/stats", httpStats)
@@ -218,7 +258,7 @@ func httpInit() {
 
 	// Other
 	httpRouter.Static("/public", path.Join(projectPath, "public"))
-	httpRouter.StaticFile("/favicon.ico", path.Join(projectPath, "public", "img", "favicon.png"))
+	httpRouter.StaticFile("/favicon.ico", path.Join(projectPath, "public", "img", "favicon.ico"))
 
 	if useTLS {
 		// Create the LetsEncrypt directory structure
@@ -308,7 +348,7 @@ func httpInit() {
 
 // httpServeTemplate combines a standard HTML header with the body for a specific page
 // (we want the same HTML header for all pages)
-func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...string) {
+func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ...string) {
 	viewsPath := path.Join(projectPath, "server", "src", "views")
 	layoutPath := path.Join(viewsPath, "layout.tmpl")
 	logoPath := path.Join(viewsPath, "logo.tmpl")
@@ -361,6 +401,9 @@ func httpServeTemplate(w http.ResponseWriter, data interface{}, templateName ...
 	// Since we are using the GZip middleware, we have to specify the content type,
 	// or else the page will be downloaded by the browser as "download.gz"
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// Add extra data that should be the same for every page request
+	data.WebsiteName = websiteName
 
 	// Execute the template and send it to the user
 	if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {

@@ -157,35 +157,60 @@ export const exitButton = () => {
 // The replay shuttle
 // ------------------
 
+// Gets the current segment from an X position relative to a maximum width
+const segmentFromBarPosition = (x: number, w: number) => {
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  const step = w / finalSegment;
+  return Math.floor((x + (step / 2)) / step);
+};
+
+// Called when a position in the bar is clicked
 export function barClick(this: Konva.Rect) {
   const rectX = globals.stage.getPointerPosition().x - this.getAbsolutePosition().x;
-  const w = this.width();
-  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
-  const step = w / finalSegment;
-  const newSegment = Math.floor((rectX + (step / 2)) / step);
-  goToSegment(newSegment, true);
+  const w = globals.elements.replayBar!.width();
+  goToSegment(segmentFromBarPosition(rectX, w), true);
 }
 
-export function barDrag(this: Konva.Rect, pos: Konva.Vector2d) {
+// Called when a position in the bar is clicked
+export function barScroll(this: Konva.Rect, e: Konva.KonvaEventObject<WheelEvent>) {
+  let delta = 0;
+  if (e.evt.deltaY > 0) {
+    delta = 1;
+  } else if (e.evt.deltaY < 0) {
+    delta = -1;
+  } else {
+    return;
+  }
+
+  goToSegment(getCurrentReplaySegment() + delta, true);
+}
+
+// Restricts the positions of the replay shuttle
+// Given a desired position, returns the allowed position closest to it
+export function shuttleDragBound(this: Konva.Rect, pos: Konva.Vector2d) {
+  const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max));
+
   const min = globals.elements.replayBar!.getAbsolutePosition().x + (this.width() * 0.5);
   const w = globals.elements.replayBar!.width() - this.width();
-  let shuttleX = pos.x - min;
-  const shuttleY = this.getAbsolutePosition().y;
-  if (shuttleX < 0) {
-    shuttleX = 0;
-  }
-  if (shuttleX > w) {
-    shuttleX = w;
-  }
+
+  const shuttleX = clamp(pos.x - min, 0, w);
+  const segment = segmentFromBarPosition(shuttleX, w);
+
   const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
   const step = w / finalSegment;
-  const newSegment = Math.floor((shuttleX + (step / 2)) / step);
-  goToSegment(newSegment, true);
-  shuttleX = newSegment * step;
+
   return {
-    x: min + shuttleX,
-    y: shuttleY,
+    x: min + (segment * step),
+    y: this.getAbsolutePosition().y,
   };
+}
+
+// Called when the shuttle moves. The position is guaranteed to be valid by shuttleDragBound
+export function shuttleDragMove(this: Konva.Rect) {
+  const min = globals.elements.replayBar!.getAbsolutePosition().x + (this.width() * 0.5);
+  const w = globals.elements.replayBar!.width() - this.width();
+  const newSegment = segmentFromBarPosition(this.getAbsolutePosition().x - min, w);
+  goToSegment(newSegment, true);
 }
 
 const positionReplayShuttle = (
@@ -238,23 +263,27 @@ export const adjustShuttles = (fast: boolean) => {
     smaller = true;
   }
 
-  // Adjust the two shuttles along the replay bar based on the current segment
+  const draggingShuttle = globals.elements.replayShuttle!.isDragging();
+
+  // Adjust the replay shuttle along the bar based on the current segment
   // If it is smaller, we need to nudge it to the right a bit in order to center it
+  positionReplayShuttle(
+    globals.elements.replayShuttle!,
+    state.replay.segment,
+    smaller,
+    fast || draggingShuttle,
+  );
+
+  // Adjust the shared replay shuttle along the bar based on the shared segment
   globals.elements.replayShuttleShared!.visible(globals.metadata.sharedReplay);
   if (globals.metadata.sharedReplay) {
     positionReplayShuttle(
       globals.elements.replayShuttleShared!,
       state.replay.sharedSegment,
       false,
-      fast,
+      fast || (draggingShuttle && state.replay.sharedSegment === state.replay.segment),
     );
   }
-  positionReplayShuttle(
-    globals.elements.replayShuttle!,
-    state.replay.segment,
-    smaller,
-    fast,
-  );
 };
 
 // -----------------------------

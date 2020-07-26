@@ -26,7 +26,7 @@ func websocketInit() {
 	m = melody.New()
 
 	// The default maximum message size is 512 bytes,
-	// but this is not long enough to send Hanabi game objects
+	// but this is not long enough to send game objects
 	// Thus, we have to manually increase it
 	m.Config.MaxMessageSize = 8192
 

@@ -209,7 +209,7 @@ func websocketConnect(ms *melody.Session) {
 	// Send them a message about the Discord server
 	msg := "Find teammates and discuss strategy in the " +
 		"<a href=\"https://discord.gg/FADvkJp\" target=\"_blank\" rel=\"noopener noreferrer\">" +
-		"Hanabi Discord chat</a>."
+		"Discord chat</a>."
 	s.Emit("chat", &ChatMessage{
 		Msg:      msg,
 		Server:   true,

@@ -17,14 +17,16 @@ func (s *Session) NotifyUser(u *Session) {
 type UserMessage struct {
 	ID     int    `json:"id"`
 	Name   string `json:"name"`
-	Status string `json:"status"`
+	Status int    `json:"status"`
+	Table  int    `json:"table"`
 }
 
 func makeUserMessage(s *Session) *UserMessage {
 	return &UserMessage{
 		ID:     s.UserID(),
 		Name:   s.Username(),
-		Status: status[s.Status()], // Status declarations are in the "constants.go" file
+		Status: s.Status(),
+		Table:  s.Table(),
 	}
 }
 
@@ -301,7 +303,7 @@ func (s *Session) NotifySpectators(t *Table) {
 	shadowingPlayers := make([]int, 0)
 	for _, sp := range t.Spectators {
 		names = append(names, sp.Name)
-		shadowingPlayers = append(shadowingPlayers, sp.PlayerIndex)
+		shadowingPlayers = append(shadowingPlayers, sp.ShadowPlayerIndex)
 	}
 
 	type SpectatorsMessage struct {
@@ -374,7 +376,7 @@ func (s *Session) NotifyReplayLeader(t *Table, playAnimation bool) {
 
 // NotifyNoteList sends them all of the notes from the players & spectators
 // (there will be no spectator notes if this is a replay spawned from the database)
-func (s *Session) NotifyNoteList(t *Table) {
+func (s *Session) NotifyNoteList(t *Table, shadowPlayerIndex int) {
 	g := t.Game
 
 	type NoteList struct {
@@ -386,13 +388,15 @@ func (s *Session) NotifyNoteList(t *Table) {
 	// Get the notes from all the players & spectators
 	notes := make([]NoteList, 0)
 	for _, p := range g.Players {
-		notes = append(notes, NoteList{
-			ID:    t.Players[p.Index].ID,
-			Name:  p.Name,
-			Notes: p.Notes,
-		})
+		if shadowPlayerIndex == -1 || shadowPlayerIndex == p.Index {
+			notes = append(notes, NoteList{
+				ID:    t.Players[p.Index].ID,
+				Name:  p.Name,
+				Notes: p.Notes,
+			})
+		}
 	}
-	if !t.Replay {
+	if !t.Replay && shadowPlayerIndex == -1 {
 		for _, sp := range t.Spectators {
 			notes = append(notes, NoteList{
 				ID:    sp.ID,

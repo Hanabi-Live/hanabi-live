@@ -24,7 +24,7 @@ func (g *Game) InitDeck() {
 		// Ranks are represented as a slice of integers
 		// (e.g. [1, 2, 3, 4, 5] for a "No Variant" game)
 		for _, rank := range variants[g.Options.VariantName].Ranks {
-			// In a normal suit of Hanabi, there are:
+			// In a normal suit, there are:
 			// - three 1's
 			// - two 2's
 			// - two 3's

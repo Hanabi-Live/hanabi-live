@@ -43,6 +43,10 @@ export default class CardLayout extends Konva.Group {
     */
   }
 
+  // The card has a relative position relating to its location
+  // (e.g. a player's hand, the play stacks)
+  // Use the absolute position so that we can tween it from one location to another without having
+  // to worry about the relative position
   addChild(child: LayoutChild) {
     const pos = child.getAbsolutePosition();
     this.add(child as any);

@@ -1,6 +1,6 @@
 # List of Features
 
-[Hanabi Live](https://hanabi.live/) was released on October 2017 as an attempt to improve upon [Keldon Jones'](http://keldon.net/) Hanabi site (which is now deleted). Much of the client code was originally borrowed from his implementation. Nearly all of the server code was written by Zamiel. Several community members have contributed to the project.
+[Hanab Live](https://hanab.live/) was released on October 2017 as an attempt to improve upon [Keldon Jones'](http://keldon.net/) implementation of the game (which is now deleted). The site offers many different features and ways to play.
 
 <br />
 
@@ -17,14 +17,14 @@
 9. [Chat](#chat)
 10. [Friends](#friends)
 11. [Tags](#tags)
-12. [Webpage Endpoints](#webpage-endpoints)
+12. [Website Endpoints](#website-endpoints)
 13. [Research & Bots](#research--bots)
 
 <br />
 
 ## Basic How-To
 
-* If you don't know how to play Hanabi already, you can read [the official rules](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md) or [watch Zamiel's video explanation](https://www.youtube.com/watch?v=jR9i1qCbHXQ).
+* If you don't know how to play the game already, read [the rules](Rules.md). For visual learners, you can also try watching [Zamiel's video explanation](https://www.youtube.com/watch?v=jR9i1qCbHXQ).
 * Getting a game going should be self-explanatory, but just in case:
   * Once logged in, use the "Create Game" button on the top navigation bar and then click "Create".
   * For everyone else, the game will now appear in the list of games. To join it, they need to click on ▶️.
@@ -130,22 +130,21 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 * Some statistics are shown on the right hand side of the screen to show how well the game is going.
 * Pace:
-  * You can think of Hanabi as a race to play all of the cards before the deck runs out. It is useful to track how close to the end of the race you are.
+  * You can think of the game as a race to play all of the cards before the deck runs out. It is useful to track how close to the end of the race you are.
   * Pace is a measure of the amount of discards that can happen while still having a chance to get the maximum score.
   * Pace is calculated with the following formula: `current score + cards in deck + number of players - maximum score`.
   * If you discard all copies of a card, so that the the maximum achievable score lowers, pace will adjust accordingly.
   * At pace 0, the only way to win is if every player plays a card in the last round of the game.
 * Efficiency:
-  * In Hanabi, you want to be as efficient as possible with the limited number of clues that you have. It is useful to track how well the team is doing with regards to this.
+  * Since you only have a limited amount of clues, you want to be as efficient as possible with then. It is useful to track how well the team is doing with regards to this.
   * Efficiency is calculated with the following formula: `(number of cards played + number of unplayed cards with one or more clues "on" them) / number of clues given or lost`
   * The numerator (first number) shows the efficiency of the current game.
   * The denominator (second number) shows the minimum possible efficiency needed to win with the current number of players and the current variant. (This number is statically calculated at the beginning of the game - it will not adjust if the maximum achievable score lowers.)
   * Note that this measure of efficiency assumes *Good Touch Principle* - that all clued cards will eventually be played. If your team does not play with *Good Touch Principle*, then these numbers won't be useful.
-  * Even known useless cards with a clue on them will be counted.
+  * Efficiency will automatically account for clued cards that are globally known to be trash. Such cards will not be included in the "number of unplayed cards with one or more clues on them" term.
 
 #### 6-Player Games
 
-* Hanabi is supposed to be played with 2-5 players. But nobody can tell me what to do.
 * In 6-player games, only three cards are dealt to each player.
 
 <br />
@@ -204,9 +203,14 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 ## Custom Game Options
 
+* In a pre-game, the custom game options (if any) can be seen on the left side of the screen.
+* In a game, the custom game (if any) can be seen by hovering over the deck.
+
+<br />
+
 #### Variants
 
-* The server implements several official and unofficial Hanabi variants, which are listed on [a separate page](https://github.com/Zamiell/hanabi-live/tree/master/docs/VARIANTS.md).
+* The server implements several variants, which are listed on [a separate page](https://github.com/Zamiell/hanabi-live/tree/master/docs/VARIANTS.md).
 
 #### Timed Games
 
@@ -231,7 +235,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 * Each game has the option to enable algorithmic card cycling.
 * If enabled, whenever a player gives a clue, their oldest unclued card will be moved to their newest slot.
-* This is a way to play Hanabi that is used by <a href="https://sites.google.com/view/iraci">Alessandro Iraci's</a> group from the <a href="https://www.sns.it/en">Scuola Normale Superiore di Pisa</a>.
+* This is a way to play that is used by <a href="https://sites.google.com/view/iraci">Alessandro Iraci's</a> group from the <a href="https://www.sns.it/en">Scuola Normale Superiore di Pisa</a>.
 
 #### Bottom Deck Blind Plays
 
@@ -283,8 +287,8 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 #### Keldon Mode
 
-* By default, the interface will look similar to the  [Board Game Arena](https://en.boardgamearena.com/) implementation of Hanabi, in which all of the hands are grouped together in rows.
-* In Keldon mode, the hands are distributed around the table, similar to how it would look if you were playing Hanabi in real-life.
+* By default, the interface will look similar to the [Board Game Arena](https://en.boardgamearena.com/) implementation of the game. In this mode, all of the hands are grouped together in rows.
+* In Keldon mode, the hands are distributed around the table, similar to how it would look if you were playing a card game in real-life.
 
 #### Color-Blind Mode
 
@@ -370,7 +374,7 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 * Normally, when a game is started, the server will find a deal in the database (based on a seed) that none of the players have played before.
 * If there were no old deals that matched this criteria, the server will generate a new random deal.
 * After the game is completed, the "Other Scores" button on the game history screen will show other players who played the same deal, if any. You can even view the replay of other people's games to see how they played the deal.
-* If two groups of Hanabi players want to compete against each other, then there are a few ways to play a non-randomly generated deal:
+* If two groups of players want to compete against each other, then there are a few ways to play a non-randomly generated deal:
   * Start a game with a name of `!seed [seed]` to play a deal generated by that specific seed. For example: `!seed showmatch-jan-2050-game-1`
   * Start a game with a name of `!replay [id] [turn]` to replay an existing game that is already located in the database. (Specifying the turn number is optional.)
 
@@ -383,7 +387,7 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 * You can type any emoji into chat using the [standard emoji short-code](https://raw.githubusercontent.com/Zamiell/hanabi-live/master/public/js/src/data/emojis.json). For example, `:thinking:` will turn into 🤔.
 * You can type any [Twitch emote](https://raw.githubusercontent.com/Zamiell/hanabi-live/master/public/js/src/data/emotes.json) into chat. For example, `Kappa` will turn into <img src="https://github.com/Zamiell/hanabi-live/raw/master/public/img/emotes/twitch/Kappa.png">. (Many BetterTwitchTV and FrankerFaceZ emotes are also supported.)
 * There are various chat commands. The full list can be found [here](CHAT_COMMANDS.md).
-* All lobby chat will be replicated to (and from) the [Hanabi Discord server](https://discord.gg/FADvkJp).
+* All lobby chat will be replicated to (and from) the [Discord server](https://discord.gg/FADvkJp).
 
 <br />
 
@@ -411,41 +415,37 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 
 ## Website Endpoints
 
-* As mentioned previously, Hanabi Live offers webpage endpoints to show statistics on specific players, variants, and so forth.
+* As mentioned previously, the website offers endpoints to show statistics on specific players, variants, and so forth.
 
-| URL                          | Description
-| ---------------------------- | -----------
-| `/scores/[username]`         | Lists the player's profile and best scores.
-| `/history/[username]`        | Lists the player's past games.
-| `/missing-scores/[username]` | Lists the player's remaining non-max scores.
-| `/tags/[username]`           | Lists the player's tagged games.
-| `/seed/[seed]`               | Lists the games played on a specific seed.
-| `/stats`                     | Lists stats for the entire website.
-| `/variant/[id]`              | Lists stats for a specific variant.
-| `/tag/[tag]`                 | Lists all the games that match the specified tag.
+| URL                                       | Description
+| ----------------------------------------- | -----------
+| `/scores/[username]`                      | Lists the player's profile and best scores.
+| `/history/[username]`                     | Lists the player's past games.
+| `/history/[username1]/[username2]`        | Lists the past games that 2 players were in together. (You can specify up to 6 players.)
+| `/missing-scores/[username]`              | Lists the player's remaining non-max scores.
+| `/missing-scores/[username1]/[username2]` | Lists the remaining non-max scores that 2 players both need. (You can specify up to 6 players.)
+| `/tags/[username]`                        | Lists the player's tagged games.
+| `/seed/[seed]`                            | Lists the games played on a specific seed.
+| `/stats`                                  | Lists stats for the entire website.
+| `/variant/[id]`                           | Lists stats for a specific variant.
+| `/tag/[tag]`                              | Lists all the games that match the specified tag.
 
 <br />
 
 ## Research & Bots
 
-* The game of Hanabi has relevance to researchers in artificial intelligence:
-  * In 1997, an artificial intelligence named [Deep Blue](https://en.wikipedia.org/wiki/Deep_Blue_(chess_computer)) defeated world-champion [Gary Kasparov](https://en.wikipedia.org/wiki/Garry_Kasparov) in [chess](https://en.wikipedia.org/wiki/Chess).
-  * In 2011, an artificial intelligence named [Watson](https://en.wikipedia.org/wiki/Watson_(computer)) defeated world-champions [Brad Rutter](https://en.wikipedia.org/wiki/Brad_Rutter) and [Ken Jennings](https://en.wikipedia.org/wiki/Ken_Jennings) in [Jeopardy!](https://en.wikipedia.org/wiki/Jeopardy!)
-  * In 2016, an artificial intelligence named [AlphaGo](https://en.wikipedia.org/wiki/AlphaGo) defeated world-champion [Lee Sedol](https://en.wikipedia.org/wiki/Lee_Sedol) in [Go](https://en.wikipedia.org/wiki/Go_(game)).
-  * In 2019, [AI researchers proposed](https://arxiv.org/pdf/1902.00506.pdf) that the next challenge for the AI community should be Hanabi. If bots could successfully cooperate with one another (and cooperate with humans) by demonstrating a [theory of mind](https://en.wikipedia.org/wiki/Theory_of_mind), it would be an important leap forward.
-* A game of Hanabi can be stored as a [JSON](https://www.json.org/json-en.html) object. The Hanabi community uses [the following format](https://raw.githubusercontent.com/Zamiell/hanabi-live/master/misc/example_game_with_comments.json) to specify a game.
-* Hanabi Live supports watching arbitrary games from JSON files. Simply select "Watch Specific Replay" from the menu, select "JSON Data" as the source, and then paste in the JSON data.
-* This is useful for researchers and bot-makers because you can take one of the games that your bot plays and then plug it into Hanabi Live in order to more-easily see what kinds of strategies that it is doing.
+* A game can be stored as a [JSON](https://www.json.org/json-en.html) object. The community uses [the following format](https://raw.githubusercontent.com/Zamiell/hanabi-live/master/misc/example_game_with_comments.json) to specify a game.
+* The website supports watching arbitrary games from JSON files. Simply select "Watch Specific Replay" from the menu, select "JSON Data" as the source, and then paste in the JSON data.
+* This is useful for researchers and bot-makers because you can take one of the games that your bot plays and then plug it into the website in order to more-easily see what kinds of strategies that it is doing.
 * It is also possible to program a bot to play on the website with other players. Unlike other websites such as [lichess.org](https://lichess.org/), there is no bot-specific API. Bots must connect to the WebSocket server and send messages in exactly the same way that a real player would. A reference bot implementation can be found [here](https://github.com/Zamiell/hanabi-live-bot).
 
 ### JSON Endpoints
 
-| URL                                                | Description
-| -------------------------------------------------- | -----------
-| `/history/[username]?api`                          | Provides all of the games played by a user.
-| `/history/[username1]/[username2]?api`             | Provides all of the games played in by both users.
-| `/history/[username1]/[username2]/[username3]?api` | Provides all of the games played in by all three users, and so forth.
-| `/seed/[seed]?api`                                 | Provides all of the games played on the specified seed.
-| `/export/[game ID]`                                | Provides the data for an arbitrary game from the database.
+| URL                                    | Description
+| -------------------------------------- | -----------
+| `/history/[username]?api`              | Provides all of the games played by a user.
+| `/history/[username1]/[username2]?api` | Provides all of the games played in by both users. (You can specify up to 6 players.)
+| `/seed/[seed]?api`                     | Provides all of the games played on the specified seed.
+| `/export/[game ID]`                    | Provides the data for an arbitrary game from the database.
 
 <br />

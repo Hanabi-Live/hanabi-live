@@ -8,7 +8,7 @@ import globals from '../globals';
 import * as misc from '../misc';
 import { isEmpty } from '../misc';
 import * as modals from '../modals';
-import Settings from './Settings';
+import Settings from './types/Settings';
 
 // Constants
 const basicVariants = [
@@ -108,7 +108,7 @@ export const init = () => {
   $('#create-game-submit').on('click', submit);
 };
 
-// There are over 1000+ variants on Hanabi Live
+// The website offers over 1000+ variants
 // To prevent confusion, only show the basic variants to the user by default
 // They can select "Search custom variants..." if they want access to the "full" dropdown
 //

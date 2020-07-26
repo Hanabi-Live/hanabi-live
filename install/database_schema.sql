@@ -1,6 +1,6 @@
 /*
  * Notes:
- * - Hanabi Live uses PostgreSQL
+ * - The website uses PostgreSQL
  * - Initializing the database is accomplished in the "install_database_schema.sh" script
  * - "SERIAL" is a keyword in PostgreSQL to have an automatic-incrementing column:
  *   https://www.postgresqltutorial.com/postgresql-serial

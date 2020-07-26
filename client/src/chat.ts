@@ -5,11 +5,12 @@ import linkifyHtml from 'linkifyjs/html';
 import emojis from '../../data/emojis.json';
 import emoteCategories from '../../data/emotes.json';
 import chatCommands from './chatCommands';
-import ChatMessage from './ChatMessage';
 import { FADE_TIME } from './constants';
 import globals from './globals';
+import Screen from './lobby/types/Screen';
 import { isEmpty } from './misc';
 import * as modals from './modals';
+import ChatMessage from './types/ChatMessage';
 
 // Variables
 const emojiMap = new Map<string, string>();
@@ -321,7 +322,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
   if (data.recipient === globals.username) {
     // If this is a PM that we are receiving,
     // we want it to always go to either the lobby chat or the game chat
-    if (globals.currentScreen === 'game') {
+    if (globals.currentScreen === Screen.Game) {
       chat = $('#game-chat-text');
     } else {
       chat = $('#lobby-chat-text');
@@ -331,7 +332,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
     globals.lastPM = data.who;
   } else if (data.room === 'lobby') {
     chat = $('#lobby-chat-text');
-  } else if (globals.currentScreen === 'pregame') {
+  } else if (globals.currentScreen === Screen.PreGame) {
     chat = $('#lobby-chat-pregame-text');
   } else {
     chat = $('#game-chat-text');

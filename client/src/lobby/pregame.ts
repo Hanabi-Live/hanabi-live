@@ -6,6 +6,7 @@ import globals from '../globals';
 import * as misc from '../misc';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
+import Screen from './types/Screen';
 import * as usersDraw from './usersDraw';
 
 // Constants
@@ -20,7 +21,8 @@ const tooltipOptions: JQueryTooltipster.ITooltipsterOptions = {
 };
 
 export const show = () => {
-  globals.currentScreen = 'pregame';
+  globals.currentScreen = Screen.PreGame;
+  usersDraw.draw();
 
   // Replace the list of current games with a list of the current players
   $('#lobby-pregame').show();
@@ -63,7 +65,7 @@ export const show = () => {
 };
 
 export const hide = () => {
-  globals.currentScreen = 'lobby';
+  globals.currentScreen = Screen.Lobby;
   tablesDraw();
   usersDraw.draw();
 

@@ -7,6 +7,7 @@ import { isEmpty } from '../misc';
 import websocketInit from '../websocketInit';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
+import Screen from './types/Screen';
 import * as usersDraw from './usersDraw';
 
 export const init = () => {
@@ -164,7 +165,7 @@ export const hide = (firstTimeUser: boolean) => {
   $('body').css('overflow', 'hidden');
 
   // Show the lobby
-  globals.currentScreen = 'lobby';
+  globals.currentScreen = Screen.Lobby;
   tablesDraw();
   usersDraw.draw(); // If we were in the tutorial, we have to re-draw all of the user rows
   $('#lobby').show();

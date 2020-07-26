@@ -1,7 +1,7 @@
 // Integration tests, involving loading a full game and checking state at different points
 
 import loadGameJSON from '../../../test/loadGameJSON';
-import pinkRainbowOnesGame from '../../../test_data/pink_rainbow_ones.json';
+import rainbowOnesAndPinkGame from '../../../test_data/rainbow-ones_and_pink.json';
 import upOrDownGame from '../../../test_data/up_or_down.json';
 import upOrDownFinalCards from '../../../test_data/up_or_down_final_cards.json';
 import upOrDownTurn5Cards from '../../../test_data/up_or_down_turn5.json';
@@ -15,11 +15,12 @@ const getStateAtTurn = (state: State, turn: number) => state.replay.states[turn]
 const getFinalState = (state: State) => state.replay.states[state.replay.states.length - 1];
 
 describe('integration', () => {
-  describe('up_or_down test game', () => {
+  describe('Up or Down test game', () => {
     beforeAll(() => {
       // Load the game and get the final state
       testState = loadGameJSON(upOrDownGame);
     });
+
     describe('at turn 5', () => {
       test('has the correct cards on each player\'s hands', () => {
         const turn5State = getStateAtTurn(testState, 4);
@@ -29,6 +30,7 @@ describe('integration', () => {
           [8, 9, 11, 16],
           [12, 13, 15, 17]]);
       });
+
       test('has the correct stats', () => {
         const turn5State = getStateAtTurn(testState, 4);
         expect(turn5State.turn.turnNum).toBe(4);
@@ -37,7 +39,6 @@ describe('integration', () => {
         expect(turn5State.clueTokens).toBe(6);
         expect(turn5State.stats.pace).toBe(8);
         expect(turn5State.stats.efficiency).toBeCloseTo(1.50);
-        expect(turn5State.stats.cardsGotten).toBe(3);
         expect(turn5State.stats.potentialCluesLost).toBe(2);
 
         expect(turn5State.playStackDirections).toEqual([
@@ -48,6 +49,7 @@ describe('integration', () => {
           StackDirection.Undecided,
         ]);
       });
+
       test.each([...Array(18).keys()])(
         'card %i has the correct pips and possibilities', (order) => {
           const turn5State = getStateAtTurn(testState, 4);
@@ -59,6 +61,7 @@ describe('integration', () => {
         },
       );
     });
+
     describe('final state', () => {
       test('has the correct cards on each player\'s hands', () => {
         const finalState = getFinalState(testState);
@@ -68,6 +71,7 @@ describe('integration', () => {
           [31, 36, 41, 44],
           [13, 23, 39]]);
       });
+
       test('has the correct stats', () => {
         const finalState = getFinalState(testState);
         expect(finalState.turn.turnNum).toBe(50);
@@ -75,8 +79,7 @@ describe('integration', () => {
         expect(finalState.score).toBe(24);
         expect(finalState.clueTokens).toBe(2);
         expect(finalState.stats.pace).toBeNull();
-        expect(finalState.stats.efficiency).toBeCloseTo(1.44);
-        expect(finalState.stats.cardsGotten).toBe(26);
+        expect(finalState.stats.efficiency).toBeCloseTo(1.39);
         expect(finalState.stats.potentialCluesLost).toBe(18);
 
         expect(finalState.playStackDirections).toEqual([
@@ -87,6 +90,7 @@ describe('integration', () => {
           StackDirection.Finished,
         ]);
       });
+
       test.each([...Array(45).keys()])(
         'card %i has the correct pips and possibilities', (order) => {
           const finalState = getFinalState(testState);
@@ -98,11 +102,13 @@ describe('integration', () => {
       );
     });
   });
-  describe('pink_rainbow_ones test game', () => {
+
+  describe('Rainbow-Ones & Pink test game', () => {
     beforeAll(() => {
       // Load the game and get the final state
-      testState = loadGameJSON(pinkRainbowOnesGame);
+      testState = loadGameJSON(rainbowOnesAndPinkGame);
     });
+
     describe('final state', () => {
       test('has the correct cards on each player\'s hands', () => {
         const finalState = getFinalState(testState);
@@ -112,6 +118,7 @@ describe('integration', () => {
           [28, 31, 33, 42],
         ]);
       });
+
       test('has the correct stats', () => {
         const finalState = getFinalState(testState);
         expect(finalState.turn.turnNum).toBe(53);
@@ -119,8 +126,7 @@ describe('integration', () => {
         expect(finalState.score).toBe(25);
         expect(finalState.clueTokens).toBe(8);
         expect(finalState.stats.pace).toBeNull();
-        expect(finalState.stats.efficiency).toBeCloseTo(1.67);
-        expect(finalState.stats.cardsGotten).toBe(30);
+        expect(finalState.stats.efficiency).toBeCloseTo(1.39);
         expect(finalState.stats.potentialCluesLost).toBe(18);
       });
     });

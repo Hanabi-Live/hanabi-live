@@ -2,7 +2,7 @@ package main
 
 // /pause
 func chatPause(s *Session, d *CommandData, t *Table) {
-	if d.Room == "lobby" {
+	if t == nil || d.Room == "lobby" {
 		chatServerSend(ChatCommandNotInGameFail, d.Room)
 		return
 	}
@@ -20,7 +20,7 @@ func chatPause(s *Session, d *CommandData, t *Table) {
 
 // /unpause
 func chatUnpause(s *Session, d *CommandData, t *Table) {
-	if d.Room == "lobby" {
+	if t == nil || d.Room == "lobby" {
 		chatServerSend(ChatCommandNotInGameFail, d.Room)
 		return
 	}

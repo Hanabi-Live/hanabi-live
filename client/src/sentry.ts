@@ -11,7 +11,7 @@ export const init = () => {
   Sentry.init({
     dsn: 'https://93293e0a9dff44c7b8485d646738a3e5@sentry.io/5189482',
     release: version.toString(),
-    whitelistUrls: ['hanabi.live'], // Otherwise, we get errors for LastPass, etc.
+    whitelistUrls: ['hanab.live'], // Otherwise, we get errors for LastPass, etc.
     ignoreErrors,
   });
 };

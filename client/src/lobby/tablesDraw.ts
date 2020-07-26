@@ -3,7 +3,8 @@
 import globals from '../globals';
 import * as misc from '../misc';
 import * as modals from '../modals';
-import Table from './Table';
+import Screen from './types/Screen';
+import Table from './types/Table';
 
 const tablesDraw = () => {
   const tbody = $('#lobby-games-table-tbody');
@@ -119,14 +120,18 @@ const tablesDraw = () => {
     if (table.sharedReplay || (!table.joined && table.running)) {
       button.html('<i class="fas fa-eye lobby-button-icon"></i>');
       button.attr('id', `spectate-${table.id}`);
-      button.on('click', tableSpectateButton(table));
+      button.on('click', () => {
+        tableSpectate(table);
+      });
     } else if (!table.joined) {
       button.html('<i class="fas fa-sign-in-alt lobby-button-icon"></i>');
       button.attr('id', `join-${table.id}`);
       if (table.numPlayers >= 6) {
         button.addClass('disabled');
       }
-      button.on('click', tableJoinButton(table));
+      button.on('click', () => {
+        tableJoin(table);
+      });
       if (!addedFirstJoinButton) {
         addedFirstJoinButton = true;
         button.addClass('lobby-games-first-join-button');
@@ -134,7 +139,9 @@ const tablesDraw = () => {
     } else {
       button.html('<i class="fas fa-play lobby-button-icon"></i>');
       button.attr('id', `resume-${table.id}`);
-      button.on('click', tableReattendButton(table));
+      button.on('click', () => {
+        tableReattend(table);
+      });
     }
     $('<td>').html(button as any).appendTo(row);
 
@@ -174,24 +181,35 @@ const tablesDraw = () => {
 };
 export default tablesDraw;
 
-const tableSpectateButton = (table: Table) => () => {
+export const tableSpectate = (table: Table) => {
+  if (globals.currentScreen !== Screen.Lobby) {
+    return;
+  }
+
   globals.conn!.send('tableSpectate', {
     tableID: table.id,
   });
 };
 
-const tableJoinButton = (table: Table) => () => {
-  if (table.passwordProtected) {
-    modals.passwordShow(table.id);
+export const tableJoin = (table: Table) => {
+  if (globals.currentScreen !== Screen.Lobby) {
     return;
   }
 
-  globals.conn!.send('tableJoin', {
-    tableID: table.id,
-  });
+  if (table.passwordProtected) {
+    modals.passwordShow(table.id);
+  } else {
+    globals.conn!.send('tableJoin', {
+      tableID: table.id,
+    });
+  }
 };
 
-const tableReattendButton = (table: Table) => () => {
+const tableReattend = (table: Table) => {
+  if (globals.currentScreen !== Screen.Lobby) {
+    return;
+  }
+
   globals.conn!.send('tableReattend', {
     tableID: table.id,
   });

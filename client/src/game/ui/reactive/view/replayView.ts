@@ -2,6 +2,7 @@
 
 import { variantRules } from '../../../rules';
 import ReplayActionType from '../../../types/ReplayActionType';
+import State from '../../../types/State';
 import globals from '../../globals';
 import isOurTurn from '../../isOurTurn';
 import * as ourHand from '../../ourHand';
@@ -43,9 +44,9 @@ export const onActiveChanged = (active: boolean, previousActive: boolean | undef
 
 export const onActiveOrOngoingGameSegmentChanged = (data: {
   active: boolean;
-  segment: number | null;
+  ongoingGameSegment: number | null;
 }) => {
-  if (!data.active || data.segment === null) {
+  if (!data.active || data.ongoingGameSegment === null) {
     return;
   }
 
@@ -53,9 +54,9 @@ export const onActiveOrOngoingGameSegmentChanged = (data: {
   replay.adjustShuttles(false);
 
   // If we are on the last segment, disable the forward replay buttons
-  const state = globals.store!.getState();
-  globals.elements.replayForwardButton!.setEnabled(state.replay.segment !== data.segment);
-  globals.elements.replayForwardFullButton!.setEnabled(state.replay.segment !== data.segment);
+  const enabled = globals.store!.getState().replay.segment !== data.ongoingGameSegment;
+  globals.elements.replayForwardButton!.setEnabled(enabled);
+  globals.elements.replayForwardFullButton!.setEnabled(enabled);
 
   globals.layers.UI.batchDraw();
 };
@@ -200,5 +201,19 @@ export const onFinishedChanged = (finished: boolean, previousFinished: boolean |
   }
 
   globals.layers.timer.batchDraw();
+  globals.layers.UI.batchDraw();
+};
+
+// For replay leaders, we want to disable entering a hypothetical during certain situations
+export const enterHypoButtonIsEnabled = (state: State): boolean => (
+  state.metadata.finished
+  && globals.amSharedReplayLeader
+  && state.replay.useSharedSegments
+  // We can't start a hypothetical on a segment where the game has already ended
+  && state.visibleState!.turn.currentPlayerIndex !== null
+);
+
+export const enterHypoButtonEnabledChanged = (enabled: boolean) => {
+  globals.elements.enterHypoButton!.setEnabled(enabled);
   globals.layers.UI.batchDraw();
 };

@@ -82,7 +82,7 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	// Check if the game is still in progress
 	if t.Replay {
 		// Since the game is over, send them the notes from all the players & spectators
-		s.NotifyNoteList(t)
+		s.NotifyNoteList(t, -1)
 	} else {
 		// Send them the current connection status of the players
 		s.NotifyConnected(t)
@@ -96,7 +96,7 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 		}
 
 		if i > -1 {
-			// They are a player
+			// They are a player in an ongoing game
 			p := g.Players[i]
 
 			// Send them a list of only their notes
@@ -112,9 +112,9 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 			t.Players[i].Present = true
 			t.NotifyConnected()
 		} else if j > -1 {
-			// They are a spectator
-			// Send them the notes from all the players & spectators
-			s.NotifyNoteList(t)
+			// They are a spectator in an ongoing game
+			sp := t.Spectators[j]
+			s.NotifyNoteList(t, sp.ShadowPlayerIndex)
 		}
 	}
 

@@ -98,17 +98,15 @@ const subscribeToCardChanges = (order: number) => {
 
   // Pips
   sub((c) => ({
-    possibleCardsFromClues: c.possibleCardsFromClues,
+    numPossibleCardsFromClues: c.possibleCardsFromClues.length,
     possibleCardsFromObservation: c.possibleCardsFromObservation,
-    positiveRankClues: c.positiveRankClues,
+    numPositiveRankClues: c.positiveRankClues.length,
   }), () => updatePips(order));
   // Notes
-  sub(
-    (c) => ({
-      possibleCardsFromClues: c.possibleCardsFromClues,
-      possibleCardsFromObservation: c.possibleCardsFromObservation,
-    }), () => updateNotePossibilities(order),
-  );
+  sub((c) => ({
+    possibleCardsFromClues: c.possibleCardsFromClues,
+    possibleCardsFromObservation: c.possibleCardsFromObservation,
+  }), () => updateNotePossibilities(order));
   // Card visuals
   subFullState((s) => {
     const card = s.visibleState!.deck[order];

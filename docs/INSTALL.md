@@ -1,6 +1,6 @@
-# Hanabi Live Installation
+# Hanab Live Installation
 
-If you just want to install Hanabi Live without the ability to edit the code, skip to [the production installation section](#installation-for-production-linux).
+If you just want to install the website without the ability to edit the code, skip to [the production installation section](#installation-for-production-linux).
 
 Like many code projects, we use [linters](https://en.wikipedia.org/wiki/Lint_(software)) to ensure that all of the code is written consistently and error-free. For Golang (the server-side code), we use [golangci-lint](https://github.com/golangci/golangci-lint). For TypeScript (the client-side code), we use [ESLint](https://eslint.org/) and have a configuration based on the [Airbnb style guide](https://github.com/airbnb/javascript). We ask that all pull requests pass our linting rules.
 
@@ -237,7 +237,7 @@ These instructions assume you are running Ubuntu 20.04 LTS. Some adjustments may
 
 This assumes that you installed the server to "/root/hanabi-live". If not, you will need to edit the paths in the below commands and edit the contents of the three Supervisor files.
 
-* Install Supervisor and install the Hanabi Live service:
+* Install Supervisor and install the service:
   * `./install/install_supervisor.sh`
 
 To manage the service:
@@ -282,19 +282,19 @@ This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
 
 #### Install HTTPS (optional)
 
-This assumes that your domain names are "hanabi.live" and "www.hanabi.live". It also assumes that you installed the server to "/root/hanabi-live". Adjust if needed.
+This assumes that your domain names are "hanab.live" and "www.hanab.live". It also assumes that you installed the server to "/root/hanabi-live". Adjust if needed.
 
 * `sudo apt install certbot -y`
-* `certbot certonly --standalone -d hanabi.live -d www.hanabi.live` <br />
-  (this creates "/etc/letsencrypt/live/hanabi.live/")
+* `certbot certonly --standalone -d hanab.live -d www.hanab.live -d hanabi.live -d www.hanabi.live` <br />
+  (this creates "/etc/letsencrypt/live/hanab.live/")
 * In the `.env` file:
-  * Set `TLS_CERT_FILE` to: `/etc/letsencrypt/live/hanabi.live/fullchain.pem`
-  * Set `TLS_KEY_FILE` to: `/etc/letsencrypt/live/hanabi.live/privkey.pem`
+  * Set `TLS_CERT_FILE` to: `/etc/letsencrypt/live/hanab.live/fullchain.pem`
+  * Set `TLS_KEY_FILE` to: `/etc/letsencrypt/live/hanab.live/privkey.pem`
 * `crontab -e`
 
 ```
 # Every day, keep the Let's Encrypt certificate up to date
-0 0 * * * /root/hanabi-live/renew_cert.sh
+0 0 * * * /root/hanab-live/renew_cert.sh
 ```
 
 <br />

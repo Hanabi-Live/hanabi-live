@@ -204,18 +204,22 @@ export default class LayoutChild extends Konva.Group {
     const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
     const ourPlayerIndex = state.metadata.ourPlayerIndex;
     const card = this.children[0] as unknown as HanabiCard;
+    let ongoingGame = state.ongoingGame;
+    if (state.replay.hypothetical !== null) {
+      ongoingGame = state.replay.hypothetical.ongoing;
+    }
 
     if (
       draggedTo === 'playArea'
       && !globals.metadata.options.speedrun
       && !variantRules.isThrowItInAHole(globals.variant)
       // Don't use warnings for preplays unless we are at 2 strikes
-      && (currentPlayerIndex === ourPlayerIndex || state.ongoingGame.strikes.length === 2)
+      && (currentPlayerIndex === ourPlayerIndex || ongoingGame.strikes.length === 2)
       && !cardRules.isPotentiallyPlayable(
         card.state,
-        state.ongoingGame.deck,
-        state.ongoingGame.playStacks,
-        state.ongoingGame.playStackDirections,
+        ongoingGame.deck,
+        ongoingGame.playStacks,
+        ongoingGame.playStackDirections,
       )
     ) {
       let text = 'Are you sure you want to play this card?\n';

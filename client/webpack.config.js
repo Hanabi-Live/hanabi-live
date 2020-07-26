@@ -90,7 +90,7 @@ module.exports = {
     // ProvidePlugin automatically loads modules instead of having to import them everywhere
     // https://webpack.js.org/plugins/provide-plugin/
     new webpack.ProvidePlugin({
-      // The Hanabi codebase and the Tooltipster library uses "$" to invoke jQuery
+      // The codebase and the Tooltipster library uses "$" to invoke jQuery
       $: 'jquery',
     }),
   ],

@@ -1,6 +1,6 @@
 # Variants
 
-[Hanabi Live](https://hanabi.live) is programmed by Hanabi enthusiasts who have played the game thousands of times. In order to keep the game fresh, the server allows you to create games using the variants mentioned in the [rules that come with the game](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants) as well as many other non-official custom variants. Players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#custom-game-options).
+[Hanab Live](https://hanab.live) is programmed by enthusiasts who have played the game thousands of times. In order to keep the game fresh, the server allows you to create games using many different variants. Players also have the ability to further custom a game by using a number of [custom game options](https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#custom-game-options).
 
 <br />
 
@@ -28,7 +28,7 @@ One of each card per suit (e.g. 5 in total):
 
 ### No Variant
 
-* This is the "normal" game, with 5 suits. Unlike some real-life versions of the game, Hanabi Live uses the following five suit colors:
+* This is the "normal" game, with 5 suits. Unlike some other versions of the game, the website uses the following five suit colors:
   * Blue
   * Green
   * Yellow
@@ -39,7 +39,6 @@ One of each card per suit (e.g. 5 in total):
 
 * A teal suit is added.
 * It works identical to the other suits in that you can clue teal cards with teal clues.
-* (This is the first [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants).)
 
 ### 4 Suits
 
@@ -54,13 +53,11 @@ One of each card per suit (e.g. 5 in total):
 * One of the suits is replaced with a black suit.
 * It works similar to the other suits in that you can clue black cards with black clues.
 * There is only one of each black card in the deck, which means that every black card is "critical".
-* (This is the second [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants).)
 
 ### Rainbow
 
 * One of the suits is replaced with a rainbow suit.
 * All color clues will "touch" the rainbow suit.
-* (This is the third [official variant](https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Rules.md#multicolor-variants).)
 
 ### Pink
 
@@ -250,7 +247,6 @@ One of each card per suit (e.g. 5 in total):
 * The reversed suit must be played in the opposite order (e.g. 5, 4, 3, 2, 1).
 * Two 1's are removed from the reversed suit.
 * Two 5's are added to the reversed suit.
-* The "White Reversed (6 Suits)" variant is an official variant introduced with [Hanabi Grands Feux](https://www.cocktailgames.com/jeu/hanabi-grands-feux/) under the name "Poudre Noire" (Black Powder).
 
 ### Up or Down
 

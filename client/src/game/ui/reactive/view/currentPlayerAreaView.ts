@@ -6,10 +6,8 @@ import State from '../../../types/State';
 import globals from '../../globals';
 
 export const isVisible = (s: State) => (
-  // Don't show it if the UI is still initializing
-  s.visibleState !== null
   // Don't show it we happen to have the in-game replay open
-  && !s.replay.active
+  !s.replay.active
   // The clue UI should take precedence over the "Current Player" area
   && (
     s.ongoingGame.turn.currentPlayerIndex !== s.metadata.ourPlayerIndex

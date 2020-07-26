@@ -248,9 +248,8 @@ const gameStateReducer = produce((
         console.warn(`Client = ${state.clueTokens}, Server = ${action.clues}`);
       }
 
-      // On Throw It In a Hole, the client is missing some key pieces of information about
-      // the stats.
-      // TODO: the status message shouldn't be sent, so we don't leak info to the client
+      // In "Throw It In a Hole" variants, the client is missing some information about the stats
+      // TODO: the status message should not be sent, so we do not leak information to the client
       if (variantRules.isThrowItInAHole(variant) && !metadata.spectating) {
         break;
       }
@@ -311,8 +310,10 @@ const gameStateReducer = produce((
 
   // Discarding or playing cards can make other card cards in that suit
   // not playable anymore and can make other cards critical
-  if ((action.type === 'play' || action.type === 'discard')
-      && (action.suitIndex >= 0 && action.rank >= 0)) {
+  if (
+    (action.type === 'play' || action.type === 'discard')
+    && (action.suitIndex >= 0 && action.rank >= 0)
+  ) {
     variant.ranks.forEach((rank) => {
       state.cardStatus[action.suitIndex][rank] = cardRules.status(
         action.suitIndex,

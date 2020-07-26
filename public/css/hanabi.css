@@ -786,14 +786,12 @@ input::-webkit-calendar-picker-indicator {
   }
 }
 
-/* Hide the "Hanabi Live" text on the header when it overlaps with the lobby nav bar buttons */
+/* Hide the logo on the header when it overlaps with the lobby nav bar buttons */
 @media screen and (max-width: 650px) {
   .lobby-header #logo-text {
     display: none;
   }
 }
-
-/* Hide the "Hanabi Live" logo when it overlaps with the lobby nav bar buttons */
 @media screen and (max-width: 490px) {
   .lobby-header {
     display: none;

@@ -477,13 +477,16 @@ func characterPostClue(d *CommandData, g *Game, p *GamePlayer) {
 	if p.Character == "Mood Swings" { // 12
 		p.CharacterMetadata = clue.Type
 	} else if p.Character == "Insistent" { // 13
-		// Mark that the cards that they clued must be continue to be clued
-		cardsTouched := p2.FindCardsTouchedByClue(clue)
-		for _, order := range cardsTouched {
-			c := g.Deck[order]
-			c.InsistentTouched = true
+		// Don't do anything if they are already in their "Insistent" state
+		if p.CharacterMetadata == -1 {
+			// Mark that the cards that they clued must be continue to be clued
+			cardsTouched := p2.FindCardsTouchedByClue(clue)
+			for _, order := range cardsTouched {
+				c := g.Deck[order]
+				c.InsistentTouched = true
+			}
+			p.CharacterMetadata = 0 // 0 means that the "Insistent" state is activated
 		}
-		p.CharacterMetadata = 0 // 0 means that the "Insistent" state is activated
 	}
 
 	if p2.Character == "Vindictive" { // 9

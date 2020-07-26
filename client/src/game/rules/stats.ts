@@ -8,6 +8,7 @@ import {
 } from '../rules';
 import CardState from '../types/CardState';
 import { MAX_CLUE_NUM } from '../types/constants';
+import GameMetadata from '../types/GameMetadata';
 import { PaceRisk } from '../types/GameState';
 import StackDirection from '../types/StackDirection';
 import Variant from '../types/Variant';
@@ -105,7 +106,45 @@ export const startingPace = (
   return totalCards - middleTerm - totalCardsToBePlayed;
 };
 
-export const efficiency = (cardsGotten: number, potentialCluesLost: number): number => {
+export const cardsGotten = (
+  deck: readonly CardState[],
+  playStacks: ReadonlyArray<readonly number[]>,
+  playStackDirections: readonly StackDirection[],
+  metadata: GameMetadata,
+  variant: Variant,
+) => {
+  let currentCardsGotten = 0;
+
+  // Go through the deck and count the cards that are gotten
+  for (const card of deck) {
+    if (
+      card.location === 'playStack'
+      || (
+        card.location === 'discard'
+        && card.isMisplayed
+        && variantRules.isThrowItInAHole(variant)
+        && !metadata.spectating
+      )
+    ) {
+      // A card is considered to be gotten if it is already played
+      // (and failed discards count as played for the purposes of "Throw It in a Hole" variants)
+      currentCardsGotten += 1;
+    } else if (
+      typeof card.location === 'number' // This card is in a player's hand
+      && cardRules.isClued(card)
+      && !cardRules.allPossibilitiesTrash(card, deck, playStacks, playStackDirections, variant)
+    ) {
+      // Clued cards in player's hands are considered to be gotten,
+      // since they will eventually be played from Good Touch Principle
+      // (unless the card is globally known to be trash)
+      currentCardsGotten += 1;
+    }
+  }
+
+  return currentCardsGotten;
+};
+
+export const efficiency = (currentCardsGotten: number, potentialCluesLost: number): number => {
   // First, handle the case where no clues have been given yet
   // Infinity is normal and expected in this case (on e.g. the first turn of the game)
   // We must explicitly check for this because while e.g. "1 / 0" in JavaScript is infinity,
@@ -114,7 +153,7 @@ export const efficiency = (cardsGotten: number, potentialCluesLost: number): num
     return Infinity;
   }
 
-  return cardsGotten / potentialCluesLost;
+  return currentCardsGotten / potentialCluesLost;
 };
 
 // Calculate the minimum amount of efficiency needed in order to win this variant
@@ -171,7 +210,7 @@ export const doubleDiscard = (
   const card = deck[order];
   if (card.suitIndex === null || card.rank === null) {
     if (variantRules.isThrowItInAHole(variant)) {
-      // In "Throw It In A Hole", it's expected to get scrubbed discards
+      // In "Throw It In A Hole", it is expected to get scrubbed discards
       return false;
     }
     throw new Error(`Unable to find the information for card ${order} in the state deck.`);

@@ -69,7 +69,7 @@ module.exports = {
     // ESLint does not like TypeScript 3.8 syntax, e.g. "import { module } from 'file'"
     'import/named': ['off'],
 
-    // The Hanabi codebase uses cyclical dependencies because
+    // The codebase uses cyclical dependencies because
     // various objects are attached to the global variables object,
     // but methods of these objects also reference/change global variables
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/imports.js#L236

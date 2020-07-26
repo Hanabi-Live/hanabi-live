@@ -189,7 +189,15 @@ func httpLogin(c *gin.Context) {
 
 	// Validate that the username is not reserved
 	normalizedUsername := normalizeString(username)
-	if normalizedUsername == "hanabilive" {
+	if normalizedUsername == normalizeString(websiteName) ||
+		normalizedUsername == "hanab" ||
+		normalizedUsername == "hanabi" ||
+		normalizedUsername == "live" ||
+		normalizedUsername == "hlive" ||
+		normalizedUsername == "hanablive" ||
+		normalizedUsername == "hanabilive" ||
+		normalizedUsername == "nabilive" {
+
 		logger.Info("User from IP \"" + ip + "\" tried to log in with a username of " +
 			"\"" + username + "\", but that username is reserved.")
 		http.Error(
@@ -225,7 +233,7 @@ func httpLogin(c *gin.Context) {
 				"(The current version is " + strconv.Itoa(currentVersion) + ".)")
 			http.Error(
 				w,
-				"You are running an outdated version of the Hanabi client code.<br />"+
+				"You are running an outdated version of the client code.<br />"+
 					"(You are on <strong>v"+version+"</strong> and "+
 					"the latest is <strong>v"+strconv.Itoa(currentVersion)+"</strong>.)<br />"+
 					"Please perform a "+

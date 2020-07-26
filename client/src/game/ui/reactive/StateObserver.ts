@@ -177,7 +177,7 @@ const replayObservers: Subscriptions = [
   // Replay sliders and buttons
   subAfterInit((s) => ({
     active: s.replay.active,
-    segment: s.ongoingGame.turn.segment,
+    ongoingGameSegment: s.ongoingGame.turn.segment,
   }), replayView.onActiveOrOngoingGameSegmentChanged),
   sub((s) => s.replay.states.length >= 2, replayView.onSecondRecordedSegment),
   subAfterInit((s) => s.replay.segment, replayView.onReplaySegmentChanged),
@@ -185,6 +185,12 @@ const replayObservers: Subscriptions = [
     sharedSegment: s.replay.sharedSegment,
     useSharedSegments: s.replay.useSharedSegments,
   }), replayView.onSharedSegmentOrUseSharedSegmentsChanged),
+
+  // Hypothetical buttons
+  subAfterInit(
+    (s) => replayView.enterHypoButtonIsEnabled(s),
+    replayView.enterHypoButtonEnabledChanged,
+  ),
 
   // Card and stack base morphing
   subAfterInit((s) => ({

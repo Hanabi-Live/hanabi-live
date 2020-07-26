@@ -129,7 +129,7 @@
           <img src="/public/img/logos/header.svg" height=200 />
         </h2>
         <p id="title-sub">
-          A place to play <strong>Hanabi</strong> online,<br />
+          A place to play <strong>Hanab</strong> online,<br />
           a cooperative card game of logic and reasoning
         </p>
       </header>
@@ -138,7 +138,7 @@
         <div class="col-8 off-2">
           <section id="loading" class="box align-center">
             <h3>Loading...</h3>
-            <p>Hanabi Live is loading. Please wait!</p>
+            <p>{{.WebsiteName}} is loading. Please wait!</p>
             <img src="/public/img/ajax.gif">
           </section>
 
@@ -192,7 +192,7 @@
           <section id="compiling-warning" class="box align-center hidden">
             <h3><i class="fas fa-tools"></i>&nbsp; Maintenance</h3>
             <p>
-              A new version of Hanabi Live has been released and the server is in the process of
+              A new version of {{.WebsiteName}} has been released and the server is in the process of
               loading the new client, which should only take a second or two. Please wait.
             </p>
             <img src="/public/img/ajax.gif">
@@ -205,10 +205,19 @@
       <div class="row">
         <div class="col-8 off-2">
           <p class="login-text">
-            Hanabi Live is fan-made and has no affiliation to Antoine Bauza or any of the real-life
-            publishers of the game. This website is free of charge, has no advertisements, and is
-            not monetized in any way. If you enjoy playing the game online, then we urge you to
-            purchase a physical copy of the game.
+            This site has no affiliation with the card game Hanabi, no affiliation with Antoine
+            Bauza (the creator of Hanabi), and no affiliation with any of the the real-life
+            publishers of Hanabi (of which there are many).
+          </p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-8 off-2">
+          <p class="login-text">
+            This website is free of charge, has no advertisements, and is not monetized in any way.
+            Since this website is inspired by Hanabi, we urge you to purchase a physical copy of
+            that game if you enjoy playing the variants of it online.
           </p>
         </div>
       </div>
@@ -217,7 +226,7 @@
         <div class="col-8 off-2">
           <p class="login-text">
             Discord is a voice and text chat application that you can run in a browser.<br />
-            If the server is down, you can probably find out why in the Hanabi server / chat room.
+            If the server is down, you can probably find out why in the Discord server.
           </p>
         </div>
       </div>
@@ -240,7 +249,7 @@
           <section id="tutorial-1" class="box align-center">
             <h3>Welcome!</h3>
             <p>
-              It looks like you are logging on to <em>Hanabi Live</em> for the first time.
+              It looks like you are logging on to <em>{{.WebsiteName}}</em> for the first time.
               There are some things you should know.
             </p>
             <div class="row">
@@ -259,7 +268,7 @@
 
           <section id="tutorial-2" class="box align-center hidden">
             <h3>The Rules</h3>
-            <p>Do you already know how to play Hanabi?</p>
+            <p>Do you already know how to play?</p>
             <div class="row">
               <div class="col-6">
                 <a id="tutorial-2-yes" class="button fit icon fa-check">Yup.</a>
@@ -286,11 +295,9 @@
           <section id="tutorial-2-2" class="box align-center hidden">
             <h3>The Rules</h3>
             <p>
-              Well, unfortunately <em>Hanabi Live</em> doesn't have a tutorial mode or anything like
-              that. You will have to learn the rules on your own. Thankfully, Tricky has
-              <a href="http://pastebin.com/6brGz2J4" target="_blank" rel="noopener noreferrer">
-                a nice writeup on Pastebin
-              </a>. Or, you can watch
+              Well, unfortunately the website does not have a tutorial mode or anything like that.
+              You will have to learn <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/RULES.md">the rules</a> on your own. So read those, or try
+              watching
               <a href="https://www.youtube.com/watch?v=jR9i1qCbHXQ" target="_blank" rel="noopener noreferrer">
                 my video explanation
               </a>.
@@ -307,7 +314,7 @@
           <section id="tutorial-3" class="box align-center hidden">
             <h3>Using the Website</h3>
             <p>
-              Getting a game going on Hanabi Live should be fairly straightforward:<br />
+              Getting a game going should be fairly straightforward:<br />
               1) Click on the "Create Game" button in the top navigation bar.<br />
               2) Other people join the game by clicking on the &nbsp; <i class="fas fa-sign-in-alt nav-icon"></i> icon.<br />
               3) Then, you click on the "Start Game" button.
@@ -328,7 +335,7 @@
 
           <section id="tutorial-4" class="box align-center hidden">
             <h3>Other Players</h3>
-            <p>You can't play Hanabi by yourself. Do you already have a team / a group of players to play with?</p>
+            <p>You can't play by yourself. Do you already have a team / a group of players to play with?</p>
             <div class="row">
               <div class="col-6">
                 <a id="tutorial-4-yes" class="button fit icon fa-check">Yup.</a>
@@ -343,7 +350,7 @@
             <h3>Other Players</h3>
             <p>
               Good, because this website is mostly used with people who already have a team.<br />
-              Good luck and enjoy Hanabi Live!
+              Good luck and enjoy the website!
             </p>
             <div class="row">
               <div class="col-12 align-center">
@@ -355,37 +362,35 @@
           <section id="tutorial-5" class="box align-center hidden">
             <h3>Other Players</h3>
             <p>
-              Hanabi is a lot like Chess in that it is easy to learn, but hard to master,
+              Hanab is a lot like Chess in that it is easy to learn, but hard to master,
               even after spending hundreds of hours playing.
             </p>
             <p>
               Are you looking to play a few casual one-off games?<br />
-              Or, are you looking to "get into" Hanabi and have a permanent team to learn from and
+              Or, are you looking to "get into" the game and have a permanent team to learn from and
               grow with?
             </p>
             <a id="tutorial-5-casual" class="button icon fa-dice-one fit">
-              I'm not super into Hanabi, so I just want to play a few one-off games.
+              I'm not super into this, so I just want to play a few one-off games.
             </a>
             <br /><br />
             <a id="tutorial-5-expert" class="button icon fa-dice-six fit">
-              I love Hanabi and would be willing to spend a lot of time to play with experienced players.
+              I love Hanab and would be willing to spend a lot of time to play with experienced players.
             </a>
           </section>
 
           <section id="tutorial-5-1" class="box align-center hidden">
             <h3>Other Players</h3>
             <p>
-              Unfortunately, finding quick games with strangers on <em>Hanabi Live</em> is difficult
-              because the website is mostly used by people who already have a team. You can always
-              try to join random games with other people, but don't be offended if people don't want
-              to play with strangers.
+              Unfortunately, finding quick games with strangers on the website is difficult because
+              it is mostly used by people who already have a team. You can always try to join random
+              games with other people, but don't be offended if people don't want to play with strangers.
             </p>
             <p>
               Fortunately, <a href="https://en.boardgamearena.com/">Board Game Arena</a> is a
-              website where you can play many different board games online, including Hanabi. Their
-              implementation of the game is not as fancy as what Hanabi Live offers, but the website
-              has a ton of people, so you will have much better luck finding random pick-up games
-              there.
+              website where you can play many different board games online. Their implementation of
+              the game is not as fancy as what this website offers, but the website has a ton of
+              people, so you will have much better luck finding random pick-up games there.
             </p>
             <div class="row">
               <div class="col-6">
@@ -395,7 +400,7 @@
               </div>
               <div class="col-6">
                 <a id="tutorial-5-1-lobby" class="button icon fa-sign-in-alt">
-                  Take me to the Hanabi Live lobby anyway.
+                  Take me to the lobby anyway.
                 </a>
               </div>
             </div>
@@ -404,11 +409,11 @@
           <section id="tutorial-6" class="box align-center hidden">
             <h3>Other Players</h3>
             <p>
-              That's good to hear. In general, <em>Hanabi Live</em> is mostly used by people who
-              already have a team, so finding quick games with strangers can be difficult. If you
-              are interested in doing some prep work, I would like to welcome you to play with my
-              group, the <em>Hyphen-ated Group</em>. We have been playing Hanabi for many years, but
-              we could always use new players.
+              That's good to hear. In general, the website is mostly used by people who already have
+              a team, so finding quick games with strangers can be difficult. If you are interested
+              in doing some prep work, I would like to welcome you to play with my group, the
+              <em>Hyphen-ated Group</em>. We have been playing the game for many years, but we could
+              always use new players.
             </p>
             <p></p>
             <div class="row">
@@ -428,10 +433,10 @@
           <section id="tutorial-7" class="box align-center hidden">
             <h3>Voice Chat</h3>
             <p>
-              After my group plays a game of Hanabi, we all get together in a voice chat to review
-              the game. This is important so that everyone can learn from their mistakes and
-              so that everyone can become more synchronized. As you may imagine, using a voice chat
-              is much more productive than everyone typing text-snippets at each other.
+              After my group finishes a game, we all get together in a voice chat to review it. This
+              is important - everyone gets to learn from their mistakes and everyone can become more
+              synchronized. As you may imagine, using a voice chat is much more productive than
+              everyone typing text-snippets at each other.
             </p>
             <p>Do you have a working microphone and are you able to voice chat?</p>
             <div class="row">
@@ -484,7 +489,7 @@
             <div class="row">
               <div class="col-12">
                 <a id="tutorial-8-ok" class="button icon fa-sign-in-alt">
-                  I'll read the guide, thanks. Take me to the Hanabi Live lobby.
+                  I'll read the guide, thanks. Take me to the lobby.
                 </a>
               </div>
             </div>
@@ -940,13 +945,13 @@
         <a href="/password-reset" target="_blank" rel="noopener noreferrer">
           Password Reset
         </a><br />
-        If you need to reset your Hanabi Live password, visit this page to learn more.
+        If you need to reset your password, visit this page to learn more.
       </li>
       <br />
 
       <li>
         <a href="https://discord.gg/FADvkJp" target="_blank" rel="noopener noreferrer">
-          The Hanabi Discord Server
+          The Discord Server
         </a><br />
         A place to find teammates and discuss strategy.
       </li>
@@ -958,14 +963,6 @@
         </a><br />
         This is a document that lists the strategies and conventions used by the Hyphen-ated group.<br />
         (You don't have to use them if you don't want to.)
-      </li>
-      <br />
-
-      <li>
-        <a href="/videos" target="_blank">
-          Videos
-        </a><br />
-        A collection of various Hanabi videos.
       </li>
       <br />
 
@@ -1002,25 +999,13 @@
       <br />
 
       <li>
-        <a href="https://www.amazon.com/s?k=hanabi" target="_blank" rel="noopener noreferrer">
-          Buy Hanabi
-        </a><br />
-        Hanabi is designed and created by <a href="https://en.wikipedia.org/wiki/Antoine_Bauza" target="_blank" rel="noopener noreferrer">Antoine Bauza</a>. This site is fan-made and has<br />
-        no official affiliation to him or any of the real-life publishers of the game. If you enjoy playing<br />
-        the game online, then you should consider purchasing a physical copy of the game.
-      </li>
-      <br />
-
-      <li>
         <a href="https://www.givewell.org/charities/top-charities" target="_blank" rel="noopener noreferrer">
           Make the World a Better Place
         </a><br />
-        Hanabi Live is hosted free of charge and does not have any advertisements.<br />
-        If you enjoy the website and want to help out, then first consider purchasing a physical<br />
-        copy of the game (see above). Second, consider donating a portion of your income to the<br />
+        {{.WebsiteName}} is hosted free of charge and does not have any advertisements.<br />
+        If you enjoy the website and want to help out, consider donating a portion of your income to the<br />
         top-rated charities in the world. (<a href="https://en.wikipedia.org/wiki/GiveWell" target="_blank" rel="noopener noreferrer">GiveWell</a> is widely regarded as a pretty good organization<br />
-        for assessing which charities are good.) Scott Alexander has <a href="https://slatestarcodex.com/2014/12/19/nobody-is-perfect-everything-is-commensurable/" target="_blank" rel="noopener noreferrer">a pretty convincing essay</a> on<br />
-        why donating even $5 to charity is better than a lifetime of participating in activist politics.
+        for assessing which charities are good.)
       </li>
     </ul>
     </div>

@@ -1,4 +1,4 @@
-import Options from './Options';
+import Options from '../../types/Options';
 
 export default class LegacyGameMetadata {
   // Game settings

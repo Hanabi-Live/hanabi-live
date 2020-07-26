@@ -1,4 +1,4 @@
-import Options from '../game/types/Options';
+import Options from '../../types/Options';
 
 export default interface GameHistory {
   id: number;

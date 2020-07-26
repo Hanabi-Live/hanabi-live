@@ -163,3 +163,20 @@ export function canPossiblyBe(card: CardState, suitIndex: number | null, rank: n
       && card.possibleCardsFromObservation[s][r] > 0,
   );
 }
+
+export const allPossibilitiesTrash = (
+  card: CardState,
+  deck: readonly CardState[],
+  playStacks: ReadonlyArray<readonly number[]>,
+  playStackDirections: readonly StackDirection[],
+  variant: Variant,
+) => {
+  for (const [suitIndex, rank] of card.possibleCardsFromClues) {
+    if (card.possibleCardsFromObservation[suitIndex][rank] === 0) continue;
+    if (needsToBePlayed(suitIndex, rank, deck, playStacks, playStackDirections, variant)) {
+      return false;
+    }
+  }
+
+  return true;
+};

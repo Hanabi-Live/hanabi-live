@@ -1,11 +1,12 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things
 
 import * as chat from './chat';
-import ChatMessage from './ChatMessage';
 import * as gameChat from './game/chat';
 import globals from './globals';
 import * as pregame from './lobby/pregame';
+import Screen from './lobby/types/Screen';
 import * as modals from './modals';
+import ChatMessage from './types/ChatMessage';
 
 // Define a command handler map
 type CommandCallback = (data: any) => void;
@@ -21,13 +22,13 @@ commands.set('warning', (data: WarningData) => {
 
   // Re-activate some lobby elements
   $('#nav-buttons-games-create-game').removeClass('disabled');
-  if (globals.currentScreen === 'pregame') {
+  if (globals.currentScreen === Screen.PreGame) {
     pregame.enableStartGameButton();
   }
 
   // Re-activate in-game elements
   if (
-    globals.currentScreen === 'game'
+    globals.currentScreen === Screen.Game
     && globals.ui !== null
   ) {
     globals.ui.reshowClueUIAfterWarning();
@@ -55,12 +56,12 @@ commands.set('chat', (data: ChatMessage) => {
   if (!data.room.startsWith('table')) {
     return;
   }
-  if (globals.currentScreen === 'pregame') {
+  if (globals.currentScreen === Screen.PreGame) {
     // Notify the server that we have read the chat message that was just received
     globals.conn!.send('chatRead', {
       tableID: globals.tableID,
     });
-  } else if (globals.currentScreen === 'game' && globals.ui !== null) {
+  } else if (globals.currentScreen === Screen.Game && globals.ui !== null) {
     if ($('#game-chat-modal').is(':visible')) {
       // Notify the server that we have read the chat message that was just received
       globals.conn!.send('chatRead', {

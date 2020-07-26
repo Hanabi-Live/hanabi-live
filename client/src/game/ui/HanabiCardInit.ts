@@ -193,6 +193,11 @@ export const pips = (variant: Variant) => {
       fill,
       stroke: 'black',
       strokeWidth: 5,
+      shadowColor: 'black',
+      shadowOffsetX: 15,
+      shadowOffsetY: 15,
+      shadowOpacity: 0.4,
+      shadowForStrokeEnabled: true,
       sceneFunc: (ctx: any) => { // Konva.Context does not exist for some reason
         drawPip(ctx, suit, false);
       },
@@ -250,7 +255,7 @@ export const pips = (variant: Variant) => {
     suitPipsXMap.set(i, suitPipX);
   }
 
-  // Initialize the rank pips, which are black squares along the bottom of the card
+  // Initialize the rank pips (along the bottom of the card)
   const rankPips = new Konva.Group({
     x: 0,
     y: Math.floor(CARD_H * 0.81),
@@ -263,13 +268,13 @@ export const pips = (variant: Variant) => {
   const rankPipsMap = new Map<number, RankPip>();
   const rankPipsXMap = new Map<number, Konva.Shape>();
   for (const rank of variant.ranks) {
+    if (rank === START_CARD_RANK) {
+      // We don't want to create a rank pip that corresponds to the "START" card
+      continue;
+    }
+
     const x = Math.floor(CARD_W * ((rank * 0.19) - 0.14));
     const y = 0;
-    let opacity = 1;
-    if (rank === START_CARD_RANK) {
-      // We don't want to show the rank pip that represents a "START" card
-      opacity = 0;
-    }
     const rankPip = new RankPip({
       x,
       y,
@@ -283,18 +288,17 @@ export const pips = (variant: Variant) => {
       fill: 'white',
       stroke: 'black',
       strokeWidth: 3,
-      opacity,
       listening: false,
+      shadowColor: 'black',
+      shadowOffsetX: 5,
+      shadowOffsetY: 5,
+      shadowOpacity: 0.4,
+      shadowForStrokeEnabled: true,
     });
     rankPips.add(rankPip);
     rankPipsMap.set(rank, rankPip);
 
     // Also create the X that will show when a certain rank can be ruled out
-    opacity = 0.8;
-    if (rank === START_CARD_RANK) {
-      // We don't want to show the rank pip that represents a "START" card
-      opacity = 0;
-    }
     const rankPipX = new Konva.Shape({
       x,
       y: Math.floor(CARD_H * 0.02),

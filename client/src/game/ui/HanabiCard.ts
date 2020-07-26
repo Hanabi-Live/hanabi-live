@@ -413,12 +413,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       const rankUnknown = rankToShow === UNKNOWN_CARD_RANK;
       this.suitPips!.visible(suitUnknown);
       this.rankPips!.visible(rankUnknown);
-
-      // Color the rank pips if we are showing a suit
-      if (rankUnknown) {
-        const fillValue = suitUnknown ? 'white' : suitToShow.fill;
-        this.rankPipsMap.forEach((pip) => pip.setFillValue(fillValue));
-      }
     }
 
     // Show or hide the "trash" image
@@ -596,7 +590,17 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  removeFromParent() {
+  // A card's parent is a LayoutChild
+  // The parent of the LayoutChild is the location of the card
+  // (e.g. a player's hand, the play stacks, etc.)
+  // The LayoutChild is removed from the parent prior to the card changing location
+  removeLayoutChildFromParent() {
+    // Ensure that empathy is disabled prior to removing a card from a player's hand
+    if (this.empathy) {
+      this.empathy = false;
+      this.setBareImage();
+    }
+
     // Remove the card from the player's hand in preparation of adding it to either
     // the play stacks or the discard pile
     if (!this.layout.parent) {
@@ -625,7 +629,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToPlayerHand(holder: number) {
-    this.removeFromParent();
+    this.removeLayoutChildFromParent();
 
     // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
     // and the user rewinds to the beginning of the replay
@@ -651,7 +655,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       // First initialization
       return;
     }
-    this.removeFromParent();
+    this.removeLayoutChildFromParent();
 
     const scale = globals.elements.deck!.cardBack.width() / CARD_W;
     if (globals.animateFast) {
@@ -683,14 +687,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
           this.finishedTweening();
           layoutChild.checkSetDraggable();
           layoutChild.hide();
-          this.removeFromParent();
+          this.removeLayoutChildFromParent();
         },
       }, true);
     }
   }
 
   animateToPlayStacks() {
-    this.removeFromParent();
+    this.removeLayoutChildFromParent();
 
     // The act of adding it will automatically tween the card
     const suit = this.variant.suits[this.state.suitIndex!];
@@ -710,7 +714,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToHole() {
-    this.removeFromParent();
+    this.removeLayoutChildFromParent();
 
     // The act of adding it will automatically tween the card
     const hole = globals.elements.playStacks.get('hole')!;
@@ -721,7 +725,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   animateToDiscardPile() {
-    this.removeFromParent();
+    this.removeLayoutChildFromParent();
 
     // We add a LayoutChild to a CardLayout
     const suit = this.variant.suits[this.state.suitIndex!];
@@ -816,6 +820,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         default:
           break;
       }
+
       // TODO: Positive clues on suits
       if (pip instanceof RankPip) {
         if (hasPositiveClues && pipState !== PipState.Hidden) {
@@ -847,7 +852,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     for (const [rank, pipState] of rankPipStates.entries()) {
-      if (rank > 5) continue; // Don't show pip from start card (in "Up or Down" games)
+      if (rank > 5) continue; // Don't show pip for START card (in "Up or Down" games)
       const pip = this.rankPipsMap.get(rank)!;
       const x = this.rankPipsXMap.get(rank)!;
       const hasPositiveClues = this.state.positiveRankClues.includes(rank);
@@ -1056,7 +1061,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
 
       globals.activeHover = this;
-      setEmpathyOnHand(true);
+      this.setEmpathyOnHand(true);
     });
 
     this.on('mouseup mouseout', (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -1067,40 +1072,38 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
 
       globals.activeHover = null;
-      setEmpathyOnHand(false);
+      this.setEmpathyOnHand(false);
     });
+  }
 
-    const setEmpathyOnHand = (enabled: boolean) => {
-      // Disable Empathy for the stack bases
-      if (this.state.order > globals.deck.length - 1) {
+  private setEmpathyOnHand(enabled: boolean) {
+    // Disable Empathy for the stack bases
+    if (this.state.order > globals.deck.length - 1) {
+      return;
+    }
+
+    // If the card is not attached to a hand, then we don't need to do anything
+    const hand = this.layout.parent as unknown as CardLayout;
+    if (hand === undefined || hand === null || hand.children.length === 0) {
+      return;
+    }
+
+    if (enabled === hand.empathy) {
+      // No change
+      return;
+    }
+
+    hand.empathy = enabled;
+    hand.children.each((layoutChild) => {
+      const card = layoutChild.children[0] as HanabiCard;
+      if (card === undefined) {
+        // When rewinding, sometimes the card can be undefined
         return;
       }
-
-      if (!this.layout.parent) {
-        return;
-      }
-      const hand = this.layout.parent as unknown as CardLayout;
-      if (hand === undefined || hand.children.length === 0 || hand.empathy === enabled) {
-        return;
-      }
-
-      if (enabled === hand.empathy) {
-        // No change
-        return;
-      }
-
-      hand.empathy = enabled;
-      hand.children.each((layoutChild) => {
-        const card = layoutChild.children[0] as HanabiCard;
-        if (card === undefined) {
-          // When rewinding, sometimes the card can be undefined
-          return;
-        }
-        card.empathy = enabled;
-        card.setBareImage();
-      });
-      globals.layers.card.batchDraw();
-    };
+      card.empathy = enabled;
+      card.setBareImage();
+    });
+    globals.layers.card.batchDraw();
   }
 
   checkSpecialNote() {
