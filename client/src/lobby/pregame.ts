@@ -21,6 +21,7 @@ const tooltipOptions: JQueryTooltipster.ITooltipsterOptions = {
 
 export const show = () => {
   globals.currentScreen = 'pregame';
+  usersDraw.draw();
 
   // Replace the list of current games with a list of the current players
   $('#lobby-pregame').show();

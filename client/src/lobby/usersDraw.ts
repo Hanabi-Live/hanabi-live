@@ -98,7 +98,11 @@ const drawUser = (
 
   let statusColumn;
   const statusText = StatusText[user.status];
-  if (user.status === Status.Lobby || user.status === Status.Replay) {
+  if (
+    globals.currentScreen === 'pregame'
+    || user.status === Status.Lobby
+    || user.status === Status.Replay
+  ) {
     statusColumn = statusText;
   } else {
     statusColumn = `<a id="online-users-${userID}-link" href="#">${statusText}</a>`;

@@ -181,12 +181,20 @@ const tablesDraw = () => {
 export default tablesDraw;
 
 export const tableSpectate = (table: Table) => {
+  if (globals.currentScreen !== 'lobby') {
+    return;
+  }
+
   globals.conn!.send('tableSpectate', {
     tableID: table.id,
   });
 };
 
 export const tableJoin = (table: Table) => {
+  if (globals.currentScreen !== 'lobby') {
+    return;
+  }
+
   if (table.passwordProtected) {
     modals.passwordShow(table.id);
   } else {
@@ -197,6 +205,10 @@ export const tableJoin = (table: Table) => {
 };
 
 const tableReattend = (table: Table) => {
+  if (globals.currentScreen !== 'lobby') {
+    return;
+  }
+
   globals.conn!.send('tableReattend', {
     tableID: table.id,
   });
