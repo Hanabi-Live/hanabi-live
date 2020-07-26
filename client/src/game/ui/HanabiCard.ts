@@ -788,7 +788,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     let newNote = note;
 
     // If we had an existing note, append the new note to the end using pipe notation
-    const existingNote = globals.ourNotes[this.state.order];
+    const existingNote = globals.ourNotes.get(this.state.order)!;
     if (existingNote !== '') {
       newNote = `${existingNote} | ${note}`;
     }
@@ -1200,7 +1200,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   checkSpecialNote() {
-    const noteText = globals.ourNotes[this.state.order];
+    const noteText = globals.ourNotes.get(this.state.order)!;
 
     this.note = notes.checkNoteIdentity(this.variant, noteText);
     notes.checkNoteImpossibility(this.variant, this.state, this.note);

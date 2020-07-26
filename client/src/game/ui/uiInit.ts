@@ -1,10 +1,8 @@
 import Konva from 'konva';
-import * as deck from '../rules/deck';
 import { LABEL_COLOR } from './constants';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
 import globals from './globals';
-import HanabiCard from './HanabiCard';
 import * as keyboard from './keyboard';
 
 // When the HanabiUI object is instantiated,
@@ -96,9 +94,6 @@ const finishedDownloadingImages = () => {
     globals.lobby.settings.styleNumbers,
   );
 
-  // Build all of the reusable card objects
-  initCards();
-
   // Draw the user interface
   drawUI();
 
@@ -110,26 +105,4 @@ const finishedDownloadingImages = () => {
   globals.lobby.conn!.send('getGameInfo2', {
     tableID: globals.lobby.tableID,
   });
-};
-
-const initCards = () => {
-  const deckSize = deck.totalCards(globals.variant);
-  for (let order = 0; order < deckSize; order++) {
-    // Create the notes for this card
-    // (this must be done before creating the HanabiCard object)
-    globals.ourNotes.push('');
-    globals.allNotes.push([]);
-
-    // Create the HanabiCard object
-    const card = new HanabiCard({
-      order,
-    });
-    globals.deck.push(card);
-  }
-
-  // Also create objects for the stack bases
-  for (let i = 0; i < globals.variant.suits.length; i++) {
-    globals.ourNotes.push('');
-    globals.allNotes.push([]);
-  }
 };

@@ -150,6 +150,17 @@ export const directionArrow = (variant: Variant) => {
   return { arrow, arrowBase };
 };
 
+// Cache the pip objects to save time on the multiple cards
+let cachedVariant: Variant | null = null;
+let cachedPips: {
+  suitPips: Konva.Group;
+  suitPipsMap: Map<number, Konva.Shape>;
+  suitPipsXMap: Map<number, Konva.Shape>;
+  rankPips: Konva.Group;
+  rankPipsMap: Map<number, RankPip>;
+  rankPipsXMap: Map<number, Konva.Shape>;
+};
+
 export const pips = (variant: Variant) => {
   // Initialize the suit pips (colored shapes) on the back of the card,
   // which will be removed one by one as the card gains negative information
@@ -165,6 +176,16 @@ export const pips = (variant: Variant) => {
   const suitPipsMap = new Map<number, Konva.Shape>();
   const suitPipsXMap = new Map<number, Konva.Shape>();
   for (let i = 0; i < variant.suits.length; i++) {
+    if (cachedVariant === variant) {
+      const suitPip = cachedPips.suitPipsMap.get(i)!.clone() as Konva.Shape;
+      const suitPipX = cachedPips.suitPipsXMap.get(i)!.clone() as Konva.Shape;
+      suitPips.add(suitPip);
+      suitPips.add(suitPipX);
+      suitPipsMap.set(i, suitPip);
+      suitPipsXMap.set(i, suitPipX);
+      continue;
+    }
+
     const suit = variant.suits[i];
 
     // Set the pip at the middle of the card
@@ -275,6 +296,16 @@ export const pips = (variant: Variant) => {
       continue;
     }
 
+    if (cachedVariant === variant) {
+      const rankPip = cachedPips.rankPipsMap.get(rank)!.clone() as RankPip;
+      const rankPipX = cachedPips.rankPipsXMap.get(rank)!.clone() as Konva.Shape;
+      rankPips.add(rankPip);
+      rankPips.add(rankPipX);
+      rankPipsMap.set(rank, rankPip);
+      rankPipsXMap.set(rank, rankPipX);
+      continue;
+    }
+
     const x = Math.floor(CARD_W * ((rank * 0.19) - 0.14));
     const y = 0;
     const rankPip = new RankPip({
@@ -322,7 +353,8 @@ export const pips = (variant: Variant) => {
     rankPipsXMap.set(rank, rankPipX);
   }
 
-  return {
+  // Cache the results
+  cachedPips = {
     suitPips,
     suitPipsMap,
     suitPipsXMap,
@@ -330,6 +362,10 @@ export const pips = (variant: Variant) => {
     rankPipsMap,
     rankPipsXMap,
   };
+
+  cachedVariant = variant;
+
+  return cachedPips;
 };
 
 export const note = (offsetCornerElements: boolean, shouldShowIndicator: () => boolean) => {
