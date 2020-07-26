@@ -1,6 +1,9 @@
 // The lobby area that shows all of the current logged-in users
 
 import globals from '../globals';
+import { ensureAllCases } from '../misc';
+import * as tablesDraw from './tablesDraw';
+import Status, { StatusText } from './types/Status';
 
 export const draw = () => {
   $('#lobby-users-num').text(globals.userMap.size);
@@ -65,17 +68,16 @@ const drawUser = (
   friend: boolean,
 ) => {
   // Find the status of this user from the "userList" map
-  const id = usernameMapping.get(username);
-  if (id === undefined) {
+  const userID = usernameMapping.get(username);
+  if (userID === undefined) {
     throw new Error(`Failed to get the ID for the username of "${username}".`);
   }
-  const user = globals.userMap.get(id);
-  if (!user) {
-    throw new Error(`Failed to get the user for the ID of "${id}".`);
+  const user = globals.userMap.get(userID);
+  if (user === undefined) {
+    throw new Error(`Failed to get the user for the ID of "${userID}".`);
   }
-  const status = user.status;
 
-  let nameColumn = `<span id="online-users-${id}">`;
+  let nameColumn = `<span id="online-users-${userID}">`;
   if (username === globals.username) {
     nameColumn += '<strong>';
   }
@@ -91,24 +93,87 @@ const drawUser = (
   if (username === globals.username) {
     nameColumn += '</strong>';
   }
-  nameColumn += `<span id="online-users-${id}-zzz" class="hidden"> &nbsp;💤</span>`;
+  nameColumn += `<span id="online-users-${userID}-zzz" class="hidden"> &nbsp;💤</span>`;
   nameColumn += '</span>';
+
+  let statusColumn;
+  const statusText = StatusText[user.status];
+  if (user.status === Status.Lobby || user.status === Status.Replay) {
+    statusColumn = statusText;
+  } else {
+    statusColumn = `<a id="online-users-${userID}-link" href="#">${statusText}</a>`;
+  }
 
   const row = $('<tr>');
   $('<td>').html(nameColumn).appendTo(row);
-  $('<td>').html(status).appendTo(row);
+  $('<td>').html(statusColumn).appendTo(row);
 
   row.appendTo(tbody);
 
-  setInactive(id, user.inactive);
+  setLink(userID);
+  setInactive(userID, user.inactive);
 };
 
-export const setInactive = (id: number, inactive: boolean) => {
+const setLink = (userID: number) => {
+  $(`#online-users-${userID}-link`).off('click');
+  $(`#online-users-${userID}-link`).on('click', () => {
+    // Get the user corresponding to this element
+    const user = globals.userMap.get(userID);
+    if (user === undefined) {
+      return;
+    }
+
+    // Get the table corresponding to the user
+    // If the user is in the lobby or in a solo replay, this will be undefined
+    const table = globals.tableMap.get(user.table);
+    if (table === undefined) {
+      return;
+    }
+
+    switch (user.status) {
+      case Status.Lobby: {
+        // The "Lobby" status is not a link
+        break;
+      }
+
+      case Status.PreGame: {
+        tablesDraw.tableJoin(table);
+        break;
+      }
+
+      case Status.Playing: {
+        tablesDraw.tableSpectate(table);
+        break;
+      }
+
+      case Status.Spectating: {
+        tablesDraw.tableSpectate(table);
+        break;
+      }
+
+      case Status.Replay: {
+        // The "Replay" status is not a link
+        break;
+      }
+
+      case Status.SharedReplay: {
+        tablesDraw.tableSpectate(table);
+        break;
+      }
+
+      default: {
+        ensureAllCases(user.status);
+      }
+    }
+  });
+};
+
+export const setInactive = (userID: number, inactive: boolean) => {
   if (inactive) {
-    $(`#online-users-${id}`).fadeTo(0, 0.3);
-    $(`#online-users-${id}-zzz`).show();
+    $(`#online-users-${userID}`).fadeTo(0, 0.3);
+    $(`#online-users-${userID}-zzz`).show();
   } else {
-    $(`#online-users-${id}`).fadeTo(0, 1);
-    $(`#online-users-${id}-zzz`).hide();
+    $(`#online-users-${userID}`).fadeTo(0, 1);
+    $(`#online-users-${userID}-zzz`).hide();
   }
 };

@@ -4,11 +4,11 @@ import version from '../../data/version.json';
 import Connection from './Connection';
 import HanabiUI from './game/ui/HanabiUI';
 import Loader from './Loader';
-import Game from './lobby/Game';
-import GameHistory from './lobby/GameHistory';
-import Settings from './lobby/Settings';
-import Table from './lobby/Table';
-import User from './lobby/User';
+import Game from './lobby/types/Game';
+import GameHistory from './lobby/types/GameHistory';
+import Settings from './lobby/types/Settings';
+import Table from './lobby/types/Table';
+import User from './lobby/types/User';
 
 type Screen = (
   'login'

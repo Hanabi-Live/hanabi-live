@@ -3,7 +3,6 @@ package main
 import (
 	"strconv"
 	"strings"
-	"time"
 
 	melody "gopkg.in/olahol/melody.v1"
 )
@@ -449,22 +448,14 @@ func loadFakePlayers(t *Table, playerNames []string) {
 	}
 }
 
+// newFakeSession prepares a "fake" user session that will be used for game emulation
 func newFakeSession(id int, name string) *Session {
-	// Prepare a "fake" player session that will be used for emulation
-	keys := make(map[string]interface{})
+	keys := defaultSessionKeys()
 
 	keys["sessionID"] = id
 	keys["userID"] = id
 	keys["username"] = name
-	keys["muted"] = false
-	keys["status"] = StatusLobby
-	keys["friends"] = make(map[int]struct{})
-	keys["reverseFriends"] = make(map[int]struct{})
-	keys["inactive"] = false
 	keys["fakeUser"] = true
-	keys["rateLimitAllowance"] = RateLimitRate
-	keys["rateLimitLastCheck"] = time.Now()
-	keys["banned"] = false
 
 	return &Session{
 		&melody.Session{

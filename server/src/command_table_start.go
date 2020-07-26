@@ -287,6 +287,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		for _, p := range t.Players {
 			if p.Session != nil {
 				p.Session.Set("status", StatusPlaying)
+				p.Session.Set("table", t.ID)
 				notifyAllUser(p.Session)
 			}
 		}

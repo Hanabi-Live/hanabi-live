@@ -93,15 +93,18 @@ func commandTableSpectate(s *Session, d *CommandData) {
 
 	// Set their status
 	status := StatusSpectating
+	table := t.ID
 	if t.Replay {
 		if t.Visible {
 			status = StatusSharedReplay
 		} else {
 			status = StatusReplay
+			table = -1 // Protect the privacy of a user in a solo replay
 		}
 	}
 	if s != nil {
 		s.Set("status", status)
+		s.Set("table", table)
 		notifyAllUser(s)
 	}
 

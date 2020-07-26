@@ -8,7 +8,7 @@ import globals from '../globals';
 import * as misc from '../misc';
 import { isEmpty } from '../misc';
 import * as modals from '../modals';
-import Settings from './Settings';
+import Settings from './types/Settings';
 
 // Constants
 const basicVariants = [

@@ -142,21 +142,15 @@ func httpWS(c *gin.Context) {
 	// If they got this far, they are a valid user
 	// Transfer the values from the login cookie into WebSocket session variables
 	// New keys added here should also be added to the "newFakeSesssion()" function
-	keys := make(map[string]interface{})
+	keys := defaultSessionKeys()
 	// This is independent of the user and used for disconnection purposes
 	keys["sessionID"] = sessionID
 	sessionID++
 	keys["userID"] = userID
 	keys["username"] = username
 	keys["muted"] = muted
-	keys["status"] = StatusLobby // By default, the user is in the lobby
 	keys["friends"] = friendsMap
 	keys["reverseFriends"] = reverseFriendsMap
-	keys["inactive"] = false
-	keys["fakeUser"] = false
-	keys["rateLimitAllowance"] = RateLimitRate
-	keys["rateLimitLastCheck"] = time.Now()
-	keys["banned"] = false
 
 	// Validation succeeded; establish the WebSocket connection
 	// "HandleRequestWithKeys()" will call the "websocketConnect()" function if successful;
@@ -189,4 +183,24 @@ func httpWSError(msg string, err error, c *gin.Context) {
 	)
 	deleteCookie(c)
 	commandMutex.Unlock()
+}
+
+func defaultSessionKeys() map[string]interface{} {
+	keys := make(map[string]interface{})
+
+	keys["sessionID"] = -1
+	keys["userID"] = -1
+	keys["username"] = ""
+	keys["muted"] = false
+	keys["status"] = StatusLobby // By default, new users are in the lobby
+	keys["table"] = -1
+	keys["friends"] = make(map[int]struct{})
+	keys["reverseFriends"] = make(map[int]struct{})
+	keys["inactive"] = false
+	keys["fakeUser"] = false
+	keys["rateLimitAllowance"] = RateLimitRate
+	keys["rateLimitLastCheck"] = time.Now()
+	keys["banned"] = false
+
+	return keys
 }

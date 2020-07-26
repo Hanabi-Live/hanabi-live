@@ -6,16 +6,16 @@ import gameCommands from '../game/ui/gameCommands';
 import globals from '../globals';
 import * as sentry from '../sentry';
 import * as sounds from '../sounds';
-import Game from './Game';
-import GameHistory from './GameHistory';
 import * as history from './history';
 import * as lobbyLogin from './login';
 import * as pregame from './pregame';
-import Settings from './Settings';
 import * as lobbySettingsTooltip from './settingsTooltip';
-import Table from './Table';
 import tablesDraw from './tablesDraw';
-import User from './User';
+import Game from './types/Game';
+import GameHistory from './types/GameHistory';
+import Settings from './types/Settings';
+import Table from './types/Table';
+import User from './types/User';
 import * as usersDraw from './usersDraw';
 
 // Define a command handler map

@@ -4,9 +4,9 @@ import { getVariant, VARIANTS } from '../game/data/gameData';
 import Variant from '../game/types/Variant';
 import globals from '../globals';
 import * as misc from '../misc';
-import GameHistory from './GameHistory';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
+import GameHistory from './types/GameHistory';
 import * as usersDraw from './usersDraw';
 
 export const init = () => {

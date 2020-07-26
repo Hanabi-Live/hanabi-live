@@ -16,17 +16,6 @@ const (
 	StatusSharedReplay
 )
 
-var (
-	status = []string{
-		"Lobby",
-		"Pre-Game",
-		"Playing",
-		"Spectating",
-		"Replay",
-		"Shared Replay",
-	}
-)
-
 const (
 	ActionTypePlay = iota
 	ActionTypeDiscard

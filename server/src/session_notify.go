@@ -17,14 +17,16 @@ func (s *Session) NotifyUser(u *Session) {
 type UserMessage struct {
 	ID     int    `json:"id"`
 	Name   string `json:"name"`
-	Status string `json:"status"`
+	Status int    `json:"status"`
+	Table  int    `json:"table"`
 }
 
 func makeUserMessage(s *Session) *UserMessage {
 	return &UserMessage{
 		ID:     s.UserID(),
 		Name:   s.Username(),
-		Status: status[s.Status()], // Status declarations are in the "constants.go" file
+		Status: s.Status(),
+		Table:  s.Table(),
 	}
 }
 

@@ -60,6 +60,7 @@ func commandTableLeave(s *Session, d *CommandData) {
 	// Set their status
 	if s != nil {
 		s.Set("status", StatusLobby)
+		s.Set("table", -1)
 		notifyAllUser(s)
 	}
 

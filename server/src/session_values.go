@@ -77,6 +77,20 @@ func (s *Session) Status() int {
 	}
 }
 
+func (s *Session) Table() int {
+	if s == nil {
+		logger.Error("The \"Table\" method was called for a nil session.")
+		return -1
+	}
+
+	if v, exists := s.Get("table"); !exists {
+		logger.Error("Failed to get \"table\" from a session.")
+		return -1
+	} else {
+		return v.(int)
+	}
+}
+
 func (s *Session) Friends() map[int]struct{} {
 	if s == nil {
 		logger.Error("The \"Friends\" method was called for a nil session.")
