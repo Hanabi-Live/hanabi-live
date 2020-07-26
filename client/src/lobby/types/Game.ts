@@ -1,4 +1,4 @@
-import Options from '../game/types/Options';
+import Options from './Options';
 
 export default interface Game {
   name: string;

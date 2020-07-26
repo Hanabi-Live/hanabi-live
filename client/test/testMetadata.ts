@@ -1,6 +1,6 @@
 import { DEFAULT_VARIANT_NAME } from '../src/game/types/constants';
 import GameMetadata from '../src/game/types/GameMetadata';
-import Options from '../src/game/types/Options';
+import Options from '../src/lobby/types/Options';
 import { initArray } from '../src/misc';
 
 export default function testMetadata(
