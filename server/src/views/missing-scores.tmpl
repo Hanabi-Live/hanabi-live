@@ -67,7 +67,7 @@
       {{range $index2, $results2 := .BestScores}}
         {{if or (ne .Score $results.MaxScore) (ne .Modifier 0)}}
           {{if or (not $.NumTotalPlayers) (eq $.NumTotalPlayers .NumPlayers)}}
-            <tr class="missing-scores-row-{{.NumPlayers}}">
+            <tr class="missing-scores-row missing-scores-row-players-{{.NumPlayers}}">
               <td>{{$results.Name}}</td>
               <td>{{.NumPlayers}}</td>
               <td>
