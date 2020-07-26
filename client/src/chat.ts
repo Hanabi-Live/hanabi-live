@@ -5,12 +5,12 @@ import linkifyHtml from 'linkifyjs/html';
 import emojis from '../../data/emojis.json';
 import emoteCategories from '../../data/emotes.json';
 import chatCommands from './chatCommands';
-import ChatMessage from './ChatMessage';
 import { FADE_TIME } from './constants';
 import globals from './globals';
 import Screen from './lobby/types/Screen';
 import { isEmpty } from './misc';
 import * as modals from './modals';
+import ChatMessage from './types/ChatMessage';
 
 // Variables
 const emojiMap = new Map<string, string>();

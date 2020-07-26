@@ -1,4 +1,4 @@
-import { DEFAULT_VARIANT_NAME } from '../../game/types/constants';
+import { DEFAULT_VARIANT_NAME } from '../game/types/constants';
 
 export default class Options {
   readonly numPlayers: number = 0;

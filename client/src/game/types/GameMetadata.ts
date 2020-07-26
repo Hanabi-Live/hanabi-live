@@ -1,4 +1,4 @@
-import Options from '../../lobby/types/Options';
+import Options from '../../types/Options';
 
 export default interface GameMetadata {
   readonly options: Options;

@@ -1,12 +1,12 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things
 
 import * as chat from './chat';
-import ChatMessage from './ChatMessage';
 import * as gameChat from './game/chat';
 import globals from './globals';
 import * as pregame from './lobby/pregame';
 import Screen from './lobby/types/Screen';
 import * as modals from './modals';
+import ChatMessage from './types/ChatMessage';
 
 // Define a command handler map
 type CommandCallback = (data: any) => void;
