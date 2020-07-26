@@ -2,6 +2,7 @@
 
 import { variantRules } from '../../../rules';
 import ReplayActionType from '../../../types/ReplayActionType';
+import State from '../../../types/State';
 import globals from '../../globals';
 import isOurTurn from '../../isOurTurn';
 import * as ourHand from '../../ourHand';
@@ -200,5 +201,19 @@ export const onFinishedChanged = (finished: boolean, previousFinished: boolean |
   }
 
   globals.layers.timer.batchDraw();
+  globals.layers.UI.batchDraw();
+};
+
+// For replay leaders, we want to disable entering a hypothetical during certain situations
+export const enterHypoButtonIsEnabled = (state: State): boolean => (
+  state.metadata.finished
+  && globals.amSharedReplayLeader
+  && state.replay.useSharedSegments
+  // We can't start a hypothetical on a segment where the game has already ended
+  && state.visibleState!.turn.currentPlayerIndex !== null
+);
+
+export const enterHypoButtonEnabledChanged = (enabled: boolean) => {
+  globals.elements.enterHypoButton!.setEnabled(enabled);
   globals.layers.UI.batchDraw();
 };

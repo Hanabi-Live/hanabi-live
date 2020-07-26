@@ -44,12 +44,6 @@ export const onCurrentPlayerIndexChanged = (currentPlayerIndex: number | null) =
     globals.elements.playerHandTurnRects[currentPlayerIndex].show();
   }
 
-  // For replay leaders, we want to disable entering a hypothetical if we are currently on a turn
-  // where the game has already ended
-  if (globals.metadata.sharedReplay && globals.amSharedReplayLeader) {
-    globals.elements.enterHypoButton!.setEnabled(currentPlayerIndex !== null);
-  }
-
   globals.layers.UI.batchDraw();
 };
 
