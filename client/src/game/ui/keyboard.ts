@@ -1,6 +1,7 @@
 // Functions for handling all of the keyboard shortcuts
 
 import Konva from 'konva';
+import Screen from '../../lobby/types/Screen';
 import { copyStringToClipboard } from '../../misc';
 import ActionType from '../types/ActionType';
 import { MAX_CLUE_NUM } from '../types/constants';
@@ -64,7 +65,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   // Disable hotkeys if we not currently in a game
   // (this should not be possible, as the handler gets unregistered upon going back to the lobby,
   // but double check just in case)
-  if (globals.lobby.currentScreen !== 'game') {
+  if (globals.lobby.currentScreen !== Screen.Game) {
     return;
   }
 

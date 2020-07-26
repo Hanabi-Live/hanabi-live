@@ -3,6 +3,7 @@
 import globals from '../globals';
 import * as misc from '../misc';
 import * as modals from '../modals';
+import Screen from './types/Screen';
 import Table from './types/Table';
 
 const tablesDraw = () => {
@@ -181,7 +182,7 @@ const tablesDraw = () => {
 export default tablesDraw;
 
 export const tableSpectate = (table: Table) => {
-  if (globals.currentScreen !== 'lobby') {
+  if (globals.currentScreen !== Screen.Lobby) {
     return;
   }
 
@@ -191,7 +192,7 @@ export const tableSpectate = (table: Table) => {
 };
 
 export const tableJoin = (table: Table) => {
-  if (globals.currentScreen !== 'lobby') {
+  if (globals.currentScreen !== Screen.Lobby) {
     return;
   }
 
@@ -205,7 +206,7 @@ export const tableJoin = (table: Table) => {
 };
 
 const tableReattend = (table: Table) => {
-  if (globals.currentScreen !== 'lobby') {
+  if (globals.currentScreen !== Screen.Lobby) {
     return;
   }
 

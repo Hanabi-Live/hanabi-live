@@ -3,6 +3,7 @@
 import globals from '../globals';
 import { ensureAllCases } from '../misc';
 import * as tablesDraw from './tablesDraw';
+import Screen from './types/Screen';
 import Status, { StatusText } from './types/Status';
 
 export const draw = () => {
@@ -99,7 +100,7 @@ const drawUser = (
   let statusColumn;
   const statusText = StatusText[user.status];
   if (
-    globals.currentScreen === 'pregame'
+    globals.currentScreen === Screen.PreGame
     || user.status === Status.Lobby
     || user.status === Status.Replay
   ) {

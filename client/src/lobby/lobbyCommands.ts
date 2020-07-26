@@ -13,6 +13,7 @@ import * as lobbySettingsTooltip from './settingsTooltip';
 import tablesDraw from './tablesDraw';
 import Game from './types/Game';
 import GameHistory from './types/GameHistory';
+import Screen from './types/Screen';
 import Settings from './types/Settings';
 import Table from './types/Table';
 import User from './types/User';
@@ -32,16 +33,16 @@ commands.set('friends', (data: FriendsData) => {
 
   // Since our list of friends has changed, we need to redraw some UI elements so that users that
   // happen to be our friend will be shown in the correct color
-  if (globals.currentScreen === 'lobby' || globals.currentScreen === 'pregame') {
+  if (globals.currentScreen === Screen.Lobby || globals.currentScreen === Screen.PreGame) {
     usersDraw.draw();
   }
-  if (globals.currentScreen === 'lobby') {
+  if (globals.currentScreen === Screen.Lobby) {
     tablesDraw();
   }
-  if (globals.currentScreen === 'pregame') {
+  if (globals.currentScreen === Screen.PreGame) {
     pregame.draw();
   }
-  if (globals.currentScreen === 'game') {
+  if (globals.currentScreen === Screen.Game) {
     // Re-call the "spectators" command handler to emulate having received a "spectators" message
     // from the server
     const spectatorsCommandHandler = gameCommands.get('spectators');
@@ -162,7 +163,7 @@ commands.set('soundLobby', (data: SoundLobbyData) => {
 // Received by the client when a table is created or modified
 commands.set('table', (data: Table) => {
   tableSet(data);
-  if (globals.currentScreen === 'lobby') {
+  if (globals.currentScreen === Screen.Lobby) {
     tablesDraw();
   }
 });
@@ -182,7 +183,7 @@ interface TableGoneData {
 commands.set('tableGone', (data: TableGoneData) => {
   globals.tableMap.delete(data.id);
 
-  if (globals.currentScreen === 'lobby') {
+  if (globals.currentScreen === Screen.Lobby) {
     tablesDraw();
   }
 });
@@ -192,7 +193,7 @@ commands.set('tableList', (dataList: Table[]) => {
   for (const data of dataList) {
     tableSet(data);
   }
-  if (globals.currentScreen === 'lobby') {
+  if (globals.currentScreen === Screen.Lobby) {
     tablesDraw();
   }
 });
@@ -208,7 +209,7 @@ commands.set('tableProgress', (data: TableProgressData) => {
   }
   table.progress = data.progress;
 
-  if (globals.currentScreen === 'lobby') {
+  if (globals.currentScreen === Screen.Lobby) {
     $(`#status-${data.id}`).html(data.progress.toString());
   }
 });
@@ -229,7 +230,7 @@ commands.set('tableStart', (data: TableStartData) => {
 // Received by the client when a user connect or has a new status
 commands.set('user', (data: User) => {
   globals.userMap.set(data.id, data);
-  if (globals.currentScreen === 'lobby' || globals.currentScreen === 'pregame') {
+  if (globals.currentScreen === Screen.Lobby || globals.currentScreen === Screen.PreGame) {
     usersDraw.draw();
   }
 });
@@ -238,7 +239,7 @@ commands.set('userList', (dataList: User[]) => {
   for (const data of dataList) {
     globals.userMap.set(data.id, data);
   }
-  if (globals.currentScreen === 'lobby' || globals.currentScreen === 'pregame') {
+  if (globals.currentScreen === Screen.Lobby || globals.currentScreen === Screen.PreGame) {
     usersDraw.draw();
   }
 });
@@ -250,7 +251,7 @@ interface UserLeftData {
 commands.set('userLeft', (data: UserLeftData) => {
   globals.userMap.delete(data.id);
 
-  if (globals.currentScreen === 'lobby' || globals.currentScreen === 'pregame') {
+  if (globals.currentScreen === Screen.Lobby || globals.currentScreen === Screen.PreGame) {
     usersDraw.draw();
   }
 });
@@ -263,7 +264,7 @@ commands.set('userInactive', (data: UserInactiveData) => {
   const user = globals.userMap.get(data.id);
   if (user) {
     user.inactive = data.inactive;
-    if (globals.currentScreen === 'lobby' || globals.currentScreen === 'pregame') {
+    if (globals.currentScreen === Screen.Lobby || globals.currentScreen === Screen.PreGame) {
       usersDraw.setInactive(user.id, user.inactive);
     }
   }

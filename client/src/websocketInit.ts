@@ -6,6 +6,7 @@ import Connection from './Connection';
 import gameCommands from './game/ui/gameCommands';
 import globals from './globals';
 import lobbyCommands from './lobby/lobbyCommands';
+import Screen from './lobby/types/Screen';
 import * as modals from './modals';
 
 export default function websocketInit() {
@@ -74,10 +75,7 @@ const initCommands = (conn: Connection) => {
   for (const [commandName, commandFunction] of gameCommands) {
     conn.on(commandName, (data: any) => {
       // As a safety precaution, ignore any game-related commands if we are not inside of a game
-      if (
-        globals.currentScreen !== 'game'
-        || globals.ui === null
-      ) {
+      if (globals.currentScreen !== Screen.Game || globals.ui === null) {
         return;
       }
 
