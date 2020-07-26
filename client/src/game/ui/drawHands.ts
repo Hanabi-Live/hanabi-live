@@ -279,6 +279,62 @@ export default function drawHands(winW: number, winH: number) {
     });
     globals.layers.card.add(globals.elements.playerHands[i] as any);
 
+    // In Keldon mode,
+    // we want to show a helper element that indicates which side of the hand is the oldest
+    if (globals.lobby.settings.keldonMode) {
+      const blackLineGroup = new Konva.Group({
+        x: handValues.x * winW,
+        y: handValues.y * winH,
+        width: handValues.w * winW,
+        height: handValues.h * winH,
+        rotation: handValues.rot,
+        align: 'center',
+        listening: false,
+      });
+      globals.layers.UI.add(blackLineGroup);
+
+      // The beginning of the hand is at 0
+      // We want it a little to the left of the first card
+      let blackLineX;
+      if (numPlayers === 2) {
+        blackLineX = -0.0075;
+      } else if (numPlayers === 3) {
+        blackLineX = -0.0125;
+      } else if (numPlayers === 4) {
+        blackLineX = -0.005;
+      } else if (numPlayers === 5 && (j === 1 || j === 4)) {
+        blackLineX = -0.01;
+      } else if (numPlayers === 5) {
+        blackLineX = -0.001;
+      } else if (numPlayers === 6) {
+        blackLineX = -0.0025;
+      } else {
+        blackLineX = 0;
+      }
+      let blackLineY = 0;
+      if (isHandReversed(j)) {
+        if (numPlayers === 2 || numPlayers === 3) {
+          blackLineX = handValues.w + 0.002;
+        } else if (numPlayers === 5) {
+          blackLineX = handValues.w - 0.005;
+        } else if (numPlayers === 6) {
+          blackLineX = handValues.w - 0.005;
+        } else {
+          blackLineX = handValues.w;
+        }
+        blackLineY = 0.002;
+      }
+      const blackLine = new Konva.Rect({
+        x: blackLineX * winW,
+        y: blackLineY * winH,
+        width: 0.0075 * winW,
+        height: handValues.h * winH,
+        fill: '#0d0d0d', // Off-black
+        listening: false,
+      });
+      blackLineGroup.add(blackLine);
+    }
+
     const turnRectValues = {
       // The black box should always be as wide as the name frame
       x: playerNamePos[numPlayers][j].x,
