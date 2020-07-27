@@ -626,7 +626,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.layout.setAbsolutePosition(pos);
   }
 
-  private moveToDeckPosition() {
+  moveToDeckPosition() {
     const deckPos = globals.elements.deck!.cardBack.getAbsolutePosition();
     this.layout.setAbsolutePosition(deckPos);
     const scale = globals.elements.deck!.cardBack.width() / CARD_W;
