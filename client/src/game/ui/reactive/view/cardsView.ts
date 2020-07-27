@@ -20,6 +20,10 @@ export const onDeckChanged = (length: number) => {
   } else {
     // Unsubscribe the removed cards
     while (globals.cardSubscriptions.length > length) {
+      // The card was removed from the visible state
+      // Ensure the position of the card is correctly reset
+      globals.deck[globals.cardSubscriptions.length - 1].moveToDeckPosition();
+
       const unsubscribe = globals.cardSubscriptions.pop()!;
       unsubscribe();
     }
