@@ -96,6 +96,11 @@ export default class FullActionLog extends Konva.Group {
   addMessage(turn: number, msg: string) {
     this.buffer.push({ turnNum: turn, text: msg });
     this.needsRefresh = true;
+
+    // If the log is already open, apply the change immediately
+    if (this.isVisible()) {
+      this.refreshText();
+    }
   }
 
   // Overrides the Konva show() method to refresh the text as well
