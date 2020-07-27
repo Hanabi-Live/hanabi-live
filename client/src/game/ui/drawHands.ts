@@ -1,7 +1,8 @@
 import Konva from 'konva';
 import { CARD_W, CARD_H } from '../../constants';
-import { CHARACTERS } from '../data/gameData';
+import { getCharacter } from '../data/gameData';
 import * as hand from '../rules/hand';
+import Character from '../types/Character';
 import CardLayout from './CardLayout';
 import TextWithTooltip from './controls/TextWithTooltip';
 import globals from './globals';
@@ -23,11 +24,11 @@ const namePosBGA: HandConfig[][] = [];
 
 export default function drawHands(winW: number, winH: number) {
   // Constants
-  const numPlayers = globals.playerNames.length;
+  const numPlayers = globals.metadata.playerNames.length;
   const numCardsPerHand = hand.cardsPerHand(
     numPlayers,
-    globals.options.oneExtraCard,
-    globals.options.oneLessCard,
+    globals.metadata.options.oneExtraCard,
+    globals.metadata.options.oneLessCard,
   );
 
   /* eslint-disable object-curly-newline */
@@ -246,7 +247,7 @@ export default function drawHands(winW: number, winH: number) {
 
   // Draw the hands
   for (let i = 0; i < numPlayers; i++) {
-    let j = i - globals.playerUs;
+    let j = i - globals.metadata.ourPlayerIndex;
 
     if (j < 0) {
       j += numPlayers;
@@ -278,21 +279,77 @@ export default function drawHands(winW: number, winH: number) {
     });
     globals.layers.card.add(globals.elements.playerHands[i] as any);
 
+    // In Keldon mode,
+    // we want to show a helper element that indicates which side of the hand is the oldest
+    if (globals.lobby.settings.keldonMode) {
+      const blackLineGroup = new Konva.Group({
+        x: handValues.x * winW,
+        y: handValues.y * winH,
+        width: handValues.w * winW,
+        height: handValues.h * winH,
+        rotation: handValues.rot,
+        align: 'center',
+        listening: false,
+      });
+      globals.layers.UI.add(blackLineGroup);
+
+      // The beginning of the hand is at 0
+      // We want it a little to the left of the first card
+      let blackLineX;
+      if (numPlayers === 2) {
+        blackLineX = -0.0075;
+      } else if (numPlayers === 3) {
+        blackLineX = -0.0125;
+      } else if (numPlayers === 4) {
+        blackLineX = -0.005;
+      } else if (numPlayers === 5 && (j === 1 || j === 4)) {
+        blackLineX = -0.01;
+      } else if (numPlayers === 5) {
+        blackLineX = -0.001;
+      } else if (numPlayers === 6) {
+        blackLineX = -0.0025;
+      } else {
+        blackLineX = 0;
+      }
+      let blackLineY = 0;
+      if (isHandReversed(j)) {
+        if (numPlayers === 2 || numPlayers === 3) {
+          blackLineX = handValues.w + 0.002;
+        } else if (numPlayers === 5) {
+          blackLineX = handValues.w - 0.005;
+        } else if (numPlayers === 6) {
+          blackLineX = handValues.w - 0.005;
+        } else {
+          blackLineX = handValues.w;
+        }
+        blackLineY = 0.002;
+      }
+      const blackLine = new Konva.Rect({
+        x: blackLineX * winW,
+        y: blackLineY * winH,
+        width: 0.0075 * winW,
+        height: handValues.h * winH,
+        fill: '#0d0d0d', // Off-black
+        listening: false,
+      });
+      blackLineGroup.add(blackLine);
+    }
+
     const turnRectValues = {
       // The black box should always be as wide as the name frame
       x: playerNamePos[numPlayers][j].x,
       y: handValues.y,
       w: playerNamePos[numPlayers][j].w * 1.04,
-      h: handValues.h * 1.38,
+      h: handValues.h * 1.34,
       offsetX: handValues.w * 0.02,
       offsetY: handValues.h * 0.14,
     };
     if (globals.lobby.settings.keldonMode) {
       turnRectValues.x = handValues.x;
-      turnRectValues.w = handValues.w * 1.05;
-      turnRectValues.h = handValues.h * 1.1;
-      turnRectValues.offsetX = handValues.w * 0.025;
-      turnRectValues.offsetY = handValues.h * 0.05;
+      turnRectValues.w = handValues.w * 1.025;
+      turnRectValues.h = handValues.h * 1.075;
+      turnRectValues.offsetX = handValues.w * 0.0125;
+      turnRectValues.offsetY = handValues.h * 0.0375;
       if (numPlayers === 5) {
         turnRectValues.w += handValues.w * 0.03;
         turnRectValues.offsetX += handValues.w * 0.015;
@@ -325,7 +382,7 @@ export default function drawHands(winW: number, winH: number) {
       y: playerNamePos[numPlayers][j].y * winH,
       width: playerNamePos[numPlayers][j].w * winW,
       height: playerNamePos[numPlayers][j].h * winH,
-      name: globals.playerNames[i],
+      name: globals.metadata.playerNames[i],
       playerIndex: i,
     });
     globals.layers.UI.add(globals.elements.nameFrames[i] as any);
@@ -424,69 +481,71 @@ const drawDetrimentalCharacters = (
     playerNamePos = namePosBGA;
   }
 
-  if (globals.options.detrimentalCharacters) {
-    let character = CHARACTERS.get(globals.characterAssignments[i]);
-    if (globals.characterAssignments[i] === 'n/a') {
-      // A "n/a" character may be assigned when debugging
-      character = {
-        id: -1,
-        name: 'n/a',
-        description: '',
-        emoji: '',
-      };
-    }
-    if (character === undefined) {
-      throw new Error(`Failed to get the "${globals.characterAssignments[i]}" character.`);
-    }
-
-    const width2 = 0.03 * winW;
-    const height2 = 0.03 * winH;
-    const charIcon = new TextWithTooltip({
-      width: width2,
-      height: height2,
-      x: (playerNamePos[numPlayers][j].x * winW) - (width2 / 2),
-      y: (playerNamePos[numPlayers][j].y * winH) - (height2 / 2),
-      fontSize: 0.03 * winH,
-      fontFamily: 'Verdana',
-      align: 'center',
-      text: character.emoji,
-      fill: 'yellow',
-      shadowColor: 'black',
-      shadowBlur: 10,
-      shadowOffset: {
-        x: 0,
-        y: 0,
-      },
-      shadowOpacity: 0.9,
-      listening: true,
-    });
-    globals.layers.UI.add(charIcon);
-
-    charIcon.tooltipName = `character-assignment-${i}`;
-    const metadata = globals.characterMetadata[i];
-    let tooltipContent = `<strong>#${character.id} - ${character.name}</strong><br />${character.description}`;
-    if (tooltipContent.includes('[random color]')) {
-      // Replace "[random color]" with the selected color
-      tooltipContent = tooltipContent.replace(
-        '[random color]',
-        globals.variant.clueColors[metadata].name.toLowerCase(),
-      );
-    } else if (tooltipContent.includes('[random number]')) {
-      // Replace "[random number]" with the selected number
-      tooltipContent = tooltipContent.replace(
-        '[random number]',
-        metadata.toString(),
-      );
-    } else if (tooltipContent.includes('[random suit]')) {
-      // Replace "[random suit]" with the selected suit name
-      tooltipContent = tooltipContent.replace(
-        '[random suit]',
-        globals.variant.suits[metadata].name,
-      );
-    }
-    charIcon.tooltipContent = tooltipContent;
-    tooltips.init(charIcon, false, true);
+  if (!globals.metadata.options.detrimentalCharacters) {
+    return;
   }
+
+  const characterID = globals.metadata.characterAssignments[i];
+  let character: Character | undefined;
+  if (characterID === null) {
+    // A character with an ID of null may be assigned when debugging
+    character = {
+      id: -1,
+      name: 'n/a',
+      description: '',
+      emoji: '',
+    };
+  } else {
+    character = getCharacter(characterID);
+  }
+
+  const width2 = 0.03 * winW;
+  const height2 = 0.03 * winH;
+  const charIcon = new TextWithTooltip({
+    width: width2,
+    height: height2,
+    x: (playerNamePos[numPlayers][j].x * winW) - (width2 / 2),
+    y: (playerNamePos[numPlayers][j].y * winH) - (height2 / 2),
+    fontSize: 0.03 * winH,
+    fontFamily: 'Verdana',
+    align: 'center',
+    text: character.emoji,
+    fill: 'yellow',
+    shadowColor: 'black',
+    shadowBlur: 10,
+    shadowOffset: {
+      x: 0,
+      y: 0,
+    },
+    shadowOpacity: 0.9,
+    listening: true,
+  });
+  globals.layers.UI.add(charIcon);
+
+  charIcon.tooltipName = `character-assignment-${i}`;
+  const metadata = globals.metadata.characterMetadata[i];
+  let tooltipContent = `<strong>#${character.id} - ${character.name}</strong><br />${character.description}`;
+  if (tooltipContent.includes('[random color]')) {
+    // Replace "[random color]" with the selected color
+    tooltipContent = tooltipContent.replace(
+      '[random color]',
+      globals.variant.clueColors[metadata].name.toLowerCase(),
+    );
+  } else if (tooltipContent.includes('[random number]')) {
+    // Replace "[random number]" with the selected number
+    tooltipContent = tooltipContent.replace(
+      '[random number]',
+      metadata.toString(),
+    );
+  } else if (tooltipContent.includes('[random suit]')) {
+    // Replace "[random suit]" with the selected suit name
+    tooltipContent = tooltipContent.replace(
+      '[random suit]',
+      globals.variant.suits[metadata].name,
+    );
+  }
+  charIcon.tooltipContent = tooltipContent;
+  tooltips.init(charIcon, false, true);
 };
 
 const isHandReversed = (j: number) => {

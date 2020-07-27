@@ -1,6 +1,6 @@
 import Konva from 'konva';
 import Clue from '../types/Clue';
-import drawLayer from './drawLayer';
+import { drawLayer } from './konvaHelpers';
 
 export default class RankButton extends Konva.Group {
   pressed: boolean = false;

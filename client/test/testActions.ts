@@ -5,21 +5,20 @@ import {
   ActionClue,
   ActionDiscard,
   ActionDraw,
-  ActionPlay,
-  ActionStrike,
-  ActionText,
   ActionHypotheticalStart,
   ActionHypotheticalBack,
   ActionHypotheticalEnd,
   ActionHypothetical,
   ActionIncludingHypothetical,
-  ActionStartReplay,
-  ActionEndReplay,
+  ActionPlay,
+  ActionReplayEnter,
+  ActionReplayExit,
+  ActionStrike,
   ActionTurn,
 } from '../src/game/types/actions';
 import ClueType from '../src/game/types/ClueType';
 
-export const clue = (
+const clue = (
   type: ClueType,
   value: number,
   giver: number,
@@ -27,63 +26,123 @@ export const clue = (
   target: number,
   turn: number,
 ): ActionClue => ({
-  type: 'clue', clue: { type, value }, giver, list, target, turn,
+  type: 'clue',
+  clue: {
+    type,
+    value,
+  },
+  giver,
+  list,
+  target,
+  turn,
 });
 
-export const draw = (who: number, rank: number, suit: number, order: number): ActionDraw => ({
-  type: 'draw', who, rank, suit, order,
+export const colorClue = (
+  value: number,
+  giver: number,
+  list: number[],
+  target: number,
+  turn: number,
+): ActionClue => clue(
+  ClueType.Color,
+  value,
+  giver,
+  list,
+  target,
+  turn,
+);
+
+export const rankClue = (
+  value: number,
+  giver: number,
+  list: number[],
+  target: number,
+  turn: number,
+): ActionClue => clue(
+  ClueType.Rank,
+  value,
+  giver,
+  list,
+  target,
+  turn,
+);
+
+export const draw = (
+  playerIndex: number,
+  order: number,
+  suitIndex: number = -1,
+  rank: number = -1,
+): ActionDraw => ({
+  type: 'draw',
+  playerIndex,
+  order,
+  suitIndex,
+  rank,
 });
 
 export const discard = (
-  failed: boolean,
-  index: number,
-  suit: number,
-  rank: number,
+  playerIndex: number,
   order: number,
+  suitIndex: number,
+  rank: number,
+  failed: boolean,
 ): ActionDiscard => ({
   type: 'discard',
+  playerIndex,
+  order,
+  suitIndex,
+  rank,
   failed,
-  which: {
-    index, suit, rank, order,
-  },
 });
 
 export const play = (
-  index: number,
-  suit: number,
-  rank: number,
+  playerIndex: number,
   order: number,
+  suitIndex: number,
+  rank: number,
 ): ActionPlay => ({
   type: 'play',
-  which: {
-    index, suit, rank, order,
-  },
+  playerIndex,
+  order,
+  suitIndex,
+  rank,
 });
 
 export const strike = (num: number, order: number, turn: number): ActionStrike => ({
-  type: 'strike', num, order, turn,
+  type: 'strike',
+  num,
+  order,
+  turn,
 });
 
-export const text = (textContent: string): ActionText => ({
-  type: 'text', text: textContent,
+export const turn = (num: number, currentPlayerIndex: number): ActionTurn => ({
+  type: 'turn',
+  num,
+  currentPlayerIndex,
 });
 
-export const turn = (num: number, who: number): ActionTurn => ({
-  type: 'turn', num, who,
+export const enterReplay = (): ActionReplayEnter => ({
+  type: 'replayEnter',
+  segment: 0,
 });
 
-export const startReplay = (turnNumber: number): ActionStartReplay => ({
-  type: 'startReplay', turn: turnNumber,
+export const endReplay = (): ActionReplayExit => ({
+  type: 'replayExit',
 });
 
-export const endReplay = (): ActionEndReplay => ({ type: 'endReplay' });
+export const hypoStart = (): ActionHypotheticalStart => ({
+  type: 'hypoStart',
+});
 
-export const hypoStart = (): ActionHypotheticalStart => ({ type: 'hypoStart' });
-export const hypoEnd = (): ActionHypotheticalEnd => ({ type: 'hypoEnd' });
-export const hypoBack = (): ActionHypotheticalBack => ({ type: 'hypoBack' });
-export const hypoAction = (action: ActionIncludingHypothetical): ActionHypothetical => (
-  {
-    type: 'hypoAction',
-    action,
-  }
-);
+export const hypoEnd = (): ActionHypotheticalEnd => ({
+  type: 'hypoEnd',
+});
+
+export const hypoBack = (): ActionHypotheticalBack => ({
+  type: 'hypoBack',
+});
+
+export const hypoAction = (action: ActionIncludingHypothetical): ActionHypothetical => ({
+  type: 'hypoAction',
+  action,
+});

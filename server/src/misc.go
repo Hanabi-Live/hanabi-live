@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"hash/crc64"
 	"io/ioutil"
 	"math"
 	"math/rand"
@@ -19,14 +20,6 @@ import (
 	"github.com/mozillazg/go-unidecode"
 	"golang.org/x/text/unicode/norm"
 )
-
-// From: https://stackoverflow.com/questions/47341278/how-to-format-a-duration-in-golang
-func durationToString(d time.Duration) string {
-	m := d / time.Minute
-	d -= m * time.Minute
-	s := d / time.Second
-	return fmt.Sprintf("%02d:%02d", m, s)
-}
 
 func executeScript(script string) error {
 	cmd := exec.Command(path.Join(projectPath, script)) // nolint:gosec
@@ -224,6 +217,16 @@ func secondsToDurationString(seconds int) (string, error) {
 	}
 
 	return msg, nil
+}
+
+// setSeed seeds the random number generator with a string
+// Golang's "rand.Seed()" function takes an int64, so we need to convert a string to an int64
+// We use the CRC64 hash function to do this
+// Also note that seeding with negative numbers will not work
+func setSeed(seed string) {
+	crc64Table := crc64.MakeTable(crc64.ECMA)
+	intSeed := crc64.Checksum([]byte(seed), crc64Table)
+	rand.Seed(int64(intSeed))
 }
 
 func stringInSlice(a string, slice []string) bool {

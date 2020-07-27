@@ -1,38 +1,84 @@
+import CardIdentity from './CardIdentity';
+import ClientAction from './ClientAction';
+import EndCondition from './EndCondition';
 import MsgClue from './MsgClue';
-import SimpleCard from './SimpleCard';
 
 export type Action =
-| GameAction
-| ReplayAction
-| ActionListReceived;
+  | GameAction
+  | ReplayAction
+  | ActionListReceived
+  | ActionCardIdentities
+  | ActionPremove
+  | ActionFinishOngoingGame;
 
 export type GameAction =
-| ActionClue
-| ActionDeckOrder
-| ActionDiscard
-| ActionDraw
-| ActionPlay
-| ActionReorder
-| ActionStackDirections
-| ActionStatus
-| ActionStrike
-| ActionText
-| ActionTurn;
+  | ActionCardIdentity
+  | ActionClue
+  | ActionDiscard
+  | ActionDraw
+  | ActionGameDuration
+  | ActionGameOver
+  | ActionPlay
+  | ActionPlayerTimes
+  | ActionPlayStackDirections
+  | ActionStatus
+  | ActionStrike
+  | ActionTurn;
 
-export type ActionIncludingHypothetical = GameAction | ActionReveal;
+export type ActionIncludingHypothetical = GameAction | ActionHypotheticalMorph;
 
 export type ReplayAction =
-| ActionStartReplay
-| ActionEndReplay
-| ActionGoToTurn
-| ActionHypotheticalStart
-| ActionHypotheticalEnd
-| ActionHypotheticalBack
-| ActionHypothetical;
+  | ActionReplayEnter
+  | ActionReplayExit
+  | ActionReplaySegment
+  | ActionReplaySharedSegment
+  | ActionReplayUseSharedSegments
+  | HypotheticalAction;
+
+export type HypotheticalAction =
+  | ActionHypotheticalStart
+  | ActionHypotheticalEnd
+  | ActionHypotheticalBack
+  | ActionHypothetical
+  | ActionHypotheticalShowDrawnCards;
+
+// ----------------------
+// Initialization actions
+// ----------------------
 
 export interface ActionListReceived {
   type: 'gameActionList';
   readonly actions: GameAction[];
+}
+
+// ---------------------
+// Miscellaneous actions
+// ---------------------
+
+export interface ActionCardIdentities {
+  type: 'cardIdentities';
+  readonly cardIdentities: CardIdentity[];
+}
+
+export interface ActionPremove {
+  type: 'premove';
+  readonly premove: ClientAction | null;
+}
+
+export interface ActionFinishOngoingGame {
+  type: 'finishOngoingGame';
+}
+// ------------
+// Game actions
+// ------------
+
+// Used to implement the "Slow-Witted" detrimental character
+export interface ActionCardIdentity {
+  type: 'cardIdentity';
+  readonly playerIndex: number;
+  readonly order: number;
+  readonly suitIndex: number;
+  readonly rank: number;
 }
 
 export interface ActionClue {
@@ -44,38 +90,49 @@ export interface ActionClue {
   readonly turn: number;
 }
 
-export interface ActionDeckOrder {
-  type: 'deckOrder';
-  readonly deck: SimpleCard[];
-}
-
 export interface ActionDiscard {
   type: 'discard';
   readonly failed: boolean;
-  readonly which: Which;
+  readonly playerIndex: number;
+  readonly order: number;
+  readonly suitIndex: number;
+  readonly rank: number;
 }
 
 export interface ActionDraw {
   type: 'draw';
-  readonly who: number;
-  readonly rank: number;
-  readonly suit: number;
+  readonly playerIndex: number;
   readonly order: number;
+  readonly suitIndex: number;
+  readonly rank: number;
+}
+
+export interface ActionGameDuration {
+  type: 'gameDuration';
+  duration: number;
+}
+
+export interface ActionGameOver {
+  type: 'gameOver';
+  readonly endCondition: EndCondition;
+  readonly playerIndex: number;
 }
 
 export interface ActionPlay {
   type: 'play';
-  readonly which: Which;
+  readonly playerIndex: number;
+  readonly order: number;
+  readonly suitIndex: number;
+  readonly rank: number;
 }
 
-export interface ActionReorder {
-  type: 'reorder';
-  readonly target: number;
-  readonly handOrder: number[];
+export interface ActionPlayerTimes {
+  type: 'playerTimes';
+  readonly playerTimes: number[];
 }
 
-export interface ActionStackDirections {
-  type: 'stackDirections';
+export interface ActionPlayStackDirections {
+  type: 'playStackDirections';
   readonly directions: number[];
 }
 
@@ -94,40 +151,44 @@ export interface ActionStrike {
   readonly turn: number;
 }
 
-export interface ActionText {
-  type: 'text';
-  readonly text: string;
-}
-
 export interface ActionTurn {
   type: 'turn';
   readonly num: number;
-  readonly who: number;
+  readonly currentPlayerIndex: number;
 }
 
-export interface Which {
-  readonly index: number;
-  readonly suit: number;
-  readonly rank: number;
-  readonly order: number;
-}
-
+// --------------
 // Replay actions
-export interface ActionStartReplay {
-  type: 'startReplay';
-  readonly turn: number;
+// --------------
+
+export interface ActionReplayEnter {
+  type: 'replayEnter';
+  segment: number;
 }
 
-export interface ActionEndReplay {
-  type: 'endReplay';
+export interface ActionReplayExit {
+  type: 'replayExit';
 }
 
-export interface ActionGoToTurn {
-  type: 'goToTurn';
-  readonly turn: number;
+export interface ActionReplaySegment {
+  type: 'replaySegment';
+  readonly segment: number;
 }
 
+export interface ActionReplaySharedSegment {
+  type: 'replaySharedSegment';
+  readonly segment: number;
+}
+
+export interface ActionReplayUseSharedSegments {
+  type: 'replayUseSharedSegments';
+  readonly useSharedSegments: boolean;
+}
+
+// --------------------
 // Hypothetical actions
+// --------------------
+
 export interface ActionHypotheticalStart {
   type: 'hypoStart';
 }
@@ -145,9 +206,14 @@ export interface ActionHypothetical {
   readonly action: ActionIncludingHypothetical;
 }
 
-export interface ActionReveal {
-  type: 'reveal';
-  readonly suit: number;
+export interface ActionHypotheticalMorph {
+  type: 'morph';
+  readonly suitIndex: number;
   readonly rank: number;
   readonly order: number;
+}
+
+export interface ActionHypotheticalShowDrawnCards {
+  type: 'hypoRevealed';
+  readonly showDrawnCards: boolean;
 }

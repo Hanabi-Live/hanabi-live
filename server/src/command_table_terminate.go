@@ -51,36 +51,10 @@ func commandTableTerminate(s *Session, d *CommandData) {
 		Terminate
 	*/
 
-	if d.Server {
-		i = -1
-	}
-	terminate(t, s.Username(), i)
-}
-
-func terminate(t *Table, username string, endPlayerIndex int) {
-	// Local variables
-	g := t.Game
-
-	// We want to set the end condition before advancing the turn to ensure that
-	// no active player will show
-	g.EndCondition = EndConditionTerminated
-	g.EndPlayer = endPlayerIndex
-
-	// Add a text message for the termination
-	// and put it on its own turn so that it is separate from the final times
-	text := username + " terminated the game!"
-	g.Actions = append(g.Actions, ActionText{
-		Type: "text",
-		Text: text,
+	commandAction(s, &CommandData{
+		TableID: t.ID,
+		Type:    ActionTypeGameOver,
+		Target:  i,
+		Value:   EndConditionTerminated,
 	})
-	t.NotifyGameAction()
-	g.Turn++
-	t.NotifyTurn()
-
-	// Play a sound to indicate that the game was terminated
-	g.Sound = "finished_fail"
-	t.NotifySound()
-
-	// End the game and write it to the database
-	g.End()
 }

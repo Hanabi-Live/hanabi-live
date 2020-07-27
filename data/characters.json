@@ -72,7 +72,7 @@
   },
   "Insistent": {
     "id": 13,
-    "description": "Must continue to clue the same card until it is played or discarded",
+    "description": "Must continue to clue the same card(s) until one of them is played or discarded",
     "emoji": "😣"
   },
   "Quacker": {
@@ -92,7 +92,7 @@
   },
   "Follower": {
     "id": 31,
-    "description": "Cannot play a card unless two cards of the same rank have already been played",
+    "description": "Cannot play a card unless two cards of that same rank have already been played",
     "emoji": "👁️"
   },
   "Impulsive": {
@@ -132,12 +132,12 @@
   },
   "Panicky": {
     "id": 26,
-    "description": "When discarding, discards twice if 4 clues or less",
+    "description": "After discarding, discards again if there are 4 clues or less",
     "emoji": "😳"
   },
   "Contrarian": {
     "id": 27,
-    "description": "Play order inverts after taking a turn, 2-turn end game",
+    "description": "Play order inverts after taking a turn; 2-turn end game",
     "emoji": "🙅",
     "not2P": true
   },
@@ -162,10 +162,5 @@
     "id": 33,
     "description": "Cannot see cards in slot 1",
     "emoji": "🤪"
-  },
-  "Forgetful": {
-    "id": 32,
-    "description": "Hand is shuffled after discarding (but before drawing)",
-    "emoji": "🔀"
   }
 }

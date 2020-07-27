@@ -1,11 +1,12 @@
 // We will receive WebSocket messages / commands from the server that tell us to do things
 
 import * as chat from './chat';
-import ChatMessage from './ChatMessage';
 import * as gameChat from './game/chat';
 import globals from './globals';
 import * as pregame from './lobby/pregame';
+import Screen from './lobby/types/Screen';
 import * as modals from './modals';
+import ChatMessage from './types/ChatMessage';
 
 // Define a command handler map
 type CommandCallback = (data: any) => void;
@@ -21,15 +22,14 @@ commands.set('warning', (data: WarningData) => {
 
   // Re-activate some lobby elements
   $('#nav-buttons-games-create-game').removeClass('disabled');
-  if (globals.currentScreen === 'pregame') {
+  if (globals.currentScreen === Screen.PreGame) {
     pregame.enableStartGameButton();
   }
 
   // Re-activate in-game elements
   if (
-    globals.currentScreen === 'game'
-      && globals.ui !== null
-      && globals.ui.globals.ourTurn
+    globals.currentScreen === Screen.Game
+    && globals.ui !== null
   ) {
     globals.ui.reshowClueUIAfterWarning();
   }
@@ -56,21 +56,21 @@ commands.set('chat', (data: ChatMessage) => {
   if (!data.room.startsWith('table')) {
     return;
   }
-  if (globals.currentScreen === 'pregame') {
+  if (globals.currentScreen === Screen.PreGame) {
     // Notify the server that we have read the chat message that was just received
     globals.conn!.send('chatRead', {
       tableID: globals.tableID,
     });
-  } else if (globals.currentScreen === 'game' && globals.ui !== null) {
+  } else if (globals.currentScreen === Screen.Game && globals.ui !== null) {
     if ($('#game-chat-modal').is(':visible')) {
       // Notify the server that we have read the chat message that was just received
       globals.conn!.send('chatRead', {
         tableID: globals.tableID,
       });
     } else if (
-      globals.ui.globals.spectating
-        && !globals.ui.globals.sharedReplay
-        && !$('#game-chat-modal').is(':visible')
+      globals.ui.globals.metadata.spectating
+      && !globals.ui.globals.metadata.sharedReplay
+      && !$('#game-chat-modal').is(':visible')
     ) {
       // The chat window was not open; pop open the chat window every time for spectators
       gameChat.toggle();
@@ -117,10 +117,7 @@ commands.set('chatList', (data: ChatListData) => {
   for (const line of data.list) {
     chat.add(line, true); // The second argument is "fast"
   }
-  if (
-    globals.ui !== null
-      && !$('#game-chat-modal').is(':visible')
-  ) {
+  if (globals.ui !== null && !$('#game-chat-modal').is(':visible')) {
     // If the UI is open, we assume that this is a list of in-game chat messages
     globals.chatUnread += data.unread;
     globals.ui.updateChatLabel();

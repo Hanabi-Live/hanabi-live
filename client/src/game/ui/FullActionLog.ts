@@ -4,11 +4,13 @@ import globals from './globals';
 import MultiFitText from './MultiFitText';
 
 export default class FullActionLog extends Konva.Group {
+  buffer: Array<{turnNum: number; text: string}> = [];
   logText: MultiFitText;
   logNumbers: MultiFitText;
   playerLogEmptyMessage: FitText;
   playerLogs: MultiFitText[] = [];
   playerLogNumbers: MultiFitText[] = [];
+  private needsRefresh: boolean = false;
 
   constructor(winW: number, winH: number) {
     super({
@@ -78,7 +80,7 @@ export default class FullActionLog extends Konva.Group {
     this.playerLogEmptyMessage.hide();
     this.add(this.playerLogEmptyMessage as any);
 
-    for (let i = 0; i < globals.playerNames.length; i++) {
+    for (let i = 0; i < globals.metadata.playerNames.length; i++) {
       const playerLog = new MultiFitText(textOptions, maxLines);
       playerLog.hide();
       this.playerLogs.push(playerLog);
@@ -91,33 +93,37 @@ export default class FullActionLog extends Konva.Group {
     }
   }
 
-  addMessage(msg: string) {
-    const appendLine = (log: MultiFitText, numbers: MultiFitText, line: string) => {
-      log.setMultiText(line);
-      numbers.setMultiText((globals.turn + 1).toString());
-    };
+  addMessage(turn: number, msg: string) {
+    this.buffer.push({ turnNum: turn, text: msg });
+    this.needsRefresh = true;
 
-    appendLine(this.logText, this.logNumbers, msg);
-    for (let i = 0; i < globals.playerNames.length; i++) {
-      if (msg.startsWith(globals.playerNames[i])) {
-        appendLine(this.playerLogs[i], this.playerLogNumbers[i], msg);
-        break;
-      }
+    // If the log is already open, apply the change immediately
+    if (this.isVisible()) {
+      this.refreshText();
     }
   }
 
-  showPlayerActions(playerName: string) {
-    let playerIndex = -1;
-    for (let i = 0; i < globals.playerNames.length; i++) {
-      if (globals.playerNames[i] === playerName) {
-        playerIndex = i;
-      }
+  // Overrides the Konva show() method to refresh the text as well
+  show() {
+    // We only need to refresh the text when it is shown
+    if (this.needsRefresh) {
+      this.refreshText();
     }
+    return super.show();
+  }
+
+  showPlayerActions(playerName: string) {
+    const playerIndex = globals.metadata.playerNames.findIndex((name) => name === playerName);
     if (playerIndex === -1) {
       throw new Error(`Failed to find player "${playerName}" in the player names.`);
     }
     this.logText.hide();
     this.logNumbers.hide();
+
+    if (this.needsRefresh) {
+      this.refreshText();
+    }
+
     if (this.playerLogs[playerIndex].isEmpty()) {
       this.playerLogEmptyMessage.show();
     } else {
@@ -146,25 +152,45 @@ export default class FullActionLog extends Konva.Group {
       this.logNumbers.show();
       this.hide();
       globals.elements.stageFade.hide();
+
       globals.layers.UI2.batchDraw();
     });
   }
 
-  refreshText() {
+  private refreshText() {
+    const appendLine = (log: MultiFitText, numbers: MultiFitText, turn: number, line: string) => {
+      log.setMultiText(line);
+      numbers.setMultiText(turn.toString());
+    };
+
+    this.buffer.forEach((logEntry) => {
+      appendLine(this.logText, this.logNumbers, logEntry.turnNum, logEntry.text);
+      for (let i = 0; i < globals.metadata.playerNames.length; i++) {
+        if (logEntry.text.startsWith(globals.metadata.playerNames[i])) {
+          appendLine(this.playerLogs[i], this.playerLogNumbers[i], logEntry.turnNum, logEntry.text);
+          break;
+        }
+      }
+    });
+
     this.logText.refreshText();
     this.logNumbers.refreshText();
-    for (let i = 0; i < globals.playerNames.length; i++) {
+    for (let i = 0; i < globals.metadata.playerNames.length; i++) {
       this.playerLogs[i].refreshText();
       this.playerLogNumbers[i].refreshText();
     }
+    this.buffer = [];
+    this.needsRefresh = false;
   }
 
   reset() {
+    this.buffer = [];
     this.logText.reset();
     this.logNumbers.reset();
-    for (let i = 0; i < globals.playerNames.length; i++) {
+    for (let i = 0; i < globals.metadata.playerNames.length; i++) {
       this.playerLogs[i].reset();
       this.playerLogNumbers[i].reset();
     }
+    this.needsRefresh = true;
   }
 }

@@ -8,7 +8,7 @@ const chatCommands = new Map<string, Callback>();
 export default chatCommands;
 
 // /friend [username]
-chatCommands.set('friend', (_room: string, args: string[]) => {
+const friend = (_room: string, args: string[]) => {
   // Validate that the format of the command is correct
   if (args.length < 1) {
     modals.warningShow('The format of the /friend command is: <code>/friend Alice</code>');
@@ -24,7 +24,9 @@ chatCommands.set('friend', (_room: string, args: string[]) => {
   globals.conn!.send('chatFriend', {
     name,
   });
-});
+};
+chatCommands.set('friend', friend);
+chatCommands.set('addfriend', friend);
 
 // /friends
 const friends = (room: string) => {
@@ -175,7 +177,7 @@ const playerinfo = (_room: string, args: string[]) => {
     // If there are no arguments and we are at a table
     // return stats for all the players
     if (globals.tableID !== -1 && globals.ui) {
-      usernames = globals.ui.globals.playerNames;
+      usernames = globals.ui.globals.metadata.playerNames;
     } else {
       // Otherwise, return stats for the caller
       usernames = [globals.username];

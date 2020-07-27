@@ -10,7 +10,7 @@ interface CharacterJSON {
 type CharacterEntryIterable = Iterable<[keyof (typeof charactersJSON), CharacterJSON]>;
 
 export default function charactersInit() {
-  const CHARACTERS = new Map<string, Character>();
+  const CHARACTERS = new Map<number, Character>();
 
   const characters = Object.entries(charactersJSON) as CharacterEntryIterable;
   for (const [characterName, characterJSON] of characters) {
@@ -45,7 +45,7 @@ export default function charactersInit() {
       description,
       emoji,
     };
-    CHARACTERS.set(characterName, character);
+    CHARACTERS.set(id, character);
   }
 
   return CHARACTERS;

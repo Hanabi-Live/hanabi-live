@@ -1,12 +1,13 @@
 // The screens that show past games and other scores
 
-import { VARIANTS } from '../game/data/gameData';
+import { getVariant, VARIANTS } from '../game/data/gameData';
 import Variant from '../game/types/Variant';
 import globals from '../globals';
 import * as misc from '../misc';
-import GameHistory from './GameHistory';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
+import GameHistory from './types/GameHistory';
+import Screen from './types/Screen';
 import * as usersDraw from './usersDraw';
 
 export const init = () => {
@@ -14,10 +15,10 @@ export const init = () => {
     globals.showMoreHistoryClicked = true;
     let command: string;
     let offset: number;
-    if (globals.currentScreen === 'history') {
+    if (globals.currentScreen === Screen.History) {
       command = 'historyGet';
       offset = Object.keys(globals.history).length;
-    } else if (globals.currentScreen === 'historyFriends') {
+    } else if (globals.currentScreen === Screen.HistoryFriends) {
       command = 'historyFriendsGet';
       offset = Object.keys(globals.historyFriends).length;
     } else {
@@ -31,7 +32,7 @@ export const init = () => {
 };
 
 export const show = () => {
-  globals.currentScreen = 'history';
+  globals.currentScreen = Screen.History;
 
   $('#lobby-history').show();
   $('#lobby-top-half').hide();
@@ -55,7 +56,7 @@ export const show = () => {
 };
 
 export const hide = () => {
-  globals.currentScreen = 'lobby';
+  globals.currentScreen = Screen.Lobby;
   tablesDraw();
   usersDraw.draw();
 
@@ -111,10 +112,7 @@ export const draw = (friends: boolean) => {
     } else {
       gameData = globals.historyFriends[ids[i]];
     }
-    const variant = VARIANTS.get(gameData.options.variantName);
-    if (variant === undefined) {
-      throw new Error(`Unable to find the "${gameData.options.variantName}" variant in the "VARIANTS" map.`);
-    }
+    const variant = getVariant(gameData.options.variantName);
     const { maxScore } = variant;
 
     const row = $('<tr>');
@@ -213,7 +211,7 @@ const makeOtherScoresButton = (id: number, seed: string, gameCount: number) => {
     button.on('click', () => {
       globals.conn!.send('historyGetSeed', {
         seed,
-        friends: globals.currentScreen === 'historyFriends',
+        friends: globals.currentScreen === Screen.HistoryFriends,
       });
       showOtherScores();
     });
@@ -223,7 +221,7 @@ const makeOtherScoresButton = (id: number, seed: string, gameCount: number) => {
 };
 
 export const showFriends = () => {
-  globals.currentScreen = 'historyFriends';
+  globals.currentScreen = Screen.HistoryFriends;
   nav.show('history-friends');
   $('#lobby-history-table-players').html('Players');
   $('#lobby-history-show-all').hide();
@@ -231,7 +229,7 @@ export const showFriends = () => {
 };
 
 export const hideFriends = () => {
-  globals.currentScreen = 'history';
+  globals.currentScreen = Screen.History;
   nav.show('history');
   $('#lobby-history-table-players').html('Other Players');
   $('#lobby-history-show-all').show();
@@ -239,21 +237,21 @@ export const hideFriends = () => {
 };
 
 export const showOtherScores = () => {
-  globals.currentScreen = 'historyOtherScores';
+  globals.currentScreen = Screen.HistoryOtherScores;
   $('#lobby-history').hide();
   $('#lobby-history-other-scores').show();
   nav.show('history-other-scores');
 };
 
 export const hideOtherScores = () => {
-  globals.currentScreen = 'history';
+  globals.currentScreen = Screen.History;
   $('#lobby-history').show();
   $('#lobby-history-other-scores').hide();
   nav.show('history');
 };
 
 export const hideOtherScoresToFriends = () => {
-  globals.currentScreen = 'historyFriends';
+  globals.currentScreen = Screen.HistoryFriends;
   $('#lobby-history').show();
   $('#lobby-history-other-scores').hide();
   nav.show('history-friends');

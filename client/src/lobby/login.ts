@@ -3,9 +3,11 @@
 import version from '../../../data/version.json';
 import { FADE_TIME } from '../constants';
 import globals from '../globals';
+import { isEmpty } from '../misc';
 import websocketInit from '../websocketInit';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
+import Screen from './types/Screen';
 import * as usersDraw from './usersDraw';
 
 export const init = () => {
@@ -26,16 +28,16 @@ const submit = (event: JQuery.Event) => {
   event.preventDefault();
 
   let username = $('#login-username').val();
-  if (!username) {
+  if (isEmpty(username)) {
     formError('You must provide a username.');
     return;
   }
   if (typeof username !== 'string') {
-    username = username.toString();
+    username = username!.toString();
   }
 
   let password = $('#login-password').val();
-  if (!password) {
+  if (isEmpty(password)) {
     formError('You must provide a password.');
     return;
   }
@@ -163,7 +165,7 @@ export const hide = (firstTimeUser: boolean) => {
   $('body').css('overflow', 'hidden');
 
   // Show the lobby
-  globals.currentScreen = 'lobby';
+  globals.currentScreen = Screen.Lobby;
   tablesDraw();
   usersDraw.draw(); // If we were in the tutorial, we have to re-draw all of the user rows
   $('#lobby').show();

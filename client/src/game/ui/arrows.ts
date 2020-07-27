@@ -3,10 +3,9 @@
 
 import Konva from 'konva';
 import { KonvaEventObject } from 'konva/types/Node';
-import {
-  ARROW_COLOR,
-} from '../../constants';
-import * as variantRules from '../rules/variant';
+import { ARROW_COLOR } from '../../constants';
+import { getCharacter } from '../data/gameData';
+import { cardRules, variantRules } from '../rules';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
 import { STACK_BASE_RANK } from '../types/constants';
@@ -20,6 +19,7 @@ import StrikeSquare from './controls/StrikeSquare';
 import drawPip from './drawPip';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
+import * as konvaHelpers from './konvaHelpers';
 
 export const hideAll = () => {
   let changed = false;
@@ -27,10 +27,14 @@ export const hideAll = () => {
     if (arrow.pointingTo !== null) {
       changed = true;
       arrow.pointingTo = null;
-      arrow.visible(false);
+      arrow.hide();
+      if (arrow.tween !== null) {
+        arrow.tween.destroy();
+        arrow.tween = null;
+      }
     }
   }
-  if (!globals.animateFast && changed) {
+  if (changed) {
     globals.layers.arrow.batchDraw();
   }
 };
@@ -51,8 +55,8 @@ export const set = (
   let rot = 0;
   if (
     element instanceof HanabiCard
-    && !element.state.isPlayed
-    && !element.state.isDiscarded
+    && !cardRules.isPlayed(element.state)
+    && !cardRules.isDiscarded(element.state)
     && element.state.rank !== STACK_BASE_RANK
   ) {
     if (element.parent && element.parent.parent && element.parent.parent instanceof CardLayout) {
@@ -61,10 +65,13 @@ export const set = (
     if (
       (
         !globals.lobby.settings.keldonMode
-        && element.state.holder === globals.playerUs
+        && element.state.location === globals.metadata.ourPlayerIndex
       ) || (
         globals.lobby.settings.keldonMode
-        && (element.state.holder !== globals.playerUs && element.state.holder !== null)
+        && (
+          element.state.location !== globals.metadata.ourPlayerIndex
+          && cardRules.isInPlayerHand(element.state)
+        )
       )
     ) {
       // In BGA mode, invert the arrows on our hand
@@ -102,9 +109,17 @@ export const set = (
     arrow.base.fill(color);
 
     // Clue arrows have a circle that shows the type of clue given
+    let giverCharacterName = '';
+    if (giver !== null) {
+      const giverCharacterID = globals.metadata.characterAssignments[giver!];
+      if (giverCharacterID !== null) {
+        const giverCharacter = getCharacter(giverCharacterID);
+        giverCharacterName = giverCharacter.name;
+      }
+    }
     if (
       variantRules.isDuck(globals.variant)
-      || (globals.characterAssignments[giver!] === 'Quacker' && !globals.replay)
+      || (giverCharacterName === 'Quacker' && !globals.metadata.replay)
     ) {
       // Don't show the circle in variants where the clue types are supposed to be hidden
       arrow.circle.hide();
@@ -137,9 +152,9 @@ export const set = (
               arrow.suitPip!.sceneFunc((ctx: any) => {
                 drawPip(ctx, matchingSuits[0]);
               });
-              arrow.suitPip!.visible(true);
+              arrow.suitPip!.show();
             } else {
-              arrow.suitPip!.visible(false);
+              arrow.suitPip!.hide();
             }
           }
         }
@@ -156,20 +171,22 @@ export const set = (
         arrow.circle.fill('black');
 
         if (globals.lobby.settings.colorblindMode) {
-          arrow.suitPip!.visible(false);
+          arrow.suitPip!.hide();
         }
       }
     }
   }
 
-  if (arrow.tween) {
+  if (arrow.tween !== null) {
     arrow.tween.destroy();
+    arrow.tween = null;
   }
   if (globals.animateFast || giver === null) {
     const pos = getPos(element!, rot);
     arrow.setAbsolutePosition(pos);
   } else {
-    animate(arrow, element as HanabiCard, rot, giver, globals.turn);
+    const visibleSegment = globals.store!.getState().visibleState!.turn.segment!;
+    animate(arrow, element as HanabiCard, rot, giver, visibleSegment);
   }
   if (!globals.animateFast) {
     globals.layers.arrow.batchDraw();
@@ -214,24 +231,37 @@ const getPos = (element: Konva.Node, rot: number) => {
 };
 
 // Animate the arrow to fly from the player who gave the clue to the card
-const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, turn: number) => {
-  // Don't bother doing the animation if it is delayed by more than one turn
-  if (globals.turn > turn + 1) {
+const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, segment: number) => {
+  // Don't bother doing the animation if it is delayed by more than one segment
+  const visibleSegment = globals.store!.getState().visibleState!.turn.segment!;
+  if (visibleSegment > segment + 1 || visibleSegment < segment - 1) {
     return;
   }
 
   // Don't bother doing the animation if the card is no longer part of a hand
-  // (which can happen rarely when jumping quickly through a replay)
-  if (!card.parent || !card.parent.parent) {
+  // (which can happen when jumping quickly through a replay)
+  if (
+    card === undefined
+    || card.parent === undefined
+    || card.parent === null
+    || card.parent.parent === undefined
+    || card.parent.parent === null
+  ) {
+    return;
+  }
+
+  // Don't bother doing the animation if we have hidden the arrow in the meantime
+  // (which can happen when jumping quickly through a replay)
+  if (arrow.pointingTo === null) {
     return;
   }
 
   // Delay the animation if the card is currently tweening to avoid buggy behavior
   if (card.tweening) {
     arrow.hide();
-    setTimeout(() => {
-      animate(arrow, card, rot, giver, turn);
-    }, 20);
+    card.waitForTweening(() => {
+      animate(arrow, card, rot, giver, segment);
+    });
     return;
   }
   arrow.show();
@@ -244,13 +274,12 @@ const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, tur
   // (this must be done after the card is finished tweening)
   const pos = getPos(card, rot);
 
-  arrow.tween = new Konva.Tween({
-    node: arrow,
+  konvaHelpers.animate(arrow, {
     duration: 0.5,
     x: pos.x,
     y: pos.y,
     easing: Konva.Easings.EaseOut,
-  }).play();
+  });
 };
 
 export const click = (
@@ -263,13 +292,13 @@ export const click = (
   }
 
   if (
-    globals.sharedReplay
+    globals.metadata.sharedReplay
     && globals.amSharedReplayLeader
-    && globals.useSharedTurns
+    && globals.store!.getState().replay.useSharedSegments
   ) {
     // The shared replay leader is clicking on a UI element, so send this action to the server
     send(order, element);
-  } else if (!globals.sharedReplay) {
+  } else if (!globals.metadata.sharedReplay) {
     // Otherwise, toggle the arrow locally
     // However, we don't want to enable this functionality in shared replays because it could be
     // misleading as to who the real replay leader is
@@ -289,17 +318,11 @@ export const send = (order: ReplayArrowOrder, element: any) => {
 };
 
 // This toggles the "highlight" arrow on a particular element
-export const toggle = (element: NodeWithTooltip | null, attempt: number = 0) => {
+export const toggle = (element: NodeWithTooltip | null) => {
   // If we are showing an arrow on a card that is currently tweening,
   // delay showing it until the tween is finished
-  if (attempt >= 100) {
-    // Give up after 100 attempts to prevent an infinite recursion
-    return;
-  }
   if (element instanceof HanabiCard && element.tweening) {
-    setTimeout(() => {
-      toggle(element, attempt + 1);
-    }, 5);
+    element.waitForTweening(() => toggle(element));
     return;
   }
 
@@ -310,7 +333,7 @@ export const toggle = (element: NodeWithTooltip | null, attempt: number = 0) => 
     set(0, element, null, null);
 
     // If this element has a tooltip and it is open, close it
-    if (element && element.tooltipName) {
+    if (element !== null && element.tooltipName !== undefined && element.tooltipName !== '') {
       const tooltip = $(`#tooltip-${element.tooltipName}`);
       tooltip.tooltipster('close');
     }

@@ -4,21 +4,12 @@ import version from '../../data/version.json';
 import Connection from './Connection';
 import HanabiUI from './game/ui/HanabiUI';
 import Loader from './Loader';
-import Game from './lobby/Game';
-import GameHistory from './lobby/GameHistory';
-import Settings from './lobby/Settings';
-import Table from './lobby/Table';
-import User from './lobby/User';
-
-type Screen = (
-  'login'
-  | 'lobby'
-  | 'pregame'
-  | 'game'
-  | 'history'
-  | 'historyFriends'
-  | 'historyOtherScores'
-);
+import Game from './lobby/types/Game';
+import GameHistory from './lobby/types/GameHistory';
+import Screen from './lobby/types/Screen';
+import Settings from './lobby/types/Settings';
+import Table from './lobby/types/Table';
+import User from './lobby/types/User';
 
 export class Globals {
   // The "version.json" file is filled in dynamically by the "build_client.sh" script
@@ -56,23 +47,16 @@ export class Globals {
 
   game: Game | null = null; // Equal to the data from the "game" command
 
-  currentScreen: Screen = 'login'; // See "screen" declaration above
+  currentScreen: Screen = Screen.Login;
   modalShowing: boolean = false;
   tableID: number = -1; // Equal to the table we are joined to or -1 if no table
   errorOccurred: boolean = false;
 
-  // Legacy UI variables
+  // UI variables
   imageLoader: Loader | null = null;
   ui: HanabiUI | null = null;
   // Used to keep track of how many in-game chat messages are currently unread
   chatUnread: number = 0;
-
-  // Phaser UI variables
-  ui2: any | null = null;
-  phaser: any | null = null; // TODO convert to a PhaserUI object
-  // TODO convert to an Init object
-  init: any | null = null; // Equal to the data from the "init" command
-  // ui: null, // The various graphics objects used, initialized in the "commands.init()" function
 }
 
 const globals = new Globals();

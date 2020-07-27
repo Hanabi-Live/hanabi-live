@@ -1,14 +1,11 @@
 import Konva from 'konva';
 import { LABEL_COLOR } from '../../constants';
 import * as deck from '../rules/deck';
-import * as variantRules from '../rules/variant';
-import { STACK_BASE_RANK } from '../types/constants';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import * as keyboard from './keyboard';
-import LayoutChild from './LayoutChild';
 import pause from './pause';
 
 // When the HanabiUI object is instantiated,
@@ -96,9 +93,6 @@ const finishedDownloadingImages = () => {
     globals.lobby.settings.styleNumbers,
   );
 
-  // Construct a list of all of the cards in the deck
-  initCardsMap();
-
   // Build all of the reusable card objects
   initCards();
 
@@ -118,47 +112,9 @@ const finishedDownloadingImages = () => {
   });
 };
 
-const initCardsMap = () => {
-  for (const suit of globals.variant.suits) {
-    if (variantRules.isUpOrDown(globals.variant)) {
-      // 6 is an unknown rank, so we use 7 to represent a "START" card
-      const key = `${suit.name}7`;
-      globals.cardsMap.set(key, 1);
-    }
-    for (let rank = 1; rank <= 5; rank++) {
-      // In a normal suit, there are three 1's, two 2's, two 3's, two 4's, and one five
-      let amountToAdd = 2;
-      if (rank === 1) {
-        amountToAdd = 3;
-        if (variantRules.isUpOrDown(globals.variant) || suit.reversed) {
-          amountToAdd = 1;
-        }
-      } else if (rank === 5) {
-        amountToAdd = 1;
-        if (suit.reversed) {
-          amountToAdd = 3;
-        }
-      }
-      if (suit.oneOfEach) {
-        amountToAdd = 1;
-      }
-
-      const key = `${suit.name}${rank}`;
-      globals.cardsMap.set(key, amountToAdd);
-    }
-  }
-};
-
 const initCards = () => {
-  globals.deckSize = deck.totalCards(globals.variant);
-  for (let order = 0; order < globals.deckSize; order++) {
-    // Create the "learned" card object
-    // (this must be done before creating the HanabiCard object)
-    globals.learnedCards.push({
-      suit: null,
-      rank: null,
-    });
-
+  const deckSize = deck.totalCards(globals.variant);
+  for (let order = 0; order < deckSize; order++) {
     // Create the notes for this card
     // (this must be done before creating the HanabiCard object)
     globals.ourNotes.push('');
@@ -169,19 +125,10 @@ const initCards = () => {
       order,
     });
     globals.deck.push(card);
-
-    // Create the LayoutChild that will be the parent of the card
-    const child = new LayoutChild();
-    child.addCard(card);
   }
 
   // Also create objects for the stack bases
-  for (const suit of globals.variant.suits) {
-    globals.learnedCards.push({
-      suit,
-      rank: STACK_BASE_RANK,
-    });
-
+  for (let i = 0; i < globals.variant.suits.length; i++) {
     globals.ourNotes.push('');
     globals.allNotes.push([]);
   }

@@ -17,14 +17,16 @@ func (s *Session) NotifyUser(u *Session) {
 type UserMessage struct {
 	ID     int    `json:"id"`
 	Name   string `json:"name"`
-	Status string `json:"status"`
+	Status int    `json:"status"`
+	Table  int    `json:"table"`
 }
 
 func makeUserMessage(s *Session) *UserMessage {
 	return &UserMessage{
 		ID:     s.UserID(),
 		Name:   s.Username(),
-		Status: status[s.Status()], // Status declarations are in the "constants.go" file
+		Status: s.Status(),
+		Table:  s.Table(),
 	}
 }
 
@@ -208,13 +210,8 @@ func (s *Session) NotifyYourTurn(t *Table) {
 	})
 }
 
-func (s *Session) NotifyGameAction(action interface{}, t *Table) {
-	// Check to see if we need to remove some card information
-	drawAction, ok := action.(ActionDraw)
-	if ok && drawAction.Type == "draw" {
-		drawAction.Scrub(t, s.UserID())
-		action = drawAction
-	}
+func (s *Session) NotifyGameAction(t *Table, action interface{}) {
+	scrubbedAction := CheckScrub(t, action, s.UserID())
 
 	type GameActionMessage struct {
 		TableID int         `json:"tableID"`
@@ -222,7 +219,7 @@ func (s *Session) NotifyGameAction(action interface{}, t *Table) {
 	}
 	s.Emit("gameAction", &GameActionMessage{
 		TableID: t.ID,
-		Action:  action,
+		Action:  scrubbedAction,
 	})
 }
 
@@ -302,17 +299,33 @@ func (s *Session) NotifyPause(t *Table) {
 }
 
 func (s *Session) NotifySpectators(t *Table) {
-	// Build an array with the names of all of the spectators
 	names := make([]string, 0)
+	shadowingPlayers := make([]int, 0)
 	for _, sp := range t.Spectators {
 		names = append(names, sp.Name)
+		shadowingPlayers = append(shadowingPlayers, sp.ShadowPlayerIndex)
 	}
 
 	type SpectatorsMessage struct {
-		Names []string `json:"names"`
+		Names            []string `json:"names"`
+		ShadowingPlayers []int    `json:"shadowingPlayers"`
 	}
 	s.Emit("spectators", &SpectatorsMessage{
-		Names: names,
+		Names:            names,
+		ShadowingPlayers: shadowingPlayers,
+	})
+}
+
+func (s *Session) NotifyCardIdentities(t *Table) {
+	g := t.Game
+
+	type CardIdentitiesMessage struct {
+		TableID        int             `json:"tableID"`
+		CardIdentities []*CardIdentity `json:"cardIdentities"`
+	}
+	s.Emit("cardIdentities", &CardIdentitiesMessage{
+		TableID:        t.ID,
+		CardIdentities: g.CardIdentities,
 	})
 }
 
@@ -363,7 +376,7 @@ func (s *Session) NotifyReplayLeader(t *Table, playAnimation bool) {
 
 // NotifyNoteList sends them all of the notes from the players & spectators
 // (there will be no spectator notes if this is a replay spawned from the database)
-func (s *Session) NotifyNoteList(t *Table) {
+func (s *Session) NotifyNoteList(t *Table, shadowPlayerIndex int) {
 	g := t.Game
 
 	type NoteList struct {
@@ -375,13 +388,15 @@ func (s *Session) NotifyNoteList(t *Table) {
 	// Get the notes from all the players & spectators
 	notes := make([]NoteList, 0)
 	for _, p := range g.Players {
-		notes = append(notes, NoteList{
-			ID:    t.Players[p.Index].ID,
-			Name:  p.Name,
-			Notes: p.Notes,
-		})
+		if shadowPlayerIndex == -1 || shadowPlayerIndex == p.Index {
+			notes = append(notes, NoteList{
+				ID:    t.Players[p.Index].ID,
+				Name:  p.Name,
+				Notes: p.Notes,
+			})
+		}
 	}
-	if !t.Replay {
+	if !t.Replay && shadowPlayerIndex == -1 {
 		for _, sp := range t.Spectators {
 			notes = append(notes, NoteList{
 				ID:    sp.ID,

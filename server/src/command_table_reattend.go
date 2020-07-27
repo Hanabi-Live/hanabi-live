@@ -78,6 +78,7 @@ func commandTableReattend(s *Session, d *CommandData) {
 			status = StatusPregame
 		}
 		s.Set("status", status)
+		s.Set("table", t.ID)
 		notifyAllUser(s)
 	}
 }

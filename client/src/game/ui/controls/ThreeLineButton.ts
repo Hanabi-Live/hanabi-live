@@ -51,13 +51,13 @@ export default class ThreeLineButton extends Button {
     line2?: string;
     line3?: string;
   }) {
-    if (lines.line1) {
+    if (lines.line1 !== undefined) {
       this.textElement1.text(lines.line1);
     }
-    if (lines.line2) {
+    if (lines.line2 !== undefined) {
       this.textElement2.text(lines.line2);
     }
-    if (lines.line3) {
+    if (lines.line3 !== undefined) {
       this.textElement3.text(lines.line3);
     }
   }

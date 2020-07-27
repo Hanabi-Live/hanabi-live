@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 // The HanabiCard object represents a single card
 // It has a LayoutChild parent
 
@@ -8,54 +7,142 @@ import {
   CARD_H,
   CARD_W,
 } from '../../constants';
-import { SUITS } from '../data/gameData';
+import { getSuit, VARIANTS } from '../data/gameData';
+import initialCardState from '../reducers/initialStates/initialCardState';
+import * as cardRules from '../rules/card';
 import * as variantRules from '../rules/variant';
-import CardState, { cardInitialState } from '../types/CardState';
-import Clue from '../types/Clue';
+import CardIdentity from '../types/CardIdentity';
+import CardNote from '../types/CardNote';
+import CardState, { PipState } from '../types/CardState';
+import CardStatus from '../types/CardStatus';
 import ClueType from '../types/ClueType';
-import Color from '../types/Color';
-import { STACK_BASE_RANK, START_CARD_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
+import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
 import StackDirection from '../types/StackDirection';
 import Suit from '../types/Suit';
+import Variant from '../types/Variant';
+import * as arrows from './arrows';
+import CardLayout from './CardLayout';
 import NodeWithTooltip from './controls/NodeWithTooltip';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';
-import { msgSuitToSuit } from './convert';
+import { suitIndexToSuit } from './convert';
+import cursorSet, { CursorType } from './cursorSet';
 import globals from './globals';
+import HanabiCardClick from './HanabiCardClick';
+import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
 import * as HanabiCardInit from './HanabiCardInit';
+import { animate } from './konvaHelpers';
 import LayoutChild from './LayoutChild';
 import * as notes from './notes';
-import possibilitiesCheck from './possibilitiesCheck';
-import * as reversible from './variants/reversible';
+
+const DECK_BACK_IMAGE = 'deck-back';
 
 export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
-  state: CardState;
-  bareName: string = '';
+  // HACK: this is temporary to figure out what needs to be converted to reactive
+  // In the end, the state should not be exposed by the UI in any form
+  // and nobody should depend on the HanabiCard UI state
+  private _state: CardState;
 
-  tweening: boolean = false;
+  get state() {
+    return globals.store?.getState()?.visibleState?.deck[this._state.order] || this._state;
+  }
+
+  set state(state: CardState) {
+    this._state = state;
+  }
+
+  private _variant: Variant | null = null;
+
+  private get variant() {
+    if (!this._variant) {
+      this._variant = VARIANTS.get(globals.store!.getState().metadata.options.variantName)!;
+    }
+    return this._variant;
+  }
+
+  private _tweening: boolean = false;
+  get tweening() { return this._tweening; }
+
+  private tweenCallbacks: Function[] = [];
+
+  startedTweening() {
+    this._tweening = true;
+
+    // HACK: since Konva doesn't propagate listening hierarchically until v7,
+    // stop the image from listening
+    this.bare.listening(false);
+  }
+
+  finishedTweening() {
+    // HACK: since Konva doesn't propagate listening hierarchically until v7,
+    // stop the image from listening
+    this.bare.listening(true);
+
+    this._tweening = false;
+    this.tweenCallbacks.forEach((callback) => { callback(); });
+    this.tweenCallbacks = [];
+  }
+
+  waitForTweening(callback: Function) {
+    if (!this.tweening) {
+      callback();
+      return;
+    }
+    this.tweenCallbacks.push(callback);
+  }
+
   wasRecentlyTapped: boolean = false;
   touchstartTimeout: ReturnType<typeof setTimeout> | null = null;
   doMisplayAnimation: boolean = false;
-
-  bare: Konva.Image | null = null;
-  cluedBorder: Konva.Group | null = null;
-  chopMoveBorder: Konva.Group | null = null;
-  finesseBorder: Konva.Group | null = null;
-  suitPips: Konva.Group | null = null;
-  suitPipsMap: Map<Suit, Konva.Shape> = new Map<Suit, Konva.Shape>();
-  suitPipsXMap: Map<Suit, Konva.Shape> = new Map<Suit, Konva.Shape>();
-  rankPips: Konva.Group | null = null;
-  rankPipsMap: Map<number, RankPip> = new Map<number, RankPip>();
-  rankPipsXMap: Map<number, Konva.Shape> = new Map<number, Konva.Shape>();
-  noteIndicator: NoteIndicator | null = null;
   tooltipName: string = '';
-  trashcan: Konva.Image | null = null;
-  wrench: Konva.Image | null = null;
-  arrow: Konva.Group | null = null;
-  arrowBase: Konva.Arrow | null = null;
-  criticalIndicator: Konva.Image | null = null;
+  noteIndicator: NoteIndicator;
 
-  empathy: boolean = false;
+  private _visibleSuitIndex: number | null = null;
+  get visibleSuitIndex() {
+    return this._visibleSuitIndex;
+  }
+
+  private _visibleRank: number | null = null;
+  get visibleRank() {
+    return this._visibleRank;
+  }
+
+  private empathy: boolean = false;
+
+  private note: CardNote = {
+    suitIndex: null,
+    rank: null,
+    chopMoved: false,
+    needsFix: false,
+    knownTrash: false,
+    finessed: false,
+    blank: false,
+    unclued: false,
+  };
+
+  private cluedBorder: Konva.Group;
+  private chopMoveBorder: Konva.Group;
+  private finesseBorder: Konva.Group;
+
+  private suitPips: Konva.Group;
+  private rankPips: Konva.Group;
+  private bareName: string = '';
+  private bare: Konva.Image;
+  private suitPipsMap: Map<number, Konva.Shape>;
+  private suitPipsXMap: Map<number, Konva.Shape>;
+  private rankPipsMap: Map<number, RankPip>;
+  private rankPipsXMap: Map<number, Konva.Shape>;
+  private trashcan: Konva.Image;
+  private wrench: Konva.Image;
+  private criticalIndicator: Konva.Image;
+
+  private arrow: Konva.Group | null = null;
+  private arrowBase: Konva.Arrow | null = null;
+
+  private _layout: LayoutChild;
+  get layout() {
+    return this._layout;
+  }
 
   constructor(config: Konva.ContainerConfig) {
     super(config);
@@ -71,170 +158,172 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       y: 0.5 * CARD_H,
     });
 
-    // Most class variables are defined below in the "refresh()" function
     // Order is defined upon first initialization
-    this.state = cardInitialState(config.order);
+    // This state is only used by stack bases
+    // TODO: move stack bases to be a separate class that shares code with HanabiCard
+    const initialState = initialCardState(config.order, this.variant);
+    this._state = {
+      ...initialState,
+      suitIndex: typeof config.suitIndex === 'number' ? config.suitIndex : initialState.suitIndex,
+      rank: typeof config.rank === 'number' ? config.rank : initialState.rank,
+    };
 
     // Initialize various elements/features of the card
-    HanabiCardInit.image.call(this);
-    HanabiCardInit.borders.call(this);
-    HanabiCardInit.directionArrow.call(this);
-    HanabiCardInit.pips.call(this);
-    HanabiCardInit.note.call(this);
-    HanabiCardInit.empathy.call(this);
-    HanabiCardInit.click.call(this);
-    HanabiCardInit.fadedImages.call(this);
-    HanabiCardInit.criticalIndicator.call(this);
+    this.bare = HanabiCardInit.image(
+      () => this.bareName,
+    );
+    this.add(this.bare);
+
+    this.cluedBorder = HanabiCardInit.cluedBorder();
+    this.add(this.cluedBorder);
+    this.finesseBorder = HanabiCardInit.finesseBorder();
+    this.add(this.finesseBorder);
+    this.chopMoveBorder = HanabiCardInit.chopMoveBorder();
+    this.add(this.chopMoveBorder);
+
+    const arrowElements = HanabiCardInit.directionArrow(this.variant);
+    if (arrowElements) {
+      this.arrow = arrowElements.arrow;
+      this.arrowBase = arrowElements.arrowBase;
+      this.add(this.arrow);
+    }
+
+    const pips = HanabiCardInit.pips(this.variant);
+    this.suitPipsMap = pips.suitPipsMap;
+    this.suitPipsXMap = pips.suitPipsXMap;
+    this.rankPipsMap = pips.rankPipsMap;
+    this.rankPipsXMap = pips.rankPipsXMap;
+    this.suitPips = pips.suitPips;
+    this.rankPips = pips.rankPips;
+    this.add(this.suitPips);
+    this.add(this.rankPips);
+
+    this.noteIndicator = HanabiCardInit.note(
+      this.variant.offsetCornerElements,
+      () => notes.shouldShowIndicator(this.state.order),
+    );
+    this.add(this.noteIndicator);
+
+    this.criticalIndicator = HanabiCardInit.criticalIndicator(this.variant.offsetCornerElements);
+    this.add(this.criticalIndicator);
+
+    this.trashcan = HanabiCardInit.trashcan();
+    this.add(this.trashcan);
+    this.wrench = HanabiCardInit.wrench();
+    this.add(this.wrench);
+
+    // Register mouse events
+    this.initTooltip();
+    this.initEmpathy();
+    this.registerMouseHandlers();
+
+    // Add a parent layout
+    this._layout = new LayoutChild(this);
+
+    // Initialize the bare image for stack bases
+    if (typeof config.suitIndex === 'number' || typeof config.rank === 'number') {
+      this.setBareImage();
+    }
   }
 
-  // Erase all of the data on the card to make it like it was freshly drawn
-  refresh() {
-    // Possible suits and ranks (based on clues given) are tracked separately
-    // from knowledge of the true suit and rank
-    this.state.possibleSuits = globals.variant.suits.slice();
-    this.state.possibleRanks = globals.variant.ranks.slice();
-    // Possible cards (based on both clues given and cards seen) are also tracked separately
-    this.state.possibleCards = new Map(globals.cardsMap); // Start by cloning the "globals.cardsMap"
-    this.state.identityDetermined = false;
-    this.tweening = false;
-    this.wasRecentlyTapped = false;
-    this.touchstartTimeout = null;
-    this.empathy = false;
-    this.doMisplayAnimation = false;
-    this.state.numPositiveClues = 0;
-    this.state.positiveColorClues = [];
-    this.state.negativeColorClues = [];
-    this.state.positiveRankClues = [];
-    this.state.negativeRankClues = [];
-    this.state.turnsClued = [];
-    // We have to add one to the turn drawn because
-    // the "draw" command comes before the "turn" command
-    // However, if it was part of the initial deal, then it will correctly be set as turn 0
-    this.state.turnDrawn = globals.turn === 0 ? 0 : globals.turn + 1;
-    this.state.isDiscarded = false;
-    this.state.turnDiscarded = -1;
-    this.state.isPlayed = false;
-    this.state.turnPlayed = -1;
-    this.state.isMisplayed = false;
+  private shouldShowClueBorder() {
+    return (
+      this.state.numPositiveClues > 0
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
+      && !this.note.unclued
+    );
+  }
 
-    // Some variants disable listening on cards
-    this.listening(true);
-
-    this.setClued();
-    if (!globals.replay && !globals.spectating) {
-      // If it has a "chop move" note on it, we want to keep the chop move border turned on
-      if (this.state.noteChopMoved) {
-        this.chopMoveBorder!.show();
-      }
-      // If it has a "finessed" note on it, we want to keep the finesse border turned on
-      if (this.state.noteFinessed) {
-        this.finesseBorder!.show();
-      }
-    }
-
-    // Reset all of the pips to their default state
-    // (but don't show any pips in Real-Life mode)
-    if (this.suitPipsMap) {
-      for (const [, suitPip] of this.suitPipsMap) {
-        suitPip.show();
-      }
-    }
-    if (this.suitPipsXMap) {
-      for (const [, suitPipX] of this.suitPipsXMap) {
-        suitPipX.hide();
-      }
-    }
-    if (this.rankPipsMap) {
-      for (const [, rankPip] of this.rankPipsMap) {
-        rankPip.show();
-        rankPip.hidePositiveClue();
-      }
-    }
-    if (this.rankPipsXMap) {
-      for (const [, rankPipX] of this.rankPipsXMap) {
-        rankPipX.hide();
-      }
-    }
-
-    HanabiCardInit.possibilities.call(this);
-    this.setBareImage();
+  private isRaisedBecauseOfClues() {
+    return this.shouldShowClueBorder()
+    && (
+      !globals.lobby.settings.keldonMode
+      || (this.state.location === globals.metadata.ourPlayerIndex && !globals.metadata.replay)
+    );
   }
 
   setClued() {
-    const isClued = (
-      this.state.numPositiveClues > 0
-      && !this.state.isPlayed
-      && !this.state.isDiscarded
-      && !this.state.noteUnclued
-    );
-
     // When cards are clued,
     // they should raise up a little bit to make it clear that they are touched
     // However, don't do this for other people's hands in Keldon mode
     this.offsetY(0.5 * CARD_H); // The default offset
-    if (
-      isClued
-      && (
-        !globals.lobby.settings.keldonMode
-        || (this.state.holder === globals.playerUs && !globals.replay)
-      )
-    ) {
+    if (this.isRaisedBecauseOfClues()) {
       this.offsetY(0.6 * CARD_H);
     }
 
-    this.cluedBorder!.visible(isClued);
+    this.cluedBorder!.visible(this.shouldShowClueBorder());
 
     // Remove all special borders when a card is clued, played, discarded
     this.chopMoveBorder!.hide();
     this.finesseBorder!.hide();
   }
 
-  isClued() {
-    return this.state.numPositiveClues > 0;
-  }
-
   setBareImage() {
-    // Optimization: This function is expensive, so don't do it in replays
-    // unless we got to the final destination
-    // However, if an action happens before the "turn" message is sent,
-    // we still need to redraw any affected cards
-    if (
-      this.bareName !== ''
-      && globals.replay
-      && globals.turn < globals.replayTurn - 1
-    ) {
-      return;
+    // Local variables
+    const state = globals.store!.getState();
+
+    // Retrieve the identity of the card
+    // We may know the identity through normal means
+    // (e.g. it is a card that is currently in someone else's hand)
+    // We may also know the identity from a future game state
+    // (e.g. it is a card in our hand that we have learned about in the future)
+    let cardIdentity: CardIdentity | undefined;
+    // First check if we have an alternate identity (blank/morphed) for this card
+    const morphedIdentity = state.replay.hypothetical?.morphedIdentities[this.state.order];
+    if (morphedIdentity !== undefined) {
+      cardIdentity = morphedIdentity;
+    } else if (this.state.rank === STACK_BASE_RANK) {
+      // We do not track the card identities for the stack base cards
+      // For stack bases, the suit and rank is always baked into the state from the get-go
+      cardIdentity = {
+        suitIndex: this.state.suitIndex,
+        rank: this.state.rank,
+      };
+    } else {
+      // Card identities are stored on the global state for convenience
+      cardIdentity = state.cardIdentities[this.state.order];
+      if (cardIdentity === undefined) {
+        throw new Error(`Failed to get the previously known card identity for card ${this.state.order}.`);
+      }
     }
 
-    const learnedCard = globals.learnedCards[this.state.order];
+    const unknownSuit = getSuit('Unknown');
 
     // Find out the suit to display
     // (Unknown is a colorless suit used for unclued cards)
-    let suitToShow;
+    let suitToShow: Suit | null | undefined;
     if (this.empathy) {
       // If we are in Empathy mode, only show the suit if there is only one possibility left
-      if (this.state.possibleSuits.length === 1) {
-        [suitToShow] = this.state.possibleSuits;
+      if (this.state.colorClueMemory.possibilities.length === 1) {
+        const [suitIndex] = this.state.colorClueMemory.possibilities;
+        suitToShow = this.variant.suits[suitIndex];
       } else {
-        suitToShow = SUITS.get('Unknown');
+        suitToShow = unknownSuit;
       }
     } else {
       // If we are not in Empathy mode, then show the suit if it is known
-      suitToShow = learnedCard.suit;
+      if (cardIdentity.suitIndex === null) {
+        suitToShow = null;
+      } else {
+        suitToShow = suitIndexToSuit(cardIdentity.suitIndex, globals.variant);
+      }
       if (
         this.state.rank === STACK_BASE_RANK
-        && this.state.noteSuit !== null
-        && !globals.replay
+        && this.note.suitIndex !== null
+        && !globals.metadata.replay
       ) {
-        // The card note suit has precedence over the "real" suit,
+        // Show the suit corresponding to the note
+        // The note has precedence over the "real" suit,
         // but only for the stack bases (and not in replays)
-        suitToShow = this.state.noteSuit;
+        suitToShow = this.variant.suits[this.note.suitIndex];
+      }
+      if (suitToShow === null && this.note.suitIndex !== null) {
+        // Show the suit corresponding to the note
+        suitToShow = this.variant.suits[this.note.suitIndex];
       }
       if (suitToShow === null) {
-        suitToShow = this.state.noteSuit;
-      }
-      if (suitToShow === null) {
-        suitToShow = SUITS.get('Unknown');
+        suitToShow = unknownSuit;
       }
     }
 
@@ -243,64 +332,70 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     let rankToShow;
     if (this.empathy) {
       // If we are in Empathy mode, only show the rank if there is only one possibility left
-      if (this.state.possibleRanks.length === 1) {
-        [rankToShow] = this.state.possibleRanks;
+      if (this.state.rankClueMemory.possibilities.length === 1) {
+        [rankToShow] = this.state.rankClueMemory.possibilities;
       } else {
-        rankToShow = 6;
+        rankToShow = UNKNOWN_CARD_RANK;
       }
     } else {
       // If we are not in Empathy mode, then show the rank if it is known
-      rankToShow = learnedCard.rank;
+      rankToShow = cardIdentity.rank;
       if (
         this.state.rank === STACK_BASE_RANK
-        && this.state.noteRank !== null
-        && !globals.replay
+        && this.note.rank !== null
+        && !globals.metadata.replay
       ) {
         // The card note rank has precedence over the "real" rank,
         // but only for the stack bases (and not in replays)
-        rankToShow = this.state.noteRank;
+        rankToShow = this.note.rank;
       }
       if (rankToShow === null) {
-        rankToShow = this.state.noteRank;
+        rankToShow = this.note.rank;
       }
       if (rankToShow === null) {
-        rankToShow = 6;
+        rankToShow = UNKNOWN_CARD_RANK;
       }
     }
 
     // Set the name
     // (setting "this.bareName" will automatically update how the card appears the next time that
     // the "card" layer is drawn)
-    if (this.state.blank) {
-      // The "blank" property is set when the card should appear blank no matter what
-      this.bareName = 'deck-back';
+    const blank = (
+      morphedIdentity !== undefined
+      && morphedIdentity.rank === null
+      && morphedIdentity.suitIndex === null
+    );
+
+    // Let the LayoutChild know about it
+    this.layout.blank = blank;
+
+    if (blank) {
+      // If a card is morphed to a null identity, the card should appear blank no matter what
+      this.bareName = DECK_BACK_IMAGE;
 
       // Disable dragging of this card
-      const layoutChild = this.parent;
-      if (layoutChild) {
-        layoutChild.draggable(false);
-        layoutChild.off('dragend');
-      }
+      this.layout.draggable(false);
+      this.layout.off('dragend');
     } else if (
       // A "blank" note means that the user wants to force the card to appear blank
-      this.state.noteBlank
+      this.note?.blank
       && !this.empathy
-      && !this.state.isPlayed
-      && !this.state.isDiscarded
-      && !globals.replay
-      && !globals.spectating
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
+      && !globals.metadata.replay
+      && !globals.metadata.spectating
     ) {
-      this.bareName = 'deck-back';
+      this.bareName = DECK_BACK_IMAGE;
     } else if (
       (
         globals.lobby.settings.realLifeMode
-        || variantRules.isCowAndPig(globals.variant)
-        || variantRules.isDuck(globals.variant)
-      ) && (suitToShow!.name === 'Unknown' || rankToShow === 6)
+        || variantRules.isCowAndPig(this.variant)
+        || variantRules.isDuck(this.variant)
+      ) && (suitToShow === unknownSuit || rankToShow === UNKNOWN_CARD_RANK)
     ) {
       // In Real-Life mode or Cow & Pig / Duck variants,
       // always show the vanilla card back if the card is not fully revealed
-      this.bareName = 'deck-back';
+      this.bareName = DECK_BACK_IMAGE;
     } else {
       this.bareName = `card-${suitToShow!.name}-${rankToShow}`;
     }
@@ -308,68 +403,90 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Show or hide the pips
     if (
       globals.lobby.settings.realLifeMode
-      || variantRules.isCowAndPig(globals.variant)
-      || variantRules.isDuck(globals.variant)
-      || this.state.blank
+      || variantRules.isCowAndPig(this.variant)
+      || variantRules.isDuck(this.variant)
+      || blank
     ) {
       this.suitPips!.hide();
       this.rankPips!.hide();
     } else {
-      this.suitPips!.visible(suitToShow!.name === 'Unknown');
-      this.rankPips!.visible(rankToShow === UNKNOWN_CARD_RANK);
+      const suitUnknown = suitToShow === unknownSuit;
+      const rankUnknown = rankToShow === UNKNOWN_CARD_RANK;
+      this.suitPips!.visible(suitUnknown);
+      this.rankPips!.visible(rankUnknown);
     }
 
     // Show or hide the "trash" image
     this.trashcan!.visible((
-      this.state.noteKnownTrash
+      this.note.knownTrash
       && !this.empathy
-      && !this.state.isPlayed
-      && !this.state.isDiscarded
-      && !globals.replay
-      && !globals.spectating
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
+      && !globals.metadata.replay
+      && !globals.metadata.spectating
     ));
 
     // Show or hide the "fixme" image
     this.wrench!.visible((
-      this.state.noteNeedsFix
+      this.note.needsFix
       && !this.empathy
-      && !this.state.isPlayed
-      && !this.state.isDiscarded
-      && !globals.replay
-      && !globals.spectating
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
+      && !globals.metadata.replay
+      && !globals.metadata.spectating
     ));
 
-    if (!suitToShow || suitToShow!.name === 'Unknown') {
-      suitToShow = null;
+    if (suitToShow === undefined || suitToShow === unknownSuit) {
+      this._visibleSuitIndex = null;
+    } else {
+      this._visibleSuitIndex = this.variant.suits.indexOf(suitToShow);
     }
-    this.setDirectionArrow(suitToShow);
-    this.setFade();
-    this.setCritical();
+
+    if (rankToShow === undefined || rankToShow === UNKNOWN_CARD_RANK) {
+      this._visibleRank = null;
+    } else {
+      this._visibleRank = rankToShow;
+    }
+
+    if (this.arrow !== null && state.visibleState !== null) {
+      if (this.visibleSuitIndex === null || this.visibleRank === STACK_BASE_RANK) {
+        this.arrow.hide();
+      } else {
+        this.setDirectionArrow(
+          this.visibleSuitIndex,
+          state.visibleState!.playStackDirections[this.visibleSuitIndex],
+        );
+      }
+    }
+
+    this.setStatus();
+
+    // Enable/disable shadow on card
+    const isStackBase = this.visibleRank === STACK_BASE_RANK;
+    if (this.bare.shadowEnabled() === isStackBase) {
+      this.bare.shadowEnabled(!isStackBase);
+    }
+
+    globals.layers.card.batchDraw();
   }
 
   // Show or hide the direction arrow (for specific variants)
-  setDirectionArrow(suitToShow: Suit | null) {
-    if (!variantRules.hasReversedSuits(globals.variant)) {
+  setDirectionArrow(suitIndex: number, direction: StackDirection) {
+    if (!variantRules.hasReversedSuits(this.variant)) {
       return;
     }
 
-    if (suitToShow === null || this.state.rank === STACK_BASE_RANK) {
-      this.arrow!.hide();
-      return;
-    }
-
-    const suitIndex = globals.variant.suits.indexOf(suitToShow);
-    const direction = globals.stackDirections[suitIndex];
+    const suit = this.variant.suits[suitIndex];
 
     let shouldShowArrow;
-    if (variantRules.isUpOrDown(globals.variant)) {
+    if (variantRules.isUpOrDown(this.variant)) {
       // In "Up or Down" variants, the arrow should be shown when the stack direction is determined
       // (and the arrow should be cleared when the stack is finished)
       shouldShowArrow = (
         direction === StackDirection.Up
         || direction === StackDirection.Down
       );
-    } else if (suitToShow.reversed) {
+    } else if (suit.reversed) {
       // In variants with a reversed suit, the arrow should always be shown on the reversed suit
       shouldShowArrow = true;
     } else {
@@ -382,14 +499,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     this.arrow!.rotation(direction === StackDirection.Up ? 180 : 0);
-    this.arrowBase!.stroke(suitToShow.fill);
-    if (suitToShow.fill === 'multi') {
+    this.arrowBase!.stroke(suit.fill);
+    if (suit.fill === 'multi') {
       // We can't use a fill gradient because the "fill" is actually a big stroke
       // (the Konva arrow object is not a shape, but instead a very thick line)
       // Instead, just use the the first gradient color
-      this.arrowBase!.stroke(suitToShow.fillColors[0]);
+      this.arrowBase!.stroke(suit.fillColors[0]);
     }
-    if (this.rankPips!.visible()) {
+    if (this.rankPips!.isVisible()) {
       this.setArrowMiddleRight();
     } else {
       this.setArrowBottomRight();
@@ -404,693 +521,228 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.arrow!.y(0.79 * CARD_H);
   };
 
-  // Fade this card if it is useless, fully revealed, and still in a player's hand
-  setFade() {
-    if (
-      globals.lobby.settings.realLifeMode
-      || globals.options.speedrun
-      || variantRules.isThrowItInAHole(globals.variant)
-      || this.state.rank === STACK_BASE_RANK
-    ) {
+  setStatus() {
+    const visibleState = globals.store!.getState().visibleState;
+    if (visibleState === null) {
       return;
     }
 
-    const oldOpacity = this.opacity();
-
-    let newOpacity = 1;
+    let status;
     if (
-      this.state.suit !== null
-      && this.state.rank !== null
-      && this.state.numPositiveClues === 0
-      && !this.state.isPlayed
-      && !this.state.isDiscarded
-      && !this.empathy
-      && !this.needsToBePlayed()
+      this.visibleSuitIndex === null
+      || this.visibleRank === null
+      || this.visibleRank === STACK_BASE_RANK
     ) {
-      newOpacity = CARD_FADE;
+      status = CardStatus.NeedsToBePlayed; // Default status, not faded and not critical
+    } else {
+      status = visibleState.cardStatus[this.visibleSuitIndex][this.visibleRank];
     }
 
-    // Override the above logic and always fade the card if it is explicitly marked as known trash
-    if (this.trashcan!.visible() && this.state.numPositiveClues === 0) {
-      newOpacity = CARD_FADE;
-    }
-
-    if (oldOpacity === newOpacity) {
-      return;
-    }
-
-    this.opacity(newOpacity);
+    this.setFade(status === CardStatus.Trash);
+    this.setCritical(status === CardStatus.Critical);
   }
 
-  // Show an indicator if this card is critical, unclued, unmarked, and still in a player's hand
-  setCritical() {
-    this.criticalIndicator!.visible((
-      this.isCritical()
-      && (!this.empathy || this.state.identityDetermined)
+  private setFade(isTrash: boolean) {
+    const opacity = this.shouldSetFade(isTrash) ? CARD_FADE : 1;
+    this.opacity(opacity);
+  }
+
+  private shouldSetFade(isTrash: boolean) {
+    // Override any logic and always fade the card if it is explicitly marked as known trash
+    if (this.trashcan!.isVisible() && this.state.numPositiveClues === 0) {
+      return true;
+    }
+
+    return (
+      isTrash
+      && !cardRules.isClued(this.state)
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
+      && !this.note.blank
+      && !variantRules.isThrowItInAHole(this.variant)
+      && !globals.metadata.options.speedrun
       && !globals.lobby.settings.realLifeMode
-      && !this.state.isPlayed
-      && !this.state.isDiscarded
-      && !this.state.noteBlank
-    ));
-  }
-
-  // This card was touched by a positive or negative clue,
-  // so remove pips and possibilities from the card
-  applyClue(clue: Clue, positive: boolean) {
-    // If the card is already fully revealed from clues, then additional clues would tell us nothing
-    // We don't check for "this.state.identityDetermined" here because we still need to calculate
-    // the effects of clues on cards in other people's hands whose true identity we already know
-    const wasFullyKnown = (
-      this.state.possibleSuits.length === 1
-      && this.state.possibleRanks.length === 1
     );
-    if (wasFullyKnown) {
-      return;
-    }
+  }
 
-    let shouldReapplyRankClues = false;
-    let shouldReapplyColorClues = false;
+  private setCritical(critical: boolean) {
+    const visible = this.shouldSetCritical(critical);
+    this.criticalIndicator!.visible(visible);
+  }
 
-    // Mark all turns that this card is positively clued
-    if (positive) {
-      // We add one because the "clue" action comes before the "turn" action
-      this.state.turnsClued.push(globals.turn + 1);
-    }
-
-    // Record unique clues that touch the card for later
-    if (clue.type === ClueType.Color) {
-      if (positive && !this.state.positiveColorClues.includes(clue.value as Color)) {
-        this.state.positiveColorClues.push(clue.value as Color);
-      } else if (!positive && !this.state.negativeColorClues.includes(clue.value as Color)) {
-        this.state.negativeColorClues.push(clue.value as Color);
-      }
-    } else if (clue.type === ClueType.Rank) {
-      if (positive && !this.state.positiveRankClues.includes(clue.value as number)) {
-        this.state.positiveRankClues.push(clue.value as number);
-      } else if (!positive && !this.state.negativeRankClues.includes(clue.value as number)) {
-        this.state.negativeRankClues.push(clue.value as number);
-      }
-    }
-
-    // Find out if we can remove some rank pips or suit pips from this clue
-    let ranksRemoved: number[] = [];
-    let suitsRemoved: Suit[] = [];
-    if (clue.type === ClueType.Color) {
-      const clueColor = clue.value as Color;
-      // suitsRemoved keeps track of suits removed for normal ranks
-      // This allows for proper checking of possibilities to cross out rank pips
-      // We handle special ranks later
-      if (globals.variant.colorCluesTouchNothing) {
-        // Some variants have color clues touch no cards
-        // If this is the case, we cannot remove any suit pips from the card
-      } else {
-        // The default case (e.g. No Variant)
-        // Remove all possibilities that do not include this color
-        suitsRemoved = this.state.possibleSuits.filter(
-          (suit: Suit) => (
-            suit.clueColors.includes(clueColor)
-            || suit.allClueColors
-          ) !== positive,
-        );
-      }
-
-      if (
-        possibilitiesCheck()
-        && (globals.variant.specialAllClueColors || globals.variant.specialNoClueColors)
-      ) {
-        // We only need to run this early possibility removal for variants with special ranks
-        // touched by all or no color clues
-        for (const rank of this.state.possibleRanks) {
-          // We can remove possibilities for normal ranks
-          if (rank !== globals.variant.specialRank) {
-            for (const suit of suitsRemoved) {
-              this.removePossibility(suit, rank, true);
-            }
-          }
-        }
-      }
-
-      if (
-        positive
-        && this.state.possibleRanks.includes(globals.variant.specialRank)
-        && globals.variant.specialAllClueColors
-      ) {
-        // Some variants have specific ranks touched by all colors
-        // If this is the case, and this is a positive color clue,
-        // we cannot remove any color pips from the card
-        // An exception to this is special suits touched by no colors
-        suitsRemoved = filterInPlace(
-          this.state.possibleSuits,
-          (suit: Suit) => !suit.noClueColors,
-        );
-      } else if (
-        !positive
-        && this.state.possibleRanks.includes(globals.variant.specialRank)
-        && globals.variant.specialNoClueColors
-      ) {
-        // Some variants have specific ranks touched by no colors
-        // If this is the case, and this is a negative color clue,
-        // we cannot remove any color pips from the card
-        // An exception to this is special suits touched by all colors
-        suitsRemoved = filterInPlace(
-          this.state.possibleSuits,
-          (suit: Suit) => !suit.allClueColors,
-        );
-      } else {
-        // We can safely remove the suits from possible suits
-        filterInPlace(this.state.possibleSuits, (suit: Suit) => suitsRemoved.indexOf(suit) === -1);
-      }
-
-      // Handle special ranks
-      if (globals.variant.specialRank !== -1) {
-        if (globals.variant.specialAllClueColors) {
-          if (positive) {
-            if (
-              this.state.positiveColorClues.length >= 2
-              && this.state.possibleSuits.filter((suit) => suit.allClueColors).length === 0
-            ) {
-              // Two positive color clues should "fill in" a special rank that is touched by all
-              // color clues (that cannot be a multi-color suit)
-              ranksRemoved = filterInPlace(
-                this.state.possibleRanks,
-                (rank: number) => rank === globals.variant.specialRank,
-              );
-            }
-          } else if (
-            this.state.possibleRanks.length === 1
-            && this.state.rank === globals.variant.specialRank
-          ) {
-            // Negative color to a known special rank means that we can remove all suits
-            // other that the ones that are never touched by color clues
-            const moreSuitsRemoved = filterInPlace(
-              this.state.possibleSuits,
-              (suit: Suit) => suit.noClueColors,
-            );
-            suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
-            suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
-          } else if (this.state.possibleSuits.filter((suit) => suit.noClueColors).length === 0) {
-            // Negative color means that the card cannot be the special rank
-            // (as long as the card cannot be a suit that is never touched by color clues)
-            ranksRemoved = filterInPlace(
-              this.state.possibleRanks,
-              (rank: number) => rank !== globals.variant.specialRank,
-            );
-          } else if (possibilitiesCheck()) {
-            // If there is a suit never touched by color clues, we can still remove
-            // possibilities for other suits on the special rank
-            for (const suit of this.state.possibleSuits) {
-              if (!suit.noClueColors) {
-                this.removePossibility(suit, globals.variant.specialRank, true);
-              }
-            }
-          }
-        } else if (globals.variant.specialNoClueColors) {
-          if (positive) {
-            if (this.state.possibleSuits.filter((suit) => suit.allClueColors).length === 0) {
-              // Positive color means that the card cannot be a special rank
-              // (as long as the card cannot be a suit that is always touched by color clues)
-              ranksRemoved = filterInPlace(
-                this.state.possibleRanks,
-                (rank: number) => rank !== globals.variant.specialRank,
-              );
-            } else if (possibilitiesCheck()) {
-              // If there is a suit always touched by color clues, we can still remove
-              // possibilities for other suits on the special rank
-              for (const suit of this.state.possibleSuits) {
-                if (!suit.allClueColors) {
-                  this.removePossibility(suit, globals.variant.specialRank, true);
-                }
-              }
-            }
-          } else if (this.state.negativeColorClues.length === globals.variant.clueColors.length) {
-            if (this.state.possibleSuits.filter((suit) => suit.noClueColors).length === 0) {
-              // All negative colors means that the card must be the special rank
-              // (as long as it cannot be a suit that is never touched by color clues)
-              ranksRemoved = filterInPlace(
-                this.state.possibleRanks,
-                (rank: number) => rank === globals.variant.specialRank,
-              );
-            }
-          }
-        }
-      }
-    } else if (clue.type === ClueType.Rank) {
-      const clueRank = clue.value as number;
-      // ranksRemoved keeps track of ranks removed for normal suits touched by their own rank
-      // This allows for proper checking of possibilities to cross out suit pips
-      // We handle suits with special ranks later
-      if (globals.variant.rankCluesTouchNothing) {
-        // Some variants have rank clues touch no cards
-        // If this is the case, we cannot remove any rank pips from the card
-      } else if (
-        this.state.possibleRanks.includes(globals.variant.specialRank)
-        && globals.variant.specialAllClueRanks
-      ) {
-        // Some variants have specific ranks touched by all rank clues
-        ranksRemoved = this.state.possibleRanks.filter(
-          (rank: number) => (rank === clueRank || rank === globals.variant.specialRank) !== positive, // eslint-disable-line max-len
-        );
-      } else if (
-        this.state.possibleRanks.includes(globals.variant.specialRank)
-        && globals.variant.specialNoClueRanks
-      ) {
-        // Some variants have specific ranks touched by no rank clues
-        ranksRemoved = this.state.possibleRanks.filter(
-          (rank: number) => (rank === clueRank && rank !== globals.variant.specialRank) !== positive, // eslint-disable-line max-len
-        );
-      } else {
-        // The default case (e.g. No Variant)
-        // Remove all possibilities that do not include this rank
-        ranksRemoved = this.state.possibleRanks.filter(
-          (rank: number) => (rank === clueRank) !== positive,
-        );
-      }
-
-      // Some suits are touched by all rank clues
-      // Some suits are not touched by any rank clues
-      // So we may be able to remove a suit pip
-      if (positive) {
-        suitsRemoved = filterInPlace(
-          this.state.possibleSuits,
-          (suit: Suit) => !suit.noClueRanks,
-        );
-      } else {
-        suitsRemoved = filterInPlace(
-          this.state.possibleSuits,
-          (suit: Suit) => !suit.allClueRanks,
-        );
-      }
-
-      // Handle the special case where two positive rank clues should "fill in" a card of a
-      // multi-rank suit
-      if (
-        positive
-        && this.state.positiveRankClues.length >= 2
-        && !(
-          this.state.possibleRanks.includes(globals.variant.specialRank)
-          && globals.variant.specialAllClueRanks
-        )
-      ) {
-        const moreSuitsRemoved = filterInPlace(
-          this.state.possibleSuits,
-          (suit: Suit) => suit.allClueRanks,
-        );
-        suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
-        suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
-      }
-
-      // Handle the special case where all negative rank clues should "fill in" a card of a
-      // rank-less suit
-      if (
-        !positive
-        && !globals.variant.rankCluesTouchNothing
-        && this.state.negativeRankClues.length === globals.variant.ranks.length
-        // We know that any special rank can be given as a rank clue
-        // so there is no need to have a separate check for special variants
-      ) {
-        const moreSuitsRemoved = filterInPlace(
-          this.state.possibleSuits,
-          (suit: Suit) => suit.noClueRanks,
-        );
-        suitsRemoved = suitsRemoved.concat(moreSuitsRemoved);
-        suitsRemoved = removeDuplicatesFromArray(suitsRemoved);
-      }
-
-      // If the rank of the card is not known yet,
-      // change the rank pip that corresponds with this number to signify a positive clue
-      if (positive) {
-        const pip = this.rankPipsMap.get(clueRank)!;
-        if (pip.visible()) {
-          pip.showPositiveClue();
-        }
-      }
-
-      if (possibilitiesCheck()) {
-        for (const suit of this.state.possibleSuits) {
-          // We can remove possibilities for normal suits touched by their own rank
-          if (!suit.allClueRanks && !suit.noClueRanks) {
-            for (const rank of ranksRemoved) {
-              this.removePossibility(suit, rank, true);
-            }
-          }
-        }
-      }
-
-      if (this.state.possibleSuits.some((suit) => suit.allClueRanks) && positive) {
-        // Some cards are touched by all ranks,
-        // so if this is a positive rank clue, we cannot remove any rank pips from the card
-        ranksRemoved = [];
-      } else if (this.state.possibleSuits.some((suit) => suit.noClueRanks) && !positive) {
-        // Some suits are not touched by any ranks,
-        // so if this is a negative rank clue, we cannot remove any rank pips from the card
-        ranksRemoved = [];
-      } else {
-        // We can safely remove the ranks from possible ranks
-        filterInPlace(this.state.possibleRanks,
-          (rank: number) => ranksRemoved.indexOf(rank) === -1);
-      }
-    }
-
-    // Remove suit pips, if any
-    for (const suitRemoved of suitsRemoved) {
-      // Hide the suit pips
-      this.suitPipsMap.get(suitRemoved)!.hide();
-      this.suitPipsXMap.get(suitRemoved)!.hide();
-
-      // Remove any card possibilities for this suit
-      if (possibilitiesCheck()) {
-        for (const rank of globals.variant.ranks) {
-          this.removePossibility(suitRemoved, rank, true);
-        }
-      }
-
-      // Check for note impossibilities
-      // e.g. a note of "r" is now impossible because we know that it is not a red card
-      if (this.state.noteSuit === suitRemoved && this.state.noteRank === null) {
-        this.state.noteSuit = null;
-        this.state.noteRank = null;
-        this.setBareImage();
-        globals.layers.card.batchDraw();
-      }
-
-      if (suitRemoved.allClueRanks || suitRemoved.noClueRanks) {
-        // Mark to retroactively apply rank clues when we return from this function
-        shouldReapplyRankClues = true;
-      }
-    }
-    if (this.state.possibleSuits.length === 1) {
-      // We have discovered the true suit of the card
-      [this.state.suit] = this.state.possibleSuits;
-      globals.learnedCards[this.state.order].suit = this.state.suit;
-      this.suitPipsMap.get(this.state.suit)!.hide();
-      this.suitPips!.hide();
-    }
-
-    // Remove rank pips, if any
-    for (const rankRemoved of ranksRemoved) {
-      // Hide the rank pips
-      this.rankPipsMap.get(rankRemoved)!.hide();
-      this.rankPipsXMap.get(rankRemoved)!.hide();
-
-      // Remove any card possibilities for this rank
-      if (possibilitiesCheck()) {
-        for (const suit of globals.variant.suits) {
-          this.removePossibility(suit, rankRemoved, true);
-        }
-      }
-
-      // Check for note impossibilities
-      // e.g. a note of "1" is now impossible because we know that it is not a 1
-      if (this.state.noteSuit === null && this.state.noteRank !== this.state.rank) {
-        this.state.noteSuit = null;
-        this.state.noteRank = null;
-        this.setBareImage();
-        globals.layers.card.batchDraw();
-      }
-
-      if (
-        rankRemoved === globals.variant.specialRank
-        && (globals.variant.specialAllClueColors || globals.variant.specialNoClueColors)
-      ) {
-        // Mark to retroactively apply color clues when we return from this function
-        shouldReapplyColorClues = true;
-      }
-    }
-    if (this.state.possibleRanks.length === 1) {
-      // We have discovered the true rank of the card
-      [this.state.rank] = this.state.possibleRanks;
-      globals.learnedCards[this.state.order].rank = this.state.rank;
-      this.rankPips!.hide();
-    }
-
-    // Handle if this is the first time that the card is fully revealed to the holder
-    const isFullyKnown = (
-      this.state.possibleSuits.length === 1
-      && this.state.possibleRanks.length === 1
+  private shouldSetCritical(critical: boolean) {
+    return (
+      critical
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
+      && !globals.lobby.settings.realLifeMode
     );
-    if (isFullyKnown && !wasFullyKnown) {
-      this.state.identityDetermined = true;
-      this.updatePossibilitiesOnOtherCards(this.state.suit!, this.state.rank!);
-    }
+  }
 
-    if (shouldReapplyRankClues) {
-      this.reapplyRankClues();
-    }
+  updateNotePossibilities() {
+    // If we wrote a card identity note and all the possibilities for that note have been
+    // eliminated, unmorph the card
+    // e.g. a note of "r1" is now impossible because red 1 has 0 cards left
 
-    if (shouldReapplyColorClues) {
-      this.reapplyColorClues();
+    const isSuitImpossible = this.note.suitIndex !== null
+      && !this.state.colorClueMemory.possibilities.includes(this.note.suitIndex);
+
+    const isRankImpossible = this.note.rank !== null
+      && !this.state.rankClueMemory.possibilities.includes(this.note.rank);
+
+    if (isSuitImpossible || isRankImpossible) {
+      // Unmorph
+      this.note.suitIndex = null;
+      this.note.rank = null;
+      this.setBareImage();
     }
   }
 
-  // If a clue just eliminated the possibility of being a special multi-color card,
-  // we need to retroactively apply previous color clues
-  private reapplyColorClues() {
-    const { positiveColorClues, negativeColorClues } = this.state;
-    this.state.positiveColorClues = [];
-    this.state.negativeColorClues = [];
-    for (const color of positiveColorClues) {
-      this.applyClue(new Clue(ClueType.Color, color), true);
-    }
-    for (const color of negativeColorClues) {
-      this.applyClue(new Clue(ClueType.Color, color), false);
-    }
-  }
-
-  // If a clue just eliminated the possibility of being a special multi-rank card,
-  // we can retroactively remove rank pips from previous rank clues
-  private reapplyRankClues() {
-    const { positiveRankClues, negativeRankClues } = this.state;
-    this.state.positiveRankClues = [];
-    this.state.negativeRankClues = [];
-    for (const rank of positiveRankClues) {
-      this.applyClue(new Clue(ClueType.Rank, rank), true);
-    }
-    for (const rank of negativeRankClues) {
-      this.applyClue(new Clue(ClueType.Rank, rank), false);
-    }
-  }
-
-  // Check to see if we can put an X over this suit pip or this rank pip
-  private checkPipPossibilities(suit: Suit, rank: number) {
-    // First, check to see if there are any possibilities remaining for this suit
-    let suitPossible = false;
-    for (const rank2 of globals.variant.ranks) {
-      const count = this.state.possibleCards.get(`${suit.name}${rank2}`);
-      if (count === undefined) {
-        throw new Error(`Failed to get an entry for ${suit.name}${rank2} from the "possibleCards" map for card ${this.state.order}.`);
-      }
-      if (count > 0) {
-        suitPossible = true;
-        break;
-      }
-    }
-    if (!suitPossible) {
-      // Do nothing if the normal pip is already hidden
-      const pip = this.suitPipsMap.get(suit)!;
-      if (pip.visible()) {
-        // All the cards of this suit are seen, so put an X over the suit pip
-        this.suitPipsXMap.get(suit)!.visible(true);
-      }
+  // A card's parent is a LayoutChild
+  // The parent of the LayoutChild is the location of the card
+  // (e.g. a player's hand, the play stacks, etc.)
+  // The LayoutChild is removed from the parent prior to the card changing location
+  removeLayoutChildFromParent() {
+    // Ensure that empathy is disabled prior to removing a card from a player's hand
+    if (this.empathy) {
+      this.empathy = false;
+      this.setBareImage();
     }
 
-    // Second, check to see if there are any possibilities remaining for this rank
-    let rankPossible = false;
-    for (const suit2 of globals.variant.suits) {
-      const count = this.state.possibleCards.get(`${suit2.name}${rank}`);
-      if (count === undefined) {
-        throw new Error(`Failed to get an entry for ${suit2.name}${rank} from the "possibleCards" map for card ${this.state.order}.`);
-      }
-      if (count > 0) {
-        rankPossible = true;
-        break;
-      }
-    }
-    if (!rankPossible) {
-      // There is no rank pip for "START" cards
-      if (rank >= 1 && rank <= 5) {
-        // Do nothing if the normal pip is already hidden
-        const pip = this.rankPipsMap.get(rank)!;
-        if (pip.visible()) {
-          // All the cards of this rank are seen, so put an X over the rank pip
-          this.rankPipsXMap.get(rank)!.visible(true);
-        }
-      }
-    }
-  }
-
-  // We have learned the true suit and rank of this card
-  // but it might not be known to the holder
-  convert(msgSuit: number, msgRank: number) {
-    // Local variables
-    const suit = msgSuit === -1 ? null : msgSuitToSuit(msgSuit, globals.variant);
-    const rank = msgRank === -1 ? null : msgRank;
-
-    // Blank the card if it is revealed with no suit and no rank
-    this.state.blank = !(suit || rank);
-
-    // Set the true suit/rank on the card
-    this.state.suit = suit;
-    this.state.rank = rank;
-
-    // Keep track of what this card is
-    const learnedCard = globals.learnedCards[this.state.order];
-    learnedCard.suit = suit;
-    learnedCard.rank = rank;
-
-    // Redraw the card
-    this.setBareImage();
-  }
-
-  // This card was either played or discarded
-  reveal(msgSuit: number, msgRank: number) {
-    // Played cards are not revealed in the "Throw It in a Hole" variant
-    if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay && this.state.isPlayed) {
-      return;
-    }
-
-    this.convert(msgSuit, msgRank);
-
-    const suit = this.state.suit;
-    const rank = this.state.rank;
-
-    // If the card was already fully-clued,
-    // we already updated the possibilities for it on other cards
-    if (suit && rank && !this.state.identityDetermined) {
-      this.state.identityDetermined = true;
-      this.updatePossibilitiesOnOtherCards(suit, rank);
-    }
-  }
-
-  // We need to redraw this card's suit and rank in a shared replay or hypothetical
-  // based on deckOrder and hypoRevealed
-  replayRedraw() {
-    if (globals.deckOrder.length === 0) {
-      return;
-    }
-    const suitNum = globals.deckOrder[this.state.order].suit;
-    const trueSuit = msgSuitToSuit(suitNum, globals.variant);
-    const trueRank = globals.deckOrder[this.state.order].rank;
-
-    if (
-      // If we are in a hypothetical and "hypoRevealed" is turned off
-      // and this card was drawn from the deck since the hypothetical started
-      globals.hypothetical
-      && !globals.hypoRevealed
-      && globals.hypoFirstDrawnIndex
-      && this.state.order >= globals.hypoFirstDrawnIndex
-    ) {
-      if (
-        (this.state.suit === trueSuit && this.state.rank === trueRank)
-        || (!this.state.suit && !this.state.rank)
-      ) {
-        // We need to hide this card unless it was morphed from its real identity
-        // -1 is used for null suits and ranks
-        this.convert(-1, -1);
-      }
-    } else if (this.state.suit === null || this.state.rank === null) {
-      // Otherwise, we should make sure to fill in information from deckOrder
-      // unless this card is fully known, possibly morphed
-      this.convert(suitNum, trueRank);
-
-      // Check if we can drag this card now
-      const layoutChild = this.parent as unknown as LayoutChild;
-      if (layoutChild) {
-        layoutChild.checkSetDraggable();
-      }
-    }
-  }
-
-  private updatePossibilitiesOnOtherCards(suit: Suit, rank: number) {
-    if (!possibilitiesCheck()) {
-      return;
-    }
-
-    // Update the possibilities for the player
-    // who just discovered the true identity of this card
-    // (either through playing it, discarding it, or getting a clue that fully revealed it)
-    if (this.state.holder === null) {
-      throw new Error('The holder of this card\'s hand is null in the "updatePossibilitiesOnOtherCards()" function.');
-    }
-    const playerHand = globals.elements.playerHands[this.state.holder];
-    for (const layoutChild of playerHand.children.toArray() as Konva.Node[]) {
-      const card = layoutChild.children[0] as HanabiCard;
-      if (card.state.order === this.state.order) {
-        // There is no need to update the card that was just revealed
-        continue;
-      }
-      card.removePossibility(suit, rank, false);
-    }
-
-    // If this is a:
-    // 1) unknown card that we played or
-    // 2) a card that was just fully revealed in our hand via a clue
-    // then we also need to update the possibilities for the other hands
-    if (this.state.holder === globals.playerUs && !globals.replay && !globals.spectating) {
-      for (let i = 0; i < globals.elements.playerHands.length; i++) {
-        if (i === this.state.holder) {
-          // We already updated our own hand above
-          continue;
-        }
-
-        const playerHand2 = globals.elements.playerHands[i];
-        playerHand2.children.each((layoutChild) => {
-          const card = layoutChild.children[0] as HanabiCard;
-          card.removePossibility(suit, rank, false);
-        });
-      }
-    }
-  }
-
-  removeFromParent() {
     // Remove the card from the player's hand in preparation of adding it to either
     // the play stacks or the discard pile
-    const layoutChild = this.parent;
-    if (!layoutChild || !layoutChild.parent) {
+    if (!this.layout.parent) {
       // If a tween is destroyed in the middle of animation,
       // it can cause a card to be orphaned
+      // Ensure the position is reset to the deck, if unset
+      if (this.layout.x() === 0 && this.layout.y() === 0) {
+        this.moveToDeckPosition();
+      }
       return;
     }
-    const pos = layoutChild.getAbsolutePosition();
-    layoutChild.rotation(layoutChild.parent.rotation());
-    layoutChild.remove();
-    layoutChild.setAbsolutePosition(pos);
+    const pos = this.layout.getAbsolutePosition();
+    this.layout.rotation(this.layout.parent.rotation());
+    this.layout.remove();
+    this.layout.setAbsolutePosition(pos);
+  }
 
-    // Mark that no player is now holding this card
-    this.state.holder = null;
+  moveToDeckPosition() {
+    const deckPos = globals.elements.deck!.cardBack.getAbsolutePosition();
+    this.layout.setAbsolutePosition(deckPos);
+    const scale = globals.elements.deck!.cardBack.width() / CARD_W;
+    this.layout.scale({
+      x: scale,
+      y: scale,
+    });
+  }
+
+  animateToPlayerHand(holder: number) {
+    this.removeLayoutChildFromParent();
+
+    // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
+    // and the user rewinds to the beginning of the replay
+    this.layout.visible(true);
+    this.layout.rotation(-globals.elements.playerHands[holder].rotation());
+    this.layout.opacity(1); // Cards can be faded in certain variants
+
+    // Add it to the player's hand (which will automatically tween the card)
+    globals.elements.playerHands[holder].addChild(this.layout);
+    globals.elements.playerHands[holder].moveToTop();
+
+    // In case listening was disabled, which happens in some variants
+    this.listening(true);
+  }
+
+  animateToDeck() {
+    const layoutChild = this.layout;
+    if (
+      layoutChild === undefined
+      || layoutChild.parent === null
+      || layoutChild.parent === undefined
+    ) {
+      // First initialization
+      return;
+    }
+    this.removeLayoutChildFromParent();
+
+    const scale = globals.elements.deck!.cardBack.width() / CARD_W;
+    if (globals.animateFast) {
+      layoutChild.checkSetDraggable();
+      this.setVisualEffect('default');
+      layoutChild.hide();
+    } else {
+      // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
+      // and the user rewinds to the beginning of the replay
+      layoutChild.show();
+      layoutChild.opacity(1); // Cards can be faded in certain variants
+      const pos = layoutChild.getAbsolutePosition();
+      globals.elements.deck!.add(layoutChild as any);
+      layoutChild.setAbsolutePosition(pos);
+
+      // Animate to the deck
+      this.startedTweening();
+      animate(layoutChild, {
+        duration: 0.5,
+        x: 0,
+        y: 0,
+        scale,
+        rotation: 0,
+        easing: Konva.Easings.EaseOut,
+        onFinish: () => {
+          if (this === undefined || layoutChild === undefined) {
+            return;
+          }
+          this.finishedTweening();
+          layoutChild.checkSetDraggable();
+          layoutChild.hide();
+          this.removeLayoutChildFromParent();
+        },
+      }, true);
+    }
   }
 
   animateToPlayStacks() {
-    // We add a LayoutChild to a PlayStack
-    if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
-      // The act of adding it will automatically tween the card
-      const hole = globals.elements.playStacks.get('hole')!;
-      hole.addChild(this.parent as any);
+    this.removeLayoutChildFromParent();
 
-      // We do not want this card to interfere with writing notes on the stack bases
-      this.listening(false);
-    } else {
-      // The act of adding it will automatically tween the card
-      const playStack = globals.elements.playStacks.get(this.state.suit!);
-      if (!playStack) {
-        // We might have played a hidden card in a hypothetical
-        return;
-      }
-      playStack.addChild(this.parent as any);
-
-      // We also want to move this stack to the top so that
-      // cards do not tween behind the other play stacks when travelling to this stack
-      playStack.moveToTop();
+    // The act of adding it will automatically tween the card
+    const suit = this.variant.suits[this.state.suitIndex!];
+    const playStack = globals.elements.playStacks.get(suit);
+    if (!playStack) {
+      // We might have played a hidden card in a hypothetical
+      return;
     }
+    playStack.addChild(this.layout);
+
+    // We also want to move this stack to the top so that
+    // cards do not tween behind the other play stacks when travelling to this stack
+    playStack.moveToTop();
+
+    // In case listening was disabled, which happens in some variants
+    this.listening(true);
+  }
+
+  animateToHole() {
+    this.removeLayoutChildFromParent();
+
+    // The act of adding it will automatically tween the card
+    const hole = globals.elements.playStacks.get('hole')!;
+    hole.addChild(this.layout);
+
+    // We do not want this card to interfere with writing notes on the stack bases
+    this.listening(false);
   }
 
   animateToDiscardPile() {
+    this.removeLayoutChildFromParent();
+
     // We add a LayoutChild to a CardLayout
-    const discardStack = globals.elements.discardStacks.get(this.state.suit!);
+    const suit = this.variant.suits[this.state.suitIndex!];
+    const discardStack = globals.elements.discardStacks.get(suit);
     if (!discardStack) {
       // We might have discarded a hidden card in a hypothetical
       return;
     }
-    discardStack.addChild(this.parent as any);
+    discardStack.addChild(this.layout);
 
     // We need to bring the discarded card to the top so that when it tweens to the discard
     // pile, it will fly on top of the play stacks and other player's hands
@@ -1102,10 +754,13 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     for (const stack of globals.elements.discardStacks) {
       // Since "discardStacks" is a Map(),
       // "stack" is an array containing a Suit and CardLayout
-      if (stack[1]) {
+      if (stack[1] !== undefined) {
         stack[1].moveToTop();
       }
     }
+
+    // In case listening was disabled, which happens in some variants
+    this.listening(true);
   }
 
   setNote(note: string) {
@@ -1130,14 +785,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   getSlotNum() {
-    if (!this.parent || !this.parent.parent) {
+    if (!this.layout.parent) {
       return -1;
     }
 
-    const numCardsInHand = this.parent.parent.children.length;
+    const numCardsInHand = this.layout.parent.children.length;
     for (let i = 0; i < numCardsInHand; i++) {
-      const layoutChild = this.parent.parent.children[i];
-      if ((layoutChild.children[0] as HanabiCard).state.order === this.state.order) {
+      const layoutChild = this.layout.parent.children[i] as LayoutChild;
+      if (layoutChild.card.state.order === this.state.order) {
         return numCardsInHand - i;
       }
     }
@@ -1145,180 +800,344 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return -1;
   }
 
-  private isCritical() {
-    if (
-      this.state.suit === null
-      || this.state.rank === null
-      || this.state.rank === 0 // Base
-      || this.state.isPlayed
-      || this.state.isDiscarded
-      || !this.needsToBePlayed()
-    ) {
+  // Update all UI pips to their state
+  updatePips(clueType: ClueType | null = null) {
+    const updatePip = (
+      pipState: PipState,
+      hasPositiveClues: boolean,
+      pip: Konva.Shape | RankPip,
+      x : Konva.Shape,
+    ) => {
+      switch (pipState) {
+        case 'Visible': {
+          pip.show();
+          x.hide();
+          break;
+        }
+        case 'Hidden': {
+          pip.hide();
+          x.hide();
+          break;
+        }
+        case 'Eliminated': {
+          pip.show();
+          x.show();
+          break;
+        }
+        default:
+          break;
+      }
+
+      // TODO: Positive clues on suits
+      if (pip instanceof RankPip) {
+        if (hasPositiveClues && pipState !== 'Hidden') {
+          pip.showPositiveClue();
+        } else {
+          pip.hidePositiveClue();
+        }
+      }
+    };
+
+    if (clueType === null || clueType === ClueType.Color) {
+      for (const [suit, pipState] of this.state.colorClueMemory.pipStates.entries()) {
+        const pip = this.suitPipsMap.get(suit)!;
+        const x = this.suitPipsXMap.get(suit)!;
+        // TODO: Positive clues on suits
+        updatePip(pipState, false, pip, x);
+      }
+    }
+    if (clueType === null || clueType === ClueType.Rank) {
+      for (const [rank, pipState] of this.state.rankClueMemory.pipStates.entries()) {
+        const pip = this.rankPipsMap.get(rank);
+        if (pip === undefined) {
+          // There is no rank pip for START cards
+          continue;
+        }
+        const x = this.rankPipsXMap.get(rank)!;
+        const hasPositiveClues = this.state.rankClueMemory.positiveClues.includes(rank);
+        updatePip(pipState, hasPositiveClues, pip, x);
+      }
+    }
+  }
+
+  private visualEffectCursor: CursorType = 'default';
+  setVisualEffect(cursor: CursorType, duration?: number) {
+    if (cursor === this.visualEffectCursor) {
+      return;
+    }
+    this.visualEffectCursor = cursor;
+
+    const defaultDuration = 0.05;
+    const actualDuration = globals.animateFast ? 0 : (duration ?? defaultDuration);
+
+    // Shadow special effects
+    const shadowOffset = cursor === 'dragging' ? Math.floor(0.12 * CARD_W) : Math.floor(0.04 * CARD_W);
+    this.bare.to({
+      shadowOffsetX: shadowOffset,
+      shadowOffsetY: shadowOffset,
+      duration: actualDuration,
+    });
+    const baseOffsetY = this.isRaisedBecauseOfClues() ? 0.6 * CARD_H : 0.5 * CARD_H;
+    this.to({
+      offsetX: cursor === 'dragging' ? 0.52 * CARD_W : 0.5 * CARD_W,
+      offsetY: baseOffsetY + (cursor === 'dragging' ? 0.02 * CARD_H : 0),
+      duration: actualDuration,
+    });
+  }
+
+  private registerMouseHandlers() {
+    // Define the clue log mouse handlers
+    this.on('mousemove tap', () => {
+      globals.elements.clueLog!.showMatches(this);
+      globals.layers.UI.batchDraw();
+    });
+    this.on('mouseout', () => {
+      globals.elements.clueLog!.showMatches(null);
+      globals.layers.UI.batchDraw();
+    });
+
+    // Define the other mouse handlers
+    this.on('click tap', HanabiCardClick);
+    this.on('mousedown', HanabiCardClickSpeedrun);
+    this.on('mousedown', this.cardStartDrag);
+    this.on('mousemove', this.setCursor);
+    this.on('mouseleave', () => {
+      cursorSet('default');
+    });
+  }
+
+  setCursor() {
+    const cursorType = this.shouldShowLookCursor() ? 'look' : 'default';
+    cursorSet(cursorType);
+  }
+
+  shouldShowLookCursor() {
+    // Local variables
+    const state = globals.store!.getState();
+
+    // Don't show the cursor if this is a stack base
+    if (this.state.rank === STACK_BASE_RANK) {
       return false;
     }
 
-    // "Up or Down" has some special cases for critical cards
-    if (variantRules.hasReversedSuits(globals.variant)) {
-      return reversible.isCardCritical(this.state);
+    // Don't show the cursor if the card is draggable
+    // (the hand cursor takes precedence over the look cursor)
+    if (this.layout !== null && this.layout.draggable()) {
+      return false;
     }
 
-    const num = getSpecificCardNum(this.state.suit, this.state.rank);
-    return num.total === num.discarded + 1;
+    // If we are in a replay, always show the cursor
+    if (globals.metadata.replay || state.replay.active) {
+      return true;
+    }
+
+    // For ongoing games, always show the cursor for other people's hands
+    if (
+      typeof this.state.location === 'number'
+      && this.state.location !== state.metadata.ourPlayerIndex
+    ) {
+      return true;
+    }
+
+    // For ongoing games, only show the cursor for our hand if it has a custom card identity
+    if (
+      (this.note.suitIndex !== null && this.note.suitIndex !== this.state.suitIndex)
+      || (this.note.rank !== null && this.note.rank !== this.state.rank)
+      || this.note.blank
+      || this.note.unclued
+    ) {
+      return true;
+    }
+
+    return false;
   }
 
-  // needsToBePlayed returns true if the card is not yet played
-  // and is still needed to be played in order to get the maximum score
-  // (this mirrors the server function in "card.go")
-  private needsToBePlayed() {
-    // First, check to see if a copy of this card has already been played
-    for (const card of globals.deck) {
-      if (card.state.order === this.state.order) {
-        continue;
-      }
-      if (
-        card.state.suit === this.state.suit
-        && card.state.rank === this.state.rank
-        && card.state.isPlayed
-      ) {
-        return false;
-      }
+  private cardStartDrag(event: Konva.KonvaEventObject<MouseEvent>) {
+    if (
+      event.evt.button !== 0 // Dragging uses left click
+      || !this.layout.draggable()
+    ) {
+      return;
     }
 
-    // Determining if the card needs to be played in variants with reversed suits is more
-    // complicated
-    if (variantRules.hasReversedSuits(globals.variant)) {
-      return reversible.needsToBePlayed(this.state);
+    // Hide any visible arrows on the rest of a hand when the card begins to be dragged
+    if (this.layout.parent === undefined || this.layout.parent === null) {
+      return;
     }
-
-    // Second, check to see if it is still possible to play this card
-    // (the preceding cards in the suit might have already been discarded)
-    for (let i = 1; i < this.state.rank!; i++) {
-      const num = getSpecificCardNum(this.state.suit!, i);
-      if (num.total === num.discarded) {
-        // The suit is "dead", so this card does not need to be played anymore
-        return false;
+    const hand = this.layout.parent;
+    let hideArrows = false;
+    for (const layoutChild of hand.children.toArray()) {
+      const card: HanabiCard = (layoutChild as Konva.Node).children[0] as HanabiCard;
+      for (const arrow of globals.elements.arrows) {
+        if (arrow.pointingTo === card) {
+          hideArrows = true;
+          break;
+        }
       }
-    }
-
-    // By default, all cards not yet played will need to be played
-    return true;
-  }
-
-  isPotentiallyPlayable() {
-    // Calculating this in an Up or Down variant is more complicated
-    if (variantRules.hasReversedSuits(globals.variant)) {
-      return reversible.isPotentiallyPlayable(this.state);
-    }
-
-    let potentiallyPlayable = false;
-    for (const suit of globals.variant.suits) {
-      const playStack = globals.elements.playStacks.get(suit)!;
-      let lastPlayedRank = playStack.getLastPlayedRank();
-      if (lastPlayedRank === 5) {
-        continue;
-      }
-      if (lastPlayedRank === STACK_BASE_RANK) {
-        lastPlayedRank = 0;
-      }
-      const nextRankNeeded = lastPlayedRank! + 1;
-      const count = this.state.possibleCards.get(`${suit.name}${nextRankNeeded}`);
-      if (count === undefined) {
-        throw new Error(`Failed to get an entry for ${suit.name}${nextRankNeeded} from the "possibleCards" map for card ${this.state.order}.`);
-      }
-      if (count > 0) {
-        potentiallyPlayable = true;
+      if (hideArrows) {
         break;
       }
     }
+    if (hideArrows) {
+      arrows.hideAll();
+    }
 
-    return potentiallyPlayable;
+    // Move this hand to the top
+    // (otherwise, the card can appear under the play stacks / discard stacks)
+    hand.moveToTop();
   }
 
-  removePossibility(suit: Suit, rank: number, all: boolean) {
-    // Every card has a possibility map that maps card identities to count
-    const mapIndex = `${suit.name}${rank}`;
-    let cardsLeft = this.state.possibleCards.get(mapIndex);
-    if (cardsLeft === undefined) {
-      throw new Error(`Failed to get an entry for ${mapIndex} from the "possibleCards" map for card ${this.state.order}.`);
-    }
-    if (cardsLeft > 0) {
-      // Remove one or all possibilities for this card,
-      // (depending on whether the card was clued
-      // or if we saw someone draw a copy of this card)
-      cardsLeft = all ? 0 : cardsLeft - 1;
-      this.state.possibleCards.set(mapIndex, cardsLeft);
-      this.checkPipPossibilities(suit, rank);
+  private initTooltip() {
+    // If the user mouses over the card, show a tooltip that contains the note
+    // (we don't use the "tooltip.init()" function because we need the extra conditions in the
+    // "mousemove" event)
+    this.tooltipName = `card-${this.state.order}`;
+    this.on('mousemove', function cardMouseMove(this: HanabiCard) {
+      // Don't do anything if there is not a note on this card
+      if (!this.noteIndicator!.isVisible()) {
+        return;
+      }
+
+      // Don't open any more note tooltips if the user is currently editing a note
+      if (globals.editingNote !== null) {
+        return;
+      }
+
+      // If we are spectating and there is an new note, mark it as seen
+      if (this.noteIndicator!.rotated) {
+        this.noteIndicator!.rotated = false;
+        this.noteIndicator!.rotate(-15);
+        globals.layers.card.batchDraw();
+      }
+
+      globals.activeHover = this;
+      notes.show(this);
+    });
+
+    this.on('mouseout', function cardMouseOut(this: HanabiCard) {
+      globals.activeHover = null;
+
+      // Don't close the tooltip if we are currently editing a note
+      if (globals.editingNote !== null) {
+        return;
+      }
+
+      const tooltipElement = $(`#tooltip-${this.tooltipName}`);
+      tooltipElement.tooltipster('close');
+    });
+  }
+
+  // In a game, click on a teammate's hand to it show as it would to that teammate
+  // (or show your own hand as it should appear without any identity notes on it)
+  // (or, in a replay, show the hand as it appeared at that moment in time)
+  private initEmpathy() {
+    this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
+      if (
+        event.evt.button !== 0 // Only enable Empathy for left-clicks
+        // Disable Empathy if a modifier key is pressed
+        // (unless we are in a speedrun, because then Empathy is mapped to Ctrl + left click)
+        || (
+          event.evt.ctrlKey
+          && !globals.metadata.options.speedrun
+          && !globals.lobby.settings.speedrunMode
+        )
+        || (
+          !event.evt.ctrlKey
+          && (globals.metadata.options.speedrun || globals.lobby.settings.speedrunMode)
+          && !globals.metadata.replay
+          && !globals.metadata.spectating
+        )
+        || event.evt.shiftKey
+        || event.evt.altKey
+        || event.evt.metaKey
+        || this.tweening // Disable Empathy if the card is tweening
+        // Clicking on a played card goes to the turn that it was played
+        || cardRules.isPlayed(this.state)
+        // Clicking on a discarded card goes to the turn that it was discarded
+        || cardRules.isDiscarded(this.state)
+        || this.state.order > globals.deck.length - 1 // Disable empathy for the stack bases
+      ) {
+        return;
+      }
+
+      globals.activeHover = this;
+      this.setEmpathyOnHand(true);
+    });
+
+    this.on('mouseup mouseout', (event: Konva.KonvaEventObject<MouseEvent>) => {
+      // Konva.MouseEvent does not have a "type" property for some reason
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if ((event as any).type === 'mouseup' && event.evt.button !== 0) { // Left-click
+        return;
+      }
+
+      globals.activeHover = null;
+      this.setEmpathyOnHand(false);
+    });
+  }
+
+  private setEmpathyOnHand(enabled: boolean) {
+    // Disable Empathy for the stack bases
+    if (this.state.order > globals.deck.length - 1) {
+      return;
     }
 
-    // If we wrote a card identity note and all the possibilities for that note have been
-    // eliminated, unmorph the card
-    // e.g. a note of "r1" is now impossible because red 1 has 0 cards left
-    // The case of removing a wrong note of "r" or "1" is handled in the "HanabiCard.applyClue()"
-    // function
-    if (this.state.noteSuit === suit && this.state.noteRank === rank && cardsLeft === 0) {
-      this.state.noteSuit = null;
-      this.state.noteRank = null;
-      this.setBareImage();
-      globals.layers.card.batchDraw();
+    // If the card is not attached to a hand, then we don't need to do anything
+    const hand = this.layout.parent as unknown as CardLayout;
+    if (hand === undefined || hand === null || hand.children.length === 0) {
+      return;
     }
+
+    if (enabled === hand.empathy) {
+      // No change
+      return;
+    }
+
+    hand.empathy = enabled;
+    hand.children.each((layoutChild) => {
+      const card = layoutChild.children[0] as HanabiCard;
+      if (card === undefined) {
+        // When rewinding, sometimes the card can be undefined
+        return;
+      }
+      card.empathy = enabled;
+      card.setBareImage();
+    });
+    globals.layers.card.batchDraw();
+  }
+
+  checkSpecialNote() {
+    const noteText = globals.ourNotes[this.state.order];
+
+    this.note = notes.checkNoteIdentity(this.variant, noteText);
+    notes.checkNoteImpossibility(this.variant, this.state, this.note);
+    this.setClued();
+
+    // Feature 1 - Morph the card if it has an "exact" card note
+    // (or clear the bare image if the note was deleted/changed)
+    this.setBareImage();
+
+    // Feature 2 - Give the card a special border if it is chop moved
+    const showSpecialBorder = (
+      !this.cluedBorder!.isVisible()
+      && !cardRules.isPlayed(this.state)
+      && !cardRules.isDiscarded(this.state)
+      && !globals.metadata.replay
+      && !globals.metadata.spectating
+    );
+
+    this.chopMoveBorder!.visible((
+      this.note.chopMoved
+      && showSpecialBorder
+    ));
+
+    // Feature 3 - Give the card a special border if it is finessed
+    this.finesseBorder!.visible((
+      this.note.finessed
+      && showSpecialBorder
+    ));
+
+    globals.layers.card.batchDraw();
+    this.setCursor();
   }
 }
-
-// ---------------
-// Misc. functions
-// ---------------
-
-// Remove everything from the array that does not match the condition in the function
-function filterInPlace<T>(values: T[], predicate: (value: T) => boolean) : T[] {
-  const removed = [];
-  let i = values.length - 1;
-  while (i >= 0) {
-    if (!predicate(values[i])) {
-      removed.unshift(values.splice(i, 1)[0]);
-    }
-    i -= 1;
-  }
-  return removed;
-}
-
-// From: https://medium.com/dailyjs/how-to-remove-array-duplicates-in-es6-5daa8789641c
-function removeDuplicatesFromArray<T>(array: T[]) {
-  return array.filter((item, index) => array.indexOf(item) === index);
-}
-
-// getSpecificCardNum returns the total cards in the deck of the specified suit and rank
-// as well as how many of those that have been already discarded
-// (this DOES NOT mirror the server function in "game.go",
-// because the client does not have the full deck)
-export const getSpecificCardNum = (suit: Suit, rank: number) => {
-  // First, find out how many of this card should be in the deck, based on the rules of the game
-  let total = 0;
-  if (rank === 1) {
-    total = 3;
-    if (variantRules.isUpOrDown(globals.variant) || suit.reversed) {
-      total = 1;
-    }
-  } else if (rank === 5) {
-    total = 1;
-    if (suit.reversed) {
-      total = 3;
-    }
-  } else if (rank === START_CARD_RANK) {
-    total = 1;
-  } else {
-    total = 2;
-  }
-  if (suit.oneOfEach) {
-    total = 1;
-  }
-
-  // Second, search through the deck to find the total amount of discarded cards that match
-  let discarded = 0;
-  for (const card of globals.deck) {
-    if (card.state.suit === suit && card.state.rank === rank && card.state.isDiscarded) {
-      discarded += 1;
-    }
-  }
-
-  return { total, discarded };
-};

@@ -47,6 +47,7 @@ for user in users:
     i += 1
     if i % 1000 == 0:
         print("On user #" + str(i), flush=True)
+
     cursor = conn.cursor()
     cursor.execute(
         "SELECT COUNT(game_id) FROM game_participants WHERE user_id = %s", (user[0],)

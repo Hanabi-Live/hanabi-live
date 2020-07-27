@@ -104,17 +104,45 @@
 
     // Initialize the "Filter by # of Players" dropdown
     $('#filter-by-players').change(() => {
-      const numPlayersSelected = $('#filter-by-players').val();
-      for (let i = 2; i <= 6; i++) {
-        if (numPlayersSelected === i.toString() || numPlayersSelected === 'all') {
-          $(`.missing-scores-row-${i}`).show();
-          $(`.history-row-${i}`).show();
-        } else {
-          $(`.missing-scores-row-${i}`).hide();
-          $(`.history-row-${i}`).hide();
-        }
-      }
+      filterHistoryRows();
     });
+
+    // Initialize the "Filter by Score" input field
+    $('#filter-by-score').on('input', () => {
+      filterHistoryRows();
+    });
+
+    const filterHistoryRows = () => {
+      // Hide all rows
+      $('.history-row').hide();
+      $('.missing-scores-row').hide();
+
+      // Get the filter values
+      const numPlayers = $('#filter-by-players').val();
+      const scoreString = $('#filter-by-score').val();
+      if (typeof scoreString !== 'string') {
+        throw new Error('The value of the filter by score field is not a string.');
+      }
+      const score = parseInt(scoreString, 10);
+
+      const numPlayersFilterEnabled = numPlayers !== 'all';
+      const scoreFilterEnabled = score !== NaN && score >= 0 && score <= 30;
+
+      // Filter
+      if (numPlayersFilterEnabled && scoreFilterEnabled) {
+        $(`.history-row-players-${numPlayers}.history-row-score-${score}`).show();
+        $(`.missing-scores-row-players-${numPlayers}.missing-scores-row-score-${score}`).show();
+      } else if (numPlayersFilterEnabled && !scoreFilterEnabled) {
+        $(`.history-row-players-${numPlayers}`).show();
+        $(`.missing-scores-row-players-${numPlayers}`).show();
+      } else if (!numPlayersFilterEnabled && scoreFilterEnabled) {
+        $(`.history-row-score-${score}`).show();
+        $(`.missing-scores-row-score-${score}`).show();
+      } else if (!numPlayersFilterEnabled && !scoreFilterEnabled) {
+        $('.history-row').show();
+        $('.missing-scores-row').show();
+      }
+    };
   });
 </script>
 {{end}}

@@ -82,7 +82,7 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Validate that the game is not paused
-	if g.Paused {
+	if g.Paused && d.Type != ActionTypeGameOver {
 		s.Warning("You cannot perform a game action when the game is paused.")
 		g.InvalidActionOccurred = true
 		return
@@ -181,23 +181,16 @@ func commandAction(s *Session, d *CommandData) {
 
 	// Check for end game states
 	if g.CheckEnd() {
-		var text string
-		if g.EndCondition > EndConditionNormal {
-			text = "Players lose!"
-		} else {
-			text = "Players score " + strconv.Itoa(g.Score) + " points."
-		}
-		g.Actions = append(g.Actions, ActionText{
-			Type: "text",
-			Text: text,
+		// Append a game over action
+		g.Actions = append(g.Actions, ActionGameOver{
+			Type:         "gameOver",
+			EndCondition: g.EndCondition,
+			PlayerIndex:  g.EndPlayer,
 		})
 		t.NotifyGameAction()
-		logger.Info(t.GetName() + " " + text)
 	}
 
 	// Send the new turn
-	// This must be below the end-game text (e.g. "Players lose!"),
-	// so that it is combined with the final action
 	t.NotifyTurn()
 
 	if g.EndCondition == EndConditionInProgress {
@@ -302,7 +295,6 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 	g.ClueTokens++
 	c := p.RemoveCard(d.Target)
 	g.DoubleDiscard = p.DiscardCard(c)
-	characterShuffle(g, p)
 	p.DrawCard()
 
 	// Mark that the blind-play streak has ended
@@ -416,14 +408,13 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 }
 
 func commandActionGameOver(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
-	// Local variables
-	t := g.Table
-
 	// A "gameOver" action is a special action type sent by the server to itself when it needs to
 	// end an ongoing game
 	// The value will correspond to the end condition (see "endCondition" in "constants.go")
+	// The target will correspond to the index of the player who ended the game
 	// Validate the value
 	if d.Value != EndConditionTimeout &&
+		d.Value != EndConditionTerminated &&
 		d.Value != EndConditionIdleTimeout {
 
 		s.Warning("That is not a valid value for the game over action.")
@@ -431,21 +422,8 @@ func commandActionGameOver(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		return false
 	}
 
-	g.Strikes = 3
 	g.EndCondition = d.Value
-	g.EndPlayer = g.ActivePlayer
-
-	var text string
-	if d.Value == EndConditionTimeout {
-		text = p.Name + " ran out of time!"
-	} else if d.Value == EndConditionIdleTimeout {
-		text = "Players were idle for too long."
-	}
-	g.Actions = append(g.Actions, ActionText{
-		Type: "text",
-		Text: text,
-	})
-	t.NotifyGameAction()
+	g.EndPlayer = d.Target
 
 	return true
 }

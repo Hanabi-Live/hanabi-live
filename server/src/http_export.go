@@ -101,17 +101,8 @@ func httpExport(c *gin.Context) {
 		Seed:         seed,
 	}
 	g.InitDeck()
-	g.InitSeed()
+	setSeed(g.Seed) // Seed the random number generator
 	g.ShuffleDeck()
-
-	// Create a list of cards in the deck
-	deck := make([]SimpleCard, 0)
-	for _, c := range g.Deck {
-		deck = append(deck, SimpleCard{
-			Suit: c.Suit,
-			Rank: c.Rank,
-		})
-	}
 
 	// Get the actions from the database
 	var actions []*GameAction
@@ -233,7 +224,7 @@ func httpExport(c *gin.Context) {
 	gameJSON := &GameJSON{
 		ID:         gameID,
 		Players:    playerNames,
-		Deck:       deck,
+		Deck:       g.CardIdentities,
 		Actions:    actions,
 		Options:    optionsJSON,
 		Notes:      notes,

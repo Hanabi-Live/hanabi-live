@@ -14,5 +14,4 @@ enum ReplayArrowOrder {
   Efficiency = -10,
   MinEfficiency = -11,
 }
-
 export default ReplayArrowOrder;

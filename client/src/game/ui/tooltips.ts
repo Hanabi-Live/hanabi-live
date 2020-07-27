@@ -1,5 +1,6 @@
 import Konva from 'konva';
 import { TOOLTIP_DELAY } from '../../constants';
+import Screen from '../../lobby/types/Screen';
 import NodeWithTooltip from './controls/NodeWithTooltip';
 import TextWithTooltip from './controls/TextWithTooltip';
 import globals from './globals';
@@ -34,7 +35,7 @@ export const init = (element: NodeWithTooltip, delayed: boolean, customContent: 
 
 export const show = (element: NodeWithTooltip) => {
   // Don't do anything if we are no longer in the game
-  if (globals.lobby.currentScreen !== 'game') {
+  if (globals.lobby.currentScreen !== Screen.Game) {
     return;
   }
 

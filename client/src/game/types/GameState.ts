@@ -1,33 +1,35 @@
+import CardState from './CardState';
+import CardStatus from './CardStatus';
 import StackDirection from './StackDirection';
+import StatsState from './StatsState';
+import TurnState from './TurnState';
 
 export default interface GameState {
-  readonly turn: number;
-  readonly currentPlayerIndex: number;
-  readonly log: string[];
-  readonly deck: StateCard[];
+  readonly turn: TurnState;
+  readonly log: readonly LogEntry[];
+  readonly deck: readonly CardState[];
   readonly deckSize: number;
+  readonly cardStatus: ReadonlyArray<readonly CardStatus[]>;
   readonly score: number;
-  readonly maxScore: number;
+  readonly numAttemptedCardsPlayed: number; // For "Throw It in a Hole" variants
   readonly clueTokens: number;
-  readonly doubleDiscard: boolean;
-  readonly strikes: StateStrike[];
-  readonly hands: number[][];
-  readonly playStacks: number[][];
-  readonly playStacksDirections: StackDirection[];
-  readonly discardStacks: number[][];
-  readonly clues: StateClue[];
-  readonly stats: StateStats;
+  readonly strikes: readonly StateStrike[];
+  readonly hands: ReadonlyArray<readonly number[]>;
+  readonly playStacks: ReadonlyArray<readonly number[]>;
+  readonly playStackDirections: readonly StackDirection[];
+  readonly hole: readonly number[]; // For "Throw It in a Hole" variants
+  readonly discardStacks: ReadonlyArray<readonly number[]>;
+  readonly clues: readonly StateClue[];
+  readonly stats: StatsState;
 }
-
-export interface StateCard {
-  readonly suit: number;
-  readonly rank: number;
-  readonly clues: StateCardClue[];
+export interface LogEntry {
+  readonly turn: number;
+  readonly text: string;
 }
 
 export interface StateStrike {
+  readonly segment: number;
   readonly order: number;
-  readonly turn: number;
 }
 
 export interface StateClue {
@@ -35,21 +37,15 @@ export interface StateClue {
   readonly value: number;
   readonly giver: number;
   readonly target: number;
-  readonly turn: number;
+  readonly segment: number;
+  readonly list: readonly number[];
+  readonly negativeList: readonly number[];
 }
 
 export interface StateCardClue {
   readonly type: number;
   readonly value: number;
   readonly positive: boolean;
-}
-
-export interface StateStats {
-  readonly cardsGotten: number;
-  readonly potentialCluesLost: number;
-  readonly efficiency: number;
-  readonly pace: number | null;
-  readonly paceRisk: PaceRisk;
 }
 
 export type PaceRisk = 'LowRisk' | 'MediumRisk' | 'HighRisk' | 'Zero' | 'Null';

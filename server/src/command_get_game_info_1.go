@@ -55,33 +55,42 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		Provide the info
 	*/
 
-	// Create a list of names of the users in this game
-	names := make([]string, 0)
+	// Create a list of names of the players in this game
+	playerNames := make([]string, 0)
 	for _, p := range t.Players {
-		names = append(names, p.Name)
+		playerNames = append(playerNames, p.Name)
 	}
 
 	// Create a list of the "Detrimental Character Assignments", if enabled
-	characterAssignments := make([]string, 0)
+	characterAssignments := make([]int, 0)
 	characterMetadata := make([]int, 0)
 	if t.Options.DetrimentalCharacters {
 		for _, p := range g.Players {
-			characterAssignments = append(characterAssignments, p.Character)
+			var characterID int
+			if p.Character == "n/a" { // Manually handle the special character for debugging
+				characterID = -1
+			} else if character, ok := characters[p.Character]; !ok {
+				logger.Error("Failed to find the \"" + p.Character + "\" in the characters map.")
+				characterID = -1
+			} else {
+				characterID = character.ID
+			}
+
+			characterAssignments = append(characterAssignments, characterID)
 			characterMetadata = append(characterMetadata, p.CharacterMetadata)
 		}
 	}
 
-	// The seat number is equal to the index of the player in the Players slice
-	seat := i
-	if seat == -1 {
+	ourPlayerIndex := i
+	if ourPlayerIndex == -1 {
 		// By default, spectators view the game from the first player's perspective
-		seat = 0
+		ourPlayerIndex = 0
 
 		// If a spectator is viewing a replay of a game that they played in,
 		// we want to put them in the same seat
-		for k, name := range names {
+		for k, name := range playerNames {
 			if name == s.Username() {
-				seat = k
+				ourPlayerIndex = k
 				break
 			}
 		}
@@ -89,7 +98,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 
 	// Account for if a spectator is shadowing a specific player
 	if j != -1 && t.Spectators[j].Shadowing {
-		seat = t.Spectators[j].PlayerIndex
+		ourPlayerIndex = t.Spectators[j].ShadowPlayerIndex
 	}
 
 	pauseQueued := false
@@ -101,9 +110,9 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 	type InitMessage struct {
 		// Game settings
 		TableID          int       `json:"tableID"`
-		Names            []string  `json:"names"`
+		PlayerNames      []string  `json:"playerNames"`
 		Variant          string    `json:"variant"`
-		Seat             int       `json:"seat"`
+		OurPlayerIndex   int       `json:"ourPlayerIndex"`
 		Spectating       bool      `json:"spectating"`
 		Replay           bool      `json:"replay"`
 		SharedReplay     bool      `json:"sharedReplay"`
@@ -115,8 +124,8 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		Options          *Options  `json:"options"`
 
 		// Character settings
-		CharacterAssignments []string `json:"characterAssignments"`
-		CharacterMetadata    []int    `json:"characterMetadata"`
+		CharacterAssignments []int `json:"characterAssignments"`
+		CharacterMetadata    []int `json:"characterMetadata"`
 
 		// Hypothetical settings
 		Hypothetical bool     `json:"hypothetical"`
@@ -132,8 +141,8 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 	s.Emit("init", &InitMessage{
 		// Game settings
 		TableID:          t.ID, // The client needs to know the table ID for chat to work properly
-		Names:            names,
-		Seat:             seat,
+		PlayerNames:      playerNames,
+		OurPlayerIndex:   ourPlayerIndex,
 		Spectating:       !t.Replay && j != -1,
 		Replay:           t.Replay,
 		SharedReplay:     t.Replay && t.Visible,

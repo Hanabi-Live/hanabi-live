@@ -1,25 +1,61 @@
 // Functions to calculate game stats such as pace and efficiency
 
+import {
+  deckRules,
+  handRules,
+  variantRules,
+  cardRules,
+} from '../rules';
+import CardState from '../types/CardState';
 import { MAX_CLUE_NUM } from '../types/constants';
+import GameMetadata from '../types/GameMetadata';
 import { PaceRisk } from '../types/GameState';
+import StackDirection from '../types/StackDirection';
 import Variant from '../types/Variant';
-import * as deck from './deck';
-import * as hand from './hand';
-import * as variantRules from './variant';
+import * as reversibleRules from './variants/reversible';
 
-/*
-export function maxScore(state: GameState): number {
-  // TODO
-}
-*/
+export const getMaxScore = (
+  deck: readonly CardState[],
+  playStackDirections: readonly StackDirection[],
+  variant: Variant,
+): number => {
+  let maxScore = 0;
+
+  // Getting the maximum score is much more complicated if we are playing a
+  // "Reversed" or "Up or Down" variant
+  if (variantRules.hasReversedSuits(variant)) {
+    return reversibleRules.getMaxScore(deck, playStackDirections, variant);
+  }
+
+  for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
+    const suit = variant.suits[suitIndex];
+    for (let rank = 1; rank <= 5; rank++) {
+      // Search through the deck to see if all the copies of this card are discarded already
+      const total = deckRules.numCopiesOfCard(suit, rank, variant);
+      const discarded = deckRules.discardedCopies(deck, suitIndex, rank);
+      if (total > discarded) {
+        maxScore += 1;
+      } else {
+        break;
+      }
+    }
+  }
+
+  return maxScore;
+};
 
 // Pace is the number of discards that can happen while still getting the maximum score
-export function pace(
+export const pace = (
   score: number,
   deckSize: number,
   maxScore: number,
   numPlayers: number,
-): number | null {
+  gameOver: boolean,
+): number | null => {
+  if (gameOver) {
+    return null;
+  }
+
   if (deckSize <= 0) {
     return null;
   }
@@ -27,10 +63,10 @@ export function pace(
   // The formula for pace was derived by Libster
   const adjustedScorePlusDeck = score + deckSize - maxScore;
   return adjustedScorePlusDeck + numPlayers;
-}
+};
 
 // A measure of how risky a discard would be right now, using different heuristics
-export function paceRisk(currentPace: number | null, numPlayers: number): PaceRisk {
+export const paceRisk = (currentPace: number | null, numPlayers: number): PaceRisk => {
   if (currentPace === null) {
     return 'Null';
   }
@@ -52,25 +88,63 @@ export function paceRisk(currentPace: number | null, numPlayers: number): PaceRi
   }
 
   return 'LowRisk';
-}
+};
 
 // Calculate the starting pace with the following formula:
 //   total cards in the deck -
 //   ((number of cards in a player's hand - 1) * number of players) -
 //   (5 * number of suits)
 // https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
-export function startingPace(
+export const startingPace = (
   numPlayers: number,
   cardsPerHand: number,
   variant: Variant,
-): number {
-  let p = deck.totalCards(variant);
-  p -= (cardsPerHand - 1) * numPlayers;
-  p -= 5 * variant.suits.length;
-  return p;
-}
+): number => {
+  const totalCards = deckRules.totalCards(variant);
+  const middleTerm = (cardsPerHand - 1) * numPlayers;
+  const totalCardsToBePlayed = 5 * variant.suits.length;
+  return totalCards - middleTerm - totalCardsToBePlayed;
+};
 
-export function efficiency(cardsGotten: number, potentialCluesLost: number): number {
+export const cardsGotten = (
+  deck: readonly CardState[],
+  playStacks: ReadonlyArray<readonly number[]>,
+  playStackDirections: readonly StackDirection[],
+  metadata: GameMetadata,
+  variant: Variant,
+) => {
+  let currentCardsGotten = 0;
+
+  // Go through the deck and count the cards that are gotten
+  for (const card of deck) {
+    if (
+      card.location === 'playStack'
+      || (
+        card.location === 'discard'
+        && card.isMisplayed
+        && variantRules.isThrowItInAHole(variant)
+        && !metadata.spectating
+      )
+    ) {
+      // A card is considered to be gotten if it is already played
+      // (and failed discards count as played for the purposes of "Throw It in a Hole" variants)
+      currentCardsGotten += 1;
+    } else if (
+      typeof card.location === 'number' // This card is in a player's hand
+      && cardRules.isClued(card)
+      && !cardRules.allPossibilitiesTrash(card, deck, playStacks, playStackDirections, variant)
+    ) {
+      // Clued cards in player's hands are considered to be gotten,
+      // since they will eventually be played from Good Touch Principle
+      // (unless the card is globally known to be trash)
+      currentCardsGotten += 1;
+    }
+  }
+
+  return currentCardsGotten;
+};
+
+export const efficiency = (currentCardsGotten: number, potentialCluesLost: number): number => {
   // First, handle the case where no clues have been given yet
   // Infinity is normal and expected in this case (on e.g. the first turn of the game)
   // We must explicitly check for this because while e.g. "1 / 0" in JavaScript is infinity,
@@ -79,18 +153,18 @@ export function efficiency(cardsGotten: number, potentialCluesLost: number): num
     return Infinity;
   }
 
-  return cardsGotten / potentialCluesLost;
-}
+  return currentCardsGotten / potentialCluesLost;
+};
 
 // Calculate the minimum amount of efficiency needed in order to win this variant
-export function minEfficiency(
+export const minEfficiency = (
   numPlayers: number,
   variant: Variant,
   oneExtraCard: boolean,
   oneLessCard: boolean,
-): number {
+): number => {
   // First, calculate the starting pace:
-  const cardsPerHand = hand.cardsPerHand(numPlayers, oneExtraCard, oneLessCard);
+  const cardsPerHand = handRules.cardsPerHand(numPlayers, oneExtraCard, oneLessCard);
   const initialPace = startingPace(numPlayers, cardsPerHand, variant);
 
   // Second, use the pace to calculate the minimum efficiency required to win the game with the
@@ -122,4 +196,36 @@ export function minEfficiency(
   );
 
   return minEfficiencyNumerator / minEfficiencyDenominator;
-}
+};
+
+// After a discard, it is a "double discard situation" if there is only one other copy of this card
+// and it needs to be played
+export const doubleDiscard = (
+  order: number,
+  deck: readonly CardState[],
+  playStacks: ReadonlyArray<readonly number[]>,
+  playStackDirections: readonly StackDirection[],
+  variant: Variant,
+) => {
+  const card = deck[order];
+  if (card.suitIndex === null || card.rank === null) {
+    if (variantRules.isThrowItInAHole(variant)) {
+      // In "Throw It In A Hole", it is expected to get scrubbed discards
+      return false;
+    }
+    throw new Error(`Unable to find the information for card ${order} in the state deck.`);
+  }
+  const suit = variant.suits[card.suitIndex];
+  const total = deckRules.numCopiesOfCard(suit, card.rank, variant);
+  const discarded = deckRules.discardedCopies(deck, card.suitIndex, card.rank);
+  const needsToBePlayed = cardRules.needsToBePlayed(
+    card.suitIndex,
+    card.rank,
+    deck,
+    playStacks,
+    playStackDirections,
+    variant,
+  );
+
+  return total === discarded + 1 && needsToBePlayed;
+};

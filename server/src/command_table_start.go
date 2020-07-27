@@ -163,7 +163,7 @@ func commandTableStart(s *Session, d *CommandData) {
 	}
 	logger.Info(t.GetName()+"Using seed:", g.Seed)
 
-	g.InitSeed() // Seed the random number generator
+	setSeed(g.Seed) // Seed the random number generator
 	if shuffleDeck {
 		g.ShuffleDeck()
 	}
@@ -242,16 +242,6 @@ func commandTableStart(s *Session, d *CommandData) {
 	// Record the initial status of the game
 	t.NotifyStatus()
 
-	// Show who goes first
-	// (this must be sent before the "turn" message
-	// so that the text appears on the first turn of the replay)
-	text := g.Players[g.ActivePlayer].Name + " goes first"
-	g.Actions = append(g.Actions, ActionText{
-		Type: "text",
-		Text: text,
-	})
-	logger.Info(t.GetName() + text)
-
 	// Record a message about the first turn
 	t.NotifyTurn()
 
@@ -297,6 +287,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		for _, p := range t.Players {
 			if p.Session != nil {
 				p.Session.Set("status", StatusPlaying)
+				p.Session.Set("table", t.ID)
 				notifyAllUser(p.Session)
 			}
 		}

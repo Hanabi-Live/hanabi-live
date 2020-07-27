@@ -171,6 +171,7 @@ func (t *Table) CheckIdle() {
 		commandAction(s, &CommandData{
 			TableID: t.ID,
 			Type:    ActionTypeGameOver,
+			Target:  -1,
 			Value:   EndConditionIdleTimeout,
 		})
 	} else {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"hash/crc64"
 	"math/rand"
 )
 
@@ -10,16 +9,20 @@ func (g *Game) InitDeck() {
 	// then we can simply add every card to the deck as specified
 	if g.ExtraOptions.CustomDeck != nil {
 		for _, card := range g.ExtraOptions.CustomDeck {
-			g.Deck = append(g.Deck, NewCard(card.Suit, card.Rank))
+			g.Deck = append(g.Deck, NewCard(card.SuitIndex, card.Rank))
+			g.CardIdentities = append(g.CardIdentities, &CardIdentity{
+				SuitIndex: card.SuitIndex,
+				Rank:      card.Rank,
+			})
 		}
 		return
 	}
 
 	// Suits are represented as a slice of integers from 0 to the number of suits - 1
-	// (e.g. {0, 1, 2, 3, 4} for a "No Variant" game)
-	for suitInt, suitObject := range variants[g.Options.VariantName].Suits {
+	// (e.g. [0, 1, 2, 3, 4] for a "No Variant" game)
+	for suitIndex, suitObject := range variants[g.Options.VariantName].Suits {
 		// Ranks are represented as a slice of integers
-		// (e.g. {1, 2, 3, 4, 5} for a "No Variant" game)
+		// (e.g. [1, 2, 3, 4, 5] for a "No Variant" game)
 		for _, rank := range variants[g.Options.VariantName].Ranks {
 			// In a normal suit, there are:
 			// - three 1's
@@ -49,20 +52,14 @@ func (g *Game) InitDeck() {
 
 			for i := 0; i < amountToAdd; i++ {
 				// Add the card to the deck
-				g.Deck = append(g.Deck, NewCard(suitInt, rank))
+				g.Deck = append(g.Deck, NewCard(suitIndex, rank))
+				g.CardIdentities = append(g.CardIdentities, &CardIdentity{
+					SuitIndex: suitIndex,
+					Rank:      rank,
+				})
 			}
 		}
 	}
-}
-
-// InitSeed seeds the random number generator with the game seed
-// Golang's "rand.Seed()" function takes an int64, so we need to convert a string to an int64
-// We use the CRC64 hash function to do this
-// Also note that seeding with negative numbers will not work
-func (g *Game) InitSeed() {
-	crc64Table := crc64.MakeTable(crc64.ECMA)
-	intSeed := crc64.Checksum([]byte(g.Seed), crc64Table)
-	rand.Seed(int64(intSeed))
 }
 
 func (g *Game) ShuffleDeck() {
@@ -70,5 +67,6 @@ func (g *Game) ShuffleDeck() {
 	for i := range g.Deck {
 		j := rand.Intn(i + 1)
 		g.Deck[i], g.Deck[j] = g.Deck[j], g.Deck[i]
+		g.CardIdentities[i], g.CardIdentities[j] = g.CardIdentities[j], g.CardIdentities[i]
 	}
 }

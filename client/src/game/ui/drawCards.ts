@@ -4,7 +4,7 @@ import {
   CARD_H,
   CARD_W,
 } from '../../constants';
-import { SUITS } from '../data/gameData';
+import { getSuit } from '../data/gameData';
 import * as variantRules from '../rules/variant';
 import Color from '../types/Color';
 import { STACK_BASE_RANK, UNKNOWN_CARD_RANK, START_CARD_RANK } from '../types/constants';
@@ -23,10 +23,7 @@ export default function drawCards(
 
   // Add the "Unknown" suit to the list of suits for this variant
   // The unknown suit has blank white cards, representing cards of known rank but unknown suit
-  const unknownSuit = SUITS.get('Unknown');
-  if (unknownSuit === undefined) {
-    throw new Error('Failed to get the "Unknown" variant in the "drawCards()" function.');
-  }
+  const unknownSuit = getSuit('Unknown');
   const suits = variant.suits.concat(unknownSuit);
 
   for (const suit of suits) {
@@ -46,9 +43,9 @@ export default function drawCards(
         throw new Error('Failed to get the context for a new canvas element.');
       }
 
-      // We don't need the cross texture pattern on the stack base
+      // We don't need the background on the stack base
       if (rank !== STACK_BASE_RANK) {
-        drawCardTexture(ctx);
+        drawCardBackground(ctx);
       }
 
       // Make the special corners on the cards for dual-color suits
@@ -274,7 +271,7 @@ const makeUnknownCard = () => {
     throw new Error('Failed to get the context for a new canvas element.');
   }
 
-  drawCardTexture(ctx);
+  drawCardBackground(ctx);
   ctx.fillStyle = 'black';
   cardBorderPath(ctx, 4);
 
@@ -428,31 +425,11 @@ const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Color[])
   ctx.restore();
 };
 
-// Draw texture lines on card
-const drawCardTexture = (ctx: CanvasRenderingContext2D) => {
+const drawCardBackground = (ctx: CanvasRenderingContext2D) => {
   cardBorderPath(ctx, 4);
 
   ctx.fillStyle = 'white';
   ctx.fill();
-
-  ctx.save();
-  ctx.clip();
-  ctx.globalAlpha = 0.2;
-  ctx.strokeStyle = 'black';
-
-  for (let x = 0; x < CARD_W; x += 4 + (Math.random() * 4)) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, CARD_H);
-    ctx.stroke();
-  }
-
-  for (let y = 0; y < CARD_H; y += 4 + (Math.random() * 4)) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(CARD_W, y);
-    ctx.stroke();
-  }
 
   ctx.restore();
 };

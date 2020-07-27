@@ -1,22 +1,24 @@
 // This is one of the entries in the clue log (in the top-right-hand corner of the UI)
 
 import Konva from 'konva';
+import { cluesRules } from '../rules';
+import { StateClue } from '../types/GameState';
 import FitText from './controls/FitText';
-import drawLayer from './drawLayer';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
+import { drawLayer } from './konvaHelpers';
 import * as replay from './replay';
 
 export default class ClueEntry extends Konva.Group {
-  list: number[];
-  negativeList: number[];
-  turn: number;
+  clue: StateClue;
 
   background: Konva.Rect;
   negativeMarker: Konva.Text;
 
-  constructor(config: Konva.ContainerConfig) {
+  constructor(clue: StateClue, config: Konva.ContainerConfig) {
     super(config);
+
+    this.clue = clue;
 
     // Object variables
     const w = config.width;
@@ -27,9 +29,6 @@ export default class ClueEntry extends Konva.Group {
     if (h === undefined) {
       throw new Error('ClueEntry was not provided with a "h" value.');
     }
-    this.list = config.list as number[];
-    this.negativeList = config.negativeList as number[];
-    this.turn = config.turn as number;
 
     this.background = new Konva.Rect({
       x: 0,
@@ -50,7 +49,8 @@ export default class ClueEntry extends Konva.Group {
       fontSize: 0.9 * h,
       fontFamily: 'Verdana',
       fill: 'white',
-      text: config.giver as string | undefined,
+      text: globals.metadata.playerNames[clue.giver],
+      verticalAlign: 'middle',
     });
     this.add(giver);
 
@@ -62,10 +62,13 @@ export default class ClueEntry extends Konva.Group {
       fontSize: 0.9 * h,
       fontFamily: 'Verdana',
       fill: 'white',
-      text: config.target as string | undefined,
+      text: globals.metadata.playerNames[clue.target],
+      verticalAlign: 'middle',
     });
     this.add(target);
 
+    // TODO: use character and playerNames from state
+    const characterID = globals.metadata.characterAssignments[clue.giver];
     const name = new Konva.Text({
       x: 0.75 * w,
       y: 0,
@@ -75,7 +78,8 @@ export default class ClueEntry extends Konva.Group {
       fontSize: 0.9 * h,
       fontFamily: 'Verdana',
       fill: 'white',
-      text: config.clueName as string | undefined,
+      text: cluesRules.getClueName(clue.type, clue.value, globals.variant, characterID),
+      verticalAlign: 'middle',
     });
     this.add(name);
 
@@ -107,7 +111,7 @@ export default class ClueEntry extends Konva.Group {
 
     // Click an entry in the clue log to go to that turn in the replay
     this.background.on('click tap', () => {
-      replay.clueLogClickHandler(this.turn);
+      replay.goToSegment(this.clue.segment + 1, true);
     });
   }
 
@@ -116,14 +120,14 @@ export default class ClueEntry extends Konva.Group {
     this.background.fill('white');
     this.negativeMarker.hide();
 
-    for (let i = 0; i < this.list.length; i++) {
-      if (globals.deck[this.list[i]] === target) {
+    for (let i = 0; i < this.clue.list.length; i++) {
+      if (globals.deck[this.clue.list[i]] === target) {
         this.background.opacity(0.4);
       }
     }
 
-    for (let i = 0; i < this.negativeList.length; i++) {
-      if (globals.deck[this.negativeList[i]] === target) {
+    for (let i = 0; i < this.clue.negativeList.length; i++) {
+      if (globals.deck[this.clue.negativeList[i]] === target) {
         this.background.opacity(0.4);
         this.background.fill('#ff7777');
         if (globals.lobby.settings.colorblindMode) {

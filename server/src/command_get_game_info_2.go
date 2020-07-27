@@ -49,13 +49,9 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	// Check to see if we need to remove some card information
 	var scrubbedActions []interface{}
 	if !t.Replay {
-		for _, a := range g.Actions {
-			drawAction, ok := a.(ActionDraw)
-			if ok && drawAction.Type == "draw" {
-				drawAction.Scrub(t, s.UserID())
-				a = drawAction
-			}
-			scrubbedActions = append(scrubbedActions, a)
+		for _, action := range g.Actions {
+			scrubbedAction := CheckScrub(t, action, s.UserID())
+			scrubbedActions = append(scrubbedActions, scrubbedAction)
 		}
 	} else {
 		// The person requesting the game state is not an active player
@@ -73,6 +69,11 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 		List:    scrubbedActions,
 	})
 
+	// Send them the full list of all the cards in the deck if the game is already over
+	if t.Replay {
+		s.NotifyCardIdentities(t)
+	}
+
 	// If it is their turn, send a "yourTurn" message
 	if !t.Replay && g.ActivePlayer == i {
 		s.NotifyYourTurn(t)
@@ -81,7 +82,7 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	// Check if the game is still in progress
 	if t.Replay {
 		// Since the game is over, send them the notes from all the players & spectators
-		s.NotifyNoteList(t)
+		s.NotifyNoteList(t, -1)
 	} else {
 		// Send them the current connection status of the players
 		s.NotifyConnected(t)
@@ -95,7 +96,7 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 		}
 
 		if i > -1 {
-			// They are a player
+			// They are a player in an ongoing game
 			p := g.Players[i]
 
 			// Send them a list of only their notes
@@ -111,9 +112,9 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 			t.Players[i].Present = true
 			t.NotifyConnected()
 		} else if j > -1 {
-			// They are a spectator
-			// Send them the notes from all the players & spectators
-			s.NotifyNoteList(t)
+			// They are a spectator in an ongoing game
+			sp := t.Spectators[j]
+			s.NotifyNoteList(t, sp.ShadowPlayerIndex)
 		}
 	}
 
@@ -142,11 +143,11 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 		s.NotifyReplayLeader(t, false)
 
 		// Send them to the current turn that everyone else is at
-		type ReplayTurnMessage struct {
-			Turn int `json:"turn"`
+		type ReplaySegmentMessage struct {
+			Segment int `json:"segment"`
 		}
-		s.Emit("replayTurn", &ReplayTurnMessage{
-			Turn: g.Turn,
+		s.Emit("replaySegment", &ReplaySegmentMessage{
+			Segment: g.Turn,
 		})
 	}
 }

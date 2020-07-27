@@ -3,16 +3,15 @@ package main
 import (
 	"strconv"
 	"strings"
-	"time"
 
 	melody "gopkg.in/olahol/melody.v1"
 )
 
 type GameJSON struct {
-	ID      int           `json:"id,omitempty"` // Optional element only used for game exports
-	Players []string      `json:"players"`
-	Deck    []SimpleCard  `json:"deck"`
-	Actions []*GameAction `json:"actions"`
+	ID      int             `json:"id,omitempty"` // Optional element only used for game exports
+	Players []string        `json:"players"`
+	Deck    []*CardIdentity `json:"deck"`
+	Actions []*GameAction   `json:"actions"`
 	// Options is an optional element
 	// Thus, it must be a pointer so that we can tell if the value was specified or not
 	Options *OptionsJSON `json:"options,omitempty"`
@@ -106,6 +105,12 @@ func commandReplayCreate(s *Session, d *CommandData) {
 		TableID: t.ID,
 	})
 	g := t.Game
+	if g == nil {
+		logger.Error("Failed to start the game when after loading database game #" + strconv.Itoa(d.GameID) + ".")
+		s.Error(InitGameFail)
+		delete(tables, t.ID)
+		return
+	}
 	if d.Source == "id" {
 		g.ID = d.GameID
 	}
@@ -120,19 +125,13 @@ func commandReplayCreate(s *Session, d *CommandData) {
 		return
 	}
 
-	// If the game was terminated or did not finish, then the deck order will not be appended yet
-	// (which is normally done in the "Game.End()" function)
-	if g.EndCondition == EndConditionInProgress {
-		g.End() // This will only append the deck order and then return early
-	}
-
 	// Handle scripts that are creating replays with no sessions
 	if s == nil {
 		delete(tables, t.ID)
 		return
 	}
 
-	// Do a mini-version of the rest of steps in the "g.End()" function
+	// Do a mini-version of the steps in the "g.End()" function
 	t.Replay = true
 	g.EndTurn = g.Turn
 	g.Turn = 0 // We want to start viewing the replay at the beginning, not the end
@@ -261,9 +260,9 @@ func validateJSON(s *Session, d *CommandData) bool {
 		return false
 	}
 	for i, card := range d.GameJSON.Deck {
-		if card.Suit < 0 || card.Suit > len(variant.Suits)-1 {
+		if card.SuitIndex < 0 || card.SuitIndex > len(variant.Suits)-1 {
 			s.Warning("The card at index " + strconv.Itoa(i) +
-				" has an invalid suit number of " + strconv.Itoa(card.Suit) + ".")
+				" has an invalid suit number of " + strconv.Itoa(card.SuitIndex) + ".")
 			return false
 		}
 		if (card.Rank < 1 || card.Rank > 5) && card.Rank != StartCardRank {
@@ -336,6 +335,17 @@ func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
 		return false
 	} else {
 		playerNames = v
+	}
+
+	// Ensure that the number of game participants matches the number of players that are supposed
+	// to be in the game
+	if len(playerNames) != t.Options.NumPlayers {
+		logger.Error("There are not enough game participants for game #" +
+			strconv.Itoa(d.GameID) + ". (There were " + strconv.Itoa(len(playerNames)) +
+			" players in the database and there should be " +
+			strconv.Itoa(t.Options.NumPlayers) + " players.)")
+		s.Error(InitGameFail)
+		return false
 	}
 
 	// Convert the database player objects to Player objects
@@ -438,22 +448,14 @@ func loadFakePlayers(t *Table, playerNames []string) {
 	}
 }
 
+// newFakeSession prepares a "fake" user session that will be used for game emulation
 func newFakeSession(id int, name string) *Session {
-	// Prepare a "fake" player session that will be used for emulation
-	keys := make(map[string]interface{})
+	keys := defaultSessionKeys()
 
 	keys["sessionID"] = id
 	keys["userID"] = id
 	keys["username"] = name
-	keys["muted"] = false
-	keys["status"] = StatusLobby
-	keys["friends"] = make(map[int]struct{})
-	keys["reverseFriends"] = make(map[int]struct{})
-	keys["inactive"] = false
 	keys["fakeUser"] = true
-	keys["rateLimitAllowance"] = RateLimitRate
-	keys["rateLimitLastCheck"] = time.Now()
-	keys["banned"] = false
 
 	return &Session{
 		&melody.Session{
@@ -526,34 +528,12 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 
 		p := t.Players[g.ActivePlayer]
 
-		if action.Type == ActionTypeGameOver && action.Value == EndConditionTerminated {
-			// Terminations do not flow through the "commandAction()" function,
-			// so this is a special case
-			// (this is because any player can terminate the game, even if it is not their turn)
-			var ps *Session
-			var serverTermination bool
-			if action.Target < 0 {
-				// A target of "-1" indicates that this was a termination initiated by the server
-				// itself, so just use the session of the 1st player to send the termination
-				ps = t.Players[0].Session
-				serverTermination = true
-			} else {
-				ps = t.Players[action.Target].Session
-				serverTermination = false
-			}
-			commandTableTerminate(ps, &CommandData{
-				TableID: t.ID,
-				Server:  serverTermination,
-			})
-		} else {
-			// A normal action (e.g. play, discard, or clue)
-			commandAction(p.Session, &CommandData{
-				TableID: t.ID,
-				Type:    action.Type,
-				Target:  action.Target,
-				Value:   action.Value,
-			})
-		}
+		commandAction(p.Session, &CommandData{
+			TableID: t.ID,
+			Type:    action.Type,
+			Target:  action.Target,
+			Value:   action.Value,
+		})
 
 		if g.InvalidActionOccurred {
 			logger.Info("An invalid action occurred for game " + strconv.Itoa(d.GameID) + "; " +

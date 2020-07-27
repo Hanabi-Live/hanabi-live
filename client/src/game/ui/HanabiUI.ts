@@ -4,6 +4,7 @@
 
 import { Globals as LobbyGlobals } from '../../globals';
 import { GameExports } from '../main';
+import cursorSet from './cursorSet';
 import globals, { Globals } from './globals';
 import * as keyboard from './keyboard';
 import * as timer from './timer';
@@ -28,8 +29,8 @@ export default class HanabiUI {
     globals.game = game; // This is the "gameExports" from the "/src/game/main.ts" file
     // We should also combine this with the UI object in the future
 
-    // Initialize the stage
-    initStage();
+    initStageSize();
+    cursorSet('default');
 
     // The HanabiUI object is now instantiated, but none of the actual UI elements are drawn yet
     // We must wait for the "init" message from the server in order to know how many players are in
@@ -60,12 +61,12 @@ export default class HanabiUI {
   }
 
   reshowClueUIAfterWarning() { // eslint-disable-line class-methods-use-this
-    turn.showClueUIAndEnableDragging();
+    turn.showClueUI();
   }
 }
 
 // Initialize and size the stage depending on the window size
-const initStage = () => {
+const initStageSize = () => {
   const ratio = 16 / 9;
 
   let ww = window.innerWidth;

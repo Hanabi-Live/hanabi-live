@@ -85,9 +85,9 @@ export const init = () => {
       localStorage.setItem('chatWindowWidth', event.target.style.width);
       localStorage.setItem('chatWindowHeight', event.target.style.height);
       const chatElement = $(`#${event.target.id}`);
-      if (chatElement) {
-        localStorage.setItem('chatWindowX', chatElement.attr('data-x') || '0');
-        localStorage.setItem('chatWindowY', chatElement.attr('data-y') || '0');
+      if (chatElement !== undefined) {
+        localStorage.setItem('chatWindowX', chatElement.attr('data-x') ?? '0');
+        localStorage.setItem('chatWindowY', chatElement.attr('data-y') ?? '0');
       } else {
         throw new Error(`Failed to get the "${event.target.id}" element.`);
       }
@@ -189,7 +189,7 @@ export const hide = () => {
 };
 
 // Subroutine to move an element (using the "transform" CSS property)
-function moveElement(element: JQuery, x: number, y: number) {
+const moveElement = (element: JQuery, x: number, y: number) => {
   // Update the element's style
   const transform = `translate(${x}px, ${y}px)`;
   element.css('webkitTransform', transform);
@@ -198,4 +198,4 @@ function moveElement(element: JQuery, x: number, y: number) {
   // Keep the dragged position in the "data-x" & "data-y" attributes
   element.attr('data-x', x);
   element.attr('data-y', y);
-}
+};

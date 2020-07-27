@@ -252,10 +252,10 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			return false
 		}
 
-		if variant.Suits[card.Suit].AllClueColors {
+		if variant.Suits[card.SuitIndex].AllClueColors {
 			return true
 		}
-		if variant.Suits[card.Suit].NoClueColors {
+		if variant.Suits[card.SuitIndex].NoClueColors {
 			return false
 		}
 
@@ -269,7 +269,7 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 		}
 
 		clueColor := variant.ClueColors[clue.Value]
-		cardColors := variant.Suits[card.Suit].ClueColors
+		cardColors := variant.Suits[card.SuitIndex].ClueColors
 		return stringInSlice(clueColor, cardColors)
 	}
 
@@ -278,10 +278,10 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			return false
 		}
 
-		if variant.Suits[card.Suit].AllClueRanks {
+		if variant.Suits[card.SuitIndex].AllClueRanks {
 			return true
 		}
-		if variant.Suits[card.Suit].NoClueRanks {
+		if variant.Suits[card.SuitIndex].NoClueRanks {
 			return false
 		}
 

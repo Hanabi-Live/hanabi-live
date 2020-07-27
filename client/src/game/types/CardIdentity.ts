@@ -1,6 +1,4 @@
-import Suit from './Suit';
-
-export interface CardIdentity {
-  suit: Suit | null;
-  rank: number | null;
+export default interface CardIdentity {
+  readonly suitIndex: number | null;
+  readonly rank: number | null;
 }

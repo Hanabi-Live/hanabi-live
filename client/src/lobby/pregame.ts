@@ -1,11 +1,12 @@
 // The lobby area that shows all of the players in the current unstarted game
 
 import * as chat from '../chat';
-import { VARIANTS } from '../game/data/gameData';
+import { getVariant } from '../game/data/gameData';
 import globals from '../globals';
 import * as misc from '../misc';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
+import Screen from './types/Screen';
 import * as usersDraw from './usersDraw';
 
 // Constants
@@ -20,7 +21,8 @@ const tooltipOptions: JQueryTooltipster.ITooltipsterOptions = {
 };
 
 export const show = () => {
-  globals.currentScreen = 'pregame';
+  globals.currentScreen = Screen.PreGame;
+  usersDraw.draw();
 
   // Replace the list of current games with a list of the current players
   $('#lobby-pregame').show();
@@ -63,7 +65,7 @@ export const show = () => {
 };
 
 export const hide = () => {
-  globals.currentScreen = 'lobby';
+  globals.currentScreen = Screen.Lobby;
   tablesDraw();
   usersDraw.draw();
 
@@ -252,7 +254,7 @@ export const draw = () => {
     const div = $(`#lobby-pregame-player-${(i + 1)}`);
 
     const player = globals.game.players[i];
-    if (!player) {
+    if (player === undefined) {
       div.html('');
       div.hide();
       continue;
@@ -356,10 +358,7 @@ export const draw = () => {
       <div class="hidden">
         <div id="lobby-pregame-player-${i + 1}-tooltip" class="lobby-pregame-tooltip">
     `;
-    const variant = VARIANTS.get(globals.game.options.variantName);
-    if (variant === undefined) {
-      throw new Error(`Unable to find the "${globals.game.options.variantName}" variant in the "VARIANTS" map.`);
-    }
+    const variant = getVariant(globals.game.options.variantName);
     const { maxScore } = variant;
     for (let j = 2; j <= 6; j++) {
       html += '<div class="row">';

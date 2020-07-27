@@ -24,6 +24,7 @@ type TemplateData struct {
 	Domain      string // Used to validate that the user is going to the correct URL
 	Version     int
 	Compiling   bool // True if we are currently recompiling the TypeScript client
+	WebpackPort int
 
 	// Profile
 	Name       string
@@ -45,6 +46,7 @@ type TemplateData struct {
 	PercentageMaxScores        string
 	NumMaxScoresPerType        []int    // Used on the "Missing Scores" page
 	PercentageMaxScoresPerType []string // Used on the "Missing Scores" page
+	NumTotalPlayers            int      // Used on the "Missing Scores" page
 	VariantStats               []UserVariantStats
 
 	// Stats
@@ -71,7 +73,9 @@ const (
 
 var (
 	domain       string
+	useTLS       bool
 	GATrackingID string
+	webpackPort  int
 
 	// HTTPClientWithTimeout is used for sending web requests to external sites,
 	// which is used in various middleware
@@ -109,7 +113,6 @@ func httpInit() {
 	}
 	tlsCertFile := os.Getenv("TLS_CERT_FILE")
 	tlsKeyFile := os.Getenv("TLS_KEY_FILE")
-	useTLS := false
 	if len(tlsCertFile) != 0 && len(tlsKeyFile) != 0 {
 		useTLS = true
 		if port == 80 {
@@ -117,6 +120,17 @@ func httpInit() {
 		}
 	}
 	GATrackingID = os.Getenv("GA_TRACKING_ID")
+	webpackPortString := os.Getenv("WEBPACK_DEV_SERVER_PORT")
+	if len(webpackPortString) == 0 {
+		webpackPort = 8080
+	} else {
+		if v, err := strconv.Atoi(webpackPortString); err != nil {
+			logger.Fatal("Failed to convert the \"WEBPACK_DEV_SERVER_PORT\" environment variable to a number.")
+			return
+		} else {
+			webpackPort = v
+		}
+	}
 
 	// Create a new Gin HTTP router
 	gin.SetMode(gin.ReleaseMode)                       // Comment this out to debug HTTP stuff
@@ -127,32 +141,33 @@ func httpInit() {
 	// The limiter works per path request,
 	// meaning that a user can only request one specific path every X seconds
 	// Thus, this does not impact the ability of a user to download CSS and image files all at once
-	limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
-	limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
-	limiterMiddleware := tollbooth_gin.LimitHandler(limiter)
-	httpRouter.Use(limiterMiddleware)
+	// (However, we do not want to use the rate-limiter in development, since we might have multiple
+	// tabs open that are automatically-refreshing with webpack-dev-server)
+	if !isDev {
+		limiter := tollbooth.NewLimiter(2, nil) // Limit each user to 2 requests per second
+		limiter.SetMessage(http.StatusText(http.StatusTooManyRequests))
+		limiterMiddleware := tollbooth_gin.LimitHandler(limiter)
+		httpRouter.Use(limiterMiddleware)
+	}
 
 	// Create a session store
 	httpSessionStore := cookie.NewStore([]byte(sessionSecret))
 	options := gsessions.Options{
-		Path:   "/",
-		Domain: domain,
-		// After getting a cookie via "/login", the client will immediately
-		// establish a WebSocket connection via "/ws", so the cookie only needs
-		// to exist for that time frame
+		Path:   "/",                // The cookie should apply to the entire domain
 		MaxAge: HTTPSessionTimeout, // In seconds
+	}
+	if !isDev {
+		// Bind the cookie to this specific domain for security purposes
+		options.Domain = domain
 		// Only send the cookie over HTTPS:
 		// https://www.owasp.org/index.php/Testing_for_cookies_attributes_(OTG-SESS-002)
-		Secure: true,
+		options.Secure = useTLS
 		// Mitigate XSS attacks:
 		// https://www.owasp.org/index.php/HttpOnly
-		HttpOnly: true,
+		options.HttpOnly = true
 		// Mitigate CSRF attacks:
 		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#SameSite_cookies
-		SameSite: http.SameSiteStrictMode,
-	}
-	if !useTLS {
-		options.Secure = false
+		options.SameSite = http.SameSiteStrictMode
 	}
 	httpSessionStore.Options(options)
 
@@ -194,6 +209,7 @@ func httpInit() {
 	// Path handlers (for development)
 	// ("/dev" is the same as "/" but uses webpack-dev-server to serve JavaScript)
 	httpRouter.GET("/dev", httpMain)
+	httpRouter.GET("/dev/", httpMain)
 	httpRouter.GET("/dev/replay", httpMain)
 	httpRouter.GET("/dev/replay/:gameID", httpMain)
 	httpRouter.GET("/dev/replay/:gameID/:turn", httpMain)
@@ -206,9 +222,9 @@ func httpInit() {
 
 	// Path handlers for other URLs
 	httpRouter.GET("/scores", httpScores)
-	httpRouter.GET("/scores/:player", httpScores)
+	httpRouter.GET("/scores/:player1", httpScores)
 	httpRouter.GET("/profile", httpScores) // "/profile" is an alias for "/scores"
-	httpRouter.GET("/profile/:player", httpScores)
+	httpRouter.GET("/profile/:player1", httpScores)
 	httpRouter.GET("/history", httpHistory)
 	httpRouter.GET("/history/:player1", httpHistory)
 	httpRouter.GET("/history/:player1/:player2", httpHistory)
@@ -216,10 +232,15 @@ func httpInit() {
 	httpRouter.GET("/history/:player1/:player2/:player3/:player4", httpHistory)
 	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5", httpHistory)
 	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5/:player6", httpHistory)
-	httpRouter.GET("/missing-scores", httpScores)
-	httpRouter.GET("/missing-scores/:player", httpScores)
+	httpRouter.GET("/missing-scores", httpMissingScores)
+	httpRouter.GET("/missing-scores/:player1", httpMissingScores)
+	httpRouter.GET("/missing-scores/:player1/:player2", httpMissingScoresMultiple)
+	httpRouter.GET("/missing-scores/:player1/:player2/:player3", httpMissingScoresMultiple)
+	httpRouter.GET("/missing-scores/:player1/:player2/:player3/:player4", httpMissingScoresMultiple)
+	httpRouter.GET("/missing-scores/:player1/:player2/:player3/:player4/:player5", httpMissingScoresMultiple)
+	httpRouter.GET("/missing-scores/:player1/:player2/:player3/:player4/:player5/:player6", httpMissingScoresMultiple)
 	httpRouter.GET("/tags", httpTags)
-	httpRouter.GET("/tags/:player", httpTags)
+	httpRouter.GET("/tags/:player1", httpTags)
 	httpRouter.GET("/seed", httpSeed)
 	httpRouter.GET("/seed/:seed", httpSeed) // Display all games played on a given seed
 	httpRouter.GET("/stats", httpStats)

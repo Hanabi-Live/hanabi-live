@@ -52,6 +52,7 @@ export default function drawReplayArea(winW: number, winH: number) {
     listening: true,
   });
   replayBarClickRect.on('click tap', replay.barClick);
+  replayBarClickRect.on('wheel', replay.barScroll);
   globals.elements.replayArea.add(replayBarClickRect);
 
   const shuttleValues = {
@@ -76,12 +77,13 @@ export default function drawReplayArea(winW: number, winH: number) {
     fill: '#d1d1d1', // Gray
     stroke: shuttleValues.stroke,
     strokeWidth: shuttleValues.strokeWidth * winW,
-    visible: !globals.useSharedTurns,
+    visible: false,
     listening: true,
   });
   globals.elements.replayShuttleShared.on('click tap', () => {
     // This is needed because the shared replay shuttle will block the replay bar
-    replay.goto(globals.sharedReplayTurn, true);
+    const sharedSegment = globals.store!.getState().replay.sharedSegment;
+    replay.goToSegment(sharedSegment, true);
   });
   globals.elements.replayArea.add(globals.elements.replayShuttleShared);
 
@@ -96,11 +98,13 @@ export default function drawReplayArea(winW: number, winH: number) {
     cornerRadius: shuttleValues.cornerRadius * winW,
     fill: '#0000cc', // Blue
     draggable: true,
-    dragBoundFunc: replay.barDrag,
+    dragBoundFunc: replay.shuttleDragBound,
     stroke: shuttleValues.stroke,
     strokeWidth: shuttleValues.strokeWidth * winW,
     listening: true,
   });
+  globals.elements.replayShuttle.on('dragmove', replay.shuttleDragMove);
+  globals.elements.replayShuttle.on('wheel', replay.barScroll);
   globals.elements.replayArea.add(globals.elements.replayShuttle);
 
   const replayButtonValues = {
@@ -211,7 +215,7 @@ export default function drawReplayArea(winW: number, winH: number) {
     width: ((replayButtonValues.w * 2) + (replayButtonValues.spacing * 2)) * winW,
     height: replayButtonValues.w * winH,
     text: 'Exit Replay',
-    visible: !globals.replay,
+    visible: !globals.metadata.replay,
   });
   globals.elements.replayExitButton.on('click tap', replay.exitButton);
   globals.elements.replayArea.add(globals.elements.replayExitButton as any);
@@ -224,30 +228,8 @@ export default function drawReplayArea(winW: number, winH: number) {
     h: 0.06,
   };
 
-  // The "Pause Shared Turns" button
-  // (this will be shown when the client receives the "replayLeader" command)
-  globals.elements.pauseSharedTurnsButton = new SharedTurnsButton({
-    width: bottomLeftReplayButtonValues.w * winW,
-    height: bottomLeftReplayButtonValues.h * winH,
-    text: 'Pause Shared Turns',
-    visible: false,
-  });
-  globals.elements.pauseSharedTurnsButton.on('click tap', replay.toggleSharedTurns);
-  globals.elements.replayArea.add(globals.elements.pauseSharedTurnsButton as any);
-
-  // The "Use Shared Turns" button
-  // (this will be shown when the client receives the "replayLeader" command)
-  globals.elements.useSharedTurnsButton = new SharedTurnsButton({
-    width: bottomLeftReplayButtonValues.w * winW,
-    height: bottomLeftReplayButtonValues.h * winH,
-    text: 'Use Shared Turns',
-    visible: false,
-  });
-  globals.elements.useSharedTurnsButton.on('click tap', replay.toggleSharedTurns);
-  globals.elements.replayArea.add(globals.elements.useSharedTurnsButton as any);
-
-  // The previous two buttons will be moved to the left for replay leaders and
-  // centered for non-replay-leaders
+  // The next two buttons will be moved to the left for replay leaders
+  // and centered for non-replay-leaders
   const totalWidth = (replayButtonValues.w * 4) + (replayButtonValues.spacing * 3);
   function setCenter(this: SharedTurnsButton) {
     const x = replayButtonValues.x + ((totalWidth - bottomLeftReplayButtonValues.w) / 2);
@@ -258,10 +240,34 @@ export default function drawReplayArea(winW: number, winH: number) {
     this.x(bottomLeftReplayButtonValues.x * winW);
     this.y(bottomLeftReplayButtonValues.y * winH);
   }
-  globals.elements.pauseSharedTurnsButton!.setCenter = setCenter;
-  globals.elements.pauseSharedTurnsButton!.setLeft = setLeft;
-  globals.elements.useSharedTurnsButton!.setCenter = setCenter;
-  globals.elements.useSharedTurnsButton!.setLeft = setLeft;
+
+  // The "Pause Shared Turns" button
+  // (this will be shown when the client receives the "replayLeader" command)
+  globals.elements.pauseSharedTurnsButton = new SharedTurnsButton({
+    width: bottomLeftReplayButtonValues.w * winW,
+    height: bottomLeftReplayButtonValues.h * winH,
+    text: 'Pause Shared Turns',
+    visible: false,
+  });
+  globals.elements.pauseSharedTurnsButton.on('click tap', replay.toggleSharedSegments);
+  globals.elements.pauseSharedTurnsButton.setCenter = setCenter;
+  globals.elements.pauseSharedTurnsButton.setCenter(); // Set it to be center by default
+  globals.elements.pauseSharedTurnsButton.setLeft = setLeft;
+  globals.elements.replayArea.add(globals.elements.pauseSharedTurnsButton as any);
+
+  // The "Use Shared Turns" button
+  // (this will be shown when the client receives the "replayLeader" command)
+  globals.elements.useSharedTurnsButton = new SharedTurnsButton({
+    width: bottomLeftReplayButtonValues.w * winW,
+    height: bottomLeftReplayButtonValues.h * winH,
+    text: 'Use Shared Turns',
+    visible: false,
+  });
+  globals.elements.useSharedTurnsButton.on('click tap', replay.toggleSharedSegments);
+  globals.elements.useSharedTurnsButton.setCenter = setCenter;
+  globals.elements.useSharedTurnsButton.setCenter(); // Set it to be center by default
+  globals.elements.useSharedTurnsButton.setLeft = setLeft;
+  globals.elements.replayArea.add(globals.elements.useSharedTurnsButton as any);
 
   const bottomRightReplayButtonValues = {
     x: replayButtonValues.x + (replayButtonValues.w * 2) + (replayButtonValues.spacing * 2),
@@ -277,7 +283,11 @@ export default function drawReplayArea(winW: number, winH: number) {
     width: bottomRightReplayButtonValues.w * winW,
     height: bottomRightReplayButtonValues.h * winH,
     text: 'Enter Hypothetical',
-    visible: globals.replay && globals.amSharedReplayLeader && !globals.hypothetical,
+    visible: (
+      globals.metadata.replay
+      && globals.amSharedReplayLeader
+      && !globals.metadata.hypothetical
+    ),
   });
   globals.elements.enterHypoButton.on('click tap', hypothetical.start);
   globals.elements.replayArea.add(globals.elements.enterHypoButton as any);
@@ -285,5 +295,5 @@ export default function drawReplayArea(winW: number, winH: number) {
   // Add the replay area to the UI
   globals.elements.replayArea.hide();
   globals.layers.UI.add(globals.elements.replayArea);
-  replay.adjustShuttles(true);
+  replay.adjustShuttles(true); // Skip the animation
 }

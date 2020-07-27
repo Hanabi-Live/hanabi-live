@@ -5,10 +5,12 @@ import linkifyHtml from 'linkifyjs/html';
 import emojis from '../../data/emojis.json';
 import emoteCategories from '../../data/emotes.json';
 import chatCommands from './chatCommands';
-import ChatMessage from './ChatMessage';
 import { FADE_TIME } from './constants';
 import globals from './globals';
+import Screen from './lobby/types/Screen';
+import { isEmpty } from './misc';
 import * as modals from './modals';
+import ChatMessage from './types/ChatMessage';
 
 // Variables
 const emojiMap = new Map<string, string>();
@@ -50,7 +52,7 @@ export const init = () => {
 
 const input = function input(this: HTMLElement, event: JQuery.Event) {
   const element = $(this);
-  if (!element) {
+  if (element === undefined) {
     throw new Error('Failed to get the element for the input function.');
   }
   const text = element.val();
@@ -105,7 +107,7 @@ const keypress = (room: string) => function keypressFunction(
   event: JQuery.Event,
 ) {
   const element = $(this);
-  if (!element) {
+  if (element === undefined) {
     throw new Error('Failed to get the element for the keypress function.');
   }
 
@@ -116,7 +118,7 @@ const keypress = (room: string) => function keypressFunction(
 
 const submit = (room: string, element: JQuery<HTMLElement>) => {
   const msg = element.val();
-  if (!msg) {
+  if (isEmpty(msg)) {
     return;
   }
   if (typeof msg !== 'string') {
@@ -139,8 +141,9 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
 
   // Use "startsWith" instead of "===" to work around an unknown bug where
   // the room can already have the table number appended (e.g. "table123")
-  if (room.startsWith('table')) {
-    room = `table${globals.tableID}`;
+  let roomID = room;
+  if (roomID.startsWith('table')) {
+    roomID = `table${globals.tableID}`;
   }
 
   // Add the chat message to the typed history so that we can use the up arrow later
@@ -160,7 +163,7 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
 
     const chatCommandFunction = chatCommands.get(command);
     if (typeof chatCommandFunction !== 'undefined') {
-      chatCommandFunction(room, args);
+      chatCommandFunction(roomID, args);
       return;
     }
   }
@@ -168,13 +171,13 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
   // This is not a command, so send a the chat message to the server
   globals.conn!.send('chat', {
     msg,
-    room,
+    room: roomID,
   });
 };
 
 const keydown = function keydown(this: HTMLElement, event: JQuery.Event) {
   const element = $(this);
-  if (!element) {
+  if (element === undefined) {
     throw new Error('Failed to get the element for the keydown function.');
   }
 
@@ -319,7 +322,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
   if (data.recipient === globals.username) {
     // If this is a PM that we are receiving,
     // we want it to always go to either the lobby chat or the game chat
-    if (globals.currentScreen === 'game') {
+    if (globals.currentScreen === Screen.Game) {
       chat = $('#game-chat-text');
     } else {
       chat = $('#lobby-chat-text');
@@ -329,12 +332,12 @@ export const add = (data: ChatMessage, fast: boolean) => {
     globals.lastPM = data.who;
   } else if (data.room === 'lobby') {
     chat = $('#lobby-chat-text');
-  } else if (globals.currentScreen === 'pregame') {
+  } else if (globals.currentScreen === Screen.PreGame) {
     chat = $('#lobby-chat-pregame-text');
   } else {
     chat = $('#game-chat-text');
   }
-  if (!chat) {
+  if (chat === undefined) {
     throw new Error('Failed to get the chat element in the "chat.add()" function.');
   }
 
@@ -366,7 +369,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
       line += `<span class="red">[PM to <strong>${data.recipient}</strong>]</span>&nbsp; `;
     }
   }
-  if (data.server || data.recipient) {
+  if (data.server === true || (data.recipient !== undefined && data.recipient !== '')) {
     line += data.msg;
   } else if (data.who) {
     line += `&lt;<strong>${data.who}</strong>&gt;&nbsp; `;
@@ -374,7 +377,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
   } else {
     line += data.msg;
   }
-  if (data.server && line.includes('[Server Notice]')) {
+  if (data.server === true && line.includes('[Server Notice]')) {
     line = line.replace('[Server Notice]', '<span class="red">[Server Notice]</span>');
   }
   line += '</span><br />';
@@ -383,8 +386,8 @@ export const add = (data: ChatMessage, fast: boolean) => {
   // https://stackoverflow.com/questions/6271237/detecting-when-user-scrolls-to-bottom-of-div-with-jquery
   // If we are already scrolled to the bottom, then it is ok to automatically scroll
   let autoScroll = false;
-  const topPositionOfScrollBar = chat.scrollTop() || 0;
-  const innerHeight = chat.innerHeight() || 0;
+  const topPositionOfScrollBar = chat.scrollTop() ?? 0;
+  const innerHeight = chat.innerHeight() ?? 0;
   if (topPositionOfScrollBar + Math.ceil(innerHeight) >= chat[0].scrollHeight) {
     autoScroll = true;
   }

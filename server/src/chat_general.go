@@ -34,11 +34,25 @@ func chatDiscord(s *Session, d *CommandData, t *Table) {
 
 // /replay [game ID] [turn]
 func chatReplay(s *Session, d *CommandData, t *Table) {
+	// Start building the URL string
+	protocol := "http"
+	if useTLS {
+		protocol += "s"
+	}
+	urlPrefix := protocol + "://" + domain + "/replay/"
+
+	// If they do not specify any arguments, then give them a link for the current replay
 	if len(d.Args) == 0 {
-		chatServerSend(
-			"The format of the /replay command is: /replay [game ID] [turn number]",
-			d.Room,
-		)
+		if t == nil || d.Room == "lobby" || !t.Replay {
+			chatServerSend(
+				"The format of the /replay command is: /replay [game ID] [turn number]",
+				d.Room,
+			)
+			return
+		}
+
+		msg := urlPrefix + strconv.Itoa(t.Game.ID)
+		chatServerSend(msg, d.Room)
 		return
 	}
 
@@ -61,7 +75,7 @@ func chatReplay(s *Session, d *CommandData, t *Table) {
 
 	if len(d.Args) == 0 {
 		// They specified an ID but not a turn
-		msg := "https://hanab.live/replay/" + strconv.Itoa(id)
+		msg := urlPrefix + strconv.Itoa(id)
 		chatServerSend(msg, d.Room)
 		return
 	}
@@ -83,7 +97,7 @@ func chatReplay(s *Session, d *CommandData, t *Table) {
 	}
 
 	// They specified an ID and a turn
-	msg := "https://hanab.live/replay/" + strconv.Itoa(id) + "/" + strconv.Itoa(turn)
+	msg := urlPrefix + strconv.Itoa(id) + "/" + strconv.Itoa(turn)
 	chatServerSend(msg, d.Room)
 }
 

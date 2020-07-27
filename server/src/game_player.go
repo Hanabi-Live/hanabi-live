@@ -6,7 +6,6 @@ package main
 import (
 	"math"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -87,68 +86,6 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	})
 	t.NotifyGameAction()
 
-	// Send the "message" message about the clue
-	text := p.Name + " tells " + p2.Name + " about "
-	words := []string{
-		"zero",
-		"one",
-		"two",
-		"three",
-		"four",
-		"five",
-		"six",
-	}
-	text += words[len(cardsTouched)] + " "
-
-	if clue.Type == ClueTypeColor {
-		text += variants[g.Options.VariantName].ClueColors[clue.Value]
-	} else if clue.Type == ClueTypeRank {
-		text += strconv.Itoa(clue.Value)
-	}
-	if len(cardsTouched) != 1 {
-		text += "s"
-	}
-
-	if strings.HasPrefix(g.Options.VariantName, "Cow & Pig") ||
-		strings.HasPrefix(g.Options.VariantName, "Duck") ||
-		p.Character == "Quacker" { // 34
-
-		// Create a list of slot numbers that correspond to the cards touched
-		slots := make([]string, 0)
-		for _, order := range cardsTouched {
-			slots = append(slots, strconv.Itoa(p2.GetCardSlot(order)))
-		}
-		sort.Strings(slots)
-
-		text = p.Name + " "
-		if strings.HasPrefix(g.Options.VariantName, "Cow & Pig") {
-			if clue.Type == ClueTypeColor {
-				text += "moos"
-				g.Sound = "moo"
-			} else if clue.Type == ClueTypeRank {
-				text += "oinks"
-				g.Sound = "oink"
-			}
-		} else if strings.HasPrefix(g.Options.VariantName, "Duck") ||
-			p.Character == "Quacker" { // 34
-
-			text += "quacks"
-			g.Sound = "quack"
-		}
-		text += " at " + p2.Name + "'"
-		if !strings.HasSuffix(p2.Name, "s") {
-			text += "s"
-		}
-		text += " slot " + strings.Join(slots, "/")
-	}
-
-	g.Actions = append(g.Actions, ActionText{
-		Type: "text",
-		Text: text,
-	})
-	t.NotifyGameAction()
-	logger.Info(t.GetName() + text)
-
 	// Do post-clue tasks
 	characterPostClue(d, g, p)
 
@@ -201,7 +138,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 		// In the "Up or Down" and "Reversed" variants, cards might not play in order
 		failed = variantReversiblePlay(g, c)
 	} else {
-		failed = c.Rank != g.Stacks[c.Suit]+1
+		failed = c.Rank != g.Stacks[c.SuitIndex]+1
 	}
 
 	// Handle "Detrimental Character Assignment" restrictions
@@ -254,56 +191,22 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	// Handle successful card plays
 	c.Played = true
 	g.Score++
-	g.Stacks[c.Suit] = c.Rank
+	g.Stacks[c.SuitIndex] = c.Rank
 	if c.Rank == 0 {
-		g.Stacks[c.Suit] = -1 // A rank 0 card is the "START" card
+		g.Stacks[c.SuitIndex] = -1 // A rank 0 card is the "START" card
 	}
 
 	// Mark that the misplay streak has ended
 	g.Misplays = 0
 
 	g.Actions = append(g.Actions, ActionPlay{
-		Type: "play",
-		Which: Which{
-			Index: p.Index,
-			Suit:  c.Suit,
-			Rank:  c.Rank,
-			Order: c.Order,
-		},
+		Type:        "play",
+		PlayerIndex: p.Index,
+		Order:       c.Order,
+		SuitIndex:   c.SuitIndex,
+		Rank:        c.Rank,
 	})
 	t.NotifyGameAction()
-
-	// Send the "message" about the play
-	text := p.Name + " plays "
-	if strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") {
-		text += "a card"
-	} else {
-		text += c.Name(g)
-	}
-	text += " from "
-	if c.Slot == -1 {
-		text += "the deck"
-	} else {
-		text += "slot #" + strconv.Itoa(c.Slot)
-	}
-	if c.Touched {
-		// Mark that the blind-play streak has ended
-		g.BlindPlays = 0
-	} else {
-		text += " (blind)"
-		g.BlindPlays++
-		if g.BlindPlays > 4 {
-			// There is no sound effect for more than 4 blind plays in a row
-			g.BlindPlays = 4
-		}
-		g.Sound = "blind" + strconv.Itoa(g.BlindPlays)
-	}
-	g.Actions = append(g.Actions, ActionText{
-		Type: "text",
-		Text: text,
-	})
-	t.NotifyGameAction()
-	logger.Info(t.GetName() + text)
 
 	// Give the team a clue if the final card of the suit was played
 	// (this will always be a 5 unless it is a custom variant)
@@ -312,7 +215,7 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	// Handle custom variants that do not play in order from 1 to 5
 	if variants[g.Options.VariantName].HasReversedSuits() {
 		extraClue = (c.Rank == 5 || c.Rank == 1) &&
-			g.StackDirections[c.Suit] == StackDirectionFinished
+			g.PlayStackDirections[c.SuitIndex] == StackDirectionFinished
 	}
 
 	if extraClue {
@@ -376,53 +279,14 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 	c.Discarded = true
 
 	g.Actions = append(g.Actions, ActionDiscard{
-		Type:   "discard",
-		Failed: c.Failed,
-		Which: Which{
-			Index: p.Index,
-			Rank:  c.Rank,
-			Suit:  c.Suit,
-			Order: c.Order,
-		},
+		Type:        "discard",
+		PlayerIndex: p.Index,
+		Order:       c.Order,
+		Rank:        c.Rank,
+		SuitIndex:   c.SuitIndex,
+		Failed:      c.Failed,
 	})
 	t.NotifyGameAction()
-
-	text := p.Name + " "
-	if c.Failed {
-		if strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") {
-			text += "plays"
-		} else {
-			text += "fails to play"
-		}
-	} else {
-		text += "discards"
-	}
-	text += " "
-	if strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") && c.Failed {
-		text += "a card"
-	} else {
-		text += c.Name(g)
-	}
-	text += " from "
-	if c.Slot == -1 {
-		text += "the deck"
-	} else {
-		text += "slot #" + strconv.Itoa(c.Slot)
-	}
-	if !c.Failed && c.Touched {
-		text += " (clued)"
-		g.Sound = "turn_discard_clued"
-	}
-	if c.Failed && c.Slot != -1 && !c.Touched {
-		text += " (blind)"
-	}
-
-	g.Actions = append(g.Actions, ActionText{
-		Type: "text",
-		Text: text,
-	})
-	t.NotifyGameAction()
-	logger.Info(t.GetName() + text)
 
 	// Check to see if revealing this card would surprise the player
 	// (we want to have it in the middle of the function so that it will
@@ -443,7 +307,7 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 
 	// This could be a double discard situation if there is only one other copy of this card
 	// and it needs to be played
-	total, discarded := g.GetSpecificCardNum(c.Suit, c.Rank)
+	total, discarded := g.GetSpecificCardNum(c.SuitIndex, c.Rank)
 	doubleDiscard := total == discarded+1 && c.NeedsToBePlayed(g)
 
 	// Return whether or not this is a "double discard" situation
@@ -466,13 +330,25 @@ func (p *GamePlayer) DrawCard() {
 	p.Hand = append(p.Hand, c)
 
 	g.Actions = append(g.Actions, ActionDraw{
-		Type:  "draw",
-		Who:   p.Index,
-		Rank:  c.Rank,
-		Suit:  c.Suit,
-		Order: c.Order,
+		Type:        "draw",
+		PlayerIndex: p.Index,
+		Order:       c.Order,
+		SuitIndex:   c.SuitIndex,
+		Rank:        c.Rank,
 	})
-	if t.Running {
+	t.NotifyGameAction()
+
+	// If a card slides from slot 1 to slot 2,
+	// we might need to reveal the identity of the card to another player on the team
+	if len(p.Hand) > 1 && characterShouldSendCardIdentityOfSlot2(g) {
+		c2 := p.Hand[len(p.Hand)-2]
+		g.Actions = append(g.Actions, ActionCardIdentity{
+			Type:        "cardIdentity",
+			PlayerIndex: p.Index,
+			Order:       c2.Order,
+			SuitIndex:   c2.SuitIndex,
+			Rank:        c2.Rank,
+		})
 		t.NotifyGameAction()
 	}
 

@@ -16,21 +16,6 @@ func (g *Game) End() {
 	}
 	logger.Info(t.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
 
-	// Append a final action with a listing of every card in the deck
-	// (so that the client will have it for hypotheticals)
-	deck := make([]SimpleCard, 0)
-	for _, c := range g.Deck {
-		deck = append(deck, SimpleCard{
-			Suit: c.Suit,
-			Rank: c.Rank,
-		})
-	}
-	g.Actions = append(g.Actions, ActionDeckOrder{
-		Type: "deckOrder",
-		Deck: deck,
-	})
-	t.NotifyGameAction()
-
 	// There will be no times associated with a replay, so don't bother with the rest of the code
 	if g.ExtraOptions.Replay {
 		return
@@ -38,57 +23,36 @@ func (g *Game) End() {
 
 	// Send text messages showing how much time each player finished with
 	// (this won't appear initially unless the user clicks back and then forward again)
+	playerTimes := make([]int64, 0)
 	for _, p := range g.Players {
-		text := p.Name + " "
-		if g.Options.Timed {
-			text += "had " + durationToString(p.Time) + " left"
-		} else {
-			// Player times are negative in untimed games
-			text += "took: " + durationToString(p.Time*-1)
-		}
-		g.Actions = append(g.Actions, ActionText{
-			Type: "text",
-			Text: text,
-		})
-		t.NotifyGameAction()
-		logger.Info(t.GetName() + text)
+		// JavaScript expects time in milliseconds
+		milliseconds := int64(p.Time / time.Millisecond)
+		playerTimes = append(playerTimes, milliseconds)
 	}
-
-	// Send a text message showing how much time the game took in total
-	totalTime := g.DatetimeFinished.Sub(g.DatetimeStarted)
-	text := "The total game duration was: " + durationToString(totalTime)
-	g.Actions = append(g.Actions, ActionText{
-		Type: "text",
-		Text: text,
+	g.Actions = append(g.Actions, ActionPlayerTimes{
+		Type:        "playerTimes",
+		PlayerTimes: playerTimes,
 	})
 	t.NotifyGameAction()
-	logger.Info(t.GetName() + text)
+
+	// Send a text message showing how much time the game took in total
+	// JavaScript expects time in milliseconds
+	duration := int64(g.DatetimeFinished.Sub(g.DatetimeStarted) / time.Millisecond)
+	g.Actions = append(g.Actions, ActionGameDuration{
+		Type:     "gameDuration",
+		Duration: duration,
+	})
+	t.NotifyGameAction()
 
 	// Advance a turn so that the finishing times are separated from the final action of the game
 	g.Turn++
 	t.NotifyTurn()
 
+	// Give all of the players and spectators the full listing of the cards in the deck
+	t.NotifyCardIdentities()
+
 	// Notify everyone that the game is over
 	t.NotifyGameOver()
-
-	// Send "reveal" messages to each player about the missing cards in their hand
-	for _, gp := range g.Players {
-		p := t.Players[gp.Index]
-		if p.Present {
-			for _, c := range gp.Hand {
-				type RevealMessage struct {
-					Suit  int `json:"suit"`
-					Rank  int `json:"rank"`
-					Order int `json:"order"` // The ID of the card (based on its order in the deck)
-				}
-				p.Session.Emit("reveal", &RevealMessage{
-					Suit:  c.Suit,
-					Rank:  c.Rank,
-					Order: c.Order,
-				})
-			}
-		}
-	}
 
 	// Notify everyone that the table was deleted
 	// (we will send a new table message later for the shared replay)
@@ -101,6 +65,7 @@ func (g *Game) End() {
 	for _, p := range t.Players {
 		if p.Session != nil {
 			p.Session.Set("status", StatusLobby)
+			p.Session.Set("table", -1)
 			notifyAllUser(p.Session)
 		}
 	}
@@ -259,7 +224,7 @@ func (g *Game) WriteDatabase() error {
 	} else if g.EndCondition == EndConditionIdleTimeout {
 		gameOverAction = &GameAction{
 			Type:   ActionTypeGameOver,
-			Target: 0,
+			Target: -1,
 			Value:  EndConditionIdleTimeout,
 		}
 	}
@@ -413,10 +378,11 @@ func (t *Table) ConvertToSharedReplay() {
 
 		// Add the new spectator
 		sp := &Spectator{
-			ID:      p.ID,
-			Name:    p.Name,
-			Session: p.Session,
-			Notes:   make([]string, g.GetNotesSize()),
+			ID:                p.ID,
+			Name:              p.Name,
+			Session:           p.Session,
+			ShadowPlayerIndex: -1, // To indicate that they are not shadowing anyone
+			Notes:             make([]string, g.GetNotesSize()),
 		}
 		t.Spectators = append(t.Spectators, sp)
 		logger.Info("Converted " + p.Name + " to a spectator.")
@@ -461,6 +427,7 @@ func (t *Table) ConvertToSharedReplay() {
 		// Reset everyone's status (both players and spectators are now spectators)
 		if sp.Session != nil {
 			sp.Session.Set("status", StatusSharedReplay)
+			sp.Session.Set("table", t.ID)
 			notifyAllUser(sp.Session)
 		}
 
@@ -468,16 +435,16 @@ func (t *Table) ConvertToSharedReplay() {
 		sp.Session.NotifyReplayLeader(t, false)
 
 		// Send them the notes from all the players & spectators
-		sp.Session.NotifyNoteList(t)
+		sp.Session.NotifyNoteList(t, -1)
 
 		// Send them the database ID
-		type IDMessage struct {
-			TableID int `json:"tableID"`
-			ID      int `json:"id"`
+		type DatabaseIDMessage struct {
+			TableID    int `json:"tableID"`
+			DatabaseID int `json:"databaseID"`
 		}
-		sp.Session.Emit("databaseID", &IDMessage{
-			TableID: t.ID,
-			ID:      g.ID,
+		sp.Session.Emit("databaseID", &DatabaseIDMessage{
+			TableID:    t.ID,
+			DatabaseID: g.ID,
 		})
 	}
 

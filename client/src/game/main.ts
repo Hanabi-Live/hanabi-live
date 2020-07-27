@@ -3,24 +3,21 @@
 import { FADE_TIME } from '../constants';
 import globals from '../globals';
 import tablesDraw from '../lobby/tablesDraw';
+import Screen from '../lobby/types/Screen';
 import * as usersDraw from '../lobby/usersDraw';
 import * as misc from '../misc';
 import * as sounds from '../sounds';
 import * as chat from './chat';
 import HanabiUI from './ui/HanabiUI';
 
-export const init = () => {
-  // Disable the right-click context menu while in a game
-  $('body').on('contextmenu', '#game', () => false);
-};
-
 export const show = () => {
-  globals.currentScreen = 'game';
+  globals.currentScreen = Screen.Game;
   $('#page-wrapper').hide(); // We can't fade this out as it will overlap
   $('#game-chat-text').html(''); // Clear the in-game chat box of any previous content
+  $('body').on('contextmenu', () => false); // Disable the right-click context menu
+  $('#game').fadeIn(FADE_TIME);
 
   // Every time a new game is opened, the UI is rebuilt from scratch
-  $('#game').fadeIn(FADE_TIME);
   globals.ui = new HanabiUI(globals, gameExports);
   globals.chatUnread = 0;
 
@@ -33,7 +30,7 @@ export const show = () => {
 };
 
 export const hide = () => {
-  globals.currentScreen = 'lobby';
+  globals.currentScreen = Screen.Lobby;
   tablesDraw();
   usersDraw.draw();
 
@@ -43,13 +40,14 @@ export const hide = () => {
   }
 
   $('#game').hide(); // We can't fade this out as it will overlap
+  $('body').off('contextmenu'); // Enable the right-click context menu
   $('#page-wrapper').fadeIn(FADE_TIME, () => {
     // Also account that we could be going back to one of the history screens
     // (we could have entered a solo replay from one of the history screens)
     if ($('#lobby-history').is(':visible')) {
-      globals.currentScreen = 'history';
+      globals.currentScreen = Screen.History;
     } else if ($('#lobby-history-other-scores').is(':visible')) {
-      globals.currentScreen = 'historyOtherScores';
+      globals.currentScreen = Screen.HistoryOtherScores;
     }
   });
 

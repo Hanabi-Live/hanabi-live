@@ -1,321 +1,144 @@
 // Functions for progressing forward and backward through time
 
 import Konva from 'konva';
-import * as deck from '../rules/deck';
-import * as variantRules from '../rules/variant';
-import { MAX_CLUE_NUM } from '../types/constants';
-import ReplayActionType from '../types/ReplayActionType';
-import StackDirection from '../types/StackDirection';
-import action from './action';
-import cardStatusCheck from './cardStatusCheck';
+import * as arrows from './arrows';
 import Shuttle from './controls/Shuttle';
 import globals from './globals';
-import LayoutChild from './LayoutChild';
-import * as tooltips from './tooltips';
-import * as turn from './turn';
+import { animate } from './konvaHelpers';
 
 // ---------------------
 // Main replay functions
 // ---------------------
 
-export const enter = () => {
-  if (globals.hypothetical) {
-    // Don't allow replay navigation while in a hypothetical
+export const enter = (customSegment?: number) => {
+  // Local variables
+  const state = globals.store!.getState();
+
+  if (state.replay.active) {
     return;
   }
-  if (globals.replayMax === 0) {
-    // No actions have been taken yet, so we cannot enter a replay
-    return;
-  }
-  if (globals.inReplay) {
-    return;
-  }
-  globals.inReplay = true;
 
-  // Start by putting us at the end of the replay (the current game state)
-  globals.replayPos = globals.replayLog.length;
-  globals.replayTurn = globals.replayMax;
+  // By default, use the final segment of the ongoing game, or 0
+  const segment = customSegment ?? state.ongoingGame.turn.segment ?? 0;
 
-  // TEMP: eventually, move code from this file to reducers and observers
-  globals.store!.dispatch({ type: 'startReplay', turn: globals.replayTurn });
-
-  // However, if the game just ended,
-  // we want to go to the turn before the miscellaneous data sent at the end of the game
-  if (globals.gameOver) {
-    globals.replayPos = globals.finalReplayPos;
-    globals.replayTurn = globals.finalReplayTurn;
-  }
-
-  // Hide the UI elements that overlap with the replay area
-  turn.hideClueUIAndDisableDragging();
-
-  // Next, show the replay area and initialize some UI elements
-  globals.elements.replayArea!.show();
-  adjustShuttles(true); // We want it to immediately snap to the end
-  setVisibleButtons();
-  globals.layers.UI.batchDraw();
+  globals.store!.dispatch({
+    type: 'replayEnter',
+    segment,
+  });
 };
 
 export const exit = () => {
-  if (!globals.inReplay) {
+  if (!globals.store!.getState().replay.active) {
     return;
   }
 
-  goto(globals.replayMax, true);
-  globals.inReplay = false;
-  globals.elements.replayArea!.hide();
-
-  // TEMP: eventually, move code from this file to reducers and observers
-  globals.store!.dispatch({ type: 'endReplay' });
-
-  if (globals.ourTurn) {
-    turn.showClueUIAndEnableDragging();
-  }
-  globals.elements.currentPlayerArea!.visible(!globals.elements.clueArea!.visible());
-  if (globals.queuedAction !== null) {
-    globals.elements.currentPlayerArea!.hide();
-    globals.elements.premoveCancelButton!.show();
-  }
-
-  for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
-    globals.deck[i].setBareImage();
-  }
-
-  globals.layers.UI.batchDraw();
-  globals.layers.card.batchDraw();
+  // Always animate fast if we are exiting a replay, even if we are only jumping to an adjacent turn
+  globals.store!.dispatch({
+    type: 'replayExit',
+  });
 };
 
-export const goto = (target: number, fast: boolean, force?: boolean) => {
-  if (globals.hypothetical && !force) {
-    // Don't allow the user to "break free" in a hypothetical
-    // (e.g. by clicking on a clue entry in the top-right hand corner)
-    // "force" will be set to true if this function is being called from hypothetical functions
+export const getCurrentReplaySegment = () => {
+  const state = globals.store!.getState();
+  const finalSegment = state.ongoingGame.turn.segment!;
+  return state.replay.active ? state.replay.segment : finalSegment;
+};
+
+export const goToSegment = (
+  segment: number,
+  breakFree: boolean = false,
+  force: boolean = false,
+) => {
+  // Local variables
+  const state = globals.store!.getState();
+  const finalSegment = state.ongoingGame.turn.segment!;
+  const currentSegment = getCurrentReplaySegment();
+
+  // Validate the target segment
+  // The target must be between 0 and the final replay segment
+  const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max));
+  const newSegment = clamp(segment, 0, finalSegment);
+  if (currentSegment === newSegment) {
     return;
   }
 
-  // Validate function arguments
-  if (target < 0) {
-    target = 0;
-  }
-  if (target > globals.replayMax) {
-    target = globals.replayMax;
-  }
-  if (target === globals.replayTurn) {
-    // TEMP: eventually, move code from this file to reducers and observers
-    globals.store!.dispatch({ type: 'goToTurn', turn: globals.replayTurn });
-
+  // Disable replay navigation while we are in a hypothetical
+  // (hypothetical navigation functions will set "force" equal to true)
+  if (globals.metadata.hypothetical && !force) {
     return;
   }
 
-  const rewind = target < globals.replayTurn;
+  // Enter the replay, if we are not already
+  enter(newSegment);
+
+  // By default, most replay navigation actions should "break free" from the shared segments to
+  // allow users to go off on their own side adventure through the game
+  // However, if we are navigating to a new segment as the shared replay leader,
+  // do not disable shared segments
+  if (
+    globals.metadata.sharedReplay
+    && breakFree
+    && state.replay.useSharedSegments
+    && !globals.amSharedReplayLeader
+  ) {
+    globals.store!.dispatch({
+      type: 'replayUseSharedSegments',
+      useSharedSegments: false,
+    });
+  }
+
+  globals.store!.dispatch({
+    type: 'replaySegment',
+    segment: newSegment,
+  });
 
   if (
-    globals.sharedReplay
+    globals.metadata.sharedReplay
     && globals.amSharedReplayLeader
-    && globals.useSharedTurns
+    && state.replay.useSharedSegments
   ) {
-    shareCurrentTurn(target);
+    globals.store!.dispatch({
+      type: 'replaySharedSegment',
+      segment: newSegment,
+    });
   }
-
-  globals.replayTurn = target;
-
-  setVisibleButtons();
-  adjustShuttles(false);
-  if (fast) {
-    globals.animateFast = true;
-  }
-
-  if (rewind) {
-    reset();
-    globals.replayPos = 0;
-  }
-
-  // Iterate over the replay and stop at the current turn or at the end, whichever comes first
-  while (true) {
-    const msg = globals.replayLog[globals.replayPos];
-    globals.replayPos += 1;
-
-    // Stop at the end of the replay
-    if (!msg) {
-      break;
-    }
-
-    // Re-process all game actions; this will correctly position cards and text
-    action(msg);
-
-    // Stop if you're at the current turn
-    if (msg.type === 'turn' && msg.num === globals.replayTurn) {
-      break;
-    }
-  }
-
-  // TEMP: eventually, move code from this file to reducers and observers
-  globals.store!.dispatch({ type: 'goToTurn', turn: globals.replayTurn });
-
-  // Automatically close any tooltips and disable all Empathy when we jump to a particular turn
-  // Without this, we would observe glitchy behavior
-  tooltips.resetActiveHover();
-
-  globals.animateFast = false;
-  cardStatusCheck();
-  globals.elements.actionLog!.refreshText();
-  globals.elements.fullActionLog!.refreshText();
-  globals.layers.card.batchDraw();
-  globals.layers.UI.batchDraw();
-  globals.layers.arrow.batchDraw();
-  globals.layers.UI2.batchDraw();
 };
 
-const setVisibleButtons = () => {
-  // If we are on the first turn, disable the rewind replay buttons
-  globals.elements.replayBackFullButton!.setEnabled(globals.replayTurn !== 0);
-  globals.elements.replayBackButton!.setEnabled(globals.replayTurn !== 0);
+export const goToSegmentAndIndicateCard = (segment: number, order: number) => {
+  goToSegment(segment, true);
 
-  // If we are on the last turn, disable the forward replay buttons
-  globals.elements.replayForwardButton!.setEnabled(globals.replayTurn !== globals.replayMax);
-  globals.elements.replayForwardFullButton!.setEnabled(globals.replayTurn !== globals.replayMax);
+  // We indicate the card to make it easier to see
+  arrows.hideAll(); // We hide all the arrows first to ensure that the arrow is always shown
+  arrows.toggle(globals.deck[order]);
 };
 
-const reset = () => {
-  // Reset some game state variables
-  globals.turn = 0;
-  // "globals.currentPlayerIndex" is set in every "turn" command
-  globals.deckSize = deck.totalCards(globals.variant);
-  // "globals.indexOfLastDrawnCard" is set in every "draw" command
-  globals.score = 0;
-  globals.maxScore = globals.variant.maxScore;
-  globals.clues = MAX_CLUE_NUM;
-  globals.cardsGotten = 0;
-  globals.numCardsPlayed = 0;
-  if (variantRules.isUpOrDown(globals.variant)) {
-    globals.stackDirections = [];
-    for (let i = 0; i < globals.variant.suits.length; i++) {
-      globals.stackDirections.push(StackDirection.Undecided);
-    }
-  }
+// ---------------------------
+// Replay navigation functions
+// ---------------------------
 
-  // Reset various UI elements
-  globals.postAnimationLayout = null;
-  globals.elements.actionLog!.reset();
-  globals.elements.fullActionLog!.reset();
-  globals.elements.deck!.setCount(globals.deckSize);
-  globals.elements.clueLog!.clear();
-  if (variantRules.isUpOrDown(globals.variant)) {
-    for (let i = 0; i < globals.variant.suits.length; i++) {
-      globals.elements.suitLabelTexts[i].fitText('');
-    }
-  }
-
-  for (let i = 0; i < globals.elements.playerHands.length; i++) {
-    globals.elements.playerHands[i].removeChildren();
-  }
-
-  // Remove all of the cards from the play stacks
-  for (const [, playStack] of globals.elements.playStacks) {
-    playStack.removeChildren();
-  }
-
-  // Re-add the stack base to the play stacks
-  for (let i = 0; i < globals.variant.suits.length; i++) {
-    const suit = globals.variant.suits[i];
-    const playStack = globals.elements.playStacks.get(suit)!;
-    const stackBase = globals.stackBases[i];
-    const stackBaseLayoutChild = stackBase.parent!;
-    playStack.addChild(stackBaseLayoutChild as any);
-
-    // The stack base might have been hidden if there was a card on top of it
-    stackBaseLayoutChild.visible(true);
-
-    // The stack base might have been morphed
-    if (stackBase.state.rank !== 0 || stackBase.state.suit !== globals.variant.suits[i]) {
-      stackBase.convert(i, 0);
-    }
-
-    // Reverse the stack direction of reversed suits, except on the "Up or Down" variant
-    // that uses the "UNDECIDED" direction.
-    if (
-      variantRules.hasReversedSuits(globals.variant)
-      && !variantRules.isUpOrDown(globals.variant)
-    ) {
-      globals.stackDirections[i] = suit.reversed ? StackDirection.Down : StackDirection.Up;
-    }
-  }
-
-  // Remove all of the cards from the discard stacks
-  for (const [, discardStack] of globals.elements.discardStacks) {
-    discardStack.removeChildren();
-  }
-
-  // Reset the strikes
-  for (const strikeX of globals.elements.strikeXs) {
-    if (strikeX.tween) {
-      strikeX.tween.destroy();
-    }
-    strikeX.opacity(0);
-    strikeX.setFaded();
-  }
-
-  // Reset all of the cards in the deck
-  for (const card of globals.deck) {
-    const child = card.parent as unknown as LayoutChild;
-    if (!child) {
-      return;
-    }
-    if (child.tween) {
-      child.tween.destroy();
-    }
-    card.state.holder = null;
-    card.state.suit = null;
-    card.state.rank = null;
-  }
-
-  // Reset the arrows
-  for (const arrow of globals.elements.arrows) {
-    if (arrow.tween) {
-      arrow.tween.destroy();
-    }
-    arrow.hide();
-  }
-
-  globals.animateFast = true;
-};
-
-// -----------------------------
-// The 4 replay button functions
-// -----------------------------
-
-export const backFull = () => {
-  checkDisableSharedTurns();
-  goto(0, true);
-};
-
-export const back = () => {
-  checkDisableSharedTurns();
-  goto(globals.replayTurn - 1, true);
+export const back = (breakFree: boolean = true) => {
+  goToSegment(getCurrentReplaySegment() - 1, breakFree);
 };
 
 export const forward = () => {
-  checkDisableSharedTurns();
-  goto(globals.replayTurn + 1, false);
+  goToSegment(getCurrentReplaySegment() + 1, true);
 };
-
-export const forwardFull = () => {
-  checkDisableSharedTurns();
-  goto(globals.replayMax, true);
-};
-
-// ----------------------
-// Extra replay functions
-// ----------------------
 
 export const backRound = () => {
-  checkDisableSharedTurns();
-  goto(globals.replayTurn - globals.playerNames.length, true);
+  goToSegment(getCurrentReplaySegment() - globals.metadata.options.numPlayers, true);
 };
 
 export const forwardRound = () => {
-  checkDisableSharedTurns();
-  goto(globals.replayTurn + globals.playerNames.length, false);
+  goToSegment(getCurrentReplaySegment() + globals.metadata.options.numPlayers, true);
+};
+
+export const backFull = () => {
+  goToSegment(0, true);
+};
+
+export const forwardFull = () => {
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  goToSegment(finalSegment, true);
 };
 
 // ------------------------
@@ -334,108 +157,133 @@ export const exitButton = () => {
 // The replay shuttle
 // ------------------
 
+// Gets the current segment from an X position relative to a maximum width
+const segmentFromBarPosition = (x: number, w: number) => {
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  const step = w / finalSegment;
+  return Math.floor((x + (step / 2)) / step);
+};
+
+// Called when a position in the bar is clicked
 export function barClick(this: Konva.Rect) {
   const rectX = globals.stage.getPointerPosition().x - this.getAbsolutePosition().x;
-  const w = this.width();
-  const step = w / globals.replayMax;
-  const newTurn = Math.floor((rectX + (step / 2)) / step);
-  if (newTurn !== globals.replayTurn) {
-    checkDisableSharedTurns();
-    goto(newTurn, true);
-  }
+  const w = globals.elements.replayBar!.width();
+  goToSegment(segmentFromBarPosition(rectX, w), true);
 }
 
-export function barDrag(this: Konva.Rect, pos: Konva.Vector2d) {
+// Called when a position in the bar is clicked
+export function barScroll(this: Konva.Rect, e: Konva.KonvaEventObject<WheelEvent>) {
+  let delta = 0;
+  if (e.evt.deltaY > 0) {
+    delta = 1;
+  } else if (e.evt.deltaY < 0) {
+    delta = -1;
+  } else {
+    return;
+  }
+
+  goToSegment(getCurrentReplaySegment() + delta, true);
+}
+
+// Restricts the positions of the replay shuttle
+// Given a desired position, returns the allowed position closest to it
+export function shuttleDragBound(this: Konva.Rect, pos: Konva.Vector2d) {
+  const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(n, max));
+
   const min = globals.elements.replayBar!.getAbsolutePosition().x + (this.width() * 0.5);
   const w = globals.elements.replayBar!.width() - this.width();
-  let shuttleX = pos.x - min;
-  const shuttleY = this.getAbsolutePosition().y;
-  if (shuttleX < 0) {
-    shuttleX = 0;
-  }
-  if (shuttleX > w) {
-    shuttleX = w;
-  }
-  const step = w / globals.replayMax;
-  const newTurn = Math.floor((shuttleX + (step / 2)) / step);
-  if (newTurn !== globals.replayTurn) {
-    checkDisableSharedTurns();
-    goto(newTurn, true);
-  }
-  shuttleX = newTurn * step;
+
+  const shuttleX = clamp(pos.x - min, 0, w);
+  const segment = segmentFromBarPosition(shuttleX, w);
+
+  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  const step = w / finalSegment;
+
   return {
-    x: min + shuttleX,
-    y: shuttleY,
+    x: min + (segment * step),
+    y: this.getAbsolutePosition().y,
   };
+}
+
+// Called when the shuttle moves. The position is guaranteed to be valid by shuttleDragBound
+export function shuttleDragMove(this: Konva.Rect) {
+  const min = globals.elements.replayBar!.getAbsolutePosition().x + (this.width() * 0.5);
+  const w = globals.elements.replayBar!.width() - this.width();
+  const newSegment = segmentFromBarPosition(this.getAbsolutePosition().x - min, w);
+  goToSegment(newSegment, true);
 }
 
 const positionReplayShuttle = (
   shuttle: Shuttle,
-  targetTurn: number,
+  targetSegment: number,
   smaller: boolean,
   fast: boolean,
 ) => {
-  let max = globals.replayMax;
-
-  // During initialization, the turn will be -1 and the maximum number of replay turns will be 0
-  // Account for this and provide sane defaults
-  if (targetTurn === -1) {
-    targetTurn = 0;
+  let finalSegment = globals.store!.getState().ongoingGame.turn.segment;
+  if (
+    finalSegment === null // The final segment is null during initialization
+    || finalSegment === 0 // The final segment is 0 before a move is made
+  ) {
+    // For the purposes of the replay shuttle calculation,
+    // we need to assume that there are at least two possible locations
+    finalSegment = 1;
   }
-  if (max === 0) {
-    max = 1;
-  }
-
   const winH = globals.stage.height();
   const sliderW = globals.elements.replayBar!.width() - shuttle.width();
-  const x = globals.elements.replayBar!.x() + (sliderW / max * targetTurn) + (shuttle.width() / 2);
+  const x = (
+    globals.elements.replayBar!.x()
+    + (sliderW / finalSegment * targetSegment)
+    + (shuttle.width() / 2)
+  );
   let y = globals.elements.replayBar!.y() + (shuttle.height() * 0.55);
   if (smaller) {
     y -= 0.003 * winH;
   }
   const scale = smaller ? 0.7 : 1;
-  if (fast) {
-    shuttle.x(x);
-    shuttle.y(y);
-    shuttle.scaleX(scale);
-    shuttle.scaleY(scale);
-  } else {
-    if (shuttle.tween) {
-      shuttle.tween.destroy();
-    }
-    shuttle.tween = new Konva.Tween({
-      x,
-      y,
-      scaleX: scale,
-      scaleY: scale,
-      node: shuttle,
-      duration: 0.25,
-      easing: Konva.Easings.EaseOut,
-    }).play();
-  }
+  animate(shuttle, {
+    duration: 0.25,
+    x,
+    y,
+    scale,
+    easing: Konva.Easings.EaseOut,
+  }, true, fast);
 };
 
 export const adjustShuttles = (fast: boolean) => {
-  // If the shuttles are overlapping, then make the normal shuttle a little bit smaller
+  // Local variables
+  const state = globals.store!.getState();
+
+  // If the two shuttles are overlapping, then make the normal shuttle a little bit smaller
   let smaller = false;
-  if (!globals.useSharedTurns && globals.replayTurn === globals.sharedReplayTurn) {
+  if (
+    globals.metadata.sharedReplay
+    && !state.replay.useSharedSegments
+    && state.replay.segment === state.replay.sharedSegment
+  ) {
     smaller = true;
   }
 
-  // Adjust the shuttles along the X axis based on the current turn
+  const draggingShuttle = globals.elements.replayShuttle!.isDragging();
+
+  // Adjust the replay shuttle along the bar based on the current segment
   // If it is smaller, we need to nudge it to the right a bit in order to center it
   positionReplayShuttle(
-    globals.elements.replayShuttleShared!,
-    globals.sharedReplayTurn,
-    false,
-    fast,
-  );
-  positionReplayShuttle(
     globals.elements.replayShuttle!,
-    globals.replayTurn,
+    state.replay.segment,
     smaller,
-    fast,
+    fast || draggingShuttle,
   );
+
+  // Adjust the shared replay shuttle along the bar based on the shared segment
+  globals.elements.replayShuttleShared!.visible(globals.metadata.sharedReplay);
+  if (globals.metadata.sharedReplay) {
+    positionReplayShuttle(
+      globals.elements.replayShuttleShared!,
+      state.replay.sharedSegment,
+      false,
+      fast || (draggingShuttle && state.replay.sharedSegment === state.replay.segment),
+    );
+  }
 };
 
 // -----------------------------
@@ -456,75 +304,28 @@ export const promptTurn = () => {
   // the turn shown to the user is always one greater than the real turn
   targetTurn -= 1;
 
-  if (globals.replay) {
-    checkDisableSharedTurns();
-  } else {
-    enter();
-  }
-  goto(targetTurn, true);
+  goToSegment(targetTurn, true);
 };
 
 // --------------------------------
 // The "Toggle Shared Turns" button
 // --------------------------------
 
-export const toggleSharedTurns = () => {
-  globals.useSharedTurns = !globals.useSharedTurns;
+export const toggleSharedSegments = () => {
+  // Local variables
+  const state = globals.store!.getState();
 
-  globals.elements.pauseSharedTurnsButton!.visible(globals.useSharedTurns);
-  globals.elements.useSharedTurnsButton!.visible(!globals.useSharedTurns);
-  globals.elements.replayShuttleShared!.visible(!globals.useSharedTurns);
-
-  if (globals.useSharedTurns) {
-    if (globals.amSharedReplayLeader) {
-      shareCurrentTurn(globals.replayTurn);
-    } else {
-      goto(globals.sharedReplayTurn, true);
-    }
+  // If we are the replay leader and we are re-enabling shared segments,
+  // first update the shared segment to our current segment
+  if (globals.amSharedReplayLeader && !state.replay.useSharedSegments) {
+    globals.store!.dispatch({
+      type: 'replaySharedSegment',
+      segment: getCurrentReplaySegment(),
+    });
   }
 
-  // We need to adjust the shuttles in the case where
-  // the normal shuttle is underneath the shared replay shuttle
-  // and we need to make it bigger/smaller
-  adjustShuttles(false);
-};
-
-// Navigating as a follower in a shared replay disables replay actions
-export const checkDisableSharedTurns = () => {
-  if (globals.hypothetical) {
-    // Don't allow the user to "break free" in a hypothetical
-    return;
-  }
-  if (
-    globals.replay
-    && globals.sharedReplay
-    && !globals.amSharedReplayLeader
-    && globals.useSharedTurns
-  ) {
-    // Replay actions are currently enabled, so disable them
-    toggleSharedTurns();
-  }
-};
-
-const shareCurrentTurn = (targetTurn: number) => {
-  if (globals.sharedReplayTurn === targetTurn) {
-    return;
-  }
-
-  globals.lobby.conn!.send('replayAction', {
-    tableID: globals.lobby.tableID,
-    type: ReplayActionType.Turn,
-    turn: targetTurn,
+  globals.store!.dispatch({
+    type: 'replayUseSharedSegments',
+    useSharedSegments: !state.replay.useSharedSegments,
   });
-  globals.sharedReplayTurn = targetTurn;
-  adjustShuttles(false);
-};
-
-export const clueLogClickHandler = (targetTurn: number) => {
-  if (globals.replay) {
-    checkDisableSharedTurns();
-  } else {
-    enter();
-  }
-  goto(targetTurn + 1, true);
 };

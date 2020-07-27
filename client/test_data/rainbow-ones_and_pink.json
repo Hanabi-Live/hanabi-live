@@ -1,0 +1,510 @@
+{
+    "id": 12346,
+    "players": [
+        "Alice",
+        "Bob",
+        "Cathy"
+    ],
+    "deck": [
+        {
+            "suitIndex": 1,
+            "rank": 1
+        },
+        {
+            "suitIndex": 0,
+            "rank": 3
+        },
+        {
+            "suitIndex": 2,
+            "rank": 1
+        },
+        {
+            "suitIndex": 1,
+            "rank": 4
+        },
+        {
+            "suitIndex": 0,
+            "rank": 1
+        },
+        {
+            "suitIndex": 3,
+            "rank": 1
+        },
+        {
+            "suitIndex": 1,
+            "rank": 2
+        },
+        {
+            "suitIndex": 0,
+            "rank": 4
+        },
+        {
+            "suitIndex": 4,
+            "rank": 2
+        },
+        {
+            "suitIndex": 3,
+            "rank": 5
+        },
+        {
+            "suitIndex": 1,
+            "rank": 2
+        },
+        {
+            "suitIndex": 3,
+            "rank": 1
+        },
+        {
+            "suitIndex": 4,
+            "rank": 2
+        },
+        {
+            "suitIndex": 4,
+            "rank": 1
+        },
+        {
+            "suitIndex": 1,
+            "rank": 5
+        },
+        {
+            "suitIndex": 0,
+            "rank": 4
+        },
+        {
+            "suitIndex": 4,
+            "rank": 4
+        },
+        {
+            "suitIndex": 1,
+            "rank": 3
+        },
+        {
+            "suitIndex": 0,
+            "rank": 2
+        },
+        {
+            "suitIndex": 2,
+            "rank": 5
+        },
+        {
+            "suitIndex": 0,
+            "rank": 2
+        },
+        {
+            "suitIndex": 4,
+            "rank": 4
+        },
+        {
+            "suitIndex": 1,
+            "rank": 4
+        },
+        {
+            "suitIndex": 0,
+            "rank": 3
+        },
+        {
+            "suitIndex": 2,
+            "rank": 2
+        },
+        {
+            "suitIndex": 2,
+            "rank": 3
+        },
+        {
+            "suitIndex": 3,
+            "rank": 2
+        },
+        {
+            "suitIndex": 3,
+            "rank": 4
+        },
+        {
+            "suitIndex": 4,
+            "rank": 1
+        },
+        {
+            "suitIndex": 2,
+            "rank": 1
+        },
+        {
+            "suitIndex": 2,
+            "rank": 4
+        },
+        {
+            "suitIndex": 2,
+            "rank": 2
+        },
+        {
+            "suitIndex": 0,
+            "rank": 1
+        },
+        {
+            "suitIndex": 1,
+            "rank": 1
+        },
+        {
+            "suitIndex": 3,
+            "rank": 1
+        },
+        {
+            "suitIndex": 4,
+            "rank": 5
+        },
+        {
+            "suitIndex": 3,
+            "rank": 3
+        },
+        {
+            "suitIndex": 2,
+            "rank": 4
+        },
+        {
+            "suitIndex": 2,
+            "rank": 3
+        },
+        {
+            "suitIndex": 4,
+            "rank": 1
+        },
+        {
+            "suitIndex": 1,
+            "rank": 1
+        },
+        {
+            "suitIndex": 3,
+            "rank": 4
+        },
+        {
+            "suitIndex": 3,
+            "rank": 3
+        },
+        {
+            "suitIndex": 2,
+            "rank": 1
+        },
+        {
+            "suitIndex": 4,
+            "rank": 3
+        },
+        {
+            "suitIndex": 1,
+            "rank": 3
+        },
+        {
+            "suitIndex": 4,
+            "rank": 3
+        },
+        {
+            "suitIndex": 0,
+            "rank": 1
+        },
+        {
+            "suitIndex": 3,
+            "rank": 2
+        },
+        {
+            "suitIndex": 0,
+            "rank": 5
+        }
+    ],
+    "actions": [
+        {
+            "type": 2,
+            "target": 2,
+            "value": 4
+        },
+        {
+            "type": 3,
+            "target": 0,
+            "value": 1
+        },
+        {
+            "type": 0,
+            "target": 13,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 0,
+            "value": 0
+        },
+        {
+            "type": 2,
+            "target": 2,
+            "value": 1
+        },
+        {
+            "type": 2,
+            "target": 1,
+            "value": 3
+        },
+        {
+            "type": 0,
+            "target": 2,
+            "value": 0
+        },
+        {
+            "type": 1,
+            "target": 5,
+            "value": 0
+        },
+        {
+            "type": 1,
+            "target": 10,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 4,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 18,
+            "value": 0
+        },
+        {
+            "type": 3,
+            "target": 0,
+            "value": 3
+        },
+        {
+            "type": 1,
+            "target": 3,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 8,
+            "value": 0
+        },
+        {
+            "type": 2,
+            "target": 0,
+            "value": 1
+        },
+        {
+            "type": 0,
+            "target": 1,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 7,
+            "value": 0
+        },
+        {
+            "type": 2,
+            "target": 1,
+            "value": 2
+        },
+        {
+            "type": 0,
+            "target": 24,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 6,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 11,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 17,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 25,
+            "value": 0
+        },
+        {
+            "type": 1,
+            "target": 15,
+            "value": 0
+        },
+        {
+            "type": 2,
+            "target": 2,
+            "value": 2
+        },
+        {
+            "type": 0,
+            "target": 30,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 19,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 22,
+            "value": 0
+        },
+        {
+            "type": 1,
+            "target": 21,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 12,
+            "value": 0
+        },
+        {
+            "type": 1,
+            "target": 20,
+            "value": 0
+        },
+        {
+            "type": 1,
+            "target": 23,
+            "value": 0
+        },
+        {
+            "type": 3,
+            "target": 0,
+            "value": 2
+        },
+        {
+            "type": 0,
+            "target": 26,
+            "value": 0
+        },
+        {
+            "type": 1,
+            "target": 27,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 14,
+            "value": 0
+        },
+        {
+            "type": 3,
+            "target": 2,
+            "value": 3
+        },
+        {
+            "type": 3,
+            "target": 2,
+            "value": 4
+        },
+        {
+            "type": 0,
+            "target": 36,
+            "value": 0
+        },
+        {
+            "type": 1,
+            "target": 29,
+            "value": 0
+        },
+        {
+            "type": 1,
+            "target": 32,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 41,
+            "value": 0
+        },
+        {
+            "type": 3,
+            "target": 1,
+            "value": 5
+        },
+        {
+            "type": 0,
+            "target": 9,
+            "value": 0
+        },
+        {
+            "type": 3,
+            "target": 1,
+            "value": 3
+        },
+        {
+            "type": 2,
+            "target": 1,
+            "value": 4
+        },
+        {
+            "type": 0,
+            "target": 46,
+            "value": 0
+        },
+        {
+            "type": 3,
+            "target": 1,
+            "value": 5
+        },
+        {
+            "type": 0,
+            "target": 16,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 35,
+            "value": 0
+        },
+        {
+            "type": 1,
+            "target": 45,
+            "value": 0
+        },
+        {
+            "type": 1,
+            "target": 48,
+            "value": 0
+        },
+        {
+            "type": 0,
+            "target": 49,
+            "value": 0
+        }
+    ],
+    "options": {
+        "variant": "Rainbow-Ones \u0026 Pink (5 Suits)",
+        "timed": true,
+        "timeBase": 120,
+        "timePerTurn": 20
+    },
+    "notes": [
+        [
+            "i4?",
+            "i4 prio?",
+            "i5 --\u0026gt;"
+        ],
+        [
+            "g2?",
+            "g2?",
+            "g2?",
+            "g2?",
+            "f",
+            "3?",
+            "i5 bomb--\u0026gt;"
+        ],
+        [
+            "f",
+            "f",
+            "f",
+            "pink... 35?",
+            "i4?",
+            "f",
+            "kt",
+            "kt",
+            "i5\u0026gt;?"
+        ]
+    ]
+}

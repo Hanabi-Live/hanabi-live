@@ -2,89 +2,106 @@
 // as a result of each action
 
 import produce, { Draft } from 'immer';
-import { VARIANTS } from '../data/gameData';
-import * as cluesRules from '../rules/clues';
+import { getVariant } from '../data/gameData';
+import { variantRules } from '../rules';
+import * as clueTokensRules from '../rules/clueTokens';
 import * as statsRules from '../rules/stats';
 import { GameAction } from '../types/actions';
-import GameState, { StateStats } from '../types/GameState';
-import Options from '../types/Options';
+import GameMetadata from '../types/GameMetadata';
+import GameState from '../types/GameState';
+import StatsState from '../types/StatsState';
 
 const statsReducer = produce((
-  stats: Draft<StateStats>,
+  stats: Draft<StatsState>,
   action: GameAction,
   originalState: GameState,
   currentState: GameState,
-  options: Options,
+  metadata: GameMetadata,
 ) => {
-  const variant = VARIANTS.get(options.variantName)!;
-  if (variant === undefined) {
-    throw new Error(`Unable to find the "${options.variantName}" variant in the "VARIANTS" map.`);
-  }
+  const variant = getVariant(metadata.options.variantName);
 
   switch (action.type) {
     case 'clue': {
       // A clue was spent
       stats.potentialCluesLost += 1;
 
-      // Count cards that were newly gotten
-      for (let i = 0; i < action.list.length; i++) {
-        const order = action.list[i];
-        const card = originalState.deck[order];
-        if (!cluesRules.isClued(card)) {
-          // A card was newly clued
-          stats.cardsGotten += 1;
-        }
-      }
-      break;
-    }
-
-    case 'discard': {
-      const card = originalState.deck[action.which.order];
-      if (cluesRules.isClued(card)) {
-        // A clued card was discarded
-        stats.cardsGotten -= 1;
-      }
       break;
     }
 
     case 'strike': {
-      // TODO move this check to the play action when we have logic for knowing which cards play
+      // TODO: move this check to the play action when we have logic for knowing which cards play
       // A strike is equivalent to losing a clue
-      stats.potentialCluesLost += cluesRules.clueValue(variant);
+      if (!variantRules.isThrowItInAHole(variant) || metadata.spectating) {
+        stats.potentialCluesLost += clueTokensRules.value(variant);
+      }
+
       break;
     }
 
     case 'play': {
       if (
-        currentState.playStacks[action.which.suit].length === 5
+        !variantRules.isThrowItInAHole(variant) // We don't get an extra clue in these variants
+        && currentState.playStacks[action.suitIndex].length === 5 // Hard code stack length to 5
         && originalState.clueTokens === currentState.clueTokens
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted",
         // similar to what happens when the team gets a strike
-        stats.potentialCluesLost += cluesRules.clueValue(variant);
+        stats.potentialCluesLost += clueTokensRules.value(variant);
       }
 
-      const card = originalState.deck[action.which.order];
-      if (!cluesRules.isClued(card)) {
-        // A card was blind played
-        stats.cardsGotten += 1;
-      }
       break;
     }
 
-    default:
+    default: {
       break;
+    }
   }
 
-  // Now that the action has occurred, update the stats relating to the current game state
+  // Handle double discard calculation
+  if (action.type === 'discard') {
+    stats.doubleDiscard = statsRules.doubleDiscard(
+      action.order,
+      currentState.deck,
+      currentState.playStacks,
+      currentState.playStackDirections,
+      variant,
+    );
+  } else if (action.type === 'play' || action.type === 'clue') {
+    stats.doubleDiscard = false;
+  }
+
+  // Handle max score calculation
+  if (action.type === 'play' || action.type === 'discard') {
+    stats.maxScore = statsRules.getMaxScore(
+      currentState.deck,
+      currentState.playStackDirections,
+      variant,
+    );
+  }
+
+  // Handle pace calculation
+  const score = variantRules.isThrowItInAHole(variant) && !metadata.spectating
+    ? currentState.numAttemptedCardsPlayed
+    : currentState.score;
   stats.pace = statsRules.pace(
-    currentState.score,
+    score,
     currentState.deckSize,
-    currentState.maxScore,
-    options.numPlayers,
+    stats.maxScore,
+    metadata.options.numPlayers,
+    // currentPlayerIndex will be null if the game is over
+    currentState.turn.currentPlayerIndex === null,
   );
-  stats.paceRisk = statsRules.paceRisk(stats.pace, options.numPlayers);
-  stats.efficiency = statsRules.efficiency(stats.cardsGotten, stats.potentialCluesLost);
-}, {} as StateStats);
+  stats.paceRisk = statsRules.paceRisk(stats.pace, metadata.options.numPlayers);
+
+  // Handle efficiency calculation
+  const cardsGotten = statsRules.cardsGotten(
+    currentState.deck,
+    currentState.playStacks,
+    currentState.playStackDirections,
+    metadata,
+    variant,
+  );
+  stats.efficiency = statsRules.efficiency(cardsGotten, stats.potentialCluesLost);
+}, {} as StatsState);
 
 export default statsReducer;

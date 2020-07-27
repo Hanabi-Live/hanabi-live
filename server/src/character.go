@@ -23,7 +23,7 @@ var (
 	characterNames  []string
 	charactersID    map[int]string
 	debugCharacters = []string{
-		"Genius",
+		"Slow-Witted",
 		"n/a",
 		"n/a",
 		"n/a",
@@ -274,7 +274,7 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		cardsTouched := p2.FindCardsTouchedByClue(clue)
 		for _, order := range cardsTouched {
 			c := g.Deck[order]
-			if c.Suit == p.CharacterMetadata {
+			if c.SuitIndex == p.CharacterMetadata {
 				s.Warning("You are " + p.Character + ", " +
 					"so you cannot give clues that touch a specific suit.")
 				return true
@@ -477,13 +477,16 @@ func characterPostClue(d *CommandData, g *Game, p *GamePlayer) {
 	if p.Character == "Mood Swings" { // 12
 		p.CharacterMetadata = clue.Type
 	} else if p.Character == "Insistent" { // 13
-		// Mark that the cards that they clued must be continue to be clued
-		cardsTouched := p2.FindCardsTouchedByClue(clue)
-		for _, order := range cardsTouched {
-			c := g.Deck[order]
-			c.InsistentTouched = true
+		// Don't do anything if they are already in their "Insistent" state
+		if p.CharacterMetadata == -1 {
+			// Mark that the cards that they clued must be continue to be clued
+			cardsTouched := p2.FindCardsTouchedByClue(clue)
+			for _, order := range cardsTouched {
+				c := g.Deck[order]
+				c.InsistentTouched = true
+			}
+			p.CharacterMetadata = 0 // 0 means that the "Insistent" state is activated
 		}
-		p.CharacterMetadata = 0 // 0 means that the "Insistent" state is activated
 	}
 
 	if p2.Character == "Vindictive" { // 9
@@ -584,25 +587,31 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 	return false
 }
 
-func characterShuffle(g *Game, p *GamePlayer) {
-	if !g.Options.DetrimentalCharacters {
-		return
-	}
-
-	if p.Character == "Forgetful" { // 32
-		p.ShuffleHand()
-	}
-}
-
 func characterHideCard(a *ActionDraw, g *Game, p *GamePlayer) bool {
 	if !g.Options.DetrimentalCharacters {
 		return false
 	}
 
-	if p.Character == "Blind Spot" && a.Who == p.GetLeftPlayer() { // 29
+	if p.Character == "Blind Spot" && a.PlayerIndex == p.GetLeftPlayer() { // 29
 		return true
-	} else if p.Character == "Oblivious" && a.Who == p.GetRightPlayer() { // 30
+	} else if p.Character == "Oblivious" && a.PlayerIndex == p.GetRightPlayer() { // 30
 		return true
+	} else if p.Character == "Slow-Witted" { // 33
+		return true
+	}
+
+	return false
+}
+
+func characterShouldSendCardIdentityOfSlot2(g *Game) bool {
+	if !g.Options.DetrimentalCharacters {
+		return false
+	}
+
+	for _, p := range g.Players {
+		if p.Character == "Slow-Witted" { // 33
+			return true
+		}
 	}
 
 	return false
@@ -623,9 +632,6 @@ func characterAdjustEndTurn(g *Game) {
 }
 
 func characterCheckSoftlock(g *Game, p *GamePlayer) {
-	// Local variables
-	t := g.Table
-
 	if !g.Options.DetrimentalCharacters {
 		return
 	}
@@ -635,14 +641,7 @@ func characterCheckSoftlock(g *Game, p *GamePlayer) {
 		(p.Character == "Vindictive" || // 9
 			p.Character == "Insistent") { // 13
 
-		g.Strikes = 3
-
-		text := p.Name + " was left with 0 clues!"
-		g.Actions = append(g.Actions, ActionText{
-			Type: "text",
-			Text: text,
-		})
-		t.NotifyGameAction()
+		g.EndCondition = EndConditionCharacterSoftlock
 	}
 }
 

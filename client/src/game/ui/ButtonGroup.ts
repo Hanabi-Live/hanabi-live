@@ -19,7 +19,7 @@ export default class ButtonGroup extends Konva.Group {
 
     this.list.push(button);
 
-    (button as Konva.Node).on('click tap', function buttonClick(this: any) {
+    (button as Konva.Node).on('click tap', function buttonClick(this: Konva.Node) {
       (this as ClueButton).setPressed(true);
 
       for (let i = 0; i < self.list.length; i++) {

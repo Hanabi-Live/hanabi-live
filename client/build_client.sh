@@ -11,9 +11,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SECONDS=0
 
 # Import the port
-source "$DIR/../.env"
-if [[ -z $PORT ]]; then
-  PORT="80"
+if [[ -z $CI ]]; then
+  source "$DIR/../.env"
+  if [[ -z $PORT ]]; then
+    PORT="80"
+  fi
 fi
 
 # Set the version number in the "version.json" file

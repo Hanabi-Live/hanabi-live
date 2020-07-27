@@ -983,7 +983,7 @@
       <br />
 
       <li>
-        <a href="https://docs.google.com/spreadsheets/d/10XVg1Xgq27Nbxv4_JIL2uC5YX9dpWtA-alT8qAeQwHw/edit" target="_blank" rel="noopener noreferrer">
+        <a href="https://docs.google.com/spreadsheets/d/1iMv5mfVv7PYxckPPRBAnJpXyTHACn_9HAMfF2YID16w/edit?usp=sharing" target="_blank" rel="noopener noreferrer">
           Weekly Competitions
         </a><br />
         Compete with other players around the world to get the highest score on a new random deal.
@@ -1310,7 +1310,7 @@
     In development, we use "webpack-dev-server" to serve the JavaScript on a separate port
     (this is necessary because it provides "hot reloading" and speeds up long compilation times)
 -->
-<script type="text/javascript" src="http://localhost:8080/main.{{.Version}}.min.js"></script>
+<script type="text/javascript" src="http://{{.Domain}}:{{.WebpackPort}}/main.{{.Version}}.min.js"></script>
 {{else if .Compiling}}
 <!-- The server is currently in the process of compiling the TypeScript -->
 <script type="text/javascript" src="/public/js/lib/jquery-3.5.0.min.js"></script>

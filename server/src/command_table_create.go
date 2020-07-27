@@ -101,7 +101,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 // such as a restarted game
 func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	// Set default values for the custom game options
-	var customDeck []SimpleCard
+	var customDeck []*CardIdentity
 	setSeedSuffix := ""
 	setReplay := false
 	databaseID := 0

@@ -54,68 +54,20 @@ export default class NameFrame extends Konva.Group {
       w = this.playerName.width();
     }
     this.playerName.offsetX(w / 2);
+    this.playerName.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
+      switch (event.evt.button) {
+        case 0: { // Left-click
+          this.leftClick();
+          break;
+        }
 
-    this.playerName.on('click tap', function click(event: Konva.KonvaEventObject<MouseEvent>) {
-      const username = this.text();
-      const mouseEvent = event.evt as MouseEvent;
-      if (mouseEvent.button === 0) { // Left-click
-        // Left-click on the name frame to see a log of only their actions
-        globals.elements.fullActionLog!.showPlayerActions(username);
-      } else if (mouseEvent.button === 2) { // Right-click
-        if (!globals.replay && globals.spectating) {
-          // As a spectator in an ongoing game, right-clicking on a name frame reloads the
-          // page, shifting the seat and hiding the appropriate cards
-          // (so that you can spectate from a specific player's perspective)
-          mouseEvent.preventDefault();
-          setTimeout(() => {
-            globals.lobby.conn!.send('tableSpectate', {
-              tableID: globals.lobby.tableID,
-              player: username,
-            });
-          }, 20);
-          backToLobby();
-        } else if (globals.replay) {
-          // In a replay, right-clicking on a name frame reloads the page and shifts the
-          // seat (so that you can view the game from a specific player's perspective)
-          if (!globals.sharedReplay || globals.spectators.length === 1) {
-            if (globals.databaseID === 0) {
-              const msg = 'Due to technical limitations, you cannot shift your perspective if you are the only person in a JSON replay.';
-              setTimeout(() => {
-                // Show the warning modal in a callback so that the right-click context menu does
-                // not show up (otherwise, the right-click would be passed through to the non-game
-                // part of the page)
-                modals.warningShow(msg);
-              }, 0);
-              return;
-            }
+        case 2: { // Right-click
+          this.rightClick();
+          break;
+        }
 
-            // We are the only person in this replay,
-            // so going back to the lobby will automatically end it
-            // So, leave the replay and create a new one
-            // (while specifying the player to view the perspective from)
-            setTimeout(() => {
-              globals.lobby.conn!.send('replayCreate', {
-                source: 'id',
-                gameID: globals.databaseID,
-                visibility: globals.sharedReplay ? 'shared' : 'solo',
-                player: username,
-              });
-            }, 20);
-            backToLobby();
-            return;
-          }
-
-          // We are not the only person in this replay,
-          // so going back to the lobby will not automatically end it
-          // So, go back to the lobby and re-spectate the current shared replay
-          // (while specifying the player to view the perspective from)
-          setTimeout(() => {
-            globals.lobby.conn!.send('tableSpectate', {
-              tableID: globals.lobby.tableID,
-              player: username,
-            });
-          }, 20);
-          backToLobby();
+        default: {
+          break;
         }
       }
     });
@@ -174,11 +126,11 @@ export default class NameFrame extends Konva.Group {
     // Draw the tooltips on the player names that show the time
     // (we don't use the "tooltip.init()" function because we need the extra condition in the
     // "mouseover" and "mouseout" event)
-    this.on('mouseover touchstart', function mouseOver() {
+    this.on('mouseover touchstart', function mouseOver(this: NameFrame) {
       globals.activeHover = this;
 
       // Don't do anything if we are in a solo/shared replay
-      if (globals.replay) {
+      if (globals.metadata.replay) {
         return;
       }
 
@@ -191,7 +143,7 @@ export default class NameFrame extends Konva.Group {
       globals.activeHover = null;
 
       // Don't do anything if we are in a solo/shared replay
-      if (globals.replay) {
+      if (globals.metadata.replay) {
         return;
       }
 
@@ -217,5 +169,72 @@ export default class NameFrame extends Konva.Group {
     this.leftLine.stroke(color);
     this.rightLine.stroke(color);
     this.playerName.fill(color);
+  }
+
+  // Players can left-click on the name frame to see a log of only that player's actions
+  leftClick() {
+    const username = this.playerName.text();
+    globals.elements.fullActionLog!.showPlayerActions(username);
+  }
+
+  // Players can right-click on the name frame to assume the perspective of the respective player
+  // This function calls "backToLobby()" inside of a "setTimeout" callback to avoid having the
+  // right-click context menu come up (the right-click context menu will be enabled as soon as we
+  // execute the "backToLobby()" function)
+  rightClick() {
+    const username = this.playerName.text();
+
+    if (!globals.metadata.replay && globals.metadata.spectating) {
+      // As a spectator in an ongoing game, right-clicking on a name frame reloads the page,
+      // shifting the seat and hiding the appropriate cards
+      // (so that you can spectate from a specific player's perspective)
+      setTimeout(() => {
+        backToLobby();
+        globals.lobby.conn!.send('tableSpectate', {
+          tableID: globals.lobby.tableID,
+          player: username,
+        });
+      }, 0);
+    } else if (globals.metadata.replay) {
+      // In a replay, right-clicking on a name frame reloads the page and shifts the seat
+      // (so that you can view the game from a specific player's perspective)
+      if (!globals.metadata.sharedReplay || globals.spectators.length === 1) {
+        if (globals.metadata.databaseID === 0) {
+          setTimeout(() => {
+            const msg = 'Due to technical limitations, you cannot shift your perspective if you are the only person in a JSON replay.';
+            modals.warningShow(msg);
+          }, 0);
+          return;
+        }
+
+        // We are the only person in this replay,
+        // so going back to the lobby will automatically end it
+        // So, leave the replay and create a new one
+        // (while specifying the player to view the perspective from)
+        setTimeout(() => {
+          backToLobby();
+          globals.lobby.conn!.send('replayCreate', {
+            source: 'id',
+            gameID: globals.metadata.databaseID,
+            visibility: globals.metadata.sharedReplay ? 'shared' : 'solo',
+            player: username,
+          });
+        }, 0);
+
+        return;
+      }
+
+      // We are not the only person in this replay,
+      // so going back to the lobby will not automatically end it
+      // So, go back to the lobby and re-spectate the current shared replay
+      // (while specifying the player to view the perspective from)
+      setTimeout(() => {
+        backToLobby();
+        globals.lobby.conn!.send('tableSpectate', {
+          tableID: globals.lobby.tableID,
+          player: username,
+        });
+      }, 0);
+    }
   }
 }

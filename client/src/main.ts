@@ -16,7 +16,6 @@ import '../lib/tooltipster-scrollableTip.min';
 
 import * as chat from './chat';
 import * as gameChat from './game/chat';
-import * as gameMain from './game/main';
 import gameTooltipsInit from './game/tooltipsInit';
 import globals from './globals';
 import Loader from './Loader';
@@ -51,7 +50,6 @@ $(document).ready(() => {
   // Now that the page has loaded, initialize and define the functionality of various UI elements
   chat.init();
   gameChat.init();
-  gameMain.init();
   gameTooltipsInit();
   lobbyCreateGame.init();
   lobbyHistory.init();

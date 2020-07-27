@@ -1,0 +1,604 @@
+{
+  "id": 12345,
+  "players": [
+    "Alice",
+    "Bob",
+    "Cathy",
+    "Donald"
+  ],
+  "deck": [
+    {
+      "suitIndex": 0,
+      "rank": 4
+    },
+    {
+      "suitIndex": 2,
+      "rank": 5
+    },
+    {
+      "suitIndex": 2,
+      "rank": 2
+    },
+    {
+      "suitIndex": 2,
+      "rank": 4
+    },
+    {
+      "suitIndex": 0,
+      "rank": 4
+    },
+    {
+      "suitIndex": 4,
+      "rank": 3
+    },
+    {
+      "suitIndex": 0,
+      "rank": 3
+    },
+    {
+      "suitIndex": 3,
+      "rank": 2
+    },
+    {
+      "suitIndex": 4,
+      "rank": 3
+    },
+    {
+      "suitIndex": 0,
+      "rank": 3
+    },
+    {
+      "suitIndex": 1,
+      "rank": 5
+    },
+    {
+      "suitIndex": 0,
+      "rank": 2
+    },
+    {
+      "suitIndex": 4,
+      "rank": 2
+    },
+    {
+      "suitIndex": 3,
+      "rank": 1
+    },
+    {
+      "suitIndex": 3,
+      "rank": 5
+    },
+    {
+      "suitIndex": 4,
+      "rank": 4
+    },
+    {
+      "suitIndex": 2,
+      "rank": 3
+    },
+    {
+      "suitIndex": 0,
+      "rank": 2
+    },
+    {
+      "suitIndex": 1,
+      "rank": 7
+    },
+    {
+      "suitIndex": 0,
+      "rank": 7
+    },
+    {
+      "suitIndex": 1,
+      "rank": 1
+    },
+    {
+      "suitIndex": 4,
+      "rank": 4
+    },
+    {
+      "suitIndex": 0,
+      "rank": 1
+    },
+    {
+      "suitIndex": 2,
+      "rank": 7
+    },
+    {
+      "suitIndex": 2,
+      "rank": 1
+    },
+    {
+      "suitIndex": 1,
+      "rank": 3
+    },
+    {
+      "suitIndex": 1,
+      "rank": 4
+    },
+    {
+      "suitIndex": 3,
+      "rank": 2
+    },
+    {
+      "suitIndex": 4,
+      "rank": 5
+    },
+    {
+      "suitIndex": 4,
+      "rank": 2
+    },
+    {
+      "suitIndex": 4,
+      "rank": 7
+    },
+    {
+      "suitIndex": 3,
+      "rank": 4
+    },
+    {
+      "suitIndex": 1,
+      "rank": 3
+    },
+    {
+      "suitIndex": 2,
+      "rank": 2
+    },
+    {
+      "suitIndex": 0,
+      "rank": 5
+    },
+    {
+      "suitIndex": 3,
+      "rank": 7
+    },
+    {
+      "suitIndex": 2,
+      "rank": 3
+    },
+    {
+      "suitIndex": 3,
+      "rank": 4
+    },
+    {
+      "suitIndex": 1,
+      "rank": 2
+    },
+    {
+      "suitIndex": 1,
+      "rank": 2
+    },
+    {
+      "suitIndex": 4,
+      "rank": 1
+    },
+    {
+      "suitIndex": 1,
+      "rank": 4
+    },
+    {
+      "suitIndex": 3,
+      "rank": 3
+    },
+    {
+      "suitIndex": 3,
+      "rank": 3
+    },
+    {
+      "suitIndex": 2,
+      "rank": 4
+    }
+  ],
+  "actions": [
+    {
+      "type": 2,
+      "target": 2,
+      "value": 1
+    },
+    {
+      "type": 2,
+      "target": 3,
+      "value": 3
+    },
+    {
+      "type": 0,
+      "target": 10,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 14,
+      "value": 0
+    },
+    {
+      "type": 1,
+      "target": 0,
+      "value": 0
+    },
+    {
+      "type": 2,
+      "target": 0,
+      "value": 2
+    },
+    {
+      "type": 2,
+      "target": 1,
+      "value": 0
+    },
+    {
+      "type": 3,
+      "target": 0,
+      "value": 2
+    },
+    {
+      "type": 0,
+      "target": 1,
+      "value": 0
+    },
+    {
+      "type": 2,
+      "target": 3,
+      "value": 0
+    },
+    {
+      "type": 3,
+      "target": 1,
+      "value": 4
+    },
+    {
+      "type": 1,
+      "target": 12,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 19,
+      "value": 0
+    },
+    {
+      "type": 1,
+      "target": 5,
+      "value": 0
+    },
+    {
+      "type": 3,
+      "target": 3,
+      "value": 1
+    },
+    {
+      "type": 0,
+      "target": 17,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 3,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 6,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 16,
+      "value": 0
+    },
+    {
+      "type": 2,
+      "target": 1,
+      "value": 1
+    },
+    {
+      "type": 0,
+      "target": 2,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 4,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 26,
+      "value": 0
+    },
+    {
+      "type": 2,
+      "target": 0,
+      "value": 4
+    },
+    {
+      "type": 2,
+      "target": 2,
+      "value": 4
+    },
+    {
+      "type": 0,
+      "target": 28,
+      "value": 0
+    },
+    {
+      "type": 1,
+      "target": 9,
+      "value": 0
+    },
+    {
+      "type": 2,
+      "target": 0,
+      "value": 2
+    },
+    {
+      "type": 0,
+      "target": 21,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 25,
+      "value": 0
+    },
+    {
+      "type": 1,
+      "target": 11,
+      "value": 0
+    },
+    {
+      "type": 3,
+      "target": 2,
+      "value": 2
+    },
+    {
+      "type": 0,
+      "target": 24,
+      "value": 0
+    },
+    {
+      "type": 2,
+      "target": 2,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 34,
+      "value": 0
+    },
+    {
+      "type": 3,
+      "target": 2,
+      "value": 4
+    },
+    {
+      "type": 1,
+      "target": 18,
+      "value": 0
+    },
+    {
+      "type": 3,
+      "target": 0,
+      "value": 4
+    },
+    {
+      "type": 0,
+      "target": 8,
+      "value": 0
+    },
+    {
+      "type": 1,
+      "target": 15,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 37,
+      "value": 0
+    },
+    {
+      "type": 2,
+      "target": 2,
+      "value": 1
+    },
+    {
+      "type": 0,
+      "target": 38,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 20,
+      "value": 0
+    },
+    {
+      "type": 2,
+      "target": 1,
+      "value": 3
+    },
+    {
+      "type": 1,
+      "target": 33,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 29,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 42,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 40,
+      "value": 0
+    },
+    {
+      "type": 0,
+      "target": 7,
+      "value": 0
+    }
+  ],
+  "options": {
+    "variant": "Up or Down (5 Suits)"
+  },
+  "notes": [
+    [
+      "",
+      "g1/g5/gS",
+      "",
+      "",
+      "why not 3?",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "what is this 1 clue?",
+      "b5/b1/bS",
+      "cm?",
+      "f",
+      "",
+      "",
+      "f",
+      "y1/p1",
+      "",
+      "",
+      "",
+      "g1",
+      "y3",
+      "f",
+      "",
+      "f",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "f"
+    ],
+    [
+      "",
+      "",
+      "",
+      "9: g4 once g5 plays",
+      "8: r4 save",
+      "",
+      "12: r3",
+      "",
+      "26: p23",
+      "11: I wonder if red here is better, at the risk of duping r3",
+      "",
+      "2: I wish blue to Donald so I could\u0026#39;ve done 2 here to bluff y5",
+      "12: rip p2?",
+      "",
+      "",
+      "",
+      "9: g3 f",
+      "",
+      "",
+      "",
+      "16: hopefully this is a critical 1 save and not p1",
+      "",
+      "",
+      "",
+      "",
+      "21: y3 if y4 f",
+      "",
+      "24: 2 for a bluff on g1?",
+      "25: p15?",
+      "24: oh nice, we can save p2 with p3 now"
+    ],
+    [
+      "",
+      "157g",
+      "",
+      "",
+      "1457r | 4r",
+      "",
+      "prompt",
+      "",
+      "3p",
+      "",
+      "157y",
+      "",
+      "",
+      "1-stall",
+      "157b",
+      "",
+      "g3",
+      "prompt",
+      "",
+      "[f] 17r",
+      "",
+      "",
+      "",
+      "",
+      "1g",
+      "23y",
+      "f",
+      "",
+      "f",
+      "123p",
+      "",
+      "4b | ? | kt",
+      "",
+      "",
+      "played because clue",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "positional",
+      "",
+      "f"
+    ],
+    [
+      "",
+      "15s",
+      "",
+      "",
+      "r4",
+      "",
+      "3",
+      "",
+      "23",
+      "",
+      "15",
+      "",
+      "",
+      "",
+      "15s",
+      "",
+      "f",
+      "2",
+      "",
+      "f? | f",
+      "1 stall from DDA  | y",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "f",
+      "",
+      "f",
+      "",
+      "",
+      "b4"
+    ]
+  ]
+}

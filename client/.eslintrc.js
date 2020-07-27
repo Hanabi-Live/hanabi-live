@@ -16,16 +16,17 @@ module.exports = {
   parserOptions: {
     project: './tsconfig.json',
   },
-  plugins: [ '@typescript-eslint' ],
+  plugins: [
+    '@typescript-eslint',
+    'import',
+  ],
   settings: {
     'import/extensions': ['.ts'],
     'import/parsers': {
       '@typescript-eslint/parser': ['.ts'],
     },
     'import/resolver': {
-      'node': {
-        'extensions': ['.ts'],
-      },
+      'typescript': {},
     },
   },
 
@@ -59,6 +60,14 @@ module.exports = {
     // This allows code to be structured in a more logical order
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/variables.js#L42
     '@typescript-eslint/no-use-before-define': ['off'],
+
+    // Prevent using falsy/truthy to compare against null/undefined
+    // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/strict-boolean-expressions.md
+    // We allow 'any' values because Konva uses them a lot.
+    '@typescript-eslint/strict-boolean-expressions': ['error', { allowAny: true }],
+
+    // ESLint does not like TypeScript 3.8 syntax, e.g. "import { module } from 'file'"
+    'import/named': ['off'],
 
     // The codebase uses cyclical dependencies because
     // various objects are attached to the global variables object,
@@ -99,9 +108,9 @@ module.exports = {
     // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/style.js#L316
     'no-multiple-empty-lines': ['error', { max: 1, maxBOF: 0, maxEOF: 0 }],
 
-    // We make use of parameter reassigning where appropriate
-    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js#L190
-    'no-param-reassign': ['off'],
+    // We allow reassigning properties of parameters, but not the parameters themselves
+    // https://github.com/airbnb/javascript/blob/master/packages/eslint-config-airbnb-base/rules/best-practices.js#L195
+    'no-param-reassign': ['error', { props: false }],
 
     // Airbnb disallows these because it can lead to errors with minified code;
     // we don't have to worry about this in for loops though

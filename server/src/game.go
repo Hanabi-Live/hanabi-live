@@ -32,21 +32,22 @@ type Game struct {
 	// The seed specifies how the deck is dealt
 	// It is either entered manually by players before the game starts or
 	// randomly selected by the server upon starting a game
-	Seed              string
-	Deck              []*Card
-	DeckIndex         int
-	Stacks            []int
-	StackDirections   []int // The values for this are listed in "constants.go"
-	Turn              int   // Starts at 0; the client will represent turn 0 as turn 1 to the user
-	DatetimeTurnBegin time.Time
-	TurnsInverted     bool
-	ActivePlayer      int // Every game always starts with the 0th player going first
-	ClueTokens        int
-	Score             int
-	MaxScore          int
-	Strikes           int
-	LastClueTypeGiven int
-	DoubleDiscard     bool
+	Seed                string
+	Deck                []*Card
+	CardIdentities      []*CardIdentity // A bare-bones version of the deck
+	DeckIndex           int
+	Stacks              []int
+	PlayStackDirections []int // The values for this are listed in "constants.go"
+	Turn                int   // Starts at 0; the client will represent turn 0 as turn 1 to the user
+	DatetimeTurnBegin   time.Time
+	TurnsInverted       bool
+	ActivePlayer        int // Every game always starts with the 0th player going first
+	ClueTokens          int
+	Score               int
+	MaxScore            int
+	Strikes             int
+	LastClueTypeGiven   int
+	DoubleDiscard       bool
 	// Actions is a list of all of the in-game moves that players have taken thus far
 	// Different actions will have different fields, so we need this to be an generic interface
 	// Furthermore, we do not want this to be a pointer of interfaces because
@@ -93,17 +94,18 @@ func NewGame(t *Table) *Game {
 		Options:      t.Options,
 		ExtraOptions: t.ExtraOptions,
 
-		Players:           make([]*GamePlayer, 0),
-		Deck:              make([]*Card, 0),
-		Stacks:            make([]int, len(variants[t.Options.VariantName].Suits)),
-		StackDirections:   make([]int, len(variants[t.Options.VariantName].Suits)),
-		DatetimeTurnBegin: time.Now(),
-		ClueTokens:        MaxClueNum,
-		MaxScore:          len(variants[t.Options.VariantName].Suits) * PointsPerSuit,
-		LastClueTypeGiven: -1,
-		Actions:           make([]interface{}, 0),
-		Actions2:          make([]*GameAction, 0),
-		EndTurn:           -1,
+		Players:             make([]*GamePlayer, 0),
+		Deck:                make([]*Card, 0),
+		CardIdentities:      make([]*CardIdentity, 0),
+		Stacks:              make([]int, len(variants[t.Options.VariantName].Suits)),
+		PlayStackDirections: make([]int, len(variants[t.Options.VariantName].Suits)),
+		DatetimeTurnBegin:   time.Now(),
+		ClueTokens:          MaxClueNum,
+		MaxScore:            len(variants[t.Options.VariantName].Suits) * PointsPerSuit,
+		LastClueTypeGiven:   -1,
+		Actions:             make([]interface{}, 0),
+		Actions2:            make([]*GameAction, 0),
+		EndTurn:             -1,
 
 		HypoActions: make([]string, 0),
 		Tags:        make(map[string]int),
@@ -122,9 +124,9 @@ func NewGame(t *Table) *Game {
 	if v.HasReversedSuits() && !v.IsUpOrDown() {
 		for i, s := range v.Suits {
 			if s.Reversed {
-				g.StackDirections[i] = StackDirectionDown
+				g.PlayStackDirections[i] = StackDirectionDown
 			} else {
-				g.StackDirections[i] = StackDirectionUp
+				g.PlayStackDirections[i] = StackDirectionUp
 			}
 		}
 	}
@@ -187,21 +189,22 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 	commandAction(s, &CommandData{
 		TableID: t.ID,
 		Type:    ActionTypeGameOver,
+		Target:  gp.Index,
 		Value:   EndConditionTimeout,
 	})
 }
 
+// CheckEnd examines the game state and sets "EndCondition" to the appropriate value, if any
 func (g *Game) CheckEnd() bool {
 	// Local variables
 	t := g.Table
 
-	// Check to see if one of the players ran out of time
-	if g.EndCondition == EndConditionTimeout {
-		return true
-	}
+	// Some ending conditions will already be set by the time we get here
+	if g.EndCondition == EndConditionTimeout ||
+		g.EndCondition == EndConditionTerminated ||
+		g.EndCondition == EndConditionIdleTimeout ||
+		g.EndCondition == EndConditionCharacterSoftlock {
 
-	// Check to see if the game ended to idleness
-	if g.EndCondition == EndConditionIdleTimeout {
 		return true
 	}
 
@@ -214,6 +217,7 @@ func (g *Game) CheckEnd() bool {
 
 	// In a speedrun, check to see if a perfect score can still be achieved
 	if g.Options.Speedrun && g.MaxScore < variants[g.Options.VariantName].MaxScore {
+		logger.Info(t.GetName() + "A perfect score is impossible in a speedrun; ending the game.")
 		g.EndCondition = EndConditionSpeedrunFail
 		return true
 	}
@@ -221,15 +225,15 @@ func (g *Game) CheckEnd() bool {
 	// In an "All or Nothing" game, check to see if a maximum score can still be reached
 	if g.Options.AllOrNothing && g.MaxScore < variants[g.Options.VariantName].MaxScore {
 		logger.Info(t.GetName() + "A perfect score is impossible in an \"All or Nothing\" game; ending the game.")
-		g.EndCondition = EndConditionStrikeout
+		g.EndCondition = EndConditionAllOrNothingFail
 		return true
 	}
 
 	// In an "All or Nothing game",
-	// handle the case where a player would handle to discard without any cards in their hand
+	// handle the case where a player would have to discard without any cards in their hand
 	if g.Options.AllOrNothing && len(g.Players[g.ActivePlayer].Hand) == 0 && g.ClueTokens == 0 {
-		logger.Info(t.GetName() + "The current player has no cards and no clue tokens; ending the game.")
-		g.EndCondition = EndConditionStrikeout
+		logger.Info(t.GetName() + "The current player has no cards and no clue tokens in an \"All or Nothing\" game; ending the game.")
+		g.EndCondition = EndConditionAllOrNothingSoftlock
 		return true
 	}
 
@@ -264,7 +268,7 @@ func (g *Game) CheckEnd() bool {
 			neededSuit := i
 			neededRank := stackLen + 1
 			for _, c := range g.Deck {
-				if c.Suit == neededSuit &&
+				if c.SuitIndex == neededSuit &&
 					c.Rank == neededRank &&
 					!c.Discarded &&
 					!c.CannotBePlayed {
@@ -318,7 +322,7 @@ func (g *Game) GetHandSizeForNormalGame() int {
 // accounting for stacks that cannot be completed due to discarded cards
 func (g *Game) GetMaxScore() int {
 	// Getting the maximum score is much more complicated if we are playing a
-	// "Up or Down" or "Reversed" variant
+	// "Reversed" or "Up or Down" variant
 	if variants[g.Options.VariantName].HasReversedSuits() {
 		return variantReversibleGetMaxScore(g)
 	}
@@ -341,11 +345,11 @@ func (g *Game) GetMaxScore() int {
 
 // GetSpecificCardNum returns the total cards in the deck of the specified suit and rank
 // as well as how many of those that have been already discarded
-func (g *Game) GetSpecificCardNum(suit int, rank int) (int, int) {
+func (g *Game) GetSpecificCardNum(suitIndex int, rank int) (int, int) {
 	total := 0
 	discarded := 0
 	for _, c := range g.Deck {
-		if c.Suit == suit && c.Rank == rank {
+		if c.SuitIndex == suitIndex && c.Rank == rank {
 			total++
 			if c.Discarded {
 				discarded++

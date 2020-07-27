@@ -1,4 +1,5 @@
 import * as chat from '../../chat';
+import { trimReplaySuffixFromURL } from '../../misc';
 import globals from './globals';
 import * as timer from './timer';
 import * as tooltips from './tooltips';
@@ -13,6 +14,9 @@ export default function backToLobby() {
   // Clear the typing list
   globals.lobby.peopleTyping = [];
   chat.updatePeopleTyping();
+
+  // Trim the replay suffix from the URL, if any
+  trimReplaySuffixFromURL();
 
   globals.lobby.conn!.send('tableUnattend', {
     tableID: globals.lobby.tableID,

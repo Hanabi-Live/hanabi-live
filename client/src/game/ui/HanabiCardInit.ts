@@ -2,45 +2,51 @@
 
 import Konva from 'konva';
 import * as KonvaContext from 'konva/types/Context';
+import { RectConfig } from 'konva/types/shapes/Rect';
 import * as KonvaUtil from 'konva/types/Util';
-import { CARD_H, CARD_W } from '../../constants';
+import {
+  CARD_H,
+  CARD_W,
+  CLUED_COLOR,
+  CHOP_MOVE_COLOR,
+  FINESSE_COLOR,
+} from '../../constants';
 import * as variantRules from '../rules/variant';
 import { START_CARD_RANK } from '../types/constants';
-import Suit from '../types/Suit';
-import * as arrows from './arrows';
-import CardLayout from './CardLayout';
+import Variant from '../types/Variant';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';
 import drawPip from './drawPip';
 import globals from './globals';
-import HanabiCard from './HanabiCard';
-import HanabiCardClick from './HanabiCardClick';
-import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
-import { HanabiCardTap, HanabiCardDblTap } from './HanabiCardTouchActions';
-import * as notes from './notes';
-import possibilitiesCheck from './possibilitiesCheck';
-import * as tooltips from './tooltips';
 
-export function image(this: HanabiCard) {
+export const image = (getBareName: () => string) => {
   // Create the "bare" card image, which is the main card graphic
   // If the card is not revealed, it will just be a gray rectangle
   // The pips and other elements of a card are drawn on top of the bare image
-  this.bare = new Konva.Image({
+  const imageConfig: Konva.ImageConfig = {
     width: CARD_W,
     height: CARD_H,
     image: null as unknown as ImageBitmapSource,
-  });
-  (this.bare as Konva.Shape).sceneFunc((ctx: KonvaContext.Context) => {
+    shadowEnabled: false,
+    shadowColor: 'black',
+    shadowOffset: {
+      x: Math.floor(0.04 * CARD_W),
+      y: Math.floor(0.04 * CARD_W),
+    },
+    shadowOpacity: 0.4,
+  };
+  const bare = new Konva.Image(imageConfig);
+  (bare as Konva.Shape).sceneFunc((ctx: KonvaContext.Context) => {
     scaleCardImage(
       ctx._context,
-      this.bareName,
-      this.bare!.width(),
-      this.bare!.height(),
-      this.bare!.getAbsoluteTransform(),
+      getBareName(),
+      bare.width(),
+      bare.height(),
+      bare.getAbsoluteTransform(),
     );
   });
-  this.add(this.bare);
-}
+  return bare;
+};
 
 const borderCornerRadius = 6;
 const borderStrokeWidth = 20;
@@ -48,106 +54,48 @@ const borderStrokeWidthInside = borderStrokeWidth * 0.6;
 const borderOffset = 2;
 const borderOutsideColor = '#0d0d0d'; // Off-black
 
-export function borders(this: HanabiCard) {
-  // The card will get a border when it becomes clued
-  this.cluedBorder = new Konva.Group({
+const makeBorder = (color: string) => {
+  const border = new Konva.Group({
     visible: false,
     listening: false,
   });
 
-  const cluedBorderOutside = new Konva.Rect({
+  const borderConfig = (strokeWidth: number, stroke: string): RectConfig => ({
     width: CARD_W - borderOffset,
     height: CARD_H - borderOffset,
     cornerRadius: borderCornerRadius,
-    strokeWidth: borderStrokeWidth,
-    stroke: borderOutsideColor,
+    strokeWidth,
+    stroke,
     listening: false,
   });
 
-  const cluedBorderInside = new Konva.Rect({
-    width: CARD_W - borderOffset,
-    height: CARD_H - borderOffset,
-    cornerRadius: borderCornerRadius,
-    strokeWidth: borderStrokeWidthInside,
-    stroke: 'orange',
-    listening: false,
-  });
+  const borderOutside = new Konva.Rect(borderConfig(borderStrokeWidth, borderOutsideColor));
+  const borderInside = new Konva.Rect(borderConfig(borderStrokeWidthInside, color));
 
-  this.cluedBorder.add(cluedBorderOutside);
-  this.cluedBorder.add(cluedBorderInside);
-  this.add(this.cluedBorder);
+  border.add(borderOutside);
+  border.add(borderInside);
 
-  // The card will get a special border if the player tells us that it is chop moved
-  this.chopMoveBorder = new Konva.Group({
-    visible: false,
-    listening: false,
-  });
+  return border;
+};
 
-  const chopMoveBorderOutside = new Konva.Rect({
-    width: CARD_W - borderOffset,
-    height: CARD_H - borderOffset,
-    cornerRadius: borderCornerRadius,
-    strokeWidth: borderStrokeWidth,
-    stroke: borderOutsideColor,
-    listening: false,
-  });
+export const cluedBorder = () => makeBorder(CLUED_COLOR);
+export const chopMoveBorder = () => makeBorder(CHOP_MOVE_COLOR);
+export const finesseBorder = () => makeBorder(FINESSE_COLOR);
 
-  const chopMoveBorderInside = new Konva.Rect({
-    width: CARD_W - borderOffset,
-    height: CARD_H - borderOffset,
-    cornerRadius: borderCornerRadius,
-    strokeWidth: borderStrokeWidthInside,
-    stroke: '#fffce6', // White with a yellow tint
-    listening: false,
-  });
-
-  this.chopMoveBorder.add(chopMoveBorderOutside);
-  this.chopMoveBorder.add(chopMoveBorderInside);
-  this.add(this.chopMoveBorder);
-
-  // The card will get a special border if the player tells us that it is finessed
-  this.finesseBorder = new Konva.Group({
-    visible: false,
-    listening: false,
-  });
-
-  const finesseBorderOutside = new Konva.Rect({
-    width: CARD_W - borderOffset,
-    height: CARD_H - borderOffset,
-    cornerRadius: borderCornerRadius,
-    strokeWidth: borderStrokeWidth,
-    stroke: borderOutsideColor,
-    listening: false,
-  });
-
-  const finesseBorderInside = new Konva.Rect({
-    width: CARD_W - borderOffset,
-    height: CARD_H - borderOffset,
-    cornerRadius: borderCornerRadius,
-    strokeWidth: borderStrokeWidthInside,
-    stroke: 'aqua',
-    listening: false,
-  });
-
-  this.finesseBorder.add(finesseBorderOutside);
-  this.finesseBorder.add(finesseBorderInside);
-  this.add(this.finesseBorder);
-}
-
-export function directionArrow(this: HanabiCard) {
-  if (!variantRules.hasReversedSuits(globals.variant)) {
-    return;
+export const directionArrow = (variant: Variant) => {
+  if (!variantRules.hasReversedSuits(variant)) {
+    return null;
   }
 
-  this.arrow = new Konva.Group({
+  const arrow = new Konva.Group({
     x: 0.815 * CARD_W,
     visible: false,
     offset: {
       x: 0,
       y: 0.14 * CARD_H,
     },
+    listening: false,
   });
-  this.add(this.arrow);
 
   const arrowHeight = 0.25;
   const pointerLength = 0.05 * CARD_W;
@@ -164,8 +112,9 @@ export function directionArrow(this: HanabiCard) {
     fill: 'black',
     stroke: 'black',
     strokeWidth: pointerLength * 2,
+    listening: false,
   });
-  this.arrow.add(border);
+  arrow.add(border);
 
   const edge = new Konva.Line({
     points: [
@@ -177,10 +126,11 @@ export function directionArrow(this: HanabiCard) {
     fill: 'black',
     stroke: 'black',
     strokeWidth: pointerLength * 0.75,
+    listening: false,
   });
-  this.arrow.add(edge);
+  arrow.add(edge);
 
-  this.arrowBase = new Konva.Arrow({
+  const arrowBase = new Konva.Arrow({
     points: [
       0,
       0,
@@ -192,14 +142,17 @@ export function directionArrow(this: HanabiCard) {
     fill: 'white',
     stroke: 'white', // This should match the color of the suit; it will be manually set later on
     strokeWidth: pointerLength * 1.25,
+    listening: false,
   });
-  this.arrow.add(this.arrowBase);
-}
+  arrow.add(arrowBase);
 
-export function pips(this: HanabiCard) {
+  return { arrow, arrowBase };
+};
+
+export const pips = (variant: Variant) => {
   // Initialize the suit pips (colored shapes) on the back of the card,
   // which will be removed one by one as the card gains negative information
-  this.suitPips = new Konva.Group({
+  const suitPips = new Konva.Group({
     x: 0,
     y: 0,
     width: Math.floor(CARD_W),
@@ -207,13 +160,11 @@ export function pips(this: HanabiCard) {
     visible: false,
     listening: false,
   });
-  this.add(this.suitPips);
 
-  const { suits } = globals.variant;
-  this.suitPipsMap = new Map<Suit, Konva.Shape>();
-  this.suitPipsXMap = new Map<Suit, Konva.Shape>();
-  for (let i = 0; i < suits.length; i++) {
-    const suit = suits[i];
+  const suitPipsMap = new Map<number, Konva.Shape>();
+  const suitPipsXMap = new Map<number, Konva.Shape>();
+  for (let i = 0; i < variant.suits.length; i++) {
+    const suit = variant.suits[i];
 
     // Set the pip at the middle of the card
     const x = Math.floor(CARD_W * 0.5);
@@ -224,7 +175,7 @@ export function pips(this: HanabiCard) {
     };
     // Transform polar to Cartesian coordinates
     const offsetBase = CARD_W * 0.7;
-    const offsetTrig = ((-i / suits.length) + 0.25) * Math.PI * 2;
+    const offsetTrig = ((-i / variant.suits.length) + 0.25) * Math.PI * 2;
     const offset = {
       x: Math.floor(offsetBase * Math.cos(offsetTrig)),
       y: Math.floor(offsetBase * Math.sin(offsetTrig)),
@@ -242,6 +193,11 @@ export function pips(this: HanabiCard) {
       fill,
       stroke: 'black',
       strokeWidth: 5,
+      shadowColor: 'black',
+      shadowOffsetX: 15,
+      shadowOffsetY: 15,
+      shadowOpacity: 0.4,
+      shadowForStrokeEnabled: true,
       sceneFunc: (ctx: any) => { // Konva.Context does not exist for some reason
         drawPip(ctx, suit, false);
       },
@@ -273,8 +229,8 @@ export function pips(this: HanabiCard) {
       suitPip.fillRadialGradientStartRadius(0);
       suitPip.fillRadialGradientEndRadius(Math.floor(CARD_W * 0.25));
     }
-    this.suitPips.add(suitPip);
-    this.suitPipsMap.set(suit, suitPip);
+    suitPips.add(suitPip);
+    suitPipsMap.set(i, suitPip);
 
     // Also create the X that will show when a certain suit can be ruled out
     const suitPipX = new Konva.Shape({
@@ -295,84 +251,95 @@ export function pips(this: HanabiCard) {
       },
       listening: false,
     });
-    this.suitPips.add(suitPipX);
-    this.suitPipsXMap.set(suit, suitPipX);
+    suitPips.add(suitPipX);
+    suitPipsXMap.set(i, suitPipX);
   }
 
-  // Initialize the rank pips, which are black squares along the bottom of the card
-  this.rankPips = new Konva.Group({
+  // Initialize the rank pips (along the bottom of the card)
+  const rankPips = new Konva.Group({
     x: 0,
-    y: Math.floor(CARD_H * 0.85),
+    y: Math.floor(CARD_H * 0.81),
     width: CARD_W,
     height: Math.floor(CARD_H * 0.15),
     visible: false,
     listening: false,
   });
-  this.add(this.rankPips);
 
-  this.rankPipsMap = new Map<number, RankPip>();
-  this.rankPipsXMap = new Map<number, Konva.Shape>();
-  for (const rank of globals.variant.ranks) {
+  const rankPipsMap = new Map<number, RankPip>();
+  const rankPipsXMap = new Map<number, Konva.Shape>();
+  for (const rank of variant.ranks) {
+    if (rank === START_CARD_RANK) {
+      // We don't want to create a rank pip that corresponds to the "START" card
+      continue;
+    }
+
     const x = Math.floor(CARD_W * ((rank * 0.19) - 0.14));
     const y = 0;
-    let opacity = 1;
-    if (rank === START_CARD_RANK) {
-      // We don't want to show the rank pip that represents a "START" card
-      opacity = 0;
-    }
     const rankPip = new RankPip({
       x,
       y,
+      fontFamily: 'Arial',
+      fontStyle: 'bold',
+      fontSize: 63,
+      align: 'center',
+      text: rank.toString(),
       width: Math.floor(CARD_H * 0.1),
       height: Math.floor(CARD_H * 0.1),
-      fill: 'black',
+      fill: 'white',
       stroke: 'black',
-      strokeWidth: 4,
-      cornerRadius: 0.02 * CARD_H,
-      opacity,
+      strokeWidth: 3,
       listening: false,
+      shadowColor: 'black',
+      shadowOffsetX: 5,
+      shadowOffsetY: 5,
+      shadowOpacity: 0.4,
+      shadowForStrokeEnabled: true,
     });
-    this.rankPips.add(rankPip);
-    this.rankPipsMap.set(rank, rankPip);
+    rankPips.add(rankPip);
+    rankPipsMap.set(rank, rankPip);
 
     // Also create the X that will show when a certain rank can be ruled out
-    opacity = 0.8;
-    if (rank === START_CARD_RANK) {
-      // We don't want to show the rank pip that represents a "START" card
-      opacity = 0;
-    }
     const rankPipX = new Konva.Shape({
       x,
-      y,
-      fill: '#e6e6e6',
+      y: Math.floor(CARD_H * 0.02),
+      fill: 'black',
       stroke: 'black',
       strokeWidth: 2,
       opacity: 0.8,
       visible: false,
       sceneFunc: (ctx, shape) => {
-        const width = 20;
-        const xx = Math.floor(CARD_W * 0.035);
+        const width = 13;
+        const xx = Math.floor(CARD_W * 0.05);
         const xy = Math.floor(CARD_H * 0.047);
-        drawX(ctx, shape, xx, xy, 10, width);
+        drawX(ctx, shape, xx, xy, 13, width);
       },
       listening: false,
     });
-    this.rankPips.add(rankPipX);
-    this.rankPipsXMap.set(rank, rankPipX);
+    rankPips.add(rankPipX);
+    rankPipsXMap.set(rank, rankPipX);
   }
-}
 
-export function note(this: HanabiCard) {
+  return {
+    suitPips,
+    suitPipsMap,
+    suitPipsXMap,
+    rankPips,
+    rankPipsMap,
+    rankPipsXMap,
+  };
+};
+
+export const note = (offsetCornerElements: boolean, shouldShowIndicator: () => boolean) => {
   // Define the note indicator image
   const noteX = 0.78;
   const noteY = 0.03;
   const size = 0.2 * CARD_W;
-  this.noteIndicator = new NoteIndicator({
+  const noteIndicator = new NoteIndicator({
     // If the cards have triangles on the corners that show the color composition,
     // the images will overlap
     // Thus, we move it downwards if this is the case
-    x: (globals.variant.offsetCornerElements ? noteX - 0.05 : noteX) * CARD_W,
-    y: (globals.variant.offsetCornerElements ? noteY + 0.05 : noteY) * CARD_H,
+    x: (offsetCornerElements ? noteX - 0.05 : noteX) * CARD_W,
+    y: (offsetCornerElements ? noteY + 0.05 : noteY) * CARD_H,
     align: 'center',
     image: globals.imageLoader!.get('note')!,
     width: size,
@@ -385,72 +352,28 @@ export function note(this: HanabiCard) {
       y: 0,
     },
     shadowOpacity: 0.9,
-    visible: notes.shouldShowIndicator(this.state.order),
+    visible: shouldShowIndicator(),
     listening: false,
   });
-  this.noteIndicator.scale({
+  noteIndicator.scale({
     x: -1,
     y: -1,
   });
-  this.add(this.noteIndicator);
 
-  // If the user mouses over the card, show a tooltip that contains the note
-  // (we don't use the "tooltip.init()" function because we need the extra conditions in the
-  // "mouseover" event)
-  // The "touchstart" event is handled later in the empathy function
-  this.tooltipName = `card-${this.state.order}`;
-  this.on('mouseover', function cardMouseOver(this: HanabiCard) {
-    noteMouseOver.call(this);
-    globals.activeHover = this;
-  });
+  return noteIndicator;
+};
 
-  this.on('mouseout touchend', function cardMouseOut(this: HanabiCard) {
-    if (globals.activeHover !== this) {
-      return;
-    }
-
-    // Don't close the tooltip if we are currently editing a note
-    if (globals.editingNote !== null) {
-      return;
-    }
-
-    const tooltip = $(`#tooltip-${this.tooltipName}`);
-    tooltip.tooltipster('close');
-  });
-}
-
-function noteMouseOver(this: HanabiCard) {
-  // Don't do anything if there is not a note on this card
-  if (!this.noteIndicator!.visible()) {
-    return;
-  }
-
-  // Don't open any more note tooltips if the user is currently editing a note
-  if (globals.editingNote !== null) {
-    return;
-  }
-
-  // If we are spectating and there is a new note, mark it as seen
-  if (this.noteIndicator!.rotated) {
-    this.noteIndicator!.rotated = false;
-    this.noteIndicator!.rotate(-15);
-    globals.layers.card.batchDraw();
-  }
-
-  notes.show(this);
-}
-
-export function criticalIndicator(this: HanabiCard) {
+export const criticalIndicator = (offsetCornerElements: boolean) => {
   // Define the critical indicator image
   const critX = 0.06;
   const critY = 0.82;
   const size = 0.2 * CARD_W;
-  this.criticalIndicator = new Konva.Image({
+  const indicator = new Konva.Image({
     // If the cards have triangles on the corners that show the color composition,
     // the images will overlap
     // Thus, we move it upwards if this is the case
-    x: (globals.variant.offsetCornerElements ? critX + 0.05 : critX) * CARD_W,
-    y: (globals.variant.offsetCornerElements ? critY - 0.05 : critY) * CARD_H,
+    x: (offsetCornerElements ? critX + 0.05 : critX) * CARD_W,
+    y: (offsetCornerElements ? critY - 0.05 : critY) * CARD_H,
     align: 'center',
     image: globals.imageLoader!.get('critical')!,
     width: size,
@@ -466,213 +389,30 @@ export function criticalIndicator(this: HanabiCard) {
     visible: false,
     listening: false,
   });
-  this.criticalIndicator.scale({
+  indicator.scale({
     x: -1,
     y: -1,
   });
-  this.add(this.criticalIndicator);
-}
+  return indicator;
+};
 
-// In a game, click on a teammate's hand to it show as it would to that teammate
-// (or show your own hand as it should appear without any identity notes on it)
-// (or, in a replay, show the hand as it appeared at that moment in time)
-export function empathy(this: HanabiCard) {
-  this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
-    if (
-      event.evt.button !== 0 // Only enable Empathy for left-clicks
-      // Disable Empathy if a modifier key is pressed
-      // (unless we are in a speedrun, because then Empathy is mapped to Ctrl + left click)
-      || (event.evt.ctrlKey && !globals.options.speedrun && !globals.lobby.settings.speedrunMode)
-      || (
-        !event.evt.ctrlKey
-        && (globals.options.speedrun || globals.lobby.settings.speedrunMode)
-        && !globals.replay
-        && !globals.spectating
-      )
-      || event.evt.shiftKey
-      || event.evt.altKey
-      || event.evt.metaKey
-      || this.tweening // Disable Empathy if the card is tweening
-      || this.state.isPlayed // Clicking on a played card goes to the turn that it was played
-      // Clicking on a discarded card goes to the turn that it was discarded
-      || this.state.isDiscarded
-      || this.state.order > globals.deck.length - 1 // Disable empathy for the stack bases
-    ) {
-      return;
-    }
+export const trashcan = () => new Konva.Image({
+  x: 0.15 * CARD_W,
+  y: 0.2 * CARD_H,
+  width: 0.7 * CARD_W,
+  height: 0.6 * CARD_H,
+  image: globals.imageLoader!.get('trashcan2')!,
+  visible: false,
+});
 
-    // We might need to set activeHover again because it was cleared by a game action, for example
-    globals.activeHover = this;
-
-    setEmpathyOnHand(true);
-  });
-  this.on('touchstart', () => {
-    tooltips.resetActiveHover();
-    globals.activeHover = this;
-
-    // Make sure to not register this as a single tap if the user long presses the card
-    this.touchstartTimeout = setTimeout(() => {
-      // A tap will trigger when the touchend occurs
-      // The next tap action will not run because it will appear like the second tap of a double tap
-      // Don't worry about this if we actually double-tapped
-      if (!this.wasRecentlyTapped && globals.editingNote == null) {
-        this.wasRecentlyTapped = true;
-      }
-    }, 500); // 500 milliseconds, same as the double-tap time for standardization reasons
-
-    // First, show the note tooltip
-    noteMouseOver.call(this);
-
-    // Then, set the empathy
-    if (
-      this.tweening // Disable Empathy if the card is tweening
-      || this.state.isPlayed // Clicking on a played card goes to the turn that it was played
-      // Clicking on a discarded card goes to the turn that it was discarded
-      || this.state.isDiscarded
-      || this.state.order > globals.deck.length - 1 // Disable empathy for the stack bases
-    ) {
-      return;
-    }
-
-    setEmpathyOnHand(true);
-  });
-
-  this.on('mouseup mouseout', (event: Konva.KonvaEventObject<MouseEvent>) => {
-    // Konva.MouseEvent does not have a "type" property for some reason
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if ((event as any).type === 'mouseup' && event.evt.button !== 0) { // Left-click
-      return;
-    }
-
-    setEmpathyOnHand(false);
-  });
-  this.on('touchend', () => {
-    setEmpathyOnHand(false);
-  });
-
-  const setEmpathyOnHand = (enabled: boolean) => {
-    // Disable Empathy for the stack bases
-    if (this.state.order > globals.deck.length - 1) {
-      return;
-    }
-
-    if (!this.parent || !this.parent.parent) {
-      return;
-    }
-    const hand = this.parent.parent as unknown as CardLayout;
-    if (!hand || hand.children.length === 0 || hand.empathy === enabled) {
-      return;
-    }
-
-    hand.empathy = enabled;
-    hand.children.each((layoutChild) => {
-      const card = layoutChild.children[0] as HanabiCard;
-      card.empathy = enabled;
-      card.setBareImage();
-    });
-    globals.layers.card.batchDraw();
-  };
-}
-
-export function click(this: HanabiCard) {
-  // Define the clue log mouse handlers
-  this.on('mouseover touchstart', () => {
-    globals.elements.clueLog!.showMatches(this);
-    globals.layers.UI.batchDraw();
-  });
-  this.on('mouseout touchend', () => {
-    globals.elements.clueLog!.showMatches(null);
-    globals.layers.UI.batchDraw();
-  });
-
-  // Define the other mouse handlers
-  this.on('click', HanabiCardClick);
-  this.on('tap', HanabiCardTap);
-  this.on('dbltap', HanabiCardDblTap);
-  this.on('mousedown', HanabiCardClickSpeedrun);
-  this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
-    if (
-      event.evt.button !== 0 // Dragging uses left click
-      || !this.parent
-      || !this.parent.draggable()
-    ) {
-      return;
-    }
-
-    // Hide any visible arrows on the rest of a hand when the card begins to be dragged
-    if (!this.parent || !this.parent.parent) {
-      return;
-    }
-    const hand = this.parent.parent;
-    let hidden = false;
-    for (const layoutChild of hand.children.toArray()) {
-      const card: HanabiCard = (layoutChild as Konva.Node).children[0] as HanabiCard;
-      for (const arrow of globals.elements.arrows) {
-        if (arrow.pointingTo === card) {
-          hidden = true;
-          arrows.hideAll();
-          break;
-        }
-      }
-      if (hidden) {
-        break;
-      }
-    }
-
-    // Move this hand to the top
-    // (otherwise, the card can appear under the play stacks / discard stacks)
-    hand.moveToTop();
-  });
-}
-
-export function possibilities(this: HanabiCard) {
-  if (!possibilitiesCheck()) {
-    return;
-  }
-
-  // We want to remove all of the currently seen cards from the list of possibilities
-  for (let i = 0; i <= globals.indexOfLastDrawnCard; i++) {
-    const card = globals.deck[i];
-
-    // Don't do anything if this is one of our unknown cards
-    if (card.state.suit === null || card.state.rank === null) {
-      continue;
-    }
-
-    // If the card is still in the player's hand and it is not fully "filled in" with clues,
-    // then we cannot remove it from the list of possibilities
-    // (because they do not know what it is yet)
-    if (
-      card.state.holder === this.state.holder
-      && (card.state.possibleSuits.length > 1 || card.state.possibleRanks.length > 1)
-    ) {
-      continue;
-    }
-
-    this.removePossibility(card.state.suit, card.state.rank, false);
-  }
-}
-
-export function fadedImages(this: HanabiCard) {
-  this.trashcan = new Konva.Image({
-    x: 0.15 * CARD_W,
-    y: 0.2 * CARD_H,
-    width: 0.7 * CARD_W,
-    height: 0.6 * CARD_H,
-    image: globals.imageLoader!.get('trashcan2')!,
-    visible: false,
-  });
-  this.add(this.trashcan);
-
-  this.wrench = new Konva.Image({
-    x: 0.1 * CARD_W,
-    y: 0.33 * CARD_H,
-    width: 0.8 * CARD_W,
-    image: globals.imageLoader!.get('wrench')!,
-    visible: false,
-  });
-  this.add(this.wrench);
-}
+export const wrench = () => new Konva.Image({
+  x: 0.1 * CARD_W,
+  y: 0.33 * CARD_H,
+  width: 0.8 * CARD_W,
+  image: globals.imageLoader!.get('wrench')!,
+  visible: false,
+  listening: false,
+});
 
 const scaleCardImage = (
   ctx: CanvasRenderingContext2D,
@@ -711,7 +451,7 @@ const scaleCardImage = (
     sw = Math.floor(sw / 2);
     sh = Math.floor(sh / 2);
 
-    if (!scaledCardImage) {
+    if (scaledCardImage === undefined) {
       scaledCardImage = document.createElement('canvas');
       scaledCardImage.width = sw;
       scaledCardImage.height = sh;
@@ -734,12 +474,14 @@ const scaleCardImage = (
 
 const drawX = (
   ctx: KonvaContext.Context,
-  shape: any,
-  x: number,
-  y: number,
+  shape: Konva.Shape,
+  positionX: number,
+  positionY: number,
   size: number,
   width: number,
 ) => {
+  let x = positionX;
+  let y = positionY;
   // Start at the top left corner and draw an X
   ctx.beginPath();
   x -= size;

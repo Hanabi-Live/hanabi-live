@@ -7,7 +7,7 @@ import (
 
 // /tags
 func chatTags(s *Session, d *CommandData, t *Table) {
-	if d.Room == "lobby" {
+	if t == nil || d.Room == "lobby" {
 		chatServerSend(ChatCommandNotInGameFail, d.Room)
 		return
 	}

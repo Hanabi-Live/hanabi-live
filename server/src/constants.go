@@ -16,17 +16,6 @@ const (
 	StatusSharedReplay
 )
 
-var (
-	status = []string{
-		"Lobby",
-		"Pre-Game",
-		"Playing",
-		"Spectating",
-		"Replay",
-		"Shared Replay",
-	}
-)
-
 const (
 	ActionTypePlay = iota
 	ActionTypeDiscard
@@ -48,11 +37,14 @@ const (
 	EndConditionTerminated
 	EndConditionSpeedrunFail
 	EndConditionIdleTimeout
+	EndConditionCharacterSoftlock
+	EndConditionAllOrNothingFail
+	EndConditionAllOrNothingSoftlock
 )
 
 const (
 	// Changing the shared turn
-	ReplayActionTypeTurn = iota
+	ReplayActionTypeSegment = iota
 	// Highlighting a card with an indicator arrow
 	ReplayActionTypeArrow
 	// Play one of the arbitrary sound effects included on the server

@@ -1,10 +1,9 @@
 import { LABEL_COLOR } from '../../../../constants';
-import * as variantRules from '../../../rules/variant';
 import { PaceRisk } from '../../../types/GameState';
 import globals from '../../globals';
 
 // onEfficiencyChanged updates the labels on the right-hand side of the screen
-export function onEfficiencyChanged(efficiency: number) {
+export const onEfficiencyChanged = (efficiency: number) => {
   const effLabel = globals.elements.efficiencyNumberLabel;
   if (!effLabel) {
     throw new Error('efficiencyNumberLabel is not initialized in the "onEfficiencyChanged()" function.');
@@ -12,13 +11,6 @@ export function onEfficiencyChanged(efficiency: number) {
   const effMinLabel = globals.elements.efficiencyNumberLabelMinNeeded;
   if (!effMinLabel) {
     throw new Error('efficiencyNumberLabelMinNeeded is not initialized in the "onEfficiencyChanged()" function.');
-  }
-
-  // In "Throw It in a Hole" variants,
-  // efficiency will leak information that the player is not supposed to know
-  if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
-    effLabel.text('? / ');
-    return;
   }
 
   if (efficiency === Infinity) {
@@ -37,40 +29,35 @@ export function onEfficiencyChanged(efficiency: number) {
   // (since it should be directly to the right of the efficiency label)
   const x = effLabel.x() + effLabel.measureSize(effLabel.text()).width as number;
   effMinLabel.x(x);
-}
 
-export function onPaceOrPaceRiskChanged(p: {
+  globals.layers.UI.batchDraw();
+};
+
+export const onPaceOrPaceRiskChanged = (data: {
   pace: number | null;
   paceRisk: PaceRisk;
-}) {
+}) => {
   const label = globals.elements.paceNumberLabel;
   if (!label) {
     throw new Error('paceNumberLabel is not initialized.');
   }
 
-  if (variantRules.isThrowItInAHole(globals.variant) && !globals.replay) {
-    // In "Throw It in a Hole" variants,
-    // pace will leak information that the player is not supposed to know
-    label.text('?');
-    return;
-  }
-
   // Update the pace
   // (part of the efficiency statistics on the right-hand side of the screen)
   // If there are no cards left in the deck, pace is meaningless
-  if (p.pace === null) {
+  if (data.pace === null) {
     label.text('-');
     label.fill(LABEL_COLOR);
   } else {
-    let paceText = p.pace.toString();
-    if (p.pace > 0) {
-      paceText = `+${p.pace}`;
+    let paceText = data.pace.toString();
+    if (data.pace > 0) {
+      paceText = `+${data.pace}`;
     }
     label.text(paceText);
 
     // Color the pace label depending on how "risky" it would be to discard
     // (approximately)
-    switch (p.paceRisk) {
+    switch (data.paceRisk) {
       case 'Zero': {
         // No more discards can occur in order to get a maximum score
         label.fill('#df1c2d'); // Red
@@ -92,9 +79,11 @@ export function onPaceOrPaceRiskChanged(p: {
         break;
       }
       case 'Null': {
-        console.error(`An invalid value of pace / risk was detected. Pace = ${p.pace}, Risk = Null`);
+        console.error(`An invalid value of pace / risk was detected. Pace = ${data.pace}, Risk = Null`);
         break;
       }
     }
   }
-}
+
+  globals.layers.UI.batchDraw();
+};

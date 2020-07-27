@@ -1,9 +1,12 @@
 // Users can right-click cards to record information on them
 
 import * as variantRules from '../rules/variant';
-import { CardIdentity } from '../types/CardIdentity';
+import CardIdentity from '../types/CardIdentity';
+import CardNote from '../types/CardNote';
 import CardState from '../types/CardState';
-import { START_CARD_RANK } from '../types/constants';
+import { STACK_BASE_RANK, START_CARD_RANK } from '../types/constants';
+import Variant from '../types/Variant';
+import { suitToSuitIndex } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 
@@ -12,7 +15,7 @@ const get = (order: number, our: boolean) => {
   // If we are a player in an ongoing game, return our note
   // (we don't have to check to see if the element exists because
   // all notes are initialized to an empty string)
-  if (our || (!globals.replay && !globals.spectating)) {
+  if (our || (!globals.metadata.replay && !globals.metadata.spectating)) {
     return globals.ourNotes[order];
   }
 
@@ -36,7 +39,7 @@ const get = (order: number, our: boolean) => {
 export const set = (order: number, note: string) => {
   const oldNote = globals.ourNotes[order];
   globals.ourNotes[order] = note;
-  if (globals.spectating) {
+  if (globals.metadata.spectating) {
     for (const noteObject of globals.allNotes[order]) {
       if (noteObject.name === globals.lobby.username) {
         noteObject.note = note;
@@ -46,7 +49,7 @@ export const set = (order: number, note: string) => {
   globals.lastNote = note;
 
   // Send the note to the server
-  if (!globals.replay && note !== oldNote) {
+  if (!globals.metadata.replay && note !== oldNote) {
     globals.lobby.conn!.send('note', {
       tableID: globals.lobby.tableID,
       order,
@@ -55,59 +58,15 @@ export const set = (order: number, note: string) => {
   }
 
   // The note identity features do not apply to spectators and replays
-  if (globals.spectating || globals.replay) {
+  if (globals.metadata.spectating || globals.metadata.replay) {
     return;
   }
 
   let card = globals.deck[order];
-  if (!card) {
+  if (card === undefined) {
     card = globals.stackBases[order - globals.deck.length];
   }
-  checkSpecialNote(card);
-};
-
-export const checkSpecialNote = (card: HanabiCard) => {
-  let note = globals.ourNotes[card.state.order];
-  note = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
-  note = note.trim(); // Remove all leading and trailing whitespace
-  const fullNote = note;
-
-  // Only examine the text to the right of the rightmost pipe
-  // (pipes are a conventional way to append new information to a note
-  if (note.includes('|')) {
-    const match = note.match(/.*\|(.*)/);
-    note = match![1];
-    note = note.trim(); // Remove all leading and trailing whitespace
-  }
-
-  checkNoteIdentity(card, note, fullNote);
-  checkNoteImpossibility(card.state);
-
-  // Feature 1 - Morph the card if it has an "exact" card note
-  // (or clear the bare image if the note was deleted/changed)
-  card.setBareImage();
-
-  // Feature 2 - Give the card a special border if it is chop moved
-  card.chopMoveBorder!.visible((
-    card.state.noteChopMoved
-    && !card.cluedBorder!.visible()
-    && !card.state.isPlayed
-    && !card.state.isDiscarded
-    && !globals.replay
-    && !globals.spectating
-  ));
-
-  // Feature 3 - Give the card a special border if it is finessed
-  card.finesseBorder!.visible((
-    card.state.noteFinessed
-    && !card.cluedBorder!.visible()
-    && !card.state.isPlayed
-    && !card.state.isDiscarded
-    && !globals.replay
-    && !globals.spectating
-  ));
-
-  globals.layers.card.batchDraw();
+  card.checkSpecialNote();
 };
 
 const checkNoteKeywords = (
@@ -116,21 +75,22 @@ const checkNoteKeywords = (
   fullNote: string,
 ) => keywords.find((k) => note === k || fullNote.includes(`[${k}]`)) !== undefined;
 
-const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => {
-  // First, check to see if this card should be marked with certain properties
-  card.state.noteKnownTrash = checkNoteKeywords([
-    'kt',
-    'trash',
-    'stale',
-    'bad',
-  ], note, fullNote);
+export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
+  let text = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
+  text = text.trim(); // Remove all leading and trailing whitespace
+  const fullNote = text;
 
-  card.state.noteNeedsFix = checkNoteKeywords([
-    'fixme',
-    'needs fix',
-  ], note, fullNote);
+  // Only examine the text to the right of the rightmost pipe
+  // (pipes are a conventional way to append new information to a note
+  if (text.includes('|')) {
+    const match = text.match(/.*\|(.*)/);
+    text = match![1];
+    text = text.trim(); // Remove all leading and trailing whitespace
+  }
 
-  card.state.noteChopMoved = checkNoteKeywords([
+  const cardIdentity = cardIdentityFromNote(variant, text, fullNote);
+
+  const chopMoved = checkNoteKeywords([
     'cm',
     'chop move',
     '5cm',
@@ -143,29 +103,45 @@ const checkNoteIdentity = (card: HanabiCard, note: string, fullNote: string) => 
     'tocm',
     'utfcm',
     'utbcm',
-  ], note, fullNote);
-
-  card.state.noteFinessed = checkNoteKeywords([
+  ], text, fullNote);
+  const finessed = checkNoteKeywords([
     'f',
     'hf',
     'pf',
     'gd',
-  ], note, fullNote);
+  ], text, fullNote);
+  const knownTrash = checkNoteKeywords([
+    'kt',
+    'trash',
+    'stale',
+    'bad',
+  ], text, fullNote);
+  const needsFix = checkNoteKeywords([
+    'fixme',
+    'needs fix',
+  ], text, fullNote);
+  const blank = checkNoteKeywords(['blank'], text, fullNote);
+  const unclued = checkNoteKeywords(['unclued'], text, fullNote);
 
-  card.state.noteBlank = checkNoteKeywords(['blank'], note, fullNote);
-
-  card.state.noteUnclued = checkNoteKeywords(['unclued'], note, fullNote);
-
-  card.setClued();
-
-  const noteCard = cardFromNote(note, fullNote);
-  card.state.noteSuit = noteCard.suit;
-  card.state.noteRank = noteCard.rank;
+  return {
+    suitIndex: cardIdentity.suitIndex,
+    rank: cardIdentity.rank,
+    chopMoved,
+    finessed,
+    knownTrash,
+    needsFix,
+    blank,
+    unclued,
+  };
 };
 
-export const cardFromNote = (note: string, fullNote: string): CardIdentity => {
-  let rankStrings = globals.variant.ranks.map((r) => r.toString());
-  if (variantRules.isUpOrDown(globals.variant)) {
+export const cardIdentityFromNote = (
+  variant: Variant,
+  note: string,
+  fullNote: string,
+): CardIdentity => {
+  let rankStrings = variant.ranks.map((r) => r.toString());
+  if (variantRules.isUpOrDown(variant)) {
     rankStrings = rankStrings.concat('0', 's', 'start');
   }
   for (const rankText of rankStrings) {
@@ -176,14 +152,20 @@ export const cardFromNote = (note: string, fullNote: string): CardIdentity => {
     if (checkNoteKeywords([
       rankText,
     ], note, fullNote)) {
-      return { suit: null, rank };
+      return {
+        suitIndex: null,
+        rank,
+      };
     }
-    for (const suit of globals.variant.suits) {
+    for (const suit of variant.suits) {
       if (checkNoteKeywords([
         suit.abbreviation.toLowerCase(),
         suit.name.toLowerCase(),
       ], note, fullNote)) {
-        return { suit, rank: null };
+        return {
+          suitIndex: suitToSuitIndex(suit, variant),
+          rank: null,
+        };
       }
 
       if (checkNoteKeywords([
@@ -195,63 +177,83 @@ export const cardFromNote = (note: string, fullNote: string): CardIdentity => {
         `${rankText}${suit.name.toLowerCase()}`, // e.g. "1blue" or "1Blue" or "1BLUE"
         `${rankText} ${suit.name.toLowerCase()}`, // e.g. "1 blue" or "1 Blue" or "1 BLUE"
       ], note, fullNote)) {
-        return { suit, rank };
+        return {
+          suitIndex: suitToSuitIndex(suit, variant),
+          rank,
+        };
       }
     }
   }
 
-  return { suit: null, rank: null };
+  return {
+    suitIndex: null,
+    rank: null,
+  };
 };
 
-const checkNoteImpossibility = (cardState: CardState) => {
-  // Validate that the note does not contain an impossibility
-  if (cardState.noteSuit !== null && cardState.noteRank === null) {
-    // Only the suit was specified
-    // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
+// Validate that the note does not contain an impossibility
+export const checkNoteImpossibility = (variant: Variant, cardState: CardState, note: CardNote) => {
+  // Only the suit was specified
+  if (note.suitIndex !== null && note.rank === null) {
     let suitPossible = false;
-    for (const rank of cardState.possibleRanks) {
-      const count = cardState.possibleCards.get(`${cardState.noteSuit.name}${rank}`);
+    for (const rank of cardState.rankClueMemory.possibilities) {
+      const count = cardState.possibleCards[note.suitIndex][rank];
       if (count === undefined) {
-        throw new Error(`The card of "${cardState.noteSuit.name}${rank}" does not exist in the possibleCards map.`);
+        throw new Error(`The card of Suit: ${note.suitIndex} and Rank: ${rank} does not exist in the possibleCards array.`);
       }
       if (count > 0) {
         suitPossible = true;
         break;
       }
     }
-    if (!suitPossible && cardState.holder === globals.playerUs) {
-      window.alert(`That card cannot possibly be ${cardState.noteSuit.name.toLowerCase()}.`);
-      cardState.noteSuit = null;
+
+    if (!suitPossible && cardState.location === globals.metadata.ourPlayerIndex) {
+      const suitName = variant.suits[note.suitIndex].name;
+      window.alert(`That card cannot possibly be ${suitName.toLowerCase()}.`);
+      note.suitIndex = null;
       return;
     }
   }
-  if (cardState.noteSuit === null && cardState.noteRank !== null) {
-    // Only the rank was specified
-    // (this logic is copied from the "HanabiCard.checkPipPossibilities()" function)
+
+  // Only the rank was specified
+  if (note.suitIndex === null && note.rank !== null) {
     let rankPossible = false;
-    for (const suit of cardState.possibleSuits) {
-      const count = cardState.possibleCards.get(`${suit.name}${cardState.noteRank}`);
+    for (const suitIndex of cardState.colorClueMemory.possibilities) {
+      const count = cardState.possibleCards[suitIndex][note.rank];
       if (count === undefined) {
-        throw new Error(`The card of "${suit.name}${cardState.noteRank}" does not exist in the possibleCards map.`);
+        throw new Error(`The card of Suit: ${suitIndex} and Rank: ${note.rank} does not exist in the possibleCards array.`);
       }
       if (count > 0) {
         rankPossible = true;
         break;
       }
     }
-    if (!rankPossible && cardState.holder === globals.playerUs) {
-      window.alert(`That card cannot possibly be a ${cardState.noteRank}.`);
-      cardState.noteRank = null;
+    if (!rankPossible && cardState.location === globals.metadata.ourPlayerIndex) {
+      window.alert(`That card cannot possibly be a ${note.rank}.`);
+      note.rank = null;
       return;
     }
   }
-  if (cardState.noteSuit !== null && cardState.noteRank !== null) {
-    // Both the suit and the rank were specified
-    const mapIndex = `${cardState.noteSuit.name}${cardState.noteRank}`;
-    if (cardState.possibleCards.get(mapIndex) === 0 && cardState.holder === globals.playerUs) {
-      window.alert(`That card cannot possibly be a ${cardState.noteSuit.name.toLowerCase()} ${cardState.noteRank}.`);
-      cardState.noteSuit = null;
-      cardState.noteRank = null;
+
+  // Both the suit and the rank were specified
+  if (note.suitIndex !== null && note.rank !== null) {
+    // First, validate that we cannot put the wrong suit on a stack base
+    // (stack bases have all the card possibilities and they are never decremented)
+    if (cardState.rank === STACK_BASE_RANK && cardState.suitIndex !== note.suitIndex) {
+      window.alert('You cannot morph a stack base to have a different suit.');
+      note.suitIndex = null;
+      note.rank = null;
+      return;
+    }
+
+    if (
+      cardState.possibleCards[note.suitIndex][note.rank] === 0
+      && cardState.location === globals.metadata.ourPlayerIndex
+    ) {
+      const suitName = variant.suits[note.suitIndex].name;
+      window.alert(`That card cannot possibly be a ${suitName.toLowerCase()} ${note.rank}.`);
+      note.suitIndex = null;
+      note.rank = null;
     }
   }
 };
@@ -270,8 +272,8 @@ export const update = (card: HanabiCard) => {
   // Update the card indicator
   const visibleOld = card.noteIndicator!.visible();
   const visibleNew = note.length > 0;
-  card.noteIndicator!.visible(visibleNew);
   if (visibleOld !== visibleNew) {
+    card.noteIndicator!.visible(visibleNew);
     globals.layers.card.batchDraw();
   }
 };
@@ -304,21 +306,13 @@ export const show = (card: HanabiCard) => {
 
 export const openEditTooltip = (card: HanabiCard) => {
   // Don't edit any notes in replays
-  if (globals.replay) {
+  if (globals.metadata.replay) {
     return;
   }
 
-  if (globals.editingNote !== null) {
-    // Close any existing note tooltips
-    const tooltip = $(`#tooltip-card-${globals.editingNote}`);
-    tooltip.tooltipster('close');
-
-    // If we are right clicking the card that we were already editing,
-    // then just close the existing tooltip and don't do anything else
-    if (card.state.order === globals.editingNote) {
-      globals.editingNote = null;
-      return;
-    }
+  // Disable making notes on the stack bases outside of special variants
+  if (card.state.rank === STACK_BASE_RANK && !variantRules.isThrowItInAHole(globals.variant)) {
+    return;
   }
 
   show(card);
@@ -344,7 +338,7 @@ export const openEditTooltip = (card: HanabiCard) => {
     } else if (keyEvent.key === 'Enter') {
       // Get the value of the input box
       const element = $(`#tooltip-${card.tooltipName}-input`);
-      if (!element) {
+      if (element === undefined) {
         throw new Error('Failed to get the element for the keydown function.');
       }
       newNote = element.val();
@@ -368,8 +362,14 @@ export const openEditTooltip = (card: HanabiCard) => {
     update(card);
   });
 
+  // Automatically close the tooltip if we click elsewhere on the screen
+  $(`#tooltip-${card.tooltipName}-input`).on('focusout', () => {
+    globals.editingNote = null;
+    tooltip.tooltipster('close');
+  });
+
   // Automatically highlight all of the existing text when a note input box is focused
-  $(`#tooltip-${card.tooltipName}-input`).focus(function tooltipCardInputFocus() {
+  $(`#tooltip-${card.tooltipName}-input`).focus(function tooltipCardInputFocus(this: HTMLElement) {
     $(this).select();
   });
 
@@ -396,12 +396,17 @@ export const setAllCardIndicators = () => {
 export const setCardIndicator = (order: number) => {
   const visible = shouldShowIndicator(order);
   let card = globals.deck[order];
-  if (!card) {
+  if (card === undefined) {
     card = globals.stackBases[order - globals.deck.length];
   }
   card.noteIndicator!.visible(visible);
 
-  if (visible && globals.spectating && !globals.replay && !card.noteIndicator!.rotated) {
+  if (
+    visible
+    && globals.metadata.spectating
+    && !globals.metadata.replay
+    && !card.noteIndicator!.rotated
+  ) {
     card.noteIndicator!.rotate(15);
     card.noteIndicator!.rotated = true;
   }
@@ -410,7 +415,7 @@ export const setCardIndicator = (order: number) => {
 };
 
 export const shouldShowIndicator = (order: number) => {
-  if (globals.replay || globals.spectating) {
+  if (globals.metadata.replay || globals.metadata.spectating) {
     for (const noteObject of globals.allNotes[order]) {
       if (noteObject.note.length > 0) {
         return true;
@@ -424,5 +429,5 @@ export const shouldShowIndicator = (order: number) => {
 
 const stripHTMLTags = (input: string) => {
   const doc = new DOMParser().parseFromString(input, 'text/html');
-  return doc.body.textContent || '';
+  return doc.body.textContent ?? '';
 };

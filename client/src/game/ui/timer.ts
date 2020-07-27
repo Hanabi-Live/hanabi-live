@@ -2,8 +2,8 @@
 
 import * as misc from '../../misc';
 import TimerDisplay from './controls/TimerDisplay';
-import drawLayer from './drawLayer';
 import globals from './globals';
+import { drawLayer } from './konvaHelpers';
 
 export interface ClockData {
   times: number[];
@@ -34,7 +34,7 @@ export const update = (data: ClockData) => {
   globals.timeTaken = data.timeTaken;
 
   // Keep track of what the active player's time was when they started their turn
-  if (globals.options.timed) {
+  if (globals.metadata.options.timed) {
     globals.startingTurnTime = globals.playerTimes[globals.activeIndex];
   }
 
@@ -42,26 +42,28 @@ export const update = (data: ClockData) => {
   globals.lastTimerUpdateTimeMS = new Date().getTime();
 
   // Update onscreen time displays
-  if (!globals.spectating) {
+  if (!globals.metadata.spectating) {
     // The visibility of the first timer does not change during a game
-    let time = globals.playerTimes[globals.playerUs];
-    if (!globals.options.timed) {
+    let time = globals.playerTimes[globals.metadata.ourPlayerIndex];
+    if (!globals.metadata.options.timed) {
       // Invert it to show how much time each player is taking
       time *= -1;
     }
     globals.elements.timer1.setTimerText(misc.millisecondsToClockString(time));
   }
 
-  const ourTurn = globals.activeIndex === globals.playerUs && !globals.spectating;
+  const ourTurn = (
+    globals.activeIndex === globals.metadata.ourPlayerIndex && !globals.metadata.spectating
+  );
   if (!ourTurn) {
     // Update the UI with the value of the timer for the active player
     let time = globals.playerTimes[globals.activeIndex];
-    if (!globals.options.timed) {
+    if (!globals.metadata.options.timed) {
       // Invert it to show how much time each player is taking
       time *= -1;
     }
     globals.elements.timer2.setTimerText(misc.millisecondsToClockString(time));
-    globals.elements.timer2.setLabelText(globals.playerNames[globals.activeIndex]);
+    globals.elements.timer2.setLabelText(globals.metadata.playerNames[globals.activeIndex]);
   }
 
   globals.elements.timer2.visible(!ourTurn && globals.activeIndex !== -1);
@@ -94,7 +96,7 @@ export const stop = () => {
   }
 };
 
-function setTickingDownTime(timer: TimerDisplay) {
+const setTickingDownTime = (timer: TimerDisplay) => {
   // Calculate the elapsed time since the last timer update
   const now = new Date().getTime();
   const elapsedTime = now - globals.lastTimerUpdateTimeMS;
@@ -105,14 +107,14 @@ function setTickingDownTime(timer: TimerDisplay) {
 
   // Update the time in local array to approximate server times
   globals.playerTimes[globals.activeIndex] -= elapsedTime;
-  if (globals.options.timed && globals.playerTimes[globals.activeIndex] < 0) {
+  if (globals.metadata.options.timed && globals.playerTimes[globals.activeIndex] < 0) {
     // Don't let the timer go into negative values, or else it will mess up the display
     // (but in non-timed games, we want this to happen)
     globals.playerTimes[globals.activeIndex] = 0;
   }
 
   let millisecondsLeft = globals.playerTimes[globals.activeIndex];
-  if (!globals.options.timed) {
+  if (!globals.metadata.options.timed) {
     // Invert it to show how much time each player is taking
     millisecondsLeft *= -1;
   }
@@ -125,7 +127,7 @@ function setTickingDownTime(timer: TimerDisplay) {
   // Play a sound to indicate that the current player is almost out of time
   // Do not play it more frequently than about once per second
   if (
-    globals.options.timed
+    globals.metadata.options.timed
     && globals.lobby.settings.soundTimer
     && millisecondsLeft > 0 // Between 0 and 10 seconds
     && millisecondsLeft <= 10000
@@ -136,23 +138,23 @@ function setTickingDownTime(timer: TimerDisplay) {
   ) {
     globals.game!.sounds.play('tone');
   }
-}
+};
 
-function setTickingDownTimeTooltip(i: number) {
+const setTickingDownTimeTooltip = (i: number) => {
   // This tooltip is disabled in speedrun mode
-  if (globals.lobby.settings.speedrunMode || globals.options.speedrun) {
+  if (globals.lobby.settings.speedrunMode || globals.metadata.options.speedrun) {
     return;
   }
 
   // Update the tooltip that appears when you hover over a player's name
   let time = globals.playerTimes[i];
-  if (!globals.options.timed) {
+  if (!globals.metadata.options.timed) {
     // Invert it to show how much time each player is taking
     time *= -1;
   }
 
   let content = 'Time ';
-  if (globals.options.timed) {
+  if (globals.metadata.options.timed) {
     content += 'remaining';
   } else {
     content += 'taken';
@@ -161,11 +163,11 @@ function setTickingDownTimeTooltip(i: number) {
   content += misc.millisecondsToClockString(time);
   content += '</strong>';
   $(`#tooltip-player-${i}`).tooltipster('instance').content(content);
-}
+};
 
 const setTickingDownTimeCPTooltip = () => {
   // This tooltip is disabled in non-timed games
-  if (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed) {
+  if (!globals.metadata.options.timed && !globals.lobby.settings.showTimerInUntimed) {
     return;
   }
 

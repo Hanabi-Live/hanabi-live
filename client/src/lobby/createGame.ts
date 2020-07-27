@@ -6,8 +6,9 @@ import { VARIANTS } from '../game/data/gameData';
 import { DEFAULT_VARIANT_NAME } from '../game/types/constants';
 import globals from '../globals';
 import * as misc from '../misc';
+import { isEmpty } from '../misc';
 import * as modals from '../modals';
-import Settings from './Settings';
+import Settings from './types/Settings';
 
 // Constants
 const basicVariants = [
@@ -143,6 +144,7 @@ const firstVariantDropdownInit = () => {
       dropdown1.hide();
       dropdown2.show();
       dropdown2.val('');
+      dropdown2.focus();
       $('#create-game-variant-dropdown2-icon').show();
       $('#dice').show();
     } else {
@@ -234,11 +236,11 @@ const getCheckbox = (setting: keyof Settings) => {
 
 const getTextbox = (setting: keyof Settings) => {
   const element = $(`#${setting}`);
-  if (!element) {
+  if (element === undefined) {
     throw new Error(`Failed to get the element of "${setting}".`);
   }
   let value = element.val();
-  if (!value) {
+  if (isEmpty(value)) {
     throw new Error(`Failed to get the value of element "${setting}".`);
   }
   if (typeof value !== 'string') {
@@ -251,7 +253,7 @@ const getTextbox = (setting: keyof Settings) => {
 
 const getVariant = (setting: keyof Settings) => {
   const element = $(`#${setting}`);
-  if (!element) {
+  if (element === undefined) {
     throw new Error(`Failed to get the element of "${setting}".`);
   }
   let value = element.text();
@@ -359,7 +361,7 @@ export const ready = () => {
   // Fill in the "Password" box
   // (this is not stored on the server so we have to retrieve the last password from a cookie)
   const password = localStorage.getItem('createTablePassword');
-  if (password) {
+  if (password !== null && password !== '') {
     $('#createTablePassword').val(password);
   }
 

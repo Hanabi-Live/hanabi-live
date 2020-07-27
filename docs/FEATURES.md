@@ -137,11 +137,11 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
   * At pace 0, the only way to win is if every player plays a card in the last round of the game.
 * Efficiency:
   * Since you only have a limited amount of clues, you want to be as efficient as possible with then. It is useful to track how well the team is doing with regards to this.
-  * Efficiency is calculated with the following formula: `(number of cards played + number of unplayed cards with one or more clues "on" them) / number of clues given`
+  * Efficiency is calculated with the following formula: `(number of cards played + number of unplayed cards with one or more clues "on" them) / number of clues given or lost`
   * The numerator (first number) shows the efficiency of the current game.
   * The denominator (second number) shows the minimum possible efficiency needed to win with the current number of players and the current variant. (This number is statically calculated at the beginning of the game - it will not adjust if the maximum achievable score lowers.)
   * Note that this measure of efficiency assumes *Good Touch Principle* - that all clued cards will eventually be played. If your team does not play with *Good Touch Principle*, then these numbers won't be useful.
-  * Even known useless cards with a clue on them will be counted.
+  * Efficiency will automatically account for clued cards that are globally known to be trash. Such cards will not be included in the "number of unplayed cards with one or more clues on them" term.
 
 #### 6-Player Games
 
@@ -417,16 +417,18 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 
 * As mentioned previously, the website offers endpoints to show statistics on specific players, variants, and so forth.
 
-| URL                          | Description
-| ---------------------------- | -----------
-| `/scores/[username]`         | Lists the player's profile and best scores.
-| `/history/[username]`        | Lists the player's past games.
-| `/missing-scores/[username]` | Lists the player's remaining non-max scores.
-| `/tags/[username]`           | Lists the player's tagged games.
-| `/seed/[seed]`               | Lists the games played on a specific seed.
-| `/stats`                     | Lists stats for the entire website.
-| `/variant/[id]`              | Lists stats for a specific variant.
-| `/tag/[tag]`                 | Lists all the games that match the specified tag.
+| URL                                       | Description
+| ----------------------------------------- | -----------
+| `/scores/[username]`                      | Lists the player's profile and best scores.
+| `/history/[username]`                     | Lists the player's past games.
+| `/history/[username1]/[username2]`        | Lists the past games that 2 players were in together. (You can specify up to 6 players.)
+| `/missing-scores/[username]`              | Lists the player's remaining non-max scores.
+| `/missing-scores/[username1]/[username2]` | Lists the remaining non-max scores that 2 players both need. (You can specify up to 6 players.)
+| `/tags/[username]`                        | Lists the player's tagged games.
+| `/seed/[seed]`                            | Lists the games played on a specific seed.
+| `/stats`                                  | Lists stats for the entire website.
+| `/variant/[id]`                           | Lists stats for a specific variant.
+| `/tag/[tag]`                              | Lists all the games that match the specified tag.
 
 <br />
 
@@ -439,12 +441,11 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 
 ### JSON Endpoints
 
-| URL                                                | Description
-| -------------------------------------------------- | -----------
-| `/history/[username]?api`                          | Provides all of the games played by a user.
-| `/history/[username1]/[username2]?api`             | Provides all of the games played in by both users.
-| `/history/[username1]/[username2]/[username3]?api` | Provides all of the games played in by all three users, and so forth.
-| `/seed/[seed]?api`                                 | Provides all of the games played on the specified seed.
-| `/export/[game ID]`                                | Provides the data for an arbitrary game from the database.
+| URL                                    | Description
+| -------------------------------------- | -----------
+| `/history/[username]?api`              | Provides all of the games played by a user.
+| `/history/[username1]/[username2]?api` | Provides all of the games played in by both users. (You can specify up to 6 players.)
+| `/seed/[seed]?api`                     | Provides all of the games played on the specified seed.
+| `/export/[game ID]`                    | Provides the data for an arbitrary game from the database.
 
 <br />

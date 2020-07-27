@@ -1,7 +1,8 @@
 // Speedrun click functions for the HanabiCard object
 
 import Konva from 'konva';
-import { ActionType } from '../types/ClientAction';
+import { cardRules } from '../rules';
+import ActionType from '../types/ActionType';
 import Color from '../types/Color';
 import {
   MAX_CLUE_NUM,
@@ -9,7 +10,7 @@ import {
   START_CARD_RANK,
 } from '../types/constants';
 import ColorButton from './ColorButton';
-import { colorToMsgColor } from './convert';
+import { colorToColorIndex } from './convert';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import * as notes from './notes';
@@ -23,9 +24,9 @@ export default function HanabiCardClickSpeedrun(
   // (but don't use the speedrunning behavior if we are in a
   // solo replay / shared replay / spectating / clicking on the stack base)
   if (
-    (!globals.options.speedrun && !globals.lobby.settings.speedrunMode)
-    || globals.replay
-    || globals.spectating
+    (!globals.metadata.options.speedrun && !globals.lobby.settings.speedrunMode)
+    || globals.metadata.replay
+    || globals.metadata.spectating
     || this.state.rank === STACK_BASE_RANK
   ) {
     return;
@@ -41,8 +42,10 @@ export default function HanabiCardClickSpeedrun(
   // However, we do not want to allow clicking on the first card in the hand
   // (as it is sliding in from the deck)
     (this.tweening && this.parent.index === this.parent.parent.children.length - 1)
-    || this.state.isPlayed // Do nothing if we accidentally clicked on a played card
-    || this.state.isDiscarded // Do nothing if we accidentally clicked on a discarded card
+    // Do nothing if we accidentally clicked on a played card
+    || cardRules.isPlayed(this.state)
+    // Do nothing if we accidentally clicked on a discarded card
+    || cardRules.isDiscarded(this.state)
   ) {
     return;
   }
@@ -58,7 +61,7 @@ export default function HanabiCardClickSpeedrun(
 const clickLeft = (card: HanabiCard, event: MouseEvent) => {
   // Left-clicking on cards in our own hand is a play action
   if (
-    card.state.holder === globals.playerUs
+    card.state.location === globals.metadata.ourPlayerIndex
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
@@ -74,49 +77,48 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
   // Left-clicking on cards in other people's hands is a color clue action
   // (but if we are holding Ctrl, then we are using Empathy)
   if (
-    card.state.holder !== globals.playerUs
-    && card.state.holder !== null
-    && card.state.suit !== null
+    card.state.location !== globals.metadata.ourPlayerIndex
+    && cardRules.isInPlayerHand(card.state)
+    && card.state.suitIndex !== null
     && globals.clues !== 0
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
   ) {
-    globals.preCluedCardOrder = card.state.order;
-
     // A card may be cluable by more than one color,
     // so we need to figure out which color to use
     // First, find out if they have a clue color button selected
     const clueButton = globals.elements.clueTypeButtonGroup!.getPressed() as ColorButton;
     let clueColor: Color;
+    const suit = globals.variant.suits[card.state.suitIndex];
     if (clueButton === null) {
       // They have not clicked on a clue color button yet,
       // so assume that they want to use the first possible color of the card
-      clueColor = card.state.suit.clueColors[0];
+      clueColor = suit.clueColors[0];
     } else if (typeof clueButton.clue.value === 'number') {
       // They have clicked on a number clue button,
       // so assume that they want to use the first possible color of the card
-      clueColor = card.state.suit.clueColors[0];
+      clueColor = suit.clueColors[0];
     } else {
       // They have clicked on a color button, so assume that they want to use that color
       clueColor = clueButton.clue.value;
 
       // See if this is a valid color for the clicked card
-      const clueColorIndex = card.state.suit.clueColors.findIndex(
+      const clueColorIndex = suit.clueColors.findIndex(
         (cardColor: Color) => cardColor === clueColor,
       );
       if (clueColorIndex === -1) {
         // It is not possible to clue this color to this card,
         // so default to using the first valid color
-        clueColor = card.state.suit.clueColors[0];
+        clueColor = suit.clueColors[0];
       }
     }
 
     turn.end({
       type: ActionType.ColorClue,
-      target: card.state.holder,
-      value: colorToMsgColor(clueColor, globals.variant),
+      target: card.state.location as number,
+      value: colorToColorIndex(clueColor, globals.variant),
     });
   }
 };
@@ -124,7 +126,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
 const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // Right-clicking on cards in our own hand is a discard action
   if (
-    card.state.holder === globals.playerUs
+    card.state.location === globals.metadata.ourPlayerIndex
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
@@ -143,8 +145,8 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
 
   // Right-clicking on cards in other people's hands is a rank clue action
   if (
-    card.state.holder !== globals.playerUs
-    && card.state.holder !== null
+    card.state.location !== globals.metadata.ourPlayerIndex
+    && cardRules.isInPlayerHand(card.state)
     && card.state.rank !== null
     // It is not possible to clue a Start Card with a rank clue
     && card.state.rank !== START_CARD_RANK
@@ -154,11 +156,9 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.altKey
     && !event.metaKey
   ) {
-    globals.preCluedCardOrder = card.state.order;
-
     turn.end({
       type: ActionType.RankClue,
-      target: card.state.holder,
+      target: card.state.location as number,
       value: card.state.rank,
     });
     return;

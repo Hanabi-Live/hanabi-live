@@ -1,8 +1,9 @@
 // Functions for handling all of the keyboard shortcuts
 
 import Konva from 'konva';
+import Screen from '../../lobby/types/Screen';
 import { copyStringToClipboard } from '../../misc';
-import { ActionType } from '../types/ClientAction';
+import ActionType from '../types/ActionType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import backToLobby from './backToLobby';
@@ -58,10 +59,13 @@ export const destroy = () => {
 };
 
 const keydown = (event: JQuery.KeyDownEvent) => {
+  // Local variables
+  const state = globals.store!.getState();
+
   // Disable hotkeys if we not currently in a game
   // (this should not be possible, as the handler gets unregistered upon going back to the lobby,
   // but double check just in case)
-  if (globals.lobby.currentScreen !== 'game') {
+  if (globals.lobby.currentScreen !== Screen.Game) {
     return;
   }
 
@@ -77,7 +81,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
       return;
     }
 
-    if (globals.replay) {
+    if (globals.metadata.replay) {
       // Escape = If in a replay, exit back to the lobby
       backToLobby();
       return;
@@ -99,10 +103,10 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     // Ctrl + c = Copy the current game ID
     if (
       event.key === 'c'
-      && globals.replay
+      && globals.metadata.replay
       && !($('#game-chat-modal').is(':visible'))
     ) {
-      copyStringToClipboard(globals.databaseID.toString());
+      copyStringToClipboard(globals.metadata.databaseID.toString());
       return;
     }
   }
@@ -166,54 +170,63 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   }
 
   // Replay hotkeys
-  if (globals.hypothetical) {
+  if (globals.metadata.hypothetical) {
     if (event.key === 'ArrowLeft') {
-      hypothetical.sendBackOneTurn();
+      hypothetical.sendBack();
       return;
     }
   } else {
-    if (event.key === 'ArrowLeft') {
-      replay.enter();
-      replay.back();
-      return;
-    }
-    if (event.key === 'ArrowRight') {
-      replay.enter();
-      replay.forward();
-      return;
-    }
-    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-      if (globals.sharedReplay) {
-        replay.toggleSharedTurns();
-      } else if (!globals.replay) {
-        replay.exit();
+    switch (event.key) {
+      case 'ArrowLeft': {
+        replay.back();
+        return;
       }
-      return;
-    }
-    if (event.key === '[') {
-      replay.enter();
-      replay.backRound();
-      return;
-    }
-    if (event.key === ']') {
-      replay.enter();
-      replay.forwardRound();
-      return;
-    }
-    if (event.key === 'Home') {
-      replay.enter();
-      replay.backFull();
-      return;
-    }
-    if (event.key === 'End') {
-      replay.enter();
-      replay.forwardFull();
-      return;
+
+      case 'ArrowRight': {
+        replay.forward();
+        return;
+      }
+
+      case 'ArrowUp':
+      case 'ArrowDown': {
+        if (globals.metadata.sharedReplay) {
+          replay.toggleSharedSegments();
+        } else if (!globals.metadata.replay) {
+          replay.exit();
+        }
+        return;
+      }
+
+      case '[': {
+        replay.backRound();
+        return;
+      }
+
+      case ']': {
+        replay.forwardRound();
+        return;
+      }
+
+      case 'Home': {
+        replay.backFull();
+        return;
+      }
+
+      case 'End': {
+        replay.forwardFull();
+        return;
+      }
+
+      default: {
+        break;
+      }
     }
   }
 
   // Check for other keyboard hotkeys
-  if (globals.inReplay || globals.currentPlayerIndex !== globals.playerUs) {
+  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
+  const ourPlayerIndex = state.metadata.ourPlayerIndex;
+  if (state.replay.active || currentPlayerIndex === ourPlayerIndex) {
     return;
   }
 
@@ -233,7 +246,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
 
 const sharedReplaySendSound = (sound: string) => {
   // Only enable sound effects in a shared replay
-  if (!globals.replay || !globals.sharedReplay) {
+  if (!globals.metadata.replay || !globals.metadata.sharedReplay) {
     return;
   }
 
@@ -289,7 +302,7 @@ const performAction = (playAction = true) => {
 
 // Keyboard actions for playing and discarding cards
 const promptOwnHandOrder = (actionString: string) : string | number | null => {
-  const playerCards = globals.elements.playerHands[globals.playerUs].children;
+  const playerCards = globals.elements.playerHands[globals.metadata.ourPlayerIndex].children;
   const maxSlotIndex = playerCards.length;
   const msg = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${actionString}.`;
   const response = window.prompt(msg);

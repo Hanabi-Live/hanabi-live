@@ -127,6 +127,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 	// Set their status
 	if s != nil {
 		s.Set("status", StatusPregame)
+		s.Set("table", t.ID)
 		notifyAllUser(s)
 	}
 
