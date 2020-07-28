@@ -25,6 +25,7 @@
     "grunt-contrib-cssmin": "^3.0.0",
     "grunt-criticalcss": "^2.1.0",
     "jest": "^26.0.1",
+    "source-map-loader": "^1.0.1",
     "ts-jest": "^26.1.0",
     "ts-loader": "^7.0.5",
     "ts-node": "^8.10.2",

@@ -4,6 +4,7 @@ import produce, {
   castDraft,
   Draft,
   original,
+  setAutoFreeze,
 } from 'immer';
 import { getVariant } from '../data/gameData';
 import { variantRules } from '../rules';
@@ -16,6 +17,10 @@ import State from '../types/State';
 import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialStates/initialGameState';
 import replayReducer from './replayReducer';
+
+// Ensure immer will always auto-freeze recursive structures (like replay states)
+// This only has to be called once.
+setAutoFreeze(true);
 
 const stateReducer = produce((state: Draft<State>, action: Action) => {
   switch (action.type) {
