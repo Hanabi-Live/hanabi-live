@@ -125,9 +125,6 @@
       // Get the filter values
       const numPlayers = $('#filter-by-players').val();
       const scoreString = $('#filter-by-score').val();
-      if (typeof scoreString !== 'string') {
-        throw new Error('The value of the filter by score field is not a string.');
-      }
       const score = parseInt(scoreString, 10);
       const variant = $('#filter-by-variant').val();
 
