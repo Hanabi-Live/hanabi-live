@@ -157,13 +157,12 @@ commands.set('hypoBack', () => {
 });
 
 commands.set('hypoEnd', () => {
+  // If we are the shared replay leader, we already ended the hypothetical locally
   if (globals.amSharedReplayLeader) {
-    globals.store!.dispatch({
-      type: 'hypoEnd',
-    });
-  } else {
-    hypothetical.end();
+    return;
   }
+
+  hypothetical.end();
 });
 
 interface HypoRevealedData {

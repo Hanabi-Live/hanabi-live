@@ -80,6 +80,11 @@ export const end = () => {
   if (!globals.metadata.hypothetical) {
     return;
   }
+
+  globals.store!.dispatch({
+    type: 'hypoEnd',
+  });
+
   globals.metadata.hypothetical = false;
   globals.hypoActions = [];
   globals.hypoFirstDrawnIndex = 0;
