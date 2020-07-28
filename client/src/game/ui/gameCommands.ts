@@ -156,12 +156,13 @@ commands.set('hypoBack', () => {
 });
 
 commands.set('hypoEnd', () => {
-  if (!globals.amSharedReplayLeader) {
+  if (globals.amSharedReplayLeader) {
+    globals.store!.dispatch({
+      type: 'hypoEnd',
+    });
+  } else {
     hypothetical.end();
   }
-  globals.store!.dispatch({
-    type: 'hypoEnd',
-  });
 });
 
 interface HypoRevealedData {

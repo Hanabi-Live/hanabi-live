@@ -18,8 +18,9 @@ import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialStates/initialGameState';
 import replayReducer from './replayReducer';
 
-// Ensure immer will always auto-freeze recursive structures (like replay states)
-// This only has to be called once.
+// Ensure that immer will always auto-freeze recursive structures (like replay states)
+// This is necessary to prevent massive lag when WebPack bundles in production made
+// This only has to be called once
 setAutoFreeze(true);
 
 const stateReducer = produce((state: Draft<State>, action: Action) => {
