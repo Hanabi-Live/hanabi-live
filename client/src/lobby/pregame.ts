@@ -95,44 +95,24 @@ export const draw = () => {
   $('#lobby-pregame-name').text(globals.game.name);
   $('#lobby-pregame-variant').text(globals.game.options.variantName);
 
-  const optionsTitle = $('#lobby-pregame-options-title');
-  optionsTitle.text('Options:');
-  const options = $('#lobby-pregame-options');
-
-  // Note that the tooltips must be created inline; if they are created statically in "main.tmpl",
-  // then they will fail to initialize properly on the second viewing
-  const html = makeOptionsHTML();
-  options.html(html);
-  if (html === '') {
-    optionsTitle.text('');
-  }
-
-  // Initialize the tooltips, if any
-  // (this has to be done after adding the HTML to the page)
-  $('#lobby-pregame-options-timer').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-speedrun').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-card-cycle').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-deck-plays').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-empty-clues').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-one-extra-card').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-one-less-card').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-all-or-nothing').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-characters').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-password').tooltipster(tooltipOptions);
+  drawOptions();
 
   // Draw the player boxes
   for (let i = 0; i <= 5; i++) {
-    makePlayerBox(i);
+    drawPlayerBox(i);
   }
 
   enableStartGameButton();
 };
 
-const makeOptionsHTML = () => {
+const drawOptions = () => {
   if (globals.game === null) {
-    return '';
+    return;
   }
 
+  // Start to create the HTML that will appear under the "Options:" text
+  // Note that the tooltips must be created inline; if they are created statically in "main.tmpl",
+  // then they will fail to initialize properly on the second viewing
   let html = '';
 
   if (globals.game.options.timed) {
@@ -250,10 +230,28 @@ const makeOptionsHTML = () => {
     `;
   }
 
-  return html;
+  // Set the HTML
+  const optionsTitleDiv = $('#lobby-pregame-options-title');
+  const optionsText = html === '' ? '' : 'Options:';
+  optionsTitleDiv.text(optionsText);
+  const optionsDiv = $('#lobby-pregame-options');
+  optionsDiv.html(html);
+
+  // Initialize the tooltips, if any
+  // (this has to be done after adding the HTML to the page)
+  $('#lobby-pregame-options-timer').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-speedrun').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-card-cycle').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-deck-plays').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-empty-clues').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-one-extra-card').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-one-less-card').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-all-or-nothing').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-characters').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-password').tooltipster(tooltipOptions);
 };
 
-const makePlayerBox = (i: number) => {
+const drawPlayerBox = (i: number) => {
   if (globals.game === null) {
     return;
   }
