@@ -54,7 +54,7 @@ export default class LayoutChild extends Konva.Group {
   // since that would overlap with the Konva function
   checkSetDraggable() {
     const state = globals.store?.getState();
-    if (state === null || state === undefined || state.visibleState === null) {
+    if (state === undefined || state === null || state.visibleState === null) {
       return;
     }
     if (this.shouldBeDraggable(state.visibleState.turn.currentPlayerIndex)) {

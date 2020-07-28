@@ -614,6 +614,9 @@ const initStateStore = (data: LegacyGameMetadata) => {
     // We need to use the "nullified" version, so we access the globals
     characterAssignments: globals.metadata.characterAssignments,
     characterMetadata: data.characterMetadata,
+    paused: data.paused,
+    pausePlayer: data.pausePlayer,
+    pauseQueued: data.pauseQueued,
   };
   globals.store = createStore(stateReducer, initialState(metadata));
 

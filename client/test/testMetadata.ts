@@ -26,5 +26,8 @@ export default function testMetadata(
     finished: false,
     characterAssignments: initArray(numPlayers, null),
     characterMetadata: [],
+    paused: false,
+    pausePlayer: '',
+    pauseQueued: false,
   };
 }

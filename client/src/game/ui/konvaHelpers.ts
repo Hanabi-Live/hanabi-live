@@ -31,7 +31,7 @@ export const animate = (
   fast: boolean = globals.animateFast,
 ) => {
   if (!interactive && node.isListening() && !globals.metadata.options.speedrun) {
-    // Note there's an exception for speedruns, that remain listening during the animation
+    // Note that in speedruns, cards remain listening during their animations
     throw new Error('A node that is about to animate is listening, but it should not be (because "interactive" was to set to be false or not specified).');
   }
 

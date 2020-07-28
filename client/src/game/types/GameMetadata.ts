@@ -13,6 +13,9 @@ export default interface GameMetadata {
   readonly finished: boolean;
   readonly characterAssignments: Readonly<Array<number | null>>;
   readonly characterMetadata: number[];
+  readonly paused: boolean;
+  readonly pausePlayer: string;
+  readonly pauseQueued: boolean;
 }
 
 export const getPlayerName = (
