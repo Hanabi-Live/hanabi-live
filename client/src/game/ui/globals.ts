@@ -79,11 +79,6 @@ export class Globals {
   startingTurnTime: number = 0;
   lastTimerUpdateTimeMS: number = 0;
 
-  // Pause feature
-  paused: boolean = false; // Whether or not the game is currently paused
-  pausePlayer: string = ''; // The name of the player who paused the game
-  pauseQueued: boolean = false; // Whether or not we have requested a queued pause
-
   // Miscellaneous
   animateFast: boolean = true;
   UIClickTime: number = 0; // Used to prevent accidental double clicks
@@ -137,9 +132,6 @@ export class Globals {
     this.timeTaken = 0;
     this.startingTurnTime = 0;
     this.lastTimerUpdateTimeMS = 0;
-    this.paused = false;
-    this.pausePlayer = '';
-    this.pauseQueued = false;
     this.animateFast = true;
     this.UIClickTime = 0;
     this.spectators = [];

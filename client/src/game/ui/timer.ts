@@ -133,7 +133,7 @@ const setTickingDownTime = (timer: TimerDisplay) => {
     && millisecondsLeft <= 10000
     && elapsedTime > 900
     && elapsedTime < 1100
-    && !globals.paused
+    && !globals.metadata.paused
     && !globals.lobby.errorOccurred
   ) {
     globals.game!.sounds.play('tone');

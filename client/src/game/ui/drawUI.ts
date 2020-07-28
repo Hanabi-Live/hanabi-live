@@ -1429,7 +1429,7 @@ const drawTimers = () => {
     radiusY: 0.07 * winH,
     stroke: '#ffe03b', // Yellow
     strokeWidth: 2,
-    visible: globals.pauseQueued,
+    visible: globals.metadata.pauseQueued,
   });
   globals.layers.UI.add(globals.elements.timer1Circle);
 
@@ -1450,7 +1450,7 @@ const drawTimers = () => {
   const timerClick = () => {
     if (
       !globals.metadata.options.timed // We don't need to pause if this is not a timed game
-      || globals.paused // We don't need to pause if the game is already paused
+      || globals.metadata.paused // We don't need to pause if the game is already paused
     ) {
       return;
     }
@@ -1460,12 +1460,12 @@ const drawTimers = () => {
     const ourPlayerIndex = state.metadata.ourPlayerIndex;
     if (currentPlayerIndex === ourPlayerIndex) {
       setting = 'pause';
-    } else if (globals.pauseQueued) {
+    } else if (globals.metadata.pauseQueued) {
       setting = 'pause-unqueue';
-      globals.pauseQueued = false;
+      globals.metadata.pauseQueued = false;
     } else {
       setting = 'pause-queue';
-      globals.pauseQueued = true;
+      globals.metadata.pauseQueued = true;
     }
     globals.lobby.conn!.send('pause', {
       tableID: globals.lobby.tableID,
@@ -1473,8 +1473,8 @@ const drawTimers = () => {
     });
 
     const wasVisible = globals.elements.timer1Circle!.visible();
-    if (wasVisible !== globals.pauseQueued) {
-      globals.elements.timer1Circle!.visible(globals.pauseQueued);
+    if (wasVisible !== globals.metadata.pauseQueued) {
+      globals.elements.timer1Circle!.visible(globals.metadata.pauseQueued);
       globals.layers.UI.batchDraw();
     }
   };

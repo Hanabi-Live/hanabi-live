@@ -328,8 +328,8 @@ interface PauseData {
   pausePlayer: string;
 }
 commands.set('pause', (data: PauseData) => {
-  globals.paused = data.paused;
-  globals.pausePlayer = data.pausePlayer;
+  globals.metadata.paused = data.paused;
+  globals.metadata.pausePlayer = data.pausePlayer;
 
   // Pause or unpause the UI accordingly
   pause();

@@ -8,12 +8,12 @@ export default function pause() {
     return;
   }
 
-  if (globals.paused) {
+  if (globals.metadata.paused) {
     // If we queued a pause, unqueue it
-    globals.pauseQueued = false;
+    globals.metadata.pauseQueued = false;
     const wasVisible = globals.elements.timer1Circle!.visible();
-    if (wasVisible !== globals.pauseQueued) {
-      globals.elements.timer1Circle!.visible(globals.pauseQueued);
+    if (wasVisible !== globals.metadata.pauseQueued) {
+      globals.elements.timer1Circle!.visible(globals.metadata.pauseQueued);
       globals.layers.UI.batchDraw();
     }
 
@@ -26,7 +26,7 @@ export default function pause() {
     drawLayer(globals.elements.timer1!);
 
     globals.elements.pauseArea!.show();
-    globals.elements.pauseText!.text(`by: ${globals.pausePlayer}`);
+    globals.elements.pauseText!.text(`by: ${globals.metadata.pausePlayer}`);
     if (globals.metadata.spectating) {
       globals.elements.pauseButton!.setEnabled(false);
       globals.elements.pauseButton!.opacity(0.2);
