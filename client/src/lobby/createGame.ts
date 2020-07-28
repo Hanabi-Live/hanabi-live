@@ -5,8 +5,9 @@ import * as debug from '../debug';
 import { VARIANTS } from '../game/data/gameData';
 import { DEFAULT_VARIANT_NAME } from '../game/types/constants';
 import globals from '../globals';
-import * as misc from '../misc';
-import { isEmpty } from '../misc';
+import {
+  isEmpty, getRandomNumber, closeAllTooltips, isKeyOf,
+} from '../misc';
 import * as modals from '../modals';
 import Settings from './types/Settings';
 
@@ -33,7 +34,7 @@ export const init = () => {
 
   // The "dice" button will select a random variant from the list
   $('#dice').on('click', () => {
-    const randomVariantIndex = misc.getRandomNumber(0, variantNames.length - 1);
+    const randomVariantIndex = getRandomNumber(0, variantNames.length - 1);
     const randomVariant = variantNames[randomVariantIndex];
     $('#createTableVariant').text(randomVariant);
     dropdown2.val(randomVariant);
@@ -220,7 +221,7 @@ const submit = () => {
     alertWaiters: getCheckbox('createTableAlertWaiters'),
   });
 
-  misc.closeAllTooltips();
+  closeAllTooltips();
   $('#nav-buttons-games-create-game').addClass('disabled');
 };
 
@@ -266,7 +267,7 @@ const getVariant = (setting: keyof Settings) => {
 };
 
 const checkChanged = (settingName: keyof Settings, value: boolean | string) => {
-  if (!misc.isKeyOf(settingName, globals.settings)) {
+  if (!isKeyOf(settingName, globals.settings)) {
     throw new Error(`The setting of ${settingName} does not exist in the Settings class.`);
   }
 

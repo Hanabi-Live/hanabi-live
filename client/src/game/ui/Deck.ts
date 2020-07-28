@@ -1,7 +1,6 @@
 import Konva from 'konva';
 import { TOOLTIP_DELAY } from '../../constants';
-import { timerFormatter } from '../../misc';
-import * as misc from '../../misc';
+import { timerFormatter, dateTimeFormatter, millisecondsToClockString } from '../../misc';
 import { deckRules } from '../rules';
 import ActionType from '../types/ActionType';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
@@ -159,7 +158,7 @@ export default class Deck extends Konva.Group {
 
     // Disable this row in JSON replays
     if (globals.metadata.replay && globals.metadata.databaseID !== 0) {
-      const formattedDatetimeFinished = misc.dateTimeFormatter.format(
+      const formattedDatetimeFinished = dateTimeFormatter.format(
         new Date(globals.metadata.datetimeFinished),
       );
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-calendar"></i></span>';
@@ -168,7 +167,7 @@ export default class Deck extends Konva.Group {
       const startedDate = new Date(globals.metadata.datetimeStarted);
       const finishedDate = new Date(globals.metadata.datetimeFinished);
       const elapsedMilliseconds = finishedDate.getTime() - startedDate.getTime();
-      const clockString = misc.millisecondsToClockString(elapsedMilliseconds);
+      const clockString = millisecondsToClockString(elapsedMilliseconds);
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-stopwatch"></i></span>';
       content += `&nbsp; Game Length: &nbsp;<strong>${clockString}</strong></li>`;
     }
@@ -189,9 +188,9 @@ export default class Deck extends Konva.Group {
     if (globals.metadata.options.timed) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-clock"></i></span>';
       content += '&nbsp; Timed: ';
-      content += timerFormatter(globals.metadata.options.timeBase * 1000);
+      content += timerFormatter(globals.metadata.options.timeBase);
       content += ' + ';
-      content += timerFormatter(globals.metadata.options.timePerTurn * 1000);
+      content += timerFormatter(globals.metadata.options.timePerTurn);
       content += '</li>';
     }
 

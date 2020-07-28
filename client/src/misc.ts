@@ -82,7 +82,8 @@ const pad2 = (num: number) => {
   return `${num}`;
 };
 
-export const timerFormatter = (milliseconds: number) => {
+export const timerFormatter = (totalSeconds: number) => {
+  const milliseconds = totalSeconds * 1000;
   const time = new Date();
   time.setHours(0, 0, 0, milliseconds || 0);
   const minutes = time.getMinutes();

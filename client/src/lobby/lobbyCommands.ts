@@ -57,14 +57,6 @@ commands.set('friends', (data: FriendsData) => {
 
 commands.set('game', (data: Game) => {
   globals.game = data;
-
-  // The timeBase and timePerTurn come in seconds, so convert them to milliseconds
-  globals.game.options = {
-    ...data.options,
-    timeBase: data.options.timeBase * 1000,
-    timePerTurn: data.options.timePerTurn * 1000,
-  };
-
   pregame.draw();
 });
 
@@ -162,19 +154,11 @@ commands.set('soundLobby', (data: SoundLobbyData) => {
 
 // Received by the client when a table is created or modified
 commands.set('table', (data: Table) => {
-  tableSet(data);
+  globals.tableMap.set(data.id, data);
   if (globals.currentScreen === Screen.Lobby) {
     tablesDraw();
   }
 });
-
-const tableSet = (data: Table) => {
-  // The timeBase and timePerTurn come in seconds, so convert them to milliseconds
-  data.timeBase *= 1000;
-  data.timePerTurn *= 1000;
-
-  globals.tableMap.set(data.id, data);
-};
 
 // Received by the client when a table no longer has any members present
 interface TableGoneData {
@@ -191,7 +175,7 @@ commands.set('tableGone', (data: TableGoneData) => {
 // Received by the client upon initial connection
 commands.set('tableList', (dataList: Table[]) => {
   for (const data of dataList) {
-    tableSet(data);
+    globals.tableMap.set(data.id, data);
   }
   if (globals.currentScreen === Screen.Lobby) {
     tablesDraw();

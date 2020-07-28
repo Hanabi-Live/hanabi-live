@@ -4,7 +4,7 @@ import { FADE_TIME } from './constants';
 import * as gameChat from './game/chat';
 import globals from './globals';
 import * as lobbyNav from './lobby/nav';
-import * as misc from './misc';
+import { closeAllTooltips } from './misc';
 import * as sounds from './sounds';
 
 // The list of all of the modals
@@ -52,7 +52,7 @@ export const init = () => {
 
 export const passwordShow = (tableID: number) => {
   $('#lobby').fadeTo(FADE_TIME, 0.25);
-  misc.closeAllTooltips();
+  closeAllTooltips();
   globals.modalShowing = true;
 
   $('#password-modal-id').val(tableID);
@@ -90,7 +90,7 @@ export const warningShow = (msg: string) => {
   if ($('#game').is(':visible')) {
     $('#game').fadeTo(FADE_TIME, 0.25);
   }
-  misc.closeAllTooltips();
+  closeAllTooltips();
   gameChat.hide();
   globals.modalShowing = true;
 
@@ -111,7 +111,7 @@ export const errorShow = (msg: string) => {
   if ($('#game').is(':visible')) {
     $('#game').fadeTo(FADE_TIME, 0.1);
   }
-  misc.closeAllTooltips();
+  closeAllTooltips();
   gameChat.hide();
   globals.modalShowing = true;
 

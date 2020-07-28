@@ -1,6 +1,6 @@
 // Functions for timed games (and the timer that ticks up in untimed games)
 
-import * as misc from '../../misc';
+import { millisecondsToClockString } from '../../misc';
 import TimerDisplay from './controls/TimerDisplay';
 import globals from './globals';
 import { drawLayer } from './konvaHelpers';
@@ -49,7 +49,7 @@ export const update = (data: ClockData) => {
       // Invert it to show how much time each player is taking
       time *= -1;
     }
-    globals.elements.timer1.setTimerText(misc.millisecondsToClockString(time));
+    globals.elements.timer1.setTimerText(millisecondsToClockString(time));
   }
 
   const ourTurn = (
@@ -62,7 +62,7 @@ export const update = (data: ClockData) => {
       // Invert it to show how much time each player is taking
       time *= -1;
     }
-    globals.elements.timer2.setTimerText(misc.millisecondsToClockString(time));
+    globals.elements.timer2.setTimerText(millisecondsToClockString(time));
     globals.elements.timer2.setLabelText(globals.metadata.playerNames[globals.activeIndex]);
   }
 
@@ -118,7 +118,7 @@ const setTickingDownTime = (timer: TimerDisplay) => {
     // Invert it to show how much time each player is taking
     millisecondsLeft *= -1;
   }
-  const displayString = misc.millisecondsToClockString(millisecondsLeft);
+  const displayString = millisecondsToClockString(millisecondsLeft);
 
   // Update display
   timer.setTimerText(displayString);
@@ -160,7 +160,7 @@ const setTickingDownTimeTooltip = (i: number) => {
     content += 'taken';
   }
   content += ':<br /><strong>';
-  content += misc.millisecondsToClockString(time);
+  content += millisecondsToClockString(time);
   content += '</strong>';
   $(`#tooltip-player-${i}`).tooltipster('instance').content(content);
 };
@@ -182,7 +182,7 @@ const setTickingDownTimeCPTooltip = () => {
   time += globals.timeTaken;
 
   let content = 'Time taken on this turn:<br /><strong>';
-  content += misc.millisecondsToClockString(time);
+  content += millisecondsToClockString(time);
   content += '</strong>';
   $('#tooltip-time-taken').tooltipster('instance').content(content);
 };

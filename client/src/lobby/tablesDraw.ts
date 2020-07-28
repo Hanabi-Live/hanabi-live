@@ -1,7 +1,7 @@
 // The lobby area that shows all of the current tables
 
 import globals from '../globals';
-import * as misc from '../misc';
+import { timerFormatter } from '../misc';
 import * as modals from '../modals';
 import Screen from './types/Screen';
 import Table from './types/Table';
@@ -97,7 +97,7 @@ const tablesDraw = () => {
     // Column 4 - Timed
     let timed = 'No';
     if (table.timed) {
-      timed = `${misc.timerFormatter(table.timeBase)} + ${misc.timerFormatter(table.timePerTurn)}`;
+      timed = `${timerFormatter(table.timeBase)} + ${timerFormatter(table.timePerTurn)}`;
     }
     $('<td>').html(timed).appendTo(row);
 

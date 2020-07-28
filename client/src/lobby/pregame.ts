@@ -3,7 +3,7 @@
 import * as chat from '../chat';
 import { getVariant } from '../game/data/gameData';
 import globals from '../globals';
-import * as misc from '../misc';
+import { timerFormatter } from '../misc';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
 import Screen from './types/Screen';
@@ -118,9 +118,9 @@ const drawOptions = () => {
   if (globals.game.options.timed) {
     html += '<li><i id="lobby-pregame-options-timer" class="fas fa-clock" ';
     html += 'data-tooltip-content="#pregame-tooltip-timer"></i>&nbsp; (';
-    html += misc.timerFormatter(globals.game.options.timeBase);
+    html += timerFormatter(globals.game.options.timeBase);
     html += ' + ';
-    html += misc.timerFormatter(globals.game.options.timePerTurn);
+    html += timerFormatter(globals.game.options.timePerTurn);
     html += ')</li>';
     html += `
       <div class="hidden">
@@ -145,7 +145,6 @@ const drawOptions = () => {
 
   if (globals.game.options.cardCycle) {
     html += '<li><i id="lobby-pregame-options-card-cycle" class="fas fa-sync-alt" ';
-    html += 'style="position: relative; left: 0.2em;" ';
     html += 'data-tooltip-content="#pregame-tooltip-card-cycle"></i></li>';
     html += `
       <div class="hidden">
