@@ -30,7 +30,8 @@ export const animate = (
   interactive: boolean = false,
   fast: boolean = globals.animateFast,
 ) => {
-  if (!interactive && node.isListening()) {
+  if (!interactive && node.isListening() && !globals.metadata.options.speedrun) {
+    // Note there's an exception for speedruns, that remain listening during the animation
     throw new Error('A node that is about to animate is listening, but it should not be (because "interactive" was to set to be false or not specified).');
   }
 
@@ -77,13 +78,14 @@ export const animate = (
           node.tween.destroy();
           node.tween = null;
         }
-        if (params.onFinish !== undefined) {
-          params.onFinish();
-        }
 
         // Now that the animation is finished, we can re-enable listening (see below explanation)
         if (interactive) {
           node.listening(true);
+        }
+
+        if (params.onFinish !== undefined) {
+          params.onFinish();
         }
       },
     };
