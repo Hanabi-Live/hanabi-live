@@ -83,6 +83,12 @@ module.exports = {
         include: path.join(__dirname, 'src'),
         loader: 'ts-loader',
       },
+      // All files with a ".js" extension (JavaScript libraries) need to import other source maps
+      {
+        test: /\.js$/,
+        enforce: 'pre',
+        use: ['source-map-loader'],
+      },
     ],
   },
 
