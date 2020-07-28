@@ -106,3 +106,4 @@
 ## Other Rules
 
 * Successfully playing a 5 gives the team an additional clue. (This is a "reward" for finishing a play stack.)
+* If you finish a play stack while the team is at 8 clues, then the extra clue is forfeit.
