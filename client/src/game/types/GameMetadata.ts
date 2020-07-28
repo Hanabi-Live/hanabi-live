@@ -14,7 +14,7 @@ export default interface GameMetadata {
   readonly characterAssignments: Readonly<Array<number | null>>;
   readonly characterMetadata: number[];
   readonly paused: boolean;
-  readonly pausePlayer: string;
+  readonly pausePlayerIndex: number | null;
   readonly pauseQueued: boolean;
 }
 

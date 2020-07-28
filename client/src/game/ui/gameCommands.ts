@@ -615,7 +615,7 @@ const initStateStore = (data: LegacyGameMetadata) => {
     characterAssignments: globals.metadata.characterAssignments,
     characterMetadata: data.characterMetadata,
     paused: data.paused,
-    pausePlayer: data.pausePlayer,
+    pausePlayerIndex: null, // TODO server changes to make this work
     pauseQueued: data.pauseQueued,
   };
   globals.store = createStore(stateReducer, initialState(metadata));
