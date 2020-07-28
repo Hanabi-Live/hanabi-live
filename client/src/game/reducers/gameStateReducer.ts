@@ -176,15 +176,6 @@ const gameStateReducer = produce((
         const playStack = state.playStacks[action.suitIndex];
         playStack.push(action.order);
 
-        // Resolve the stack direction
-        const direction = playStacksRules.direction(
-          action.suitIndex,
-          playStack,
-          state.deck,
-          variant,
-        );
-        state.playStackDirections[action.suitIndex] = direction;
-
         // Gain a clue token if the stack is complete
         if (playStack.length === 5) { // Hard-code 5 cards per stack
           state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
@@ -307,6 +298,20 @@ const gameStateReducer = produce((
     state,
     metadata,
   ));
+
+  // Resolve the stack direction
+  if (action.type === 'play') {
+    // We have to wait until the deck is updated with the information of the card that we played
+    // before the following functions will work
+    const playStack = state.playStacks[action.suitIndex];
+    const direction = playStacksRules.direction(
+      action.suitIndex,
+      playStack,
+      state.deck,
+      variant,
+    );
+    state.playStackDirections[action.suitIndex] = direction;
+  }
 
   // Discarding or playing cards can make other card cards in that suit
   // not playable anymore and can make other cards critical

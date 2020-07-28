@@ -25,17 +25,13 @@ export const onPlayStackDirectionsChanged = (
   directions: readonly StackDirection[],
   previousDirections: readonly StackDirection[] | undefined,
 ) => {
-  if (previousDirections === undefined) {
-    return;
-  }
-
   if (!variantRules.hasReversedSuits(globals.variant)) {
     return;
   }
 
   // Update the stack directions (which are only used in the "Up or Down" and "Reversed" variants)
   directions.forEach((direction, i) => {
-    if (direction === previousDirections[i]) {
+    if (previousDirections !== undefined && direction === previousDirections[i]) {
       return;
     }
 

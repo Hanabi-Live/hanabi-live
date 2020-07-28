@@ -80,6 +80,9 @@ export const direction = (
   }
 
   const top = lastPlayedRank(playStack, deck);
+  if (top === UNKNOWN_CARD_RANK) {
+    throw new Error(`The last played rank for suit index ${suitIndex} was unknown.`);
+  }
   if (top === STACK_BASE_RANK || top === START_CARD_RANK) {
     return StackDirection.Undecided;
   }
