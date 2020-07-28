@@ -375,8 +375,6 @@ export default function drawHands(winW: number, winH: number) {
     globals.layers.UI.add(turnRect);
     globals.elements.playerHandTurnRects.push(turnRect);
 
-    // drawShades(winW, winH, numPlayers, j);
-
     globals.elements.nameFrames[i] = new NameFrame({
       x: playerNamePos[numPlayers][j].x * winW,
       y: playerNamePos[numPlayers][j].y * winH,
@@ -390,83 +388,6 @@ export default function drawHands(winW: number, winH: number) {
     drawDetrimentalCharacters(winW, winH, numPlayers, i, j);
   }
 }
-
-/*
-// Draw the faded shade that shows where the "new" side of the hand is
-// (but don't bother drawing it in BGA mode since all the hands face the same way)
-const drawShades = (winW: number, winH: number, numPlayers: number, playerIndex: number) => {
-  if (!globals.lobby.settings.keldonMode) {
-    return;
-  }
-
-  // This is the position for the white shade that shows where the new side of the hand is
-  // The x and y coordinates cannot be algorithmically derived from the hand positions
-  // Note that there is no shade in BGA mode
-  const shadePos: HandConfig[][] = [];
-  shadePos[2] = [
-    { x: handPos[2][0].x + 0.001, y: handPos[2][0].y - 0.008 },
-    { x: handPos[2][1].x - 0.011, y: handPos[2][1].y - 0.008 },
-  ];
-  shadePos[3] = [
-    { x: handPos[3][0].x + 0.001, y: handPos[3][0].y - 0.008 },
-    { x: handPos[3][1].x - 0.006, y: handPos[3][1].y + 0.01 },
-    { x: handPos[3][2].x + 0.003, y: handPos[3][2].y - 0.013 },
-  ];
-  shadePos[4] = [
-    { x: handPos[4][0].x + 0.001, y: handPos[4][0].y - 0.008 },
-    { x: handPos[4][1].x - 0.007, y: handPos[4][1].y + 0.021 },
-    { x: handPos[4][2].x - 0.011, y: handPos[4][2].y - 0.008 },
-    { x: handPos[4][3].x + 0.002, y: handPos[4][3].y - 0.023 },
-  ];
-  shadePos[5] = [
-    { x: handPos[5][0].x + 0.001, y: handPos[5][0].y - 0.008 },
-    { x: handPos[5][1].x - 0.004, y: handPos[5][1].y + 0.009 },
-    { x: handPos[5][2].x - 0.01, y: handPos[5][2].y - 0.008 },
-    { x: handPos[5][3].x - 0.01, y: handPos[5][3].y - 0.008 },
-    { x: handPos[5][4].x + 0.004, y: handPos[5][4].y - 0.009 },
-  ];
-  shadePos[6] = [
-    { x: handPos[6][0].x + 0.001, y: handPos[6][0].y - 0.008 },
-    { x: handPos[6][1].x - 0.0045, y: handPos[6][1].y + 0.02 },
-    { x: handPos[6][2].x - 0.011, y: handPos[6][2].y - 0.008 },
-    { x: handPos[6][3].x - 0.011, y: handPos[6][3].y - 0.008 },
-    { x: handPos[6][4].x - 0.011, y: handPos[6][4].y - 0.008 },
-    { x: handPos[6][5].x + 0.0045, y: handPos[6][5].y - 0.02 },
-  ];
-  for (let i = 2; i <= 6; i++) {
-    for (let j = 0; j < i; j++) {
-      shadePos[i][j].w = handPos[i][j].w + 0.01;
-      shadePos[i][j].h = handPos[i][j].h + 0.016;
-      shadePos[i][j].rot = handPos[i][j].rot;
-    }
-  }
-
-  const rect = new Konva.Rect({
-    x: shadePos[numPlayers][playerIndex].x * winW,
-    y: shadePos[numPlayers][playerIndex].y * winH,
-    width: shadePos[numPlayers][playerIndex].w * winW,
-    height: shadePos[numPlayers][playerIndex].h * winH,
-    rotation: shadePos[numPlayers][playerIndex].rot,
-    cornerRadius: 0.03 * shadePos[numPlayers][playerIndex].w * winW,
-    opacity: 0.4,
-    fillLinearGradientStartPoint: {
-      x: 0,
-      y: 0,
-    },
-    fillLinearGradientEndPoint: {
-      x: shadePos[numPlayers][playerIndex].w * winW,
-      y: 0,
-    },
-    fillLinearGradientColorStops: [0, 'rgba(0,0,0,0)', 0.9, 'white'],
-  });
-
-  if (isHandReversed(playerIndex)) {
-    rect.fillLinearGradientColorStops([1, 'rgba(0,0,0,0)', 0.1, 'white']);
-  }
-
-  globals.layers.UI.add(rect);
-};
-*/
 
 // Draw the "Detrimental Character Assignments" icon and tooltip
 const drawDetrimentalCharacters = (
