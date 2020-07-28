@@ -208,6 +208,19 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 	})
 	t.NotifyGameAction()
 
+	// Find out if this was a blind play
+	if c.Touched {
+		// Mark that the blind-play streak has ended
+		g.BlindPlays = 0
+	} else {
+		g.BlindPlays++
+		if g.BlindPlays > 4 {
+			// There is no sound effect for more than 4 blind plays in a row
+			g.BlindPlays = 4
+		}
+		g.Sound = "blind" + strconv.Itoa(g.BlindPlays)
+	}
+
 	// Give the team a clue if the final card of the suit was played
 	// (this will always be a 5 unless it is a custom variant)
 	extraClue := c.Rank == 5
@@ -287,6 +300,11 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 		Failed:      c.Failed,
 	})
 	t.NotifyGameAction()
+
+	// Check for discarding clued cards
+	if !c.Failed && c.Touched {
+		g.Sound = "turn_discard_clued"
+	}
 
 	// Check to see if revealing this card would surprise the player
 	// (we want to have it in the middle of the function so that it will
