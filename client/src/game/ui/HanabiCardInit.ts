@@ -193,6 +193,7 @@ export const pips = (variant: Variant) => {
       fill,
       stroke: 'black',
       strokeWidth: 5,
+      shadowEnabled: !globals.metadata.options.speedrun,
       shadowColor: 'black',
       shadowOffsetX: 15,
       shadowOffsetY: 15,
@@ -289,6 +290,7 @@ export const pips = (variant: Variant) => {
       stroke: 'black',
       strokeWidth: 3,
       listening: false,
+      shadowEnabled: !globals.metadata.options.speedrun,
       shadowColor: 'black',
       shadowOffsetX: 5,
       shadowOffsetY: 5,
@@ -345,6 +347,7 @@ export const note = (offsetCornerElements: boolean, shouldShowIndicator: () => b
     width: size,
     height: size,
     rotation: 180,
+    shadowEnabled: !globals.metadata.options.speedrun,
     shadowColor: 'black',
     shadowBlur: 10,
     shadowOffset: {
@@ -379,6 +382,7 @@ export const criticalIndicator = (offsetCornerElements: boolean) => {
     width: size,
     height: size,
     rotation: 180,
+    shadowEnabled: !globals.metadata.options.speedrun,
     shadowColor: 'black',
     shadowBlur: 10,
     shadowOffset: {

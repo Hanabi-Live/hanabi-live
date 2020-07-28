@@ -462,9 +462,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.setStatus();
 
     // Enable/disable shadow on card
-    const isStackBase = this.visibleRank === STACK_BASE_RANK;
-    if (this.bare.shadowEnabled() === isStackBase) {
-      this.bare.shadowEnabled(!isStackBase);
+    const shadowVisible = (
+      this.visibleRank !== STACK_BASE_RANK
+      && !globals.metadata.options.speedrun
+    );
+    if (this.bare.shadowEnabled() !== shadowVisible) {
+      this.bare.shadowEnabled(shadowVisible);
     }
 
     globals.layers.card.batchDraw();
