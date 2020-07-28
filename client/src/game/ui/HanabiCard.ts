@@ -926,8 +926,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       return false;
     }
 
-    // If we are in a replay, always show the cursor
-    if (globals.metadata.replay || state.replay.active) {
+    // If we are in a replay or are a spectator, always show the cursor
+    if (state.metadata.spectating || state.replay.active) {
       return true;
     }
 
