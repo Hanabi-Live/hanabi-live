@@ -226,7 +226,13 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   // Check for other keyboard hotkeys
   const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
   const ourPlayerIndex = state.metadata.ourPlayerIndex;
-  if (state.replay.active || currentPlayerIndex === ourPlayerIndex) {
+  const shouldHaveKeyboardHotkeysForActions = (
+    // If it is our turn in an ongoing-game
+    (!state.replay.active && currentPlayerIndex === ourPlayerIndex)
+    // If we are in a hypothetical and we are the shared replay leader
+    || (state.replay.hypothetical !== null && globals.amSharedReplayLeader)
+  );
+  if (!shouldHaveKeyboardHotkeysForActions) {
     return;
   }
 
