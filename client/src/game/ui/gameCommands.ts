@@ -153,6 +153,7 @@ commands.set('hypoBack', () => {
   globals.store!.dispatch({
     type: 'hypoBack',
   });
+  hypothetical.beginTurn();
 });
 
 commands.set('hypoEnd', () => {
