@@ -101,6 +101,38 @@ export const draw = () => {
 
   // Note that the tooltips must be created inline; if they are created statically in "main.tmpl",
   // then they will fail to initialize properly on the second viewing
+  const html = makeOptionsHTML();
+  options.html(html);
+  if (html === '') {
+    optionsTitle.text('');
+  }
+
+  // Initialize the tooltips, if any
+  // (this has to be done after adding the HTML to the page)
+  $('#lobby-pregame-options-timer').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-speedrun').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-card-cycle').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-deck-plays').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-empty-clues').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-one-extra-card').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-one-less-card').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-all-or-nothing').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-characters').tooltipster(tooltipOptions);
+  $('#lobby-pregame-options-password').tooltipster(tooltipOptions);
+
+  // Draw the player boxes
+  for (let i = 0; i <= 5; i++) {
+    makePlayerBox(i);
+  }
+
+  enableStartGameButton();
+};
+
+const makeOptionsHTML = () => {
+  if (globals.game === null) {
+    return '';
+  }
+
   let html = '';
 
   if (globals.game.options.timed) {
@@ -218,184 +250,157 @@ export const draw = () => {
     `;
   }
 
-  if (globals.game.passwordProtected) {
-    html += '<li><i id="lobby-pregame-options-password" class="fas fa-lock" ';
-    html += 'data-tooltip-content="#pregame-tooltip-password"></i></li>';
-    html += `
-      <div class="hidden">
-        <div id="pregame-tooltip-password" class="lobby-pregame-tooltip-icon">
-          This game is password protected.
-        </div>
-      </div>
-    `;
+  return html;
+};
+
+const makePlayerBox = (i: number) => {
+  if (globals.game === null) {
+    return;
   }
 
-  options.html(html);
-  if (html === '') {
-    optionsTitle.text('');
-  }
-
-  // Initialize the tooltips, if any
-  // (this has to be done after adding the HTML to the page)
-  $('#lobby-pregame-options-timer').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-speedrun').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-card-cycle').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-deck-plays').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-empty-clues').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-one-extra-card').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-one-less-card').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-all-or-nothing').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-characters').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-password').tooltipster(tooltipOptions);
-
-  // Draw the player boxes
   const numPlayers = globals.game.players.length;
-  for (let i = 0; i <= 5; i++) {
-    const div = $(`#lobby-pregame-player-${(i + 1)}`);
+  const div = $(`#lobby-pregame-player-${(i + 1)}`);
 
-    const player = globals.game.players[i];
-    if (player === undefined) {
-      div.html('');
-      div.hide();
-      continue;
-    }
-
-    div.show();
-
-    html = '<p class="margin0 padding0p5"><strong>';
-    if (player.name === globals.username) {
-      html += `<span class="name-me">${player.name}</span>`;
-    } else if (globals.friends.includes(player.name)) {
-      html += `<span class="friend">${player.name}</span>`;
-    } else {
-      html += player.name;
-    }
-    html += '</strong></p>';
-
-    // There is not enough room to draw the full box for 6 players
-    if (numPlayers === 6) {
-      div.removeClass('col-2');
-      div.addClass('lobby-pregame-col');
-    } else {
-      div.addClass('col-2');
-      div.removeClass('lobby-pregame-col');
-    }
-
-    // Calculate some stats
-    const variantStats = player.stats.variant;
-    const averageScore = Math.round(variantStats.averageScore * 10) / 10;
-    // (round it to 1 decimal place)
-    let averageScoreString;
-    if (averageScore === 0) {
-      averageScoreString = '-';
-    } else {
-      averageScoreString = averageScore.toString();
-    }
-    let strikeoutRateString;
-    if (variantStats.numGames > 0) {
-      let strikeoutRate = variantStats.numStrikeouts / variantStats.numGames * 100;
-      strikeoutRate = Math.round(strikeoutRate * 10) / 10; // (round it to 1 decimal places)
-      strikeoutRateString = `${strikeoutRate}%`;
-    } else {
-      strikeoutRateString = '-';
-    }
-
-    html += `
-      <div class="row">
-        <div class="col-10">
-          Total games:
-        </div>
-        <div class="col-2 align-right padding0">
-          ${player.stats.numGames}
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-10">
-          ...of this variant:
-        </div>
-        <div class="col-2 align-right padding0">
-          ${variantStats.numGames}
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-10">
-          Average score:
-        </div>
-        <div class="col-2 align-right padding0">
-          ${averageScoreString}
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-10">
-          Strikeout rate:
-        </div>
-        <div class="col-2 align-right padding0">
-          ${strikeoutRateString}
-        </div>
-      </div>
-    `;
-    if (numPlayers > 1) {
-      html += `
-        <div class="row">
-          <div class="col-10">
-            ${numPlayers}-player best score:
-          </div>
-          <div class="col-2 align-right padding0">
-            ${variantStats.bestScores[numPlayers - 2].score}
-          </div>
-        </div>
-      `;
-    }
-    html += `
-      <div class="row">
-        <div class="col-10">
-          ${numPlayers === 1 ? 'B' : 'Other b'}est scores:
-        </div>
-        <div class="col-2 align-right padding0">
-          <i id="lobby-pregame-player-${i + 1}-scores-icon" class="fas fa-chart-area green" data-tooltip-content="#lobby-pregame-player-${i + 1}-tooltip"></i>
-        </div>
-      </div>
-      <div class="hidden">
-        <div id="lobby-pregame-player-${i + 1}-tooltip" class="lobby-pregame-tooltip">
-    `;
-    const variant = getVariant(globals.game.options.variantName);
-    const { maxScore } = variant;
-    for (let j = 2; j <= 6; j++) {
-      html += '<div class="row">';
-      html += `<div class="col-6">${j}-player:</div>`;
-      const bestScoreObject = variantStats.bestScores[j - 2];
-      const bestScore = bestScoreObject.score;
-      const bestScoreMod = bestScoreObject.modifier;
-      html += '<div class="col-6">';
-      if (bestScore === maxScore) {
-        html += '<strong>';
-      }
-      html += ` ${bestScore} / ${maxScore}`;
-      if (bestScore === maxScore) {
-        html += '</strong> &nbsp; ';
-        if (bestScoreMod === 0) {
-          html += '<i class="fas fa-check score-modifier green"></i>';
-        } else {
-          html += '<i class="fas fa-times score-modifier red"></i>';
-        }
-      }
-      html += '</div></div>';
-    }
-    html += `
-        </div>
-      </div>
-    `;
-    if (!player.present) {
-      html += '<p class="lobby-pregame-player-away"><strong>AWAY</strong></p>';
-    }
-
-    div.html(html);
-
-    // Initialize the tooltip
-    $(`#lobby-pregame-player-${i + 1}-scores-icon`).tooltipster(tooltipOptions);
+  const player = globals.game.players[i];
+  if (player === undefined) {
+    div.html('');
+    div.hide();
+    return;
   }
 
-  enableStartGameButton();
+  div.show();
+
+  let html = '<p class="margin0 padding0p5"><strong>';
+  if (player.name === globals.username) {
+    html += `<span class="name-me">${player.name}</span>`;
+  } else if (globals.friends.includes(player.name)) {
+    html += `<span class="friend">${player.name}</span>`;
+  } else {
+    html += player.name;
+  }
+  html += '</strong></p>';
+
+  // There is not enough room to draw the full box for 6 players
+  if (numPlayers === 6) {
+    div.removeClass('col-2');
+    div.addClass('lobby-pregame-col');
+  } else {
+    div.addClass('col-2');
+    div.removeClass('lobby-pregame-col');
+  }
+
+  // Calculate some stats
+  const variantStats = player.stats.variant;
+  const averageScore = Math.round(variantStats.averageScore * 10) / 10;
+  // (round it to 1 decimal place)
+  let averageScoreString;
+  if (averageScore === 0) {
+    averageScoreString = '-';
+  } else {
+    averageScoreString = averageScore.toString();
+  }
+  let strikeoutRateString;
+  if (variantStats.numGames > 0) {
+    let strikeoutRate = variantStats.numStrikeouts / variantStats.numGames * 100;
+    strikeoutRate = Math.round(strikeoutRate * 10) / 10; // (round it to 1 decimal places)
+    strikeoutRateString = `${strikeoutRate}%`;
+  } else {
+    strikeoutRateString = '-';
+  }
+
+  html += `
+    <div class="row">
+      <div class="col-10">
+        Total games:
+      </div>
+      <div class="col-2 align-right padding0">
+        ${player.stats.numGames}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-10">
+        ...of this variant:
+      </div>
+      <div class="col-2 align-right padding0">
+        ${variantStats.numGames}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-10">
+        Average score:
+      </div>
+      <div class="col-2 align-right padding0">
+        ${averageScoreString}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-10">
+        Strikeout rate:
+      </div>
+      <div class="col-2 align-right padding0">
+        ${strikeoutRateString}
+      </div>
+    </div>
+  `;
+  if (numPlayers > 1) {
+    html += `
+      <div class="row">
+        <div class="col-10">
+          ${numPlayers}-player best score:
+        </div>
+        <div class="col-2 align-right padding0">
+          ${variantStats.bestScores[numPlayers - 2].score}
+        </div>
+      </div>
+    `;
+  }
+  html += `
+    <div class="row">
+      <div class="col-10">
+        ${numPlayers === 1 ? 'B' : 'Other b'}est scores:
+      </div>
+      <div class="col-2 align-right padding0">
+        <i id="lobby-pregame-player-${i + 1}-scores-icon" class="fas fa-chart-area green" data-tooltip-content="#lobby-pregame-player-${i + 1}-tooltip"></i>
+      </div>
+    </div>
+    <div class="hidden">
+      <div id="lobby-pregame-player-${i + 1}-tooltip" class="lobby-pregame-tooltip">
+  `;
+  const variant = getVariant(globals.game.options.variantName);
+  const { maxScore } = variant;
+  for (let j = 2; j <= 6; j++) {
+    html += '<div class="row">';
+    html += `<div class="col-6">${j}-player:</div>`;
+    const bestScoreObject = variantStats.bestScores[j - 2];
+    const bestScore = bestScoreObject.score;
+    const bestScoreMod = bestScoreObject.modifier;
+    html += '<div class="col-6">';
+    if (bestScore === maxScore) {
+      html += '<strong>';
+    }
+    html += ` ${bestScore} / ${maxScore}`;
+    if (bestScore === maxScore) {
+      html += '</strong> &nbsp; ';
+      if (bestScoreMod === 0) {
+        html += '<i class="fas fa-check score-modifier green"></i>';
+      } else {
+        html += '<i class="fas fa-times score-modifier red"></i>';
+      }
+    }
+    html += '</div></div>';
+  }
+  html += `
+      </div>
+    </div>
+  `;
+  if (!player.present) {
+    html += '<p class="lobby-pregame-player-away"><strong>AWAY</strong></p>';
+  }
+
+  div.html(html);
+
+  // Initialize the tooltip
+  $(`#lobby-pregame-player-${i + 1}-scores-icon`).tooltipster(tooltipOptions);
 };
 
 export const enableStartGameButton = () => {
