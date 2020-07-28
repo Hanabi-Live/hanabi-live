@@ -102,6 +102,15 @@
     // Initialize the table sorting
     $('table').tablesorter();
 
+    initHistory();
+    initMissingScores();
+  });
+
+  const initHistory = () => {
+    if (!window.location.pathname.startsWith('/history/')) {
+      return;
+    }
+
     // Initialize the "Filter by # of Players" dropdown
     $('#filter-by-players').change(() => {
       filterHistoryRows();
@@ -116,48 +125,74 @@
     $('#filter-by-variant').on('input', () => {
       filterHistoryRows();
     });
+  };
 
-    const filterHistoryRows = () => {
-      // Hide all rows
-      $('.history-row').hide();
-      $('.missing-scores-row').hide();
+  const filterHistoryRows = () => {
+    // Hide all rows
+    $('.history-row').hide();
 
-      // Get the filter values
+    // Get the filter values
+    const numPlayers = $('#filter-by-players').val();
+    const scoreString = $('#filter-by-score').val();
+    const score = parseInt(scoreString, 10);
+    const variant = $('#filter-by-variant').val();
+
+    const numPlayersFilterEnabled = numPlayers !== 'all';
+    const scoreFilterEnabled = score !== NaN && score >= 0 && score <= 30;
+    const variantFilterEnabled = typeof variant === 'string' && variant !== '';
+
+    // If no filters are active, show everything
+    if (!numPlayersFilterEnabled && !scoreFilterEnabled && !variantFilterEnabled) {
+      $('.history-row').show();
+      return;
+    }
+
+    let historySelector = '';
+    if (numPlayersFilterEnabled) {
+      historySelector += `.history-row-players-${numPlayers}`;
+    }
+    if (scoreFilterEnabled) {
+      historySelector += `.history-row-score-${score}`;
+    }
+
+    if (variantFilterEnabled) {
+      $(`${historySelector}[data-variant="${variant}"]`).show();
+    } else {
+      $(historySelector).show();
+    }
+  };
+
+  const initMissingScores = () => {
+    if (!window.location.pathname.startsWith('/missing-scores/')) {
+      return;
+    }
+
+    // Parse the number of players from the URL
+    // e.g. ["", "missing-scores", "test"] from "http://localhost/missing-scores/test"
+    const urlSegments = window.location.pathname.split('/');
+    if (urlSegments < 3) {
+      return;
+    }
+    const playerName = urlSegments[2];
+    let numPlayers = 0;
+    if (urlSegments.length >= 4) {
+      numPlayers = parseInt(urlSegments[3], 10);
+      if (numPlayers === NaN) {
+        numPlayers = 0;
+      }
+    }
+
+    // Initialize the "Filter by # of Players" dropdown
+    if (numPlayers === 0) {
+      $('#filter-by-players').val('-');
+    } else {
+      $('#filter-by-players').val(numPlayers.toString());
+      $('#filter-by-players option[value="-"]').remove();
+    }
+    $('#filter-by-players').change(() => {
       const numPlayers = $('#filter-by-players').val();
-      const scoreString = $('#filter-by-score').val();
-      const score = parseInt(scoreString, 10);
-      const variant = $('#filter-by-variant').val();
-
-      const numPlayersFilterEnabled = numPlayers !== 'all';
-      const scoreFilterEnabled = score !== NaN && score >= 0 && score <= 30;
-      const variantFilterEnabled = variant !== '';
-
-      // If no filters are active, show everything
-      if (!numPlayersFilterEnabled && !scoreFilterEnabled && !variantFilterEnabled) {
-        $('.history-row').show();
-        $('.missing-scores-row').show();
-        return;
-      }
-
-      let historySelector = '';
-      let missingScoresSelector = '';
-      if (numPlayersFilterEnabled) {
-        historySelector += `.history-row-players-${numPlayers}`;
-        missingScoresSelector += `.missing-scores-row-players-${numPlayers}`;
-      }
-      if (scoreFilterEnabled) {
-        historySelector += `.history-row-score-${score}`;
-        missingScoresSelector += `.missing-scores-row-score-${score}`;
-      }
-
-      if (variantFilterEnabled) {
-        $(`${historySelector}[data-variant="${variant}"]`).show();
-        $(`${missingScoresSelector}[data-variant="${variant}"]`).show();
-      } else {
-        $(historySelector).show();
-        $(missingScoresSelector).show();
-      }
-    };
-  });
+      window.location = `/missing-scores/${playerName}/${numPlayers}`;
+    });
+  }
 </script>
 {{end}}

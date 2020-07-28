@@ -44,9 +44,10 @@ type TemplateData struct {
 	NumMaxScores               int
 	TotalMaxScores             int
 	PercentageMaxScores        string
+	RequestedNumPlayers        int      // Used on the "Missing Scores" page
 	NumMaxScoresPerType        []int    // Used on the "Missing Scores" page
 	PercentageMaxScoresPerType []string // Used on the "Missing Scores" page
-	NumTotalPlayers            int      // Used on the "Missing Scores" page
+	SharedMissingScores        bool     // Used on the "Missing Scores" page
 	VariantStats               []UserVariantStats
 
 	// Stats
@@ -234,11 +235,14 @@ func httpInit() {
 	httpRouter.GET("/history/:player1/:player2/:player3/:player4/:player5/:player6", httpHistory)
 	httpRouter.GET("/missing-scores", httpMissingScores)
 	httpRouter.GET("/missing-scores/:player1", httpMissingScores)
-	httpRouter.GET("/missing-scores/:player1/:player2", httpMissingScoresMultiple)
-	httpRouter.GET("/missing-scores/:player1/:player2/:player3", httpMissingScoresMultiple)
-	httpRouter.GET("/missing-scores/:player1/:player2/:player3/:player4", httpMissingScoresMultiple)
-	httpRouter.GET("/missing-scores/:player1/:player2/:player3/:player4/:player5", httpMissingScoresMultiple)
-	httpRouter.GET("/missing-scores/:player1/:player2/:player3/:player4/:player5/:player6", httpMissingScoresMultiple)
+	httpRouter.GET("/missing-scores/:player1/:numPlayers", httpMissingScores)
+	httpRouter.GET("/shared-missing-scores", httpSharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:player1", httpSharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:player1/:player2", httpSharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3", httpSharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3/:player4", httpSharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3/:player4/:player5", httpSharedMissingScores)
+	httpRouter.GET("/shared-missing-scores/:player1/:player2/:player3/:player4/:player5/:player6", httpSharedMissingScores)
 	httpRouter.GET("/tags", httpTags)
 	httpRouter.GET("/tags/:player1", httpTags)
 	httpRouter.GET("/seed", httpSeed)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,6 +16,15 @@ func httpMissingScores(c *gin.Context) {
 		return
 	} else {
 		user = v
+	}
+
+	// Parse the number of players from the URL
+	numPlayersString := c.Param("numPlayers")
+	numPlayers := 0
+	if numPlayersString != "" {
+		if v, err := strconv.Atoi(numPlayersString); err == nil {
+			numPlayers = v
+		}
 	}
 
 	// Get all of the variant-specific stats for this player
@@ -41,10 +51,12 @@ func httpMissingScores(c *gin.Context) {
 	data := TemplateData{
 		Title:                      "Missing Scores",
 		Name:                       user.Username,
+		RequestedNumPlayers:        numPlayers,
 		NumMaxScores:               numMaxScores,
 		PercentageMaxScores:        percentageMaxScoresString,
 		NumMaxScoresPerType:        numMaxScoresPerType,
 		PercentageMaxScoresPerType: percentageMaxScoresPerType,
+		SharedMissingScores:        false,
 
 		VariantStats: variantStatsList,
 	}
