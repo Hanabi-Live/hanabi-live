@@ -68,6 +68,50 @@ export default function drawHands(winW: number, winH: number) {
     { x: 0.5535, y: 0.009, w: handPos6W, h: handPos6H, rot: 0 },
     { x: 0.77, y: 0.292, w: 0.301 * 0.8, h: 0.18, rot: 90 },
   ];
+  if (globals.metadata.options.oneExtraCard) {
+    const reducedH = 0.165;
+    const adjustedYUs = 0.018;
+    const adjustedYOther = 0.013;
+
+    // 2-player
+    handPos[2][0].h = reducedH;
+    handPos[2][1].h = reducedH;
+    handPos[2][0].y += adjustedYUs;
+    handPos[2][1].y += adjustedYOther;
+
+    // 3-player
+    handPos[3][0].h = reducedH;
+    handPos[3][1].h = reducedH;
+    handPos[3][2].h = reducedH;
+    handPos[3][0].y += adjustedYUs;
+
+    // 4-player
+    handPos[4][0].h = reducedH;
+    handPos[4][1].h = reducedH;
+    handPos[4][2].h = reducedH;
+    handPos[4][3].h = reducedH;
+    handPos[4][0].y += adjustedYUs;
+    handPos[4][2].y += adjustedYOther;
+
+    // 5-player
+    handPos[5][0].h = reducedH;
+    handPos[5][1].h = reducedH - 0.02;
+    handPos[5][2].h = reducedH;
+    handPos[5][3].h = reducedH;
+    handPos[5][4].h = reducedH - 0.02;
+    handPos[5][0].y += adjustedYUs;
+
+    // 6-player
+    handPos[6][0].h = reducedH - 0.01;
+    handPos[6][1].h = reducedH - 0.02;
+    handPos[6][2].h = reducedH - 0.03;
+    handPos[6][3].h = reducedH - 0.03;
+    handPos[6][4].h = reducedH - 0.03;
+    handPos[6][5].h = reducedH - 0.02;
+    handPos[6][2].y += adjustedYOther;
+    handPos[6][3].y += adjustedYOther;
+    handPos[6][4].y += adjustedYOther;
+  }
 
   // In Board Game Arena mode, the hands are all in a line,
   // so they do not have to be hard coded
