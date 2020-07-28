@@ -42,12 +42,21 @@
   </li>
   <li>
     <div class="create-game-icon">
-        <i class="fas fa-users" style="position: relative; top: 1px;"></i>
+        <i class="fas fa-star-half-alt"></i>
     </div>
     Filter by Score
   </li>
   <li>
     <input id="filter-by-score" type="text" style="width: 3.5em;">
+  </li>
+  <li>
+    <div class="create-game-icon">
+        <i class="fas fa-rainbow"></i>
+    </div>
+    Filter by Variant
+  </li>
+  <li>
+    <input id="filter-by-variant" type="text" style="width: 7em;">
   </li>
 </ul>
 
@@ -68,7 +77,7 @@
   </thead>
   <tbody>
     {{range $index, $results := .History}}
-      <tr class="history-row history-row-players-{{.Options.NumPlayers}} history-row-score-{{.Score}}">
+      <tr class="history-row history-row-players-{{.Options.NumPlayers}} history-row-score-{{.Score}}" data-variant="{{.Options.VariantName}}">
         <td><a href="/replay/{{.ID}}">{{.ID}}</a></td>
         <td>{{.Options.NumPlayers}}</td>
         <td>{{.Score}}</td>

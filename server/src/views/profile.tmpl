@@ -112,6 +112,11 @@
       filterHistoryRows();
     });
 
+    // Initialize the "Filter by Score" input field
+    $('#filter-by-variant').on('input', () => {
+      filterHistoryRows();
+    });
+
     const filterHistoryRows = () => {
       // Hide all rows
       $('.history-row').hide();
@@ -124,23 +129,36 @@
         throw new Error('The value of the filter by score field is not a string.');
       }
       const score = parseInt(scoreString, 10);
+      const variant = $('#filter-by-variant').val();
 
       const numPlayersFilterEnabled = numPlayers !== 'all';
       const scoreFilterEnabled = score !== NaN && score >= 0 && score <= 30;
+      const variantFilterEnabled = variant !== '';
 
-      // Filter
-      if (numPlayersFilterEnabled && scoreFilterEnabled) {
-        $(`.history-row-players-${numPlayers}.history-row-score-${score}`).show();
-        $(`.missing-scores-row-players-${numPlayers}.missing-scores-row-score-${score}`).show();
-      } else if (numPlayersFilterEnabled && !scoreFilterEnabled) {
-        $(`.history-row-players-${numPlayers}`).show();
-        $(`.missing-scores-row-players-${numPlayers}`).show();
-      } else if (!numPlayersFilterEnabled && scoreFilterEnabled) {
-        $(`.history-row-score-${score}`).show();
-        $(`.missing-scores-row-score-${score}`).show();
-      } else if (!numPlayersFilterEnabled && !scoreFilterEnabled) {
+      // If no filters are active, show everything
+      if (!numPlayersFilterEnabled && !scoreFilterEnabled && !variantFilterEnabled) {
         $('.history-row').show();
         $('.missing-scores-row').show();
+        return;
+      }
+
+      let historySelector = '';
+      let missingScoresSelector = '';
+      if (numPlayersFilterEnabled) {
+        historySelector += `.history-row-players-${numPlayers}`;
+        missingScoresSelector += `.missing-scores-row-players-${numPlayers}`;
+      }
+      if (scoreFilterEnabled) {
+        historySelector += `.history-row-score-${score}`;
+        missingScoresSelector += `.missing-scores-row-score-${score}`;
+      }
+
+      if (variantFilterEnabled) {
+        $(`${historySelector}[data-variant="${variant}"]`).show();
+        $(`${missingScoresSelector}[data-variant="${variant}"]`).show();
+      } else {
+        $(historySelector).show();
+        $(missingScoresSelector).show();
       }
     };
   });
