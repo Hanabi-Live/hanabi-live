@@ -207,7 +207,9 @@ func characterValidateAction(s *Session, d *CommandData, g *Game, p *GamePlayer)
 			"so you cannot play a card if you played one in the last round.")
 		return true
 	} else if p.Character == "Stubborn" && // 28
-		d.Type == p.CharacterMetadata {
+		(d.Type == p.CharacterMetadata ||
+			(d.Type == ActionTypeColorClue && p.CharacterMetadata == ActionTypeRankClue) ||
+			(d.Type == ActionTypeRankClue && p.CharacterMetadata == ActionTypeColorClue)) {
 
 		s.Warning("You are " + p.Character + ", " +
 			"so you cannot perform the same kind of action that the previous player did.")
