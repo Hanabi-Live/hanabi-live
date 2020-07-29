@@ -158,9 +158,9 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 				g.BlindPlays = 0
 			} else {
 				g.BlindPlays++
-				if g.BlindPlays > 4 {
-					// There is no sound effect for more than 4 blind plays in a row
-					g.BlindPlays = 4
+				if g.BlindPlays > 6 {
+					// There is no sound effect for more than 6 blind plays in a row
+					g.BlindPlays = 6
 				}
 				g.Sound = "blind" + strconv.Itoa(g.BlindPlays)
 			}
