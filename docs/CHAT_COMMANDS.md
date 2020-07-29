@@ -54,10 +54,10 @@ If you need general help with the website, then read the [features page](FEATURE
 
 ### Pre-game or game commands
 
-| Command          | Description
-| ---------------- |------------
-| `/missingscores` | Get the list of every max score that the team is missing
-| `/findvariant`   | Find a random variant that everyone needs the max score in
+| Command        | Description
+| -------------- |------------
+| `/missing`     | Get the list of every max score that the team is missing
+| `/findvariant` | Find a random variant that everyone needs the max score in
 
 <br />
 

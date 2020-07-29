@@ -43,6 +43,7 @@ func chatCommandInit() {
 	chatCommandMap["kick"] = chatKick
 
 	// Table-only commands (pregame or game)
+	chatCommandMap["missing"] = chatMissingScores
 	chatCommandMap["missingscores"] = chatMissingScores
 	chatCommandMap["missing-scores"] = chatMissingScores
 	chatCommandMap["sharedmissingscores"] = chatMissingScores
