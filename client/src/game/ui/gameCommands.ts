@@ -138,10 +138,6 @@ commands.set('hypoAction', (data: string) => {
     action: actionMessage,
   });
 
-  // We need to save this game state change for the purposes of the in-game hypothetical
-  globals.hypoActions.push(actionMessage);
-
-  hypothetical.setHypoFirstDrawnIndex(actionMessage);
   hypothetical.checkToggleRevealedButton(actionMessage);
 
   if (actionMessage.type === 'turn') {
@@ -157,11 +153,6 @@ commands.set('hypoBack', () => {
 });
 
 commands.set('hypoEnd', () => {
-  // If we are the shared replay leader, we already ended the hypothetical locally
-  if (globals.amSharedReplayLeader) {
-    return;
-  }
-
   hypothetical.end();
 });
 
@@ -188,12 +179,7 @@ commands.set('hypoRevealed', (data: HypoRevealedData) => {
 });
 
 commands.set('hypoStart', () => {
-  if (!globals.amSharedReplayLeader) {
-    hypothetical.start();
-  }
-  globals.store!.dispatch({
-    type: 'hypoStart',
-  });
+  hypothetical.start();
 });
 
 commands.set('init', (metadata: LegacyGameMetadata) => {
@@ -436,10 +422,6 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
   // Enable/disable the restart button
   globals.elements.restartButton!.visible(globals.amSharedReplayLeader);
 
-  // Hide the replay area if we are in a hypothetical
-  if (globals.metadata.hypothetical) {
-    hypothetical.show();
-  }
   globals.layers.UI.batchDraw();
 
   // Update the tooltip
@@ -471,24 +453,29 @@ commands.set('replaySegment', (data: ReplaySegmentData) => {
     });
   }
 
-  // It is normally impossible to receive a "replaySegment" message while in a hypothetical
-  // Thus, this must be the initial "replayTurn" message that occurs when the client is first
-  // loading
-  // We need to "catch up" to everyone else and play all of the existing hypothetical actions
-  // that have taken place
-  // TODO: Put this somewhere else?
+  // We use the global metadata to see if we should be in a hypothetical
+  // We can't use the state because the state hypothetical is currently set to null
+  // This is because we never dispatched a "hypoEnter" when we dispatched a "replayEnter"
+  // The "hypoEnter" handler needs a valid state to exist for it to function correctly
   if (globals.metadata.hypothetical) {
+    // It is normally impossible to receive a "replaySegment" message while in a hypothetical
+    // Thus, this must be the initial "replayTurn" message that occurs when the client is first
+    // loading
+    // We need to "catch up" to everyone else and play all of the existing hypothetical actions
+    // that have taken place
     globals.store!.dispatch({
       type: 'hypoStart',
+      drawnCardsShown: globals.metadata.hypoRevealed,
     });
-    globals.hypoActions.forEach((action) => {
-      // TODO: we want this to animate fast but I have no idea how to do that
+
+    for (let i = 0; i < globals.metadata.hypoActions.length; i++) {
+      const action = JSON.parse(globals.metadata.hypoActions[i]) as ActionIncludingHypothetical;
+      // TODO: this should animate fast but I have no idea how to do that
       globals.store!.dispatch({
         type: 'hypoAction',
         action,
       });
-    });
-    hypothetical.beginTurn();
+    }
   }
 });
 
@@ -595,13 +582,6 @@ const copyMetadataToGlobals = (metadata: LegacyGameMetadata) => {
   if (globals.metadata.characterAssignments.length === 0) {
     globals.metadata.characterAssignments = initArray(globals.metadata.options.numPlayers, null);
   }
-
-  // Hypothetical settings
-  globals.hypoActions = [];
-  for (let i = 0; i < globals.metadata.hypoActions.length; i++) {
-    const action = JSON.parse(globals.metadata.hypoActions[i]) as ActionIncludingHypothetical;
-    globals.hypoActions[i] = action;
-  }
 };
 
 const initStateStore = (data: LegacyGameMetadata) => {
@@ -640,6 +620,10 @@ const initStateStore = (data: LegacyGameMetadata) => {
         useSharedSegments: true,
       });
     }
+
+    // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here
+    // We must wait until the game is initialized first,
+    // because the "hypoEnter" handler requires there to be a valid state
   }
 };
 

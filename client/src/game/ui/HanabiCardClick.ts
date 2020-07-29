@@ -38,6 +38,9 @@ export default function HanabiCardClick(this: HanabiCard, event: Konva.KonvaEven
 }
 
 const clickLeft = (card: HanabiCard, event: MouseEvent) => {
+  // Local variables
+  const state = globals.store!.getState();
+
   // The "Empathy" feature is handled in the "HanabiCardInit.ts" file,
   // so we don't have to worry about it here
   if (
@@ -45,7 +48,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     || event.shiftKey
     || event.metaKey
     || card.state.rank === STACK_BASE_RANK // Disable clicking on the stack base
-    || globals.metadata.hypothetical // No replay actions should happen in a hypothetical
+    || state.replay.hypothetical !== null // No replay actions should happen in a hypothetical
   ) {
     return;
   }
@@ -93,12 +96,15 @@ const clickMiddle = (card: HanabiCard, event: MouseEvent) => {
 };
 
 const clickRight = (card: HanabiCard, event: MouseEvent) => {
+  // Local variables
+  const state = globals.store!.getState();
+
   // Alt + right-click is a card morph (in a hypothetical)
   if (
     globals.metadata.replay
     && globals.metadata.sharedReplay
     && globals.amSharedReplayLeader
-    && globals.metadata.hypothetical
+    && state.replay.hypothetical !== null
     && !event.ctrlKey
     && !event.shiftKey
     && event.altKey

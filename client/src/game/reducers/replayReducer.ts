@@ -110,7 +110,7 @@ const replayReducer = produce((
       state.hypothetical = {
         ongoing,
         states: [ongoing],
-        drawnCardsShown: false,
+        drawnCardsShown: action.drawnCardsShown,
         drawnCardsInHypothetical: [],
         morphedIdentities: [],
       };

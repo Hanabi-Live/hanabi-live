@@ -10,14 +10,15 @@ import ReplayActionType from '../types/ReplayActionType';
 import { getTouchedCardsFromClue } from './clues';
 import PlayerButton from './controls/PlayerButton';
 import globals from './globals';
-import * as replay from './replay';
 import * as turn from './turn';
 
 export const start = () => {
-  if (globals.metadata.hypothetical) {
+  // Local variables
+  const state = globals.store!.getState();
+
+  if (state.replay.hypothetical !== null) {
     return;
   }
-  globals.metadata.hypothetical = true;
 
   if (globals.amSharedReplayLeader) {
     globals.lobby.conn!.send('replayAction', {
@@ -27,7 +28,6 @@ export const start = () => {
   }
 
   // Bring us to the current shared replay turn, if we are not already there
-  const state = globals.store!.getState();
   if (!state.replay.useSharedSegments) {
     globals.store!.dispatch({
       type: 'replayUseSharedSegments',
@@ -35,84 +35,39 @@ export const start = () => {
     });
   }
 
-  globals.elements.toggleRevealedButton!.setEnabled(true);
-
-  show();
+  globals.store!.dispatch({
+    type: 'hypoStart',
+    drawnCardsShown: false,
+  });
 };
 
-// Transition the screen to show all of the hypothetical buttons and elements
-export const show = () => {
-  globals.elements.replayArea!.hide();
-
-  // Modify the clue UI
-  if (globals.metadata.playerNames.length !== 2) {
-    globals.elements.clueTargetButtonGroup!.hide();
-    globals.elements.clueTargetButtonGroup2!.show();
-  }
-
-  // Make sure to toggle all of the elements
-  // in case the leader changes in the middle of a hypothetical
-  globals.elements.restartButton!.hide();
-
-  // These elements are visible only for the leader
-  globals.elements.endHypotheticalButton!.visible(globals.amSharedReplayLeader);
-  globals.elements.hypoBackButton!.visible((
-    globals.amSharedReplayLeader
-    && globals.hypoActions.length > 0
-  ));
-  globals.elements.toggleRevealedButton!.visible(globals.amSharedReplayLeader);
-  globals.elements.clueArea!.visible(globals.amSharedReplayLeader);
-
-  // This element is visible only for the other spectators
-  globals.elements.hypoCircle!.visible(!globals.amSharedReplayLeader);
-
-  if (!globals.amSharedReplayLeader) {
-    checkSetDraggableAllHands();
-  }
-
-  globals.layers.UI.batchDraw();
-
-  beginTurn();
-};
-
-// TODO: move this function to a view
 export const end = () => {
-  if (!globals.metadata.hypothetical) {
+  // Local variables
+  const state = globals.store!.getState();
+
+  if (state.replay.hypothetical === null) {
     return;
   }
 
-  globals.store!.dispatch({
-    type: 'hypoEnd',
-  });
-
-  globals.metadata.hypothetical = false;
-  globals.hypoActions = [];
-  globals.hypoFirstDrawnIndex = 0;
-
-  // Adjust the UI, depending on whether or not we are the replay leader
-  globals.elements.replayArea!.show();
   if (globals.amSharedReplayLeader) {
     globals.lobby.conn!.send('replayAction', {
       tableID: globals.lobby.tableID,
       type: ReplayActionType.HypoEnd,
     });
-
-    globals.elements.restartButton!.show();
-    globals.elements.endHypotheticalButton!.hide();
-    globals.elements.hypoBackButton!.hide();
-    globals.elements.toggleRevealedButton!.hide();
-
-    // Furthermore, disable dragging and get rid of the clue UI
-    checkSetDraggableAllHands();
-    turn.hideClueUIAndDisableDragging();
-  } else {
-    globals.elements.hypoCircle!.hide();
   }
 
-  globals.layers.UI.batchDraw();
+  globals.store!.dispatch({
+    type: 'hypoEnd',
+  });
 };
 
 export const beginTurn = () => {
+  // Local variables
+  const state = globals.store!.getState();
+  if (state.replay.hypothetical === null) {
+    return;
+  }
+
   if (!globals.amSharedReplayLeader) {
     return;
   }
@@ -134,7 +89,7 @@ export const beginTurn = () => {
   }
 
   turn.showClueUI();
-  globals.elements.hypoBackButton!.visible(globals.hypoActions.length > 0);
+  globals.elements.hypoBackButton!.visible(state.replay.hypothetical.states.length > 1);
 
   // Set the current player's hand to be draggable
   checkSetDraggableAllHands();
@@ -259,14 +214,21 @@ export const sendHypoAction = (hypoAction: ActionIncludingHypothetical) => {
   });
 };
 
-const checkSetDraggableAllHands = () => {
+export const checkSetDraggableAllHands = () => {
   for (const hand of globals.elements.playerHands) {
     hand.checkSetDraggableAll();
   }
 };
 
 export const sendBack = () => {
-  if (!globals.amSharedReplayLeader) {
+  // Local variables
+  const state = globals.store!.getState();
+
+  if (
+    state.replay.hypothetical === null
+    || state.replay.hypothetical.states.length <= 1
+    || !globals.amSharedReplayLeader
+  ) {
     return;
   }
 
@@ -276,33 +238,6 @@ export const sendBack = () => {
   });
 };
 
-export const back = () => {
-  if (globals.hypoActions.length === 0) {
-    return;
-  }
-
-  // Starting from the end, remove hypothetical actions until we get to
-  // the 2nd to last "turn" action or get to the very beginning of the hypothetical
-  while (true) {
-    globals.hypoActions.pop();
-    if (globals.hypoActions.length === 0) {
-      break;
-    }
-    const lastAction = globals.hypoActions[globals.hypoActions.length - 1];
-    if (lastAction.type === 'turn') {
-      break;
-    }
-  }
-  globals.elements.hypoBackButton!.visible((
-    globals.amSharedReplayLeader
-    && globals.hypoActions.length > 0
-  ));
-
-  // Reset to the segment where the hypothetical started
-  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
-  replay.goToSegment(finalSegment, false, true);
-};
-
 export const toggleRevealed = () => {
   globals.lobby.conn!.send('replayAction', {
     tableID: globals.lobby.tableID,
@@ -310,29 +245,39 @@ export const toggleRevealed = () => {
   });
 };
 
-// Set hypoFirstDrawnIndex if this is the first card we drew in the hypothetical
-// This check should only run if the draw action is a hypoAction
-export const setHypoFirstDrawnIndex = (actionMessage: ActionIncludingHypothetical) => {
-  if (actionMessage.type === 'draw' && globals.metadata.hypothetical && !globals.hypoFirstDrawnIndex) {
-    globals.hypoFirstDrawnIndex = actionMessage.order;
-  }
-};
-
 // Check if we need to disable the toggleRevealedButton
 // This happens when a newly drawn card is played, discarded, or clued
-// It should also happen for misplays once those are implemented
 export const checkToggleRevealedButton = (actionMessage: ActionIncludingHypothetical) => {
-  if (actionMessage.type === 'play' || actionMessage.type === 'discard') {
-    const cardOrder = actionMessage.order;
-    if (globals.hypoFirstDrawnIndex && cardOrder >= globals.hypoFirstDrawnIndex) {
-      globals.elements.toggleRevealedButton?.setEnabled(false);
-    }
-  } else if (actionMessage.type === 'clue') {
-    for (const cardOrder of actionMessage.list) {
-      if (globals.hypoFirstDrawnIndex && cardOrder >= globals.hypoFirstDrawnIndex) {
+  // Local variables
+  const state = globals.store!.getState();
+  if (state.replay.hypothetical === null) {
+    return;
+  }
+
+  switch (actionMessage.type) {
+    case 'play':
+    case 'discard': {
+      const cardOrder = actionMessage.order;
+      if (state.replay.hypothetical.drawnCardsInHypothetical.includes(cardOrder)) {
         globals.elements.toggleRevealedButton?.setEnabled(false);
-        return;
       }
+
+      break;
+    }
+
+    case 'clue': {
+      for (const cardOrder of actionMessage.list) {
+        if (state.replay.hypothetical.drawnCardsInHypothetical.includes(cardOrder)) {
+          globals.elements.toggleRevealedButton?.setEnabled(false);
+          return;
+        }
+      }
+
+      break;
+    }
+
+    default: {
+      break;
     }
   }
 };

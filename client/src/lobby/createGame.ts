@@ -371,7 +371,6 @@ export const ready = () => {
 
   const now = new Date();
   const diff = now.getTime() - timeStart.getTime();
-  console.log(diff);
 };
 
 const readyVariant = (value: any) => {

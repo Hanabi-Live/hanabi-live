@@ -348,7 +348,6 @@ export const hideOtherScoresToFriends = () => {
 
 export const drawOtherScores = (games: GameHistory[], friends: boolean) => {
   // Define the functionality of the "Return to History" button
-  console.log(friends);
   if (!friends) {
     $('#nav-buttons-history-other-scores-return').on('click', () => {
       hideOtherScores();

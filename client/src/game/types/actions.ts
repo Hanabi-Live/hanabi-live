@@ -191,6 +191,7 @@ export interface ActionReplayUseSharedSegments {
 
 export interface ActionHypotheticalStart {
   type: 'hypoStart';
+  drawnCardsShown: boolean;
 }
 
 export interface ActionHypotheticalEnd {

@@ -220,10 +220,16 @@ const visualStateToShow = (state: Draft<State>) => {
     }
 
     // Show the current hypothetical
+    if (state.replay.hypothetical.ongoing === undefined) {
+      throw new Error('The ongoing hypothetical state is undefined.');
+    }
     return state.replay.hypothetical.ongoing;
   }
 
   // Show the final segment of the current game
+  if (state.ongoingGame === undefined) {
+    throw new Error('The ongoing state is undefined.');
+  }
   return state.ongoingGame;
 };
 

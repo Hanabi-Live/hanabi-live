@@ -170,7 +170,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   }
 
   // Replay hotkeys
-  if (globals.metadata.hypothetical) {
+  if (state.replay.hypothetical !== null) {
     if (event.key === 'ArrowLeft') {
       hypothetical.sendBack();
       return;

@@ -113,10 +113,6 @@ export default function drawUI() {
   drawPauseArea();
   drawExtraAnimations();
 
-  if (globals.store!.getState().replay.active) {
-    globals.elements.replayArea!.show();
-  }
-
   // Just in case, delete all existing layers
   globals.stage.getLayers().each((layer) => {
     layer.remove();

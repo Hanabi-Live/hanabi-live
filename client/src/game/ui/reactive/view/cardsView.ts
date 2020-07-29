@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import CardIdentity from '../../../types/CardIdentity';
 import CardState from '../../../types/CardState';
 import ClueType from '../../../types/ClueType';

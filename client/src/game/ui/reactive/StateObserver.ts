@@ -11,6 +11,7 @@ import * as currentPlayerAreaView from './view/currentPlayerAreaView';
 import * as currentPlayerView from './view/currentPlayerView';
 import * as deckView from './view/deckView';
 import * as gameInfoView from './view/gameInfoView';
+import * as hypotheticalView from './view/hypotheticalView';
 import * as initView from './view/initView';
 import * as logView from './view/logView';
 import * as premoveView from './view/premoveView';
@@ -186,10 +187,11 @@ const replayObservers: Subscriptions = [
     useSharedSegments: s.replay.useSharedSegments,
   }), replayView.onSharedSegmentOrUseSharedSegmentsChanged),
 
-  // Hypothetical buttons
+  // Hypothetical
+  subAfterInit((s) => s.replay.hypothetical !== null, hypotheticalView.onHypotheticalEnterExit),
   subAfterInit(
-    (s) => replayView.enterHypoButtonIsEnabled(s),
-    replayView.enterHypoButtonEnabledChanged,
+    (s) => hypotheticalView.enterHypoButtonIsEnabled(s),
+    hypotheticalView.enterHypoButtonEnabledChanged,
   ),
 
   // Card and stack base morphing

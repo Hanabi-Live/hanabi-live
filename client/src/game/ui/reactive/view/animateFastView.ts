@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import State from '../../../types/State';
 import globals from '../../globals';
 

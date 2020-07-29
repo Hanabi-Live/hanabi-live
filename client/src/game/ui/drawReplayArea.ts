@@ -23,6 +23,8 @@ export default function drawReplayArea(winW: number, winH: number) {
     y: replayAreaValues.y * winH,
     width: replayAreaValues.w * winW,
     height: 0.27 * winH,
+    visible: false,
+    listening: false,
   });
 
   // The thin black rectangle that the replay slider slides on
@@ -39,6 +41,7 @@ export default function drawReplayArea(winW: number, winH: number) {
     height: replayBarValues.h * winH,
     fill: 'black',
     cornerRadius: 0.005 * winH,
+    listening: false,
   });
   globals.elements.replayArea.add(globals.elements.replayBar);
 
@@ -283,17 +286,12 @@ export default function drawReplayArea(winW: number, winH: number) {
     width: bottomRightReplayButtonValues.w * winW,
     height: bottomRightReplayButtonValues.h * winH,
     text: 'Enter Hypothetical',
-    visible: (
-      globals.metadata.replay
-      && globals.amSharedReplayLeader
-      && !globals.metadata.hypothetical
-    ),
+    visible: false,
   });
   globals.elements.enterHypoButton.on('click tap', hypothetical.start);
   globals.elements.replayArea.add(globals.elements.enterHypoButton as any);
 
   // Add the replay area to the UI
-  globals.elements.replayArea.hide();
   globals.layers.UI.add(globals.elements.replayArea);
   replay.adjustShuttles(true); // Skip the animation
 }

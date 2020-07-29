@@ -1,5 +1,4 @@
 // Helper functions for doing actions to our own hand
-/* eslint-disable import/prefer-default-export */
 
 import globals from './globals';
 

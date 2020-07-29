@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { ensureAllCases } from '../../misc';
 import { getVariant, getCharacter } from '../data/gameData';
 import { getCharacterIDForPlayer } from '../reducers/reducerHelpers';

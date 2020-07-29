@@ -1,5 +1,4 @@
 // Functions related to hand management
-/* eslint-disable import/prefer-default-export */
 
 import { cardRules } from '../rules';
 import CardState from '../types/CardState';

@@ -15,11 +15,14 @@ import RankButton from './RankButton';
 import * as turn from './turn';
 
 export const checkLegal = () => {
+  // Local variables
+  const state = globals.store!.getState();
+
   let clueTargetButtonGroup;
-  if (globals.metadata.hypothetical) {
-    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
-  } else {
+  if (state.replay.hypothetical === null) {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
+  } else {
+    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
   }
   const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
   const { clueTypeButtonGroup } = globals.elements;
@@ -112,11 +115,14 @@ export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
 };
 
 export const give = () => {
+  // Local variables
+  const state = globals.store!.getState();
+
   let clueTargetButtonGroup;
-  if (globals.metadata.hypothetical) {
-    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
-  } else {
+  if (state.replay.hypothetical === null) {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
+  } else {
+    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
   }
   const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
   const { clueTypeButtonGroup } = globals.elements;

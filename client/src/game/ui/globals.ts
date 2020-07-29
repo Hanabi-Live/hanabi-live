@@ -7,7 +7,7 @@ import { Globals as LobbyGlobals } from '../../globals';
 import Loader from '../../Loader';
 import { VARIANTS } from '../data/gameData';
 import { GameExports } from '../main';
-import { GameAction, ActionIncludingHypothetical, Action } from '../types/actions';
+import { GameAction, Action } from '../types/actions';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import LegacyGameMetadata from '../types/LegacyGameMetadata';
 import SpectatorNote from '../types/SpectatorNote';
@@ -53,8 +53,6 @@ export class Globals {
   sharedReplayLeader: string = ''; // Equal to the username of the leader
   amSharedReplayLeader: boolean = false;
   sharedReplayFirstLoading: boolean = false;
-  hypoActions: ActionIncludingHypothetical[] = []; // Actions in the current hypothetical
-  hypoFirstDrawnIndex: number = 0; // The index of the first card drawn in a hypothetical
 
   // Notes feature
   ourNotes: string[] = []; // Indexed by card order
@@ -120,7 +118,6 @@ export class Globals {
     this.sharedReplayLeader = '';
     this.amSharedReplayLeader = false;
     this.sharedReplayFirstLoading = true;
-    this.hypoActions = [];
     this.ourNotes = [];
     this.allNotes = [];
     this.editingNote = null;

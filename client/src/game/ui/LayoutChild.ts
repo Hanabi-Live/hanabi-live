@@ -97,6 +97,9 @@ export default class LayoutChild extends Konva.Group {
   }
 
   shouldBeDraggable(currentPlayerIndex: number | null) {
+    // Local variables
+    const state = globals.store!.getState();
+
     // Cards should only be draggable in specific circumstances
     if (this.card === null || this.card === undefined) {
       // Rarely, if the game is restarted when a tween is happening,
@@ -105,7 +108,7 @@ export default class LayoutChild extends Konva.Group {
     }
 
     // First, handle the special case of a hypothetical
-    if (globals.metadata.hypothetical) {
+    if (state.replay.hypothetical !== null) {
       return (
         globals.amSharedReplayLeader
         && currentPlayerIndex === this.card.state.location
@@ -113,7 +116,6 @@ export default class LayoutChild extends Konva.Group {
       );
     }
 
-    const state = globals.store!.getState();
     return (
       // If it is not our turn, then the card should not need to be draggable yet
       // (unless we have the "Enable pre-playing cards" feature enabled)
@@ -140,7 +142,8 @@ export default class LayoutChild extends Konva.Group {
     // In a hypothetical, dragging a rotated card from another person's hand is frustrating,
     // so temporarily remove all rotation (for the duration of the drag)
     // The rotation will be automatically reset if the card tweens back to the hand
-    if (globals.metadata.hypothetical) {
+    const state = globals.store!.getState();
+    if (state.replay.hypothetical !== null) {
       this.rotation(this.parent!.rotation() * -1);
     }
   }

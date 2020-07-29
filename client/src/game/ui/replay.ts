@@ -64,7 +64,7 @@ export const goToSegment = (
 
   // Disable replay navigation while we are in a hypothetical
   // (hypothetical navigation functions will set "force" equal to true)
-  if (globals.metadata.hypothetical && !force) {
+  if (state.replay.hypothetical !== null && !force) {
     return;
   }
 

@@ -112,16 +112,16 @@ export const showClueUI = () => {
   }
   globals.elements.clueTypeButtonGroup!.clearPressed();
   globals.elements.clueArea!.show();
-  if (globals.elements.yourTurn !== null && !globals.metadata.hypothetical) {
+  if (globals.elements.yourTurn !== null && state.replay.hypothetical === null) {
     globals.elements.yourTurn.show();
   }
   globals.elements.currentPlayerArea!.hide();
 
   // Hide some specific clue buttons in certain variants with clue restrictions
   if (variantRules.isAlternatingClues(globals.variant)) {
-    const ongoingGameState = globals.metadata.hypothetical
-      ? state.replay.hypothetical!.ongoing
-      : state.ongoingGame;
+    const ongoingGameState = state.replay.hypothetical === null
+      ? state.ongoingGame
+      : state.replay.hypothetical.ongoing;
     if (ongoingGameState.clues.length > 0) {
       const lastClue = ongoingGameState.clues[ongoingGameState.clues.length - 1];
       if (lastClue.type === ClueType.Color) {
