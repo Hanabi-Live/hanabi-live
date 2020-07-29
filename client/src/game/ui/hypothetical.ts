@@ -1,6 +1,7 @@
 // In shared replays, players can enter a hypotheticals where can perform arbitrary actions in order
 // to see what will happen
 
+import { playStacksRules } from '../rules';
 import { ActionIncludingHypothetical } from '../types/actions';
 import ActionType from '../types/ActionType';
 import ClientAction from '../types/ClientAction';
@@ -98,15 +99,39 @@ export const send = (hypoAction: ClientAction) => {
         throw new Error(`Card ${hypoAction.target} has an unknown rank.`);
       }
 
+      // Find out if this card misplays
+      let failed = false;
+      let newType = type;
+      if (type === 'play') {
+        const nextRanks = playStacksRules.nextRanks(
+          gameState.playStacks[card.suitIndex],
+          gameState.playStackDirections[card.suitIndex],
+          gameState.deck,
+        );
+        if (!nextRanks.includes(card.rank)) {
+          newType = 'discard';
+          failed = true;
+        }
+      }
+
       // Play / Discard
       sendHypoAction({
-        type,
+        type: newType,
         playerIndex: gameState.turn.currentPlayerIndex!,
         order: hypoAction.target,
         suitIndex: card.suitIndex,
         rank: card.rank,
-        failed: false, // TODO: misplays
+        failed,
       });
+
+      if (failed) {
+        sendHypoAction({
+          type: 'strike',
+          num: gameState.strikes.length + 1,
+          turn: gameState.turn.segment!,
+          order: hypoAction.target,
+        });
+      }
 
       // Draw
       const nextCardOrder = gameState.deck.length;
