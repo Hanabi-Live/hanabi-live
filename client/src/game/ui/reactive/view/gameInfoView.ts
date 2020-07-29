@@ -148,11 +148,12 @@ export const onOngoingOrVisibleStrikesChanged = (data: {
       continue;
     }
 
+    const duration = 1; // The duration for the strike animation
     if (data.visibleStrikes[i] !== undefined) {
       // There is a strike on the visible state
       // Animate the strike X fading in
       animate(strikeX, {
-        duration: 1,
+        duration,
         opacity: 1,
       }, true);
     } else {
@@ -164,7 +165,10 @@ export const onOngoingOrVisibleStrikesChanged = (data: {
         strikeX.tween = null;
       }
       const opacity = data.ongoingStrikes[i] === undefined ? 0 : STRIKE_FADE;
-      strikeX.opacity(opacity);
+      animate(strikeX, {
+        duration,
+        opacity,
+      }, true);
     }
   }
 
