@@ -36,10 +36,6 @@ export class Globals {
   historyFriends: GameHistory[] = [];
   totalGamesFriends: number = 0;
 
-  lastPM: string = '';
-  datetimeLastChatInput: number = new Date().getTime();
-  typedChatHistory: string[] = [];
-  typedChatHistoryIndex = 0;
   peopleTyping: string[] = [];
 
   showMoreHistoryClicked: boolean = false;

@@ -16,6 +16,10 @@ import ChatMessage from './types/ChatMessage';
 const emojiMap = new Map<string, string>();
 const emoteList: string[] = [];
 let chatLineNum = 1;
+let lastPM = '';
+let datetimeLastChatInput = new Date().getTime();
+const typedChatHistory: string[] = [];
+let typedChatHistoryIndex = 0;
 let tabCompleteCounter = 0;
 let tabCompleteIndex = 0;
 let tabCompleteWordList: string[] = [];
@@ -64,8 +68,8 @@ const input = function input(this: HTMLElement, event: JQuery.Event) {
   // (but don't spam the server with more than one message a second)
   if (this.id !== 'lobby-chat-input') {
     const datetimeNow = new Date().getTime();
-    if (datetimeNow - globals.datetimeLastChatInput >= 1000) {
-      globals.datetimeLastChatInput = datetimeNow;
+    if (datetimeNow - datetimeLastChatInput >= 1000) {
+      datetimeLastChatInput = datetimeNow;
       globals.conn!.send('chatTyping', {
         tableID: globals.tableID,
       });
@@ -73,8 +77,8 @@ const input = function input(this: HTMLElement, event: JQuery.Event) {
   }
 
   // /r - A PM reply
-  if (text === '/r ' && globals.lastPM !== '') {
-    element.val(`/pm ${globals.lastPM} `);
+  if (text === '/r ' && lastPM !== '') {
+    element.val(`/pm ${lastPM} `);
     return;
   }
 
@@ -147,10 +151,10 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
   }
 
   // Add the chat message to the typed history so that we can use the up arrow later
-  globals.typedChatHistory.unshift(msg);
+  typedChatHistory.unshift(msg);
 
   // Reset the typed history index
-  globals.typedChatHistoryIndex = -1;
+  typedChatHistoryIndex = -1;
 
   // Check for chat commands
   // Each chat command should also have an error handler in "chat_command.go"
@@ -195,31 +199,31 @@ const keydown = function keydown(this: HTMLElement, event: JQuery.Event) {
 };
 
 export const arrowUp = (element: JQuery<HTMLElement>) => {
-  globals.typedChatHistoryIndex += 1;
+  typedChatHistoryIndex += 1;
 
   // Check to see if we have reached the end of the history list
-  if (globals.typedChatHistoryIndex > globals.typedChatHistory.length - 1) {
-    globals.typedChatHistoryIndex = globals.typedChatHistory.length - 1;
+  if (typedChatHistoryIndex > typedChatHistory.length - 1) {
+    typedChatHistoryIndex = typedChatHistory.length - 1;
     return;
   }
 
   // Set the chat input box to what we last typed
-  const retrievedHistory = globals.typedChatHistory[globals.typedChatHistoryIndex];
+  const retrievedHistory = typedChatHistory[typedChatHistoryIndex];
   element.val(retrievedHistory);
 };
 
 export const arrowDown = (element: JQuery<HTMLElement>) => {
-  globals.typedChatHistoryIndex -= 1;
+  typedChatHistoryIndex -= 1;
 
   // Check to see if we have reached the beginning of the history list
   // We check for -2 instead of -1 here because we want down arrow to clear the chat
-  if (globals.typedChatHistoryIndex <= -2) {
-    globals.typedChatHistoryIndex = -1;
+  if (typedChatHistoryIndex <= -2) {
+    typedChatHistoryIndex = -1;
     return;
   }
 
   // Set the chat input box to what we last typed
-  const retrievedHistory = globals.typedChatHistory[globals.typedChatHistoryIndex];
+  const retrievedHistory = typedChatHistory[typedChatHistoryIndex];
   element.val(retrievedHistory);
 };
 
@@ -331,7 +335,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
     }
 
     // Also, record who our last PM is from
-    globals.lastPM = data.who;
+    lastPM = data.who;
   } else if (data.room === 'lobby') {
     chat = $('#lobby-chat-text');
   } else if (globals.currentScreen === Screen.PreGame) {
