@@ -236,7 +236,10 @@ export const tab = (element: JQuery<HTMLElement>) => {
 
   // We want to be able to tab complete both users and emotes
   const tabList = userList.concat(emoteList);
-  tabList.sort();
+  tabList.sort(
+    // We want to do a case-insensitive sort, which will not occur by default
+    (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
+  );
 
   // Prioritize the more commonly used NotLikeThis over NootLikeThis
   const notLikeThisIndex = tabList.indexOf('NotLikeThis');
