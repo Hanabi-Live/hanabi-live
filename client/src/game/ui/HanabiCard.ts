@@ -31,9 +31,11 @@ import globals from './globals';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
 import * as HanabiCardInit from './HanabiCardInit';
+import { HanabiCardTap, HanabiCardDblTap } from './HanabiCardTouchActions';
 import { animate } from './konvaHelpers';
 import LayoutChild from './LayoutChild';
 import * as notes from './notes';
+import * as tooltips from './tooltips';
 
 const DECK_BACK_IMAGE = 'deck-back';
 
@@ -894,17 +896,19 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   private registerMouseHandlers() {
     // Define the clue log mouse handlers
-    this.on('mousemove tap', () => {
+    this.on('mouseover touchstart', () => {
       globals.elements.clueLog!.showMatches(this);
       globals.layers.UI.batchDraw();
     });
-    this.on('mouseout', () => {
+    this.on('mouseout touchend', () => {
       globals.elements.clueLog!.showMatches(null);
       globals.layers.UI.batchDraw();
     });
 
     // Define the other mouse handlers
-    this.on('click tap', HanabiCardClick);
+    this.on('click', HanabiCardClick);
+    this.on('tap', HanabiCardTap);
+    this.on('dbltap', HanabiCardDblTap);
     this.on('mousedown', HanabiCardClickSpeedrun);
     this.on('mousedown', this.cardStartDrag);
     this.on('mousemove', this.setCursor);
@@ -997,32 +1001,18 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   private initTooltip() {
     // If the user mouses over the card, show a tooltip that contains the note
     // (we don't use the "tooltip.init()" function because we need the extra conditions in the
-    // "mousemove" event)
+    // "mouseover" event)
+    // The "touchstart" event is handled later in the empathy function
     this.tooltipName = `card-${this.state.order}`;
-    this.on('mousemove', function cardMouseMove(this: HanabiCard) {
-      // Don't do anything if there is not a note on this card
-      if (!this.noteIndicator!.isVisible()) {
-        return;
-      }
-
-      // Don't open any more note tooltips if the user is currently editing a note
-      if (globals.editingNote !== null) {
-        return;
-      }
-
-      // If we are spectating and there is an new note, mark it as seen
-      if (this.noteIndicator!.rotated) {
-        this.noteIndicator!.rotated = false;
-        this.noteIndicator!.rotate(-15);
-        globals.layers.card.batchDraw();
-      }
-
+    this.on('mouseover', function cardMouseOver(this: HanabiCard) {
+      this.noteMouseOver();
       globals.activeHover = this;
-      notes.show(this);
     });
 
-    this.on('mouseout', function cardMouseOut(this: HanabiCard) {
-      globals.activeHover = null;
+    this.on('mouseout touchend', function cardMouseOut(this: HanabiCard) {
+      if (globals.activeHover !== this) {
+        return;
+      }
 
       // Don't close the tooltip if we are currently editing a note
       if (globals.editingNote !== null) {
@@ -1067,7 +1057,41 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         return;
       }
 
+      // We might need to set activeHover again because it was cleared by a game action, for example
       globals.activeHover = this;
+
+      this.setEmpathyOnHand(true);
+    });
+    this.on('touchstart', () => {
+      tooltips.resetActiveHover();
+      globals.activeHover = this;
+
+      // Make sure to not register this as a single tap if the user long presses the card
+      this.touchstartTimeout = setTimeout(() => {
+        // A tap will trigger when the touchend occurs
+        // The next tap action will not run because it will appear like the
+        // second tap of a double tap
+        // Don't worry about this if we actually double-tapped
+        if (!this.wasRecentlyTapped && globals.editingNote == null) {
+          this.wasRecentlyTapped = true;
+        }
+      }, 500); // 500 milliseconds, same as the double-tap time for standardization reasons
+
+      // First, show the note tooltip
+      this.noteMouseOver();
+
+      // Then, set the empathy
+      if (
+        this.tweening // Disable Empathy if the card is tweening
+        // Clicking on a played card goes to the turn that it was played
+        || cardRules.isPlayed(this.state)
+        // Clicking on a discarded card goes to the turn that it was discarded
+        || cardRules.isDiscarded(this.state)
+        || this.state.order > globals.deck.length - 1 // Disable empathy for the stack bases
+      ) {
+        return;
+      }
+
       this.setEmpathyOnHand(true);
     });
 
@@ -1078,9 +1102,32 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         return;
       }
 
-      globals.activeHover = null;
       this.setEmpathyOnHand(false);
     });
+    this.on('touchend', () => {
+      this.setEmpathyOnHand(false);
+    });
+  }
+
+  private noteMouseOver(this: HanabiCard) {
+    // Don't do anything if there is not a note on this card
+    if (!this.noteIndicator!.isVisible()) {
+      return;
+    }
+
+    // Don't open any more note tooltips if the user is currently editing a note
+    if (globals.editingNote !== null) {
+      return;
+    }
+
+    // If we are spectating and there is a new note, mark it as seen
+    if (this.noteIndicator!.rotated) {
+      this.noteIndicator!.rotated = false;
+      this.noteIndicator!.rotate(-15);
+      globals.layers.card.batchDraw();
+    }
+
+    notes.show(this);
   }
 
   private setEmpathyOnHand(enabled: boolean) {
