@@ -130,26 +130,20 @@ commands.set('gameOver', () => {
 });
 
 commands.set('hypoAction', (data: string) => {
-  const actionMessage = JSON.parse(data) as ActionIncludingHypothetical;
+  const action = JSON.parse(data) as ActionIncludingHypothetical;
 
-  // Pass it along to the reducers
   globals.store!.dispatch({
     type: 'hypoAction',
-    action: actionMessage,
+    action,
   });
 
-  hypothetical.checkToggleRevealedButton(actionMessage);
-
-  if (actionMessage.type === 'turn') {
-    hypothetical.beginTurn();
-  }
+  hypothetical.checkToggleRevealedButton(action);
 });
 
 commands.set('hypoBack', () => {
   globals.store!.dispatch({
     type: 'hypoBack',
   });
-  hypothetical.beginTurn();
 });
 
 commands.set('hypoEnd', () => {

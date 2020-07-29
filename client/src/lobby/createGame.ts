@@ -26,7 +26,6 @@ const variantNames = Array.from(VARIANTS.keys());
 // Local variables
 let dropdown1: JQuery<Element>;
 let dropdown2: JQuery<Element>;
-let timeStart: Date;
 
 export const init = () => {
   dropdown1 = $('#create-game-variant-dropdown1');
@@ -320,8 +319,6 @@ export const before = () => {
 
   $('#lobby').fadeTo(FADE_TIME, 0.4);
 
-  timeStart = new Date();
-
   return true;
 };
 
@@ -368,9 +365,6 @@ export const ready = () => {
   if (password !== null && password !== '') {
     $('#createTablePassword').val(password);
   }
-
-  const now = new Date();
-  const diff = now.getTime() - timeStart.getTime();
 };
 
 const readyVariant = (value: any) => {

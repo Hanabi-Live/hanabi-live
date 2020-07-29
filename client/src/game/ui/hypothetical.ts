@@ -8,9 +8,7 @@ import ClueType from '../types/ClueType';
 import MsgClue from '../types/MsgClue';
 import ReplayActionType from '../types/ReplayActionType';
 import { getTouchedCardsFromClue } from './clues';
-import PlayerButton from './controls/PlayerButton';
 import globals from './globals';
-import * as turn from './turn';
 
 export const start = () => {
   // Local variables
@@ -59,40 +57,6 @@ export const end = () => {
   globals.store!.dispatch({
     type: 'hypoEnd',
   });
-};
-
-export const beginTurn = () => {
-  // Local variables
-  const state = globals.store!.getState();
-  if (state.replay.hypothetical === null) {
-    return;
-  }
-
-  if (!globals.amSharedReplayLeader) {
-    return;
-  }
-
-  // Enable or disable the individual clue target buttons, depending on whose turn it is
-  const buttonGroup = globals.elements.clueTargetButtonGroup2!;
-  const buttons = buttonGroup.children.toArray() as PlayerButton[];
-  for (const button of buttons) {
-    button.setPressed(false);
-    const currentPlayerIndex = globals.store!.getState().visibleState!.turn.currentPlayerIndex;
-    const enabled = button.targetIndex !== currentPlayerIndex;
-    button.setEnabled(enabled);
-
-    // In 2-player games,
-    // default the clue recipient button to the only other player available
-    if (globals.metadata.playerNames.length === 2 && enabled) {
-      button.setPressed(true);
-    }
-  }
-
-  turn.showClueUI();
-  globals.elements.hypoBackButton!.visible(state.replay.hypothetical.states.length > 1);
-
-  // Set the current player's hand to be draggable
-  checkSetDraggableAllHands();
 };
 
 export const send = (hypoAction: ClientAction) => {
@@ -212,12 +176,6 @@ export const sendHypoAction = (hypoAction: ActionIncludingHypothetical) => {
     type: ReplayActionType.HypoAction,
     actionJSON: JSON.stringify(hypoAction),
   });
-};
-
-export const checkSetDraggableAllHands = () => {
-  for (const hand of globals.elements.playerHands) {
-    hand.checkSetDraggableAll();
-  }
 };
 
 export const sendBack = () => {

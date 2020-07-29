@@ -189,6 +189,7 @@ const replayObservers: Subscriptions = [
 
   // Hypothetical
   subAfterInit((s) => s.replay.hypothetical !== null, hypotheticalView.onHypotheticalEnterExit),
+  subAfterInit((s) => s.replay.hypothetical?.states.length, hypotheticalView.onStatesLengthChanged),
   subAfterInit(
     (s) => hypotheticalView.enterHypoButtonIsEnabled(s),
     hypotheticalView.enterHypoButtonEnabledChanged,
