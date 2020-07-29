@@ -120,6 +120,9 @@ export const onStrikesChanged = (
   strikes: readonly StateStrike[],
   previousStrikes: readonly StateStrike[] | undefined,
 ) => {
+  // Local variables
+  const state = globals.store!.getState();
+
   // Strikes are hidden from the end-user in "Throw It in a Hole" variants
   if (variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay) {
     return;
@@ -130,12 +133,14 @@ export const onStrikesChanged = (
   // The user will be able to click on the X in order to jump directly to the turn where the
   // strike happened
   if (previousStrikes === undefined) {
-    for (let i = 0; i < globals.store!.getState().ongoingGame.strikes.length; i++) {
+    for (let i = 0; i < state.ongoingGame.strikes.length; i++) {
+      const strike = state.ongoingGame.strikes[i];
+      const opacity = strike.segment <= state.visibleState!.turn.segment! ? 1 : STRIKE_FADE;
+
       const strikeX = globals.elements.strikeXs[i];
-      if (strikeX === undefined) {
-        continue;
+      if (strikeX !== undefined) {
+        strikeX.opacity(opacity);
       }
-      strikeX.opacity(STRIKE_FADE);
     }
 
     return;
