@@ -62,6 +62,9 @@ export const init = () => {
 
     // Redraw the tooltip so that the new elements will fit better
     $('#nav-buttons-games-create-game').tooltipster('reposition');
+
+    // Remember the new setting
+    getCheckbox('createTableTimed');
   });
   $('#createTableSpeedrun').change(() => {
     if ($('#createTableSpeedrun').prop('checked')) {
@@ -74,6 +77,9 @@ export const init = () => {
 
     // Redraw the tooltip so that the new elements will fit better
     $('#nav-buttons-games-create-game').tooltipster('reposition');
+
+    // Remember the new setting
+    getCheckbox('createTableSpeedrun');
   });
 
   // Disable some checkboxes if a checkbox is checked
@@ -87,6 +93,9 @@ export const init = () => {
       $('#createTableOneLessCard').prop('disabled', false);
       $('#createTableOneLessCardLabel').css('cursor', 'pointer');
     }
+
+    // Remember the new setting
+    getCheckbox('createTableOneLessCard');
   });
   $('#createTableOneLessCard').change(() => {
     if ($('#createTableOneLessCard').is(':checked')) {
@@ -98,6 +107,41 @@ export const init = () => {
       $('#createTableOneExtraCard').prop('disabled', false);
       $('#createTableOneExtraCardLabel').css('cursor', 'pointer');
     }
+
+    // Remember the new setting
+    getCheckbox('createTableOneLessCard');
+  });
+
+  // Check for changes in the various input fields so that we can remember their respective settings
+  $('#create-game-variant-dropdown1').change(() => {
+    getVariant('createTableVariant');
+  });
+  $('#create-game-variant-dropdown2').change(() => {
+    getVariant('createTableVariant');
+  });
+  $('#createTableTimeBaseMinutes').change(() => {
+    getTextbox('createTableTimeBaseMinutes');
+  });
+  $('#createTableTimePerTurnSeconds').change(() => {
+    getTextbox('createTableTimePerTurnSeconds');
+  });
+  $('#createTableCardCycle').change(() => {
+    getCheckbox('createTableCardCycle');
+  });
+  $('#createTableDeckPlays').change(() => {
+    getCheckbox('createTableDeckPlays');
+  });
+  $('#createTableEmptyClues').change(() => {
+    getCheckbox('createTableEmptyClues');
+  });
+  $('#createTableAllOrNothing').change(() => {
+    getCheckbox('createTableAllOrNothing');
+  });
+  $('#createTableDetrimentalCharacters').change(() => {
+    getCheckbox('createTableDetrimentalCharacters');
+  });
+  $('#createTableAlertWaiters').change(() => {
+    getCheckbox('createTableAlertWaiters');
   });
 
   // Pressing enter anywhere will submit the form
@@ -283,7 +327,8 @@ const checkChanged = (settingName: keyof Settings, value: boolean | string) => {
   }
 };
 
-// This function is executed when the "Create Game" button is clicked
+// This function is executed every time the "Create Game" button is clicked
+// (before the tooltip is added to the DOM)
 export const before = () => {
   // Don't allow the tooltip to open if the button is currently disabled
   if ($('#nav-buttons-games-create-game').hasClass('disabled')) {
