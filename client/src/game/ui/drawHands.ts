@@ -1,5 +1,5 @@
 import Konva from 'konva';
-import { CARD_W, CARD_H } from '../../constants';
+import { CARD_W, CARD_H, OFF_BLACK } from '../../constants';
 import { getCharacter } from '../data/gameData';
 import * as hand from '../rules/hand';
 import Character from '../types/Character';
@@ -323,9 +323,9 @@ export default function drawHands(winW: number, winH: number) {
     });
     globals.layers.card.add(globals.elements.playerHands[i] as any);
 
-    // In Keldon mode,
-    // we want to show a helper element that indicates which side of the hand is the oldest
     if (globals.lobby.settings.keldonMode) {
+      // In Keldon mode,
+      // we want to show a helper element that indicates which side of the hand is the oldest
       const blackLineGroup = new Konva.Group({
         x: handValues.x * winW,
         y: handValues.y * winH,
@@ -373,51 +373,55 @@ export default function drawHands(winW: number, winH: number) {
         y: blackLineY * winH,
         width: 0.0075 * winW,
         height: handValues.h * winH,
-        fill: '#0d0d0d', // Off-black
+        fill: OFF_BLACK,
+        stroke: OFF_BLACK,
+        strokeWidth: 3,
         listening: false,
       });
       blackLineGroup.add(blackLine);
-    }
-
-    const turnRectValues = {
-      // The black box should always be as wide as the name frame
-      x: playerNamePos[numPlayers][j].x,
-      y: handValues.y,
-      w: playerNamePos[numPlayers][j].w * 1.04,
-      h: handValues.h * 1.34,
-      offsetX: handValues.w * 0.02,
-      offsetY: handValues.h * 0.14,
-    };
-    if (globals.lobby.settings.keldonMode) {
-      turnRectValues.x = handValues.x;
-      turnRectValues.w = handValues.w * 1.025;
-      turnRectValues.h = handValues.h * 1.075;
-      turnRectValues.offsetX = handValues.w * 0.0125;
-      turnRectValues.offsetY = handValues.h * 0.0375;
-      if (numPlayers === 5) {
-        turnRectValues.w += handValues.w * 0.03;
-        turnRectValues.offsetX += handValues.w * 0.015;
+      globals.elements.playerHandBlackLines.push(blackLine);
+    } else {
+      // In BGA mode, we show a black box around a player's hand to indicate that it is their turn
+      const turnRectValues = {
+        // The black box should always be as wide as the name frame
+        x: playerNamePos[numPlayers][j].x,
+        y: handValues.y,
+        w: playerNamePos[numPlayers][j].w * 1.04,
+        h: handValues.h * 1.34,
+        offsetX: handValues.w * 0.02,
+        offsetY: handValues.h * 0.14,
+      };
+      if (globals.lobby.settings.keldonMode) {
+        turnRectValues.x = handValues.x;
+        turnRectValues.w = handValues.w * 1.025;
+        turnRectValues.h = handValues.h * 1.075;
+        turnRectValues.offsetX = handValues.w * 0.0125;
+        turnRectValues.offsetY = handValues.h * 0.0375;
+        if (numPlayers === 5) {
+          turnRectValues.w += handValues.w * 0.03;
+          turnRectValues.offsetX += handValues.w * 0.015;
+        }
+      } else if (numPlayers === 6) {
+        turnRectValues.h += 0.005;
       }
-    } else if (numPlayers === 6) {
-      turnRectValues.h += 0.005;
+      const turnRect = new Konva.Rect({
+        x: turnRectValues.x * winW,
+        y: turnRectValues.y * winH,
+        width: turnRectValues.w * winW,
+        height: turnRectValues.h * winH,
+        offset: {
+          x: turnRectValues.offsetX * winW,
+          y: turnRectValues.offsetY * winH,
+        },
+        fill: 'black',
+        cornerRadius: turnRectValues.h * 0.1 * winH,
+        rotation: handValues.rot,
+        opacity: 0.5,
+        visible: false,
+      });
+      globals.layers.UI.add(turnRect);
+      globals.elements.playerHandTurnRects.push(turnRect);
     }
-    const turnRect = new Konva.Rect({
-      x: turnRectValues.x * winW,
-      y: turnRectValues.y * winH,
-      width: turnRectValues.w * winW,
-      height: turnRectValues.h * winH,
-      offset: {
-        x: turnRectValues.offsetX * winW,
-        y: turnRectValues.offsetY * winH,
-      },
-      fill: 'black',
-      cornerRadius: turnRectValues.h * 0.1 * winH,
-      rotation: handValues.rot,
-      opacity: 0.5,
-      visible: false,
-    });
-    globals.layers.UI.add(turnRect);
-    globals.elements.playerHandTurnRects.push(turnRect);
 
     globals.elements.nameFrames[i] = new NameFrame({
       x: playerNamePos[numPlayers][j].x * winW,

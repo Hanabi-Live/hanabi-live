@@ -32,6 +32,7 @@ export default class Elements {
   discardStacks: Map<Suit, CardLayout> = new Map<Suit, CardLayout>();
   playerHands: CardLayout[] = [];
   playerHandTurnRects: Konva.Rect[] = [];
+  playerHandBlackLines: Konva.Rect[] = [];
   nameFrames: NameFrame[] = [];
   actionLog: MultiFitText | null = null;
   replayButton: Button | null = null;

@@ -19,6 +19,7 @@ export const ARROW_COLOR = {
 export const CLUED_COLOR = 'orange';
 export const CHOP_MOVE_COLOR = '#fffce6'; // White with a yellow tint
 export const FINESSE_COLOR = 'aqua';
+export const OFF_BLACK = '#0d0d0d';
 
 // Time constants
 export const FADE_TIME = 350; // In milliseconds

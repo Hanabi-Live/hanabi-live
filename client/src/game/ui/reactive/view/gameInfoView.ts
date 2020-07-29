@@ -1,4 +1,4 @@
-import { LABEL_COLOR, STRIKE_FADE } from '../../../../constants';
+import { LABEL_COLOR, STRIKE_FADE, OFF_BLACK } from '../../../../constants';
 import { variantRules } from '../../../rules';
 import { MAX_STRIKES, MAX_CLUE_NUM } from '../../../types/constants';
 import { StateStrike } from '../../../types/GameState';
@@ -36,12 +36,25 @@ export const onCurrentPlayerIndexChanged = (currentPlayerIndex: number | null) =
     globals.elements.nameFrames[i].setActive(currentPlayerIndex === i);
   }
 
-  // Additionally, show a black rectangle over a player's hand to signify that it is their turn
+  // Additionally, show a UI element to signify that it is their turn
   if (currentPlayerIndex !== null) {
-    for (const rect of globals.elements.playerHandTurnRects) {
-      rect.hide();
+    if (globals.lobby.settings.keldonMode) {
+      for (const rect of globals.elements.playerHandBlackLines) {
+        rect.fill(OFF_BLACK);
+      }
+      const currentPlayerRect = globals.elements.playerHandBlackLines[currentPlayerIndex];
+      if (currentPlayerRect !== undefined) {
+        currentPlayerRect.fill('yellow');
+      }
+    } else {
+      for (const rect of globals.elements.playerHandTurnRects) {
+        rect.hide();
+      }
+      const currentPlayerRect = globals.elements.playerHandTurnRects[currentPlayerIndex];
+      if (currentPlayerRect !== undefined) {
+        currentPlayerRect.show();
+      }
     }
-    globals.elements.playerHandTurnRects[currentPlayerIndex].show();
   }
 
   globals.layers.UI.batchDraw();

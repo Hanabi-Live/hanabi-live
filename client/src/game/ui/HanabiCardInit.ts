@@ -10,6 +10,7 @@ import {
   CLUED_COLOR,
   CHOP_MOVE_COLOR,
   FINESSE_COLOR,
+  OFF_BLACK,
 } from '../../constants';
 import * as variantRules from '../rules/variant';
 import { START_CARD_RANK } from '../types/constants';
@@ -52,7 +53,7 @@ const borderCornerRadius = 6;
 const borderStrokeWidth = 20;
 const borderStrokeWidthInside = borderStrokeWidth * 0.6;
 const borderOffset = 2;
-const borderOutsideColor = '#0d0d0d'; // Off-black
+const borderOutsideColor = OFF_BLACK;
 
 const makeBorder = (color: string) => {
   const border = new Konva.Group({
