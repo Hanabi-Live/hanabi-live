@@ -9,8 +9,8 @@ These are the svg files used to generate the pips.
 * White pip is a small modification of https://www.goodfreephotos.com/svgfiles/final292-crescent-moon.svg by TaleKids
 * Brown pip is a small modification of http://tecs.g2.xrea.com/hyouki/kana/kana.html
 
+In order to get the Canvas path from an svg file, proceed as follows:
 
-In order to get the Canvas path from an svg file, proceed as follows
 * Open the svg file in Inkscape https://inkscape.org/
 * Set the size so that the maximum dimension is 150 px, and set the width of the stroke at 6 mm (Ctrl+Shift+F to open the "Fill and Stroke" menu)
 * Resize the page to content (Ctrl+Shift+D to open the "Document properties" menu)
@@ -19,9 +19,10 @@ In order to get the Canvas path from an svg file, proceed as follows
 * Export as HTML Canvas (Ctrl+Shift+S, then select "Save as HTML")
 * Open the HTML file with a text editor
 
-Then, proceed as follows, using the other pips in drawPip.ts as reference
+Then, proceed as follows, using the other pips in drawPip.ts as reference:
+
 * Check that, on line 8 of the file, the maximum dimension is 42 (150 px correspond to 42 mm). If it is not, you will have to rescale the image accordingly using ctx.scale(42 / max_size, 42 / max_size);
-* On line 14, there should be a ctx.transform(a, b, c, d, x, y) command. Check that the trasformation matrix is (1, 0, 0, 1). Otherwise, you will need to apply the inverse transformation after the code. 
+* On line 14, there should be a ctx.transform(a, b, c, d, x, y) command. Check that the transformation matrix is (1, 0, 0, 1). Otherwise, you will need to apply the inverse transformation after the code.
 * Copy-paste that line after ctx.beginPath(); in the drawPip.ts file
 * Copy-paste everything from the first occurrence of ctx.moveTo(x,y); (included) to ctx.fill(); (excluded) in the drawPip.ts file
 * If the transformation matrix was not (1, 0, 0, 1), add a ctx.transform(a', b', c', d', 0, 0); line after the path, where (a', b', c', d') is the inverse matrix of (a, b, c, d)

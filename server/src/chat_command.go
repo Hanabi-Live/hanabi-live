@@ -43,8 +43,14 @@ func chatCommandInit() {
 	chatCommandMap["kick"] = chatKick
 
 	// Table-only commands (pregame or game)
+	chatCommandMap["missingscores"] = chatMissingScores
+	chatCommandMap["missing-scores"] = chatMissingScores
+	chatCommandMap["sharedmissingscores"] = chatMissingScores
+	chatCommandMap["shared-missing-scores"] = chatMissingScores
 	chatCommandMap["findvariant"] = chatFindVariant
+	chatCommandMap["find-variant"] = chatFindVariant
 	chatCommandMap["randomvariant"] = chatFindVariant
+	chatCommandMap["random-variant"] = chatFindVariant
 
 	// Table-only commands (game only)
 	chatCommandMap["pause"] = chatPause

@@ -1,6 +1,6 @@
 Open "piano.flp" in FL Studio 20.
 
-- The instrament chosen is "Stage Grand" piano.
+- The instrument chosen is "Stage Grand" piano.
 - Most samples are recorded at 110 BPM.
 - Finish Success is recorded at 140 BPM.
 - Finish Perfect is recorded at 90 BPM.
