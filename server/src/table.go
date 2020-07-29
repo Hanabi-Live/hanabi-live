@@ -29,9 +29,7 @@ type Table struct {
 	Visible bool // Whether or not this table is shown to other users
 	// This is an Argon2id hash generated from the plain-text password
 	// that the table creator sends us
-	PasswordHash string
-	// Whether or not the table was created with the "Alert people" checkbox checked
-	AlertWaiters   bool
+	PasswordHash   string
 	Running        bool
 	Replay         bool
 	AutomaticStart int // See "chatTable.go"

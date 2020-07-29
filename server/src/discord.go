@@ -255,28 +255,6 @@ func discordGetChannel(discordID string) string {
 	return "[unknown]"
 }
 
-func discordGetID(username string) string {
-	// Get the Discord guild object
-	var guild *discordgo.Guild
-	if v, err := discord.Guild(discordListenChannels[0]); err != nil {
-		// This can occasionally fail, so we don't want to report the error to Sentry
-		logger.Info("Failed to get the Discord guild:", err)
-		return ""
-	} else {
-		guild = v
-	}
-	// (assume that the first channel ID is the same as the server ID)
-
-	// Find the ID that corresponds to this username
-	for _, member := range guild.Members {
-		if member.Nick == username || member.User.Username == username {
-			return member.User.ID
-		}
-	}
-
-	return ""
-}
-
 // We need to check for special commands that occur in Discord channels other than #general
 // (because the messages will not flow to the normal "chatCommandMap")
 func discordCheckCommand(m *discordgo.MessageCreate) {

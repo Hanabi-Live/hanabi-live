@@ -23,7 +23,6 @@ const (
 //     [other options omitted; see "Options.ts"]
 //   },
 //   password: 'super_secret',
-//   alertWaiters: false,
 // }
 func commandTableCreate(s *Session, d *CommandData) {
 	/*
@@ -282,7 +281,6 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	t := NewTable(d.Name, s.UserID())
 	t.Visible = preGameVisible
 	t.PasswordHash = passwordHash
-	t.AlertWaiters = d.AlertWaiters
 	if setReplayOptions == nil {
 		t.Options = d.Options
 	} else {
@@ -302,17 +300,6 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	// Join the user to the new table
 	d.TableID = t.ID
 	commandTableJoin(s, d)
-
-	// Alert the people on the waiting list, if any
-	// (even if they check the "Alert people on the waiting list" checkbox,
-	// we don't want to alert on password-protected games or test games)
-	if t.AlertWaiters &&
-		t.PasswordHash == "" &&
-		t.Name != "test" &&
-		!strings.HasPrefix(t.Name, "test ") {
-
-		waitingListAlert(t, s.Username())
-	}
 
 	// If the server is shutting down / restarting soon, warn the players
 	if shuttingDown {

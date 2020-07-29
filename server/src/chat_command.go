@@ -57,10 +57,6 @@ func chatCommandInit() {
 	// Discord-only commands
 	chatCommandMap["here"] = chatHere
 	chatCommandMap["last"] = chatLast
-	chatCommandMap["next"] = chatNext
-	chatCommandMap["unnext"] = chatUnnext
-	chatCommandMap["removenext"] = chatUnnext
-	chatCommandMap["list"] = chatList
 	// (there are additional Discord-only commands in "discord.go")
 
 	// Error handlers for website-only commands

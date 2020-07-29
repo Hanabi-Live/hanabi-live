@@ -85,9 +85,6 @@ const (
 	// but this may not always be the case
 	PointsPerSuit = 5
 
-	// The amount of time that someone can be on the waiting list
-	IdleWaitingListTimeout = time.Hour * 8
-
 	// The amount of time that players have to finish their game once
 	// a server shutdown or restart is initiated
 	ShutdownTimeout = time.Minute * 30

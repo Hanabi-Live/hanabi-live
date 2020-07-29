@@ -34,7 +34,6 @@ type Settings struct {
 	CreateTableOneLessCard           bool    `json:"createTableOneLessCard"`
 	CreateTableAllOrNothing          bool    `json:"createTableAllOrNothing"`
 	CreateTableDetrimentalCharacters bool    `json:"createTableDetrimentalCharacters"`
-	CreateTableAlertWaiters          bool    `json:"createTableAlertWaiters"`
 }
 
 var (
@@ -78,8 +77,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 			create_table_one_extra_card,
 			create_table_one_less_card,
 			create_table_all_or_nothing,
-			create_table_detrimental_characters,
-			create_table_alert_waiters
+			create_table_detrimental_characters
 		FROM user_settings
 		WHERE user_id = $1
 	`, userID).Scan(
@@ -108,7 +106,6 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		&settings.CreateTableOneLessCard,
 		&settings.CreateTableAllOrNothing,
 		&settings.CreateTableDetrimentalCharacters,
-		&settings.CreateTableAlertWaiters,
 	); err == pgx.ErrNoRows {
 		return defaultSettings, nil
 	} else if err != nil {

@@ -112,19 +112,6 @@ func commandTableRestart(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that there is currently no-one on the waiting list
-	waitingListPurgeOld()
-	if t.AlertWaiters &&
-		t.PasswordHash == "" &&
-		t.Name != "test" &&
-		!strings.HasPrefix(t.Name, "test ") &&
-		len(waitingList) > 0 {
-
-		s.Warning("There are one or more players on the waiting list, " +
-			"so you should create a new table and let them join.")
-		return
-	}
-
 	// Validate that the server is not about to go offline
 	if checkImminentShutdown(s) {
 		return
@@ -202,9 +189,8 @@ func commandTableRestart(s *Session, d *CommandData) {
 	// The shared replay should now be deleted, since all of the players have left
 	// Now, create the new game but hide it from the lobby
 	createTable(s, &CommandData{
-		Name:         newTableName,
-		Options:      t.Options,
-		AlertWaiters: t.AlertWaiters,
+		Name:    newTableName,
+		Options: t.Options,
 	}, false)
 
 	// Find the table ID for the new game

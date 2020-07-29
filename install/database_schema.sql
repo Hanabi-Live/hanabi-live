@@ -73,7 +73,6 @@ CREATE TABLE user_settings (
     create_table_one_less_card           BOOLEAN   NOT NULL  DEFAULT FALSE,
     create_table_all_or_nothing          BOOLEAN   NOT NULL  DEFAULT FALSE,
     create_table_detrimental_characters  BOOLEAN   NOT NULL  DEFAULT FALSE,
-    create_table_alert_waiters           BOOLEAN   NOT NULL  DEFAULT FALSE,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
@@ -299,11 +298,3 @@ CREATE TABLE metadata (
 );
 /* The "discord_last_at_here" value is stored as a RFC3339 string */
 INSERT INTO metadata (name, value) VALUES ('discord_last_at_here', '2006-01-02T15:04:05Z');
-
-DROP TABLE IF EXISTS discord_waiters CASCADE;
-CREATE TABLE discord_waiters (
-    id                SERIAL       PRIMARY KEY,
-    username          TEXT         NOT NULL,
-    discord_mention   TEXT         NOT NULL,
-    datetime_expired  TIMESTAMPTZ  NOT NULL
-);

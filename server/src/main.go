@@ -198,9 +198,6 @@ func main() {
 	// Start the Discord bot (in "discord.go")
 	discordInit()
 
-	// Get the people on the waiting list from the database (in "waitingList.go")
-	waitingListInit()
-
 	// Initialize a WebSocket router using the Melody framework (in "websocket.go")
 	websocketInit()
 

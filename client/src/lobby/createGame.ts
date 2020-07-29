@@ -140,9 +140,6 @@ export const init = () => {
   $('#createTableDetrimentalCharacters').change(() => {
     getCheckbox('createTableDetrimentalCharacters');
   });
-  $('#createTableAlertWaiters').change(() => {
-    getCheckbox('createTableAlertWaiters');
-  });
 
   // Pressing enter anywhere will submit the form
   $('#create-game-tooltip').on('keypress', (event) => {
@@ -264,7 +261,6 @@ const submit = () => {
       detrimentalCharacters: getCheckbox('createTableDetrimentalCharacters'),
     },
     password,
-    alertWaiters: getCheckbox('createTableAlertWaiters'),
   });
 
   closeAllTooltips();
