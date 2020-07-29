@@ -131,12 +131,10 @@ commands.set('gameOver', () => {
 
 commands.set('hypoAction', (data: string) => {
   const action = JSON.parse(data) as ActionIncludingHypothetical;
-
   globals.store!.dispatch({
     type: 'hypoAction',
     action,
   });
-
   hypothetical.checkToggleRevealedButton(action);
 });
 
@@ -469,6 +467,7 @@ commands.set('replaySegment', (data: ReplaySegmentData) => {
         type: 'hypoAction',
         action,
       });
+      hypothetical.checkToggleRevealedButton(action);
     }
   }
 });
