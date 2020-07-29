@@ -116,7 +116,6 @@ const visibleStateObservers: Subscriptions = [
     clueTokens: s.clueTokens,
     doubleDiscard: s.stats.doubleDiscard,
   }), gameInfoView.onClueTokensOrDoubleDiscardChanged),
-  subVS((s) => s.strikes, gameInfoView.onStrikesChanged),
 
   // Stats
   subVS((s) => s.stats.efficiency, statsView.onEfficiencyChanged),
@@ -169,6 +168,13 @@ const ongoingGameObservers: Subscriptions = [
     visible: currentPlayerAreaView.isVisible(s),
     currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
   }), currentPlayerAreaView.onChanged),
+
+  // Strikes
+  subAfterInit((s) => ({
+    ongoingStrikes: s.ongoingGame.strikes,
+    visibleStrikes: s.visibleState!.strikes,
+  }), gameInfoView.onOngoingOrVisibleStrikesChanged),
+
 ];
 
 const replayObservers: Subscriptions = [

@@ -129,42 +129,16 @@ export const onClueTokensOrDoubleDiscardChanged = (data: {
   globals.layers.UI.batchDraw();
 };
 
-export const onStrikesChanged = (
-  strikes: readonly StateStrike[],
-  previousStrikes: readonly StateStrike[] | undefined,
-) => {
-  // Local variables
-  const state = globals.store!.getState();
-
+export const onOngoingOrVisibleStrikesChanged = (data: {
+  ongoingStrikes: readonly StateStrike[];
+  visibleStrikes: readonly StateStrike[];
+}) => {
   // Strikes are hidden from the end-user in "Throw It in a Hole" variants
   if (variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay) {
     return;
   }
 
-  // If there is no previous state, we are viewing the visible state for the first time
-  // If a strike happened in the future, we want to show a faded X on the UI
-  // The user will be able to click on the X in order to jump directly to the turn where the
-  // strike happened
-  if (previousStrikes === undefined) {
-    for (let i = 0; i < state.ongoingGame.strikes.length; i++) {
-      const strike = state.ongoingGame.strikes[i];
-      const opacity = strike.segment <= state.visibleState!.turn.segment! ? 1 : STRIKE_FADE;
-
-      const strikeX = globals.elements.strikeXs[i];
-      if (strikeX !== undefined) {
-        strikeX.opacity(opacity);
-      }
-    }
-
-    return;
-  }
-
   for (let i = 0; i < MAX_STRIKES; i++) {
-    // Check to see if this strike has changed
-    if (typeof strikes[i] === typeof previousStrikes[i]) {
-      continue;
-    }
-
     const strikeX = globals.elements.strikeXs[i];
     if (strikeX === undefined) {
       continue;
@@ -174,21 +148,24 @@ export const onStrikesChanged = (
       continue;
     }
 
-    if (strikes[i] === undefined) {
-      // We are going backwards in a replay and this strike should now be faded
+    if (data.visibleStrikes[i] !== undefined) {
+      // There is a strike on the visible state
+      // Animate the strike X fading in
+      animate(strikeX, {
+        duration: 1,
+        opacity: 1,
+      }, true);
+    } else {
+      // Either this strike has never happened, or we are moving backwards in a replay
+      // If this strike never happened, it should be invisible
+      // If this strike happened in the future, then it should be slightly faded
       if (strikeX.tween !== null) {
         strikeX.tween.destroy();
         strikeX.tween = null;
       }
-      strikeX.opacity(STRIKE_FADE);
-      continue;
+      const opacity = data.ongoingStrikes[i] === undefined ? 0 : STRIKE_FADE;
+      strikeX.opacity(opacity);
     }
-
-    // Animate the strike square fading in
-    animate(strikeX, {
-      duration: 1,
-      opacity: 1,
-    }, true);
   }
 
   globals.layers.UI.batchDraw();
