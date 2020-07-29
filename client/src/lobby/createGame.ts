@@ -82,6 +82,15 @@ export const init = () => {
     getCheckbox('createTableSpeedrun');
   });
 
+  // The "Show Extra Options" button
+  $('#create-game-show-extra-options').click(() => {
+    $('#create-game-extra-options').show();
+    $('#create-game-show-extra-options-row').hide();
+
+    // Redraw the tooltip so that the new elements will fit better
+    $('#nav-buttons-games-create-game').tooltipster('reposition');
+  });
+
   // Disable some checkboxes if a checkbox is checked
   $('#createTableOneExtraCard').change(() => {
     if ($('#createTableOneExtraCard').is(':checked')) {
@@ -406,6 +415,27 @@ export const ready = () => {
   if (password !== null && password !== '') {
     $('#createTablePassword').val(password);
   }
+
+  // Hide the extra options if we do not have any selected
+  if (
+    !globals.settings.createTableSpeedrun
+    && !globals.settings.createTableCardCycle
+    && !globals.settings.createTableDeckPlays
+    && !globals.settings.createTableEmptyClues
+    && !globals.settings.createTableOneExtraCard
+    && !globals.settings.createTableOneLessCard
+    && !globals.settings.createTableAllOrNothing
+    && !globals.settings.createTableDetrimentalCharacters
+  ) {
+    $('#create-game-extra-options').hide();
+    $('#create-game-show-extra-options-row').show();
+  } else {
+    $('#create-game-extra-options').show();
+    $('#create-game-show-extra-options-row').hide();
+  }
+
+  // Redraw the tooltip so that the new elements will fit better
+  $('#nav-buttons-games-create-game').tooltipster('reposition');
 };
 
 const readyVariant = (value: any) => {
