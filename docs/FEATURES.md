@@ -329,7 +329,7 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
   * when a card fails to play
   * when two cards fail to play in a row
   * when a card blind-plays
-  * when multiple cards blind-play in a row (up to 4)
+  * when multiple cards blind-play in a row (up to 6)
   * discarding a "critical" card
   * finishing the game with a score of 0
   * finishing the game with a non-perfect score
