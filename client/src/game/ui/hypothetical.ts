@@ -90,12 +90,12 @@ export const send = (hypoAction: ClientAction) => {
   switch (type) {
     case 'play':
     case 'discard': {
-      const card = state.cardIdentities[hypoAction.target];
+      const card = globals.deck[hypoAction.target];
 
-      if (card.suitIndex === null) {
+      if (card.visibleSuitIndex === null) {
         throw new Error(`Card ${hypoAction.target} has an unknown suit index.`);
       }
-      if (card.rank === null) {
+      if (card.visibleRank === null) {
         throw new Error(`Card ${hypoAction.target} has an unknown rank.`);
       }
 
@@ -104,11 +104,11 @@ export const send = (hypoAction: ClientAction) => {
       let newType = type;
       if (type === 'play') {
         const nextRanks = playStacksRules.nextRanks(
-          gameState.playStacks[card.suitIndex],
-          gameState.playStackDirections[card.suitIndex],
+          gameState.playStacks[card.visibleSuitIndex],
+          gameState.playStackDirections[card.visibleSuitIndex],
           gameState.deck,
         );
-        if (!nextRanks.includes(card.rank)) {
+        if (!nextRanks.includes(card.visibleRank)) {
           newType = 'discard';
           failed = true;
         }
@@ -119,8 +119,8 @@ export const send = (hypoAction: ClientAction) => {
         type: newType,
         playerIndex: gameState.turn.currentPlayerIndex!,
         order: hypoAction.target,
-        suitIndex: card.suitIndex,
-        rank: card.rank,
+        suitIndex: card.visibleSuitIndex,
+        rank: card.visibleRank,
         failed,
       });
 
