@@ -88,9 +88,8 @@ const gameStateReducer = produce((
         // Add it to the discard stacks
         state.discardStacks[action.suitIndex].push(action.order);
 
-        if (!action.failed) {
-          state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
-        }
+        // Discarding cards grants clue tokens under certain circumstances
+        state.clueTokens = clueTokensRules.gain(action, state.clueTokens, variant);
       }
 
       const touched = state.deck[action.order].numPositiveClues > 0;
@@ -176,10 +175,13 @@ const gameStateReducer = produce((
         const playStack = state.playStacks[action.suitIndex];
         playStack.push(action.order);
 
-        // Gain a clue token if the stack is complete
-        if (playStack.length === 5) { // Hard-code 5 cards per stack
-          state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
-        }
+        // Playing cards grants clue tokens under certain circumstances
+        state.clueTokens = clueTokensRules.gain(
+          action,
+          state.clueTokens,
+          variant,
+          playStack.length === 5,
+        );
       }
 
       // Gain a point
