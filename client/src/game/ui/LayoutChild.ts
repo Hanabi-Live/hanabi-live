@@ -128,7 +128,7 @@ export default class LayoutChild extends Konva.Group {
       && this.card.state.location === globals.metadata.ourPlayerIndex
       // Cards should not be draggable if we are spectating an ongoing game, in a dedicated solo
       // replay, or in a shared replay
-      && !state.metadata.playing
+      && state.metadata.playing
       // Cards should not be draggable if they are currently playing an animation
       // (this function will be called again upon the completion of the animation)
       && !this.card.tweening
