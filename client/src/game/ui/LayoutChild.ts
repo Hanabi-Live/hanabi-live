@@ -126,9 +126,9 @@ export default class LayoutChild extends Konva.Group {
       && !globals.lobby.settings.speedrunMode // Cards should never be draggable while speedrunning
       // Only our cards should be draggable
       && this.card.state.location === globals.metadata.ourPlayerIndex
-      && !globals.metadata.replay // Cards should not be draggable in solo or shared replays
-      // Cards should not be draggable if we are spectating an ongoing game
-      && !state.metadata.spectating
+      // Cards should not be draggable if we are spectating an ongoing game, in a dedicated solo
+      // replay, or in a shared replay
+      && !state.metadata.playing
       // Cards should not be draggable if they are currently playing an animation
       // (this function will be called again upon the completion of the animation)
       && !this.card.tweening

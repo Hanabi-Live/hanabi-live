@@ -150,7 +150,7 @@ export const play = (
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   let card;
-  if (variantRules.isThrowItInAHole(variant) && !metadata.spectating) {
+  if (variantRules.isThrowItInAHole(variant) && metadata.playing) {
     card = 'a card';
   } else {
     card = cardRules.name(action.suitIndex, action.rank, variant);
@@ -183,7 +183,7 @@ export const discard = (
   let verb = 'discards';
   if (action.failed) {
     verb = 'fails to play';
-    if (variantRules.isThrowItInAHole(variant) && !metadata.spectating) {
+    if (variantRules.isThrowItInAHole(variant) && metadata.playing) {
       verb = 'plays';
     }
   }

@@ -22,7 +22,7 @@ export default function testMetadata(
       'Frank',
     ].slice(0, numPlayers),
     ourPlayerIndex: 0,
-    spectating: true,
+    playing: false,
     finished: false,
     characterAssignments: initArray(numPlayers, null),
     characterMetadata: [],

@@ -11,7 +11,7 @@ export const isVisible = (s: State) => (
   // The clue UI should take precedence over the "Current Player" area
   && (
     s.ongoingGame.turn.currentPlayerIndex !== s.metadata.ourPlayerIndex
-    || s.metadata.spectating
+    || !s.metadata.playing
   )
   // The premove cancel button should take precedence over the "Current Player" area
   && s.premove === null

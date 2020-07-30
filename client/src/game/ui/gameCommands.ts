@@ -583,7 +583,7 @@ const initStateStore = (data: LegacyGameMetadata) => {
     options: data.options,
     playerNames: data.playerNames,
     ourPlayerIndex: data.ourPlayerIndex,
-    spectating: data.spectating || data.replay,
+    playing: !data.spectating && !data.replay,
     finished: data.replay,
     // We need to use the "nullified" version, so we access the globals
     characterAssignments: globals.metadata.characterAssignments,

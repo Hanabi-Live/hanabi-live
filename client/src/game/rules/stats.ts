@@ -123,7 +123,7 @@ export const cardsGotten = (
         card.location === 'discard'
         && card.isMisplayed
         && variantRules.isThrowItInAHole(variant)
-        && !metadata.spectating
+        && metadata.playing
       )
     ) {
       // A card is considered to be gotten if it is already played

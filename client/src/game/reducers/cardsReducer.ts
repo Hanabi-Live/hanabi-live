@@ -82,15 +82,10 @@ const cardsReducer = (
           && newCard.rankClueMemory.possibilities.length === 1
           && newCard.colorClueMemory.possibilities.length === 1
         ) {
-          // If we are currently playing this game and we got clued,
-          // this is the first time we identify this card, from the point of view of all hands
-          const handsSeeingCardForFirstTime = (
-            !metadata.spectating
-            && metadata.ourPlayerIndex === card.location
-          )
-            ? game.hands // All hands
-            : [game.hands[card.location as number]]; // Just who is seeing this for the first time
-          for (const hand of handsSeeingCardForFirstTime) {
+          // Since this card is now fully identified,
+          // update the possibilities on the cards in people's hands
+          const hands = handsSeeingCardForFirstTime(game, card, metadata);
+          for (const hand of hands) {
             removePossibilityOnHand(
               newDeck,
               hand,
@@ -369,17 +364,23 @@ const revealCard = (
     return true;
   }
 
-  // If we are currently playing this game, this is the first time we see this card,
-  // from the point of view of all hands
-  const handsSeeingCardForFirstTime = (
-    !metadata.spectating
-    && metadata.ourPlayerIndex === card.location
-  )
-    ? game.hands // All hands
-    : [game.hands[card.location as number]]; // Just who's seeing this for the first time
-  for (const hand of handsSeeingCardForFirstTime) {
+  // Since this card is now fully identified,
+  // update the possibilities on the cards in people's hands
+  const hands = handsSeeingCardForFirstTime(game, card, metadata);
+  for (const hand of hands) {
     removePossibilityOnHand(newDeck, hand, card.order, suitIndex, rank, variant);
   }
 
   return true;
+};
+
+const handsSeeingCardForFirstTime = (game: GameState, card: CardState, metadata: GameMetadata) => {
+  if (metadata.playing && metadata.ourPlayerIndex === card.location) {
+    // All hands see this card now, from our perspective
+    return game.hands;
+  }
+
+  // We already knew about this card,
+  // so the only person seeing it for the first time is the person that is holding the card
+  return [game.hands[card.location as number]];
 };

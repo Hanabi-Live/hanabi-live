@@ -60,8 +60,8 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
     case 'finishOngoingGame': {
       // If the game just ended, recalculate the whole game as a spectator to fix card possibilities
-      if (!state.metadata.spectating) {
-        state.metadata.spectating = true;
+      if (state.metadata.playing) {
+        state.metadata.playing = false;
 
         const initialState = initialGameState(state.metadata);
         const {

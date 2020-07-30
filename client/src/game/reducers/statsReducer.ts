@@ -31,7 +31,9 @@ const statsReducer = produce((
     case 'strike': {
       // TODO: move this check to the play action when we have logic for knowing which cards play
       // A strike is equivalent to losing a clue
-      if (!variantRules.isThrowItInAHole(variant) || metadata.spectating) {
+      // But don't reveal that a strike has happened to players in an ongoing "Throw It in a Hole"
+      // game
+      if (!variantRules.isThrowItInAHole(variant) || !metadata.playing) {
         stats.potentialCluesLost += clueTokensRules.value(variant);
       }
 
@@ -80,7 +82,7 @@ const statsReducer = produce((
   }
 
   // Handle pace calculation
-  const score = variantRules.isThrowItInAHole(variant) && !metadata.spectating
+  const score = variantRules.isThrowItInAHole(variant) && metadata.playing
     ? currentState.numAttemptedCardsPlayed
     : currentState.score;
   stats.pace = statsRules.pace(

@@ -80,7 +80,7 @@ const gameStateReducer = produce((
         hand.splice(handIndex, 1);
       }
 
-      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, metadata.spectating)) {
+      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, metadata.playing)) {
         if (typeof action.suitIndex !== 'number' || action.suitIndex < 0) {
           throw new Error(`The suit index for the discarded card was ${action.suitIndex}.`);
         }
@@ -167,7 +167,7 @@ const gameStateReducer = produce((
       }
 
       // Add it to the play stacks
-      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, metadata.spectating)) {
+      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, metadata.playing)) {
         if (typeof action.suitIndex !== 'number' || action.suitIndex < 0) {
           throw new Error(`The suit index for the played card was ${action.suitIndex}.`);
         }
@@ -242,8 +242,9 @@ const gameStateReducer = produce((
       }
 
       // In "Throw It In a Hole" variants, the client is missing some information about the stats
-      // TODO: the status message should not be sent, so we do not leak information to the client
-      if (variantRules.isThrowItInAHole(variant) && !metadata.spectating) {
+      // TODO: the server should not send the status message,
+      // so that it does not leak information to the client
+      if (variantRules.isThrowItInAHole(variant) && metadata.playing) {
         break;
       }
 
@@ -373,9 +374,9 @@ const throwItInAHolePlayedOrMisplayed = (
   state: Draft<GameState>,
   action: ActionPlay | ActionDiscard,
   variant: Variant,
-  spectating: boolean,
+  playing: boolean,
 ) => {
-  if (!variantRules.isThrowItInAHole(variant) || spectating) {
+  if (!variantRules.isThrowItInAHole(variant) || !playing) {
     return false;
   }
 
