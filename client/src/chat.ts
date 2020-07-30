@@ -329,10 +329,13 @@ const fixCustomEmotePriority = (usersAndEmotesList: string[]) => {
   usersAndEmotesList[kaddaIndex] = 'Kappa';
   usersAndEmotesList[kappaIndex] = 'Kadda';
 
+  // Local variables
+  let tempEmote1;
+
   // Prioritize the more commonly used FrankerZ over all the other Franker emotes
   const frankerZIndex = usersAndEmotesList.indexOf('FrankerZ');
   const frankerBIndex = usersAndEmotesList.indexOf('FrankerB');
-  let tempEmote1 = usersAndEmotesList[frankerBIndex];
+  tempEmote1 = usersAndEmotesList[frankerBIndex];
   usersAndEmotesList[frankerBIndex] = 'FrankerZ';
   for (let i = frankerBIndex; i < frankerZIndex; i++) {
     const tempEmote2 = usersAndEmotesList[i + 1];
@@ -340,8 +343,16 @@ const fixCustomEmotePriority = (usersAndEmotesList: string[]) => {
     tempEmote1 = tempEmote2;
   }
 
-  // Prioritize the more commonly used monkaS over ?
-  // TODO
+  // Prioritize the more commonly used monkaS over all the other monka emotes
+  const monkaSIndex = usersAndEmotesList.indexOf('monkaS');
+  const monkaEyesIndex = usersAndEmotesList.indexOf('monkaEyes');
+  tempEmote1 = usersAndEmotesList[monkaEyesIndex];
+  usersAndEmotesList[monkaEyesIndex] = 'monkaS';
+  for (let i = monkaEyesIndex; i < monkaSIndex; i++) {
+    const tempEmote2 = usersAndEmotesList[i + 1];
+    usersAndEmotesList[i + 1] = tempEmote1;
+    tempEmote1 = tempEmote2;
+  }
 };
 
 export const add = (data: ChatMessage, fast: boolean) => {
