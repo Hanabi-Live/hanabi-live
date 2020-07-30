@@ -245,7 +245,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return this.shouldShowClueBorder()
     && (
       !globals.lobby.settings.keldonMode
-      || (this.state.location === globals.metadata.ourPlayerIndex && !globals.metadata.replay)
+      || (
+        this.state.location === globals.metadata.ourPlayerIndex
+        && !globals.metadata.replay
+        && !this.layout.isDragging()
+      )
     );
   }
 
@@ -260,9 +264,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     this.cluedBorder!.visible(this.shouldShowClueBorder());
 
-    // Remove all special borders when a card is clued, played, discarded
-    this.chopMoveBorder!.hide();
-    this.finesseBorder!.hide();
+    if (this.shouldShowClueBorder()) {
+      // Remove all special borders when a card is clued, played, discarded
+      this.chopMoveBorder!.hide();
+      this.finesseBorder!.hide();
+    }
   }
 
   setBareImage() {
