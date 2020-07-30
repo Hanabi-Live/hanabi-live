@@ -151,6 +151,7 @@ export default class LayoutChild extends Konva.Group {
   dragEnd() {
     // We have released the mouse button, so immediately set the cursor back to the default
     cursorSet('default');
+    this.card.setVisualEffect('default');
 
     // We have to unregister the handler or else it will send multiple actions for one drag
     this.draggable(false);
