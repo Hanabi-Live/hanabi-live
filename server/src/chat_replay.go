@@ -5,6 +5,40 @@ import (
 	"strconv"
 )
 
+// /suggest
+func chatSuggest(s *Session, d *CommandData, t *Table) {
+	if t == nil || d.Room == "lobby" {
+		chatServerSend(ChatCommandNotInGameFail, d.Room)
+		return
+	}
+
+	if !t.Replay {
+		chatServerSend(ChatCommandNotReplayFail, d.Room)
+		return
+	}
+
+	// Validate that they only sent one argument
+	if len(d.Args) != 1 {
+		chatServerSend("The format of the /suggest command is: /suggest [turn]", d.Room)
+		return
+	}
+
+	// Validate that the argument is a number
+	arg := d.Args[0]
+	if _, err := strconv.Atoi(arg); err != nil {
+		var msg string
+		if _, err := strconv.ParseFloat(arg, 64); err != nil {
+			msg = "\"" + arg + "\" is not a number."
+		} else {
+			msg = "The /suggest command only accepts integers."
+		}
+		chatServerSend(msg, d.Room)
+		return
+	}
+
+	// The logic for this command is handled client-side
+}
+
 // /tags
 func chatTags(s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {

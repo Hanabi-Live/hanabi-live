@@ -58,6 +58,7 @@ func chatCommandInit() {
 	chatCommandMap["unpause"] = chatUnpause
 
 	// Table-only commands (replay only)
+	chatCommandMap["suggest"] = chatSuggest
 	chatCommandMap["tags"] = chatTags
 	chatCommandMap["taglist"] = chatTags
 

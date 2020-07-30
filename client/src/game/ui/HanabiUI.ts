@@ -7,6 +7,7 @@ import { GameExports } from '../main';
 import cursorSet from './cursorSet';
 import globals, { Globals } from './globals';
 import * as keyboard from './keyboard';
+import * as replay from './replay';
 import * as timer from './timer';
 import * as turn from './turn';
 
@@ -51,6 +52,23 @@ export default class HanabiUI {
     }
     globals.elements.chatButton.text(text);
     globals.layers.UI.batchDraw();
+  }
+
+  suggestTurn(who: string, segment: number) { // eslint-disable-line class-methods-use-this
+    // Local variables
+    const state = globals.store!.getState();
+
+    if (
+      globals.metadata.replay
+      && globals.metadata.sharedReplay
+      && globals.amSharedReplayLeader
+      && state.replay.hypothetical === null
+    ) {
+      if (window.confirm(`${who} suggests that we go to turn ${segment}. Agree?`)) {
+        // We minus one to account for the fact that turns are presented to the user starting from 1
+        replay.goToSegment(segment - 1);
+      }
+    }
   }
 
   destroy() { // eslint-disable-line class-methods-use-this

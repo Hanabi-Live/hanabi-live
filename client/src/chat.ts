@@ -398,7 +398,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
   // Find out which chat box we should add the new chat message to
   let chat;
   if (data.recipient === globals.username) {
-    // If this is a PM that we are receiving, send it to the appropriate chat box
+    // This is a PM that we are receiving
     // Prefer that PMs that are received while in a pregame are sent to the pregame chat
     if (globals.currentScreen === Screen.Game) {
       chat = $('#game-chat-text');
@@ -489,6 +489,16 @@ export const add = (data: ChatMessage, fast: boolean) => {
   if (index !== -1) {
     globals.peopleTyping.splice(index, 1);
     updatePeopleTyping();
+  }
+
+  // Handle client-side commands
+  const match = data.msg.match(/^\/suggest (\d+)$/);
+  if (match) {
+    const segmentString = match[1];
+    const segment = parseInt(segmentString, 10);
+    if (!Number.isNaN(segment) && globals.currentScreen === Screen.Game && globals.ui !== null) {
+      globals.ui.suggestTurn(data.who, segment);
+    }
   }
 };
 

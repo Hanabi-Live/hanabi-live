@@ -12,10 +12,11 @@ export default function cursorSet(cursorType: CursorType) {
   }
 
   // Don't show any custom cursors in a speedrun
-  // But override this if we are spectating an ongoing game, in a solo replay, or in a shared replay
+  // But override this if we are spectating an ongoing game or in a dedicated replay
   if (
     (globals.metadata.options.speedrun || globals.lobby.settings.speedrunMode)
     && !globals.metadata.spectating
+    && !globals.metadata.replay
   ) {
     return;
   }
