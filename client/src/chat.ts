@@ -20,9 +20,9 @@ let lastPM = '';
 let datetimeLastChatInput = new Date().getTime();
 const typedChatHistory: string[] = [];
 let typedChatHistoryIndex = 0;
-let tabCompleteCounter = 0;
-let tabCompleteIndex = 0;
+let tabCompleteWordListIndex: number | null = null;
 let tabCompleteWordList: string[] = [];
+let tabCompleteOriginalText = '';
 
 export const init = () => {
   $('#lobby-chat-input').on('input', input);
@@ -115,6 +115,10 @@ const keypress = (room: string) => function keypressFunction(
     throw new Error('Failed to get the element for the keypress function.');
   }
 
+  // We have typed a new character, so reset the tab-complete variables
+  tabCompleteWordList = [];
+  tabCompleteWordListIndex = null;
+
   if (event.key === 'Enter') {
     submit(room, element);
   }
@@ -194,7 +198,7 @@ const keydown = function keydown(this: HTMLElement, event: JQuery.Event) {
     arrowDown(element);
   } else if (event.key === 'Tab') {
     event.preventDefault();
-    tab(element);
+    tab(element, event);
   }
 };
 
@@ -227,100 +231,117 @@ export const arrowDown = (element: JQuery<HTMLElement>) => {
   element.val(retrievedHistory);
 };
 
-export const tab = (element: JQuery<HTMLElement>) => {
+export const tab = (element: JQuery<HTMLElement>, event: JQuery.Event) => {
+  // Parse the final word from what we have typed so far
+  let message = element.val();
+  if (typeof message !== 'string') {
+    message = '';
+  }
+  message = message.trim();
+  const messageWords = message.split(' ');
+  const finalWord = messageWords[messageWords.length - 1];
+
+  // Increment the tab counter
+  if (tabCompleteWordListIndex === null) {
+    tabInitAutoCompleteList(event, finalWord);
+  } else if (event.shiftKey === true) {
+    // Shift-tab goes backwards
+    tabCompleteWordListIndex -= 1;
+    if (tabCompleteWordListIndex === -1) {
+      tabCompleteWordListIndex = null;
+    }
+  } else {
+    // Tab goes forwards
+    tabCompleteWordListIndex += 1;
+    if (tabCompleteWordListIndex === tabCompleteWordList.length) {
+      tabCompleteWordListIndex = null;
+    }
+  }
+
+  if (tabCompleteWordListIndex === null) {
+    // We have rotated through all of the possible auto-complete entries
+    // (or there are no auto-complete matches for this particular sequence of text),
+    // so return the original text
+    messageWords[messageWords.length - 1] = tabCompleteOriginalText;
+    element.val(messageWords.join(' '));
+    return;
+  }
+
+  // Replace the final word with the new auto-complete word
+  const autoCompleteWord = tabCompleteWordList[tabCompleteWordListIndex];
+  messageWords[messageWords.length - 1] = autoCompleteWord;
+  element.val(messageWords.join(' '));
+};
+
+// This is the first time we are pressing tab on this particular sequence of text
+const tabInitAutoCompleteList = (event: JQuery.Event, finalWord: string) => {
+  // Save our current partially-completed word in case we need to cycle back to it later
+  tabCompleteOriginalText = finalWord;
+
   // Make a list of the currently connected users
   const userList = [];
   for (const user of globals.userMap.values()) {
     userList.push(user.name);
   }
 
-  // We want to be able to tab complete both users and emotes
-  const tabList = userList.concat(emoteList);
-  tabList.sort(
+  // Combine it with the list of emotes
+  const usersAndEmotesList = userList.concat(emoteList);
+  usersAndEmotesList.sort(
     // We want to do a case-insensitive sort, which will not occur by default
     (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
   );
+  fixCustomEmotePriority(usersAndEmotesList);
 
+  // Create a list of all the things that could match what we have typed thus far
+  tabCompleteWordList = [];
+  for (const word of usersAndEmotesList) {
+    const partialWord = word.slice(0, finalWord.length);
+    if (partialWord.toLowerCase() === finalWord.toLowerCase()) {
+      tabCompleteWordList.push(word);
+    }
+  }
+
+  // If there were no possible matches, keep the "tabCompleteWordListIndex" as null as return
+  if (tabCompleteWordList.length === 0) {
+    return;
+  }
+
+  // Set the starting index, depending on whether or not we are pressing shift
+  if (event.shiftKey === true) {
+    // Shift-tab goes backwards
+    tabCompleteWordListIndex = tabCompleteWordList.length - 1;
+  } else {
+    // Tab goes forwards
+    tabCompleteWordListIndex = 0;
+  }
+};
+
+const fixCustomEmotePriority = (usersAndEmotesList: string[]) => {
   // Prioritize the more commonly used NotLikeThis over NootLikeThis
-  const notLikeThisIndex = tabList.indexOf('NotLikeThis');
-  const nootLikeThisIndex = tabList.indexOf('NootLikeThis');
-  tabList[notLikeThisIndex] = 'NootLikeThis';
-  tabList[nootLikeThisIndex] = 'NotLikeThis';
+  const notLikeThisIndex = usersAndEmotesList.indexOf('NotLikeThis');
+  const nootLikeThisIndex = usersAndEmotesList.indexOf('NootLikeThis');
+  usersAndEmotesList[notLikeThisIndex] = 'NootLikeThis';
+  usersAndEmotesList[nootLikeThisIndex] = 'NotLikeThis';
 
   // Prioritize the more commonly used Kappa over Kadda
-  const kappaIndex = tabList.indexOf('Kappa');
-  const kaddaIndex = tabList.indexOf('Kadda');
-  tabList[kaddaIndex] = 'Kappa';
-  tabList[kappaIndex] = 'Kadda';
+  const kappaIndex = usersAndEmotesList.indexOf('Kappa');
+  const kaddaIndex = usersAndEmotesList.indexOf('Kadda');
+  usersAndEmotesList[kaddaIndex] = 'Kappa';
+  usersAndEmotesList[kappaIndex] = 'Kadda';
 
   // Prioritize the more commonly used FrankerZ over all the other Franker emotes
-  const frankerZIndex = tabList.indexOf('FrankerZ');
-  const frankerBIndex = tabList.indexOf('FrankerB');
-  let tempEmote1 = tabList[frankerBIndex];
-  tabList[frankerBIndex] = 'FrankerZ';
+  const frankerZIndex = usersAndEmotesList.indexOf('FrankerZ');
+  const frankerBIndex = usersAndEmotesList.indexOf('FrankerB');
+  let tempEmote1 = usersAndEmotesList[frankerBIndex];
+  usersAndEmotesList[frankerBIndex] = 'FrankerZ';
   for (let i = frankerBIndex; i < frankerZIndex; i++) {
-    const tempEmote2 = tabList[i + 1];
-    tabList[i + 1] = tempEmote1;
+    const tempEmote2 = usersAndEmotesList[i + 1];
+    usersAndEmotesList[i + 1] = tempEmote1;
     tempEmote1 = tempEmote2;
   }
 
-  if (tabCompleteCounter === 0) {
-    // This is the first time we are pressing tab
-    let message = element.val();
-    if (typeof message !== 'string') {
-      message = '';
-    }
-    message = message.trim();
-
-    tabCompleteWordList = message.split(' ');
-    const messageEnd = tabCompleteWordList[tabCompleteWordList.length - 1];
-    for (let i = 0; i < tabList.length; i++) {
-      const tabWord = tabList[i];
-      const temp = tabWord.slice(0, messageEnd.length).toLowerCase();
-      if (temp === messageEnd.toLowerCase()) {
-        tabCompleteIndex = i;
-        tabCompleteCounter += 1;
-        let newMessage = '';
-        for (let j = 0; j < tabCompleteWordList.length - 1; j++) {
-          newMessage += tabCompleteWordList[j];
-          newMessage += ' ';
-        }
-        newMessage += tabWord;
-        element.val(newMessage);
-        break;
-      }
-    }
-  } else {
-    // We have already pressed tab once, so we need to cycle through the rest of the
-    // autocompletion words
-    let index = tabCompleteCounter + tabCompleteIndex;
-    const messageEnd = tabCompleteWordList[tabCompleteWordList.length - 1];
-    if (tabCompleteCounter >= tabList.length) {
-      tabCompleteCounter = 0;
-      element.val(messageEnd);
-      index = tabCompleteCounter + tabCompleteIndex;
-    }
-    const tempSlice = tabList[index].slice(0, messageEnd.length).toLowerCase();
-    if (tempSlice === messageEnd.toLowerCase()) {
-      tabCompleteCounter += 1;
-      let newMessage = '';
-      for (let i = 0; i < tabCompleteWordList.length - 1; i++) {
-        newMessage += tabCompleteWordList[i];
-        newMessage += ' ';
-      }
-      newMessage += tabList[index];
-      element.val(newMessage);
-    } else {
-      tabCompleteCounter = 0;
-      let newMessage = '';
-      for (let i = 0; i < tabCompleteWordList.length - 1; i++) {
-        newMessage += tabCompleteWordList[i];
-        newMessage += ' ';
-      }
-      newMessage += messageEnd;
-      element.val(newMessage);
-    }
-  }
+  // Prioritize the more commonly used monkaS over ?
+  // TODO
 };
 
 export const add = (data: ChatMessage, fast: boolean) => {
