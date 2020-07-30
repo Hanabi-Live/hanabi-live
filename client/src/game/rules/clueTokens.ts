@@ -12,13 +12,13 @@ export const gain = (
   variant: Variant,
   playStackComplete: boolean = false,
 ) => {
-  if (shouldGet(action, clueTokens, variant, playStackComplete)) {
+  if (shouldGenerateClue(action, clueTokens, variant, playStackComplete)) {
     return clueTokens + value(variant);
   }
   return clueTokens;
 };
 
-const shouldGet = (
+const shouldGenerateClue = (
   action: ActionPlay | ActionDiscard,
   clueTokens: number,
   variant: Variant,
