@@ -1,6 +1,7 @@
 // Users can chat in the lobby, in the pregame, and in a game
 // Logic for the game chat box is located separately in "game/chat.ts"
 
+import { isArray } from 'jquery';
 import linkifyHtml from 'linkifyjs/html';
 import emojis from '../../data/emojis.json';
 import emoteCategories from '../../data/emotes.json';
@@ -18,8 +19,8 @@ const emoteList: string[] = [];
 let chatLineNum = 1;
 let lastPM = '';
 let datetimeLastChatInput = new Date().getTime();
-const typedChatHistory: string[] = [];
-let typedChatHistoryIndex = 0;
+let typedChatHistory: string[] = [];
+let typedChatHistoryIndex: number | null = null;
 let tabCompleteWordListIndex: number | null = null;
 let tabCompleteWordList: string[] = [];
 let tabCompleteOriginalText = '';
@@ -51,6 +52,25 @@ export const init = () => {
   // Convert the emoji JSON to a map for easy reference
   for (const [emojiName, emoji] of Object.entries(emojis)) {
     emojiMap.set(emojiName, emoji);
+  }
+
+  // Retrieve the contents of the typed chat list from local storage (cookie)
+  const typedChatHistoryString = localStorage.getItem('typedChatHistory');
+  if (
+    typedChatHistoryString !== null
+    && typedChatHistoryString !== ''
+    && typedChatHistoryString !== '[]'
+  ) {
+    let potentialArray: unknown;
+    try {
+      potentialArray = JSON.parse(typedChatHistoryString) as unknown;
+    } catch (err) {
+      return;
+    }
+
+    if (isArray(potentialArray)) {
+      typedChatHistory = potentialArray as string[];
+    }
   }
 };
 
@@ -155,10 +175,22 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
   }
 
   // Add the chat message to the typed history so that we can use the up arrow later
-  typedChatHistory.unshift(msg);
+  // (but only if it isn't in the history already)
+  if (!typedChatHistory.includes(msg)) {
+    const newLength = typedChatHistory.unshift(msg);
+
+    // Prevent the typed history from getting too large
+    if (newLength > 100) {
+    // Pop off the final element
+      typedChatHistory.pop();
+    }
+
+    // Save the typed chat history to local storage (cookie)
+    localStorage.setItem('typedChatHistory', JSON.stringify(typedChatHistory));
+  }
 
   // Reset the typed history index
-  typedChatHistoryIndex = -1;
+  typedChatHistoryIndex = null;
 
   // Check for chat commands
   // Each chat command should also have an error handler in "chat_command.go"
@@ -203,11 +235,16 @@ const keydown = function keydown(this: HTMLElement, event: JQuery.Event) {
 };
 
 export const arrowUp = (element: JQuery<HTMLElement>) => {
-  typedChatHistoryIndex += 1;
+  if (typedChatHistoryIndex === null) {
+    typedChatHistoryIndex = 0;
+  } else {
+    typedChatHistoryIndex += 1;
+  }
 
   // Check to see if we have reached the end of the history list
-  if (typedChatHistoryIndex > typedChatHistory.length - 1) {
-    typedChatHistoryIndex = typedChatHistory.length - 1;
+  const finalIndex = typedChatHistory.length - 1;
+  if (typedChatHistoryIndex > finalIndex) {
+    typedChatHistoryIndex = finalIndex;
     return;
   }
 
@@ -217,12 +254,14 @@ export const arrowUp = (element: JQuery<HTMLElement>) => {
 };
 
 export const arrowDown = (element: JQuery<HTMLElement>) => {
-  typedChatHistoryIndex -= 1;
-
-  // Check to see if we have reached the beginning of the history list
-  // We check for -2 instead of -1 here because we want down arrow to clear the chat
-  if (typedChatHistoryIndex <= -2) {
-    typedChatHistoryIndex = -1;
+  if (typedChatHistoryIndex !== null) {
+    typedChatHistoryIndex -= 1;
+    if (typedChatHistoryIndex < 0) {
+      typedChatHistoryIndex = null;
+    }
+  }
+  if (typedChatHistoryIndex === null) {
+    element.val('');
     return;
   }
 
