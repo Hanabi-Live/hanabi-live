@@ -117,6 +117,7 @@ export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
     'bad',
   ], text, fullNote);
   const needsFix = checkNoteKeywords([
+    'fix',
     'fixme',
     'needs fix',
   ], text, fullNote);
