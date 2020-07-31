@@ -242,13 +242,15 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   private isRaisedBecauseOfClues() {
-    return this.shouldShowClueBorder()
-    && (
-      !globals.lobby.settings.keldonMode
-      || (
-        this.state.location === globals.state.metadata.ourPlayerIndex
-        && !globals.metadata.replay
-        && !this.layout.isDragging()
+    return (
+      this.shouldShowClueBorder()
+      && (
+        !globals.lobby.settings.keldonMode
+        || (
+          this.state.location === globals.state.metadata.ourPlayerIndex
+          && !globals.metadata.replay
+          && !this.layout.isDragging()
+        )
       )
     );
   }
