@@ -25,7 +25,7 @@ export const enter = (customSegment?: number) => {
 };
 
 export const exit = () => {
-  if (!globals.store!.getState().replay.active) {
+  if (!globals.state.replay.active) {
     return;
   }
 
@@ -131,7 +131,7 @@ export const backFull = () => {
 };
 
 export const forwardFull = () => {
-  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  const finalSegment = globals.state.ongoingGame.turn.segment!;
   goToSegment(finalSegment, true);
 };
 
@@ -153,7 +153,7 @@ export const exitButton = () => {
 
 // Gets the current segment from an X position relative to a maximum width
 const segmentFromBarPosition = (x: number, w: number) => {
-  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  const finalSegment = globals.state.ongoingGame.turn.segment!;
   const step = w / finalSegment;
   return Math.floor((x + (step / 2)) / step);
 };
@@ -190,7 +190,7 @@ export function shuttleDragBound(this: Konva.Rect, pos: Konva.Vector2d) {
   const shuttleX = clamp(pos.x - min, 0, w);
   const segment = segmentFromBarPosition(shuttleX, w);
 
-  const finalSegment = globals.store!.getState().ongoingGame.turn.segment!;
+  const finalSegment = globals.state.ongoingGame.turn.segment!;
   const step = w / finalSegment;
 
   return {
@@ -213,7 +213,7 @@ const positionReplayShuttle = (
   smaller: boolean,
   fast: boolean,
 ) => {
-  let finalSegment = globals.store!.getState().ongoingGame.turn.segment;
+  let finalSegment = globals.state.ongoingGame.turn.segment;
   if (
     finalSegment === null // The final segment is null during initialization
     || finalSegment === 0 // The final segment is 0 before a move is made

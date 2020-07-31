@@ -75,7 +75,7 @@ commands.set('databaseID', (data: DatabaseIDData) => {
   globals.elements.gameIDLabel!.show();
 
   // Also move the card count label on the deck downwards
-  const deckSize = globals.store!.getState().visibleState!.deckSize;
+  const deckSize = globals.state.visibleState!.deckSize;
   if (deckSize === 0) {
     globals.elements.deck!.nudgeCountDownwards();
   }
@@ -233,7 +233,7 @@ commands.set('noteListPlayer', (data: NoteListPlayerData) => {
   notes.setAllCardIndicators();
 
   // Check for special notes
-  const indexOfLastDrawnCard = globals.store!.getState().visibleState!.deck.length - 1;
+  const indexOfLastDrawnCard = globals.state.visibleState!.deck.length - 1;
   for (let i = 0; i <= indexOfLastDrawnCard; i++) {
     const card = globals.deck[i];
     card.checkSpecialNote();
@@ -296,7 +296,7 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
     return;
   }
 
-  if (!globals.store!.getState().replay.useSharedSegments) {
+  if (!globals.state.replay.useSharedSegments) {
     // We are not currently using the shared segments,
     // so the arrow that the shared replay leader is highlighting will not be applicable
     return;
@@ -376,7 +376,7 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
     globals.elements.useSharedTurnsButton!.setCenter();
   }
   globals.elements.enterHypoButton!.visible(globals.amSharedReplayLeader);
-  const currentPlayerIndex = globals.store!.getState().visibleState!.turn.currentPlayerIndex;
+  const currentPlayerIndex = globals.state.visibleState!.turn.currentPlayerIndex;
   globals.elements.enterHypoButton!.setEnabled(currentPlayerIndex !== null);
 
   // Enable/disable the restart button
@@ -560,14 +560,15 @@ const initStateStore = (data: LegacyGameMetadata) => {
   // The various UI views subscribe to the state store
   globals.stateObserver = new StateObserver(globals.store);
 
-  // Make the current visible state available from the JavaScript console (for debugging purposes)
+  // Make the current state available from the JavaScript console (for debugging purposes)
   globals.store.subscribe(() => {
-    window.state = globals.store!.getState();
+    window.state = globals.state;
   });
 
   if (data.replay) {
     globals.store.dispatch({
       type: 'replayEnterDedicated',
+      shared: data.sharedReplay,
     });
 
     // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here

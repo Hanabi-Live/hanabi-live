@@ -45,7 +45,7 @@ export const onActiveOrOngoingGameSegmentChanged = (data: {
   replay.adjustShuttles(false);
 
   // If we are on the last segment, disable the forward replay buttons
-  const enabled = globals.store!.getState().replay.segment !== data.ongoingGameSegment;
+  const enabled = globals.state.replay.segment !== data.ongoingGameSegment;
   globals.elements.replayForwardButton!.setEnabled(enabled);
   globals.elements.replayForwardFullButton!.setEnabled(enabled);
 

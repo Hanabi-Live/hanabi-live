@@ -551,7 +551,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   };
 
   setStatus() {
-    const visibleState = globals.store!.getState().visibleState;
+    const visibleState = globals.state.visibleState;
     if (visibleState === null) {
       return;
     }

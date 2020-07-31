@@ -115,7 +115,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     globals.metadata.replay
     && globals.metadata.sharedReplay
     && globals.amSharedReplayLeader
-    && globals.store!.getState().replay.useSharedSegments
+    && globals.state.replay.useSharedSegments
   ) {
     arrows.send(card.state.order, card);
     return;

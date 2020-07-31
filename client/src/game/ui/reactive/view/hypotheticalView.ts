@@ -81,7 +81,7 @@ export const onStatesLengthChanged = () => {
   const buttons = buttonGroup.children.toArray() as PlayerButton[];
   for (const button of buttons) {
     button.setPressed(false);
-    const currentPlayerIndex = globals.store!.getState().visibleState!.turn.currentPlayerIndex;
+    const currentPlayerIndex = globals.state.visibleState!.turn.currentPlayerIndex;
     const enabled = button.targetIndex !== currentPlayerIndex;
     button.setEnabled(enabled);
 

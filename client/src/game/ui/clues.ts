@@ -34,7 +34,7 @@ export const checkLegal = () => {
   }
 
   const who = (target as PlayerButton).targetIndex;
-  const currentPlayerIndex = globals.store!.getState().visibleState!.turn.currentPlayerIndex;
+  const currentPlayerIndex = globals.state.visibleState!.turn.currentPlayerIndex;
   if (currentPlayerIndex === null) {
     return;
   }

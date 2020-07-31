@@ -3,7 +3,7 @@
 import globals from './globals';
 
 export const get = () => {
-  const ourPlayerIndex = globals.store!.getState().metadata.ourPlayerIndex;
+  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
   const ourHand = globals.elements.playerHands[ourPlayerIndex];
   if (ourHand === undefined) {
     throw new Error(`Failed to get our hand with an index of ${ourPlayerIndex}.`);
@@ -12,7 +12,7 @@ export const get = () => {
 };
 
 export const checkSetDraggableAll = () => {
-  const ourPlayerIndex = globals.store!.getState().metadata.ourPlayerIndex;
+  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
   const ourHand = globals.elements.playerHands[ourPlayerIndex];
   if (ourHand === undefined) {
     throw new Error(`Failed to get our hand with an index of ${ourPlayerIndex}.`);

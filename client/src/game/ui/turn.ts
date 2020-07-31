@@ -68,7 +68,7 @@ const handlePremove = () => {
   // We don't want to send the queued action right away, or else it introduces bugs
   setTimeout(() => {
     // As a sanity check, ensure that there is still a queued action
-    if (globals.store!.getState().premove === null) {
+    if (globals.state.premove === null) {
       return;
     }
 
@@ -150,7 +150,7 @@ export const showClueUI = () => {
   }
 
   if (globals.options.deckPlays) {
-    const deckSize = globals.store!.getState().ongoingGame.deckSize;
+    const deckSize = globals.state.ongoingGame.deckSize;
     globals.elements.deck!.cardBack.draggable(deckSize === 1);
     globals.elements.deckPlayAvailableLabel!.visible(deckSize === 1);
 

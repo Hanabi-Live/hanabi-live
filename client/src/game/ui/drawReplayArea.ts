@@ -85,8 +85,7 @@ export default function drawReplayArea(winW: number, winH: number) {
   });
   globals.elements.replayShuttleShared.on('click tap', () => {
     // This is needed because the shared replay shuttle will block the replay bar
-    const sharedSegment = globals.store!.getState().replay.sharedSegment;
-    replay.goToSegment(sharedSegment, true);
+    replay.goToSegment(globals.state.replay.sharedSegment, true);
   });
   globals.elements.replayArea.add(globals.elements.replayShuttleShared);
 

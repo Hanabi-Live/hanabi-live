@@ -446,7 +446,7 @@ const drawBottomLeftButtons = () => {
       return;
     }
 
-    if (globals.store!.getState().replay.active) {
+    if (globals.state.replay.active) {
       replay.exit();
     } else {
       replay.enter();
@@ -875,7 +875,7 @@ const drawScoreArea = () => {
     switch (event.evt.button) {
       case 0: { // Left-click
         // Left-clicking a strike X or a strike square takes us to the turn that the strike happened
-        const strikes = globals.store!.getState().ongoingGame.strikes;
+        const strikes = globals.state.ongoingGame.strikes;
         const strike = strikes[this.num];
         if (strike === undefined) {
           // There is no strike yet that corresponds to this square / X, so do nothing

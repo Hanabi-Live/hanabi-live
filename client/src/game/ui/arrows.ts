@@ -185,7 +185,7 @@ export const set = (
     const pos = getPos(element!, rot);
     arrow.setAbsolutePosition(pos);
   } else {
-    const visibleSegment = globals.store!.getState().visibleState!.turn.segment!;
+    const visibleSegment = globals.state.visibleState!.turn.segment!;
     animate(arrow, element as HanabiCard, rot, giver, visibleSegment);
   }
   if (!globals.animateFast) {
@@ -233,7 +233,7 @@ const getPos = (element: Konva.Node, rot: number) => {
 // Animate the arrow to fly from the player who gave the clue to the card
 const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, segment: number) => {
   // Don't bother doing the animation if it is delayed by more than one segment
-  const visibleSegment = globals.store!.getState().visibleState!.turn.segment!;
+  const visibleSegment = globals.state.visibleState!.turn.segment!;
   if (visibleSegment > segment + 1 || visibleSegment < segment - 1) {
     return;
   }
@@ -292,9 +292,9 @@ export const click = (
   }
 
   if (
-    globals.metadata.sharedReplay
+    globals.state.replay.shared
     && globals.amSharedReplayLeader
-    && globals.store!.getState().replay.useSharedSegments
+    && globals.state.replay.useSharedSegments
   ) {
     // The shared replay leader is clicking on a UI element, so send this action to the server
     send(order, element);

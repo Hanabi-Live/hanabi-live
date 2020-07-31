@@ -85,6 +85,7 @@ export interface ActionFinishOngoingGame {
 
 export interface ActionReplayEnterDedicated {
   type: 'replayEnterDedicated';
+  shared: boolean;
 }
 
 // ------------
