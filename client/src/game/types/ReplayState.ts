@@ -12,6 +12,7 @@ export default interface ReplayState {
   // game
   readonly actions: readonly GameAction[];
 
+  readonly databaseID: number | null;
   readonly shared: boolean;
   readonly sharedSegment: number;
   readonly useSharedSegments: boolean;

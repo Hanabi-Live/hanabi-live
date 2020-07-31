@@ -170,6 +170,22 @@ const playSharedReplayTween = (sharedSegment: number, previousSharedSegment: num
   }
 };
 
+export const onDatabaseIDChanged = (databaseID: number | null) => {
+  if (databaseID === null) {
+    return;
+  }
+
+  globals.elements.gameIDLabel!.text(`ID: ${databaseID}`);
+  globals.elements.gameIDLabel!.show();
+
+  // Also move the card count label on the deck downwards
+  if (globals.state.visibleState!.deckSize === 0) {
+    globals.elements.deck!.nudgeCountDownwards();
+  }
+
+  globals.layers.arrow.batchDraw();
+};
+
 export const onFinishedChanged = (finished: boolean, previousFinished: boolean | undefined) => {
   if (previousFinished === undefined || !finished) {
     return;

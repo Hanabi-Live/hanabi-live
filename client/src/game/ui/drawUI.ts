@@ -611,7 +611,7 @@ const drawDeck = () => {
   // Near the top of the deck, draw the database ID for the respective game
   // (in an ongoing game, this will not show)
   globals.elements.gameIDLabel = new FitText({
-    text: `ID: ${globals.metadata.databaseID}`,
+    text: `ID: ${globals.state.replay.databaseID}`,
     x: deckValues.x * winW,
     y: (deckValues.y + 0.01) * winH,
     width: deckValues.w! * winW,
@@ -626,7 +626,7 @@ const drawDeck = () => {
       y: 0,
     },
     shadowOpacity: 0.9,
-    visible: globals.state.finished && globals.metadata.databaseID !== 0,
+    visible: globals.state.finished && globals.state.replay.databaseID !== null,
   });
   // We draw the label on the arrow layer because it is on top of the card but
   // not on top of the black second layer
@@ -1560,7 +1560,7 @@ const drawClueArea = () => {
         y: 0,
         width: playerButtonW * winW,
         height: playerButtonH * winH,
-        text: globals.metadata.playerNames[j],
+        text: globals.state.metadata.playerNames[j],
       }, j);
       globals.elements.clueTargetButtonGroup!.add(button as any);
       globals.elements.clueTargetButtonGroup!.addList(button);
@@ -1593,7 +1593,7 @@ const drawClueArea = () => {
         y: 0,
         width: playerButtonW * winW,
         height: playerButtonH * winH,
-        text: globals.metadata.playerNames[j],
+        text: globals.state.metadata.playerNames[j],
       }, j);
       globals.elements.clueTargetButtonGroup2!.add(button as any);
       globals.elements.clueTargetButtonGroup2!.addList(button);

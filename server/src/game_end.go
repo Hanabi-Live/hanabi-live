@@ -90,7 +90,8 @@ func (g *Game) End() {
 	sortStringsCaseInsensitive(playerNames)
 	gameHistoryList := make([]*GameHistory, 0)
 	gameHistoryList = append(gameHistoryList, &GameHistory{
-		ID:                 g.ID, // Recorded in the "WriteDatabase()" function above
+		// The ID is recorded in the "WriteDatabase()" function above
+		ID:                 t.ExtraOptions.DatabaseID,
 		Options:            g.Options,
 		Seed:               g.Seed,
 		Score:              g.Score,
@@ -133,7 +134,7 @@ func (g *Game) WriteDatabase() error {
 		logger.Error("Failed to insert the game row:", err)
 		return err
 	} else {
-		g.ID = v
+		t.ExtraOptions.DatabaseID = v
 	}
 
 	// Next, we insert rows for each of the participants
@@ -169,7 +170,7 @@ func (g *Game) WriteDatabase() error {
 		}
 
 		if err := models.GameParticipants.Insert(
-			g.ID,
+			t.ExtraOptions.DatabaseID,
 			p.ID,
 			gp.Index,
 			characterID,
@@ -188,7 +189,12 @@ func (g *Game) WriteDatabase() error {
 			if note == "" {
 				continue
 			}
-			if err := models.GameParticipantNotes.Insert(p.ID, g.ID, j, note); err != nil {
+			if err := models.GameParticipantNotes.Insert(
+				p.ID,
+				t.ExtraOptions.DatabaseID,
+				j,
+				note,
+			); err != nil {
 				logger.Error("Failed to insert the row for note #"+strconv.Itoa(j)+
 					" for game participant #"+strconv.Itoa(i)+":", err)
 				// Do not return on failed note insertion,
@@ -201,7 +207,7 @@ func (g *Game) WriteDatabase() error {
 	for i, action := range g.Actions2 {
 		// The index of the action in the slice is equivalent to the turn number that the
 		// action happened
-		if err := models.GameActions.Insert(g.ID, i, action); err != nil {
+		if err := models.GameActions.Insert(t.ExtraOptions.DatabaseID, i, action); err != nil {
 			logger.Error("Failed to insert row for action #"+strconv.Itoa(i)+":", err)
 			return err
 		}
@@ -229,7 +235,11 @@ func (g *Game) WriteDatabase() error {
 		}
 	}
 	if gameOverAction != nil {
-		if err := models.GameActions.Insert(g.ID, len(g.Actions2), gameOverAction); err != nil {
+		if err := models.GameActions.Insert(
+			t.ExtraOptions.DatabaseID,
+			len(g.Actions2),
+			gameOverAction,
+		); err != nil {
 			logger.Error("Failed to insert the game over action:", err)
 			return err
 		}
@@ -247,7 +257,7 @@ func (g *Game) WriteDatabase() error {
 
 	// Next, we insert rows for each tag (if any)
 	for tag, userID := range g.Tags {
-		if err := models.GameTags.Insert(g.ID, userID, tag); err != nil {
+		if err := models.GameTags.Insert(t.ExtraOptions.DatabaseID, userID, tag); err != nil {
 			logger.Error("Failed to insert a tag into the database:", err)
 			// Do not return on failed tag insertion,
 			// since it should not affect subsequent operations
@@ -347,7 +357,7 @@ func (t *Table) ConvertToSharedReplay() {
 
 	t.Replay = true
 	t.InitialName = t.Name
-	t.Name = "Shared replay for game #" + strconv.Itoa(g.ID)
+	t.Name = "Shared replay for game #" + strconv.Itoa(t.ExtraOptions.DatabaseID)
 	// Update the "EndTurn" field (since we incremented the final turn above in an artificial way)
 	g.EndTurn = g.Turn
 	// Initialize the shared replay on the 2nd to last turn (since the end times are not important)
@@ -444,7 +454,7 @@ func (t *Table) ConvertToSharedReplay() {
 		}
 		sp.Session.Emit("databaseID", &DatabaseIDMessage{
 			TableID:    t.ID,
-			DatabaseID: g.ID,
+			DatabaseID: t.ExtraOptions.DatabaseID,
 		})
 	}
 

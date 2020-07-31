@@ -70,17 +70,10 @@ interface DatabaseIDData {
   databaseID: number;
 }
 commands.set('databaseID', (data: DatabaseIDData) => {
-  globals.metadata.databaseID = data.databaseID;
-  globals.elements.gameIDLabel!.text(`ID: ${globals.metadata.databaseID}`);
-  globals.elements.gameIDLabel!.show();
-
-  // Also move the card count label on the deck downwards
-  const deckSize = globals.state.visibleState!.deckSize;
-  if (deckSize === 0) {
-    globals.elements.deck!.nudgeCountDownwards();
-  }
-
-  globals.layers.arrow.batchDraw();
+  globals.store!.dispatch({
+    type: 'databaseID',
+    databaseID: data.databaseID,
+  });
 });
 
 interface CardIdentitiesData {
@@ -150,7 +143,7 @@ commands.set('init', (metadata: LegacyGameMetadata) => {
   // attach this to the Sentry context to make debugging easier
   sentry.setGameContext(metadata);
 
-  copyMetadataToGlobals(metadata);
+  copyLegacyMetadataToGlobals(metadata);
   initStateStore(metadata);
 
   // Now that we know the number of players and the variant, we can start to load & draw the UI
@@ -478,7 +471,7 @@ commands.set('spectators', (data: SpectatorsData) => {
         nameEntry += spectatorName;
       }
       if (shadowing !== -1) {
-        const shadowedPlayerName = globals.metadata.playerNames[shadowing];
+        const shadowedPlayerName = globals.state.metadata.playerNames[shadowing];
         if (shadowedPlayerName === undefined) {
           throw new Error(`Unable to find the player name at index ${shadowing}.`);
         }
@@ -527,7 +520,7 @@ commands.set('sound', (data: SoundData) => {
 // Subroutines
 // -----------
 
-const copyMetadataToGlobals = (metadata: LegacyGameMetadata) => {
+const copyLegacyMetadataToGlobals = (metadata: LegacyGameMetadata) => {
   // Copy it
   globals.metadata = metadata;
 
@@ -569,6 +562,7 @@ const initStateStore = (data: LegacyGameMetadata) => {
     globals.store.dispatch({
       type: 'replayEnterDedicated',
       shared: data.sharedReplay,
+      databaseID: data.databaseID,
     });
 
     // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here
@@ -596,7 +590,7 @@ const validateReplayURL = () => {
   } else if (match2 && globals.state.finished && globals.state.replay.shared) {
     databaseID = parseInt(match2[1], 10);
   }
-  if (databaseID === globals.metadata.databaseID) {
+  if (databaseID === globals.state.replay.databaseID) {
     return true;
   }
 

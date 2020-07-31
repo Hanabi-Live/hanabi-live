@@ -72,7 +72,6 @@ export default class HanabiUI {
     keyboard.destroy();
     timer.stop();
     globals.stage.destroy();
-    // window.removeEventListener('resize', resizeCanvas, false);
   }
 
   reshowClueUIAfterWarning() { // eslint-disable-line class-methods-use-this

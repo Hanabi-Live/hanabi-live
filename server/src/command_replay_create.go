@@ -111,9 +111,6 @@ func commandReplayCreate(s *Session, d *CommandData) {
 		delete(tables, t.ID)
 		return
 	}
-	if d.Source == "id" {
-		g.ID = d.GameID
-	}
 
 	if !applyNotesToPlayers(s, d, g) {
 		delete(tables, t.ID)
@@ -139,8 +136,9 @@ func commandReplayCreate(s *Session, d *CommandData) {
 
 	if d.Source == "id" {
 		// Fill in the DatetimeStarted and DatetimeFinished" values from the database
-		if v1, v2, err := models.Games.GetDatetimes(g.ID); err != nil {
-			logger.Error("Failed to get the datetimes for game \""+strconv.Itoa(g.ID)+"\":", err)
+		if v1, v2, err := models.Games.GetDatetimes(t.ExtraOptions.DatabaseID); err != nil {
+			logger.Error("Failed to get the datetimes for game "+
+				"\""+strconv.Itoa(t.ExtraOptions.DatabaseID)+"\":", err)
 			s.Error(InitGameFail)
 			delete(tables, t.ID)
 			return
@@ -425,6 +423,7 @@ func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 	}
 	t.ExtraOptions = &ExtraOptions{
 		Replay:     true, // We need to mark that the game should not be written to the database
+		DatabaseID: -1,
 		CustomDeck: d.GameJSON.Deck,
 	}
 

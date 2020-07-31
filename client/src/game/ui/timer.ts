@@ -64,7 +64,8 @@ export const update = (data: ClockData) => {
       time *= -1;
     }
     globals.elements.timer2.setTimerText(millisecondsToClockString(time));
-    globals.elements.timer2.setLabelText(globals.metadata.playerNames[data.activePlayerIndex]);
+    const activePlayerName = globals.state.metadata.playerNames[data.activePlayerIndex];
+    globals.elements.timer2.setLabelText(activePlayerName);
   }
 
   globals.elements.timer2.visible(!ourTurn && data.activePlayerIndex !== -1);

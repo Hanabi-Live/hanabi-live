@@ -12,6 +12,7 @@ export type Action =
   | ActionPause
   | ActionPauseQueue
   | ActionFinishOngoingGame
+  | ActionDatabaseID
   | ActionReplayEnterDedicated;
 
 export type GameAction =
@@ -83,9 +84,15 @@ export interface ActionFinishOngoingGame {
   type: 'finishOngoingGame';
 }
 
+export interface ActionDatabaseID {
+  type: 'databaseID';
+  databaseID: number;
+}
+
 export interface ActionReplayEnterDedicated {
   type: 'replayEnterDedicated';
   shared: boolean;
+  databaseID: number;
 }
 
 // ------------

@@ -103,7 +103,7 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	var customDeck []*CardIdentity
 	setSeedSuffix := ""
 	setReplay := false
-	databaseID := 0
+	databaseID := -1
 	setReplayTurn := 0
 	var setReplayOptions *Options
 
@@ -287,10 +287,10 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 		t.Options = setReplayOptions
 	}
 	t.ExtraOptions = &ExtraOptions{
+		DatabaseID:    databaseID,
 		CustomDeck:    customDeck,
 		SetSeedSuffix: setSeedSuffix,
 		SetReplay:     setReplay,
-		DatabaseID:    databaseID,
 		SetReplayTurn: setReplayTurn,
 	}
 	tables[t.ID] = t // Add it to the map

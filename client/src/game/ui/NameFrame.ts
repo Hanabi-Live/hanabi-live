@@ -199,7 +199,7 @@ export default class NameFrame extends Konva.Group {
       // In a replay, right-clicking on a name frame reloads the page and shifts the seat
       // (so that you can view the game from a specific player's perspective)
       if (globals.spectators.length === 1) {
-        if (globals.metadata.databaseID === 0) {
+        if (globals.state.replay.databaseID === null) {
           setTimeout(() => {
             const msg = 'Due to technical limitations, you cannot shift your perspective if you are the only person in a JSON replay.';
             modals.warningShow(msg);
@@ -215,7 +215,7 @@ export default class NameFrame extends Konva.Group {
           backToLobby();
           globals.lobby.conn!.send('replayCreate', {
             source: 'id',
-            gameID: globals.metadata.databaseID,
+            gameID: globals.state.replay.databaseID,
             visibility: globals.state.replay.shared ? 'shared' : 'solo',
             player: username,
           });

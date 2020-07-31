@@ -7,10 +7,6 @@ import (
 )
 
 type Game struct {
-	// This corresponds to the database ID of the game
-	// It will be 0 in an ongoing game that has not been written to the database yet
-	ID int
-
 	// This corresponds to the database field of "datetime_started"
 	// It will be equal to "Table.DatetimeStarted" in an ongoing game that has not been written to
 	// the database yet

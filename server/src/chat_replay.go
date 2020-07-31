@@ -51,13 +51,11 @@ func chatTags(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	// Local variables
-	g := t.Game
-
 	// Get the tags from the database
 	var tags []string
-	if v, err := models.GameTags.GetAll(g.ID); err != nil {
-		logger.Error("Failed to get the tags for game ID "+strconv.Itoa(g.ID)+":", err)
+	if v, err := models.GameTags.GetAll(t.ExtraOptions.DatabaseID); err != nil {
+		logger.Error("Failed to get the tags for game ID "+
+			strconv.Itoa(t.ExtraOptions.DatabaseID)+":", err)
 		s.Error(DefaultErrorMsg)
 		return
 	} else {

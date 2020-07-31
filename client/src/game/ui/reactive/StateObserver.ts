@@ -194,6 +194,9 @@ const replayObservers: Subscriptions = [
     useSharedSegments: s.replay.useSharedSegments,
   }), replayView.onSharedSegmentOrUseSharedSegmentsChanged),
 
+  // Database ID
+  subAfterInit((s) => s.replay.databaseID, replayView.onDatabaseIDChanged),
+
   // Hypothetical
   subAfterInit((s) => s.replay.hypothetical !== null, hypotheticalView.onHypotheticalEnterExit),
   subAfterInit((s) => s.replay.hypothetical?.states.length, hypotheticalView.onStatesLengthChanged),

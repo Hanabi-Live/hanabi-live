@@ -103,7 +103,9 @@ const keydown = (event: JQuery.KeyDownEvent) => {
       && globals.state.finished
       && !($('#game-chat-modal').is(':visible'))
     ) {
-      copyStringToClipboard(globals.metadata.databaseID.toString());
+      if (globals.state.replay.databaseID !== null) {
+        copyStringToClipboard(globals.state.replay.databaseID.toString());
+      }
       return;
     }
   }

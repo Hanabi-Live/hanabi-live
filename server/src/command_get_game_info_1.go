@@ -146,7 +146,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		Spectating:       !t.Replay && j != -1,
 		Replay:           t.Replay,
 		SharedReplay:     t.Replay && t.Visible,
-		DatabaseID:       g.ID,
+		DatabaseID:       t.ExtraOptions.DatabaseID,
 		Seed:             g.Seed,
 		Seeded:           strings.HasPrefix(t.Name, "!seed "),
 		DatetimeStarted:  g.DatetimeStarted,
