@@ -34,7 +34,7 @@ export default class CurrentPlayerArea extends Konva.Group {
       y: values.y * winH,
       width: values.w * winW,
       height: values.h * winH,
-      visible: !globals.metadata.replay,
+      visible: !globals.state.finished,
     });
 
     this.values = values;

@@ -490,7 +490,7 @@ commands.set('spectators', (data: SpectatorsData) => {
       nameEntries += nameEntry;
     }
     let content = '<strong>';
-    if (globals.metadata.replay) {
+    if (globals.state.finished) {
       content += 'Shared Replay Viewers';
     } else {
       content += 'Spectators';

@@ -119,7 +119,7 @@ export const set = (
     }
     if (
       variantRules.isDuck(globals.variant)
-      || (giverCharacterName === 'Quacker' && !globals.metadata.replay)
+      || (giverCharacterName === 'Quacker' && !globals.state.finished)
     ) {
       // Don't show the circle in variants where the clue types are supposed to be hidden
       arrow.circle.hide();

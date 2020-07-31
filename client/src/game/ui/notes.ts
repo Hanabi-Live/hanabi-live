@@ -50,7 +50,7 @@ export const set = (order: number, note: string) => {
   }
 
   // Send the note to the server
-  if (!globals.metadata.replay && note !== oldNote) {
+  if (!globals.state.finished && note !== oldNote) {
     globals.lobby.conn!.send('note', {
       tableID: globals.lobby.tableID,
       order,
@@ -307,8 +307,8 @@ export const show = (card: HanabiCard) => {
 };
 
 export const openEditTooltip = (card: HanabiCard) => {
-  // Don't edit any notes in replays
-  if (globals.metadata.replay) {
+  // Don't edit any notes in dedicated replays
+  if (globals.state.finished) {
     return;
   }
 

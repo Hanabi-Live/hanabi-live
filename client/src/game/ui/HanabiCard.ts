@@ -284,7 +284,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         !globals.lobby.settings.keldonMode
         || (
           this.state.location === globals.state.metadata.ourPlayerIndex
-          && !globals.metadata.replay
+          && !globals.state.finished
           && !this.layout.isDragging()
         )
       )
@@ -340,7 +340,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       if (
         this.state.rank === STACK_BASE_RANK
         && this.note.suitIndex !== null
-        && !globals.metadata.replay
+        && !globals.state.finished
       ) {
         // Show the suit corresponding to the note
         // The note has precedence over the "real" suit,
@@ -372,7 +372,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       if (
         this.state.rank === STACK_BASE_RANK
         && this.note.rank !== null
-        && !globals.metadata.replay
+        && !globals.state.finished
       ) {
         // The card note rank has precedence over the "real" rank,
         // but only for the stack bases (and not in replays)

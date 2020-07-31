@@ -129,8 +129,8 @@ export default class NameFrame extends Konva.Group {
     this.on('mouseover touchstart', function mouseOver(this: NameFrame) {
       globals.activeHover = this;
 
-      // Don't do anything if we are in a solo/shared replay
-      if (globals.metadata.replay) {
+      // Don't do anything if we are in a dedicated replay
+      if (globals.state.finished) {
         return;
       }
 
@@ -143,7 +143,7 @@ export default class NameFrame extends Konva.Group {
       globals.activeHover = null;
 
       // Don't do anything if we are in a solo/shared replay
-      if (globals.metadata.replay) {
+      if (globals.state.finished) {
         return;
       }
 

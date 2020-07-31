@@ -78,7 +78,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
       return;
     }
 
-    if (globals.metadata.replay) {
+    if (globals.state.finished) {
       // Escape = If in a replay, exit back to the lobby
       backToLobby();
       return;
@@ -100,7 +100,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     // Ctrl + c = Copy the current game ID
     if (
       event.key === 'c'
-      && globals.metadata.replay
+      && globals.state.finished
       && !($('#game-chat-modal').is(':visible'))
     ) {
       copyStringToClipboard(globals.metadata.databaseID.toString());

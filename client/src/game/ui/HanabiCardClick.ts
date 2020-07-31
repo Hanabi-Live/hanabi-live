@@ -188,7 +188,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.metadata.replay
+    && !globals.state.finished
   ) {
     notes.openEditTooltip(card);
   }

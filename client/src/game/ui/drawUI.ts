@@ -434,7 +434,7 @@ const drawBottomLeftButtons = () => {
       y: bottomLeftButtonValues.y * winH,
       width: bottomLeftButtonValues.w! * winW,
       height: bottomLeftButtonValues.h! * winH,
-      visible: !globals.metadata.replay,
+      visible: !globals.state.finished,
     },
     [
       globals.imageLoader!.get('replay')!,
@@ -626,7 +626,7 @@ const drawDeck = () => {
       y: 0,
     },
     shadowOpacity: 0.9,
-    visible: globals.metadata.replay && globals.metadata.databaseID !== 0,
+    visible: globals.state.finished && globals.metadata.databaseID !== 0,
   });
   // We draw the label on the arrow layer because it is on top of the card but
   // not on top of the black second layer
@@ -768,7 +768,7 @@ const drawScoreArea = () => {
     x: labelX * winW,
     y: 0.045 * winH,
     listening: true,
-    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.metadata.replay,
+    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.state.finished,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreTextLabel!);
   globals.elements.scoreTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -780,7 +780,7 @@ const drawScoreArea = () => {
     x: (labelX + labelSpacing) * winW,
     y: 0.045 * winH,
     listening: true,
-    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.metadata.replay,
+    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.state.finished,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreNumberLabel!);
   globals.elements.scoreNumberLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -793,7 +793,7 @@ const drawScoreArea = () => {
     y: 0.05 * winH,
     fontSize: 0.017 * winH,
     listening: true,
-    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.metadata.replay,
+    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.state.finished,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel!);
   globals.elements.maxScoreNumberLabel.on(
@@ -808,7 +808,7 @@ const drawScoreArea = () => {
     x: labelX * winW,
     y: 0.045 * winH,
     listening: true,
-    visible: variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay,
+    visible: variantRules.isThrowItInAHole(globals.variant) && !globals.state.finished,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.playsTextLabel!);
   globals.elements.playsTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -820,7 +820,7 @@ const drawScoreArea = () => {
     x: (labelX + labelSpacing) * winW,
     y: 0.045 * winH,
     listening: true,
-    visible: variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay,
+    visible: variantRules.isThrowItInAHole(globals.variant) && !globals.state.finished,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.playsNumberLabel!);
   globals.elements.playsNumberLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -954,7 +954,7 @@ const drawScoreArea = () => {
       fontSize: 0.032 * winH,
       x: (0.0205 + (0.04 * i)) * winW,
       y: 0.128 * winH,
-      visible: variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay,
+      visible: variantRules.isThrowItInAHole(globals.variant) && !globals.state.finished,
       listening: false,
     }) as Konva.Text;
     globals.elements.scoreArea.add(questionMarkLabel);

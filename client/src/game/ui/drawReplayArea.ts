@@ -217,7 +217,7 @@ export default function drawReplayArea(winW: number, winH: number) {
     width: ((replayButtonValues.w * 2) + (replayButtonValues.spacing * 2)) * winW,
     height: replayButtonValues.w * winH,
     text: 'Exit Replay',
-    visible: !globals.metadata.replay,
+    visible: !globals.state.finished,
   });
   globals.elements.replayExitButton.on('click tap', replay.exitButton);
   globals.elements.replayArea.add(globals.elements.replayExitButton as any);

@@ -78,7 +78,7 @@ export const onScoreOrMaxScoreChanged = (data: {
 };
 
 export const onNumAttemptedCardsPlayedChanged = (numAttemptedCardsPlayed: number) => {
-  if (!variantRules.isThrowItInAHole(globals.variant) || globals.metadata.replay) {
+  if (!variantRules.isThrowItInAHole(globals.variant) || globals.state.finished) {
     return;
   }
 
@@ -134,7 +134,7 @@ export const onOngoingOrVisibleStrikesChanged = (data: {
   visibleStrikes: readonly StateStrike[];
 }) => {
   // Strikes are hidden from the end-user in "Throw It in a Hole" variants
-  if (variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay) {
+  if (variantRules.isThrowItInAHole(globals.variant) && !globals.state.finished) {
     return;
   }
 
