@@ -184,7 +184,7 @@ export default class NameFrame extends Konva.Group {
   rightClick() {
     const username = this.playerName.text();
 
-    if (!globals.metadata.replay && globals.metadata.spectating) {
+    if (!globals.state.metadata.playing && !globals.state.metadata.finished) {
       // As a spectator in an ongoing game, right-clicking on a name frame reloads the page,
       // shifting the seat and hiding the appropriate cards
       // (so that you can spectate from a specific player's perspective)

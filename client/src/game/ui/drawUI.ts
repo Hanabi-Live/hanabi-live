@@ -535,7 +535,7 @@ const drawBottomLeftButtons = () => {
     y: lobbyButtonValues.y * winH,
     width: ((bottomLeftButtonValues.w! / 2) - shortButtonSpacing) * winW,
     height: lobbyButtonValues.h! * winH,
-    visible: !globals.metadata.replay && !globals.metadata.spectating,
+    visible: globals.state.metadata.playing,
   }, [globals.imageLoader!.get('home')!]);
   globals.layers.UI.add(lobbyButtonSmall as any);
   lobbyButtonSmall.on('click tap', lobbyButtonClick);
@@ -550,7 +550,7 @@ const drawBottomLeftButtons = () => {
     width: bottomLeftButtonValues.w! * winW,
     height: lobbyButtonValues.h! * winH,
     text: 'Lobby',
-    visible: globals.metadata.replay || globals.metadata.spectating,
+    visible: !globals.state.metadata.playing,
   });
   globals.layers.UI.add(lobbyButtonBig as any);
   lobbyButtonBig.on('click tap', lobbyButtonClick);
@@ -565,7 +565,7 @@ const drawBottomLeftButtons = () => {
     y: (bottomLeftButtonValues.y + (2 * bottomLeftButtonValues.h!) + 0.02) * winH,
     width: ((bottomLeftButtonValues.w! / 2) - shortButtonSpacing) * winW,
     height: bottomLeftButtonValues.h! * winH,
-    visible: !globals.metadata.replay && !globals.metadata.spectating,
+    visible: globals.state.metadata.playing,
   }, [globals.imageLoader!.get('skull')!]);
   globals.layers.UI.add(killButton as any);
   killButton.on('click tap', () => {
@@ -1439,7 +1439,7 @@ const drawTimers = () => {
     cornerRadius: timerValues.cornerRadius * winH,
     spaceH: timerValues.spaceH * winH,
     label: 'You',
-    visible: !globals.metadata.spectating,
+    visible: globals.state.metadata.playing,
     listening: true,
   });
   globals.layers.timer.add(globals.elements.timer1 as any);

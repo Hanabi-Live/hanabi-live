@@ -1,5 +1,6 @@
 import Options from '../../types/Options';
 
+// GameMetadata is for data that does not change
 export default interface GameMetadata {
   readonly options: Options;
   readonly playerNames: string[];
