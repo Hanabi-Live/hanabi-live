@@ -24,7 +24,7 @@ const hypoStarted = () => {
 
   // We toggle all of the UI elements relating to hypotheticals in case the shared replay leader
   // changes in the middle of a hypothetical
-  if (globals.metadata.playerNames.length !== 2) {
+  if (globals.metadata.options.numPlayers !== 2) {
     globals.elements.clueTargetButtonGroup!.hide();
     globals.elements.clueTargetButtonGroup2!.show();
   }
@@ -87,7 +87,7 @@ export const onStatesLengthChanged = () => {
 
     // In 2-player games,
     // default the clue recipient button to the only other player available
-    if (globals.metadata.playerNames.length === 2 && enabled) {
+    if (globals.metadata.options.numPlayers === 2 && enabled) {
       button.setPressed(true);
     }
   }

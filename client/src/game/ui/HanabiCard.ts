@@ -246,7 +246,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     && (
       !globals.lobby.settings.keldonMode
       || (
-        this.state.location === globals.metadata.ourPlayerIndex
+        this.state.location === globals.state.metadata.ourPlayerIndex
         && !globals.metadata.replay
         && !this.layout.isDragging()
       )
@@ -698,9 +698,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         rotation: 0,
         easing: Konva.Easings.EaseOut,
         onFinish: () => {
-          if (this === undefined || this.parent === undefined || this.parent === null) {
-            return;
-          }
           this.finishedTweening();
           layoutChild.checkSetDraggable();
           layoutChild.hide();

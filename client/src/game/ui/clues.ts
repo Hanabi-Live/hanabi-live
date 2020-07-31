@@ -46,7 +46,7 @@ export const checkLegal = () => {
 
   const touchedAtLeastOneCard = showClueMatch(who, clueButton.clue);
 
-  const ourCharacterID = globals.metadata.characterAssignments[globals.metadata.ourPlayerIndex];
+  const ourCharacterID = globals.state.metadata.characterAssignments[globals.state.metadata.ourPlayerIndex]; // eslint-disable-line
   let ourCharacterName = '';
   if (ourCharacterID !== null) {
     const ourCharacter = getCharacter(ourCharacterID);
@@ -65,12 +65,14 @@ export const checkLegal = () => {
     // Make an exception for certain characters
     || (
       ourCharacterName === 'Blind Spot'
-      && who === (globals.metadata.ourPlayerIndex + 1) % globals.metadata.playerNames.length
+      && who === (globals.state.metadata.ourPlayerIndex + 1)
+        % globals.state.metadata.options.numPlayers
     )
     || (
       ourCharacterName === 'Oblivious'
-      && who === (globals.metadata.ourPlayerIndex - 1 + globals.metadata.playerNames.length)
-        % globals.metadata.playerNames.length
+      && who === (globals.state.metadata.ourPlayerIndex - 1
+        + globals.state.metadata.options.numPlayers)
+        % globals.state.metadata.options.numPlayers
     );
 
   globals.elements.giveClueButton!.setEnabled(enabled);

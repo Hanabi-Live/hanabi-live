@@ -24,7 +24,7 @@ const namePosBGA: HandConfig[][] = [];
 
 export default function drawHands(winW: number, winH: number) {
   // Constants
-  const numPlayers = globals.metadata.playerNames.length;
+  const numPlayers = globals.state.metadata.options.numPlayers;
   const numCardsPerHand = hand.cardsPerHand(
     numPlayers,
     globals.options.oneExtraCard,
@@ -291,7 +291,7 @@ export default function drawHands(winW: number, winH: number) {
 
   // Draw the hands
   for (let i = 0; i < numPlayers; i++) {
-    let j = i - globals.metadata.ourPlayerIndex;
+    let j = i - globals.state.metadata.ourPlayerIndex;
 
     if (j < 0) {
       j += numPlayers;
@@ -428,7 +428,7 @@ export default function drawHands(winW: number, winH: number) {
       y: playerNamePos[numPlayers][j].y * winH,
       width: playerNamePos[numPlayers][j].w * winW,
       height: playerNamePos[numPlayers][j].h * winH,
-      name: globals.metadata.playerNames[i],
+      name: globals.state.metadata.playerNames[i],
       playerIndex: i,
     });
     globals.layers.UI.add(globals.elements.nameFrames[i] as any);
@@ -454,7 +454,7 @@ const drawDetrimentalCharacters = (
     return;
   }
 
-  const characterID = globals.metadata.characterAssignments[i];
+  const characterID = globals.state.metadata.characterAssignments[i];
   let character: Character | undefined;
   if (characterID === null) {
     // A character with an ID of null may be assigned when debugging
@@ -492,7 +492,7 @@ const drawDetrimentalCharacters = (
   globals.layers.UI.add(charIcon);
 
   charIcon.tooltipName = `character-assignment-${i}`;
-  const metadata = globals.metadata.characterMetadata[i];
+  const metadata = globals.state.metadata.characterMetadata[i];
   let tooltipContent = `<strong>#${character.id} - ${character.name}</strong><br />${character.description}`;
   if (tooltipContent.includes('[random color]')) {
     // Replace "[random color]" with the selected color

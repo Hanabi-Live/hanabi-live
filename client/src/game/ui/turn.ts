@@ -102,7 +102,7 @@ export const showClueUI = () => {
   }
 
   // Reset and show the clue UI
-  if (globals.metadata.playerNames.length === 2) {
+  if (globals.metadata.options.numPlayers === 2) {
     // In 2-player games,
     // default the clue recipient button to the only other player available
     // Otherwise, leave the last player selected

@@ -1297,7 +1297,7 @@ const drawStatistics = () => {
   });
 
   const minEfficiency = stats.minEfficiency(
-    globals.metadata.playerNames.length,
+    globals.state.metadata.options.numPlayers,
     globals.variant,
     globals.options.oneExtraCard,
     globals.options.oneLessCard,
@@ -1534,7 +1534,7 @@ const drawClueArea = () => {
   });
 
   // Player buttons
-  const numPlayers = globals.metadata.playerNames.length;
+  const numPlayers = globals.state.metadata.options.numPlayers;
   let playerButtonW = 0.08;
   const playerButtonH = 0.025;
   const playerButtonSpacing = 0.0075;
@@ -1554,7 +1554,7 @@ const drawClueArea = () => {
     totalPlayerWidth += playerButtonSpacing * (totalPlayerButtons - 1);
     let playerX = (clueAreaValues.w! * 0.5) - (totalPlayerWidth * 0.5);
     for (let i = 0; i < totalPlayerButtons; i++) {
-      const j = (globals.metadata.ourPlayerIndex + i + 1) % numPlayers;
+      const j = (globals.state.metadata.ourPlayerIndex + i + 1) % numPlayers;
       const button = new PlayerButton({
         x: playerX * winW,
         y: 0,
@@ -1587,7 +1587,7 @@ const drawClueArea = () => {
     for (let i = 0; i < totalPlayerButtons; i++) {
       // We change the calculation of j from the above code block because we want the buttons to
       // follow the order of players from top to bottom (in BGA mode)
-      const j = (globals.metadata.ourPlayerIndex + i) % numPlayers;
+      const j = (globals.state.metadata.ourPlayerIndex + i) % numPlayers;
       const button = new PlayerButton({
         x: playerX * winW,
         y: 0,

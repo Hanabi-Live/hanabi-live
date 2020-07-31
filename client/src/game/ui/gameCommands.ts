@@ -528,17 +528,6 @@ commands.set('sound', (data: SoundData) => {
 // -----------
 
 const copyMetadataToGlobals = (metadata: LegacyGameMetadata) => {
-  // Handle the special case of when players can be given assignments of "-1" during debugging
-  // (which corresponds to a null character)
-  for (let i = 0; i < metadata.characterAssignments.length; i++) {
-    if (metadata.characterAssignments[i] === -1) {
-      metadata.characterAssignments[i] = null;
-    }
-  }
-  if (metadata.characterAssignments.length === 0) {
-    metadata.characterAssignments = initArray(metadata.options.numPlayers, null);
-  }
-
   // Copy it
   globals.metadata = metadata;
 
@@ -547,13 +536,23 @@ const copyMetadataToGlobals = (metadata: LegacyGameMetadata) => {
 };
 
 const initStateStore = (data: LegacyGameMetadata) => {
+  // Handle the special case of when players can be given assignments of "-1" during debugging
+  // (which corresponds to a null character)
+  for (let i = 0; i < data.characterAssignments.length; i++) {
+    if (data.characterAssignments[i] === -1) {
+      data.characterAssignments[i] = null;
+    }
+  }
+  if (data.characterAssignments.length === 0) {
+    data.characterAssignments = initArray(data.options.numPlayers, null);
+  }
+
   // Create the state store (using the Redux library)
   const metadata: GameMetadata = {
     options: data.options,
     playerNames: data.playerNames,
     ourPlayerIndex: data.ourPlayerIndex,
-    // We need to use the "nullified" version, so we access the globals
-    characterAssignments: globals.metadata.characterAssignments,
+    characterAssignments: data.characterAssignments,
     characterMetadata: data.characterMetadata,
   };
   globals.store = createStore(stateReducer, initialState(metadata));

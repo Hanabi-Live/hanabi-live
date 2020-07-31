@@ -44,7 +44,7 @@ export const update = (data: ClockData) => {
   // Update onscreen time displays
   if (globals.state.playing) {
     // The visibility of the first timer does not change during a game
-    let time = globals.playerTimes[globals.metadata.ourPlayerIndex];
+    let time = globals.playerTimes[globals.state.metadata.ourPlayerIndex];
     if (!globals.options.timed) {
       // Invert it to show how much time each player is taking
       time *= -1;

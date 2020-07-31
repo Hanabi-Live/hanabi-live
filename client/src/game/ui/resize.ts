@@ -68,7 +68,7 @@ const redraw = () => {
         }
 
         // If it's your turn, setup the clue area
-        if (whoseTurn === globals.metadata.ourPlayerIndex && !globals.metadata.spectating) {
+        if (whoseTurn === globals.state.metadata.ourPlayerIndex && !globals.metadata.spectating) {
             ui.handleAction();
         }
 
