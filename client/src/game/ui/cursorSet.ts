@@ -11,12 +11,13 @@ export default function cursorSet(cursorType: CursorType) {
     return;
   }
 
-  // Don't show any custom cursors in a speedrun
-  // But override this if we are spectating an ongoing game or in a dedicated replay
+  // Local variables
+  const state = globals.store!.getState();
+
+  // Don't show any custom cursors if we are an active player in a speedrun
   if (
-    (globals.metadata.options.speedrun || globals.lobby.settings.speedrunMode)
-    && !globals.metadata.spectating
-    && !globals.metadata.replay
+    (state.metadata.options.speedrun || globals.lobby.settings.speedrunMode)
+    && state.metadata.playing
   ) {
     return;
   }

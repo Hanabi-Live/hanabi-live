@@ -394,8 +394,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !this.empathy
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
-      && !globals.metadata.replay
-      && !globals.metadata.spectating
+      && state.metadata.playing
     ) {
       this.bareName = DECK_BACK_IMAGE;
     } else if (
@@ -434,8 +433,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !this.empathy
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
-      && !globals.metadata.replay
-      && !globals.metadata.spectating
+      && state.metadata.playing
     ));
 
     // Show or hide the "fixme" image
@@ -444,8 +442,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !this.empathy
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
-      && !globals.metadata.replay
-      && !globals.metadata.spectating
+      && state.metadata.playing
     ));
 
     if (suitToShow === undefined || suitToShow === unknownSuit) {
@@ -1037,47 +1034,26 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   private initEmpathy() {
     this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
       if (
-        event.evt.button !== 0 // Only enable Empathy for left-clicks
-        // Disable Empathy if a modifier key is pressed
-        // (unless we are in a speedrun, because then Empathy is mapped to Ctrl + left click)
-        || (
-          event.evt.ctrlKey
-          && !globals.metadata.options.speedrun
-          && !globals.lobby.settings.speedrunMode
-        )
-        || (
-          !event.evt.ctrlKey
-          && (globals.metadata.options.speedrun || globals.lobby.settings.speedrunMode)
-          && !globals.metadata.replay
-          && !globals.metadata.spectating
-        )
-        || event.evt.shiftKey
-        || event.evt.altKey
-        || event.evt.metaKey
-        || this.tweening // Disable Empathy if the card is tweening
-        // Clicking on a played card goes to the turn that it was played
-        || cardRules.isPlayed(this.state)
-        // Clicking on a discarded card goes to the turn that it was discarded
-        || cardRules.isDiscarded(this.state)
-        || this.state.order > globals.deck.length - 1 // Disable empathy for the stack bases
+        event.evt.button === 0 // Only enable Empathy for left-clicks
+        && this.shouldShowEmpathy(event)
       ) {
-        return;
+        // We might need to set "activeHover" again because it was cleared by a game action,
+        // for example
+        globals.activeHover = this;
+
+        this.setEmpathyOnHand(true);
       }
-
-      // We might need to set activeHover again because it was cleared by a game action, for example
-      globals.activeHover = this;
-
-      this.setEmpathyOnHand(true);
     });
-    this.on('touchstart', () => {
+
+    this.on('touchstart', (event: Konva.KonvaEventObject<TouchEvent>) => {
       tooltips.resetActiveHover();
       globals.activeHover = this;
 
       // Make sure to not register this as a single tap if the user long presses the card
       this.touchstartTimeout = setTimeout(() => {
-        // A tap will trigger when the touchend occurs
-        // The next tap action will not run because it will appear like the
-        // second tap of a double tap
+        // A tap will trigger when the "touchend" event occurs
+        // The next tap action will not run because it will appear like the second tap of a double
+        // tap
         // Don't worry about this if we actually double-tapped
         if (!this.wasRecentlyTapped && globals.editingNote == null) {
           this.wasRecentlyTapped = true;
@@ -1088,18 +1064,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this.noteMouseOver();
 
       // Then, set the empathy
-      if (
-        this.tweening // Disable Empathy if the card is tweening
-        // Clicking on a played card goes to the turn that it was played
-        || cardRules.isPlayed(this.state)
-        // Clicking on a discarded card goes to the turn that it was discarded
-        || cardRules.isDiscarded(this.state)
-        || this.state.order > globals.deck.length - 1 // Disable empathy for the stack bases
-      ) {
-        return;
+      if (this.shouldShowEmpathy(event)) {
+        this.setEmpathyOnHand(true);
       }
-
-      this.setEmpathyOnHand(true);
     });
 
     this.on('mouseup mouseout', (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -1111,9 +1078,38 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
       this.setEmpathyOnHand(false);
     });
+
     this.on('touchend', () => {
       this.setEmpathyOnHand(false);
     });
+  }
+
+  private shouldShowEmpathy(event: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
+    // Local variables
+    const state = globals.store!.getState();
+
+    return (
+      // Disable Empathy if a modifier key is pressed
+      // (unless we are in a speedrun, because then Empathy is mapped to Ctrl + left click)
+      (
+        !event.evt.ctrlKey
+        || (state.metadata.options.speedrun || globals.lobby.settings.speedrunMode)
+      )
+      && (
+        event.evt.ctrlKey
+        || (!state.metadata.options.speedrun && !globals.lobby.settings.speedrunMode)
+        || !state.metadata.playing
+      )
+      && !event.evt.shiftKey
+      && !event.evt.altKey
+      && !event.evt.metaKey
+      && !this.tweening // Disable Empathy if the card is tweening
+      // Clicking on a played card goes to the turn that it was played
+      && !cardRules.isPlayed(this.state)
+      // Clicking on a discarded card goes to the turn that it was discarded
+      && !cardRules.isDiscarded(this.state)
+      && this.state.order <= globals.deck.length - 1 // Disable empathy for the stack bases
+    );
   }
 
   private noteMouseOver(this: HanabiCard) {

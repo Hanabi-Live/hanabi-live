@@ -164,8 +164,11 @@ interface NoteData {
   notes: SpectatorNote[];
 }
 commands.set('note', (data: NoteData) => {
-  // If we are not spectating and we got this message, something has gone wrong
-  if (!globals.metadata.spectating) {
+  // Local variables
+  const state = globals.store!.getState();
+
+  // If we are an active player and we got this message, something has gone wrong
+  if (state.metadata.playing) {
     return;
   }
 
@@ -190,6 +193,9 @@ interface NoteList {
   notes: string[];
 }
 commands.set('noteList', (data: NoteListData) => {
+  // Local variables
+  const state = globals.store!.getState();
+
   // Reset any existing notes
   // (we could be getting a fresh copy of all notes after an ongoing game has ended)
   for (let i = 0; i < globals.allNotes.length; i++) {
@@ -201,8 +207,8 @@ commands.set('noteList', (data: NoteListData) => {
   for (const noteList of data.notes) {
     // If we are a spectator, copy our notes from the combined list
     if (
-      !globals.metadata.replay
-      && globals.metadata.spectating
+      !state.metadata.playing
+      && !state.metadata.finished
       && noteList.name === globals.lobby.username
     ) {
       globals.ourNotes = noteList.notes;
