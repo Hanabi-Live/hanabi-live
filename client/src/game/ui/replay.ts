@@ -70,9 +70,9 @@ export const goToSegment = (
   // However, if we are navigating to a new segment as the shared replay leader,
   // do not disable shared segments
   if (
-    globals.state.replay.shared
-    && breakFree
-    && globals.state.replay.useSharedSegments
+    breakFree
+    && globals.state.replay.shared !== null
+    && globals.state.replay.shared.useSharedSegments
     && !globals.amSharedReplayLeader
   ) {
     globals.store!.dispatch({
@@ -87,9 +87,9 @@ export const goToSegment = (
   });
 
   if (
-    globals.state.replay.shared
+    globals.state.replay.shared !== null
     && globals.amSharedReplayLeader
-    && globals.state.replay.useSharedSegments
+    && globals.state.replay.shared.useSharedSegments
   ) {
     globals.store!.dispatch({
       type: 'replaySharedSegment',
@@ -247,9 +247,9 @@ export const adjustShuttles = (fast: boolean) => {
   // If the two shuttles are overlapping, then make the normal shuttle a little bit smaller
   let smaller = false;
   if (
-    globals.state.replay.shared
-    && !globals.state.replay.useSharedSegments
-    && globals.state.replay.segment === globals.state.replay.sharedSegment
+    globals.state.replay.shared !== null
+    && !globals.state.replay.shared.useSharedSegments
+    && globals.state.replay.segment === globals.state.replay.shared.segment
   ) {
     smaller = true;
   }
@@ -266,15 +266,15 @@ export const adjustShuttles = (fast: boolean) => {
   );
 
   // Adjust the shared replay shuttle along the bar based on the shared segment
-  globals.elements.replayShuttleShared!.visible(globals.state.replay.shared);
-  if (globals.state.replay.shared) {
+  globals.elements.replayShuttleShared!.visible(globals.state.replay.shared !== null);
+  if (globals.state.replay.shared !== null) {
     positionReplayShuttle(
       globals.elements.replayShuttleShared!,
-      globals.state.replay.sharedSegment,
+      globals.state.replay.shared.segment,
       false,
       fast || (
         draggingShuttle
-        && globals.state.replay.sharedSegment === globals.state.replay.segment
+        && globals.state.replay.shared.segment === globals.state.replay.segment
       ),
     );
   }
@@ -306,9 +306,13 @@ export const promptTurn = () => {
 // --------------------------------
 
 export const toggleSharedSegments = () => {
+  if (globals.state.replay.shared === null) {
+    return;
+  }
+
   // If we are the replay leader and we are re-enabling shared segments,
   // first update the shared segment to our current segment
-  if (globals.amSharedReplayLeader && !globals.state.replay.useSharedSegments) {
+  if (globals.amSharedReplayLeader && !globals.state.replay.shared.useSharedSegments) {
     globals.store!.dispatch({
       type: 'replaySharedSegment',
       segment: getCurrentReplaySegment(),
@@ -317,6 +321,6 @@ export const toggleSharedSegments = () => {
 
   globals.store!.dispatch({
     type: 'replayUseSharedSegments',
-    useSharedSegments: !globals.state.replay.useSharedSegments,
+    useSharedSegments: !globals.state.replay.shared.useSharedSegments,
   });
 };

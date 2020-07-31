@@ -70,13 +70,17 @@ export const onSegmentChanged = (data: {
 
 export const onSharedSegmentChanged = (data: {
   active: boolean;
-  sharedSegment: number;
-  useSharedSegments: boolean;
+  sharedSegment: number | undefined;
+  useSharedSegments: boolean | undefined;
 }, previousData: {
-  sharedSegment: number;
-  useSharedSegments: boolean;
+  sharedSegment: number | undefined;
+  useSharedSegments: boolean | undefined;
 } | undefined) => {
-  if (!data.active || !globals.state.replay.shared) {
+  if (
+    !data.active
+    || data.sharedSegment === undefined
+    || data.useSharedSegments === undefined
+  ) {
     return;
   }
 
@@ -94,7 +98,11 @@ export const onSharedSegmentChanged = (data: {
       // starting turn of the hypothetical)
       replay.goToSegment(data.sharedSegment, false, true);
 
-      if (previousData !== undefined && data.useSharedSegments === previousData.useSharedSegments) {
+      if (
+        previousData !== undefined
+        && previousData.sharedSegment !== undefined
+        && data.useSharedSegments === previousData.useSharedSegments
+      ) {
         playSharedReplayTween(data.sharedSegment, previousData.sharedSegment);
       }
     }

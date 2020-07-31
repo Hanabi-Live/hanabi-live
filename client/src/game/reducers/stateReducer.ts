@@ -83,10 +83,11 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       state.replay.databaseID = action.databaseID;
 
       // If we were in an in-game replay when the game ended,
-      // keep us at the current turn and do not jerk us away to the end
-      // Otherwise, initialize the replay segment to be equal to the penultimate segment
-      // We do not want to use the final segment, because it will contain the times for all of the
-      // players, and this will drown out the reason that the game ended
+      // keep us at the current turn so that we are not taken away from what we are looking at
+      // Otherwise, go to the penultimate segment
+      // We want to use the penultimate segment instead of the final segment,
+      // because the final segment will contain the times for all of the players,
+      // and this will drown out the reason that the game ended
       if (state.ongoingGame.turn.segment === null) {
         throw new Error('The segment for the ongoing game was null when it finished.');
       }
@@ -95,12 +96,16 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       }
       const penultimateSegment = state.ongoingGame.turn.segment - 1;
       if (!state.replay.active) {
-        state.replay.active = true;
         state.replay.segment = penultimateSegment;
-        state.replay.useSharedSegments = true;
       }
-      state.replay.shared = true;
-      state.replay.sharedSegment = penultimateSegment;
+
+      // Initialize the shared replay
+      state.replay.shared = {
+        segment: penultimateSegment,
+        useSharedSegments: !state.replay.active,
+        leader: '',
+        amLeader: false,
+      };
 
       break;
     }
@@ -109,10 +114,18 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       state.playing = false;
       state.finished = true;
       state.replay.active = true;
-      state.replay.databaseID = action.databaseID;
-      state.replay.shared = action.shared;
       state.replay.segment = 0;
-      state.replay.useSharedSegments = true;
+      state.replay.databaseID = action.databaseID;
+
+      if (action.shared) {
+        state.replay.shared = {
+          segment: 0,
+          useSharedSegments: true,
+          leader: '',
+          amLeader: false,
+        };
+      }
+
       break;
     }
 

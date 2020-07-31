@@ -61,15 +61,18 @@ const replayReducer = produce((
     }
 
     case 'replaySharedSegment': {
+      if (state.shared === null) {
+        throw new Error(`A "${action.type}" action was dispatched, but we not in a shared replay.`);
+      }
       if (typeof action.segment !== 'number') {
         throw new Error(`The "${action.type}" action segment was not a number.`);
       }
       if (action.segment < 0) {
         throw new Error(`The "${action.type}" action segment was less than 0.`);
       }
-      state.sharedSegment = action.segment;
+      state.shared.segment = action.segment;
 
-      if (state.useSharedSegments) {
+      if (state.shared.useSharedSegments) {
         state.segment = action.segment;
       }
 
@@ -77,7 +80,10 @@ const replayReducer = produce((
     }
 
     case 'replayUseSharedSegments': {
-      state.useSharedSegments = action.useSharedSegments;
+      if (state.shared === null) {
+        throw new Error(`A "${action.type}" action was dispatched, but we not in a shared replay.`);
+      }
+      state.shared.useSharedSegments = action.useSharedSegments;
       break;
     }
 

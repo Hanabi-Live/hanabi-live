@@ -101,8 +101,9 @@ export const onStatesLengthChanged = (statesLength: number) => {
 // For replay leaders, we want to disable entering a hypothetical during certain situations
 export const enterHypoButtonIsEnabled = (state: State): boolean => (
   state.finished
+  && state.replay.shared !== null
+  && state.replay.shared.useSharedSegments
   && globals.amSharedReplayLeader
-  && state.replay.useSharedSegments
   // We can't start a hypothetical on a segment where the game has already ended
   && state.visibleState!.turn.currentPlayerIndex !== null
 );

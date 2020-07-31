@@ -95,7 +95,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // Alt + right-click is a card morph (in a hypothetical)
   if (
     globals.state.finished
-    && globals.state.replay.shared
+    && globals.state.replay.shared !== null
     && globals.amSharedReplayLeader
     && globals.state.replay.hypothetical !== null
     && !event.ctrlKey
@@ -113,16 +113,16 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // in case someone is pushing their push-to-talk hotkey while highlighting cards)
   if (
     globals.state.finished
-    && globals.state.replay.shared
+    && globals.state.replay.shared !== null
     && globals.amSharedReplayLeader
-    && globals.state.replay.useSharedSegments
+    && globals.state.replay.shared.useSharedSegments
   ) {
     arrows.send(card.state.order, card);
     return;
   }
 
   // Right-click in a solo replay just prints out the order of the card
-  if (globals.state.finished && !globals.state.replay.shared) {
+  if (globals.state.finished && globals.state.replay.shared === null) {
     console.log(`This card's order is: ${card.state.order}`);
     return;
   }
@@ -176,7 +176,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.state.replay.shared
+    && globals.state.replay.shared === null
   ) {
     arrows.toggle(card);
     return;

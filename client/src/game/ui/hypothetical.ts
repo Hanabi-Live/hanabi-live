@@ -12,7 +12,7 @@ import { getTouchedCardsFromClue } from './clues';
 import globals from './globals';
 
 export const start = () => {
-  if (globals.state.replay.hypothetical !== null) {
+  if (globals.state.replay.shared === null || globals.state.replay.hypothetical !== null) {
     return;
   }
 
@@ -24,7 +24,7 @@ export const start = () => {
   }
 
   // Bring us to the current shared replay turn, if we are not already there
-  if (!globals.state.replay.useSharedSegments) {
+  if (!globals.state.replay.shared.useSharedSegments) {
     globals.store!.dispatch({
       type: 'replayUseSharedSegments',
       useSharedSegments: true,

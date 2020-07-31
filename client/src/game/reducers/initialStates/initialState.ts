@@ -14,9 +14,7 @@ export default function initialState(metadata: GameMetadata): State {
       actions: [],
 
       databaseID: null,
-      shared: false,
-      sharedSegment: 0,
-      useSharedSegments: false,
+      shared: null,
       hypothetical: null,
     },
 

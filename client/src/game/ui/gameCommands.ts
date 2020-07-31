@@ -136,7 +136,10 @@ commands.set('init', (metadata: LegacyGameMetadata) => {
   // attach this to the Sentry context to make debugging easier
   sentry.setGameContext(metadata);
 
-  copyLegacyMetadataToGlobals(metadata);
+  // Copy it the legacy metadata to the globals
+  // TODO: remove this
+  globals.metadata = metadata;
+
   initStateStore(metadata);
 
   // Now that we know the number of players and the variant, we can start to load & draw the UI
@@ -276,15 +279,14 @@ interface ReplayIndicatorData {
   order: ReplayArrowOrder;
 }
 commands.set('replayIndicator', (data: ReplayIndicatorData) => {
-  if (globals.amSharedReplayLeader) {
-    // We don't have to draw any indicator arrows;
-    // we already drew it after sending the "replayAction" message
-    return;
-  }
-
-  if (!globals.state.replay.useSharedSegments) {
-    // We are not currently using the shared segments,
-    // so the arrow that the shared replay leader is highlighting will not be applicable
+  if (
+    globals.state.replay.shared === null
+    // Shared replay leaders already drew the arrow after sending the "replayAction" message
+    || globals.amSharedReplayLeader
+    // If we are not currently using the shared segments,
+    // the arrow that the shared replay leader is highlighting will not be applicable
+    || !globals.state.replay.shared.useSharedSegments
+  ) {
     return;
   }
 
@@ -335,6 +337,10 @@ interface ReplayLeaderData {
   playAnimation: boolean;
 }
 commands.set('replayLeader', (data: ReplayLeaderData) => {
+  if (globals.state.replay.shared === null) {
+    return;
+  }
+
   // Store who the shared replay leader is
   globals.sharedReplayLeader = data.name;
   globals.amSharedReplayLeader = globals.sharedReplayLeader === globals.lobby.username;
@@ -352,8 +358,8 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
 
   // Arrange the center buttons in a certain way depending on
   // whether we are the shared replay leader
-  globals.elements.pauseSharedTurnsButton!.visible(globals.state.replay.useSharedSegments);
-  globals.elements.useSharedTurnsButton!.visible(!globals.state.replay.useSharedSegments);
+  globals.elements.pauseSharedTurnsButton!.visible(globals.state.replay.shared.useSharedSegments);
+  globals.elements.useSharedTurnsButton!.visible(!globals.state.replay.shared.useSharedSegments);
   if (globals.amSharedReplayLeader) {
     globals.elements.pauseSharedTurnsButton!.setLeft();
     globals.elements.useSharedTurnsButton!.setLeft();
@@ -488,7 +494,7 @@ commands.set('spectators', (data: SpectatorsData) => {
   }
 
   // We might also need to update the content of replay leader icon
-  if (globals.state.replay.shared) {
+  if (globals.state.replay.shared !== null) {
     let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
     if (!globals.spectators.includes(globals.sharedReplayLeader)) {
       // Check to see if the leader is away
@@ -513,15 +519,10 @@ commands.set('sound', (data: SoundData) => {
 // Subroutines
 // -----------
 
-const copyLegacyMetadataToGlobals = (metadata: LegacyGameMetadata) => {
-  // Copy it
-  globals.metadata = metadata;
-
-  // Set the variant
-  globals.variant = getVariant(metadata.options.variantName);
-};
-
 const initStateStore = (data: LegacyGameMetadata) => {
+  // Set the variant (as a helper reference)
+  globals.variant = getVariant(data.options.variantName);
+
   // Handle the special case of when players can be given assignments of "-1" during debugging
   // (which corresponds to a null character)
   for (let i = 0; i < data.characterAssignments.length; i++) {
@@ -578,9 +579,9 @@ const validateReplayURL = () => {
   const match1 = window.location.pathname.match(/\/replay\/(\d+).*/);
   const match2 = window.location.pathname.match(/\/shared-replay\/(\d+).*/);
   let databaseID;
-  if (match1 && globals.state.finished && !globals.state.replay.shared) {
+  if (match1 && globals.state.finished && globals.state.replay.shared === null) {
     databaseID = parseInt(match1[1], 10);
-  } else if (match2 && globals.state.finished && globals.state.replay.shared) {
+  } else if (match2 && globals.state.finished && globals.state.replay.shared !== null) {
     databaseID = parseInt(match2[1], 10);
   }
   if (databaseID === globals.state.replay.databaseID) {

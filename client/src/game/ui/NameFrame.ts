@@ -216,7 +216,7 @@ export default class NameFrame extends Konva.Group {
           globals.lobby.conn!.send('replayCreate', {
             source: 'id',
             gameID: globals.state.replay.databaseID,
-            visibility: globals.state.replay.shared ? 'shared' : 'solo',
+            visibility: globals.state.replay.shared === null ? 'solo' : 'shared',
             player: username,
           });
         }, 0);

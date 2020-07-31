@@ -1,6 +1,7 @@
 import { GameAction } from './actions';
 import GameState from './GameState';
 import HypotheticalState from './HypotheticalState';
+import SharedReplayState from './SharedReplayState';
 
 export default interface ReplayState {
   readonly active: boolean;
@@ -12,9 +13,7 @@ export default interface ReplayState {
   // game
   readonly actions: readonly GameAction[];
 
-  readonly databaseID: number | null;
-  readonly shared: boolean;
-  readonly sharedSegment: number;
-  readonly useSharedSegments: boolean;
+  readonly databaseID: number | null; // Null if we are in an ongoing game
+  readonly shared: SharedReplayState | null;
   readonly hypothetical: HypotheticalState | null;
 }

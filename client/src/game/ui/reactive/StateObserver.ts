@@ -189,8 +189,8 @@ const replayObservers: Subscriptions = [
   }), replayView.onSegmentChanged),
   subAfterInit((s) => ({
     active: s.replay.active,
-    sharedSegment: s.replay.sharedSegment,
-    useSharedSegments: s.replay.useSharedSegments,
+    sharedSegment: s.replay.shared?.segment,
+    useSharedSegments: s.replay.shared?.useSharedSegments,
   }), replayView.onSharedSegmentChanged),
   sub((s) => s.replay.states.length >= 2, replayView.onSecondRecordedSegment),
 
