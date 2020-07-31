@@ -100,7 +100,7 @@ export const onSharedSegmentOrUseSharedSegmentsChanged = (data: {
   if (
     previousData === undefined
     || !globals.state.replay.active
-    || !globals.metadata.sharedReplay
+    || !globals.state.replay.shared
   ) {
     return;
   }
@@ -182,10 +182,6 @@ export const onFinishedChanged = (finished: boolean, previousFinished: boolean |
   globals.elements.timer1?.hide();
   globals.elements.timer2?.hide();
   timer.stop();
-
-  // Transform this game into a shared replay
-  globals.metadata.replay = true;
-  globals.metadata.sharedReplay = true;
 
   // Hide the "Exit Replay" button in the center of the screen, since it is no longer necessary
   globals.elements.replayExitButton!.hide();

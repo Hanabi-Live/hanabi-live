@@ -96,6 +96,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
         state.replay.segment = penultimateSegment;
         state.replay.useSharedSegments = true;
       }
+      state.replay.shared = true;
       state.replay.sharedSegment = penultimateSegment;
 
       break;

@@ -94,8 +94,8 @@ const clickMiddle = (card: HanabiCard, event: MouseEvent) => {
 const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // Alt + right-click is a card morph (in a hypothetical)
   if (
-    globals.metadata.replay
-    && globals.metadata.sharedReplay
+    globals.state.finished
+    && globals.state.replay.shared
     && globals.amSharedReplayLeader
     && globals.state.replay.hypothetical !== null
     && !event.ctrlKey
@@ -112,8 +112,8 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // (we want it to work no matter what modifiers are being pressed,
   // in case someone is pushing their push-to-talk hotkey while highlighting cards)
   if (
-    globals.metadata.replay
-    && globals.metadata.sharedReplay
+    globals.state.finished
+    && globals.state.replay.shared
     && globals.amSharedReplayLeader
     && globals.state.replay.useSharedSegments
   ) {
@@ -121,8 +121,8 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     return;
   }
 
-  // Right-click in a solo replay just displays what card order (in the deck) that it is
-  if (globals.metadata.replay && !globals.metadata.sharedReplay) {
+  // Right-click in a solo replay just prints out the order of the card
+  if (globals.state.finished && !globals.state.replay.shared) {
     console.log(`This card's order is: ${card.state.order}`);
     return;
   }
@@ -176,7 +176,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.metadata.sharedReplay
+    && !globals.state.replay.shared
   ) {
     arrows.toggle(card);
     return;

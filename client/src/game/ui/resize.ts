@@ -83,7 +83,7 @@ const redraw = () => {
     }
 
     // Restore Shared Replay Button if applicable
-    if (globals.metadata.sharedReplay) {
+    if (globals.state.replay.shared) {
         commands.replayLeader({
             name: globals.sharedReplayLeader,
         });

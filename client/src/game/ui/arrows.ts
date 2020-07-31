@@ -298,7 +298,7 @@ export const click = (
   ) {
     // The shared replay leader is clicking on a UI element, so send this action to the server
     send(order, element);
-  } else if (!globals.metadata.sharedReplay) {
+  } else if (!globals.state.replay.shared) {
     // Otherwise, toggle the arrow locally
     // However, we don't want to enable this functionality in shared replays because it could be
     // misleading as to who the real replay leader is

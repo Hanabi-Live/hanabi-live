@@ -509,7 +509,7 @@ const drawBottomLeftButtons = () => {
     width: bottomLeftButtonValues.w! * winW,
     height: bottomLeftButtonValues.h! * winH,
     text: '💬',
-    visible: !globals.metadata.replay || globals.metadata.sharedReplay,
+    visible: !globals.state.finished || globals.state.replay.shared,
   });
   globals.layers.UI.add(chatButton as any);
   chatButton.on('click tap', () => {

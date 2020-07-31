@@ -70,7 +70,7 @@ export const goToSegment = (
   // However, if we are navigating to a new segment as the shared replay leader,
   // do not disable shared segments
   if (
-    globals.metadata.sharedReplay
+    globals.state.replay.shared
     && breakFree
     && globals.state.replay.useSharedSegments
     && !globals.amSharedReplayLeader
@@ -87,7 +87,7 @@ export const goToSegment = (
   });
 
   if (
-    globals.metadata.sharedReplay
+    globals.state.replay.shared
     && globals.amSharedReplayLeader
     && globals.state.replay.useSharedSegments
   ) {
@@ -247,7 +247,7 @@ export const adjustShuttles = (fast: boolean) => {
   // If the two shuttles are overlapping, then make the normal shuttle a little bit smaller
   let smaller = false;
   if (
-    globals.metadata.sharedReplay
+    globals.state.replay.shared
     && !globals.state.replay.useSharedSegments
     && globals.state.replay.segment === globals.state.replay.sharedSegment
   ) {
@@ -266,8 +266,8 @@ export const adjustShuttles = (fast: boolean) => {
   );
 
   // Adjust the shared replay shuttle along the bar based on the shared segment
-  globals.elements.replayShuttleShared!.visible(globals.metadata.sharedReplay);
-  if (globals.metadata.sharedReplay) {
+  globals.elements.replayShuttleShared!.visible(globals.state.replay.shared);
+  if (globals.state.replay.shared) {
     positionReplayShuttle(
       globals.elements.replayShuttleShared!,
       globals.state.replay.sharedSegment,

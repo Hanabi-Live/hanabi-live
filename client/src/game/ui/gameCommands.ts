@@ -502,7 +502,7 @@ commands.set('spectators', (data: SpectatorsData) => {
   }
 
   // We might also need to update the content of replay leader icon
-  if (globals.metadata.sharedReplay) {
+  if (globals.state.replay.shared) {
     let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
     if (!globals.spectators.includes(globals.sharedReplayLeader)) {
       // Check to see if the leader is away
@@ -591,9 +591,9 @@ const validateReplayURL = () => {
   const match1 = window.location.pathname.match(/\/replay\/(\d+).*/);
   const match2 = window.location.pathname.match(/\/shared-replay\/(\d+).*/);
   let databaseID;
-  if (match1 && globals.metadata.replay && !globals.metadata.sharedReplay) {
+  if (match1 && globals.state.finished && !globals.state.replay.shared) {
     databaseID = parseInt(match1[1], 10);
-  } else if (match2 && globals.metadata.replay && globals.metadata.sharedReplay) {
+  } else if (match2 && globals.state.finished && globals.state.replay.shared) {
     databaseID = parseInt(match2[1], 10);
   }
   if (databaseID === globals.metadata.databaseID) {

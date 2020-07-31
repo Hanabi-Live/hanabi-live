@@ -56,8 +56,8 @@ export default class HanabiUI {
 
   suggestTurn(who: string, segment: number) { // eslint-disable-line class-methods-use-this
     if (
-      globals.metadata.replay
-      && globals.metadata.sharedReplay
+      globals.state.finished
+      && globals.state.replay.shared
       && globals.amSharedReplayLeader
       && globals.state.replay.hypothetical === null
     ) {

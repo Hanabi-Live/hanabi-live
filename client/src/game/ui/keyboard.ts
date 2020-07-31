@@ -186,9 +186,9 @@ const keydown = (event: JQuery.KeyDownEvent) => {
 
       case 'ArrowUp':
       case 'ArrowDown': {
-        if (globals.metadata.sharedReplay) {
+        if (globals.state.replay.shared) {
           replay.toggleSharedSegments();
-        } else if (!globals.metadata.replay) {
+        } else if (!globals.state.finished) {
           replay.exit();
         }
         return;
@@ -248,12 +248,12 @@ const keydown = (event: JQuery.KeyDownEvent) => {
 };
 
 const sharedReplaySendSound = (sound: string) => {
-  // Only enable sound effects in a shared replay
-  if (!globals.metadata.replay || !globals.metadata.sharedReplay) {
+  // Only send sound effects in shared replays
+  if (!globals.state.finished || !globals.state.replay.shared) {
     return;
   }
 
-  // Only enable sound effects for shared replay leaders
+  // Only send sound effects for shared replay leaders
   if (!globals.amSharedReplayLeader) {
     return;
   }
