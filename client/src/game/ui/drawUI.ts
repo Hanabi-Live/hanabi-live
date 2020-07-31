@@ -2005,7 +2005,6 @@ const drawExtraAnimations = () => {
   const x = (playAreaValues.x + (playAreaValues.w! / 2) - 0.05);
   const y = (playAreaValues.y + (playAreaValues.h! / 2) - 0.05);
   const size = 0.1;
-  const duration = 0.5;
 
   globals.elements.sharedReplayForward = new Konva.Image({
     x: x * winW,
@@ -2017,11 +2016,6 @@ const drawExtraAnimations = () => {
     visible: false,
   });
   globals.layers.UI2.add(globals.elements.sharedReplayForward);
-  globals.elements.sharedReplayForwardTween = new Konva.Tween({
-    node: globals.elements.sharedReplayForward,
-    duration,
-    opacity: 0,
-  });
 
   globals.elements.sharedReplayBackward = new Konva.Image({
     x: x * winW,

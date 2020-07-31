@@ -15,6 +15,7 @@ export const onChanged = (pause: PauseState) => {
   globals.elements.timer1?.visible(!pause.active && globals.state.playing);
   globals.elements.timer2?.visible(!pause.active && !isOurTurn());
   globals.elements.timer1Circle?.visible(pause.queued);
+  console.log(globals.state.finished, 'ZZZZZZZZZZZZZZZZZZZZZZZZZ');
 
   if (pause.active) {
     globals.elements.pauseText!.text(`by: ${globals.state.metadata.playerNames[pause.playerIndex]}`);

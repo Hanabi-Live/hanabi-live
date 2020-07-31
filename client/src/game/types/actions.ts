@@ -11,7 +11,8 @@ export type Action =
   | ActionPremove
   | ActionPause
   | ActionPauseQueue
-  | ActionFinishOngoingGame;
+  | ActionFinishOngoingGame
+  | ActionReplayEnterDedicated;
 
 export type GameAction =
   | ActionCardIdentity
@@ -80,6 +81,10 @@ export interface ActionPauseQueue {
 
 export interface ActionFinishOngoingGame {
   type: 'finishOngoingGame';
+}
+
+export interface ActionReplayEnterDedicated {
+  type: 'replayEnterDedicated';
 }
 
 // ------------

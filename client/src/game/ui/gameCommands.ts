@@ -566,15 +566,9 @@ const initStateStore = (data: LegacyGameMetadata) => {
   });
 
   if (data.replay) {
-    replay.enter();
-
-    // By default, we use shared segments when first loading a shared replay
-    if (data.sharedReplay) {
-      globals.store.dispatch({
-        type: 'replayUseSharedSegments',
-        useSharedSegments: true,
-      });
-    }
+    globals.store.dispatch({
+      type: 'replayEnterDedicated',
+    });
 
     // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here
     // We must wait until the game is initialized first,

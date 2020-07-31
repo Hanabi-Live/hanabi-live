@@ -101,6 +101,15 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       break;
     }
 
+    case 'replayEnterDedicated': {
+      state.playing = false;
+      state.finished = true;
+      state.replay.active = true;
+      state.replay.segment = 0;
+      state.replay.useSharedSegments = true;
+      break;
+    }
+
     case 'replayEnter':
     case 'replayExit':
     case 'replaySegment':
