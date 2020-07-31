@@ -15,13 +15,7 @@ const replayReducer = produce((
   metadata: GameMetadata,
 ) => {
   // Validate current state
-  if (
-    !state.active
-    // We enter a replay from a non-active state
-    && action.type !== 'replayEnter'
-    // We want to be able to update the shared segment before we enter a replay
-    && action.type !== 'replaySharedSegment'
-  ) {
+  if (!state.active && action.type !== 'replayEnter') {
     throw new Error(`Tried to perform a replay action of ${action.type}, but we are not in a replay.`);
   }
   if (

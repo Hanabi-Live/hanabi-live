@@ -59,7 +59,8 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     }
 
     case 'finishOngoingGame': {
-      // If the game just ended, recalculate the whole game as a spectator to fix card possibilities
+      // If we were playing in a game that just ended,
+      // recalculate the whole game as a spectator to fix card possibilities
       if (state.metadata.playing) {
         state.metadata.playing = false;
 
@@ -74,8 +75,28 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
         state.replay.states = castDraft(states);
       }
 
-      // The finished view will take care of converting this game to a shared replay
+      // Mark that this game is now finished
+      // The finished view will take care of enabling the UI elements for a shared replay
       state.metadata.finished = true;
+
+      // If we were in an in-game replay when the game ended,
+      // keep us at the current turn and do not jerk us away to the end
+      // Otherwise, initialize the replay segment to be equal to the penultimate segment
+      // We do not want to use the final segment, because it will contain the times for all of the
+      // players, and this will drown out the reason that the game ended
+      if (state.ongoingGame.turn.segment === null) {
+        throw new Error('The segment for the ongoing game was null when it finished.');
+      }
+      if (state.ongoingGame.turn.segment < 1) {
+        throw new Error('The segment for the ongoing game was less than 1 when it finished.');
+      }
+      const penultimateSegment = state.ongoingGame.turn.segment - 1;
+      if (!state.replay.active) {
+        state.replay.active = true;
+        state.replay.segment = penultimateSegment;
+        state.replay.useSharedSegments = true;
+      }
+      state.replay.sharedSegment = penultimateSegment;
 
       break;
     }

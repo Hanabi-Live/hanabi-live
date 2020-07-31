@@ -96,37 +96,9 @@ commands.set('cardIdentities', (data: CardIdentitiesData) => {
 });
 
 commands.set('gameOver', () => {
-  // Local variables
-  const state = globals.store!.getState();
-
-  // By default, we will enter the replay on the final segment,
-  // which is the segment that all the times display
-  // We do not want the text of the times to drown out the reason that the game ended
-  // So enter the replay on the turn prior so that the player can see why the game ended
-  const segmentBeforeTimes = state.ongoingGame.turn.segment! - 1;
-
-  // Update the shared segment before we end the game
-  // (in order to prevent it from tweening from the left side of the bar)
-  globals.store!.dispatch({
-    type: 'replaySharedSegment',
-    segment: segmentBeforeTimes,
-  });
-
-  // Change UI elements to reflect that we are in a replay instead of an ongoing game
   globals.store!.dispatch({
     type: 'finishOngoingGame',
   });
-
-  // If we were not already in an in-game replay, open the replay UI
-  if (!state.replay.active) {
-    replay.enter(segmentBeforeTimes);
-
-    // By default, we want to use shared turns if we were not in an in-game replay
-    globals.store!.dispatch({
-      type: 'replayUseSharedSegments',
-      useSharedSegments: true,
-    });
-  }
 });
 
 commands.set('hypoAction', (data: string) => {

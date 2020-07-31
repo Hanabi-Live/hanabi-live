@@ -161,7 +161,9 @@ export const onFinishedChanged = (finished: boolean, previousFinished: boolean |
   // If the timers are showing, hide them
   if (globals.elements.timer1) {
     globals.elements.timer1.hide();
-    globals.elements.timer2!.hide();
+  }
+  if (globals.elements.timer2) {
+    globals.elements.timer2.hide();
   }
   timer.stop();
 
