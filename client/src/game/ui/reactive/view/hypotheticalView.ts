@@ -16,8 +16,7 @@ export const onHypotheticalEnterExit = (active: boolean, previousActive: boolean
 };
 
 const hypoStarted = () => {
-  const state = globals.store!.getState();
-  if (state.replay.hypothetical === null) {
+  if (globals.state.replay.hypothetical === null) {
     return;
   }
 
@@ -35,7 +34,7 @@ const hypoStarted = () => {
   globals.elements.endHypotheticalButton!.visible(globals.amSharedReplayLeader);
   globals.elements.hypoBackButton!.visible((
     globals.amSharedReplayLeader
-    && state.replay.hypothetical.states.length > 1
+    && globals.state.replay.hypothetical.states.length > 1
   ));
   globals.elements.toggleRevealedButton!.visible(globals.amSharedReplayLeader);
   globals.elements.clueArea!.visible(globals.amSharedReplayLeader);
@@ -73,8 +72,7 @@ const hypoEnded = () => {
 // Prepare the UI elements for the new turn
 export const onStatesLengthChanged = () => {
   // Local variables
-  const state = globals.store!.getState();
-  if (state.replay.hypothetical === null || !globals.amSharedReplayLeader) {
+  if (globals.state.replay.hypothetical === null || !globals.amSharedReplayLeader) {
     return;
   }
 
@@ -95,7 +93,7 @@ export const onStatesLengthChanged = () => {
   }
 
   turn.showClueUI();
-  globals.elements.hypoBackButton!.visible(state.replay.hypothetical.states.length > 1);
+  globals.elements.hypoBackButton!.visible(globals.state.replay.hypothetical.states.length > 1);
 
   // Set the current player's hand to be draggable
   checkSetDraggableAllHands();

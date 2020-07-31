@@ -40,15 +40,14 @@ export const onChanged = (data: {
   // Local variables
   const winW = globals.stage.width();
   const winH = globals.stage.height();
-  const state = globals.store!.getState();
-  const clueTokens = state.ongoingGame!.clueTokens;
-  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
+  const clueTokens = globals.state.ongoingGame!.clueTokens;
+  const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
   if (currentPlayerIndex === null) {
     return;
   }
-  const currentPlayerHand = state.ongoingGame.hands[currentPlayerIndex];
-  const isLocked = handRules.isLocked(currentPlayerHand, state.ongoingGame.deck);
-  const numPlayers = state.metadata.options.numPlayers;
+  const currentPlayerHand = globals.state.ongoingGame.hands[currentPlayerIndex];
+  const isLocked = handRules.isLocked(currentPlayerHand, globals.state.ongoingGame.deck);
+  const numPlayers = globals.state.metadata.options.numPlayers;
 
   // Update the text
   const { text1, text2, text3 } = currentPlayerArea;

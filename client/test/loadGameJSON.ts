@@ -99,10 +99,9 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   }
 
   // Run the list of states through the state reducer
-  // NOTE: we need to fix the list of cards touched in a clue,
-  // since that is not saved in the JSON.
-  // NOTE2: we also need to figure out if plays are successful or
-  // not, since they both show up as plays in the JSON.
+  // We need to fix the list of cards touched in a clue, since that is not saved in the JSON
+  // We also need to figure out if plays are successful or not,
+  // since they both show up as plays in the JSON
   const state = initialState(metadata);
 
   // Calculate all the intermediate states

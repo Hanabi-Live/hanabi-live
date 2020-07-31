@@ -28,9 +28,8 @@ export const begin = () => {
 // Handle pre-playing / pre-discarding / pre-cluing
 const handlePremove = () => {
   // Local variables
-  const state = globals.store!.getState();
-  const premove = state.premove;
-  const clueTokens = state.ongoingGame.clueTokens;
+  const premove = globals.state.premove;
+  const clueTokens = globals.state.ongoingGame.clueTokens;
 
   if (premove === null) {
     return;
@@ -89,16 +88,15 @@ const handlePremove = () => {
 };
 
 export const showClueUI = () => {
-  const state = globals.store!.getState();
-  if (state.replay.active && state.replay.hypothetical === null) {
+  if (globals.state.replay.active && globals.state.replay.hypothetical === null) {
     return;
   }
 
-  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
-  const ourPlayerIndex = state.metadata.ourPlayerIndex;
+  const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
+  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
   if (
     currentPlayerIndex !== ourPlayerIndex
-    && (state.replay.hypothetical === null || !globals.amSharedReplayLeader)
+    && (globals.state.replay.hypothetical === null || !globals.amSharedReplayLeader)
   ) {
     return;
   }
@@ -112,16 +110,16 @@ export const showClueUI = () => {
   }
   globals.elements.clueTypeButtonGroup!.clearPressed();
   globals.elements.clueArea!.show();
-  if (globals.elements.yourTurn !== null && state.replay.hypothetical === null) {
+  if (globals.elements.yourTurn !== null && globals.state.replay.hypothetical === null) {
     globals.elements.yourTurn.show();
   }
   globals.elements.currentPlayerArea!.hide();
 
   // Hide some specific clue buttons in certain variants with clue restrictions
   if (variantRules.isAlternatingClues(globals.variant)) {
-    const ongoingGameState = state.replay.hypothetical === null
-      ? state.ongoingGame
-      : state.replay.hypothetical.ongoing;
+    const ongoingGameState = globals.state.replay.hypothetical === null
+      ? globals.state.ongoingGame
+      : globals.state.replay.hypothetical.ongoing;
     if (ongoingGameState.clues.length > 0) {
       const lastClue = ongoingGameState.clues[ongoingGameState.clues.length - 1];
       if (lastClue.type === ClueType.Color) {
@@ -166,15 +164,14 @@ export const showClueUI = () => {
 };
 
 export const end = (clientAction: ClientAction) => {
-  const state = globals.store!.getState();
-  if (state.replay.hypothetical !== null) {
+  if (globals.state.replay.hypothetical !== null) {
     hypothetical.send(clientAction);
     hideClueUIAndDisableDragging();
     return;
   }
 
-  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
-  const ourPlayerIndex = state.metadata.ourPlayerIndex;
+  const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
+  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
   if (currentPlayerIndex === ourPlayerIndex) {
     replay.exit(); // Close the in-game replay if we preplayed a card in the replay
     globals.lobby.conn!.send('action', {

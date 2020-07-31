@@ -9,9 +9,6 @@ import * as tooltips from '../../tooltips';
 import * as turn from '../../turn';
 
 export const onActiveChanged = (active: boolean) => {
-  // Local variables
-  const state = globals.store!.getState();
-
   if (active) {
     // Hide the UI elements that overlap with the replay area
     turn.hideClueUIAndDisableDragging();
@@ -22,7 +19,7 @@ export const onActiveChanged = (active: boolean) => {
   } else {
     // We are exiting a replay
     globals.elements.replayArea!.hide();
-    if (state.premove !== null) {
+    if (globals.state.premove !== null) {
       globals.elements.premoveCancelButton!.show();
     }
     if (isOurTurn()) {
@@ -72,10 +69,7 @@ export const onReplaySegmentChanged = (
   segment: number,
   previousSegment: number | undefined,
 ) => {
-  // Local variables
-  const state = globals.store!.getState();
-
-  if (previousSegment === undefined || segment === null || !state.replay.active) {
+  if (previousSegment === undefined || segment === null || !globals.state.replay.active) {
     return;
   }
 
@@ -84,7 +78,7 @@ export const onReplaySegmentChanged = (
   globals.elements.replayBackButton!.setEnabled(segment !== 0);
 
   // If we are on the last segment, disable the forward replay buttons
-  const finalSegment = state.ongoingGame.turn.segment!;
+  const finalSegment = globals.state.ongoingGame.turn.segment!;
   globals.elements.replayForwardButton!.setEnabled(segment !== finalSegment);
   globals.elements.replayForwardFullButton!.setEnabled(segment !== finalSegment);
 
@@ -102,10 +96,11 @@ export const onSharedSegmentOrUseSharedSegmentsChanged = (data: {
   sharedSegment: number;
   useSharedSegments: boolean;
 } | undefined) => {
-  // Local variables
-  const state = globals.store!.getState();
-
-  if (previousData === undefined || !state.replay.active || !globals.metadata.sharedReplay) {
+  if (
+    previousData === undefined
+    || !globals.state.replay.active
+    || !globals.metadata.sharedReplay
+  ) {
     return;
   }
 
