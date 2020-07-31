@@ -72,7 +72,8 @@ export class Globals {
   playerTimes: number[] = [];
   // "activeIndex" must be tracked separately from the "currentPlayerIndex" because
   // the current player may change in an in-game replay
-  activeIndex: number = -1; // Legacy variable, kill this and use state.currentPlayerIndex instead
+  // Legacy variable, kill this and use state.currentPlayerIndex instead
+  activePlayerIndex: number = -1;
   timeTaken: number = 0;
   startingTurnTime: number = 0;
   lastTimerUpdateTimeMS: number = 0;
@@ -134,7 +135,7 @@ export class Globals {
     this.lastNote = '';
     this.timerID = null;
     this.playerTimes = [];
-    this.activeIndex = -1; // Legacy variable
+    this.activePlayerIndex = -1; // Legacy variable
     this.timeTaken = 0;
     this.startingTurnTime = 0;
     this.lastTimerUpdateTimeMS = 0;

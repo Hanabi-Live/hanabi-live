@@ -133,9 +133,9 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		HypoRevealed bool     `json:"hypoRevealed"`
 
 		// Other features
-		Paused      bool   `json:"paused"`
-		PausePlayer string `json:"pausePlayer"`
-		PauseQueued bool   `json:"pauseQueued"`
+		Paused           bool `json:"paused"`
+		PausePlayerIndex int  `json:"pausePlayerIndex"`
+		PauseQueued      bool `json:"pauseQueued"`
 	}
 
 	s.Emit("init", &InitMessage{
@@ -165,8 +165,8 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		HypoRevealed: g.HypoRevealed,
 
 		// Other features
-		Paused:      g.Paused,
-		PausePlayer: t.Players[g.PausePlayer].Name,
-		PauseQueued: pauseQueued,
+		Paused:           g.Paused,
+		PausePlayerIndex: g.PausePlayerIndex,
+		PauseQueued:      pauseQueued,
 	})
 }

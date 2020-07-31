@@ -125,6 +125,23 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       break;
     }
 
+    case 'pause': {
+      state.pause.active = action.active;
+      state.pause.playerIndex = action.playerIndex;
+
+      // If the game is now paused, unqueue any queued pauses
+      if (action.active) {
+        state.pause.queued = false;
+      }
+
+      break;
+    }
+
+    case 'pauseQueue': {
+      state.pause.queued = action.queued;
+      break;
+    }
+
     default: {
       // A new game action happened
       const previousSegment = state.ongoingGame.turn.segment;

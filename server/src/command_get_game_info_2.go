@@ -75,7 +75,7 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	}
 
 	// If it is their turn, send a "yourTurn" message
-	if !t.Replay && g.ActivePlayer == i {
+	if !t.Replay && g.ActivePlayerIndex == i {
 		s.NotifyYourTurn(t)
 	}
 

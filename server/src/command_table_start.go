@@ -198,7 +198,7 @@ func commandTableStart(s *Session, d *CommandData) {
 
 	// Games created prior to April 2020 do not always have the 0th player taking the first turn
 	if t.Options.StartingPlayer != 0 {
-		g.ActivePlayer = t.Options.StartingPlayer
+		g.ActivePlayerIndex = t.Options.StartingPlayer
 	}
 
 	// Initialize the GamePlayer objects
@@ -295,6 +295,6 @@ func commandTableStart(s *Session, d *CommandData) {
 
 	// Start a timer to detect if the current player runs out of time
 	if t.Options.Timed && !t.ExtraOptions.Replay {
-		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayer])
+		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayerIndex])
 	}
 }

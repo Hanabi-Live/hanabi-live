@@ -230,7 +230,7 @@ func (s *Session) NotifySound(t *Table, i int) {
 	var sound string
 	if g.Sound != "" {
 		sound = g.Sound
-	} else if i == g.ActivePlayer {
+	} else if i == g.ActivePlayerIndex {
 		sound = "turn_us"
 	} else {
 		sound = "turn_other"
@@ -262,7 +262,7 @@ func (s *Session) NotifyTime(t *Table) {
 	for i, p := range g.Players {
 		// We could be sending the message in the middle of someone's turn, so account for this
 		timeLeft := p.Time
-		if g.ActivePlayer == i {
+		if g.ActivePlayerIndex == i {
 			elapsedTime := time.Since(g.DatetimeTurnBegin)
 			timeLeft -= elapsedTime
 		}
@@ -274,14 +274,14 @@ func (s *Session) NotifyTime(t *Table) {
 	timeTaken := int64(time.Since(g.DatetimeTurnBegin) / time.Millisecond)
 
 	type ClockMessage struct {
-		Times     []int64 `json:"times"`
-		Active    int     `json:"active"`
-		TimeTaken int64   `json:"timeTaken"`
+		Times             []int64 `json:"times"`
+		ActivePlayerIndex int     `json:"activePlayerIndex"`
+		TimeTaken         int64   `json:"timeTaken"`
 	}
 	s.Emit("clock", &ClockMessage{
-		Times:     times,
-		Active:    g.ActivePlayer,
-		TimeTaken: timeTaken,
+		Times:             times,
+		ActivePlayerIndex: g.ActivePlayerIndex,
+		TimeTaken:         timeTaken,
 	})
 }
 
@@ -289,12 +289,12 @@ func (s *Session) NotifyPause(t *Table) {
 	g := t.Game
 
 	type PauseMessage struct {
-		Paused      bool   `json:"paused"`
-		PausePlayer string `json:"pausePlayer"`
+		Active      bool `json:"active"`
+		PlayerIndex int  `json:"playerIndex"`
 	}
 	s.Emit("pause", &PauseMessage{
-		Paused:      g.Paused,
-		PausePlayer: t.Players[g.PausePlayer].Name,
+		Active:      g.Paused,
+		PlayerIndex: g.PausePlayerIndex,
 	})
 }
 

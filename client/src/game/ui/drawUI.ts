@@ -1392,7 +1392,7 @@ const drawTimers = () => {
   // We don't want the timer to show in replays or untimed games
   // (unless they have the optional setting turned on)
   if (
-    globals.metadata.replay
+    globals.state.metadata.finished
     || (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed)
   ) {
     return;
@@ -1425,7 +1425,7 @@ const drawTimers = () => {
     radiusY: 0.07 * winH,
     stroke: '#ffe03b', // Yellow
     strokeWidth: 2,
-    visible: globals.metadata.pauseQueued,
+    visible: false,
   });
   globals.layers.UI.add(globals.elements.timer1Circle);
 
@@ -1439,40 +1439,44 @@ const drawTimers = () => {
     cornerRadius: timerValues.cornerRadius * winH,
     spaceH: timerValues.spaceH * winH,
     label: 'You',
-    visible: globals.state.metadata.playing,
+    visible: false,
     listening: true,
   });
   globals.layers.timer.add(globals.elements.timer1 as any);
   const timerClick = () => {
     if (
       !globals.options.timed // We don't need to pause if this is not a timed game
-      || globals.metadata.paused // We don't need to pause if the game is already paused
+      || globals.state.pause.active // We don't need to pause if the game is already paused
     ) {
       return;
     }
+
+    const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
+    const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
+
     let setting;
-    const state = globals.store!.getState();
-    const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
-    const ourPlayerIndex = state.metadata.ourPlayerIndex;
     if (currentPlayerIndex === ourPlayerIndex) {
       setting = 'pause';
-    } else if (globals.metadata.pauseQueued) {
+    } else if (globals.state.pause.queued) {
       setting = 'pause-unqueue';
-      globals.metadata.pauseQueued = false;
+
+      globals.store!.dispatch({
+        type: 'pauseQueue',
+        queued: false,
+      });
     } else {
       setting = 'pause-queue';
-      globals.metadata.pauseQueued = true;
+
+      globals.store!.dispatch({
+        type: 'pauseQueue',
+        queued: true,
+      });
     }
+
     globals.lobby.conn!.send('pause', {
       tableID: globals.lobby.tableID,
       setting,
     });
-
-    const wasVisible = globals.elements.timer1Circle!.visible();
-    if (wasVisible !== globals.metadata.pauseQueued) {
-      globals.elements.timer1Circle!.visible(globals.metadata.pauseQueued);
-      globals.layers.UI.batchDraw();
-    }
   };
   globals.elements.timer1.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
     if (event.evt.button === 2) { // Right-click

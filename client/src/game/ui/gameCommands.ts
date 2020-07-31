@@ -20,7 +20,6 @@ import { checkLegal } from './clues';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as notes from './notes';
-import pause from './pause';
 import StateObserver from './reactive/StateObserver';
 import * as replay from './replay';
 import * as timer from './timer';
@@ -281,15 +280,15 @@ commands.set('gameActionList', (data: GameActionListData) => {
 });
 
 interface PauseData {
-  paused: boolean;
-  pausePlayer: string;
+  active: boolean;
+  playerIndex: number;
 }
 commands.set('pause', (data: PauseData) => {
-  globals.metadata.paused = data.paused;
-  globals.metadata.pausePlayer = data.pausePlayer;
-
-  // Pause or unpause the UI accordingly
-  pause();
+  globals.store!.dispatch({
+    type: 'pause',
+    active: data.active,
+    playerIndex: data.playerIndex,
+  });
 });
 
 // This is used in shared replays to highlight a specific card (or UI element)
@@ -567,9 +566,6 @@ const initStateStore = (data: LegacyGameMetadata) => {
     // We need to use the "nullified" version, so we access the globals
     characterAssignments: globals.metadata.characterAssignments,
     characterMetadata: data.characterMetadata,
-    paused: data.paused,
-    pausePlayerIndex: null, // TODO server changes to make this work
-    pauseQueued: data.pauseQueued,
   };
   globals.store = createStore(stateReducer, initialState(metadata));
 
@@ -582,7 +578,6 @@ const initStateStore = (data: LegacyGameMetadata) => {
   });
 
   if (data.replay) {
-    // Set "state.replay.active" to true
     replay.enter();
 
     // By default, we use shared segments when first loading a shared replay
@@ -596,6 +591,14 @@ const initStateStore = (data: LegacyGameMetadata) => {
     // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here
     // We must wait until the game is initialized first,
     // because the "hypoEnter" handler requires there to be a valid state
+  }
+
+  if (data.paused) {
+    globals.store.dispatch({
+      type: 'pause',
+      active: true,
+      playerIndex: data.pausePlayerIndex,
+    });
   }
 };
 

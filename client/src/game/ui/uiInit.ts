@@ -6,7 +6,6 @@ import drawUI from './drawUI';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import * as keyboard from './keyboard';
-import pause from './pause';
 
 // When the HanabiUI object is instantiated,
 // we do not know how many players are in the game or what the variant is
@@ -101,9 +100,6 @@ const finishedDownloadingImages = () => {
 
   // Keyboard hotkeys can only be initialized once the clue buttons are drawn
   keyboard.init();
-
-  // If the game is paused, darken the background
-  pause();
 
   // Tell the server that we are finished loading the UI and
   // we now need the specific actions that have taken place in this game so far

@@ -24,8 +24,8 @@ export default class LegacyGameMetadata {
   hypoActions: string[] = [];
   hypoRevealed: boolean = false;
 
-  // Other features
+  // Pause settings
   paused: boolean = false;
-  pausePlayer: string = '';
+  pausePlayerIndex: number = 0;
   pauseQueued: boolean = false;
 }

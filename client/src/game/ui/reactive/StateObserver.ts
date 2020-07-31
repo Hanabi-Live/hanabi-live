@@ -14,6 +14,7 @@ import * as gameInfoView from './view/gameInfoView';
 import * as hypotheticalView from './view/hypotheticalView';
 import * as initView from './view/initView';
 import * as logView from './view/logView';
+import * as pauseView from './view/pauseView';
 import * as premoveView from './view/premoveView';
 import * as replayView from './view/replayView';
 import * as statsView from './view/statsView';
@@ -211,6 +212,9 @@ const replayObservers: Subscriptions = [
 const otherObservers = [
   // Premoves (e.g. queued actions)
   subAfterInit((s) => s.premove, premoveView.onChanged),
+
+  // Pause
+  subAfterInit((s) => s.pause, pauseView.onChanged),
 ];
 
 // These observers need to run after all other observers

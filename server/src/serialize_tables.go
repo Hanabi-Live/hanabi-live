@@ -139,11 +139,11 @@ func restoreTables() {
 		if g.Options.Timed {
 			// Give the current player some additional seconds to make up for the fact that they are
 			// forced to refresh
-			g.Players[g.ActivePlayer].Time += 20 * time.Second
+			g.Players[g.ActivePlayerIndex].Time += 20 * time.Second
 
 			// Players will never run out of time on restored tables because the "CheckTimer()"
 			// function was never initiated; manually do this
-			go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayer])
+			go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayerIndex])
 		}
 
 		tables[t.ID] = t

@@ -182,6 +182,11 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     cardIdentities: [],
     metadata,
     premove: null,
+    pause: {
+      active: false,
+      playerIndex: 0,
+      queued: false,
+    },
   };
 }
 

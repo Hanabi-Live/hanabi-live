@@ -12,7 +12,11 @@ import * as modals from './modals';
 export default function websocketInit() {
   // Ensure that we are connecting to the right URL
   const domain = $('#domain').html();
-  if (window.location.hostname !== domain) {
+  if (
+    window.location.hostname !== domain
+    && !window.location.hostname.startsWith('192.168')
+    && !window.location.hostname.startsWith('10.')
+  ) {
     modals.errorShow(`You are supposed to connect using the URL of: ${domain}`);
     return;
   }

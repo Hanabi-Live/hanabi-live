@@ -6,7 +6,9 @@ export default interface ReplayState {
   readonly active: boolean;
   readonly segment: number;
   readonly states: readonly GameState[]; // Indexed by segment
-  // Used to re-compute states at the end of an ongoing game
+  // All of the individual game actions are stored alongside the computed states for each turn
+  // This is used so that we can re-compute the game state for each turn at the end of an ongoing
+  // game
   readonly actions: readonly GameAction[];
   readonly sharedSegment: number;
   readonly useSharedSegments: boolean;

@@ -9,6 +9,8 @@ export type Action =
   | ActionListReceived
   | ActionCardIdentities
   | ActionPremove
+  | ActionPause
+  | ActionPauseQueue
   | ActionFinishOngoingGame;
 
 export type GameAction =
@@ -65,9 +67,21 @@ export interface ActionPremove {
   readonly premove: ClientAction | null;
 }
 
+export interface ActionPause {
+  type: 'pause';
+  active: boolean;
+  playerIndex: number;
+}
+
+export interface ActionPauseQueue {
+  type: 'pauseQueue';
+  queued: boolean;
+}
+
 export interface ActionFinishOngoingGame {
   type: 'finishOngoingGame';
 }
+
 // ------------
 // Game actions
 // ------------

@@ -526,7 +526,7 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 			break
 		}
 
-		p := t.Players[g.ActivePlayer]
+		p := t.Players[g.ActivePlayerIndex]
 
 		commandAction(p.Session, &CommandData{
 			TableID: t.ID,

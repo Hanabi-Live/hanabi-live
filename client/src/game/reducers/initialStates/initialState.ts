@@ -19,5 +19,10 @@ export default function initialState(metadata: GameMetadata): State {
     cardIdentities: [],
     metadata,
     premove: null,
+    pause: {
+      active: false,
+      playerIndex: 0,
+      queued: false,
+    },
   };
 }
