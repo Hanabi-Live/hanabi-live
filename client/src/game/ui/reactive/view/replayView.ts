@@ -1,3 +1,4 @@
+import Konva from 'konva';
 import { variantRules } from '../../../rules';
 import ReplayActionType from '../../../types/ReplayActionType';
 import globals from '../../globals';
@@ -118,19 +119,8 @@ export const onSharedSegmentOrUseSharedSegmentsChanged = (data: {
       // starting turn of the hypothetical)
       replay.goToSegment(data.sharedSegment, false, true);
 
-      // In shared replays, it can be confusing as to what the shared replay leader is doing,
-      // so play an appropriate animations to indicate what is going on
-      // (and cancel the other tween if it is going)
-      // Don't play it though if we are resuming shared segments
-      // (e.g. going back to where the shared replay leader is)
       if (data.useSharedSegments === previousData.useSharedSegments) {
-        if (data.sharedSegment < previousData.sharedSegment) {
-          globals.elements.sharedReplayForwardTween!.reset();
-          globals.elements.sharedReplayBackwardTween!.play();
-        } else if (data.sharedSegment > previousData.sharedSegment) {
-          globals.elements.sharedReplayBackwardTween!.reset();
-          globals.elements.sharedReplayForwardTween!.play();
-        }
+        playSharedReplayTween(data.sharedSegment, previousData.sharedSegment);
       }
     }
   }
@@ -143,6 +133,41 @@ export const onSharedSegmentOrUseSharedSegmentsChanged = (data: {
   replay.adjustShuttles(false);
 
   globals.layers.UI.batchDraw();
+};
+
+// In shared replays, it can be confusing as to what the shared replay leader is doing,
+// so play an appropriate animations to indicate what is going on
+// (and cancel the other tween if it is going)
+// Don't play it though if we are resuming shared segments
+// (e.g. going back to where the shared replay leader is)
+const playSharedReplayTween = (sharedSegment: number, previousSharedSegment: number) => {
+  const duration = 1;
+  const opacity = 0;
+  if (sharedSegment < previousSharedSegment) {
+    globals.elements.sharedReplayBackward!.show();
+    globals.elements.sharedReplayBackward!.opacity(1);
+    if (globals.elements.sharedReplayBackwardTween !== null) {
+      globals.elements.sharedReplayBackwardTween.destroy();
+      globals.elements.sharedReplayBackwardTween = null;
+    }
+    globals.elements.sharedReplayBackwardTween = new Konva.Tween({
+      node: globals.elements.sharedReplayBackward,
+      duration,
+      opacity,
+    }).play();
+  } else if (sharedSegment > previousSharedSegment) {
+    globals.elements.sharedReplayForward!.show();
+    globals.elements.sharedReplayForward!.opacity(1);
+    if (globals.elements.sharedReplayForwardTween !== null) {
+      globals.elements.sharedReplayForwardTween.destroy();
+      globals.elements.sharedReplayForwardTween = null;
+    }
+    globals.elements.sharedReplayForwardTween = new Konva.Tween({
+      node: globals.elements.sharedReplayForward,
+      duration,
+      opacity,
+    }).play();
+  }
 };
 
 export const onFinishedChanged = (finished: boolean, previousFinished: boolean | undefined) => {

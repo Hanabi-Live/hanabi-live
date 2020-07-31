@@ -258,22 +258,22 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   private shouldShowChopMoveBorder() {
     return (
-      this.shouldShowAnyBorder()
+      this.note.chopMoved
+      && this.shouldShowAnyBorder()
       // The clue border has precedence over the chop move border
       && !this.shouldShowClueBorder()
       && globals.state.playing
-      && this.note.chopMoved
     );
   }
 
   private shouldShowFinesseBorder() {
     return (
-      this.shouldShowAnyBorder()
+      this.note.finessed
+      && this.shouldShowAnyBorder()
       // The clue border and the chop move border have precedence over the finesse border
       && !this.shouldShowClueBorder()
       && !this.shouldShowChopMoveBorder()
       && globals.state.playing
-      && this.note.finessed
     );
   }
 

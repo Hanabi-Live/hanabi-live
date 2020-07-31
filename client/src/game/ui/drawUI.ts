@@ -2013,22 +2013,14 @@ const drawExtraAnimations = () => {
     width: size * winW,
     height: size * winH,
     image: globals.imageLoader!.get('replay-forward-border')!,
-    opacity: 0,
     border: 100,
+    visible: false,
   });
   globals.layers.UI2.add(globals.elements.sharedReplayForward);
   globals.elements.sharedReplayForwardTween = new Konva.Tween({
     node: globals.elements.sharedReplayForward,
     duration,
-    opacity: 1,
-    onFinish: () => {
-      if (
-        globals.elements.sharedReplayForwardTween !== undefined
-        && globals.elements.sharedReplayForwardTween !== null
-      ) {
-        globals.elements.sharedReplayForwardTween.reverse();
-      }
-    },
+    opacity: 0,
   });
 
   globals.elements.sharedReplayBackward = new Konva.Image({
@@ -2037,22 +2029,9 @@ const drawExtraAnimations = () => {
     width: size * winW,
     height: size * winH,
     image: globals.imageLoader!.get('replay-back-border')!,
-    opacity: 0,
+    visible: false,
   });
   globals.layers.UI2.add(globals.elements.sharedReplayBackward);
-  globals.elements.sharedReplayBackwardTween = new Konva.Tween({
-    node: globals.elements.sharedReplayBackward,
-    duration,
-    opacity: 1,
-    onFinish: () => {
-      if (
-        globals.elements.sharedReplayBackwardTween !== undefined
-        && globals.elements.sharedReplayBackwardTween !== null
-      ) {
-        globals.elements.sharedReplayBackwardTween.reverse();
-      }
-    },
-  });
 };
 
 // Subroutines
