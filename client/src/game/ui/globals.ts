@@ -88,9 +88,18 @@ export class Globals {
   cardSubscriptions: Redux.Unsubscribe[] = [];
   cardIdentitySubscriptions: Redux.Unsubscribe[] = [];
 
+  get state() {
+    return this.store!.getState();
+  }
+
+  get options() {
+    // TODO: change to "this.metadata.options" when "get metadata()" exists
+    return this.state.metadata.options;
+  }
+
   // TEMP: accessors to minimize churn while we don't re-architect user input
   get clues() {
-    return this.store!.getState().visibleState!.clueTokens!;
+    return this.state.visibleState!.clueTokens!;
   }
 
   // We provide a method to reset every class variable to its initial value

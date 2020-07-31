@@ -151,7 +151,7 @@ export const showClueUI = () => {
     globals.elements.clueAreaDisabled!.show();
   }
 
-  if (globals.metadata.options.deckPlays) {
+  if (globals.options.deckPlays) {
     const deckSize = globals.store!.getState().ongoingGame.deckSize;
     globals.elements.deck!.cardBack.draggable(deckSize === 1);
     globals.elements.deckPlayAvailableLabel!.visible(deckSize === 1);

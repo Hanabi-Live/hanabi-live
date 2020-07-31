@@ -57,7 +57,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   private get variant() {
     if (!this._variant) {
-      this._variant = VARIANTS.get(globals.store!.getState().metadata.options.variantName)!;
+      this._variant = VARIANTS.get(globals.options.variantName)!;
     }
     return this._variant;
   }
@@ -473,7 +473,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Enable/disable shadow on card
     const shadowVisible = (
       this.visibleRank !== STACK_BASE_RANK
-      && !globals.metadata.options.speedrun
+      && !globals.options.speedrun
     );
     if (this.bare.shadowEnabled() !== shadowVisible) {
       this.bare.shadowEnabled(shadowVisible);
@@ -572,7 +572,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !cardRules.isDiscarded(this.state)
       && !this.note.blank
       && !variantRules.isThrowItInAHole(this.variant)
-      && !globals.metadata.options.speedrun
+      && !globals.options.speedrun
       && !globals.lobby.settings.realLifeMode
     );
   }
@@ -1085,20 +1085,17 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   private shouldShowEmpathy(event: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
-    // Local variables
-    const state = globals.store!.getState();
-
     return (
       // Disable Empathy if a modifier key is pressed
       // (unless we are in a speedrun, because then Empathy is mapped to Ctrl + left click)
       (
         !event.evt.ctrlKey
-        || (state.metadata.options.speedrun || globals.lobby.settings.speedrunMode)
+        || (globals.options.speedrun || globals.lobby.settings.speedrunMode)
       )
       && (
         event.evt.ctrlKey
-        || (!state.metadata.options.speedrun && !globals.lobby.settings.speedrunMode)
-        || !state.metadata.playing
+        || (!globals.options.speedrun && !globals.lobby.settings.speedrunMode)
+        || !globals.state.metadata.playing
       )
       && !event.evt.shiftKey
       && !event.evt.altKey
@@ -1164,6 +1161,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   checkSpecialNote() {
+    // Local variables
+    const state = globals.store!.getState();
+
     const noteText = globals.ourNotes[this.state.order];
 
     this.note = notes.checkNoteIdentity(this.variant, noteText);
@@ -1179,8 +1179,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       !this.cluedBorder!.isVisible()
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
-      && !globals.metadata.replay
-      && !globals.metadata.spectating
+      && state.metadata.playing
     );
 
     this.chopMoveBorder!.visible((

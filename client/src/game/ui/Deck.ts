@@ -74,11 +74,11 @@ export default class Deck extends Konva.Group {
     this.numLeftText.y(h * this.height());
     globals.elements.deckTurnsRemainingLabel1!.visible(
       count === 0
-      && !globals.metadata.options.allOrNothing,
+      && !globals.options.allOrNothing,
     );
     globals.elements.deckTurnsRemainingLabel2!.visible(
       count === 0
-      && !globals.metadata.options.allOrNothing,
+      && !globals.options.allOrNothing,
     );
 
     // If the game ID is showing,
@@ -185,53 +185,53 @@ export default class Deck extends Konva.Group {
     content += '<li><span class="game-tooltips-icon"><i class="fas fa-rainbow"></i></span>';
     content += `&nbsp; Variant: &nbsp;<strong>${globals.variant.name}</strong></li>`;
 
-    if (globals.metadata.options.timed) {
+    if (globals.options.timed) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-clock"></i></span>';
       content += '&nbsp; Timed: ';
-      content += timerFormatter(globals.metadata.options.timeBase);
+      content += timerFormatter(globals.options.timeBase);
       content += ' + ';
-      content += timerFormatter(globals.metadata.options.timePerTurn);
+      content += timerFormatter(globals.options.timePerTurn);
       content += '</li>';
     }
 
-    if (globals.metadata.options.speedrun) {
+    if (globals.options.speedrun) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-running"></i></span>';
       content += '&nbsp; Speedrun</li>';
     }
 
-    if (globals.metadata.options.cardCycle) {
+    if (globals.options.cardCycle) {
       content += '<li><span class="game-tooltips-icon">';
       content += '<i class="fas fa-sync-alt" style="position: relative; left: 0.2em;"></i></span>';
       content += '&nbsp; Card Cycling</li>';
     }
 
-    if (globals.metadata.options.deckPlays) {
+    if (globals.options.deckPlays) {
       content += '<li><span class="game-tooltips-icon">';
       content += '<i class="fas fa-blind" style="position: relative; left: 0.2em;"></i></span>';
       content += '&nbsp; Bottom-Deck Blind Plays</li>';
     }
 
-    if (globals.metadata.options.emptyClues) {
+    if (globals.options.emptyClues) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-expand"></i></span>';
       content += '&nbsp; Empty Clues</li>';
     }
 
-    if (globals.metadata.options.oneExtraCard) {
+    if (globals.options.oneExtraCard) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-plus-circle"></i></span>';
       content += '&nbsp; One Extra Card</li>';
     }
 
-    if (globals.metadata.options.oneLessCard) {
+    if (globals.options.oneLessCard) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-minus-circle"></i></span>';
       content += '&nbsp; One Less Card</li>';
     }
 
-    if (globals.metadata.options.allOrNothing) {
+    if (globals.options.allOrNothing) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-layer-group"></i></span>';
       content += '&nbsp; All or Nothing</li>';
     }
 
-    if (globals.metadata.options.detrimentalCharacters) {
+    if (globals.options.detrimentalCharacters) {
       content += '<li><span class="game-tooltips-icon">';
       content += '<span style="position: relative; right: 0.4em;">🤔</span></span>';
       content += '&nbsp; Detrimental Characters</li>';

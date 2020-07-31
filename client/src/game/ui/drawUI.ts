@@ -472,7 +472,7 @@ const drawBottomLeftButtons = () => {
   globals.layers.UI.add(restartButton as any);
   restartButton.on('click tap', () => {
     if (
-      globals.metadata.options.speedrun
+      globals.options.speedrun
       || debug.amTestUser(globals.lobby.username)
       || globals.lobby.totalGames >= 1000
       || window.confirm('Are you sure you want to restart the game?')
@@ -570,7 +570,7 @@ const drawBottomLeftButtons = () => {
   globals.layers.UI.add(killButton as any);
   killButton.on('click tap', () => {
     if (
-      globals.metadata.options.speedrun
+      globals.options.speedrun
       || debug.amTestUser(globals.lobby.username)
       || globals.lobby.totalGames >= 1000
       || window.confirm('Are you sure you want to terminate the game?')
@@ -1293,8 +1293,8 @@ const drawStatistics = () => {
   const minEfficiency = stats.minEfficiency(
     globals.metadata.playerNames.length,
     globals.variant,
-    globals.metadata.options.oneExtraCard,
-    globals.metadata.options.oneLessCard,
+    globals.options.oneExtraCard,
+    globals.options.oneLessCard,
   );
   const efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
     text: minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places
@@ -1393,7 +1393,7 @@ const drawTimers = () => {
   // (unless they have the optional setting turned on)
   if (
     globals.metadata.replay
-    || (!globals.metadata.options.timed && !globals.lobby.settings.showTimerInUntimed)
+    || (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed)
   ) {
     return;
   }
@@ -1445,7 +1445,7 @@ const drawTimers = () => {
   globals.layers.timer.add(globals.elements.timer1 as any);
   const timerClick = () => {
     if (
-      !globals.metadata.options.timed // We don't need to pause if this is not a timed game
+      !globals.options.timed // We don't need to pause if this is not a timed game
       || globals.metadata.paused // We don't need to pause if the game is already paused
     ) {
       return;
@@ -1495,7 +1495,7 @@ const drawTimers = () => {
     listening: true,
   });
   globals.layers.timer.add(globals.elements.timer2 as any);
-  if (globals.metadata.options.timed || globals.lobby.settings.showTimerInUntimed) {
+  if (globals.options.timed || globals.lobby.settings.showTimerInUntimed) {
     globals.elements.timer2.tooltipName = 'time-taken';
     // (the content will be updated in the "setTickingDownTimeCPTooltip()" function)
     tooltips.init(globals.elements.timer2, true, false);

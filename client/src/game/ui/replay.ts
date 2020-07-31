@@ -125,11 +125,11 @@ export const forward = () => {
 };
 
 export const backRound = () => {
-  goToSegment(getCurrentReplaySegment() - globals.metadata.options.numPlayers, true);
+  goToSegment(getCurrentReplaySegment() - globals.options.numPlayers, true);
 };
 
 export const forwardRound = () => {
-  goToSegment(getCurrentReplaySegment() + globals.metadata.options.numPlayers, true);
+  goToSegment(getCurrentReplaySegment() + globals.options.numPlayers, true);
 };
 
 export const backFull = () => {

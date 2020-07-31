@@ -152,7 +152,7 @@ export default class CardLayout extends Konva.Group {
               card.finishedTweening();
               layoutChild.checkSetDraggable();
             },
-          }, !globals.metadata.options.speedrun);
+          }, !globals.options.speedrun);
         };
 
         if (card.doMisplayAnimation) {
@@ -176,7 +176,7 @@ export default class CardLayout extends Konva.Group {
               layoutChild.rotation(360);
               animateToLayout();
             },
-          }, !globals.metadata.options.speedrun);
+          }, !globals.options.speedrun);
         } else {
           animateToLayout();
         }

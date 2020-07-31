@@ -11,13 +11,10 @@ export default function cursorSet(cursorType: CursorType) {
     return;
   }
 
-  // Local variables
-  const state = globals.store!.getState();
-
   // Don't show any custom cursors if we are an active player in a speedrun
   if (
-    (state.metadata.options.speedrun || globals.lobby.settings.speedrunMode)
-    && state.metadata.playing
+    (globals.options.speedrun || globals.lobby.settings.speedrunMode)
+    && globals.state.metadata.playing
   ) {
     return;
   }

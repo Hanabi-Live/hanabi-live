@@ -185,7 +185,7 @@ export const send = (hypoAction: ClientAction) => {
   // Even though this action is unnecessary from the point of the reducers,
   // for now we MUST send it so that the "hypoAction" command handler knows when to begin a turn
   let nextPlayerIndex = gameState.turn.currentPlayerIndex! + 1;
-  if (nextPlayerIndex === state.metadata.options.numPlayers) {
+  if (nextPlayerIndex === globals.options.numPlayers) {
     nextPlayerIndex = 0;
   }
   sendHypoAction({

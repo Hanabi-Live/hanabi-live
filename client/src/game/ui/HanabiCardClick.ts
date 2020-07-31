@@ -12,12 +12,10 @@ import * as replay from './replay';
 
 export default function HanabiCardClick(this: HanabiCard, event: Konva.KonvaEventObject<any>) {
   // Speedrunning overrides the normal card clicking behavior
-  // (but do not use the speedrunning behavior if we are in a
-  // solo replay / shared replay / spectating)
+  // (but only use the speedrunning behavior if we are an active player)
   if (
-    (globals.metadata.options.speedrun || globals.lobby.settings.speedrunMode)
-    && !globals.metadata.replay
-    && !globals.metadata.spectating
+    (globals.options.speedrun || globals.lobby.settings.speedrunMode)
+    && globals.state.metadata.playing
   ) {
     return;
   }
@@ -141,8 +139,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.metadata.replay
-    && !globals.metadata.spectating
+    && state.metadata.playing
   ) {
     card.setNote(globals.lastNote);
     return;
@@ -155,8 +152,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.metadata.replay
-    && !globals.metadata.spectating
+    && state.metadata.playing
   ) {
     card.appendNote('f');
     return;
@@ -169,8 +165,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.shiftKey
     && event.altKey
     && !event.metaKey
-    && !globals.metadata.replay
-    && !globals.metadata.spectating
+    && state.metadata.playing
   ) {
     card.appendNote('cm');
     return;

@@ -4,7 +4,7 @@ import globals from './globals';
 import { drawLayer } from './konvaHelpers';
 
 export default function pause() {
-  if (!globals.metadata.options.timed || globals.metadata.replay) {
+  if (!globals.options.timed || globals.metadata.replay) {
     return;
   }
 

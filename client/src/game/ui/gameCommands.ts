@@ -538,21 +538,22 @@ commands.set('sound', (data: SoundData) => {
 // -----------
 
 const copyMetadataToGlobals = (metadata: LegacyGameMetadata) => {
+  // Handle the special case of when players can be given assignments of "-1" during debugging
+  // (which corresponds to a null character)
+  for (let i = 0; i < metadata.characterAssignments.length; i++) {
+    if (metadata.characterAssignments[i] === -1) {
+      metadata.characterAssignments[i] = null;
+    }
+  }
+  if (metadata.characterAssignments.length === 0) {
+    metadata.characterAssignments = initArray(metadata.options.numPlayers, null);
+  }
+
+  // Copy it
   globals.metadata = metadata;
 
   // Set the variant
-  globals.variant = getVariant(globals.metadata.options.variantName);
-
-  // Handle the special case of when players can be given assignments of "-1" during debugging
-  // (which corresponds to a null character)
-  for (let i = 0; i < globals.metadata.characterAssignments.length; i++) {
-    if (globals.metadata.characterAssignments[i]! === -1) {
-      globals.metadata.characterAssignments[i] = null;
-    }
-  }
-  if (globals.metadata.characterAssignments.length === 0) {
-    globals.metadata.characterAssignments = initArray(globals.metadata.options.numPlayers, null);
-  }
+  globals.variant = getVariant(metadata.options.variantName);
 };
 
 const initStateStore = (data: LegacyGameMetadata) => {

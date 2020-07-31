@@ -21,12 +21,11 @@ export default function HanabiCardClickSpeedrun(
   event: Konva.KonvaEventObject<any>,
 ) {
   // Speedrunning overrides the normal card clicking behavior
-  // (but don't use the speedrunning behavior if we are in a
-  // solo replay / shared replay / spectating / clicking on the stack base)
+  // (but don't use the speedrunning behavior if we are not an active player
+  // or are clicking on the stack base)
   if (
-    (!globals.metadata.options.speedrun && !globals.lobby.settings.speedrunMode)
-    || globals.metadata.replay
-    || globals.metadata.spectating
+    (!globals.options.speedrun && !globals.lobby.settings.speedrunMode)
+    || !globals.state.metadata.playing
     || this.state.rank === STACK_BASE_RANK
   ) {
     return;

@@ -122,7 +122,7 @@ export default class LayoutChild extends Konva.Group {
       (isOurTurn() || globals.lobby.settings.speedrunPreplay)
       // Cards should not be draggable if there is a queued move
       && state.premove === null
-      && !globals.metadata.options.speedrun // Cards should never be draggable while speedrunning
+      && !globals.options.speedrun // Cards should never be draggable while speedrunning
       && !globals.lobby.settings.speedrunMode // Cards should never be draggable while speedrunning
       // Only our cards should be draggable
       && this.card.state.location === globals.metadata.ourPlayerIndex
@@ -215,7 +215,7 @@ export default class LayoutChild extends Konva.Group {
 
     if (
       draggedTo === 'playArea'
-      && !globals.metadata.options.speedrun
+      && !globals.options.speedrun
       && !variantRules.isThrowItInAHole(globals.variant)
       // Don't use warnings for preplays unless we are at 2 strikes
       && (currentPlayerIndex === ourPlayerIndex || ongoingGame.strikes.length === 2)

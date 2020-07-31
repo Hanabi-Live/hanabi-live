@@ -27,8 +27,8 @@ export default function drawHands(winW: number, winH: number) {
   const numPlayers = globals.metadata.playerNames.length;
   const numCardsPerHand = hand.cardsPerHand(
     numPlayers,
-    globals.metadata.options.oneExtraCard,
-    globals.metadata.options.oneLessCard,
+    globals.options.oneExtraCard,
+    globals.options.oneLessCard,
   );
 
   /* eslint-disable object-curly-newline */
@@ -68,7 +68,7 @@ export default function drawHands(winW: number, winH: number) {
     { x: 0.5535, y: 0.009, w: handPos6W, h: handPos6H, rot: 0 },
     { x: 0.77, y: 0.292, w: 0.301 * 0.8, h: 0.18, rot: 90 },
   ];
-  if (globals.metadata.options.oneExtraCard) {
+  if (globals.options.oneExtraCard) {
     const reducedH = 0.165;
     const adjustedYUs = 0.018;
     const adjustedYOther = 0.013;
@@ -450,7 +450,7 @@ const drawDetrimentalCharacters = (
     playerNamePos = namePosBGA;
   }
 
-  if (!globals.metadata.options.detrimentalCharacters) {
+  if (!globals.options.detrimentalCharacters) {
     return;
   }
 
