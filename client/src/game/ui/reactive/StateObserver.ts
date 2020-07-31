@@ -175,7 +175,6 @@ const ongoingGameObservers: Subscriptions = [
     ongoingStrikes: s.ongoingGame.strikes,
     visibleStrikes: s.visibleState!.strikes,
   }), gameInfoView.onOngoingOrVisibleStrikesChanged),
-
 ];
 
 const replayObservers: Subscriptions = [
@@ -185,14 +184,15 @@ const replayObservers: Subscriptions = [
   // Replay sliders and buttons
   subAfterInit((s) => ({
     active: s.replay.active,
+    replaySegment: s.replay.segment,
     ongoingGameSegment: s.ongoingGame.turn.segment,
-  }), replayView.onActiveOrOngoingGameSegmentChanged),
-  sub((s) => s.replay.states.length >= 2, replayView.onSecondRecordedSegment),
-  subAfterInit((s) => s.replay.segment, replayView.onReplaySegmentChanged),
+  }), replayView.onSegmentChanged),
   subAfterInit((s) => ({
+    active: s.replay.active,
     sharedSegment: s.replay.sharedSegment,
     useSharedSegments: s.replay.useSharedSegments,
-  }), replayView.onSharedSegmentOrUseSharedSegmentsChanged),
+  }), replayView.onSharedSegmentChanged),
+  sub((s) => s.replay.states.length >= 2, replayView.onSecondRecordedSegment),
 
   // Database ID
   subAfterInit((s) => s.replay.databaseID, replayView.onDatabaseIDChanged),

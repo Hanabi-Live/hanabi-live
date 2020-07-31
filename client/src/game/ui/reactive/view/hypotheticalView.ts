@@ -32,12 +32,12 @@ const hypoStarted = () => {
 
   // These elements are visible only for the leader
   globals.elements.endHypotheticalButton!.visible(globals.amSharedReplayLeader);
-  globals.elements.hypoBackButton!.visible((
-    globals.amSharedReplayLeader
-    && globals.state.replay.hypothetical.states.length > 1
-  ));
   globals.elements.toggleRevealedButton!.visible(globals.amSharedReplayLeader);
   globals.elements.clueArea!.visible(globals.amSharedReplayLeader);
+
+  // When starting a hypothetical, there will only be 1 state
+  // The back button will always be hidden until the first move in the hypothetical is made
+  globals.elements.hypoBackButton!.hide();
 
   // This element is visible only for followers
   globals.elements.hypoCircle!.visible(!globals.amSharedReplayLeader);
@@ -70,8 +70,7 @@ const hypoEnded = () => {
 // Either we have entered a hypothetical, gone forward one action in a hypothetical,
 // or gone back one action in a hypothetical
 // Prepare the UI elements for the new turn
-export const onStatesLengthChanged = () => {
-  // Local variables
+export const onStatesLengthChanged = (statesLength: number) => {
   if (globals.state.replay.hypothetical === null || !globals.amSharedReplayLeader) {
     return;
   }
@@ -93,7 +92,7 @@ export const onStatesLengthChanged = () => {
   }
 
   turn.showClueUI();
-  globals.elements.hypoBackButton!.visible(globals.state.replay.hypothetical.states.length > 1);
+  globals.elements.hypoBackButton!.visible(statesLength > 1);
 
   // Set the current player's hand to be draggable
   checkSetDraggableAllHands();

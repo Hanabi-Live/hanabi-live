@@ -33,55 +33,33 @@ export const onActiveChanged = (active: boolean) => {
   globals.layers.UI.batchDraw();
 };
 
-export const onActiveOrOngoingGameSegmentChanged = (data: {
+export const onSegmentChanged = (data: {
   active: boolean;
+  replaySegment: number | null;
   ongoingGameSegment: number | null;
-}) => {
-  if (!data.active || data.ongoingGameSegment === null) {
-    return;
-  }
-
-  // We need to update the replay slider, based on the new amount of segments
-  replay.adjustShuttles(false);
-
-  // If we are on the last segment, disable the forward replay buttons
-  const enabled = globals.state.replay.segment !== data.ongoingGameSegment;
-  globals.elements.replayForwardButton!.setEnabled(enabled);
-  globals.elements.replayForwardFullButton!.setEnabled(enabled);
-
-  globals.layers.UI.batchDraw();
-};
-
-export const onSecondRecordedSegment = (
-  hasTwoOrMoreSegments: boolean,
-  previousHasTwoOrMoreSegments: boolean | undefined,
-) => {
-  if (previousHasTwoOrMoreSegments === undefined) {
-    return;
-  }
-
-  // The in-game replay button starts off disabled
-  // Enable it once there is at least one segment to rewind to
-  globals.elements.replayButton!.setEnabled(hasTwoOrMoreSegments);
-  globals.layers.UI.batchDraw();
-};
-
-export const onReplaySegmentChanged = (
-  segment: number,
-  previousSegment: number | undefined,
-) => {
-  if (previousSegment === undefined || segment === null || !globals.state.replay.active) {
+}, previousData: {
+  active: boolean;
+  replaySegment: number | null;
+  ongoingGameSegment: number | null;
+} | undefined) => {
+  if (
+    previousData === undefined
+    || !data.active
+    || data.replaySegment === null
+    || data.ongoingGameSegment === null
+  ) {
     return;
   }
 
   // If we are on the first segment, disable the rewind replay buttons
-  globals.elements.replayBackFullButton!.setEnabled(segment !== 0);
-  globals.elements.replayBackButton!.setEnabled(segment !== 0);
+  const onFirstSegment = data.replaySegment !== 0;
+  globals.elements.replayBackFullButton!.setEnabled(onFirstSegment);
+  globals.elements.replayBackButton!.setEnabled(onFirstSegment);
 
   // If we are on the last segment, disable the forward replay buttons
-  const finalSegment = globals.state.ongoingGame.turn.segment!;
-  globals.elements.replayForwardButton!.setEnabled(segment !== finalSegment);
-  globals.elements.replayForwardFullButton!.setEnabled(segment !== finalSegment);
+  const onFinalSegment = data.replaySegment !== data.ongoingGameSegment;
+  globals.elements.replayForwardButton!.setEnabled(onFinalSegment);
+  globals.elements.replayForwardFullButton!.setEnabled(onFinalSegment);
 
   // There are two replay shuttles,
   // so we have to adjust them whenever the "segment" or the "sharedSegment" changes
@@ -90,18 +68,15 @@ export const onReplaySegmentChanged = (
   globals.layers.UI.batchDraw();
 };
 
-export const onSharedSegmentOrUseSharedSegmentsChanged = (data: {
+export const onSharedSegmentChanged = (data: {
+  active: boolean;
   sharedSegment: number;
   useSharedSegments: boolean;
 }, previousData: {
   sharedSegment: number;
   useSharedSegments: boolean;
 } | undefined) => {
-  if (
-    previousData === undefined
-    || !globals.state.replay.active
-    || !globals.state.replay.shared
-  ) {
+  if (!data.active || !globals.state.replay.shared) {
     return;
   }
 
@@ -119,7 +94,7 @@ export const onSharedSegmentOrUseSharedSegmentsChanged = (data: {
       // starting turn of the hypothetical)
       replay.goToSegment(data.sharedSegment, false, true);
 
-      if (data.useSharedSegments === previousData.useSharedSegments) {
+      if (previousData !== undefined && data.useSharedSegments === previousData.useSharedSegments) {
         playSharedReplayTween(data.sharedSegment, previousData.sharedSegment);
       }
     }
@@ -168,6 +143,20 @@ const playSharedReplayTween = (sharedSegment: number, previousSharedSegment: num
       opacity,
     }).play();
   }
+};
+
+export const onSecondRecordedSegment = (
+  hasTwoOrMoreSegments: boolean,
+  previousHasTwoOrMoreSegments: boolean | undefined,
+) => {
+  if (previousHasTwoOrMoreSegments === undefined) {
+    return;
+  }
+
+  // The in-game replay button starts off disabled
+  // Enable it once there is at least one segment to rewind to
+  globals.elements.replayButton!.setEnabled(hasTwoOrMoreSegments);
+  globals.layers.UI.batchDraw();
 };
 
 export const onDatabaseIDChanged = (databaseID: number | null) => {
