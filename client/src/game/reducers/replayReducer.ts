@@ -16,17 +16,7 @@ const replayReducer = produce((
 ) => {
   // Validate current state
   if (!state.active && action.type !== 'replayEnter') {
-    throw new Error(`Tried to perform a replay action of ${action.type}, but we are not in a replay.`);
-  }
-  if (
-    state.hypothetical === null && (
-      action.type === 'hypoEnd'
-      || action.type === 'hypoBack'
-      || action.type === 'hypoRevealed'
-      || action.type === 'hypoAction'
-    )
-  ) {
-    throw new Error(`Tried to perform a hypothetical action of ${action.type}, but we are not in a hypothetical.`);
+    throw new Error(`A "${action.type}" action was dispatched, but we are not in a replay.`);
   }
 
   switch (action.type) {
@@ -36,15 +26,15 @@ const replayReducer = produce((
 
     case 'replayEnter': {
       if (state.active) {
-        throw new Error('Tried to enter a replay, but we are already in a replay.');
+        throw new Error(`A "${action.type}" action was dispatched, but we are already in a replay.`);
       }
       state.active = true;
 
       if (typeof action.segment !== 'number') {
-        throw new Error('The "replayEnter" segment was not a number.');
+        throw new Error(`The "${action.type}" action segment was not a number.`);
       }
       if (action.segment < 0) {
-        throw new Error('The "replayEnter" segment was less than 0.');
+        throw new Error(`The "${action.type}" action segment was less than 0.`);
       }
       state.segment = action.segment;
 
@@ -60,10 +50,10 @@ const replayReducer = produce((
 
     case 'replaySegment': {
       if (typeof action.segment !== 'number') {
-        throw new Error('The "replaySegment" segment was not a number.');
+        throw new Error(`The "${action.type}" action segment was not a number.`);
       }
       if (action.segment < 0) {
-        throw new Error('The "replaySegment" segment was less than 0.');
+        throw new Error(`The "${action.type}" action segment was less than 0.`);
       }
       state.segment = action.segment;
 
@@ -72,10 +62,10 @@ const replayReducer = produce((
 
     case 'replaySharedSegment': {
       if (typeof action.segment !== 'number') {
-        throw new Error('The "replaySharedSegment" segment was not a number.');
+        throw new Error(`The "${action.type}" action segment was not a number.`);
       }
       if (action.segment < 0) {
-        throw new Error('The "replaySharedSegment" segment was less than 0.');
+        throw new Error(`The "${action.type}" action segment was less than 0.`);
       }
       state.sharedSegment = action.segment;
 
@@ -97,7 +87,7 @@ const replayReducer = produce((
 
     case 'hypoStart': {
       if (state.hypothetical !== null) {
-        throw new Error('Tried to start a hypothetical, but we are already in a hypothetical.');
+        throw new Error(`A "${action.type}" action was dispatched with a non-null hypothetical state.`);
       }
 
       const ongoing = state.states[state.segment];
@@ -113,38 +103,50 @@ const replayReducer = produce((
     }
 
     case 'hypoEnd': {
+      if (state.hypothetical === null) {
+        throw new Error(`A "${action.type}" action was dispatched with a null hypothetical state.`);
+      }
+
       state.hypothetical = null;
       break;
     }
 
     case 'hypoBack': {
-      const hypoStates = state.hypothetical!.states;
+      if (state.hypothetical === null) {
+        throw new Error(`A "${action.type}" action was dispatched with a null hypothetical state.`);
+      }
+
+      const hypoStates = state.hypothetical.states;
       hypoStates.pop();
       const lastState = hypoStates[hypoStates.length - 1];
-      state.hypothetical!.ongoing = lastState;
+      state.hypothetical.ongoing = lastState;
       break;
     }
 
     case 'hypoRevealed': {
-      state.hypothetical!.drawnCardsShown = action.showDrawnCards;
+      if (state.hypothetical === null) {
+        throw new Error(`A "${action.type}" action was dispatched with a null hypothetical state.`);
+      }
+
+      state.hypothetical.drawnCardsShown = action.showDrawnCards;
       // Filter out all identities morphed to blank
       if (action.showDrawnCards) {
-        const morphed = original(state.hypothetical!.morphedIdentities)!;
+        const morphed = original(state.hypothetical.morphedIdentities)!;
         for (let i = 0; i < morphed.length; i++) {
           // Note: the for loop is necessary because the array is not contiguous
           // Array.filter would change the indexes
-          state.hypothetical!.morphedIdentities = [];
+          state.hypothetical.morphedIdentities = [];
           if (
             morphed[i] !== undefined
             && morphed[i].rank !== null
             && morphed[i].suitIndex !== null
           ) {
-            state.hypothetical!.morphedIdentities[i] = morphed[i];
+            state.hypothetical.morphedIdentities[i] = morphed[i];
           }
         }
       } else {
         // Hide all cards drawn since the beginning of the hypothetical
-        original(state.hypothetical!.drawnCardsInHypothetical)!.forEach((order) => {
+        original(state.hypothetical.drawnCardsInHypothetical)!.forEach((order) => {
           state.hypothetical!.morphedIdentities[order] = {
             rank: null,
             suitIndex: null,
@@ -156,8 +158,14 @@ const replayReducer = produce((
     }
 
     case 'hypoAction': {
+      if (state.hypothetical === null) {
+        throw new Error(`A "${action.type}" action was dispatched with a null hypothetical state.`);
+      }
+
+      // Local variables
       const a = action.action;
-      // The morph action is handled here, exclusively
+
+      // The morph action is exclusively handled here
       // Also take note of any draws that conflict with the known card identities
       if (a.type === 'morph' || a.type === 'draw') {
         let suitIndex = nullIfNegative(a.suitIndex);
@@ -165,8 +173,8 @@ const replayReducer = produce((
 
         if (a.type === 'draw') {
           // Store drawn cards to be able to show/hide in the future
-          state.hypothetical!.drawnCardsInHypothetical.push(a.order);
-          if (!state.hypothetical!.drawnCardsShown) {
+          state.hypothetical.drawnCardsInHypothetical.push(a.order);
+          if (!state.hypothetical.drawnCardsShown) {
             // Mark this one as blank
             suitIndex = null;
             rank = null;
@@ -180,7 +188,7 @@ const replayReducer = produce((
           || rank !== cardIdentities[a.order].rank
         ) {
           // This card has been morphed or blanked
-          state.hypothetical!.morphedIdentities[a.order] = {
+          state.hypothetical.morphedIdentities[a.order] = {
             suitIndex,
             rank,
           };
@@ -192,9 +200,9 @@ const replayReducer = produce((
         break;
       }
 
-      const hypoState = original(state.hypothetical?.ongoing)!;
+      const hypoState = original(state.hypothetical.ongoing);
       const newState = gameStateReducer(hypoState, a, metadata);
-      state.hypothetical!.ongoing = newState;
+      state.hypothetical.ongoing = newState;
 
       if (a.type === 'turn') {
         // Save it for going back

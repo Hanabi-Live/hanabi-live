@@ -400,32 +400,51 @@ export const setCardIndicator = (order: number) => {
   if (card === undefined) {
     card = globals.stackBases[order - globals.deck.length];
   }
-  card.noteIndicator!.visible(visible);
+  if (card.noteIndicator === null) {
+    throw new Error(`The note indicator for card ${order} was not initialized.`);
+  }
+  card.noteIndicator.visible(visible);
 
+  // Spectators
   if (
     visible
     && globals.metadata.spectating
     && !globals.metadata.replay
-    && !card.noteIndicator!.rotated
+    && !card.noteIndicator.rotated
   ) {
-    card.noteIndicator!.rotate(15);
-    card.noteIndicator!.rotated = true;
+    card.noteIndicator.rotate(15);
+    card.noteIndicator.rotated = true;
   }
 
   globals.layers.card.batchDraw();
 };
 
 export const shouldShowIndicator = (order: number) => {
-  if (globals.metadata.replay || globals.metadata.spectating) {
-    for (const noteObject of globals.allNotes[order]) {
-      if (noteObject.note.length > 0) {
-        return true;
-      }
-    }
-    return false;
+  // Local variables
+  const state = globals.store!.getState();
+
+  // If we are a player in an ongoing game,
+  // show the note indicator if we have a non-blank note on it
+  if (state.metadata.playing) {
+    return globals.ourNotes[order] !== '';
   }
 
-  return globals.ourNotes[order] !== '';
+  // Morphed cards (in a hypothetical) should never show the note indicator
+  if (state.replay.hypothetical !== null) {
+    const cardMorphedIdentity = state.replay.hypothetical.morphedIdentities[order];
+    if (cardMorphedIdentity !== undefined) {
+      return false;
+    }
+  }
+
+  // We are not a player in an ongoing game
+  // Only show the note indicator if there is one or more non-blank notes
+  for (const noteObject of globals.allNotes[order]) {
+    if (noteObject.note.length > 0) {
+      return true;
+    }
+  }
+  return false;
 };
 
 const stripHTMLTags = (input: string) => {

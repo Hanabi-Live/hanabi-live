@@ -42,7 +42,7 @@ export const onMorphedIdentitiesChanged = (data: {
 
   if (!data.hypotheticalActive) {
     if (!previousData.hypotheticalActive) {
-      throw new Error('Trying to unmorph cards but we were not in a hypothetical.');
+      throw new Error('Trying to unmorph cards but we are not in a hypothetical.');
     }
 
     // Exiting hypothetical, update all morphed
