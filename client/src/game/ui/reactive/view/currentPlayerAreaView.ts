@@ -5,18 +5,18 @@ import { MAX_CLUE_NUM } from '../../../types/constants';
 import State from '../../../types/State';
 import globals from '../../globals';
 
-export const isVisible = (s: State) => (
+export const isVisible = (state: State) => (
   // Don't show it we happen to have the in-game replay open
-  !s.replay.active
+  !state.replay.active
   // The clue UI should take precedence over the "Current Player" area
   && (
-    s.ongoingGame.turn.currentPlayerIndex !== s.metadata.ourPlayerIndex
-    || !s.metadata.playing
+    state.ongoingGame.turn.currentPlayerIndex !== state.metadata.ourPlayerIndex
+    || !state.playing
   )
   // The premove cancel button should take precedence over the "Current Player" area
-  && s.premove === null
+  && state.premove === null
   // Don't show it if the game is over
-  && s.ongoingGame.turn.currentPlayerIndex !== null
+  && state.ongoingGame.turn.currentPlayerIndex !== null
 );
 
 export const onChanged = (data: {

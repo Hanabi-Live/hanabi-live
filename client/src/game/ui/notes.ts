@@ -15,7 +15,7 @@ const get = (order: number, our: boolean) => {
   // If we are a player in an ongoing game, return our note
   // (we don't have to check to see if the element exists because
   // all notes are initialized to an empty string)
-  if (our || globals.state.metadata.playing) {
+  if (our || globals.state.playing) {
     return globals.ourNotes[order];
   }
 
@@ -41,7 +41,7 @@ export const set = (order: number, note: string) => {
   globals.ourNotes[order] = note;
   globals.lastNote = note;
 
-  if (!globals.state.metadata.playing) {
+  if (!globals.state.playing) {
     for (const noteObject of globals.allNotes[order]) {
       if (noteObject.name === globals.lobby.username) {
         noteObject.note = note;
@@ -59,7 +59,7 @@ export const set = (order: number, note: string) => {
   }
 
   // The note identity features are only enabled for active players
-  if (!globals.state.metadata.playing) {
+  if (!globals.state.playing) {
     return;
   }
 
@@ -409,8 +409,8 @@ export const setCardIndicator = (order: number) => {
   // Spectators
   if (
     visible
-    && !globals.state.metadata.playing
-    && !globals.state.metadata.finished
+    && !globals.state.playing
+    && !globals.state.finished
     && !card.noteIndicator.rotated
   ) {
     card.noteIndicator.rotate(15);
@@ -426,7 +426,7 @@ export const shouldShowIndicator = (order: number) => {
 
   // If we are a player in an ongoing game,
   // show the note indicator if we have a non-blank note on it
-  if (state.metadata.playing) {
+  if (state.playing) {
     return globals.ourNotes[order] !== '';
   }
 

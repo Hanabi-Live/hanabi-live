@@ -15,11 +15,8 @@ import RankButton from './RankButton';
 import * as turn from './turn';
 
 export const checkLegal = () => {
-  // Local variables
-  const state = globals.store!.getState();
-
   let clueTargetButtonGroup;
-  if (state.replay.hypothetical === null) {
+  if (globals.state.replay.hypothetical === null) {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
   } else {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
@@ -115,11 +112,8 @@ export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
 };
 
 export const give = () => {
-  // Local variables
-  const state = globals.store!.getState();
-
   let clueTargetButtonGroup;
-  if (state.replay.hypothetical === null) {
+  if (globals.state.replay.hypothetical === null) {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
   } else {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
@@ -153,13 +147,12 @@ export const give = () => {
 };
 
 const shouldGiveClue = (target: PlayerButton, clueButton: ColorButton | RankButton) => {
-  const state = globals.store!.getState();
-  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
-  const ourPlayerIndex = state.metadata.ourPlayerIndex;
+  const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
+  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
 
   return (
     // We can only give clues on our turn
-    (currentPlayerIndex === ourPlayerIndex || state.replay.hypothetical !== null)
+    (currentPlayerIndex === ourPlayerIndex || globals.state.replay.hypothetical !== null)
     && globals.clues > 0 // We can only give a clue if there is one available
     && target !== undefined // We might have not selected a clue recipient
     && target !== null // We might have not selected a clue recipient

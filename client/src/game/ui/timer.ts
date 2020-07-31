@@ -42,7 +42,7 @@ export const update = (data: ClockData) => {
   globals.lastTimerUpdateTimeMS = new Date().getTime();
 
   // Update onscreen time displays
-  if (globals.state.metadata.playing) {
+  if (globals.state.playing) {
     // The visibility of the first timer does not change during a game
     let time = globals.playerTimes[globals.metadata.ourPlayerIndex];
     if (!globals.options.timed) {
@@ -53,7 +53,7 @@ export const update = (data: ClockData) => {
   }
 
   const ourTurn = (
-    globals.state.metadata.playing
+    globals.state.playing
     && data.activePlayerIndex === globals.state.metadata.ourPlayerIndex
   );
   if (!ourTurn) {

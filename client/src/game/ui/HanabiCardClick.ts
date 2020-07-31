@@ -15,7 +15,7 @@ export default function HanabiCardClick(this: HanabiCard, event: Konva.KonvaEven
   // (but only use the speedrunning behavior if we are an active player)
   if (
     (globals.options.speedrun || globals.lobby.settings.speedrunMode)
-    && globals.state.metadata.playing
+    && globals.state.playing
   ) {
     return;
   }
@@ -36,9 +36,6 @@ export default function HanabiCardClick(this: HanabiCard, event: Konva.KonvaEven
 }
 
 const clickLeft = (card: HanabiCard, event: MouseEvent) => {
-  // Local variables
-  const state = globals.store!.getState();
-
   // The "Empathy" feature is handled in the "HanabiCardInit.ts" file,
   // so we don't have to worry about it here
   if (
@@ -46,7 +43,8 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     || event.shiftKey
     || event.metaKey
     || card.state.rank === STACK_BASE_RANK // Disable clicking on the stack base
-    || state.replay.hypothetical !== null // No replay actions should happen in a hypothetical
+    // No replay actions should happen in a hypothetical
+    || globals.state.replay.hypothetical !== null
   ) {
     return;
   }
@@ -94,15 +92,12 @@ const clickMiddle = (card: HanabiCard, event: MouseEvent) => {
 };
 
 const clickRight = (card: HanabiCard, event: MouseEvent) => {
-  // Local variables
-  const state = globals.store!.getState();
-
   // Alt + right-click is a card morph (in a hypothetical)
   if (
     globals.metadata.replay
     && globals.metadata.sharedReplay
     && globals.amSharedReplayLeader
-    && state.replay.hypothetical !== null
+    && globals.state.replay.hypothetical !== null
     && !event.ctrlKey
     && !event.shiftKey
     && event.altKey
@@ -139,7 +134,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && state.metadata.playing
+    && globals.state.playing
   ) {
     card.setNote(globals.lastNote);
     return;
@@ -152,7 +147,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && state.metadata.playing
+    && globals.state.playing
   ) {
     card.appendNote('f');
     return;
@@ -165,7 +160,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.shiftKey
     && event.altKey
     && !event.metaKey
-    && state.metadata.playing
+    && globals.state.playing
   ) {
     card.appendNote('cm');
     return;

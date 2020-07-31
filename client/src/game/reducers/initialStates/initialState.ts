@@ -16,8 +16,12 @@ export default function initialState(metadata: GameMetadata): State {
       useSharedSegments: false,
       hypothetical: null,
     },
-    cardIdentities: [],
+
+    playing: true,
+    finished: false,
+
     metadata,
+    cardIdentities: [],
     premove: null,
     pause: {
       active: false,

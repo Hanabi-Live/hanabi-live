@@ -30,6 +30,7 @@ import turnReducer from './turnReducer';
 const gameStateReducer = produce((
   state: Draft<GameState>,
   action: GameAction,
+  playing: boolean,
   metadata: GameMetadata,
 ) => {
   const variant = getVariant(metadata.options.variantName);
@@ -80,7 +81,7 @@ const gameStateReducer = produce((
         hand.splice(handIndex, 1);
       }
 
-      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, metadata.playing)) {
+      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, playing)) {
         if (typeof action.suitIndex !== 'number' || action.suitIndex < 0) {
           throw new Error(`The suit index for the discarded card was ${action.suitIndex}.`);
         }
@@ -93,7 +94,7 @@ const gameStateReducer = produce((
       }
 
       const touched = state.deck[action.order].numPositiveClues > 0;
-      const text = textRules.discard(action, slot, touched, metadata);
+      const text = textRules.discard(action, slot, touched, playing, metadata);
       state.log.push({
         turn: state.turn.turnNum + 1,
         text,
@@ -167,7 +168,7 @@ const gameStateReducer = produce((
       }
 
       // Add it to the play stacks
-      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, metadata.playing)) {
+      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, playing)) {
         if (typeof action.suitIndex !== 'number' || action.suitIndex < 0) {
           throw new Error(`The suit index for the played card was ${action.suitIndex}.`);
         }
@@ -188,7 +189,7 @@ const gameStateReducer = produce((
       state.score += 1;
 
       const touched = state.deck[action.order].numPositiveClues > 0;
-      const text = textRules.play(action, slot, touched, metadata);
+      const text = textRules.play(action, slot, touched, playing, metadata);
       state.log.push({
         turn: state.turn.turnNum + 1,
         text,
@@ -244,7 +245,7 @@ const gameStateReducer = produce((
       // In "Throw It In a Hole" variants, the client is missing some information about the stats
       // TODO: the server should not send the status message,
       // so that it does not leak information to the client
-      if (variantRules.isThrowItInAHole(variant) && metadata.playing) {
+      if (variantRules.isThrowItInAHole(variant) && playing) {
         break;
       }
 
@@ -299,6 +300,7 @@ const gameStateReducer = produce((
     original(state.deck)!,
     action,
     state,
+    playing,
     metadata,
   ));
 
@@ -348,6 +350,7 @@ const gameStateReducer = produce((
     action,
     original(state)!,
     state,
+    playing,
     metadata,
   );
 }, {} as GameState);

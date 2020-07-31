@@ -97,9 +97,6 @@ export default class LayoutChild extends Konva.Group {
   }
 
   shouldBeDraggable(currentPlayerIndex: number | null) {
-    // Local variables
-    const state = globals.store!.getState();
-
     // Cards should only be draggable in specific circumstances
     if (this.card === null || this.card === undefined) {
       // Rarely, if the game is restarted when a tween is happening,
@@ -108,7 +105,7 @@ export default class LayoutChild extends Konva.Group {
     }
 
     // First, handle the special case of a hypothetical
-    if (state.replay.hypothetical !== null) {
+    if (globals.state.replay.hypothetical !== null) {
       return (
         globals.amSharedReplayLeader
         && currentPlayerIndex === this.card.state.location
@@ -121,14 +118,14 @@ export default class LayoutChild extends Konva.Group {
       // (unless we have the "Enable pre-playing cards" feature enabled)
       (isOurTurn() || globals.lobby.settings.speedrunPreplay)
       // Cards should not be draggable if there is a queued move
-      && state.premove === null
+      && globals.state.premove === null
       && !globals.options.speedrun // Cards should never be draggable while speedrunning
       && !globals.lobby.settings.speedrunMode // Cards should never be draggable while speedrunning
       // Only our cards should be draggable
       && this.card.state.location === globals.metadata.ourPlayerIndex
       // Cards should not be draggable if we are spectating an ongoing game, in a dedicated solo
       // replay, or in a shared replay
-      && state.metadata.playing
+      && globals.state.playing
       // Cards should not be draggable if they are currently playing an animation
       // (this function will be called again upon the completion of the animation)
       && !this.card.tweening

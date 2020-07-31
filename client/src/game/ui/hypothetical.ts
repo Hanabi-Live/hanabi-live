@@ -12,10 +12,7 @@ import { getTouchedCardsFromClue } from './clues';
 import globals from './globals';
 
 export const start = () => {
-  // Local variables
-  const state = globals.store!.getState();
-
-  if (state.replay.hypothetical !== null) {
+  if (globals.state.replay.hypothetical !== null) {
     return;
   }
 
@@ -27,7 +24,7 @@ export const start = () => {
   }
 
   // Bring us to the current shared replay turn, if we are not already there
-  if (!state.replay.useSharedSegments) {
+  if (!globals.state.replay.useSharedSegments) {
     globals.store!.dispatch({
       type: 'replayUseSharedSegments',
       useSharedSegments: true,
@@ -41,10 +38,7 @@ export const start = () => {
 };
 
 export const end = () => {
-  // Local variables
-  const state = globals.store!.getState();
-
-  if (state.replay.hypothetical === null) {
+  if (globals.state.replay.hypothetical === null) {
     return;
   }
 
@@ -61,8 +55,7 @@ export const end = () => {
 };
 
 export const send = (hypoAction: ClientAction) => {
-  const state = globals.store!.getState();
-  const gameState = state.replay.hypothetical!.ongoing;
+  const gameState = globals.state.replay.hypothetical!.ongoing;
 
   let type;
   switch (hypoAction.type) {
@@ -135,7 +128,7 @@ export const send = (hypoAction: ClientAction) => {
 
       // Draw
       const nextCardOrder = gameState.deck.length;
-      const nextCard = state.cardIdentities[nextCardOrder];
+      const nextCard = globals.state.cardIdentities[nextCardOrder];
       if (nextCard !== undefined) { // All the cards might have already been drawn
         if (nextCard.suitIndex === null || nextCard.rank === null) {
           throw new Error('Unable to find the suit or rank of the next card.');
@@ -204,12 +197,9 @@ export const sendHypoAction = (hypoAction: ActionIncludingHypothetical) => {
 };
 
 export const sendBack = () => {
-  // Local variables
-  const state = globals.store!.getState();
-
   if (
-    state.replay.hypothetical === null
-    || state.replay.hypothetical.states.length <= 1
+    globals.state.replay.hypothetical === null
+    || globals.state.replay.hypothetical.states.length <= 1
     || !globals.amSharedReplayLeader
   ) {
     return;
@@ -231,9 +221,7 @@ export const toggleRevealed = () => {
 // Check if we need to disable the toggleRevealedButton
 // This happens when a newly drawn card is played, discarded, or clued
 export const checkToggleRevealedButton = (actionMessage: ActionIncludingHypothetical) => {
-  // Local variables
-  const state = globals.store!.getState();
-  if (state.replay.hypothetical === null) {
+  if (globals.state.replay.hypothetical === null) {
     return;
   }
 
@@ -241,7 +229,7 @@ export const checkToggleRevealedButton = (actionMessage: ActionIncludingHypothet
     case 'play':
     case 'discard': {
       const cardOrder = actionMessage.order;
-      if (state.replay.hypothetical.drawnCardsInHypothetical.includes(cardOrder)) {
+      if (globals.state.replay.hypothetical.drawnCardsInHypothetical.includes(cardOrder)) {
         globals.elements.toggleRevealedButton?.setEnabled(false);
       }
 
@@ -250,7 +238,7 @@ export const checkToggleRevealedButton = (actionMessage: ActionIncludingHypothet
 
     case 'clue': {
       for (const cardOrder of actionMessage.list) {
-        if (state.replay.hypothetical.drawnCardsInHypothetical.includes(cardOrder)) {
+        if (globals.state.replay.hypothetical.drawnCardsInHypothetical.includes(cardOrder)) {
           globals.elements.toggleRevealedButton?.setEnabled(false);
           return;
         }

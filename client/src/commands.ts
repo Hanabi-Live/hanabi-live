@@ -75,8 +75,8 @@ commands.set('chat', (data: ChatMessage) => {
       return;
     }
 
-    const state = globals.ui.globals.store.getState();
-    if (!state.metadata.playing && !state.metadata.finished) {
+    const UIState = globals.ui.globals.state;
+    if (!UIState.playing && !UIState.finished) {
       // The chat window was not open; pop open the chat window every time for spectators
       gameChat.toggle();
       globals.conn!.send('chatRead', {

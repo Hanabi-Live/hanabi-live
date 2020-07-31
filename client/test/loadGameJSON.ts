@@ -152,7 +152,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
             rank: a.rank,
             failed: true,
           };
-          nextState = gameStateReducer(s, action, state.metadata);
+          nextState = gameStateReducer(s, action, false, state.metadata);
           action = {
             type: 'strike', num: nextState.strikes.length, order: a.order, turn,
           };
@@ -165,7 +165,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       }
     }
 
-    nextState = gameStateReducer(nextState, action, state.metadata);
+    nextState = gameStateReducer(nextState, action, false, state.metadata);
 
     if (a.type === 'turn') {
       // Store the current state in the state table to enable replays
@@ -180,6 +180,10 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     ongoingGame: game,
     replay: { ...state.replay, states },
     cardIdentities: [],
+
+    playing: false,
+    finished: true,
+
     metadata,
     premove: null,
     pause: {

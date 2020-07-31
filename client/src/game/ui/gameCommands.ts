@@ -163,11 +163,8 @@ interface NoteData {
   notes: SpectatorNote[];
 }
 commands.set('note', (data: NoteData) => {
-  // Local variables
-  const state = globals.store!.getState();
-
   // If we are an active player and we got this message, something has gone wrong
-  if (state.metadata.playing) {
+  if (globals.state.playing) {
     return;
   }
 
@@ -192,9 +189,6 @@ interface NoteList {
   notes: string[];
 }
 commands.set('noteList', (data: NoteListData) => {
-  // Local variables
-  const state = globals.store!.getState();
-
   // Reset any existing notes
   // (we could be getting a fresh copy of all notes after an ongoing game has ended)
   for (let i = 0; i < globals.allNotes.length; i++) {
@@ -206,8 +200,8 @@ commands.set('noteList', (data: NoteListData) => {
   for (const noteList of data.notes) {
     // If we are a spectator, copy our notes from the combined list
     if (
-      !state.metadata.playing
-      && !state.metadata.finished
+      !globals.state.playing
+      && !globals.state.finished
       && noteList.name === globals.lobby.username
     ) {
       globals.ourNotes = noteList.notes;
@@ -355,9 +349,6 @@ interface ReplayLeaderData {
   playAnimation: boolean;
 }
 commands.set('replayLeader', (data: ReplayLeaderData) => {
-  // Local variables
-  const state = globals.store!.getState();
-
   // Store who the shared replay leader is
   globals.sharedReplayLeader = data.name;
   globals.amSharedReplayLeader = globals.sharedReplayLeader === globals.lobby.username;
@@ -375,8 +366,8 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
 
   // Arrange the center buttons in a certain way depending on
   // whether we are the shared replay leader
-  globals.elements.pauseSharedTurnsButton!.visible(state.replay.useSharedSegments);
-  globals.elements.useSharedTurnsButton!.visible(!state.replay.useSharedSegments);
+  globals.elements.pauseSharedTurnsButton!.visible(globals.state.replay.useSharedSegments);
+  globals.elements.useSharedTurnsButton!.visible(!globals.state.replay.useSharedSegments);
   if (globals.amSharedReplayLeader) {
     globals.elements.pauseSharedTurnsButton!.setLeft();
     globals.elements.useSharedTurnsButton!.setLeft();
@@ -561,8 +552,6 @@ const initStateStore = (data: LegacyGameMetadata) => {
     options: data.options,
     playerNames: data.playerNames,
     ourPlayerIndex: data.ourPlayerIndex,
-    playing: !data.spectating && !data.replay,
-    finished: data.replay,
     // We need to use the "nullified" version, so we access the globals
     characterAssignments: globals.metadata.characterAssignments,
     characterMetadata: data.characterMetadata,

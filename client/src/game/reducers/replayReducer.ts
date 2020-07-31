@@ -201,7 +201,7 @@ const replayReducer = produce((
       }
 
       const hypoState = original(state.hypothetical.ongoing);
-      const newState = gameStateReducer(hypoState, a, metadata);
+      const newState = gameStateReducer(hypoState, a, true, metadata);
       state.hypothetical.ongoing = newState;
 
       if (a.type === 'turn') {

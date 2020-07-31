@@ -25,7 +25,7 @@ export default function HanabiCardClickSpeedrun(
   // or are clicking on the stack base)
   if (
     (!globals.options.speedrun && !globals.lobby.settings.speedrunMode)
-    || !globals.state.metadata.playing
+    || !globals.state.playing
     || this.state.rank === STACK_BASE_RANK
   ) {
     return;

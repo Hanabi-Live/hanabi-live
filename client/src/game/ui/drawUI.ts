@@ -535,7 +535,7 @@ const drawBottomLeftButtons = () => {
     y: lobbyButtonValues.y * winH,
     width: ((bottomLeftButtonValues.w! / 2) - shortButtonSpacing) * winW,
     height: lobbyButtonValues.h! * winH,
-    visible: globals.state.metadata.playing,
+    visible: globals.state.playing,
   }, [globals.imageLoader!.get('home')!]);
   globals.layers.UI.add(lobbyButtonSmall as any);
   lobbyButtonSmall.on('click tap', lobbyButtonClick);
@@ -550,7 +550,7 @@ const drawBottomLeftButtons = () => {
     width: bottomLeftButtonValues.w! * winW,
     height: lobbyButtonValues.h! * winH,
     text: 'Lobby',
-    visible: !globals.state.metadata.playing,
+    visible: !globals.state.playing,
   });
   globals.layers.UI.add(lobbyButtonBig as any);
   lobbyButtonBig.on('click tap', lobbyButtonClick);
@@ -565,7 +565,7 @@ const drawBottomLeftButtons = () => {
     y: (bottomLeftButtonValues.y + (2 * bottomLeftButtonValues.h!) + 0.02) * winH,
     width: ((bottomLeftButtonValues.w! / 2) - shortButtonSpacing) * winW,
     height: bottomLeftButtonValues.h! * winH,
-    visible: globals.state.metadata.playing,
+    visible: globals.state.playing,
   }, [globals.imageLoader!.get('skull')!]);
   globals.layers.UI.add(killButton as any);
   killButton.on('click tap', () => {
@@ -1392,7 +1392,7 @@ const drawTimers = () => {
   // We don't want the timer to show in replays or untimed games
   // (unless they have the optional setting turned on)
   if (
-    globals.state.metadata.finished
+    globals.state.finished
     || (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed)
   ) {
     return;

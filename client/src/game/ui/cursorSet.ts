@@ -14,7 +14,7 @@ export default function cursorSet(cursorType: CursorType) {
   // Don't show any custom cursors if we are an active player in a speedrun
   if (
     (globals.options.speedrun || globals.lobby.settings.speedrunMode)
-    && globals.state.metadata.playing
+    && globals.state.playing
   ) {
     return;
   }

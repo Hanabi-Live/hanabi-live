@@ -12,14 +12,14 @@ export const onChanged = (pause: PauseState) => {
   globals.elements.pauseArea!.visible(pause.active);
 
   // The timer elements may not be initialized under certain conditions (e.g. an untimed game)
-  globals.elements.timer1?.visible(!pause.active && globals.state.metadata.playing);
+  globals.elements.timer1?.visible(!pause.active && globals.state.playing);
   globals.elements.timer2?.visible(!pause.active && !isOurTurn());
   globals.elements.timer1Circle?.visible(pause.queued);
 
   if (pause.active) {
     globals.elements.pauseText!.text(`by: ${globals.state.metadata.playerNames[pause.playerIndex]}`);
 
-    if (globals.state.metadata.playing) {
+    if (globals.state.playing) {
       globals.elements.pauseButton!.setEnabled(true);
       globals.elements.pauseButton!.opacity(1);
     } else {

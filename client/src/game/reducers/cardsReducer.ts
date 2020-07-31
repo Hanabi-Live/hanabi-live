@@ -18,6 +18,7 @@ const cardsReducer = (
   deck: readonly CardState[],
   action: GameAction,
   game: GameState,
+  playing: boolean,
   metadata: GameMetadata,
 ) => {
   const variant = getVariant(metadata.options.variantName);
@@ -45,7 +46,7 @@ const cardsReducer = (
       const rank = action.rank;
 
       // Now that we know the identity of this card, we can remove card possibilities on other cards
-      revealCard(suitIndex, rank, card, newDeck, game, metadata);
+      revealCard(suitIndex, rank, card, newDeck, game, playing, metadata);
 
       newDeck[order] = {
         ...card,
@@ -84,7 +85,7 @@ const cardsReducer = (
         ) {
           // Since this card is now fully identified,
           // update the possibilities on the cards in people's hands
-          const hands = handsSeeingCardForFirstTime(game, card, metadata);
+          const hands = handsSeeingCardForFirstTime(game, card, playing, metadata);
           for (const hand of hands) {
             removePossibilityOnHand(
               newDeck,
@@ -127,7 +128,15 @@ const cardsReducer = (
       const rank = nullIfNegative(action.rank) ?? card.rank;
 
       // If we know the full identity of this card, we can remove card possibilities on other cards
-      const identityDetermined = revealCard(suitIndex, rank, card, newDeck, game, metadata);
+      const identityDetermined = revealCard(
+        suitIndex,
+        rank,
+        card,
+        newDeck,
+        game,
+        playing,
+        metadata,
+      );
 
       let segmentPlayed = card.segmentPlayed;
       let segmentDiscarded = card.segmentDiscarded;
@@ -347,6 +356,7 @@ const revealCard = (
   card: CardState,
   newDeck: CardState[],
   game: GameState,
+  playing: boolean,
   metadata: GameMetadata,
 ) => {
   // Local variables
@@ -366,7 +376,7 @@ const revealCard = (
 
   // Since this card is now fully identified,
   // update the possibilities on the cards in people's hands
-  const hands = handsSeeingCardForFirstTime(game, card, metadata);
+  const hands = handsSeeingCardForFirstTime(game, card, playing, metadata);
   for (const hand of hands) {
     removePossibilityOnHand(newDeck, hand, card.order, suitIndex, rank, variant);
   }
@@ -374,8 +384,13 @@ const revealCard = (
   return true;
 };
 
-const handsSeeingCardForFirstTime = (game: GameState, card: CardState, metadata: GameMetadata) => {
-  if (metadata.playing && metadata.ourPlayerIndex === card.location) {
+const handsSeeingCardForFirstTime = (
+  game: GameState,
+  card: CardState,
+  playing: boolean,
+  metadata: GameMetadata,
+) => {
+  if (playing && metadata.ourPlayerIndex === card.location) {
     // All hands see this card now, from our perspective
     return game.hands;
   }

@@ -32,7 +32,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       const {
         game,
         states,
-      } = reduceGameActions(action.actions, initialState, state.metadata);
+      } = reduceGameActions(action.actions, initialState, state.playing, state.metadata);
 
       state.ongoingGame = castDraft(game);
 
@@ -61,14 +61,14 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     case 'finishOngoingGame': {
       // If we were playing in a game that just ended,
       // recalculate the whole game as a spectator to fix card possibilities
-      if (state.metadata.playing) {
-        state.metadata.playing = false;
+      if (state.playing) {
+        state.playing = false;
 
         const initialState = initialGameState(state.metadata);
         const {
           game,
           states,
-        } = reduceGameActions(state.replay.actions, initialState, state.metadata);
+        } = reduceGameActions(state.replay.actions, initialState, state.playing, state.metadata);
 
         state.ongoingGame = castDraft(game);
         state.visibleState = state.ongoingGame;
@@ -77,7 +77,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
       // Mark that this game is now finished
       // The finished view will take care of enabling the UI elements for a shared replay
-      state.metadata.finished = true;
+      state.finished = true;
 
       // If we were in an in-game replay when the game ended,
       // keep us at the current turn and do not jerk us away to the end
@@ -145,7 +145,12 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     default: {
       // A new game action happened
       const previousSegment = state.ongoingGame.turn.segment;
-      state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action, state.metadata)!;
+      state.ongoingGame = gameStateReducer(
+        original(state.ongoingGame),
+        action,
+        state.playing,
+        state.metadata,
+      );
 
       // We copy the card identities to the global state for convenience
       updateCardIdentities(state);
@@ -172,11 +177,12 @@ export default stateReducer;
 const reduceGameActions = (
   actions: GameAction[],
   initialState: GameState,
+  playing: boolean,
   metadata: GameMetadata,
 ) => {
   const states: GameState[] = [initialState];
   const game = actions.reduce((s: GameState, a: GameAction) => {
-    const nextState = gameStateReducer(s, a, metadata);
+    const nextState = gameStateReducer(s, a, playing, metadata);
 
     if (shouldStoreSegment(nextState.turn.segment, s.turn.segment, a)) {
       states[nextState.turn.segment!] = nextState;
