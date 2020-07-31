@@ -162,6 +162,6 @@ declare global {
 }
 
 // Make the globals available from the JavaScript console (for debugging purposes)
-if (typeof window !== 'undefined') {
+if (window !== undefined) {
   window.globals = globals;
 }

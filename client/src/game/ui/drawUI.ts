@@ -860,7 +860,10 @@ const drawScoreArea = () => {
     duration: 0.5,
     easing: Konva.Easings.EaseInOut,
     onFinish: () => {
-      if (globals.elements.cluesNumberLabelPulse) {
+      if (
+        globals.elements.cluesNumberLabelPulse !== undefined
+        && globals.elements.cluesNumberLabelPulse !== null
+      ) {
         globals.elements.cluesNumberLabelPulse.reverse();
       }
     },
@@ -1080,7 +1083,10 @@ const drawSharedReplay = () => {
     duration: 0.5,
     easing: Konva.Easings.EaseInOut,
     onFinish: () => {
-      if (globals.elements.sharedReplayLeaderLabelPulse) {
+      if (
+        globals.elements.sharedReplayLeaderLabelPulse !== undefined
+        && globals.elements.sharedReplayLeaderLabelPulse !== null
+      ) {
         globals.elements.sharedReplayLeaderLabelPulse.reverse();
       }
     },
@@ -1999,6 +2005,7 @@ const drawExtraAnimations = () => {
   const x = (playAreaValues.x + (playAreaValues.w! / 2) - 0.05);
   const y = (playAreaValues.y + (playAreaValues.h! / 2) - 0.05);
   const size = 0.1;
+  const duration = 0.5;
 
   globals.elements.sharedReplayForward = new Konva.Image({
     x: x * winW,
@@ -2012,10 +2019,13 @@ const drawExtraAnimations = () => {
   globals.layers.UI2.add(globals.elements.sharedReplayForward);
   globals.elements.sharedReplayForwardTween = new Konva.Tween({
     node: globals.elements.sharedReplayForward,
-    duration: 0.5,
+    duration,
     opacity: 1,
     onFinish: () => {
-      if (globals.elements.sharedReplayForwardTween) {
+      if (
+        globals.elements.sharedReplayForwardTween !== undefined
+        && globals.elements.sharedReplayForwardTween !== null
+      ) {
         globals.elements.sharedReplayForwardTween.reverse();
       }
     },
@@ -2032,10 +2042,13 @@ const drawExtraAnimations = () => {
   globals.layers.UI2.add(globals.elements.sharedReplayBackward);
   globals.elements.sharedReplayBackwardTween = new Konva.Tween({
     node: globals.elements.sharedReplayBackward,
-    duration: 0.5,
+    duration,
     opacity: 1,
     onFinish: () => {
-      if (globals.elements.sharedReplayBackwardTween) {
+      if (
+        globals.elements.sharedReplayBackwardTween !== undefined
+        && globals.elements.sharedReplayBackwardTween !== null
+      ) {
         globals.elements.sharedReplayBackwardTween.reverse();
       }
     },

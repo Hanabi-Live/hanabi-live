@@ -65,6 +65,6 @@ declare global {
     globals2: Globals;
   }
 }
-if (typeof window !== 'undefined') {
+if (window !== undefined) {
   window.globals2 = globals;
 }

@@ -683,7 +683,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
       // and the user rewinds to the beginning of the replay
       layoutChild.show();
-      layoutChild.opacity(1); // Cards can be faded in certain variants
+      layoutChild.opacity(1); // Cards can be hidden in certain variants
       const pos = layoutChild.getAbsolutePosition();
       globals.elements.deck!.add(layoutChild as any);
       layoutChild.setAbsolutePosition(pos);
@@ -698,7 +698,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         rotation: 0,
         easing: Konva.Easings.EaseOut,
         onFinish: () => {
-          if (this === undefined || layoutChild === undefined) {
+          if (this === undefined || this.parent === undefined || this.parent === null) {
             return;
           }
           this.finishedTweening();

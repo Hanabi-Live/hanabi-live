@@ -59,9 +59,6 @@ export const destroy = () => {
 };
 
 const keydown = (event: JQuery.KeyDownEvent) => {
-  // Local variables
-  const state = globals.store!.getState();
-
   // Disable hotkeys if we not currently in a game
   // (this should not be possible, as the handler gets unregistered upon going back to the lobby,
   // but double check just in case)
@@ -170,7 +167,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   }
 
   // Replay hotkeys
-  if (state.replay.hypothetical !== null) {
+  if (globals.state.replay.hypothetical !== null) {
     if (event.key === 'ArrowLeft') {
       hypothetical.sendBack();
       return;
@@ -224,13 +221,13 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   }
 
   // Check for other keyboard hotkeys
-  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
-  const ourPlayerIndex = state.metadata.ourPlayerIndex;
+  const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
+  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
   const shouldHaveKeyboardHotkeysForActions = (
     // If it is our turn in an ongoing-game
-    (!state.replay.active && currentPlayerIndex === ourPlayerIndex)
+    (!globals.state.replay.active && currentPlayerIndex === ourPlayerIndex)
     // If we are in a hypothetical and we are the shared replay leader
-    || (state.replay.hypothetical !== null && globals.amSharedReplayLeader)
+    || (globals.state.replay.hypothetical !== null && globals.amSharedReplayLeader)
   );
   if (!shouldHaveKeyboardHotkeysForActions) {
     return;

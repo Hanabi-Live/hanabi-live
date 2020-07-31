@@ -146,7 +146,7 @@ export default class CardLayout extends Konva.Group {
             opacity: 1,
             easing: Konva.Easings.EaseOut,
             onFinish: () => {
-              if (card === undefined || layoutChild === undefined) {
+              if (card === undefined || card.parent === undefined || card.parent === null) {
                 return;
               }
               card.finishedTweening();

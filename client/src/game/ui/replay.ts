@@ -11,15 +11,12 @@ import { animate } from './konvaHelpers';
 // ---------------------
 
 export const enter = (customSegment?: number) => {
-  // Local variables
-  const state = globals.store!.getState();
-
-  if (state.replay.active) {
+  if (globals.state.replay.active) {
     return;
   }
 
   // By default, use the final segment of the ongoing game, or 0
-  const segment = customSegment ?? state.ongoingGame.turn.segment ?? 0;
+  const segment = customSegment ?? globals.state.ongoingGame.turn.segment ?? 0;
 
   globals.store!.dispatch({
     type: 'replayEnter',
@@ -39,9 +36,8 @@ export const exit = () => {
 };
 
 export const getCurrentReplaySegment = () => {
-  const state = globals.store!.getState();
-  const finalSegment = state.ongoingGame.turn.segment!;
-  return state.replay.active ? state.replay.segment : finalSegment;
+  const finalSegment = globals.state.ongoingGame.turn.segment!;
+  return globals.state.replay.active ? globals.state.replay.segment : finalSegment;
 };
 
 export const goToSegment = (
@@ -49,9 +45,7 @@ export const goToSegment = (
   breakFree: boolean = false,
   force: boolean = false,
 ) => {
-  // Local variables
-  const state = globals.store!.getState();
-  const finalSegment = state.ongoingGame.turn.segment!;
+  const finalSegment = globals.state.ongoingGame.turn.segment!;
   const currentSegment = getCurrentReplaySegment();
 
   // Validate the target segment
@@ -64,7 +58,7 @@ export const goToSegment = (
 
   // Disable replay navigation while we are in a hypothetical
   // (hypothetical navigation functions will set "force" equal to true)
-  if (state.replay.hypothetical !== null && !force) {
+  if (globals.state.replay.hypothetical !== null && !force) {
     return;
   }
 
@@ -78,7 +72,7 @@ export const goToSegment = (
   if (
     globals.metadata.sharedReplay
     && breakFree
-    && state.replay.useSharedSegments
+    && globals.state.replay.useSharedSegments
     && !globals.amSharedReplayLeader
   ) {
     globals.store!.dispatch({
@@ -95,7 +89,7 @@ export const goToSegment = (
   if (
     globals.metadata.sharedReplay
     && globals.amSharedReplayLeader
-    && state.replay.useSharedSegments
+    && globals.state.replay.useSharedSegments
   ) {
     globals.store!.dispatch({
       type: 'replaySharedSegment',
@@ -250,15 +244,12 @@ const positionReplayShuttle = (
 };
 
 export const adjustShuttles = (fast: boolean) => {
-  // Local variables
-  const state = globals.store!.getState();
-
   // If the two shuttles are overlapping, then make the normal shuttle a little bit smaller
   let smaller = false;
   if (
     globals.metadata.sharedReplay
-    && !state.replay.useSharedSegments
-    && state.replay.segment === state.replay.sharedSegment
+    && !globals.state.replay.useSharedSegments
+    && globals.state.replay.segment === globals.state.replay.sharedSegment
   ) {
     smaller = true;
   }
@@ -269,7 +260,7 @@ export const adjustShuttles = (fast: boolean) => {
   // If it is smaller, we need to nudge it to the right a bit in order to center it
   positionReplayShuttle(
     globals.elements.replayShuttle!,
-    state.replay.segment,
+    globals.state.replay.segment,
     smaller,
     fast || draggingShuttle,
   );
@@ -279,9 +270,12 @@ export const adjustShuttles = (fast: boolean) => {
   if (globals.metadata.sharedReplay) {
     positionReplayShuttle(
       globals.elements.replayShuttleShared!,
-      state.replay.sharedSegment,
+      globals.state.replay.sharedSegment,
       false,
-      fast || (draggingShuttle && state.replay.sharedSegment === state.replay.segment),
+      fast || (
+        draggingShuttle
+        && globals.state.replay.sharedSegment === globals.state.replay.segment
+      ),
     );
   }
 };
@@ -312,12 +306,9 @@ export const promptTurn = () => {
 // --------------------------------
 
 export const toggleSharedSegments = () => {
-  // Local variables
-  const state = globals.store!.getState();
-
   // If we are the replay leader and we are re-enabling shared segments,
   // first update the shared segment to our current segment
-  if (globals.amSharedReplayLeader && !state.replay.useSharedSegments) {
+  if (globals.amSharedReplayLeader && !globals.state.replay.useSharedSegments) {
     globals.store!.dispatch({
       type: 'replaySharedSegment',
       segment: getCurrentReplaySegment(),
@@ -326,6 +317,6 @@ export const toggleSharedSegments = () => {
 
   globals.store!.dispatch({
     type: 'replayUseSharedSegments',
-    useSharedSegments: !state.replay.useSharedSegments,
+    useSharedSegments: !globals.state.replay.useSharedSegments,
   });
 };

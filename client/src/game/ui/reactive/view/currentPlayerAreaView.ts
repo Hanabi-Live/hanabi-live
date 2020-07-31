@@ -155,7 +155,9 @@ export const onChanged = (data: {
       rotation,
       easing: Konva.Easings.EaseInOut,
       onFinish: () => {
-        currentPlayerArea.arrow.rotation(unmodifiedRotation);
+        if (currentPlayerArea.arrow !== undefined && currentPlayerArea.arrow !== null) {
+          currentPlayerArea.arrow.rotation(unmodifiedRotation);
+        }
       },
     }).play();
   }

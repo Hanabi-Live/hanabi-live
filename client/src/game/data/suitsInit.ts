@@ -40,7 +40,7 @@ export default function suitsInit(COLORS: Map<string, Color>) {
     let abbreviation: string = suitJSON.abbreviation ?? '';
     if (abbreviation === '') {
       const color = COLORS.get(name);
-      if (typeof color !== 'undefined') {
+      if (color !== undefined) {
         abbreviation = color.abbreviation;
       } else {
         abbreviation = name.charAt(0);
@@ -86,7 +86,7 @@ export default function suitsInit(COLORS: Map<string, Color>) {
         }
 
         const colorObject = COLORS.get(colorString);
-        if (typeof colorObject !== 'undefined') {
+        if (colorObject !== undefined) {
           clueColors.push(colorObject);
         } else {
           throw new Error(`The color "${colorString}" in the suit "${suitName}" does not exist.`);
@@ -95,7 +95,7 @@ export default function suitsInit(COLORS: Map<string, Color>) {
     } else if (!allClueColors && !noClueColors) {
       // The clue colors were not specified; by default, use the color of the same name
       const color = COLORS.get(name);
-      if (typeof color !== 'undefined') {
+      if (color !== undefined) {
         clueColors.push(color);
       } else if (name !== 'Unknown') {
         // The "Unknown" suit is not supposed to have clue colors
@@ -112,7 +112,7 @@ export default function suitsInit(COLORS: Map<string, Color>) {
     let fillColorblind = '';
     if (fill === '') {
       const color = COLORS.get(name);
-      if (typeof color !== 'undefined') {
+      if (color !== undefined) {
         fill = color.fill;
         fillColorblind = color.fillColorblind;
       } else if (clueColors.length > 0) {

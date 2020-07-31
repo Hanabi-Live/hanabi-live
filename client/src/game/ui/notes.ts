@@ -421,18 +421,15 @@ export const setCardIndicator = (order: number) => {
 };
 
 export const shouldShowIndicator = (order: number) => {
-  // Local variables
-  const state = globals.store!.getState();
-
   // If we are a player in an ongoing game,
   // show the note indicator if we have a non-blank note on it
-  if (state.playing) {
+  if (globals.state.playing) {
     return globals.ourNotes[order] !== '';
   }
 
   // Morphed cards (in a hypothetical) should never show the note indicator
-  if (state.replay.hypothetical !== null) {
-    const cardMorphedIdentity = state.replay.hypothetical.morphedIdentities[order];
+  if (globals.state.replay.hypothetical !== null) {
+    const cardMorphedIdentity = globals.state.replay.hypothetical.morphedIdentities[order];
     if (cardMorphedIdentity !== undefined) {
       return false;
     }

@@ -62,7 +62,7 @@ export default function variantsInit(
       }
 
       const suitObject = SUITS.get(suitString);
-      if (typeof suitObject !== 'undefined') {
+      if (suitObject !== undefined) {
         suits.push(suitObject);
       } else {
         throw new Error(`The suit "${suitString}" in the variant "${name}" does not exist.`);
@@ -92,7 +92,7 @@ export default function variantsInit(
         }
 
         const colorObject = COLORS.get(colorString);
-        if (typeof colorObject !== 'undefined') {
+        if (colorObject !== undefined) {
           clueColors.push(colorObject);
         } else {
           throw new Error(`The color "${colorString}" in the variant "${name}" does not exist.`);

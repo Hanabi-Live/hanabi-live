@@ -71,9 +71,12 @@ export const animate = (
     const config: any = {
       node,
       onFinish: () => {
-        if (node === undefined) {
+        // If the game is restarted in the middle of an animation,
+        // it is possible to get here with something important being undefined
+        if (node === undefined || globals.store === null || globals.state === undefined) {
           return;
         }
+
         if (node.tween !== null) {
           node.tween.destroy();
           node.tween = null;

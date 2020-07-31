@@ -50,20 +50,19 @@ export default class LayoutChild extends Konva.Group {
     child.on('heightChange', change);
   }
 
-  // Note that this method cannot have a name of "setDraggable()",
+  // Note that this method cannot be named "setDraggable()",
   // since that would overlap with the Konva function
   checkSetDraggable() {
-    const state = globals.store?.getState();
-    if (state === undefined || state === null || state.visibleState === null) {
+    if (globals.state.visibleState === null) {
       return;
     }
-    if (this.shouldBeDraggable(state.visibleState.turn.currentPlayerIndex)) {
+
+    if (this.shouldBeDraggable(globals.state.visibleState.turn.currentPlayerIndex)) {
       this.draggable(true);
       this.on('dragstart', this.dragStart);
       this.on('dragend', this.dragEnd);
       this.on('mousemove', (event: Konva.KonvaEventObject<MouseEvent>) => {
-        if (event.evt.buttons % 2 === 1) {
-          // Left-click is being held down
+        if (event.evt.buttons % 2 === 1) { // Left-click is being held down
           cursorSet('dragging');
           this.card.setVisualEffect('dragging');
         } else {
@@ -139,8 +138,7 @@ export default class LayoutChild extends Konva.Group {
     // In a hypothetical, dragging a rotated card from another person's hand is frustrating,
     // so temporarily remove all rotation (for the duration of the drag)
     // The rotation will be automatically reset if the card tweens back to the hand
-    const state = globals.store!.getState();
-    if (state.replay.hypothetical !== null) {
+    if (globals.state.replay.hypothetical !== null) {
       this.rotation(this.parent!.rotation() * -1);
     }
   }
@@ -200,14 +198,12 @@ export default class LayoutChild extends Konva.Group {
   // do a check to ensure that it is actually playable to prevent silly mistakes from players
   // (but disable this in speedruns and certain variants)
   checkMisplay(draggedTo: string | null) {
-    // Local variables
-    const state = globals.store!.getState();
-    const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
-    const ourPlayerIndex = state.metadata.ourPlayerIndex;
+    const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
+    const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
     const card = this.children[0] as unknown as HanabiCard;
-    let ongoingGame = state.ongoingGame;
-    if (state.replay.hypothetical !== null) {
-      ongoingGame = state.replay.hypothetical.ongoing;
+    let ongoingGame = globals.state.ongoingGame;
+    if (globals.state.replay.hypothetical !== null) {
+      ongoingGame = globals.state.replay.hypothetical.ongoing;
     }
 
     if (

@@ -12,11 +12,11 @@ const webpack = require('webpack');
 // Constants
 const outputPath = path.join(__dirname, 'webpack_output');
 const inTravis = (
-  typeof process.env.TRAVIS !== 'undefined'
+  process.env.TRAVIS !== undefined
   && process.env.TRAVIS === 'true'
 );
 const sentryTokenIsSet = (
-  typeof process.env.SENTRY_AUTH_TOKEN !== 'undefined'
+  process.env.SENTRY_AUTH_TOKEN !== undefined
   && process.env.SENTRY_AUTH_TOKEN !== ''
 );
 

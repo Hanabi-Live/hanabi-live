@@ -116,7 +116,7 @@ const input = function input(this: HTMLElement, event: JQuery.Event) {
       const emojiName = match.slice(1, -1); // Strip off the colons
 
       const emoji = emojiMap.get(emojiName);
-      if (typeof emoji !== 'undefined') {
+      if (emoji !== undefined) {
         const newText = text.replace(match, emoji);
         element.val(newText);
         event.preventDefault();
@@ -202,7 +202,7 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
     command = command.toLowerCase();
 
     const chatCommandFunction = chatCommands.get(command);
-    if (typeof chatCommandFunction !== 'undefined') {
+    if (chatCommandFunction !== undefined) {
       chatCommandFunction(roomID, args);
       return;
     }
