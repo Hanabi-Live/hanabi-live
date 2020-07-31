@@ -48,12 +48,6 @@ func (g *Game) End() {
 	g.Turn++
 	t.NotifyTurn()
 
-	// Give all of the players and spectators the full listing of the cards in the deck
-	t.NotifyCardIdentities()
-
-	// Notify everyone that the game is over
-	t.NotifyGameOver()
-
 	// Notify everyone that the table was deleted
 	// (we will send a new table message later for the shared replay)
 	notifyAllTableGone(t)
@@ -91,7 +85,7 @@ func (g *Game) End() {
 	gameHistoryList := make([]*GameHistory, 0)
 	gameHistoryList = append(gameHistoryList, &GameHistory{
 		// The ID is recorded in the "WriteDatabase()" function above
-		ID:                 t.ExtraOptions.DatabaseID,
+		ID:                 g.ExtraOptions.DatabaseID,
 		Options:            g.Options,
 		Seed:               g.Seed,
 		Score:              g.Score,
@@ -433,6 +427,12 @@ func (t *Table) ConvertToSharedReplay() {
 	}
 	t.NotifyConnected()
 
+	// Give all of the players and spectators the full listing of the cards in the deck
+	t.NotifyCardIdentities()
+
+	// Notify everyone that the game is over and that they should prepare the UI for a shared replay
+	t.NotifyGameOver()
+
 	for _, sp := range t.Spectators {
 		// Reset everyone's status (both players and spectators are now spectators)
 		if sp.Session != nil {
@@ -446,16 +446,6 @@ func (t *Table) ConvertToSharedReplay() {
 
 		// Send them the notes from all the players & spectators
 		sp.Session.NotifyNoteList(t, -1)
-
-		// Send them the database ID
-		type DatabaseIDMessage struct {
-			TableID    int `json:"tableID"`
-			DatabaseID int `json:"databaseID"`
-		}
-		sp.Session.Emit("databaseID", &DatabaseIDMessage{
-			TableID:    t.ID,
-			DatabaseID: t.ExtraOptions.DatabaseID,
-		})
 	}
 
 	notifyAllTable(t)    // Update the spectator list for the row in the lobby

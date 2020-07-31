@@ -65,17 +65,6 @@ commands.set('connected', (data: ConnectedData) => {
   globals.layers.UI.batchDraw();
 });
 
-interface DatabaseIDData {
-  tableID: number;
-  databaseID: number;
-}
-commands.set('databaseID', (data: DatabaseIDData) => {
-  globals.store!.dispatch({
-    type: 'databaseID',
-    databaseID: data.databaseID,
-  });
-});
-
 interface CardIdentitiesData {
   tableID: number;
   cardIdentities: CardIdentity[];
@@ -87,9 +76,13 @@ commands.set('cardIdentities', (data: CardIdentitiesData) => {
   });
 });
 
-commands.set('gameOver', () => {
+interface GameOverData {
+  databaseID: number;
+}
+commands.set('gameOver', (data: GameOverData) => {
   globals.store!.dispatch({
     type: 'finishOngoingGame',
+    databaseID: data.databaseID,
   });
 });
 

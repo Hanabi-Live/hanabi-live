@@ -224,14 +224,21 @@ func (t *Table) NotifySound() {
 }
 
 func (t *Table) NotifyGameOver() {
+	type GameOverMessage struct {
+		DatabaseID int
+	}
+	gameOverMessage := &GameOverMessage{
+		DatabaseID: t.ExtraOptions.DatabaseID,
+	}
+
 	for _, p := range t.Players {
 		if p.Present {
-			p.Session.Emit("gameOver", nil)
+			p.Session.Emit("gameOver", gameOverMessage)
 		}
 	}
 
 	for _, sp := range t.Spectators {
-		sp.Session.Emit("gameOver", nil)
+		sp.Session.Emit("gameOver", gameOverMessage)
 	}
 }
 

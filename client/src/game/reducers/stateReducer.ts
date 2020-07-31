@@ -79,6 +79,9 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       // The finished view will take care of enabling the UI elements for a shared replay
       state.finished = true;
 
+      // Record the database ID of the game
+      state.replay.databaseID = action.databaseID;
+
       // If we were in an in-game replay when the game ended,
       // keep us at the current turn and do not jerk us away to the end
       // Otherwise, initialize the replay segment to be equal to the penultimate segment
@@ -99,11 +102,6 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       state.replay.shared = true;
       state.replay.sharedSegment = penultimateSegment;
 
-      break;
-    }
-
-    case 'databaseID': {
-      state.replay.databaseID = action.databaseID;
       break;
     }
 
