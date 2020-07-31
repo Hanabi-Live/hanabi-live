@@ -232,12 +232,48 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
   }
 
-  private shouldShowClueBorder() {
+  setBorder() {
+    this.cluedBorder!.visible(this.shouldShowClueBorder());
+    this.chopMoveBorder!.visible(this.shouldShowChopMoveBorder());
+    this.finesseBorder!.visible(this.shouldShowFinesseBorder());
+
+    // Additionally, when cards are clued,
+    // they should raise up a little bit to make it clear that they are touched
+    // However, don't do this for other people's hands in Keldon mode
+    const offset = this.isRaisedBecauseOfClues() ? 0.6 : 0.5;
+    this.offsetY(offset * CARD_H);
+  }
+
+  private shouldShowAnyBorder() {
     return (
-      this.state.numPositiveClues > 0
-      && !cardRules.isPlayed(this.state)
+      !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
-      && !this.note.unclued
+      && (!this.note.unclued || !globals.state.playing)
+    );
+  }
+
+  private shouldShowClueBorder() {
+    return this.shouldShowAnyBorder() && cardRules.isClued(this.state);
+  }
+
+  private shouldShowChopMoveBorder() {
+    return (
+      this.shouldShowAnyBorder()
+      // The clue border has precedence over the chop move border
+      && !this.shouldShowClueBorder()
+      && globals.state.playing
+      && this.note.chopMoved
+    );
+  }
+
+  private shouldShowFinesseBorder() {
+    return (
+      this.shouldShowAnyBorder()
+      // The clue border and the chop move border have precedence over the finesse border
+      && !this.shouldShowClueBorder()
+      && !this.shouldShowChopMoveBorder()
+      && globals.state.playing
+      && this.note.finessed
     );
   }
 
@@ -253,24 +289,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
         )
       )
     );
-  }
-
-  setClued() {
-    // When cards are clued,
-    // they should raise up a little bit to make it clear that they are touched
-    // However, don't do this for other people's hands in Keldon mode
-    this.offsetY(0.5 * CARD_H); // The default offset
-    if (this.isRaisedBecauseOfClues()) {
-      this.offsetY(0.6 * CARD_H);
-    }
-
-    this.cluedBorder!.visible(this.shouldShowClueBorder());
-
-    if (this.shouldShowClueBorder()) {
-      // Remove all special borders when a card is clued, played, discarded
-      this.chopMoveBorder!.hide();
-      this.finesseBorder!.hide();
-    }
   }
 
   setBareImage() {
@@ -1158,30 +1176,13 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     this.note = notes.checkNoteIdentity(this.variant, noteText);
     notes.checkNoteImpossibility(this.variant, this.state, this.note);
-    this.setClued();
 
-    // Feature 1 - Morph the card if it has an "exact" card note
+    // Morph the card if it has an "exact" card note
     // (or clear the bare image if the note was deleted/changed)
     this.setBareImage();
 
-    // Feature 2 - Give the card a special border if it is chop moved
-    const showSpecialBorder = (
-      !this.cluedBorder!.isVisible()
-      && !cardRules.isPlayed(this.state)
-      && !cardRules.isDiscarded(this.state)
-      && globals.state.playing
-    );
-
-    this.chopMoveBorder!.visible((
-      this.note.chopMoved
-      && showSpecialBorder
-    ));
-
-    // Feature 3 - Give the card a special border if it is finessed
-    this.finesseBorder!.visible((
-      this.note.finessed
-      && showSpecialBorder
-    ));
+    // Since we updated the note, we might need to redraw a special border around the card
+    this.setBorder();
 
     globals.layers.card.batchDraw();
     this.setCursor();

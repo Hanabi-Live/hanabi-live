@@ -93,7 +93,7 @@ const gameStateReducer = produce((
         state.clueTokens = clueTokensRules.gain(action, state.clueTokens, variant);
       }
 
-      const touched = state.deck[action.order].numPositiveClues > 0;
+      const touched = cardRules.isClued(state.deck[action.order]);
       const text = textRules.discard(action, slot, touched, playing, metadata);
       state.log.push({
         turn: state.turn.turnNum + 1,
@@ -188,7 +188,7 @@ const gameStateReducer = produce((
       // Gain a point
       state.score += 1;
 
-      const touched = state.deck[action.order].numPositiveClues > 0;
+      const touched = cardRules.isClued(state.deck[action.order]);
       const text = textRules.play(action, slot, touched, playing, metadata);
       state.log.push({
         turn: state.turn.turnNum + 1,

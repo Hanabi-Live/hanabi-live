@@ -93,11 +93,11 @@ const subscribeToCardChanges = (order: number) => {
     subscriptions.push({ select: checkOrderAndSelect(s), onChange: l });
   }
 
-  // Clued border
+  // Borders
   sub((c) => ({
     numPositiveClues: c.numPositiveClues,
     location: c.location,
-  }), () => updateCluedBorder(order));
+  }), () => updateBorder(order));
 
   // Pips
   sub((c) => ({
@@ -131,8 +131,8 @@ const subscribeToCardChanges = (order: number) => {
 // TODO: these functions should pass the value of the changed properties,
 // and not let the UI query the whole state object
 
-const updateCluedBorder = (order: number) => {
-  globals.deck[order].setClued();
+const updateBorder = (order: number) => {
+  globals.deck[order].setBorder();
   globals.layers.card.batchDraw();
 };
 
