@@ -3,6 +3,7 @@
 import Konva from 'konva';
 import { LABEL_COLOR } from '../../constants';
 import * as debug from '../../debug';
+import * as modals from '../../modals';
 import * as deck from '../rules/deck';
 import * as stats from '../rules/stats';
 import * as variantRules from '../rules/variant';
@@ -1121,6 +1122,11 @@ const drawSharedReplay = () => {
       return;
     }
 
+    if (globals.state.spectators.length === 1) {
+      modals.warningShow('You are the only person in the shared replay, so you cannot pass the leader to someone else.');
+      return;
+    }
+
     const spectatorMap: Map<number, string> = new Map<number, string>();
 
     let msg = 'What is the number of the person that you want to pass the replay leader to?\n\n';
@@ -1131,7 +1137,7 @@ const drawSharedReplay = () => {
       }
 
       spectatorMap.set(i, spectator.name);
-      msg += `${i} - ${spectator}\n`;
+      msg += `${i} - ${spectator.name}\n`;
       i += 1;
     }
     const targetString = window.prompt(msg);
