@@ -4,6 +4,7 @@ import GameMetadata from './GameMetadata';
 import GameState from './GameState';
 import PauseState from './PauseState';
 import ReplayState from './ReplayState';
+import Spectator from './Spectator';
 
 export default interface State {
   readonly visibleState: GameState | null; // Null during initialization
@@ -22,4 +23,5 @@ export default interface State {
   readonly cardIdentities: readonly CardIdentity[];
   readonly premove: ClientAction | null;
   readonly pause: PauseState;
+  readonly spectators: Spectator[];
 }

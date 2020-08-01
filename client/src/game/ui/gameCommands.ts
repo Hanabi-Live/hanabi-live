@@ -3,7 +3,7 @@
 // for e.g. in-game replays
 
 import { createStore } from 'redux';
-import { initArray, trimReplaySuffixFromURL } from '../../misc';
+import { initArray, trimReplaySuffixFromURL, nullIfNegative } from '../../misc';
 import * as sentry from '../../sentry';
 import { getVariant } from '../data/gameData';
 import initialState from '../reducers/initialStates/initialState';
@@ -13,6 +13,7 @@ import CardIdentity from '../types/CardIdentity';
 import GameMetadata from '../types/GameMetadata';
 import LegacyGameMetadata from '../types/LegacyGameMetadata';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
+import Spectator from '../types/Spectator';
 import SpectatorNote from '../types/SpectatorNote';
 import State from '../types/State';
 import * as arrows from './arrows';
@@ -78,11 +79,13 @@ commands.set('cardIdentities', (data: CardIdentitiesData) => {
 
 interface GameOverData {
   databaseID: number;
+  sharedReplayLeader: string;
 }
 commands.set('gameOver', (data: GameOverData) => {
   globals.store!.dispatch({
     type: 'finishOngoingGame',
     databaseID: data.databaseID,
+    sharedReplayLeader: data.sharedReplayLeader,
   });
 });
 
@@ -191,7 +194,7 @@ commands.set('noteList', (data: NoteListData) => {
     if (
       !globals.state.playing
       && !globals.state.finished
-      && noteList.name === globals.lobby.username
+      && noteList.name === globals.state.metadata.ourUsername
     ) {
       globals.ourNotes = noteList.notes;
     }
@@ -282,7 +285,7 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
   if (
     globals.state.replay.shared === null
     // Shared replay leaders already drew the arrow after sending the "replayAction" message
-    || globals.amSharedReplayLeader
+    || globals.state.replay.shared.amLeader
     // If we are not currently using the shared segments,
     // the arrow that the shared replay leader is highlighting will not be applicable
     || !globals.state.replay.shared.useSharedSegments
@@ -334,55 +337,16 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
 // This is used in shared replays to specify who the leader is
 interface ReplayLeaderData {
   name: string;
-  playAnimation: boolean;
 }
 commands.set('replayLeader', (data: ReplayLeaderData) => {
   if (globals.state.replay.shared === null) {
     return;
   }
 
-  // Store who the shared replay leader is
-  globals.sharedReplayLeader = data.name;
-  globals.amSharedReplayLeader = globals.sharedReplayLeader === globals.lobby.username;
-
-  // Update the UI and play an animation to indicate there is a new replay leader
-  globals.elements.sharedReplayLeaderLabel!.show();
-  // (the crown might be invisible if we just finished an ongoing game)
-  globals.elements.sharedReplayLeaderCircle!.visible(globals.amSharedReplayLeader);
-  if (data.playAnimation) {
-    // We only want the animation to play when the leader changes
-    // The server will set "playAnimation" to false when a player is first loading into a game
-    // (or when a game ends)
-    globals.elements.sharedReplayLeaderLabelPulse!.play();
-  }
-
-  // Arrange the center buttons in a certain way depending on
-  // whether we are the shared replay leader
-  globals.elements.pauseSharedTurnsButton!.visible(globals.state.replay.shared.useSharedSegments);
-  globals.elements.useSharedTurnsButton!.visible(!globals.state.replay.shared.useSharedSegments);
-  if (globals.amSharedReplayLeader) {
-    globals.elements.pauseSharedTurnsButton!.setLeft();
-    globals.elements.useSharedTurnsButton!.setLeft();
-  } else {
-    globals.elements.pauseSharedTurnsButton!.setCenter();
-    globals.elements.useSharedTurnsButton!.setCenter();
-  }
-  globals.elements.enterHypoButton!.visible(globals.amSharedReplayLeader);
-  const currentPlayerIndex = globals.state.visibleState!.turn.currentPlayerIndex;
-  globals.elements.enterHypoButton!.setEnabled(currentPlayerIndex !== null);
-
-  // Enable/disable the restart button
-  globals.elements.restartButton!.visible(globals.amSharedReplayLeader);
-
-  globals.layers.UI.batchDraw();
-
-  // Update the tooltip
-  let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
-  if (!globals.spectators.includes(globals.sharedReplayLeader)) {
-    // Check to see if the leader is away
-    content += ' (away)';
-  }
-  $('#tooltip-leader').tooltipster('instance').content(content);
+  globals.store!.dispatch({
+    type: 'replayLeader',
+    name: data.name,
+  });
 });
 
 // This is used in shared replays to change the segment (e.g. turn)
@@ -390,46 +354,19 @@ interface ReplaySegmentData {
   segment: number;
 }
 commands.set('replaySegment', (data: ReplaySegmentData) => {
+  // If we are the replay leader,
+  // we will already have the shared segment set to be equal to what the server is broadcasting
+  if (globals.state.replay.shared === null || globals.state.replay.shared.amLeader) {
+    return;
+  }
+
   if (typeof data.segment !== 'number' || data.segment < 0) {
     throw new Error('Received an invalid segment from the "replaySegment" command.');
   }
-
-  // If we are the replay leader,
-  // we will already have the shared segment set to be equal to what the server is broadcasting
-  // (unless we had to refresh mid-replay and need to go back to the turn that we left off)
-  if (!globals.amSharedReplayLeader || globals.sharedReplayFirstLoading) {
-    globals.sharedReplayFirstLoading = false;
-    globals.store!.dispatch({
-      type: 'replaySharedSegment',
-      segment: data.segment,
-    });
-  }
-
-  // We use the global metadata to see if we should be in a hypothetical
-  // We can't use the state because the state hypothetical is currently set to null
-  // This is because we never dispatched a "hypoEnter" when we dispatched a "replayEnter"
-  // The "hypoEnter" handler needs a valid state to exist for it to function correctly
-  if (globals.metadata.hypothetical) {
-    // It is normally impossible to receive a "replaySegment" message while in a hypothetical
-    // Thus, this must be the initial "replayTurn" message that occurs when the client is first
-    // loading
-    // We need to "catch up" to everyone else and play all of the existing hypothetical actions
-    // that have taken place
-    globals.store!.dispatch({
-      type: 'hypoStart',
-      drawnCardsShown: globals.metadata.hypoRevealed,
-    });
-
-    for (let i = 0; i < globals.metadata.hypoActions.length; i++) {
-      const action = JSON.parse(globals.metadata.hypoActions[i]) as ActionIncludingHypothetical;
-      // TODO: this should animate fast but I have no idea how to do that
-      globals.store!.dispatch({
-        type: 'hypoAction',
-        action,
-      });
-      hypothetical.checkToggleRevealedButton(action);
-    }
-  }
+  globals.store!.dispatch({
+    type: 'replaySharedSegment',
+    segment: data.segment,
+  });
 });
 
 // This is used in shared replays to make fun sounds
@@ -441,69 +378,22 @@ commands.set('replaySound', (data: ReplaySoundData) => {
 });
 
 // This is used to update the names of the people currently spectating the game
-interface SpectatorsData {
+export interface SpectatorsData {
   names: string[];
   shadowingPlayers: number[];
 }
 commands.set('spectators', (data: SpectatorsData) => {
-  // Remember the current list of spectators
-  globals.spectators = data.names;
-
-  const visible = data.names.length > 0;
-  globals.elements.spectatorsLabel!.visible(visible);
-  globals.elements.spectatorsNumLabel!.visible(visible);
-  if (visible) {
-    globals.elements.spectatorsNumLabel!.text(data.names.length.toString());
-
-    // Build the string that shows all the names
-    let nameEntries = '';
-    for (let i = 0; i < data.names.length; i++) {
-      const spectatorName = data.names[i];
-      const shadowing = data.shadowingPlayers[i];
-
-      let nameEntry = '<li>';
-      if (spectatorName === globals.lobby.username) {
-        nameEntry += `<span class="name-me">${spectatorName}</span>`;
-      } else if (globals.lobby.friends.includes(spectatorName)) {
-        nameEntry += `<span class="friend">${spectatorName}</span>`;
-      } else {
-        nameEntry += spectatorName;
-      }
-      if (shadowing !== -1) {
-        const shadowedPlayerName = globals.state.metadata.playerNames[shadowing];
-        if (shadowedPlayerName === undefined) {
-          throw new Error(`Unable to find the player name at index ${shadowing}.`);
-        }
-        if (shadowedPlayerName !== spectatorName) {
-          nameEntry += ` (🕵️ <em>${shadowedPlayerName}</em>)`;
-        }
-      }
-      nameEntry += '</li>';
-      nameEntries += nameEntry;
-    }
-    let content = '<strong>';
-    if (globals.state.finished) {
-      content += 'Shared Replay Viewers';
-    } else {
-      content += 'Spectators';
-    }
-    content += `:</strong><ol class="game-tooltips-ol">${nameEntries}</ol>`;
-    $('#tooltip-spectators').tooltipster('instance').content(content);
-  } else {
-    $('#tooltip-spectators').tooltipster('close');
+  const spectators: Spectator[] = [];
+  for (let i = 0; i < data.names.length; i++) {
+    spectators.push({
+      name: data.names[i],
+      shadowingIndex: nullIfNegative(data.shadowingPlayers[i]),
+    });
   }
-
-  // We might also need to update the content of replay leader icon
-  if (globals.state.replay.shared !== null) {
-    let content = `<strong>Leader:</strong> ${globals.sharedReplayLeader}`;
-    if (!globals.spectators.includes(globals.sharedReplayLeader)) {
-      // Check to see if the leader is away
-      content += ' (away)';
-    }
-    $('#tooltip-leader').tooltipster('instance').content(content);
-  }
-
-  globals.layers.UI.batchDraw();
+  globals.store!.dispatch({
+    type: 'spectators',
+    spectators,
+  });
 });
 
 interface SoundData {
@@ -536,6 +426,7 @@ const initStateStore = (data: LegacyGameMetadata) => {
 
   // Create the state store (using the Redux library)
   const metadata: GameMetadata = {
+    ourUsername: globals.lobby.username,
     options: data.options,
     playerNames: data.playerNames,
     ourPlayerIndex: data.ourPlayerIndex,
@@ -552,11 +443,19 @@ const initStateStore = (data: LegacyGameMetadata) => {
     window.state = globals.state;
   });
 
+  if (data.spectating) {
+    globals.store.dispatch({
+      type: 'spectating',
+    });
+  }
+
   if (data.replay) {
     globals.store.dispatch({
       type: 'replayEnterDedicated',
       shared: data.sharedReplay,
       databaseID: data.databaseID,
+      sharedReplayLeader: data.sharedReplayLeader,
+      sharedReplaySegment: data.sharedReplaySegment,
     });
 
     // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here

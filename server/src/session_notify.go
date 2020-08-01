@@ -1,7 +1,6 @@
 package main
 
 import (
-	"strconv"
 	"time"
 )
 
@@ -329,48 +328,12 @@ func (s *Session) NotifyCardIdentities(t *Table) {
 	})
 }
 
-func (s *Session) NotifyReplayLeader(t *Table, playAnimation bool) {
-	// Get the username of the game owner
-	// (the "Owner" field is used to store the leader of the shared replay)
-	name := ""
-	for _, sp := range t.Spectators {
-		if sp.ID == t.Owner {
-			name = sp.Name
-			break
-		}
-	}
-
-	if name == "" {
-		// The leader is not currently present,
-		// so try getting their username from the players object
-		for _, p := range t.Players {
-			if p.ID == t.Owner {
-				name = p.Name
-				break
-			}
-		}
-	}
-
-	if name == "" {
-		// The leader is not currently present and was not a member of the original game,
-		// so we need to look up their username from the database
-		if v, err := models.Users.GetUsername(t.Owner); err != nil {
-			logger.Error("Failed to get the username for user "+strconv.Itoa(t.Owner)+
-				" who is the owner of table:", t.ID)
-			name = "(Unknown)"
-		} else {
-			name = v
-		}
-	}
-
-	// Send it
+func (s *Session) NotifyReplayLeader(t *Table) {
 	type ReplayLeaderMessage struct {
-		Name          string `json:"name"`
-		PlayAnimation bool   `json:"playAnimation"`
+		Name string `json:"name"`
 	}
 	s.Emit("replayLeader", &ReplayLeaderMessage{
-		Name:          name,
-		PlayAnimation: playAnimation,
+		Name: t.GetSharedReplayLeaderName(),
 	})
 }
 

@@ -293,7 +293,7 @@ export const click = (
 
   if (
     globals.state.replay.shared !== null
-    && globals.amSharedReplayLeader
+    && globals.state.replay.shared.amLeader
     && globals.state.replay.shared.useSharedSegments
   ) {
     // The shared replay leader is clicking on a UI element, so send this action to the server

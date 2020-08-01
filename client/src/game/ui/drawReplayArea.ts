@@ -131,6 +131,7 @@ export default function drawReplayArea(winW: number, winH: number) {
         y: 0.07 * winH,
         width: replayButtonValues.w * winW,
         height: replayButtonValues.h * winH,
+        listening: true,
       },
       [
         globals.imageLoader!.get('replay-back-full')!,

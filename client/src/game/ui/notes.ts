@@ -43,7 +43,7 @@ export const set = (order: number, note: string) => {
 
   if (!globals.state.playing) {
     for (const noteObject of globals.allNotes[order]) {
-      if (noteObject.name === globals.lobby.username) {
+      if (noteObject.name === globals.state.metadata.ourUsername) {
         noteObject.note = note;
       }
     }

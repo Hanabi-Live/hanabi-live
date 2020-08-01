@@ -1,8 +1,8 @@
 import Konva from 'konva';
 import { variantRules } from '../../../rules';
 import ReplayActionType from '../../../types/ReplayActionType';
+import Spectator from '../../../types/Spectator';
 import globals from '../../globals';
-import isOurTurn from '../../isOurTurn';
 import * as ourHand from '../../ourHand';
 import * as replay from '../../replay';
 import * as timer from '../../timer';
@@ -10,22 +10,20 @@ import * as tooltips from '../../tooltips';
 import * as turn from '../../turn';
 
 export const onActiveChanged = (active: boolean) => {
+  globals.elements.replayArea!.visible(active);
+
   if (active) {
     // Hide the UI elements that overlap with the replay area
     turn.hideClueUIAndDisableDragging();
 
     // Next, show the replay area and initialize some UI elements
-    globals.elements.replayArea!.show();
     replay.adjustShuttles(true); // We want it to immediately snap to the end
   } else {
     // We are exiting a replay
-    globals.elements.replayArea!.hide();
     if (globals.state.premove !== null) {
       globals.elements.premoveCancelButton!.show();
     }
-    if (isOurTurn()) {
-      turn.showClueUI();
-    }
+    turn.showClueUI();
   }
 
   ourHand.checkSetDraggableAll();
@@ -85,7 +83,7 @@ export const onSharedSegmentChanged = (data: {
   }
 
   if (data.useSharedSegments) {
-    if (globals.amSharedReplayLeader) {
+    if (globals.state.replay.shared!.amLeader) {
       // Tell the rest of the spectators to go to the turn that we are now on
       globals.lobby.conn!.send('replayAction', {
         tableID: globals.lobby.tableID,
@@ -222,4 +220,59 @@ export const onFinishedChanged = (finished: boolean, previousFinished: boolean |
 
   globals.layers.timer.batchDraw();
   globals.layers.UI.batchDraw();
+};
+
+export const onSharedReplayEnter = (sharedReplay: boolean) => {
+  globals.elements.sharedReplayLeaderLabel!.visible(sharedReplay);
+};
+
+export const onSharedLeaderChanged = (_leader: string, previousLeader: string | undefined) => {
+  // Make the crown play an animation to indicate there is a new replay leader
+  // (but don't play the animation if the game just ended or we are first loading the page)
+  if (previousLeader !== undefined) {
+    globals.elements.sharedReplayLeaderLabelPulse!.play();
+  }
+};
+
+export const onSharedAmLeaderChanged = (amLeader: boolean) => {
+  globals.elements.sharedReplayLeaderCircle!.visible(amLeader);
+  globals.elements.restartButton!.visible(amLeader);
+  globals.elements.enterHypoButton!.visible(amLeader);
+
+  // Arrange the buttons in the center of the screen in a certain way depending on
+  // whether we are the shared replay leader
+  if (amLeader) {
+    globals.elements.pauseSharedTurnsButton!.setLeft();
+    globals.elements.useSharedTurnsButton!.setLeft();
+  } else {
+    globals.elements.pauseSharedTurnsButton!.setCenter();
+    globals.elements.useSharedTurnsButton!.setCenter();
+  }
+
+  globals.layers.UI.batchDraw();
+};
+
+export const onLeaderOrSpectatorsChanged = (data: {
+  leader: string | undefined;
+  spectators: Spectator[];
+}) => {
+  if (data.leader === undefined) {
+    return;
+  }
+
+  // Find out if the leader is away
+  let away = true;
+  for (const spectator of data.spectators) {
+    if (spectator.name === data.leader) {
+      away = false;
+      break;
+    }
+  }
+
+  // Update the tooltip
+  let content = `<strong>Leader:</strong> ${data.leader}`;
+  if (away) {
+    content += ' (away)';
+  }
+  $('#tooltip-leader').tooltipster('instance').content(content);
 };

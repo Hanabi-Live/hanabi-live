@@ -7,7 +7,6 @@ export default class LegacyGameMetadata {
   ourPlayerIndex: number = 0; // 0 if a spectator or a replay of a game that we were not in
   spectating: boolean = false;
   replay: boolean = false;
-  sharedReplay: boolean = false;
   databaseID: number = 0; // 0 if this is an ongoing game
   seed: string = '';
   seeded: boolean = false; // If playing a table started with the "!seed" prefix
@@ -18,6 +17,11 @@ export default class LegacyGameMetadata {
   // Character settings
   characterAssignments: Array<number | null> = [];
   characterMetadata: number[] = [];
+
+  // Shared replay settings
+  sharedReplay: boolean = false;
+  sharedReplayLeader: string = '';
+  sharedReplaySegment: number = 0;
 
   // Hypothetical settings
   hypothetical: boolean = false;

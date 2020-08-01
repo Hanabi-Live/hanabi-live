@@ -23,6 +23,7 @@ export default class FullActionLog extends Konva.Group {
       clipWidth: 0.4 * winW,
       clipHeight: 0.96 * winH,
       visible: false,
+      listening: false,
     });
 
     // The black background
@@ -34,6 +35,7 @@ export default class FullActionLog extends Konva.Group {
       fill: 'black',
       opacity: 0.9,
       cornerRadius: 0.01 * winW,
+      listening: false,
     });
     Konva.Group.prototype.add.call(this, rect);
 
@@ -48,6 +50,7 @@ export default class FullActionLog extends Konva.Group {
       y: 0.01 * winH,
       width: 0.35 * winW,
       height: 0.94 * winH,
+      listening: false,
     };
     this.logText = new MultiFitText(textOptions, maxLines);
     this.add(this.logText as any);
@@ -61,6 +64,7 @@ export default class FullActionLog extends Konva.Group {
       y: 0.01 * winH,
       width: 0.03 * winW,
       height: 0.94 * winH,
+      listening: false,
     };
     this.logNumbers = new MultiFitText(numbersOptions, maxLines);
     this.add(this.logNumbers as any);
@@ -74,6 +78,7 @@ export default class FullActionLog extends Konva.Group {
       y: 0.01 * winH,
       width: 0.35 * winW,
       height: 0.94 * winH,
+      listening: false,
     };
     this.playerLogEmptyMessage = new FitText(emptyMessageOptions);
     this.playerLogEmptyMessage.fitText('This player has not taken any actions yet.');

@@ -319,6 +319,7 @@ export default function drawHands(winW: number, winH: number) {
       rotation: handValues.rot,
       align: 'center',
       reverse: isHandReversed(j),
+      // Hands must listen in order for the events to propagate through to the cards
       listening: true,
     });
     globals.layers.card.add(globals.elements.playerHands[i] as any);
@@ -418,6 +419,7 @@ export default function drawHands(winW: number, winH: number) {
         rotation: handValues.rot,
         opacity: 0.5,
         visible: false,
+        listening: false,
       });
       globals.layers.UI.add(turnRect);
       globals.elements.playerHandTurnRects.push(turnRect);

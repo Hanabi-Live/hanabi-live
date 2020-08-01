@@ -30,6 +30,7 @@ export default class ColorButton extends Konva.Group {
       cornerRadius: 0.12 * h,
       fill: 'black',
       opacity: 0.6,
+      listening: true,
     });
     this.add(this.background);
 

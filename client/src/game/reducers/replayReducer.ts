@@ -62,7 +62,7 @@ const replayReducer = produce((
 
     case 'replaySharedSegment': {
       if (state.shared === null) {
-        throw new Error(`A "${action.type}" action was dispatched, but we not in a shared replay.`);
+        throw new Error(`A "${action.type}" action was dispatched, but we are not in a shared replay.`);
       }
       if (typeof action.segment !== 'number') {
         throw new Error(`The "${action.type}" action segment was not a number.`);
@@ -81,9 +81,25 @@ const replayReducer = produce((
 
     case 'replayUseSharedSegments': {
       if (state.shared === null) {
-        throw new Error(`A "${action.type}" action was dispatched, but we not in a shared replay.`);
+        throw new Error(`A "${action.type}" action was dispatched, but we are not in a shared replay.`);
       }
       state.shared.useSharedSegments = action.useSharedSegments;
+
+      // If we are the replay leader and we are re-enabling shared segments,
+      // we also want to update the shared segment to our current segment
+      if (state.shared.amLeader && state.shared.useSharedSegments) {
+        state.shared.segment = state.segment;
+      }
+
+      break;
+    }
+
+    case 'replayLeader': {
+      if (state.shared === null) {
+        throw new Error(`A "${action.type}" action was dispatched, but we are not in a shared replay.`);
+      }
+      state.shared.leader = action.name;
+      state.shared.amLeader = action.name === metadata.ourUsername;
       break;
     }
 

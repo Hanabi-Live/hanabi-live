@@ -35,6 +35,7 @@ export default class CurrentPlayerArea extends Konva.Group {
       width: values.w * winW,
       height: values.h * winH,
       visible: !globals.state.finished,
+      listening: false,
     });
 
     this.values = values;
@@ -48,6 +49,7 @@ export default class CurrentPlayerArea extends Konva.Group {
       cornerRadius: 0.01 * winW,
       fill: 'black',
       opacity: 0.2,
+      listening: false,
     });
     this.add(this.rect1);
 
@@ -75,6 +77,7 @@ export default class CurrentPlayerArea extends Konva.Group {
         y: 0,
       },
       shadowOpacity: 0.9,
+      listening: false,
     });
     this.add(this.text1);
 
@@ -93,6 +96,7 @@ export default class CurrentPlayerArea extends Konva.Group {
         y: 0,
       },
       shadowOpacity: 0.9,
+      listening: false,
     });
     this.add(this.text2);
 
@@ -111,6 +115,7 @@ export default class CurrentPlayerArea extends Konva.Group {
         y: 0,
       },
       shadowOpacity: 0.9,
+      listening: false,
     });
     this.add(this.text3);
 
@@ -129,6 +134,7 @@ export default class CurrentPlayerArea extends Konva.Group {
       cornerRadius: 0.01 * winW,
       fill: 'black',
       opacity: 0.2,
+      listening: false,
     });
     this.add(rect2);
 
@@ -141,6 +147,7 @@ export default class CurrentPlayerArea extends Konva.Group {
         x: (arrowValues.w / 2) * winW,
         y: (values.h / 2) * winH,
       },
+      listening: false,
     });
     this.add(this.arrow);
 
@@ -158,6 +165,7 @@ export default class CurrentPlayerArea extends Konva.Group {
       strokeWidth: baseArrowLength * 2,
       shadowBlur: 75,
       shadowOpacity: 1,
+      listening: false,
     });
     this.arrow.add(arrowBorder);
 
@@ -171,6 +179,7 @@ export default class CurrentPlayerArea extends Konva.Group {
       fill: 'black',
       stroke: 'black',
       strokeWidth: baseArrowLength,
+      listening: false,
     });
     this.arrow.add(arrowBorderEdge);
 
@@ -186,6 +195,7 @@ export default class CurrentPlayerArea extends Konva.Group {
       fill: LABEL_COLOR,
       stroke: LABEL_COLOR,
       strokeWidth: baseArrowLength,
+      listening: false,
     });
     this.arrow.add(arrowMain);
 

@@ -58,7 +58,7 @@ export default class HanabiUI {
     if (
       globals.state.finished
       && globals.state.replay.shared !== null
-      && globals.amSharedReplayLeader
+      && globals.state.replay.shared.amLeader
       && globals.state.replay.hypothetical === null
     ) {
       if (window.confirm(`${who} suggests that we go to turn ${segment}. Agree?`)) {

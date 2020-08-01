@@ -29,5 +29,6 @@ export default function initialState(metadata: GameMetadata): State {
       playerIndex: 0,
       queued: false,
     },
+    spectators: [],
   };
 }

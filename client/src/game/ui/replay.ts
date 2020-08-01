@@ -73,7 +73,7 @@ export const goToSegment = (
     breakFree
     && globals.state.replay.shared !== null
     && globals.state.replay.shared.useSharedSegments
-    && !globals.amSharedReplayLeader
+    && !globals.state.replay.shared.amLeader
   ) {
     globals.store!.dispatch({
       type: 'replayUseSharedSegments',
@@ -88,7 +88,7 @@ export const goToSegment = (
 
   if (
     globals.state.replay.shared !== null
-    && globals.amSharedReplayLeader
+    && globals.state.replay.shared.amLeader
     && globals.state.replay.shared.useSharedSegments
   ) {
     globals.store!.dispatch({
@@ -308,15 +308,6 @@ export const promptTurn = () => {
 export const toggleSharedSegments = () => {
   if (globals.state.replay.shared === null) {
     return;
-  }
-
-  // If we are the replay leader and we are re-enabling shared segments,
-  // first update the shared segment to our current segment
-  if (globals.amSharedReplayLeader && !globals.state.replay.shared.useSharedSegments) {
-    globals.store!.dispatch({
-      type: 'replaySharedSegment',
-      segment: getCurrentReplaySegment(),
-    });
   }
 
   globals.store!.dispatch({

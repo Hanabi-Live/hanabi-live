@@ -88,6 +88,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       // We want to use the penultimate segment instead of the final segment,
       // because the final segment will contain the times for all of the players,
       // and this will drown out the reason that the game ended
+      const inInGameReplay = state.replay.active;
       if (state.ongoingGame.turn.segment === null) {
         throw new Error('The segment for the ongoing game was null when it finished.');
       }
@@ -95,16 +96,17 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
         throw new Error('The segment for the ongoing game was less than 1 when it finished.');
       }
       const penultimateSegment = state.ongoingGame.turn.segment - 1;
-      if (!state.replay.active) {
+      if (!inInGameReplay) {
+        state.replay.active = true;
         state.replay.segment = penultimateSegment;
       }
 
       // Initialize the shared replay
       state.replay.shared = {
         segment: penultimateSegment,
-        useSharedSegments: !state.replay.active,
-        leader: '',
-        amLeader: false,
+        useSharedSegments: !inInGameReplay,
+        leader: action.sharedReplayLeader,
+        amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
       };
 
       break;
@@ -119,10 +121,10 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
       if (action.shared) {
         state.replay.shared = {
-          segment: 0,
+          segment: action.sharedReplaySegment,
           useSharedSegments: true,
-          leader: '',
-          amLeader: false,
+          leader: action.sharedReplayLeader,
+          amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
         };
       }
 
@@ -134,6 +136,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     case 'replaySegment':
     case 'replaySharedSegment':
     case 'replayUseSharedSegments':
+    case 'replayLeader':
     case 'hypoStart':
     case 'hypoBack':
     case 'hypoEnd':
@@ -167,6 +170,16 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
     case 'pauseQueue': {
       state.pause.queued = action.queued;
+      break;
+    }
+
+    case 'spectating': {
+      state.playing = false;
+      break;
+    }
+
+    case 'spectators': {
+      state.spectators = action.spectators;
       break;
     }
 

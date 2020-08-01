@@ -33,7 +33,6 @@ func friend(s *Session, d *CommandData, add bool) {
 		return
 	}
 
-	// Normalize the username
 	normalizedUsername := normalizeString(d.Name)
 
 	// Validate that they did not target themselves

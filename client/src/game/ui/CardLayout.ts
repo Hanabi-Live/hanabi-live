@@ -38,6 +38,7 @@ export default class CardLayout extends Konva.Group {
       height: config.height,
       fill: 'black',
       rotation: config.rotation,
+      listening: false,
     });
     globals.layers.UI.add(debugRect);
     */

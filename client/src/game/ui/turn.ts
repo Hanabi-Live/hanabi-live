@@ -8,6 +8,7 @@ import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
+import isOurTurn from './isOurTurn';
 import * as ourHand from './ourHand';
 import * as replay from './replay';
 
@@ -88,16 +89,13 @@ const handlePremove = () => {
 };
 
 export const showClueUI = () => {
-  if (globals.state.replay.active && globals.state.replay.hypothetical === null) {
+  if (!isOurTurn()) {
     return;
   }
 
-  const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
-  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
-  if (
-    currentPlayerIndex !== ourPlayerIndex
-    && (globals.state.replay.hypothetical === null || !globals.amSharedReplayLeader)
-  ) {
+  // Don't show the clue UI if it gets to be our turn and we happen to be viewing past actions in an
+  // in-game replay
+  if (globals.state.replay.active && globals.state.replay.hypothetical === null) {
     return;
   }
 

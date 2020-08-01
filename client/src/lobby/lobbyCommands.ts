@@ -2,7 +2,7 @@
 
 import * as gameMain from '../game/main';
 import { DEFAULT_VARIANT_NAME } from '../game/types/constants';
-import gameCommands from '../game/ui/gameCommands';
+import * as spectatorsView from '../game/ui/reactive/view/spectatorsView';
 import globals from '../globals';
 import * as sentry from '../sentry';
 import * as sounds from '../sounds';
@@ -42,16 +42,8 @@ commands.set('friends', (data: FriendsData) => {
   if (globals.currentScreen === Screen.PreGame) {
     pregame.draw();
   }
-  if (globals.currentScreen === Screen.Game) {
-    // Re-call the "spectators" command handler to emulate having received a "spectators" message
-    // from the server
-    const spectatorsCommandHandler = gameCommands.get('spectators');
-    if (spectatorsCommandHandler === undefined) {
-      throw new Error('There is no command handler for the "spectators" command.');
-    }
-    spectatorsCommandHandler({
-      names: globals.ui!.globals.spectators,
-    });
+  if (globals.currentScreen === Screen.Game && globals.ui !== null) {
+    spectatorsView.onSpectatorsChanged(globals.ui.globals.state.spectators);
   }
 });
 

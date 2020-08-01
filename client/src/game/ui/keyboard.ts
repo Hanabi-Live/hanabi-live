@@ -229,7 +229,11 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     // If it is our turn in an ongoing-game
     (!globals.state.replay.active && currentPlayerIndex === ourPlayerIndex)
     // If we are in a hypothetical and we are the shared replay leader
-    || (globals.state.replay.hypothetical !== null && globals.amSharedReplayLeader)
+    || (
+      globals.state.replay.hypothetical !== null
+      && globals.state.replay.shared !== null
+      && globals.state.replay.shared.amLeader
+    )
   );
   if (!shouldHaveKeyboardHotkeysForActions) {
     return;
@@ -254,7 +258,7 @@ const sharedReplaySendSound = (sound: string) => {
     // Only send sound effects in shared replays
     globals.state.replay.shared === null
     // Only send sound effects for shared replay leaders
-    || !globals.amSharedReplayLeader
+    || !globals.state.replay.shared.amLeader
   ) {
     return;
   }

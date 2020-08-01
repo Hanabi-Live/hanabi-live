@@ -16,7 +16,7 @@ export const start = () => {
     return;
   }
 
-  if (globals.amSharedReplayLeader) {
+  if (globals.state.replay.shared.amLeader) {
     globals.lobby.conn!.send('replayAction', {
       tableID: globals.lobby.tableID,
       type: ReplayActionType.HypoStart,
@@ -38,11 +38,11 @@ export const start = () => {
 };
 
 export const end = () => {
-  if (globals.state.replay.hypothetical === null) {
+  if (globals.state.replay.shared === null || globals.state.replay.hypothetical === null) {
     return;
   }
 
-  if (globals.amSharedReplayLeader) {
+  if (globals.state.replay.shared.amLeader) {
     globals.lobby.conn!.send('replayAction', {
       tableID: globals.lobby.tableID,
       type: ReplayActionType.HypoEnd,
@@ -200,7 +200,8 @@ export const sendBack = () => {
   if (
     globals.state.replay.hypothetical === null
     || globals.state.replay.hypothetical.states.length <= 1
-    || !globals.amSharedReplayLeader
+    || globals.state.replay.shared === null
+    || !globals.state.replay.shared.amLeader
   ) {
     return;
   }

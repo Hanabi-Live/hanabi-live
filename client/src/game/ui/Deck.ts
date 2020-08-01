@@ -25,6 +25,7 @@ export default class Deck extends Konva.Group {
       width: this.width(),
       height: this.height(),
       image: globals.cardImages.get('deck-back')!,
+      listening: true,
     });
     this.add(this.cardBack);
     this.cardBack.on('dragend', this.dragEnd);

@@ -8,6 +8,7 @@ export default function testMetadata(
   variantName: string = DEFAULT_VARIANT_NAME,
 ): GameMetadata {
   return {
+    ourUsername: 'Alice',
     options: {
       ...(new Options()),
       numPlayers,

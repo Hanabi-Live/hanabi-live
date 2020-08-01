@@ -3,78 +3,73 @@ import PlayerButton from '../../controls/PlayerButton';
 import globals from '../../globals';
 import * as turn from '../../turn';
 
-export const onHypotheticalEnterExit = (active: boolean, previousActive: boolean | undefined) => {
-  if (previousActive === undefined) {
+// For replay leaders, we want to disable entering a hypothetical during certain situations
+export const shouldEnableEnterHypoButton = (state: State): boolean => (
+  state.replay.shared !== null
+  && state.replay.shared.useSharedSegments
+  && state.replay.shared.amLeader
+  // We can't start a hypothetical on a segment where the game has already ended
+  && state.visibleState !== null
+  && state.visibleState.turn.currentPlayerIndex !== null
+);
+
+export const shouldEnableEnterHypoButtonChanged = (enabled: boolean) => {
+  globals.elements.enterHypoButton!.setEnabled(enabled);
+  globals.layers.UI.batchDraw();
+};
+
+export const onActiveChanged = (active: boolean) => {
+  if (globals.state.replay.shared === null) {
     return;
   }
+
+  globals.elements.replayArea!.visible(!active);
+
+  checkSetDraggableAllHands();
 
   if (active) {
-    hypoStarted();
-  } else {
-    hypoEnded();
+    // We toggle all of the UI elements relating to hypotheticals in case the shared replay leader
+    // changes in the middle of a hypothetical
+    if (globals.options.numPlayers !== 2) {
+      globals.elements.clueTargetButtonGroup!.hide();
+      globals.elements.clueTargetButtonGroup2!.show();
+    }
+    globals.elements.restartButton!.visible(!active);
   }
+
+  globals.layers.UI.batchDraw();
 };
 
-const hypoStarted = () => {
-  if (globals.state.replay.hypothetical === null) {
+export const onActiveOrAmLeaderChanged = (data: {
+  active: boolean;
+  amLeader: boolean | undefined;
+}) => {
+  if (data.amLeader === undefined) {
     return;
   }
 
-  globals.elements.replayArea!.hide();
+  const visibleForLeaderInHypo = data.active && data.amLeader;
+  globals.elements.endHypotheticalButton!.visible(visibleForLeaderInHypo);
+  globals.elements.toggleRevealedButton!.visible(visibleForLeaderInHypo);
+  globals.elements.clueArea!.visible(visibleForLeaderInHypo);
 
-  // We toggle all of the UI elements relating to hypotheticals in case the shared replay leader
-  // changes in the middle of a hypothetical
-  if (globals.options.numPlayers !== 2) {
-    globals.elements.clueTargetButtonGroup!.hide();
-    globals.elements.clueTargetButtonGroup2!.show();
-  }
-  globals.elements.restartButton!.hide();
+  const visibleForFollowersInHypo = data.active && !data.amLeader;
+  globals.elements.hypoCircle!.visible(visibleForFollowersInHypo);
 
-  // These elements are visible only for the leader
-  globals.elements.endHypotheticalButton!.visible(globals.amSharedReplayLeader);
-  globals.elements.toggleRevealedButton!.visible(globals.amSharedReplayLeader);
-  globals.elements.clueArea!.visible(globals.amSharedReplayLeader);
-
-  // When starting a hypothetical, there will only be 1 state
-  // The back button will always be hidden until the first move in the hypothetical is made
-  globals.elements.hypoBackButton!.hide();
-
-  // This element is visible only for followers
-  globals.elements.hypoCircle!.visible(!globals.amSharedReplayLeader);
-
-  if (!globals.amSharedReplayLeader) {
-    checkSetDraggableAllHands();
-  }
-
-  globals.layers.UI.batchDraw();
-};
-
-const hypoEnded = () => {
-  if (globals.amSharedReplayLeader) {
-    checkSetDraggableAllHands();
+  const visibleForLeaderOutOfHypo = !data.active && data.amLeader;
+  globals.elements.restartButton!.visible(visibleForLeaderOutOfHypo);
+  if (visibleForLeaderOutOfHypo) {
     turn.hideClueUIAndDisableDragging();
-
-    globals.elements.restartButton!.show();
-    globals.elements.endHypotheticalButton!.hide();
-    globals.elements.hypoBackButton!.hide();
-    globals.elements.toggleRevealedButton!.hide();
-  } else {
-    globals.elements.hypoCircle!.hide();
   }
 
-  globals.elements.replayArea!.show();
-
-  globals.layers.UI.batchDraw();
+  // We might to change the draggable property of a hand
+  checkSetDraggableAllHands();
 };
 
 // Either we have entered a hypothetical, gone forward one action in a hypothetical,
 // or gone back one action in a hypothetical
 // Prepare the UI elements for the new turn
-export const onStatesLengthChanged = (statesLength: number) => {
-  if (globals.state.replay.hypothetical === null || !globals.amSharedReplayLeader) {
-    return;
-  }
-
+export const onStatesLengthChanged = () => {
   // Enable or disable the individual clue target buttons, depending on whose turn it is
   const buttonGroup = globals.elements.clueTargetButtonGroup2!;
   const buttons = buttonGroup.children.toArray() as PlayerButton[];
@@ -92,24 +87,20 @@ export const onStatesLengthChanged = (statesLength: number) => {
   }
 
   turn.showClueUI();
-  globals.elements.hypoBackButton!.visible(statesLength > 1);
 
   // Set the current player's hand to be draggable
   checkSetDraggableAllHands();
 };
 
-// For replay leaders, we want to disable entering a hypothetical during certain situations
-export const enterHypoButtonIsEnabled = (state: State): boolean => (
-  state.finished
-  && state.replay.shared !== null
-  && state.replay.shared.useSharedSegments
-  && globals.amSharedReplayLeader
-  // We can't start a hypothetical on a segment where the game has already ended
-  && state.visibleState!.turn.currentPlayerIndex !== null
+export const shouldShowHypoBackButton = (state: State): boolean => (
+  state.replay.shared !== null
+  && state.replay.shared.amLeader
+  && state.replay.hypothetical !== null
+  && state.replay.hypothetical.states.length > 1
 );
 
-export const enterHypoButtonEnabledChanged = (enabled: boolean) => {
-  globals.elements.enterHypoButton!.setEnabled(enabled);
+export const shouldShowHypoBackButtonChanged = (enabled: boolean) => {
+  globals.elements.hypoBackButton!.visible(enabled);
   globals.layers.UI.batchDraw();
 };
 

@@ -292,3 +292,31 @@ func (t *Table) GetNotifySessions(excludePlayers bool) []*Session {
 
 	return notifySessions
 }
+
+func (t *Table) GetSharedReplayLeaderName() string {
+	// Get the username of the game owner
+	// (the "Owner" field is used to store the leader of the shared replay)
+	for _, sp := range t.Spectators {
+		if sp.ID == t.Owner {
+			return sp.Name
+		}
+	}
+
+	// The leader is not currently present,
+	// so try getting their username from the players object
+	for _, p := range t.Players {
+		if p.ID == t.Owner {
+			return p.Name
+		}
+	}
+
+	// The leader is not currently present and was not a member of the original game,
+	// so we need to look up their username from the database
+	if v, err := models.Users.GetUsername(t.Owner); err != nil {
+		logger.Error("Failed to get the username for user "+strconv.Itoa(t.Owner)+
+			" who is the owner of table:", t.ID)
+		return "(Unknown)"
+	} else {
+		return v
+	}
+}

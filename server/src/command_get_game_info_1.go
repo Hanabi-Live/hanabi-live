@@ -115,7 +115,6 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		OurPlayerIndex   int       `json:"ourPlayerIndex"`
 		Spectating       bool      `json:"spectating"`
 		Replay           bool      `json:"replay"`
-		SharedReplay     bool      `json:"sharedReplay"`
 		DatabaseID       int       `json:"databaseID"`
 		Seed             string    `json:"seed"`
 		Seeded           bool      `json:"seeded"`
@@ -126,6 +125,11 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		// Character settings
 		CharacterAssignments []int `json:"characterAssignments"`
 		CharacterMetadata    []int `json:"characterMetadata"`
+
+		// Shared replay settings
+		SharedReplay        bool   `json:"sharedReplay"`
+		SharedReplayLeader  string `json:"sharedReplayLeader"`
+		SharedReplaySegment int    `json:"sharedReplaySegment"`
 
 		// Hypothetical settings
 		Hypothetical bool     `json:"hypothetical"`
@@ -145,7 +149,6 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		OurPlayerIndex:   ourPlayerIndex,
 		Spectating:       !t.Replay && j != -1,
 		Replay:           t.Replay,
-		SharedReplay:     t.Replay && t.Visible,
 		DatabaseID:       t.ExtraOptions.DatabaseID,
 		Seed:             g.Seed,
 		Seeded:           strings.HasPrefix(t.Name, "!seed "),
@@ -158,6 +161,11 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		// Character settings
 		CharacterAssignments: characterAssignments,
 		CharacterMetadata:    characterMetadata,
+
+		// Shared replay settings
+		SharedReplay:        t.Replay && t.Visible,
+		SharedReplayLeader:  t.GetSharedReplayLeaderName(),
+		SharedReplaySegment: g.Turn,
 
 		// Hypothetical settings
 		Hypothetical: g.Hypothetical,

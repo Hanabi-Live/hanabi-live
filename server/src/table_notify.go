@@ -102,13 +102,14 @@ func (t *Table) NotifyConnected() {
 		return
 	}
 
-	for _, p := range t.Players {
-		if p.Present {
-			p.Session.NotifyConnected(t)
+	if !t.Replay {
+		for _, p := range t.Players {
+			if p.Present {
+				p.Session.NotifyConnected(t)
+			}
 		}
 	}
 
-	// Also send the spectators an update
 	for _, sp := range t.Spectators {
 		sp.Session.NotifyConnected(t)
 	}
@@ -225,16 +226,12 @@ func (t *Table) NotifySound() {
 
 func (t *Table) NotifyGameOver() {
 	type GameOverMessage struct {
-		DatabaseID int
+		DatabaseID         int    `json:"databaseID"`
+		SharedReplayLeader string `json:"sharedReplayLeader"`
 	}
 	gameOverMessage := &GameOverMessage{
-		DatabaseID: t.ExtraOptions.DatabaseID,
-	}
-
-	for _, p := range t.Players {
-		if p.Present {
-			p.Session.Emit("gameOver", gameOverMessage)
-		}
+		DatabaseID:         t.ExtraOptions.DatabaseID,
+		SharedReplayLeader: t.GetSharedReplayLeaderName(),
 	}
 
 	for _, sp := range t.Spectators {
@@ -243,12 +240,6 @@ func (t *Table) NotifyGameOver() {
 }
 
 func (t *Table) NotifyCardIdentities() {
-	for _, p := range t.Players {
-		if p.Present {
-			p.Session.NotifyCardIdentities(t)
-		}
-	}
-
 	for _, sp := range t.Spectators {
 		sp.Session.NotifyCardIdentities(t)
 	}
@@ -275,6 +266,12 @@ func (t *Table) NotifyPause() {
 
 	for _, sp := range t.Spectators {
 		sp.Session.NotifyPause(t)
+	}
+}
+
+func (t *Table) NotifyReplayLeader() {
+	for _, sp := range t.Spectators {
+		sp.Session.NotifyReplayLeader(t)
 	}
 }
 

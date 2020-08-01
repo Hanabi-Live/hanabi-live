@@ -96,7 +96,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
   if (
     globals.state.finished
     && globals.state.replay.shared !== null
-    && globals.amSharedReplayLeader
+    && globals.state.replay.shared.amLeader
     && globals.state.replay.hypothetical !== null
     && !event.ctrlKey
     && !event.shiftKey
@@ -114,7 +114,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
   if (
     globals.state.finished
     && globals.state.replay.shared !== null
-    && globals.amSharedReplayLeader
+    && globals.state.replay.shared.amLeader
     && globals.state.replay.shared.useSharedSegments
   ) {
     arrows.send(card.state.order, card);

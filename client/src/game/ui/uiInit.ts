@@ -45,7 +45,9 @@ export default function uiInit() {
   const winH = globals.stage.height();
 
   // Draw the loading screen
-  const loadingLayer = new Konva.Layer();
+  const loadingLayer = new Konva.Layer({
+    listening: false,
+  });
 
   const loadingLabel = new Konva.Text({
     fill: LABEL_COLOR,
@@ -60,6 +62,7 @@ export default function uiInit() {
     fontFamily: 'Arial',
     fontStyle: 'bold',
     fontSize: 0.05 * winH,
+    listening: false,
   });
   loadingLayer.add(loadingLabel);
 
@@ -76,6 +79,7 @@ export default function uiInit() {
     fontFamily: 'Arial',
     fontStyle: 'bold',
     fontSize: 0.05 * winH,
+    listening: false,
   });
   loadingLayer.add(progressLabel);
 

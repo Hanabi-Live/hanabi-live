@@ -190,6 +190,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       playerIndex: 0,
       queued: false,
     },
+    spectators: [],
   };
 }
 

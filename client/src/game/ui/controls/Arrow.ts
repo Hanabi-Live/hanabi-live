@@ -22,6 +22,7 @@ export default class Arrow extends Konva.Group {
         y,
       },
       visible: false,
+      listening: false,
     });
 
     // Class variables
@@ -47,6 +48,7 @@ export default class Arrow extends Konva.Group {
       strokeWidth: pointerLength * 2,
       shadowBlur: pointerLength * 4,
       shadowOpacity: 1,
+      listening: false,
     });
     this.add(border);
 
@@ -62,6 +64,7 @@ export default class Arrow extends Konva.Group {
       fill: 'black',
       stroke: 'black',
       strokeWidth: pointerLength * 0.75,
+      listening: false,
     });
     this.add(edge);
 
@@ -78,6 +81,7 @@ export default class Arrow extends Konva.Group {
       fill: 'white',
       stroke: 'white',
       strokeWidth: pointerLength * 1.25,
+      listening: false,
     });
     this.add(this.base);
 
@@ -125,8 +129,8 @@ export default class Arrow extends Konva.Group {
           x: 0.2,
           y: 0.2,
         },
-        listening: false,
         visible: false,
+        listening: false,
       });
       this.add(this.suitPip);
     } else {

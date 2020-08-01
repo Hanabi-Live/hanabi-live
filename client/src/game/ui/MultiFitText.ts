@@ -18,6 +18,7 @@ export default class MultiFitText extends Konva.Group {
     for (let i = 0; i < this.maxLines; i++) {
       const newConfig = $.extend({}, config);
 
+      newConfig.listening = false;
       newConfig.height = config.height / this.maxLines;
       newConfig.x = 0;
       newConfig.y = i * newConfig.height;

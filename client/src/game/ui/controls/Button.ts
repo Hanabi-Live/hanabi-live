@@ -30,6 +30,7 @@ export default class Button extends Konva.Group {
       cornerRadius: 0.12 * h,
       fill: 'black',
       opacity: 0.6,
+      listening: true,
     });
     this.add(this.background);
 
@@ -67,8 +68,8 @@ export default class Button extends Konva.Group {
           width: 0.6 * w,
           height: 0.6 * h,
           image: images[1],
-          listening: false,
           visible: false,
+          listening: false,
         });
         this.add(this.imageDisabledElement);
       }

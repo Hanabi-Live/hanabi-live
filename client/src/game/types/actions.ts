@@ -2,6 +2,7 @@ import CardIdentity from './CardIdentity';
 import ClientAction from './ClientAction';
 import EndCondition from './EndCondition';
 import MsgClue from './MsgClue';
+import Spectator from './Spectator';
 
 export type Action =
   | GameAction
@@ -11,6 +12,8 @@ export type Action =
   | ActionPremove
   | ActionPause
   | ActionPauseQueue
+  | ActionSpectating
+  | ActionSpectators
   | ActionFinishOngoingGame
   | ActionReplayEnterDedicated;
 
@@ -36,6 +39,7 @@ export type ReplayAction =
   | ActionReplaySegment
   | ActionReplaySharedSegment
   | ActionReplayUseSharedSegments
+  | ActionReplayLeader
   | HypotheticalAction;
 
 export type HypotheticalAction =
@@ -79,15 +83,27 @@ export interface ActionPauseQueue {
   queued: boolean;
 }
 
+export interface ActionSpectating {
+  type: 'spectating';
+}
+
+export interface ActionSpectators {
+  type: 'spectators';
+  spectators: Spectator[];
+}
+
 export interface ActionFinishOngoingGame {
   type: 'finishOngoingGame';
   databaseID: number;
+  sharedReplayLeader: string;
 }
 
 export interface ActionReplayEnterDedicated {
   type: 'replayEnterDedicated';
   shared: boolean;
   databaseID: number;
+  sharedReplayLeader: string;
+  sharedReplaySegment: number;
 }
 
 // ------------
@@ -205,6 +221,11 @@ export interface ActionReplaySharedSegment {
 export interface ActionReplayUseSharedSegments {
   type: 'replayUseSharedSegments';
   readonly useSharedSegments: boolean;
+}
+
+export interface ActionReplayLeader {
+  type: 'replayLeader';
+  readonly name: string;
 }
 
 // --------------------

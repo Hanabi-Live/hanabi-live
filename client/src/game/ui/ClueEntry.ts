@@ -51,6 +51,7 @@ export default class ClueEntry extends Konva.Group {
       fill: 'white',
       text: globals.state.metadata.playerNames[clue.giver],
       verticalAlign: 'middle',
+      listening: false,
     });
     this.add(giver);
 
@@ -64,6 +65,7 @@ export default class ClueEntry extends Konva.Group {
       fill: 'white',
       text: globals.state.metadata.playerNames[clue.target],
       verticalAlign: 'middle',
+      listening: false,
     });
     this.add(target);
 
@@ -79,6 +81,7 @@ export default class ClueEntry extends Konva.Group {
       fill: 'white',
       text: cluesRules.getClueName(clue.type, clue.value, globals.variant, characterID),
       verticalAlign: 'middle',
+      listening: false,
     });
     this.add(name);
 
@@ -93,6 +96,7 @@ export default class ClueEntry extends Konva.Group {
       fill: 'white',
       text: '✘',
       visible: false,
+      listening: false,
     });
     this.add(this.negativeMarker);
 

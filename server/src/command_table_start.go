@@ -107,7 +107,7 @@ func commandTableStart(s *Session, d *CommandData) {
 	shufflePlayers := true
 	seedPrefix := "p" + strconv.Itoa(len(t.Players)) + // e.g. p2v0s
 		"v" + strconv.Itoa(variants[t.Options.VariantName].ID) + "s"
-	if t.ExtraOptions.DatabaseID != 0 {
+	if t.ExtraOptions.DatabaseID != -1 {
 		// This is a replay of a game from the database or
 		// a custom game created with the "!replay" prefix
 		if v, err := models.Games.GetSeed(t.ExtraOptions.DatabaseID); err != nil {

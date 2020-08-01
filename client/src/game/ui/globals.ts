@@ -37,7 +37,11 @@ export class Globals {
 
   // UI elements
   imageLoader: Loader | null = null;
-  stage: Konva.Stage = new Konva.Stage({ container: 'game' });
+  stage: Konva.Stage = new Konva.Stage({
+    container: 'game',
+    listening: false,
+  });
+
   layers: Layers = new Layers();
   elements: Elements = new Elements();
   activeHover: Konva.Node | null = null; // The element that the mouse cursor is currently over
@@ -48,11 +52,6 @@ export class Globals {
   replayLog: GameAction[] = []; // Contains all of the "action" messages for the game
   finalReplayPos: number = 0;
   finalReplayTurn: number = 0;
-
-  // Shared replay feature
-  sharedReplayLeader: string = ''; // Equal to the username of the leader
-  amSharedReplayLeader: boolean = false;
-  sharedReplayFirstLoading: boolean = false;
 
   // Notes feature
   ourNotes: string[] = []; // Indexed by card order
@@ -81,7 +80,6 @@ export class Globals {
   // Miscellaneous
   animateFast: boolean = true;
   UIClickTime: number = 0; // Used to prevent accidental double clicks
-  spectators: string[] = [];
 
   // State information
   store: Redux.Store<State, Action> | null = null;
@@ -116,7 +114,10 @@ export class Globals {
     this.deck = [];
     this.stackBases = [];
     this.imageLoader = null;
-    this.stage = new Konva.Stage({ container: 'game' });
+    this.stage = new Konva.Stage({
+      container: 'game',
+      listening: false,
+    });
     this.layers = new Layers();
     this.elements = new Elements();
     this.activeHover = null;
@@ -125,9 +126,6 @@ export class Globals {
     this.replayLog = [];
     this.finalReplayPos = 0;
     this.finalReplayTurn = 0;
-    this.sharedReplayLeader = '';
-    this.amSharedReplayLeader = false;
-    this.sharedReplayFirstLoading = true;
     this.ourNotes = [];
     this.allNotes = [];
     this.editingNote = null;
@@ -141,7 +139,6 @@ export class Globals {
     this.lastTimerUpdateTimeMS = 0;
     this.animateFast = true;
     this.UIClickTime = 0;
-    this.spectators = [];
 
     this.stateObserver?.unregisterObservers();
     this.stateObserver = null;

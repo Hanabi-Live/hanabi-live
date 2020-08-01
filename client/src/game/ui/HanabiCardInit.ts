@@ -24,7 +24,7 @@ export const image = (getBareName: () => string) => {
   // Create the "bare" card image, which is the main card graphic
   // If the card is not revealed, it will just be a gray rectangle
   // The pips and other elements of a card are drawn on top of the bare image
-  const imageConfig: Konva.ImageConfig = {
+  const bare = new Konva.Image({
     width: CARD_W,
     height: CARD_H,
     image: null as unknown as ImageBitmapSource,
@@ -35,8 +35,8 @@ export const image = (getBareName: () => string) => {
       y: Math.floor(0.04 * CARD_W),
     },
     shadowOpacity: 0.4,
-  };
-  const bare = new Konva.Image(imageConfig);
+    listening: true, // As the main card element, this must be listening in order for events to fire
+  });
   (bare as Konva.Shape).sceneFunc((ctx: KonvaContext.Context) => {
     scaleCardImage(
       ctx._context,
@@ -290,13 +290,13 @@ export const pips = (variant: Variant) => {
       fill: 'white',
       stroke: 'black',
       strokeWidth: 3,
-      listening: false,
       shadowEnabled: !globals.options.speedrun,
       shadowColor: 'black',
       shadowOffsetX: 5,
       shadowOffsetY: 5,
       shadowOpacity: 0.4,
       shadowForStrokeEnabled: true,
+      listening: false,
     });
     rankPips.add(rankPip);
     rankPipsMap.set(rank, rankPip);

@@ -137,17 +137,4 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 			}
 		}
 	}
-
-	if t.Replay && t.Visible {
-		// Enable the replay controls for the leader of the review
-		s.NotifyReplayLeader(t, false)
-
-		// Send them to the current turn that everyone else is at
-		type ReplaySegmentMessage struct {
-			Segment int `json:"segment"`
-		}
-		s.Emit("replaySegment", &ReplaySegmentMessage{
-			Segment: g.Turn,
-		})
-	}
 }

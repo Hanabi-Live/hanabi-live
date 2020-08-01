@@ -2,13 +2,6 @@
 
 import * as ourHand from '../../ourHand';
 
-export const onOngoingCurrentPlayerIndexChanged = (
-  _: number | null,
-  previousCurrentPlayerIndex: number | null | undefined,
-) => {
-  if (previousCurrentPlayerIndex === undefined) {
-    return;
-  }
-
+export const onOngoingCurrentPlayerIndexChanged = () => {
   ourHand.checkSetDraggableAll();
 };

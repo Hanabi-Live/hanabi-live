@@ -17,6 +17,7 @@ import * as logView from './view/logView';
 import * as pauseView from './view/pauseView';
 import * as premoveView from './view/premoveView';
 import * as replayView from './view/replayView';
+import * as spectatorsView from './view/spectatorsView';
 import * as statsView from './view/statsView';
 import * as tooltipsView from './view/tooltipsView';
 
@@ -197,12 +198,32 @@ const replayObservers: Subscriptions = [
   // Database ID
   subAfterInit((s) => s.replay.databaseID, replayView.onDatabaseIDChanged),
 
+  // Shared replay
+  subAfterInit((s) => s.replay.shared !== null, replayView.onSharedReplayEnter),
+  subAfterInit((s) => s.replay.shared?.leader, replayView.onSharedLeaderChanged),
+  subAfterInit((s) => s.replay.shared?.amLeader, replayView.onSharedAmLeaderChanged),
+  subAfterInit((s) => ({
+    leader: s.replay.shared?.leader,
+    spectators: s.spectators,
+  }), replayView.onLeaderOrSpectatorsChanged),
+
   // Hypothetical
-  subAfterInit((s) => s.replay.hypothetical !== null, hypotheticalView.onHypotheticalEnterExit),
+  subAfterInit(
+    (s) => hypotheticalView.shouldEnableEnterHypoButton(s),
+    hypotheticalView.shouldEnableEnterHypoButtonChanged,
+  ),
+  subAfterInit(
+    (s) => s.replay.shared !== null && s.replay.hypothetical !== null,
+    hypotheticalView.onActiveChanged,
+  ),
+  subAfterInit((s) => ({
+    active: s.replay.shared !== null && s.replay.hypothetical !== null,
+    amLeader: s.replay.shared?.amLeader,
+  }), hypotheticalView.onActiveOrAmLeaderChanged),
   subAfterInit((s) => s.replay.hypothetical?.states.length, hypotheticalView.onStatesLengthChanged),
   subAfterInit(
-    (s) => hypotheticalView.enterHypoButtonIsEnabled(s),
-    hypotheticalView.enterHypoButtonEnabledChanged,
+    (s) => hypotheticalView.shouldShowHypoBackButton(s),
+    hypotheticalView.shouldShowHypoBackButtonChanged,
   ),
 
   // Card and stack base morphing
@@ -218,6 +239,9 @@ const otherObservers = [
 
   // Pause
   subAfterInit((s) => s.pause, pauseView.onChanged),
+
+  // Spectators
+  subAfterInit((s) => s.spectators, spectatorsView.onSpectatorsChanged),
 ];
 
 // These observers need to run after all other observers

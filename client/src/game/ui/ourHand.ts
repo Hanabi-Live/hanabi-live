@@ -3,6 +3,10 @@
 import globals from './globals';
 
 export const get = () => {
+  if (!globals.state.playing) {
+    throw new Error('Failed to get our hand because we are not currently playing.');
+  }
+
   const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
   const ourHand = globals.elements.playerHands[ourPlayerIndex];
   if (ourHand === undefined) {
@@ -12,6 +16,10 @@ export const get = () => {
 };
 
 export const checkSetDraggableAll = () => {
+  if (!globals.state.playing) {
+    return;
+  }
+
   const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
   const ourHand = globals.elements.playerHands[ourPlayerIndex];
   if (ourHand === undefined) {
