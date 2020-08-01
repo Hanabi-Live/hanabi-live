@@ -289,14 +289,14 @@ func (t *Table) NotifySpectatorsNote(order int) {
 		}
 		notes := make([]Note, 0)
 		for _, p := range g.Players {
-			if sp.ShadowPlayerIndex == -1 || sp.ShadowPlayerIndex == p.Index {
+			if sp.ShadowingPlayerIndex == -1 || sp.ShadowingPlayerIndex == p.Index {
 				notes = append(notes, Note{
 					Name: p.Name,
 					Note: p.Notes[order],
 				})
 			}
 		}
-		if sp.ShadowPlayerIndex == -1 {
+		if sp.ShadowingPlayerIndex == -1 {
 			for _, sp2 := range t.Spectators {
 				notes = append(notes, Note{
 					Name: sp2.Name,

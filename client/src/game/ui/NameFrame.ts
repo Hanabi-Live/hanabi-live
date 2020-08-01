@@ -17,7 +17,7 @@ export default class NameFrame extends Konva.Group {
 
   constructor(config: Konva.ContainerConfig) {
     super(config);
-    this.listening(true);
+    this.listening(true); // Needed for the hover events
 
     if (config.width === undefined) {
       throw new Error('A NameFrame was initialized without a width.');
@@ -46,7 +46,7 @@ export default class NameFrame extends Konva.Group {
         y: 3,
       },
       shadowOpacity: 0.9,
-      listening: false,
+      listening: true, // Needed so that we can click on a player's name to shadow them
     });
 
     let w = this.playerName.width();
@@ -183,22 +183,49 @@ export default class NameFrame extends Konva.Group {
   // right-click context menu come up (the right-click context menu will be enabled as soon as we
   // execute the "backToLobby()" function)
   rightClick() {
-    const username = this.playerName.text();
+    // Find the index corresponding to this player
+    const shadowingPlayerIndex = globals.metadata.playerNames.indexOf(this.playerName.text());
+    if (shadowingPlayerIndex === -1) {
+      throw new Error(`Failed to find the index corresponding to player "${this.playerName.text()}".`);
+    }
 
     if (!globals.state.playing && !globals.state.finished) {
       // As a spectator in an ongoing game, right-clicking on a name frame reloads the page,
       // shifting the seat and hiding the appropriate cards
       // (so that you can spectate from a specific player's perspective)
+
+      // Validate that we are not shifting to the perspective that we are already at
+      let oldShadowingPlayerIndex;
+      for (const spectator of globals.state.spectators) {
+        if (spectator.name === globals.state.metadata.ourUsername) {
+          if (spectator.shadowingIndex !== -1) {
+            oldShadowingPlayerIndex = spectator.shadowingIndex;
+          }
+          break;
+        }
+      }
+      if (shadowingPlayerIndex === oldShadowingPlayerIndex) {
+        modals.warningShow('You are already viewing the game from this player\'s perspective.');
+        return;
+      }
+
       setTimeout(() => {
         backToLobby();
         globals.lobby.conn!.send('tableSpectate', {
           tableID: globals.lobby.tableID,
-          player: username,
+          shadowingPlayerIndex,
         });
       }, 0);
     } else if (globals.state.finished) {
       // In a replay, right-clicking on a name frame reloads the page and shifts the seat
       // (so that you can view the game from a specific player's perspective)
+
+      // Validate that we are not shifting to the perspective that we are already at
+      if (shadowingPlayerIndex === globals.metadata.ourPlayerIndex) {
+        modals.warningShow('You are already viewing the game from this player\'s perspective.');
+        return;
+      }
+
       if (globals.state.spectators.length === 1) {
         if (globals.state.replay.databaseID === null) {
           setTimeout(() => {
@@ -218,7 +245,7 @@ export default class NameFrame extends Konva.Group {
             source: 'id',
             gameID: globals.state.replay.databaseID,
             visibility: globals.state.replay.shared === null ? 'solo' : 'shared',
-            player: username,
+            shadowingPlayerIndex,
           });
         }, 0);
 
@@ -233,7 +260,7 @@ export default class NameFrame extends Konva.Group {
         backToLobby();
         globals.lobby.conn!.send('tableSpectate', {
           tableID: globals.lobby.tableID,
-          player: username,
+          shadowingPlayerIndex,
         });
       }, 0);
     }

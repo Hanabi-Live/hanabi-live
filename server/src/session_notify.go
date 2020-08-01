@@ -302,7 +302,7 @@ func (s *Session) NotifySpectators(t *Table) {
 	shadowingPlayers := make([]int, 0)
 	for _, sp := range t.Spectators {
 		names = append(names, sp.Name)
-		shadowingPlayers = append(shadowingPlayers, sp.ShadowPlayerIndex)
+		shadowingPlayers = append(shadowingPlayers, sp.ShadowingPlayerIndex)
 	}
 
 	type SpectatorsMessage struct {
@@ -339,7 +339,7 @@ func (s *Session) NotifyReplayLeader(t *Table) {
 
 // NotifyNoteList sends them all of the notes from the players & spectators
 // (there will be no spectator notes if this is a replay spawned from the database)
-func (s *Session) NotifyNoteList(t *Table, shadowPlayerIndex int) {
+func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 	g := t.Game
 
 	type NoteList struct {
@@ -351,7 +351,7 @@ func (s *Session) NotifyNoteList(t *Table, shadowPlayerIndex int) {
 	// Get the notes from all the players & spectators
 	notes := make([]NoteList, 0)
 	for _, p := range g.Players {
-		if shadowPlayerIndex == -1 || shadowPlayerIndex == p.Index {
+		if shadowingPlayerIndex == -1 || shadowingPlayerIndex == p.Index {
 			notes = append(notes, NoteList{
 				ID:    t.Players[p.Index].ID,
 				Name:  p.Name,
@@ -359,7 +359,7 @@ func (s *Session) NotifyNoteList(t *Table, shadowPlayerIndex int) {
 			})
 		}
 	}
-	if !t.Replay && shadowPlayerIndex == -1 {
+	if !t.Replay && shadowingPlayerIndex == -1 {
 		for _, sp := range t.Spectators {
 			notes = append(notes, NoteList{
 				ID:    sp.ID,

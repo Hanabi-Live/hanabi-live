@@ -188,6 +188,7 @@ export const tableSpectate = (table: Table) => {
 
   globals.conn!.send('tableSpectate', {
     tableID: table.id,
+    shadowingPlayerIndex: -1,
   });
 };
 
