@@ -887,11 +887,18 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   private visualEffectCursor: CursorType = 'default';
+  private wasRaised = false;
   setVisualEffect(cursor: CursorType, duration?: number) {
-    if (cursor === this.visualEffectCursor) {
+    const raised = this.isRaisedBecauseOfClues();
+    if (
+      cursor === this.visualEffectCursor
+      && this.wasRaised === raised
+    ) {
       return;
     }
+
     this.visualEffectCursor = cursor;
+    this.wasRaised = raised;
 
     const defaultDuration = 0.05;
     const actualDuration = globals.animateFast ? 0 : (duration ?? defaultDuration);
@@ -903,7 +910,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       shadowOffsetY: shadowOffset,
       duration: actualDuration,
     });
-    const baseOffsetY = this.isRaisedBecauseOfClues() ? 0.6 * CARD_H : 0.5 * CARD_H;
+    const baseOffsetY = raised ? 0.6 * CARD_H : 0.5 * CARD_H;
     this.to({
       offsetX: cursor === 'dragging' ? 0.52 * CARD_W : 0.5 * CARD_W,
       offsetY: baseOffsetY + (cursor === 'dragging' ? 0.02 * CARD_H : 0),
