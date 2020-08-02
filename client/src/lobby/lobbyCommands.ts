@@ -43,7 +43,10 @@ commands.set('friends', (data: FriendsData) => {
     pregame.draw();
   }
   if (globals.currentScreen === Screen.Game && globals.ui !== null) {
-    spectatorsView.onSpectatorsChanged(globals.ui.globals.state.spectators);
+    spectatorsView.onSpectatorsChanged({
+      spectators: globals.ui.globals.state.spectators,
+      finished: globals.ui.globals.state.finished,
+    });
   }
 });
 

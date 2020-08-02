@@ -3,7 +3,7 @@
 // for e.g. in-game replays
 
 import { createStore } from 'redux';
-import { initArray, trimReplaySuffixFromURL, nullIfNegative } from '../../misc';
+import { initArray, trimReplaySuffixFromURL } from '../../misc';
 import * as sentry from '../../sentry';
 import { getVariant } from '../data/gameData';
 import initialState from '../reducers/initialStates/initialState';
@@ -379,20 +379,13 @@ commands.set('replaySound', (data: ReplaySoundData) => {
 
 // This is used to update the names of the people currently spectating the game
 export interface SpectatorsData {
-  names: string[];
-  shadowingPlayers: number[];
+  tableID: number;
+  spectators: Spectator[];
 }
 commands.set('spectators', (data: SpectatorsData) => {
-  const spectators: Spectator[] = [];
-  for (let i = 0; i < data.names.length; i++) {
-    spectators.push({
-      name: data.names[i],
-      shadowingIndex: nullIfNegative(data.shadowingPlayers[i]),
-    });
-  }
   globals.store!.dispatch({
     type: 'spectators',
-    spectators,
+    spectators: data.spectators,
   });
 });
 
