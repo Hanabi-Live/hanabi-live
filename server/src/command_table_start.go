@@ -107,9 +107,15 @@ func commandTableStart(s *Session, d *CommandData) {
 	shufflePlayers := true
 	seedPrefix := "p" + strconv.Itoa(len(t.Players)) + // e.g. p2v0s
 		"v" + strconv.Itoa(variants[t.Options.VariantName].ID) + "s"
-	if t.ExtraOptions.DatabaseID != -1 {
-		// This is a replay of a game from the database or
-		// a custom game created with the "!replay" prefix
+	if t.ExtraOptions.DatabaseID == 0 {
+		// This is a JSON replay table
+		// (they are hardcoded to have a database ID of 0)
+		g.Seed = "JSON"
+		shuffleDeck = false
+		shufflePlayers = false
+	} else if t.ExtraOptions.DatabaseID != -1 {
+		// Normal tables have a database ID of -1
+		// Thus, this is a database replay table or a custom table created with the "!replay" prefix
 		if v, err := models.Games.GetSeed(t.ExtraOptions.DatabaseID); err != nil {
 			logger.Error("Failed to get the seed for game "+
 				"\""+strconv.Itoa(t.ExtraOptions.DatabaseID)+"\":", err)
@@ -120,14 +126,9 @@ func commandTableStart(s *Session, d *CommandData) {
 		}
 		shufflePlayers = false
 	} else if t.ExtraOptions.SetSeedSuffix != "" {
-		// This is a custom game created with the "!seed" prefix
+		// This is a custom table created with the "!seed" prefix
 		// (e.g. playing a deal with a specific seed)
 		g.Seed = seedPrefix + t.ExtraOptions.SetSeedSuffix
-	} else if t.ExtraOptions.CustomDeck != nil {
-		// This is a replay of a game from JSON
-		g.Seed = "JSON"
-		shuffleDeck = false
-		shufflePlayers = false
 	} else {
 		// This is a normal game with a random seed / a random deck
 		// Get a list of all the seeds that these players have played before

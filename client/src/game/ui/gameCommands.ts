@@ -454,8 +454,8 @@ const initStateStore = (data: LegacyGameMetadata) => {
       type: 'replayEnterDedicated',
       shared: data.sharedReplay,
       databaseID: data.databaseID,
-      sharedReplayLeader: data.sharedReplayLeader,
       sharedReplaySegment: data.sharedReplaySegment,
+      sharedReplayLeader: data.sharedReplayLeader,
     });
 
     // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here

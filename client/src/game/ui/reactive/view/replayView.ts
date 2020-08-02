@@ -170,7 +170,14 @@ export const onDatabaseIDChanged = (databaseID: number | null) => {
     return;
   }
 
-  globals.elements.gameIDLabel!.text(`ID: ${databaseID}`);
+  let text;
+  if (databaseID === 0) {
+    // JSON replays are hard-coded to have a database ID of 0
+    text = 'JSON replay';
+  } else {
+    text = `ID: ${databaseID}`;
+  }
+  globals.elements.gameIDLabel!.text(text);
   globals.elements.gameIDLabel!.show();
 
   // Also move the card count label on the deck downwards

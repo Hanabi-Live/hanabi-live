@@ -422,8 +422,11 @@ func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 		DetrimentalCharacters: detrimentalCharacters,
 	}
 	t.ExtraOptions = &ExtraOptions{
-		Replay:     true, // We need to mark that the game should not be written to the database
-		DatabaseID: -1,
+		Replay: true, // We need to mark that the game should not be written to the database
+		// Normally, "DatabaseID" is set to either -1 (in an ongoing game)
+		// or a positive number (for a replay of a game in the database or a "!replay" game)
+		// JSON games are hard-coded to have a database ID of 0
+		DatabaseID: 0,
 		CustomDeck: d.GameJSON.Deck,
 	}
 
