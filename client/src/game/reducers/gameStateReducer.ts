@@ -217,6 +217,7 @@ const gameStateReducer = produce((
           text,
         });
       }
+
       break;
     }
 

@@ -226,9 +226,9 @@ const replayReducer = produce((
       const newState = gameStateReducer(hypoState, a, true, metadata);
       state.hypothetical.ongoing = newState;
 
-      if (a.type === 'turn') {
-        // Save it for going back
-        state.hypothetical!.states.push(newState);
+      if (hypoState!.turn.segment !== newState.turn.segment) {
+        // Save the new segment in case we want to go backwards
+        state.hypothetical.states.push(newState);
       }
 
       break;
