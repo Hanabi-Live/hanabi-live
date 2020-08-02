@@ -241,7 +241,10 @@ const otherObservers = [
   subAfterInit((s) => s.pause, pauseView.onChanged),
 
   // Spectators
-  subAfterInit((s) => s.spectators, spectatorsView.onSpectatorsChanged),
+  subAfterInit((s) => ({
+    spectators: s.spectators,
+    finished: s.finished,
+  }), spectatorsView.onSpectatorsChanged),
 ];
 
 // These observers need to run after all other observers

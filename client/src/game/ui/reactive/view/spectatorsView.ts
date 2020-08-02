@@ -3,17 +3,20 @@
 import Spectator from '../../../types/Spectator';
 import globals from '../../globals';
 
-export const onSpectatorsChanged = (spectators: Spectator[]) => {
-  const visible = spectators.length > 0;
+export const onSpectatorsChanged = (data: {
+  spectators: Spectator[];
+  finished: boolean;
+}) => {
+  const visible = data.spectators.length > 0;
   globals.elements.spectatorsLabel!.visible(visible);
   globals.elements.spectatorsNumLabel!.visible(visible);
 
   if (visible) {
-    globals.elements.spectatorsNumLabel!.text(spectators.length.toString());
+    globals.elements.spectatorsNumLabel!.text(data.spectators.length.toString());
 
     // Build the string that shows all the names
     let nameEntries = '';
-    for (const spectator of spectators) {
+    for (const spectator of data.spectators) {
       let nameEntry = '<li>';
       if (spectator.name === globals.state.metadata.ourUsername) {
         nameEntry += `<span class="name-me">${spectator.name}</span>`;
@@ -22,7 +25,11 @@ export const onSpectatorsChanged = (spectators: Spectator[]) => {
       } else {
         nameEntry += spectator.name;
       }
-      if (spectator.shadowingIndex !== null) {
+
+      // Spectators can also be shadowing a specific player
+      // However, only show this in ongoing games
+      // (perspective shifts in replays are inconsequential)
+      if (spectator.shadowingIndex !== null && !data.finished) {
         const shadowedPlayerName = globals.state.metadata.playerNames[spectator.shadowingIndex];
         if (shadowedPlayerName === undefined) {
           throw new Error(`Unable to find the player name at index ${spectator.shadowingIndex}.`);
