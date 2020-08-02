@@ -314,7 +314,7 @@ const revealCard = (
   // update the possibilities on the cards in people's hands
   const hands = handsSeeingCardForFirstTime(game, card, playing, metadata);
   for (const hand of hands) {
-    removePossibilityOnHand(newDeck, hand, card.order, suitIndex, rank, variant);
+    removePossibilityOnHand(newDeck, hand, card.order, suitIndex, rank);
   }
 
   return true;
