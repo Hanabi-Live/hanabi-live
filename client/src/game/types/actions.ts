@@ -102,8 +102,8 @@ export interface ActionReplayEnterDedicated {
   type: 'replayEnterDedicated';
   shared: boolean;
   databaseID: number;
-  sharedReplayLeader: string;
   sharedReplaySegment: number;
+  sharedReplayLeader: string;
 }
 
 // ------------

@@ -116,10 +116,12 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       state.playing = false;
       state.finished = true;
       state.replay.active = true;
-      state.replay.segment = 0;
+      state.replay.segment = 0; // In dedicated solo replays, start on the first segment
       state.replay.databaseID = action.databaseID;
 
       if (action.shared) {
+        // In dedicated shared replays, start on the shared replay turn
+        state.replay.segment = action.sharedReplaySegment;
         state.replay.shared = {
           segment: action.sharedReplaySegment,
           useSharedSegments: true,
