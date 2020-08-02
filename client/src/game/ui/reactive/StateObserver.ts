@@ -11,10 +11,13 @@ import * as currentPlayerAreaView from './view/currentPlayerAreaView';
 import * as currentPlayerView from './view/currentPlayerView';
 import * as deckView from './view/deckView';
 import * as gameInfoView from './view/gameInfoView';
+import * as hypotheticalView from './view/hypotheticalView';
 import * as initView from './view/initView';
 import * as logView from './view/logView';
+import * as pauseView from './view/pauseView';
 import * as premoveView from './view/premoveView';
 import * as replayView from './view/replayView';
+import * as spectatorsView from './view/spectatorsView';
 import * as statsView from './view/statsView';
 import * as tooltipsView from './view/tooltipsView';
 
@@ -95,7 +98,7 @@ const earlyObservers: Subscriptions = [
   subAfterInit((s) => s, animateFastView.onObserversStarted),
 
   // This has to come first because it tells the UI that we are changing to a shared replay
-  subAfterInit((s) => s.metadata.finished, replayView.onFinishedChanged),
+  subAfterInit((s) => s.finished, replayView.onFinishedChanged),
 ];
 
 const visibleStateObservers: Subscriptions = [
@@ -115,7 +118,6 @@ const visibleStateObservers: Subscriptions = [
     clueTokens: s.clueTokens,
     doubleDiscard: s.stats.doubleDiscard,
   }), gameInfoView.onClueTokensOrDoubleDiscardChanged),
-  subVS((s) => s.strikes, gameInfoView.onStrikesChanged),
 
   // Stats
   subVS((s) => s.stats.efficiency, statsView.onEfficiencyChanged),
@@ -168,6 +170,12 @@ const ongoingGameObservers: Subscriptions = [
     visible: currentPlayerAreaView.isVisible(s),
     currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
   }), currentPlayerAreaView.onChanged),
+
+  // Strikes
+  subAfterInit((s) => ({
+    ongoingStrikes: s.ongoingGame.strikes,
+    visibleStrikes: s.visibleState!.strikes,
+  }), gameInfoView.onOngoingOrVisibleStrikesChanged),
 ];
 
 const replayObservers: Subscriptions = [
@@ -177,19 +185,49 @@ const replayObservers: Subscriptions = [
   // Replay sliders and buttons
   subAfterInit((s) => ({
     active: s.replay.active,
+    replaySegment: s.replay.segment,
     ongoingGameSegment: s.ongoingGame.turn.segment,
-  }), replayView.onActiveOrOngoingGameSegmentChanged),
-  sub((s) => s.replay.states.length >= 2, replayView.onSecondRecordedSegment),
-  subAfterInit((s) => s.replay.segment, replayView.onReplaySegmentChanged),
+  }), replayView.onSegmentChanged),
   subAfterInit((s) => ({
-    sharedSegment: s.replay.sharedSegment,
-    useSharedSegments: s.replay.useSharedSegments,
-  }), replayView.onSharedSegmentOrUseSharedSegmentsChanged),
+    active: s.replay.active,
+    sharedSegment: s.replay.shared?.segment,
+    useSharedSegments: s.replay.shared?.useSharedSegments,
+  }), replayView.onSharedSegmentChanged),
+  sub((s) => s.replay.states.length >= 2, replayView.onSecondRecordedSegment),
 
-  // Hypothetical buttons
+  // Database ID
+  subAfterInit((s) => s.replay.databaseID, replayView.onDatabaseIDChanged),
+
+  // Shared replay
+  subAfterInit((s) => s.replay.shared !== null, replayView.onSharedReplayEnter),
+  subAfterInit((s) => s.replay.shared?.leader, replayView.onSharedLeaderChanged),
+  subAfterInit((s) => s.replay.shared?.amLeader, replayView.onSharedAmLeaderChanged),
+  subAfterInit((s) => ({
+    leader: s.replay.shared?.leader,
+    spectators: s.spectators,
+  }), replayView.onLeaderOrSpectatorsChanged),
+
+  // Hypothetical
   subAfterInit(
-    (s) => replayView.enterHypoButtonIsEnabled(s),
-    replayView.enterHypoButtonEnabledChanged,
+    (s) => hypotheticalView.shouldEnableEnterHypoButton(s),
+    hypotheticalView.shouldEnableEnterHypoButtonChanged,
+  ),
+  subAfterInit(
+    (s) => s.replay.shared !== null && s.replay.hypothetical !== null,
+    hypotheticalView.onActiveChanged,
+  ),
+  subAfterInit((s) => ({
+    active: s.replay.shared !== null && s.replay.hypothetical !== null,
+    amLeader: s.replay.shared?.amLeader,
+  }), hypotheticalView.onActiveOrAmLeaderChanged),
+  subAfterInit((s) => s.replay.hypothetical?.states.length, hypotheticalView.onStatesLengthChanged),
+  subAfterInit(
+    (s) => hypotheticalView.shouldShowHypoBackButton(s),
+    hypotheticalView.shouldShowHypoBackButtonChanged,
+  ),
+  subAfterInit(
+    (s) => s.replay.hypothetical?.drawnCardsShown,
+    hypotheticalView.onDrawnCardsInHypotheticalChanged,
   ),
 
   // Card and stack base morphing
@@ -202,6 +240,15 @@ const replayObservers: Subscriptions = [
 const otherObservers = [
   // Premoves (e.g. queued actions)
   subAfterInit((s) => s.premove, premoveView.onChanged),
+
+  // Pause
+  subAfterInit((s) => s.pause, pauseView.onChanged),
+
+  // Spectators
+  subAfterInit((s) => ({
+    spectators: s.spectators,
+    finished: s.finished,
+  }), spectatorsView.onSpectatorsChanged),
 ];
 
 // These observers need to run after all other observers

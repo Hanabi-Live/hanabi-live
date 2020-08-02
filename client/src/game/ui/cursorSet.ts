@@ -11,14 +11,35 @@ export default function cursorSet(cursorType: CursorType) {
     return;
   }
 
-  if (globals.metadata.options.speedrun || globals.lobby.settings.speedrunMode) {
+  // Don't show any custom cursors if we are an active player in a speedrun
+  if (
+    (globals.options.speedrun || globals.lobby.settings.speedrunMode)
+    && globals.state.playing
+  ) {
     return;
   }
 
   currentCursorType = cursorType;
-  const url = `/public/img/cursors/${cursorType}.png`;
-  const cursorValue = `url('${url}'), auto`;
-  globals.stage.container().style.cursor = cursorType === 'default' ? 'auto' : cursorValue;
+
+  let cursorValue = 'auto';
+  switch (cursorType) {
+    case 'look': {
+      const url = `/public/img/cursors/${cursorType}.png`;
+      cursorValue = `url('${url}'), auto`;
+      break;
+    }
+    case 'hand':
+    case 'dragging': {
+      cursorValue = 'pointer';
+      break;
+    }
+    default: {
+      cursorValue = 'auto';
+      break;
+    }
+  }
+
+  globals.stage.container().style.cursor = cursorValue;
 
   // If the Chrome development tools are open, then the cursor may not update properly
   // https://stackoverflow.com/questions/37462132/update-mouse-cursor-without-moving-mouse-with-changed-css-cursor-property

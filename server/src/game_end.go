@@ -48,12 +48,6 @@ func (g *Game) End() {
 	g.Turn++
 	t.NotifyTurn()
 
-	// Give all of the players and spectators the full listing of the cards in the deck
-	t.NotifyCardIdentities()
-
-	// Notify everyone that the game is over
-	t.NotifyGameOver()
-
 	// Notify everyone that the table was deleted
 	// (we will send a new table message later for the shared replay)
 	notifyAllTableGone(t)
@@ -90,7 +84,8 @@ func (g *Game) End() {
 	sortStringsCaseInsensitive(playerNames)
 	gameHistoryList := make([]*GameHistory, 0)
 	gameHistoryList = append(gameHistoryList, &GameHistory{
-		ID:                 g.ID, // Recorded in the "WriteDatabase()" function above
+		// The ID is recorded in the "WriteDatabase()" function above
+		ID:                 g.ExtraOptions.DatabaseID,
 		Options:            g.Options,
 		Seed:               g.Seed,
 		Score:              g.Score,
@@ -133,7 +128,7 @@ func (g *Game) WriteDatabase() error {
 		logger.Error("Failed to insert the game row:", err)
 		return err
 	} else {
-		g.ID = v
+		t.ExtraOptions.DatabaseID = v
 	}
 
 	// Next, we insert rows for each of the participants
@@ -169,7 +164,7 @@ func (g *Game) WriteDatabase() error {
 		}
 
 		if err := models.GameParticipants.Insert(
-			g.ID,
+			t.ExtraOptions.DatabaseID,
 			p.ID,
 			gp.Index,
 			characterID,
@@ -188,7 +183,12 @@ func (g *Game) WriteDatabase() error {
 			if note == "" {
 				continue
 			}
-			if err := models.GameParticipantNotes.Insert(p.ID, g.ID, j, note); err != nil {
+			if err := models.GameParticipantNotes.Insert(
+				p.ID,
+				t.ExtraOptions.DatabaseID,
+				j,
+				note,
+			); err != nil {
 				logger.Error("Failed to insert the row for note #"+strconv.Itoa(j)+
 					" for game participant #"+strconv.Itoa(i)+":", err)
 				// Do not return on failed note insertion,
@@ -201,7 +201,7 @@ func (g *Game) WriteDatabase() error {
 	for i, action := range g.Actions2 {
 		// The index of the action in the slice is equivalent to the turn number that the
 		// action happened
-		if err := models.GameActions.Insert(g.ID, i, action); err != nil {
+		if err := models.GameActions.Insert(t.ExtraOptions.DatabaseID, i, action); err != nil {
 			logger.Error("Failed to insert row for action #"+strconv.Itoa(i)+":", err)
 			return err
 		}
@@ -229,7 +229,11 @@ func (g *Game) WriteDatabase() error {
 		}
 	}
 	if gameOverAction != nil {
-		if err := models.GameActions.Insert(g.ID, len(g.Actions2), gameOverAction); err != nil {
+		if err := models.GameActions.Insert(
+			t.ExtraOptions.DatabaseID,
+			len(g.Actions2),
+			gameOverAction,
+		); err != nil {
 			logger.Error("Failed to insert the game over action:", err)
 			return err
 		}
@@ -247,7 +251,7 @@ func (g *Game) WriteDatabase() error {
 
 	// Next, we insert rows for each tag (if any)
 	for tag, userID := range g.Tags {
-		if err := models.GameTags.Insert(g.ID, userID, tag); err != nil {
+		if err := models.GameTags.Insert(t.ExtraOptions.DatabaseID, userID, tag); err != nil {
 			logger.Error("Failed to insert a tag into the database:", err)
 			// Do not return on failed tag insertion,
 			// since it should not affect subsequent operations
@@ -347,7 +351,7 @@ func (t *Table) ConvertToSharedReplay() {
 
 	t.Replay = true
 	t.InitialName = t.Name
-	t.Name = "Shared replay for game #" + strconv.Itoa(g.ID)
+	t.Name = "Shared replay for game #" + strconv.Itoa(t.ExtraOptions.DatabaseID)
 	// Update the "EndTurn" field (since we incremented the final turn above in an artificial way)
 	g.EndTurn = g.Turn
 	// Initialize the shared replay on the 2nd to last turn (since the end times are not important)
@@ -378,11 +382,11 @@ func (t *Table) ConvertToSharedReplay() {
 
 		// Add the new spectator
 		sp := &Spectator{
-			ID:                p.ID,
-			Name:              p.Name,
-			Session:           p.Session,
-			ShadowPlayerIndex: -1, // To indicate that they are not shadowing anyone
-			Notes:             make([]string, g.GetNotesSize()),
+			ID:                   p.ID,
+			Name:                 p.Name,
+			Session:              p.Session,
+			ShadowingPlayerIndex: -1, // To indicate that they are not shadowing anyone
+			Notes:                make([]string, g.GetNotesSize()),
 		}
 		t.Spectators = append(t.Spectators, sp)
 		logger.Info("Converted " + p.Name + " to a spectator.")
@@ -423,6 +427,12 @@ func (t *Table) ConvertToSharedReplay() {
 	}
 	t.NotifyConnected()
 
+	// Give all of the players and spectators the full listing of the cards in the deck
+	t.NotifyCardIdentities()
+
+	// Notify everyone that the game is over and that they should prepare the UI for a shared replay
+	t.NotifyGameOver()
+
 	for _, sp := range t.Spectators {
 		// Reset everyone's status (both players and spectators are now spectators)
 		if sp.Session != nil {
@@ -431,21 +441,8 @@ func (t *Table) ConvertToSharedReplay() {
 			notifyAllUser(sp.Session)
 		}
 
-		// Activate the Replay Leader label
-		sp.Session.NotifyReplayLeader(t, false)
-
 		// Send them the notes from all the players & spectators
 		sp.Session.NotifyNoteList(t, -1)
-
-		// Send them the database ID
-		type DatabaseIDMessage struct {
-			TableID    int `json:"tableID"`
-			DatabaseID int `json:"databaseID"`
-		}
-		sp.Session.Emit("databaseID", &DatabaseIDMessage{
-			TableID:    t.ID,
-			DatabaseID: g.ID,
-		})
 	}
 
 	notifyAllTable(t)    // Update the spectator list for the row in the lobby

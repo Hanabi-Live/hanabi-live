@@ -1,7 +1,6 @@
 package main
 
 import (
-	"strconv"
 	"time"
 )
 
@@ -114,6 +113,15 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 	}
 }
 
+func (s *Session) NotifyTableJoined(t *Table) {
+	type JoinedMessage struct {
+		TableID int `json:"tableID"`
+	}
+	s.Emit("joined", &JoinedMessage{
+		TableID: t.ID,
+	})
+}
+
 func (s *Session) NotifyTableProgress(t *Table) {
 	type TableProgressMessage struct {
 		ID       int `json:"id"`
@@ -135,14 +143,16 @@ func (s *Session) NotifyTableGone(t *Table) {
 	})
 }
 
-func (s *Session) NotifyChatTyping(name string, typing bool) {
+func (s *Session) NotifyChatTyping(t *Table, name string, typing bool) {
 	type ChatTypingMessage struct {
-		Name   string `json:"name"`
-		Typing bool   `json:"typing"`
+		TableID int    `json:"tableID"`
+		Name    string `json:"name"`
+		Typing  bool   `json:"typing"`
 	}
 	s.Emit("chatTyping", &ChatTypingMessage{
-		Name:   name,
-		Typing: typing,
+		TableID: t.ID,
+		Name:    name,
+		Typing:  typing,
 	})
 }
 
@@ -192,10 +202,12 @@ func (s *Session) NotifyConnected(t *Table) {
 
 	// Send the "connected" message
 	type ConnectedMessage struct {
-		List []bool `json:"list"`
+		TableID int    `json:"tableID"`
+		List    []bool `json:"list"`
 	}
 	s.Emit("connected", &ConnectedMessage{
-		List: list,
+		TableID: t.ID,
+		List:    list,
 	})
 }
 
@@ -230,7 +242,7 @@ func (s *Session) NotifySound(t *Table, i int) {
 	var sound string
 	if g.Sound != "" {
 		sound = g.Sound
-	} else if i == g.ActivePlayer {
+	} else if i == g.ActivePlayerIndex {
 		sound = "turn_us"
 	} else {
 		sound = "turn_other"
@@ -246,12 +258,13 @@ func (s *Session) NotifySound(t *Table, i int) {
 	}
 
 	type SoundMessage struct {
-		File string `json:"file"`
+		TableID int    `json:"tableID"`
+		File    string `json:"file"`
 	}
-	data := &SoundMessage{
-		File: sound,
-	}
-	s.Emit("sound", data)
+	s.Emit("sound", &SoundMessage{
+		TableID: t.ID,
+		File:    sound,
+	})
 }
 
 func (s *Session) NotifyTime(t *Table) {
@@ -262,7 +275,7 @@ func (s *Session) NotifyTime(t *Table) {
 	for i, p := range g.Players {
 		// We could be sending the message in the middle of someone's turn, so account for this
 		timeLeft := p.Time
-		if g.ActivePlayer == i {
+		if g.ActivePlayerIndex == i {
 			elapsedTime := time.Since(g.DatetimeTurnBegin)
 			timeLeft -= elapsedTime
 		}
@@ -274,14 +287,16 @@ func (s *Session) NotifyTime(t *Table) {
 	timeTaken := int64(time.Since(g.DatetimeTurnBegin) / time.Millisecond)
 
 	type ClockMessage struct {
-		Times     []int64 `json:"times"`
-		Active    int     `json:"active"`
-		TimeTaken int64   `json:"timeTaken"`
+		TableID           int     `json:"tableID"`
+		Times             []int64 `json:"times"`
+		ActivePlayerIndex int     `json:"activePlayerIndex"`
+		TimeTaken         int64   `json:"timeTaken"`
 	}
 	s.Emit("clock", &ClockMessage{
-		Times:     times,
-		Active:    g.ActivePlayer,
-		TimeTaken: timeTaken,
+		TableID:           t.ID,
+		Times:             times,
+		ActivePlayerIndex: g.ActivePlayerIndex,
+		TimeTaken:         timeTaken,
 	})
 }
 
@@ -289,32 +304,40 @@ func (s *Session) NotifyPause(t *Table) {
 	g := t.Game
 
 	type PauseMessage struct {
-		Paused      bool   `json:"paused"`
-		PausePlayer string `json:"pausePlayer"`
+		TableID     int  `json:"tableID"`
+		Active      bool `json:"active"`
+		PlayerIndex int  `json:"playerIndex"`
 	}
 	s.Emit("pause", &PauseMessage{
-		Paused:      g.Paused,
-		PausePlayer: t.Players[g.PausePlayer].Name,
+		TableID:     t.ID,
+		Active:      g.Paused,
+		PlayerIndex: g.PausePlayerIndex,
 	})
 }
 
 func (s *Session) NotifySpectators(t *Table) {
-	names := make([]string, 0)
-	shadowingPlayers := make([]int, 0)
-	for _, sp := range t.Spectators {
-		names = append(names, sp.Name)
-		shadowingPlayers = append(shadowingPlayers, sp.ShadowPlayerIndex)
-	}
-
 	type SpectatorsMessage struct {
-		Names            []string `json:"names"`
-		ShadowingPlayers []int    `json:"shadowingPlayers"`
+		TableID    int          `json:"tableID"`
+		Spectators []*Spectator `json:"spectators"`
 	}
 	s.Emit("spectators", &SpectatorsMessage{
-		Names:            names,
-		ShadowingPlayers: shadowingPlayers,
+		TableID:    t.ID,
+		Spectators: t.Spectators,
 	})
 }
+
+func (s *Session) NotifyBoot(t *Table) {
+	type BootMessage struct {
+		TableID int
+	}
+	s.Emit("boot", &BootMessage{
+		TableID: t.ID,
+	})
+}
+
+/*
+	Replay notify functions
+*/
 
 func (s *Session) NotifyCardIdentities(t *Table) {
 	g := t.Game
@@ -329,54 +352,20 @@ func (s *Session) NotifyCardIdentities(t *Table) {
 	})
 }
 
-func (s *Session) NotifyReplayLeader(t *Table, playAnimation bool) {
-	// Get the username of the game owner
-	// (the "Owner" field is used to store the leader of the shared replay)
-	name := ""
-	for _, sp := range t.Spectators {
-		if sp.ID == t.Owner {
-			name = sp.Name
-			break
-		}
-	}
-
-	if name == "" {
-		// The leader is not currently present,
-		// so try getting their username from the players object
-		for _, p := range t.Players {
-			if p.ID == t.Owner {
-				name = p.Name
-				break
-			}
-		}
-	}
-
-	if name == "" {
-		// The leader is not currently present and was not a member of the original game,
-		// so we need to look up their username from the database
-		if v, err := models.Users.GetUsername(t.Owner); err != nil {
-			logger.Error("Failed to get the username for user "+strconv.Itoa(t.Owner)+
-				" who is the owner of table:", t.ID)
-			name = "(Unknown)"
-		} else {
-			name = v
-		}
-	}
-
-	// Send it
+func (s *Session) NotifyReplayLeader(t *Table) {
 	type ReplayLeaderMessage struct {
-		Name          string `json:"name"`
-		PlayAnimation bool   `json:"playAnimation"`
+		TableID int    `json:"tableID"`
+		Name    string `json:"name"`
 	}
 	s.Emit("replayLeader", &ReplayLeaderMessage{
-		Name:          name,
-		PlayAnimation: playAnimation,
+		TableID: t.ID,
+		Name:    t.GetSharedReplayLeaderName(),
 	})
 }
 
 // NotifyNoteList sends them all of the notes from the players & spectators
 // (there will be no spectator notes if this is a replay spawned from the database)
-func (s *Session) NotifyNoteList(t *Table, shadowPlayerIndex int) {
+func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 	g := t.Game
 
 	type NoteList struct {
@@ -388,7 +377,7 @@ func (s *Session) NotifyNoteList(t *Table, shadowPlayerIndex int) {
 	// Get the notes from all the players & spectators
 	notes := make([]NoteList, 0)
 	for _, p := range g.Players {
-		if shadowPlayerIndex == -1 || shadowPlayerIndex == p.Index {
+		if shadowingPlayerIndex == -1 || shadowingPlayerIndex == p.Index {
 			notes = append(notes, NoteList{
 				ID:    t.Players[p.Index].ID,
 				Name:  p.Name,
@@ -396,7 +385,7 @@ func (s *Session) NotifyNoteList(t *Table, shadowPlayerIndex int) {
 			})
 		}
 	}
-	if !t.Replay && shadowPlayerIndex == -1 {
+	if !t.Replay && shadowingPlayerIndex == -1 {
 		for _, sp := range t.Spectators {
 			notes = append(notes, NoteList{
 				ID:    sp.ID,
@@ -408,9 +397,11 @@ func (s *Session) NotifyNoteList(t *Table, shadowPlayerIndex int) {
 
 	// Send it
 	type NoteListMessage struct {
-		Notes []NoteList `json:"notes"`
+		TableID int        `json:"tableID"`
+		Notes   []NoteList `json:"notes"`
 	}
 	s.Emit("noteList", &NoteListMessage{
-		Notes: notes,
+		TableID: t.ID,
+		Notes:   notes,
 	})
 }

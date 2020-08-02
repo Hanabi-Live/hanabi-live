@@ -65,11 +65,11 @@ export const set = (
     if (
       (
         !globals.lobby.settings.keldonMode
-        && element.state.location === globals.metadata.ourPlayerIndex
+        && element.state.location === globals.state.metadata.ourPlayerIndex
       ) || (
         globals.lobby.settings.keldonMode
         && (
-          element.state.location !== globals.metadata.ourPlayerIndex
+          element.state.location !== globals.state.metadata.ourPlayerIndex
           && cardRules.isInPlayerHand(element.state)
         )
       )
@@ -111,7 +111,7 @@ export const set = (
     // Clue arrows have a circle that shows the type of clue given
     let giverCharacterName = '';
     if (giver !== null) {
-      const giverCharacterID = globals.metadata.characterAssignments[giver!];
+      const giverCharacterID = globals.state.metadata.characterAssignments[giver!];
       if (giverCharacterID !== null) {
         const giverCharacter = getCharacter(giverCharacterID);
         giverCharacterName = giverCharacter.name;
@@ -119,7 +119,7 @@ export const set = (
     }
     if (
       variantRules.isDuck(globals.variant)
-      || (giverCharacterName === 'Quacker' && !globals.metadata.replay)
+      || (giverCharacterName === 'Quacker' && !globals.state.finished)
     ) {
       // Don't show the circle in variants where the clue types are supposed to be hidden
       arrow.circle.hide();
@@ -185,7 +185,7 @@ export const set = (
     const pos = getPos(element!, rot);
     arrow.setAbsolutePosition(pos);
   } else {
-    const visibleSegment = globals.store!.getState().visibleState!.turn.segment!;
+    const visibleSegment = globals.state.visibleState!.turn.segment!;
     animate(arrow, element as HanabiCard, rot, giver, visibleSegment);
   }
   if (!globals.animateFast) {
@@ -233,7 +233,7 @@ const getPos = (element: Konva.Node, rot: number) => {
 // Animate the arrow to fly from the player who gave the clue to the card
 const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, segment: number) => {
   // Don't bother doing the animation if it is delayed by more than one segment
-  const visibleSegment = globals.store!.getState().visibleState!.turn.segment!;
+  const visibleSegment = globals.state.visibleState!.turn.segment!;
   if (visibleSegment > segment + 1 || visibleSegment < segment - 1) {
     return;
   }
@@ -292,13 +292,13 @@ export const click = (
   }
 
   if (
-    globals.metadata.sharedReplay
-    && globals.amSharedReplayLeader
-    && globals.store!.getState().replay.useSharedSegments
+    globals.state.replay.shared !== null
+    && globals.state.replay.shared.amLeader
+    && globals.state.replay.shared.useSharedSegments
   ) {
     // The shared replay leader is clicking on a UI element, so send this action to the server
     send(order, element);
-  } else if (!globals.metadata.sharedReplay) {
+  } else if (globals.state.replay.shared === null) {
     // Otherwise, toggle the arrow locally
     // However, we don't want to enable this functionality in shared replays because it could be
     // misleading as to who the real replay leader is

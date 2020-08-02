@@ -30,6 +30,7 @@ import turnReducer from './turnReducer';
 const gameStateReducer = produce((
   state: Draft<GameState>,
   action: GameAction,
+  playing: boolean,
   metadata: GameMetadata,
 ) => {
   const variant = getVariant(metadata.options.variantName);
@@ -80,7 +81,7 @@ const gameStateReducer = produce((
         hand.splice(handIndex, 1);
       }
 
-      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, metadata.spectating)) {
+      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, playing)) {
         if (typeof action.suitIndex !== 'number' || action.suitIndex < 0) {
           throw new Error(`The suit index for the discarded card was ${action.suitIndex}.`);
         }
@@ -88,13 +89,12 @@ const gameStateReducer = produce((
         // Add it to the discard stacks
         state.discardStacks[action.suitIndex].push(action.order);
 
-        if (!action.failed) {
-          state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
-        }
+        // Discarding cards grants clue tokens under certain circumstances
+        state.clueTokens = clueTokensRules.gain(action, state.clueTokens, variant);
       }
 
-      const touched = state.deck[action.order].numPositiveClues > 0;
-      const text = textRules.discard(action, slot, touched, metadata);
+      const touched = cardRules.isClued(state.deck[action.order]);
+      const text = textRules.discard(action, slot, touched, playing, metadata);
       state.log.push({
         turn: state.turn.turnNum + 1,
         text,
@@ -168,7 +168,7 @@ const gameStateReducer = produce((
       }
 
       // Add it to the play stacks
-      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, metadata.spectating)) {
+      if (!throwItInAHolePlayedOrMisplayed(state, action, variant, playing)) {
         if (typeof action.suitIndex !== 'number' || action.suitIndex < 0) {
           throw new Error(`The suit index for the played card was ${action.suitIndex}.`);
         }
@@ -176,26 +176,20 @@ const gameStateReducer = produce((
         const playStack = state.playStacks[action.suitIndex];
         playStack.push(action.order);
 
-        // Resolve the stack direction
-        const direction = playStacksRules.direction(
-          action.suitIndex,
-          playStack,
-          state.deck,
+        // Playing cards grants clue tokens under certain circumstances
+        state.clueTokens = clueTokensRules.gain(
+          action,
+          state.clueTokens,
           variant,
+          playStack.length === 5,
         );
-        state.playStackDirections[action.suitIndex] = direction;
-
-        // Gain a clue token if the stack is complete
-        if (playStack.length === 5) { // Hard-code 5 cards per stack
-          state.clueTokens = clueTokensRules.gain(variant, state.clueTokens);
-        }
       }
 
       // Gain a point
       state.score += 1;
 
-      const touched = state.deck[action.order].numPositiveClues > 0;
-      const text = textRules.play(action, slot, touched, metadata);
+      const touched = cardRules.isClued(state.deck[action.order]);
+      const text = textRules.play(action, slot, touched, playing, metadata);
       state.log.push({
         turn: state.turn.turnNum + 1,
         text,
@@ -223,6 +217,7 @@ const gameStateReducer = produce((
           text,
         });
       }
+
       break;
     }
 
@@ -249,8 +244,9 @@ const gameStateReducer = produce((
       }
 
       // In "Throw It In a Hole" variants, the client is missing some information about the stats
-      // TODO: the status message should not be sent, so we do not leak information to the client
-      if (variantRules.isThrowItInAHole(variant) && !metadata.spectating) {
+      // TODO: the server should not send the status message,
+      // so that it does not leak information to the client
+      if (variantRules.isThrowItInAHole(variant) && playing) {
         break;
       }
 
@@ -305,8 +301,23 @@ const gameStateReducer = produce((
     original(state.deck)!,
     action,
     state,
+    playing,
     metadata,
   ));
+
+  // Resolve the stack direction
+  if (action.type === 'play' && variantRules.hasReversedSuits(variant)) {
+    // We have to wait until the deck is updated with the information of the card that we played
+    // before the "direction()" function will work
+    const playStack = state.playStacks[action.suitIndex];
+    const direction = playStacksRules.direction(
+      action.suitIndex,
+      playStack,
+      state.deck,
+      variant,
+    );
+    state.playStackDirections[action.suitIndex] = direction;
+  }
 
   // Discarding or playing cards can make other card cards in that suit
   // not playable anymore and can make other cards critical
@@ -340,6 +351,7 @@ const gameStateReducer = produce((
     action,
     original(state)!,
     state,
+    playing,
     metadata,
   );
 }, {} as GameState);
@@ -366,9 +378,9 @@ const throwItInAHolePlayedOrMisplayed = (
   state: Draft<GameState>,
   action: ActionPlay | ActionDiscard,
   variant: Variant,
-  spectating: boolean,
+  playing: boolean,
 ) => {
-  if (!variantRules.isThrowItInAHole(variant) || spectating) {
+  if (!variantRules.isThrowItInAHole(variant) || !playing) {
     return false;
   }
 

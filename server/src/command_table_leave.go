@@ -65,7 +65,12 @@ func commandTableLeave(s *Session, d *CommandData) {
 	}
 
 	// Make the client switch screens to show the base lobby
-	s.Emit("left", nil)
+	type TableLeftMessage struct {
+		TableID int
+	}
+	s.Emit("left", &TableLeftMessage{
+		TableID: t.ID,
+	})
 
 	// If they were typing, remove the message
 	t.NotifyChatTyping(s.Username(), false)

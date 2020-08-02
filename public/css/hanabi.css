@@ -530,6 +530,25 @@ input::-webkit-calendar-picker-indicator {
 }
 
 /*
+  Show History
+*/
+
+.lobby-history-table-tooltip-ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lobby-history-table-tooltip-ul > li {
+  padding-left: 0.2em;
+  margin-bottom: 0.3em;
+}
+
+.lobby-history-table-tooltip-ul > li:last-child {
+  margin-bottom: 0;
+}
+
+/*
   Watch Specific Replay Tooltip
 */
 

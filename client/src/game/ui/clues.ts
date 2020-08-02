@@ -16,10 +16,10 @@ import * as turn from './turn';
 
 export const checkLegal = () => {
   let clueTargetButtonGroup;
-  if (globals.metadata.hypothetical) {
-    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
-  } else {
+  if (globals.state.replay.hypothetical === null) {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
+  } else {
+    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
   }
   const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
   const { clueTypeButtonGroup } = globals.elements;
@@ -34,7 +34,7 @@ export const checkLegal = () => {
   }
 
   const who = (target as PlayerButton).targetIndex;
-  const currentPlayerIndex = globals.store!.getState().visibleState!.turn.currentPlayerIndex;
+  const currentPlayerIndex = globals.state.visibleState!.turn.currentPlayerIndex;
   if (currentPlayerIndex === null) {
     return;
   }
@@ -46,7 +46,7 @@ export const checkLegal = () => {
 
   const touchedAtLeastOneCard = showClueMatch(who, clueButton.clue);
 
-  const ourCharacterID = globals.metadata.characterAssignments[globals.metadata.ourPlayerIndex];
+  const ourCharacterID = globals.state.metadata.characterAssignments[globals.state.metadata.ourPlayerIndex]; // eslint-disable-line
   let ourCharacterName = '';
   if (ourCharacterID !== null) {
     const ourCharacter = getCharacter(ourCharacterID);
@@ -57,7 +57,7 @@ export const checkLegal = () => {
   // one or more cards in the hand
   const enabled = touchedAtLeastOneCard
     // Make an exception if they have the optional setting for "Empty Clues" turned on
-    || globals.metadata.options.emptyClues
+    || globals.options.emptyClues
     // Make an exception for variants where color clues are always allowed
     || (globals.variant.colorCluesTouchNothing && clueButton.clue.type === ClueType.Color)
     // Make an exception for variants where number clues are always allowed
@@ -65,12 +65,14 @@ export const checkLegal = () => {
     // Make an exception for certain characters
     || (
       ourCharacterName === 'Blind Spot'
-      && who === (globals.metadata.ourPlayerIndex + 1) % globals.metadata.playerNames.length
+      && who === (globals.state.metadata.ourPlayerIndex + 1)
+        % globals.state.metadata.options.numPlayers
     )
     || (
       ourCharacterName === 'Oblivious'
-      && who === (globals.metadata.ourPlayerIndex - 1 + globals.metadata.playerNames.length)
-        % globals.metadata.playerNames.length
+      && who === (globals.state.metadata.ourPlayerIndex - 1
+        + globals.state.metadata.options.numPlayers)
+        % globals.state.metadata.options.numPlayers
     );
 
   globals.elements.giveClueButton!.setEnabled(enabled);
@@ -113,10 +115,10 @@ export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
 
 export const give = () => {
   let clueTargetButtonGroup;
-  if (globals.metadata.hypothetical) {
-    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
-  } else {
+  if (globals.state.replay.hypothetical === null) {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
+  } else {
+    clueTargetButtonGroup = globals.elements.clueTargetButtonGroup2;
   }
   const target = clueTargetButtonGroup!.getPressed() as PlayerButton;
   const { clueTypeButtonGroup } = globals.elements;
@@ -147,13 +149,12 @@ export const give = () => {
 };
 
 const shouldGiveClue = (target: PlayerButton, clueButton: ColorButton | RankButton) => {
-  const state = globals.store!.getState();
-  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
-  const ourPlayerIndex = state.metadata.ourPlayerIndex;
+  const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
+  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
 
   return (
     // We can only give clues on our turn
-    (currentPlayerIndex === ourPlayerIndex || state.replay.hypothetical !== null)
+    (currentPlayerIndex === ourPlayerIndex || globals.state.replay.hypothetical !== null)
     && globals.clues > 0 // We can only give a clue if there is one available
     && target !== undefined // We might have not selected a clue recipient
     && target !== null // We might have not selected a clue recipient

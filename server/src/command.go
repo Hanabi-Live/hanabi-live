@@ -14,10 +14,9 @@ type CommandData struct {
 	Recipient string `json:"recipient"`
 
 	// tableCreate
-	Name         string   `json:"name"`
-	Password     string   `json:"password"`
-	Options      *Options `json:"options"`
-	AlertWaiters bool     `json:"alertWaiters"`
+	Name     string   `json:"name"`
+	Options  *Options `json:"options"`
+	Password string   `json:"password"`
 
 	// action
 	Type   int `json:"type"`
@@ -29,9 +28,7 @@ type CommandData struct {
 	Order int    `json:"order"`
 
 	// tableSpectate
-	Player string `json:"player"` // Optional
-	// (it might be simpler to use "seat" instead of "player",
-	// but this gets tricky since 0 is the default value of an int and 0 is a valid seat number)
+	ShadowingPlayerIndex int `json:"shadowingPlayerIndex"`
 
 	// replayCreate
 	Source     string   `json:"source"`

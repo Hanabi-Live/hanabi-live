@@ -12,12 +12,23 @@ export default function initialState(metadata: GameMetadata): State {
       segment: 0,
       states: [],
       actions: [],
-      sharedSegment: 0,
-      useSharedSegments: false,
+
+      databaseID: null,
+      shared: null,
       hypothetical: null,
     },
-    cardIdentities: [],
+
+    playing: true,
+    finished: false,
+
     metadata,
+    cardIdentities: [],
     premove: null,
+    pause: {
+      active: false,
+      playerIndex: 0,
+      queued: false,
+    },
+    spectators: [],
   };
 }

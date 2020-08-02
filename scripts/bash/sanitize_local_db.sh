@@ -35,5 +35,4 @@ DELETE FROM chat_log_pm;
 DELETE FROM banned_ips;
 DELETE FROM muted_ips;
 DELETE FROM throttled_ips;
-DELETE FROM discord_waiters;
 EOF

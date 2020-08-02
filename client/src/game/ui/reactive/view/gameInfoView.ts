@@ -1,4 +1,4 @@
-import { LABEL_COLOR, STRIKE_FADE } from '../../../../constants';
+import { LABEL_COLOR, STRIKE_FADE, OFF_BLACK } from '../../../../constants';
 import { variantRules } from '../../../rules';
 import { MAX_STRIKES, MAX_CLUE_NUM } from '../../../types/constants';
 import { StateStrike } from '../../../types/GameState';
@@ -36,12 +36,25 @@ export const onCurrentPlayerIndexChanged = (currentPlayerIndex: number | null) =
     globals.elements.nameFrames[i].setActive(currentPlayerIndex === i);
   }
 
-  // Additionally, show a black rectangle over a player's hand to signify that it is their turn
+  // Additionally, show a UI element to signify that it is their turn
   if (currentPlayerIndex !== null) {
-    for (const rect of globals.elements.playerHandTurnRects) {
-      rect.hide();
+    if (globals.lobby.settings.keldonMode) {
+      for (const rect of globals.elements.playerHandBlackLines) {
+        rect.fill(OFF_BLACK);
+      }
+      const currentPlayerRect = globals.elements.playerHandBlackLines[currentPlayerIndex];
+      if (currentPlayerRect !== undefined) {
+        currentPlayerRect.fill('yellow');
+      }
+    } else {
+      for (const rect of globals.elements.playerHandTurnRects) {
+        rect.hide();
+      }
+      const currentPlayerRect = globals.elements.playerHandTurnRects[currentPlayerIndex];
+      if (currentPlayerRect !== undefined) {
+        currentPlayerRect.show();
+      }
     }
-    globals.elements.playerHandTurnRects[currentPlayerIndex].show();
   }
 
   globals.layers.UI.batchDraw();
@@ -65,7 +78,7 @@ export const onScoreOrMaxScoreChanged = (data: {
 };
 
 export const onNumAttemptedCardsPlayedChanged = (numAttemptedCardsPlayed: number) => {
-  if (!variantRules.isThrowItInAHole(globals.variant) || globals.metadata.replay) {
+  if (!variantRules.isThrowItInAHole(globals.variant) || globals.state.finished) {
     return;
   }
 
@@ -116,37 +129,16 @@ export const onClueTokensOrDoubleDiscardChanged = (data: {
   globals.layers.UI.batchDraw();
 };
 
-export const onStrikesChanged = (
-  strikes: readonly StateStrike[],
-  previousStrikes: readonly StateStrike[] | undefined,
-) => {
+export const onOngoingOrVisibleStrikesChanged = (data: {
+  ongoingStrikes: readonly StateStrike[];
+  visibleStrikes: readonly StateStrike[];
+}) => {
   // Strikes are hidden from the end-user in "Throw It in a Hole" variants
-  if (variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay) {
-    return;
-  }
-
-  // If there is no previous state, we are viewing the visible state for the first time
-  // If a strike happened in the future, we want to show a faded X on the UI
-  // The user will be able to click on the X in order to jump directly to the turn where the
-  // strike happened
-  if (previousStrikes === undefined) {
-    for (let i = 0; i < globals.store!.getState().ongoingGame.strikes.length; i++) {
-      const strikeX = globals.elements.strikeXs[i];
-      if (strikeX === undefined) {
-        continue;
-      }
-      strikeX.opacity(STRIKE_FADE);
-    }
-
+  if (variantRules.isThrowItInAHole(globals.variant) && !globals.state.finished) {
     return;
   }
 
   for (let i = 0; i < MAX_STRIKES; i++) {
-    // Check to see if this strike has changed
-    if (typeof strikes[i] === typeof previousStrikes[i]) {
-      continue;
-    }
-
     const strikeX = globals.elements.strikeXs[i];
     if (strikeX === undefined) {
       continue;
@@ -156,21 +148,28 @@ export const onStrikesChanged = (
       continue;
     }
 
-    if (strikes[i] === undefined) {
-      // We are going backwards in a replay and this strike should now be faded
+    const duration = 1; // The duration for the strike animation
+    if (data.visibleStrikes[i] !== undefined) {
+      // There is a strike on the visible state
+      // Animate the strike X fading in
+      animate(strikeX, {
+        duration,
+        opacity: 1,
+      }, true);
+    } else {
+      // Either this strike has never happened, or we are moving backwards in a replay
+      // If this strike never happened, it should be invisible
+      // If this strike happened in the future, then it should be slightly faded
       if (strikeX.tween !== null) {
         strikeX.tween.destroy();
         strikeX.tween = null;
       }
-      strikeX.opacity(STRIKE_FADE);
-      continue;
+      const opacity = data.ongoingStrikes[i] === undefined ? 0 : STRIKE_FADE;
+      animate(strikeX, {
+        duration,
+        opacity,
+      }, true);
     }
-
-    // Animate the strike square fading in
-    animate(strikeX, {
-      duration: 1,
-      opacity: 1,
-    }, true);
   }
 
   globals.layers.UI.batchDraw();

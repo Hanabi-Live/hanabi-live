@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { ensureAllCases } from '../../misc';
 import { getVariant, getCharacter } from '../data/gameData';
 import { getCharacterIDForPlayer } from '../reducers/reducerHelpers';
@@ -146,13 +144,14 @@ export const play = (
   action: ActionPlay,
   slot: number | null,
   touched: boolean,
+  playing: boolean,
   metadata: GameMetadata,
 ) => {
   const variant = getVariant(metadata.options.variantName);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   let card;
-  if (variantRules.isThrowItInAHole(variant) && !metadata.spectating) {
+  if (variantRules.isThrowItInAHole(variant) && playing) {
     card = 'a card';
   } else {
     card = cardRules.name(action.suitIndex, action.rank, variant);
@@ -177,6 +176,7 @@ export const discard = (
   action: ActionDiscard,
   slot: number | null,
   touched: boolean,
+  playing: boolean,
   metadata: GameMetadata,
 ) => {
   const variant = getVariant(metadata.options.variantName);
@@ -185,7 +185,7 @@ export const discard = (
   let verb = 'discards';
   if (action.failed) {
     verb = 'fails to play';
-    if (variantRules.isThrowItInAHole(variant) && !metadata.spectating) {
+    if (variantRules.isThrowItInAHole(variant) && playing) {
       verb = 'plays';
     }
   }

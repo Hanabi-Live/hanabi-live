@@ -23,6 +23,7 @@ export default class FullActionLog extends Konva.Group {
       clipWidth: 0.4 * winW,
       clipHeight: 0.96 * winH,
       visible: false,
+      listening: false,
     });
 
     // The black background
@@ -34,6 +35,7 @@ export default class FullActionLog extends Konva.Group {
       fill: 'black',
       opacity: 0.9,
       cornerRadius: 0.01 * winW,
+      listening: false,
     });
     Konva.Group.prototype.add.call(this, rect);
 
@@ -48,6 +50,7 @@ export default class FullActionLog extends Konva.Group {
       y: 0.01 * winH,
       width: 0.35 * winW,
       height: 0.94 * winH,
+      listening: false,
     };
     this.logText = new MultiFitText(textOptions, maxLines);
     this.add(this.logText as any);
@@ -61,6 +64,7 @@ export default class FullActionLog extends Konva.Group {
       y: 0.01 * winH,
       width: 0.03 * winW,
       height: 0.94 * winH,
+      listening: false,
     };
     this.logNumbers = new MultiFitText(numbersOptions, maxLines);
     this.add(this.logNumbers as any);
@@ -74,13 +78,14 @@ export default class FullActionLog extends Konva.Group {
       y: 0.01 * winH,
       width: 0.35 * winW,
       height: 0.94 * winH,
+      listening: false,
     };
     this.playerLogEmptyMessage = new FitText(emptyMessageOptions);
     this.playerLogEmptyMessage.fitText('This player has not taken any actions yet.');
     this.playerLogEmptyMessage.hide();
     this.add(this.playerLogEmptyMessage as any);
 
-    for (let i = 0; i < globals.metadata.playerNames.length; i++) {
+    for (let i = 0; i < globals.options.numPlayers; i++) {
       const playerLog = new MultiFitText(textOptions, maxLines);
       playerLog.hide();
       this.playerLogs.push(playerLog);
@@ -96,6 +101,11 @@ export default class FullActionLog extends Konva.Group {
   addMessage(turn: number, msg: string) {
     this.buffer.push({ turnNum: turn, text: msg });
     this.needsRefresh = true;
+
+    // If the log is already open, apply the change immediately
+    if (this.isVisible()) {
+      this.refreshText();
+    }
   }
 
   // Overrides the Konva show() method to refresh the text as well
@@ -108,7 +118,7 @@ export default class FullActionLog extends Konva.Group {
   }
 
   showPlayerActions(playerName: string) {
-    const playerIndex = globals.metadata.playerNames.findIndex((name) => name === playerName);
+    const playerIndex = globals.state.metadata.playerNames.findIndex((name) => name === playerName);
     if (playerIndex === -1) {
       throw new Error(`Failed to find player "${playerName}" in the player names.`);
     }
@@ -160,8 +170,8 @@ export default class FullActionLog extends Konva.Group {
 
     this.buffer.forEach((logEntry) => {
       appendLine(this.logText, this.logNumbers, logEntry.turnNum, logEntry.text);
-      for (let i = 0; i < globals.metadata.playerNames.length; i++) {
-        if (logEntry.text.startsWith(globals.metadata.playerNames[i])) {
+      for (let i = 0; i < globals.options.numPlayers; i++) {
+        if (logEntry.text.startsWith(globals.state.metadata.playerNames[i])) {
           appendLine(this.playerLogs[i], this.playerLogNumbers[i], logEntry.turnNum, logEntry.text);
           break;
         }
@@ -170,7 +180,7 @@ export default class FullActionLog extends Konva.Group {
 
     this.logText.refreshText();
     this.logNumbers.refreshText();
-    for (let i = 0; i < globals.metadata.playerNames.length; i++) {
+    for (let i = 0; i < globals.options.numPlayers; i++) {
       this.playerLogs[i].refreshText();
       this.playerLogNumbers[i].refreshText();
     }
@@ -182,7 +192,7 @@ export default class FullActionLog extends Konva.Group {
     this.buffer = [];
     this.logText.reset();
     this.logNumbers.reset();
-    for (let i = 0; i < globals.metadata.playerNames.length; i++) {
+    for (let i = 0; i < globals.options.numPlayers; i++) {
       this.playerLogs[i].reset();
       this.playerLogNumbers[i].reset();
     }

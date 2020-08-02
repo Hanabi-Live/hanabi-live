@@ -8,6 +8,7 @@ import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
+import isOurTurn from './isOurTurn';
 import * as ourHand from './ourHand';
 import * as replay from './replay';
 
@@ -28,9 +29,8 @@ export const begin = () => {
 // Handle pre-playing / pre-discarding / pre-cluing
 const handlePremove = () => {
   // Local variables
-  const state = globals.store!.getState();
-  const premove = state.premove;
-  const clueTokens = state.ongoingGame.clueTokens;
+  const premove = globals.state.premove;
+  const clueTokens = globals.state.ongoingGame.clueTokens;
 
   if (premove === null) {
     return;
@@ -69,7 +69,7 @@ const handlePremove = () => {
   // We don't want to send the queued action right away, or else it introduces bugs
   setTimeout(() => {
     // As a sanity check, ensure that there is still a queued action
-    if (globals.store!.getState().premove === null) {
+    if (globals.state.premove === null) {
       return;
     }
 
@@ -89,22 +89,18 @@ const handlePremove = () => {
 };
 
 export const showClueUI = () => {
-  const state = globals.store!.getState();
-  if (state.replay.active && state.replay.hypothetical === null) {
+  if (!isOurTurn()) {
     return;
   }
 
-  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
-  const ourPlayerIndex = state.metadata.ourPlayerIndex;
-  if (
-    currentPlayerIndex !== ourPlayerIndex
-    && (state.replay.hypothetical === null || !globals.amSharedReplayLeader)
-  ) {
+  // Don't show the clue UI if it gets to be our turn and we happen to be viewing past actions in an
+  // in-game replay
+  if (globals.state.replay.active && globals.state.replay.hypothetical === null) {
     return;
   }
 
   // Reset and show the clue UI
-  if (globals.metadata.playerNames.length === 2) {
+  if (globals.options.numPlayers === 2) {
     // In 2-player games,
     // default the clue recipient button to the only other player available
     // Otherwise, leave the last player selected
@@ -112,16 +108,16 @@ export const showClueUI = () => {
   }
   globals.elements.clueTypeButtonGroup!.clearPressed();
   globals.elements.clueArea!.show();
-  if (globals.elements.yourTurn !== null && !globals.metadata.hypothetical) {
+  if (globals.elements.yourTurn !== null && globals.state.replay.hypothetical === null) {
     globals.elements.yourTurn.show();
   }
   globals.elements.currentPlayerArea!.hide();
 
   // Hide some specific clue buttons in certain variants with clue restrictions
   if (variantRules.isAlternatingClues(globals.variant)) {
-    const ongoingGameState = globals.metadata.hypothetical
-      ? state.replay.hypothetical!.ongoing
-      : state.ongoingGame;
+    const ongoingGameState = globals.state.replay.hypothetical === null
+      ? globals.state.ongoingGame
+      : globals.state.replay.hypothetical.ongoing;
     if (ongoingGameState.clues.length > 0) {
       const lastClue = ongoingGameState.clues[ongoingGameState.clues.length - 1];
       if (lastClue.type === ClueType.Color) {
@@ -151,8 +147,8 @@ export const showClueUI = () => {
     globals.elements.clueAreaDisabled!.show();
   }
 
-  if (globals.metadata.options.deckPlays) {
-    const deckSize = globals.store!.getState().ongoingGame.deckSize;
+  if (globals.options.deckPlays) {
+    const deckSize = globals.state.ongoingGame.deckSize;
     globals.elements.deck!.cardBack.draggable(deckSize === 1);
     globals.elements.deckPlayAvailableLabel!.visible(deckSize === 1);
 
@@ -166,15 +162,14 @@ export const showClueUI = () => {
 };
 
 export const end = (clientAction: ClientAction) => {
-  const state = globals.store!.getState();
-  if (state.replay.hypothetical !== null) {
+  if (globals.state.replay.hypothetical !== null) {
     hypothetical.send(clientAction);
     hideClueUIAndDisableDragging();
     return;
   }
 
-  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
-  const ourPlayerIndex = state.metadata.ourPlayerIndex;
+  const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
+  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
   if (currentPlayerIndex === ourPlayerIndex) {
     replay.exit(); // Close the in-game replay if we preplayed a card in the replay
     globals.lobby.conn!.send('action', {

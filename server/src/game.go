@@ -7,10 +7,6 @@ import (
 )
 
 type Game struct {
-	// This corresponds to the database ID of the game
-	// It will be 0 in an ongoing game that has not been written to the database yet
-	ID int
-
 	// This corresponds to the database field of "datetime_started"
 	// It will be equal to "Table.DatetimeStarted" in an ongoing game that has not been written to
 	// the database yet
@@ -41,7 +37,7 @@ type Game struct {
 	Turn                int   // Starts at 0; the client will represent turn 0 as turn 1 to the user
 	DatetimeTurnBegin   time.Time
 	TurnsInverted       bool
-	ActivePlayer        int // Every game always starts with the 0th player going first
+	ActivePlayerIndex   int // Every game always starts with the 0th player going first
 	ClueTokens          int
 	Score               int
 	MaxScore            int
@@ -74,15 +70,15 @@ type Game struct {
 
 	// Pause-related fields
 	// (these are only applicable to timed games)
-	Paused      bool
-	PauseTime   time.Time
-	PauseCount  int
-	PausePlayer int // The index of the player who paused
+	Paused           bool
+	PauseTime        time.Time
+	PauseCount       int
+	PausePlayerIndex int
 
 	// Hypothetical-related fields
-	Hypothetical bool // Whether or not we are in a post-game hypothetical
-	HypoActions  []string
-	HypoRevealed bool // Whether or not drawn cards should be revealed (false by default)
+	Hypothetical        bool // Whether or not we are in a post-game hypothetical
+	HypoActions         []string
+	HypoDrawnCardsShown bool // Whether or not drawn cards should be revealed (false by default)
 
 	// Keep track of user-defined tags; they will be written to the database upon game completion
 	Tags map[string]int // Keys are the tags, values are the user ID that created it
@@ -231,7 +227,10 @@ func (g *Game) CheckEnd() bool {
 
 	// In an "All or Nothing game",
 	// handle the case where a player would have to discard without any cards in their hand
-	if g.Options.AllOrNothing && len(g.Players[g.ActivePlayer].Hand) == 0 && g.ClueTokens == 0 {
+	if g.Options.AllOrNothing &&
+		len(g.Players[g.ActivePlayerIndex].Hand) == 0 &&
+		g.ClueTokens == 0 {
+
 		logger.Info(t.GetName() + "The current player has no cards and no clue tokens in an \"All or Nothing\" game; ending the game.")
 		g.EndCondition = EndConditionAllOrNothingSoftlock
 		return true

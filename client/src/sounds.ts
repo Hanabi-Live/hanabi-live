@@ -12,7 +12,7 @@ export const init = () => {
     'blind1',
     'blind2',
     'blind3',
-    'blind4',
+    // Do not preload the rest of the blind-play sounds, since they will only occur very rarely
     'fail1',
     'fail2',
     'finished_fail',

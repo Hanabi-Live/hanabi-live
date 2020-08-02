@@ -8,7 +8,6 @@ import {
 } from '../rules';
 import CardState from '../types/CardState';
 import { MAX_CLUE_NUM } from '../types/constants';
-import GameMetadata from '../types/GameMetadata';
 import { PaceRisk } from '../types/GameState';
 import StackDirection from '../types/StackDirection';
 import Variant from '../types/Variant';
@@ -110,7 +109,7 @@ export const cardsGotten = (
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
-  metadata: GameMetadata,
+  playing: boolean,
   variant: Variant,
 ) => {
   let currentCardsGotten = 0;
@@ -123,7 +122,7 @@ export const cardsGotten = (
         card.location === 'discard'
         && card.isMisplayed
         && variantRules.isThrowItInAHole(variant)
-        && !metadata.spectating
+        && playing
       )
     ) {
       // A card is considered to be gotten if it is already played

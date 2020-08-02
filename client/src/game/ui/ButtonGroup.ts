@@ -4,6 +4,7 @@ import PlayerButton from './controls/PlayerButton';
 import RankButton from './RankButton';
 
 type ClueButton = PlayerButton | ColorButton | RankButton;
+
 export default class ButtonGroup extends Konva.Group {
   list: ClueButton[] = [];
 

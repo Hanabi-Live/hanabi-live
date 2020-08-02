@@ -5,18 +5,18 @@ import { MAX_CLUE_NUM } from '../../../types/constants';
 import State from '../../../types/State';
 import globals from '../../globals';
 
-export const isVisible = (s: State) => (
+export const isVisible = (state: State) => (
   // Don't show it we happen to have the in-game replay open
-  !s.replay.active
+  !state.replay.active
   // The clue UI should take precedence over the "Current Player" area
   && (
-    s.ongoingGame.turn.currentPlayerIndex !== s.metadata.ourPlayerIndex
-    || s.metadata.spectating
+    state.ongoingGame.turn.currentPlayerIndex !== state.metadata.ourPlayerIndex
+    || !state.playing
   )
   // The premove cancel button should take precedence over the "Current Player" area
-  && s.premove === null
+  && state.premove === null
   // Don't show it if the game is over
-  && s.ongoingGame.turn.currentPlayerIndex !== null
+  && state.ongoingGame.turn.currentPlayerIndex !== null
 );
 
 export const onChanged = (data: {
@@ -40,15 +40,14 @@ export const onChanged = (data: {
   // Local variables
   const winW = globals.stage.width();
   const winH = globals.stage.height();
-  const state = globals.store!.getState();
-  const clueTokens = state.ongoingGame!.clueTokens;
-  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
+  const clueTokens = globals.state.ongoingGame!.clueTokens;
+  const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
   if (currentPlayerIndex === null) {
     return;
   }
-  const currentPlayerHand = state.ongoingGame.hands[currentPlayerIndex];
-  const isLocked = handRules.isLocked(currentPlayerHand, state.ongoingGame.deck);
-  const numPlayers = state.metadata.options.numPlayers;
+  const currentPlayerHand = globals.state.ongoingGame.hands[currentPlayerIndex];
+  const isLocked = handRules.isLocked(currentPlayerHand, globals.state.ongoingGame.deck);
+  const numPlayers = globals.state.metadata.options.numPlayers;
 
   // Update the text
   const { text1, text2, text3 } = currentPlayerArea;
@@ -75,7 +74,7 @@ export const onChanged = (data: {
   const setPlayerText = (threeLines: boolean) => {
     const { rect1, textValues, values } = currentPlayerArea;
 
-    text2.fitText(globals.metadata.playerNames[data.currentPlayerIndex!]);
+    text2.fitText(globals.state.metadata.playerNames[data.currentPlayerIndex!]);
 
     let maxSize = (values.h / 3) * winH;
     if (threeLines) {
@@ -155,7 +154,9 @@ export const onChanged = (data: {
       rotation,
       easing: Konva.Easings.EaseInOut,
       onFinish: () => {
-        currentPlayerArea.arrow.rotation(unmodifiedRotation);
+        if (currentPlayerArea.arrow !== undefined && currentPlayerArea.arrow !== null) {
+          currentPlayerArea.arrow.rotation(unmodifiedRotation);
+        }
       },
     }).play();
   }

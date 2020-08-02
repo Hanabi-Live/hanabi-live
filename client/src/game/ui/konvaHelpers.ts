@@ -30,7 +30,8 @@ export const animate = (
   interactive: boolean = false,
   fast: boolean = globals.animateFast,
 ) => {
-  if (!interactive && node.isListening()) {
+  if (!interactive && node.isListening() && !globals.options.speedrun) {
+    // Note that in speedruns, cards remain listening during their animations
     throw new Error('A node that is about to animate is listening, but it should not be (because "interactive" was to set to be false or not specified).');
   }
 
@@ -70,20 +71,24 @@ export const animate = (
     const config: any = {
       node,
       onFinish: () => {
-        if (node === undefined) {
+        // If the game is restarted in the middle of an animation,
+        // it is possible to get here with something important being undefined
+        if (node === undefined || globals.store === null || globals.state === undefined) {
           return;
         }
+
         if (node.tween !== null) {
           node.tween.destroy();
           node.tween = null;
-        }
-        if (params.onFinish !== undefined) {
-          params.onFinish();
         }
 
         // Now that the animation is finished, we can re-enable listening (see below explanation)
         if (interactive) {
           node.listening(true);
+        }
+
+        if (params.onFinish !== undefined) {
+          params.onFinish();
         }
       },
     };
@@ -120,11 +125,6 @@ export const animate = (
     // (for performance reasons and to prevent players from accidentally clicking on it)
     if (interactive) {
       node.listening(false);
-    }
-
-    // Since we are animating, ensure the node is visible
-    if (!node.isVisible()) {
-      node.show();
     }
 
     node.tween = new Konva.Tween(config).play();

@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import CardIdentity from '../../../types/CardIdentity';
 import CardState from '../../../types/CardState';
 import State from '../../../types/State';
@@ -19,6 +17,10 @@ export const onDeckChanged = (length: number) => {
   } else {
     // Unsubscribe the removed cards
     while (globals.cardSubscriptions.length > length) {
+      // The card was removed from the visible state
+      // Ensure the position of the card is correctly reset
+      globals.deck[globals.cardSubscriptions.length - 1].moveToDeckPosition();
+
       const unsubscribe = globals.cardSubscriptions.pop()!;
       unsubscribe();
     }
@@ -39,7 +41,7 @@ export const onMorphedIdentitiesChanged = (data: {
 
   if (!data.hypotheticalActive) {
     if (!previousData.hypotheticalActive) {
-      throw new Error('Trying to unmorph cards but we were not in a hypothetical.');
+      throw new Error('Trying to unmorph cards but we are not in a hypothetical.');
     }
 
     // Exiting hypothetical, update all morphed
@@ -90,11 +92,11 @@ const subscribeToCardChanges = (order: number) => {
     subscriptions.push({ select: checkOrderAndSelect(s), onChange: l });
   }
 
-  // Clued border
+  // Borders
   sub((c) => ({
     numPositiveClues: c.numPositiveClues,
     location: c.location,
-  }), () => updateCluedBorder(order));
+  }), () => updateBorder(order));
 
   // Pips
   sub((c) => ({
@@ -126,8 +128,8 @@ const subscribeToCardChanges = (order: number) => {
 // TODO: these functions should pass the value of the changed properties,
 // and not let the UI query the whole state object
 
-const updateCluedBorder = (order: number) => {
-  globals.deck[order].setClued();
+const updateBorder = (order: number) => {
+  globals.deck[order].setBorder();
   globals.layers.card.batchDraw();
 };
 

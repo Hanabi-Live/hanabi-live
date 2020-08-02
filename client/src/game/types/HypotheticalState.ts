@@ -3,6 +3,8 @@ import GameState from './GameState';
 
 export default interface HypotheticalState {
   readonly ongoing: GameState;
+  // The "states" array will have 1 element if we have entered a hypothetical but not made any moves
+  // yet, 2 elements if we have made 1 move, etc.
   readonly states: readonly GameState[];
   readonly drawnCardsShown: boolean;
   readonly drawnCardsInHypothetical: readonly number[];

@@ -75,7 +75,7 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Validate that it is this player's turn
-	if g.ActivePlayer != i && d.Type != ActionTypeGameOver {
+	if g.ActivePlayerIndex != i && d.Type != ActionTypeGameOver {
 		s.Warning("It is not your turn, so you cannot perform an action.")
 		g.InvalidActionOccurred = true
 		return
@@ -166,13 +166,13 @@ func commandAction(s *Session, d *CommandData) {
 			// In Golang, "%" will give the remainder and not the modulus,
 			// so we need to ensure that the result is not negative or we will get a
 			// "index out of range" error
-			g.ActivePlayer += len(g.Players)
-			g.ActivePlayer = (g.ActivePlayer - 1) % len(g.Players)
+			g.ActivePlayerIndex += len(g.Players)
+			g.ActivePlayerIndex = (g.ActivePlayerIndex - 1) % len(g.Players)
 		} else {
-			g.ActivePlayer = (g.ActivePlayer + 1) % len(g.Players)
+			g.ActivePlayerIndex = (g.ActivePlayerIndex + 1) % len(g.Players)
 		}
 	}
-	np := g.Players[g.ActivePlayer] // The next player
+	np := g.Players[g.ActivePlayerIndex] // The next player
 	nps := t.Players[np.Index].Session
 
 	// Check for character-related softlocks
@@ -315,7 +315,7 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 	}
 
 	// Validate that the player is not giving a clue to themselves
-	if g.ActivePlayer == d.Target {
+	if g.ActivePlayerIndex == d.Target {
 		s.Warning("You cannot give a clue to yourself.")
 		g.InvalidActionOccurred = true
 		return false

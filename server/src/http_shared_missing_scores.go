@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func httpMissingScoresMultiple(c *gin.Context) {
+func httpSharedMissingScores(c *gin.Context) {
 	// Local variables
 	w := c.Writer
 
@@ -19,6 +19,11 @@ func httpMissingScoresMultiple(c *gin.Context) {
 	} else {
 		playerIDs = v1
 		playerNames = v2
+	}
+
+	if len(playerIDs) < 2 {
+		http.Error(w, "Error: You must specify at least two players.", http.StatusNotFound)
+		return
 	}
 
 	// Get all of the variant-specific stats for each player
@@ -60,9 +65,10 @@ func httpMissingScoresMultiple(c *gin.Context) {
 	}
 
 	data := TemplateData{
-		Title:           "Missing Scores",
-		NamesTitle:      "Missing Scores for [" + strings.Join(playerNames, ", ") + "]",
-		NumTotalPlayers: len(playerIDs),
+		Title:               "Missing Scores",
+		NamesTitle:          "Missing Scores for [" + strings.Join(playerNames, ", ") + "]",
+		RequestedNumPlayers: len(playerIDs),
+		SharedMissingScores: true,
 
 		VariantStats: combinedVariantStatsList,
 	}

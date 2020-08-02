@@ -4,6 +4,7 @@ import produce, {
   castDraft,
   Draft,
   original,
+  setAutoFreeze,
 } from 'immer';
 import { getVariant } from '../data/gameData';
 import { variantRules } from '../rules';
@@ -17,6 +18,11 @@ import gameStateReducer from './gameStateReducer';
 import initialGameState from './initialStates/initialGameState';
 import replayReducer from './replayReducer';
 
+// Ensure that immer will always auto-freeze recursive structures (like replay states)
+// This is necessary to prevent massive lag when WebPack bundles in production made
+// This only has to be called once
+setAutoFreeze(true);
+
 const stateReducer = produce((state: Draft<State>, action: Action) => {
   switch (action.type) {
     case 'gameActionList': {
@@ -26,7 +32,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       const {
         game,
         states,
-      } = reduceGameActions(action.actions, initialState, state.metadata);
+      } = reduceGameActions(action.actions, initialState, state.playing, state.metadata);
 
       state.ongoingGame = castDraft(game);
 
@@ -53,23 +59,76 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     }
 
     case 'finishOngoingGame': {
-      // If the game just ended, recalculate the whole game as a spectator to fix card possibilities
-      if (!state.metadata.spectating) {
-        state.metadata.spectating = true;
+      // If we were playing in a game that just ended,
+      // recalculate the whole game as a spectator to fix card possibilities
+      if (state.playing) {
+        state.playing = false;
 
         const initialState = initialGameState(state.metadata);
         const {
           game,
           states,
-        } = reduceGameActions(state.replay.actions, initialState, state.metadata);
+        } = reduceGameActions(state.replay.actions, initialState, state.playing, state.metadata);
 
         state.ongoingGame = castDraft(game);
         state.visibleState = state.ongoingGame;
         state.replay.states = castDraft(states);
       }
 
-      // The finished view will take care of converting this game to a shared replay
-      state.metadata.finished = true;
+      // Mark that this game is now finished
+      // The finished view will take care of enabling the UI elements for a shared replay
+      state.finished = true;
+
+      // Record the database ID of the game
+      state.replay.databaseID = action.databaseID;
+
+      // If we were in an in-game replay when the game ended,
+      // keep us at the current turn so that we are not taken away from what we are looking at
+      // Otherwise, go to the penultimate segment
+      // We want to use the penultimate segment instead of the final segment,
+      // because the final segment will contain the times for all of the players,
+      // and this will drown out the reason that the game ended
+      const inInGameReplay = state.replay.active;
+      if (state.ongoingGame.turn.segment === null) {
+        throw new Error('The segment for the ongoing game was null when it finished.');
+      }
+      if (state.ongoingGame.turn.segment < 1) {
+        throw new Error('The segment for the ongoing game was less than 1 when it finished.');
+      }
+      const penultimateSegment = state.ongoingGame.turn.segment - 1;
+      if (!inInGameReplay) {
+        state.replay.active = true;
+        state.replay.segment = penultimateSegment;
+      }
+
+      // Initialize the shared replay
+      state.replay.shared = {
+        segment: penultimateSegment,
+        useSharedSegments: !inInGameReplay,
+        leader: action.sharedReplayLeader,
+        amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
+      };
+
+      break;
+    }
+
+    case 'replayEnterDedicated': {
+      state.playing = false;
+      state.finished = true;
+      state.replay.active = true;
+      state.replay.segment = 0; // In dedicated solo replays, start on the first segment
+      state.replay.databaseID = action.databaseID;
+
+      if (action.shared) {
+        // In dedicated shared replays, start on the shared replay turn
+        state.replay.segment = action.sharedReplaySegment;
+        state.replay.shared = {
+          segment: action.sharedReplaySegment,
+          useSharedSegments: true,
+          leader: action.sharedReplayLeader,
+          amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
+        };
+      }
 
       break;
     }
@@ -79,11 +138,12 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     case 'replaySegment':
     case 'replaySharedSegment':
     case 'replayUseSharedSegments':
+    case 'replayLeader':
     case 'hypoStart':
     case 'hypoBack':
     case 'hypoEnd':
     case 'hypoAction':
-    case 'hypoRevealed': {
+    case 'hypoDrawnCardsShown': {
       state.replay = replayReducer(
         state.replay,
         action,
@@ -98,10 +158,42 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       break;
     }
 
+    case 'pause': {
+      state.pause.active = action.active;
+      state.pause.playerIndex = action.playerIndex;
+
+      // If the game is now paused, unqueue any queued pauses
+      if (action.active) {
+        state.pause.queued = false;
+      }
+
+      break;
+    }
+
+    case 'pauseQueue': {
+      state.pause.queued = action.queued;
+      break;
+    }
+
+    case 'spectating': {
+      state.playing = false;
+      break;
+    }
+
+    case 'spectators': {
+      state.spectators = action.spectators;
+      break;
+    }
+
     default: {
       // A new game action happened
       const previousSegment = state.ongoingGame.turn.segment;
-      state.ongoingGame = gameStateReducer(original(state.ongoingGame)!, action, state.metadata)!;
+      state.ongoingGame = gameStateReducer(
+        original(state.ongoingGame),
+        action,
+        state.playing,
+        state.metadata,
+      );
 
       // We copy the card identities to the global state for convenience
       updateCardIdentities(state);
@@ -128,11 +220,12 @@ export default stateReducer;
 const reduceGameActions = (
   actions: GameAction[],
   initialState: GameState,
+  playing: boolean,
   metadata: GameMetadata,
 ) => {
   const states: GameState[] = [initialState];
   const game = actions.reduce((s: GameState, a: GameAction) => {
-    const nextState = gameStateReducer(s, a, metadata);
+    const nextState = gameStateReducer(s, a, playing, metadata);
 
     if (shouldStoreSegment(nextState.turn.segment, s.turn.segment, a)) {
       states[nextState.turn.segment!] = nextState;
@@ -214,10 +307,16 @@ const visualStateToShow = (state: Draft<State>) => {
     }
 
     // Show the current hypothetical
+    if (state.replay.hypothetical.ongoing === undefined) {
+      throw new Error('The ongoing hypothetical state is undefined.');
+    }
     return state.replay.hypothetical.ongoing;
   }
 
   // Show the final segment of the current game
+  if (state.ongoingGame === undefined) {
+    throw new Error('The ongoing state is undefined.');
+  }
   return state.ongoingGame;
 };
 

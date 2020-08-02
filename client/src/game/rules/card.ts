@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { playStacksRules } from '../rules';
 import CardState from '../types/CardState';
 import CardStatus from '../types/CardStatus';

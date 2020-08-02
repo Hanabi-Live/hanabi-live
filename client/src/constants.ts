@@ -7,7 +7,7 @@ export const PLAY_AREA_PADDING = 1.15;
 export const HAND_PADDING = 1.05;
 export const HAND_BASE_SCALE = 0.4;
 export const CARD_FADE = 0.6;
-export const STRIKE_FADE = 0.125;
+export const STRIKE_FADE = 0.175;
 
 // Colors
 export const LABEL_COLOR = '#d8d5ef'; // Off-white
@@ -19,6 +19,7 @@ export const ARROW_COLOR = {
 export const CLUED_COLOR = 'orange';
 export const CHOP_MOVE_COLOR = '#fffce6'; // White with a yellow tint
 export const FINESSE_COLOR = 'aqua';
+export const OFF_BLACK = '#0d0d0d';
 
 // Time constants
 export const FADE_TIME = 350; // In milliseconds

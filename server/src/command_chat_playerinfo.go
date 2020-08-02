@@ -11,7 +11,6 @@ import (
 //   name: 'Alice',
 // }
 func commandChatPlayerInfo(s *Session, d *CommandData) {
-	// Normalize the username
 	normalizedUsername := normalizeString(d.Name)
 
 	// Validate that this person exists in the database

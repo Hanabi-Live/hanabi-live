@@ -41,7 +41,7 @@
     </li>
     <li>
       <select id="filter-by-players">
-        <option value="all">All</option>
+        <option value="-">-</option>
         <option value="2">2-Players</option>
         <option value="3">3-Players</option>
         <option value="4">4-Players</option>
@@ -54,20 +54,21 @@
   <br /><br /><br />
 {{end}}
 
+{{if ne .RequestedNumPlayers 0}}
 <table>
   <thead>
     <tr>
       <th>Variant</th>
       <th># of Players</th>
-      <th>{{if .NumTotalPlayers}}Highest Score{{else}}Current Score{{end}}</th>
+      <th>{{if .SharedMissingScores}}Highest Score{{else}}Current Score{{end}}</th>
     </tr>
   </thead>
   <tbody>
     {{range $index, $results := .VariantStats}}
       {{range $index2, $results2 := .BestScores}}
         {{if or (ne .Score $results.MaxScore) (ne .Modifier 0)}}
-          {{if or (not $.NumTotalPlayers) (eq $.NumTotalPlayers .NumPlayers)}}
-            <tr class="missing-scores-row-{{.NumPlayers}}">
+          {{if or (not $.RequestedNumPlayers) (eq $.RequestedNumPlayers .NumPlayers)}}
+            <tr class="missing-scores-row missing-scores-row-players-{{.NumPlayers}}">
               <td>{{$results.Name}}</td>
               <td>{{.NumPlayers}}</td>
               <td>
@@ -87,4 +88,5 @@
     {{- end -}}
   </tbody>
 </table>
+{{end}}
 {{end}}

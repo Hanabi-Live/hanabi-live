@@ -2,7 +2,7 @@
 
 import { FADE_TIME } from '../constants';
 import globals from '../globals';
-import * as misc from '../misc';
+import { closeAllTooltips } from '../misc';
 import * as modals from '../modals';
 import * as createGame from './createGame';
 import * as history from './history';
@@ -149,7 +149,7 @@ const initTooltips = () => {
   $(document).keydown((event) => {
     if (event.key === 'Escape') {
       event.preventDefault();
-      misc.closeAllTooltips();
+      closeAllTooltips();
       modals.closeAll();
     }
   });

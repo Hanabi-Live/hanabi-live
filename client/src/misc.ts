@@ -59,6 +59,9 @@ export function initArray<T>(length: number, value: T): T[] {
   return Array.from({ length }, () => value);
 }
 
+// From: https://stackoverflow.com/questions/951483/how-to-check-if-a-json-response-element-is-an-array
+export const isArray = (thing: any) => Object.prototype.toString.call(thing) === '[object Array]';
+
 // This is a helper to check for empty/invalid HTML elements without worrying about the linter
 // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
 export const isEmpty = (value: string | string[] | number | undefined) => !value;
@@ -82,7 +85,8 @@ const pad2 = (num: number) => {
   return `${num}`;
 };
 
-export const timerFormatter = (milliseconds: number) => {
+export const timerFormatter = (totalSeconds: number) => {
+  const milliseconds = totalSeconds * 1000;
   const time = new Date();
   time.setHours(0, 0, 0, milliseconds || 0);
   const minutes = time.getMinutes();

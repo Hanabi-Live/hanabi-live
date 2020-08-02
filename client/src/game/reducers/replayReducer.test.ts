@@ -1,11 +1,11 @@
 import loadGameJSON from '../../../test/loadGameJSON';
 import { // Direct import instead of namespace import for compactness
-  enterReplay,
   hypoStart,
   hypoAction,
   hypoBack,
   hypoEnd,
   rankClue,
+  replayEnterDedicated,
   turn,
 } from '../../../test/testActions';
 import testGame from '../../../test_data/up_or_down.json';
@@ -22,9 +22,10 @@ describe('replayReducer', () => {
   beforeAll(() => {
     // Load the game and start a replay
     testState = loadGameJSON(testGame);
-    testState = stateReducer(testState, enterReplay());
+    testState = stateReducer(testState, replayEnterDedicated());
     metadata = testState.metadata;
   });
+
   describe('hypothetical', () => {
     test('can start', () => {
       const state = replayReducer(testState.replay, hypoStart(), [], metadata);

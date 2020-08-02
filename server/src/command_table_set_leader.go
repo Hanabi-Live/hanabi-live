@@ -38,7 +38,6 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 		return
 	}
 
-	// Normalize the username
 	normalizedUsername := normalizeString(d.Name)
 
 	// Validate that they did not target themselves
@@ -80,15 +79,10 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 		return
 	}
 
-	// Mark them as the new replay leader
 	t.Owner = newLeaderID
 
-	// Tell everyone about the new leader
-	// (which will enable the replay controls for the leader)
 	if t.Replay {
-		for _, sp := range t.Spectators {
-			sp.Session.NotifyReplayLeader(t, true)
-		}
+		t.NotifyReplayLeader()
 	} else {
 		if !t.Running {
 			// On the pregame screen, the leader should always be the leftmost player,

@@ -10,6 +10,7 @@ import {
   CLUED_COLOR,
   CHOP_MOVE_COLOR,
   FINESSE_COLOR,
+  OFF_BLACK,
 } from '../../constants';
 import * as variantRules from '../rules/variant';
 import { START_CARD_RANK } from '../types/constants';
@@ -23,7 +24,7 @@ export const image = (getBareName: () => string) => {
   // Create the "bare" card image, which is the main card graphic
   // If the card is not revealed, it will just be a gray rectangle
   // The pips and other elements of a card are drawn on top of the bare image
-  const imageConfig: Konva.ImageConfig = {
+  const bare = new Konva.Image({
     width: CARD_W,
     height: CARD_H,
     image: null as unknown as ImageBitmapSource,
@@ -34,8 +35,8 @@ export const image = (getBareName: () => string) => {
       y: Math.floor(0.04 * CARD_W),
     },
     shadowOpacity: 0.4,
-  };
-  const bare = new Konva.Image(imageConfig);
+    listening: true, // As the main card element, this must be listening in order for events to fire
+  });
   (bare as Konva.Shape).sceneFunc((ctx: KonvaContext.Context) => {
     scaleCardImage(
       ctx._context,
@@ -52,7 +53,7 @@ const borderCornerRadius = 6;
 const borderStrokeWidth = 20;
 const borderStrokeWidthInside = borderStrokeWidth * 0.6;
 const borderOffset = 2;
-const borderOutsideColor = '#0d0d0d'; // Off-black
+const borderOutsideColor = OFF_BLACK;
 
 const makeBorder = (color: string) => {
   const border = new Konva.Group({
@@ -193,6 +194,7 @@ export const pips = (variant: Variant) => {
       fill,
       stroke: 'black',
       strokeWidth: 5,
+      shadowEnabled: !globals.options.speedrun,
       shadowColor: 'black',
       shadowOffsetX: 15,
       shadowOffsetY: 15,
@@ -288,12 +290,13 @@ export const pips = (variant: Variant) => {
       fill: 'white',
       stroke: 'black',
       strokeWidth: 3,
-      listening: false,
+      shadowEnabled: !globals.options.speedrun,
       shadowColor: 'black',
       shadowOffsetX: 5,
       shadowOffsetY: 5,
       shadowOpacity: 0.4,
       shadowForStrokeEnabled: true,
+      listening: false,
     });
     rankPips.add(rankPip);
     rankPipsMap.set(rank, rankPip);
@@ -345,6 +348,7 @@ export const note = (offsetCornerElements: boolean, shouldShowIndicator: () => b
     width: size,
     height: size,
     rotation: 180,
+    shadowEnabled: !globals.options.speedrun,
     shadowColor: 'black',
     shadowBlur: 10,
     shadowOffset: {
@@ -379,6 +383,7 @@ export const criticalIndicator = (offsetCornerElements: boolean) => {
     width: size,
     height: size,
     rotation: 180,
+    shadowEnabled: !globals.options.speedrun,
     shadowColor: 'black',
     shadowBlur: 10,
     shadowOffset: {

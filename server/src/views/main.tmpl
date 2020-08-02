@@ -609,6 +609,7 @@
                   <th># of Players</th>
                   <th>Score</th>
                   <th>Variant</th>
+                  <th>Options</th>
                   <th id="lobby-history-table-players">Other Players</th>
                   <th>Date Played</th>
                   <th>Watch Replay</th>
@@ -733,169 +734,10 @@
         <input id="createTableTimePerTurnSeconds" type="text" placeholder="Time per Turn">
       </div>
     </div>
+
     <span id="create-game-timed-row-spacing">
       <br /><br />
     </span>
-
-    <div class="row">
-      <div class="col-9 create-game-text-label">
-        <div class="create-game-icon">
-          <i class="fas fa-running"></i>
-        </div>
-        Speedrun
-      </div>
-      <div class="col-1">
-        <input id="createTableSpeedrun" type="checkbox" />
-        <label for="createTableSpeedrun"></label>
-      </div>
-      <div class="col-1 align-center">
-        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#speedruns" target="_blank"
-          rel="noopener noreferrer">
-          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-        </a>
-      </div>
-    </div>
-    <br />
-
-    <div class="row">
-      <div class="col-9 create-game-text-label">
-        <div class="create-game-icon">
-          <i class="fas fa-sync-alt"></i>
-        </div>
-        Card Cycling
-      </div>
-      <div class="col-1">
-        <input id="createTableCardCycle" type="checkbox" />
-        <label for="createTableCardCycle"></label>
-      </div>
-      <div class="col-1 align-center">
-        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#card-cycling" target="_blank"
-          rel="noopener noreferrer">
-          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-        </a>
-      </div>
-    </div>
-    <br />
-
-    <div class="row">
-      <div class="col-9 create-game-text-label">
-        <div class="create-game-icon">
-          <i class="fas fa-blind" style="position: relative; left: 0.2em;"></i>
-        </div>
-        Bottom-Deck Blind-Plays
-      </div>
-      <div class="col-1">
-        <input id="createTableDeckPlays" type="checkbox" />
-        <label for="createTableDeckPlays"></label>
-      </div>
-      <div class="col-1 align-center">
-        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#bottom-deck-blind-plays"
-          target="_blank" rel="noopener noreferrer">
-          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-        </a>
-      </div>
-    </div>
-    <br />
-
-    <div class="row">
-      <div class="col-9 create-game-text-label">
-        <div class="create-game-icon" style="position: relative; top: 1px;">
-          <i class="fas fa-expand"></i>
-        </div>
-        Empty Clues
-      </div>
-      <div class="col-1">
-        <input id="createTableEmptyClues" type="checkbox" />
-        <label for="createTableEmptyClues"></label>
-      </div>
-      <div class="col-1 align-center">
-        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#empty-clues" target="_blank"
-          rel="noopener noreferrer">
-          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-        </a>
-      </div>
-    </div>
-    <br />
-
-    <div id="createTableOneExtraCardRow" class="row">
-      <div class="col-9 create-game-text-label">
-        <div class="create-game-icon">
-          <i class="fas fa-plus-circle"></i>
-        </div>
-        One Extra Card
-      </div>
-      <div class="col-1">
-        <input id="createTableOneExtraCard" type="checkbox" />
-        <label id="createTableOneExtraCardLabel" for="createTableOneExtraCard"></label>
-      </div>
-      <div class="col-1 align-center">
-        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#one-extra-card" target="_blank"
-          rel="noopener noreferrer">
-          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-        </a>
-      </div>
-    </div>
-    <br />
-
-    <div id="createTableOneLessCardRow" class="row">
-      <div class="col-9 create-game-text-label">
-        <div class="create-game-icon">
-          <i class="fas fa-minus-circle"></i>
-        </div>
-        One Less Card
-      </div>
-      <div class="col-1">
-        <input id="createTableOneLessCard" type="checkbox" />
-        <label id="createTableOneLessCardLabel" for="createTableOneLessCard"></label>
-      </div>
-      <div class="col-1 align-center">
-        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#one-less-card" target="_blank"
-          rel="noopener noreferrer">
-          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-        </a>
-      </div>
-    </div>
-    <br />
-
-    <div class="row">
-      <div class="col-9 create-game-text-label">
-        <div class="create-game-icon">
-          <i class="fas fa-layer-group"></i>
-        </div>
-        All or Nothing
-      </div>
-      <div class="col-1">
-        <input id="createTableAllOrNothing" type="checkbox" />
-        <label for="createTableAllOrNothing"></label>
-      </div>
-      <div class="col-1 align-center">
-        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#all-or-nothing" target="_blank"
-          rel="noopener noreferrer">
-          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-        </a>
-      </div>
-    </div>
-    <br />
-
-    <div class="row">
-      <div class="col-9 create-game-text-label">
-        <div class="create-game-icon">
-          🤔
-        </div>
-        Detrimental Characters
-      </div>
-      <div class="col-1">
-        <input id="createTableDetrimentalCharacters" type="checkbox" />
-        <label for="createTableDetrimentalCharacters"></label>
-      </div>
-      <div class="col-1 align-center">
-        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/CHARACTERS.md" target="_blank"
-          rel="noopener noreferrer">
-          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-        </a>
-      </div>
-    </div>
-    <br />
 
     <div class="row">
       <div class="col-4 input-text">
@@ -910,25 +752,176 @@
     </div>
     <br />
 
-    <div class="row">
-      <div class="col-9 create-game-text-label">
-        <div class="create-game-icon">
-          <i class="fas fa-bed nav-icon" style="position: relative; left: 1px;"></i>
-        </div>
-        Alert people on the waiting list
-      </div>
-      <div class="col-1">
-        <input id="createTableAlertWaiters" type="checkbox" />
-        <label for="createTableAlertWaiters"></label>
-      </div>
-      <div class="col-1 align-center">
-        <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#discord-integration"
-          target="_blank" rel="noopener noreferrer">
-          <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
-        </a>
+    <div id="create-game-show-extra-options-row" class="row">
+      <div class="col-12 align-center">
+        <button id="create-game-show-extra-options" class="button small">
+          <i class="fas fa-plus"></i>&nbsp;
+          Show Extra Options
+        </button>
       </div>
     </div>
-    <br />
+
+    <div id="create-game-extra-options" class="hidden">
+      <div class="row">
+        <div class="col-9 create-game-text-label">
+          <div class="create-game-icon">
+            <i class="fas fa-running"></i>
+          </div>
+          Speedrun
+        </div>
+        <div class="col-1">
+          <input id="createTableSpeedrun" type="checkbox" />
+          <label for="createTableSpeedrun"></label>
+        </div>
+        <div class="col-1 align-center">
+          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#speedruns" target="_blank"
+            rel="noopener noreferrer">
+            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+          </a>
+        </div>
+      </div>
+      <br />
+
+      <div class="row">
+        <div class="col-9 create-game-text-label">
+          <div class="create-game-icon">
+            <i class="fas fa-sync-alt"></i>
+          </div>
+          Card Cycling
+        </div>
+        <div class="col-1">
+          <input id="createTableCardCycle" type="checkbox" />
+          <label for="createTableCardCycle"></label>
+        </div>
+        <div class="col-1 align-center">
+          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#card-cycling" target="_blank"
+            rel="noopener noreferrer">
+            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+          </a>
+        </div>
+      </div>
+      <br />
+
+      <div class="row">
+        <div class="col-9 create-game-text-label">
+          <div class="create-game-icon">
+            <i class="fas fa-blind" style="position: relative; left: 0.2em;"></i>
+          </div>
+          Bottom-Deck Blind-Plays
+        </div>
+        <div class="col-1">
+          <input id="createTableDeckPlays" type="checkbox" />
+          <label for="createTableDeckPlays"></label>
+        </div>
+        <div class="col-1 align-center">
+          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#bottom-deck-blind-plays"
+            target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+          </a>
+        </div>
+      </div>
+      <br />
+
+      <div class="row">
+        <div class="col-9 create-game-text-label">
+          <div class="create-game-icon" style="position: relative; top: 1px;">
+            <i class="fas fa-expand"></i>
+          </div>
+          Empty Clues
+        </div>
+        <div class="col-1">
+          <input id="createTableEmptyClues" type="checkbox" />
+          <label for="createTableEmptyClues"></label>
+        </div>
+        <div class="col-1 align-center">
+          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#empty-clues" target="_blank"
+            rel="noopener noreferrer">
+            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+          </a>
+        </div>
+      </div>
+      <br />
+
+      <div id="createTableOneExtraCardRow" class="row">
+        <div class="col-9 create-game-text-label">
+          <div class="create-game-icon">
+            <i class="fas fa-plus-circle"></i>
+          </div>
+          One Extra Card
+        </div>
+        <div class="col-1">
+          <input id="createTableOneExtraCard" type="checkbox" />
+          <label id="createTableOneExtraCardLabel" for="createTableOneExtraCard"></label>
+        </div>
+        <div class="col-1 align-center">
+          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#one-extra-card" target="_blank"
+            rel="noopener noreferrer">
+            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+          </a>
+        </div>
+      </div>
+      <br />
+
+      <div id="createTableOneLessCardRow" class="row">
+        <div class="col-9 create-game-text-label">
+          <div class="create-game-icon">
+            <i class="fas fa-minus-circle"></i>
+          </div>
+          One Less Card
+        </div>
+        <div class="col-1">
+          <input id="createTableOneLessCard" type="checkbox" />
+          <label id="createTableOneLessCardLabel" for="createTableOneLessCard"></label>
+        </div>
+        <div class="col-1 align-center">
+          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#one-less-card" target="_blank"
+            rel="noopener noreferrer">
+            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+          </a>
+        </div>
+      </div>
+      <br />
+
+      <div class="row">
+        <div class="col-9 create-game-text-label">
+          <div class="create-game-icon">
+            <i class="fas fa-layer-group"></i>
+          </div>
+          All or Nothing
+        </div>
+        <div class="col-1">
+          <input id="createTableAllOrNothing" type="checkbox" />
+          <label for="createTableAllOrNothing"></label>
+        </div>
+        <div class="col-1 align-center">
+          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/FEATURES.md#all-or-nothing" target="_blank"
+            rel="noopener noreferrer">
+            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+          </a>
+        </div>
+      </div>
+      <br />
+
+      <div class="row">
+        <div class="col-9 create-game-text-label">
+          <div class="create-game-icon">
+            🤔
+          </div>
+          Detrimental Characters
+        </div>
+        <div class="col-1">
+          <input id="createTableDetrimentalCharacters" type="checkbox" />
+          <label for="createTableDetrimentalCharacters"></label>
+        </div>
+        <div class="col-1 align-center">
+          <a href="https://github.com/Zamiell/hanabi-live/blob/master/docs/CHARACTERS.md" target="_blank"
+            rel="noopener noreferrer">
+            <i class="fas fa-question-circle question-mark create-game-info-icon"></i>
+          </a>
+        </div>
+      </div>
+      <br />
+    </div>
 
     <br />
     <button id="create-game-submit" class="button fit" type="submit">
@@ -967,18 +960,20 @@
       <br />
 
       <li>
-        <a href="https://github.com/Zamiell/hanabi-live/issues" target="_blank" rel="noopener noreferrer">
-          File a Bug Report
-        </a><br />
-        Report bugs by opening a new issue GitHub. (You'll need to create a few GitHub account.)
-      </li>
-      <br />
-
-      <li>
         <a href="https://github.com/Zamiell/hanabi-live" target="_blank" rel="noopener noreferrer">
           The Code Repository
         </a><br />
         This client and server are open-source, hosted on GitHub.
+      </li>
+      <br />
+
+      <li>
+        <a href="https://github.com/Zamiell/hanabi-live/issues" target="_blank" rel="noopener noreferrer">
+          File a Bug Report
+        </a><br />
+        Report bugs by opening a new issue on GitHub.<br />
+        (You will need to create a free GitHub account.)<br />
+        (And make sure that someone else has not already opened the same issue.)
       </li>
       <br />
 

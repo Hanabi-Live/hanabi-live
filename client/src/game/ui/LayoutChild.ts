@@ -26,6 +26,7 @@ export default class LayoutChild extends Konva.Group {
 
   constructor(child: HanabiCard, config?: Konva.ContainerConfig | undefined) {
     super(config);
+    this.listening(true);
     this._card = child;
     this.addCard(child);
   }
@@ -50,20 +51,19 @@ export default class LayoutChild extends Konva.Group {
     child.on('heightChange', change);
   }
 
-  // Note that this method cannot have a name of "setDraggable()",
+  // Note that this method cannot be named "setDraggable()",
   // since that would overlap with the Konva function
   checkSetDraggable() {
-    const state = globals.store!.getState();
-    if (state.visibleState === null) {
+    if (globals.state.visibleState === null) {
       return;
     }
-    if (this.shouldBeDraggable(state.visibleState.turn.currentPlayerIndex)) {
+
+    if (this.shouldBeDraggable(globals.state.visibleState.turn.currentPlayerIndex)) {
       this.draggable(true);
       this.on('dragstart', this.dragStart);
       this.on('dragend', this.dragEnd);
       this.on('mousemove', (event: Konva.KonvaEventObject<MouseEvent>) => {
-        if (event.evt.buttons % 2 === 1) {
-          // Left-click is being held down
+        if (event.evt.buttons % 2 === 1) { // Left-click is being held down
           cursorSet('dragging');
           this.card.setVisualEffect('dragging');
         } else {
@@ -105,28 +105,28 @@ export default class LayoutChild extends Konva.Group {
     }
 
     // First, handle the special case of a hypothetical
-    if (globals.metadata.hypothetical) {
+    if (globals.state.replay.hypothetical !== null) {
       return (
-        globals.amSharedReplayLeader
+        globals.state.replay.shared !== null
+        && globals.state.replay.shared.amLeader
         && currentPlayerIndex === this.card.state.location
         && !this.blank
       );
     }
 
-    const state = globals.store!.getState();
     return (
       // If it is not our turn, then the card should not need to be draggable yet
       // (unless we have the "Enable pre-playing cards" feature enabled)
       (isOurTurn() || globals.lobby.settings.speedrunPreplay)
       // Cards should not be draggable if there is a queued move
-      && state.premove === null
-      && !globals.metadata.options.speedrun // Cards should never be draggable while speedrunning
+      && globals.state.premove === null
+      && !globals.options.speedrun // Cards should never be draggable while speedrunning
       && !globals.lobby.settings.speedrunMode // Cards should never be draggable while speedrunning
       // Only our cards should be draggable
-      && this.card.state.location === globals.metadata.ourPlayerIndex
-      && !globals.metadata.replay // Cards should not be draggable in solo or shared replays
-      // Cards should not be draggable if we are spectating an ongoing game
-      && !state.metadata.spectating
+      && this.card.state.location === globals.state.metadata.ourPlayerIndex
+      // Cards should not be draggable if we are spectating an ongoing game, in a dedicated solo
+      // replay, or in a shared replay
+      && globals.state.playing
       // Cards should not be draggable if they are currently playing an animation
       // (this function will be called again upon the completion of the animation)
       && !this.card.tweening
@@ -140,7 +140,7 @@ export default class LayoutChild extends Konva.Group {
     // In a hypothetical, dragging a rotated card from another person's hand is frustrating,
     // so temporarily remove all rotation (for the duration of the drag)
     // The rotation will be automatically reset if the card tweens back to the hand
-    if (globals.metadata.hypothetical) {
+    if (globals.state.replay.hypothetical !== null) {
       this.rotation(this.parent!.rotation() * -1);
     }
   }
@@ -148,6 +148,7 @@ export default class LayoutChild extends Konva.Group {
   dragEnd() {
     // We have released the mouse button, so immediately set the cursor back to the default
     cursorSet('default');
+    this.card.setVisualEffect('default');
 
     // We have to unregister the handler or else it will send multiple actions for one drag
     this.draggable(false);
@@ -189,6 +190,12 @@ export default class LayoutChild extends Konva.Group {
     }
 
     const card = this.children[0] as unknown as HanabiCard;
+
+    // Ensure that empathy is disabled prior to ending the turn
+    // (this is needed for hypotheticals,
+    // since it uses the visual suit of the card to determine if it will play)
+    card.disableEmpathy();
+
     turn.end({
       type,
       target: card.state.order,
@@ -199,19 +206,17 @@ export default class LayoutChild extends Konva.Group {
   // do a check to ensure that it is actually playable to prevent silly mistakes from players
   // (but disable this in speedruns and certain variants)
   checkMisplay(draggedTo: string | null) {
-    // Local variables
-    const state = globals.store!.getState();
-    const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
-    const ourPlayerIndex = state.metadata.ourPlayerIndex;
+    const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
+    const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
     const card = this.children[0] as unknown as HanabiCard;
-    let ongoingGame = state.ongoingGame;
-    if (state.replay.hypothetical !== null) {
-      ongoingGame = state.replay.hypothetical.ongoing;
+    let ongoingGame = globals.state.ongoingGame;
+    if (globals.state.replay.hypothetical !== null) {
+      ongoingGame = globals.state.replay.hypothetical.ongoing;
     }
 
     if (
       draggedTo === 'playArea'
-      && !globals.metadata.options.speedrun
+      && !globals.options.speedrun
       && !variantRules.isThrowItInAHole(globals.variant)
       // Don't use warnings for preplays unless we are at 2 strikes
       && (currentPlayerIndex === ourPlayerIndex || ongoingGame.strikes.length === 2)

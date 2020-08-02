@@ -2080,6 +2080,7 @@
 	input[type="text"],
 	input[type="password"],
 	input[type="email"],
+	input[type="number"],
 	select,
 	textarea {
 		-moz-appearance: none;
@@ -2100,6 +2101,7 @@
 		input[type="text"]:invalid,
 		input[type="password"]:invalid,
 		input[type="email"]:invalid,
+		input[type="number"]:invalid,
 		select:invalid,
 		textarea:invalid {
 			box-shadow: none;
@@ -2108,6 +2110,7 @@
 		input[type="text"]:focus,
 		input[type="password"]:focus,
 		input[type="email"]:focus,
+		input[type="number"]:focus,
 		select:focus,
 		textarea:focus {
 			border-color: #e89980;
@@ -2140,6 +2143,7 @@
 	input[type="text"],
 	input[type="password"],
 	input[type="email"],
+	input[type="number"],
 	select {
 		height: 3em;
 	}
@@ -3311,6 +3315,7 @@
 		#cta input[type="text"],
 		#cta input[type="password"],
 		#cta input[type="email"],
+		#cta input[type="number"],
 		#cta select,
 		#cta textarea {
 			color: #ffffff;
@@ -3321,6 +3326,7 @@
 			#cta input[type="text"]:focus,
 			#cta input[type="password"]:focus,
 			#cta input[type="email"]:focus,
+			#cta input[type="number"]:focus,
 			#cta select:focus,
 			#cta textarea:focus {
 				box-shadow: inset 0 0 0 2px #fff;

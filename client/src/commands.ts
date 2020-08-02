@@ -63,15 +63,20 @@ commands.set('chat', (data: ChatMessage) => {
     });
   } else if (globals.currentScreen === Screen.Game && globals.ui !== null) {
     if ($('#game-chat-modal').is(':visible')) {
-      // Notify the server that we have read the chat message that was just received
+      // The chat window was open;
+      // notify the server that we have read the chat message that was just received
       globals.conn!.send('chatRead', {
         tableID: globals.tableID,
       });
-    } else if (
-      globals.ui.globals.metadata.spectating
-      && !globals.ui.globals.metadata.sharedReplay
-      && !$('#game-chat-modal').is(':visible')
-    ) {
+      return;
+    }
+
+    if (globals.ui.globals.store === null) {
+      return;
+    }
+
+    const UIState = globals.ui.globals.state;
+    if (!UIState.playing && !UIState.finished) {
       // The chat window was not open; pop open the chat window every time for spectators
       gameChat.toggle();
       globals.conn!.send('chatRead', {
@@ -80,7 +85,7 @@ commands.set('chat', (data: ChatMessage) => {
     } else {
       // The chat window was not open; by default, keep it closed
       // Change the "Chat" button to say "Chat (1)"
-      // (or e.g. "Chat (3)", if they have multiple unread messages)
+      // (or e.g. "Chat (2)", if they have multiple unread messages)
       globals.chatUnread += 1;
       globals.ui.updateChatLabel();
     }

@@ -97,8 +97,8 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 	}
 
 	// Account for if a spectator is shadowing a specific player
-	if j != -1 && t.Spectators[j].Shadowing {
-		ourPlayerIndex = t.Spectators[j].ShadowPlayerIndex
+	if j != -1 && t.Spectators[j].ShadowingPlayerIndex != -1 {
+		ourPlayerIndex = t.Spectators[j].ShadowingPlayerIndex
 	}
 
 	pauseQueued := false
@@ -106,7 +106,6 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		pauseQueued = g.Players[i].RequestedPause
 	}
 
-	// Give them an "init" message
 	type InitMessage struct {
 		// Game settings
 		TableID          int       `json:"tableID"`
@@ -115,7 +114,6 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		OurPlayerIndex   int       `json:"ourPlayerIndex"`
 		Spectating       bool      `json:"spectating"`
 		Replay           bool      `json:"replay"`
-		SharedReplay     bool      `json:"sharedReplay"`
 		DatabaseID       int       `json:"databaseID"`
 		Seed             string    `json:"seed"`
 		Seeded           bool      `json:"seeded"`
@@ -127,15 +125,15 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		CharacterAssignments []int `json:"characterAssignments"`
 		CharacterMetadata    []int `json:"characterMetadata"`
 
-		// Hypothetical settings
-		Hypothetical bool     `json:"hypothetical"`
-		HypoActions  []string `json:"hypoActions"`
-		HypoRevealed bool     `json:"hypoRevealed"`
+		// Shared replay settings
+		SharedReplay        bool   `json:"sharedReplay"`
+		SharedReplayLeader  string `json:"sharedReplayLeader"`
+		SharedReplaySegment int    `json:"sharedReplaySegment"`
 
 		// Other features
-		Paused      bool   `json:"paused"`
-		PausePlayer string `json:"pausePlayer"`
-		PauseQueued bool   `json:"pauseQueued"`
+		Paused           bool `json:"paused"`
+		PausePlayerIndex int  `json:"pausePlayerIndex"`
+		PauseQueued      bool `json:"pauseQueued"`
 	}
 
 	s.Emit("init", &InitMessage{
@@ -145,8 +143,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		OurPlayerIndex:   ourPlayerIndex,
 		Spectating:       !t.Replay && j != -1,
 		Replay:           t.Replay,
-		SharedReplay:     t.Replay && t.Visible,
-		DatabaseID:       g.ID,
+		DatabaseID:       t.ExtraOptions.DatabaseID,
 		Seed:             g.Seed,
 		Seeded:           strings.HasPrefix(t.Name, "!seed "),
 		DatetimeStarted:  g.DatetimeStarted,
@@ -159,14 +156,14 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		CharacterAssignments: characterAssignments,
 		CharacterMetadata:    characterMetadata,
 
-		// Hypothetical settings
-		Hypothetical: g.Hypothetical,
-		HypoActions:  g.HypoActions,
-		HypoRevealed: g.HypoRevealed,
+		// Shared replay settings
+		SharedReplay:        t.Replay && t.Visible,
+		SharedReplayLeader:  t.GetSharedReplayLeaderName(),
+		SharedReplaySegment: g.Turn,
 
 		// Other features
-		Paused:      g.Paused,
-		PausePlayer: t.Players[g.PausePlayer].Name,
-		PauseQueued: pauseQueued,
+		Paused:           g.Paused,
+		PausePlayerIndex: g.PausePlayerIndex,
+		PauseQueued:      pauseQueued,
 	})
 }

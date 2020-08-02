@@ -1,5 +1,4 @@
 // Functions related to the clue objects themselves: converting, getting names, etc
-/* eslint-disable import/prefer-default-export */
 
 import { getCharacter } from '../data/gameData';
 import { getCharacterIDForPlayer } from '../reducers/reducerHelpers';

@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -152,6 +153,40 @@ func chatKick(s *Session, d *CommandData, t *Table) {
 /*
 	Pregame or game chat commands
 */
+
+// /missingscores
+func chatMissingScores(s *Session, d *CommandData, t *Table) {
+	if t == nil || d.Room == "lobby" {
+		chatServerSend(ChatCommandNotInGameFail, d.Room)
+		return
+	}
+
+	// If this is a pregame or ongoing game, make a list of the players
+	// If this is a shared replay, make a list of the spectators
+	usernames := make([]string, 0)
+	if t.Replay {
+		for _, sp := range t.Spectators {
+			usernames = append(usernames, sp.Name)
+		}
+	} else {
+		for _, p := range t.Players {
+			usernames = append(usernames, p.Name)
+		}
+	}
+
+	if len(usernames) < 2 || len(usernames) > 6 {
+		msg := "You can only perform this command if the game or shared replay has between 2 and 6 players."
+		chatServerSend(msg, d.Room)
+		return
+	}
+
+	msg := "http"
+	if useTLS {
+		msg += "s"
+	}
+	msg += "://" + domain + "/shared-missing-scores/" + strings.Join(usernames, "/")
+	chatServerSend(msg, d.Room)
+}
 
 // /findvariant
 // This function does not consider modifiers (e.g. "Empty Clues")

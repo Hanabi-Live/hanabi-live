@@ -23,6 +23,8 @@ export default function drawReplayArea(winW: number, winH: number) {
     y: replayAreaValues.y * winH,
     width: replayAreaValues.w * winW,
     height: 0.27 * winH,
+    visible: false,
+    listening: false,
   });
 
   // The thin black rectangle that the replay slider slides on
@@ -39,6 +41,7 @@ export default function drawReplayArea(winW: number, winH: number) {
     height: replayBarValues.h * winH,
     fill: 'black',
     cornerRadius: 0.005 * winH,
+    listening: false,
   });
   globals.elements.replayArea.add(globals.elements.replayBar);
 
@@ -81,9 +84,9 @@ export default function drawReplayArea(winW: number, winH: number) {
     listening: true,
   });
   globals.elements.replayShuttleShared.on('click tap', () => {
-    // This is needed because the shared replay shuttle will block the replay bar
-    const sharedSegment = globals.store!.getState().replay.sharedSegment;
-    replay.goToSegment(sharedSegment, true);
+    if (globals.state.replay.shared !== null) {
+      replay.goToSegment(globals.state.replay.shared.segment, true);
+    }
   });
   globals.elements.replayArea.add(globals.elements.replayShuttleShared);
 
@@ -128,6 +131,7 @@ export default function drawReplayArea(winW: number, winH: number) {
         y: 0.07 * winH,
         width: replayButtonValues.w * winW,
         height: replayButtonValues.h * winH,
+        listening: true,
       },
       [
         globals.imageLoader!.get('replay-back-full')!,
@@ -215,7 +219,7 @@ export default function drawReplayArea(winW: number, winH: number) {
     width: ((replayButtonValues.w * 2) + (replayButtonValues.spacing * 2)) * winW,
     height: replayButtonValues.w * winH,
     text: 'Exit Replay',
-    visible: !globals.metadata.replay,
+    visible: !globals.state.finished,
   });
   globals.elements.replayExitButton.on('click tap', replay.exitButton);
   globals.elements.replayArea.add(globals.elements.replayExitButton as any);
@@ -283,17 +287,12 @@ export default function drawReplayArea(winW: number, winH: number) {
     width: bottomRightReplayButtonValues.w * winW,
     height: bottomRightReplayButtonValues.h * winH,
     text: 'Enter Hypothetical',
-    visible: (
-      globals.metadata.replay
-      && globals.amSharedReplayLeader
-      && !globals.metadata.hypothetical
-    ),
+    visible: false,
   });
   globals.elements.enterHypoButton.on('click tap', hypothetical.start);
   globals.elements.replayArea.add(globals.elements.enterHypoButton as any);
 
   // Add the replay area to the UI
-  globals.elements.replayArea.hide();
   globals.layers.UI.add(globals.elements.replayArea);
   replay.adjustShuttles(true); // Skip the animation
 }

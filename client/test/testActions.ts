@@ -5,16 +5,17 @@ import {
   ActionClue,
   ActionDiscard,
   ActionDraw,
-  ActionHypotheticalStart,
+  ActionHypotheticalAction,
   ActionHypotheticalBack,
   ActionHypotheticalEnd,
-  ActionHypothetical,
+  ActionHypotheticalStart,
   ActionIncludingHypothetical,
   ActionPlay,
   ActionReplayEnter,
   ActionReplayExit,
   ActionStrike,
   ActionTurn,
+  ActionReplayEnterDedicated,
 } from '../src/game/types/actions';
 import ClueType from '../src/game/types/ClueType';
 
@@ -121,9 +122,17 @@ export const turn = (num: number, currentPlayerIndex: number): ActionTurn => ({
   currentPlayerIndex,
 });
 
-export const enterReplay = (): ActionReplayEnter => ({
+export const replayEnter = (): ActionReplayEnter => ({
   type: 'replayEnter',
   segment: 0,
+});
+
+export const replayEnterDedicated = (): ActionReplayEnterDedicated => ({
+  type: 'replayEnterDedicated',
+  shared: true,
+  databaseID: 1,
+  sharedReplaySegment: 0,
+  sharedReplayLeader: '',
 });
 
 export const endReplay = (): ActionReplayExit => ({
@@ -132,17 +141,19 @@ export const endReplay = (): ActionReplayExit => ({
 
 export const hypoStart = (): ActionHypotheticalStart => ({
   type: 'hypoStart',
+  drawnCardsShown: false,
+  actions: [],
 });
 
 export const hypoEnd = (): ActionHypotheticalEnd => ({
   type: 'hypoEnd',
 });
 
-export const hypoBack = (): ActionHypotheticalBack => ({
-  type: 'hypoBack',
-});
-
-export const hypoAction = (action: ActionIncludingHypothetical): ActionHypothetical => ({
+export const hypoAction = (action: ActionIncludingHypothetical): ActionHypotheticalAction => ({
   type: 'hypoAction',
   action,
+});
+
+export const hypoBack = (): ActionHypotheticalBack => ({
+  type: 'hypoBack',
 });

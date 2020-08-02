@@ -51,7 +51,7 @@ func chatReplay(s *Session, d *CommandData, t *Table) {
 			return
 		}
 
-		msg := urlPrefix + strconv.Itoa(t.Game.ID)
+		msg := urlPrefix + strconv.Itoa(t.ExtraOptions.DatabaseID)
 		chatServerSend(msg, d.Room)
 		return
 	}

@@ -282,10 +282,10 @@ This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
 
 #### Install HTTPS (optional)
 
-This assumes that your domain names are "hanab.live" and "www.hanab.live". It also assumes that you installed the server to "/root/hanabi-live". Adjust if needed.
+Adjust the "certbot" command below according to what domain names you want to register.
 
 * `sudo apt install certbot -y`
-* `certbot certonly --standalone -d hanab.live -d www.hanab.live -d hanabi.live -d www.hanabi.live` <br />
+* `certbot certonly --standalone -d hanab.live -d www.hanab.live -d hanabi.live -d www.hanabi.live -d fireworks.cards -d www.fireworks.cards` <br />
   (this creates "/etc/letsencrypt/live/hanab.live/")
 * In the `.env` file:
   * Set `TLS_CERT_FILE` to: `/etc/letsencrypt/live/hanab.live/fullchain.pem`

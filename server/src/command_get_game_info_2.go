@@ -75,7 +75,7 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	}
 
 	// If it is their turn, send a "yourTurn" message
-	if !t.Replay && g.ActivePlayer == i {
+	if !t.Replay && g.ActivePlayerIndex == i {
 		s.NotifyYourTurn(t)
 	}
 
@@ -101,10 +101,12 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 
 			// Send them a list of only their notes
 			type NoteListPlayerMessage struct {
-				Notes []string `json:"notes"`
+				TableID int      `json:"tableID"`
+				Notes   []string `json:"notes"`
 			}
 			s.Emit("noteListPlayer", &NoteListPlayerMessage{
-				Notes: p.Notes,
+				TableID: t.ID,
+				Notes:   p.Notes,
 			})
 
 			// Set their "present" variable back to true,
@@ -114,7 +116,7 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 		} else if j > -1 {
 			// They are a spectator in an ongoing game
 			sp := t.Spectators[j]
-			s.NotifyNoteList(t, sp.ShadowPlayerIndex)
+			s.NotifyNoteList(t, sp.ShadowingPlayerIndex)
 		}
 	}
 
@@ -128,26 +130,24 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 		// Send them messages for people typing, if any
 		for _, p := range t.Players {
 			if p.Typing {
-				s.NotifyChatTyping(p.Name, p.Typing)
+				s.NotifyChatTyping(t, p.Name, p.Typing)
 			}
 		}
 		for _, sp := range t.Spectators {
 			if sp.Typing {
-				s.NotifyChatTyping(sp.Name, sp.Typing)
+				s.NotifyChatTyping(t, sp.Name, sp.Typing)
 			}
 		}
 	}
 
-	if t.Replay && t.Visible {
-		// Enable the replay controls for the leader of the review
-		s.NotifyReplayLeader(t, false)
-
-		// Send them to the current turn that everyone else is at
-		type ReplaySegmentMessage struct {
-			Segment int `json:"segment"`
+	if g.Hypothetical {
+		type HypotheticalMessage struct {
+			DrawnCardsShown bool     `json:"drawnCardsShown"`
+			Actions         []string `json:"actions"`
 		}
-		s.Emit("replaySegment", &ReplaySegmentMessage{
-			Segment: g.Turn,
+		s.Emit("hypothetical", &HypotheticalMessage{
+			DrawnCardsShown: g.HypoDrawnCardsShown,
+			Actions:         g.HypoActions,
 		})
 	}
 }

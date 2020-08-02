@@ -191,18 +191,6 @@ func debugPrint() {
 			"Status: " + strconv.Itoa(s2.Status()))
 	}
 	logger.Debug("---------------------------------------------------------------")
-
-	// Print out the waiting list
-	logger.Debug("Waiting list (" + strconv.Itoa(len(waitingList)) + "):")
-	if len(waitingList) == 0 {
-		logger.Debug("    [no people on the waiting list]")
-	}
-	for i, p := range waitingList { // This is a []*models.Waiter
-		logger.Debug("    " + strconv.Itoa(i) + " - " +
-			p.Username + " - " + p.DiscordMention + " - " + p.DatetimeExpired.String())
-	}
-	logger.Debug("    discordLastAtHere:", discordLastAtHere)
-	logger.Debug("---------------------------------------------------------------")
 }
 
 func debugFunction() {

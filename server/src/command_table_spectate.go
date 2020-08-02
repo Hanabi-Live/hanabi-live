@@ -13,8 +13,8 @@ import (
 // Example data:
 // {
 //   tableID: 15103,
-//   // If the player is specified, they will spectate from that player's perspective
-//   player: 'Alice', // Optional
+//   // A value of "-1" must be specified if we do not want to shadow a player
+//   shadowingPlayerIndex: -1,
 // }
 func commandTableSpectate(s *Session, d *CommandData) {
 	/*
@@ -52,18 +52,11 @@ func commandTableSpectate(s *Session, d *CommandData) {
 		}
 	}
 
-	// Validate the player name
+	// Validate the shadowing player index
 	// (if provided, they want to spectate from a specific player's perspective)
-	shadowPlayerIndex := -1
-	if d.Player != "" {
-		for i, p := range t.Players {
-			if p.Name == d.Player {
-				shadowPlayerIndex = i
-				break
-			}
-		}
-		if shadowPlayerIndex == -1 {
-			s.Warning("That is an invalid player name.")
+	if d.ShadowingPlayerIndex != -1 {
+		if d.ShadowingPlayerIndex < 0 || d.ShadowingPlayerIndex > len(t.Players)-1 {
+			s.Warning("That is an invalid player index to shadow.")
 			return
 		}
 	}
@@ -80,12 +73,11 @@ func commandTableSpectate(s *Session, d *CommandData) {
 
 	// Add them to the spectators object
 	sp := &Spectator{
-		ID:                s.UserID(),
-		Name:              s.Username(),
-		Session:           s,
-		Shadowing:         shadowPlayerIndex != -1,
-		ShadowPlayerIndex: shadowPlayerIndex,
-		Notes:             make([]string, g.GetNotesSize()),
+		ID:                   s.UserID(),
+		Name:                 s.Username(),
+		Session:              s,
+		ShadowingPlayerIndex: d.ShadowingPlayerIndex,
+		Notes:                make([]string, g.GetNotesSize()),
 	}
 	t.Spectators = append(t.Spectators, sp)
 	notifyAllTable(t)    // Update the spectator list for the row in the lobby

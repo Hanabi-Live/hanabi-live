@@ -26,5 +26,4 @@ export default class Settings {
   createTableOneLessCard: boolean = false;
   createTableAllOrNothing: boolean = false;
   createTableDetrimentalCharacters: boolean = false;
-  createTableAlertWaiters: boolean = false;
 }

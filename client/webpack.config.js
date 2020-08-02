@@ -5,17 +5,18 @@
 const SentryWebpackPlugin = require('@sentry/webpack-plugin');
 const dotenv = require('dotenv');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const webpack = require('webpack');
 
 // Constants
 const outputPath = path.join(__dirname, 'webpack_output');
 const inTravis = (
-  typeof process.env.TRAVIS !== 'undefined'
+  process.env.TRAVIS !== undefined
   && process.env.TRAVIS === 'true'
 );
 const sentryTokenIsSet = (
-  typeof process.env.SENTRY_AUTH_TOKEN !== 'undefined'
+  process.env.SENTRY_AUTH_TOKEN !== undefined
   && process.env.SENTRY_AUTH_TOKEN !== ''
 );
 
@@ -68,10 +69,7 @@ module.exports = {
   // Production mode minifies the resulting JavaScript, reducing the file size by a huge factor
   // However, production mode takes a lot longer to pack than development mode,
   // so we only enable it on the real web server so that we can have speedy development
-  mode: (
-    process.platform === 'win32'
-    || process.platform === 'darwin' ? 'development' : 'production'
-  ),
+  mode: os.hostname() === 'hanabi-live-server' ? 'production' : 'development',
 
   // Loaders are transformations that are applied on the source code of a module
   // https://webpack.js.org/concepts/loaders/
@@ -82,6 +80,12 @@ module.exports = {
         test: /\.ts$/,
         include: path.join(__dirname, 'src'),
         loader: 'ts-loader',
+      },
+      // All files with a ".js" extension (JavaScript libraries) need to import other source maps
+      {
+        test: /\.js$/,
+        enforce: 'pre',
+        use: ['source-map-loader'],
       },
     ],
   },

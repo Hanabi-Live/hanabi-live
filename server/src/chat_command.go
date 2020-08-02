@@ -43,24 +43,28 @@ func chatCommandInit() {
 	chatCommandMap["kick"] = chatKick
 
 	// Table-only commands (pregame or game)
+	chatCommandMap["missing"] = chatMissingScores
+	chatCommandMap["missingscores"] = chatMissingScores
+	chatCommandMap["missing-scores"] = chatMissingScores
+	chatCommandMap["sharedmissingscores"] = chatMissingScores
+	chatCommandMap["shared-missing-scores"] = chatMissingScores
 	chatCommandMap["findvariant"] = chatFindVariant
+	chatCommandMap["find-variant"] = chatFindVariant
 	chatCommandMap["randomvariant"] = chatFindVariant
+	chatCommandMap["random-variant"] = chatFindVariant
 
 	// Table-only commands (game only)
 	chatCommandMap["pause"] = chatPause
 	chatCommandMap["unpause"] = chatUnpause
 
 	// Table-only commands (replay only)
+	chatCommandMap["suggest"] = chatSuggest
 	chatCommandMap["tags"] = chatTags
 	chatCommandMap["taglist"] = chatTags
 
 	// Discord-only commands
 	chatCommandMap["here"] = chatHere
 	chatCommandMap["last"] = chatLast
-	chatCommandMap["next"] = chatNext
-	chatCommandMap["unnext"] = chatUnnext
-	chatCommandMap["removenext"] = chatUnnext
-	chatCommandMap["list"] = chatList
 	// (there are additional Discord-only commands in "discord.go")
 
 	// Error handlers for website-only commands

@@ -16,7 +16,7 @@ const get = (order: number, our: boolean) => {
   // If we are a player in an ongoing game, return our note
   // (we don't have to check to see if the element exists because
   // all notes are initialized to an empty string)
-  if (our || (!globals.metadata.replay && !globals.metadata.spectating)) {
+  if (our || globals.state.playing) {
     return globals.ourNotes[order];
   }
 
@@ -40,17 +40,18 @@ const get = (order: number, our: boolean) => {
 export const set = (order: number, note: string) => {
   const oldNote = globals.ourNotes[order];
   globals.ourNotes[order] = note;
-  if (globals.metadata.spectating) {
+  globals.lastNote = note;
+
+  if (!globals.state.playing) {
     for (const noteObject of globals.allNotes[order]) {
-      if (noteObject.name === globals.lobby.username) {
+      if (noteObject.name === globals.state.metadata.ourUsername) {
         noteObject.note = note;
       }
     }
   }
-  globals.lastNote = note;
 
   // Send the note to the server
-  if (!globals.metadata.replay && note !== oldNote) {
+  if (!globals.state.finished && note !== oldNote) {
     globals.lobby.conn!.send('note', {
       tableID: globals.lobby.tableID,
       order,
@@ -58,8 +59,8 @@ export const set = (order: number, note: string) => {
     });
   }
 
-  // The note identity features do not apply to spectators and replays
-  if (globals.metadata.spectating || globals.metadata.replay) {
+  // The note identity features are only enabled for active players
+  if (!globals.state.playing) {
     return;
   }
 
@@ -118,6 +119,7 @@ export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
     'bad',
   ], text, fullNote);
   const needsFix = checkNoteKeywords([
+    'fix',
     'fixme',
     'needs fix',
   ], text, fullNote);
@@ -284,8 +286,8 @@ export const show = (card: HanabiCard) => {
 };
 
 export const openEditTooltip = (card: HanabiCard) => {
-  // Don't edit any notes in replays
-  if (globals.metadata.replay) {
+  // Don't edit any notes in dedicated replays
+  if (globals.state.finished) {
     return;
   }
 
@@ -378,32 +380,48 @@ export const setCardIndicator = (order: number) => {
   if (card === undefined) {
     card = globals.stackBases[order - globals.deck.length];
   }
-  card.noteIndicator!.visible(visible);
+  if (card.noteIndicator === null) {
+    throw new Error(`The note indicator for card ${order} was not initialized.`);
+  }
+  card.noteIndicator.visible(visible);
 
+  // Spectators
   if (
     visible
-    && globals.metadata.spectating
-    && !globals.metadata.replay
-    && !card.noteIndicator!.rotated
+    && !globals.state.playing
+    && !globals.state.finished
+    && !card.noteIndicator.rotated
   ) {
-    card.noteIndicator!.rotate(15);
-    card.noteIndicator!.rotated = true;
+    card.noteIndicator.rotate(15);
+    card.noteIndicator.rotated = true;
   }
 
   globals.layers.card.batchDraw();
 };
 
 export const shouldShowIndicator = (order: number) => {
-  if (globals.metadata.replay || globals.metadata.spectating) {
-    for (const noteObject of globals.allNotes[order]) {
-      if (noteObject.note.length > 0) {
-        return true;
-      }
-    }
-    return false;
+  // If we are a player in an ongoing game,
+  // show the note indicator if we have a non-blank note on it
+  if (globals.state.playing) {
+    return globals.ourNotes[order] !== '';
   }
 
-  return globals.ourNotes[order] !== '';
+  // Morphed cards (in a hypothetical) should never show the note indicator
+  if (globals.state.replay.hypothetical !== null) {
+    const cardMorphedIdentity = globals.state.replay.hypothetical.morphedIdentities[order];
+    if (cardMorphedIdentity !== undefined) {
+      return false;
+    }
+  }
+
+  // We are not a player in an ongoing game
+  // Only show the note indicator if there is one or more non-blank notes
+  for (const noteObject of globals.allNotes[order]) {
+    if (noteObject.note.length > 0) {
+      return true;
+    }
+  }
+  return false;
 };
 
 const stripHTMLTags = (input: string) => {

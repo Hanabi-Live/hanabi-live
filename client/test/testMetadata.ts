@@ -8,6 +8,7 @@ export default function testMetadata(
   variantName: string = DEFAULT_VARIANT_NAME,
 ): GameMetadata {
   return {
+    ourUsername: 'Alice',
     options: {
       ...(new Options()),
       numPlayers,
@@ -22,8 +23,6 @@ export default function testMetadata(
       'Frank',
     ].slice(0, numPlayers),
     ourPlayerIndex: 0,
-    spectating: true,
-    finished: false,
     characterAssignments: initArray(numPlayers, null),
     characterMetadata: [],
   };

@@ -29,9 +29,7 @@ type Table struct {
 	Visible bool // Whether or not this table is shown to other users
 	// This is an Argon2id hash generated from the plain-text password
 	// that the table creator sends us
-	PasswordHash string
-	// Whether or not the table was created with the "Alert people" checkbox checked
-	AlertWaiters   bool
+	PasswordHash   string
 	Running        bool
 	Replay         bool
 	AutomaticStart int // See "chatTable.go"
@@ -293,4 +291,32 @@ func (t *Table) GetNotifySessions(excludePlayers bool) []*Session {
 	}
 
 	return notifySessions
+}
+
+func (t *Table) GetSharedReplayLeaderName() string {
+	// Get the username of the game owner
+	// (the "Owner" field is used to store the leader of the shared replay)
+	for _, sp := range t.Spectators {
+		if sp.ID == t.Owner {
+			return sp.Name
+		}
+	}
+
+	// The leader is not currently present,
+	// so try getting their username from the players object
+	for _, p := range t.Players {
+		if p.ID == t.Owner {
+			return p.Name
+		}
+	}
+
+	// The leader is not currently present and was not a member of the original game,
+	// so we need to look up their username from the database
+	if v, err := models.Users.GetUsername(t.Owner); err != nil {
+		logger.Error("Failed to get the username for user "+strconv.Itoa(t.Owner)+
+			" who is the owner of table:", t.ID)
+		return "(Unknown)"
+	} else {
+		return v
+	}
 }

@@ -5,8 +5,12 @@ import * as debug from '../debug';
 import { VARIANTS } from '../game/data/gameData';
 import { DEFAULT_VARIANT_NAME } from '../game/types/constants';
 import globals from '../globals';
-import * as misc from '../misc';
-import { isEmpty } from '../misc';
+import {
+  isEmpty,
+  getRandomNumber,
+  closeAllTooltips,
+  isKeyOf,
+} from '../misc';
 import * as modals from '../modals';
 import Settings from './types/Settings';
 
@@ -22,7 +26,6 @@ const variantNames = Array.from(VARIANTS.keys());
 // Local variables
 let dropdown1: JQuery<Element>;
 let dropdown2: JQuery<Element>;
-let timeStart: Date;
 
 export const init = () => {
   dropdown1 = $('#create-game-variant-dropdown1');
@@ -33,7 +36,7 @@ export const init = () => {
 
   // The "dice" button will select a random variant from the list
   $('#dice').on('click', () => {
-    const randomVariantIndex = misc.getRandomNumber(0, variantNames.length - 1);
+    const randomVariantIndex = getRandomNumber(0, variantNames.length - 1);
     const randomVariant = variantNames[randomVariantIndex];
     $('#createTableVariant').text(randomVariant);
     dropdown2.val(randomVariant);
@@ -59,6 +62,9 @@ export const init = () => {
 
     // Redraw the tooltip so that the new elements will fit better
     $('#nav-buttons-games-create-game').tooltipster('reposition');
+
+    // Remember the new setting
+    getCheckbox('createTableTimed');
   });
   $('#createTableSpeedrun').change(() => {
     if ($('#createTableSpeedrun').prop('checked')) {
@@ -68,6 +74,18 @@ export const init = () => {
       $('#create-game-timed-row').show();
       $('#create-game-timed-row-spacing').show();
     }
+
+    // Redraw the tooltip so that the new elements will fit better
+    $('#nav-buttons-games-create-game').tooltipster('reposition');
+
+    // Remember the new setting
+    getCheckbox('createTableSpeedrun');
+  });
+
+  // The "Show Extra Options" button
+  $('#create-game-show-extra-options').click(() => {
+    $('#create-game-extra-options').show();
+    $('#create-game-show-extra-options-row').hide();
 
     // Redraw the tooltip so that the new elements will fit better
     $('#nav-buttons-games-create-game').tooltipster('reposition');
@@ -84,6 +102,9 @@ export const init = () => {
       $('#createTableOneLessCard').prop('disabled', false);
       $('#createTableOneLessCardLabel').css('cursor', 'pointer');
     }
+
+    // Remember the new setting
+    getCheckbox('createTableOneLessCard');
   });
   $('#createTableOneLessCard').change(() => {
     if ($('#createTableOneLessCard').is(':checked')) {
@@ -95,6 +116,38 @@ export const init = () => {
       $('#createTableOneExtraCard').prop('disabled', false);
       $('#createTableOneExtraCardLabel').css('cursor', 'pointer');
     }
+
+    // Remember the new setting
+    getCheckbox('createTableOneLessCard');
+  });
+
+  // Check for changes in the various input fields so that we can remember their respective settings
+  $('#create-game-variant-dropdown1').change(() => {
+    getVariant('createTableVariant');
+  });
+  $('#create-game-variant-dropdown2').change(() => {
+    getVariant('createTableVariant');
+  });
+  $('#createTableTimeBaseMinutes').change(() => {
+    getTextbox('createTableTimeBaseMinutes');
+  });
+  $('#createTableTimePerTurnSeconds').change(() => {
+    getTextbox('createTableTimePerTurnSeconds');
+  });
+  $('#createTableCardCycle').change(() => {
+    getCheckbox('createTableCardCycle');
+  });
+  $('#createTableDeckPlays').change(() => {
+    getCheckbox('createTableDeckPlays');
+  });
+  $('#createTableEmptyClues').change(() => {
+    getCheckbox('createTableEmptyClues');
+  });
+  $('#createTableAllOrNothing').change(() => {
+    getCheckbox('createTableAllOrNothing');
+  });
+  $('#createTableDetrimentalCharacters').change(() => {
+    getCheckbox('createTableDetrimentalCharacters');
   });
 
   // Pressing enter anywhere will submit the form
@@ -217,10 +270,9 @@ const submit = () => {
       detrimentalCharacters: getCheckbox('createTableDetrimentalCharacters'),
     },
     password,
-    alertWaiters: getCheckbox('createTableAlertWaiters'),
   });
 
-  misc.closeAllTooltips();
+  closeAllTooltips();
   $('#nav-buttons-games-create-game').addClass('disabled');
 };
 
@@ -266,7 +318,7 @@ const getVariant = (setting: keyof Settings) => {
 };
 
 const checkChanged = (settingName: keyof Settings, value: boolean | string) => {
-  if (!misc.isKeyOf(settingName, globals.settings)) {
+  if (!isKeyOf(settingName, globals.settings)) {
     throw new Error(`The setting of ${settingName} does not exist in the Settings class.`);
   }
 
@@ -280,7 +332,8 @@ const checkChanged = (settingName: keyof Settings, value: boolean | string) => {
   }
 };
 
-// This function is executed when the "Create Game" button is clicked
+// This function is executed every time the "Create Game" button is clicked
+// (before the tooltip is added to the DOM)
 export const before = () => {
   // Don't allow the tooltip to open if the button is currently disabled
   if ($('#nav-buttons-games-create-game').hasClass('disabled')) {
@@ -315,8 +368,6 @@ export const before = () => {
   }
 
   $('#lobby').fadeTo(FADE_TIME, 0.4);
-
-  timeStart = new Date();
 
   return true;
 };
@@ -365,9 +416,26 @@ export const ready = () => {
     $('#createTablePassword').val(password);
   }
 
-  const now = new Date();
-  const diff = now.getTime() - timeStart.getTime();
-  console.log(diff);
+  // Hide the extra options if we do not have any selected
+  if (
+    !globals.settings.createTableSpeedrun
+    && !globals.settings.createTableCardCycle
+    && !globals.settings.createTableDeckPlays
+    && !globals.settings.createTableEmptyClues
+    && !globals.settings.createTableOneExtraCard
+    && !globals.settings.createTableOneLessCard
+    && !globals.settings.createTableAllOrNothing
+    && !globals.settings.createTableDetrimentalCharacters
+  ) {
+    $('#create-game-extra-options').hide();
+    $('#create-game-show-extra-options-row').show();
+  } else {
+    $('#create-game-extra-options').show();
+    $('#create-game-show-extra-options-row').hide();
+  }
+
+  // Redraw the tooltip so that the new elements will fit better
+  $('#nav-buttons-games-create-game').tooltipster('reposition');
 };
 
 const readyVariant = (value: any) => {

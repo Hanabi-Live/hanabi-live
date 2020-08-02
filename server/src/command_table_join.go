@@ -131,14 +131,8 @@ func commandTableJoin(s *Session, d *CommandData) {
 		notifyAllUser(s)
 	}
 
-	// Send them a "joined" message
-	// (to let them know they successfully joined the table)
-	type JoinedMessage struct {
-		TableID int `json:"tableID"`
-	}
-	s.Emit("joined", &JoinedMessage{
-		TableID: tableID,
-	})
+	// Let the client know they successfully joined the table
+	s.NotifyTableJoined(t)
 
 	// Send them the chat history for this game
 	chatSendPastFromTable(s, t)
@@ -147,7 +141,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 	// Send them messages for people typing, if any
 	for _, p := range t.Players {
 		if p.Typing {
-			s.NotifyChatTyping(p.Name, p.Typing)
+			s.NotifyChatTyping(t, p.Name, p.Typing)
 		}
 	}
 
@@ -186,15 +180,17 @@ func commandTableJoin(s *Session, d *CommandData) {
 		return
 	}
 	t.DatetimeLastJoined = time.Now()
+
+	type SoundLobbyMessage struct {
+		File string `json:"file"`
+	}
+	soundLobbyMessage := &SoundLobbyMessage{
+		File: "someone_joined",
+	}
 	for _, p2 := range t.Players {
 		// Skip sending a message to the player that just joined
 		if p2.ID != p.ID {
-			type SoundLobbyMessage struct {
-				File string `json:"file"`
-			}
-			p2.Session.Emit("soundLobby", SoundLobbyMessage{
-				File: "someone_joined",
-			})
+			p2.Session.Emit("soundLobby", soundLobbyMessage)
 		}
 	}
 }

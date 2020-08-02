@@ -8,7 +8,7 @@
 * Unlike other card games, it is cooperative, meaning that everyone either wins or loses together.
 * Unlike other card games, you cannot see your own hand, but you can see the hands of the other players.
 * There is a deck of 50 cards comprised of 5 colors and numbers 1 through 5.
-* The goal is to play out 1 through 5 for each color in order (kind of like [Solitaire](https://en.wikipedia.org/wiki/Klondike_(solitaire))).
+* The goal is to play the cards for each color in order (e.g. 1 through 5), kind of like [Solitaire](https://en.wikipedia.org/wiki/Klondike_(solitaire)).
 
 <br />
 
@@ -21,6 +21,8 @@
 * The play stacks for each color are located in the center of the table. All players play their cards on to the shared play stacks. To start off with, nothing is played on the play stacks.
 * The discard pile is located off to the side. All players discard their cards to the shared discard pile. To start off with, no cards are discarded.
 * A random player goes first.
+
+<br />
 
 ## Actions
 
@@ -47,8 +49,11 @@
 
 ### 3) Give a Clue
 
-* A player can spend a clue token to give one piece of information to another player.
-* First, they choose a player. Second, they choose either a number or color. Then, they tell that player about all of the cards in their hand that match that number or color.
+* A player can spend a clue token to give one "clue" to another player.
+* To give a clue:
+  * First, you choose a player.
+  * Second, you choose either a number or color.
+  * Then, you tell that player about all of the cards in their hand that match that number or color.
 * It is not allowed to give a clue that matches 0 cards in the hand.
 
 #### Example
@@ -101,3 +106,4 @@
 ## Other Rules
 
 * Successfully playing a 5 gives the team an additional clue. (This is a "reward" for finishing a play stack.)
+* If you finish a play stack while the team is at 8 clues, then the extra clue is forfeit.

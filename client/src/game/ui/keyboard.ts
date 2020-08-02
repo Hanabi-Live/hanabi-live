@@ -59,9 +59,6 @@ export const destroy = () => {
 };
 
 const keydown = (event: JQuery.KeyDownEvent) => {
-  // Local variables
-  const state = globals.store!.getState();
-
   // Disable hotkeys if we not currently in a game
   // (this should not be possible, as the handler gets unregistered upon going back to the lobby,
   // but double check just in case)
@@ -81,7 +78,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
       return;
     }
 
-    if (globals.metadata.replay) {
+    if (globals.state.finished) {
       // Escape = If in a replay, exit back to the lobby
       backToLobby();
       return;
@@ -103,10 +100,12 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     // Ctrl + c = Copy the current game ID
     if (
       event.key === 'c'
-      && globals.metadata.replay
+      && globals.state.finished
       && !($('#game-chat-modal').is(':visible'))
     ) {
-      copyStringToClipboard(globals.metadata.databaseID.toString());
+      if (globals.state.replay.databaseID !== null) {
+        copyStringToClipboard(globals.state.replay.databaseID.toString());
+      }
       return;
     }
   }
@@ -170,7 +169,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   }
 
   // Replay hotkeys
-  if (globals.metadata.hypothetical) {
+  if (globals.state.replay.hypothetical !== null) {
     if (event.key === 'ArrowLeft') {
       hypothetical.sendBack();
       return;
@@ -189,9 +188,9 @@ const keydown = (event: JQuery.KeyDownEvent) => {
 
       case 'ArrowUp':
       case 'ArrowDown': {
-        if (globals.metadata.sharedReplay) {
+        if (globals.state.replay.shared !== null) {
           replay.toggleSharedSegments();
-        } else if (!globals.metadata.replay) {
+        } else if (!globals.state.finished) {
           replay.exit();
         }
         return;
@@ -224,9 +223,19 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   }
 
   // Check for other keyboard hotkeys
-  const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
-  const ourPlayerIndex = state.metadata.ourPlayerIndex;
-  if (state.replay.active || currentPlayerIndex === ourPlayerIndex) {
+  const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
+  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
+  const shouldHaveKeyboardHotkeysForActions = (
+    // If it is our turn in an ongoing-game
+    (!globals.state.replay.active && currentPlayerIndex === ourPlayerIndex)
+    // If we are in a hypothetical and we are the shared replay leader
+    || (
+      globals.state.replay.hypothetical !== null
+      && globals.state.replay.shared !== null
+      && globals.state.replay.shared.amLeader
+    )
+  );
+  if (!shouldHaveKeyboardHotkeysForActions) {
     return;
   }
 
@@ -245,13 +254,12 @@ const keydown = (event: JQuery.KeyDownEvent) => {
 };
 
 const sharedReplaySendSound = (sound: string) => {
-  // Only enable sound effects in a shared replay
-  if (!globals.metadata.replay || !globals.metadata.sharedReplay) {
-    return;
-  }
-
-  // Only enable sound effects for shared replay leaders
-  if (!globals.amSharedReplayLeader) {
+  if (
+    // Only send sound effects in shared replays
+    globals.state.replay.shared === null
+    // Only send sound effects for shared replay leaders
+    || !globals.state.replay.shared.amLeader
+  ) {
     return;
   }
 
@@ -302,7 +310,7 @@ const performAction = (playAction = true) => {
 
 // Keyboard actions for playing and discarding cards
 const promptOwnHandOrder = (actionString: string) : string | number | null => {
-  const playerCards = globals.elements.playerHands[globals.metadata.ourPlayerIndex].children;
+  const playerCards = globals.elements.playerHands[globals.state.metadata.ourPlayerIndex].children;
   const maxSlotIndex = playerCards.length;
   const msg = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${actionString}.`;
   const response = window.prompt(msg);

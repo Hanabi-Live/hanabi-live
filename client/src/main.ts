@@ -36,14 +36,14 @@ import * as sounds from './sounds';
 // Initialize logging to Sentry.io
 sentry.init();
 
-// Manually redirect users that go to the old domain
-if (window.location.hostname === 'hanabi.live' || window.location.hostname === 'www.hanabi.live') {
-  window.location.replace('https://hanab.live');
-}
-
-// Manually redirect users that go to "www.hanab.live" instead of "hanab.live"
-if (window.location.hostname === 'www.hanab.live') {
-  window.location.replace('https://hanab.live');
+if (
+  // Manually redirect users that go to the old domain
+  window.location.hostname === 'hanabi.live'
+  || window.location.hostname === 'www.hanabi.live'
+  // Manually redirect users that go to "www.hanab.live" instead of "hanab.live"
+  || window.location.hostname === 'www.hanab.live'
+) {
+  window.location.replace(`https://hanab.live${window.location.pathname}`);
 }
 
 $(document).ready(() => {

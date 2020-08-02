@@ -20,6 +20,7 @@ export default class TimerDisplay extends Konva.Group {
       fill: 'black',
       cornerRadius: config.cornerRadius as (number | number[] | undefined),
       opacity: 0.2,
+      listening: false,
     });
     this.add(rectangle);
 
@@ -40,6 +41,7 @@ export default class TimerDisplay extends Konva.Group {
         y: 0,
       },
       shadowOpacity: 0.9,
+      listening: false,
     });
     this.add(this.timerText);
 
@@ -60,6 +62,7 @@ export default class TimerDisplay extends Konva.Group {
         y: 0,
       },
       shadowOpacity: 0.9,
+      listening: false,
     });
     this.add(this.labelText);
   }

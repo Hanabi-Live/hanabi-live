@@ -38,6 +38,7 @@ export default class CardLayout extends Konva.Group {
       height: config.height,
       fill: 'black',
       rotation: config.rotation,
+      listening: false,
     });
     globals.layers.UI.add(debugRect);
     */
@@ -146,13 +147,10 @@ export default class CardLayout extends Konva.Group {
             opacity: 1,
             easing: Konva.Easings.EaseOut,
             onFinish: () => {
-              if (card === undefined || layoutChild === undefined) {
-                return;
-              }
               card.finishedTweening();
               layoutChild.checkSetDraggable();
             },
-          }, true);
+          }, !globals.options.speedrun);
         };
 
         if (card.doMisplayAnimation) {
@@ -176,7 +174,7 @@ export default class CardLayout extends Konva.Group {
               layoutChild.rotation(360);
               animateToLayout();
             },
-          }, true);
+          }, !globals.options.speedrun);
         } else {
           animateToLayout();
         }

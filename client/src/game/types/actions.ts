@@ -2,6 +2,7 @@ import CardIdentity from './CardIdentity';
 import ClientAction from './ClientAction';
 import EndCondition from './EndCondition';
 import MsgClue from './MsgClue';
+import Spectator from './Spectator';
 
 export type Action =
   | GameAction
@@ -9,7 +10,12 @@ export type Action =
   | ActionListReceived
   | ActionCardIdentities
   | ActionPremove
-  | ActionFinishOngoingGame;
+  | ActionPause
+  | ActionPauseQueue
+  | ActionSpectating
+  | ActionSpectators
+  | ActionFinishOngoingGame
+  | ActionReplayEnterDedicated;
 
 export type GameAction =
   | ActionCardIdentity
@@ -33,14 +39,15 @@ export type ReplayAction =
   | ActionReplaySegment
   | ActionReplaySharedSegment
   | ActionReplayUseSharedSegments
+  | ActionReplayLeader
   | HypotheticalAction;
 
 export type HypotheticalAction =
   | ActionHypotheticalStart
   | ActionHypotheticalEnd
+  | ActionHypotheticalAction
   | ActionHypotheticalBack
-  | ActionHypothetical
-  | ActionHypotheticalShowDrawnCards;
+  | ActionHypotheticalDrawnCardsShown;
 
 // ----------------------
 // Initialization actions
@@ -65,9 +72,40 @@ export interface ActionPremove {
   readonly premove: ClientAction | null;
 }
 
+export interface ActionPause {
+  type: 'pause';
+  active: boolean;
+  playerIndex: number;
+}
+
+export interface ActionPauseQueue {
+  type: 'pauseQueue';
+  queued: boolean;
+}
+
+export interface ActionSpectating {
+  type: 'spectating';
+}
+
+export interface ActionSpectators {
+  type: 'spectators';
+  spectators: Spectator[];
+}
+
 export interface ActionFinishOngoingGame {
   type: 'finishOngoingGame';
+  databaseID: number;
+  sharedReplayLeader: string;
 }
+
+export interface ActionReplayEnterDedicated {
+  type: 'replayEnterDedicated';
+  shared: boolean;
+  databaseID: number;
+  sharedReplaySegment: number;
+  sharedReplayLeader: string;
+}
+
 // ------------
 // Game actions
 // ------------
@@ -185,35 +223,42 @@ export interface ActionReplayUseSharedSegments {
   readonly useSharedSegments: boolean;
 }
 
+export interface ActionReplayLeader {
+  type: 'replayLeader';
+  readonly name: string;
+}
+
 // --------------------
 // Hypothetical actions
 // --------------------
 
 export interface ActionHypotheticalStart {
   type: 'hypoStart';
+  readonly drawnCardsShown: boolean;
+  readonly actions: ActionIncludingHypothetical[];
 }
 
 export interface ActionHypotheticalEnd {
   type: 'hypoEnd';
 }
 
-export interface ActionHypotheticalBack {
-  type: 'hypoBack';
-}
-
-export interface ActionHypothetical {
+export interface ActionHypotheticalAction {
   type: 'hypoAction';
   readonly action: ActionIncludingHypothetical;
 }
 
+export interface ActionHypotheticalBack {
+  type: 'hypoBack';
+}
+
 export interface ActionHypotheticalMorph {
-  type: 'morph';
+  type: 'morph'; // This is not "hypoMorph" because it is a game action
   readonly suitIndex: number;
   readonly rank: number;
   readonly order: number;
 }
 
-export interface ActionHypotheticalShowDrawnCards {
-  type: 'hypoRevealed';
-  readonly showDrawnCards: boolean;
+export interface ActionHypotheticalDrawnCardsShown {
+  type: 'hypoDrawnCardsShown';
+  readonly drawnCardsShown: boolean;
 }

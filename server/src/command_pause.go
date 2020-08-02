@@ -57,7 +57,7 @@ func commandPause(s *Session, d *CommandData) {
 	}
 
 	// If a player requests a queued pause on their turn, turn it into a normal pause
-	if d.Setting == "pause-queue" && g.ActivePlayer == i {
+	if d.Setting == "pause-queue" && g.ActivePlayerIndex == i {
 		d.Setting = "pause"
 	}
 
@@ -104,7 +104,7 @@ func commandPause(s *Session, d *CommandData) {
 		g.Paused = true
 		g.PauseTime = time.Now()
 		g.PauseCount++
-		g.PausePlayer = i
+		g.PausePlayerIndex = i
 	} else if d.Setting == "unpause" {
 		g.Paused = false
 
@@ -118,7 +118,7 @@ func commandPause(s *Session, d *CommandData) {
 
 		// Restart the function that will check to see if the current player has run out of time
 		// (since the existing function will return and do nothing if the game is paused)
-		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayer])
+		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayerIndex])
 	}
 
 	t.NotifyPause()

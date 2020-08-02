@@ -7,7 +7,7 @@ import { Globals as LobbyGlobals } from '../../globals';
 import Loader from '../../Loader';
 import { VARIANTS } from '../data/gameData';
 import { GameExports } from '../main';
-import { GameAction, ActionIncludingHypothetical, Action } from '../types/actions';
+import { GameAction, Action } from '../types/actions';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import LegacyGameMetadata from '../types/LegacyGameMetadata';
 import SpectatorNote from '../types/SpectatorNote';
@@ -37,7 +37,11 @@ export class Globals {
 
   // UI elements
   imageLoader: Loader | null = null;
-  stage: Konva.Stage = new Konva.Stage({ container: 'game' });
+  stage: Konva.Stage = new Konva.Stage({
+    container: 'game',
+    listening: false,
+  });
+
   layers: Layers = new Layers();
   elements: Elements = new Elements();
   activeHover: Konva.Node | null = null; // The element that the mouse cursor is currently over
@@ -48,13 +52,6 @@ export class Globals {
   replayLog: GameAction[] = []; // Contains all of the "action" messages for the game
   finalReplayPos: number = 0;
   finalReplayTurn: number = 0;
-
-  // Shared replay feature
-  sharedReplayLeader: string = ''; // Equal to the username of the leader
-  amSharedReplayLeader: boolean = false;
-  sharedReplayFirstLoading: boolean = false;
-  hypoActions: ActionIncludingHypothetical[] = []; // Actions in the current hypothetical
-  hypoFirstDrawnIndex: number = 0; // The index of the first card drawn in a hypothetical
 
   // Notes feature
   ourNotes: string[] = []; // Indexed by card order
@@ -74,20 +71,15 @@ export class Globals {
   playerTimes: number[] = [];
   // "activeIndex" must be tracked separately from the "currentPlayerIndex" because
   // the current player may change in an in-game replay
-  activeIndex: number = -1; // Legacy variable, kill this and use state.currentPlayerIndex instead
+  // Legacy variable, kill this and use state.currentPlayerIndex instead
+  activePlayerIndex: number = -1;
   timeTaken: number = 0;
   startingTurnTime: number = 0;
   lastTimerUpdateTimeMS: number = 0;
 
-  // Pause feature
-  paused: boolean = false; // Whether or not the game is currently paused
-  pausePlayer: string = ''; // The name of the player who paused the game
-  pauseQueued: boolean = false; // Whether or not we have requested a queued pause
-
   // Miscellaneous
   animateFast: boolean = true;
   UIClickTime: number = 0; // Used to prevent accidental double clicks
-  spectators: string[] = [];
 
   // State information
   store: Redux.Store<State, Action> | null = null;
@@ -95,9 +87,18 @@ export class Globals {
   cardSubscriptions: Redux.Unsubscribe[] = [];
   cardIdentitySubscriptions: Redux.Unsubscribe[] = [];
 
+  get state() {
+    return this.store!.getState();
+  }
+
+  get options() {
+    // TODO: change to "this.metadata.options" when "get metadata()" exists
+    return this.state.metadata.options;
+  }
+
   // TEMP: accessors to minimize churn while we don't re-architect user input
   get clues() {
-    return this.store!.getState().visibleState!.clueTokens!;
+    return this.state.visibleState!.clueTokens!;
   }
 
   // We provide a method to reset every class variable to its initial value
@@ -113,7 +114,10 @@ export class Globals {
     this.deck = [];
     this.stackBases = [];
     this.imageLoader = null;
-    this.stage = new Konva.Stage({ container: 'game' });
+    this.stage = new Konva.Stage({
+      container: 'game',
+      listening: false,
+    });
     this.layers = new Layers();
     this.elements = new Elements();
     this.activeHover = null;
@@ -122,10 +126,6 @@ export class Globals {
     this.replayLog = [];
     this.finalReplayPos = 0;
     this.finalReplayTurn = 0;
-    this.sharedReplayLeader = '';
-    this.amSharedReplayLeader = false;
-    this.sharedReplayFirstLoading = true;
-    this.hypoActions = [];
     this.ourNotes = [];
     this.allNotes = [];
     this.editingNote = null;
@@ -133,16 +133,12 @@ export class Globals {
     this.lastNote = '';
     this.timerID = null;
     this.playerTimes = [];
-    this.activeIndex = -1; // Legacy variable
+    this.activePlayerIndex = -1; // Legacy variable
     this.timeTaken = 0;
     this.startingTurnTime = 0;
     this.lastTimerUpdateTimeMS = 0;
-    this.paused = false;
-    this.pausePlayer = '';
-    this.pauseQueued = false;
     this.animateFast = true;
     this.UIClickTime = 0;
-    this.spectators = [];
 
     this.stateObserver?.unregisterObservers();
     this.stateObserver = null;
@@ -163,6 +159,6 @@ declare global {
 }
 
 // Make the globals available from the JavaScript console (for debugging purposes)
-if (typeof window !== 'undefined') {
+if (window !== undefined) {
   window.globals = globals;
 }

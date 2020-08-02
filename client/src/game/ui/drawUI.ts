@@ -3,6 +3,7 @@
 import Konva from 'konva';
 import { LABEL_COLOR } from '../../constants';
 import * as debug from '../../debug';
+import * as modals from '../../modals';
 import * as deck from '../rules/deck';
 import * as stats from '../rules/stats';
 import * as variantRules from '../rules/variant';
@@ -113,10 +114,6 @@ export default function drawUI() {
   drawPauseArea();
   drawExtraAnimations();
 
-  if (globals.store!.getState().replay.active) {
-    globals.elements.replayArea!.show();
-  }
-
   // Just in case, delete all existing layers
   globals.stage.getLayers().each((layer) => {
     layer.remove();
@@ -174,6 +171,7 @@ const initReusableObjects = () => {
       y: 0,
     },
     shadowOpacity: 0.9,
+    listening: false,
   });
   basicNumberLabel = basicTextLabel.clone() as Konva.Text;
   basicNumberLabel.text('0');
@@ -200,6 +198,7 @@ const drawActionLog = () => {
   const actionLogGroup = new Konva.Group({
     x: actionLogValues.x * winW,
     y: actionLogValues.y * winH,
+    listening: false,
   });
   globals.layers.UI.add(actionLogGroup);
 
@@ -249,6 +248,7 @@ const drawActionLog = () => {
     y: 0.003 * winH,
     width: (actionLogValues.w! - 0.02) * winW,
     height: (actionLogValues.h! - 0.003) * winH,
+    listening: false,
   }, maxLines);
   actionLogGroup.add(globals.elements.actionLog as any);
 
@@ -322,6 +322,7 @@ const drawPlayStacks = () => {
       y: playStackValues.y * winH,
       width: cardWidth * winW,
       height: cardHeight * winH,
+      listening: false,
     });
     globals.elements.playStacks.set(suit, playStack);
     globals.layers.card.add(playStack as any);
@@ -332,6 +333,7 @@ const drawPlayStacks = () => {
       order: deck.totalCards(globals.variant) + i,
       suitIndex: i,
       rank: STACK_BASE_RANK,
+      listening: true,
     });
     globals.stackBases.push(stackBase);
 
@@ -359,6 +361,7 @@ const drawPlayStacks = () => {
         align: 'center',
         text,
         fill: LABEL_COLOR,
+        listening: false,
       });
       globals.layers.UI.add(suitLabelText);
       globals.elements.suitLabelTexts.push(suitLabelText);
@@ -374,6 +377,7 @@ const drawPlayStacks = () => {
       y: playStackValues.y * winH,
       width: cardWidth * winW,
       height: cardHeight * winH,
+      listening: false,
     });
     globals.elements.playStacks.set('hole', playStack);
     globals.layers.card.add(playStack as any);
@@ -395,6 +399,7 @@ const drawPlayStacks = () => {
     y: (playAreaValues.y - overlap) * winH,
     width: (playAreaValues.w! + (overlap * 2)) * winW,
     height: (playAreaValues.h! + (overlap * 2)) * winH,
+    listening: false,
   });
 };
 
@@ -438,7 +443,7 @@ const drawBottomLeftButtons = () => {
       y: bottomLeftButtonValues.y * winH,
       width: bottomLeftButtonValues.w! * winW,
       height: bottomLeftButtonValues.h! * winH,
-      visible: !globals.metadata.replay,
+      visible: !globals.state.finished,
     },
     [
       globals.imageLoader!.get('replay')!,
@@ -450,7 +455,7 @@ const drawBottomLeftButtons = () => {
       return;
     }
 
-    if (globals.store!.getState().replay.active) {
+    if (globals.state.replay.active) {
       replay.exit();
     } else {
       replay.enter();
@@ -476,8 +481,8 @@ const drawBottomLeftButtons = () => {
   globals.layers.UI.add(restartButton as any);
   restartButton.on('click tap', () => {
     if (
-      globals.metadata.options.speedrun
-      || debug.amTestUser(globals.lobby.username)
+      globals.options.speedrun
+      || debug.amTestUser(globals.state.metadata.ourUsername)
       || globals.lobby.totalGames >= 1000
       || window.confirm('Are you sure you want to restart the game?')
     ) {
@@ -513,7 +518,7 @@ const drawBottomLeftButtons = () => {
     width: bottomLeftButtonValues.w! * winW,
     height: bottomLeftButtonValues.h! * winH,
     text: '💬',
-    visible: !globals.metadata.replay || globals.metadata.sharedReplay,
+    visible: !globals.state.finished || globals.state.replay.shared !== null,
   });
   globals.layers.UI.add(chatButton as any);
   chatButton.on('click tap', () => {
@@ -539,7 +544,7 @@ const drawBottomLeftButtons = () => {
     y: lobbyButtonValues.y * winH,
     width: ((bottomLeftButtonValues.w! / 2) - shortButtonSpacing) * winW,
     height: lobbyButtonValues.h! * winH,
-    visible: !globals.metadata.replay && !globals.metadata.spectating,
+    visible: globals.state.playing,
   }, [globals.imageLoader!.get('home')!]);
   globals.layers.UI.add(lobbyButtonSmall as any);
   lobbyButtonSmall.on('click tap', lobbyButtonClick);
@@ -554,7 +559,7 @@ const drawBottomLeftButtons = () => {
     width: bottomLeftButtonValues.w! * winW,
     height: lobbyButtonValues.h! * winH,
     text: 'Lobby',
-    visible: globals.metadata.replay || globals.metadata.spectating,
+    visible: !globals.state.playing,
   });
   globals.layers.UI.add(lobbyButtonBig as any);
   lobbyButtonBig.on('click tap', lobbyButtonClick);
@@ -569,13 +574,13 @@ const drawBottomLeftButtons = () => {
     y: (bottomLeftButtonValues.y + (2 * bottomLeftButtonValues.h!) + 0.02) * winH,
     width: ((bottomLeftButtonValues.w! / 2) - shortButtonSpacing) * winW,
     height: bottomLeftButtonValues.h! * winH,
-    visible: !globals.metadata.replay && !globals.metadata.spectating,
+    visible: globals.state.playing,
   }, [globals.imageLoader!.get('skull')!]);
   globals.layers.UI.add(killButton as any);
   killButton.on('click tap', () => {
     if (
-      globals.metadata.options.speedrun
-      || debug.amTestUser(globals.lobby.username)
+      globals.options.speedrun
+      || debug.amTestUser(globals.state.metadata.ourUsername)
       || globals.lobby.totalGames >= 1000
       || window.confirm('Are you sure you want to terminate the game?')
     ) {
@@ -615,7 +620,7 @@ const drawDeck = () => {
   // Near the top of the deck, draw the database ID for the respective game
   // (in an ongoing game, this will not show)
   globals.elements.gameIDLabel = new FitText({
-    text: `ID: ${globals.metadata.databaseID}`,
+    text: `ID: ${globals.state.replay.databaseID}`,
     x: deckValues.x * winW,
     y: (deckValues.y + 0.01) * winH,
     width: deckValues.w! * winW,
@@ -630,7 +635,8 @@ const drawDeck = () => {
       y: 0,
     },
     shadowOpacity: 0.9,
-    visible: globals.metadata.replay && globals.metadata.databaseID !== 0,
+    visible: globals.state.finished && globals.state.replay.databaseID !== null,
+    listening: false,
   });
   // We draw the label on the arrow layer because it is on top of the card but
   // not on top of the black second layer
@@ -643,6 +649,7 @@ const drawDeck = () => {
     height: deckValues.h! * winH,
     cardBack: 'deck-back',
     suits: globals.variant.suits,
+    listening: false,
   });
   globals.layers.card.add(globals.elements.deck as any);
 
@@ -702,6 +709,7 @@ const drawScoreArea = () => {
   globals.elements.scoreArea = new Konva.Group({
     x: scoreAreaValues.x * winW,
     y: scoreAreaValues.y * winH,
+    listening: false,
   });
   globals.layers.UI.add(globals.elements.scoreArea);
 
@@ -715,6 +723,7 @@ const drawScoreArea = () => {
     strokeWidth: 0.003 * winW,
     cornerRadius: 0.01 * winW,
     visible: false,
+    listening: false,
   });
   globals.layers.UI.add(globals.elements.noClueBorder);
 
@@ -727,6 +736,7 @@ const drawScoreArea = () => {
     fill: 'black',
     opacity: 0.2,
     cornerRadius: 0.01 * winW,
+    listening: false,
   });
   globals.elements.scoreArea.add(scoreAreaRect);
 
@@ -772,7 +782,7 @@ const drawScoreArea = () => {
     x: labelX * winW,
     y: 0.045 * winH,
     listening: true,
-    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.metadata.replay,
+    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.state.finished,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreTextLabel!);
   globals.elements.scoreTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -784,7 +794,7 @@ const drawScoreArea = () => {
     x: (labelX + labelSpacing) * winW,
     y: 0.045 * winH,
     listening: true,
-    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.metadata.replay,
+    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.state.finished,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreNumberLabel!);
   globals.elements.scoreNumberLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -797,7 +807,7 @@ const drawScoreArea = () => {
     y: 0.05 * winH,
     fontSize: 0.017 * winH,
     listening: true,
-    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.metadata.replay,
+    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.state.finished,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel!);
   globals.elements.maxScoreNumberLabel.on(
@@ -812,7 +822,7 @@ const drawScoreArea = () => {
     x: labelX * winW,
     y: 0.045 * winH,
     listening: true,
-    visible: variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay,
+    visible: variantRules.isThrowItInAHole(globals.variant) && !globals.state.finished,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.playsTextLabel!);
   globals.elements.playsTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -824,7 +834,7 @@ const drawScoreArea = () => {
     x: (labelX + labelSpacing) * winW,
     y: 0.045 * winH,
     listening: true,
-    visible: variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay,
+    visible: variantRules.isThrowItInAHole(globals.variant) && !globals.state.finished,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.playsNumberLabel!);
   globals.elements.playsNumberLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -864,7 +874,10 @@ const drawScoreArea = () => {
     duration: 0.5,
     easing: Konva.Easings.EaseInOut,
     onFinish: () => {
-      if (globals.elements.cluesNumberLabelPulse) {
+      if (
+        globals.elements.cluesNumberLabelPulse !== undefined
+        && globals.elements.cluesNumberLabelPulse !== null
+      ) {
         globals.elements.cluesNumberLabelPulse.reverse();
       }
     },
@@ -876,7 +889,7 @@ const drawScoreArea = () => {
     switch (event.evt.button) {
       case 0: { // Left-click
         // Left-clicking a strike X or a strike square takes us to the turn that the strike happened
-        const strikes = globals.store!.getState().ongoingGame.strikes;
+        const strikes = globals.state.ongoingGame.strikes;
         const strike = strikes[this.num];
         if (strike === undefined) {
           // There is no strike yet that corresponds to this square / X, so do nothing
@@ -955,7 +968,7 @@ const drawScoreArea = () => {
       fontSize: 0.032 * winH,
       x: (0.0205 + (0.04 * i)) * winW,
       y: 0.128 * winH,
-      visible: variantRules.isThrowItInAHole(globals.variant) && !globals.metadata.replay,
+      visible: variantRules.isThrowItInAHole(globals.variant) && !globals.state.finished,
       listening: false,
     }) as Konva.Text;
     globals.elements.scoreArea.add(questionMarkLabel);
@@ -1030,6 +1043,7 @@ const drawSpectators = () => {
     },
     shadowOpacity: 0.9,
     visible: false,
+    listening: false,
   });
   globals.layers.UI.add(globals.elements.spectatorsNumLabel);
 };
@@ -1050,6 +1064,7 @@ const drawSharedReplay = () => {
     stroke: '#ffe03b', // Yellow
     strokeWidth: 0.00211 * winH,
     visible: false,
+    listening: false,
   });
   globals.layers.UI.add(globals.elements.sharedReplayLeaderCircle);
 
@@ -1084,7 +1099,10 @@ const drawSharedReplay = () => {
     duration: 0.5,
     easing: Konva.Easings.EaseInOut,
     onFinish: () => {
-      if (globals.elements.sharedReplayLeaderLabelPulse) {
+      if (
+        globals.elements.sharedReplayLeaderLabelPulse !== undefined
+        && globals.elements.sharedReplayLeaderLabelPulse !== null
+      ) {
         globals.elements.sharedReplayLeaderLabelPulse.reverse();
       }
     },
@@ -1100,7 +1118,12 @@ const drawSharedReplay = () => {
   // The user can click on the crown to pass the replay leader to an arbitrary person
   // Require a double tap to prevent accidentally opening the dialog when hovering over the crown
   sharedReplayLeaderLabel.on('click dbltap', () => {
-    if (!globals.amSharedReplayLeader) { // Do nothing if we are not the shared replay leader
+    if (globals.state.replay.shared === null || !globals.state.replay.shared.amLeader) {
+      return;
+    }
+
+    if (globals.state.spectators.length === 1) {
+      modals.warningShow('You are the only person in the shared replay, so you cannot pass the leader to someone else.');
       return;
     }
 
@@ -1108,13 +1131,13 @@ const drawSharedReplay = () => {
 
     let msg = 'What is the number of the person that you want to pass the replay leader to?\n\n';
     let i = 1;
-    for (const spectator of globals.spectators) {
-      if (spectator === globals.lobby.username) {
+    for (const spectator of globals.state.spectators) {
+      if (spectator.name === globals.state.metadata.ourUsername) {
         continue;
       }
 
-      spectatorMap.set(i, spectator);
-      msg += `${i} - ${spectator}\n`;
+      spectatorMap.set(i, spectator.name);
+      msg += `${i} - ${spectator.name}\n`;
       i += 1;
     }
     const targetString = window.prompt(msg);
@@ -1150,6 +1173,7 @@ const drawYourTurn = () => {
     x: (spectatorsLabelValues.x + 0.052) * winW,
     y: (spectatorsLabelValues.y - 0.01) * winH,
     visible: false,
+    listening: false,
   });
   globals.layers.UI.add(globals.elements.yourTurn);
 
@@ -1164,6 +1188,7 @@ const drawYourTurn = () => {
       x: -0.025 * winW,
       y: -0.036 * winH,
     },
+    listening: false,
   });
   globals.elements.yourTurn.add(circle);
 
@@ -1175,6 +1200,7 @@ const drawYourTurn = () => {
     fill: 'yellow',
     align: 'center',
     text: 'Your\nTurn',
+    listening: false,
   });
   globals.elements.yourTurn.add(text);
 };
@@ -1194,6 +1220,7 @@ const drawClueLog = () => {
     fill: 'black',
     opacity: 0.2,
     cornerRadius: 0.01 * winW,
+    listening: false,
   });
   globals.layers.UI.add(clueLogRect);
 
@@ -1203,6 +1230,7 @@ const drawClueLog = () => {
     y: (clueLogValues.y + spacing) * winH,
     width: (clueLogValues.w! - (spacing * 2)) * winW,
     height: (clueLogValues.h! - (spacing * 2)) * winH,
+    listening: false,
   });
   globals.layers.UI.add(globals.elements.clueLog as any);
 };
@@ -1217,6 +1245,7 @@ const drawStatistics = () => {
     fill: 'black',
     opacity: 0.2,
     cornerRadius: 0.01 * winW,
+    listening: false,
   });
   globals.layers.UI.add(statsRect);
 
@@ -1295,10 +1324,10 @@ const drawStatistics = () => {
   });
 
   const minEfficiency = stats.minEfficiency(
-    globals.metadata.playerNames.length,
+    globals.state.metadata.options.numPlayers,
     globals.variant,
-    globals.metadata.options.oneExtraCard,
-    globals.metadata.options.oneLessCard,
+    globals.options.oneExtraCard,
+    globals.options.oneLessCard,
   );
   const efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
     text: minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places
@@ -1332,6 +1361,7 @@ const drawDiscardArea = () => {
     strokeWidth: 0.005 * winW,
     cornerRadius: 0.01 * winW,
     visible: false,
+    listening: false,
   });
   globals.layers.UI.add(globals.elements.noDiscardBorder);
 
@@ -1346,6 +1376,7 @@ const drawDiscardArea = () => {
     cornerRadius: 0.01 * winW,
     opacity: 0.75,
     visible: false,
+    listening: false,
   });
   globals.layers.UI.add(globals.elements.noDoubleDiscardBorder);
 
@@ -1369,6 +1400,7 @@ const drawDiscardArea = () => {
     height: 0.35 * winH,
     opacity: 0.2,
     image: globals.imageLoader!.get('trashcan')!,
+    listening: false,
   });
   globals.layers.UI.add(trashcan);
 
@@ -1378,6 +1410,7 @@ const drawDiscardArea = () => {
     y: 0.6 * winH,
     width: 0.2 * winW,
     height: 0.4 * winH,
+    listening: false,
   });
 };
 
@@ -1396,8 +1429,8 @@ const drawTimers = () => {
   // We don't want the timer to show in replays or untimed games
   // (unless they have the optional setting turned on)
   if (
-    globals.metadata.replay
-    || (!globals.metadata.options.timed && !globals.lobby.settings.showTimerInUntimed)
+    globals.state.finished
+    || (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed)
   ) {
     return;
   }
@@ -1429,7 +1462,8 @@ const drawTimers = () => {
     radiusY: 0.07 * winH,
     stroke: '#ffe03b', // Yellow
     strokeWidth: 2,
-    visible: globals.pauseQueued,
+    visible: false,
+    listening: false,
   });
   globals.layers.UI.add(globals.elements.timer1Circle);
 
@@ -1443,40 +1477,44 @@ const drawTimers = () => {
     cornerRadius: timerValues.cornerRadius * winH,
     spaceH: timerValues.spaceH * winH,
     label: 'You',
-    visible: !globals.metadata.spectating,
+    visible: false,
     listening: true,
   });
   globals.layers.timer.add(globals.elements.timer1 as any);
   const timerClick = () => {
     if (
-      !globals.metadata.options.timed // We don't need to pause if this is not a timed game
-      || globals.paused // We don't need to pause if the game is already paused
+      !globals.options.timed // We don't need to pause if this is not a timed game
+      || globals.state.pause.active // We don't need to pause if the game is already paused
     ) {
       return;
     }
+
+    const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
+    const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
+
     let setting;
-    const state = globals.store!.getState();
-    const currentPlayerIndex = state.ongoingGame.turn.currentPlayerIndex;
-    const ourPlayerIndex = state.metadata.ourPlayerIndex;
     if (currentPlayerIndex === ourPlayerIndex) {
       setting = 'pause';
-    } else if (globals.pauseQueued) {
+    } else if (globals.state.pause.queued) {
       setting = 'pause-unqueue';
-      globals.pauseQueued = false;
+
+      globals.store!.dispatch({
+        type: 'pauseQueue',
+        queued: false,
+      });
     } else {
       setting = 'pause-queue';
-      globals.pauseQueued = true;
+
+      globals.store!.dispatch({
+        type: 'pauseQueue',
+        queued: true,
+      });
     }
+
     globals.lobby.conn!.send('pause', {
       tableID: globals.lobby.tableID,
       setting,
     });
-
-    const wasVisible = globals.elements.timer1Circle!.visible();
-    if (wasVisible !== globals.pauseQueued) {
-      globals.elements.timer1Circle!.visible(globals.pauseQueued);
-      globals.layers.UI.batchDraw();
-    }
   };
   globals.elements.timer1.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
     if (event.evt.button === 2) { // Right-click
@@ -1499,7 +1537,7 @@ const drawTimers = () => {
     listening: true,
   });
   globals.layers.timer.add(globals.elements.timer2 as any);
-  if (globals.metadata.options.timed || globals.lobby.settings.showTimerInUntimed) {
+  if (globals.options.timed || globals.lobby.settings.showTimerInUntimed) {
     globals.elements.timer2.tooltipName = 'time-taken';
     // (the content will be updated in the "setTickingDownTimeCPTooltip()" function)
     tooltips.init(globals.elements.timer2, true, false);
@@ -1525,10 +1563,12 @@ const drawClueArea = () => {
     x: clueAreaValues.x * winW,
     y: clueAreaValues.y * winH,
     width: clueAreaValues.w! * winW,
+    visible: false,
+    listening: false,
   });
 
   // Player buttons
-  const numPlayers = globals.metadata.playerNames.length;
+  const numPlayers = globals.state.metadata.options.numPlayers;
   let playerButtonW = 0.08;
   const playerButtonH = 0.025;
   const playerButtonSpacing = 0.0075;
@@ -1538,7 +1578,9 @@ const drawClueArea = () => {
   const playerButtonAdjustment = numPlayers === 2 ? playerButtonH / 2 : 0;
 
   // This is the normal button group, which does not include us
-  globals.elements.clueTargetButtonGroup = new ButtonGroup({});
+  globals.elements.clueTargetButtonGroup = new ButtonGroup({
+    listening: false,
+  });
   {
     const totalPlayerButtons = numPlayers - 1;
     if (totalPlayerButtons >= 5) {
@@ -1548,13 +1590,13 @@ const drawClueArea = () => {
     totalPlayerWidth += playerButtonSpacing * (totalPlayerButtons - 1);
     let playerX = (clueAreaValues.w! * 0.5) - (totalPlayerWidth * 0.5);
     for (let i = 0; i < totalPlayerButtons; i++) {
-      const j = (globals.metadata.ourPlayerIndex + i + 1) % numPlayers;
+      const j = (globals.state.metadata.ourPlayerIndex + i + 1) % numPlayers;
       const button = new PlayerButton({
         x: playerX * winW,
         y: 0,
         width: playerButtonW * winW,
         height: playerButtonH * winH,
-        text: globals.metadata.playerNames[j],
+        text: globals.state.metadata.playerNames[j],
       }, j);
       globals.elements.clueTargetButtonGroup!.add(button as any);
       globals.elements.clueTargetButtonGroup!.addList(button);
@@ -1569,7 +1611,9 @@ const drawClueArea = () => {
   }
 
   // This button group includes us, which is used for hypotheticals
-  globals.elements.clueTargetButtonGroup2 = new ButtonGroup({});
+  globals.elements.clueTargetButtonGroup2 = new ButtonGroup({
+    listening: false,
+  });
   {
     const totalPlayerButtons = numPlayers;
     if (totalPlayerButtons >= 5) {
@@ -1581,13 +1625,13 @@ const drawClueArea = () => {
     for (let i = 0; i < totalPlayerButtons; i++) {
       // We change the calculation of j from the above code block because we want the buttons to
       // follow the order of players from top to bottom (in BGA mode)
-      const j = (globals.metadata.ourPlayerIndex + i) % numPlayers;
+      const j = (globals.state.metadata.ourPlayerIndex + i) % numPlayers;
       const button = new PlayerButton({
         x: playerX * winW,
         y: 0,
         width: playerButtonW * winW,
         height: playerButtonH * winH,
-        text: globals.metadata.playerNames[j],
+        text: globals.state.metadata.playerNames[j],
       }, j);
       globals.elements.clueTargetButtonGroup2!.add(button as any);
       globals.elements.clueTargetButtonGroup2!.addList(button);
@@ -1602,7 +1646,9 @@ const drawClueArea = () => {
   const buttonH = 0.071;
   const buttonXSpacing = 0.009;
   const buttonYSpacing = 0.002;
-  globals.elements.clueTypeButtonGroup = new ButtonGroup({});
+  globals.elements.clueTypeButtonGroup = new ButtonGroup({
+    listening: false,
+  });
 
   // Color buttons
   globals.elements.colorClueButtons = [];
@@ -1701,7 +1747,6 @@ const drawClueArea = () => {
   globals.elements.clueArea.add(globals.elements.giveClueButton as any);
   globals.elements.giveClueButton.on('click tap', clues.give);
 
-  globals.elements.clueArea.hide();
   globals.layers.UI.add(globals.elements.clueArea);
 };
 
@@ -1711,6 +1756,7 @@ const drawClueAreaDisabled = () => {
     x: clueAreaValues.x * winW,
     y: clueAreaValues.y * winH,
     width: clueAreaValues.w! * winW,
+    listening: false,
   });
 
   // A transparent rectangle to stop clicks
@@ -1737,6 +1783,7 @@ const drawClueAreaDisabled = () => {
     ],
     stroke: lineColor,
     strokeWidth: 0.00528 * winH,
+    listening: false,
   });
   globals.elements.clueAreaDisabled.add(line1);
 
@@ -1750,6 +1797,7 @@ const drawClueAreaDisabled = () => {
     ],
     stroke: lineColor,
     strokeWidth: 0.00528 * winH,
+    listening: false,
   });
   globals.elements.clueAreaDisabled.add(line2);
 
@@ -1764,6 +1812,7 @@ const drawClueAreaDisabled = () => {
     fill: LABEL_COLOR,
     stroke: 'black',
     strokeWidth: 0.00211 * winH,
+    listening: false,
   });
   globals.elements.clueAreaDisabled.add(noCluesText);
 
@@ -1820,6 +1869,7 @@ const drawHypotheticalArea = () => {
     x: hypoValues.x * winW,
     y: hypoValues.y * winH,
     visible: false,
+    listening: false,
   });
   globals.layers.UI.add(globals.elements.hypoCircle);
 
@@ -1832,6 +1882,7 @@ const drawHypotheticalArea = () => {
     opacity: 0.5,
     stroke: 'black',
     strokeWidth: 4,
+    listening: false,
   });
   globals.elements.hypoCircle.add(circle);
 
@@ -1844,6 +1895,7 @@ const drawHypotheticalArea = () => {
     fill: LABEL_COLOR,
     align: 'center',
     text: 'Hypothetical',
+    listening: false,
   });
   globals.elements.hypoCircle.add(text);
 
@@ -1884,7 +1936,7 @@ const drawHypotheticalArea = () => {
     y: toggleHiddenButtonValues.y * winH,
     width: 0.07 * winW,
     height: 0.1226 * winH,
-    text: globals.metadata.hypoRevealed ? 'Hide' : 'Show',
+    text: 'Show',
     text2: 'Drawn',
     text3: 'Cards',
     visible: false,
@@ -1903,6 +1955,7 @@ const drawPauseArea = () => {
     x: 0.25 * winW,
     y: 0.25 * winH,
     visible: false,
+    listening: false,
   });
   globals.layers.UI2.add(globals.elements.pauseArea);
 
@@ -1930,6 +1983,7 @@ const drawPauseArea = () => {
       y: 0,
     },
     shadowOpacity: 0.9,
+    listening: false,
   });
   globals.elements.pauseArea.add(pauseTitle);
 
@@ -1948,6 +2002,7 @@ const drawPauseArea = () => {
       y: 0,
     },
     shadowOpacity: 0.9,
+    listening: false,
   });
   globals.elements.pauseArea.add(globals.elements.pauseText);
 
@@ -2006,20 +2061,11 @@ const drawExtraAnimations = () => {
     width: size * winW,
     height: size * winH,
     image: globals.imageLoader!.get('replay-forward-border')!,
-    opacity: 0,
     border: 100,
+    visible: false,
+    listening: false,
   });
   globals.layers.UI2.add(globals.elements.sharedReplayForward);
-  globals.elements.sharedReplayForwardTween = new Konva.Tween({
-    node: globals.elements.sharedReplayForward,
-    duration: 0.5,
-    opacity: 1,
-    onFinish: () => {
-      if (globals.elements.sharedReplayForwardTween) {
-        globals.elements.sharedReplayForwardTween.reverse();
-      }
-    },
-  });
 
   globals.elements.sharedReplayBackward = new Konva.Image({
     x: x * winW,
@@ -2027,19 +2073,10 @@ const drawExtraAnimations = () => {
     width: size * winW,
     height: size * winH,
     image: globals.imageLoader!.get('replay-back-border')!,
-    opacity: 0,
+    visible: false,
+    listening: false,
   });
   globals.layers.UI2.add(globals.elements.sharedReplayBackward);
-  globals.elements.sharedReplayBackwardTween = new Konva.Tween({
-    node: globals.elements.sharedReplayBackward,
-    duration: 0.5,
-    opacity: 1,
-    onFinish: () => {
-      if (globals.elements.sharedReplayBackwardTween) {
-        globals.elements.sharedReplayBackwardTween.reverse();
-      }
-    },
-  });
 };
 
 // Subroutines

@@ -12,12 +12,10 @@ import * as replay from './replay';
 
 export default function HanabiCardClick(this: HanabiCard, event: Konva.KonvaEventObject<any>) {
   // Speedrunning overrides the normal card clicking behavior
-  // (but do not use the speedrunning behavior if we are in a
-  // solo replay / shared replay / spectating)
+  // (but only use the speedrunning behavior if we are an active player)
   if (
-    (globals.metadata.options.speedrun || globals.lobby.settings.speedrunMode)
-    && !globals.metadata.replay
-    && !globals.metadata.spectating
+    (globals.options.speedrun || globals.lobby.settings.speedrunMode)
+    && globals.state.playing
   ) {
     return;
   }
@@ -45,7 +43,8 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     || event.shiftKey
     || event.metaKey
     || card.state.rank === STACK_BASE_RANK // Disable clicking on the stack base
-    || globals.metadata.hypothetical // No replay actions should happen in a hypothetical
+    // No replay actions should happen in a hypothetical
+    || globals.state.replay.hypothetical !== null
   ) {
     return;
   }
@@ -95,10 +94,10 @@ const clickMiddle = (card: HanabiCard, event: MouseEvent) => {
 const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // Alt + right-click is a card morph (in a hypothetical)
   if (
-    globals.metadata.replay
-    && globals.metadata.sharedReplay
-    && globals.amSharedReplayLeader
-    && globals.metadata.hypothetical
+    globals.state.finished
+    && globals.state.replay.shared !== null
+    && globals.state.replay.shared.amLeader
+    && globals.state.replay.hypothetical !== null
     && !event.ctrlKey
     && !event.shiftKey
     && event.altKey
@@ -113,17 +112,17 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // (we want it to work no matter what modifiers are being pressed,
   // in case someone is pushing their push-to-talk hotkey while highlighting cards)
   if (
-    globals.metadata.replay
-    && globals.metadata.sharedReplay
-    && globals.amSharedReplayLeader
-    && globals.store!.getState().replay.useSharedSegments
+    globals.state.finished
+    && globals.state.replay.shared !== null
+    && globals.state.replay.shared.amLeader
+    && globals.state.replay.shared.useSharedSegments
   ) {
     arrows.send(card.state.order, card);
     return;
   }
 
-  // Right-click in a solo replay just displays what card order (in the deck) that it is
-  if (globals.metadata.replay && !globals.metadata.sharedReplay) {
+  // Right-click in a solo replay just prints out the order of the card
+  if (globals.state.finished && globals.state.replay.shared === null) {
     console.log(`This card's order is: ${card.state.order}`);
     return;
   }
@@ -135,8 +134,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.metadata.replay
-    && !globals.metadata.spectating
+    && globals.state.playing
   ) {
     card.setNote(globals.lastNote);
     return;
@@ -149,8 +147,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.metadata.replay
-    && !globals.metadata.spectating
+    && globals.state.playing
   ) {
     card.appendNote('f');
     return;
@@ -163,8 +160,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.shiftKey
     && event.altKey
     && !event.metaKey
-    && !globals.metadata.replay
-    && !globals.metadata.spectating
+    && globals.state.playing
   ) {
     card.appendNote('cm');
     return;
@@ -180,7 +176,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.metadata.sharedReplay
+    && globals.state.replay.shared === null
   ) {
     arrows.toggle(card);
     return;
@@ -192,7 +188,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.shiftKey
     && !event.altKey
     && !event.metaKey
-    && !globals.metadata.replay
+    && !globals.state.finished
   ) {
     notes.openEditTooltip(card);
   }

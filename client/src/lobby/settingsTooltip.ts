@@ -1,7 +1,7 @@
 // The "Settings" nav button
 
 import globals from '../globals';
-import * as misc from '../misc';
+import { isKeyOf } from '../misc';
 import * as notifications from '../notifications';
 
 export const init = () => {
@@ -75,7 +75,7 @@ function changeSetting(this: HTMLElement) {
   if (settingName === undefined || settingName === '') {
     throw new Error('Failed to get the ID of the element in the "changeSetting()" function.');
   }
-  if (!misc.isKeyOf(settingName, globals.settings)) {
+  if (!isKeyOf(settingName, globals.settings)) {
     throw new Error(`The setting of ${settingName} does not exist in the Settings class.`);
   }
   const setting = globals.settings[settingName];
