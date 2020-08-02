@@ -15,6 +15,7 @@ import {
   ActionReplayExit,
   ActionStrike,
   ActionTurn,
+  ActionReplayEnterDedicated,
 } from '../src/game/types/actions';
 import ClueType from '../src/game/types/ClueType';
 
@@ -121,9 +122,17 @@ export const turn = (num: number, currentPlayerIndex: number): ActionTurn => ({
   currentPlayerIndex,
 });
 
-export const enterReplay = (): ActionReplayEnter => ({
+export const replayEnter = (): ActionReplayEnter => ({
   type: 'replayEnter',
   segment: 0,
+});
+
+export const replayEnterDedicated = (): ActionReplayEnterDedicated => ({
+  type: 'replayEnterDedicated',
+  shared: true,
+  databaseID: 1,
+  sharedReplaySegment: 0,
+  sharedReplayLeader: '',
 });
 
 export const endReplay = (): ActionReplayExit => ({

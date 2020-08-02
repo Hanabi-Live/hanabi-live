@@ -145,12 +145,9 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 			DrawnCardsShown bool     `json:"drawnCardsShown"`
 			Actions         []string `json:"actions"`
 		}
-		hypotheticalMessage := &HypotheticalMessage{
+		s.Emit("hypothetical", &HypotheticalMessage{
 			DrawnCardsShown: g.HypoDrawnCardsShown,
 			Actions:         g.HypoActions,
-		}
-		for _, sp := range t.Spectators {
-			sp.Session.Emit("hypothetical", hypotheticalMessage)
-		}
+		})
 	}
 }

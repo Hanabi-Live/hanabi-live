@@ -468,10 +468,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     } else {
       this._visibleSuitIndex = this.variant.suits.indexOf(suitToShow);
     }
-    if (this.state.order === 5) {
-      console.log('GETTING HERE,', suitToShow);
-      console.log(this._visibleSuitIndex);
-    }
 
     if (rankToShow === undefined || rankToShow === UNKNOWN_CARD_RANK) {
       this._visibleRank = null;
