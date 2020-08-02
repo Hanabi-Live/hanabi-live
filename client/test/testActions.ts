@@ -5,10 +5,10 @@ import {
   ActionClue,
   ActionDiscard,
   ActionDraw,
-  ActionHypotheticalStart,
+  ActionHypotheticalAction,
   ActionHypotheticalBack,
   ActionHypotheticalEnd,
-  ActionHypothetical,
+  ActionHypotheticalStart,
   ActionIncludingHypothetical,
   ActionPlay,
   ActionReplayEnter,
@@ -133,17 +133,18 @@ export const endReplay = (): ActionReplayExit => ({
 export const hypoStart = (): ActionHypotheticalStart => ({
   type: 'hypoStart',
   drawnCardsShown: false,
+  actions: [],
 });
 
 export const hypoEnd = (): ActionHypotheticalEnd => ({
   type: 'hypoEnd',
 });
 
-export const hypoBack = (): ActionHypotheticalBack => ({
-  type: 'hypoBack',
-});
-
-export const hypoAction = (action: ActionIncludingHypothetical): ActionHypothetical => ({
+export const hypoAction = (action: ActionIncludingHypothetical): ActionHypotheticalAction => ({
   type: 'hypoAction',
   action,
+});
+
+export const hypoBack = (): ActionHypotheticalBack => ({
+  type: 'hypoBack',
 });

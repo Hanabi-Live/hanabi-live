@@ -225,6 +225,10 @@ const replayObservers: Subscriptions = [
     (s) => hypotheticalView.shouldShowHypoBackButton(s),
     hypotheticalView.shouldShowHypoBackButtonChanged,
   ),
+  subAfterInit(
+    (s) => s.replay.hypothetical?.drawnCardsShown,
+    hypotheticalView.onDrawnCardsInHypotheticalChanged,
+  ),
 
   // Card and stack base morphing
   subAfterInit((s) => ({

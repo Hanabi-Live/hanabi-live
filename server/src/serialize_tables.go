@@ -34,7 +34,7 @@ func serializeTables() bool {
 				logger.Info("Created a new fake session in the \"serializeTables()\" function.")
 			} else {
 				// Boot them from the game
-				s.Emit("boot", nil)
+				s.NotifyBoot(t)
 			}
 			commandTableUnattend(s, &CommandData{
 				TableID: t.ID,

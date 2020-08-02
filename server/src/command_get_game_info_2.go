@@ -101,10 +101,12 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 
 			// Send them a list of only their notes
 			type NoteListPlayerMessage struct {
-				Notes []string `json:"notes"`
+				TableID int      `json:"tableID"`
+				Notes   []string `json:"notes"`
 			}
 			s.Emit("noteListPlayer", &NoteListPlayerMessage{
-				Notes: p.Notes,
+				TableID: t.ID,
+				Notes:   p.Notes,
 			})
 
 			// Set their "present" variable back to true,
@@ -128,13 +130,27 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 		// Send them messages for people typing, if any
 		for _, p := range t.Players {
 			if p.Typing {
-				s.NotifyChatTyping(p.Name, p.Typing)
+				s.NotifyChatTyping(t, p.Name, p.Typing)
 			}
 		}
 		for _, sp := range t.Spectators {
 			if sp.Typing {
-				s.NotifyChatTyping(sp.Name, sp.Typing)
+				s.NotifyChatTyping(t, sp.Name, sp.Typing)
 			}
+		}
+	}
+
+	if g.Hypothetical {
+		type HypotheticalMessage struct {
+			DrawnCardsShown bool     `json:"drawnCardsShown"`
+			Actions         []string `json:"actions"`
+		}
+		hypotheticalMessage := &HypotheticalMessage{
+			DrawnCardsShown: g.HypoDrawnCardsShown,
+			Actions:         g.HypoActions,
+		}
+		for _, sp := range t.Spectators {
+			sp.Session.Emit("hypothetical", hypotheticalMessage)
 		}
 	}
 }

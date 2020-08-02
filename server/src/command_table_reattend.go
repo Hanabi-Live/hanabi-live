@@ -57,12 +57,7 @@ func commandTableReattend(s *Session, d *CommandData) {
 		t.NotifyPlayerChange()
 
 		// Let the client know they successfully joined the table
-		type JoinedMessage struct {
-			ID int `json:"tableID"`
-		}
-		s.Emit("joined", &JoinedMessage{
-			ID: tableID,
-		})
+		s.NotifyTableJoined(t)
 
 		// Send them the chat history for this game
 		// (if the game is running, this is handled in the "getGameInfo2()" function)

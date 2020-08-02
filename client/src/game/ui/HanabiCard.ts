@@ -337,6 +337,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       } else {
         suitToShow = suitIndexToSuit(cardIdentity.suitIndex, globals.variant);
       }
+
       if (
         this.state.rank === STACK_BASE_RANK
         && this.note.suitIndex !== null
@@ -466,6 +467,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this._visibleSuitIndex = null;
     } else {
       this._visibleSuitIndex = this.variant.suits.indexOf(suitToShow);
+    }
+    if (this.state.order === 5) {
+      console.log('GETTING HERE,', suitToShow);
+      console.log(this._visibleSuitIndex);
     }
 
     if (rankToShow === undefined || rankToShow === UNKNOWN_CARD_RANK) {
@@ -633,10 +638,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   // The LayoutChild is removed from the parent prior to the card changing location
   removeLayoutChildFromParent() {
     // Ensure that empathy is disabled prior to removing a card from a player's hand
-    if (this.empathy) {
-      this.empathy = false;
-      this.setBareImage();
-    }
+    this.disableEmpathy();
 
     // Remove the card from the player's hand in preparation of adding it to either
     // the play stacks or the discard pile
@@ -1125,6 +1127,13 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !cardRules.isDiscarded(this.state)
       && this.state.order <= globals.deck.length - 1 // Disable empathy for the stack bases
     );
+  }
+
+  disableEmpathy() {
+    if (this.empathy) {
+      this.empathy = false;
+      this.setBareImage();
+    }
   }
 
   private noteMouseOver(this: HanabiCard) {

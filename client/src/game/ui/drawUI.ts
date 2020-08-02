@@ -1936,7 +1936,7 @@ const drawHypotheticalArea = () => {
     y: toggleHiddenButtonValues.y * winH,
     width: 0.07 * winW,
     height: 0.1226 * winH,
-    text: globals.metadata.hypoRevealed ? 'Hide' : 'Show',
+    text: 'Show',
     text2: 'Drawn',
     text3: 'Cards',
     visible: false,

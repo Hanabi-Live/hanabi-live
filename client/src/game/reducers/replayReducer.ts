@@ -2,7 +2,7 @@
 
 import produce, { Draft, original } from 'immer';
 import { ensureAllCases, nullIfNegative } from '../../misc';
-import { ReplayAction } from '../types/actions';
+import { ReplayAction, ActionIncludingHypothetical } from '../types/actions';
 import CardIdentity from '../types/CardIdentity';
 import GameMetadata from '../types/GameMetadata';
 import ReplayState from '../types/ReplayState';
@@ -108,9 +108,16 @@ const replayReducer = produce((
     // --------------------
 
     case 'hypoStart': {
+      if (state.shared === null) {
+        throw new Error(`A "${action.type}" action was dispatched, but we are not in a shared replay.`);
+      }
       if (state.hypothetical !== null) {
         throw new Error(`A "${action.type}" action was dispatched with a non-null hypothetical state.`);
       }
+
+      // Bring us to the current shared replay turn, if we are not already there
+      state.segment = state.shared.segment;
+      state.shared.useSharedSegments = true;
 
       const ongoing = state.states[state.segment];
       state.hypothetical = {
@@ -121,10 +128,17 @@ const replayReducer = produce((
         morphedIdentities: [],
       };
 
+      for (const a of action.actions) {
+        hypoAction(state, a, cardIdentities, metadata);
+      }
+
       break;
     }
 
     case 'hypoEnd': {
+      if (state.shared === null) {
+        throw new Error(`A "${action.type}" action was dispatched, but we are not in a shared replay.`);
+      }
       if (state.hypothetical === null) {
         throw new Error(`A "${action.type}" action was dispatched with a null hypothetical state.`);
       }
@@ -134,6 +148,9 @@ const replayReducer = produce((
     }
 
     case 'hypoBack': {
+      if (state.shared === null) {
+        throw new Error(`A "${action.type}" action was dispatched, but we are not in a shared replay.`);
+      }
       if (state.hypothetical === null) {
         throw new Error(`A "${action.type}" action was dispatched with a null hypothetical state.`);
       }
@@ -145,14 +162,17 @@ const replayReducer = produce((
       break;
     }
 
-    case 'hypoRevealed': {
+    case 'hypoDrawnCardsShown': {
+      if (state.shared === null) {
+        throw new Error(`A "${action.type}" action was dispatched, but we are not in a shared replay.`);
+      }
       if (state.hypothetical === null) {
         throw new Error(`A "${action.type}" action was dispatched with a null hypothetical state.`);
       }
 
-      state.hypothetical.drawnCardsShown = action.showDrawnCards;
-      // Filter out all identities morphed to blank
-      if (action.showDrawnCards) {
+      state.hypothetical.drawnCardsShown = action.drawnCardsShown;
+      if (action.drawnCardsShown) {
+        // Filter out all identities morphed to blank
         const morphed = original(state.hypothetical.morphedIdentities)!;
         for (let i = 0; i < morphed.length; i++) {
           // Note: the for loop is necessary because the array is not contiguous
@@ -180,57 +200,14 @@ const replayReducer = produce((
     }
 
     case 'hypoAction': {
+      if (state.shared === null) {
+        throw new Error(`A "${action.type}" action was dispatched, but we are not in a shared replay.`);
+      }
       if (state.hypothetical === null) {
         throw new Error(`A "${action.type}" action was dispatched with a null hypothetical state.`);
       }
 
-      // Local variables
-      const a = action.action;
-
-      // The morph action is exclusively handled here
-      // Also take note of any draws that conflict with the known card identities
-      if (a.type === 'morph' || a.type === 'draw') {
-        let suitIndex = nullIfNegative(a.suitIndex);
-        let rank = nullIfNegative(a.rank);
-
-        if (a.type === 'draw') {
-          // Store drawn cards to be able to show/hide in the future
-          state.hypothetical.drawnCardsInHypothetical.push(a.order);
-          if (!state.hypothetical.drawnCardsShown) {
-            // Mark this one as blank
-            suitIndex = null;
-            rank = null;
-          }
-        }
-
-        if (
-          // Stack bases can be morphed, but their orders are higher than the deck size
-          a.order >= cardIdentities.length
-          || suitIndex !== cardIdentities[a.order].suitIndex
-          || rank !== cardIdentities[a.order].rank
-        ) {
-          // This card has been morphed or blanked
-          state.hypothetical.morphedIdentities[a.order] = {
-            suitIndex,
-            rank,
-          };
-        }
-      }
-
-      // The game state doesn't care about morphed cards
-      if (a.type === 'morph') {
-        break;
-      }
-
-      const hypoState = original(state.hypothetical.ongoing);
-      const newState = gameStateReducer(hypoState, a, true, metadata);
-      state.hypothetical.ongoing = newState;
-
-      if (hypoState!.turn.segment !== newState.turn.segment) {
-        // Save the new segment in case we want to go backwards
-        state.hypothetical.states.push(newState);
-      }
-
+      hypoAction(state, action.action, cardIdentities, metadata);
       break;
     }
 
@@ -242,3 +219,58 @@ const replayReducer = produce((
 }, {} as ReplayState);
 
 export default replayReducer;
+
+const hypoAction = (
+  state: Draft<ReplayState>,
+  action: ActionIncludingHypothetical,
+  cardIdentities: readonly CardIdentity[],
+  metadata: GameMetadata,
+) => {
+  if (state.hypothetical === null) {
+    throw new Error('A "hypoAction" action was dispatched with a null hypothetical state.');
+  }
+
+  // The morph action is handled here
+  // Also take note of any draws that conflict with the known card identities
+  if (action.type === 'morph' || action.type === 'draw') {
+    let suitIndex = nullIfNegative(action.suitIndex);
+    let rank = nullIfNegative(action.rank);
+
+    if (action.type === 'draw') {
+      // Store drawn cards to be able to show/hide in the future
+      state.hypothetical.drawnCardsInHypothetical.push(action.order);
+      if (!state.hypothetical.drawnCardsShown) {
+        // Mark this one as blank
+        suitIndex = null;
+        rank = null;
+      }
+    }
+
+    if (
+      // Stack bases can be morphed, but their orders are higher than the deck size
+      action.order >= cardIdentities.length
+      || suitIndex !== cardIdentities[action.order].suitIndex
+      || rank !== cardIdentities[action.order].rank
+    ) {
+      // This card has been morphed or blanked
+      state.hypothetical.morphedIdentities[action.order] = {
+        suitIndex,
+        rank,
+      };
+    }
+  }
+
+  // The game state doesn't care about morphed cards
+  if (action.type === 'morph') {
+    return;
+  }
+
+  const hypoState = original(state.hypothetical.ongoing);
+  const newState = gameStateReducer(hypoState, action, true, metadata);
+  state.hypothetical.ongoing = newState;
+
+  if (hypoState!.turn.segment !== newState.turn.segment) {
+    // Save the new segment in case we want to go backwards
+    state.hypothetical.states.push(newState);
+  }
+};

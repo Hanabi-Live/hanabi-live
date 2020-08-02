@@ -1,4 +1,5 @@
 import State from '../../../types/State';
+import * as clues from '../../clues';
 import PlayerButton from '../../controls/PlayerButton';
 import globals from '../../globals';
 import * as turn from '../../turn';
@@ -101,6 +102,17 @@ export const shouldShowHypoBackButton = (state: State): boolean => (
 
 export const shouldShowHypoBackButtonChanged = (enabled: boolean) => {
   globals.elements.hypoBackButton!.visible(enabled);
+  globals.layers.UI.batchDraw();
+};
+
+export const onDrawnCardsInHypotheticalChanged = (drawnCardsInHypothetical: boolean) => {
+  globals.elements.toggleRevealedButton!.setText({
+    line1: drawnCardsInHypothetical ? 'Hide' : 'Show',
+  });
+
+  // Check if the ability to give a clue changed
+  clues.checkLegal();
+
   globals.layers.UI.batchDraw();
 };
 

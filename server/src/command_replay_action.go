@@ -93,13 +93,16 @@ func commandReplayActionSegment(s *Session, d *CommandData, t *Table) {
 	g.Turn = d.Segment
 
 	// Notify everyone
+	type ReplaySegmentMessage struct {
+		TableID int `json:"tableID"`
+		Segment int `json:"segment"`
+	}
+	replaySegmentMessage := &ReplaySegmentMessage{
+		TableID: t.ID,
+		Segment: d.Segment,
+	}
 	for _, sp := range t.Spectators {
-		type ReplaySegmentMessage struct {
-			Segment int `json:"segment"`
-		}
-		sp.Session.Emit("replaySegment", &ReplaySegmentMessage{
-			Segment: d.Segment,
-		})
+		sp.Session.Emit("replaySegment", replaySegmentMessage)
 	}
 
 	// Update the progress
@@ -126,25 +129,31 @@ func commandReplayActionSegment(s *Session, d *CommandData, t *Table) {
 func commandReplayActionArrow(s *Session, d *CommandData, t *Table) {
 	// Display an arrow to indicate a specific card that the shared replay leader wants to draw
 	// attention to
+	type ReplayIndicatorMessage struct {
+		TableID int `json:"tableID"`
+		Order   int `json:"order"`
+	}
+	replayIndicatorMessage := &ReplayIndicatorMessage{
+		TableID: t.ID,
+		Order:   d.Order,
+	}
 	for _, sp := range t.Spectators {
-		type ReplayIndicatorMessage struct {
-			Order int `json:"order"`
-		}
-		sp.Session.Emit("replayIndicator", &ReplayIndicatorMessage{
-			Order: d.Order,
-		})
+		sp.Session.Emit("replayIndicator", replayIndicatorMessage)
 	}
 }
 
 func commandReplayActionSound(s *Session, d *CommandData, t *Table) {
 	// Play a sound effect
+	type ReplaySoundMessage struct {
+		TableID int    `json:"tableID"`
+		Sound   string `json:"sound"`
+	}
+	replaySoundMessage := &ReplaySoundMessage{
+		TableID: t.ID,
+		Sound:   d.Sound,
+	}
 	for _, sp := range t.Spectators {
-		type ReplaySoundMessage struct {
-			Sound string `json:"sound"`
-		}
-		sp.Session.Emit("replaySound", &ReplaySoundMessage{
-			Sound: d.Sound,
-		})
+		sp.Session.Emit("replaySound", replaySoundMessage)
 	}
 }
 
@@ -159,8 +168,15 @@ func commandReplayActionHypoStart(s *Session, d *CommandData, t *Table) {
 
 	// Start a hypothetical line
 	g.Hypothetical = true
+
+	type HypoStartMessage struct {
+		TableID int
+	}
+	hypoStartMessage := &HypoStartMessage{
+		TableID: t.ID,
+	}
 	for _, sp := range t.Spectators {
-		sp.Session.Emit("hypoStart", nil)
+		sp.Session.Emit("hypoStart", hypoStartMessage)
 	}
 }
 
@@ -176,8 +192,15 @@ func commandReplayActionHypoEnd(s *Session, d *CommandData, t *Table) {
 	// End a hypothetical line
 	g.Hypothetical = false
 	g.HypoActions = make([]string, 0)
+
+	type HypoEndMessage struct {
+		TableID int
+	}
+	hypoEndMessage := &HypoEndMessage{
+		TableID: t.ID,
+	}
 	for _, sp := range t.Spectators {
-		sp.Session.Emit("hypoEnd", nil)
+		sp.Session.Emit("hypoEnd", hypoEndMessage)
 	}
 }
 
@@ -200,6 +223,7 @@ func commandReplayActionHypoAction(s *Session, d *CommandData, t *Table) {
 
 	// Perform a move in the hypothetical
 	g.HypoActions = append(g.HypoActions, d.ActionJSON)
+
 	for _, sp := range t.Spectators {
 		sp.Session.Emit("hypoAction", d.ActionJSON)
 	}
@@ -230,8 +254,14 @@ func commandReplayActionHypoBack(s *Session, d *CommandData, t *Table) {
 		}
 	}
 
+	type HypoBackMessage struct {
+		TableID int
+	}
+	hypoBackMessage := &HypoBackMessage{
+		TableID: t.ID,
+	}
 	for _, sp := range t.Spectators {
-		sp.Session.Emit("hypoBack", nil)
+		sp.Session.Emit("hypoBack", hypoBackMessage)
 	}
 }
 
@@ -239,13 +269,17 @@ func commandReplayActionToggleRevealed(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
-	g.HypoRevealed = !g.HypoRevealed
+	g.HypoDrawnCardsShown = !g.HypoDrawnCardsShown
+
+	type HypoDrawnCardsShownMessage struct {
+		TableID         int  `json:"tableID"`
+		DrawnCardsShown bool `json:"drawnCardsShown"`
+	}
+	hypoDrawnCardsShownMessage := &HypoDrawnCardsShownMessage{
+		TableID:         t.ID,
+		DrawnCardsShown: g.HypoDrawnCardsShown,
+	}
 	for _, sp := range t.Spectators {
-		type ReplayHypoRevealedMessage struct {
-			HypoRevealed bool `json:"hypoRevealed"`
-		}
-		sp.Session.Emit("hypoRevealed", &ReplayHypoRevealedMessage{
-			HypoRevealed: g.HypoRevealed,
-		})
+		sp.Session.Emit("hypoDrawnCardsShown", hypoDrawnCardsShownMessage)
 	}
 }

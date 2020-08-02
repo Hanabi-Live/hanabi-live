@@ -23,17 +23,10 @@ export const start = () => {
     });
   }
 
-  // Bring us to the current shared replay turn, if we are not already there
-  if (!globals.state.replay.shared.useSharedSegments) {
-    globals.store!.dispatch({
-      type: 'replayUseSharedSegments',
-      useSharedSegments: true,
-    });
-  }
-
   globals.store!.dispatch({
     type: 'hypoStart',
     drawnCardsShown: false,
+    actions: [],
   });
 };
 

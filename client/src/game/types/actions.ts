@@ -45,9 +45,9 @@ export type ReplayAction =
 export type HypotheticalAction =
   | ActionHypotheticalStart
   | ActionHypotheticalEnd
+  | ActionHypotheticalAction
   | ActionHypotheticalBack
-  | ActionHypothetical
-  | ActionHypotheticalShowDrawnCards;
+  | ActionHypotheticalDrawnCardsShown;
 
 // ----------------------
 // Initialization actions
@@ -234,30 +234,31 @@ export interface ActionReplayLeader {
 
 export interface ActionHypotheticalStart {
   type: 'hypoStart';
-  drawnCardsShown: boolean;
+  readonly drawnCardsShown: boolean;
+  readonly actions: ActionIncludingHypothetical[];
 }
 
 export interface ActionHypotheticalEnd {
   type: 'hypoEnd';
 }
 
-export interface ActionHypotheticalBack {
-  type: 'hypoBack';
-}
-
-export interface ActionHypothetical {
+export interface ActionHypotheticalAction {
   type: 'hypoAction';
   readonly action: ActionIncludingHypothetical;
 }
 
+export interface ActionHypotheticalBack {
+  type: 'hypoBack';
+}
+
 export interface ActionHypotheticalMorph {
-  type: 'morph';
+  type: 'morph'; // This is not "hypoMorph" because it is a game action
   readonly suitIndex: number;
   readonly rank: number;
   readonly order: number;
 }
 
-export interface ActionHypotheticalShowDrawnCards {
-  type: 'hypoRevealed';
-  readonly showDrawnCards: boolean;
+export interface ActionHypotheticalDrawnCardsShown {
+  type: 'hypoDrawnCardsShown';
+  readonly drawnCardsShown: boolean;
 }

@@ -106,7 +106,6 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		pauseQueued = g.Players[i].RequestedPause
 	}
 
-	// Give them an "init" message
 	type InitMessage struct {
 		// Game settings
 		TableID          int       `json:"tableID"`
@@ -130,11 +129,6 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		SharedReplay        bool   `json:"sharedReplay"`
 		SharedReplayLeader  string `json:"sharedReplayLeader"`
 		SharedReplaySegment int    `json:"sharedReplaySegment"`
-
-		// Hypothetical settings
-		Hypothetical bool     `json:"hypothetical"`
-		HypoActions  []string `json:"hypoActions"`
-		HypoRevealed bool     `json:"hypoRevealed"`
 
 		// Other features
 		Paused           bool `json:"paused"`
@@ -166,11 +160,6 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		SharedReplay:        t.Replay && t.Visible,
 		SharedReplayLeader:  t.GetSharedReplayLeaderName(),
 		SharedReplaySegment: g.Turn,
-
-		// Hypothetical settings
-		Hypothetical: g.Hypothetical,
-		HypoActions:  g.HypoActions,
-		HypoRevealed: g.HypoRevealed,
 
 		// Other features
 		Paused:           g.Paused,

@@ -143,7 +143,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     case 'hypoBack':
     case 'hypoEnd':
     case 'hypoAction':
-    case 'hypoRevealed': {
+    case 'hypoDrawnCardsShown': {
       state.replay = replayReducer(
         state.replay,
         action,

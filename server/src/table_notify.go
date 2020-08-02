@@ -22,14 +22,14 @@ func (t *Table) NotifyChatTyping(name string, typing bool) {
 	if !t.Replay {
 		for _, p := range t.Players {
 			if p.Present && p.Name != name { // We do not need to alert the person who is typing
-				p.Session.NotifyChatTyping(name, typing)
+				p.Session.NotifyChatTyping(t, name, typing)
 			}
 		}
 	}
 
 	for _, sp := range t.Spectators {
 		if sp.Name != name { // We do not need to alert the person who is typing
-			sp.Session.NotifyChatTyping(name, typing)
+			sp.Session.NotifyChatTyping(t, name, typing)
 		}
 	}
 }
@@ -73,6 +73,7 @@ func (t *Table) NotifyPlayerChange() {
 
 		// Second, send information about the game and the players in one big message
 		type GameMessage struct {
+			TableID           int                  `json:"tableID"`
 			Name              string               `json:"name"`
 			Owner             int                  `json:"owner"`
 			Players           []*GamePlayerMessage `json:"players"`
@@ -80,6 +81,7 @@ func (t *Table) NotifyPlayerChange() {
 			PasswordProtected bool                 `json:"passwordProtected"`
 		}
 		p.Session.Emit("game", &GameMessage{
+			TableID:           t.ID,
 			Name:              t.Name,
 			Owner:             t.Owner,
 			Players:           gamePlayers,
@@ -226,10 +228,12 @@ func (t *Table) NotifySound() {
 
 func (t *Table) NotifyGameOver() {
 	type GameOverMessage struct {
+		TableID            int    `json:"tableID"`
 		DatabaseID         int    `json:"databaseID"`
 		SharedReplayLeader string `json:"sharedReplayLeader"`
 	}
 	gameOverMessage := &GameOverMessage{
+		TableID:            t.ID,
 		DatabaseID:         t.ExtraOptions.DatabaseID,
 		SharedReplayLeader: t.GetSharedReplayLeaderName(),
 	}
@@ -306,13 +310,15 @@ func (t *Table) NotifySpectatorsNote(order int) {
 		}
 
 		type NoteMessage struct {
+			TableID int `json:"tableID"`
 			// The order of the card in the deck that these notes correspond to
 			Order int    `json:"order"`
 			Notes []Note `json:"notes"`
 		}
 		sp.Session.Emit("note", &NoteMessage{
-			Order: order,
-			Notes: notes,
+			TableID: t.ID,
+			Order:   order,
+			Notes:   notes,
 		})
 	}
 }
@@ -339,12 +345,12 @@ func (t *Table) NotifyBoot() {
 	if !t.Replay {
 		for _, p := range t.Players {
 			if p.Present {
-				p.Session.Emit("boot", nil)
+				p.Session.NotifyBoot(t)
 			}
 		}
 	}
 
 	for _, sp := range t.Spectators {
-		sp.Session.Emit("boot", nil)
+		sp.Session.NotifyBoot(t)
 	}
 }

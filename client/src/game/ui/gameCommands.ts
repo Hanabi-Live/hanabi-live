@@ -17,7 +17,6 @@ import Spectator from '../types/Spectator';
 import SpectatorNote from '../types/SpectatorNote';
 import State from '../types/State';
 import * as arrows from './arrows';
-import { checkLegal } from './clues';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as notes from './notes';
@@ -89,6 +88,29 @@ commands.set('gameOver', (data: GameOverData) => {
   });
 });
 
+interface HypotheticalData {
+  drawnCardsShown: boolean;
+  actions: string[];
+}
+commands.set('hypothetical', (data: HypotheticalData) => {
+  // We are joining an ongoing shared replay that is currently playing through a hypothetical line
+  // We need to "catch up" to everyone else and play all of the existing hypothetical actions that
+  // have taken place
+
+  // First, parse all of the actions
+  const actions: ActionIncludingHypothetical[] = [];
+  for (let i = 0; i < data.actions.length; i++) {
+    const action = JSON.parse(data.actions[i]) as ActionIncludingHypothetical;
+    actions.push(action);
+  }
+
+  globals.store!.dispatch({
+    type: 'hypoStart',
+    drawnCardsShown: data.drawnCardsShown,
+    actions,
+  });
+});
+
 commands.set('hypoAction', (data: string) => {
   const action = JSON.parse(data) as ActionIncludingHypothetical;
   globals.store!.dispatch({
@@ -108,25 +130,13 @@ commands.set('hypoEnd', () => {
   hypothetical.end();
 });
 
-interface HypoRevealedData {
-  hypoRevealed: boolean;
+interface HypoDrawnCardsShownData {
+  drawnCardsShown: boolean;
 }
-commands.set('hypoRevealed', (data: HypoRevealedData) => {
-  globals.metadata.hypoRevealed = data.hypoRevealed;
-
-  const text = globals.metadata.hypoRevealed ? 'Hide' : 'Show';
-  globals.elements.toggleRevealedButton!.setText({ line1: text });
-  globals.layers.UI.batchDraw();
-
-  // Check if the ability to give a clue changed
-  checkLegal();
-
-  globals.layers.card.batchDraw();
-
-  // Send to reducers
+commands.set('hypoDrawnCardsShown', (data: HypoDrawnCardsShownData) => {
   globals.store!.dispatch({
-    type: 'hypoRevealed',
-    showDrawnCards: data.hypoRevealed,
+    type: 'hypoDrawnCardsShown',
+    drawnCardsShown: data.drawnCardsShown,
   });
 });
 

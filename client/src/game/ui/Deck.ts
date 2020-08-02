@@ -158,7 +158,7 @@ export default class Deck extends Konva.Group {
     content += '<ul class="game-tooltips-ul">';
 
     // Disable this row in JSON replays
-    if (globals.state.finished && globals.state.replay.databaseID !== null) {
+    if (globals.state.finished && globals.state.replay.databaseID !== 0) {
       const formattedDatetimeFinished = dateTimeFormatter.format(
         new Date(globals.metadata.datetimeFinished),
       );

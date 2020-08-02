@@ -23,11 +23,6 @@ export default class LegacyGameMetadata {
   sharedReplayLeader: string = '';
   sharedReplaySegment: number = 0;
 
-  // Hypothetical settings
-  hypothetical: boolean = false;
-  hypoActions: string[] = [];
-  hypoRevealed: boolean = false;
-
   // Pause settings
   paused: boolean = false;
   pausePlayerIndex: number = 0;
