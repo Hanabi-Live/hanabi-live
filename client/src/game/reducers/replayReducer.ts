@@ -265,11 +265,11 @@ const hypoAction = (
     return;
   }
 
-  const hypoState = original(state.hypothetical.ongoing);
-  const newState = gameStateReducer(hypoState, action, true, metadata);
+  const oldSegment = state.hypothetical.ongoing.turn.segment;
+  const newState = gameStateReducer(state.hypothetical.ongoing, action, true, metadata);
   state.hypothetical.ongoing = newState;
 
-  if (hypoState!.turn.segment !== newState.turn.segment) {
+  if (oldSegment !== newState.turn.segment) {
     // Save the new segment in case we want to go backwards
     state.hypothetical.states.push(newState);
   }
