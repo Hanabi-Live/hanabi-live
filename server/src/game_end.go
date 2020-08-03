@@ -22,31 +22,20 @@ func (g *Game) End() {
 	}
 
 	// Send text messages showing how much time each player finished with
-	// (this won't appear initially unless the user clicks back and then forward again)
+	// and the duration of the game
+	// JavaScript expects time in milliseconds
 	playerTimes := make([]int64, 0)
 	for _, p := range g.Players {
-		// JavaScript expects time in milliseconds
 		milliseconds := int64(p.Time / time.Millisecond)
 		playerTimes = append(playerTimes, milliseconds)
 	}
+	duration := int64(g.DatetimeFinished.Sub(g.DatetimeStarted) / time.Millisecond)
 	g.Actions = append(g.Actions, ActionPlayerTimes{
 		Type:        "playerTimes",
 		PlayerTimes: playerTimes,
+		Duration:    duration,
 	})
 	t.NotifyGameAction()
-
-	// Send a text message showing how much time the game took in total
-	// JavaScript expects time in milliseconds
-	duration := int64(g.DatetimeFinished.Sub(g.DatetimeStarted) / time.Millisecond)
-	g.Actions = append(g.Actions, ActionGameDuration{
-		Type:     "gameDuration",
-		Duration: duration,
-	})
-	t.NotifyGameAction()
-
-	// Advance a turn so that the finishing times are separated from the final action of the game
-	g.Turn++
-	t.NotifyTurn()
 
 	// Notify everyone that the table was deleted
 	// (we will send a new table message later for the shared replay)
@@ -431,7 +420,7 @@ func (t *Table) ConvertToSharedReplay() {
 	t.NotifyCardIdentities()
 
 	// Notify everyone that the game is over and that they should prepare the UI for a shared replay
-	t.NotifyGameOver()
+	t.NotifyFinishOngoingGame()
 
 	for _, sp := range t.Spectators {
 		// Reset everyone's status (both players and spectators are now spectators)

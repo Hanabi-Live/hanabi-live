@@ -71,28 +71,17 @@ const turnReducer = produce((
       break;
     }
 
-    case 'gameDuration': {
-      // At the end of the game, the server will send us how much time each player finished with
-      // as well as the total game duration; we want all of this text on its own replay segment to
-      // avoid cluttering the final turn of the game
+    case 'gameOver': {
       if (turn.segment === null) {
         throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
-      turn.segment += 1;
-      break;
-    }
 
-    case 'gameOver': {
       // Setting the current player index to null signifies that the game is over and will prevent
       // any name frames from being highlighted on subsequent segments
       turn.currentPlayerIndex = null;
 
       // For some types of game overs,
       // we want the explanation text to appear on its own replay segment
-      if (turn.segment === null) {
-        throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
-      }
-
       // The types of "gameOver" that do not have to do with the previous action should be on
       // their own separate replay segment
       // Otherwise, we want the "gameOver" explanation to be on the same segment as the final action
@@ -109,31 +98,15 @@ const turnReducer = produce((
       break;
     }
 
-    // The current turn has ended and a new turn has begun
-    // {type: 'turn', num: 0, currentPlayerIndex: 1}
-    // TODO: This message is unnecessary and will be removed in a future version of the code
-    case 'turn': {
-      // TEMP: At this point, check that the local state matches the server
-      if (turn.turnNum !== action.num && turn.currentPlayerIndex !== null) {
-        // Ignore turns that occur after the game has already ended
-        console.warn(`The turns from the client and the server do not match on turn ${turn.turnNum}.`);
-        console.warn(`Client = ${turn.turnNum}, Server = ${action.num}`);
+    case 'playerTimes': {
+      if (turn.segment === null) {
+        throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
       }
 
-      // TEMP: the client should set the "currentPlayerIndex" index to -1 when the game is over
-      if (action.currentPlayerIndex === -1 && turn.currentPlayerIndex !== null) {
-        turn.currentPlayerIndex = null;
-        console.warn('The "turnReducer()" function had to manually set the "currentPlayerIndex" to null.');
-      }
-
-      // TEMP: At this point, check that the local state matches the server
-      if (
-        turn.currentPlayerIndex !== action.currentPlayerIndex
-        && turn.currentPlayerIndex !== null
-      ) {
-        console.warn(`The currentPlayerIndex from the client and the server do not match on turn ${turn.turnNum}.`);
-        console.warn(`Client = ${turn.currentPlayerIndex}, Server = ${action.currentPlayerIndex}`);
-      }
+      // At the end of the game, the server will send us how much time each player finished with
+      // as well as the total game duration; we want all of this text on its own replay segment to
+      // avoid cluttering the final turn of the game
+      turn.segment += 1;
       break;
     }
 

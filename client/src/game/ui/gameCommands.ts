@@ -76,11 +76,11 @@ commands.set('cardIdentities', (data: CardIdentitiesData) => {
   });
 });
 
-interface GameOverData {
+interface FinishOngoingGameData {
   databaseID: number;
   sharedReplayLeader: string;
 }
-commands.set('gameOver', (data: GameOverData) => {
+commands.set('finishOngoingGame', (data: FinishOngoingGameData) => {
   globals.store!.dispatch({
     type: 'finishOngoingGame',
     databaseID: data.databaseID,

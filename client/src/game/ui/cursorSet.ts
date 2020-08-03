@@ -29,9 +29,10 @@ export default function cursorSet(cursorType: CursorType) {
       break;
     }
 
-    case 'hand':
+    case 'hand': {
       cursorValue = 'grab';
       break;
+    }
 
     case 'dragging': {
       cursorValue = 'grabbing';

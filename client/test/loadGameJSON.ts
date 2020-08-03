@@ -49,13 +49,6 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   let turn = 0; // Start on the 0th turn
   let currentPlayerIndex = 0; // The player at index 0 goes first
 
-  // Make a "turn" action for the initial turn, before any players have taken any actions yet
-  actions.push({
-    type: 'turn',
-    num: turn,
-    currentPlayerIndex,
-  });
-
   gameJSON.actions.forEach((a) => {
     const action = parseJSONAction(currentPlayerIndex, turn, gameJSON.deck, a);
     if (action) {
@@ -71,11 +64,6 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
 
     turn += 1;
     currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
-    actions.push({
-      type: 'turn',
-      num: turn,
-      currentPlayerIndex,
-    });
   });
 
   // If the game was exported from the server and it ended in a specific way,
@@ -86,16 +74,12 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   if (finalGameJSONAction.type !== ActionType.GameOver) {
     actions[actions.length - 1] = {
       type: 'gameOver',
-      // Assume that the game ended normally; this is not necessarily the case and will break if a
-      // test game is added with a strikeout, a termination, etc.
+      // Assume that the game ended normally;
+      // this is not necessarily the case and will break if a test game is added with a strikeout,
+      // a termination, etc.
       endCondition: 1,
       playerIndex: currentPlayerIndex,
     };
-    actions.push({
-      type: 'turn',
-      num: turn,
-      currentPlayerIndex: -1,
-    });
   }
 
   // Run the list of states through the state reducer
@@ -165,11 +149,6 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     }
 
     nextState = gameStateReducer(nextState, action, false, state.metadata);
-
-    if (a.type === 'turn') {
-      // Store the current state in the state table to enable replays
-      states[a.num] = nextState;
-    }
 
     return nextState;
   }, state.ongoingGame);

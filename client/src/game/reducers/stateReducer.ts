@@ -82,13 +82,8 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       // Record the database ID of the game
       state.replay.databaseID = action.databaseID;
 
-      // If we were in an in-game replay when the game ended,
-      // keep us at the current turn so that we are not taken away from what we are looking at
-      // Otherwise, go to the penultimate segment
-      // We want to use the penultimate segment instead of the final segment,
-      // because the final segment will contain the times for all of the players,
-      // and this will drown out the reason that the game ended
-      const inInGameReplay = state.replay.active;
+      // By default, we enter a shared replay from the penultimate segment of the game
+      // (so that the player times do not drown out the reason that the game ended)
       if (state.ongoingGame.turn.segment === null) {
         throw new Error('The segment for the ongoing game was null when it finished.');
       }
@@ -96,15 +91,20 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
         throw new Error('The segment for the ongoing game was less than 1 when it finished.');
       }
       const penultimateSegment = state.ongoingGame.turn.segment - 1;
-      if (!inInGameReplay) {
+
+      // We entered the in-game replay when we received the "gameOver" game action,
+      // which should happened only a few milliseconds ago
+      // If we are not in an in-game replay for some reason, enter one
+      if (!state.replay.active) {
         state.replay.active = true;
         state.replay.segment = penultimateSegment;
       }
 
       // Initialize the shared replay
       state.replay.shared = {
-        segment: penultimateSegment,
-        useSharedSegments: !inInGameReplay,
+        segment: state.replay.segment,
+        // If we were in an in-game replay when the game ended, do not jerk us away to the end
+        useSharedSegments: state.replay.segment === penultimateSegment,
         leader: action.sharedReplayLeader,
         amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
       };
@@ -204,6 +204,17 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
       // Save the action so that we can recompute the state at the end of the game
       state.replay.actions.push(action);
+
+      if (action.type === 'gameOver') {
+        // If the game has just ended, immediately enter the in-game replay in order to prevent the
+        // final segment with all of the player's times from showing
+        // (which will drown out the reason why the game ended)
+        state.replay.active = true;
+        if (state.ongoingGame.turn.segment === null) {
+          throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
+        }
+        state.replay.segment = state.ongoingGame.turn.segment;
+      }
 
       break;
     }

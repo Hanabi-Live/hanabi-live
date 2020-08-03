@@ -6,7 +6,6 @@ import { // Direct import instead of namespace import for compactness
   hypoEnd,
   rankClue,
   replayEnterDedicated,
-  turn,
 } from '../../../test/testActions';
 import testGame from '../../../test_data/up_or_down.json';
 import GameMetadata from '../types/GameMetadata';
@@ -42,9 +41,6 @@ describe('replayReducer', () => {
       const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
       state = replayReducer(state, hypoClue, [], testState.metadata);
 
-      // End the turn
-      state = replayReducer(state, hypoAction(turn(1, 1)), [], metadata);
-
       // Using "?" is better than "!" since it will fail with a a slightly better error message
       const expectedClues = testState.replay.states[testState.replay.segment].clueTokens - 1;
       expect(state.hypothetical?.ongoing.clueTokens).toBe(expectedClues);
@@ -55,7 +51,6 @@ describe('replayReducer', () => {
 
       const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
       state = replayReducer(state, hypoClue, [], metadata);
-      state = replayReducer(state, hypoAction(turn(1, 1)), [], metadata);
       state = replayReducer(state, hypoBack(), [], metadata);
 
       const originalState = testState.visibleState;
@@ -67,7 +62,6 @@ describe('replayReducer', () => {
 
       const hypoClue = hypoAction(rankClue(3, 0, [], 1, 0));
       state = replayReducer(state, hypoClue, [], metadata);
-      state = replayReducer(state, hypoAction(turn(1, 1)), [], metadata);
       state = replayReducer(state, hypoEnd(), [], metadata);
       expect(state.hypothetical).toBeNull();
     });

@@ -22,14 +22,11 @@ export type GameAction =
   | ActionClue
   | ActionDiscard
   | ActionDraw
-  | ActionGameDuration
   | ActionGameOver
   | ActionPlay
   | ActionPlayerTimes
   | ActionPlayStackDirections
-  | ActionStatus
-  | ActionStrike
-  | ActionTurn;
+  | ActionStrike;
 
 export type ActionIncludingHypothetical = GameAction | ActionHypotheticalMorph;
 
@@ -145,11 +142,6 @@ export interface ActionDraw {
   readonly rank: number;
 }
 
-export interface ActionGameDuration {
-  type: 'gameDuration';
-  duration: number;
-}
-
 export interface ActionGameOver {
   type: 'gameOver';
   readonly endCondition: EndCondition;
@@ -167,6 +159,7 @@ export interface ActionPlay {
 export interface ActionPlayerTimes {
   type: 'playerTimes';
   readonly playerTimes: number[];
+  readonly duration: number;
 }
 
 export interface ActionPlayStackDirections {

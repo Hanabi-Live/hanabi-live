@@ -39,11 +39,6 @@ type ActionDraw struct {
 	Rank        int    `json:"rank"`
 }
 
-type ActionGameDuration struct {
-	Type     string `json:"type"`
-	Duration int64  `json:"duration"`
-}
-
 type ActionGameOver struct {
 	Type         string `json:"type"`
 	EndCondition int    `json:"endCondition"`
@@ -61,6 +56,7 @@ type ActionPlay struct {
 type ActionPlayerTimes struct {
 	Type        string  `json:"type"`
 	PlayerTimes []int64 `json:"playerTimes"`
+	Duration    int64   `json:"duration"`
 }
 
 type ActionPlayStackDirections struct {
@@ -68,25 +64,11 @@ type ActionPlayStackDirections struct {
 	Directions []int  `json:"directions"`
 }
 
-type ActionStatus struct {
-	Type          string `json:"type"`
-	Clues         int    `json:"clues"`
-	Score         int    `json:"score"`
-	MaxScore      int    `json:"maxScore"`
-	DoubleDiscard bool   `json:"doubleDiscard"`
-}
-
 type ActionStrike struct {
 	Type  string `json:"type"`
 	Num   int    `json:"num"`   // Whether it was the first strike, the second strike, etc.
 	Turn  int    `json:"turn"`  // The turn that the strike happened
 	Order int    `json:"order"` // The order of the card that was played
-}
-
-type ActionTurn struct {
-	Type               string `json:"type"`
-	Num                int    `json:"num"`
-	CurrentPlayerIndex int    `json:"currentPlayerIndex"`
 }
 
 type Clue struct {

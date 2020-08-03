@@ -137,22 +137,6 @@ func (t *Table) NotifySpectators() {
 	}
 }
 
-// NotifyStatus appends a new "status" action and alerts everyone
-func (t *Table) NotifyStatus() {
-	g := t.Game
-	g.Actions = append(g.Actions, ActionStatus{
-		Type:          "status",
-		Clues:         g.ClueTokens,
-		Score:         g.Score,
-		MaxScore:      g.MaxScore,
-		DoubleDiscard: g.DoubleDiscard,
-	})
-	t.NotifyGameAction()
-
-	// Also send updates on stack directions
-	t.NotifyStackDirections()
-}
-
 func (t *Table) NotifyStackDirections() {
 	g := t.Game
 
@@ -169,21 +153,6 @@ func (t *Table) NotifyStackDirections() {
 		})
 		t.NotifyGameAction()
 	}
-}
-
-// NotifyTurn appends a new "turn" action and alerts everyone
-func (t *Table) NotifyTurn() {
-	g := t.Game
-	currentPlayerIndex := g.ActivePlayerIndex
-	if g.EndCondition > EndConditionInProgress {
-		currentPlayerIndex = -1
-	}
-	g.Actions = append(g.Actions, ActionTurn{
-		Type:               "turn",
-		Num:                g.Turn,
-		CurrentPlayerIndex: currentPlayerIndex,
-	})
-	t.NotifyGameAction()
 }
 
 // NotifyGameAction sends the people in the game an update about the new action
@@ -226,20 +195,21 @@ func (t *Table) NotifySound() {
 	}
 }
 
-func (t *Table) NotifyGameOver() {
-	type GameOverMessage struct {
+func (t *Table) NotifyFinishOngoingGame() {
+	type FinishOngoingGameMessage struct {
 		TableID            int    `json:"tableID"`
 		DatabaseID         int    `json:"databaseID"`
 		SharedReplayLeader string `json:"sharedReplayLeader"`
 	}
-	gameOverMessage := &GameOverMessage{
+	finishOngoingGameMessage := &FinishOngoingGameMessage{
 		TableID:            t.ID,
 		DatabaseID:         t.ExtraOptions.DatabaseID,
 		SharedReplayLeader: t.GetSharedReplayLeaderName(),
 	}
 
+	// At this point, all of the players will have been converted to spectators
 	for _, sp := range t.Spectators {
-		sp.Session.Emit("gameOver", gameOverMessage)
+		sp.Session.Emit("finishOngoingGame", finishOngoingGameMessage)
 	}
 }
 

@@ -123,16 +123,6 @@ const gameStateReducer = produce((
       break;
     }
 
-    case 'gameDuration': {
-      const clockString = millisecondsToClockString(action.duration);
-      const text = `The total game duration was: ${clockString}`;
-      state.log.push({
-        turn: state.turn.turnNum + 1,
-        text,
-      });
-      break;
-    }
-
     // The game has ended, either by normal means (e.g. max score),
     // or someone ran out of time in a timed game, someone terminated, etc.
     // { type: 'gameOver', endCondition: 1, playerIndex: 0 }
@@ -218,6 +208,12 @@ const gameStateReducer = produce((
         });
       }
 
+      const clockString = millisecondsToClockString(action.duration);
+      const text = `The total game duration was: ${clockString}`;
+      state.log.push({
+        turn: state.turn.turnNum + 1,
+        text,
+      });
       break;
     }
 
@@ -230,44 +226,6 @@ const gameStateReducer = produce((
         console.warn(`The stack directions from the client and the server do not match on turn ${state.turn.turnNum}.`);
         console.warn(`Client = ${state.playStackDirections}, Server = ${action.directions}`);
       }
-      break;
-    }
-
-    // An action has been taken, so there may be a change to game state variables
-    // { type: 'status', clues: 5, score: 18, maxScore: 24, doubleDiscard: false }
-    // TODO: This message is unnecessary and will be removed in a future version of the code
-    case 'status': {
-      // TEMP: At this point, check that the local state matches the server
-      if (state.clueTokens !== action.clues) {
-        console.warn(`The clues from the client and the server do not match on turn ${state.turn.turnNum}.`);
-        console.warn(`Client = ${state.clueTokens}, Server = ${action.clues}`);
-      }
-
-      // In "Throw It In a Hole" variants, the client is missing some information about the stats
-      // TODO: the server should not send the status message,
-      // so that it does not leak information to the client
-      if (variantRules.isThrowItInAHole(variant) && playing) {
-        break;
-      }
-
-      // TEMP: At this point, check that the local state matches the server
-      if (state.score !== action.score) {
-        console.warn(`The scores from the client and the server do not match on turn ${state.turn.turnNum}.`);
-        console.warn(`Client = ${state.score}, Server = ${action.score}`);
-      }
-
-      // TEMP: At this point, check that the local state matches the server
-      if (state.stats.maxScore !== action.maxScore) {
-        console.warn(`The max scores from the client and the server do not match on turn ${state.turn.turnNum}.`);
-        console.warn(`Client = ${state.stats.maxScore}, Server = ${action.maxScore}`);
-      }
-
-      // TEMP: At this point, check that the local state matches the server
-      if (state.stats.doubleDiscard !== action.doubleDiscard) {
-        console.warn(`The double discard from the client and the server do not match on turn ${state.turn.turnNum}.`);
-        console.warn(`Client = ${state.stats.doubleDiscard}, Server = ${action.doubleDiscard}`);
-      }
-
       break;
     }
 
@@ -285,8 +243,7 @@ const gameStateReducer = produce((
     }
 
     // Some actions do not affect the main state or are handled by another reducer
-    case 'cardIdentity':
-    case 'turn': {
+    case 'cardIdentity': {
       break;
     }
 

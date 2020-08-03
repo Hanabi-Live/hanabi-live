@@ -240,12 +240,6 @@ func commandTableStart(s *Session, d *CommandData) {
 		}
 	}
 
-	// Record the initial status of the game
-	t.NotifyStatus()
-
-	// Record a message about the first turn
-	t.NotifyTurn()
-
 	// Now that all of the initial game actions have been performed, mark that the game has started
 	t.Running = true
 	g.DatetimeStarted = time.Now()
