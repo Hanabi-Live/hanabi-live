@@ -28,11 +28,16 @@ export default function cursorSet(cursorType: CursorType) {
       cursorValue = `url('${url}'), auto`;
       break;
     }
+
     case 'hand':
+      cursorValue = 'grab';
+      break;
+
     case 'dragging': {
-      cursorValue = 'pointer';
+      cursorValue = 'grabbing';
       break;
     }
+
     default: {
       cursorValue = 'auto';
       break;
