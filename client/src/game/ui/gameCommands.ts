@@ -396,8 +396,8 @@ commands.set('spectators', (data: SpectatorsData) => {
   // The shadowing index will be -1 if they are not shadowing a player
   // Convert this to null
   for (let i = 0; i < data.spectators.length; i++) {
-    if (data.spectators[i].shadowingIndex === -1) {
-      data.spectators[i].shadowingIndex = null;
+    if (data.spectators[i].shadowingPlayerIndex === -1) {
+      data.spectators[i].shadowingPlayerIndex = null;
     }
   }
 

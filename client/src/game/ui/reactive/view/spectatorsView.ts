@@ -29,13 +29,13 @@ export const onSpectatorsChanged = (data: {
       // Spectators can also be shadowing a specific player
       // However, only show this in ongoing games
       // (perspective shifts in replays are inconsequential)
-      if (spectator.shadowingIndex !== null && !data.finished) {
-        const shadowedPlayerName = globals.state.metadata.playerNames[spectator.shadowingIndex];
-        if (shadowedPlayerName === undefined) {
-          throw new Error(`Unable to find the player name at index ${spectator.shadowingIndex}.`);
+      if (spectator.shadowingPlayerIndex !== null && !data.finished) {
+        const playerName = globals.state.metadata.playerNames[spectator.shadowingPlayerIndex];
+        if (playerName === undefined) {
+          throw new Error(`Unable to find the player name at index ${spectator.shadowingPlayerIndex}.`);
         }
-        if (shadowedPlayerName !== spectator.name) {
-          nameEntry += ` (🕵️ <em>${shadowedPlayerName}</em>)`;
+        if (playerName !== spectator.name) {
+          nameEntry += ` (🕵️ <em>${playerName}</em>)`;
         }
       }
       nameEntry += '</li>';

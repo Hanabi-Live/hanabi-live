@@ -198,8 +198,8 @@ export default class NameFrame extends Konva.Group {
       let oldShadowingPlayerIndex;
       for (const spectator of globals.state.spectators) {
         if (spectator.name === globals.state.metadata.ourUsername) {
-          if (spectator.shadowingIndex !== -1) {
-            oldShadowingPlayerIndex = spectator.shadowingIndex;
+          if (spectator.shadowingPlayerIndex !== -1) {
+            oldShadowingPlayerIndex = spectator.shadowingPlayerIndex;
           }
           break;
         }
