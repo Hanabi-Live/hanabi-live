@@ -24,9 +24,11 @@ export default class PlayStack extends Konva.Group {
       const scale = lh / layoutChild.height();
       const card = layoutChild.children[0] as unknown as HanabiCard;
       const stackBase = card.state.rank === STACK_BASE_RANK;
+
+      // Hide cards in "Throw It in a Hole" variants
       const opacity = (
-        // Hide cards in "Throw It in a Hole" variants
         variantRules.isThrowItInAHole(globals.variant)
+        && globals.state.playing // Revert to the normal behavior for spectators of ongoing games
         && !globals.state.finished // Revert to the normal behavior for dedicated replays
         && !stackBase // We want the stack bases to always be visible
       ) ? 0 : 1;
