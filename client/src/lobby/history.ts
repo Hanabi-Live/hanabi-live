@@ -452,6 +452,7 @@ const makeReplayButton = (id: number, visibility: string) => {
       source: 'id',
       gameID: id,
       visibility,
+      shadowingPlayerIndex: -1,
     });
     if (visibility === 'shared') {
       hide();
