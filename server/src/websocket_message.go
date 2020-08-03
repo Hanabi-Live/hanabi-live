@@ -90,7 +90,7 @@ func websocketMessage(ms *melody.Session, msg []byte) {
 	// We use SplitN() with a value of 2 instead of Split() so that if there is a space in the JSON,
 	// the data part of the splice doesn't get messed up
 	if len(result) != 2 {
-		logger.Error("User \"" + s.Username() + "\" sent an invalid WebSocket message.")
+		logger.Error("User \"" + s.Username() + "\" sent an invalid WebSocket message (with no data attached to the command).")
 		return
 	}
 	command := result[0]
