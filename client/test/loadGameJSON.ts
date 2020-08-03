@@ -71,14 +71,14 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   // which matches what the server would do when emulating all of the database actions
   const finalGameJSONAction = gameJSON.actions[gameJSON.actions.length - 1];
   if (finalGameJSONAction.type !== ActionType.GameOver) {
-    actions[actions.length - 1] = {
+    actions.push({
       type: 'gameOver',
       // Assume that the game ended normally;
       // this is not necessarily the case and will break if a test game is added with a strikeout,
       // a termination, etc.
       endCondition: 1,
       playerIndex: currentPlayerIndex,
-    };
+    });
   }
 
   // Run the list of states through the state reducer
@@ -135,6 +135,11 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
             failed: true,
           };
           nextState = gameStateReducer(s, action, false, state.metadata);
+
+          if (segmentRules.shouldStore(nextState.turn.segment, s.turn.segment, action)) {
+            states[nextState.turn.segment!] = nextState;
+          }
+
           action = {
             type: 'strike', num: nextState.strikes.length, order: a.order, turn,
           };
@@ -148,9 +153,10 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
       }
     }
 
+    const previousSegment = nextState.turn.segment;
     nextState = gameStateReducer(nextState, action, false, state.metadata);
 
-    if (segmentRules.shouldStore(nextState.turn.segment, s.turn.segment, action)) {
+    if (segmentRules.shouldStore(nextState.turn.segment, previousSegment, action)) {
       states[nextState.turn.segment!] = nextState;
     }
 
