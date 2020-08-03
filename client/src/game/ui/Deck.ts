@@ -202,7 +202,7 @@ export default class Deck extends Konva.Group {
 
     if (globals.options.cardCycle) {
       content += '<li><span class="game-tooltips-icon">';
-      content += '<i class="fas fa-sync-alt" style="position: relative; left: 0.2em;"></i></span>';
+      content += '<i class="fas fa-sync-alt"></i></span>';
       content += '&nbsp; Card Cycling</li>';
     }
 
