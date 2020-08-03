@@ -122,12 +122,14 @@ const submit = () => {
       source,
       gameID,
       visibility,
+      shadowingPlayerIndex: -1,
     });
   } else if (source === 'json') {
     globals.conn!.send('replayCreate', {
       source,
       gameJSON,
       visibility,
+      shadowingPlayerIndex: -1,
     });
   }
 

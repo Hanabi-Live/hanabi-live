@@ -301,6 +301,7 @@ commands.set('welcome', (data: WelcomeData) => {
         gameID,
         source: 'id',
         visibility: 'solo',
+        shadowingPlayerIndex: -1,
       });
     }, 10);
     return;
@@ -315,6 +316,7 @@ commands.set('welcome', (data: WelcomeData) => {
         gameID,
         source: 'id',
         visibility: 'shared',
+        shadowingPlayerIndex: -1,
       });
     }, 10);
     return;

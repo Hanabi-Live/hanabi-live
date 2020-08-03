@@ -241,7 +241,8 @@ func commandTableRestart(s *Session, d *CommandData) {
 	// Automatically join any other spectators that were watching
 	for _, s2 := range spectatorSessions {
 		commandTableSpectate(s2, &CommandData{
-			TableID: t2.ID,
+			TableID:              t2.ID,
+			ShadowingPlayerIndex: -1,
 		})
 	}
 
