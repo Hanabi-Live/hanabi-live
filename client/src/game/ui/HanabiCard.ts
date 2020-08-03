@@ -362,7 +362,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     if (this.empathy) {
       // If we are in Empathy mode, only show the rank if there is only one possibility left
       if (this.state.rankDetermined) {
-        rankToShow = this.state.rank;
+        rankToShow = this.state.rank!;
       } else {
         rankToShow = UNKNOWN_CARD_RANK;
       }
@@ -818,7 +818,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   // Update all UI pips to their state
   updatePips() {
-    enum PipState {Hidden, Eliminated, Visible} // the order is important here
+    enum PipState { Hidden, Eliminated, Visible }
     const updatePip = (
       pipState: PipState,
       hasPositiveClues: boolean,
@@ -859,9 +859,13 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     const rankPipStates : PipState[] = [];
     for (const rank of this.variant.ranks) rankPipStates[rank] = PipState.Hidden;
 
+    // We look through each card that should have a visible pip (eliminated or not)
     for (const [suitIndex, rank] of this.state.possibleCardsFromClues) {
+      // If the card is impossible, eliminate it
       const pipState = this.state.possibleCardsFromObservation[suitIndex][rank] > 0
         ? PipState.Visible : PipState.Eliminated;
+
+      // If the suit or rank became visible (is possible), don't overwrite it
       suitPipStates[suitIndex] = suitPipStates[suitIndex] === PipState.Visible
         ? PipState.Visible : pipState;
       rankPipStates[rank] = rankPipStates[rank] === PipState.Visible

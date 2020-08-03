@@ -277,9 +277,7 @@ const gameStateReducer = produce((
     case 'strike': {
       state.strikes.push({
         order: action.order,
-        // TODO: this is wrong because turns do not equal segments
-        // This will be automatically fixed once the client can calculate the strikes on its own
-        segment: action.turn,
+        segment: state.turn.segment!,
       });
       break;
     }

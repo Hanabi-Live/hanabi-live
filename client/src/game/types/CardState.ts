@@ -12,10 +12,15 @@ export default interface CardState {
   // NOTE: we're using an array as a map, so there will be empty spaces for ranks
   // that are not valid card ranks (e.g. 0, or 6 in Up or Down)
   readonly possibleCardsFromObservation: ReadonlyArray<readonly number[]>;
+
+  // possibleCardsFromClues = Array<[suitIndex, rank]>
+  //  = which specific cards are still possible based on clues received
   readonly possibleCardsFromClues: ReadonlyArray<readonly [number, number]>;
 
-  // we need this to highlight pips on pink cards
+  // We need this to highlight pips (e.g. on Pink variants)
   readonly positiveRankClues : number[];
+
+  // TODO: save positive rank clues and highlight them (e.g. on Rainbow-Ones variants)
 
   readonly suitDetermined: boolean;
   readonly rankDetermined: boolean;

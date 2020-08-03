@@ -1,7 +1,7 @@
 // Calculates the state of a card after a clue
 
 import { getVariant } from '../data/gameData';
-import { touchesCard } from '../rules/clues';
+import { cluesRules } from '../rules';
 import CardState from '../types/CardState';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
@@ -25,7 +25,7 @@ const cardPossibilitiesReducer = (
 
   // Apply the clue and check what is eliminated
   const possibleCardsFromClues = state.possibleCardsFromClues.filter(
-    ([suitIndex, rank]) => touchesCard(variant, clue, suitIndex, rank) === positive,
+    ([suitIndex, rank]) => cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
   );
 
   let positiveRankClues = state.positiveRankClues;

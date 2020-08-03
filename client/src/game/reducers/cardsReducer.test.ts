@@ -87,6 +87,34 @@ describe('cardsReducer', () => {
     });
   });
 
+  describe('segmentFirstClued', () => {
+    test('remembers the segment when the first clue happened', () => {
+      let deck: CardState[] = [defaultCard];
+      deck = cardsReducer(deck, draw(0, 0), gameState, true, defaultMetadata);
+      expect(deck[0].segmentFirstClued).toBeNull();
+
+      const clue1Segment = 999;
+      const gameStateFirstTurn = {
+        ...gameState,
+        turn: { ...gameState.turn, segment: clue1Segment },
+      };
+
+      const testClue1 = rankClue(5, 1, [0], 0, gameStateFirstTurn.turn.turnNum);
+      deck = cardsReducer(deck, testClue1, gameStateFirstTurn, true, defaultMetadata);
+      expect(deck[0].segmentFirstClued).toEqual(clue1Segment);
+
+      const clue2Segment = clue1Segment + 1;
+      const gameStateNextTurn = {
+        ...gameStateFirstTurn,
+        turn: { ...gameStateFirstTurn.turn, segment: clue2Segment },
+      };
+
+      const testClue2 = colorClue(2, 2, [0], 0, gameStateNextTurn.turn.turnNum);
+      deck = cardsReducer(deck, testClue2, gameStateNextTurn, true, defaultMetadata);
+      expect(deck[0].segmentFirstClued).toEqual(clue1Segment);
+    });
+  });
+
   describe('isMisplayed', () => {
     test('is false while on the deck', () => {
       const deck: CardState[] = [defaultCard];
