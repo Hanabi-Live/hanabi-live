@@ -167,6 +167,19 @@ export const send = (hypoAction: ClientAction) => {
       throw new Error(`Unknown hypothetical type of ${type}.`);
     }
   }
+
+  // Finally, send a turn action
+  // Even though this action is unnecessary from the point of the client, for now we MUST send it to
+  // the server so that it can correctly shave off the last action during a "hypoBack"
+  let nextPlayerIndex = gameState.turn.currentPlayerIndex! + 1;
+  if (nextPlayerIndex === globals.options.numPlayers) {
+    nextPlayerIndex = 0;
+  }
+  sendHypoAction({
+    type: 'turn',
+    num: gameState.turn.turnNum + 1,
+    currentPlayerIndex: nextPlayerIndex,
+  });
 };
 
 export const sendHypoAction = (hypoAction: ActionIncludingHypothetical) => {

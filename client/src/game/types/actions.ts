@@ -25,8 +25,8 @@ export type GameAction =
   | ActionGameOver
   | ActionPlay
   | ActionPlayerTimes
-  | ActionPlayStackDirections
-  | ActionStrike;
+  | ActionStrike
+  | ActionTurn;
 
 export type ActionIncludingHypothetical = GameAction | ActionHypotheticalMorph;
 
@@ -160,11 +160,6 @@ export interface ActionPlayerTimes {
   type: 'playerTimes';
   readonly playerTimes: number[];
   readonly duration: number;
-}
-
-export interface ActionPlayStackDirections {
-  type: 'playStackDirections';
-  readonly directions: number[];
 }
 
 export interface ActionStatus {

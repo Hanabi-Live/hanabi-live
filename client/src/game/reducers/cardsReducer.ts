@@ -250,8 +250,8 @@ const cardsReducer = (
     // Some actions do not affect the card state
     case 'gameOver':
     case 'playerTimes':
-    case 'playStackDirections':
-    case 'strike': {
+    case 'strike':
+    case 'turn': {
       break;
     }
 

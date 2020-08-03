@@ -137,24 +137,6 @@ func (t *Table) NotifySpectators() {
 	}
 }
 
-func (t *Table) NotifyStackDirections() {
-	g := t.Game
-
-	// If we are playing a "Reversed" or "Up or Down" variant, we also need to send the stack directions
-	if variants[g.Options.VariantName].HasReversedSuits() {
-		// Since StackDirections is a slice, it will be stored as a pointer
-		// (unlike the primitive values that we used for the ActionStatus message above)
-		// So, make a copy to preserve the stack directions for this exact moment in time
-		playStackDirections := make([]int, len(g.PlayStackDirections))
-		copy(playStackDirections, g.PlayStackDirections)
-		g.Actions = append(g.Actions, ActionPlayStackDirections{
-			Type:       "playStackDirections",
-			Directions: playStackDirections,
-		})
-		t.NotifyGameAction()
-	}
-}
-
 // NotifyGameAction sends the people in the game an update about the new action
 func (t *Table) NotifyGameAction() {
 	g := t.Game

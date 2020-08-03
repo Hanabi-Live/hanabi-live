@@ -1,6 +1,5 @@
 // Functions for building a state table for every turn
 
-import equal from 'fast-deep-equal';
 import produce, {
   Draft,
   original,
@@ -217,18 +216,6 @@ const gameStateReducer = produce((
       break;
     }
 
-    // At the end of every turn, the server informs us of the stack directions for each suit
-    // { type: 'stackDirections', directions: [0, 0, 0, 0, 0] }
-    // TODO: This message is unnecessary and will be removed in a future version of the code
-    case 'playStackDirections': {
-      // TEMP: At this point, check that the local state matches the server
-      if (!equal(state.playStackDirections, action.directions)) {
-        console.warn(`The stack directions from the client and the server do not match on turn ${state.turn.turnNum}.`);
-        console.warn(`Client = ${state.playStackDirections}, Server = ${action.directions}`);
-      }
-      break;
-    }
-
     // A player failed to play a card
     // { type: 'strike', num: 1, turn: 32, order: 24 }
     // TODO: This message is unnecessary and will be removed in a future version of the code
@@ -243,6 +230,7 @@ const gameStateReducer = produce((
     }
 
     // Some actions do not affect the main state or are handled by another reducer
+    case 'turn':
     case 'cardIdentity': {
       break;
     }

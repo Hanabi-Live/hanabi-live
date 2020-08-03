@@ -59,11 +59,6 @@ type ActionPlayerTimes struct {
 	Duration    int64   `json:"duration"`
 }
 
-type ActionPlayStackDirections struct {
-	Type       string `json:"type"`
-	Directions []int  `json:"directions"`
-}
-
 type ActionStrike struct {
 	Type  string `json:"type"`
 	Num   int    `json:"num"`   // Whether it was the first strike, the second strike, etc.
