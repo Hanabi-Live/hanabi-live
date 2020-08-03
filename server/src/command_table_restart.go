@@ -103,11 +103,11 @@ func commandTableRestart(s *Session, d *CommandData) {
 	}
 
 	// Validate that this is not a game with a custom prefix
-	if strings.HasPrefix(t.Name, "!seed") {
+	if strings.HasPrefix(t.InitialName, "!seed") {
 		s.Warning("You are not allowed to restart \"!seed\" games.")
 		return
 	}
-	if strings.HasPrefix(t.Name, "!replay") {
+	if strings.HasPrefix(t.InitialName, "!replay") {
 		s.Warning("You are not allowed to restart \"!replay\" games.")
 		return
 	}
