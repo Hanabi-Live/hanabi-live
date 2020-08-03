@@ -7,10 +7,11 @@ export const onObserversStarted = (state: State, previousState: State | undefine
   }
 
   const segmentDifference = Math.abs(state.replay.segment - previousState!.replay.segment);
+
   globals.animateFast = (
     // Converting a game to a shared replay should always be fast
     (!state.playing && previousState!.playing)
-    || (!state.replay.shared !== null && previousState!.replay.shared === null)
+    || (state.replay.shared !== null && previousState!.replay.shared === null)
     // Jumping ahead or behind in a replay by 2 or more segments should always be fast
     || (segmentDifference >= 2 && previousState!.replay.active)
     // If the replay shuttle is being dragged, always animate fast (note: it can be null)

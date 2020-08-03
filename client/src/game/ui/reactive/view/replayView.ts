@@ -111,7 +111,8 @@ export const onSharedSegmentChanged = (data: {
 
   // There are two replay shuttles,
   // so we have to adjust them whenever the "segment" or the "sharedSegment" changes
-  replay.adjustShuttles(false);
+  // The first time we go into a shared replay, always animate fast
+  replay.adjustShuttles(previousData === undefined || previousData.sharedSegment === undefined);
 
   globals.layers.UI.batchDraw();
 };
