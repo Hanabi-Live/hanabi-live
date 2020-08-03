@@ -1,559 +1,2996 @@
-[{
-    "order": 0,
-    "location": 0,
-    "suitIndex": 0,
-    "rank": 4,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
+[
+    {
+        "order": 0,
+        "location": 0,
+        "suitIndex": 0,
+        "rank": 4,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                0,
+                0,
+                1,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                1,
+                2,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                0,
+                1,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                5
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "colorClueMemory": {
-        "possibilities": [0, 1, 2, 3, 4],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": ["Visible", "Visible", "Visible", "Visible", "Visible"]
+    {
+        "order": 1,
+        "location": 0,
+        "suitIndex": 2,
+        "rank": 5,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                0,
+                0,
+                1,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                1,
+                2,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                0,
+                1,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                5
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "possibleCards": [
-        [null, 1, 0, 0, 1, 1, null, 1],
-        [null, 1, 2, 2, 2, 0, null, 1],
-        [null, 1, 2, 1, 2, 1, null, 1],
-        [null, 0, 1, 2, 2, 0, null, 1],
-        [null, 1, 1, 0, 1, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 1,
-    "location": 0,
-    "suitIndex": 2,
-    "rank": 5,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
+    {
+        "order": 2,
+        "location": 0,
+        "suitIndex": 2,
+        "rank": 2,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                0,
+                0,
+                1,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                1,
+                2,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                0,
+                1,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                5
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "colorClueMemory": {
-        "possibilities": [0, 1, 2, 3, 4],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": ["Visible", "Visible", "Visible", "Visible", "Visible"]
+    {
+        "order": 3,
+        "location": 0,
+        "suitIndex": 2,
+        "rank": 4,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                0,
+                0,
+                1,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                1,
+                2,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                0,
+                1,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                5
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "possibleCards": [
-        [null, 1, 0, 0, 1, 1, null, 1],
-        [null, 1, 2, 2, 2, 0, null, 1],
-        [null, 1, 2, 1, 2, 1, null, 1],
-        [null, 0, 1, 2, 2, 0, null, 1],
-        [null, 1, 1, 0, 1, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 2,
-    "location": 0,
-    "suitIndex": 2,
-    "rank": 2,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
+    {
+        "order": 4,
+        "location": 1,
+        "suitIndex": 0,
+        "rank": 4,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                0,
+                1,
+                1,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                0,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                5
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "colorClueMemory": {
-        "possibilities": [0, 1, 2, 3, 4],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": ["Visible", "Visible", "Visible", "Visible", "Visible"]
+    {
+        "order": 5,
+        "location": 1,
+        "suitIndex": 4,
+        "rank": 3,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                0,
+                1,
+                1,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                0,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                5
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "possibleCards": [
-        [null, 1, 0, 0, 1, 1, null, 1],
-        [null, 1, 2, 2, 2, 0, null, 1],
-        [null, 1, 2, 1, 2, 1, null, 1],
-        [null, 0, 1, 2, 2, 0, null, 1],
-        [null, 1, 1, 0, 1, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 3,
-    "location": 0,
-    "suitIndex": 2,
-    "rank": 4,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
+    {
+        "order": 6,
+        "location": 1,
+        "suitIndex": 0,
+        "rank": 3,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                0,
+                1,
+                1,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                0,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                5
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "colorClueMemory": {
-        "possibilities": [0, 1, 2, 3, 4],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": ["Visible", "Visible", "Visible", "Visible", "Visible"]
+    {
+        "order": 7,
+        "location": 1,
+        "suitIndex": 3,
+        "rank": 2,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                0,
+                1,
+                1,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                0,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                5
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "possibleCards": [
-        [null, 1, 0, 0, 1, 1, null, 1],
-        [null, 1, 2, 2, 2, 0, null, 1],
-        [null, 1, 2, 1, 2, 1, null, 1],
-        [null, 0, 1, 2, 2, 0, null, 1],
-        [null, 1, 1, 0, 1, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 4,
-    "location": 1,
-    "suitIndex": 0,
-    "rank": 4,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
+    {
+        "order": 8,
+        "location": 2,
+        "suitIndex": 4,
+        "rank": 3,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                1,
+                1,
+                0,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                1,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "colorClueMemory": {
-        "possibilities": [0, 1, 2, 3, 4],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": ["Visible", "Visible", "Visible", "Visible", "Visible"]
+    {
+        "order": 9,
+        "location": 2,
+        "suitIndex": 0,
+        "rank": 3,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                1,
+                1,
+                0,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                1,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "possibleCards": [
-        [null, 1, 0, 1, 1, 1, null, 1],
-        [null, 1, 2, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 0, null, 1],
-        [null, 0, 2, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 5,
-    "location": 1,
-    "suitIndex": 4,
-    "rank": 3,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
+    {
+        "order": 10,
+        "location": "playStack",
+        "suitIndex": 1,
+        "rank": 5,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                2,
+                1,
+                0,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                1,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                5
+            ],
+            [
+                1,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
+        "numPositiveClues": 1,
+        "segmentDrawn": null,
+        "segmentFirstClued": 0,
+        "segmentPlayed": 2,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "colorClueMemory": {
-        "possibilities": [0, 1, 2, 3, 4],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": ["Visible", "Visible", "Visible", "Visible", "Visible"]
+    {
+        "order": 11,
+        "location": 2,
+        "suitIndex": 0,
+        "rank": 2,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                1,
+                1,
+                0,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                1,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "possibleCards": [
-        [null, 1, 0, 1, 1, 1, null, 1],
-        [null, 1, 2, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 0, null, 1],
-        [null, 0, 2, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 6,
-    "location": 1,
-    "suitIndex": 0,
-    "rank": 3,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
+    {
+        "order": 12,
+        "location": 3,
+        "suitIndex": 4,
+        "rank": 2,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                1,
+                0,
+                0,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                0,
+                2,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                5
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "colorClueMemory": {
-        "possibilities": [0, 1, 2, 3, 4],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": ["Visible", "Visible", "Visible", "Visible", "Visible"]
+    {
+        "order": 13,
+        "location": 3,
+        "suitIndex": 3,
+        "rank": 1,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                1,
+                0,
+                0,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                0,
+                2,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": false,
+        "numPositiveClues": 1,
+        "segmentDrawn": null,
+        "segmentFirstClued": 1,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "possibleCards": [
-        [null, 1, 0, 1, 1, 1, null, 1],
-        [null, 1, 2, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 0, null, 1],
-        [null, 0, 2, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 7,
-    "location": 1,
-    "suitIndex": 3,
-    "rank": 2,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
+    {
+        "order": 14,
+        "location": "playStack",
+        "suitIndex": 3,
+        "rank": 5,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                1,
+                0,
+                0,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                2,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                0,
+                2,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": true,
+        "rankDetermined": true,
+        "numPositiveClues": 1,
+        "segmentDrawn": null,
+        "segmentFirstClued": 1,
+        "segmentPlayed": 3,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "colorClueMemory": {
-        "possibilities": [0, 1, 2, 3, 4],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": ["Visible", "Visible", "Visible", "Visible", "Visible"]
+    {
+        "order": 15,
+        "location": 3,
+        "suitIndex": 4,
+        "rank": 4,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                1,
+                0,
+                0,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                0,
+                2,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                5
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": null,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "possibleCards": [
-        [null, 1, 0, 1, 1, 1, null, 1],
-        [null, 1, 2, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 0, null, 1],
-        [null, 0, 2, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 8,
-    "location": 2,
-    "suitIndex": 4,
-    "rank": 3,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
+    {
+        "order": 16,
+        "location": 2,
+        "suitIndex": 2,
+        "rank": 3,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                1,
+                1,
+                0,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                1,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                0,
+                1,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                5
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": 2,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
     },
-    "colorClueMemory": {
-        "possibilities": [0, 2, 3, 4],
-        "positiveClues": [],
-        "negativeClues": [1],
-        "pipStates": ["Visible", "Hidden", "Visible", "Visible", "Visible"]
-    },
-    "possibleCards": [
-        [null, 1, 1, 1, 0, 1, null, 1],
-        [null, 0, 0, 0, 0, 0, null, 0],
-        [null, 1, 1, 2, 1, 0, null, 1],
-        [null, 0, 1, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 9,
-    "location": 2,
-    "suitIndex": 0,
-    "rank": 3,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
-    },
-    "colorClueMemory": {
-        "possibilities": [0, 2, 3, 4],
-        "positiveClues": [],
-        "negativeClues": [1],
-        "pipStates": ["Visible", "Hidden", "Visible", "Visible", "Visible"]
-    },
-    "possibleCards": [
-        [null, 1, 1, 1, 0, 1, null, 1],
-        [null, 0, 0, 0, 0, 0, null, 0],
-        [null, 1, 1, 2, 1, 0, null, 1],
-        [null, 0, 1, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 10,
-    "location": "playStack",
-    "suitIndex": 1,
-    "rank": 5,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
-    },
-    "colorClueMemory": {
-        "possibilities": [1],
-        "positiveClues": [1],
-        "negativeClues": [],
-        "pipStates": ["Hidden", "Visible", "Hidden", "Hidden", "Hidden"]
-    },
-    "possibleCards": [
-        [null, 0, 0, 0, 0, 0, null, 0],
-        [null, 1, 2, 2, 2, 1, null, 1],
-        [null, 0, 0, 0, 0, 0, null, 0],
-        [null, 0, 0, 0, 0, 0, null, 0],
-        [null, 0, 0, 0, 0, 0, null, 0]
-    ],
-    "identityDetermined": true,
-    "numPositiveClues": 1,
-    "segmentFirstClued": 1,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": 2,
-    "isMisplayed": false
-}, {
-    "order": 11,
-    "location": 2,
-    "suitIndex": 0,
-    "rank": 2,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
-    },
-    "colorClueMemory": {
-        "possibilities": [0, 2, 3, 4],
-        "positiveClues": [],
-        "negativeClues": [1],
-        "pipStates": ["Visible", "Hidden", "Visible", "Visible", "Visible"]
-    },
-    "possibleCards": [
-        [null, 1, 1, 1, 0, 1, null, 1],
-        [null, 0, 0, 0, 0, 0, null, 0],
-        [null, 1, 1, 2, 1, 0, null, 1],
-        [null, 0, 1, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 12,
-    "location": 3,
-    "suitIndex": 4,
-    "rank": 2,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
-    },
-    "colorClueMemory": {
-        "possibilities": [0, 1, 2, 4],
-        "positiveClues": [],
-        "negativeClues": [3],
-        "pipStates": ["Visible", "Visible", "Visible", "Hidden", "Visible"]
-    },
-    "possibleCards": [
-        [null, 1, 1, 0, 0, 1, null, 1],
-        [null, 1, 2, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 0, null, 1],
-        [null, 0, 0, 0, 0, 0, null, 0],
-        [null, 1, 2, 0, 2, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 13,
-    "location": 3,
-    "suitIndex": 3,
-    "rank": 1,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Eliminated", null, "Hidden"]
-    },
-    "colorClueMemory": {
-        "possibilities": [3],
-        "positiveClues": [3],
-        "negativeClues": [],
-        "pipStates": ["Hidden", "Hidden", "Hidden", "Visible", "Hidden"]
-    },
-    "possibleCards": [
-        [null, 0, 0, 0, 0, 0, null, 0],
-        [null, 0, 0, 0, 0, 0, null, 0],
-        [null, 0, 0, 0, 0, 0, null, 0],
-        [null, 1, 1, 2, 2, 0, null, 1],
-        [null, 0, 0, 0, 0, 0, null, 0]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 1,
-    "segmentFirstClued": 2,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 14,
-    "location": "playStack",
-    "suitIndex": 3,
-    "rank": 5,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
-    },
-    "colorClueMemory": {
-        "possibilities": [3],
-        "positiveClues": [3],
-        "negativeClues": [],
-        "pipStates": ["Hidden", "Hidden", "Hidden", "Visible", "Hidden"]
-    },
-    "possibleCards": [
-        [null, 0, 0, 0, 0, 0, null, 0],
-        [null, 0, 0, 0, 0, 0, null, 0],
-        [null, 0, 0, 0, 0, 0, null, 0],
-        [null, 1, 1, 2, 2, 1, null, 1],
-        [null, 0, 0, 0, 0, 0, null, 0]
-    ],
-    "identityDetermined": true,
-    "numPositiveClues": 1,
-    "segmentFirstClued": 2,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": 3,
-    "isMisplayed": false
-}, {
-    "order": 15,
-    "location": 3,
-    "suitIndex": 4,
-    "rank": 4,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
-    },
-    "colorClueMemory": {
-        "possibilities": [0, 1, 2, 4],
-        "positiveClues": [],
-        "negativeClues": [3],
-        "pipStates": ["Visible", "Visible", "Visible", "Hidden", "Visible"]
-    },
-    "possibleCards": [
-        [null, 1, 1, 0, 0, 1, null, 1],
-        [null, 1, 2, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 0, null, 1],
-        [null, 0, 0, 0, 0, 0, null, 0],
-        [null, 1, 2, 0, 2, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 0,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 16,
-    "location": 2,
-    "suitIndex": 2,
-    "rank": 3,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
-    },
-    "colorClueMemory": {
-        "possibilities": [0, 1, 2, 3, 4],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": ["Visible", "Visible", "Visible", "Visible", "Visible"]
-    },
-    "possibleCards": [
-        [null, 1, 1, 1, 0, 1, null, 1],
-        [null, 1, 2, 2, 2, 0, null, 1],
-        [null, 1, 1, 2, 1, 0, null, 1],
-        [null, 0, 1, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 3,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}, {
-    "order": 17,
-    "location": 3,
-    "suitIndex": 0,
-    "rank": 2,
-    "rankClueMemory": {
-        "possibilities": [1, 2, 3, 4, 5, 7],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": [null, "Visible", "Visible", "Visible", "Visible", "Visible", null, "Hidden"]
-    },
-    "colorClueMemory": {
-        "possibilities": [0, 1, 2, 3, 4],
-        "positiveClues": [],
-        "negativeClues": [],
-        "pipStates": ["Visible", "Visible", "Visible", "Visible", "Visible"]
-    },
-    "possibleCards": [
-        [null, 1, 1, 0, 0, 1, null, 1],
-        [null, 1, 2, 2, 2, 0, null, 1],
-        [null, 1, 1, 1, 1, 0, null, 1],
-        [null, 1, 1, 2, 2, 0, null, 1],
-        [null, 1, 2, 0, 2, 1, null, 1]
-    ],
-    "identityDetermined": false,
-    "numPositiveClues": 0,
-    "segmentFirstClued": null,
-    "segmentDrawn": 4,
-    "segmentDiscarded": -1,
-    "segmentPlayed": -1,
-    "isMisplayed": false
-}]
+    {
+        "order": 17,
+        "location": 3,
+        "suitIndex": 0,
+        "rank": 2,
+        "possibleCardsFromObservation": [
+            [
+                null,
+                1,
+                1,
+                0,
+                0,
+                1,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                1,
+                1,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                1,
+                2,
+                2,
+                0,
+                null,
+                1
+            ],
+            [
+                null,
+                1,
+                2,
+                0,
+                2,
+                1,
+                null,
+                1
+            ]
+        ],
+        "possibleCardsFromClues": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                5
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                1
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                5
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "positiveRankClues": [],
+        "suitDetermined": false,
+        "rankDetermined": false,
+        "numPositiveClues": 0,
+        "segmentDrawn": 3,
+        "segmentFirstClued": null,
+        "segmentPlayed": null,
+        "segmentDiscarded": null,
+        "isMisplayed": false
+    }
+]

@@ -1,5 +1,6 @@
 import testMetadata from '../../../test/testMetadata';
 import { getVariant } from '../data/gameData';
+import CardState from '../types/CardState';
 import { colorClue, rankClue } from '../types/Clue';
 import cardPossibilitiesReducer from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
@@ -9,11 +10,22 @@ const defaultMetadata = testMetadata(numPlayers);
 const variant = getVariant(defaultMetadata.options.variantName);
 const defaultCard = initialCardState(0, variant);
 
-// Can be used to count possible cards in a possibleCards array using a reduce function
-const countPossibleCards = (
-  count: number,
-  arr: readonly number[],
-) => count + arr.filter((c) => c > 0).length;
+// Count possible cards, respecting both clues and observations.
+function countPossibleCards(state: CardState) {
+  return state.possibleCardsFromClues.filter(
+    ([suitIndex, rank]) => state.possibleCardsFromObservation[suitIndex][rank] > 0,
+  ).length;
+}
+
+function possibilities(possibleCardsFromClues: ReadonlyArray<readonly [number, number]>) {
+  const possibleSuits : Set<number> = new Set();
+  const possibleRanks : Set<number> = new Set();
+  for (const [suit, rank] of possibleCardsFromClues) {
+    possibleSuits.add(suit);
+    possibleRanks.add(rank);
+  }
+  return { possibleSuits, possibleRanks };
+}
 
 describe('cardPossibilitiesReducer', () => {
   test('applies a simple positive clue', () => {
@@ -21,13 +33,14 @@ describe('cardPossibilitiesReducer', () => {
 
     const newCard = cardPossibilitiesReducer(defaultCard, red, true, defaultMetadata);
 
-    expect(newCard.colorClueMemory.possibilities.includes(0)).toBe(true);
-    expect(newCard.colorClueMemory.possibilities.length).toBe(1);
+    const { possibleSuits, possibleRanks } = possibilities(newCard.possibleCardsFromClues);
+    expect(possibleSuits.has(0)).toBe(true);
+    expect(possibleSuits.size).toBe(1);
 
-    expect(newCard.rankClueMemory.possibilities.length).toBe(5);
+    expect(possibleRanks.size).toBe(5);
 
     // This card can only be red
-    expect(newCard.possibleCards.reduce(countPossibleCards, 0)).toBe(5);
+    expect(countPossibleCards(newCard)).toBe(5);
   });
 
   test('applies a simple negative clue', () => {
@@ -35,16 +48,17 @@ describe('cardPossibilitiesReducer', () => {
 
     const newCard = cardPossibilitiesReducer(defaultCard, red, false, defaultMetadata);
 
-    expect(newCard.colorClueMemory.possibilities.includes(0)).toBe(false);
-    expect(newCard.colorClueMemory.possibilities.length).toBe(4);
+    const { possibleSuits, possibleRanks } = possibilities(newCard.possibleCardsFromClues);
+    expect(possibleSuits.has(0)).toBe(false);
+    expect(possibleSuits.size).toBe(4);
 
-    expect(newCard.rankClueMemory.possibilities.length).toBe(5);
+    expect(possibleRanks.size).toBe(5);
 
     // This card can be any color except red
-    expect(newCard.possibleCards.reduce(countPossibleCards, 0)).toBe(20);
+    expect(countPossibleCards(newCard)).toBe(20);
   });
 
-  test.skip('removes possibilities based on previous rank and color clues', () => {
+  test('removes possibilities based on previous rank and color clues', () => {
     const metadata = testMetadata(numPlayers, 'Rainbow-Ones & Brown (6 Suits)');
     const rainbowOnesAndBrown = getVariant(metadata.options.variantName);
 
@@ -55,7 +69,8 @@ describe('cardPossibilitiesReducer', () => {
     card = cardPossibilitiesReducer(card, redClue, true, metadata);
     card = cardPossibilitiesReducer(card, oneClue, false, metadata);
 
+    const { possibleSuits } = possibilities(card.possibleCardsFromClues);
     // A card with positive red and negative one cannot be yellow
-    expect(card.colorClueMemory.possibilities.includes(1)).toBe(false);
+    expect(possibleSuits.has(1)).toBe(false);
   });
 });

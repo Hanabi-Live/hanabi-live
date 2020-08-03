@@ -1,6 +1,5 @@
 import CardIdentity from '../../../types/CardIdentity';
 import CardState from '../../../types/CardState';
-import ClueType from '../../../types/ClueType';
 import State from '../../../types/State';
 import globals from '../../globals';
 import observeStore, { Subscription, Selector, Listener } from '../observeStore';
@@ -101,17 +100,15 @@ const subscribeToCardChanges = (order: number) => {
 
   // Pips
   sub((c) => ({
-    pipStates: c.rankClueMemory.pipStates,
-    numPositiveRankClues: c.rankClueMemory.positiveClues.length,
-  }), () => updatePips(order, ClueType.Rank));
-  sub((c) => c.colorClueMemory.pipStates, () => updatePips(order, ClueType.Color));
-
+    numPossibleCardsFromClues: c.possibleCardsFromClues.length,
+    possibleCardsFromObservation: c.possibleCardsFromObservation,
+    numPositiveRankClues: c.positiveRankClues.length,
+  }), () => updatePips(order));
   // Notes
   sub((c) => ({
-    possibleRanks: c.rankClueMemory.possibilities,
-    possibleSuits: c.colorClueMemory.possibilities,
+    possibleCardsFromClues: c.possibleCardsFromClues,
+    possibleCardsFromObservation: c.possibleCardsFromObservation,
   }), () => updateNotePossibilities(order));
-
   // Card visuals
   subFullState((s) => {
     const card = s.visibleState!.deck[order];
@@ -119,8 +116,8 @@ const subscribeToCardChanges = (order: number) => {
       rank: card.rank,
       suitIndex: card.suitIndex,
       location: card.location,
-      rankDetermined: card.rankClueMemory.possibilities.length === 1,
-      suitDetermined: card.colorClueMemory.possibilities.length === 1,
+      suitDetermined: card.suitDetermined,
+      rankDetermined: card.rankDetermined,
       identity: s.cardIdentities[order],
     };
   }, () => updateCardVisuals(order));
@@ -136,8 +133,8 @@ const updateBorder = (order: number) => {
   globals.layers.card.batchDraw();
 };
 
-const updatePips = (order: number, clueType: ClueType) => {
-  globals.deck[order].updatePips(clueType);
+const updatePips = (order: number) => {
+  globals.deck[order].updatePips();
   globals.layers.card.batchDraw();
 };
 

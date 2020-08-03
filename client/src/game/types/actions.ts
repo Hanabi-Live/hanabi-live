@@ -122,7 +122,7 @@ export interface ActionClue {
   readonly giver: number;
   readonly list: number[];
   readonly target: number;
-  readonly turn: number;
+  readonly turn: number; // TODO: remove. This is unused
 }
 
 export interface ActionDiscard {

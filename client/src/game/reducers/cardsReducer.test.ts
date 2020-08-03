@@ -87,6 +87,34 @@ describe('cardsReducer', () => {
     });
   });
 
+  describe('segmentFirstClued', () => {
+    test('remembers the segment when the first clue happened', () => {
+      let deck: CardState[] = [defaultCard];
+      deck = cardsReducer(deck, draw(0, 0), gameState, true, defaultMetadata);
+      expect(deck[0].segmentFirstClued).toBeNull();
+
+      const clue1Segment = 999;
+      const gameStateFirstTurn = {
+        ...gameState,
+        turn: { ...gameState.turn, segment: clue1Segment },
+      };
+
+      const testClue1 = rankClue(5, 1, [0], 0, gameStateFirstTurn.turn.turnNum);
+      deck = cardsReducer(deck, testClue1, gameStateFirstTurn, true, defaultMetadata);
+      expect(deck[0].segmentFirstClued).toEqual(clue1Segment);
+
+      const clue2Segment = clue1Segment + 1;
+      const gameStateNextTurn = {
+        ...gameStateFirstTurn,
+        turn: { ...gameStateFirstTurn.turn, segment: clue2Segment },
+      };
+
+      const testClue2 = colorClue(2, 2, [0], 0, gameStateNextTurn.turn.turnNum);
+      deck = cardsReducer(deck, testClue2, gameStateNextTurn, true, defaultMetadata);
+      expect(deck[0].segmentFirstClued).toEqual(clue1Segment);
+    });
+  });
+
   describe('isMisplayed', () => {
     test('is false while on the deck', () => {
       const deck: CardState[] = [defaultCard];
@@ -155,75 +183,6 @@ describe('cardsReducer', () => {
     });
   });
 
-  describe('clue memory', () => {
-    test('is empty initially', () => {
-      const deck: CardState[] = [defaultCard];
-      expect(deck[0].colorClueMemory.positiveClues.length).toBe(0);
-      expect(deck[0].colorClueMemory.negativeClues.length).toBe(0);
-      expect(deck[0].rankClueMemory.positiveClues.length).toBe(0);
-      expect(deck[0].rankClueMemory.negativeClues.length).toBe(0);
-    });
-    test('remembers positive clues', () => {
-      let deck: CardState[] = [defaultCard];
-      deck = cardsReducer(deck, draw(0, 0), gameState, true, defaultMetadata);
-
-      const clueToCardZero = rankClue(1, 2, [0], 0, 0);
-      deck = cardsReducer(deck, clueToCardZero, gameState, true, defaultMetadata);
-      expect(deck[0].rankClueMemory.positiveClues.length).toBe(1);
-      expect(deck[0].rankClueMemory.positiveClues[0]).toBe(clueToCardZero.clue.value);
-
-      const anotherClueToCardZero = colorClue(0, 1, [0], 0, 0);
-      deck = cardsReducer(deck, anotherClueToCardZero, gameState, true, defaultMetadata);
-      expect(deck[0].colorClueMemory.positiveClues.length).toBe(1);
-      expect(deck[0].colorClueMemory.positiveClues[0]).toBe(anotherClueToCardZero.clue.value);
-    });
-    test('remembers negative clues and positive clues in the right cards', () => {
-      let deck: CardState[] = [defaultCard, secondCard];
-      deck = cardsReducer(deck, draw(0, 0), gameState, true, defaultMetadata);
-      deck = cardsReducer(deck, draw(0, 1), gameState, true, defaultMetadata);
-
-      // In order to apply negative clues, the hand must be correct
-      const gameStateWithCorrectHands = { ...gameState, hands: [[0, 1]] };
-
-      const clueToCardOne = rankClue(1, 2, [1], 0, 0);
-      deck = cardsReducer(deck, clueToCardOne, gameStateWithCorrectHands, true, defaultMetadata);
-      expect(deck[0].rankClueMemory.negativeClues.length).toBe(1);
-      expect(deck[0].rankClueMemory.negativeClues[0]).toBe(clueToCardOne.clue.value);
-      expect(deck[1].rankClueMemory.positiveClues.length).toBe(1);
-      expect(deck[1].rankClueMemory.positiveClues[0]).toBe(clueToCardOne.clue.value);
-
-      const anotherClueToCardOne = colorClue(0, 1, [1], 0, 0);
-      deck = cardsReducer(
-        deck,
-        anotherClueToCardOne,
-        gameStateWithCorrectHands,
-        true,
-        defaultMetadata,
-      );
-      expect(deck[0].colorClueMemory.negativeClues.length).toBe(1);
-      expect(deck[0].colorClueMemory.negativeClues[0]).toBe(anotherClueToCardOne.clue.value);
-      expect(deck[1].colorClueMemory.positiveClues.length).toBe(1);
-      expect(deck[1].colorClueMemory.positiveClues[0]).toBe(anotherClueToCardOne.clue.value);
-    });
-    test('getting the same clue twice does not change possibilities', () => {
-      let deck: CardState[] = [defaultCard, secondCard];
-      deck = cardsReducer(deck, draw(0, 0), gameState, true, defaultMetadata);
-      deck = cardsReducer(deck, draw(0, 1), gameState, true, defaultMetadata);
-
-      // In order to apply negative clues, the hand must be correct
-      const gameStateWithCorrectHands = { ...gameState, hands: [[0, 1]] };
-
-      // Apply the same clue twice
-      const clueToCardOne = rankClue(1, 2, [1], 0, 0);
-      deck = cardsReducer(deck, clueToCardOne, gameStateWithCorrectHands, true, defaultMetadata);
-      deck = cardsReducer(deck, clueToCardOne, gameStateWithCorrectHands, true, defaultMetadata);
-
-      expect(deck[1].rankClueMemory.positiveClues.length).toBe(1);
-      expect(deck[1].rankClueMemory.positiveClues[0]).toBe(clueToCardOne.clue.value);
-      expect(deck[1].colorClueMemory.possibilities.length).toBe(5);
-      expect(deck[1].rankClueMemory.possibilities.length).toBe(1);
-    });
-  });
   describe('discard', () => {
     test('eliminates a possibility on other cards', () => {
       let deck: CardState[] = [defaultCard, secondCard];
@@ -239,7 +198,7 @@ describe('cardsReducer', () => {
 
       // Expect the remaining card to remove a possibility for a red 1
       // So there are 2 red ones remaining in the deck
-      expect(deck[0].possibleCards[0][1]).toBe(2);
+      expect(deck[0].possibleCardsFromObservation[0][1]).toBe(2);
     });
     describe('draw', () => {
       test('eliminates a possibility on other players\' cards', () => {
@@ -252,7 +211,7 @@ describe('cardsReducer', () => {
         deck = cardsReducer(deck, draw(1, 1, 0, 5), gameStateDrawP1, true, defaultMetadata);
 
         // Expect the remaining card to remove a possibility for a red 5
-        expect(deck[0].possibleCards[0][5]).toBe(0);
+        expect(deck[0].possibleCardsFromObservation[0][5]).toBe(0);
       });
       test('eliminates possibilities from previously drawn cards', () => {
         let deck: CardState[] = [defaultCard, secondCard];
@@ -264,7 +223,7 @@ describe('cardsReducer', () => {
         deck = cardsReducer(deck, draw(1, 1, 0, 1), gameStateDrawP1, true, defaultMetadata);
 
         // Expect the newly drawn card to remove a possibility for a red 5
-        expect(deck[1].possibleCards[0][5]).toBe(0);
+        expect(deck[1].possibleCardsFromObservation[0][5]).toBe(0);
       });
     });
   });

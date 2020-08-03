@@ -9,6 +9,7 @@ export default interface Variant {
   readonly ranks: number[];
   readonly clueColors: Color[];
   readonly clueRanks: number[];
+
   readonly colorCluesTouchNothing: boolean;
   readonly rankCluesTouchNothing: boolean;
   readonly specialRank: number;

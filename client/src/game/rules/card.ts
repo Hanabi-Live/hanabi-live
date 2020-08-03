@@ -136,20 +136,31 @@ export const isPotentiallyPlayable = (
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
 ) => {
-  for (let suitIndex = 0; suitIndex < card.possibleCards.length; suitIndex++) {
-    const playStack = playStacks[suitIndex];
-    const playStackDirection = playStackDirections[suitIndex];
-    const nextRanks = playStacksRules.nextRanks(playStack, playStackDirection, deck);
-    for (const nextRank of nextRanks) {
-      // It is possible for this card to be this suit and rank combination
-      if (card.possibleCards[suitIndex][nextRank] > 0) {
-        return true;
-      }
+  for (const [suitIndex, rank] of card.possibleCardsFromClues) {
+    if (card.possibleCardsFromObservation[suitIndex][rank] === 0) continue;
+    const nextRanksArray = playStacksRules.nextRanks(
+      playStacks[suitIndex],
+      playStackDirections[suitIndex],
+      deck,
+    );
+    if (nextRanksArray.includes(rank)) {
+      return true;
     }
   }
 
   return false;
 };
+
+export function canPossiblyBe(card: CardState, suitIndex: number | null, rank: number | null) {
+  if (suitIndex === null && rank === null) {
+    // We have nothing to check
+    return true;
+  }
+  return card.possibleCardsFromClues.some(
+    ([s, r]) => (suitIndex === null || suitIndex === s) && (rank === null || rank === r)
+      && card.possibleCardsFromObservation[s][r] > 0,
+  );
+}
 
 export const allPossibilitiesTrash = (
   card: CardState,
@@ -158,15 +169,10 @@ export const allPossibilitiesTrash = (
   playStackDirections: readonly StackDirection[],
   variant: Variant,
 ) => {
-  for (let suitIndex = 0; suitIndex < card.possibleCards.length; suitIndex++) {
-    const possibleCardsOfSuit = card.possibleCards[suitIndex];
-    for (let rank = 0; rank < possibleCardsOfSuit.length; rank++) {
-      if (
-        card.possibleCards[suitIndex][rank] > 0
-        && needsToBePlayed(suitIndex, rank, deck, playStacks, playStackDirections, variant)
-      ) {
-        return false;
-      }
+  for (const [suitIndex, rank] of card.possibleCardsFromClues) {
+    if (card.possibleCardsFromObservation[suitIndex][rank] === 0) continue;
+    if (needsToBePlayed(suitIndex, rank, deck, playStacks, playStackDirections, variant)) {
+      return false;
     }
   }
 

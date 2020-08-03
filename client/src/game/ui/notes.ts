@@ -1,5 +1,6 @@
 // Users can right-click cards to record information on them
 
+import { canPossiblyBe } from '../rules/card';
 import * as variantRules from '../rules/variant';
 import CardIdentity from '../types/CardIdentity';
 import CardNote from '../types/CardNote';
@@ -195,68 +196,44 @@ export const cardIdentityFromNote = (
 
 // Validate that the note does not contain an impossibility
 export const checkNoteImpossibility = (variant: Variant, cardState: CardState, note: CardNote) => {
-  // Only the suit was specified
+  // Validate that the note does not contain an impossibility
+  if (
+    cardState.rank === STACK_BASE_RANK
+    && note.suitIndex !== null
+    && note.suitIndex !== cardState.suitIndex
+  ) {
+    window.alert('You cannot morph a stack base to have a different suit.');
+    note.suitIndex = null;
+    note.rank = null;
+    return;
+  }
+  if (
+    !(cardState.location === globals.metadata.ourPlayerIndex)
+    || canPossiblyBe(cardState, note.suitIndex, note.rank)
+  ) {
+    return;
+  }
   if (note.suitIndex !== null && note.rank === null) {
-    let suitPossible = false;
-    for (const rank of cardState.rankClueMemory.possibilities) {
-      const count = cardState.possibleCards[note.suitIndex][rank];
-      if (count === undefined) {
-        throw new Error(`The card of Suit: ${note.suitIndex} and Rank: ${rank} does not exist in the possibleCards array.`);
-      }
-      if (count > 0) {
-        suitPossible = true;
-        break;
-      }
-    }
-
-    if (!suitPossible && cardState.location === globals.state.metadata.ourPlayerIndex) {
-      const suitName = variant.suits[note.suitIndex].name;
-      window.alert(`That card cannot possibly be ${suitName.toLowerCase()}.`);
-      note.suitIndex = null;
-      return;
-    }
+    // Only the suit was specified
+    const suitName = variant.suits[note.suitIndex].name;
+    window.alert(`That card cannot possibly be ${suitName.toLowerCase()}.`);
+    note.suitIndex = null;
+    return;
   }
 
-  // Only the rank was specified
   if (note.suitIndex === null && note.rank !== null) {
-    let rankPossible = false;
-    for (const suitIndex of cardState.colorClueMemory.possibilities) {
-      const count = cardState.possibleCards[suitIndex][note.rank];
-      if (count === undefined) {
-        throw new Error(`The card of Suit: ${suitIndex} and Rank: ${note.rank} does not exist in the possibleCards array.`);
-      }
-      if (count > 0) {
-        rankPossible = true;
-        break;
-      }
-    }
-    if (!rankPossible && cardState.location === globals.state.metadata.ourPlayerIndex) {
-      window.alert(`That card cannot possibly be a ${note.rank}.`);
-      note.rank = null;
-      return;
-    }
+    // Only the rank was specified
+    window.alert(`That card cannot possibly be a ${note.rank}.`);
+    note.rank = null;
+    return;
   }
 
-  // Both the suit and the rank were specified
   if (note.suitIndex !== null && note.rank !== null) {
-    // First, validate that we cannot put the wrong suit on a stack base
-    // (stack bases have all the card possibilities and they are never decremented)
-    if (cardState.rank === STACK_BASE_RANK && cardState.suitIndex !== note.suitIndex) {
-      window.alert('You cannot morph a stack base to have a different suit.');
-      note.suitIndex = null;
-      note.rank = null;
-      return;
-    }
-
-    if (
-      cardState.possibleCards[note.suitIndex][note.rank] === 0
-      && cardState.location === globals.state.metadata.ourPlayerIndex
-    ) {
-      const suitName = variant.suits[note.suitIndex].name;
-      window.alert(`That card cannot possibly be a ${suitName.toLowerCase()} ${note.rank}.`);
-      note.suitIndex = null;
-      note.rank = null;
-    }
+    // Both the suit and the rank were specified
+    const suitName = variant.suits[note.suitIndex].name;
+    window.alert(`That card cannot possibly be a ${suitName.toLowerCase()} ${note.rank}.`);
+    note.suitIndex = null;
+    note.rank = null;
   }
 };
 

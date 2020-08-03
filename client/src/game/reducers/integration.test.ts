@@ -54,8 +54,8 @@ describe('integration', () => {
         'card %i has the correct pips and possibilities', (order) => {
           const turn5State = getStateAtTurn(testState, 4);
           const card = turn5State.deck[order];
-          const expected = (upOrDownTurn5Cards as CardState[])[order];
-          checkCluesAreRemembered(card, expected);
+          // ugly trick because the compiler won't accept list of tuples from JSON
+          const expected = (upOrDownTurn5Cards as unknown as CardState[])[order];
           checkPossibilitiesEliminatedByClues(card, expected);
           checkPossibilitiesEliminatedByObservation(card, expected);
         },
@@ -95,8 +95,7 @@ describe('integration', () => {
         'card %i has the correct pips and possibilities', (order) => {
           const finalState = getFinalState(testState);
           const card = finalState.deck[order];
-          const expected = (upOrDownFinalCards as CardState[])[order];
-          checkCluesAreRemembered(card, expected);
+          const expected = (upOrDownFinalCards as unknown as CardState[])[order];
           checkPossibilitiesEliminatedByClues(card, expected);
           checkPossibilitiesEliminatedByObservation(card, expected);
         },
@@ -134,33 +133,16 @@ describe('integration', () => {
   });
 });
 
-const checkCluesAreRemembered = (card: CardState, expected: CardState) => {
-  expect(card.rankClueMemory.negativeClues)
-    .toEqual(expected.rankClueMemory.negativeClues);
-  expect(card.rankClueMemory.positiveClues)
-    .toEqual(expected.rankClueMemory.positiveClues);
-  expect(card.colorClueMemory.negativeClues)
-    .toEqual(expected.colorClueMemory.negativeClues);
-  expect(card.colorClueMemory.positiveClues)
-    .toEqual(expected.colorClueMemory.positiveClues);
-};
-
-const checkPossibilitiesEliminatedByClues = (card: CardState, expected: CardState) => {
-  expect(card.rankClueMemory.possibilities)
-    .toEqual(expected.rankClueMemory.possibilities);
-  expect(card.colorClueMemory.possibilities)
-    .toEqual(expected.colorClueMemory.possibilities);
-};
+function checkPossibilitiesEliminatedByClues(card: CardState, expected: CardState) {
+  expect(card.possibleCardsFromClues)
+    .toEqual(expected.possibleCardsFromClues);
+}
 
 const checkPossibilitiesEliminatedByObservation = (card: CardState, expected: CardState) => {
   function validRanks<T>(arr: readonly T[]) {
     // Ensure Start is counted as a valid rank
     return arr.length > 6 ? arr.slice(1, 6).concat(arr[7]) : arr.slice(1, 6);
   }
-  expect(card.possibleCards.map(validRanks))
-    .toEqual(expected.possibleCards.map(validRanks));
-  expect(validRanks(card.rankClueMemory.pipStates))
-    .toEqual(validRanks(expected.rankClueMemory.pipStates));
-  expect(card.colorClueMemory.pipStates)
-    .toEqual(expected.colorClueMemory.pipStates);
+  expect(card.possibleCardsFromObservation.map(validRanks))
+    .toEqual(expected.possibleCardsFromObservation.map(validRanks));
 };
