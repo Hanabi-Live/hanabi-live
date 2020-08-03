@@ -221,7 +221,6 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
     return;
   }
 
-  // Only the rank was specified
   if (note.suitIndex === null && note.rank !== null) {
     // Only the rank was specified
     window.alert(`That card cannot possibly be a ${note.rank}.`);
@@ -229,7 +228,6 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
     return;
   }
 
-  // Both the suit and the rank were specified
   if (note.suitIndex !== null && note.rank !== null) {
     // Both the suit and the rank were specified
     const suitName = variant.suits[note.suitIndex].name;
