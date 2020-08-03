@@ -142,7 +142,7 @@ export const draw = (friends: boolean) => {
     $('<td>').html(gameData.options.variantName).appendTo(row);
 
     // Column 5 - Options
-    const options = makeOptions(i, gameData.options);
+    const options = makeOptions(i, gameData.options, false);
     $('<td>').html(options).appendTo(row);
 
     // Column 6 - Other Players / Players
@@ -190,104 +190,6 @@ export const draw = (friends: boolean) => {
   } else {
     $('#lobby-history-show-more').show();
   }
-};
-
-const makeOptions = (i: number, options: Options) => {
-  // Start to build the tooltip content HTML, if any
-  let tooltipHTML = '';
-
-  if (options.timed) {
-    tooltipHTML += '<li><i class="fas fa-clock"></i>&nbsp; ';
-    tooltipHTML += `Timed (${timerFormatter(options.timeBase)} + ${timerFormatter(options.timePerTurn)})`;
-    tooltipHTML += '</li>';
-  }
-
-  if (options.speedrun) {
-    tooltipHTML += '<li><i class="fas fa-running"></i>&nbsp; ';
-    tooltipHTML += 'Speedrun</li>';
-  }
-
-  if (options.cardCycle) {
-    tooltipHTML += '<li><i class="fas fa-sync-alt"></i>&nbsp; ';
-    tooltipHTML += 'Card Cycling</li>';
-  }
-
-  if (options.deckPlays) {
-    tooltipHTML += '<li><i class="fas fa-blind" style="position: relative; left: 0.2em;"></i>&nbsp; ';
-    tooltipHTML += 'Bottom-Deck Blind-Plays</li>';
-  }
-
-  if (options.emptyClues) {
-    tooltipHTML += '<li><i class="fas fa-expand"></i>&nbsp; ';
-    tooltipHTML += 'Empty Clues</li>';
-  }
-
-  if (options.oneExtraCard) {
-    tooltipHTML += '<li><i class="fas fa-plus-circle"></i>&nbsp; ';
-    tooltipHTML += 'One Extra Card</li>';
-  }
-
-  if (options.oneLessCard) {
-    tooltipHTML += '<li><i class="fas fa-minus-circle"></i>&nbsp; ';
-    tooltipHTML += 'One Less Card</li>';
-  }
-
-  if (options.allOrNothing) {
-    tooltipHTML += '<li><i class="fas fa-layer-group"></i>&nbsp; ';
-    tooltipHTML += 'All or Nothing</li>';
-  }
-
-  if (options.detrimentalCharacters) {
-    tooltipHTML += '<li><span style="position: relative; right: 0.2em;">🤔</span>';
-    tooltipHTML += 'Detrimental Characters</li>';
-  }
-
-  if (tooltipHTML === '') {
-    return '-';
-  }
-
-  let html = `<i id="lobby-history-table-${i}-options" class="fas fa-plus" `;
-  html += `data-tooltip-content="#lobby-history-table-${i}-options-tooltip"></i>`;
-  html += `
-    <div class="hidden">
-      <div id="lobby-history-table-${i}-options-tooltip">
-        <ul class="lobby-history-table-tooltip-ul">
-          ${tooltipHTML}
-        </ul>
-      </div>
-    </div>
-  `;
-
-  return html;
-};
-
-const makeReplayButton = (id: number, visibility: string) => {
-  const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
-  let text;
-  if (visibility === 'solo') {
-    text = '<i class="fas fa-eye lobby-button-icon"></i>';
-  } else if (visibility === 'shared') {
-    text = '<i class="fas fa-users lobby-button-icon"></i>';
-  } else {
-    throw new Error('The "makeReplayButton()" function was provided an invalid visibility argument.');
-  }
-  button.html(text);
-  button.addClass('history-table');
-  button.addClass('enter-history-game');
-  button.attr('id', `replay-${id}`);
-
-  button.on('click', () => {
-    globals.conn!.send('replayCreate', {
-      source: 'id',
-      gameID: id,
-      visibility,
-    });
-    if (visibility === 'shared') {
-      hide();
-    }
-  });
-
-  return button;
 };
 
 const makeOtherScoresButton = (id: number, seed: string, gameCount: number) => {
@@ -382,8 +284,10 @@ export const drawOtherScores = (games: GameHistory[], friends: boolean) => {
     return;
   }
 
-  // Add all of the games
-  for (const gameData of games) {
+  // Add all of the games for this particular seed
+  for (let i = 0; i < games.length; i++) {
+    const gameData = games[i];
+
     // Find out if this game was played by us
     const ourGame = gameData.playerNames.includes(globals.username);
 
@@ -403,21 +307,25 @@ export const drawOtherScores = (games: GameHistory[], friends: boolean) => {
     }
     $('<td>').html(score).appendTo(row);
 
-    // Column 3 - Players
+    // Column 3 - Options
+    const options = makeOptions(i, gameData.options, true);
+    $('<td>').html(options).appendTo(row);
+
+    // Column 4 - Players
     let playerNamesString = gameData.playerNames.join(', ');
     if (ourGame) {
       playerNamesString = `<strong>${playerNamesString}</strong>`;
     }
     $('<td>').html(playerNamesString).appendTo(row);
 
-    // Column 4 - Date Played
+    // Column 5 - Date Played
     let datePlayed = dateTimeFormatter.format(new Date(gameData.datetimeFinished));
     if (ourGame) {
       datePlayed = `<strong>${datePlayed}</strong>`;
     }
     $('<td>').html(datePlayed).appendTo(row);
 
-    // Column 5 - Seed
+    // Column 6 - Seed
     // Chop off the prefix
     const match = gameData.seed.match(/p\dv\d+s(\d+)/);
     let seed;
@@ -431,14 +339,124 @@ export const drawOtherScores = (games: GameHistory[], friends: boolean) => {
     }
     $('<td>').html(seed).appendTo(row);
 
-    // Column 6 - Watch Replay
+    // Column 7 - Watch Replay
     const watchReplayButton = makeReplayButton(gameData.id, 'solo');
     $('<td>').html(watchReplayButton as any).appendTo(row);
 
-    // Column 7 - Share Replay
+    // Column 8 - Share Replay
     const shareReplayButton = makeReplayButton(gameData.id, 'shared');
     $('<td>').html(shareReplayButton as any).appendTo(row);
 
     row.appendTo(tbody);
+
+    // Initialize the tooltips, if any
+    // (this has to be done after adding the HTML to the page)
+    $(`#lobby-history-table-${i}-options-other-scores`).tooltipster(tooltipOptions);
   }
+};
+
+// -----------
+// Subroutines
+// -----------
+
+const makeOptions = (i: number, options: Options, otherScores: boolean) => {
+  // Start to build the tooltip content HTML, if any
+  let tooltipHTML = '';
+
+  if (options.timed) {
+    tooltipHTML += '<li><i class="fas fa-clock"></i>&nbsp; ';
+    tooltipHTML += `Timed (${timerFormatter(options.timeBase)} + ${timerFormatter(options.timePerTurn)})`;
+    tooltipHTML += '</li>';
+  }
+
+  if (options.speedrun) {
+    tooltipHTML += '<li><i class="fas fa-running"></i>&nbsp; ';
+    tooltipHTML += 'Speedrun</li>';
+  }
+
+  if (options.cardCycle) {
+    tooltipHTML += '<li><i class="fas fa-sync-alt"></i>&nbsp; ';
+    tooltipHTML += 'Card Cycling</li>';
+  }
+
+  if (options.deckPlays) {
+    tooltipHTML += '<li><i class="fas fa-blind" style="position: relative; left: 0.2em;"></i>&nbsp; ';
+    tooltipHTML += 'Bottom-Deck Blind-Plays</li>';
+  }
+
+  if (options.emptyClues) {
+    tooltipHTML += '<li><i class="fas fa-expand"></i>&nbsp; ';
+    tooltipHTML += 'Empty Clues</li>';
+  }
+
+  if (options.oneExtraCard) {
+    tooltipHTML += '<li><i class="fas fa-plus-circle"></i>&nbsp; ';
+    tooltipHTML += 'One Extra Card</li>';
+  }
+
+  if (options.oneLessCard) {
+    tooltipHTML += '<li><i class="fas fa-minus-circle"></i>&nbsp; ';
+    tooltipHTML += 'One Less Card</li>';
+  }
+
+  if (options.allOrNothing) {
+    tooltipHTML += '<li><i class="fas fa-layer-group"></i>&nbsp; ';
+    tooltipHTML += 'All or Nothing</li>';
+  }
+
+  if (options.detrimentalCharacters) {
+    tooltipHTML += '<li><span style="position: relative; right: 0.2em;">🤔</span>';
+    tooltipHTML += 'Detrimental Characters</li>';
+  }
+
+  if (tooltipHTML === '') {
+    return '-';
+  }
+
+  let id = `lobby-history-table-${i}-options`;
+  if (otherScores) {
+    id += '-other-scores';
+  }
+  let html = `<i id="${id}" class="fas fa-plus" `;
+  html += `data-tooltip-content="#${id}-tooltip"></i>`;
+  html += `
+    <div class="hidden">
+      <div id="${id}-tooltip">
+        <ul class="lobby-history-table-tooltip-ul">
+          ${tooltipHTML}
+        </ul>
+      </div>
+    </div>
+  `;
+
+  return html;
+};
+
+const makeReplayButton = (id: number, visibility: string) => {
+  const button = $('<button>').attr('type', 'button').addClass('button fit margin0');
+  let text;
+  if (visibility === 'solo') {
+    text = '<i class="fas fa-eye lobby-button-icon"></i>';
+  } else if (visibility === 'shared') {
+    text = '<i class="fas fa-users lobby-button-icon"></i>';
+  } else {
+    throw new Error('The "makeReplayButton()" function was provided an invalid visibility argument.');
+  }
+  button.html(text);
+  button.addClass('history-table');
+  button.addClass('enter-history-game');
+  button.attr('id', `replay-${id}`);
+
+  button.on('click', () => {
+    globals.conn!.send('replayCreate', {
+      source: 'id',
+      gameID: id,
+      visibility,
+    });
+    if (visibility === 'shared') {
+      hide();
+    }
+  });
+
+  return button;
 };
