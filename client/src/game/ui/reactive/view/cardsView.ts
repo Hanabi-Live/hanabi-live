@@ -133,10 +133,10 @@ const updateBorder = (order: number) => {
   globals.layers.card.batchDraw();
 };
 
-function updatePips(order: number) {
+const updatePips = (order: number) => {
   globals.deck[order].updatePips();
   globals.layers.card.batchDraw();
-}
+};
 
 const updateCardVisuals = (order: number) => {
   // Card visuals are updated for both the deck and stack bases when morphed
