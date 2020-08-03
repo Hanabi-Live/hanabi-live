@@ -4,6 +4,7 @@ import { MAX_STRIKES, MAX_CLUE_NUM } from '../../../types/constants';
 import { StateStrike } from '../../../types/GameState';
 import globals from '../../globals';
 import { animate } from '../../konvaHelpers';
+import * as turn from '../../turn';
 
 export const onTurnChanged = (data: {
   turn: number;
@@ -36,24 +37,29 @@ export const onCurrentPlayerIndexChanged = (currentPlayerIndex: number | null) =
     globals.elements.nameFrames[i].setActive(currentPlayerIndex === i);
   }
 
-  // Additionally, show a UI element to signify that it is their turn
-  if (currentPlayerIndex !== null) {
-    if (globals.lobby.settings.keldonMode) {
-      for (const rect of globals.elements.playerHandBlackLines) {
-        rect.fill(OFF_BLACK);
-      }
-      const currentPlayerRect = globals.elements.playerHandBlackLines[currentPlayerIndex];
-      if (currentPlayerRect !== undefined) {
-        currentPlayerRect.fill('yellow');
-      }
-    } else {
-      for (const rect of globals.elements.playerHandTurnRects) {
-        rect.hide();
-      }
-      const currentPlayerRect = globals.elements.playerHandTurnRects[currentPlayerIndex];
-      if (currentPlayerRect !== undefined) {
-        currentPlayerRect.show();
-      }
+  if (currentPlayerIndex === null) {
+    // The game has ended
+    // Ensure that the clue UI is not showing
+    turn.hideClueUIAndDisableDragging();
+  } else if (globals.lobby.settings.keldonMode) {
+    // In addition to bolding the player's name,
+    // change the color of their black line to signify that it is their turn
+    for (const rect of globals.elements.playerHandBlackLines) {
+      rect.fill(OFF_BLACK);
+    }
+    const currentPlayerRect = globals.elements.playerHandBlackLines[currentPlayerIndex];
+    if (currentPlayerRect !== undefined) {
+      currentPlayerRect.fill('yellow');
+    }
+  } else {
+    // In addition to bolding the player's name,
+    // show a black rectangle around the player's hand to signify that it is their turn
+    for (const rect of globals.elements.playerHandTurnRects) {
+      rect.hide();
+    }
+    const currentPlayerRect = globals.elements.playerHandTurnRects[currentPlayerIndex];
+    if (currentPlayerRect !== undefined) {
+      currentPlayerRect.show();
     }
   }
 

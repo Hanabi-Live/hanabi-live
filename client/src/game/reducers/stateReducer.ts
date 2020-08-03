@@ -59,9 +59,9 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     }
 
     case 'finishOngoingGame': {
-      // If we were playing in a game that just ended,
-      // recalculate the whole game as a spectator to fix card possibilities
       if (state.playing) {
+        // We were playing in a game that just ended
+        // Recalculate the whole game as a spectator to fix card possibilities
         state.playing = false;
 
         const initialState = initialGameState(state.metadata);
@@ -82,8 +82,13 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       // Record the database ID of the game
       state.replay.databaseID = action.databaseID;
 
-      // By default, we enter a shared replay from the penultimate segment of the game
-      // (so that the player times do not drown out the reason that the game ended)
+      // If we were in an in-game replay when the game ended,
+      // keep us at the current turn so that we are not taken away from what we are looking at
+      // Otherwise, go to the penultimate segment
+      // We want to use the penultimate segment instead of the final segment,
+      // because the final segment will contain the times for all of the players,
+      // and this will drown out the reason that the game ended
+      const inInGameReplay = state.replay.active;
       if (state.ongoingGame.turn.segment === null) {
         throw new Error('The segment for the ongoing game was null when it finished.');
       }
@@ -91,20 +96,15 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
         throw new Error('The segment for the ongoing game was less than 1 when it finished.');
       }
       const penultimateSegment = state.ongoingGame.turn.segment - 1;
-
-      // We entered the in-game replay when we received the "gameOver" game action,
-      // which should happened only a few milliseconds ago
-      // If we are not in an in-game replay for some reason, enter one
-      if (!state.replay.active) {
+      if (!inInGameReplay) {
         state.replay.active = true;
         state.replay.segment = penultimateSegment;
       }
 
       // Initialize the shared replay
       state.replay.shared = {
-        segment: state.replay.segment,
-        // If we were in an in-game replay when the game ended, do not jerk us away to the end
-        useSharedSegments: state.replay.segment === penultimateSegment,
+        segment: penultimateSegment,
+        useSharedSegments: !inInGameReplay,
         leader: action.sharedReplayLeader,
         amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
       };
@@ -205,23 +205,12 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       // Save the action so that we can recompute the state at the end of the game
       state.replay.actions.push(action);
 
-      if (action.type === 'gameOver') {
-        // If the game has just ended, immediately enter the in-game replay in order to prevent the
-        // final segment with all of the player's times from showing
-        // (which will drown out the reason why the game ended)
-        state.replay.active = true;
-        if (state.ongoingGame.turn.segment === null) {
-          throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);
-        }
-        state.replay.segment = state.ongoingGame.turn.segment;
-      }
-
       break;
     }
   }
 
   // Show the appropriate state depending on the situation
-  state.visibleState = visualStateToShow(state);
+  state.visibleState = visualStateToShow(state, action);
 }, {} as State);
 
 export default stateReducer;
@@ -273,7 +262,7 @@ const updateCardIdentities = (state: Draft<State>) => {
   });
 };
 
-const visualStateToShow = (state: Draft<State>) => {
+const visualStateToShow = (state: Draft<State>, action: Action) => {
   if (state.visibleState === null) {
     // The state is still initializing, so do not show anything
     return null;
@@ -294,6 +283,12 @@ const visualStateToShow = (state: Draft<State>) => {
       throw new Error('The ongoing hypothetical state is undefined.');
     }
     return state.replay.hypothetical.ongoing;
+  }
+
+  // After an ongoing game ends, do not automatically show the final segment with the player's times
+  // by default in order to avoid drowning out the reason why the game ended
+  if (action.type === 'playerTimes') {
+    return state.replay.states[state.replay.states.length - 2]; // The penultimate segment
   }
 
   // Show the final segment of the current game

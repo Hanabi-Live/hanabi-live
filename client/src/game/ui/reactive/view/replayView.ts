@@ -112,6 +112,7 @@ export const onSharedSegmentChanged = (data: {
   // There are two replay shuttles,
   // so we have to adjust them whenever the "segment" or the "sharedSegment" changes
   // The first time we go into a shared replay, always animate fast
+  // (the condition is needed in case we are in an in-game replay when the game ends)
   replay.adjustShuttles(previousData === undefined || previousData.sharedSegment === undefined);
 
   globals.layers.UI.batchDraw();
