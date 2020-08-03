@@ -1,9 +1,9 @@
 import { getVariant } from '../src/game/data/gameData';
 import gameStateReducer from '../src/game/reducers/gameStateReducer';
 import initialState from '../src/game/reducers/initialStates/initialState';
-import { cluesRules } from '../src/game/rules';
+import { shouldStoreSegment } from '../src/game/reducers/stateReducer';
+import { cluesRules, playStacksRules } from '../src/game/rules';
 import * as handRules from '../src/game/rules/hand';
-import { hasReversedSuits } from '../src/game/rules/variant';
 import {
   ActionClue,
   ActionDiscard,
@@ -14,7 +14,6 @@ import {
 import ActionType from '../src/game/types/ActionType';
 import CardIdentity from '../src/game/types/CardIdentity';
 import ClueType from '../src/game/types/ClueType';
-import { STACK_BASE_RANK } from '../src/game/types/constants';
 import GameState from '../src/game/types/GameState';
 import State from '../src/game/types/State';
 import testGame from '../test_data/up_or_down.json';
@@ -97,7 +96,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
 
     switch (a.type) {
       case 'clue': {
-      // Fix the list of touched cards
+        // Fix the list of touched cards
         const list: number[] = s
           .hands[a.target]
           .filter((order) => {
@@ -112,20 +111,20 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
         action = { ...a, list };
         break;
       }
+
       case 'play': {
         // Check if this is actually a play or a misplay
         const jsonCard: CardIdentity = gameJSON.deck[a.order];
         if (jsonCard.suitIndex === null || jsonCard.rank === null) {
           throw new Error(`Failed to get the rank or the suit for card ${a.order} in the JSON deck.`);
         }
-        const playStack = s.playStacks[jsonCard.suitIndex];
-        let topOfStackRank = STACK_BASE_RANK;
-        if (playStack.length > 0) {
-          topOfStackRank = gameJSON.deck[playStack[playStack.length - 1]].rank;
-        }
-        // TODO: Ignoring reversed for now
-        const successful = hasReversedSuits(variant) ? true : topOfStackRank === jsonCard.rank - 1;
-        if (!successful) {
+
+        const nextRanks = playStacksRules.nextRanks(
+          s.playStacks[jsonCard.suitIndex],
+          s.playStackDirections[jsonCard.suitIndex],
+          s.deck,
+        );
+        if (!nextRanks.includes(jsonCard.rank)) {
           // Send a discard and a strike
           action = {
             type: 'discard',
@@ -143,12 +142,17 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
 
         break;
       }
+
       default: {
         break;
       }
     }
 
     nextState = gameStateReducer(nextState, action, false, state.metadata);
+
+    if (shouldStoreSegment(nextState.turn.segment, s.turn.segment, action)) {
+      states[nextState.turn.segment!] = nextState;
+    }
 
     return nextState;
   }, state.ongoingGame);

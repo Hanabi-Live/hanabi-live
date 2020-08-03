@@ -93,9 +93,15 @@ func characterGenerate(g *Game) {
 		return
 	}
 
-	// If this is a replay of a game from the database (or a "!replay" game),
+	// If this is a JSON replay, use the character selections from the JSON input
+	if g.ExtraOptions.DatabaseID == 0 {
+		// TODO
+		return
+	}
+
+	// If this is a database replay (or a "!replay" game),
 	// use the character selections from the database instead of generating new random ones
-	if g.ExtraOptions.DatabaseID != -1 && g.ExtraOptions.DatabaseID != 0 {
+	if g.ExtraOptions.DatabaseID != -1 {
 		// Get the players from the database
 		var dbPlayers []*DBPlayer
 		if v, err := models.Games.GetPlayers(g.ExtraOptions.DatabaseID); err != nil {
