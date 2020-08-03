@@ -1,9 +1,9 @@
 import { getVariant } from '../src/game/data/gameData';
 import gameStateReducer from '../src/game/reducers/gameStateReducer';
 import initialState from '../src/game/reducers/initialStates/initialState';
-import { shouldStoreSegment } from '../src/game/reducers/stateReducer';
 import { cluesRules, playStacksRules } from '../src/game/rules';
 import * as handRules from '../src/game/rules/hand';
+import * as segmentRules from '../src/game/rules/segment';
 import {
   ActionClue,
   ActionDiscard,
@@ -150,7 +150,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
 
     nextState = gameStateReducer(nextState, action, false, state.metadata);
 
-    if (shouldStoreSegment(nextState.turn.segment, s.turn.segment, action)) {
+    if (segmentRules.shouldStore(nextState.turn.segment, s.turn.segment, action)) {
       states[nextState.turn.segment!] = nextState;
     }
 
