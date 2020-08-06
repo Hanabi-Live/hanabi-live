@@ -1,4 +1,5 @@
 import * as chat from './chat';
+import { VARIANTS } from './game/data/gameData';
 import globals from './globals';
 import * as modals from './modals';
 
@@ -123,7 +124,10 @@ const setVariant = (_room: string, args: string[]) => {
 
   // Validate the variant name
   const variantName = args.join(' ');
-  // TODO
+  if (VARIANTS.get(variantName) === undefined) {
+    modals.warningShow(`The variant of "${variantName}" is not valid.`);
+    return;
+  }
 
   globals.conn!.send('tableSetVariant', {
     tableID: globals.tableID,
