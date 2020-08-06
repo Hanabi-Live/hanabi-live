@@ -15,6 +15,7 @@ import ChatMessage from './types/ChatMessage';
 
 // Variables
 const emojiMap = new Map<string, string>();
+const emojiList: string[] = [];
 const emoteList: string[] = [];
 let chatLineNum = 1;
 let lastPM = '';
@@ -36,22 +37,26 @@ export const init = () => {
   $('#game-chat-input').on('keypress', keypress('table'));
   $('#game-chat-input').on('keydown', keydown);
 
-  // Make an emote list and ensure that there are no overlapping emotes
-  const emoteMap = new Map();
-  for (const category of Object.values(emoteCategories)) {
-    for (const emote of category) {
-      if (emoteMap.has(emote)) {
-        throw new Error(`Duplicate emote found: ${emote}`);
-      } else {
-        emoteMap.set(emote, true);
-      }
-      emoteList.push(emote);
+  // Make an emoji list/map and ensure that there are no overlapping emoji
+  for (const [emojiName, emoji] of Object.entries(emojis)) {
+    if (emojiMap.has(emojiName)) {
+      throw new Error(`Duplicate emoji found: ${emojiName}`);
     }
+    emojiMap.set(emojiName, emoji);
+    emojiList.push(`:${emojiName}:`);
+    // (we use surrounding colons since that is the way that emoji are detected)
   }
 
-  // Convert the emoji JSON to a map for easy reference
-  for (const [emojiName, emoji] of Object.entries(emojis)) {
-    emojiMap.set(emojiName, emoji);
+  // Make an emote list/map and ensure that there are no overlapping emotes
+  const emoteMap = new Map(); // The map can be ephemeral
+  for (const category of Object.values(emoteCategories)) {
+    for (const emoteName of category) {
+      if (emoteMap.has(emoteName)) {
+        throw new Error(`Duplicate emote found: ${emoteName}`);
+      }
+      emoteMap.set(emoteName, true);
+      emoteList.push(emoteName);
+    }
   }
 
   // Retrieve the contents of the typed chat list from local storage (cookie)
@@ -145,7 +150,7 @@ const keypress = (room: string) => function keypressFunction(
 };
 
 const submit = (room: string, element: JQuery<HTMLElement>) => {
-  const msg = element.val();
+  let msg = element.val();
   if (isEmpty(msg)) {
     return;
   }
@@ -167,7 +172,13 @@ const submit = (room: string, element: JQuery<HTMLElement>) => {
     return;
   }
 
-  // Use "startsWith" instead of "===" to work around an unknown bug where
+  // Emojis are normally replaced before the user presses enter
+  // However, if they tab-complete an emoji and then press enter before entering in any other
+  // keystrokes, then the non-replaced emoji will be sent over the wire
+  // Replace any non-replaced emoji before that happens
+  msg = fillEmojis(msg);
+
+  // Use "startsWith" instead of "===" to work around an bug where
   // the room can already have the table number appended (e.g. "table123")
   let roomID = room;
   if (roomID.startsWith('table')) {
@@ -323,17 +334,17 @@ const tabInitAutoCompleteList = (event: JQuery.Event, finalWord: string) => {
     userList.push(user.name);
   }
 
-  // Combine it with the list of emotes
-  const usersAndEmotesList = userList.concat(emoteList);
-  usersAndEmotesList.sort(
+  // Combine it with the list of emotes and the list of emoji
+  const usersAndEmojisAndEmotesList = userList.concat(emojiList).concat(emoteList);
+  usersAndEmojisAndEmotesList.sort(
     // We want to do a case-insensitive sort, which will not occur by default
     (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()),
   );
-  fixCustomEmotePriority(usersAndEmotesList);
+  fixCustomEmotePriority(usersAndEmojisAndEmotesList);
 
   // Create a list of all the things that could match what we have typed thus far
   tabCompleteWordList = [];
-  for (const word of usersAndEmotesList) {
+  for (const word of usersAndEmojisAndEmotesList) {
     const partialWord = word.slice(0, finalWord.length);
     if (partialWord.toLowerCase() === finalWord.toLowerCase()) {
       tabCompleteWordList.push(word);
@@ -431,7 +442,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
 
   // Convert emotes to images
   data.msg = fillDiscordEmotes(data.msg);
-  data.msg = fillLocalEmotes(data.msg);
+  data.msg = fillTwitchEmotes(data.msg);
 
   // Get the hours and minutes from the time
   const datetime = new Intl.DateTimeFormat(undefined, {
@@ -517,7 +528,22 @@ const fillDiscordEmotes = (message: string) => {
   return filledMessed;
 };
 
-const fillLocalEmotes = (message: string) => {
+const fillEmojis = (message: string) => {
+  let filledMessage = message;
+
+  // Search through the text for each emoji
+  for (const [emojiName, emoji] of Object.entries(emojis)) {
+    const emojiTag = `:${emojiName}:`;
+    const index = message.indexOf(emojiTag);
+    if (index !== -1) {
+      filledMessage = filledMessage.replace(emojiTag, emoji);
+    }
+  }
+
+  return filledMessage;
+};
+
+const fillTwitchEmotes = (message: string) => {
   let filledMessage = message;
 
   // Search through the text for each emote
