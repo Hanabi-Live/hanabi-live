@@ -1,6 +1,7 @@
 import * as chat from './chat';
 import { VARIANTS } from './game/data/gameData';
 import globals from './globals';
+import * as createGame from './lobby/createGame';
 import * as modals from './modals';
 
 // Define a command handler map
@@ -135,6 +136,9 @@ const setVariant = (_room: string, args: string[]) => {
       variantName,
     },
   });
+
+  // Update our stored create table setting to be equal to this variant
+  createGame.checkChanged('createTableVariant', variantName);
 };
 chatCommands.set('setvariant', setVariant);
 chatCommands.set('changevariant', setVariant);

@@ -317,7 +317,7 @@ const getVariant = (setting: keyof Settings) => {
   return value;
 };
 
-const checkChanged = (settingName: keyof Settings, value: boolean | string) => {
+export const checkChanged = (settingName: keyof Settings, value: boolean | string) => {
   if (!isKeyOf(settingName, globals.settings)) {
     throw new Error(`The setting of ${settingName} does not exist in the Settings class.`);
   }
