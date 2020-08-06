@@ -10,18 +10,13 @@ import CardIdentity from '../types/CardIdentity';
 import CardNote from '../types/CardNote';
 import CardState from '../types/CardState';
 import CardStatus from '../types/CardStatus';
-import {
-  CARD_FADE,
-  CARD_H,
-  CARD_W,
-  STACK_BASE_RANK,
-  UNKNOWN_CARD_RANK,
-} from '../types/constants';
+import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
 import StackDirection from '../types/StackDirection';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
 import * as arrows from './arrows';
 import CardLayout from './CardLayout';
+import { CARD_FADE, CARD_H, CARD_W } from './constants';
 import NodeWithTooltip from './controls/NodeWithTooltip';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';

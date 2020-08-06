@@ -3,16 +3,10 @@
 import { getSuit } from '../data/gameData';
 import * as variantRules from '../rules/variant';
 import Color from '../types/Color';
-import {
-  CARD_H,
-  CARD_W,
-  STACK_BASE_RANK,
-  START_CARD_RANK,
-  UNKNOWN_CARD_RANK,
-} from '../types/constants';
-
+import { STACK_BASE_RANK, START_CARD_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
+import { CARD_H, CARD_W } from './constants';
 import drawPip from './drawPip';
 import drawStylizedRank from './drawStylizedRank';
 

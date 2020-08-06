@@ -1,13 +1,7 @@
 import { variantRules } from '../../../rules';
-import {
-  LABEL_COLOR,
-  MAX_STRIKES,
-  MAX_CLUE_NUM,
-  OFF_BLACK,
-  STRIKE_FADE,
-} from '../../../types/constants';
-
+import { MAX_CLUE_NUM, MAX_STRIKES } from '../../../types/constants';
 import { StateStrike } from '../../../types/GameState';
+import { LABEL_COLOR, OFF_BLACK, STRIKE_FADE } from '../../constants';
 import globals from '../../globals';
 import { animate } from '../../konvaHelpers';
 import * as turn from '../../turn';

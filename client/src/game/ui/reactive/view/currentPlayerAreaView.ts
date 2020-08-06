@@ -1,7 +1,8 @@
 import Konva from 'konva';
 import { handRules } from '../../../rules';
-import { LABEL_COLOR, MAX_CLUE_NUM } from '../../../types/constants';
+import { MAX_CLUE_NUM } from '../../../types/constants';
 import State from '../../../types/State';
+import { LABEL_COLOR } from '../../constants';
 import globals from '../../globals';
 
 export const isVisible = (state: State) => (

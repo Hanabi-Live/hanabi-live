@@ -1,5 +1,5 @@
 import Konva from 'konva';
-import { CLUED_COLOR } from '../../types/constants';
+import { CLUED_COLOR } from '../constants';
 
 export default class RankPip extends Konva.Text {
   private fillValue: string | undefined;
