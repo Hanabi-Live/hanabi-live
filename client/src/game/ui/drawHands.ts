@@ -1,8 +1,8 @@
 import Konva from 'konva';
-import { CARD_W, CARD_H, OFF_BLACK } from '../../constants';
 import { getCharacter } from '../data/gameData';
 import * as hand from '../rules/hand';
 import Character from '../types/Character';
+import { CARD_W, CARD_H, OFF_BLACK } from '../types/constants';
 import CardLayout from './CardLayout';
 import TextWithTooltip from './controls/TextWithTooltip';
 import globals from './globals';

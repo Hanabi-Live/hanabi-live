@@ -3,12 +3,11 @@
 
 import Konva from 'konva';
 import { KonvaEventObject } from 'konva/types/Node';
-import { ARROW_COLOR } from '../../constants';
 import { getCharacter } from '../data/gameData';
 import { cardRules, variantRules } from '../rules';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
-import { STACK_BASE_RANK } from '../types/constants';
+import { ARROW_COLOR, STACK_BASE_RANK } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import Suit from '../types/Suit';

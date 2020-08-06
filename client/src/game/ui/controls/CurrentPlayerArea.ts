@@ -1,5 +1,5 @@
 import Konva from 'konva';
-import { LABEL_COLOR } from '../../../constants';
+import { LABEL_COLOR } from '../../types/constants';
 import globals from '../globals';
 import FitText from './FitText';
 

@@ -2,11 +2,6 @@
 // It has a LayoutChild parent
 
 import Konva from 'konva';
-import {
-  CARD_FADE,
-  CARD_H,
-  CARD_W,
-} from '../../constants';
 import { getSuit, VARIANTS } from '../data/gameData';
 import initialCardState from '../reducers/initialStates/initialCardState';
 import * as cardRules from '../rules/card';
@@ -15,7 +10,13 @@ import CardIdentity from '../types/CardIdentity';
 import CardNote from '../types/CardNote';
 import CardState from '../types/CardState';
 import CardStatus from '../types/CardStatus';
-import { STACK_BASE_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
+import {
+  CARD_FADE,
+  CARD_H,
+  CARD_W,
+  STACK_BASE_RANK,
+  UNKNOWN_CARD_RANK,
+} from '../types/constants';
 import StackDirection from '../types/StackDirection';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';

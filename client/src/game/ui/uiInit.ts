@@ -1,6 +1,6 @@
 import Konva from 'konva';
-import { LABEL_COLOR } from '../../constants';
 import * as deck from '../rules/deck';
+import { LABEL_COLOR } from '../types/constants';
 import drawCards from './drawCards';
 import drawUI from './drawUI';
 import globals from './globals';

@@ -121,7 +121,10 @@ const setVariant = (_room: string, args: string[]) => {
     return;
   }
 
+  // Validate the variant name
   const variantName = args.join(' ');
+  // TODO
+
   globals.conn!.send('tableSetVariant', {
     tableID: globals.tableID,
     options: {

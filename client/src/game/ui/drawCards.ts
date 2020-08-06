@@ -1,13 +1,16 @@
 // The card graphics are various HTML5 canvas drawings
 
-import {
-  CARD_H,
-  CARD_W,
-} from '../../constants';
 import { getSuit } from '../data/gameData';
 import * as variantRules from '../rules/variant';
 import Color from '../types/Color';
-import { STACK_BASE_RANK, UNKNOWN_CARD_RANK, START_CARD_RANK } from '../types/constants';
+import {
+  CARD_H,
+  CARD_W,
+  STACK_BASE_RANK,
+  START_CARD_RANK,
+  UNKNOWN_CARD_RANK,
+} from '../types/constants';
+
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
 import drawPip from './drawPip';

@@ -1,10 +1,9 @@
-import { PREPLAY_DELAY } from '../../constants';
 import * as notifications from '../../notifications';
 import { variantRules } from '../rules';
 import ActionType from '../types/ActionType';
 import ClientAction from '../types/ClientAction';
 import ClueType from '../types/ClueType';
-import { MAX_CLUE_NUM } from '../types/constants';
+import { PREPLAY_DELAY, MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import globals from './globals';
 import * as hypothetical from './hypothetical';

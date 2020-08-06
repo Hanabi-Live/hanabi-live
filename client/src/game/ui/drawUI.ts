@@ -1,14 +1,13 @@
 // This function draws the UI when going into a game for the first time
 
 import Konva from 'konva';
-import { LABEL_COLOR } from '../../constants';
 import * as debug from '../../debug';
 import * as modals from '../../modals';
 import * as deck from '../rules/deck';
 import * as stats from '../rules/stats';
 import * as variantRules from '../rules/variant';
 import { colorClue, rankClue } from '../types/Clue';
-import { STACK_BASE_RANK } from '../types/constants';
+import { LABEL_COLOR, STACK_BASE_RANK } from '../types/constants';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import * as arrows from './arrows';
 import backToLobby from './backToLobby';

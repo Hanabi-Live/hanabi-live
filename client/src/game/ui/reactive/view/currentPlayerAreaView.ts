@@ -1,7 +1,6 @@
 import Konva from 'konva';
-import { LABEL_COLOR } from '../../../../constants';
 import { handRules } from '../../../rules';
-import { MAX_CLUE_NUM } from '../../../types/constants';
+import { LABEL_COLOR, MAX_CLUE_NUM } from '../../../types/constants';
 import State from '../../../types/State';
 import globals from '../../globals';
 

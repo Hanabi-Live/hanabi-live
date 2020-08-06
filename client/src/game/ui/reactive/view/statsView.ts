@@ -1,4 +1,4 @@
-import { LABEL_COLOR } from '../../../../constants';
+import { LABEL_COLOR } from '../../../types/constants';
 import { PaceRisk } from '../../../types/GameState';
 import globals from '../../globals';
 

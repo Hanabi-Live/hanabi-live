@@ -4,6 +4,7 @@ import Konva from 'konva';
 import * as KonvaContext from 'konva/types/Context';
 import { RectConfig } from 'konva/types/shapes/Rect';
 import * as KonvaUtil from 'konva/types/Util';
+import * as variantRules from '../rules/variant';
 import {
   CARD_H,
   CARD_W,
@@ -11,9 +12,9 @@ import {
   CHOP_MOVE_COLOR,
   FINESSE_COLOR,
   OFF_BLACK,
-} from '../../constants';
-import * as variantRules from '../rules/variant';
-import { START_CARD_RANK } from '../types/constants';
+  START_CARD_RANK,
+} from '../types/constants';
+
 import Variant from '../types/Variant';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';

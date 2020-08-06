@@ -1,8 +1,8 @@
 import Konva from 'konva';
-import { TOOLTIP_DELAY } from '../../constants';
 import { timerFormatter, dateTimeFormatter, millisecondsToClockString } from '../../misc';
 import { deckRules } from '../rules';
 import ActionType from '../types/ActionType';
+import { TOOLTIP_DELAY } from '../types/constants';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import * as arrows from './arrows';
 import globals from './globals';

@@ -1,6 +1,12 @@
-import { LABEL_COLOR, STRIKE_FADE, OFF_BLACK } from '../../../../constants';
 import { variantRules } from '../../../rules';
-import { MAX_STRIKES, MAX_CLUE_NUM } from '../../../types/constants';
+import {
+  LABEL_COLOR,
+  MAX_STRIKES,
+  MAX_CLUE_NUM,
+  OFF_BLACK,
+  STRIKE_FADE,
+} from '../../../types/constants';
+
 import { StateStrike } from '../../../types/GameState';
 import globals from '../../globals';
 import { animate } from '../../konvaHelpers';

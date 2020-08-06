@@ -1,6 +1,6 @@
 import Konva from 'konva';
-import { TOOLTIP_DELAY } from '../../constants';
 import Screen from '../../lobby/types/Screen';
+import { TOOLTIP_DELAY } from '../types/constants';
 import NodeWithTooltip from './controls/NodeWithTooltip';
 import TextWithTooltip from './controls/TextWithTooltip';
 import globals from './globals';

@@ -6,9 +6,9 @@ import { VARIANTS } from '../game/data/gameData';
 import { DEFAULT_VARIANT_NAME } from '../game/types/constants';
 import globals from '../globals';
 import {
-  isEmpty,
-  getRandomNumber,
   closeAllTooltips,
+  getRandomNumber,
+  isEmpty,
   isKeyOf,
 } from '../misc';
 import * as modals from '../modals';

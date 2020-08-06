@@ -1,6 +1,6 @@
 import Konva from 'konva';
-import { LABEL_COLOR } from '../../constants';
 import * as modals from '../../modals';
+import { LABEL_COLOR } from '../types/constants';
 import backToLobby from './backToLobby';
 import globals from './globals';
 import * as tooltips from './tooltips';
