@@ -170,13 +170,13 @@ export const init = () => {
 // "create-game-variant-dropdown2" is the full (datalist) dropdown
 const firstVariantDropdownInit = () => {
   // Initialize the 1st variant dropdown with the basic variants
-  for (const variant of basicVariants) {
+  for (const variantName of basicVariants) {
     // As a sanity check, ensure that this variant actually exists in the variants JSON
-    if (!variantNames.includes(variant)) {
-      throw new Error(`The "basic" variant of "${variant}" does not exist in the "variants.json" file.`);
+    if (VARIANTS.get(variantName) === undefined) {
+      throw new Error(`The "basic" variant of "${variantName}" does not exist in the "variants.json" file.`);
     }
 
-    const option = new Option(variant, variant);
+    const option = new Option(variantName, variantName);
     dropdown1.append(option);
   }
   const spacing = new Option('───────────────');
@@ -441,7 +441,7 @@ export const ready = () => {
 const readyVariant = (value: any) => {
   // Validate the variant name that we got from the server
   let variant = DEFAULT_VARIANT_NAME;
-  if (typeof value !== 'string' || !variantNames.includes(value)) {
+  if (typeof value !== 'string' || VARIANTS.get(value) === undefined) {
     globals.settings.createTableVariant = variant;
   } else {
     variant = value;
