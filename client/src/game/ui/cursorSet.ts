@@ -7,6 +7,11 @@ export type CursorType = 'default' | 'hand' | 'dragging' | 'look';
 let currentCursorType = 'default';
 
 export default function cursorSet(cursorType: CursorType) {
+  // It is possible to receive cursor events before the UI has initialized
+  if (globals.store === null) {
+    return;
+  }
+
   if (cursorType === currentCursorType) {
     return;
   }
