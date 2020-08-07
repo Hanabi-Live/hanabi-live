@@ -255,7 +255,7 @@ const drawPlayerBox = (i: number) => {
     return;
   }
 
-  const numPlayers = globals.game.options.numPlayers;
+  const numPlayers = globals.game.players.length; // The "numPlayers" in the options is not set yet
   const div = $(`#lobby-pregame-player-${(i + 1)}`);
 
   const player = globals.game.players[i];
