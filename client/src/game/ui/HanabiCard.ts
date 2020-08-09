@@ -565,6 +565,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     this.setFade(status === CardStatus.Trash);
     this.setCritical(status === CardStatus.Critical);
+    notes.setCardIndicator(this.state.order);
   }
 
   private setFade(isTrash: boolean) {
