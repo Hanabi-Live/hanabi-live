@@ -8,24 +8,30 @@ export default function initialCardState(order: number, variant: Variant) : Card
   const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);
   const possibleRanks: number[] = variant.ranks.slice();
   const possibleCardsFromObservation: number[][] = [];
+  const possibleCardsFromInference: number[][] = [];
 
   const possibleCardsFromClues: Array<[number, number]> = [];
+  const possibleCardsFromInference2: Array<[number, number]> = [];
   for (const suitIndex of possibleSuits) {
     for (const rank of possibleRanks) {
       possibleCardsFromClues.push([suitIndex, rank]);
+      possibleCardsFromInference2.push([suitIndex, rank]);
     }
   }
 
   // Possible cards (based on both clues given and cards seen) are also tracked separately
   possibleSuits.forEach((suitIndex) => {
     possibleCardsFromObservation[suitIndex] = [];
+    possibleCardsFromInference[suitIndex] = [];
     const suit = variant.suits[suitIndex];
     possibleRanks.forEach((rank) => {
-      possibleCardsFromObservation[suitIndex][rank] = deckRules.numCopiesOfCard(
+      const copies = deckRules.numCopiesOfCard(
         suit,
         rank,
         variant,
       );
+      possibleCardsFromObservation[suitIndex][rank] = copies;
+      possibleCardsFromInference[suitIndex][rank] = copies;
     });
   });
 
@@ -36,6 +42,8 @@ export default function initialCardState(order: number, variant: Variant) : Card
     rank: null,
     possibleCardsFromObservation,
     possibleCardsFromClues,
+    possibleCardsFromInference,
+    possibleCardsFromInference2,
     positiveRankClues: [],
     suitDetermined: false,
     rankDetermined: false,

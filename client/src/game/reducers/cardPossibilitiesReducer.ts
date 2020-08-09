@@ -27,6 +27,9 @@ const cardPossibilitiesReducer = (
   const possibleCardsFromClues = state.possibleCardsFromClues.filter(
     ([suitIndex, rank]) => cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
   );
+  const possibleCardsFromInference2 = state.possibleCardsFromInference2.filter(
+    ([suitIndex, rank]) => cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
+  );
 
   let positiveRankClues = state.positiveRankClues;
   if (positive && clue.type === ClueType.Rank && !positiveRankClues.includes(clue.value)) {
@@ -47,6 +50,7 @@ const cardPossibilitiesReducer = (
     suitDetermined,
     rankDetermined,
     possibleCardsFromClues,
+    possibleCardsFromInference2,
     positiveRankClues,
   };
 

@@ -17,6 +17,16 @@ export default interface CardState {
   //  = which specific cards are still possible based on clues received
   readonly possibleCardsFromClues: ReadonlyArray<readonly [number, number]>;
 
+  // possibleCardsFromInference[suitIndex][rank]
+  //  = how many cards of this suitIndex and rank could this be? (using clue and observation
+  // information, along with inferences)
+  // This is the same structure as possibleCardsFromObservation
+  readonly possibleCardsFromInference: ReadonlyArray<readonly number[]>;
+
+  // possibleCardsFromInference2 = Array<[suitIndex, rank]>
+  //  = which specific cards are still possible based on everything the player should know
+  readonly possibleCardsFromInference2: ReadonlyArray<readonly [number, number]>;
+
   // We need this to highlight pips (e.g. on Pink variants)
   readonly positiveRankClues : number[];
 

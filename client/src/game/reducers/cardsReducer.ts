@@ -9,6 +9,7 @@ import { colorClue, rankClue } from '../types/Clue';
 import ClueType from '../types/ClueType';
 import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
+import cardInferenceReducer from './cardInferenceReducer';
 import cardPossibilitiesReducer from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
 
@@ -21,6 +22,10 @@ const cardsReducer = (
 ) => {
   const variant = getVariant(metadata.options.variantName);
   const newDeck = deck.concat([]);
+  const newHands = Array.from(
+    game.hands,
+    (arr) => Array.from(arr),
+  );
 
   switch (action.type) {
     // The server just told us about a card that was previously hidden
@@ -214,6 +219,11 @@ const cardsReducer = (
         }
       }
 
+      // Are there just some bad tests that don't setup the hands correctly before draw?
+      if (!newHands[drawnCard.location].includes(drawnCard.order)) {
+        newHands[drawnCard.location].push(drawnCard.order);
+      }
+
       break;
     }
 
@@ -231,7 +241,7 @@ const cardsReducer = (
     }
   }
 
-  return newDeck;
+  return cardInferenceReducer(newDeck, newHands, action, variant);
 };
 
 export default cardsReducer;

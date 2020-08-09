@@ -136,8 +136,7 @@ export const isPotentiallyPlayable = (
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
 ) => {
-  for (const [suitIndex, rank] of card.possibleCardsFromClues) {
-    if (card.possibleCardsFromObservation[suitIndex][rank] === 0) continue;
+  for (const [suitIndex, rank] of card.possibleCardsFromInference2) {
     const nextRanksArray = playStacksRules.nextRanks(
       playStacks[suitIndex],
       playStackDirections[suitIndex],
@@ -156,9 +155,8 @@ export function canPossiblyBe(card: CardState, suitIndex: number | null, rank: n
     // We have nothing to check
     return true;
   }
-  return card.possibleCardsFromClues.some(
-    ([s, r]) => (suitIndex === null || suitIndex === s) && (rank === null || rank === r)
-      && card.possibleCardsFromObservation[s][r] > 0,
+  return card.possibleCardsFromInference2.some(
+    ([s, r]) => (suitIndex === null || suitIndex === s) && (rank === null || rank === r),
   );
 }
 
@@ -168,13 +166,6 @@ export const allPossibilitiesTrash = (
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-) => {
-  for (const [suitIndex, rank] of card.possibleCardsFromClues) {
-    if (card.possibleCardsFromObservation[suitIndex][rank] === 0) continue;
-    if (needsToBePlayed(suitIndex, rank, deck, playStacks, playStackDirections, variant)) {
-      return false;
-    }
-  }
-
-  return true;
-};
+) => !card.possibleCardsFromInference2.some(([suitIndex, rank]) => needsToBePlayed(
+  suitIndex, rank, deck, playStacks, playStackDirections, variant,
+));

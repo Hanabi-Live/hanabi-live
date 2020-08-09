@@ -101,13 +101,13 @@ const subscribeToCardChanges = (order: number) => {
   // Pips
   sub((c) => ({
     numPossibleCardsFromClues: c.possibleCardsFromClues.length,
-    possibleCardsFromObservation: c.possibleCardsFromObservation,
+    possibleCardsFromInference2: c.possibleCardsFromInference2,
     numPositiveRankClues: c.positiveRankClues.length,
   }), () => updatePips(order));
   // Notes
   sub((c) => ({
     possibleCardsFromClues: c.possibleCardsFromClues,
-    possibleCardsFromObservation: c.possibleCardsFromObservation,
+    possibleCardsFromInference2: c.possibleCardsFromInference2,
   }), () => updateNotePossibilities(order));
   // Card visuals
   subFullState((s) => {
