@@ -17,6 +17,8 @@ interface TweenConfig {
   duration?: number;
   x?: number;
   y?: number;
+  offsetX?: number;
+  offsetY?: number;
   scale?: number;
   rotation?: number;
   opacity?: number;
@@ -39,12 +41,18 @@ export const animate = (
     node.tween.destroy();
     node.tween = null;
   }
-  if (fast) {
+  if (fast || params.duration === 0) {
     if (params.x !== undefined) {
       node.x(params.x);
     }
     if (params.y !== undefined) {
       node.y(params.y);
+    }
+    if (params.offsetX !== undefined) {
+      node.offsetX(params.offsetX);
+    }
+    if (params.offsetY !== undefined) {
+      node.offsetY(params.offsetY);
     }
     if (params.scale !== undefined) {
       node.scaleX(params.scale);
@@ -105,6 +113,12 @@ export const animate = (
     }
     if (params.y !== undefined) {
       config.y = params.y;
+    }
+    if (params.offsetX !== undefined) {
+      config.offsetX = params.offsetX;
+    }
+    if (params.offsetY !== undefined) {
+      config.offsetY = params.offsetY;
     }
     if (params.scale !== undefined) {
       config.scaleX = params.scale;

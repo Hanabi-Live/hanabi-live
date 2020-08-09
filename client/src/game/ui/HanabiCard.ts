@@ -234,9 +234,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Additionally, when cards are clued,
     // they should raise up a little bit to make it clear that they are touched
-    // However, don't do this for other people's hands in Keldon mode
-    const offset = this.isRaisedBecauseOfClues() ? 0.6 : 0.5;
-    this.offsetY(offset * CARD_H);
+    // Call setVisualEffect, which handles that
+    this.setVisualEffect(this.visualEffectCursor, 0);
   }
 
   private shouldShowAnyBorder() {
@@ -273,16 +272,16 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   private isRaisedBecauseOfClues() {
+    // On Keldon mode, only the player should see the cards raised on their own hand
+    const shouldShowOnKeldonMode = (
+      this.state.location === globals.state.metadata.ourPlayerIndex
+      && !globals.state.finished
+    );
+
     return (
       this.shouldShowClueBorder()
-      && (
-        !globals.lobby.settings.keldonMode
-        || (
-          this.state.location === globals.state.metadata.ourPlayerIndex
-          && !globals.state.finished
-          && !this.layout.isDragging()
-        )
-      )
+      && !this.layout.isDragging()
+      && (!globals.lobby.settings.keldonMode || shouldShowOnKeldonMode)
     );
   }
 
@@ -887,11 +886,17 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   private visualEffectCursor: CursorType = 'default';
   private wasRaised = false;
+  // Required in order to be able to cancel animations
+  tween: Konva.Tween | null = null;
   setVisualEffect(cursor: CursorType, duration?: number) {
     const raised = this.isRaisedBecauseOfClues();
+    // Early return: no parent (being removed from scene), or no change in cursor/raised state
     if (
-      cursor === this.visualEffectCursor
-      && this.wasRaised === raised
+      this.layout.parent === null
+      || (
+        cursor === this.visualEffectCursor
+        && this.wasRaised === raised
+      )
     ) {
       return;
     }
@@ -904,17 +909,27 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Shadow special effects
     const shadowOffset = cursor === 'dragging' ? Math.floor(0.12 * CARD_W) : Math.floor(0.04 * CARD_W);
-    this.bare.to({
-      shadowOffsetX: shadowOffset,
-      shadowOffsetY: shadowOffset,
-      duration: actualDuration,
-    });
+    if (actualDuration === 0) {
+      this.bare.shadowOffsetX(shadowOffset);
+      this.bare.shadowOffsetY(shadowOffset);
+    } else {
+      this.bare.to({
+        shadowOffsetX: shadowOffset,
+        shadowOffsetY: shadowOffset,
+        duration: actualDuration,
+      });
+    }
     const baseOffsetY = raised ? 0.6 * CARD_H : 0.5 * CARD_H;
-    this.to({
-      offsetX: cursor === 'dragging' ? 0.52 * CARD_W : 0.5 * CARD_W,
-      offsetY: baseOffsetY + (cursor === 'dragging' ? 0.02 * CARD_H : 0),
-      duration: actualDuration,
-    });
+    const offsetX = cursor === 'dragging' ? 0.52 * CARD_W : 0.5 * CARD_W;
+    const offsetY = baseOffsetY + (cursor === 'dragging' ? 0.02 * CARD_H : 0);
+    animate(
+      this,
+      {
+        offsetX,
+        offsetY,
+        duration: actualDuration,
+      }, true,
+    );
   }
 
   private registerMouseHandlers() {
