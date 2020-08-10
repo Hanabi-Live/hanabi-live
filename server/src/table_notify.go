@@ -176,6 +176,21 @@ func (t *Table) NotifyStatus() {
 	t.NotifyGameAction()
 }
 
+// NotifyTurn appends a new "turn" action and alerts everyone
+func (t *Table) NotifyTurn() {
+	g := t.Game
+	currentPlayerIndex := g.ActivePlayerIndex
+	if g.EndCondition > EndConditionInProgress {
+		currentPlayerIndex = -1
+	}
+	g.Actions = append(g.Actions, ActionTurn{
+		Type:               "turn",
+		Num:                g.Turn,
+		CurrentPlayerIndex: currentPlayerIndex,
+	})
+	t.NotifyGameAction()
+}
+
 // NotifySound sends a sound notification to everyone in the game
 // (signifying that an action just occurred)
 func (t *Table) NotifySound() {

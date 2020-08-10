@@ -190,6 +190,9 @@ func commandAction(s *Session, d *CommandData) {
 		t.NotifyGameAction()
 	}
 
+	// Send the new turn
+	t.NotifyTurn()
+
 	if g.EndCondition == EndConditionInProgress {
 		logger.Info(t.GetName() + " It is now " + np.Name + "'s turn.")
 	} else if g.EndCondition == EndConditionNormal {

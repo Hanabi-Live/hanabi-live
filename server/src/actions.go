@@ -74,6 +74,12 @@ type ActionStatus struct {
 	DoubleDiscard bool   `json:"doubleDiscard"`
 }
 
+type ActionTurn struct {
+	Type               string `json:"type"`
+	Num                int    `json:"num"`
+	CurrentPlayerIndex int    `json:"currentPlayerIndex"`
+}
+
 type Clue struct {
 	Type  int `json:"type"`
 	Value int `json:"value"`
