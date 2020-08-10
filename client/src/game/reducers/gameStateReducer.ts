@@ -244,7 +244,6 @@ const gameStateReducer = produce((
     original(state.deck)!,
     action,
     state,
-    playing,
     metadata,
   ));
 

@@ -858,7 +858,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // We look through each card that should have a visible pip (eliminated or not)
     for (const [suitIndex, rank] of this.state.possibleCardsFromClues) {
       // If the card is impossible, eliminate it
-      const pipState = this.state.possibleCardsFromInference2.some(
+      const pipState = this.state.possibleCardsFromDeduction.some(
         ([s, r]) => s === suitIndex && r === rank,
       )
         ? PipState.Visible : PipState.Eliminated;

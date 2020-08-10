@@ -7,25 +7,13 @@ export default interface CardState {
 
   // The following are the variables that are refreshed
 
-  // possibleCardsFromObservation[suitIndex][rank]
-  //  = how many cards of this suitIndex and rank could this be? (excluding clue information)
-  // NOTE: we're using an array as a map, so there will be empty spaces for ranks
-  // that are not valid card ranks (e.g. 0, or 6 in Up or Down)
-  readonly possibleCardsFromObservation: ReadonlyArray<readonly number[]>;
-
   // possibleCardsFromClues = Array<[suitIndex, rank]>
   //  = which specific cards are still possible based on clues received
   readonly possibleCardsFromClues: ReadonlyArray<readonly [number, number]>;
 
-  // possibleCardsFromInference[suitIndex][rank]
-  //  = how many cards of this suitIndex and rank could this be? (using clue and observation
-  // information, along with inferences)
-  // This is the same structure as possibleCardsFromObservation
-  readonly possibleCardsFromInference: ReadonlyArray<readonly number[]>;
-
-  // possibleCardsFromInference2 = Array<[suitIndex, rank]>
+  // possibleCardsFromDeduction = Array<[suitIndex, rank]>
   //  = which specific cards are still possible based on everything the player should know
-  readonly possibleCardsFromInference2: ReadonlyArray<readonly [number, number]>;
+  readonly possibleCardsFromDeduction: ReadonlyArray<readonly [number, number]>;
 
   // We need this to highlight pips (e.g. on Pink variants)
   readonly positiveRankClues : number[];

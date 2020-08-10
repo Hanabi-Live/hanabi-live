@@ -4,58 +4,6 @@
         "location": "discard",
         "suitIndex": 0,
         "rank": 4,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                1,
-                0,
-                0,
-                1,
-                1,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                2,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                2,
-                1,
-                2,
-                1,
-                null,
-                1
-            ],
-            [
-                null,
-                0,
-                1,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                0,
-                1,
-                1,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -164,6 +112,104 @@
             [
                 4,
                 3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                4
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                5
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
             ],
             [
                 4,
@@ -193,59 +239,29 @@
         "location": "playStack",
         "suitIndex": 2,
         "rank": 5,
-        "possibleCardsFromObservation": [
+        "possibleCardsFromClues": [
             [
-                null,
-                1,
-                0,
-                0,
-                0,
-                1,
-                null,
+                2,
                 1
             ],
             [
-                null,
-                1,
                 2,
-                2,
-                2,
-                0,
-                null,
-                1
+                3
             ],
             [
-                null,
-                1,
-                1,
-                1,
                 2,
-                1,
-                null,
-                1
+                4
             ],
             [
-                null,
-                0,
-                1,
                 2,
-                2,
-                0,
-                null,
-                1
+                5
             ],
             [
-                null,
-                1,
-                1,
-                0,
-                1,
-                1,
-                null,
-                1
+                2,
+                7
             ]
         ],
-        "possibleCardsFromClues": [
+        "possibleCardsFromDeduction": [
             [
                 2,
                 1
@@ -282,59 +298,13 @@
         "location": "playStack",
         "suitIndex": 2,
         "rank": 2,
-        "possibleCardsFromObservation": [
+        "possibleCardsFromClues": [
             [
-                null,
-                0,
-                0,
-                0,
-                0,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
                 2,
-                1,
-                1,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                2,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                0,
-                1,
-                1,
-                null,
-                1
+                2
             ]
         ],
-        "possibleCardsFromClues": [
+        "possibleCardsFromDeduction": [
             [
                 2,
                 2
@@ -357,58 +327,6 @@
         "location": "playStack",
         "suitIndex": 2,
         "rank": 4,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                1,
-                2,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                0,
-                1,
-                1,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 2,
@@ -431,6 +349,20 @@
                 7
             ]
         ],
+        "possibleCardsFromDeduction": [
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ]
+        ],
         "positiveRankClues": [],
         "suitDetermined": true,
         "rankDetermined": true,
@@ -446,59 +378,13 @@
         "location": "playStack",
         "suitIndex": 0,
         "rank": 4,
-        "possibleCardsFromObservation": [
+        "possibleCardsFromClues": [
             [
-                null,
-                1,
                 0,
-                0,
-                1,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                2,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                0,
-                0,
-                1,
-                null,
-                1
+                4
             ]
         ],
-        "possibleCardsFromClues": [
+        "possibleCardsFromDeduction": [
             [
                 0,
                 4
@@ -521,58 +407,6 @@
         "location": "discard",
         "suitIndex": 4,
         "rank": 3,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                1,
-                0,
-                1,
-                0,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                2,
-                2,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                1,
-                1,
-                1,
-                1,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                0,
-                2,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                1,
-                0,
-                1,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 1,
@@ -629,6 +463,64 @@
             [
                 3,
                 5
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
             ],
             [
                 3,
@@ -670,58 +562,6 @@
         "location": "playStack",
         "suitIndex": 0,
         "rank": 3,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                1,
-                0,
-                1,
-                0,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                2,
-                2,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                0,
-                0,
-                1,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -742,6 +582,20 @@
             [
                 0,
                 7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                5
             ]
         ],
         "positiveRankClues": [],
@@ -759,58 +613,6 @@
         "location": "playStack",
         "suitIndex": 3,
         "rank": 2,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                1,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 3,
@@ -831,6 +633,16 @@
             [
                 3,
                 7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
             ]
         ],
         "positiveRankClues": [],
@@ -848,58 +660,6 @@
         "location": "playStack",
         "suitIndex": 4,
         "rank": 3,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                2,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                1,
-                0,
-                1,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 4,
@@ -916,6 +676,16 @@
             [
                 4,
                 7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                3
             ]
         ],
         "positiveRankClues": [],
@@ -933,58 +703,6 @@
         "location": "discard",
         "suitIndex": 0,
         "rank": 3,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                1,
-                1,
-                0,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                1,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -1053,6 +771,44 @@
             [
                 3,
                 5
+            ],
+            [
+                3,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
             ],
             [
                 3,
@@ -1074,59 +830,33 @@
         "location": "playStack",
         "suitIndex": 1,
         "rank": 5,
-        "possibleCardsFromObservation": [
+        "possibleCardsFromClues": [
             [
-                null,
                 1,
-                2,
-                1,
-                0,
-                1,
-                null,
                 1
             ],
             [
-                null,
                 1,
-                2,
-                2,
-                2,
-                1,
-                null,
-                1
+                2
             ],
             [
-                null,
                 1,
-                1,
-                2,
-                1,
-                0,
-                null,
-                1
+                3
             ],
             [
-                null,
-                0,
                 1,
-                2,
-                2,
-                0,
-                null,
-                1
+                4
             ],
             [
-                null,
                 1,
+                5
+            ],
+            [
                 1,
-                1,
-                1,
-                1,
-                null,
-                1
+                7
             ]
         ],
-        "possibleCardsFromClues": [
+        "possibleCardsFromDeduction": [
             [
                 1,
                 1
@@ -1167,58 +897,6 @@
         "location": "discard",
         "suitIndex": 0,
         "rank": 2,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                1,
-                0,
-                0,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                1,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -1287,6 +965,36 @@
             [
                 3,
                 5
+            ],
+            [
+                3,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
             ],
             [
                 3,
@@ -1308,58 +1016,6 @@
         "location": "discard",
         "suitIndex": 4,
         "rank": 2,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                1,
-                1,
-                0,
-                0,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                1,
-                2,
-                2,
-                2,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                1,
-                1,
-                1,
-                1,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                2,
-                0,
-                2,
-                1,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 1,
@@ -1420,6 +1076,64 @@
             [
                 4,
                 3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                1
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
             ],
             [
                 4,
@@ -1449,59 +1163,13 @@
         "location": 3,
         "suitIndex": 3,
         "rank": 1,
-        "possibleCardsFromObservation": [
+        "possibleCardsFromClues": [
             [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
+                3,
                 1
-            ],
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
             ]
         ],
-        "possibleCardsFromClues": [
+        "possibleCardsFromDeduction": [
             [
                 3,
                 1
@@ -1524,59 +1192,33 @@
         "location": "playStack",
         "suitIndex": 3,
         "rank": 5,
-        "possibleCardsFromObservation": [
+        "possibleCardsFromClues": [
             [
-                null,
-                1,
-                1,
-                0,
-                0,
-                1,
-                null,
+                3,
                 1
             ],
             [
-                null,
-                1,
-                2,
-                2,
-                2,
-                0,
-                null,
-                1
+                3,
+                2
             ],
             [
-                null,
-                1,
-                1,
-                1,
-                1,
-                0,
-                null,
-                1
+                3,
+                3
             ],
             [
-                null,
-                1,
-                1,
-                2,
-                2,
-                1,
-                null,
-                1
+                3,
+                4
             ],
             [
-                null,
-                1,
-                2,
-                0,
-                2,
-                1,
-                null,
-                1
+                3,
+                5
+            ],
+            [
+                3,
+                7
             ]
         ],
-        "possibleCardsFromClues": [
+        "possibleCardsFromDeduction": [
             [
                 3,
                 1
@@ -1617,58 +1259,6 @@
         "location": "discard",
         "suitIndex": 4,
         "rank": 4,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                1,
-                1,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                1,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                0,
-                0,
-                2,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                1,
-                0,
-                0,
-                1,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 1,
@@ -1729,6 +1319,28 @@
             [
                 4,
                 7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                4,
+                4
             ]
         ],
         "positiveRankClues": [],
@@ -1746,58 +1358,6 @@
         "location": "playStack",
         "suitIndex": 2,
         "rank": 3,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                1,
-                1,
-                0,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                1,
-                2,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                2,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                1,
-                0,
-                1,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -1910,6 +1470,80 @@
             [
                 4,
                 4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
             ],
             [
                 4,
@@ -1935,58 +1569,6 @@
         "location": "playStack",
         "suitIndex": 0,
         "rank": 2,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                1,
-                0,
-                0,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                1,
-                2,
-                2,
-                2,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                1,
-                1,
-                1,
-                1,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                0,
-                1,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                0,
-                1,
-                1,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -2009,6 +1591,16 @@
                 7
             ]
         ],
+        "possibleCardsFromDeduction": [
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                5
+            ]
+        ],
         "positiveRankClues": [],
         "suitDetermined": true,
         "rankDetermined": true,
@@ -2024,58 +1616,6 @@
         "location": "discard",
         "suitIndex": 1,
         "rank": 7,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                1,
-                1,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                2,
-                1,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -2132,6 +1672,32 @@
             [
                 3,
                 5
+            ],
+            [
+                3,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
             ],
             [
                 3,
@@ -2153,58 +1719,6 @@
         "location": "playStack",
         "suitIndex": 0,
         "rank": 7,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                1,
-                null,
-                1
-            ],
-            [
-                null,
-                0,
-                2,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                1,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                0,
-                1,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                0,
-                1,
-                1,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -2313,6 +1827,92 @@
             [
                 4,
                 3
+            ],
+            [
+                4,
+                4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                0,
+                7
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                1,
+                7
+            ],
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
             ],
             [
                 4,
@@ -2342,58 +1942,6 @@
         "location": "playStack",
         "suitIndex": 1,
         "rank": 1,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                1,
-                1,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                1,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                0,
-                0,
-                2,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -2416,6 +1964,12 @@
                 1
             ]
         ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                1
+            ]
+        ],
         "positiveRankClues": [
             1
         ],
@@ -2433,58 +1987,6 @@
         "location": "playStack",
         "suitIndex": 4,
         "rank": 4,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                1,
-                1,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                2,
-                1,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                0,
-                0,
-                1,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 4,
@@ -2509,6 +2011,16 @@
             [
                 4,
                 7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                4
             ]
         ],
         "positiveRankClues": [],
@@ -2526,58 +2038,6 @@
         "location": 1,
         "suitIndex": 0,
         "rank": 1,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -2646,6 +2106,16 @@
             [
                 4,
                 5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                0,
+                1
             ],
             [
                 4,
@@ -2667,58 +2137,6 @@
         "location": 3,
         "suitIndex": 2,
         "rank": 7,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -2838,6 +2256,16 @@
             ],
             [
                 4,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                2
+            ],
+            [
+                2,
                 7
             ]
         ],
@@ -2856,58 +2284,6 @@
         "location": "playStack",
         "suitIndex": 2,
         "rank": 1,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                1,
-                1,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                0,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                2,
-                1,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 2,
@@ -2932,6 +2308,20 @@
             [
                 2,
                 7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                2,
+                1
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
             ]
         ],
         "positiveRankClues": [],
@@ -2949,58 +2339,6 @@
         "location": "playStack",
         "suitIndex": 1,
         "rank": 3,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                2,
-                1,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                0,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 1,
@@ -3025,6 +2363,20 @@
             [
                 1,
                 7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
             ]
         ],
         "positiveRankClues": [],
@@ -3042,58 +2394,6 @@
         "location": "playStack",
         "suitIndex": 1,
         "rank": 4,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                1,
-                1,
-                0,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                1,
-                2,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                1,
-                1,
-                0,
-                0,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -3210,6 +2510,72 @@
             [
                 4,
                 5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                0,
+                2
+            ],
+            [
+                0,
+                3
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
+            ],
+            [
+                4,
+                2
+            ],
+            [
+                4,
+                3
             ],
             [
                 4,
@@ -3231,58 +2597,6 @@
         "location": 0,
         "suitIndex": 3,
         "rank": 2,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                0,
-                0,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -3339,6 +2653,20 @@
             [
                 3,
                 5
+            ],
+            [
+                3,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                3
+            ],
+            [
+                3,
+                2
             ],
             [
                 3,
@@ -3360,58 +2688,6 @@
         "location": "playStack",
         "suitIndex": 4,
         "rank": 5,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                2,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                2,
-                2,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                1,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -3524,6 +2800,68 @@
             [
                 4,
                 4
+            ],
+            [
+                4,
+                5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                0,
+                1
+            ],
+            [
+                0,
+                5
+            ],
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                3
+            ],
+            [
+                1,
+                4
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                3
+            ],
+            [
+                3,
+                4
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
             ],
             [
                 4,
@@ -3549,59 +2887,13 @@
         "location": "playStack",
         "suitIndex": 4,
         "rank": 2,
-        "possibleCardsFromObservation": [
+        "possibleCardsFromClues": [
             [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                0,
-                0,
-                0,
-                null,
-                0
+                4,
+                2
             ]
         ],
-        "possibleCardsFromClues": [
+        "possibleCardsFromDeduction": [
             [
                 4,
                 2
@@ -3624,58 +2916,6 @@
         "location": 1,
         "suitIndex": 4,
         "rank": 7,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -3768,6 +3008,16 @@
             [
                 4,
                 5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                0,
+                1
             ],
             [
                 4,
@@ -3789,58 +3039,6 @@
         "location": 2,
         "suitIndex": 3,
         "rank": 4,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 2,
@@ -3852,6 +3050,16 @@
             ],
             [
                 4,
+                4
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                2,
+                4
+            ],
+            [
+                3,
                 4
             ]
         ],
@@ -3872,58 +3080,6 @@
         "location": 0,
         "suitIndex": 1,
         "rank": 3,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                0,
-                0,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -4023,6 +3179,20 @@
             ],
             [
                 4,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                3
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
                 7
             ]
         ],
@@ -4041,58 +3211,6 @@
         "location": "discard",
         "suitIndex": 2,
         "rank": 2,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                1,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -4185,6 +3303,24 @@
             [
                 4,
                 5
+            ],
+            [
+                4,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                0,
+                1
+            ],
+            [
+                2,
+                2
+            ],
+            [
+                2,
+                4
             ],
             [
                 4,
@@ -4206,58 +3342,6 @@
         "location": "playStack",
         "suitIndex": 0,
         "rank": 5,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                1,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                2,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                2,
-                2,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                1,
-                0,
-                1,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -4280,6 +3364,12 @@
                 7
             ]
         ],
+        "possibleCardsFromDeduction": [
+            [
+                0,
+                5
+            ]
+        ],
         "positiveRankClues": [],
         "suitDetermined": true,
         "rankDetermined": true,
@@ -4295,58 +3385,6 @@
         "location": 0,
         "suitIndex": 3,
         "rank": 7,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                0,
-                0,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -4446,6 +3484,20 @@
             ],
             [
                 4,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                3
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
                 7
             ]
         ],
@@ -4464,58 +3516,6 @@
         "location": 2,
         "suitIndex": 2,
         "rank": 3,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -4596,6 +3596,12 @@
             [
                 4,
                 7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                2,
+                3
             ]
         ],
         "positiveRankClues": [],
@@ -4613,58 +3619,6 @@
         "location": "playStack",
         "suitIndex": 3,
         "rank": 4,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                2,
-                1,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -4684,6 +3638,20 @@
             ],
             [
                 4,
+                4
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                4
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                3,
                 4
             ]
         ],
@@ -4704,58 +3672,6 @@
         "location": "playStack",
         "suitIndex": 1,
         "rank": 2,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                2,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 1,
@@ -4780,6 +3696,16 @@
             [
                 1,
                 7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                2
+            ],
+            [
+                1,
+                4
             ]
         ],
         "positiveRankClues": [],
@@ -4797,58 +3723,6 @@
         "location": 3,
         "suitIndex": 1,
         "rank": 2,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -4968,6 +3842,16 @@
             ],
             [
                 4,
+                7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                2
+            ],
+            [
+                2,
                 7
             ]
         ],
@@ -4986,58 +3870,6 @@
         "location": "playStack",
         "suitIndex": 4,
         "rank": 1,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                0,
-                0,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -5158,6 +3990,24 @@
             [
                 4,
                 7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                3
+            ],
+            [
+                3,
+                2
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                4,
+                1
             ]
         ],
         "positiveRankClues": [],
@@ -5175,58 +4025,6 @@
         "location": 2,
         "suitIndex": 1,
         "rank": 4,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -5347,6 +4145,20 @@
             [
                 4,
                 7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                4
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                3,
+                4
             ]
         ],
         "positiveRankClues": [],
@@ -5364,58 +4176,6 @@
         "location": "playStack",
         "suitIndex": 3,
         "rank": 3,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                1,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                1
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -5536,6 +4296,20 @@
             [
                 4,
                 7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                2
+            ],
+            [
+                2,
+                7
+            ],
+            [
+                3,
+                3
             ]
         ],
         "positiveRankClues": [],
@@ -5553,58 +4327,6 @@
         "location": 1,
         "suitIndex": 3,
         "rank": 3,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                1,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                1
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -5725,6 +4447,12 @@
             [
                 4,
                 7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                3,
+                3
             ]
         ],
         "positiveRankClues": [],
@@ -5742,58 +4470,6 @@
         "location": 2,
         "suitIndex": 2,
         "rank": 4,
-        "possibleCardsFromObservation": [
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                1,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                1,
-                0,
-                null,
-                0
-            ],
-            [
-                null,
-                0,
-                0,
-                0,
-                0,
-                0,
-                null,
-                0
-            ]
-        ],
         "possibleCardsFromClues": [
             [
                 0,
@@ -5914,6 +4590,20 @@
             [
                 4,
                 7
+            ]
+        ],
+        "possibleCardsFromDeduction": [
+            [
+                1,
+                4
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                3,
+                4
             ]
         ],
         "positiveRankClues": [],

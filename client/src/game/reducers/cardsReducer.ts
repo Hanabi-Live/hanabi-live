@@ -9,7 +9,7 @@ import { colorClue, rankClue } from '../types/Clue';
 import ClueType from '../types/ClueType';
 import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
-import cardInferenceReducer from './cardInferenceReducer';
+import cardDeductionReducer from './cardDeductionReducer';
 import cardPossibilitiesReducer from './cardPossibilitiesReducer';
 import initialCardState from './initialStates/initialCardState';
 
@@ -17,15 +17,10 @@ const cardsReducer = (
   deck: readonly CardState[],
   action: GameAction,
   game: GameState,
-  playing: boolean,
   metadata: GameMetadata,
 ) => {
   const variant = getVariant(metadata.options.variantName);
   const newDeck = deck.concat([]);
-  const newHands = Array.from(
-    game.hands,
-    (arr) => Array.from(arr),
-  );
 
   switch (action.type) {
     // The server just told us about a card that was previously hidden
@@ -45,16 +40,10 @@ const cardsReducer = (
         break;
       }
 
-      const suitIndex = action.suitIndex;
-      const rank = action.rank;
-
-      // Now that we know the identity of this card, we can remove card possibilities on other cards
-      revealCard(suitIndex, rank, card, newDeck, game, playing, metadata);
-
       newDeck[order] = {
         ...card,
-        suitIndex,
-        rank,
+        suitIndex: action.suitIndex,
+        rank: action.rank,
         suitDetermined: true,
         rankDetermined: true,
       };
@@ -74,28 +63,8 @@ const cardsReducer = (
         }
 
         const card = getCard(newDeck, order);
-        const wasKnown = (card.possibleCardsFromClues.length === 1);
-
         const newCard = cardPossibilitiesReducer(card, clue, positive, metadata);
         newDeck[order] = newCard;
-
-        if (
-          !wasKnown
-          && newCard.possibleCardsFromClues.length === 1
-        ) {
-          // Since this card is now fully identified,
-          // update the possibilities on the cards in people's hands
-          const hands = handsSeeingCardForFirstTime(game, card, playing, metadata);
-          for (const hand of hands) {
-            removePossibilityOnHand(
-              newDeck,
-              hand,
-              order,
-              newCard.suitIndex!,
-              newCard.rank!,
-            );
-          }
-        }
       };
 
       // Positive clues
@@ -127,15 +96,10 @@ const cardsReducer = (
       const suitIndex = nullIfNegative(action.suitIndex) ?? card.suitIndex;
       const rank = nullIfNegative(action.rank) ?? card.rank;
 
-      // If we know the full identity of this card, we can remove card possibilities on other cards
       const identityDetermined = revealCard(
         suitIndex,
         rank,
         card,
-        newDeck,
-        game,
-        playing,
-        metadata,
       );
 
       let segmentPlayed = card.segmentPlayed;
@@ -181,48 +145,16 @@ const cardsReducer = (
       }
 
       const initial = initialCardState(action.order, variant);
-      const possibleCardsFromObservation = Array.from(
-        initial.possibleCardsFromObservation,
-        (arr) => Array.from(arr),
-      );
-      // Remove all possibilities of all cards previously drawn and visible
-      deck.slice(0, action.order)
-        .filter((card) => card.suitIndex !== null && card.rank !== null)
-        .filter((card) => (
-          card.location !== action.playerIndex
-          || card.possibleCardsFromClues.length === 1
-        ))
-        .forEach((card) => { possibleCardsFromObservation[card.suitIndex!][card.rank!] -= 1; });
 
       const drawnCard = {
         ...initial,
         location: action.playerIndex,
         suitIndex: nullIfNegative(action.suitIndex),
         rank: nullIfNegative(action.rank),
-        possibleCardsFromObservation,
         segmentDrawn: game.turn.segment,
       };
 
       newDeck[action.order] = drawnCard;
-
-      // If the card was drawn by a player we can see, update possibilities
-      // on all hands, except for the player that didn't see it
-      if (drawnCard.suitIndex != null && drawnCard.rank != null) {
-        for (const hand of game.hands.filter((_, i) => i !== drawnCard.location)) {
-          removePossibilityOnHand(
-            newDeck,
-            hand,
-            action.order,
-            drawnCard.suitIndex!,
-            drawnCard.rank!,
-          );
-        }
-      }
-
-      // Are there just some bad tests that don't setup the hands correctly before draw?
-      if (!newHands[drawnCard.location].includes(drawnCard.order)) {
-        newHands[drawnCard.location].push(drawnCard.order);
-      }
 
       break;
     }
@@ -241,7 +173,7 @@ const cardsReducer = (
     }
   }
 
-  return cardInferenceReducer(newDeck, newHands, action, variant);
+  return cardDeductionReducer(game.hands, newDeck, action, variant, metadata);
 };
 
 export default cardsReducer;
@@ -249,46 +181,6 @@ export default cardsReducer;
 // -------
 // Helpers
 // -------
-
-const removePossibilityOnHand = (
-  deck: CardState[],
-  hand: readonly number[],
-  order: number,
-  suitIndex: number,
-  rank: number,
-) => {
-  const cardsExceptCardBeingRemoved = hand
-    .filter((o) => o !== order)
-    .map((o) => deck[o]);
-
-  for (const handCard of cardsExceptCardBeingRemoved) {
-    const newCard = removePossibility(handCard, suitIndex, rank);
-    deck[handCard.order] = newCard;
-  }
-};
-
-const removePossibility = (
-  state: CardState,
-  suitIndex: number,
-  rank: number,
-) => {
-  // Every card has a possibility map that maps card identities to count
-  const possibleCardsFromObservation = Array.from(
-    state.possibleCardsFromObservation,
-    (arr) => Array.from(arr),
-  );
-  const cardsLeft = possibleCardsFromObservation[suitIndex][rank];
-  if (cardsLeft === undefined) {
-    throw new Error(`Failed to get an entry for Suit: ${suitIndex} and Rank: ${rank} from the "possibleCardsFromObservation" map for card.`);
-  }
-
-  possibleCardsFromObservation[suitIndex][rank] = cardsLeft - 1;
-
-  return {
-    ...state,
-    possibleCardsFromObservation,
-  };
-};
 
 const getCard = (deck: readonly CardState[], order: number) => {
   const card = deck[order];
@@ -302,10 +194,6 @@ const revealCard = (
   suitIndex: number | null,
   rank: number | null,
   card: CardState,
-  newDeck: CardState[],
-  game: GameState,
-  playing: boolean,
-  metadata: GameMetadata,
 ) => {
   // The action from the server did not specify the identity of the card, so we cannot reveal it
   // (e.g. we are playing a special variant where cards are not revealed when they are played)
@@ -319,28 +207,5 @@ const revealCard = (
     return true;
   }
 
-  // Since this card is now fully identified,
-  // update the possibilities on the cards in people's hands
-  const hands = handsSeeingCardForFirstTime(game, card, playing, metadata);
-  for (const hand of hands) {
-    removePossibilityOnHand(newDeck, hand, card.order, suitIndex, rank);
-  }
-
   return true;
-};
-
-const handsSeeingCardForFirstTime = (
-  game: GameState,
-  card: CardState,
-  playing: boolean,
-  metadata: GameMetadata,
-) => {
-  if (playing && metadata.ourPlayerIndex === card.location) {
-    // All hands see this card now, from our perspective
-    return game.hands;
-  }
-
-  // We already knew about this card,
-  // so the only person seeing it for the first time is the person that is holding the card
-  return [game.hands[card.location as number]];
 };

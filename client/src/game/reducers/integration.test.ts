@@ -113,15 +113,15 @@ describe('integration', () => {
               const priorTurnCard = testState.replay.states[turn - 1].deck[order];
               // find turn it switched to a bad state
               if (typeof priorTurnCard === 'undefined'
-              || priorTurnCard.possibleCardsFromInference2.some(
+              || priorTurnCard.possibleCardsFromDeduction.some(
                 ([s, r]) => s === finalCard.suitIndex && r === finalCard.rank,
               )) {
-                expect(card.possibleCardsFromInference2.some(
+                expect(card.possibleCardsFromDeduction.some(
                   ([s, r]) => s === finalCard.suitIndex && r === finalCard.rank,
                 )).toBe(true);
               }
             } else {
-              expect(card.possibleCardsFromInference2.some(
+              expect(card.possibleCardsFromDeduction.some(
                 ([s, r]) => s === finalCard.suitIndex && r === finalCard.rank,
               )).toBe(true);
             }
@@ -170,15 +170,15 @@ describe('integration', () => {
               const priorTurnCard = testState.replay.states[turn - 1].deck[order];
               // find turn it switched to a bad state
               if (typeof priorTurnCard === 'undefined'
-              || priorTurnCard.possibleCardsFromInference2.some(
+              || priorTurnCard.possibleCardsFromDeduction.some(
                 ([s, r]) => s === finalCard.suitIndex && r === finalCard.rank,
               )) {
-                expect(card.possibleCardsFromInference2.some(
+                expect(card.possibleCardsFromDeduction.some(
                   ([s, r]) => s === finalCard.suitIndex && r === finalCard.rank,
                 )).toBe(true);
               }
             } else {
-              expect(card.possibleCardsFromInference2.some(
+              expect(card.possibleCardsFromDeduction.some(
                 ([s, r]) => s === finalCard.suitIndex && r === finalCard.rank,
               )).toBe(true);
             }
@@ -195,10 +195,6 @@ function checkPossibilitiesEliminatedByClues(card: CardState, expected: CardStat
 }
 
 const checkPossibilitiesEliminatedByObservation = (card: CardState, expected: CardState) => {
-  function validRanks<T>(arr: readonly T[]) {
-    // Ensure Start is counted as a valid rank
-    return arr.length > 6 ? arr.slice(1, 6).concat(arr[7]) : arr.slice(1, 6);
-  }
-  expect(card.possibleCardsFromObservation.map(validRanks))
-    .toEqual(expected.possibleCardsFromObservation.map(validRanks));
+  expect(card.possibleCardsFromDeduction)
+    .toEqual(expected.possibleCardsFromDeduction);
 };
