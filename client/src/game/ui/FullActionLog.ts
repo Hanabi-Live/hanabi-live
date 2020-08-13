@@ -13,7 +13,7 @@ export default class FullActionLog extends Konva.Group {
   private playerLogNumbers: Array<MultiFitText | null> = [];
   private needsRefresh: boolean = false;
   private numbersOptions: ContainerConfig;
-  private maxLines: number;
+  private maxLines: number = 38;
   private textOptions: ContainerConfig;
 
   constructor(winW: number, winH: number) {
@@ -42,8 +42,6 @@ export default class FullActionLog extends Konva.Group {
       listening: false,
     });
     Konva.Group.prototype.add.call(this, rect);
-
-    this.maxLines = 38;
 
     // The text for each action
     this.textOptions = {
