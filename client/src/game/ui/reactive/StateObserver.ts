@@ -132,7 +132,7 @@ const visibleStateObservers: Subscriptions = [
   // Cards
   // Each card will subscribe to changes to its own data
   // Must come before card layout, since cards are constructed here
-  subVS((s) => s.deck.length, cardsView.onDeckChanged),
+  subVS((s) => s.deck.length, cardsView.onCardsPossiblyAdded),
 
   // Card layout - the order of the following subscriptions matters
   // Hands have to come first to perform the add-removes so we get nice animations
@@ -142,6 +142,10 @@ const visibleStateObservers: Subscriptions = [
   // Play stacks come last so we can show the bases if they get empty
   subVS((s) => s.playStacks, cardLayoutView.onPlayStacksChanged),
   subVS((s) => s.playStackDirections, cardLayoutView.onPlayStackDirectionsChanged),
+
+  // Unsubscribe and reset removed cards
+  // Must come after card layout so animations to deck are correctly triggered
+  subVS((s) => s.deck.length, cardsView.onCardsPossiblyRemoved),
 
   // Clues (arrows + log)
   subVS((s) => ({
