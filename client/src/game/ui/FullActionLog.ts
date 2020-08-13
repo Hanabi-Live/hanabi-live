@@ -161,8 +161,10 @@ export default class FullActionLog extends Konva.Group {
 
   private makeLog() {
     this.logText = new MultiFitText(this.textOptions, this.maxLines);
+    this.logText.hide();
     this.add(this.logText as any);
     this.logNumbers = new MultiFitText(this.numbersOptions, this.maxLines);
+    this.logNumbers.hide();
     this.add(this.logNumbers as any);
   }
 
