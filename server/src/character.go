@@ -317,7 +317,7 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 				(clue.Value+1)%2 == 0)) {
 
 		s.Warning("You are " + p.Character + ", " +
-			"so you can only clue odd numbers or clues that touch odd amounts of cards.")
+			"so you can only clue odd numbers or odd colors.")
 		return true
 	} else if p.Character == "Spiteful" { // 7
 		leftIndex := p.Index + 1
