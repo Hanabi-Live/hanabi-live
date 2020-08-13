@@ -173,6 +173,11 @@ const cardsReducer = (
     }
   }
 
+  if (game.turn.turnNum === 0 && action.type === 'draw') {
+    // No need to do deduction while cards are being drawn
+    return newDeck;
+  }
+
   return cardDeductionReducer(game.hands, newDeck, action, variant, metadata);
 };
 
