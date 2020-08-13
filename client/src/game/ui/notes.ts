@@ -1,5 +1,6 @@
 // Users can right-click cards to record information on them
 
+import { deckRules } from '../rules';
 import { canPossiblyBe } from '../rules/card';
 import * as variantRules from '../rules/variant';
 import CardIdentity from '../types/CardIdentity';
@@ -17,12 +18,12 @@ const get = (order: number, our: boolean) => {
   // (we don't have to check to see if the element exists because
   // all notes are initialized to an empty string)
   if (our || globals.state.playing) {
-    return globals.ourNotes[order];
+    return globals.ourNotes.get(order)!;
   }
 
   // Build a string that shows the combined notes from the players & spectators
   let content = '';
-  for (const noteObject of globals.allNotes[order]) {
+  for (const noteObject of globals.allNotes.get(order)!) {
     if (noteObject.note.length > 0) {
       content += `<strong>${noteObject.name}:</strong> ${noteObject.note}<br />`;
     }
@@ -38,12 +39,12 @@ const get = (order: number, our: boolean) => {
 // 2) send the new note to the server
 // 3) check for new note identities
 export const set = (order: number, note: string) => {
-  const oldNote = globals.ourNotes[order];
-  globals.ourNotes[order] = note;
+  const oldNote = globals.ourNotes.get(order)!;
+  globals.ourNotes.set(order, note);
   globals.lastNote = note;
 
   if (!globals.state.playing) {
-    for (const noteObject of globals.allNotes[order]) {
+    for (const noteObject of globals.allNotes.get(order)!) {
       if (noteObject.name === globals.state.metadata.ourUsername) {
         noteObject.note = note;
       }
@@ -66,7 +67,7 @@ export const set = (order: number, note: string) => {
 
   let card = globals.deck[order];
   if (card === undefined) {
-    card = globals.stackBases[order - globals.deck.length];
+    card = globals.stackBases[order - deckRules.totalCards(globals.variant)];
   }
   card.checkSpecialNote();
 };
@@ -376,7 +377,7 @@ export const setCardIndicator = (order: number) => {
   const visible = shouldShowIndicator(order);
   let card = globals.deck[order];
   if (card === undefined) {
-    card = globals.stackBases[order - globals.deck.length];
+    card = globals.stackBases[order - deckRules.totalCards(globals.variant)];
   }
   if (card.noteIndicator === null) {
     throw new Error(`The note indicator for card ${order} was not initialized.`);
@@ -401,7 +402,7 @@ export const shouldShowIndicator = (order: number) => {
   // If we are a player in an ongoing game,
   // show the note indicator if we have a non-blank note on it
   if (globals.state.playing) {
-    return globals.ourNotes[order] !== '';
+    return globals.ourNotes.get(order)! !== '';
   }
 
   // Morphed cards (in a hypothetical) should never show the note indicator
@@ -414,7 +415,7 @@ export const shouldShowIndicator = (order: number) => {
 
   // We are not a player in an ongoing game
   // Only show the note indicator if there is one or more non-blank notes
-  for (const noteObject of globals.allNotes[order]) {
+  for (const noteObject of globals.allNotes.get(order)!) {
     if (noteObject.note.length > 0) {
       return true;
     }

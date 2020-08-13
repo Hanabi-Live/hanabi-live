@@ -328,9 +328,12 @@ const drawPlayStacks = () => {
     globals.layers.card.add(playStack as any);
 
     // Add the stack base to the play stack
+    const order = deck.totalCards(globals.variant) + i;
+    globals.ourNotes.set(order, '');
+    globals.allNotes.set(order, []);
     const stackBase = new HanabiCard({
       // Stack bases use card orders after the final card in the deck
-      order: deck.totalCards(globals.variant) + i,
+      order,
       suitIndex: i,
       rank: STACK_BASE_RANK,
       listening: true,
