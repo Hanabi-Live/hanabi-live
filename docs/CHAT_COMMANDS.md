@@ -61,11 +61,11 @@ If you need general help with the website, then read the [features page](FEATURE
 
 <br />
 
-### Pre-game, game, and replay commands (table-owner-only)
+### Pre-game, game, and replay commands
 
 | Command      | Description
 | ------------ |------------
-| `/setleader` | Change the owner of the game (or the leader if it is a shared replay)
+| `/setleader` | Change the owner/leader of the game
 
 <br />
 
