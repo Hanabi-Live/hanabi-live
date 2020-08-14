@@ -286,29 +286,16 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   // setBareImage adjusts the "bare" image of the card
-  // (e.g. the canvas drawing from "globals.scaledCardImages")
+  // (e.g. the HTML5 canvas drawing from "globals.scaledCardImages")
   // Additionally, it toggles various card elements (pips, shadows, fading, etc.)
   setBareImage() {
-    // Local variables
-    // (Unknown is a colorless suit used for unclued cards)
-    const unknownSuit = getSuit('Unknown');
-
-    // Retrieve the identity of the card
     const cardIdentity = this.getCardIdentity();
 
-    const suitToShow = this.getSuitToShow(cardIdentity, unknownSuit);
-    if (suitToShow === unknownSuit) {
-      this._visibleSuitIndex = null;
-    } else {
-      this._visibleSuitIndex = this.variant.suits.indexOf(suitToShow);
-    }
+    // ("Unknown" is a colorless suit used for unclued cards)
+    const unknownSuit = getSuit('Unknown');
 
+    const suitToShow = this.getSuitToShow(cardIdentity, unknownSuit);
     const rankToShow = this.getRankToShow(cardIdentity);
-    if (rankToShow === UNKNOWN_CARD_RANK) {
-      this._visibleRank = null;
-    } else {
-      this._visibleRank = rankToShow;
-    }
 
     // Cards that are morphed to be blank should not be draggable
     const morphedBlank = this.getMorphedBlank();
@@ -316,6 +303,19 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     if (morphedBlank) {
       this.layout.draggable(false);
       this.layout.off('dragend');
+    }
+
+    // Set the visible state
+    // (this must be after the morphed blank check)
+    if (suitToShow === unknownSuit) {
+      this._visibleSuitIndex = null;
+    } else {
+      this._visibleSuitIndex = this.variant.suits.indexOf(suitToShow);
+    }
+    if (rankToShow === UNKNOWN_CARD_RANK) {
+      this._visibleRank = null;
+    } else {
+      this._visibleRank = rankToShow;
     }
 
     // Setting "this.bareName" will automatically update how the card appears the next time that the
