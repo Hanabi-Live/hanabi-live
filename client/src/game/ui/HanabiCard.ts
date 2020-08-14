@@ -291,29 +291,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     const unknownSuit = getSuit('Unknown');
 
     // Retrieve the identity of the card
-    // We may know the identity through normal means
-    // (e.g. it is a card that is currently in someone else's hand)
-    // We may also know the identity from a future game state
-    // (e.g. it is a card in our hand that we have learned about in the future)
-    let cardIdentity: CardIdentity | undefined;
-    // First, check if we have an alternate identity (blank/morphed) for this card
-    const morphedIdentity = globals.state.replay.hypothetical?.morphedIdentities[this.state.order];
-    if (morphedIdentity !== undefined) {
-      cardIdentity = morphedIdentity;
-    } else if (this.state.rank === STACK_BASE_RANK) {
-      // We do not track the card identities for the stack bases
-      // (for stack bases, the suit and rank is always baked into the state from the get-go)
-      cardIdentity = {
-        suitIndex: this.state.suitIndex,
-        rank: this.state.rank,
-      };
-    } else {
-      // Card identities are stored on the global state for convenience
-      cardIdentity = globals.state.cardIdentities[this.state.order];
-      if (cardIdentity === undefined) {
-        throw new Error(`Failed to get the previously known card identity for card ${this.state.order}.`);
-      }
-    }
+    const cardIdentity = this.getCardIdentity();
 
     const suitToShow = this.getSuitToShow(cardIdentity, unknownSuit);
     if (suitToShow === unknownSuit) {
@@ -329,15 +307,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this._visibleRank = rankToShow;
     }
 
-    // Find out if this card is morphed to be blank
-    const morphedBlank = (
-      morphedIdentity !== undefined
-      && morphedIdentity.rank === null
-      && morphedIdentity.suitIndex === null
-    );
+    // Cards that are morphed to be blank should not be draggable
+    const morphedBlank = this.getMorphedBlank();
     this.layout.blank = morphedBlank; // Also let the LayoutChild know about it
-
-    // Disable dragging on morphed blank cards
     if (morphedBlank) {
       this.layout.draggable(false);
       this.layout.off('dragend');
@@ -350,6 +322,37 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     this.setStatus(); // Set fading, criticality, etc.
 
     globals.layers.card.batchDraw();
+  }
+
+  getCardIdentity() {
+    // We may know the identity through normal means
+    // (e.g. it is a card that is currently in someone else's hand)
+    // We may also know the identity from a future game state
+    // (e.g. it is a card in our hand that we have learned about in the future)
+
+    // First, check if we have an alternate identity (e.g. blank or morphed) for this card
+    if (globals.state.replay.hypothetical !== null) {
+      const morphedIdentity = globals.state.replay.hypothetical.morphedIdentities[this.state.order];
+      if (morphedIdentity !== undefined) {
+        return morphedIdentity;
+      }
+    }
+
+    // We do not track the card identities for the stack bases
+    // (for stack bases, the suit and rank is always baked into the state from the get-go)
+    if (this.state.rank === STACK_BASE_RANK) {
+      return {
+        suitIndex: this.state.suitIndex,
+        rank: this.state.rank,
+      };
+    }
+
+    // Card identities are stored on the global state for convenience
+    const cardIdentity = globals.state.cardIdentities[this.state.order];
+    if (cardIdentity === undefined) {
+      throw new Error(`Failed to get the previously known card identity for card ${this.state.order}.`);
+    }
+    return cardIdentity;
   }
 
   getSuitToShow(cardIdentity: CardIdentity, unknownSuit: Suit) {
@@ -404,6 +407,19 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     return UNKNOWN_CARD_RANK;
+  }
+
+  getMorphedBlank() {
+    if (globals.state.replay.hypothetical === null) {
+      return false;
+    }
+
+    const morphedIdentity = globals.state.replay.hypothetical.morphedIdentities[this.state.order];
+    return (
+      morphedIdentity !== undefined
+      && morphedIdentity.rank === null
+      && morphedIdentity.suitIndex === null
+    );
   }
 
   getBareName(morphedBlank: boolean, suitToShow: Suit, rankToShow: number, unknownSuit: Suit) {
