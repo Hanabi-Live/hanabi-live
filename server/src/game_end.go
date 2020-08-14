@@ -196,34 +196,34 @@ func (g *Game) WriteDatabase() error {
 		}
 	}
 
-	// If the game ended in a special way, we also need to insert an "game over" action
-	var gameOverAction *GameAction
+	// If the game ended in a special way, we also need to insert an "end game" action
+	var endGameAction *GameAction
 	if g.EndCondition == EndConditionTimeout {
-		gameOverAction = &GameAction{
-			Type:   ActionTypeGameOver,
+		endGameAction = &GameAction{
+			Type:   ActionTypeEndGame,
 			Target: g.EndPlayer,
 			Value:  EndConditionTimeout,
 		}
 	} else if g.EndCondition == EndConditionTerminated {
-		gameOverAction = &GameAction{
-			Type:   ActionTypeGameOver,
+		endGameAction = &GameAction{
+			Type:   ActionTypeEndGame,
 			Target: g.EndPlayer,
 			Value:  EndConditionTerminated,
 		}
 	} else if g.EndCondition == EndConditionIdleTimeout {
-		gameOverAction = &GameAction{
-			Type:   ActionTypeGameOver,
+		endGameAction = &GameAction{
+			Type:   ActionTypeEndGame,
 			Target: -1,
 			Value:  EndConditionIdleTimeout,
 		}
 	}
-	if gameOverAction != nil {
+	if endGameAction != nil {
 		if err := models.GameActions.Insert(
 			t.ExtraOptions.DatabaseID,
 			len(g.Actions2),
-			gameOverAction,
+			endGameAction,
 		); err != nil {
-			logger.Error("Failed to insert the game over action:", err)
+			logger.Error("Failed to insert the \"end game\" action:", err)
 			return err
 		}
 	}

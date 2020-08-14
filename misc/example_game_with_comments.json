@@ -71,11 +71,11 @@
 
   // "actions" is an array that contains all of the actions that the players performed in the game
   // Valid actions types are:
-  // - 0 if a play
-  // - 1 if a discard
-  // - 2 if a color clue
-  // - 3 if a number clue
-  // - 4 if a game over
+  // - 0 for a play
+  // - 1 for a discard
+  // - 2 for a color clue
+  // - 3 for a number clue
+  // - 4 for an end game
   // An example of each action is listed below
   "actions": [
     {
@@ -120,16 +120,17 @@
       "value": 3
     },
     {
-      // A "game over" action (type 4)
+      // An "end game" action (type 4)
       "type": 4,
 
       // The index of the player that is ending the game
       // e.g. 0 corresponds to the 1st player, etc.
       "target": 1,
 
-      // The type of game over, corresponding to the "endCondition" value in "constants.go"
-      // https://github.com/Zamiell/hanabi-live/blob/master/src/constants.go
-      // e.g. 3 corresponds to a timed timeout, 4 corresponds to a manual termination, etc.
+      // The reason for ending the game, corresponding to the "endCondition" value in "constants.go"
+      // https://github.com/Zamiell/hanabi-live/blob/master/server/src/constants.go
+      // e.g. 3 corresponds to someone running out of time in a timed game,
+      // 4 corresponds to a player manually terminating the game, etc.
       "value": 3
     }
   ],

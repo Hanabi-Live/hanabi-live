@@ -52,7 +52,7 @@ func httpLocalhostTerminate(c *gin.Context) {
 	s := matchingTable.GetOwnerSession()
 	commandAction(s, &CommandData{
 		TableID: matchingTable.ID,
-		Type:    ActionTypeGameOver,
+		Type:    ActionTypeEndGame,
 		Target:  -1,
 		Value:   EndConditionTerminated,
 	})

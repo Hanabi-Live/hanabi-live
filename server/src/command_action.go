@@ -16,7 +16,7 @@ func actionsFunctionsInit() {
 		ActionTypeDiscard:   commandActionDiscard,
 		ActionTypeColorClue: commandActionClue,
 		ActionTypeRankClue:  commandActionClue,
-		ActionTypeGameOver:  commandActionGameOver,
+		ActionTypeEndGame:   commandActionEndGame,
 	}
 }
 
@@ -75,14 +75,14 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Validate that it is this player's turn
-	if g.ActivePlayerIndex != i && d.Type != ActionTypeGameOver {
+	if g.ActivePlayerIndex != i && d.Type != ActionTypeEndGame {
 		s.Warning("It is not your turn, so you cannot perform an action.")
 		g.InvalidActionOccurred = true
 		return
 	}
 
 	// Validate that the game is not paused
-	if g.Paused && d.Type != ActionTypeGameOver {
+	if g.Paused && d.Type != ActionTypeEndGame {
 		s.Warning("You cannot perform a game action when the game is paused.")
 		g.InvalidActionOccurred = true
 		return
@@ -113,7 +113,7 @@ func commandAction(s *Session, d *CommandData) {
 
 	// Start the idle timeout
 	// (but don't update the idle variable if we are ending the game)
-	if d.Type != ActionTypeGameOver {
+	if d.Type != ActionTypeEndGame {
 		go t.CheckIdle()
 	}
 
@@ -137,7 +137,7 @@ func commandAction(s *Session, d *CommandData) {
 	// Adjust the timer for the player that just took their turn
 	// (if the game is over now due to a player running out of time, we don't need to adjust the
 	// timer because we already set it to 0 in the "checkTimer" function)
-	if d.Type != ActionTypeGameOver {
+	if d.Type != ActionTypeEndGame {
 		p.Time -= time.Since(g.DatetimeTurnBegin)
 		// (in non-timed games,
 		// "Time" will decrement into negative numbers to show how much time they are taking)
@@ -407,9 +407,8 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 	return true
 }
 
-func commandActionGameOver(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
-	// A "gameOver" action is a special action type sent by the server to itself when it needs to
-	// end an ongoing game
+func commandActionEndGame(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
+	// A "endGame" action is a special action type sent by the server to itself
 	// The value will correspond to the end condition (see "endCondition" in "constants.go")
 	// The target will correspond to the index of the player who ended the game
 	// Validate the value
@@ -417,7 +416,7 @@ func commandActionGameOver(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		d.Value != EndConditionTerminated &&
 		d.Value != EndConditionIdleTimeout {
 
-		s.Warning("That is not a valid value for the game over action.")
+		s.Warning("That is not a valid value for the end game action.")
 		g.InvalidActionOccurred = true
 		return false
 	}

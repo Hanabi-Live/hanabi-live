@@ -705,6 +705,7 @@ func characterCheckSoftlock(g *Game, p *GamePlayer) {
 			p.Character == "Insistent") { // 13
 
 		g.EndCondition = EndConditionCharacterSoftlock
+		g.EndPlayer = p.Index
 	}
 }
 

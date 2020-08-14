@@ -237,10 +237,10 @@ func validateJSON(s *Session, d *CommandData) bool {
 					return false
 				}
 			}
-		} else if action.Type == ActionTypeGameOver {
+		} else if action.Type == ActionTypeEndGame {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Players)-1 {
 				s.Warning("Action at index " + strconv.Itoa(i) +
-					" is a game over with an invalid target (player index) of " +
+					" is an end game with an invalid target (player index) of " +
 					strconv.Itoa(action.Target) + ".")
 				return false
 			}

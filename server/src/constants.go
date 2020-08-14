@@ -7,6 +7,8 @@ import (
 // iota starts at 0 and counts upwards
 // i.e. statusLobby = 0, statusPregame = 1, etc.
 
+// Every player has a status associated with them for the purposes of showing "where they are" on
+// the user list in the lobby
 const (
 	StatusLobby = iota
 	StatusPregame
@@ -16,12 +18,14 @@ const (
 	StatusSharedReplay
 )
 
+// When in a game, players can send certain types of "actions" to the server to communicate what
+// kind of move they want to perform
 const (
 	ActionTypePlay = iota
 	ActionTypeDiscard
 	ActionTypeColorClue
 	ActionTypeRankClue
-	ActionTypeGameOver
+	ActionTypeEndGame // Players cannot send this (internal only)
 )
 
 const (
@@ -42,6 +46,8 @@ const (
 	EndConditionAllOrNothingSoftlock
 )
 
+// When in a shared replay, spectators can send certain types of "actions" to the server to
+// communicate what kind of function they want to perform
 const (
 	// Changing the shared turn
 	ReplayActionTypeSegment = iota
@@ -61,6 +67,9 @@ const (
 	ReplayActionTypeToggleRevealed
 )
 
+// Certain types of optional game settings can make the game easier
+// We need to keep track of these options when determining the maximum score for a particular
+// variant
 const (
 	ScoreModifierDeckPlays Bitmask = 1 << iota // e.g. 1, 2, 4, and so forth
 	ScoreModifierEmptyClues
