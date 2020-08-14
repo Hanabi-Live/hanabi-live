@@ -224,7 +224,9 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
   }
   let impossibleRank = 'unknown';
   if (note.rank !== null) {
-    if (note.rank === START_CARD_RANK) {
+    // Conventionally, players use 0 to represent a START card, but in the code, 0 is already taken
+    // (rank 0 represents a stack base)
+    if (note.rank === 0 || note.rank === START_CARD_RANK) {
       impossibleRank = 'START';
     } else {
       impossibleRank = note.rank.toString();
