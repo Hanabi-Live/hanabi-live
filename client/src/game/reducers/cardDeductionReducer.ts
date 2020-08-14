@@ -1,3 +1,4 @@
+import { current } from 'immer';
 import * as deckRules from '../rules/deck';
 import { GameAction } from '../types/actions';
 import CardState from '../types/CardState';
@@ -17,7 +18,7 @@ const cardDeductionReducer = (
     case 'discard':
     case 'play':
     case 'draw': {
-      return makeDeductions(hands, deck, variant, metadata);
+      return makeDeductions(current(hands), deck, variant, metadata);
     }
     default: {
       return deck.concat([]);
@@ -33,7 +34,7 @@ const makeDeductions = (
   variant: Variant,
   metadata: GameMetadata,
 ) => {
-  const newDeck: CardState[] = deck.concat([]);
+  const newDeck: CardState[] = Array.from(deck);
   const cardCountMap = getCardCountMap(variant);
 
   // if our variant shows played/discarded cards, then they're known by everyone
@@ -76,11 +77,18 @@ const calculateHandPossibilities = (
   }));
   hand.forEach((o) => {
     const card = deck[o];
-    const otherRemainingCards = remainingCards.filter((ro) => ro !== o).map((ro) => deck[ro]);
+    const otherRemainingPossibilities = remainingCards
+      .filter((ro) => ro !== o)
+      .map((ro) => deck[ro].possibleCardsFromDeduction);
     deck[o] = {
       ...card,
       possibleCardsFromDeduction: card.possibleCardsFromDeduction.filter(
-        (possibility) => possibilityValid(possibility, otherRemainingCards, remainingCardCountMap),
+        (possibility) => possibilityValid(
+          possibility,
+          otherRemainingPossibilities,
+          0,
+          remainingCardCountMap,
+        ),
       ),
     };
   });
@@ -88,12 +96,16 @@ const calculateHandPossibilities = (
 
 const possibilityValid = (
   [suit, rank]: readonly [number, number],
-  remainingCards: CardState[],
+  remainingPossibilities: ReadonlyArray<ReadonlyArray<readonly [number, number]>>,
+  index: number,
   cardCountMap: readonly number[][],
 ) => {
   // Avoiding duplicating the map for performance, so trying to undo the mutation as we exit
   cardCountMap[suit][rank] -= 1;
-  if (cardCountMap[suit][rank] >= 0 && remainingCardsValid(remainingCards, cardCountMap)) {
+  if (
+    cardCountMap[suit][rank] >= 0
+    && remainingCardsValid(remainingPossibilities, index, cardCountMap)
+  ) {
     cardCountMap[suit][rank] += 1;
     return true;
   }
@@ -102,15 +114,23 @@ const possibilityValid = (
 };
 
 const remainingCardsValid = (
-  remainingCards: readonly CardState[],
+  remainingPossibilities: ReadonlyArray<ReadonlyArray<readonly [number, number]>>,
+  index: number,
   cardCountMap: readonly number[][],
-) => remainingCards.length === 0 || remainingCards[0].possibleCardsFromDeduction.some(
-  (possibility) => possibilityValid(possibility, remainingCards.slice(1), cardCountMap),
+) => remainingPossibilities.length - index === 0 || remainingPossibilities[index].some(
+  (possibility) => possibilityValid(possibility, remainingPossibilities, index + 1, cardCountMap),
 );
+
+let cachedVariantName: string | null = null;
+let cachedCardCountMap: number[][] = [];
 
 const getCardCountMap = (
   variant: Variant,
 ) => {
+  if (variant.name === cachedVariantName) {
+    return Array.from(cachedCardCountMap, (arr) => Array.from(arr));
+  }
+
   const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);
   const possibleRanks: number[] = variant.ranks.slice();
   const possibleCardMap: number[][] = [];
@@ -126,6 +146,9 @@ const getCardCountMap = (
       );
     });
   });
+
+  cachedVariantName = variant.name;
+  cachedCardCountMap = possibleCardMap;
 
   return possibleCardMap;
 };
