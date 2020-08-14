@@ -285,6 +285,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     );
   }
 
+  // setBareImage adjusts the "bare" image of the card
+  // (e.g. the canvas drawing from "globals.scaledCardImages")
+  // Additionally, it toggles various card elements (pips, shadows, fading, etc.)
   setBareImage() {
     // Local variables
     // (Unknown is a colorless suit used for unclued cards)
