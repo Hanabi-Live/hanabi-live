@@ -20,7 +20,7 @@ const cardsReducer = (
   metadata: GameMetadata,
 ) => {
   const variant = getVariant(metadata.options.variantName);
-  const newDeck = deck.concat([]);
+  const newDeck = Array.from(deck);
 
   switch (action.type) {
     // The server just told us about a card that was previously hidden

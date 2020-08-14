@@ -298,7 +298,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     const rankToShow = this.getRankToShow(cardIdentity);
 
     // Cards that are morphed to be blank should not be draggable
-    const morphedBlank = this.getMorphedBlank();
+    const morphedBlank = this.isMorphedBlank();
     this.layout.blank = morphedBlank; // Also let the LayoutChild know about it
     if (morphedBlank) {
       this.layout.draggable(false);
@@ -321,8 +321,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Setting "this.bareName" will automatically update how the card appears the next time that the
     // "card" layer is drawn
     this.bareName = this.getBareName(morphedBlank, suitToShow, rankToShow, unknownSuit);
+
+    // Set pips, shadow, etc.
     this.setCardElements(morphedBlank, suitToShow, rankToShow, unknownSuit);
-    this.setStatus(); // Set fading, criticality, etc.
+
+    // Set fading, criticality, etc.
+    this.setStatus();
 
     globals.layers.card.batchDraw();
   }
@@ -412,7 +416,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return UNKNOWN_CARD_RANK;
   }
 
-  getMorphedBlank() {
+  isMorphedBlank() {
     if (globals.state.replay.hypothetical === null) {
       return false;
     }
