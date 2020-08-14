@@ -135,7 +135,9 @@ func charactersGenerate(g *Game) {
 				// We don't have to seed the PRNG,
 				// since that was done just a moment ago when the deck was shuffled
 				randomIndex := rand.Intn(len(characterNames))
+				logger.Debug("Random character index chosen:", randomIndex)
 				p.Character = characterNames[randomIndex]
+				logger.Debug("Random character chosen:", p.Character)
 
 				// Check to see if any other players have this assignment already
 				alreadyAssigned := false
@@ -162,6 +164,8 @@ func charactersGenerate(g *Game) {
 			}
 		}
 
+		// Specific characters also have secondary attributes that are stored in the character
+		// metadata field
 		if p.Character == "Fuming" { // 0
 			// A random number from 0 to the number of colors in this variant
 			p.CharacterMetadata = rand.Intn(len(variants[g.Options.VariantName].ClueColors))
