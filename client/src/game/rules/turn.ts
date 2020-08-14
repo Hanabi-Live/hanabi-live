@@ -2,6 +2,7 @@ import { getCharacter } from '../data/gameData';
 
 export const shouldEndTurnAfterDraw = (
   cardsPlayedOrDiscardedThisTurn: number,
+  cardsDiscardedThisTurn: number,
   characterID: number | null,
   clueTokens: number,
 ) => {
@@ -9,9 +10,10 @@ export const shouldEndTurnAfterDraw = (
   if (characterID !== null) {
     const character = getCharacter(characterID);
 
+    // Panicky - After discarding, discards again if there are 4 clues or less
     // TODO: fix this to be 8 when clue tokens are doubled
     if (character.name === 'Panicky' && clueTokens <= 4) {
-      return cardsPlayedOrDiscardedThisTurn >= 2;
+      return cardsDiscardedThisTurn !== 1;
     }
   }
 

@@ -21,9 +21,20 @@ const turnReducer = produce((
   );
 
   switch (action.type) {
-    case 'play':
+    case 'play': {
+      turn.cardsPlayedOrDiscardedThisTurn += 1;
+
+      if (currentState.deckSize === 0) {
+        turn.segment! += 1;
+        nextTurn(turn, numPlayers, currentState.deckSize, characterID);
+      }
+
+      break;
+    }
+
     case 'discard': {
       turn.cardsPlayedOrDiscardedThisTurn += 1;
+      turn.cardsDiscardedThisTurn += 1;
 
       if (currentState.deckSize === 0) {
         turn.segment! += 1;
@@ -61,6 +72,7 @@ const turnReducer = produce((
 
         if (turnRules.shouldEndTurnAfterDraw(
           turn.cardsPlayedOrDiscardedThisTurn,
+          turn.cardsDiscardedThisTurn,
           characterID,
           currentState.clueTokens,
         )) {
@@ -141,5 +153,6 @@ const nextTurn = (
   }
 
   state.cardsPlayedOrDiscardedThisTurn = 0;
+  state.cardsDiscardedThisTurn = 0;
   state.cluesGivenThisTurn = 0;
 };

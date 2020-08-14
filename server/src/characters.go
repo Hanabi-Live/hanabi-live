@@ -24,12 +24,20 @@ var (
 	characterNames  []string
 	charactersID    map[int]string
 	debugCharacters = []string{
-		"Slow-Witted",
 		"n/a",
 		"n/a",
 		"n/a",
 		"n/a",
 		"n/a",
+		"n/a",
+	}
+	debugCharacterMetadata = []int{
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
 	}
 	debugUsernames = []string{
 		"test",
@@ -127,12 +135,11 @@ func charactersGenerate(g *Game) {
 		return
 	}
 
-	setSeed(g.Seed) // Seed the random number generator
-	for i, p := range g.Players {
-		// Initialize the metadata to -1 (it is 0 by default in order to save database space)
-		p.CharacterMetadata = -1
+	// Seed the random number generator
+	setSeed(g.Seed)
 
-		debugUsernames = make([]string, 0) // Comment this line to activate character debugging
+	for i, p := range g.Players {
+		// Set the character
 		if stringInSlice(p.Name, debugUsernames) {
 			// Hard-code some character assignments for testing purposes
 			p.Character = debugCharacters[i]
@@ -169,20 +176,27 @@ func charactersGenerate(g *Game) {
 			}
 		}
 
+		// Initialize the metadata to -1
+		p.CharacterMetadata = -1
+
 		// Specific characters also have secondary attributes that are stored in the character
 		// metadata field
-		if p.Character == "Fuming" { // 0
-			// A random number from 0 to the number of colors in this variant
-			p.CharacterMetadata = rand.Intn(len(variants[g.Options.VariantName].ClueColors))
-		} else if p.Character == "Dumbfounded" { // 1
-			// A random number from 1 to 5
-			p.CharacterMetadata = rand.Intn(4) + 1
-		} else if p.Character == "Inept" { // 2
-			// A random number from 0 to the number of suits in this variant
-			p.CharacterMetadata = rand.Intn(len(g.Stacks))
-		} else if p.Character == "Awkward" { // 3
-			// A random number from 1 to 5
-			p.CharacterMetadata = rand.Intn(4) + 1
+		if stringInSlice(p.Name, debugUsernames) {
+			p.CharacterMetadata = debugCharacterMetadata[i]
+		} else {
+			if p.Character == "Fuming" { // 0
+				// A random number from 0 to the number of colors in this variant
+				p.CharacterMetadata = rand.Intn(len(variants[g.Options.VariantName].ClueColors))
+			} else if p.Character == "Dumbfounded" { // 1
+				// A random number from 1 to 5
+				p.CharacterMetadata = rand.Intn(4) + 1
+			} else if p.Character == "Inept" { // 2
+				// A random number from 0 to the number of suits in this variant
+				p.CharacterMetadata = rand.Intn(len(g.Stacks))
+			} else if p.Character == "Awkward" { // 3
+				// A random number from 1 to 5
+				p.CharacterMetadata = rand.Intn(4) + 1
+			}
 		}
 	}
 }
