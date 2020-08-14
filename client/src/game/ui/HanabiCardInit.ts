@@ -153,39 +153,19 @@ export const directionArrow = (variant: Variant) => {
 // Cache the pip objects to save time on the multiple cards
 let cachedVariant: Variant | null = null;
 let cachedPips: {
-  suitPips: Konva.Group;
   suitPipsMap: Map<number, Konva.Shape>;
   suitPipsXMap: Map<number, Konva.Shape>;
-  rankPips: Konva.Group;
   rankPipsMap: Map<number, RankPip>;
   rankPipsXMap: Map<number, Konva.Shape>;
 };
 
-export const pips = (variant: Variant) => {
+const makeCachedPips = (variant: Variant) => {
   // Initialize the suit pips (colored shapes) on the back of the card,
   // which will be removed one by one as the card gains negative information
-  const suitPips = new Konva.Group({
-    x: 0,
-    y: 0,
-    width: Math.floor(CARD_W),
-    height: Math.floor(CARD_H),
-    visible: false,
-    listening: false,
-  });
 
   const suitPipsMap = new Map<number, Konva.Shape>();
   const suitPipsXMap = new Map<number, Konva.Shape>();
   for (let i = 0; i < variant.suits.length; i++) {
-    if (cachedVariant === variant) {
-      const suitPip = cachedPips.suitPipsMap.get(i)!.clone() as Konva.Shape;
-      const suitPipX = cachedPips.suitPipsXMap.get(i)!.clone() as Konva.Shape;
-      suitPips.add(suitPip);
-      suitPips.add(suitPipX);
-      suitPipsMap.set(i, suitPip);
-      suitPipsXMap.set(i, suitPipX);
-      continue;
-    }
-
     const suit = variant.suits[i];
 
     // Set the pip at the middle of the card
@@ -252,7 +232,6 @@ export const pips = (variant: Variant) => {
       suitPip.fillRadialGradientStartRadius(0);
       suitPip.fillRadialGradientEndRadius(Math.floor(CARD_W * 0.25));
     }
-    suitPips.add(suitPip);
     suitPipsMap.set(i, suitPip);
 
     // Also create the X that will show when a certain suit can be ruled out
@@ -274,35 +253,15 @@ export const pips = (variant: Variant) => {
       },
       listening: false,
     });
-    suitPips.add(suitPipX);
     suitPipsXMap.set(i, suitPipX);
   }
 
   // Initialize the rank pips (along the bottom of the card)
-  const rankPips = new Konva.Group({
-    x: 0,
-    y: Math.floor(CARD_H * 0.81),
-    width: CARD_W,
-    height: Math.floor(CARD_H * 0.15),
-    visible: false,
-    listening: false,
-  });
-
   const rankPipsMap = new Map<number, RankPip>();
   const rankPipsXMap = new Map<number, Konva.Shape>();
   for (const rank of variant.ranks) {
     if (rank === START_CARD_RANK) {
       // We don't want to create a rank pip that corresponds to the "START" card
-      continue;
-    }
-
-    if (cachedVariant === variant) {
-      const rankPip = cachedPips.rankPipsMap.get(rank)!.clone() as RankPip;
-      const rankPipX = cachedPips.rankPipsXMap.get(rank)!.clone() as Konva.Shape;
-      rankPips.add(rankPip);
-      rankPips.add(rankPipX);
-      rankPipsMap.set(rank, rankPip);
-      rankPipsXMap.set(rank, rankPipX);
       continue;
     }
 
@@ -329,7 +288,6 @@ export const pips = (variant: Variant) => {
       shadowForStrokeEnabled: true,
       listening: false,
     });
-    rankPips.add(rankPip);
     rankPipsMap.set(rank, rankPip);
 
     // Also create the X that will show when a certain rank can be ruled out
@@ -349,12 +307,74 @@ export const pips = (variant: Variant) => {
       },
       listening: false,
     });
-    rankPips.add(rankPipX);
     rankPipsXMap.set(rank, rankPipX);
   }
 
   // Cache the results
   cachedPips = {
+    suitPipsMap,
+    suitPipsXMap,
+    rankPipsMap,
+    rankPipsXMap,
+  };
+
+  cachedVariant = variant;
+};
+
+export const pips = (variant: Variant) => {
+  if (cachedVariant !== variant) {
+    makeCachedPips(variant);
+  }
+
+  const suitPips = new Konva.Group({
+    x: 0,
+    y: 0,
+    width: Math.floor(CARD_W),
+    height: Math.floor(CARD_H),
+    visible: false,
+    listening: false,
+  });
+
+  const suitPipsMap = new Map<number, Konva.Shape>();
+  const suitPipsXMap = new Map<number, Konva.Shape>();
+
+  const rankPips = new Konva.Group({
+    x: 0,
+    y: Math.floor(CARD_H * 0.81),
+    width: CARD_W,
+    height: Math.floor(CARD_H * 0.15),
+    visible: false,
+    listening: false,
+  });
+
+  const rankPipsMap = new Map<number, RankPip>();
+  const rankPipsXMap = new Map<number, Konva.Shape>();
+
+  for (let i = 0; i < variant.suits.length; i++) {
+    const suitPip = cachedPips.suitPipsMap.get(i)!.clone() as Konva.Shape;
+    const suitPipX = cachedPips.suitPipsXMap.get(i)!.clone() as Konva.Shape;
+    suitPips.add(suitPip);
+    suitPips.add(suitPipX);
+    suitPipsMap.set(i, suitPip);
+    suitPipsXMap.set(i, suitPipX);
+  }
+
+  for (const rank of variant.ranks) {
+    if (rank === START_CARD_RANK) {
+      // We don't want to create a rank pip that corresponds to the "START" card
+      continue;
+    }
+
+    const rankPip = cachedPips.rankPipsMap.get(rank)!.clone() as RankPip;
+    const rankPipX = cachedPips.rankPipsXMap.get(rank)!.clone() as Konva.Shape;
+    rankPips.add(rankPip);
+    rankPips.add(rankPipX);
+    rankPipsMap.set(rank, rankPip);
+    rankPipsXMap.set(rank, rankPipX);
+    continue;
+  }
+
+  return {
     suitPips,
     suitPipsMap,
     suitPipsXMap,
@@ -362,10 +382,6 @@ export const pips = (variant: Variant) => {
     rankPipsMap,
     rankPipsXMap,
   };
-
-  cachedVariant = variant;
-
-  return cachedPips;
 };
 
 export const note = (offsetCornerElements: boolean, shouldShowIndicator: () => boolean) => {
