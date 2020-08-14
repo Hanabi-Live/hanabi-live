@@ -109,7 +109,17 @@ func charactersGenerate(g *Game) {
 
 	// If this is a JSON replay, use the character selections from the JSON input
 	if g.ExtraOptions.DatabaseID == 0 {
-		// TODO
+		if len(g.ExtraOptions.CustomCharacters) != len(g.Players) {
+			logger.Error("There are " + strconv.Itoa(len(g.ExtraOptions.CustomCharacters)) +
+				" custom characters, but there are " + strconv.Itoa(len(g.Players)) +
+				" players in the game.")
+			return
+		}
+
+		for i, p := range g.Players {
+			p.Character = g.ExtraOptions.CustomCharacters[i].Name
+			p.CharacterMetadata = g.ExtraOptions.CustomCharacters[i].Metadata
+		}
 		return
 	}
 

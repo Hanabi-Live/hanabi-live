@@ -303,6 +303,14 @@ func validateJSON(s *Session, d *CommandData) bool {
 		}
 	}
 
+	// Validate the characters
+	if d.GameJSON.Options.DetrimentalCharacters != nil &&
+		len(d.GameJSON.Characters) != len(d.GameJSON.Players) {
+
+		s.Warning("The amount of characters specified must match the number of players in the game.")
+		return false
+	}
+
 	return true
 }
 
@@ -428,6 +436,8 @@ func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 		// JSON games are hard-coded to have a database ID of 0
 		DatabaseID: 0,
 		CustomDeck: d.GameJSON.Deck,
+		// "d.GameJSON.Characters" will be an empty array if it was not specified in the JSON
+		CustomCharacters: d.GameJSON.Characters,
 	}
 
 	loadFakePlayers(t, d.GameJSON.Players)
