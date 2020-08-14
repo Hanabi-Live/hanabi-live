@@ -195,9 +195,8 @@ export const cardIdentityFromNote = (
   };
 };
 
-// Validate that the note does not contain an impossibility
 export const checkNoteImpossibility = (variant: Variant, cardState: CardState, note: CardNote) => {
-  // Validate that the note does not contain an impossibility
+  // Prevent players from accidentally mixing up which stack base is which
   if (
     cardState.rank === STACK_BASE_RANK
     && note.suitIndex !== null
@@ -208,31 +207,47 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
     note.rank = null;
     return;
   }
+
+  // Only validate cards in our own hand
   if (
     !(cardState.location === globals.metadata.ourPlayerIndex)
     || canPossiblyBe(cardState, note.suitIndex, note.rank)
   ) {
     return;
   }
+
+  // We have specified a note identity that is impossible
+  let impossibleSuit = 'unknown';
+  if (note.suitIndex !== null) {
+    const suitName = variant.suits[note.suitIndex].name;
+    impossibleSuit = suitName.toLowerCase();
+  }
+  let impossibleRank = 'unknown';
+  if (note.rank !== null) {
+    if (note.rank === START_CARD_RANK) {
+      impossibleRank = 'START';
+    } else {
+      impossibleRank = note.rank.toString();
+    }
+  }
+
   if (note.suitIndex !== null && note.rank === null) {
     // Only the suit was specified
-    const suitName = variant.suits[note.suitIndex].name;
-    window.alert(`That card cannot possibly be ${suitName.toLowerCase()}.`);
+    window.alert(`That card cannot possibly be ${impossibleSuit}.`);
     note.suitIndex = null;
     return;
   }
 
   if (note.suitIndex === null && note.rank !== null) {
     // Only the rank was specified
-    window.alert(`That card cannot possibly be a ${note.rank}.`);
+    window.alert(`That card cannot possibly be a ${impossibleRank}.`);
     note.rank = null;
     return;
   }
 
   if (note.suitIndex !== null && note.rank !== null) {
     // Both the suit and the rank were specified
-    const suitName = variant.suits[note.suitIndex].name;
-    window.alert(`That card cannot possibly be a ${suitName.toLowerCase()} ${note.rank}.`);
+    window.alert(`That card cannot possibly be a ${impossibleSuit} ${impossibleRank}.`);
     note.suitIndex = null;
     note.rank = null;
   }
