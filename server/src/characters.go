@@ -645,18 +645,39 @@ func characterHideCard(a *ActionDraw, g *Game, p *GamePlayer) bool {
 	return false
 }
 
-func characterShouldSendCardIdentityOfSlot2(g *Game) bool {
+func characterSendCardIdentityOfSlot2(g *Game, playerIndexDrawingCard int) {
 	if !g.Options.DetrimentalCharacters {
-		return false
+		return
 	}
 
-	for _, p := range g.Players {
-		if p.Character == "Slow-Witted" { // 33
-			return true
+	// Local variables
+	t := g.Table
+	p := g.Players[playerIndexDrawingCard]
+
+	if len(p.Hand) <= 1 {
+		return
+	}
+
+	hasSlowWitted := false
+	for _, p2 := range g.Players {
+		if p2.Character == "Slow-Witted" { // 33
+			hasSlowWitted = true
+			break
 		}
 	}
 
-	return false
+	if hasSlowWitted {
+		// Card information will be scrubbed from the action in the "CheckScrub()" function
+		c := p.Hand[len(p.Hand)-2] // Slot 2
+		g.Actions = append(g.Actions, ActionCardIdentity{
+			Type:        "cardIdentity",
+			PlayerIndex: p.Index,
+			Order:       c.Order,
+			SuitIndex:   c.SuitIndex,
+			Rank:        c.Rank,
+		})
+		t.NotifyGameAction()
+	}
 }
 
 func characterAdjustEndTurn(g *Game) {

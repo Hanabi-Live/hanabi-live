@@ -23,19 +23,23 @@ const cardsReducer = (
   const newDeck = Array.from(deck);
 
   switch (action.type) {
-    // The server just told us about a card that was previously hidden
+    // If we are in a game with a "Slow-Witted" character,
+    // the server will announce the identities of the cards that slide from slot 1 to slot 2
     // { type: 'cardIdentity', playerIndex: 0, order: 0, rank: 1, suitIndex: 4 }
     case 'cardIdentity': {
-      if (action.suitIndex === -1 || action.rank === -1) {
-        // The server scrubbed the identity information to prevent leaking information
-        // (e.g. the card happens to be in our own hand and we are not supposed to know the identity
-        // yet)
+      if (
+        action.playerIndex === metadata.ourPlayerIndex
+        || action.suitIndex === -1
+        || action.rank === -1
+      ) {
+        // The server scrubs the identity from cards that slide from slot 1 to slot 2 in our own
+        // hand in order to prevent leaking information
         break;
       }
 
       const order = action.order;
       const card = getCard(deck, order);
-      if (card.suitDetermined && card.rankDetermined) {
+      if (card.suitIndex !== null && card.rank !== null) {
         // We already know the full identity of this card, so we can safely ignore this action
         break;
       }
@@ -50,8 +54,6 @@ const cardsReducer = (
         ...card,
         suitIndex,
         rank,
-        suitDetermined: true,
-        rankDetermined: true,
       };
 
       break;
