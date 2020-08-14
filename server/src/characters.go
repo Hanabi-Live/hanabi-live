@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -86,6 +87,11 @@ func charactersInit() {
 		// (so that we can easily find the associated character from a database entry)
 		charactersID[character.ID] = name
 	}
+
+	// The characters map was iterated over in a random order,
+	// so the "characterNames" array will be in a random order every time the server starts
+	// Alphabetize it to prevent this
+	sort.Strings(characterNames)
 }
 
 func charactersGenerate(g *Game) {
@@ -121,6 +127,7 @@ func charactersGenerate(g *Game) {
 		return
 	}
 
+	setSeed(g.Seed) // Seed the random number generator
 	for i, p := range g.Players {
 		// Initialize the metadata to -1 (it is 0 by default in order to save database space)
 		p.CharacterMetadata = -1
@@ -135,9 +142,7 @@ func charactersGenerate(g *Game) {
 				// We don't have to seed the PRNG,
 				// since that was done just a moment ago when the deck was shuffled
 				randomIndex := rand.Intn(len(characterNames))
-				logger.Debug("Random character index chosen:", randomIndex)
 				p.Character = characterNames[randomIndex]
-				logger.Debug("Random character chosen:", p.Character)
 
 				// Check to see if any other players have this assignment already
 				alreadyAssigned := false
