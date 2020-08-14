@@ -215,7 +215,7 @@ func commandTableStart(s *Session, d *CommandData) {
 
 	// Decide the random character assignments
 	// (this has to be after seed generation and initialization)
-	characterGenerate(g)
+	charactersGenerate(g)
 
 	// Initialize all of the players to not being present
 	// This is so that we don't send them unnecessary messages during the game initialization

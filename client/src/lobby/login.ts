@@ -21,6 +21,11 @@ export const init = () => {
     }
   });
   $('#login-form').submit(submit);
+
+  $('#firefox-warning-button').click(() => {
+    localStorage.setItem('acceptedFirefoxWarning', 'true');
+    show();
+  });
 };
 
 const submit = (event: JQuery.Event) => {
@@ -119,6 +124,14 @@ export const automaticLogin = () => {
   // If we have logged in previously and our cookie is still good, automatically login
   console.log('Testing to see if we have a cached WebSocket cookie.');
   fetch('/test-cookie').then((response) => {
+    // Check to see if we have accepted the Firefox warning
+    // (cookies are strings)
+    if (globals.browserIsFirefox && localStorage.getItem('acceptedFirefoxWarning') !== 'true') {
+      $('#loading').hide();
+      $('#firefox-warning').show();
+      return;
+    }
+
     if (response.status === 200) {
       console.log('WebSocket cookie confirmed to be good. Automatically logging in to the WebSocket server.');
       websocketInit();
@@ -130,17 +143,20 @@ export const automaticLogin = () => {
     } else {
       console.log('Received an unknown status back from the server:', response.status);
     }
-
-    // Show the login screen
-    $('#loading').hide();
-    $('#sign-in').show();
-    $('#login-username').focus();
+    show();
   });
 };
 
 // -------------------------
 // Miscellaneous subroutines
 // -------------------------
+
+export const show = () => {
+  $('#loading').hide();
+  $('#firefox-warning').hide();
+  $('#sign-in').show();
+  $('#login-username').focus();
+};
 
 export const hide = (firstTimeUser: boolean) => {
   // Hide the login screen

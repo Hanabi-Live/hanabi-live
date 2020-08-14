@@ -53,6 +53,8 @@ export class Globals {
   ui: HanabiUI | null = null;
   // Used to keep track of how many in-game chat messages are currently unread
   chatUnread: number = 0;
+
+  browserIsFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 }
 
 const globals = new Globals();

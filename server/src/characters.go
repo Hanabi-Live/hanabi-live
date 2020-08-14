@@ -42,7 +42,7 @@ var (
 	}
 )
 
-func characterInit() {
+func charactersInit() {
 	// Import the JSON file
 	filePath := path.Join(dataPath, "characters.json")
 	var contents []byte
@@ -88,7 +88,7 @@ func characterInit() {
 	}
 }
 
-func characterGenerate(g *Game) {
+func charactersGenerate(g *Game) {
 	if !g.Options.DetrimentalCharacters {
 		return
 	}
@@ -125,6 +125,7 @@ func characterGenerate(g *Game) {
 		// Initialize the metadata to -1 (it is 0 by default in order to save database space)
 		p.CharacterMetadata = -1
 
+		debugUsernames = make([]string, 0) // Temp
 		if stringInSlice(p.Name, debugUsernames) {
 			// Hard-code some character assignments for testing purposes
 			p.Character = debugCharacters[i]

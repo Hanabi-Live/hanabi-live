@@ -182,7 +182,7 @@ func main() {
 	replayActionsFunctionsInit()
 
 	// Initialize "Detrimental Character Assignments" (in "characters.go")
-	characterInit()
+	charactersInit()
 
 	// Initialize the word list
 	wordListPath := path.Join(dataPath, "word_list.txt")
