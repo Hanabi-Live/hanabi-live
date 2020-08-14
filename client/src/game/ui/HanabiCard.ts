@@ -286,19 +286,23 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   setBareImage() {
+    // Local variables
+    // (Unknown is a colorless suit used for unclued cards)
+    const unknownSuit = getSuit('Unknown');
+
     // Retrieve the identity of the card
     // We may know the identity through normal means
     // (e.g. it is a card that is currently in someone else's hand)
     // We may also know the identity from a future game state
     // (e.g. it is a card in our hand that we have learned about in the future)
     let cardIdentity: CardIdentity | undefined;
-    // First check if we have an alternate identity (blank/morphed) for this card
+    // First, check if we have an alternate identity (blank/morphed) for this card
     const morphedIdentity = globals.state.replay.hypothetical?.morphedIdentities[this.state.order];
     if (morphedIdentity !== undefined) {
       cardIdentity = morphedIdentity;
     } else if (this.state.rank === STACK_BASE_RANK) {
-      // We do not track the card identities for the stack base cards
-      // For stack bases, the suit and rank is always baked into the state from the get-go
+      // We do not track the card identities for the stack bases
+      // (for stack bases, the suit and rank is always baked into the state from the get-go)
       cardIdentity = {
         suitIndex: this.state.suitIndex,
         rank: this.state.rank,
@@ -311,124 +315,136 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
     }
 
-    const unknownSuit = getSuit('Unknown');
-
-    // Find out the suit to display
-    // (Unknown is a colorless suit used for unclued cards)
-    let suitToShow: Suit | null | undefined;
-    if (this.empathy) {
-      // If we are in Empathy mode, only show the suit if there is only one possibility left
-      if (this.state.suitDetermined) {
-        const suitIndex = this.state.suitIndex!;
-        suitToShow = this.variant.suits[suitIndex];
-      } else {
-        suitToShow = unknownSuit;
-      }
+    const suitToShow = this.getSuitToShow(cardIdentity, unknownSuit);
+    if (suitToShow === unknownSuit) {
+      this._visibleSuitIndex = null;
     } else {
-      // If we are not in Empathy mode, then show the suit if it is known
-      if (cardIdentity.suitIndex === null) {
-        suitToShow = null;
-      } else {
-        suitToShow = suitIndexToSuit(cardIdentity.suitIndex, globals.variant);
-      }
-
-      if (
-        this.state.rank === STACK_BASE_RANK
-        && this.note.suitIndex !== null
-        && !globals.state.finished
-      ) {
-        // Show the suit corresponding to the note
-        // The note has precedence over the "real" suit,
-        // but only for the stack bases (and not in replays)
-        suitToShow = this.variant.suits[this.note.suitIndex];
-      }
-      if (suitToShow === null && this.note.suitIndex !== null) {
-        // Show the suit corresponding to the note
-        suitToShow = this.variant.suits[this.note.suitIndex];
-      }
-      if (suitToShow === null) {
-        suitToShow = unknownSuit;
-      }
+      this._visibleSuitIndex = this.variant.suits.indexOf(suitToShow);
     }
 
-    // Find out the rank to display
-    // (6 is a used for unclued cards)
-    let rankToShow;
-    if (this.empathy) {
-      // If we are in Empathy mode, only show the rank if there is only one possibility left
-      if (this.state.rankDetermined) {
-        rankToShow = this.state.rank!;
-      } else {
-        rankToShow = UNKNOWN_CARD_RANK;
-      }
+    const rankToShow = this.getRankToShow(cardIdentity);
+    if (rankToShow === UNKNOWN_CARD_RANK) {
+      this._visibleRank = null;
     } else {
-      // If we are not in Empathy mode, then show the rank if it is known
-      rankToShow = cardIdentity.rank;
-      if (
-        this.state.rank === STACK_BASE_RANK
-        && this.note.rank !== null
-        && !globals.state.finished
-      ) {
-        // The card note rank has precedence over the "real" rank,
-        // but only for the stack bases (and not in replays)
-        rankToShow = this.note.rank;
-      }
-      if (rankToShow === null) {
-        rankToShow = this.note.rank;
-      }
-      if (rankToShow === null) {
-        rankToShow = UNKNOWN_CARD_RANK;
-      }
+      this._visibleRank = rankToShow;
     }
 
-    // Set the name
-    // (setting "this.bareName" will automatically update how the card appears the next time that
-    // the "card" layer is drawn)
-    const blank = (
+    // Find out if this card is morphed to be blank
+    const morphedBlank = (
       morphedIdentity !== undefined
       && morphedIdentity.rank === null
       && morphedIdentity.suitIndex === null
     );
+    this.layout.blank = morphedBlank; // Also let the LayoutChild know about it
 
-    // Let the LayoutChild know about it
-    this.layout.blank = blank;
-
-    if (blank) {
-      // If a card is morphed to a null identity, the card should appear blank no matter what
-      this.bareName = DECK_BACK_IMAGE;
-
-      // Disable dragging of this card
+    // Disable dragging on morphed blank cards
+    if (morphedBlank) {
       this.layout.draggable(false);
       this.layout.off('dragend');
-    } else if (
-      // A "blank" note means that the user wants to force the card to appear blank
-      this.note?.blank
+    }
+
+    // Setting "this.bareName" will automatically update how the card appears the next time that the
+    // "card" layer is drawn
+    this.bareName = this.getBareName(morphedBlank, suitToShow, rankToShow, unknownSuit);
+    this.setCardElements(morphedBlank, suitToShow, rankToShow, unknownSuit);
+    this.setStatus(); // Set fading, criticality, etc.
+
+    globals.layers.card.batchDraw();
+  }
+
+  getSuitToShow(cardIdentity: CardIdentity, unknownSuit: Suit) {
+    // If we are in Empathy mode, only show the suit if there is only one possibility left
+    if (this.empathy) {
+      if (this.state.suitDetermined) {
+        const suitIndex = this.state.suitIndex!;
+        return this.variant.suits[suitIndex];
+      }
+
+      return unknownSuit;
+    }
+
+    // Show the suit if it is known
+    if (cardIdentity.suitIndex !== null) {
+      return suitIndexToSuit(cardIdentity.suitIndex, globals.variant) ?? unknownSuit;
+    }
+
+    // If we have a note identity on the card, show the suit corresponding to the note
+    if (this.note.suitIndex !== null) {
+      return this.variant.suits[this.note.suitIndex];
+    }
+
+    return unknownSuit;
+  }
+
+  getRankToShow(cardIdentity: CardIdentity) {
+    // If we are in Empathy mode, only show the rank if there is only one possibility left
+    if (this.empathy) {
+      if (this.state.rankDetermined && this.state.rank !== null) {
+        return this.state.rank;
+      }
+
+      return UNKNOWN_CARD_RANK;
+    }
+
+    // If we have a note identity on the card, show the rank corresponding to the note
+    // (specifically for stack bases in ongoing games; we want notes to have precedence in this case
+    // so that players can make notes in "Throw It in a Hole" variants)
+    if (this.note.rank !== null && this.state.rank === STACK_BASE_RANK && !globals.state.finished) {
+      return this.note.rank;
+    }
+
+    // Show the rank if it is known
+    if (cardIdentity.rank !== null) {
+      return cardIdentity.rank;
+    }
+
+    // If we have a note identity on the card, show the rank corresponding to the note
+    if (this.note.rank !== null) {
+      return this.note.rank;
+    }
+
+    return UNKNOWN_CARD_RANK;
+  }
+
+  getBareName(morphedBlank: boolean, suitToShow: Suit, rankToShow: number, unknownSuit: Suit) {
+    // If a card is morphed to a null identity, the card should appear blank no matter what
+    if (morphedBlank) {
+      return DECK_BACK_IMAGE;
+    }
+
+    // If a card has a "blank" note on it, the user wants to force the card to appear blank
+    if (
+      this.note.blank
       && !this.empathy
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
       && globals.state.playing
     ) {
-      this.bareName = DECK_BACK_IMAGE;
-    } else if (
+      return DECK_BACK_IMAGE;
+    }
+
+    // In Real-Life mode, or in Cow & Pig variants, or in Duck variants,
+    // always show the vanilla card back if the card is not fully revealed
+    if (
       (
         globals.lobby.settings.realLifeMode
         || variantRules.isCowAndPig(this.variant)
         || variantRules.isDuck(this.variant)
       ) && (suitToShow === unknownSuit || rankToShow === UNKNOWN_CARD_RANK)
     ) {
-      // In Real-Life mode or Cow & Pig / Duck variants,
-      // always show the vanilla card back if the card is not fully revealed
-      this.bareName = DECK_BACK_IMAGE;
-    } else {
-      this.bareName = `card-${suitToShow!.name}-${rankToShow}`;
+      return DECK_BACK_IMAGE;
     }
 
+    return `card-${suitToShow!.name}-${rankToShow}`;
+  }
+
+  setCardElements(morphedBlank: boolean, suitToShow: Suit, rankToShow: number, unknownSuit: Suit) {
     // Show or hide the pips
     if (
       globals.lobby.settings.realLifeMode
       || variantRules.isCowAndPig(this.variant)
       || variantRules.isDuck(this.variant)
-      || blank
+      || morphedBlank
     ) {
       this.suitPips!.hide();
       this.rankPips!.hide();
@@ -457,18 +473,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && globals.state.playing
     ));
 
-    if (suitToShow === undefined || suitToShow === unknownSuit) {
-      this._visibleSuitIndex = null;
-    } else {
-      this._visibleSuitIndex = this.variant.suits.indexOf(suitToShow);
-    }
-
-    if (rankToShow === undefined || rankToShow === UNKNOWN_CARD_RANK) {
-      this._visibleRank = null;
-    } else {
-      this._visibleRank = rankToShow;
-    }
-
+    // Show or hide the direction arrows
     if (this.arrow !== null && globals.state.visibleState !== null) {
       if (this.visibleSuitIndex === null || this.visibleRank === STACK_BASE_RANK) {
         this.arrow.hide();
@@ -480,9 +485,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
     }
 
-    this.setStatus();
-
-    // Enable/disable shadow on card
+    // Show or hide the shadow on the card
     const shadowVisible = (
       this.visibleRank !== STACK_BASE_RANK
       && !globals.options.speedrun
@@ -490,8 +493,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     if (this.bare.shadowEnabled() !== shadowVisible) {
       this.bare.shadowEnabled(shadowVisible);
     }
-
-    globals.layers.card.batchDraw();
   }
 
   // Show or hide the direction arrow (for specific variants)
