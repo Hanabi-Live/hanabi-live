@@ -101,34 +101,6 @@ describe('integration', () => {
         },
       );
     });
-
-    describe.each([...Array(upOrDownGame.actions.length).keys()])('on turn %i', (turn) => {
-      test.each([...Array(45).keys()])(
-        'card %i doesn\'t eliminate itself', (order) => {
-          const finalState = getFinalState(testState);
-          const finalCard = finalState.deck[order];
-          const card = testState.replay.states[turn].deck[order];
-          if (typeof card !== 'undefined') {
-            if (turn > 0) {
-              const priorTurnCard = testState.replay.states[turn - 1].deck[order];
-              // find turn it switched to a bad state
-              if (typeof priorTurnCard === 'undefined'
-              || priorTurnCard.possibleCardsFromDeduction.some(
-                ([s, r]) => s === finalCard.suitIndex && r === finalCard.rank,
-              )) {
-                expect(card.possibleCardsFromDeduction.some(
-                  ([s, r]) => s === finalCard.suitIndex && r === finalCard.rank,
-                )).toBe(true);
-              }
-            } else {
-              expect(card.possibleCardsFromDeduction.some(
-                ([s, r]) => s === finalCard.suitIndex && r === finalCard.rank,
-              )).toBe(true);
-            }
-          }
-        },
-      );
-    });
   });
 
   describe('Rainbow-Ones & Pink test game', () => {

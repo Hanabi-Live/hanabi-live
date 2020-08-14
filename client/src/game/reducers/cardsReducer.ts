@@ -2,7 +2,7 @@
 
 import { ensureAllCases, nullIfNegative } from '../../misc';
 import { getVariant } from '../data/gameData';
-import { cluesRules } from '../rules';
+import { cluesRules, deckRules } from '../rules';
 import { GameAction } from '../types/actions';
 import CardState from '../types/CardState';
 import { colorClue, rankClue } from '../types/Clue';
@@ -173,12 +173,13 @@ const cardsReducer = (
     }
   }
 
-  if (game.turn.turnNum === 0 && action.type === 'draw') {
+  if (game.turn.turnNum === 0 && action.type === 'draw'
+    && !deckRules.isInitialDealFinished(newDeck.length, metadata)) {
     // No need to do deduction while cards are being drawn
     return newDeck;
   }
 
-  return cardDeductionReducer(game.hands, newDeck, action, variant, metadata);
+  return cardDeductionReducer(newDeck, action, game.hands, metadata);
 };
 
 export default cardsReducer;

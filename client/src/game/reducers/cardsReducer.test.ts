@@ -7,6 +7,7 @@ import {
 } from '../../../test/testActions';
 import testMetadata from '../../../test/testMetadata';
 import { getVariant } from '../data/gameData';
+import * as deckRules from '../rules/deck';
 import CardState from '../types/CardState';
 import cardsReducer from './cardsReducer';
 import initialCardState from './initialStates/initialCardState';
@@ -21,6 +22,8 @@ const secondCard = initialCardState(1, variant);
 const thirdCard = initialCardState(2, variant);
 const fourthCard = initialCardState(3, variant);
 const fifthCard = initialCardState(4, variant);
+
+jest.spyOn(deckRules, 'isInitialDealFinished').mockReturnValue(true);
 
 describe('cardsReducer', () => {
   describe('location', () => {
