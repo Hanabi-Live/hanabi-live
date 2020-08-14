@@ -86,6 +86,19 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	})
 	t.NotifyGameAction()
 
+	// Handle custom clue sound effects
+	if p.Character == "Quacker" { // 34
+		g.Sound = "quack"
+	} else if strings.HasPrefix(g.Options.VariantName, "Cow & Pig") {
+		if clue.Type == ClueTypeColor {
+			g.Sound = "moo"
+		} else if clue.Type == ClueTypeRank {
+			g.Sound = "oink"
+		}
+	} else if strings.HasPrefix(g.Options.VariantName, "Duck") {
+		g.Sound = "quack"
+	}
+
 	// Do post-clue tasks
 	characterPostClue(d, g, p)
 
