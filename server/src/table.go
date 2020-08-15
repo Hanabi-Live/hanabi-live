@@ -3,15 +3,18 @@ package main
 import (
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
 var (
-	newTableID = 0 // We increment the ID for every table created
+	// Table IDs are atomically incremented before assignment,
+	// so the first table ID will be 1 and will increase from there
+	newTableID uint64 = 0
 )
 
 type Table struct {
-	ID          int
+	ID          uint64
 	Name        string
 	InitialName string // The name of the table before it was converted to a replay
 
@@ -67,13 +70,14 @@ type TableChatMessage struct {
 
 func NewTable(name string, owner int) *Table {
 	// Get a new table ID
+	var tableID uint64
 	for {
-		newTableID++
+		tableID = atomic.AddUint64(&newTableID, 1)
 
 		// Ensure that the table ID does not conflict with any existing tables
 		valid := true
 		for _, t := range tables {
-			if t.ID == newTableID {
+			if t.ID == tableID {
 				valid = false
 				break
 			}
@@ -82,7 +86,6 @@ func NewTable(name string, owner int) *Table {
 			break
 		}
 	}
-	tableID := newTableID
 
 	// Create the table object
 	return &Table{
@@ -122,7 +125,7 @@ func (t *Table) CheckIdle() {
 	t.Mutex.Unlock()
 
 	// We want to clean up idle games, so sleep for a reasonable amount of time
-	time.Sleep(idleGameTimeout)
+	time.Sleep(IdleGameTimeout)
 	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
 
@@ -132,7 +135,7 @@ func (t *Table) CheckIdle() {
 	}
 
 	// Don't do anything if there has been an action in the meantime
-	if time.Since(t.DatetimeLastAction) < idleGameTimeout {
+	if time.Since(t.DatetimeLastAction) < IdleGameTimeout {
 		return
 	}
 
@@ -188,7 +191,7 @@ func (t *Table) CheckIdle() {
 
 func (t *Table) GetName() string {
 	g := t.Game
-	name := "Table #" + strconv.Itoa(t.ID) + " (" + t.Name + ") - "
+	name := "Table #" + strconv.FormatUint(t.ID, 10) + " (" + t.Name + ") - "
 	if g == nil {
 		name += "Not started"
 	} else {
@@ -196,6 +199,11 @@ func (t *Table) GetName() string {
 	}
 	name += " - "
 	return name
+}
+
+func (t *Table) GetRoomName() string {
+	// Various places in the code base check for room names with a prefix of "table"
+	return "table" + strconv.FormatUint(t.ID, 10)
 }
 
 func (t *Table) GetPlayerIndexFromID(id int) int {
@@ -238,7 +246,7 @@ func (t *Table) GetOwnerSession() *Session {
 	}
 
 	if s == nil {
-		logger.Error("Failed to find the owner for table " + strconv.Itoa(t.ID) + ".")
+		logger.Error("Failed to find the owner for table " + strconv.FormatUint(t.ID, 10) + ".")
 		s = newFakeSession(-1, "Unknown")
 		logger.Info("Created a new fake session in the \"GetOwnerSession()\" function.")
 	}

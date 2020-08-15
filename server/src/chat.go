@@ -4,7 +4,6 @@ package main
 
 import (
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -47,8 +46,7 @@ func chatServerSend(msg string, room string) {
 func chatServerSendAll(msg string) {
 	chatServerSend(msg, "lobby")
 	for _, t := range tables {
-		room := "table" + strconv.Itoa(t.ID)
-		chatServerSend(msg, room)
+		chatServerSend(msg, t.GetRoomName())
 	}
 }
 
@@ -56,7 +54,7 @@ func chatServerSendAll(msg string) {
 func chatServerSendPM(s *Session, msg string, room string) {
 	s.Emit("chat", &ChatMessage{
 		Msg:       msg,
-		Who:       websiteName,
+		Who:       WebsiteName,
 		Datetime:  time.Now(),
 		Room:      room,
 		Recipient: s.Username(),
@@ -164,14 +162,13 @@ func chatSendPastFromTable(s *Session, t *Table) {
 	for ; i < len(t.Chat); i++ {
 		// We have to convert the *GameChatMessage to a *ChatMessage
 		gcm := t.Chat[i]
-		room := "table" + strconv.Itoa(t.ID)
 		cm := &ChatMessage{
 			Msg:      gcm.Msg,
 			Who:      gcm.Username,
 			Discord:  false,
 			Server:   gcm.Server,
 			Datetime: gcm.Datetime,
-			Room:     room,
+			Room:     t.GetRoomName(),
 		}
 		chatList = append(chatList, cm)
 	}

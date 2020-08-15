@@ -13,7 +13,7 @@ import (
 func httpLocalhostClearEmptyTables(c *gin.Context) {
 	// First, make a slice of all of the map keys
 	// (so that we are not iterating over the map while simultaneously removing things from it)
-	tableIDs := make([]int, 0, len(tables))
+	tableIDs := make([]uint64, 0, len(tables))
 	for tableID := range tables {
 		tableIDs = append(tableIDs, tableID)
 	}
@@ -21,7 +21,7 @@ func httpLocalhostClearEmptyTables(c *gin.Context) {
 	for _, tableID := range tableIDs {
 		var t *Table
 		if v, ok := tables[tableID]; !ok {
-			logger.Error("Failed to get the table with ID " + strconv.Itoa(tableID) + ".")
+			logger.Error("Failed to get the table with ID " + strconv.FormatUint(tableID, 10) + ".")
 			continue
 		} else {
 			t = v

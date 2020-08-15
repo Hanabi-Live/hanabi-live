@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"sync/atomic"
 	"time"
 
 	gsessions "github.com/gin-contrib/sessions"
@@ -12,8 +13,9 @@ import (
 )
 
 var (
-	// Start at 1 and increment for every session created
-	sessionID = 1
+	// Session IDs are atomically incremented before assignment,
+	// so the first session ID will be 1 and will increase from there
+	sessionID uint64 = 0
 )
 
 // httpWS handles part 2 of 2 for logic authentication
@@ -125,9 +127,8 @@ func httpWS(c *gin.Context) {
 	// Transfer the values from the login cookie into WebSocket session variables
 	// New keys added here should also be added to the "newFakeSesssion()" function
 	keys := defaultSessionKeys()
-	// This is independent of the user and used for disconnection purposes
-	keys["sessionID"] = sessionID
-	sessionID++
+	// The session ID is independent of the user and is used for disconnection purposes
+	keys["sessionID"] = atomic.AddUint64(&sessionID, 1)
 	keys["userID"] = userID
 	keys["username"] = username
 	keys["muted"] = muted

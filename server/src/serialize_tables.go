@@ -30,17 +30,17 @@ func serializeTables() bool {
 		t.Mutex.Lock()
 		var tableJSON []byte
 		if v, err := json.Marshal(t); err != nil {
-			logger.Error("Failed to marshal table "+strconv.Itoa(t.ID)+":", err)
+			logger.Error("Failed to marshal table "+strconv.FormatUint(t.ID, 10)+":", err)
 			return false
 		} else {
 			tableJSON = v
 		}
 		t.Mutex.Unlock()
 
-		tablePath := path.Join(tablesPath, strconv.Itoa(t.ID)+".json")
+		tableFilename := strconv.FormatUint(t.ID, 10) + ".json"
+		tablePath := path.Join(tablesPath, tableFilename)
 		if err := ioutil.WriteFile(tablePath, tableJSON, 0600); err != nil {
-			logger.Error("Failed to write the table "+strconv.Itoa(t.ID)+" to "+
-				"\""+tablePath+"\":", err)
+			logger.Error("Failed to write \""+tablePath+"\":", err)
 			return false
 		}
 	}
@@ -92,12 +92,12 @@ func restoreTables() {
 		for i, a := range g.Actions {
 			if action, ok := a.(map[string]interface{}); !ok {
 				logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-					strconv.Itoa(t.ID) + " to a map.")
+					strconv.FormatUint(t.ID, 10) + " to a map.")
 			} else if action["type"] == "draw" {
 				actionDraw := ActionDraw{}
 				if err := mapstructure.Decode(a, &actionDraw); err != nil {
 					logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-						strconv.Itoa(t.ID) + " to a draw action.")
+						strconv.FormatUint(t.ID, 10) + " to a draw action.")
 				}
 				g.Actions[i] = actionDraw
 			}

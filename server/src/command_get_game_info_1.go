@@ -30,7 +30,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
 		return
 	} else {
 		t = v
@@ -47,7 +47,8 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 	i := t.GetPlayerIndexFromID(s.UserID())
 	j := t.GetSpectatorIndexFromID(s.UserID())
 	if i == -1 && j == -1 {
-		s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ".")
+		s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
+			".")
 		return
 	}
 
@@ -108,7 +109,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 
 	type InitMessage struct {
 		// Game settings
-		TableID          int       `json:"tableID"`
+		TableID          uint64    `json:"tableID"`
 		PlayerNames      []string  `json:"playerNames"`
 		Variant          string    `json:"variant"`
 		OurPlayerIndex   int       `json:"ourPlayerIndex"`

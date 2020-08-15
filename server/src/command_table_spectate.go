@@ -25,7 +25,7 @@ func commandTableSpectate(s *Session, d *CommandData) {
 	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
 		return
 	} else {
 		t = v
@@ -91,7 +91,7 @@ func commandTableSpectate(s *Session, d *CommandData) {
 			status = StatusSharedReplay
 		} else {
 			status = StatusReplay
-			table = -1 // Protect the privacy of a user in a solo replay
+			table = 0 // Protect the privacy of a user in a solo replay
 		}
 	}
 	if s != nil {

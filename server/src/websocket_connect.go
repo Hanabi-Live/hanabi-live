@@ -87,7 +87,7 @@ func websocketConnect(ms *melody.Session) {
 	firstTimeUser := time.Since(datetimeCreated) < 10*time.Second
 
 	// Check to see if they are currently playing in an ongoing game
-	playingInOngoingGame := -1
+	var playingInOngoingGameID uint64
 	for _, t := range tables {
 		if t.Replay {
 			continue
@@ -101,15 +101,15 @@ func websocketConnect(ms *melody.Session) {
 			// Update the player object with the new socket
 			p.Session = s
 
-			playingInOngoingGame = t.ID
+			playingInOngoingGameID = t.ID
 			break
 		}
 	}
 
 	// Check to see if they are were spectating in a shared replay before they disconnected
 	// (games that they are playing in take priority over shared replays)
-	spectatingInOngoingReplay := -1
-	if playingInOngoingGame == -1 {
+	var spectatingInOngoingReplayID uint64
+	if playingInOngoingGameID == 0 {
 		for _, t := range tables {
 			if !t.Replay {
 				continue
@@ -123,7 +123,7 @@ func websocketConnect(ms *melody.Session) {
 				// Mark that this player is no longer disconnected
 				delete(t.DisconSpectators, s.UserID())
 
-				spectatingInOngoingReplay = t.ID
+				spectatingInOngoingReplayID = t.ID
 				break
 			}
 		}
@@ -166,7 +166,7 @@ func websocketConnect(ms *melody.Session) {
 		Friends:  friends,
 
 		// Warn the user if they rejoining an ongoing game or shared replay
-		AtOngoingTable: playingInOngoingGame != -1 || spectatingInOngoingReplay != -1,
+		AtOngoingTable: playingInOngoingGameID != 0 || spectatingInOngoingReplayID != 0,
 
 		// Also let the user know if the server is currently restarting or shutting down
 		ShuttingDown:         shuttingDown.IsSet(),
@@ -290,21 +290,21 @@ func websocketConnect(ms *melody.Session) {
 	}
 
 	// If they are playing in an ongoing game, join it
-	if playingInOngoingGame != -1 {
+	if playingInOngoingGameID != 0 {
 		logger.Info("Automatically reattending player \"" + s.Username() + "\" " +
-			"to table " + strconv.Itoa(playingInOngoingGame) + ".")
+			"to table " + strconv.FormatUint(playingInOngoingGameID, 10) + ".")
 		commandTableReattend(s, &CommandData{
-			TableID: playingInOngoingGame,
+			TableID: playingInOngoingGameID,
 		})
 		return
 	}
 
 	// If they were spectating an ongoing shared replay, join it
-	if spectatingInOngoingReplay != -1 {
+	if spectatingInOngoingReplayID != 0 {
 		logger.Info("Automatically re-spectating player " + "\"" + s.Username() + "\" " +
-			"to table " + strconv.Itoa(spectatingInOngoingReplay) + ".")
+			"to table " + strconv.FormatUint(spectatingInOngoingReplayID, 10) + ".")
 		commandTableSpectate(s, &CommandData{
-			TableID: spectatingInOngoingReplay,
+			TableID: spectatingInOngoingReplayID,
 		})
 		return
 	}

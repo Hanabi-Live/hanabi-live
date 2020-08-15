@@ -562,7 +562,3 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 
 	return true
 }
-
-var (
-	fuckedIDs = make([]int, 0)
-)

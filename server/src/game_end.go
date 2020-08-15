@@ -198,8 +198,7 @@ func (g *Game) WriteDatabase() error {
 
 	// Next, we insert rows for each chat message (if any)
 	for _, chatMsg := range t.Chat {
-		room := "table" + strconv.Itoa(t.ID)
-		if err := models.ChatLog.Insert(chatMsg.UserID, chatMsg.Msg, room); err != nil {
+		if err := models.ChatLog.Insert(chatMsg.UserID, chatMsg.Msg, t.GetRoomName()); err != nil {
 			logger.Error("Failed to insert a chat message into the database:", err)
 			// Do not return on failed chat insertion,
 			// since it should not affect subsequent operations
@@ -299,7 +298,7 @@ func (g *Game) WriteDatabase() error {
 		return err
 	}
 
-	logger.Info("Finished database actions for game " + strconv.Itoa(t.ID) + ".")
+	logger.Info("Finished database actions for table " + strconv.FormatUint(t.ID, 10) + ".")
 	return nil
 }
 

@@ -16,7 +16,7 @@ import (
 	"github.com/op/go-logging"
 )
 
-var (
+const (
 	HTTPReadTimeout  = 5 * time.Second
 	HTTPWriteTimeout = 10 * time.Second
 )
@@ -84,8 +84,8 @@ func main() {
 	}
 
 	// Create a new Gin HTTP router
-	gin.SetMode(gin.ReleaseMode) // Comment this out to debug HTTP stuff
-	httpRouter := gin.Default()  // Has the "Logger" and "Recovery" middleware attached
+	gin.SetMode(gin.ReleaseMode)                       // Comment this out to debug HTTP stuff
+	httpRouter := gin.Default()                        // Has the "Logger" and "Recovery" middleware attached
 	httpRouter.Use(gzip.Gzip(gzip.DefaultCompression)) // Add GZip compression middleware
 	httpRouter.StaticFile("/", path.Join(projectPath, "maintenance", "index.html"))
 	httpRouter.Static("/public", path.Join(projectPath, "public"))

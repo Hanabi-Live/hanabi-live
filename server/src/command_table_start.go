@@ -24,7 +24,7 @@ func commandTableStart(s *Session, d *CommandData) {
 	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
 		return
 	} else {
 		t = v

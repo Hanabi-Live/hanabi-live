@@ -27,7 +27,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
 		return
 	} else {
 		t = v
@@ -35,7 +35,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 
 	// Validate that this is a shared replay
 	if !t.Replay || !t.Visible {
-		s.Warning("Table " + strconv.Itoa(tableID) + " is not a shared replay, " +
+		s.Warning("Table " + strconv.FormatUint(t.ID, 10) + " is not a shared replay, " +
 			"so you cannot send a restart action.")
 		return
 	}
@@ -43,7 +43,8 @@ func commandTableRestart(s *Session, d *CommandData) {
 	// Validate that this person is spectating the shared replay
 	j := t.GetSpectatorIndexFromID(s.UserID())
 	if j < -1 {
-		s.Warning("You are not in shared replay " + strconv.Itoa(tableID) + ".")
+		s.Warning("You are not in shared replay " + strconv.FormatUint(t.ID, 10) + ".")
+		return
 	}
 
 	// Validate that this person is leading the shared replay
@@ -152,7 +153,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 		oldChatRead[k] = v
 	}
 
-	// Force the client of all of the spectators to go back to the lobby
+	// Force everyone to go back to the lobby
 	t.NotifyBoot()
 
 	// On the server side, all of the spectators will still be in the game,
@@ -247,7 +248,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 	}
 
 	// Add a message to the chat to indicate that the game was restarted
-	chatServerSend("The game has been restarted.", "table"+strconv.Itoa(t2.ID))
+	chatServerSend("The game has been restarted.", t2.GetRoomName())
 
 	// If a user has read all of the chat thus far,
 	// mark that they have also read the "restarted" message, since it is superfluous

@@ -23,7 +23,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
 		return
 	} else {
 		t = v
@@ -148,8 +148,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 	// If there is an automatic start countdown, cancel it
 	if !t.DatetimePlannedStart.IsZero() {
 		t.DatetimePlannedStart = time.Time{} // Assign a zero value
-		room := "table" + strconv.Itoa(t.ID)
-		chatServerSend("Automatic game start has been canceled.", room)
+		chatServerSend("Automatic game start has been canceled.", t.GetRoomName())
 	}
 
 	// If the user previously requested it, automatically start the game
@@ -158,9 +157,8 @@ func commandTableJoin(s *Session, d *CommandData) {
 		for _, p2 := range t.Players {
 			if p2.ID == t.Owner {
 				if !p2.Present {
-					room := "table" + strconv.Itoa(t.ID)
-					chatServerSend("Aborting automatic game start since the table creator is away.",
-						room)
+					msg := "Aborting automatic game start since the table creator is away."
+					chatServerSend(msg, t.GetRoomName())
 					return
 				}
 

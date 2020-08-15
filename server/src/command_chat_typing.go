@@ -24,7 +24,7 @@ func commandChatTyping(s *Session, d *CommandData) {
 	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
 		return
 	} else {
 		t = v
@@ -34,13 +34,13 @@ func commandChatTyping(s *Session, d *CommandData) {
 	i := t.GetPlayerIndexFromID(s.UserID())
 	j := t.GetSpectatorIndexFromID(s.UserID())
 	if i == -1 && j == -1 {
-		s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ", " +
-			"so you cannot report that you are typing in the chat.")
+		s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
+			", so you cannot report that you are typing.")
 		return
 	}
 	if t.Replay && j == -1 {
-		s.Warning("You are not spectating replay " + strconv.Itoa(t.ID) + ", " +
-			"so you cannot report that you are typing in the chat.")
+		s.Warning("You are not spectating replay " + strconv.FormatUint(t.ID, 10) +
+			", so you cannot report that you are typing.")
 		return
 	}
 

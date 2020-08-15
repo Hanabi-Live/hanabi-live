@@ -20,7 +20,7 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
 		return
 	} else {
 		t = v
@@ -37,8 +37,8 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	i := t.GetPlayerIndexFromID(s.UserID())
 	j := t.GetSpectatorIndexFromID(s.UserID())
 	if i == -1 && j == -1 {
-		s.Warning("You are not a player or a spectator at table " + strconv.Itoa(tableID) + ", " +
-			"so you cannot ready up for it.")
+		s.Warning("You are not a player or a spectator at table " +
+			strconv.FormatUint(tableID, 10) + ", so you cannot be ready for it.")
 		return
 	}
 
@@ -61,7 +61,7 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 
 	// Send them all the actions in the game that have happened thus far
 	type GameActionListMessage struct {
-		TableID int           `json:"tableID"`
+		TableID uint64        `json:"tableID"`
 		List    []interface{} `json:"list"`
 	}
 	s.Emit("gameActionList", &GameActionListMessage{
@@ -101,7 +101,7 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 
 			// Send them a list of only their notes
 			type NoteListPlayerMessage struct {
-				TableID int      `json:"tableID"`
+				TableID uint64   `json:"tableID"`
 				Notes   []string `json:"notes"`
 			}
 			s.Emit("noteListPlayer", &NoteListPlayerMessage{

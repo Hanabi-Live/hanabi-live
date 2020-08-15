@@ -185,7 +185,7 @@ func httpLogin(c *gin.Context) {
 
 	// Validate that the username is not reserved
 	normalizedUsername := normalizeString(username)
-	if normalizedUsername == normalizeString(websiteName) ||
+	if normalizedUsername == normalizeString(WebsiteName) ||
 		normalizedUsername == "hanab" ||
 		normalizedUsername == "hanabi" ||
 		normalizedUsername == "live" ||

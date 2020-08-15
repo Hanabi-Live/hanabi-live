@@ -72,8 +72,8 @@ func commandChatPM(s *Session, d *CommandData) {
 			s.Error("That is an invalid room.")
 			return
 		}
-		var tableID int
-		if v, err := strconv.Atoi(match[1]); err != nil {
+		var tableID uint64
+		if v, err := strconv.ParseUint(match[1], 10, 64); err != nil {
 			logger.Error("Failed to convert the table ID to a number:", err)
 			s.Error("That is an invalid room.")
 			return
@@ -84,7 +84,7 @@ func commandChatPM(s *Session, d *CommandData) {
 		// Get the corresponding table
 		var t *Table
 		if v, ok := tables[tableID]; !ok {
-			s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+			s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
 			return
 		} else {
 			t = v
@@ -92,8 +92,8 @@ func commandChatPM(s *Session, d *CommandData) {
 
 		// Validate that this player is in the game or spectating
 		if t.GetPlayerIndexFromID(s.UserID()) == -1 && t.GetSpectatorIndexFromID(s.UserID()) == -1 {
-			s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ", " +
-				"so you cannot send chat to it.")
+			s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
+				", so you cannot send chat to it.")
 			return
 		}
 	}

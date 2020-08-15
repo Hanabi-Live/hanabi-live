@@ -167,8 +167,8 @@ func commandChatTable(s *Session, d *CommandData) {
 		}
 		return
 	}
-	var tableID int
-	if v, err := strconv.Atoi(match[1]); err != nil {
+	var tableID uint64
+	if v, err := strconv.ParseUint(match[1], 10, 64); err != nil {
 		logger.Error("Failed to convert the table ID to a number:", err)
 		if s != nil {
 			s.Error("That is an invalid room.")
@@ -182,9 +182,9 @@ func commandChatTable(s *Session, d *CommandData) {
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
 		if s == nil {
-			logger.Error("Table " + strconv.Itoa(tableID) + " does not exist.")
+			logger.Error("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
 		} else {
-			s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+			s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
 		}
 		return
 	} else {
@@ -198,8 +198,8 @@ func commandChatTable(s *Session, d *CommandData) {
 		i = t.GetPlayerIndexFromID(s.UserID())
 		j = t.GetSpectatorIndexFromID(s.UserID())
 		if i == -1 && j == -1 {
-			s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ", " +
-				"so you cannot send chat to it.")
+			s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
+				", so you cannot send chat to it.")
 			return
 		}
 	}

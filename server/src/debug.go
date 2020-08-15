@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+var (
+	fuckedIDs = make([]int, 0)
+)
+
 func debugPrint() {
 	logger.Debug("---------------------------------------------------------------")
 	logger.Debug("Current total tables:", len(tables))
@@ -43,8 +47,8 @@ func debugPrint() {
 	if len(tables) == 0 {
 		logger.Debug("[no current tables]")
 	}
-	for id, t := range tables { // This is a map[int]*Table
-		logger.Debug(strconv.Itoa(id) + " - " + t.Name)
+	for tableID, t := range tables { // This is a map[int]*Table
+		logger.Debug(strconv.FormatUint(tableID, 10) + " - " + t.Name)
 		logger.Debug("\n")
 
 		// Print out all of the fields

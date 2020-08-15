@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 	"strconv"
-	"sync"
 	"text/template"
 	"time"
 
@@ -351,10 +350,6 @@ func httpInit() {
 	}
 }
 
-func httpServerStart(wg *sync.WaitGroup) *http.Server {
-
-}
-
 // httpServeTemplate combines a standard HTML header with the body for a specific page
 // (we want the same HTML header for all pages)
 func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ...string) {
@@ -412,7 +407,7 @@ func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ..
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	// Add extra data that should be the same for every page request
-	data.WebsiteName = websiteName
+	data.WebsiteName = WebsiteName
 
 	// Execute the template and send it to the user
 	if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {

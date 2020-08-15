@@ -330,9 +330,8 @@ func startIn(t *Table, timeToWait time.Duration, datetimePlannedStart time.Time)
 	for _, p := range t.Players {
 		if p.ID == t.Owner {
 			if !p.Present {
-				room := "table" + strconv.Itoa(t.ID)
-				chatServerSend("Aborting automatic game start since the table creator is away.",
-					room)
+				msg := "Aborting automatic game start since the table creator is away."
+				chatServerSend(msg, t.GetRoomName())
 				return
 			}
 

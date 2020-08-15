@@ -78,12 +78,9 @@ const (
 	ScoreModifierAllOrNothing
 )
 
-var (
-	// The amount of time that a game is inactive before it is killed by the server
-	idleGameTimeout = time.Minute * 30
-)
-
 const (
+	WebsiteName = "Hanab Live"
+
 	// The maximum amount of clues (and the amount of clues that players start the game with)
 	MaxClueNum = 8
 
@@ -94,12 +91,15 @@ const (
 	// but this may not always be the case
 	PointsPerSuit = 5
 
+	// A "reversed" version of every suit exists
+	SuitReversedSuffix = " Reversed"
+
 	// The amount of time that players have to finish their game once
 	// a server shutdown or restart is initiated
 	ShutdownTimeout = time.Minute * 30
 
-	// A "reversed" version of every suit exists
-	SuitReversedSuffix = " Reversed"
+	// The amount of time that a game is inactive before it is killed by the server
+	IdleGameTimeout = time.Minute * 30
 
 	// The amount of time in between allowed @here Discord alerts
 	DiscordAtHereTimeout = time.Hour * 2

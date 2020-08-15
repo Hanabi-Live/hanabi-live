@@ -306,6 +306,6 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 
 		msg := "The server is shutting down in " + strconv.Itoa(minutesLeft) + " minutes. " +
 			"Keep in mind that if your game is not finished in time, it will be terminated."
-		chatServerSend(msg, "table"+strconv.Itoa(t.ID))
+		chatServerSend(msg, t.GetRoomName())
 	}
 }

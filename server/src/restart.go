@@ -7,6 +7,8 @@ import (
 // We want to record all of the ongoing games to a flat file on the disk
 // This allows the server to restart without waiting for ongoing games to finish
 func restart() {
+	logger.Info("Initiating a server graceful restart.")
+
 	// We build the client and the server first before kicking everyone off in order to reduce the
 	// total amount of downtime (but executing Bash scripts will not work on Windows)
 	if runtime.GOOS != "windows" {
@@ -23,7 +25,7 @@ func restart() {
 		}
 	}
 
-	blockAllIncomingMessages.Set()
+	waitForAllWebSocketCommandsToFinish()
 
 	logger.Info("Serializing the tables and writing all tables to disk...")
 	if !serializeTables() {

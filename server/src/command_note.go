@@ -25,7 +25,7 @@ func commandNote(s *Session, d *CommandData) {
 	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
 		return
 	} else {
 		t = v
@@ -48,7 +48,8 @@ func commandNote(s *Session, d *CommandData) {
 	i := t.GetPlayerIndexFromID(s.UserID())
 	j := t.GetSpectatorIndexFromID(s.UserID())
 	if i == -1 && j == -1 {
-		s.Warning("You are not at table " + strconv.Itoa(tableID) + ", so you cannot send a note.")
+		s.Warning("You are not at table " + strconv.FormatUint(t.ID, 10) + ", " +
+			"so you cannot send a note.")
 		return
 	}
 

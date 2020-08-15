@@ -60,7 +60,7 @@ func shutdownXMinutesLeft(minutesLeft int) {
 	chatServerSend(msg, "lobby")
 	msg += " Finish your game soon or it will be automatically terminated!"
 	for _, t := range tables {
-		chatServerSend(msg, "table"+strconv.Itoa(t.ID))
+		chatServerSend(msg, t.GetRoomName())
 	}
 }
 
@@ -115,9 +115,9 @@ func countActiveTables() int {
 }
 
 func shutdownImmediate() {
-	blockAllIncomingMessages.Set()
-
 	logger.Info("Initiating an immediate server shutdown.")
+
+	waitForAllWebSocketCommandsToFinish()
 
 	for _, s := range sessions {
 		s.Error("The server is going down for scheduled maintenance. " +
@@ -165,4 +165,11 @@ func checkImminentShutdown(s *Session) bool {
 	}
 
 	return false
+}
+
+func waitForAllWebSocketCommandsToFinish() {
+	logger.Info("Waiting for all ongoing WebSocket commands to finish execution...")
+	blockAllIncomingMessages.Set()
+	commandWaitGroup.Wait() // Will block until it the counter becomes 0
+	logger.Info("All WebSocket commands have completed.")
 }

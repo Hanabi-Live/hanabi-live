@@ -157,10 +157,10 @@ commands.set('table', (data: Table) => {
 
 // Received by the client when a table no longer has any members present
 interface TableGoneData {
-  id: number;
+  tableID: number;
 }
 commands.set('tableGone', (data: TableGoneData) => {
-  globals.tableMap.delete(data.id);
+  globals.tableMap.delete(data.tableID);
 
   if (globals.currentScreen === Screen.Lobby) {
     tablesDraw();
@@ -178,18 +178,18 @@ commands.set('tableList', (dataList: Table[]) => {
 });
 
 interface TableProgressData {
-  id: number;
+  tableID: number;
   progress: number;
 }
 commands.set('tableProgress', (data: TableProgressData) => {
-  const table = globals.tableMap.get(data.id);
+  const table = globals.tableMap.get(data.tableID);
   if (!table) {
     return;
   }
   table.progress = data.progress;
 
   if (globals.currentScreen === Screen.Lobby) {
-    $(`#status-${data.id}`).html(data.progress.toString());
+    $(`#status-${data.tableID}`).html(data.progress.toString());
   }
 });
 

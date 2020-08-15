@@ -20,7 +20,7 @@ func commandTableLeave(s *Session, d *CommandData) {
 	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
 		return
 	} else {
 		t = v
@@ -41,7 +41,8 @@ func commandTableLeave(s *Session, d *CommandData) {
 	// Validate that they are at the table
 	i := t.GetPlayerIndexFromID(s.UserID())
 	if i == -1 {
-		s.Warning("You are not at table " + strconv.Itoa(tableID) + ", so you cannot leave it.")
+		s.Warning("You are not at table " + strconv.FormatUint(t.ID, 10) + ", " +
+			"so you cannot leave it.")
 		return
 	}
 
@@ -66,7 +67,7 @@ func commandTableLeave(s *Session, d *CommandData) {
 
 	// Make the client switch screens to show the base lobby
 	type TableLeftMessage struct {
-		TableID int
+		TableID uint64
 	}
 	s.Emit("left", &TableLeftMessage{
 		TableID: t.ID,
@@ -78,8 +79,7 @@ func commandTableLeave(s *Session, d *CommandData) {
 	// If there is an automatic start countdown, cancel it
 	if !t.DatetimePlannedStart.IsZero() {
 		t.DatetimePlannedStart = time.Time{} // Assign a zero value
-		room := "table" + strconv.Itoa(t.ID)
-		chatServerSend("Automatic game start has been canceled.", room)
+		chatServerSend("Automatic game start has been canceled.", t.GetRoomName())
 	}
 
 	// Force everyone else to leave if it was the owner that left

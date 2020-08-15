@@ -19,8 +19,8 @@ func httpLocalhostTerminate(c *gin.Context) {
 	}
 
 	searchingByName := false
-	var tableID int
-	if v, err := strconv.Atoi(tableNameOrID); err != nil {
+	var tableID uint64
+	if v, err := strconv.ParseUint(tableNameOrID, 10, 64); err != nil {
 		searchingByName = true
 	} else {
 		tableID = v
@@ -36,12 +36,14 @@ func httpLocalhostTerminate(c *gin.Context) {
 			}
 		}
 		if matchingTable == nil {
-			c.String(http.StatusOK, "Table \""+tableNameOrID+"\" does not exist.\n")
+			msg := "Table \"" + tableNameOrID + "\" does not exist.\n"
+			c.String(http.StatusOK, msg)
 			return
 		}
 	} else {
 		if v, ok := tables[tableID]; !ok {
-			c.String(http.StatusOK, "Table \""+strconv.Itoa(tableID)+"\" does not exist.\n")
+			msg := "Table \"" + strconv.FormatUint(tableID, 10) + "\" does not exist.\n"
+			c.String(http.StatusOK, msg)
 			return
 		} else {
 			matchingTable = v

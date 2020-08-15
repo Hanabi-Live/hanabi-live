@@ -18,7 +18,7 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 	tableID := d.TableID
 	var t *Table
 	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
 		return
 	} else {
 		t = v
@@ -77,6 +77,6 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 	// Update the variant in the table list for everyone in the lobby
 	notifyAllTable(t)
 
-	room := "table" + strconv.Itoa(tableID)
-	chatServerSend(s.Username()+" has changed the variant to: "+d.Options.VariantName, room)
+	msg := s.Username() + " has changed the variant to: " + d.Options.VariantName
+	chatServerSend(msg, t.GetRoomName())
 }
