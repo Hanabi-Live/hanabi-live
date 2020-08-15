@@ -82,7 +82,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 * All games have the ability to be spectated by others.
 * Spectators will see all of the hands.
 * The list of current spectators can be seen by hovering over the "👀" icon in the bottom-right-hand corner.
-* Spectators can right-click on a player's name to view the game from their perspective.
+* Spectators can right-click on a player's name to view the game from their perspective. In ongoing games, this is indicated with a "🕵️" icon.
 
 #### In-Game Replay
 
