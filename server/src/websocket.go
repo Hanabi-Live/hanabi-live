@@ -11,10 +11,8 @@ var (
 	m *melody.Melody
 
 	// We keep track of all WebSocket sessions
-	sessions = make(map[int]*Session)
-
-	// The WebSocket server needs to processes one action at a time; otherwise, there would be chaos
-	commandMutex = sync.Mutex{}
+	sessions      = make(map[int]*Session)
+	sessionsMutex = sync.Mutex{}
 )
 
 func websocketInit() {

@@ -80,8 +80,8 @@ func commandChatTyping(s *Session, d *CommandData) {
 
 func commandChatTypingCheckStopped(t *Table, userID int) {
 	time.Sleep(TypingDelay)
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
 
 	// Check to see if the table still exists
 	if _, ok := tables[t.ID]; !ok {

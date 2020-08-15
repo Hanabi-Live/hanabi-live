@@ -308,8 +308,8 @@ func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
 func startIn(t *Table, timeToWait time.Duration, datetimePlannedStart time.Time) {
 	// Sleep until it is time to automatically start
 	time.Sleep(timeToWait)
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
 
 	// Check to see if the table still exists
 	if _, ok := tables[t.ID]; !ok {

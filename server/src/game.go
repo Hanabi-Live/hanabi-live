@@ -144,8 +144,8 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 
 	// Sleep until the active player runs out of time
 	time.Sleep(gp.Time)
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
 
 	// Check to see if the game ended already
 	if g.EndCondition > EndConditionInProgress {

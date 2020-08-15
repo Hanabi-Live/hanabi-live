@@ -6,8 +6,8 @@ import (
 
 func websocketDisconnect(ms *melody.Session) {
 	// Lock the command mutex for the duration of the function to ensure synchronous execution
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
+	sessionsMutex.Lock()
+	defer sessionsMutex.Unlock()
 
 	// Turn the Melody session into a custom session
 	s := &Session{ms}

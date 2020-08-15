@@ -23,14 +23,13 @@ func restart() {
 		}
 	}
 
-	// Lock the command mutex to prevent any more moves from being submitted
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
+	blockAllIncomingMessages.Set()
 
 	logger.Info("Serializing the tables and writing all tables to disk...")
 	if !serializeTables() {
 		return
 	}
+	logger.Info("Finished writing all tables to disk.")
 
 	for _, s := range sessions {
 		s.Error("The server is going down momentarily to load a new version of the code. " +
@@ -44,7 +43,6 @@ func restart() {
 		Server: true,
 	})
 
-	logger.Info("Finished writing all tables to disk.")
 	if runtime.GOOS != "windows" {
 		logger.Info("Restarting...")
 		if err := executeScript("restart_service_only.sh"); err != nil {
@@ -54,7 +52,4 @@ func restart() {
 	} else {
 		logger.Info("Manually kill the server now.")
 	}
-
-	// Block until the process is killed so that no more moves can be submitted
-	select {}
 }

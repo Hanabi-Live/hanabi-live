@@ -23,6 +23,7 @@ require (
 	github.com/mozillazg/go-unidecode v0.1.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/satori/go.uuid v1.2.0
+	github.com/tevino/abool v1.2.0
 	github.com/virtuald/go-ordered-json v0.0.0-20170621173500-b18e6e673d74
 	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37 // indirect
 	golang.org/x/net v0.0.0-20200513185701-a91f0712d120 // indirect

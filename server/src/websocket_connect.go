@@ -14,9 +14,10 @@ import (
 // websocketConnect is fired when a new Melody WebSocket session is established
 // This is the third step of logging in; users will only get here if authentication was successful
 func websocketConnect(ms *melody.Session) {
-	// Lock the command mutex for the duration of the function to ensure synchronous execution
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
+	// We only want one computer to connect to one user at a time
+	// Use a mutex to prevent race conditions
+	sessionsMutex.Lock()
+	defer sessionsMutex.Unlock()
 
 	// Turn the Melody session into a custom session
 	s := &Session{ms}
@@ -168,9 +169,9 @@ func websocketConnect(ms *melody.Session) {
 		AtOngoingTable: playingInOngoingGame != -1 || spectatingInOngoingReplay != -1,
 
 		// Also let the user know if the server is currently restarting or shutting down
-		ShuttingDown:         shuttingDown,
+		ShuttingDown:         shuttingDown.IsSet(),
 		DatetimeShutdownInit: datetimeShutdownInit,
-		MaintenanceMode:      maintenanceMode,
+		MaintenanceMode:      maintenanceMode.IsSet(),
 	})
 
 	// Send them a random name

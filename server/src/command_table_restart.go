@@ -118,7 +118,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 	}
 
 	// Validate that the server is not undergoing maintenance
-	if maintenanceMode {
+	if maintenanceMode.IsSet() {
 		s.Warning("The server is undergoing maintenance. " +
 			"You cannot start any new games for the time being.")
 		return

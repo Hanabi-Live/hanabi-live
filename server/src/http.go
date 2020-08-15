@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"sync"
 	"text/template"
 	"time"
 
@@ -348,6 +349,10 @@ func httpInit() {
 		}
 		logger.Fatal("ListenAndServe ended prematurely.")
 	}
+}
+
+func httpServerStart(wg *sync.WaitGroup) *http.Server {
+
 }
 
 // httpServeTemplate combines a standard HTML header with the body for a specific page

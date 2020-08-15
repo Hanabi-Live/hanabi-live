@@ -35,7 +35,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 	}
 
 	// Validate that the server is not undergoing maintenance
-	if maintenanceMode {
+	if maintenanceMode.IsSet() {
 		s.Warning("The server is undergoing maintenance. " +
 			"You cannot start any new games for the time being.")
 		return
@@ -300,7 +300,7 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	commandTableJoin(s, d)
 
 	// If the server is shutting down / restarting soon, warn the players
-	if shuttingDown {
+	if shuttingDown.IsSet() {
 		timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit)
 		minutesLeft := int(timeLeft.Minutes())
 

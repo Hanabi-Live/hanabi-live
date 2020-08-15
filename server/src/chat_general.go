@@ -201,7 +201,7 @@ func chatTimeLeft(s *Session, d *CommandData, t *Table) {
 }
 
 func getTimeLeft() (string, error) {
-	if !shuttingDown {
+	if shuttingDown.IsNotSet() {
 		return "The server is not scheduled to shutdown any time soon.", nil
 	}
 

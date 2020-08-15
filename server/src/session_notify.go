@@ -173,7 +173,7 @@ func (s *Session) NotifyShutdown() {
 		DatetimeShutdownInit time.Time `json:"datetimeShutdownInit"`
 	}
 	s.Emit("shutdown", &ShutdownMessage{
-		ShuttingDown:         shuttingDown,
+		ShuttingDown:         shuttingDown.IsSet(),
 		DatetimeShutdownInit: datetimeShutdownInit,
 	})
 }
@@ -183,7 +183,7 @@ func (s *Session) NotifyMaintenance() {
 		MaintenanceMode bool `json:"maintenanceMode"`
 	}
 	s.Emit("maintenance", &MaintenanceMessage{
-		MaintenanceMode: maintenanceMode,
+		MaintenanceMode: maintenanceMode.IsSet(),
 	})
 }
 

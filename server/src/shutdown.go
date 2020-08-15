@@ -4,15 +4,18 @@ import (
 	"runtime"
 	"strconv"
 	"time"
+
+	"github.com/tevino/abool"
 )
 
 var (
-	shuttingDown         = false
-	datetimeShutdownInit time.Time
+	shuttingDown             = abool.New()
+	blockAllIncomingMessages = abool.New()
+	datetimeShutdownInit     time.Time
 )
 
 func shutdown() {
-	shuttingDown = true
+	shuttingDown.Set()
 	datetimeShutdownInit = time.Now()
 
 	numGames := countActiveTables()
@@ -35,7 +38,7 @@ func shutdownXMinutesLeft(minutesLeft int) {
 	time.Sleep(ShutdownTimeout - time.Duration(minutesLeft)*time.Minute)
 
 	// Do nothing if the shutdown was canceled
-	if !shuttingDown {
+	if shuttingDown.IsNotSet() {
 		return
 	}
 
@@ -63,7 +66,7 @@ func shutdownXMinutesLeft(minutesLeft int) {
 
 func shutdownWait() {
 	for {
-		if !shuttingDown {
+		if shuttingDown.IsNotSet() {
 			logger.Info("The shutdown was aborted.")
 			break
 		}
@@ -112,11 +115,9 @@ func countActiveTables() int {
 }
 
 func shutdownImmediate() {
-	logger.Info("Initiating an immediate server shutdown.")
+	blockAllIncomingMessages.Set()
 
-	// Lock the command mutex to prevent any more moves from being submitted
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
+	logger.Info("Initiating an immediate server shutdown.")
 
 	for _, s := range sessions {
 		s.Error("The server is going down for scheduled maintenance. " +
@@ -129,26 +130,21 @@ func shutdownImmediate() {
 		Server: true,
 	})
 
-	if runtime.GOOS != "windows" {
-		if err := executeScript("stop.sh"); err != nil {
-			logger.Error("Failed to execute the \"stop.sh\" script:", err)
-		}
-	} else {
+	if runtime.GOOS == "windows" {
 		logger.Info("Manually kill the server now.")
+	} else if err := executeScript("stop.sh"); err != nil {
+		logger.Error("Failed to execute the \"stop.sh\" script:", err)
 	}
-
-	// Block until the process is killed so that no more moves can be submitted
-	select {}
 }
 
 func cancel() {
-	shuttingDown = false
+	shuttingDown.UnSet()
 	notifyAllShutdown()
 	chatServerSendAll("Server shutdown has been canceled.")
 }
 
 func checkImminentShutdown(s *Session) bool {
-	if !shuttingDown {
+	if shuttingDown.IsNotSet() {
 		return false
 	}
 

@@ -28,10 +28,6 @@ func httpLogin(c *gin.Context) {
 	r := c.Request
 	w := c.Writer
 
-	// Lock the command mutex for the duration of the function to ensure synchronous execution
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
-
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {

@@ -155,8 +155,6 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Send everyone the notification
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
 	commandChat(nil, &CommandData{
 		Username: discordGetNickname(m.Author.ID),
 		Msg:      m.Content,

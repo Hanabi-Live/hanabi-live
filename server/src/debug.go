@@ -194,10 +194,6 @@ func debugPrint() {
 }
 
 func debugFunction() {
-	// Lock the command mutex for the duration of the function to ensure synchronous execution
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
-
 	logger.Debug("Executing debug function(s).")
 
 	/*

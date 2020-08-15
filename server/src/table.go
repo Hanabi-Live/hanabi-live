@@ -2,6 +2,7 @@ package main
 
 import (
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -15,13 +16,13 @@ type Table struct {
 	InitialName string // The name of the table before it was converted to a replay
 
 	Players    []*Player
-	Spectators []*Spectator
+	Spectators []*Spectator `json:"-"` // Skip when serializing
 	// We keep track of players who have been kicked from the game
 	// so that we can prevent them from rejoining
-	KickedPlayers map[int]struct{}
+	KickedPlayers map[int]struct{} `json:"-"` // Skip when serializing
 	// We also keep track of spectators who have disconnected
 	// so that we can automatically put them back into the shared replay
-	DisconSpectators map[int]struct{}
+	DisconSpectators map[int]struct{} `json:"-"` // Skip when serializing
 
 	// This is the user ID of the person who started the table
 	// or the current leader of the shared replay
@@ -51,6 +52,9 @@ type Table struct {
 
 	Chat     []*TableChatMessage // All of the in-game chat history
 	ChatRead map[int]int         // A map of which users have read which messages
+
+	// Each table has its own mutex to ensure that only one action can occur at the same time
+	Mutex sync.Mutex `json:"-"` // Skip when serializing
 }
 
 type TableChatMessage struct {
@@ -113,14 +117,14 @@ func (t *Table) CheckIdle() {
 	}
 
 	// Set the last action
-	commandMutex.Lock()
+	t.Mutex.Lock()
 	t.DatetimeLastAction = time.Now()
-	commandMutex.Unlock()
+	t.Mutex.Unlock()
 
 	// We want to clean up idle games, so sleep for a reasonable amount of time
 	time.Sleep(idleGameTimeout)
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
 
 	// Check to see if the table still exists
 	if _, ok := tables[t.ID]; !ok {
