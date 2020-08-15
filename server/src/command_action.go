@@ -408,9 +408,10 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 }
 
 func commandActionEndGame(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
-	// A "endGame" action is a special action type sent by the server to itself
+	// An "endGame" action is a special action type sent by the server to itself
 	// The value will correspond to the end condition (see "endCondition" in "constants.go")
 	// The target will correspond to the index of the player who ended the game
+
 	// Validate the value
 	if d.Value != EndConditionTimeout &&
 		d.Value != EndConditionTerminated &&
@@ -421,8 +422,34 @@ func commandActionEndGame(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 		return false
 	}
 
+	// Mark that the game should be ended
 	g.EndCondition = d.Value
 	g.EndPlayer = d.Target
+
+	// Insert an "end game" action
+	var endGameAction *GameAction
+	if g.EndCondition == EndConditionTimeout {
+		endGameAction = &GameAction{
+			Type:   ActionTypeEndGame,
+			Target: g.EndPlayer,
+			Value:  EndConditionTimeout,
+		}
+	} else if g.EndCondition == EndConditionTerminated {
+		endGameAction = &GameAction{
+			Type:   ActionTypeEndGame,
+			Target: g.EndPlayer,
+			Value:  EndConditionTerminated,
+		}
+	} else if g.EndCondition == EndConditionIdleTimeout {
+		endGameAction = &GameAction{
+			Type:   ActionTypeEndGame,
+			Target: -1,
+			Value:  EndConditionIdleTimeout,
+		}
+	}
+	if endGameAction != nil {
+		g.Actions2 = append(g.Actions2, endGameAction)
+	}
 
 	return true
 }

@@ -196,38 +196,6 @@ func (g *Game) WriteDatabase() error {
 		}
 	}
 
-	// If the game ended in a special way, we also need to insert an "end game" action
-	var endGameAction *GameAction
-	if g.EndCondition == EndConditionTimeout {
-		endGameAction = &GameAction{
-			Type:   ActionTypeEndGame,
-			Target: g.EndPlayer,
-			Value:  EndConditionTimeout,
-		}
-	} else if g.EndCondition == EndConditionTerminated {
-		endGameAction = &GameAction{
-			Type:   ActionTypeEndGame,
-			Target: g.EndPlayer,
-			Value:  EndConditionTerminated,
-		}
-	} else if g.EndCondition == EndConditionIdleTimeout {
-		endGameAction = &GameAction{
-			Type:   ActionTypeEndGame,
-			Target: -1,
-			Value:  EndConditionIdleTimeout,
-		}
-	}
-	if endGameAction != nil {
-		if err := models.GameActions.Insert(
-			t.ExtraOptions.DatabaseID,
-			len(g.Actions2),
-			endGameAction,
-		); err != nil {
-			logger.Error("Failed to insert the \"end game\" action:", err)
-			return err
-		}
-	}
-
 	// Next, we insert rows for each chat message (if any)
 	for _, chatMsg := range t.Chat {
 		room := "table" + strconv.Itoa(t.ID)
