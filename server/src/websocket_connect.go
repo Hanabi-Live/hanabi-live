@@ -12,12 +12,15 @@ import (
 )
 
 type WebsocketConnectData struct {
+	TotalGames                  int
+	Settings                    Settings
+	Friends                     []string
+	FirstTimeUser               bool
 	PlayingInOngoingGame        bool
 	PlayingInOngoingGameTableID uint64
 	PlayingInOngoingGameIndex   int
 	SpectatingTable             bool
 	SpectatingTableID           uint64
-	Friends                     []string
 }
 
 // websocketConnect is fired when a new Melody WebSocket session is established
@@ -26,12 +29,20 @@ func websocketConnect(ms *melody.Session) {
 	// Turn the Melody session into a custom session
 	s := &Session{ms}
 
+	// First, perform all the expensive database retrieval to gather the data we need
+	// We want to do this before we start locking any mutexes (to minimize the lock time)
+	data := websocketConnectGetData(s)
+
 	// We only want one computer to connect to one user at a time
-	// Use a mutex to prevent race conditions
-	sessionsMutex.Lock()
+	// Use a dedicated mutex to prevent race conditions
+	sessionConnectMutex.Lock()
+	defer sessionConnectMutex.Unlock()
 
 	// Disconnect any existing connections with this username
-	if s2, ok := sessions[s.UserID()]; ok {
+	sessionsMutex.RLock()
+	s2, ok := sessions[s.UserID()]
+	sessionsMutex.RUnlock()
+	if ok {
 		logger.Info("Closing existing connection for user \"" + s.Username() + "\".")
 		s2.Error("You have logged on from somewhere else, so you have been disconnected here.")
 		if err := s2.Close(); err != nil {
@@ -40,29 +51,24 @@ func websocketConnect(ms *melody.Session) {
 			logger.Info("Successfully terminated a WebSocket connection.")
 		}
 
-		// The connection is now closed, but the disconnect event will be fired in another goroutine
-		// Thus, we need to manually call the function now to ensure that
-		// the user is removed from existing games and so forth
-		websocketDisconnect2(s2)
+		// The connection is now closed,
+		// but the disconnection event will be fired in another goroutine
+		// Thus, we need to manually clean up the user from the global session map and any ongoing
+		// games
+		websocketDisconnectRemoveFromMap(s2)
+		websocketDisconnectRemoveFromGames(s2)
 	}
 
 	// Add the connection to a session map so that we can keep track of all of the connections
+	sessionsMutex.Lock()
 	sessions[s.UserID()] = s
-
-	// Unlock now instead of using "defer sessionsMutex.Unlock()" as an optimization
-	// (the database calls below can be slow)
 	sessionsMutex.Unlock()
 
 	logger.Info("User \""+s.Username()+"\" connected;", len(sessions), "user(s) now connected.")
 
 	// They have successfully logged in
 	// Now, gather some additional information
-	var data *WebsocketConnectData
-	if v, success := websocketConnectWelcomeMessage(s); !success {
-		return
-	} else {
-		data = v
-	}
+	websocketConnectWelcomeMessage(s, data)
 	websocketConnectUserList(s)
 	websocketConnectTableList(s)
 	websocketConnectChat(s)
@@ -77,36 +83,34 @@ func websocketConnect(ms *melody.Session) {
 	websocketConnectRespectate(s, data)
 }
 
-func websocketConnectWelcomeMessage(s *Session) (*WebsocketConnectData, bool) {
+func websocketConnectGetData(s *Session) *WebsocketConnectData {
 	data := &WebsocketConnectData{
 		Friends: make([]string, 0),
 	}
 
-	// Get their total number of games played
-	var totalGames int
+	// Get their total number of games played from the database
 	if v, err := models.Games.GetUserNumGames(s.UserID(), true); err != nil {
 		logger.Error("Failed to get the number of games played for user \""+s.Username()+"\":", err)
 		s.Error(DefaultErrorMsg)
-		return nil, false
+		return data
 	} else {
-		totalGames = v
+		data.TotalGames = v
 	}
 
 	// Get their settings from the database
-	var settings Settings
 	if v, err := models.UserSettings.Get(s.UserID()); err != nil {
 		logger.Error("Failed to get the settings for user \""+s.Username()+"\":", err)
 		s.Error(DefaultErrorMsg)
-		return nil, false
+		return data
 	} else {
-		settings = v
+		data.Settings = v
 	}
 
 	// Get their friends from the database
 	if v, err := models.UserFriends.GetAllUsernames(s.UserID()); err != nil {
 		logger.Error("Failed to get the friends for user \""+s.Username()+"\":", err)
 		s.Error(DefaultErrorMsg)
-		return nil, false
+		return data
 	} else {
 		data.Friends = v
 	}
@@ -116,11 +120,11 @@ func websocketConnectWelcomeMessage(s *Session) (*WebsocketConnectData, bool) {
 	if v, err := models.Users.GetDatetimeCreated(s.UserID()); err != nil {
 		logger.Error("Failed to get the join date for user \""+s.Username()+"\":", err)
 		s.Error(DefaultErrorMsg)
-		return nil, false
+		return data
 	} else {
 		datetimeCreated = v
 	}
-	firstTimeUser := time.Since(datetimeCreated) < 10*time.Second
+	data.FirstTimeUser = time.Since(datetimeCreated) < 10*time.Second
 
 	// Check to see if they are currently playing in an ongoing game
 	tablesMutex.RLock()
@@ -164,6 +168,10 @@ func websocketConnectWelcomeMessage(s *Session) (*WebsocketConnectData, bool) {
 		tablesMutex.RUnlock()
 	}
 
+	return data
+}
+
+func websocketConnectWelcomeMessage(s *Session, data *WebsocketConnectData) {
 	// Send an initial message that contains information about who they are and
 	// the current state of the server
 	type WelcomeMessage struct {
@@ -191,14 +199,14 @@ func websocketConnectWelcomeMessage(s *Session) (*WebsocketConnectData, bool) {
 
 		// We also send the total amount of games that they have played
 		// (to be shown in the nav bar on the history page)
-		TotalGames: totalGames,
+		TotalGames: data.TotalGames,
 
-		Muted:         s.Muted(),     // Some users are muted (as a resulting of spamming, etc.)
-		FirstTimeUser: firstTimeUser, // First time users get a quick tutorial
+		Muted:         s.Muted(),          // Some users are muted (as a resulting of spamming, etc.)
+		FirstTimeUser: data.FirstTimeUser, // First time users get a quick tutorial
 
 		// The various client settings are stored server-side so that users can seamlessly
 		// transition between computers
-		Settings: settings,
+		Settings: data.Settings,
 		Friends:  data.Friends,
 
 		// Warn the user if they rejoining an ongoing game or shared replay
@@ -213,8 +221,6 @@ func websocketConnectWelcomeMessage(s *Session) (*WebsocketConnectData, bool) {
 		DatetimeShutdownInit: datetimeShutdownInit,
 		MaintenanceMode:      maintenanceMode.IsSet(),
 	})
-
-	return data, true
 }
 
 // websocketConnectUserList sends a "userList" message

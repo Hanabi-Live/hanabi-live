@@ -11,10 +11,11 @@ func notifyAllUser(s *Session) {
 }
 
 func notifyAllUserLeft(s *Session) {
-	// The sessions mutex is always locked by the time we get here
+	sessionsMutex.RLock()
 	for _, s2 := range sessions {
 		s2.NotifyUserLeft(s)
 	}
+	sessionsMutex.RUnlock()
 }
 
 func notifyAllUserInactive(s *Session) {
@@ -26,23 +27,27 @@ func notifyAllUserInactive(s *Session) {
 }
 
 func notifyAllTable(t *Table) {
-	if t.Visible {
-		sessionsMutex.RLock()
-		for _, s := range sessions {
-			s.NotifyTable(t)
-		}
-		sessionsMutex.RUnlock()
+	if !t.Visible {
+		return
 	}
+
+	sessionsMutex.RLock()
+	for _, s := range sessions {
+		s.NotifyTable(t)
+	}
+	sessionsMutex.RUnlock()
 }
 
 func notifyAllTableGone(t *Table) {
-	if t.Visible {
-		sessionsMutex.RLock()
-		for _, s := range sessions {
-			s.NotifyTableGone(t)
-		}
-		sessionsMutex.RUnlock()
+	if !t.Visible {
+		return
 	}
+
+	sessionsMutex.RLock()
+	for _, s := range sessions {
+		s.NotifyTableGone(t)
+	}
+	sessionsMutex.RUnlock()
 }
 
 func notifyAllShutdown() {

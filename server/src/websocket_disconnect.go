@@ -11,18 +11,18 @@ func websocketDisconnect(ms *melody.Session) {
 	s := &Session{ms}
 
 	// We only want one computer to connect to one user at a time
-	// Use a mutex to prevent race conditions
+	// Use a dedicated mutex to prevent race conditions
+	sessionConnectMutex.Lock()
+	defer sessionConnectMutex.Unlock()
+
+	websocketDisconnectRemoveFromMap(s)
+	websocketDisconnectRemoveFromGames(s)
+}
+
+func websocketDisconnectRemoveFromMap(s *Session) {
 	sessionsMutex.Lock()
 	defer sessionsMutex.Unlock()
 
-	// We have to do the work in a separate function so that
-	// we can call it manually in the "websocketConnect()" function
-	websocketDisconnect2(s)
-}
-
-// websocketDisconnect2 does the main work of disconnecting a WebSocket connection
-// It is assumed that the "sessionMutex" is locked before getting here
-func websocketDisconnect2(s *Session) {
 	// Check to see if the existing session is different
 	// (this occurs during a reconnect, for example)
 	if s2, ok := sessions[s.UserID()]; !ok {
@@ -35,10 +35,10 @@ func websocketDisconnect2(s *Session) {
 		return
 	}
 
-	// Delete the connection from the session map
-	// (we do this first so that we don't bother sending them any more notifications)
 	delete(sessions, s.UserID())
+}
 
+func websocketDisconnectRemoveFromGames(s *Session) {
 	// Look for the disconnecting player in all of the tables
 	ongoingGameTableIDs := make([]uint64, 0)
 	preGameTableIDs := make([]uint64, 0)
