@@ -160,7 +160,7 @@ const segmentFromBarPosition = (x: number, w: number) => {
 
 // Called when a position in the bar is clicked
 export function barClick(this: Konva.Rect) {
-  const rectX = globals.stage.getPointerPosition().x - this.getAbsolutePosition().x;
+  const rectX = globals.stage.getPointerPosition()!.x - this.getAbsolutePosition().x;
   const w = globals.elements.replayBar!.width();
   goToSegment(segmentFromBarPosition(rectX, w), true);
 }

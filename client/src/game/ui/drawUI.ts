@@ -198,7 +198,7 @@ const drawActionLog = () => {
   const actionLogGroup = new Konva.Group({
     x: actionLogValues.x * winW,
     y: actionLogValues.y * winH,
-    listening: false,
+    listening: true,
   });
   globals.layers.UI.add(actionLogGroup);
 
@@ -322,7 +322,7 @@ const drawPlayStacks = () => {
       y: playStackValues.y * winH,
       width: cardWidth * winW,
       height: cardHeight * winH,
-      listening: false,
+      listening: true,
     });
     globals.elements.playStacks.set(suit, playStack);
     globals.layers.card.add(playStack as any);
@@ -424,7 +424,7 @@ const drawDiscardStacks = () => {
       y: (0.61 + (discardStackSpacing * i)) * winH,
       width: 0.17 * winW,
       height: 0.17 * winH,
-      listening: false,
+      listening: true,
     });
     globals.elements.discardStacks.set(suit, discardStack);
     globals.layers.card.add(discardStack as any);
@@ -693,6 +693,7 @@ const drawDeck = () => {
     cornerRadius: 0.01 * winH,
     strokeWidth: 0.01056 * winH,
     visible: false,
+    listening: false,
   });
   globals.layers.UI.add(globals.elements.deckPlayAvailableLabel);
 };
@@ -712,7 +713,7 @@ const drawScoreArea = () => {
   globals.elements.scoreArea = new Konva.Group({
     x: scoreAreaValues.x * winW,
     y: scoreAreaValues.y * winH,
-    listening: false,
+    listening: true,
   });
   globals.layers.UI.add(globals.elements.scoreArea);
 
@@ -888,7 +889,7 @@ const drawScoreArea = () => {
   globals.elements.cluesNumberLabelPulse.anim.addLayer(globals.layers.UI);
 
   // Draw the 3 strike (bomb) black squares / X's
-  function strikeClick(this: StrikeSquare | StrikeX, event: Konva.KonvaEventObject<MouseEvent>) {
+  function strikeClick(this: StrikeSquare, event: Konva.KonvaEventObject<MouseEvent>) {
     switch (event.evt.button) {
       case 0: { // Left-click
         // Left-clicking a strike X or a strike square takes us to the turn that the strike happened
@@ -960,7 +961,7 @@ const drawScoreArea = () => {
       height: 0.036 * winH,
       image: globals.imageLoader!.get('x')!,
       opacity: 0,
-      listening: true,
+      listening: false,
     }, i);
     globals.elements.scoreArea.add(strikeX);
     globals.elements.strikeXs.push(strikeX);
@@ -988,7 +989,6 @@ const drawScoreArea = () => {
     // Click on the strike to go to the turn that the strike happened, if any
     // (and highlight the card that misplayed)
     strikeSquare.on('click tap', strikeClick);
-    strikeX.on('click tap', strikeClick);
   }
 };
 
@@ -1233,7 +1233,7 @@ const drawClueLog = () => {
     y: (clueLogValues.y + spacing) * winH,
     width: (clueLogValues.w! - (spacing * 2)) * winW,
     height: (clueLogValues.h! - (spacing * 2)) * winH,
-    listening: false,
+    listening: true,
   });
   globals.layers.UI.add(globals.elements.clueLog as any);
 };
@@ -1392,6 +1392,7 @@ const drawDiscardArea = () => {
     fill: 'black',
     opacity: 0.2,
     cornerRadius: 0.01 * winW,
+    listening: false,
   });
   globals.layers.UI.add(discardAreaRect);
 
@@ -1567,7 +1568,7 @@ const drawClueArea = () => {
     y: clueAreaValues.y * winH,
     width: clueAreaValues.w! * winW,
     visible: false,
-    listening: false,
+    listening: true,
   });
 
   // Player buttons
@@ -1582,7 +1583,7 @@ const drawClueArea = () => {
 
   // This is the normal button group, which does not include us
   globals.elements.clueTargetButtonGroup = new ButtonGroup({
-    listening: false,
+    listening: true,
   });
   {
     const totalPlayerButtons = numPlayers - 1;
@@ -1615,7 +1616,7 @@ const drawClueArea = () => {
 
   // This button group includes us, which is used for hypotheticals
   globals.elements.clueTargetButtonGroup2 = new ButtonGroup({
-    listening: false,
+    listening: true,
   });
   {
     const totalPlayerButtons = numPlayers;
@@ -1650,7 +1651,7 @@ const drawClueArea = () => {
   const buttonXSpacing = 0.009;
   const buttonYSpacing = 0.002;
   globals.elements.clueTypeButtonGroup = new ButtonGroup({
-    listening: false,
+    listening: true,
   });
 
   // Color buttons

@@ -95,6 +95,10 @@ export default class Deck extends Konva.Group {
   }
 
   dragEnd() {
+    if (!this.draggable()) {
+      return;
+    }
+
     const pos = this.getAbsolutePosition();
 
     pos.x += this.width() * this.scaleX() / 2;

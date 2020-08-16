@@ -116,7 +116,7 @@ export class Globals {
     this.imageLoader = null;
     this.stage = new Konva.Stage({
       container: 'game',
-      listening: false,
+      listening: true,
     });
     this.layers = new Layers();
     this.elements = new Elements();

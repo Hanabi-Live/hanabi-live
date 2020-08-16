@@ -24,7 +24,7 @@ export default function drawReplayArea(winW: number, winH: number) {
     width: replayAreaValues.w * winW,
     height: 0.27 * winH,
     visible: false,
-    listening: false,
+    listening: true,
   });
 
   // The thin black rectangle that the replay slider slides on
