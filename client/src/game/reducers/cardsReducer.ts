@@ -1,5 +1,6 @@
 // Calculates the state of the deck after an action
 
+import { current } from 'immer';
 import { ensureAllCases, nullIfNegative } from '../../misc';
 import { getVariant } from '../data/gameData';
 import { cluesRules, deckRules } from '../rules';
@@ -20,7 +21,8 @@ const cardsReducer = (
   metadata: GameMetadata,
 ) => {
   const variant = getVariant(metadata.options.variantName);
-  const newDeck = deck.concat([]);
+  const newDeck = Array.from(deck);
+  const hands = current(game.hands);
 
   switch (action.type) {
     // The server just told us about a card that was previously hidden
@@ -80,7 +82,7 @@ const cardsReducer = (
       });
 
       // Negative clues
-      game.hands[action.target]
+      hands[action.target]
         .filter((order) => !action.list.includes(order))
         .forEach((order) => applyClue(order, false));
 
@@ -179,7 +181,7 @@ const cardsReducer = (
     return newDeck;
   }
 
-  return cardDeductionReducer(newDeck, action, game.hands, metadata);
+  return cardDeductionReducer(newDeck, action, hands, metadata);
 };
 
 export default cardsReducer;

@@ -1,4 +1,3 @@
-import { current, createDraft } from 'immer';
 import { getVariant } from '../data/gameData';
 import * as deckRules from '../rules/deck';
 import { GameAction } from '../types/actions';
@@ -18,7 +17,7 @@ const cardDeductionReducer = (
     case 'discard':
     case 'play':
     case 'draw': {
-      return makeDeductions(deck, current(createDraft(hands)), metadata);
+      return makeDeductions(deck, hands, metadata);
     }
     default: {
       return Array.from(deck);
