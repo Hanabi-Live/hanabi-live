@@ -42,17 +42,11 @@ func commandAction(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	t, exists := getTable(s, d.TableID)
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
-
 	g := t.Game
 
 	// Validate that the game has started
@@ -230,7 +224,7 @@ func commandAction(s *Session, d *CommandData) {
 		// If the player queued a pause command, then pause the game
 		if np.RequestedPause {
 			np.RequestedPause = false
-			commandPause(nps, &CommandData{
+			commandPause(nps, &CommandData{ // Manual invocation
 				TableID: t.ID,
 				Setting: "pause",
 			})

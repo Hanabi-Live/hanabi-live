@@ -150,15 +150,11 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 	time.Sleep(gp.Time)
 
 	// Check to see if the table still exists
-	if _, ok := getTable(nil, t.ID); !ok {
+	_, exists := getTableAndLock(nil, t.ID, true)
+	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	// Check to see if the game ended already
 	if g.EndCondition > EndConditionInProgress {
@@ -195,12 +191,14 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 	}
 
 	// End the game
-	commandAction(s, &CommandData{
+	t.Mutex.Unlock()
+	commandAction(s, &CommandData{ // Manual invocation
 		TableID: t.ID,
 		Type:    ActionTypeEndGame,
 		Target:  gp.Index,
 		Value:   EndConditionTimeout,
 	})
+	t.Mutex.Lock() // We lock it again in case the deferred unlock causes problems
 }
 
 // CheckEnd examines the game state and sets "EndCondition" to the appropriate value, if any

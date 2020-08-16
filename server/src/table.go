@@ -128,15 +128,11 @@ func (t *Table) CheckIdle() {
 	time.Sleep(IdleGameTimeout)
 
 	// Check to see if the table still exists
-	if _, ok := getTable(nil, t.ID); !ok {
+	_, exists := getTableAndLock(nil, t.ID, true)
+	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	// Don't do anything if there has been an action in the meantime
 	if time.Since(t.DatetimeLastAction) < IdleGameTimeout {
@@ -162,9 +158,11 @@ func (t *Table) CheckIdle() {
 			s = newFakeSession(sp.ID, sp.Name)
 			logger.Info("Created a new fake session in the \"CheckIdle()\" function.")
 		}
-		commandTableUnattend(s, &CommandData{
+		t.Mutex.Unlock()
+		commandTableUnattend(s, &CommandData{ // Manual invocation
 			TableID: t.ID,
 		})
+		t.Mutex.Lock()
 	}
 
 	if t.Replay {
@@ -174,10 +172,11 @@ func (t *Table) CheckIdle() {
 	}
 
 	s := t.GetOwnerSession()
+	t.Mutex.Unlock()
 	if t.Running {
 		// We need to end a game that has started
 		// (this will put everyone in a non-shared replay of the idle game)
-		commandAction(s, &CommandData{
+		commandAction(s, &CommandData{ // Manual invocation
 			TableID: t.ID,
 			Type:    ActionTypeEndGame,
 			Target:  -1,
@@ -187,10 +186,11 @@ func (t *Table) CheckIdle() {
 		// We need to end a game that hasn't started yet
 		// Force the owner to leave, which should subsequently eject everyone else
 		// (this will send everyone back to the main lobby screen)
-		commandTableLeave(s, &CommandData{
+		commandTableLeave(s, &CommandData{ // Manual invocation
 			TableID: t.ID,
 		})
 	}
+	t.Mutex.Lock() // We lock it again in case the deferred unlock causes problems
 }
 
 func (t *Table) GetName() string {

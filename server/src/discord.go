@@ -90,7 +90,7 @@ func discordConnect() {
 	// Announce that the server has started
 	msg := "The server has successfully started at: " + getCurrentTimestamp() + "\n"
 	msg += "(" + gitCommitOnStart + ")"
-	commandChat(nil, &CommandData{
+	commandChat(nil, &CommandData{ // Manual invocation
 		Msg:    msg,
 		Room:   "lobby",
 		Server: true,
@@ -155,7 +155,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Send everyone the notification
-	commandChat(nil, &CommandData{
+	commandChat(nil, &CommandData{ // Manual invocation
 		Username: discordGetNickname(m.Author.ID),
 		Msg:      m.Content,
 		Discord:  true,

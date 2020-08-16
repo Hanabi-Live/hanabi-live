@@ -66,6 +66,9 @@ type CommandData struct {
 	DiscordDiscriminator string `json:"-"` // Used when echoing a message from Discord to the lobby
 	// Used to pass chat command arguments to a chat command handler
 	Args []string `json:"-"`
+	// Used when a command handler calls another command handler
+	// (e.g. the mutex lock is already acquired and does not need to be acquired again)
+	NoLock bool `json:"-"`
 }
 
 var (

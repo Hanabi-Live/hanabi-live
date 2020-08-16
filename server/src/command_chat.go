@@ -98,7 +98,7 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Handle in-game chat in a different function; the rest of this function will be for lobby chat
 	if strings.HasPrefix(d.Room, "table") {
-		commandChatTable(s, d)
+		commandChatTable(s, d) // Manual invocation
 		return
 	}
 
@@ -178,16 +178,11 @@ func commandChatTable(s *Session, d *CommandData) {
 		tableID = v
 	}
 
-	t, exists := getTable(s, tableID)
+	t, exists := getTableAndLock(s, tableID, true)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	// Validate that this player is in the game or spectating
 	var i int

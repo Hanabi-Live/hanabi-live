@@ -48,7 +48,7 @@ func shutdownXMinutesLeft(minutesLeft int) {
 		for _, t := range tables {
 			if !t.Running {
 				s := t.GetOwnerSession()
-				commandTableLeave(s, &CommandData{
+				commandTableLeave(s, &CommandData{ // Manual invocation
 					TableID: t.ID,
 				})
 			}
@@ -77,7 +77,7 @@ func shutdownWait() {
 			for _, t := range tables {
 				if t.Running && !t.Replay {
 					s := t.GetOwnerSession()
-					commandAction(s, &CommandData{
+					commandAction(s, &CommandData{ // Manual invocation
 						TableID: t.ID,
 						Type:    ActionTypeEndGame,
 						Target:  -1,
@@ -124,11 +124,8 @@ func shutdownImmediate() {
 			"The server might be down for a while; please see the Discord server for more specific updates.")
 	}
 
-	commandChat(nil, &CommandData{
-		Msg:    "The server successfully shut down at: " + getCurrentTimestamp(),
-		Room:   "lobby",
-		Server: true,
-	})
+	msg := "The server successfully shut down at: " + getCurrentTimestamp()
+	chatServerSend(msg, "lobby")
 
 	if runtime.GOOS == "windows" {
 		logger.Info("Manually kill the server now.")

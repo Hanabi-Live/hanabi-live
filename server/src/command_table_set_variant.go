@@ -14,16 +14,11 @@ import (
 //   },
 // }
 func commandTableSetVariant(s *Session, d *CommandData) {
-	t, exists := getTable(s, d.TableID)
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	if t.Running {
 		s.Warning(ChatCommandStartedFail)

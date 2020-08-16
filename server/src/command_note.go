@@ -21,17 +21,11 @@ func commandNote(s *Session, d *CommandData) {
 		(some code is copied from the "sanitizeChatInput()" function)
 	*/
 
-	t, exists := getTable(s, d.TableID)
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
-
 	g := t.Game
 
 	// Validate that the game has started

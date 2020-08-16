@@ -7,17 +7,17 @@ import (
 	"time"
 )
 
-func (s *Session) SessionID() int {
+func (s *Session) SessionID() uint64 {
 	if s == nil {
 		logger.Error("The \"SessionID\" method was called for a nil session.")
-		return -1
+		return 0
 	}
 
 	if v, exists := s.Get("sessionID"); !exists {
 		logger.Error("Failed to get \"SessionID\" from a session.")
-		return -1
+		return 0
 	} else {
-		return v.(int)
+		return v.(uint64)
 	}
 }
 

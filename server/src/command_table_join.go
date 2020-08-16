@@ -19,16 +19,11 @@ func commandTableJoin(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	t, exists := getTable(s, d.TableID)
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	// Validate that the player is not already joined to this table
 	i := t.GetPlayerIndexFromID(s.UserID())
@@ -163,7 +158,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 					return
 				}
 
-				commandTableStart(p2.Session, &CommandData{
+				commandTableStart(p2.Session, &CommandData{ // Manual invocation
 					TableID: t.ID,
 				})
 				return

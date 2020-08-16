@@ -20,16 +20,11 @@ func commandChatTyping(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	t, exists := getTable(s, d.TableID)
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	// Validate that they are in the game or are a spectator
 	i := t.GetPlayerIndexFromID(s.UserID())
@@ -83,15 +78,11 @@ func commandChatTypingCheckStopped(t *Table, userID int) {
 	time.Sleep(TypingDelay)
 
 	// Check to see if the table still exists
-	if _, ok := getTable(nil, t.ID); !ok {
+	_, exists := getTableAndLock(nil, t.ID, true)
+	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	// Validate that they are in the game or are a spectator
 	i := t.GetPlayerIndexFromID(userID)

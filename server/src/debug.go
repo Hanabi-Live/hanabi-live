@@ -220,12 +220,12 @@ func debugFunction() {
 		}
 		logger.Debug("ON GAME:", id)
 		s := newFakeSession(1, "Server")
-		commandReplayCreate(s, &CommandData{
+		commandReplayCreate(s, &CommandData{ // Manual invocation
 			Source:     "id",
 			GameID:     id,
 			Visibility: "solo",
 		})
-		commandTableUnattend(s, &CommandData{
+		commandTableUnattend(s, &CommandData{ // Manual invocation
 			TableID: tableIDCounter,
 		})
 	}

@@ -20,16 +20,11 @@ func commandTableStart(s *Session, d *CommandData) {
 		Validation
 	*/
 
-	t, exists := getTable(s, d.TableID)
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	// Validate that this is the owner of the table
 	if s.UserID() != t.Owner {

@@ -44,13 +44,13 @@ func websocketDisconnect2(s *Session) {
 			if t.Running {
 				logger.Info(t.GetName() + "Unattending player \"" + s.Username() + "\" " +
 					"since they disconnected.")
-				commandTableUnattend(s, &CommandData{
+				commandTableUnattend(s, &CommandData{ // Manual invocation
 					TableID: t.ID,
 				})
 			} else {
 				logger.Info(t.GetName() + "Ejecting player \"" + s.Username() + "\" " +
 					"from an unstarted game since they disconnected.")
-				commandTableLeave(s, &CommandData{
+				commandTableLeave(s, &CommandData{ // Manual invocation
 					TableID: t.ID,
 				})
 			}
@@ -60,8 +60,14 @@ func websocketDisconnect2(s *Session) {
 		if t.GetSpectatorIndexFromID(s.UserID()) != -1 {
 			logger.Info(t.GetName() + "Ejecting spectator \"" + s.Username() + "\" " +
 				"since they disconnected.")
+
+			// Add them to the disconnected spectators map
+			// (so that they will be automatically reconnected to the game when/if they reconnect)
+			t.Mutex.Lock()
 			t.DisconSpectators[s.UserID()] = struct{}{}
-			commandTableUnattend(s, &CommandData{
+			t.Mutex.Unlock()
+
+			commandTableUnattend(s, &CommandData{ // Manual invocation
 				TableID: t.ID,
 			})
 		}

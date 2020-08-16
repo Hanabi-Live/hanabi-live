@@ -9,16 +9,11 @@ package main
 //   name: 'Alice,
 // }
 func commandTableSetLeader(s *Session, d *CommandData) {
-	t, exists := getTable(s, d.TableID)
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	if len(d.Name) == 0 {
 		s.Warning("You must specify the username to pass the lead to. (e.g. \"/setleader Alice\")")

@@ -175,7 +175,7 @@ func websocketConnect(ms *melody.Session) {
 	})
 
 	// Send them a random name
-	commandGetName(s, nil)
+	commandGetName(s, nil) // Manual invocation
 
 	// Alert everyone that a new user has logged in
 	// (note that we intentionally send users a message about themselves)
@@ -293,7 +293,7 @@ func websocketConnect(ms *melody.Session) {
 	if playingInOngoingGameID != 0 {
 		logger.Info("Automatically reattending player \"" + s.Username() + "\" " +
 			"to table " + strconv.FormatUint(playingInOngoingGameID, 10) + ".")
-		commandTableReattend(s, &CommandData{
+		commandTableReattend(s, &CommandData{ // Manual invocation
 			TableID: playingInOngoingGameID,
 		})
 		return
@@ -303,7 +303,7 @@ func websocketConnect(ms *melody.Session) {
 	if spectatingInOngoingReplayID != 0 {
 		logger.Info("Automatically re-spectating player " + "\"" + s.Username() + "\" " +
 			"to table " + strconv.FormatUint(spectatingInOngoingReplayID, 10) + ".")
-		commandTableSpectate(s, &CommandData{
+		commandTableSpectate(s, &CommandData{ // Manual invocation
 			TableID: spectatingInOngoingReplayID,
 		})
 		return

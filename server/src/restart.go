@@ -39,11 +39,8 @@ func restart() {
 			"Please wait a few seconds and then refresh the page.")
 	}
 
-	commandChat(nil, &CommandData{
-		Msg:    "The server went down for a restart at: " + getCurrentTimestamp(),
-		Room:   "lobby",
-		Server: true,
-	})
+	msg := "The server went down for a restart at: " + getCurrentTimestamp()
+	chatServerSend(msg, "lobby")
 
 	if runtime.GOOS != "windows" {
 		logger.Info("Restarting...")

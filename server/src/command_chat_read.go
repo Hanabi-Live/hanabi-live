@@ -8,16 +8,11 @@ package main
 //   tableID: 5,
 // }
 func commandChatRead(s *Session, d *CommandData) {
-	t, exists := getTable(s, d.TableID)
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	// Validate that they are in the game or are a spectator
 	i := t.GetPlayerIndexFromID(s.UserID())

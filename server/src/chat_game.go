@@ -12,9 +12,10 @@ func chatPause(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	commandPause(s, &CommandData{
+	commandPause(s, &CommandData{ // Manual invocation
 		TableID: t.ID,
 		Setting: "pause",
+		NoLock:  true,
 	})
 }
 
@@ -30,8 +31,9 @@ func chatUnpause(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	commandPause(s, &CommandData{
+	commandPause(s, &CommandData{ // Manual invocation
 		TableID: t.ID,
 		Setting: "unpause",
+		NoLock:  true,
 	})
 }

@@ -23,16 +23,11 @@ func commandTableRestart(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	t, exists := getTable(s, d.TableID)
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	// Validate that this is a shared replay
 	if !t.Replay || !t.Visible {
@@ -160,14 +155,18 @@ func commandTableRestart(s *Session, d *CommandData) {
 	// On the server side, all of the spectators will still be in the game,
 	// so manually disconnect everybody
 	for _, s2 := range playerSessions {
-		commandTableUnattend(s2, &CommandData{
+		t.Mutex.Unlock()
+		commandTableUnattend(s2, &CommandData{ // Manual invocation
 			TableID: t.ID,
 		})
+		t.Mutex.Lock()
 	}
 	for _, s2 := range spectatorSessions {
-		commandTableUnattend(s2, &CommandData{
+		t.Mutex.Unlock()
+		commandTableUnattend(s2, &CommandData{ // Manual invocation
 			TableID: t.ID,
 		})
+		t.Mutex.Lock()
 	}
 
 	newTableName := ""
@@ -222,9 +221,11 @@ func commandTableRestart(s *Session, d *CommandData) {
 			// The creator of the game does not need to join
 			continue
 		}
-		commandTableJoin(s2, &CommandData{
+		t.Mutex.Unlock()
+		commandTableJoin(s2, &CommandData{ // Manual invocation
 			TableID: t2.ID,
 		})
+		t.Mutex.Lock()
 	}
 
 	// Copy over the old chat
@@ -241,13 +242,13 @@ func commandTableRestart(s *Session, d *CommandData) {
 	t2.ExtraOptions.Restarted = true
 
 	// Emulate the game owner clicking on the "Start Game" button
-	commandTableStart(s, &CommandData{
+	commandTableStart(s, &CommandData{ // Manual invocation
 		TableID: t2.ID,
 	})
 
 	// Automatically join any other spectators that were watching
 	for _, s2 := range spectatorSessions {
-		commandTableSpectate(s2, &CommandData{
+		commandTableSpectate(s2, &CommandData{ // Manual invocation
 			TableID:              t2.ID,
 			ShadowingPlayerIndex: -1,
 		})

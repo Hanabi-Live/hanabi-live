@@ -16,16 +16,11 @@ func commandTableLeave(s *Session, d *CommandData) {
 		Validation
 	*/
 
-	t, exists := getTable(s, d.TableID)
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	// Validate that the game has not started
 	if t.Running {
@@ -95,9 +90,11 @@ func commandTableLeave(s *Session, d *CommandData) {
 				s2 = newFakeSession(p.ID, p.Name)
 				logger.Info("Created a new fake session in the \"commandTableLeave()\" function.")
 			}
-			commandTableLeave(s2, &CommandData{
+			t.Mutex.Unlock()
+			commandTableLeave(s2, &CommandData{ // Manual invocation
 				TableID: t.ID,
 			})
+			t.Mutex.Lock()
 		}
 		return
 	}

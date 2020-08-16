@@ -15,16 +15,11 @@ func commandTableReattend(s *Session, d *CommandData) {
 		Validation
 	*/
 
-	t, exists := getTable(s, d.TableID)
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	// Validate that they are at the table
 	i := t.GetPlayerIndexFromID(s.UserID())

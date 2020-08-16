@@ -26,32 +26,31 @@ func httpLocalhostTerminate(c *gin.Context) {
 		tableID = v
 	}
 
-	// Get the corresponding table
-	var matchingTable *Table
 	if searchingByName {
-		t, exists := getTableByName(nil, tableNameOrID)
-		if !exists {
+		if v, exists := getTableIDFromName(tableNameOrID); !exists {
 			msg := "Table \"" + tableNameOrID + "\" does not exist.\n"
 			c.String(http.StatusOK, msg)
 			return
+		} else {
+			tableID = v
 		}
-		matchingTable = t
-	} else {
-		t, exists := getTable(nil, tableID)
-		if !exists {
-			msg := "Table \"" + strconv.FormatUint(tableID, 10) + "\" does not exist.\n"
-			c.String(http.StatusOK, msg)
-			return
-		}
-		matchingTable = t
+	}
+
+	// Get the corresponding table
+	t, exists := getTableAndLock(nil, tableID, false)
+	if !exists {
+		msg := "Table \"" + strconv.FormatUint(tableID, 10) + "\" does not exist.\n"
+		c.String(http.StatusOK, msg)
+		return
 	}
 
 	// Terminate it
-	s := matchingTable.GetOwnerSession()
-	commandAction(s, &CommandData{
-		TableID: matchingTable.ID,
+	s := t.GetOwnerSession()
+	commandAction(s, &CommandData{ // Manual invocation
+		TableID: t.ID,
 		Type:    ActionTypeEndGame,
 		Target:  -1,
 		Value:   EndConditionTerminated,
+		NoLock:  true,
 	})
 }

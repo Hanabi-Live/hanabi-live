@@ -138,8 +138,9 @@ func chatKick(s *Session, d *CommandData, t *Table) {
 				s2 = newFakeSession(p.ID, p.Name)
 				logger.Info("Created a new fake session in the \"chatKick()\" function.")
 			}
-			commandTableLeave(s2, &CommandData{
+			commandTableLeave(s2, &CommandData{ // Manual invocation
 				TableID: t.ID,
+				NoLock:  true,
 			})
 
 			chatServerSend("Successfully kicked \""+d.Args[0]+"\" from the game.", d.Room)
@@ -294,8 +295,9 @@ func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
 	}
 
 	if len(t.Players) == numPlayers {
-		commandTableStart(s, &CommandData{
+		commandTableStart(s, &CommandData{ // Manual invocation
 			TableID: t.ID,
+			NoLock:  true,
 		})
 	} else {
 		t.AutomaticStart = numPlayers
@@ -310,12 +312,11 @@ func startIn(t *Table, timeToWait time.Duration, datetimePlannedStart time.Time)
 	time.Sleep(timeToWait)
 
 	// Check to see if the table still exists
-
-	t.Mutex.Lock()
-	defer t.Mutex.Unlock()
-	if t.Deleted {
+	_, exists := getTableAndLock(nil, t.ID, true)
+	if !exists {
 		return
 	}
+	defer t.Mutex.Unlock()
 
 	// Check to see if the game has already started
 	if t.Running {
@@ -337,8 +338,9 @@ func startIn(t *Table, timeToWait time.Duration, datetimePlannedStart time.Time)
 			}
 
 			logger.Info(t.GetName() + " Automatically starting (from the /startin command).")
-			commandTableStart(p.Session, &CommandData{
+			commandTableStart(p.Session, &CommandData{ // Manual invocation
 				TableID: t.ID,
+				NoLock:  true,
 			})
 			return
 		}

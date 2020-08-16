@@ -12,17 +12,11 @@ import (
 //   msg: 'inverted priority finesse',
 // }
 func commandTagDelete(s *Session, d *CommandData) {
-	t, exists := getTable(nil, d.TableID)
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
-
 	g := t.Game
 
 	if !t.Running {

@@ -34,10 +34,10 @@ type ChatMessage struct {
 // (e.g. to give feedback to a user after they type a command,
 // to notify that the server is shutting down, etc.)
 func chatServerSend(msg string, room string) {
-	commandChat(nil, &CommandData{
+	commandChat(nil, &CommandData{ // Manual invocation
 		Msg:    msg,
-		Server: true,
 		Room:   room,
+		Server: true,
 	})
 }
 

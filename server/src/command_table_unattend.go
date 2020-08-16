@@ -15,19 +15,14 @@ import (
 // }
 func commandTableUnattend(s *Session, d *CommandData) {
 	// Unlike other command handlers, we do not want to show a warning to the user if the table does
-	// not exist, so we pass "nil" instead of "s" to the "getTable()" function
+	// not exist, so we pass "nil" instead of "s" to the "getTableAndLock()" function
 	// This is because in some cases, network latency will cause the "unattend" message to get to
 	// the server after the respective table has already been deleted
-	t, exists := getTable(nil, d.TableID)
+	t, exists := getTableAndLock(nil, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	// Validate that they are either playing or spectating the game
 	i := t.GetPlayerIndexFromID(s.UserID())

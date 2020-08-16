@@ -39,16 +39,11 @@ func commandReplayAction(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	t, exists := getTable(s, d.TableID)
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
 	}
-
-	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	if t.Deleted {
-		return
-	}
 
 	// Validate that this is a shared replay
 	if !t.Replay || !t.Visible {
