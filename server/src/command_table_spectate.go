@@ -54,7 +54,7 @@ func commandTableSpectate(s *Session, d *CommandData) {
 			break
 		}
 	}
-	tablesMutex.RLock()
+	tablesMutex.RUnlock()
 	if alreadySpectating {
 		s.Warning("You are already spectating another table.")
 		return

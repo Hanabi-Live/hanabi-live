@@ -186,7 +186,7 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 			}
 			if setReplayTurn >= numTurns {
 				s.Warning("Game #" + strconv.Itoa(databaseID) + " only has " +
-					strconv.Itoa(numTurns) + ".")
+					strconv.Itoa(numTurns) + " turns.")
 				return
 			}
 

@@ -49,7 +49,6 @@ func debugPrint() {
 		logger.Debug("[no current tables]")
 	}
 
-	tablesMutex.RLock()
 	for tableID, t := range tables { // This is a map[int]*Table
 		logger.Debug(strconv.FormatUint(tableID, 10) + " - " + t.Name)
 		logger.Debug("\n")

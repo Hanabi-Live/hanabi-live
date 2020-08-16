@@ -64,21 +64,24 @@ func websocketConnect(ms *melody.Session) {
 	sessions[s.UserID()] = s
 	sessionsMutex.Unlock()
 
+	// They have successfully logged in
 	logger.Info("User \""+s.Username()+"\" connected;", len(sessions), "user(s) now connected.")
 
-	// They have successfully logged in
-	// Now, gather some additional information
+	// Now, send some additional information to them
 	websocketConnectWelcomeMessage(s, data)
+
+	// Alert everyone that a new user has logged in
+	// (note that we intentionally send users a message about themselves;
+	// this must be performed before we send them the user list)
+	notifyAllUser(s)
+
 	websocketConnectUserList(s)
 	websocketConnectTableList(s)
 	websocketConnectChat(s)
 	websocketConnectHistory(s)
 	websocketConnectHistoryFriends(s, data.Friends)
 
-	// Alert everyone that a new user has logged in
-	// (note that we intentionally send users a message about themselves)
-	notifyAllUser(s)
-
+	// They might need to resjoin an ongoing game or shared replay
 	websocketConnectRejoinOngoingGame(s, data)
 	websocketConnectRespectate(s, data)
 }
