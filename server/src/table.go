@@ -168,7 +168,7 @@ func (t *Table) CheckIdle() {
 		// (this will put everyone in a non-shared replay of the idle game)
 		commandAction(s, &CommandData{
 			TableID: t.ID,
-			Type:    ActionTypeGameOver,
+			Type:    ActionTypeEndGame,
 			Target:  -1,
 			Value:   EndConditionIdleTimeout,
 		})

@@ -27,8 +27,9 @@ matrix:
     - name: Job 2 - Server
       language: go
       go:
-        # This will automatically choose the latest released Go version
-        - 1.x
+        # "1.x" will automatically choose the latest released Go version
+        # Version 1.15 fails for some reason
+        - 1.14
       env:
         # This is needed so that Travis will use the "go.mod" file
         - GO111MODULE=on

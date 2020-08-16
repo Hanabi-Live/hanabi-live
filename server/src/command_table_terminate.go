@@ -53,7 +53,7 @@ func commandTableTerminate(s *Session, d *CommandData) {
 
 	commandAction(s, &CommandData{
 		TableID: t.ID,
-		Type:    ActionTypeGameOver,
+		Type:    ActionTypeEndGame,
 		Target:  i,
 		Value:   EndConditionTerminated,
 	})

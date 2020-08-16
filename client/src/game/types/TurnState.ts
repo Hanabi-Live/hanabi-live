@@ -12,5 +12,6 @@ export default interface TurnState {
   readonly playOrderInverted: boolean;
   readonly endTurnNum: number | null;
   readonly cardsPlayedOrDiscardedThisTurn: number;
+  readonly cardsDiscardedThisTurn: number;
   readonly cluesGivenThisTurn: number;
 }

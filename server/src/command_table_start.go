@@ -187,6 +187,8 @@ func commandTableStart(s *Session, d *CommandData) {
 	// Additionally, we need to shuffle the order of the players so that the order that the players
 	// joined the game in does not correspond to the order of the players in the actual game
 	// https://stackoverflow.com/questions/12264789/shuffle-array-in-go
+	// For this step, we don't care about explicitly seeding the random number generator,
+	// since any random shuffling will do
 	if shufflePlayers {
 		for i := range t.Players {
 			j := rand.Intn(i + 1)
@@ -215,7 +217,7 @@ func commandTableStart(s *Session, d *CommandData) {
 
 	// Decide the random character assignments
 	// (this has to be after seed generation and initialization)
-	characterGenerate(g)
+	charactersGenerate(g)
 
 	// Initialize all of the players to not being present
 	// This is so that we don't send them unnecessary messages during the game initialization

@@ -47,8 +47,16 @@ export const show = (element: NodeWithTooltip) => {
   const tooltip = $(`#tooltip-${element.tooltipName}`);
   const pos = element.getAbsolutePosition();
   let width = element.width();
-  if (element instanceof TextWithTooltip) {
+  if (element instanceof Konva.Text) {
     width = element.getTextWidth();
+
+    // For text elements consisting of only one emoji,
+    // "getTextWidth()" will not return the correct width
+    // Fall back to the element width instead
+    const text = element as TextWithTooltip;
+    if (text.emoji) {
+      width = element.width();
+    }
   }
   const tooltipX = pos.x + (width / 2);
   tooltip.css('left', tooltipX);

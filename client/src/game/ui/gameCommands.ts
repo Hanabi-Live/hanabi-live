@@ -8,6 +8,7 @@ import * as sentry from '../../sentry';
 import { getVariant } from '../data/gameData';
 import initialState from '../reducers/initialStates/initialState';
 import stateReducer from '../reducers/stateReducer';
+import { deckRules } from '../rules';
 import { GameAction, ActionIncludingHypothetical } from '../types/actions';
 import CardIdentity from '../types/CardIdentity';
 import GameMetadata from '../types/GameMetadata';
@@ -171,7 +172,7 @@ commands.set('note', (data: NoteData) => {
   }
 
   // Store the combined notes for this card
-  globals.allNotes[data.order] = data.notes;
+  globals.allNotes.set(data.order, data.notes);
 
   // Set the note indicator
   notes.setCardIndicator(data.order);
@@ -193,8 +194,8 @@ interface NoteList {
 commands.set('noteList', (data: NoteListData) => {
   // Reset any existing notes
   // (we could be getting a fresh copy of all notes after an ongoing game has ended)
-  for (let i = 0; i < globals.allNotes.length; i++) {
-    globals.allNotes[i] = [];
+  for (let i = 0; i < globals.allNotes.size; i++) {
+    globals.allNotes.set(i, []);
   }
 
   // Data comes from the server as an array of player & spectator notes
@@ -206,12 +207,13 @@ commands.set('noteList', (data: NoteListData) => {
       && !globals.state.finished
       && noteList.name === globals.state.metadata.ourUsername
     ) {
-      globals.ourNotes = noteList.notes;
+      globals.ourNotes.clear();
+      noteList.notes.forEach((note, i) => globals.ourNotes.set(i, note));
     }
 
     for (let i = 0; i < noteList.notes.length; i++) {
       const note = noteList.notes[i];
-      globals.allNotes[i].push({
+      globals.allNotes.get(i)!.push({
         name: noteList.name,
         note,
       });
@@ -229,7 +231,8 @@ interface NoteListPlayerData {
 }
 commands.set('noteListPlayer', (data: NoteListPlayerData) => {
   // Store our notes
-  globals.ourNotes = data.notes;
+  globals.ourNotes.clear();
+  data.notes.forEach((note, i) => globals.ourNotes.set(i, note));
 
   // Show the note indicator for currently-visible cards
   notes.setAllCardIndicators();
@@ -309,7 +312,7 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
     // (the server does not validate the order that the leader sends)
     let card = globals.deck[data.order];
     if (card === undefined) {
-      card = globals.stackBases[data.order - globals.deck.length];
+      card = globals.stackBases[data.order - deckRules.totalCards(globals.variant)];
     }
     if (card === undefined) {
       return;

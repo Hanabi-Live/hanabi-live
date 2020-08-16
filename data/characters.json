@@ -40,13 +40,13 @@
   },
   "Spiteful": {
     "id": 7,
-    "description": "Cannot clue the player to their left",
+    "description": "Cannot clue the next player",
     "emoji": "😈",
     "not2P": true
   },
   "Insolent": {
     "id": 8,
-    "description": "Cannot clue the player to their right",
+    "description": "Cannot clue the previous player",
     "emoji": "😏",
     "not2P": true
   },
@@ -148,13 +148,13 @@
   },
   "Blind Spot": {
     "id": 29,
-    "description": "Cannot see the cards of the player to their left",
+    "description": "Cannot see the cards of the next player",
     "emoji": "🚗",
     "not2P": true
   },
   "Oblivious": {
     "id": 30,
-    "description": "Cannot see the cards of the player to their right",
+    "description": "Cannot see the cards of the previous player",
     "emoji": "🚂",
     "not2P": true
   },

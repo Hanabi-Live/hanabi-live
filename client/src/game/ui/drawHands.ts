@@ -491,6 +491,7 @@ const drawDetrimentalCharacters = (
     shadowOpacity: 0.9,
     listening: true,
   });
+  charIcon.emoji = true; // Mark that this is a text element containing only emoji
   globals.layers.UI.add(charIcon);
 
   charIcon.tooltipName = `character-assignment-${i}`;

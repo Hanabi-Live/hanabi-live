@@ -237,10 +237,10 @@ func validateJSON(s *Session, d *CommandData) bool {
 					return false
 				}
 			}
-		} else if action.Type == ActionTypeGameOver {
+		} else if action.Type == ActionTypeEndGame {
 			if action.Target < 0 || action.Target > len(d.GameJSON.Players)-1 {
 				s.Warning("Action at index " + strconv.Itoa(i) +
-					" is a game over with an invalid target (player index) of " +
+					" is an end game with an invalid target (player index) of " +
 					strconv.Itoa(action.Target) + ".")
 				return false
 			}
@@ -301,6 +301,14 @@ func validateJSON(s *Session, d *CommandData) bool {
 				playerNotes = append(playerNotes, "")
 			}
 		}
+	}
+
+	// Validate the characters
+	if d.GameJSON.Options.DetrimentalCharacters != nil &&
+		len(d.GameJSON.Characters) != len(d.GameJSON.Players) {
+
+		s.Warning("The amount of characters specified must match the number of players in the game.")
+		return false
 	}
 
 	return true
@@ -428,6 +436,8 @@ func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 		// JSON games are hard-coded to have a database ID of 0
 		DatabaseID: 0,
 		CustomDeck: d.GameJSON.Deck,
+		// "d.GameJSON.Characters" will be an empty array if it was not specified in the JSON
+		CustomCharacters: d.GameJSON.Characters,
 	}
 
 	loadFakePlayers(t, d.GameJSON.Players)

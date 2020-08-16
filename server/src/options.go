@@ -28,7 +28,10 @@ type ExtraOptions struct {
 	// -1 if an ongoing game, 0 if a JSON replay,
 	// a positive number if a database replay (or a "!replay" table)
 	DatabaseID int
-	CustomDeck []*CardIdentity // For replays created from arbitrary JSON data
+
+	// For replays created from arbitrary JSON data
+	CustomDeck       []*CardIdentity
+	CustomCharacters []*CharacterJSON
 
 	Restarted bool // Whether or not this game was created by clicking "Restart" in a replay
 

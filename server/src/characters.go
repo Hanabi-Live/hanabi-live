@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -23,12 +24,20 @@ var (
 	characterNames  []string
 	charactersID    map[int]string
 	debugCharacters = []string{
-		"Slow-Witted",
 		"n/a",
 		"n/a",
 		"n/a",
 		"n/a",
 		"n/a",
+		"n/a",
+	}
+	debugCharacterMetadata = []int{
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
+		-1,
 	}
 	debugUsernames = []string{
 		"test",
@@ -42,7 +51,7 @@ var (
 	}
 )
 
-func characterInit() {
+func charactersInit() {
 	// Import the JSON file
 	filePath := path.Join(dataPath, "characters.json")
 	var contents []byte
@@ -86,16 +95,31 @@ func characterInit() {
 		// (so that we can easily find the associated character from a database entry)
 		charactersID[character.ID] = name
 	}
+
+	// The characters map was iterated over in a random order,
+	// so the "characterNames" array will be in a random order every time the server starts
+	// Alphabetize it to prevent this
+	sort.Strings(characterNames)
 }
 
-func characterGenerate(g *Game) {
+func charactersGenerate(g *Game) {
 	if !g.Options.DetrimentalCharacters {
 		return
 	}
 
 	// If this is a JSON replay, use the character selections from the JSON input
 	if g.ExtraOptions.DatabaseID == 0 {
-		// TODO
+		if len(g.ExtraOptions.CustomCharacters) != len(g.Players) {
+			logger.Error("There are " + strconv.Itoa(len(g.ExtraOptions.CustomCharacters)) +
+				" custom characters, but there are " + strconv.Itoa(len(g.Players)) +
+				" players in the game.")
+			return
+		}
+
+		for i, p := range g.Players {
+			p.Character = g.ExtraOptions.CustomCharacters[i].Name
+			p.CharacterMetadata = g.ExtraOptions.CustomCharacters[i].Metadata
+		}
 		return
 	}
 
@@ -121,10 +145,11 @@ func characterGenerate(g *Game) {
 		return
 	}
 
-	for i, p := range g.Players {
-		// Initialize the metadata to -1 (it is 0 by default in order to save database space)
-		p.CharacterMetadata = -1
+	// Seed the random number generator
+	setSeed(g.Seed)
 
+	for i, p := range g.Players {
+		// Set the character
 		if stringInSlice(p.Name, debugUsernames) {
 			// Hard-code some character assignments for testing purposes
 			p.Character = debugCharacters[i]
@@ -161,18 +186,27 @@ func characterGenerate(g *Game) {
 			}
 		}
 
-		if p.Character == "Fuming" { // 0
-			// A random number from 0 to the number of colors in this variant
-			p.CharacterMetadata = rand.Intn(len(variants[g.Options.VariantName].ClueColors))
-		} else if p.Character == "Dumbfounded" { // 1
-			// A random number from 1 to 5
-			p.CharacterMetadata = rand.Intn(4) + 1
-		} else if p.Character == "Inept" { // 2
-			// A random number from 0 to the number of suits in this variant
-			p.CharacterMetadata = rand.Intn(len(g.Stacks))
-		} else if p.Character == "Awkward" { // 3
-			// A random number from 1 to 5
-			p.CharacterMetadata = rand.Intn(4) + 1
+		// Initialize the metadata to -1
+		p.CharacterMetadata = -1
+
+		// Specific characters also have secondary attributes that are stored in the character
+		// metadata field
+		if stringInSlice(p.Name, debugUsernames) {
+			p.CharacterMetadata = debugCharacterMetadata[i]
+		} else {
+			if p.Character == "Fuming" { // 0
+				// A random number from 0 to the number of colors in this variant
+				p.CharacterMetadata = rand.Intn(len(variants[g.Options.VariantName].ClueColors))
+			} else if p.Character == "Dumbfounded" { // 1
+				// A random number from 1 to 5
+				p.CharacterMetadata = rand.Intn(4) + 1
+			} else if p.Character == "Inept" { // 2
+				// A random number from 0 to the number of suits in this variant
+				p.CharacterMetadata = rand.Intn(len(g.Stacks))
+			} else if p.Character == "Awkward" { // 3
+				// A random number from 1 to 5
+				p.CharacterMetadata = rand.Intn(4) + 1
+			}
 		}
 	}
 }
@@ -317,7 +351,7 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 				(clue.Value+1)%2 == 0)) {
 
 		s.Warning("You are " + p.Character + ", " +
-			"so you can only clue odd numbers or clues that touch odd amounts of cards.")
+			"so you can only clue odd numbers or odd colors.")
 		return true
 	} else if p.Character == "Spiteful" { // 7
 		leftIndex := p.Index + 1
@@ -611,18 +645,39 @@ func characterHideCard(a *ActionDraw, g *Game, p *GamePlayer) bool {
 	return false
 }
 
-func characterShouldSendCardIdentityOfSlot2(g *Game) bool {
+func characterSendCardIdentityOfSlot2(g *Game, playerIndexDrawingCard int) {
 	if !g.Options.DetrimentalCharacters {
-		return false
+		return
 	}
 
-	for _, p := range g.Players {
-		if p.Character == "Slow-Witted" { // 33
-			return true
+	// Local variables
+	t := g.Table
+	p := g.Players[playerIndexDrawingCard]
+
+	if len(p.Hand) <= 1 {
+		return
+	}
+
+	hasSlowWitted := false
+	for _, p2 := range g.Players {
+		if p2.Character == "Slow-Witted" { // 33
+			hasSlowWitted = true
+			break
 		}
 	}
 
-	return false
+	if hasSlowWitted {
+		// Card information will be scrubbed from the action in the "CheckScrub()" function
+		c := p.Hand[len(p.Hand)-2] // Slot 2
+		g.Actions = append(g.Actions, ActionCardIdentity{
+			Type:        "cardIdentity",
+			PlayerIndex: p.Index,
+			Order:       c.Order,
+			SuitIndex:   c.SuitIndex,
+			Rank:        c.Rank,
+		})
+		t.NotifyGameAction()
+	}
 }
 
 func characterAdjustEndTurn(g *Game) {
@@ -650,6 +705,7 @@ func characterCheckSoftlock(g *Game, p *GamePlayer) {
 			p.Character == "Insistent") { // 13
 
 		g.EndCondition = EndConditionCharacterSoftlock
+		g.EndPlayer = p.Index
 	}
 }
 

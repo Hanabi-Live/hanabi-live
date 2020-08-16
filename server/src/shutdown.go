@@ -76,7 +76,7 @@ func shutdownWait() {
 					s := t.GetOwnerSession()
 					commandAction(s, &CommandData{
 						TableID: t.ID,
-						Type:    ActionTypeGameOver,
+						Type:    ActionTypeEndGame,
 						Target:  -1,
 						Value:   EndConditionTerminated,
 					})

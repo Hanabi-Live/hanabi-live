@@ -1,29 +1,34 @@
+import { deckRules } from '../../../rules';
 import CardIdentity from '../../../types/CardIdentity';
 import CardState from '../../../types/CardState';
 import State from '../../../types/State';
 import globals from '../../globals';
+import HanabiCard from '../../HanabiCard';
 import observeStore, { Subscription, Selector, Listener } from '../observeStore';
 
-export const onDeckChanged = (length: number) => {
-  // Handle card subscriptions
-  // TODO: this could be used to create/destroy HanabiCards / card UI
-  // on the fly based on state which would make loading a lot faster
-  if (globals.cardSubscriptions.length < length) {
-    // Subscribe the new cards
-    for (let i = globals.cardSubscriptions.length; i < length; i++) {
-      const subscription = subscribeToCardChanges(i);
-      globals.cardSubscriptions.push(subscription);
+export const onCardsPossiblyAdded = (length: number) => {
+  // Subscribe the new cards
+  for (let i = globals.cardSubscriptions.length; i < length; i++) {
+    if (globals.deck.length <= i) {
+      // Construct the card object
+      globals.ourNotes.set(i, '');
+      globals.allNotes.set(i, []);
+      globals.deck.push(new HanabiCard({ order: i }));
     }
-  } else {
-    // Unsubscribe the removed cards
-    while (globals.cardSubscriptions.length > length) {
-      // The card was removed from the visible state
-      // Ensure the position of the card is correctly reset
-      globals.deck[globals.cardSubscriptions.length - 1].moveToDeckPosition();
+    const subscription = subscribeToCardChanges(i);
+    globals.cardSubscriptions.push(subscription);
+  }
+};
 
-      const unsubscribe = globals.cardSubscriptions.pop()!;
-      unsubscribe();
-    }
+export const onCardsPossiblyRemoved = (length: number) => {
+  // Unsubscribe the removed cards
+  while (globals.cardSubscriptions.length > length) {
+    // The card was removed from the visible state
+    // Ensure the position of the card is correctly reset
+    globals.deck[globals.cardSubscriptions.length - 1].moveToDeckPosition();
+
+    const unsubscribe = globals.cardSubscriptions.pop()!;
+    unsubscribe();
   }
 };
 
@@ -143,7 +148,7 @@ const updateCardVisuals = (order: number) => {
   if (order < globals.deck.length) {
     globals.deck[order].setBareImage();
   } else {
-    globals.stackBases[order - globals.deck.length].setBareImage();
+    globals.stackBases[order - deckRules.totalCards(globals.variant)].setBareImage();
   }
 
   globals.layers.card.batchDraw();

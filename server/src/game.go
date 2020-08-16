@@ -184,7 +184,7 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 	// End the game
 	commandAction(s, &CommandData{
 		TableID: t.ID,
-		Type:    ActionTypeGameOver,
+		Type:    ActionTypeEndGame,
 		Target:  gp.Index,
 		Value:   EndConditionTimeout,
 	})
@@ -233,6 +233,7 @@ func (g *Game) CheckEnd() bool {
 
 		logger.Info(t.GetName() + "The current player has no cards and no clue tokens in an \"All or Nothing\" game; ending the game.")
 		g.EndCondition = EndConditionAllOrNothingSoftlock
+		g.EndPlayer = g.Players[g.ActivePlayerIndex].Index
 		return true
 	}
 

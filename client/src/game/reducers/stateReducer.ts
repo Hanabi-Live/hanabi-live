@@ -6,8 +6,6 @@ import produce, {
   original,
   setAutoFreeze,
 } from 'immer';
-import { getVariant } from '../data/gameData';
-import { variantRules } from '../rules';
 import * as segmentRules from '../rules/segment';
 import { Action, GameAction } from '../types/actions';
 import CardIdentity from '../types/CardIdentity';
@@ -298,15 +296,10 @@ const visualStateToShow = (state: Draft<State>, action: Action) => {
   return state.ongoingGame;
 };
 
-const rehydrateScrubbedActions = (state: State, cardIdentities: readonly CardIdentity[]) => {
-  const variant = getVariant(state.metadata.options.variantName);
-  if (!variantRules.isThrowItInAHole(variant)) {
-    return state.replay.actions;
-  }
-
-  return state.replay.actions.map((a) => {
+const rehydrateScrubbedActions = (state: State, cardIdentities: readonly CardIdentity[]) => (
+  state.replay.actions.map((a) => {
     if (
-      (a.type === 'play' || a.type === 'discard')
+      (a.type === 'play' || a.type === 'discard' || a.type === 'draw')
       && (a.suitIndex === -1 || a.rank === -1)
     ) {
       return ({
@@ -316,5 +309,5 @@ const rehydrateScrubbedActions = (state: State, cardIdentities: readonly CardIde
       });
     }
     return a;
-  });
-};
+  })
+);

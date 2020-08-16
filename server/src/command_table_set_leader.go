@@ -23,11 +23,6 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 		t = v
 	}
 
-	if s.UserID() != t.Owner {
-		s.Warning(ChatCommandNotOwnerFail)
-		return
-	}
-
 	if len(d.Name) == 0 {
 		s.Warning("You must specify the username to pass the lead to. (e.g. \"/setleader Alice\")")
 		return
@@ -90,8 +85,8 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 			i := t.GetPlayerIndexFromID(s.UserID())
 			t.Players[i], t.Players[newLeaderIndex] = t.Players[newLeaderIndex], t.Players[i]
 
-			// Re-send the "game" message that draws the pregame screen and enables/disables the
-			// "Start Game" button
+			// Re-send the "game" message that draws the pregame screen
+			// and enables/disables the "Start Game" button
 			t.NotifyPlayerChange()
 		}
 

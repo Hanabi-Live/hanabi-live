@@ -8,6 +8,7 @@ export default function initialTurnState(startingPlayer: number = 0): TurnState 
     playOrderInverted: false,
     endTurnNum: null,
     cardsPlayedOrDiscardedThisTurn: 0,
+    cardsDiscardedThisTurn: 0,
     cluesGivenThisTurn: 0,
   };
 }

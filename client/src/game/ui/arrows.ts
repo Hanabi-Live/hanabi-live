@@ -123,6 +123,7 @@ export const set = (
     ) {
       // Don't show the circle in variants where the clue types are supposed to be hidden
       arrow.circle.hide();
+      arrow.text.hide();
     } else {
       arrow.circle.show();
       if (clue.type === ClueType.Color) {

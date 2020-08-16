@@ -54,10 +54,10 @@ export class Globals {
   finalReplayTurn: number = 0;
 
   // Notes feature
-  ourNotes: string[] = []; // Indexed by card order
+  ourNotes: Map<number, string> = new Map<number, string>(); // Indexed by card order
   // An array containing objects, indexed by card order;
   // It represents the notes of every player & spectator
-  allNotes: SpectatorNote[][] = [];
+  allNotes: Map<number, SpectatorNote[]> = new Map<number, SpectatorNote[]>();
   // Used to keep track of which card the user is editing;
   // users can only update one note at a time to prevent bugs
   // Equal to the card order number or null
@@ -126,8 +126,8 @@ export class Globals {
     this.replayLog = [];
     this.finalReplayPos = 0;
     this.finalReplayTurn = 0;
-    this.ourNotes = [];
-    this.allNotes = [];
+    this.ourNotes.clear();
+    this.allNotes.clear();
     this.editingNote = null;
     this.actionOccurred = false;
     this.lastNote = '';

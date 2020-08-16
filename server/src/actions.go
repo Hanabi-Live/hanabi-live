@@ -66,6 +66,20 @@ type ActionStrike struct {
 	Order int    `json:"order"` // The order of the card that was played
 }
 
+type ActionStatus struct {
+	Type          string `json:"type"`
+	Clues         int    `json:"clues"`
+	Score         int    `json:"score"`
+	MaxScore      int    `json:"maxScore"`
+	DoubleDiscard bool   `json:"doubleDiscard"`
+}
+
+type ActionTurn struct {
+	Type               string `json:"type"`
+	Num                int    `json:"num"`
+	CurrentPlayerIndex int    `json:"currentPlayerIndex"`
+}
+
 type Clue struct {
 	Type  int `json:"type"`
 	Value int `json:"value"`
