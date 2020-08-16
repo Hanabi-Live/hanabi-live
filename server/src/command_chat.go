@@ -178,11 +178,13 @@ func commandChatTable(s *Session, d *CommandData) {
 		tableID = v
 	}
 
-	t, exists := getTableAndLock(s, tableID, true)
+	t, exists := getTableAndLock(s, tableID, d.NoLock)
 	if !exists {
 		return
 	}
-	defer t.Mutex.Unlock()
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
+	}
 
 	// Validate that this player is in the game or spectating
 	var i int

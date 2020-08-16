@@ -18,7 +18,9 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 	if !exists {
 		return
 	}
-	defer t.Mutex.Unlock()
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
+	}
 
 	if t.Running {
 		s.Warning(ChatCommandStartedFail)

@@ -23,7 +23,9 @@ func commandTableJoin(s *Session, d *CommandData) {
 	if !exists {
 		return
 	}
-	defer t.Mutex.Unlock()
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
+	}
 
 	// Validate that the player is not already joined to this table
 	i := t.GetPlayerIndexFromID(s.UserID())
@@ -123,7 +125,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 	// Set their status
 	if s != nil {
 		s.Set("status", StatusPregame)
-		s.Set("table", t.ID)
+		s.Set("tableID", t.ID)
 		notifyAllUser(s)
 	}
 

@@ -21,7 +21,9 @@ func commandTableSpectate(s *Session, d *CommandData) {
 	if !exists {
 		return
 	}
-	defer t.Mutex.Unlock()
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
+	}
 	g := t.Game
 
 	// Validate that the game has started
@@ -91,18 +93,18 @@ func commandTableSpectate(s *Session, d *CommandData) {
 
 	// Set their status
 	status := StatusSpectating
-	table := t.ID
+	tableID := t.ID
 	if t.Replay {
 		if t.Visible {
 			status = StatusSharedReplay
 		} else {
 			status = StatusReplay
-			table = 0 // Protect the privacy of a user in a solo replay
+			tableID = 0 // Protect the privacy of a user in a solo replay
 		}
 	}
 	if s != nil {
 		s.Set("status", status)
-		s.Set("table", table)
+		s.Set("tableID", tableID)
 		notifyAllUser(s)
 	}
 

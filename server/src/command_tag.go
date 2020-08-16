@@ -24,7 +24,9 @@ func commandTag(s *Session, d *CommandData) {
 	if !exists {
 		return
 	}
-	defer t.Mutex.Unlock()
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
+	}
 	g := t.Game
 
 	if !t.Running {

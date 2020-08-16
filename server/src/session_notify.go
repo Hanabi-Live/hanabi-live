@@ -14,18 +14,18 @@ func (s *Session) NotifyUser(u *Session) {
 }
 
 type UserMessage struct {
-	ID     int    `json:"id"`
-	Name   string `json:"name"`
-	Status int    `json:"status"`
-	Table  int    `json:"table"`
+	ID      int    `json:"id"`
+	Name    string `json:"name"`
+	Status  int    `json:"status"`
+	TableID uint64 `json:"tableID"`
 }
 
 func makeUserMessage(s *Session) *UserMessage {
 	return &UserMessage{
-		ID:     s.UserID(),
-		Name:   s.Username(),
-		Status: s.Status(),
-		Table:  s.Table(),
+		ID:      s.UserID(),
+		Name:    s.Username(),
+		Status:  s.Status(),
+		TableID: s.TableID(),
 	}
 }
 

@@ -20,7 +20,9 @@ func commandTableLeave(s *Session, d *CommandData) {
 	if !exists {
 		return
 	}
-	defer t.Mutex.Unlock()
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
+	}
 
 	// Validate that the game has not started
 	if t.Running {
@@ -57,7 +59,7 @@ func commandTableLeave(s *Session, d *CommandData) {
 	// Set their status
 	if s != nil {
 		s.Set("status", StatusLobby)
-		s.Set("table", -1)
+		s.Set("tableID", uint64(0))
 		notifyAllUser(s)
 	}
 

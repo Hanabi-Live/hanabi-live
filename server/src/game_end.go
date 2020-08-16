@@ -48,7 +48,7 @@ func (g *Game) End() {
 	for _, p := range t.Players {
 		if p.Session != nil {
 			p.Session.Set("status", StatusLobby)
-			p.Session.Set("table", -1)
+			p.Session.Set("tableID", uint64(0))
 			notifyAllUser(p.Session)
 		}
 	}
@@ -395,7 +395,7 @@ func (t *Table) ConvertToSharedReplay() {
 		// Reset everyone's status (both players and spectators are now spectators)
 		if sp.Session != nil {
 			sp.Session.Set("status", StatusSharedReplay)
-			sp.Session.Set("table", t.ID)
+			sp.Session.Set("tableID", t.ID)
 			notifyAllUser(sp.Session)
 		}
 

@@ -25,7 +25,9 @@ func commandNote(s *Session, d *CommandData) {
 	if !exists {
 		return
 	}
-	defer t.Mutex.Unlock()
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
+	}
 	g := t.Game
 
 	// Validate that the game has started

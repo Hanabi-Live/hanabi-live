@@ -4,6 +4,6 @@ export default interface User {
   id: number;
   name: string;
   status: Status;
-  table: number;
+  tableID: number;
   inactive: boolean;
 }

@@ -27,7 +27,9 @@ func commandTableRestart(s *Session, d *CommandData) {
 	if !exists {
 		return
 	}
-	defer t.Mutex.Unlock()
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
+	}
 
 	// Validate that this is a shared replay
 	if !t.Replay || !t.Visible {

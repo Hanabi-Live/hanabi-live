@@ -21,7 +21,9 @@ func commandTableTerminate(s *Session, d *CommandData) {
 	if !exists {
 		return
 	}
-	defer t.Mutex.Unlock()
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
+	}
 
 	// Validate that they are in the game
 	i := t.GetPlayerIndexFromID(s.UserID())

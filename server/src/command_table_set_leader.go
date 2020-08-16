@@ -13,7 +13,9 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 	if !exists {
 		return
 	}
-	defer t.Mutex.Unlock()
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
+	}
 
 	if len(d.Name) == 0 {
 		s.Warning("You must specify the username to pass the lead to. (e.g. \"/setleader Alice\")")

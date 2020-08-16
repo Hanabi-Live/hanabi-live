@@ -12,7 +12,9 @@ func commandChatRead(s *Session, d *CommandData) {
 	if !exists {
 		return
 	}
-	defer t.Mutex.Unlock()
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
+	}
 
 	// Validate that they are in the game or are a spectator
 	i := t.GetPlayerIndexFromID(s.UserID())

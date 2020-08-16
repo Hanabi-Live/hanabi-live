@@ -19,7 +19,9 @@ func commandTableReattend(s *Session, d *CommandData) {
 	if !exists {
 		return
 	}
-	defer t.Mutex.Unlock()
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
+	}
 
 	// Validate that they are at the table
 	i := t.GetPlayerIndexFromID(s.UserID())
@@ -69,7 +71,7 @@ func commandTableReattend(s *Session, d *CommandData) {
 			status = StatusPregame
 		}
 		s.Set("status", status)
-		s.Set("table", t.ID)
+		s.Set("tableID", t.ID)
 		notifyAllUser(s)
 	}
 }

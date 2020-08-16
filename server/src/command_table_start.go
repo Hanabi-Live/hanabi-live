@@ -24,7 +24,9 @@ func commandTableStart(s *Session, d *CommandData) {
 	if !exists {
 		return
 	}
-	defer t.Mutex.Unlock()
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
+	}
 
 	// Validate that this is the owner of the table
 	if s.UserID() != t.Owner {
@@ -277,7 +279,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		for _, p := range t.Players {
 			if p.Session != nil {
 				p.Session.Set("status", StatusPlaying)
-				p.Session.Set("table", t.ID)
+				p.Session.Set("tableID", t.ID)
 				notifyAllUser(p.Session)
 			}
 		}

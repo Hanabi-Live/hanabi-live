@@ -190,7 +190,7 @@ func defaultSessionKeys() map[string]interface{} {
 	keys["username"] = ""
 	keys["muted"] = false
 	keys["status"] = StatusLobby // By default, new users are in the lobby
-	keys["table"] = -1
+	keys["tableID"] = uint64(0)
 	keys["friends"] = make(map[int]struct{})
 	keys["reverseFriends"] = make(map[int]struct{})
 	keys["inactive"] = false
