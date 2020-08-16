@@ -379,7 +379,7 @@ export const ready = () => {
   if (debug.amTestUser(globals.username)) {
     $('#createTableName').val('test game');
   } else {
-    $('#createTableName').val(globals.randomName);
+    $('#createTableName').val(globals.randomTableName);
 
     // Get a new random name from the server for the next time we click the button
     globals.conn!.send('getName');

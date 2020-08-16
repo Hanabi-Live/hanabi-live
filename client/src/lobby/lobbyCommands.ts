@@ -4,6 +4,7 @@ import * as gameMain from '../game/main';
 import { DEFAULT_VARIANT_NAME } from '../game/types/constants';
 import * as spectatorsView from '../game/ui/reactive/view/spectatorsView';
 import globals from '../globals';
+import { trimReplaySuffixFromURL } from '../misc';
 import * as sentry from '../sentry';
 import * as sounds from '../sounds';
 import * as history from './history';
@@ -128,7 +129,7 @@ interface NameData {
   name: string;
 }
 commands.set('name', (data: NameData) => {
-  globals.randomName = data.name;
+  globals.randomTableName = data.name;
 });
 
 interface ShutdownData {
@@ -259,6 +260,7 @@ interface WelcomeData {
   settings: any;
   friends: string[];
   atOngoingTable: boolean;
+  randomTableName: string;
   shuttingDown: boolean;
   maintenanceMode: boolean;
 }
@@ -270,6 +272,7 @@ commands.set('welcome', (data: WelcomeData) => {
   globals.muted = data.muted;
   globals.settings = data.settings as Settings;
   globals.friends = data.friends;
+  globals.randomTableName = data.randomTableName;
   globals.shuttingDown = data.shuttingDown;
   globals.maintenanceMode = data.maintenanceMode;
 
@@ -289,6 +292,7 @@ commands.set('welcome', (data: WelcomeData) => {
   // If we are currently in an ongoing game or are reconnecting to a shared replay,
   // then do not automatically go into another replay
   if (data.atOngoingTable) {
+    trimReplaySuffixFromURL();
     return;
   }
 
@@ -328,7 +332,7 @@ commands.set('welcome', (data: WelcomeData) => {
       || window.location.pathname === '/dev/create-table'
   ) {
     const urlParams = new URLSearchParams(window.location.search);
-    const name = urlParams.get('name') ?? globals.randomName;
+    const name = urlParams.get('name') ?? globals.randomTableName;
     const variantName = urlParams.get('variantName') ?? DEFAULT_VARIANT_NAME;
     const timed = urlParams.get('timed') === 'true';
     const timeBaseString = urlParams.get('timeBase') ?? '120';

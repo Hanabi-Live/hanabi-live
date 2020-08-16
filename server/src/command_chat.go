@@ -122,6 +122,7 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Lobby messages go to everyone
 	if !d.OnlyDiscord {
+		sessionsMutex.RLock()
 		for _, s2 := range sessions {
 			s2.Emit("chat", &ChatMessage{
 				Msg:      d.Msg,
@@ -132,6 +133,7 @@ func commandChat(s *Session, d *CommandData) {
 				Room:     d.Room,
 			})
 		}
+		sessionsMutex.RUnlock()
 	}
 
 	// Don't send Discord messages that we are already replicating
@@ -178,7 +180,7 @@ func commandChatTable(s *Session, d *CommandData) {
 		tableID = v
 	}
 
-	t, exists := getTableAndLock(s, tableID, d.NoLock)
+	t, exists := getTableAndLock(s, tableID, !d.NoLock)
 	if !exists {
 		return
 	}

@@ -45,12 +45,14 @@ func commandChatPM(s *Session, d *CommandData) {
 
 	// Validate that the recipient is online
 	var recipientSession *Session
+	sessionsMutex.RLock()
 	for _, s2 := range sessions {
 		if normalizeString(s2.Username()) == normalizedUsername {
 			recipientSession = s2
 			break
 		}
 	}
+	sessionsMutex.RUnlock()
 	if recipientSession == nil {
 		s.Warning("User \"" + d.Recipient + "\" is not currently online.")
 		return

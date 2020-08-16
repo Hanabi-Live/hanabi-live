@@ -88,7 +88,7 @@ func websocketDisconnect2(s *Session) {
 			strconv.FormatUint(spectatingTableID, 10) + " since they disconnected.")
 
 		// Add them to the disconnected spectators map
-		// (so that they will be automatically reconnected to the game when/if they reconnect)
+		// (so that they will be automatically reconnected to the game if/when they reconnect)
 		t.DisconSpectators[s.UserID()] = struct{}{}
 
 		commandTableUnattend(s, &CommandData{ // Manual invocation

@@ -192,11 +192,13 @@ func debugPrint() {
 	if len(sessions) == 0 {
 		logger.Debug("    [no users]")
 	}
+	sessionsMutex.RLock()
 	for i, s2 := range sessions { // This is a map[int]*Session
 		logger.Debug("    User ID: " + strconv.Itoa(i) + ", " +
 			"Username: " + s2.Username() + ", " +
 			"Status: " + strconv.Itoa(s2.Status()))
 	}
+	sessionsMutex.RUnlock()
 	logger.Debug("---------------------------------------------------------------")
 }
 

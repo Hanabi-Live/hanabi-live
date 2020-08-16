@@ -22,7 +22,7 @@ export class Globals {
   username: string = '';
   totalGames: number = 0;
   muted: boolean = false;
-  randomName: string = '';
+  randomTableName: string = '';
   settings: Settings = new Settings();
   // (contains the settings for the "Settings" tooltip and the "Create Game" tooltip)
   friends: string[] = [];

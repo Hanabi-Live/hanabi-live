@@ -157,10 +157,12 @@ func shutdownImmediate() {
 
 	waitForAllWebSocketCommandsToFinish()
 
+	sessionsMutex.RLock()
 	for _, s := range sessions {
 		s.Error("The server is going down for scheduled maintenance. " +
 			"The server might be down for a while; please see the Discord server for more specific updates.")
 	}
+	sessionsMutex.RUnlock()
 
 	msg := "The server successfully shut down at: " + getCurrentTimestamp()
 	chatServerSend(msg, "lobby")

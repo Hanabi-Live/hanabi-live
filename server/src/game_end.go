@@ -177,9 +177,11 @@ func (g *Game) WriteDatabase() error {
 			Value:  action.Value,
 		})
 	}
-	if err := models.GameActions.BulkInsert(gameActionRows); err != nil {
-		logger.Error("Failed to insert the game action rows:", err)
-		return err
+	if len(gameActionRows) > 0 {
+		if err := models.GameActions.BulkInsert(gameActionRows); err != nil {
+			logger.Error("Failed to insert the game action rows:", err)
+			return err
+		}
 	}
 
 	// Next, we insert rows for each note
@@ -200,10 +202,12 @@ func (g *Game) WriteDatabase() error {
 			})
 		}
 	}
-	if err := models.GameParticipantNotes.BulkInsert(gameParticipantNotesRows); err != nil {
-		logger.Error("Failed to insert the game participants notes rows:", err)
-		// Do not return on failed note insertion,
-		// since it should not affect subsequent operations
+	if len(gameParticipantNotesRows) > 0 {
+		if err := models.GameParticipantNotes.BulkInsert(gameParticipantNotesRows); err != nil {
+			logger.Error("Failed to insert the game participants notes rows:", err)
+			// Do not return on failed note insertion,
+			// since it should not affect subsequent operations
+		}
 	}
 
 	// Next, we insert rows for each chat message (if any)
@@ -215,10 +219,12 @@ func (g *Game) WriteDatabase() error {
 			Room:    t.GetRoomName(),
 		})
 	}
-	if err := models.ChatLog.BulkInsert(chatLogRows); err != nil {
-		logger.Error("Failed to insert the chat message rows:", err)
-		// Do not return on failed chat insertion,
-		// since it should not affect subsequent operations
+	if len(chatLogRows) > 0 {
+		if err := models.ChatLog.BulkInsert(chatLogRows); err != nil {
+			logger.Error("Failed to insert the chat message rows:", err)
+			// Do not return on failed chat insertion,
+			// since it should not affect subsequent operations
+		}
 	}
 
 	// Next, we insert rows for each tag (if any)
@@ -230,10 +236,12 @@ func (g *Game) WriteDatabase() error {
 			Tag:    tag,
 		})
 	}
-	if err := models.GameTags.BulkInsert(gameTagsRows); err != nil {
-		logger.Error("Failed to insert the tag rows:", err)
-		// Do not return on failed tag insertion,
-		// since it should not affect subsequent operations
+	if len(gameTagsRows) > 0 {
+		if err := models.GameTags.BulkInsert(gameTagsRows); err != nil {
+			logger.Error("Failed to insert the tag rows:", err)
+			// Do not return on failed tag insertion,
+			// since it should not affect subsequent operations
+		}
 	}
 
 	// We also need to update stats in the database, but that can be done in the background

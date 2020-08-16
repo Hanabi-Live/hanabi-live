@@ -11,6 +11,15 @@ import (
 	melody "gopkg.in/olahol/melody.v1"
 )
 
+type WebsocketConnectData struct {
+	PlayingInOngoingGame        bool
+	PlayingInOngoingGameTableID uint64
+	PlayingInOngoingGameIndex   int
+	SpectatingTable             bool
+	SpectatingTableID           uint64
+	Friends                     []string
+}
+
 // websocketConnect is fired when a new Melody WebSocket session is established
 // This is the third step of logging in; users will only get here if authentication was successful
 func websocketConnect(ms *melody.Session) {
@@ -20,14 +29,13 @@ func websocketConnect(ms *melody.Session) {
 	// We only want one computer to connect to one user at a time
 	// Use a mutex to prevent race conditions
 	sessionsMutex.Lock()
-	defer sessionsMutex.Unlock()
 
 	// Disconnect any existing connections with this username
 	if s2, ok := sessions[s.UserID()]; ok {
 		logger.Info("Closing existing connection for user \"" + s.Username() + "\".")
 		s2.Error("You have logged on from somewhere else, so you have been disconnected here.")
 		if err := s2.Close(); err != nil {
-			logger.Info("Attempted to manually close a WebSocket connection, but it failed.")
+			logger.Error("Failed to manually close a WebSocket connection.")
 		} else {
 			logger.Info("Successfully terminated a WebSocket connection.")
 		}
@@ -40,17 +48,46 @@ func websocketConnect(ms *melody.Session) {
 
 	// Add the connection to a session map so that we can keep track of all of the connections
 	sessions[s.UserID()] = s
+
+	// Unlock now instead of using "defer sessionsMutex.Unlock()" as an optimization
+	// (the database calls below can be slow)
+	sessionsMutex.Unlock()
+
 	logger.Info("User \""+s.Username()+"\" connected;", len(sessions), "user(s) now connected.")
 
 	// They have successfully logged in
 	// Now, gather some additional information
+	var data *WebsocketConnectData
+	if v, success := websocketConnectWelcomeMessage(s); !success {
+		return
+	} else {
+		data = v
+	}
+	websocketConnectUserList(s)
+	websocketConnectTableList(s)
+	websocketConnectChat(s)
+	websocketConnectHistory(s)
+	websocketConnectHistoryFriends(s, data.Friends)
+
+	// Alert everyone that a new user has logged in
+	// (note that we intentionally send users a message about themselves)
+	notifyAllUser(s)
+
+	websocketConnectRejoinOngoingGame(s, data)
+	websocketConnectRespectate(s, data)
+}
+
+func websocketConnectWelcomeMessage(s *Session) (*WebsocketConnectData, bool) {
+	data := &WebsocketConnectData{
+		Friends: make([]string, 0),
+	}
 
 	// Get their total number of games played
 	var totalGames int
 	if v, err := models.Games.GetUserNumGames(s.UserID(), true); err != nil {
 		logger.Error("Failed to get the number of games played for user \""+s.Username()+"\":", err)
 		s.Error(DefaultErrorMsg)
-		return
+		return nil, false
 	} else {
 		totalGames = v
 	}
@@ -60,19 +97,18 @@ func websocketConnect(ms *melody.Session) {
 	if v, err := models.UserSettings.Get(s.UserID()); err != nil {
 		logger.Error("Failed to get the settings for user \""+s.Username()+"\":", err)
 		s.Error(DefaultErrorMsg)
-		return
+		return nil, false
 	} else {
 		settings = v
 	}
 
 	// Get their friends from the database
-	var friends []string
 	if v, err := models.UserFriends.GetAllUsernames(s.UserID()); err != nil {
 		logger.Error("Failed to get the friends for user \""+s.Username()+"\":", err)
 		s.Error(DefaultErrorMsg)
-		return
+		return nil, false
 	} else {
-		friends = v
+		data.Friends = v
 	}
 
 	// Get their join date from the database
@@ -80,17 +116,13 @@ func websocketConnect(ms *melody.Session) {
 	if v, err := models.Users.GetDatetimeCreated(s.UserID()); err != nil {
 		logger.Error("Failed to get the join date for user \""+s.Username()+"\":", err)
 		s.Error(DefaultErrorMsg)
-		return
+		return nil, false
 	} else {
 		datetimeCreated = v
 	}
 	firstTimeUser := time.Since(datetimeCreated) < 10*time.Second
 
 	// Check to see if they are currently playing in an ongoing game
-	playingInOngoingGame := false
-	var playingInOngoingGameTableID uint64
-	var playingInOngoingGameIndex int
-
 	tablesMutex.RLock()
 	for _, t := range tables {
 		if t.Replay {
@@ -102,9 +134,9 @@ func websocketConnect(ms *melody.Session) {
 				continue
 			}
 
-			playingInOngoingGame = true
-			playingInOngoingGameTableID = t.ID
-			playingInOngoingGameIndex = i
+			data.PlayingInOngoingGame = true
+			data.PlayingInOngoingGameTableID = t.ID
+			data.PlayingInOngoingGameIndex = i
 			break
 		}
 	}
@@ -112,10 +144,7 @@ func websocketConnect(ms *melody.Session) {
 
 	// Check to see if they are were spectating in a shared replay before they disconnected
 	// (games that they are playing in take priority over shared replays)
-	spectatingTable := false
-	var spectatingTableID uint64
-
-	if !playingInOngoingGame {
+	if !data.PlayingInOngoingGame {
 		tablesMutex.RLock()
 		for _, t := range tables {
 			if !t.Replay {
@@ -127,8 +156,8 @@ func websocketConnect(ms *melody.Session) {
 					continue
 				}
 
-				spectatingTable = true
-				spectatingTableID = t.ID
+				data.SpectatingTable = true
+				data.SpectatingTableID = t.ID
 				break
 			}
 		}
@@ -146,6 +175,7 @@ func websocketConnect(ms *melody.Session) {
 		Settings             Settings  `json:"settings"`
 		Friends              []string  `json:"friends"`
 		AtOngoingTable       bool      `json:"atOngoingTable"`
+		RandomTableName      string    `json:"randomTableName"`
 		ShuttingDown         bool      `json:"shuttingDown"`
 		DatetimeShutdownInit time.Time `json:"datetimeShutdownInit"`
 		MaintenanceMode      bool      `json:"maintenanceMode"`
@@ -169,10 +199,14 @@ func websocketConnect(ms *melody.Session) {
 		// The various client settings are stored server-side so that users can seamlessly
 		// transition between computers
 		Settings: settings,
-		Friends:  friends,
+		Friends:  data.Friends,
 
 		// Warn the user if they rejoining an ongoing game or shared replay
-		AtOngoingTable: playingInOngoingGameTableID != 0 || spectatingTableID != 0,
+		AtOngoingTable: data.PlayingInOngoingGame || data.SpectatingTable,
+
+		// Provide them with a random table name
+		// (which will be used by default on the first table that they create)
+		RandomTableName: getName(),
 
 		// Also let the user know if the server is currently restarting or shutting down
 		ShuttingDown:         shuttingDown.IsSet(),
@@ -180,26 +214,27 @@ func websocketConnect(ms *melody.Session) {
 		MaintenanceMode:      maintenanceMode.IsSet(),
 	})
 
-	// Send them a random name
-	commandGetName(s, nil) // Manual invocation
+	return data, true
+}
 
-	// Alert everyone that a new user has logged in
-	// (note that we intentionally send users a message about themselves)
-	notifyAllUser(s)
-
-	// Send a "userList" message
-	// (this is much more performant than sending an individual "user" message for every user)
+// websocketConnectUserList sends a "userList" message
+// (this is much more performant than sending an individual "user" message for every user)
+func websocketConnectUserList(s *Session) {
 	userMessageList := make([]*UserMessage, 0)
+	sessionsMutex.RLock()
 	for _, s2 := range sessions {
 		// Skip sending a message about ourselves since we already sent that above
 		if s2.UserID() != s.UserID() {
 			userMessageList = append(userMessageList, makeUserMessage(s2))
 		}
 	}
+	sessionsMutex.RUnlock()
 	s.Emit("userList", userMessageList)
+}
 
-	// Send a "tableList" message
-	// (this is much more performant than sending an individual "table" message for every table)
+// websocketConnectTableList sends a "tableList" message
+// (this is much more performant than sending an individual "table" message for every table)
+func websocketConnectTableList(s *Session) {
 	tableMessageList := make([]*TableMessage, 0)
 	tablesMutex.RLock()
 	for _, t := range tables {
@@ -209,7 +244,9 @@ func websocketConnect(ms *melody.Session) {
 	}
 	tablesMutex.RUnlock()
 	s.Emit("tableList", tableMessageList)
+}
 
+func websocketConnectChat(s *Session) {
 	// Send the past 50 chat messages from the lobby
 	if !chatSendPastFromDatabase(s, "lobby", 50) {
 		return
@@ -254,9 +291,11 @@ func websocketConnect(ms *melody.Session) {
 			}
 		}
 	}
+}
 
-	// Send the user's game history
-	// (but only the last 10 games to prevent wasted bandwidth)
+// websocketConnectHistory sends the user's game history
+// (but only the last 10 games to prevent wasted bandwidth)
+func websocketConnectHistory(s *Session) {
 	var gameIDs []int
 	if v, err := models.Games.GetGameIDsUser(s.UserID(), 0, 10); err != nil {
 		logger.Error("Failed to get the game IDs for user \""+s.Username()+"\":", err)
@@ -274,69 +313,77 @@ func websocketConnect(ms *melody.Session) {
 		gameHistoryList = v
 	}
 	s.Emit("gameHistory", &gameHistoryList)
+}
 
-	// Send the game history of the user's friends
-	// (but only the last 10 games to prevent wasted bandwidth)
-	if len(friends) > 0 {
-		var gameIDs []int
-		if v, err := models.Games.GetGameIDsFriends(s.UserID(), s.Friends(), 0, 10); err != nil {
-			logger.Error("Failed to get the friend game IDs for user \""+s.Username()+"\":", err)
-			s.Error(DefaultErrorMsg)
-			return
-		} else {
-			gameIDs = v
-		}
-		var gameHistoryFriendsList []*GameHistory
-		if v, err := models.Games.GetHistory(gameIDs); err != nil {
-			logger.Error("Failed to get the history:", err)
-			s.Error(DefaultErrorMsg)
-			return
-		} else {
-			gameHistoryFriendsList = v
-		}
-		s.Emit("gameHistoryFriends", &gameHistoryFriendsList)
-	}
-
-	// If they are playing in an ongoing game, join it
-	if playingInOngoingGame {
-		t, exists := getTableAndLock(s, playingInOngoingGameTableID, true)
-		if !exists {
-			return
-		}
-		defer t.Mutex.Unlock()
-
-		logger.Info("Automatically reattending player \"" + s.Username() + "\" " +
-			"to table " + strconv.FormatUint(playingInOngoingGameTableID, 10) + ".")
-
-		// Update the player object with the new socket
-		t.Players[playingInOngoingGameIndex].Session = s
-
-		commandTableReattend(s, &CommandData{ // Manual invocation
-			TableID: playingInOngoingGameTableID,
-			NoLock:  true,
-		})
+// websocketConnectHistoryFriends sends the game history of the user's friends
+// (but only the last 10 games to prevent wasted bandwidth)
+func websocketConnectHistoryFriends(s *Session, friends []string) {
+	if len(friends) == 0 {
 		return
 	}
 
-	// If they were spectating a shared replay, join it
-	if spectatingTable {
-		t, exists := getTableAndLock(s, spectatingTableID, true)
-		if !exists {
-			return
-		}
-		defer t.Mutex.Unlock()
+	var gameIDs []int
+	if v, err := models.Games.GetGameIDsFriends(s.UserID(), s.Friends(), 0, 10); err != nil {
+		logger.Error("Failed to get the friend game IDs for user \""+s.Username()+"\":", err)
+		s.Error(DefaultErrorMsg)
+		return
+	} else {
+		gameIDs = v
+	}
+	var gameHistoryFriendsList []*GameHistory
+	if v, err := models.Games.GetHistory(gameIDs); err != nil {
+		logger.Error("Failed to get the history:", err)
+		s.Error(DefaultErrorMsg)
+		return
+	} else {
+		gameHistoryFriendsList = v
+	}
+	s.Emit("gameHistoryFriends", &gameHistoryFriendsList)
+}
 
-		logger.Info("Automatically re-spectating player " + "\"" + s.Username() + "\" " +
-			"to table " + strconv.FormatUint(spectatingTableID, 10) + ".")
-
-		// Mark that this player is no longer disconnected
-		delete(t.DisconSpectators, s.UserID())
-
-		commandTableSpectate(s, &CommandData{ // Manual invocation
-			TableID:              spectatingTableID,
-			ShadowingPlayerIndex: -1,
-			NoLock:               true,
-		})
+func websocketConnectRejoinOngoingGame(s *Session, data *WebsocketConnectData) {
+	if !data.PlayingInOngoingGame {
 		return
 	}
+
+	t, exists := getTableAndLock(s, data.PlayingInOngoingGameTableID, true)
+	if !exists {
+		return
+	}
+	defer t.Mutex.Unlock()
+
+	logger.Info("Automatically reattending player \"" + s.Username() + "\" " +
+		"to table " + strconv.FormatUint(data.PlayingInOngoingGameTableID, 10) + ".")
+
+	// Update the player object with the new socket
+	t.Players[data.PlayingInOngoingGameIndex].Session = s
+
+	commandTableReattend(s, &CommandData{ // Manual invocation
+		TableID: data.PlayingInOngoingGameTableID,
+		NoLock:  true,
+	})
+}
+
+func websocketConnectRespectate(s *Session, data *WebsocketConnectData) {
+	if data.PlayingInOngoingGame || !data.SpectatingTable {
+		return
+	}
+
+	t, exists := getTableAndLock(s, data.SpectatingTableID, true)
+	if !exists {
+		return
+	}
+	defer t.Mutex.Unlock()
+
+	logger.Info("Automatically re-spectating player " + "\"" + s.Username() + "\" " +
+		"to table " + strconv.FormatUint(data.SpectatingTableID, 10) + ".")
+
+	// Mark that this player is no longer disconnected
+	delete(t.DisconSpectators, s.UserID())
+
+	commandTableSpectate(s, &CommandData{ // Manual invocation
+		TableID:              data.SpectatingTableID,
+		ShadowingPlayerIndex: -1,
+		NoLock:               true,
+	})
 }

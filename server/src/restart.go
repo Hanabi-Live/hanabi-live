@@ -33,11 +33,13 @@ func restart() {
 	}
 	logger.Info("Finished writing all tables to disk.")
 
+	sessionsMutex.RLock()
 	for _, s := range sessions {
 		s.Error("The server is going down momentarily to load a new version of the code. " +
 			"If you are currently playing a game, all of the progress should be saved. " +
 			"Please wait a few seconds and then refresh the page.")
 	}
+	sessionsMutex.RUnlock()
 
 	msg := "The server went down for a restart at: " + getCurrentTimestamp()
 	chatServerSend(msg, "lobby")
