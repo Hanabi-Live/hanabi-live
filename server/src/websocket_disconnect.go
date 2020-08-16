@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strconv"
+
 	melody "gopkg.in/olahol/melody.v1"
 )
 
@@ -38,39 +40,62 @@ func websocketDisconnect2(s *Session) {
 	delete(sessions, s.UserID())
 
 	// Look for the disconnecting player in all of the tables
+	ongoingGameTableIDs := make([]uint64, 0)
+	preGameTableIDs := make([]uint64, 0)
+	spectatingTableIDs := make([]uint64, 0)
+
+	tablesMutex.RLock()
 	for _, t := range tables {
 		// They could be one of the players (1/2)
 		if !t.Replay && t.GetPlayerIndexFromID(s.UserID()) != -1 {
 			if t.Running {
-				logger.Info(t.GetName() + "Unattending player \"" + s.Username() + "\" " +
-					"since they disconnected.")
-				commandTableUnattend(s, &CommandData{ // Manual invocation
-					TableID: t.ID,
-				})
+				ongoingGameTableIDs = append(ongoingGameTableIDs, t.ID)
 			} else {
-				logger.Info(t.GetName() + "Ejecting player \"" + s.Username() + "\" " +
-					"from an unstarted game since they disconnected.")
-				commandTableLeave(s, &CommandData{ // Manual invocation
-					TableID: t.ID,
-				})
+				preGameTableIDs = append(preGameTableIDs, t.ID)
 			}
 		}
 
 		// They could be one of the spectators (2/2)
 		if t.GetSpectatorIndexFromID(s.UserID()) != -1 {
-			logger.Info(t.GetName() + "Ejecting spectator \"" + s.Username() + "\" " +
-				"since they disconnected.")
-
-			// Add them to the disconnected spectators map
-			// (so that they will be automatically reconnected to the game when/if they reconnect)
-			t.Mutex.Lock()
-			t.DisconSpectators[s.UserID()] = struct{}{}
-			t.Mutex.Unlock()
-
-			commandTableUnattend(s, &CommandData{ // Manual invocation
-				TableID: t.ID,
-			})
+			spectatingTableIDs = append(spectatingTableIDs, t.ID)
 		}
+	}
+	tablesMutex.RUnlock()
+
+	for _, ongoingGameTableID := range ongoingGameTableIDs {
+		logger.Info("Unattending player \"" + s.Username() + "\" from ongoing table " +
+			strconv.FormatUint(ongoingGameTableID, 10) + " since they disconnected.")
+		commandTableUnattend(s, &CommandData{ // Manual invocation
+			TableID: ongoingGameTableID,
+		})
+	}
+
+	for _, preGameTableID := range preGameTableIDs {
+		logger.Info("Ejecting player \"" + s.Username() + "\" from unstarted table " +
+			strconv.FormatUint(preGameTableID, 10) + " since they disconnected.")
+		commandTableLeave(s, &CommandData{ // Manual invocation
+			TableID: preGameTableID,
+		})
+	}
+
+	for _, spectatingTableID := range spectatingTableIDs {
+		t, exists := getTableAndLock(s, spectatingTableID, true)
+		if !exists {
+			continue
+		}
+
+		logger.Info("Ejecting spectator \"" + s.Username() + "\" from table " +
+			strconv.FormatUint(spectatingTableID, 10) + " since they disconnected.")
+
+		// Add them to the disconnected spectators map
+		// (so that they will be automatically reconnected to the game when/if they reconnect)
+		t.DisconSpectators[s.UserID()] = struct{}{}
+
+		commandTableUnattend(s, &CommandData{ // Manual invocation
+			TableID: t.ID,
+			NoLock:  true,
+		})
+		t.Mutex.Unlock()
 	}
 
 	// Alert everyone that a user has logged out

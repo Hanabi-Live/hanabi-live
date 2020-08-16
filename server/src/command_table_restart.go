@@ -155,18 +155,16 @@ func commandTableRestart(s *Session, d *CommandData) {
 	// On the server side, all of the spectators will still be in the game,
 	// so manually disconnect everybody
 	for _, s2 := range playerSessions {
-		t.Mutex.Unlock()
 		commandTableUnattend(s2, &CommandData{ // Manual invocation
 			TableID: t.ID,
+			NoLock:  true,
 		})
-		t.Mutex.Lock()
 	}
 	for _, s2 := range spectatorSessions {
-		t.Mutex.Unlock()
 		commandTableUnattend(s2, &CommandData{ // Manual invocation
 			TableID: t.ID,
+			NoLock:  true,
 		})
-		t.Mutex.Lock()
 	}
 
 	newTableName := ""
@@ -198,12 +196,14 @@ func commandTableRestart(s *Session, d *CommandData) {
 
 	// Find the table ID for the new game
 	var t2 *Table
+	tablesMutex.RLock()
 	for _, existingTable := range tables {
 		if existingTable.Name == newTableName {
 			t2 = existingTable
 			break
 		}
 	}
+	tablesMutex.RUnlock()
 	if t2 == nil {
 		logger.Error("Failed to find the newly created table of \"" + newTableName + "\" " +
 			"in the table map.")
@@ -221,11 +221,10 @@ func commandTableRestart(s *Session, d *CommandData) {
 			// The creator of the game does not need to join
 			continue
 		}
-		t.Mutex.Unlock()
 		commandTableJoin(s2, &CommandData{ // Manual invocation
 			TableID: t2.ID,
+			NoLock:  true,
 		})
-		t.Mutex.Lock()
 	}
 
 	// Copy over the old chat
@@ -244,6 +243,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 	// Emulate the game owner clicking on the "Start Game" button
 	commandTableStart(s, &CommandData{ // Manual invocation
 		TableID: t2.ID,
+		NoLock:  true,
 	})
 
 	// Automatically join any other spectators that were watching
@@ -251,6 +251,7 @@ func commandTableRestart(s *Session, d *CommandData) {
 		commandTableSpectate(s2, &CommandData{ // Manual invocation
 			TableID:              t2.ID,
 			ShadowingPlayerIndex: -1,
+			NoLock:               true,
 		})
 	}
 

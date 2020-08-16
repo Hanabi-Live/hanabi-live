@@ -12,31 +12,32 @@ var (
 )
 
 func debugPrint() {
+	tablesMutex.RLock()
+	defer tablesMutex.RUnlock()
+
 	logger.Debug("---------------------------------------------------------------")
 	logger.Debug("Current total tables:", len(tables))
 
 	numUnstarted := 0
+	numRunning := 0
+	numReplays := 0
+
 	for _, t := range tables { // This is a map[int]*Table
 		if !t.Running {
 			numUnstarted++
 		}
-	}
-	logger.Debug("Current unstarted tables:", numUnstarted)
 
-	numRunning := 0
-	for _, t := range tables { // This is a map[int]*Table
 		if t.Running && !t.Replay {
 			numRunning++
 		}
-	}
-	logger.Debug("Current ongoing tables:", numRunning)
 
-	numReplays := 0
-	for _, t := range tables { // This is a map[int]*Table
 		if t.Replay {
 			numReplays++
 		}
 	}
+
+	logger.Debug("Current unstarted tables:", numUnstarted)
+	logger.Debug("Current ongoing tables:", numRunning)
 	logger.Debug("Current replays:", numReplays)
 
 	logger.Debug("---------------------------------------------------------------")
@@ -47,6 +48,8 @@ func debugPrint() {
 	if len(tables) == 0 {
 		logger.Debug("[no current tables]")
 	}
+
+	tablesMutex.RLock()
 	for tableID, t := range tables { // This is a map[int]*Table
 		logger.Debug(strconv.FormatUint(tableID, 10) + " - " + t.Name)
 		logger.Debug("\n")

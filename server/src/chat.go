@@ -38,6 +38,7 @@ func chatServerSend(msg string, room string) {
 		Msg:    msg,
 		Room:   room,
 		Server: true,
+		NoLock: true,
 	})
 }
 
@@ -45,8 +46,16 @@ func chatServerSend(msg string, room string) {
 // whether they are in the lobby or in the middle of a game
 func chatServerSendAll(msg string) {
 	chatServerSend(msg, "lobby")
+
+	roomNames := make([]string, 0)
+	tablesMutex.RLock()
 	for _, t := range tables {
-		chatServerSend(msg, t.GetRoomName())
+		roomNames = append(roomNames, t.GetRoomName())
+	}
+	tablesMutex.RUnlock()
+
+	for _, roomName := range roomNames {
+		chatServerSend(msg, roomName)
 	}
 }
 

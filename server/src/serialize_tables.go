@@ -14,6 +14,9 @@ import (
 
 // serializeTables saves any ongoing tables to disk as JSON files so that they can be restored later
 func serializeTables() bool {
+	tablesMutex.RLock()
+	defer tablesMutex.RUnlock()
+
 	for _, t := range tables {
 		// Only serialize ongoing games
 		if !t.Running || t.Replay {

@@ -37,7 +37,7 @@ func httpLocalhostTerminate(c *gin.Context) {
 	}
 
 	// Get the corresponding table
-	t, exists := getTableAndLock(nil, tableID, false)
+	t, exists := getTableAndLock(nil, tableID, true)
 	if !exists {
 		msg := "Table \"" + strconv.FormatUint(tableID, 10) + "\" does not exist.\n"
 		c.String(http.StatusOK, msg)

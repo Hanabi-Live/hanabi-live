@@ -227,6 +227,7 @@ func commandAction(s *Session, d *CommandData) {
 			commandPause(nps, &CommandData{ // Manual invocation
 				TableID: t.ID,
 				Setting: "pause",
+				NoLock:  true,
 			})
 		}
 	}

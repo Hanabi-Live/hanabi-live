@@ -42,25 +42,49 @@ func shutdownXMinutesLeft(minutesLeft int) {
 		return
 	}
 
-	// Automatically end all unstarted games,
+	// Automatically end all unstarted tables,
 	// since they will almost certainly not have time to finish
 	if minutesLeft == 5 {
+		unstartedTableIDs := make([]uint64, 0)
+
+		tablesMutex.RLock()
 		for _, t := range tables {
 			if !t.Running {
-				s := t.GetOwnerSession()
-				commandTableLeave(s, &CommandData{ // Manual invocation
-					TableID: t.ID,
-				})
+				unstartedTableIDs = append(unstartedTableIDs, t.ID)
 			}
+		}
+		tablesMutex.RUnlock()
+
+		for _, unstartedTableID := range unstartedTableIDs {
+			t, exists := getTableAndLock(nil, unstartedTableID, true)
+			if !exists {
+				continue
+			}
+
+			s := t.GetOwnerSession()
+			commandTableLeave(s, &CommandData{ // Manual invocation
+				TableID: t.ID,
+				NoLock:  true,
+			})
+			t.Mutex.Unlock()
 		}
 	}
 
-	// Send a warning message to the lobby and to the people still playing
+	// Send a warning message to the lobby
 	msg := "The server will shutdown in " + strconv.Itoa(minutesLeft) + " minutes."
 	chatServerSend(msg, "lobby")
-	msg += " Finish your game soon or it will be automatically terminated!"
+
+	// Send a warning message to the people still playing
+	roomNames := make([]string, 0)
+	tablesMutex.RLock()
 	for _, t := range tables {
-		chatServerSend(msg, t.GetRoomName())
+		roomNames = append(roomNames, t.GetRoomName())
+	}
+	tablesMutex.RUnlock()
+
+	msg += " Finish your game soon or it will be automatically terminated!"
+	for _, roomName := range roomNames {
+		chatServerSend(msg, roomName)
 	}
 }
 
@@ -74,16 +98,30 @@ func shutdownWait() {
 		if countActiveTables() > 0 && time.Since(datetimeShutdownInit) >= ShutdownTimeout {
 			// It has been a long time since the server shutdown/restart was initiated,
 			// so automatically terminate any remaining ongoing games
+			tableIDsToTerminate := make([]uint64, 0)
+			tablesMutex.RLock()
 			for _, t := range tables {
 				if t.Running && !t.Replay {
-					s := t.GetOwnerSession()
-					commandAction(s, &CommandData{ // Manual invocation
-						TableID: t.ID,
-						Type:    ActionTypeEndGame,
-						Target:  -1,
-						Value:   EndConditionTerminated,
-					})
+					tableIDsToTerminate = append(tableIDsToTerminate, t.ID)
 				}
+			}
+			tablesMutex.RUnlock()
+
+			for _, tableIDToTerminate := range tableIDsToTerminate {
+				t, exists := getTableAndLock(nil, tableIDToTerminate, true)
+				if !exists {
+					continue
+				}
+
+				s := t.GetOwnerSession()
+				commandAction(s, &CommandData{ // Manual invocation
+					TableID: t.ID,
+					Type:    ActionTypeEndGame,
+					Target:  -1,
+					Value:   EndConditionTerminated,
+					NoLock:  true,
+				})
+				t.Mutex.Unlock()
 			}
 		}
 
@@ -101,14 +139,14 @@ func shutdownWait() {
 }
 
 func countActiveTables() int {
+	tablesMutex.RLock()
+	defer tablesMutex.RUnlock()
+
 	numTables := 0
 	for _, t := range tables {
-		if !t.Running || // Pre-game tables that have not started yet
-			t.Replay { // Solo replays and shared replays
-
-			continue
+		if t.Running && !t.Replay {
+			numTables++
 		}
-		numTables++
 	}
 
 	return numTables

@@ -110,6 +110,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	// Start the (fake) game
 	commandTableStart(t.Players[0].Session, &CommandData{ // Manual invocation
 		TableID: t.ID,
+		NoLock:  true,
 	})
 	g := t.Game
 	if g == nil {
@@ -156,8 +157,11 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	}
 
 	// Join the user to the new replay
-	d.TableID = t.ID
-	commandTableSpectate(s, d) // Manual invocation
+	commandTableSpectate(s, &CommandData{ // Manual invocation
+		TableID:              t.ID,
+		ShadowingPlayerIndex: -1,
+		NoLock:               true,
+	})
 	t.Owner = s.UserID()
 
 	// Start the idle timeout
@@ -552,6 +556,7 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 			Type:    action.Type,
 			Target:  action.Target,
 			Value:   action.Value,
+			NoLock:  true,
 		})
 
 		if g.InvalidActionOccurred {

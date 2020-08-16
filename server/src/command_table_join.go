@@ -160,6 +160,7 @@ func commandTableJoin(s *Session, d *CommandData) {
 
 				commandTableStart(p2.Session, &CommandData{ // Manual invocation
 					TableID: t.ID,
+					NoLock:  true,
 				})
 				return
 			}

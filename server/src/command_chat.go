@@ -98,7 +98,7 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Handle in-game chat in a different function; the rest of this function will be for lobby chat
 	if strings.HasPrefix(d.Room, "table") {
-		commandChatTable(s, d) // Manual invocation
+		commandChatTable(s, d)
 		return
 	}
 

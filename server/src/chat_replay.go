@@ -8,7 +8,7 @@ import (
 // /suggest
 func chatSuggest(s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
+		chatServerSend(ChatCommandNotInGameFail, "lobby")
 		return
 	}
 
@@ -42,7 +42,7 @@ func chatSuggest(s *Session, d *CommandData, t *Table) {
 // /tags
 func chatTags(s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
+		chatServerSend(ChatCommandNotInGameFail, "lobby")
 		return
 	}
 

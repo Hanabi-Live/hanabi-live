@@ -90,11 +90,10 @@ func commandTableLeave(s *Session, d *CommandData) {
 				s2 = newFakeSession(p.ID, p.Name)
 				logger.Info("Created a new fake session in the \"commandTableLeave()\" function.")
 			}
-			t.Mutex.Unlock()
 			commandTableLeave(s2, &CommandData{ // Manual invocation
 				TableID: t.ID,
+				NoLock:  true,
 			})
-			t.Mutex.Lock()
 		}
 		return
 	}

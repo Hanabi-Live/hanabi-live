@@ -87,29 +87,36 @@ func websocketConnect(ms *melody.Session) {
 	firstTimeUser := time.Since(datetimeCreated) < 10*time.Second
 
 	// Check to see if they are currently playing in an ongoing game
-	var playingInOngoingGameID uint64
+	playingInOngoingGame := false
+	var playingInOngoingGameTableID uint64
+	var playingInOngoingGameIndex int
+
+	tablesMutex.RLock()
 	for _, t := range tables {
 		if t.Replay {
 			continue
 		}
 
-		for _, p := range t.Players {
+		for i, p := range t.Players {
 			if p.Name != s.Username() {
 				continue
 			}
 
-			// Update the player object with the new socket
-			p.Session = s
-
-			playingInOngoingGameID = t.ID
+			playingInOngoingGame = true
+			playingInOngoingGameTableID = t.ID
+			playingInOngoingGameIndex = i
 			break
 		}
 	}
+	tablesMutex.RUnlock()
 
 	// Check to see if they are were spectating in a shared replay before they disconnected
 	// (games that they are playing in take priority over shared replays)
-	var spectatingInOngoingReplayID uint64
-	if playingInOngoingGameID == 0 {
+	spectatingTable := false
+	var spectatingTableID uint64
+
+	if !playingInOngoingGame {
+		tablesMutex.RLock()
 		for _, t := range tables {
 			if !t.Replay {
 				continue
@@ -120,13 +127,12 @@ func websocketConnect(ms *melody.Session) {
 					continue
 				}
 
-				// Mark that this player is no longer disconnected
-				delete(t.DisconSpectators, s.UserID())
-
-				spectatingInOngoingReplayID = t.ID
+				spectatingTable = true
+				spectatingTableID = t.ID
 				break
 			}
 		}
+		tablesMutex.RUnlock()
 	}
 
 	// Send an initial message that contains information about who they are and
@@ -166,7 +172,7 @@ func websocketConnect(ms *melody.Session) {
 		Friends:  friends,
 
 		// Warn the user if they rejoining an ongoing game or shared replay
-		AtOngoingTable: playingInOngoingGameID != 0 || spectatingInOngoingReplayID != 0,
+		AtOngoingTable: playingInOngoingGameTableID != 0 || spectatingTableID != 0,
 
 		// Also let the user know if the server is currently restarting or shutting down
 		ShuttingDown:         shuttingDown.IsSet(),
@@ -195,11 +201,13 @@ func websocketConnect(ms *melody.Session) {
 	// Send a "tableList" message
 	// (this is much more performant than sending an individual "table" message for every table)
 	tableMessageList := make([]*TableMessage, 0)
+	tablesMutex.RLock()
 	for _, t := range tables {
 		if t.Visible {
 			tableMessageList = append(tableMessageList, makeTableMessage(s, t))
 		}
 	}
+	tablesMutex.RUnlock()
 	s.Emit("tableList", tableMessageList)
 
 	// Send the past 50 chat messages from the lobby
@@ -290,21 +298,44 @@ func websocketConnect(ms *melody.Session) {
 	}
 
 	// If they are playing in an ongoing game, join it
-	if playingInOngoingGameID != 0 {
+	if playingInOngoingGame {
+		t, exists := getTableAndLock(s, playingInOngoingGameTableID, true)
+		if !exists {
+			return
+		}
+		defer t.Mutex.Unlock()
+
 		logger.Info("Automatically reattending player \"" + s.Username() + "\" " +
-			"to table " + strconv.FormatUint(playingInOngoingGameID, 10) + ".")
+			"to table " + strconv.FormatUint(playingInOngoingGameTableID, 10) + ".")
+
+		// Update the player object with the new socket
+		t.Players[playingInOngoingGameIndex].Session = s
+
 		commandTableReattend(s, &CommandData{ // Manual invocation
-			TableID: playingInOngoingGameID,
+			TableID: playingInOngoingGameTableID,
+			NoLock:  true,
 		})
 		return
 	}
 
-	// If they were spectating an ongoing shared replay, join it
-	if spectatingInOngoingReplayID != 0 {
+	// If they were spectating a shared replay, join it
+	if spectatingTable {
+		t, exists := getTableAndLock(s, spectatingTableID, true)
+		if !exists {
+			return
+		}
+		defer t.Mutex.Unlock()
+
 		logger.Info("Automatically re-spectating player " + "\"" + s.Username() + "\" " +
-			"to table " + strconv.FormatUint(spectatingInOngoingReplayID, 10) + ".")
+			"to table " + strconv.FormatUint(spectatingTableID, 10) + ".")
+
+		// Mark that this player is no longer disconnected
+		delete(t.DisconSpectators, s.UserID())
+
 		commandTableSpectate(s, &CommandData{ // Manual invocation
-			TableID: spectatingInOngoingReplayID,
+			TableID:              spectatingTableID,
+			ShadowingPlayerIndex: -1,
+			NoLock:               true,
 		})
 		return
 	}

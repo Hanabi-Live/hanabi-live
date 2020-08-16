@@ -30,18 +30,32 @@ func commandTableSpectate(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that they are not already spectating a game
+	// Validate that they are not already spectating this table
+	for _, sp := range t.Spectators {
+		if sp.ID == s.UserID() {
+			s.Warning("You are already spectating this table.")
+			return
+		}
+	}
+
+	// Validate that they are not already spectating another table
+	alreadySpectating := false
+	tablesMutex.RLock()
 	for _, t2 := range tables {
 		for _, sp := range t2.Spectators {
 			if sp.ID == s.UserID() {
-				if t2.ID == t.ID {
-					s.Warning("You are already spectating this table.")
-				} else {
-					s.Warning("You are already spectating another table.")
-				}
-				return
+				alreadySpectating = true
+				break
 			}
 		}
+		if alreadySpectating {
+			break
+		}
+	}
+	tablesMutex.RLock()
+	if alreadySpectating {
+		s.Warning("You are already spectating another table.")
+		return
 	}
 
 	// Validate the shadowing player index

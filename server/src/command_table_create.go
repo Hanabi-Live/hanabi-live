@@ -303,10 +303,10 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	// (a "table" message will be sent in the "commandTableJoin" function below)
 
 	// Join the user to the new table
-	d.TableID = t.ID
-	t.Mutex.Unlock()
-	commandTableJoin(s, d) // Manual invocation
-	t.Mutex.Lock()
+	commandTableJoin(s, &CommandData{ // Manual invocation
+		TableID: t.ID,
+		NoLock:  true,
+	})
 
 	// If the server is shutting down / restarting soon, warn the players
 	if shuttingDown.IsSet() {

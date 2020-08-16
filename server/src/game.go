@@ -191,14 +191,13 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 	}
 
 	// End the game
-	t.Mutex.Unlock()
 	commandAction(s, &CommandData{ // Manual invocation
 		TableID: t.ID,
 		Type:    ActionTypeEndGame,
 		Target:  gp.Index,
 		Value:   EndConditionTimeout,
+		NoLock:  true,
 	})
-	t.Mutex.Lock() // We lock it again in case the deferred unlock causes problems
 }
 
 // CheckEnd examines the game state and sets "EndCondition" to the appropriate value, if any

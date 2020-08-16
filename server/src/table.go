@@ -158,11 +158,10 @@ func (t *Table) CheckIdle() {
 			s = newFakeSession(sp.ID, sp.Name)
 			logger.Info("Created a new fake session in the \"CheckIdle()\" function.")
 		}
-		t.Mutex.Unlock()
 		commandTableUnattend(s, &CommandData{ // Manual invocation
 			TableID: t.ID,
+			NoLock:  true,
 		})
-		t.Mutex.Lock()
 	}
 
 	if t.Replay {
@@ -172,7 +171,6 @@ func (t *Table) CheckIdle() {
 	}
 
 	s := t.GetOwnerSession()
-	t.Mutex.Unlock()
 	if t.Running {
 		// We need to end a game that has started
 		// (this will put everyone in a non-shared replay of the idle game)
@@ -181,6 +179,7 @@ func (t *Table) CheckIdle() {
 			Type:    ActionTypeEndGame,
 			Target:  -1,
 			Value:   EndConditionIdleTimeout,
+			NoLock:  true,
 		})
 	} else {
 		// We need to end a game that hasn't started yet
@@ -188,9 +187,9 @@ func (t *Table) CheckIdle() {
 		// (this will send everyone back to the main lobby screen)
 		commandTableLeave(s, &CommandData{ // Manual invocation
 			TableID: t.ID,
+			NoLock:  true,
 		})
 	}
-	t.Mutex.Lock() // We lock it again in case the deferred unlock causes problems
 }
 
 func (t *Table) GetName() string {

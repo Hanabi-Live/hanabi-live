@@ -70,6 +70,9 @@ func (s *Session) Error(message string) {
 }
 
 func (s *Session) GetJoinedTable() *Table {
+	tablesMutex.RLock()
+	defer tablesMutex.RUnlock()
+
 	for _, t := range tables {
 		if t.Replay {
 			continue

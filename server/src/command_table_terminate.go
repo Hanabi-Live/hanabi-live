@@ -52,5 +52,6 @@ func commandTableTerminate(s *Session, d *CommandData) {
 		Type:    ActionTypeEndGame,
 		Target:  i,
 		Value:   EndConditionTerminated,
+		NoLock:  true,
 	})
 }
