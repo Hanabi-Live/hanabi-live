@@ -62,10 +62,8 @@ const calculateHandPossibilities = (
     (arr) => Array.from(arr),
   );
   const remainingCards: number[] = [];
-  const handCards: number[] = [];
   hands.forEach((otherHand) => otherHand.forEach((o) => {
     const deckCard = deck[o];
-    handCards.push(o);
     // If card is not fully known then we need to run through the permutations.
     // Otherwise, it's a card in another hand and we know we don't have that copy.
     if (deckCard.suitIndex === null || deckCard.rank === null || otherHand === hand) {
