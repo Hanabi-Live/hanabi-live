@@ -24,9 +24,6 @@ const fourthCard = initialCardState(3, variant);
 const fifthCard = initialCardState(4, variant);
 
 jest.spyOn(deckRules, 'isInitialDealFinished').mockReturnValue(true);
-jest.mock('immer', () => ({
-  current: jest.fn().mockImplementation((a: ReadonlyArray<readonly number[]>) => a),
-}));
 
 describe('cardsReducer', () => {
   describe('location', () => {

@@ -1,6 +1,5 @@
 // Calculates the state of the deck after an action
 
-import { current } from 'immer';
 import { ensureAllCases, nullIfNegative } from '../../misc';
 import { getVariant } from '../data/gameData';
 import { cluesRules, deckRules } from '../rules';
@@ -22,7 +21,7 @@ const cardsReducer = (
 ) => {
   const variant = getVariant(metadata.options.variantName);
   const newDeck = Array.from(deck);
-  const hands = current(game.hands);
+  const hands = Array.from(game.hands, (arr) => Array.from(arr));
 
   switch (action.type) {
     // The server just told us about a card that was previously hidden
@@ -175,8 +174,11 @@ const cardsReducer = (
     }
   }
 
-  if (game.turn.turnNum === 0 && action.type === 'draw'
-    && !deckRules.isInitialDealFinished(newDeck.length, metadata)) {
+  if (
+    game.turn.turnNum === 0
+    && action.type === 'draw'
+    && !deckRules.isInitialDealFinished(newDeck.length, metadata)
+  ) {
     // No need to do deduction while cards are being drawn
     return newDeck;
   }
