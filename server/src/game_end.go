@@ -121,7 +121,8 @@ func (g *Game) WriteDatabase() error {
 	}
 
 	// Next, we insert rows for each of the participants
-	for i, gp := range g.Players {
+	gameParticipantsRows := make([]*GameParticipantsRow, 0)
+	for _, gp := range g.Players {
 		p := t.Players[gp.Index]
 
 		characterID := 0
@@ -152,67 +153,101 @@ func (g *Game) WriteDatabase() error {
 			}
 		}
 
-		if err := models.GameParticipants.Insert(
-			t.ExtraOptions.DatabaseID,
-			p.ID,
-			gp.Index,
-			characterID,
-			characterMetadata,
-		); err != nil {
-			logger.Error("Failed to insert game participant row #"+strconv.Itoa(i)+":", err)
-			return err
-		}
+		gameParticipantsRows = append(gameParticipantsRows, &GameParticipantsRow{
+			GameID:              t.ExtraOptions.DatabaseID,
+			UserID:              p.ID,
+			Seat:                gp.Index,
+			CharacterAssignment: characterID,
+			CharacterMetadata:   characterMetadata,
+		})
+	}
+	if err := models.GameParticipants.BulkInsert(gameParticipantsRows); err != nil {
+		logger.Error("Failed to insert the game participant rows:", err)
+		return err
+	}
+
+	// Next, we insert rows for each of the actions
+	gameActionRows := make([]*GameActionRow, 0)
+	for i, action := range g.Actions2 {
+		gameActionRows = append(gameActionRows, &GameActionRow{
+			GameID: t.ExtraOptions.DatabaseID,
+			Turn:   i,
+			Type:   action.Type,
+			Target: action.Target,
+			Value:  action.Value,
+		})
+	}
+	if err := models.GameActions.BulkInsert(gameActionRows); err != nil {
+		logger.Error("Failed to insert the game action rows:", err)
+		return err
 	}
 
 	// Next, we insert rows for each note
-	for i, gp := range g.Players {
+	gameParticipantNotesRows := make([]*GameParticipantNotesRow, 0)
+	for _, gp := range g.Players {
 		p := t.Players[gp.Index]
 
 		for j, note := range gp.Notes {
 			if note == "" {
 				continue
 			}
-			if err := models.GameParticipantNotes.Insert(
-				p.ID,
-				t.ExtraOptions.DatabaseID,
-				j,
-				note,
-			); err != nil {
-				logger.Error("Failed to insert the row for note #"+strconv.Itoa(j)+
-					" for game participant #"+strconv.Itoa(i)+":", err)
-				// Do not return on failed note insertion,
-				// since it should not affect subsequent operations
-			}
+
+			gameParticipantNotesRows = append(gameParticipantNotesRows, &GameParticipantNotesRow{
+				GameID:    t.ExtraOptions.DatabaseID,
+				UserID:    p.ID,
+				CardOrder: j,
+				Note:      note,
+			})
 		}
 	}
-
-	// Next, we insert rows for each of the actions
-	for i, action := range g.Actions2 {
-		// The index of the action in the slice is equivalent to the turn number that the
-		// action happened
-		if err := models.GameActions.Insert(t.ExtraOptions.DatabaseID, i, action); err != nil {
-			logger.Error("Failed to insert row for action #"+strconv.Itoa(i)+":", err)
-			return err
-		}
+	if err := models.GameParticipantNotes.BulkInsert(gameParticipantNotesRows); err != nil {
+		logger.Error("Failed to insert the game participants notes rows:", err)
+		// Do not return on failed note insertion,
+		// since it should not affect subsequent operations
 	}
 
 	// Next, we insert rows for each chat message (if any)
+	chatLogRows := make([]*ChatLogRow, 0)
 	for _, chatMsg := range t.Chat {
-		if err := models.ChatLog.Insert(chatMsg.UserID, chatMsg.Msg, t.GetRoomName()); err != nil {
-			logger.Error("Failed to insert a chat message into the database:", err)
-			// Do not return on failed chat insertion,
-			// since it should not affect subsequent operations
-		}
+		chatLogRows = append(chatLogRows, &ChatLogRow{
+			UserID:  chatMsg.UserID,
+			Message: chatMsg.Msg,
+			Room:    t.GetRoomName(),
+		})
+	}
+	if err := models.ChatLog.BulkInsert(chatLogRows); err != nil {
+		logger.Error("Failed to insert the chat message rows:", err)
+		// Do not return on failed chat insertion,
+		// since it should not affect subsequent operations
 	}
 
 	// Next, we insert rows for each tag (if any)
+	gameTagsRows := make([]*GameTagsRow, 0)
 	for tag, userID := range g.Tags {
-		if err := models.GameTags.Insert(t.ExtraOptions.DatabaseID, userID, tag); err != nil {
-			logger.Error("Failed to insert a tag into the database:", err)
-			// Do not return on failed tag insertion,
-			// since it should not affect subsequent operations
-		}
+		gameTagsRows = append(gameTagsRows, &GameTagsRow{
+			GameID: t.ExtraOptions.DatabaseID,
+			UserID: userID,
+			Tag:    tag,
+		})
 	}
+	if err := models.GameTags.BulkInsert(gameTagsRows); err != nil {
+		logger.Error("Failed to insert the tag rows:", err)
+		// Do not return on failed tag insertion,
+		// since it should not affect subsequent operations
+	}
+
+	// We also need to update stats in the database, but that can be done in the background
+	go g.WriteDatabaseStats()
+
+	logger.Info("Finished core database actions for table " + strconv.FormatUint(t.ID, 10) + ".")
+	return nil
+}
+
+// WriteDatabaseStats is meant to be called in a new goroutine
+// Updating the stats is not as important as writing the core data for a game,
+// so it can be handled in the background
+func (g *Game) WriteDatabaseStats() {
+	t := g.Table
 
 	// Compute the integer modifier for this game,
 	// corresponding to the "ScoreModifier" constants in "constants.go"
@@ -271,7 +306,7 @@ func (g *Game) WriteDatabase() error {
 	if v, err := models.VariantStats.Get(variants[g.Options.VariantName].ID); err != nil {
 		logger.Error("Failed to get the stats for variant "+
 			strconv.Itoa(variants[g.Options.VariantName].ID)+":", err)
-		return err
+		return
 	} else {
 		variantStats = v
 	}
@@ -295,11 +330,8 @@ func (g *Game) WriteDatabase() error {
 	); err != nil {
 		logger.Error("Failed to update the stats for variant "+
 			strconv.Itoa(variants[g.Options.VariantName].ID)+":", err)
-		return err
+		return
 	}
-
-	logger.Info("Finished database actions for table " + strconv.FormatUint(t.ID, 10) + ".")
-	return nil
 }
 
 func (t *Table) ConvertToSharedReplay() {
