@@ -29,25 +29,21 @@ func httpLocalhostTerminate(c *gin.Context) {
 	// Get the corresponding table
 	var matchingTable *Table
 	if searchingByName {
-		for _, t := range tables {
-			if t.Name == tableNameOrID {
-				matchingTable = t
-				break
-			}
-		}
-		if matchingTable == nil {
+		t, exists := getTableByName(nil, tableNameOrID)
+		if !exists {
 			msg := "Table \"" + tableNameOrID + "\" does not exist.\n"
 			c.String(http.StatusOK, msg)
 			return
 		}
+		matchingTable = t
 	} else {
-		if v, ok := tables[tableID]; !ok {
+		t, exists := getTable(nil, tableID)
+		if !exists {
 			msg := "Table \"" + strconv.FormatUint(tableID, 10) + "\" does not exist.\n"
 			c.String(http.StatusOK, msg)
 			return
-		} else {
-			matchingTable = v
 		}
+		matchingTable = t
 	}
 
 	// Terminate it

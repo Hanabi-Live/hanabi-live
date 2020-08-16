@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	// Session IDs are atomically incremented before assignment,
-	// so the first session ID will be 1 and will increase from there
-	sessionID uint64 = 0
+	// The counter is atomically incremented before assignment,
+	// so the first ID will be 1 and will increase from there
+	sessionIDCounter uint64 = 0
 )
 
 // httpWS handles part 2 of 2 for logic authentication
@@ -128,7 +128,7 @@ func httpWS(c *gin.Context) {
 	// New keys added here should also be added to the "newFakeSesssion()" function
 	keys := defaultSessionKeys()
 	// The session ID is independent of the user and is used for disconnection purposes
-	keys["sessionID"] = atomic.AddUint64(&sessionID, 1)
+	keys["sessionID"] = atomic.AddUint64(&sessionIDCounter, 1)
 	keys["userID"] = userID
 	keys["username"] = username
 	keys["muted"] = muted

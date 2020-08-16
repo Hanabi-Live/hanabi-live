@@ -10,6 +10,10 @@ const (
 	NumRandomWords = 3
 )
 
+var (
+	wordList = make([]string, 0)
+)
+
 func wordListInit() {
 	wordListPath := path.Join(dataPath, "word_list.txt")
 	if v, err := ioutil.ReadFile(wordListPath); err != nil {

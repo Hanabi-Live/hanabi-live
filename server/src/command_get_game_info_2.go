@@ -16,15 +16,17 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
+	t, exists := getTable(s, d.TableID)
+	if !exists {
 		return
-	} else {
-		t = v
 	}
+
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
+	if t.Deleted {
+		return
+	}
+
 	g := t.Game
 
 	// Validate that the game has started
@@ -38,7 +40,7 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	j := t.GetSpectatorIndexFromID(s.UserID())
 	if i == -1 && j == -1 {
 		s.Warning("You are not a player or a spectator at table " +
-			strconv.FormatUint(tableID, 10) + ", so you cannot be ready for it.")
+			strconv.FormatUint(t.ID, 10) + ", so you cannot be ready for it.")
 		return
 	}
 

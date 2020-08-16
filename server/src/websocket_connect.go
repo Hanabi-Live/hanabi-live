@@ -14,13 +14,13 @@ import (
 // websocketConnect is fired when a new Melody WebSocket session is established
 // This is the third step of logging in; users will only get here if authentication was successful
 func websocketConnect(ms *melody.Session) {
+	// Turn the Melody session into a custom session
+	s := &Session{ms}
+
 	// We only want one computer to connect to one user at a time
 	// Use a mutex to prevent race conditions
 	sessionsMutex.Lock()
 	defer sessionsMutex.Unlock()
-
-	// Turn the Melody session into a custom session
-	s := &Session{ms}
 
 	// Disconnect any existing connections with this username
 	if s2, ok := sessions[s.UserID()]; ok {

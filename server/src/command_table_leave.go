@@ -16,14 +16,15 @@ func commandTableLeave(s *Session, d *CommandData) {
 		Validation
 	*/
 
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
+	t, exists := getTable(s, d.TableID)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
+	if t.Deleted {
+		return
 	}
 
 	// Validate that the game has not started
@@ -101,10 +102,10 @@ func commandTableLeave(s *Session, d *CommandData) {
 		return
 	}
 
+	// If this is the last person to leave, delete the game
 	if len(t.Players) == 0 {
-		// Delete the game if this is the last person to leave
-		delete(tables, tableID)
-		notifyAllTableGone(t)
+		deleteTable(t)
+		logger.Info("Ended pre-game table #" + strconv.FormatUint(t.ID, 10) + " because everyone left.")
 		return
 	}
 }

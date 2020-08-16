@@ -278,6 +278,8 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	}
 
 	t := NewTable(d.Name, s.UserID())
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
 	t.Visible = preGameVisible
 	t.PasswordHash = passwordHash
 	if setReplayOptions == nil {
@@ -291,7 +293,12 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 		SetReplay:     setReplay,
 		SetReplayTurn: setReplayTurn,
 	}
-	tables[t.ID] = t // Add it to the map
+
+	// Add it to the map
+	tablesMutex.Lock()
+	tables[t.ID] = t
+	tablesMutex.Unlock()
+
 	logger.Info(t.GetName() + "User \"" + s.Username() + "\" created a table.")
 	// (a "table" message will be sent in the "commandTableJoin" function below)
 

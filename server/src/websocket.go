@@ -12,7 +12,7 @@ var (
 
 	// We keep track of all WebSocket sessions
 	sessions      = make(map[int]*Session)
-	sessionsMutex = sync.Mutex{}
+	sessionsMutex = sync.RWMutex{}
 
 	// We keep track of all ongoing WebSocket messages/commands
 	commandWaitGroup sync.WaitGroup

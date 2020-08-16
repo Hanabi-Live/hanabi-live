@@ -350,7 +350,9 @@ func (t *Table) ConvertToSharedReplay() {
 
 	// End the shared replay if no-one is left
 	if len(t.Spectators) == 0 {
-		delete(tables, t.ID)
+		deleteTable(t)
+		logger.Info("Ended table #" + strconv.FormatUint(t.ID, 10) +
+			" because no-one was present when the game ended.")
 		return
 	}
 

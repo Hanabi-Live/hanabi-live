@@ -178,17 +178,15 @@ func commandChatTable(s *Session, d *CommandData) {
 		tableID = v
 	}
 
-	// Get the corresponding table
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		if s == nil {
-			logger.Error("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
-		} else {
-			s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
-		}
+	t, exists := getTable(s, tableID)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
+	if t.Deleted {
+		return
 	}
 
 	// Validate that this player is in the game or spectating

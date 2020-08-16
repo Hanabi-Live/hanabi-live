@@ -21,15 +21,17 @@ func commandNote(s *Session, d *CommandData) {
 		(some code is copied from the "sanitizeChatInput()" function)
 	*/
 
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
+	t, exists := getTable(s, d.TableID)
+	if !exists {
 		return
-	} else {
-		t = v
 	}
+
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
+	if t.Deleted {
+		return
+	}
+
 	g := t.Game
 
 	// Validate that the game has started

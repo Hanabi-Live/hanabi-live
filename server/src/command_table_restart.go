@@ -23,14 +23,15 @@ func commandTableRestart(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
+	t, exists := getTable(s, d.TableID)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
+	if t.Deleted {
+		return
 	}
 
 	// Validate that this is a shared replay
@@ -171,9 +172,9 @@ func commandTableRestart(s *Session, d *CommandData) {
 
 	newTableName := ""
 
-	// Generate a new name for the game based on which iteration of the room this is
-	// For example, a game named "logic only" will be "logic only (#2)" and then "logic only (#3)"
 	if t.InitialName != "" {
+		// Generate a new name for the game based on how many times the players have restarted
+		// e.g. "logic only" --> "logic only (#2)" --> "logic only (#3)"
 		oldTableName := t.InitialName
 		gameNumber := 2 // By default, this is the second game of a particular table
 		match := roomNameRegExp.FindAllStringSubmatch(oldTableName, -1)
@@ -184,6 +185,8 @@ func commandTableRestart(s *Session, d *CommandData) {
 		}
 		newTableName = oldTableName + " (#" + strconv.Itoa(gameNumber) + ")"
 	} else {
+		// If players spawn a shared replay and then restart,
+		// there will not be an initial name for the table
 		newTableName = getName()
 	}
 
@@ -209,6 +212,9 @@ func commandTableRestart(s *Session, d *CommandData) {
 			"Please report this error to an administrator.")
 		return
 	}
+
+	t2.Mutex.Lock()
+	defer t2.Mutex.Unlock()
 
 	// Emulate the other players joining the game
 	for _, s2 := range playerSessions {

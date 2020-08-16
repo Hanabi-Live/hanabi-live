@@ -132,7 +132,7 @@ func restoreTables() {
 		}
 	}
 
-	// (we do not need to adjust the "newTableID" variable because
+	// (we do not need to adjust the "tableIDCounter" variable because
 	// we have logic to not allow duplicate game IDs)
 
 	if len(tables) == 1 {

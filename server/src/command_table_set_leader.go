@@ -1,9 +1,5 @@
 package main
 
-import (
-	"strconv"
-)
-
 // commandTableSetLeader is sent when a user right-clicks on the crown
 // or types the "/setleader [username]" command
 //
@@ -13,14 +9,15 @@ import (
 //   name: 'Alice,
 // }
 func commandTableSetLeader(s *Session, d *CommandData) {
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
+	t, exists := getTable(s, d.TableID)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
+	if t.Deleted {
+		return
 	}
 
 	if len(d.Name) == 0 {

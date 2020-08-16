@@ -7,25 +7,22 @@ import (
 	"time"
 )
 
-var (
-	// Table IDs are atomically incremented before assignment,
-	// so the first table ID will be 1 and will increase from there
-	newTableID uint64 = 0
-)
-
+// Table describes the container that a player can join, whether it is an unstarted game,
+// an ongoing game, a solo replay, a shared replay, etc.
+// A tag of `json:"-"` denotes that the JSON serializer should skip the field when serializing
 type Table struct {
 	ID          uint64
 	Name        string
 	InitialName string // The name of the table before it was converted to a replay
 
 	Players    []*Player
-	Spectators []*Spectator `json:"-"` // Skip when serializing
+	Spectators []*Spectator `json:"-"`
 	// We keep track of players who have been kicked from the game
 	// so that we can prevent them from rejoining
-	KickedPlayers map[int]struct{} `json:"-"` // Skip when serializing
+	KickedPlayers map[int]struct{} `json:"-"`
 	// We also keep track of spectators who have disconnected
 	// so that we can automatically put them back into the shared replay
-	DisconSpectators map[int]struct{} `json:"-"` // Skip when serializing
+	DisconSpectators map[int]struct{} `json:"-"`
 
 	// This is the user ID of the person who started the table
 	// or the current leader of the shared replay
@@ -57,7 +54,8 @@ type Table struct {
 	ChatRead map[int]int         // A map of which users have read which messages
 
 	// Each table has its own mutex to ensure that only one action can occur at the same time
-	Mutex sync.Mutex `json:"-"` // Skip when serializing
+	Mutex   sync.Mutex `json:"-"`
+	Deleted bool       `json:"-"` // Used to prevent race conditions
 }
 
 type TableChatMessage struct {
@@ -70,14 +68,15 @@ type TableChatMessage struct {
 
 func NewTable(name string, owner int) *Table {
 	// Get a new table ID
-	var tableID uint64
+	tablesMutex.RLock()
+	var newTableID uint64
 	for {
-		tableID = atomic.AddUint64(&newTableID, 1)
+		newTableID = atomic.AddUint64(&tableIDCounter, 1)
 
 		// Ensure that the table ID does not conflict with any existing tables
 		valid := true
-		for _, t := range tables {
-			if t.ID == tableID {
+		for tableID := range tables {
+			if tableID == newTableID {
 				valid = false
 				break
 			}
@@ -86,10 +85,11 @@ func NewTable(name string, owner int) *Table {
 			break
 		}
 	}
+	tablesMutex.RUnlock()
 
 	// Create the table object
 	return &Table{
-		ID:   tableID,
+		ID:   newTableID,
 		Name: name,
 
 		Players:          make([]*Player, 0),
@@ -126,11 +126,15 @@ func (t *Table) CheckIdle() {
 
 	// We want to clean up idle games, so sleep for a reasonable amount of time
 	time.Sleep(IdleGameTimeout)
-	t.Mutex.Lock()
-	defer t.Mutex.Unlock()
 
 	// Check to see if the table still exists
-	if _, ok := tables[t.ID]; !ok {
+	if _, ok := getTable(nil, t.ID); !ok {
+		return
+	}
+
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
+	if t.Deleted {
 		return
 	}
 
@@ -296,11 +300,13 @@ func (t *Table) GetNotifySessions(excludePlayers bool) []*Session {
 
 	// Go through the map and build a list of users that happen to be currently online
 	notifySessions := make([]*Session, 0)
+	sessionsMutex.RLock()
 	for userID := range notifyMap {
 		if s, ok := sessions[userID]; ok {
 			notifySessions = append(notifySessions, s)
 		}
 	}
+	sessionsMutex.RUnlock()
 
 	return notifySessions
 }

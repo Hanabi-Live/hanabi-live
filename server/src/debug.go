@@ -226,7 +226,7 @@ func debugFunction() {
 			Visibility: "solo",
 		})
 		commandTableUnattend(s, &CommandData{
-			TableID: newTableID,
+			TableID: tableIDCounter,
 		})
 	}
 

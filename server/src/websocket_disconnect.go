@@ -5,18 +5,21 @@ import (
 )
 
 func websocketDisconnect(ms *melody.Session) {
-	// Lock the command mutex for the duration of the function to ensure synchronous execution
-	sessionsMutex.Lock()
-	defer sessionsMutex.Unlock()
-
 	// Turn the Melody session into a custom session
 	s := &Session{ms}
+
+	// We only want one computer to connect to one user at a time
+	// Use a mutex to prevent race conditions
+	sessionsMutex.Lock()
+	defer sessionsMutex.Unlock()
 
 	// We have to do the work in a separate function so that
 	// we can call it manually in the "websocketConnect()" function
 	websocketDisconnect2(s)
 }
 
+// websocketDisconnect2 does the main work of disconnecting a WebSocket connection
+// It is assumed that the "sessionMutex" is locked before getting here
 func websocketDisconnect2(s *Session) {
 	// Check to see if the existing session is different
 	// (this occurs during a reconnect, for example)

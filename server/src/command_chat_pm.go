@@ -1,8 +1,6 @@
 package main
 
 import (
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -12,7 +10,6 @@ import (
 // {
 //   msg: 'i secretly adore you',
 //   recipient: 'Alice',
-//   room: 'lobby', // Room can also be "table1", "table1234", etc.
 // }
 func commandChatPM(s *Session, d *CommandData) {
 	/*
@@ -59,45 +56,6 @@ func commandChatPM(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate the room
-	if d.Room != "lobby" && !strings.HasPrefix(d.Room, "table") {
-		s.Warning("That is not a valid room.")
-		return
-	}
-	if strings.HasPrefix(d.Room, "table") {
-		// Parse the table ID from the room
-		match := lobbyRoomRegExp.FindStringSubmatch(d.Room)
-		if match == nil {
-			logger.Error("Failed to parse the table ID from the room:", d.Room)
-			s.Error("That is an invalid room.")
-			return
-		}
-		var tableID uint64
-		if v, err := strconv.ParseUint(match[1], 10, 64); err != nil {
-			logger.Error("Failed to convert the table ID to a number:", err)
-			s.Error("That is an invalid room.")
-			return
-		} else {
-			tableID = v
-		}
-
-		// Get the corresponding table
-		var t *Table
-		if v, ok := tables[tableID]; !ok {
-			s.Warning("Table " + strconv.FormatUint(tableID, 10) + " does not exist.")
-			return
-		} else {
-			t = v
-		}
-
-		// Validate that this player is in the game or spectating
-		if t.GetPlayerIndexFromID(s.UserID()) == -1 && t.GetSpectatorIndexFromID(s.UserID()) == -1 {
-			s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
-				", so you cannot send chat to it.")
-			return
-		}
-	}
-
 	// Sanitize the message using the bluemonday library to stop
 	// various attacks against other players
 	d.Msg = bluemondayStrictPolicy.Sanitize(d.Msg)
@@ -120,7 +78,6 @@ func commandChatPM(s *Session, d *CommandData) {
 		Msg:       d.Msg,
 		Who:       s.Username(),
 		Datetime:  time.Now(),
-		Room:      d.Room,
 		Recipient: recipientSession.Username(),
 	}
 

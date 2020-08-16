@@ -27,9 +27,6 @@ var (
 	usingSentry      bool
 	models           *Models
 	datetimeStarted  time.Time
-	tables           = make(map[uint64]*Table) // Defined in "table.go"
-	// For storing all of the random words (used for random table names)
-	wordList = make([]string, 0)
 )
 
 func main() {

@@ -14,17 +14,19 @@ import (
 //   tableID: 5,
 // }
 func commandTableUnattend(s *Session, d *CommandData) {
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		// Unlike other command handlers,
-		// we do not want to show a warning to the user if the table does not exist
-		// In some cases, network latency will cause the "unattend" message to get to the server
-		// after the respective table has already been deleted
+	// Unlike other command handlers, we do not want to show a warning to the user if the table does
+	// not exist, so we pass "nil" instead of "s" to the "getTable()" function
+	// This is because in some cases, network latency will cause the "unattend" message to get to
+	// the server after the respective table has already been deleted
+	t, exists := getTable(nil, d.TableID)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
+	if t.Deleted {
+		return
 	}
 
 	// Validate that they are either playing or spectating the game
@@ -88,11 +90,8 @@ func commandTableUnattendSpectator(t *Table, j int) {
 
 	if t.Replay && len(t.Spectators) == 0 {
 		// This was the last person to leave the replay, so delete it
+		deleteTable(t)
 		logger.Info("Ended replay #" + strconv.FormatUint(t.ID, 10) + " because everyone left.")
-		delete(tables, t.ID)
-
-		// Notify everyone that the table was deleted
-		notifyAllTableGone(t)
 		return
 	}
 
