@@ -138,7 +138,7 @@ func websocketConnect(ms *melody.Session) {
 	// Send an initial message that contains information about who they are and
 	// the current state of the server
 	type WelcomeMessage struct {
-		ID                   int       `json:"id"`
+		UserID               int       `json:"userID"`
 		Username             string    `json:"username"`
 		TotalGames           int       `json:"totalGames"`
 		Muted                bool      `json:"muted"`
@@ -152,7 +152,7 @@ func websocketConnect(ms *melody.Session) {
 	}
 	s.Emit("welcome", &WelcomeMessage{
 		// Send the user their corresponding user ID
-		ID: s.UserID(),
+		UserID: s.UserID(),
 
 		// We have to send the username back to the client because they may
 		// have logged in with the wrong case, and the client needs to know

@@ -14,7 +14,7 @@ func (s *Session) NotifyUser(u *Session) {
 }
 
 type UserMessage struct {
-	ID      int    `json:"id"`
+	UserID  int    `json:"userID"`
 	Name    string `json:"name"`
 	Status  int    `json:"status"`
 	TableID uint64 `json:"tableID"`
@@ -22,7 +22,7 @@ type UserMessage struct {
 
 func makeUserMessage(s *Session) *UserMessage {
 	return &UserMessage{
-		ID:      s.UserID(),
+		UserID:  s.UserID(),
 		Name:    s.Username(),
 		Status:  s.Status(),
 		TableID: s.TableID(),
@@ -32,10 +32,10 @@ func makeUserMessage(s *Session) *UserMessage {
 // NotifyUserLeft will notify someone about a user that disconnected
 func (s *Session) NotifyUserLeft(u *Session) {
 	type UserLeftMessage struct {
-		ID int `json:"id"`
+		UserID int `json:"userID"`
 	}
 	s.Emit("userLeft", &UserLeftMessage{
-		ID: u.UserID(),
+		UserID: u.UserID(),
 	})
 }
 
@@ -43,11 +43,11 @@ func (s *Session) NotifyUserLeft(u *Session) {
 // inactive or coming back from inactive status
 func (s *Session) NotifyUserInactive(u *Session) {
 	type UserInactiveMessage struct {
-		ID       int  `json:"id"`
+		UserID   int  `json:"userID"`
 		Inactive bool `json:"inactive"`
 	}
 	s.Emit("userInactive", &UserInactiveMessage{
-		ID:       u.UserID(),
+		UserID:   u.UserID(),
 		Inactive: u.Inactive(),
 	})
 }
@@ -136,7 +136,7 @@ func (s *Session) NotifyTableProgress(t *Table) {
 // NotifyTableGone will notify someone about a game that ended
 func (s *Session) NotifyTableGone(t *Table) {
 	type TableGoneMessage struct {
-		TableID uint64 `json:"id"`
+		TableID uint64 `json:"tableID"`
 	}
 	s.Emit("tableGone", &TableGoneMessage{
 		TableID: t.ID,
@@ -369,7 +369,6 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 	g := t.Game
 
 	type NoteList struct {
-		ID    int      `json:"id"`
 		Name  string   `json:"name"`
 		Notes []string `json:"notes"`
 	}
@@ -379,7 +378,6 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 	for _, p := range g.Players {
 		if shadowingPlayerIndex == -1 || shadowingPlayerIndex == p.Index {
 			notes = append(notes, NoteList{
-				ID:    t.Players[p.Index].ID,
 				Name:  p.Name,
 				Notes: p.Notes,
 			})
@@ -388,7 +386,6 @@ func (s *Session) NotifyNoteList(t *Table, shadowingPlayerIndex int) {
 	if !t.Replay && shadowingPlayerIndex == -1 {
 		for _, sp := range t.Spectators {
 			notes = append(notes, NoteList{
-				ID:    sp.ID,
 				Name:  sp.Name,
 				Notes: sp.Notes,
 			})

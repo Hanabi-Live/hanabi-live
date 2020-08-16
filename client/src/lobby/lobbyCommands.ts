@@ -208,7 +208,7 @@ commands.set('tableStart', (data: TableStartData) => {
 
 // Received by the client when a user connect or has a new status
 commands.set('user', (data: User) => {
-  globals.userMap.set(data.id, data);
+  globals.userMap.set(data.userID, data);
   if (globals.currentScreen === Screen.Lobby || globals.currentScreen === Screen.PreGame) {
     usersDraw.draw();
   }
@@ -216,7 +216,7 @@ commands.set('user', (data: User) => {
 
 commands.set('userList', (dataList: User[]) => {
   for (const data of dataList) {
-    globals.userMap.set(data.id, data);
+    globals.userMap.set(data.userID, data);
   }
   if (globals.currentScreen === Screen.Lobby || globals.currentScreen === Screen.PreGame) {
     usersDraw.draw();
@@ -225,10 +225,10 @@ commands.set('userList', (dataList: User[]) => {
 
 // Received by the client when a user disconnects
 interface UserLeftData {
-  id: number;
+  userID: number;
 }
 commands.set('userLeft', (data: UserLeftData) => {
-  globals.userMap.delete(data.id);
+  globals.userMap.delete(data.userID);
 
   if (globals.currentScreen === Screen.Lobby || globals.currentScreen === Screen.PreGame) {
     usersDraw.draw();
@@ -236,22 +236,22 @@ commands.set('userLeft', (data: UserLeftData) => {
 });
 
 interface UserInactiveData {
-  id: number;
+  userID: number;
   inactive: boolean;
 }
 commands.set('userInactive', (data: UserInactiveData) => {
-  const user = globals.userMap.get(data.id);
+  const user = globals.userMap.get(data.userID);
   if (user) {
     user.inactive = data.inactive;
     if (globals.currentScreen === Screen.Lobby || globals.currentScreen === Screen.PreGame) {
-      usersDraw.setInactive(user.id, user.inactive);
+      usersDraw.setInactive(user.userID, user.inactive);
     }
   }
 });
 
 // Received by the client upon first connecting
 interface WelcomeData {
-  id: number;
+  userID: number;
   username: string;
   totalGames: number;
   muted: boolean;
@@ -264,7 +264,7 @@ interface WelcomeData {
 }
 commands.set('welcome', (data: WelcomeData) => {
   // Store some variables (mostly relating to our user account)
-  globals.id = data.id;
+  globals.userID = data.userID;
   globals.username = data.username; // We might have logged-in with a different stylization
   globals.totalGames = data.totalGames;
   globals.muted = data.muted;
@@ -274,7 +274,7 @@ commands.set('welcome', (data: WelcomeData) => {
   globals.maintenanceMode = data.maintenanceMode;
 
   // Now that we know what our user ID and username are, we can attach them to the Sentry context
-  sentry.setUserContext(globals.id, globals.username);
+  sentry.setUserContext(globals.userID, globals.username);
 
   // Update various elements of the UI to reflect our settings
   $('#nav-buttons-history-total-games').html(globals.totalGames.toString());

@@ -187,7 +187,6 @@ interface NoteListData {
   notes: NoteList[];
 }
 interface NoteList {
-  id: number;
   name: string;
   notes: string[];
 }
