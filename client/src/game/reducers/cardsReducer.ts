@@ -47,8 +47,8 @@ const cardsReducer = (
 
       newDeck[order] = {
         ...card,
-        suitIndex,
-        rank,
+        suitIndex: action.suitIndex,
+        rank: action.rank,
       };
 
       break;
