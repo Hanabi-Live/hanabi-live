@@ -198,7 +198,7 @@ const drawActionLog = () => {
   const actionLogGroup = new Konva.Group({
     x: actionLogValues.x * winW,
     y: actionLogValues.y * winH,
-    listening: false,
+    listening: true,
   });
   globals.layers.UI.add(actionLogGroup);
 
@@ -322,7 +322,7 @@ const drawPlayStacks = () => {
       y: playStackValues.y * winH,
       width: cardWidth * winW,
       height: cardHeight * winH,
-      listening: false,
+      listening: true,
     });
     globals.elements.playStacks.set(suit, playStack);
     globals.layers.card.add(playStack as any);
@@ -424,7 +424,7 @@ const drawDiscardStacks = () => {
       y: (0.61 + (discardStackSpacing * i)) * winH,
       width: 0.17 * winW,
       height: 0.17 * winH,
-      listening: false,
+      listening: true,
     });
     globals.elements.discardStacks.set(suit, discardStack);
     globals.layers.card.add(discardStack as any);
@@ -713,7 +713,7 @@ const drawScoreArea = () => {
   globals.elements.scoreArea = new Konva.Group({
     x: scoreAreaValues.x * winW,
     y: scoreAreaValues.y * winH,
-    listening: false,
+    listening: true,
   });
   globals.layers.UI.add(globals.elements.scoreArea);
 
@@ -1233,7 +1233,7 @@ const drawClueLog = () => {
     y: (clueLogValues.y + spacing) * winH,
     width: (clueLogValues.w! - (spacing * 2)) * winW,
     height: (clueLogValues.h! - (spacing * 2)) * winH,
-    listening: false,
+    listening: true,
   });
   globals.layers.UI.add(globals.elements.clueLog as any);
 };
@@ -1568,7 +1568,7 @@ const drawClueArea = () => {
     y: clueAreaValues.y * winH,
     width: clueAreaValues.w! * winW,
     visible: false,
-    listening: false,
+    listening: true,
   });
 
   // Player buttons
@@ -1583,7 +1583,7 @@ const drawClueArea = () => {
 
   // This is the normal button group, which does not include us
   globals.elements.clueTargetButtonGroup = new ButtonGroup({
-    listening: false,
+    listening: true,
   });
   {
     const totalPlayerButtons = numPlayers - 1;
@@ -1616,7 +1616,7 @@ const drawClueArea = () => {
 
   // This button group includes us, which is used for hypotheticals
   globals.elements.clueTargetButtonGroup2 = new ButtonGroup({
-    listening: false,
+    listening: true,
   });
   {
     const totalPlayerButtons = numPlayers;
@@ -1651,7 +1651,7 @@ const drawClueArea = () => {
   const buttonXSpacing = 0.009;
   const buttonYSpacing = 0.002;
   globals.elements.clueTypeButtonGroup = new ButtonGroup({
-    listening: false,
+    listening: true,
   });
 
   // Color buttons
