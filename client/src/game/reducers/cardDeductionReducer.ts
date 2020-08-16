@@ -52,40 +52,36 @@ const makeDeductions = (
 };
 
 const calculateHandPossibilities = (
-  hand: readonly number[],
+  handToCalculate: readonly number[],
   hands: ReadonlyArray<readonly number[]>,
   deck: CardState[],
   cardCountMap: readonly number[][],
 ) => {
-  const remainingCardCountMap = Array.from(
+  const cardCountMapForHand = Array.from(
     cardCountMap,
     (arr) => Array.from(arr),
   );
-  const remainingCards: number[] = [];
-  hands.forEach((otherHand) => otherHand.forEach((o) => {
+  const unknownCards: number[] = [];
+  hands.forEach((hand) => hand.forEach((o) => {
     const deckCard = deck[o];
     // If card is not fully known then we need to run through the permutations.
-    // Otherwise, it's a card in another hand and we know we don't have that copy.
-    if (deckCard.suitIndex === null || deckCard.rank === null || otherHand === hand) {
-      remainingCards.push(o);
+    // Otherwise, it's a card in another hand and we know we don't have that copy
+    // (and can reduce the count accordingly from the perspective of this hand).
+    if (deckCard.suitIndex === null || deckCard.rank === null || hand === handToCalculate) {
+      unknownCards.push(o);
     } else {
-      remainingCardCountMap[deckCard.suitIndex][deckCard.rank] -= 1;
+      cardCountMapForHand[deckCard.suitIndex][deckCard.rank] -= 1;
     }
   }));
-  hand.forEach((o) => {
+  handToCalculate.forEach((o) => {
     const card = deck[o];
-    const otherRemainingPossibilities = remainingCards
+    const possibilities = unknownCards
       .filter((ro) => ro !== o)
       .map((ro) => deck[ro].possibleCardsFromDeduction);
     deck[o] = {
       ...card,
       possibleCardsFromDeduction: card.possibleCardsFromDeduction.filter(
-        (possibility) => possibilityValid(
-          possibility,
-          otherRemainingPossibilities,
-          0,
-          remainingCardCountMap,
-        ),
+        (possibility) => possibilityValid(possibility, possibilities, 0, cardCountMapForHand),
       ),
     };
   });
@@ -93,21 +89,19 @@ const calculateHandPossibilities = (
 
 const possibilityValid = (
   [suit, rank]: readonly [number, number],
-  remainingPossibilities: ReadonlyArray<ReadonlyArray<readonly [number, number]>>,
+  possibilities: ReadonlyArray<ReadonlyArray<readonly [number, number]>>,
   index: number,
   cardCountMap: readonly number[][],
 ) => {
-  if (remainingPossibilities.length === index) {
+  if (possibilities.length === index) {
     return cardCountMap[suit][rank] > 0;
   }
   // Avoiding duplicating the map for performance, so trying to undo the mutation as we exit
   cardCountMap[suit][rank] -= 1;
   if (
     cardCountMap[suit][rank] >= 0
-    && remainingPossibilities[index].some(
-      (possibility) => possibilityValid(
-        possibility, remainingPossibilities, index + 1, cardCountMap,
-      ),
+    && possibilities[index].some(
+      (possibility) => possibilityValid(possibility, possibilities, index + 1, cardCountMap),
     )
   ) {
     cardCountMap[suit][rank] += 1;
