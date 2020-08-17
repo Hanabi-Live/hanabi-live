@@ -79,7 +79,8 @@ export default class HanabiUI {
   }
 }
 
-const getDesiredStageSize = () => {
+// Initialize and size the stage depending on the window size
+const initStageSize = () => {
   const ratio = 16 / 9;
 
   let ww = window.innerWidth;
@@ -112,31 +113,6 @@ const getDesiredStageSize = () => {
   if (ch > 0.98 * wh) {
     ch = wh;
   }
-  return { width: cw, height: ch };
+  globals.stage.width(cw);
+  globals.stage.height(ch);
 };
-
-// Initialize and size the stage depending on the window size
-let initialWidth = 0;
-let initialHeight = 0;
-const initStageSize = () => {
-  const { width, height } = getDesiredStageSize();
-  globals.stage.width(width);
-  globals.stage.height(height);
-  initialWidth = width;
-  initialHeight = height;
-};
-
-const resize = () => {
-  if (initialWidth === 0) {
-    return;
-  }
-
-  const { width } = getDesiredStageSize();
-  const scale = width / initialWidth;
-  globals.stage.width(scale * initialWidth);
-  globals.stage.height(scale * initialHeight);
-  globals.stage.scale({ x: scale, y: scale });
-  globals.stage.draw();
-};
-
-window.addEventListener('resize', resize);

@@ -39,7 +39,7 @@ export class Globals {
   imageLoader: Loader | null = null;
   stage: Konva.Stage = new Konva.Stage({
     container: 'game',
-    listening: true,
+    listening: false,
   });
 
   layers: Layers = new Layers();
