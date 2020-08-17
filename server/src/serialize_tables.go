@@ -113,10 +113,6 @@ func restoreTables() {
 			p.Present = false
 		}
 
-		// Restored tables will never be automatically terminated due to idleness because the
-		// "CheckIdle()" function was never initiated; manually do this
-		go t.CheckIdle()
-
 		if g.Options.Timed {
 			// Give the current player some additional seconds to make up for the fact that they are
 			// forced to refresh
@@ -128,19 +124,26 @@ func restoreTables() {
 		}
 
 		tables[t.ID] = t
+		// (we don't need to lock "tablesMutex" because we are still in the synchronous phase of
+		// startup)
 		logger.Info(t.GetName() + "Restored table.")
 
 		if err := os.Remove(tablePath); err != nil {
 			logger.Fatal("Failed to delete \""+tablePath+"\":", err)
 		}
+
+		// Restored tables will never be automatically terminated due to idleness because the
+		// "CheckIdle()" function was never initiated; manually do this
+		go t.CheckIdle()
 	}
 
 	// (we do not need to adjust the "tableIDCounter" variable because
 	// we have logic to not allow duplicate game IDs)
 
-	if len(tables) == 1 {
-		logger.Info("Restored " + strconv.Itoa(len(tables)) + " table.")
-	} else if len(tables) >= 2 {
-		logger.Info("Restored " + strconv.Itoa(len(tables)) + " tables.")
+	msg := "Restored " + strconv.Itoa(len(tables)) + " table"
+	if len(tables) >= 2 {
+		msg += "s"
 	}
+	msg += "."
+	logger.Info(msg)
 }
