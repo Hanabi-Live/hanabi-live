@@ -371,10 +371,12 @@ func websocketConnectRejoinOngoingGame(s *Session, data *WebsocketConnectData) {
 		return
 	}
 
+	logger.Debug("Acquiring tables read lock for user: " + s.Username())
 	t, exists := getTableAndLock(s, data.PlayingInOngoingGameTableID, true)
 	if !exists {
 		return
 	}
+	logger.Debug("Acquired tables read lock for user: " + s.Username())
 	defer t.Mutex.Unlock()
 
 	logger.Info("Automatically reattending player \"" + s.Username() + "\" " +
@@ -394,10 +396,12 @@ func websocketConnectRespectate(s *Session, data *WebsocketConnectData) {
 		return
 	}
 
+	logger.Debug("Acquiring tables read lock for user: " + s.Username())
 	t, exists := getTableAndLock(s, data.SpectatingTableID, true)
 	if !exists {
 		return
 	}
+	logger.Debug("Acquired tables read lock for user: " + s.Username())
 	defer t.Mutex.Unlock()
 
 	logger.Info("Automatically re-spectating player " + "\"" + s.Username() + "\" " +
