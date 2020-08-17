@@ -81,6 +81,12 @@ func restoreTables() {
 			logger.Fatal("Failed to unmarshal \""+tablePath+"\":", err)
 			return
 		}
+		t.Spectators = make([]*Spectator, 0)
+		t.KickedPlayers = make(map[int]struct{})
+		t.DisconSpectators = make(map[int]struct{})
+		if t.ChatRead == nil {
+			t.ChatRead = make(map[int]int)
+		}
 
 		// Restore the circular references that could not be represented in JSON
 		g := t.Game
@@ -93,18 +99,90 @@ func restoreTables() {
 
 		// Restore the types of the actions
 		for i, a := range g.Actions {
-			if action, ok := a.(map[string]interface{}); !ok {
+			var action map[string]interface{}
+			if v, ok := a.(map[string]interface{}); !ok {
 				logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
 					strconv.FormatUint(t.ID, 10) + " to a map.")
-			} else if action["type"] == "draw" {
+			} else {
+				action = v
+			}
+
+			actionType := action["type"].(string)
+
+			if actionType == "cardIdentity" {
+				actionCardIdentity := ActionCardIdentity{}
+				if err := mapstructure.Decode(a, &actionCardIdentity); err != nil {
+					logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
+						strconv.FormatUint(t.ID, 10) + " to a \"cardIdentity\" action.")
+				}
+				g.Actions[i] = actionCardIdentity
+			} else if actionType == "clue" {
+				actionClue := ActionClue{}
+				if err := mapstructure.Decode(a, &actionClue); err != nil {
+					logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
+						strconv.FormatUint(t.ID, 10) + " to a \"clue\" action.")
+				}
+				g.Actions[i] = actionClue
+			} else if actionType == "discard" {
+				actionDiscard := ActionDiscard{}
+				if err := mapstructure.Decode(a, &actionDiscard); err != nil {
+					logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
+						strconv.FormatUint(t.ID, 10) + " to a \"discard\" action.")
+				}
+				g.Actions[i] = actionDiscard
+			} else if actionType == "draw" {
 				actionDraw := ActionDraw{}
 				if err := mapstructure.Decode(a, &actionDraw); err != nil {
 					logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-						strconv.FormatUint(t.ID, 10) + " to a draw action.")
+						strconv.FormatUint(t.ID, 10) + " to a \"draw\" action.")
 				}
 				g.Actions[i] = actionDraw
+			} else if actionType == "gameOver" {
+				actionGameOver := ActionGameOver{}
+				if err := mapstructure.Decode(a, &actionGameOver); err != nil {
+					logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
+						strconv.FormatUint(t.ID, 10) + " to a \"gameOver\" action.")
+				}
+				g.Actions[i] = actionGameOver
+			} else if actionType == "play" {
+				actionPlay := ActionPlay{}
+				if err := mapstructure.Decode(a, &actionPlay); err != nil {
+					logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
+						strconv.FormatUint(t.ID, 10) + " to a \"play\" action.")
+				}
+				g.Actions[i] = actionPlay
+			} else if actionType == "playerTimes" {
+				actionDraw := ActionDraw{}
+				if err := mapstructure.Decode(a, &actionDraw); err != nil {
+					logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
+						strconv.FormatUint(t.ID, 10) + " to a \"playerTimes\" action.")
+				}
+				g.Actions[i] = actionDraw
+			} else if actionType == "strike" {
+				actionStrike := ActionStrike{}
+				if err := mapstructure.Decode(a, &actionStrike); err != nil {
+					logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
+						strconv.FormatUint(t.ID, 10) + " to a \"strike\" action.")
+				}
+				g.Actions[i] = actionStrike
+			} else if actionType == "status" {
+				actionStatus := ActionStatus{}
+				if err := mapstructure.Decode(a, &actionStatus); err != nil {
+					logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
+						strconv.FormatUint(t.ID, 10) + " to a \"status\" action.")
+				}
+				g.Actions[i] = actionStatus
+			} else if actionType == "turn" {
+				actionTurn := ActionTurn{}
+				if err := mapstructure.Decode(a, &actionTurn); err != nil {
+					logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
+						strconv.FormatUint(t.ID, 10) + " to a \"turn\" action.")
+				}
+				g.Actions[i] = actionTurn
+			} else {
+				logger.Fatal("Table " + strconv.FormatUint(t.ID, 10) +
+					" had an unknown action type of \"" + actionType + "\".")
 			}
-			// (we don't have to bother converting any other actions)
 		}
 
 		// Ensure that all of the players are not present

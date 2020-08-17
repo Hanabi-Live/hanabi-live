@@ -1,5 +1,6 @@
 // Actions represent a change in the game state
 // Different actions will have different fields
+// Any actions implemented here must also be accounted for in the "restoreTables()" function
 
 package main
 
