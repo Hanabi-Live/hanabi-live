@@ -35,11 +35,15 @@ func websocketConnect(ms *melody.Session) {
 
 	// We only want one computer to connect to one user at a time
 	// Use a dedicated mutex to prevent race conditions
+	logger.Debug("Acquiring session connection write lock for user: " + s.Username())
 	sessionConnectMutex.Lock()
+	logger.Debug("Acquired session connection write lock for user: " + s.Username())
 	defer sessionConnectMutex.Unlock()
 
 	// Disconnect any existing connections with this username
+	logger.Debug("Acquiring sessions read lock for user: " + s.Username())
 	sessionsMutex.RLock()
+	logger.Debug("Acquired sessions read lock for user: " + s.Username())
 	s2, ok := sessions[s.UserID()]
 	sessionsMutex.RUnlock()
 	if ok {
@@ -60,7 +64,9 @@ func websocketConnect(ms *melody.Session) {
 	}
 
 	// Add the connection to a session map so that we can keep track of all of the connections
+	logger.Debug("Acquiring sessions write lock for user: " + s.Username())
 	sessionsMutex.Lock()
+	logger.Debug("Acquired sessions write lock for user: " + s.Username())
 	sessions[s.UserID()] = s
 	sessionsMutex.Unlock()
 
@@ -130,7 +136,9 @@ func websocketConnectGetData(s *Session) *WebsocketConnectData {
 	data.FirstTimeUser = time.Since(datetimeCreated) < 10*time.Second
 
 	// Check to see if they are currently playing in an ongoing game
+	logger.Debug("Acquiring tables read lock for user: " + s.Username())
 	tablesMutex.RLock()
+	logger.Debug("Acquired tables read lock for user: " + s.Username())
 	for _, t := range tables {
 		if t.Replay {
 			continue
@@ -152,7 +160,9 @@ func websocketConnectGetData(s *Session) *WebsocketConnectData {
 	// Check to see if they are were spectating in a shared replay before they disconnected
 	// (games that they are playing in take priority over shared replays)
 	if !data.PlayingInOngoingGame {
+		logger.Debug("Acquiring tables read lock for user: " + s.Username())
 		tablesMutex.RLock()
+		logger.Debug("Acquired tables read lock for user: " + s.Username())
 		for _, t := range tables {
 			if !t.Replay {
 				continue
@@ -230,7 +240,9 @@ func websocketConnectWelcomeMessage(s *Session, data *WebsocketConnectData) {
 // (this is much more performant than sending an individual "user" message for every user)
 func websocketConnectUserList(s *Session) {
 	userMessageList := make([]*UserMessage, 0)
+	logger.Debug("Acquiring sessions read lock for user: " + s.Username())
 	sessionsMutex.RLock()
+	logger.Debug("Acquired sessions read lock for user: " + s.Username())
 	for _, s2 := range sessions {
 		// Skip sending a message about ourselves since we already sent that above
 		if s2.UserID() != s.UserID() {
@@ -245,7 +257,9 @@ func websocketConnectUserList(s *Session) {
 // (this is much more performant than sending an individual "table" message for every table)
 func websocketConnectTableList(s *Session) {
 	tableMessageList := make([]*TableMessage, 0)
+	logger.Debug("Acquiring tables read lock for user: " + s.Username())
 	tablesMutex.RLock()
+	logger.Debug("Acquired tables read lock for user: " + s.Username())
 	for _, t := range tables {
 		if t.Visible {
 			tableMessageList = append(tableMessageList, makeTableMessage(s, t))

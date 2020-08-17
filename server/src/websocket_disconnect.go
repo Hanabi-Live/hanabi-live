@@ -12,7 +12,9 @@ func websocketDisconnect(ms *melody.Session) {
 
 	// We only want one computer to connect to one user at a time
 	// Use a dedicated mutex to prevent race conditions
+	logger.Debug("Acquiring session connection write lock for user: " + s.Username())
 	sessionConnectMutex.Lock()
+	logger.Debug("Acquired session connection write lock for user: " + s.Username())
 	defer sessionConnectMutex.Unlock()
 
 	websocketDisconnectRemoveFromMap(s)
@@ -20,7 +22,9 @@ func websocketDisconnect(ms *melody.Session) {
 }
 
 func websocketDisconnectRemoveFromMap(s *Session) {
+	logger.Debug("Acquiring sessions write lock for user: " + s.Username())
 	sessionsMutex.Lock()
+	logger.Debug("Acquired sessions write lock for user: " + s.Username())
 	defer sessionsMutex.Unlock()
 
 	// Check to see if the existing session is different
@@ -44,7 +48,9 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 	preGameTableIDs := make([]uint64, 0)
 	spectatingTableIDs := make([]uint64, 0)
 
+	logger.Debug("Acquiring tables read lock for user: " + s.Username())
 	tablesMutex.RLock()
+	logger.Debug("Acquired tables read lock for user: " + s.Username())
 	for _, t := range tables {
 		// They could be one of the players (1/2)
 		if !t.Replay && t.GetPlayerIndexFromID(s.UserID()) != -1 {
