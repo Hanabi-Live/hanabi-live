@@ -161,7 +161,7 @@ export const onOngoingOrVisibleStrikesChanged = (data: {
       animate(strikeX, {
         duration,
         opacity: 1,
-      }, false);
+      }, true);
     } else {
       // Either this strike has never happened, or we are moving backwards in a replay
       // If this strike never happened, it should be invisible
@@ -174,7 +174,7 @@ export const onOngoingOrVisibleStrikesChanged = (data: {
       animate(strikeX, {
         duration,
         opacity,
-      }, false);
+      }, true);
     }
   }
 

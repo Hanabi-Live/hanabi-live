@@ -58,6 +58,7 @@ const updateLog = (clues: readonly StateClue[]) => {
     const entry = new ClueEntry(clue, {
       width: clueLog.width(),
       height: 0.017 * globals.stage.height(),
+      listening: false,
     });
     if (i < clueLog.children.length) {
       clueLog.updateClue(i, entry);

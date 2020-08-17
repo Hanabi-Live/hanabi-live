@@ -27,7 +27,7 @@ export const image = (getBareName: () => string) => {
   const bare = new Konva.Image({
     width: CARD_W,
     height: CARD_H,
-    image: null as unknown as CanvasImageSource,
+    image: null as unknown as ImageBitmapSource,
     shadowEnabled: false,
     shadowColor: 'black',
     shadowOffset: {
