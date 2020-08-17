@@ -107,7 +107,7 @@ export default class Deck extends Konva.Group {
       globals.lobby.conn!.send('action', {
         tableID: globals.lobby.tableID,
         type: ActionType.Play,
-        target: globals.deck.length - 1,
+        target: globals.deck.length,
       });
 
       turn.hideClueUIAndDisableDragging();
