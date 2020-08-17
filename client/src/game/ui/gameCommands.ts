@@ -3,7 +3,7 @@
 // for e.g. in-game replays
 
 import { createStore } from 'redux';
-import { initArray, trimReplaySuffixFromURL } from '../../misc';
+import { initArray, trimReplaySuffixFromURL, parseIntSafe } from '../../misc';
 import * as sentry from '../../sentry';
 import { getVariant } from '../data/gameData';
 import initialState from '../reducers/initialStates/initialState';
@@ -492,9 +492,9 @@ const validateReplayURL = () => {
   const match2 = window.location.pathname.match(/\/shared-replay\/(\d+).*/);
   let databaseID;
   if (match1 && globals.state.finished && globals.state.replay.shared === null) {
-    databaseID = parseInt(match1[1], 10);
+    databaseID = parseIntSafe(match1[1]);
   } else if (match2 && globals.state.finished && globals.state.replay.shared !== null) {
-    databaseID = parseInt(match2[1], 10);
+    databaseID = parseIntSafe(match2[1]);
   }
   if (databaseID === globals.state.replay.databaseID) {
     return true;
@@ -514,9 +514,9 @@ const checkLoadSpecificReplayTurn = () => {
   // We minus one from the segment since turns are represented to the user as starting from 1
   // (instead of from 0)
   if (match1) {
-    segment = parseInt(match1[1], 10) - 1;
+    segment = parseIntSafe(match1[1]) - 1;
   } else if (match2) {
-    segment = parseInt(match2[1], 10) - 1;
+    segment = parseIntSafe(match2[1]) - 1;
   } else {
     return;
   }

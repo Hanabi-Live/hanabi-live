@@ -4,7 +4,7 @@ import * as gameMain from '../game/main';
 import { DEFAULT_VARIANT_NAME } from '../game/types/constants';
 import * as spectatorsView from '../game/ui/reactive/view/spectatorsView';
 import globals from '../globals';
-import { trimReplaySuffixFromURL } from '../misc';
+import { trimReplaySuffixFromURL, parseIntSafe } from '../misc';
 import * as sentry from '../sentry';
 import * as sounds from '../sounds';
 import * as history from './history';
@@ -300,7 +300,7 @@ commands.set('welcome', (data: WelcomeData) => {
   const match1 = window.location.pathname.match(/\/replay\/(\d+)/);
   if (match1) {
     setTimeout(() => {
-      const gameID = parseInt(match1[1], 10); // The server expects the game ID as an integer
+      const gameID = parseIntSafe(match1[1]); // The server expects the game ID as an integer
       globals.conn!.send('replayCreate', {
         gameID,
         source: 'id',
@@ -315,7 +315,7 @@ commands.set('welcome', (data: WelcomeData) => {
   const match2 = window.location.pathname.match(/\/shared-replay\/(\d+)/);
   if (match2) {
     setTimeout(() => {
-      const gameID = parseInt(match2[1], 10); // The server expects the game ID as an integer
+      const gameID = parseIntSafe(match2[1]); // The server expects the game ID as an integer
       globals.conn!.send('replayCreate', {
         gameID,
         source: 'id',
@@ -329,16 +329,16 @@ commands.set('welcome', (data: WelcomeData) => {
   // Automatically create a table if we are using a "/create-table" URL
   if (
     window.location.pathname === '/create-table'
-      || window.location.pathname === '/dev/create-table'
+    || window.location.pathname === '/dev/create-table'
   ) {
     const urlParams = new URLSearchParams(window.location.search);
     const name = urlParams.get('name') ?? globals.randomTableName;
     const variantName = urlParams.get('variantName') ?? DEFAULT_VARIANT_NAME;
     const timed = urlParams.get('timed') === 'true';
     const timeBaseString = urlParams.get('timeBase') ?? '120';
-    const timeBase = parseInt(timeBaseString, 10);
+    const timeBase = parseIntSafe(timeBaseString);
     const timePerTurnString = urlParams.get('timePerTurn') ?? '20';
-    const timePerTurn = parseInt(timePerTurnString, 10);
+    const timePerTurn = parseIntSafe(timePerTurnString);
     const speedrun = urlParams.get('speedrun') === 'true';
     const cardCycle = urlParams.get('cardCycle') === 'true';
     const deckPlays = urlParams.get('deckPlays') === 'true';

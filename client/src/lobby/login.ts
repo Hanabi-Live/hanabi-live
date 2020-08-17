@@ -3,7 +3,7 @@
 import version from '../../../data/version.json';
 import { FADE_TIME } from '../constants';
 import globals from '../globals';
-import { isEmpty } from '../misc';
+import { isEmpty, parseIntSafe } from '../misc';
 import websocketInit from '../websocketInit';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
@@ -109,7 +109,7 @@ export const automaticLogin = () => {
     }
     let testNumber = 1;
     if (testNumberString !== '') {
-      testNumber = parseInt(testNumberString, 10);
+      testNumber = parseIntSafe(testNumberString);
     }
     if (Number.isNaN(testNumber)) {
       testNumber = 1;

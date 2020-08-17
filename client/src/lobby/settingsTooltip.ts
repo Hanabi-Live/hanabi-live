@@ -1,7 +1,7 @@
 // The "Settings" nav button
 
 import globals from '../globals';
-import { isKeyOf } from '../misc';
+import { isKeyOf, parseIntSafe } from '../misc';
 import * as notifications from '../notifications';
 
 export const init = () => {
@@ -14,7 +14,7 @@ export const init = () => {
     if (typeof volumeString !== 'string') {
       throw new Error('The value of the "settings-volume-slider" element is not a string.');
     }
-    const volume = parseInt(volumeString, 10);
+    const volume = parseIntSafe(volumeString);
     globals.settings.volume = volume;
     $('#settings-volume-slider-value').html(`${volume}%`);
     globals.conn!.send('setting', {
@@ -33,7 +33,7 @@ export const init = () => {
     if (typeof volumeString !== 'string') {
       throw new Error('The value of the "settings-volume-slider" element is not a string.');
     }
-    const volume = parseInt(volumeString, 10);
+    const volume = parseIntSafe(volumeString);
     audio.volume = volume / 100;
     audio.play();
   });

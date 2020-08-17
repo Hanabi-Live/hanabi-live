@@ -134,7 +134,7 @@
     // Get the filter values
     const numPlayers = $('#filter-by-players').val();
     const scoreString = $('#filter-by-score').val();
-    const score = parseInt(scoreString, 10);
+    const score = parseIntSafe(scoreString);
     const variant = $('#filter-by-variant').val();
 
     const numPlayersFilterEnabled = numPlayers !== 'all';
@@ -168,7 +168,7 @@
     }
 
     // Parse the number of players from the URL
-    // e.g. ["", "missing-scores", "test"] from "http://localhost/missing-scores/test"
+    // e.g. ["", "missing-scores", "test"] from "http://localhost/missing-scores/test/2"
     const urlSegments = window.location.pathname.split('/');
     if (urlSegments < 3) {
       return;
@@ -176,7 +176,7 @@
     const playerName = urlSegments[2];
     let numPlayers = 0;
     if (urlSegments.length >= 4) {
-      numPlayers = parseInt(urlSegments[3], 10);
+      numPlayers = parseIntSafe(urlSegments[3]);
       if (numPlayers === NaN) {
         numPlayers = 0;
       }
@@ -194,5 +194,14 @@
       window.location = `/missing-scores/${playerName}/${numPlayers}`;
     });
   }
+
+  // Subroutines
+  const parseIntSafe = (input) => { // (copied from "misc.ts")
+    const trimmedInput = input.trim(); // Remove all leading and trailing whitespace
+    if (!trimmedInput.match(/^[0-9]+$/)) {
+      return NaN;
+    }
+    return parseInt(trimmedInput, 10);
+  };
 </script>
 {{end}}

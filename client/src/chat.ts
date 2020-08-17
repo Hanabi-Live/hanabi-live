@@ -9,7 +9,7 @@ import chatCommands from './chatCommands';
 import { FADE_TIME } from './constants';
 import globals from './globals';
 import Screen from './lobby/types/Screen';
-import { isEmpty } from './misc';
+import { isEmpty, parseIntSafe } from './misc';
 import * as modals from './modals';
 import ChatMessage from './types/ChatMessage';
 
@@ -287,7 +287,7 @@ export const tab = (element: JQuery<HTMLElement>, event: JQuery.Event) => {
   if (typeof message !== 'string') {
     message = '';
   }
-  message = message.trim();
+  message = message.trim(); // Remove all leading and trailing whitespace
   const messageWords = message.split(' ');
   const finalWord = messageWords[messageWords.length - 1];
 
@@ -507,7 +507,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
   const match = data.msg.match(/^\/suggest (\d+)$/);
   if (match) {
     const segmentString = match[1];
-    const segment = parseInt(segmentString, 10);
+    const segment = parseIntSafe(segmentString);
     if (!Number.isNaN(segment) && globals.currentScreen === Screen.Game && globals.ui !== null) {
       globals.ui.suggestTurn(data.who, segment);
     }

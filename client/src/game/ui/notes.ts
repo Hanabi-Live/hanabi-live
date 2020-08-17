@@ -1,5 +1,6 @@
 // Users can right-click cards to record information on them
 
+import { parseIntSafe } from '../../misc';
 import { deckRules } from '../rules';
 import { canPossiblyBe } from '../rules/card';
 import * as variantRules from '../rules/variant';
@@ -149,7 +150,7 @@ export const cardIdentityFromNote = (
     rankStrings = rankStrings.concat('0', 's', 'start');
   }
   for (const rankText of rankStrings) {
-    let rank = parseInt(rankText, 10);
+    let rank = parseIntSafe(rankText);
     if (rank === 0 || Number.isNaN(rank)) {
       rank = START_CARD_RANK;
     }

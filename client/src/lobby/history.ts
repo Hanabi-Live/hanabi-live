@@ -3,7 +3,7 @@
 import { getVariant, VARIANTS } from '../game/data/gameData';
 import Variant from '../game/types/Variant';
 import globals from '../globals';
-import { timerFormatter, dateTimeFormatter } from '../misc';
+import { timerFormatter, dateTimeFormatter, parseIntSafe } from '../misc';
 import Options from '../types/Options';
 import * as nav from './nav';
 import tablesDraw from './tablesDraw';
@@ -89,9 +89,9 @@ export const draw = (friends: boolean) => {
   // JavaScript keys come as strings, so we need to convert them to integers
   let ids: number[];
   if (!friends) {
-    ids = Object.keys(globals.history).map((i) => parseInt(i, 10));
+    ids = Object.keys(globals.history).map((i) => parseIntSafe(i));
   } else {
-    ids = Object.keys(globals.historyFriends).map((i) => parseInt(i, 10));
+    ids = Object.keys(globals.historyFriends).map((i) => parseIntSafe(i));
   }
 
   // Handle if the user has no history
