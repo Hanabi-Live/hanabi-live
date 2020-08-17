@@ -70,7 +70,9 @@ func getTableIDFromName(tableName string) (uint64, bool) {
 }
 
 func deleteTable(t *Table) {
+	logger.Debug("Acquiring tables write lock in the \"deleteTable()\" function.")
 	tablesMutex.Lock()
+	logger.Debug("Acquired tables write lock in the \"deleteTable()\" function.")
 	delete(tables, t.ID)
 	t.Deleted = true
 	tablesMutex.Unlock()

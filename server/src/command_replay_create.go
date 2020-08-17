@@ -85,7 +85,9 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	t.Visible = d.Visibility == "shared"
 
 	// Add it to the map
+	logger.Debug("Acquiring tables write lock for user: " + s.Username())
 	tablesMutex.Lock()
+	logger.Debug("Acquired tables write lock for user: " + s.Username())
 	tables[t.ID] = t
 	tablesMutex.Unlock()
 
