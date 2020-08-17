@@ -88,13 +88,10 @@ func discordConnect() {
 	go discordRefreshMembers()
 
 	// Announce that the server has started
+	// (we wait for Discord to connect before displaying this message)
 	msg := "The server has successfully started at: " + getCurrentTimestamp() + "\n"
 	msg += "(" + gitCommitOnStart + ")"
-	commandChat(nil, &CommandData{
-		Msg:    msg,
-		Room:   "lobby",
-		Server: true,
-	})
+	chatServerSend(msg, "lobby")
 }
 
 func discordRefreshMembers() {
@@ -155,9 +152,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Send everyone the notification
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
-	commandChat(nil, &CommandData{
+	commandChat(nil, &CommandData{ // Manual invocation
 		Username: discordGetNickname(m.Author.ID),
 		Msg:      m.Content,
 		Discord:  true,
@@ -166,6 +161,7 @@ func discordMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		DiscordID: m.Author.ID,
 		// Pass through the discriminator so we can append it to the username
 		DiscordDiscriminator: m.Author.Discriminator,
+		NoLock:               true,
 	})
 }
 

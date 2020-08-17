@@ -9,7 +9,7 @@ import chatCommands from './chatCommands';
 import { FADE_TIME } from './constants';
 import globals from './globals';
 import Screen from './lobby/types/Screen';
-import { isEmpty } from './misc';
+import { isEmpty, parseIntSafe } from './misc';
 import * as modals from './modals';
 import ChatMessage from './types/ChatMessage';
 
@@ -287,7 +287,7 @@ export const tab = (element: JQuery<HTMLElement>, event: JQuery.Event) => {
   if (typeof message !== 'string') {
     message = '';
   }
-  message = message.trim();
+  message = message.trim(); // Remove all leading and trailing whitespace
   const messageWords = message.split(' ');
   const finalWord = messageWords[messageWords.length - 1];
 
@@ -409,8 +409,9 @@ export const add = (data: ChatMessage, fast: boolean) => {
   // Find out which chat box we should add the new chat message to
   let chat;
   if (data.recipient === globals.username) {
-    // This is a PM that we are receiving
-    // Prefer that PMs that are received while in a pregame are sent to the pregame chat
+    // This is a private message (PM) that we are receiving
+    // PMs do not have a room associated with them,
+    // so we default to displaying it on the chat window that the user currently has open
     if (globals.currentScreen === Screen.Game) {
       chat = $('#game-chat-text');
     } else if (globals.currentScreen === Screen.PreGame) {
@@ -506,7 +507,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
   const match = data.msg.match(/^\/suggest (\d+)$/);
   if (match) {
     const segmentString = match[1];
-    const segment = parseInt(segmentString, 10);
+    const segment = parseIntSafe(segmentString);
     if (!Number.isNaN(segment) && globals.currentScreen === Screen.Game && globals.ui !== null) {
       globals.ui.suggestTurn(data.who, segment);
     }

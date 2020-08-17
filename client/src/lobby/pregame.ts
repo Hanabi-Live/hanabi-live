@@ -410,7 +410,7 @@ export const enableStartGameButton = () => {
   }
 
   if (
-    globals.game.owner === globals.id
+    globals.game.owner === globals.userID
     && globals.game.players.length >= 2
     && globals.game.players.length <= 6
   ) {

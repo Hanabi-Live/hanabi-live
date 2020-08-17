@@ -407,7 +407,7 @@ func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ..
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	// Add extra data that should be the same for every page request
-	data.WebsiteName = websiteName
+	data.WebsiteName = WebsiteName
 
 	// Execute the template and send it to the user
 	if err := tmpl.ExecuteTemplate(w, "layout", data); err != nil {

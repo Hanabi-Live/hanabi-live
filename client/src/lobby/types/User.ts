@@ -1,9 +1,9 @@
 import Status from './Status';
 
 export default interface User {
-  id: number;
+  userID: number;
   name: string;
   status: Status;
-  table: number;
+  tableID: number;
   inactive: boolean;
 }

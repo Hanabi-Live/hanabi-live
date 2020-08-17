@@ -2,6 +2,7 @@
 
 import Konva from 'konva';
 import * as debug from '../../debug';
+import { parseIntSafe } from '../../misc';
 import * as modals from '../../modals';
 import * as deck from '../rules/deck';
 import * as stats from '../rules/stats';
@@ -1148,7 +1149,7 @@ const drawSharedReplay = () => {
       // Don't do anything if they pressed the cancel button
       return;
     }
-    const target = parseInt(targetString, 10);
+    const target = parseIntSafe(targetString);
     if (Number.isNaN(target)) {
       // Don't do anything if they entered something that is not a number
       return;

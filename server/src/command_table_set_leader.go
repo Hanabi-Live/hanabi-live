@@ -1,9 +1,5 @@
 package main
 
-import (
-	"strconv"
-)
-
 // commandTableSetLeader is sent when a user right-clicks on the crown
 // or types the "/setleader [username]" command
 //
@@ -13,14 +9,12 @@ import (
 //   name: 'Alice,
 // }
 func commandTableSetLeader(s *Session, d *CommandData) {
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
 	}
 
 	if len(d.Name) == 0 {
@@ -90,7 +84,7 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 			t.NotifyPlayerChange()
 		}
 
-		room := "table" + strconv.Itoa(t.ID)
-		chatServerSend(s.Username()+" has passed table ownership to: "+newLeaderUsername, room)
+		msg := s.Username() + " has passed table ownership to: " + newLeaderUsername
+		chatServerSend(msg, t.GetRoomName())
 	}
 }

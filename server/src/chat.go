@@ -4,7 +4,6 @@ package main
 
 import (
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -35,10 +34,11 @@ type ChatMessage struct {
 // (e.g. to give feedback to a user after they type a command,
 // to notify that the server is shutting down, etc.)
 func chatServerSend(msg string, room string) {
-	commandChat(nil, &CommandData{
+	commandChat(nil, &CommandData{ // Manual invocation
 		Msg:    msg,
-		Server: true,
 		Room:   room,
+		Server: true,
+		NoLock: true,
 	})
 }
 
@@ -46,9 +46,16 @@ func chatServerSend(msg string, room string) {
 // whether they are in the lobby or in the middle of a game
 func chatServerSendAll(msg string) {
 	chatServerSend(msg, "lobby")
+
+	roomNames := make([]string, 0)
+	tablesMutex.RLock()
 	for _, t := range tables {
-		room := "table" + strconv.Itoa(t.ID)
-		chatServerSend(msg, room)
+		roomNames = append(roomNames, t.GetRoomName())
+	}
+	tablesMutex.RUnlock()
+
+	for _, roomName := range roomNames {
+		chatServerSend(msg, roomName)
 	}
 }
 
@@ -56,7 +63,7 @@ func chatServerSendAll(msg string) {
 func chatServerSendPM(s *Session, msg string, room string) {
 	s.Emit("chat", &ChatMessage{
 		Msg:       msg,
-		Who:       websiteName,
+		Who:       WebsiteName,
 		Datetime:  time.Now(),
 		Room:      room,
 		Recipient: s.Username(),
@@ -164,14 +171,13 @@ func chatSendPastFromTable(s *Session, t *Table) {
 	for ; i < len(t.Chat); i++ {
 		// We have to convert the *GameChatMessage to a *ChatMessage
 		gcm := t.Chat[i]
-		room := "table" + strconv.Itoa(t.ID)
 		cm := &ChatMessage{
 			Msg:      gcm.Msg,
 			Who:      gcm.Username,
 			Discord:  false,
 			Server:   gcm.Server,
 			Datetime: gcm.Datetime,
-			Room:     room,
+			Room:     t.GetRoomName(),
 		}
 		chatList = append(chatList, cm)
 	}

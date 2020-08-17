@@ -18,14 +18,12 @@ func commandPause(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
 	}
 	g := t.Game
 
@@ -44,7 +42,7 @@ func commandPause(s *Session, d *CommandData) {
 	// Validate that they are in the game
 	i := t.GetPlayerIndexFromID(s.UserID())
 	if i == -1 {
-		s.Warning("You are not at table " + strconv.Itoa(tableID) + ", " +
+		s.Warning("You are not at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot pause / unpause.")
 		return
 	}
@@ -129,5 +127,5 @@ func commandPause(s *Session, d *CommandData) {
 		msg += "un"
 	}
 	msg += "paused the game."
-	chatServerSend(msg, "table"+strconv.Itoa(t.ID))
+	chatServerSend(msg, t.GetRoomName())
 }

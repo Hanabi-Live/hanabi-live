@@ -39,19 +39,17 @@ func commandReplayAction(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
 	}
 
 	// Validate that this is a shared replay
 	if !t.Replay || !t.Visible {
-		s.Warning("Table " + strconv.Itoa(tableID) + " is not a shared replay, " +
+		s.Warning("Table " + strconv.FormatUint(t.ID, 10) + " is not a shared replay, " +
 			"so you cannot send a shared replay action.")
 		return
 	}
@@ -59,7 +57,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 	// Validate that this person is spectating the shared replay
 	j := t.GetSpectatorIndexFromID(s.UserID())
 	if j < -1 {
-		s.Warning("You are not in shared replay " + strconv.Itoa(tableID) + ".")
+		s.Warning("You are not in shared replay " + strconv.FormatUint(t.ID, 10) + ".")
 	}
 
 	// Validate that this person is leading the shared replay
@@ -94,8 +92,8 @@ func commandReplayActionSegment(s *Session, d *CommandData, t *Table) {
 
 	// Notify everyone
 	type ReplaySegmentMessage struct {
-		TableID int `json:"tableID"`
-		Segment int `json:"segment"`
+		TableID uint64 `json:"tableID"`
+		Segment int    `json:"segment"`
 	}
 	replaySegmentMessage := &ReplaySegmentMessage{
 		TableID: t.ID,
@@ -130,8 +128,8 @@ func commandReplayActionArrow(s *Session, d *CommandData, t *Table) {
 	// Display an arrow to indicate a specific card that the shared replay leader wants to draw
 	// attention to
 	type ReplayIndicatorMessage struct {
-		TableID int `json:"tableID"`
-		Order   int `json:"order"`
+		TableID uint64 `json:"tableID"`
+		Order   int    `json:"order"`
 	}
 	replayIndicatorMessage := &ReplayIndicatorMessage{
 		TableID: t.ID,
@@ -145,7 +143,7 @@ func commandReplayActionArrow(s *Session, d *CommandData, t *Table) {
 func commandReplayActionSound(s *Session, d *CommandData, t *Table) {
 	// Play a sound effect
 	type ReplaySoundMessage struct {
-		TableID int    `json:"tableID"`
+		TableID uint64 `json:"tableID"`
 		Sound   string `json:"sound"`
 	}
 	replaySoundMessage := &ReplaySoundMessage{
@@ -170,7 +168,7 @@ func commandReplayActionHypoStart(s *Session, d *CommandData, t *Table) {
 	g.Hypothetical = true
 
 	type HypoStartMessage struct {
-		TableID int
+		TableID uint64
 	}
 	hypoStartMessage := &HypoStartMessage{
 		TableID: t.ID,
@@ -194,7 +192,7 @@ func commandReplayActionHypoEnd(s *Session, d *CommandData, t *Table) {
 	g.HypoActions = make([]string, 0)
 
 	type HypoEndMessage struct {
-		TableID int
+		TableID uint64
 	}
 	hypoEndMessage := &HypoEndMessage{
 		TableID: t.ID,
@@ -255,7 +253,7 @@ func commandReplayActionHypoBack(s *Session, d *CommandData, t *Table) {
 	}
 
 	type HypoBackMessage struct {
-		TableID int
+		TableID uint64
 	}
 	hypoBackMessage := &HypoBackMessage{
 		TableID: t.ID,
@@ -272,8 +270,8 @@ func commandReplayActionToggleRevealed(s *Session, d *CommandData, t *Table) {
 	g.HypoDrawnCardsShown = !g.HypoDrawnCardsShown
 
 	type HypoDrawnCardsShownMessage struct {
-		TableID         int  `json:"tableID"`
-		DrawnCardsShown bool `json:"drawnCardsShown"`
+		TableID         uint64 `json:"tableID"`
+		DrawnCardsShown bool   `json:"drawnCardsShown"`
 	}
 	hypoDrawnCardsShownMessage := &HypoDrawnCardsShownMessage{
 		TableID:         t.ID,

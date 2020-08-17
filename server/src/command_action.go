@@ -42,14 +42,12 @@ func commandAction(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
 	}
 	g := t.Game
 
@@ -69,7 +67,7 @@ func commandAction(s *Session, d *CommandData) {
 	// Validate that they are in the game
 	i := t.GetPlayerIndexFromID(s.UserID())
 	if i == -1 {
-		s.Warning("You are not playing at table " + strconv.Itoa(tableID) + ", " +
+		s.Warning("You are not playing at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot send an action.")
 		return
 	}
@@ -228,9 +226,10 @@ func commandAction(s *Session, d *CommandData) {
 		// If the player queued a pause command, then pause the game
 		if np.RequestedPause {
 			np.RequestedPause = false
-			commandPause(nps, &CommandData{
+			commandPause(nps, &CommandData{ // Manual invocation
 				TableID: t.ID,
 				Setting: "pause",
+				NoLock:  true,
 			})
 		}
 	}

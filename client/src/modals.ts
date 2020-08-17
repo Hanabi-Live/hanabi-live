@@ -4,7 +4,7 @@ import { FADE_TIME } from './constants';
 import * as gameChat from './game/chat';
 import globals from './globals';
 import * as lobbyNav from './lobby/nav';
-import { closeAllTooltips } from './misc';
+import { closeAllTooltips, parseIntSafe } from './misc';
 import * as sounds from './sounds';
 
 // The list of all of the modals
@@ -69,7 +69,7 @@ const passwordSubmit = () => {
   if (typeof tableIDString !== 'string') {
     throw new Error('The "password-modal-id" element does not have a string value.');
   }
-  const tableID = parseInt(tableIDString, 10); // The server expects this as a number
+  const tableID = parseIntSafe(tableIDString); // The server expects this as a number
   let password = $('#password-modal-password').val();
   if (typeof password === 'number') {
     password = password.toString();

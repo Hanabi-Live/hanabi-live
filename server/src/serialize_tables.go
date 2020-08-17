@@ -14,61 +14,36 @@ import (
 
 // serializeTables saves any ongoing tables to disk as JSON files so that they can be restored later
 func serializeTables() bool {
-	for _, t := range tables {
-		logger.Info("Serializing table:", t.ID)
+	tablesMutex.RLock()
+	defer tablesMutex.RUnlock()
 
+	for _, t := range tables {
 		// Only serialize ongoing games
 		if !t.Running || t.Replay {
 			logger.Info("Skipping due to it being unstarted or a replay.")
 			continue
 		}
 
-		// Force all of the spectators to leave, if any
-		for _, sp := range t.Spectators {
-			s := sp.Session
-			if s == nil {
-				// A spectator's session should never be nil
-				// They might be in the process of reconnecting,
-				// so make a fake session that will represent them
-				s = newFakeSession(sp.ID, sp.Name)
-				logger.Info("Created a new fake session in the \"serializeTables()\" function.")
-			} else {
-				// Boot them from the game
-				s.NotifyBoot(t)
-			}
-			commandTableUnattend(s, &CommandData{
-				TableID: t.ID,
-			})
-		}
-		if len(t.Spectators) > 0 {
-			t.Spectators = make([]*Spectator, 0)
-		}
-		if len(t.DisconSpectators) > 0 {
-			t.DisconSpectators = make(map[int]struct{})
-		}
+		logger.Info("Serializing table:", t.ID)
 
-		// Set all the player sessions to nil, since it is not necessary to serialize those
-		for _, p := range t.Players {
-			p.Session = nil
-			p.Present = false
-		}
-
-		// "t.Game.Table", "t.Game.Options", and "t.Game.ExtraOptions" are circular references;
-		// we do not have to unset them because we have specified `json:"-"` on their fields,
-		// so the JSON encoder will ignore them
-
+		// Several fields on the Table object and the Game object are set with `json:"-"` to prevent
+		// the JSON encoder from serializing them
+		// Otherwise, we would have to explicitly unset some fields here to avoid circular
+		// references, session data, and so forth
+		t.Mutex.Lock()
 		var tableJSON []byte
 		if v, err := json.Marshal(t); err != nil {
-			logger.Error("Failed to marshal table "+strconv.Itoa(t.ID)+":", err)
+			logger.Error("Failed to marshal table "+strconv.FormatUint(t.ID, 10)+":", err)
 			return false
 		} else {
 			tableJSON = v
 		}
+		t.Mutex.Unlock()
 
-		tablePath := path.Join(tablesPath, strconv.Itoa(t.ID)+".json")
+		tableFilename := strconv.FormatUint(t.ID, 10) + ".json"
+		tablePath := path.Join(tablesPath, tableFilename)
 		if err := ioutil.WriteFile(tablePath, tableJSON, 0600); err != nil {
-			logger.Error("Failed to write the table "+strconv.Itoa(t.ID)+" to "+
-				"\""+tablePath+"\":", err)
+			logger.Error("Failed to write \""+tablePath+"\":", err)
 			return false
 		}
 	}
@@ -120,16 +95,22 @@ func restoreTables() {
 		for i, a := range g.Actions {
 			if action, ok := a.(map[string]interface{}); !ok {
 				logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-					strconv.Itoa(t.ID) + " to a map.")
+					strconv.FormatUint(t.ID, 10) + " to a map.")
 			} else if action["type"] == "draw" {
 				actionDraw := ActionDraw{}
 				if err := mapstructure.Decode(a, &actionDraw); err != nil {
 					logger.Fatal("Failed to convert the action " + strconv.Itoa(i) + " of table " +
-						strconv.Itoa(t.ID) + " to a draw action.")
+						strconv.FormatUint(t.ID, 10) + " to a draw action.")
 				}
 				g.Actions[i] = actionDraw
 			}
 			// (we don't have to bother converting any other actions)
+		}
+
+		// Ensure that all of the players are not present
+		// (they were presumably present and connected when the table serialization happened)
+		for _, p := range t.Players {
+			p.Present = false
 		}
 
 		// Restored tables will never be automatically terminated due to idleness because the
@@ -154,7 +135,7 @@ func restoreTables() {
 		}
 	}
 
-	// (we do not need to adjust the "newTableID" variable because
+	// (we do not need to adjust the "tableIDCounter" variable because
 	// we have logic to not allow duplicate game IDs)
 
 	if len(tables) == 1 {

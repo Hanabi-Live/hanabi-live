@@ -16,7 +16,7 @@ func chatHere(s *Session, d *CommandData, t *Table) {
 
 	// Validate that this is coming from a Discord user
 	if d.DiscordID == "" {
-		chatServerSend(ChatCommandNotDiscordFail, d.Room)
+		chatServerSend(ChatCommandNotDiscordFail, "lobby")
 		return
 	}
 
@@ -58,7 +58,7 @@ func chatHere(s *Session, d *CommandData, t *Table) {
 		}
 	}
 
-	chatServerSend(msg, d.Room)
+	chatServerSend(msg, "lobby")
 }
 
 // /last
@@ -70,12 +70,12 @@ func chatLast(s *Session, d *CommandData, t *Table) {
 
 	// Validate that this is coming from a Discord user
 	if d.DiscordID == "" {
-		chatServerSend(ChatCommandNotDiscordFail, d.Room)
+		chatServerSend(ChatCommandNotDiscordFail, "lobby")
 		return
 	}
 
 	// Get the time elapsed since the last @here
 	elapsedMinutes := int(math.Ceil(time.Since(discordLastAtHere).Minutes()))
 	msg := "It has been " + strconv.Itoa(elapsedMinutes) + " minutes since the last mass ping."
-	chatServerSend(msg, d.Room)
+	chatServerSend(msg, "lobby")
 }

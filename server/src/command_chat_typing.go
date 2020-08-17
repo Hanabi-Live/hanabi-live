@@ -20,27 +20,25 @@ func commandChatTyping(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
 	}
 
 	// Validate that they are in the game or are a spectator
 	i := t.GetPlayerIndexFromID(s.UserID())
 	j := t.GetSpectatorIndexFromID(s.UserID())
 	if i == -1 && j == -1 {
-		s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ", " +
-			"so you cannot report that you are typing in the chat.")
+		s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
+			", so you cannot report that you are typing.")
 		return
 	}
 	if t.Replay && j == -1 {
-		s.Warning("You are not spectating replay " + strconv.Itoa(t.ID) + ", " +
-			"so you cannot report that you are typing in the chat.")
+		s.Warning("You are not spectating replay " + strconv.FormatUint(t.ID, 10) +
+			", so you cannot report that you are typing.")
 		return
 	}
 
@@ -80,13 +78,13 @@ func commandChatTyping(s *Session, d *CommandData) {
 
 func commandChatTypingCheckStopped(t *Table, userID int) {
 	time.Sleep(TypingDelay)
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
 
 	// Check to see if the table still exists
-	if _, ok := tables[t.ID]; !ok {
+	_, exists := getTableAndLock(nil, t.ID, true)
+	if !exists {
 		return
 	}
+	defer t.Mutex.Unlock()
 
 	// Validate that they are in the game or are a spectator
 	i := t.GetPlayerIndexFromID(userID)

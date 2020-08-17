@@ -138,8 +138,9 @@ func chatKick(s *Session, d *CommandData, t *Table) {
 				s2 = newFakeSession(p.ID, p.Name)
 				logger.Info("Created a new fake session in the \"chatKick()\" function.")
 			}
-			commandTableLeave(s2, &CommandData{
+			commandTableLeave(s2, &CommandData{ // Manual invocation
 				TableID: t.ID,
+				NoLock:  true,
 			})
 
 			chatServerSend("Successfully kicked \""+d.Args[0]+"\" from the game.", d.Room)
@@ -294,8 +295,9 @@ func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
 	}
 
 	if len(t.Players) == numPlayers {
-		commandTableStart(s, &CommandData{
+		commandTableStart(s, &CommandData{ // Manual invocation
 			TableID: t.ID,
+			NoLock:  true,
 		})
 	} else {
 		t.AutomaticStart = numPlayers
@@ -308,13 +310,13 @@ func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
 func startIn(t *Table, timeToWait time.Duration, datetimePlannedStart time.Time) {
 	// Sleep until it is time to automatically start
 	time.Sleep(timeToWait)
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
 
 	// Check to see if the table still exists
-	if _, ok := tables[t.ID]; !ok {
+	_, exists := getTableAndLock(nil, t.ID, true)
+	if !exists {
 		return
 	}
+	defer t.Mutex.Unlock()
 
 	// Check to see if the game has already started
 	if t.Running {
@@ -330,15 +332,15 @@ func startIn(t *Table, timeToWait time.Duration, datetimePlannedStart time.Time)
 	for _, p := range t.Players {
 		if p.ID == t.Owner {
 			if !p.Present {
-				room := "table" + strconv.Itoa(t.ID)
-				chatServerSend("Aborting automatic game start since the table creator is away.",
-					room)
+				msg := "Aborting automatic game start since the table creator is away."
+				chatServerSend(msg, t.GetRoomName())
 				return
 			}
 
 			logger.Info(t.GetName() + " Automatically starting (from the /startin command).")
-			commandTableStart(p.Session, &CommandData{
+			commandTableStart(p.Session, &CommandData{ // Manual invocation
 				TableID: t.ID,
+				NoLock:  true,
 			})
 			return
 		}

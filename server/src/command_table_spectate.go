@@ -1,9 +1,5 @@
 package main
 
-import (
-	"strconv"
-)
-
 // commandTableSpectate is sent when:
 // 1) the user clicks on the "Spectate" button in the lobby
 // 2) the user creates a solo replay
@@ -21,14 +17,12 @@ func commandTableSpectate(s *Session, d *CommandData) {
 		Validation
 	*/
 
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
 	}
 	g := t.Game
 
@@ -38,18 +32,32 @@ func commandTableSpectate(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that they are not already spectating a game
+	// Validate that they are not already spectating this table
+	for _, sp := range t.Spectators {
+		if sp.ID == s.UserID() {
+			s.Warning("You are already spectating this table.")
+			return
+		}
+	}
+
+	// Validate that they are not already spectating another table
+	alreadySpectating := false
+	tablesMutex.RLock()
 	for _, t2 := range tables {
 		for _, sp := range t2.Spectators {
 			if sp.ID == s.UserID() {
-				if t2.ID == t.ID {
-					s.Warning("You are already spectating this table.")
-				} else {
-					s.Warning("You are already spectating another table.")
-				}
-				return
+				alreadySpectating = true
+				break
 			}
 		}
+		if alreadySpectating {
+			break
+		}
+	}
+	tablesMutex.RUnlock()
+	if alreadySpectating {
+		s.Warning("You are already spectating another table.")
+		return
 	}
 
 	// Validate the shadowing player index
@@ -85,18 +93,18 @@ func commandTableSpectate(s *Session, d *CommandData) {
 
 	// Set their status
 	status := StatusSpectating
-	table := t.ID
+	tableID := t.ID
 	if t.Replay {
 		if t.Visible {
 			status = StatusSharedReplay
 		} else {
 			status = StatusReplay
-			table = -1 // Protect the privacy of a user in a solo replay
+			tableID = 0 // Protect the privacy of a user in a solo replay
 		}
 	}
 	if s != nil {
 		s.Set("status", status)
-		s.Set("table", table)
+		s.Set("tableID", tableID)
 		notifyAllUser(s)
 	}
 

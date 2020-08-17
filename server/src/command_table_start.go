@@ -20,14 +20,12 @@ func commandTableStart(s *Session, d *CommandData) {
 		Validation
 	*/
 
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
 	}
 
 	// Validate that this is the owner of the table
@@ -281,7 +279,7 @@ func commandTableStart(s *Session, d *CommandData) {
 		for _, p := range t.Players {
 			if p.Session != nil {
 				p.Session.Set("status", StatusPlaying)
-				p.Session.Set("table", t.ID)
+				p.Session.Set("tableID", t.ID)
 				notifyAllUser(p.Session)
 			}
 		}

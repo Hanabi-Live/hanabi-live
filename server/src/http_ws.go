@@ -4,6 +4,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"sync/atomic"
 	"time"
 
 	gsessions "github.com/gin-contrib/sessions"
@@ -12,8 +13,9 @@ import (
 )
 
 var (
-	// Start at 1 and increment for every session created
-	sessionID = 1
+	// The counter is atomically incremented before assignment,
+	// so the first ID will be 1 and will increase from there
+	sessionIDCounter uint64 = 0
 )
 
 // httpWS handles part 2 of 2 for logic authentication
@@ -33,16 +35,11 @@ func httpWS(c *gin.Context) {
 	w := c.Writer
 	r := c.Request
 
-	// Lock the command mutex for the duration of the function to ensure synchronous execution
-	commandMutex.Lock()
-	// (we cannot use "defer commandMutex.Unlock()" since this function will not return until the
-	// WebSocket connection is terminated)
-
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
 		msg := "Failed to parse the IP address in the WebSocket function:"
-		httpWSError(msg, err, c)
+		httpWSError(c, msg, err)
 		return
 	} else {
 		ip = v
@@ -51,7 +48,7 @@ func httpWS(c *gin.Context) {
 	// Check to see if their IP is banned
 	if banned, err := models.BannedIPs.Check(ip); err != nil {
 		msg := "Failed to check to see if the IP \"" + ip + "\" is banned:"
-		httpWSError(msg, err, c)
+		httpWSError(c, msg, err)
 		return
 	} else if banned {
 		logger.Info("IP \"" + ip + "\" tried to establish a WebSocket connection, " +
@@ -63,7 +60,6 @@ func httpWS(c *gin.Context) {
 			http.StatusUnauthorized,
 		)
 		deleteCookie(c)
-		commandMutex.Unlock()
 		return
 	}
 
@@ -71,7 +67,7 @@ func httpWS(c *gin.Context) {
 	var muted bool
 	if v, err := models.MutedIPs.Check(ip); err != nil {
 		msg := "Failed to check to see if the IP \"" + ip + "\" is muted:"
-		httpWSError(msg, err, c)
+		httpWSError(c, msg, err)
 		return
 	} else {
 		muted = v
@@ -81,15 +77,9 @@ func httpWS(c *gin.Context) {
 	session := gsessions.Default(c)
 	var userID int
 	if v := session.Get("userID"); v == nil {
-		logger.Info("Unauthorized WebSocket handshake detected from \"" + ip + "\". " +
-			"This likely means that their cookie has expired.")
-		http.Error(
-			w,
-			http.StatusText(http.StatusUnauthorized),
-			http.StatusUnauthorized,
-		)
-		deleteCookie(c)
-		commandMutex.Unlock()
+		msg := "Unauthorized WebSocket handshake detected from \"" + ip + "\". " +
+			"This likely means that their cookie has expired."
+		httpWSDeny(c, msg)
 		return
 	} else {
 		userID = v.(int)
@@ -102,20 +92,14 @@ func httpWS(c *gin.Context) {
 		// e.g. an "orphaned" user
 		// This can happen in situations where a test user was deleted, for example
 		// Delete their cookie and force them to re-login
-		logger.Info("User from \"" + ip + "\" " +
-			"tried to login with a cookie with an orphaned user ID of " + strconv.Itoa(userID) + ". " +
-			"Deleting their cookie.")
-		http.Error(
-			w,
-			http.StatusText(http.StatusUnauthorized),
-			http.StatusUnauthorized,
-		)
-		deleteCookie(c)
-		commandMutex.Unlock()
+		msg := "User from \"" + ip + "\" " +
+			"tried to login with a cookie with an orphaned user ID of " + strconv.Itoa(userID) +
+			". Deleting their cookie."
+		httpWSDeny(c, msg)
 		return
 	} else if err != nil {
 		msg := "Failed to get the username for user " + strconv.Itoa(userID) + ":"
-		httpWSError(msg, err, c)
+		httpWSError(c, msg, err)
 		return
 	} else {
 		username = v
@@ -125,7 +109,7 @@ func httpWS(c *gin.Context) {
 	var friendsMap map[int]struct{}
 	if v, err := models.UserFriends.GetMap(userID); err != nil {
 		msg := "Failed to get the friend map for user \"" + username + "\":"
-		httpWSError(msg, err, c)
+		httpWSError(c, msg, err)
 		return
 	} else {
 		friendsMap = v
@@ -133,7 +117,7 @@ func httpWS(c *gin.Context) {
 	var reverseFriendsMap map[int]struct{}
 	if v, err := models.UserReverseFriends.GetMap(userID); err != nil {
 		msg := "Failed to get the reverse friend map for user \"" + username + "\":"
-		httpWSError(msg, err, c)
+		httpWSError(c, msg, err)
 		return
 	} else {
 		reverseFriendsMap = v
@@ -143,9 +127,8 @@ func httpWS(c *gin.Context) {
 	// Transfer the values from the login cookie into WebSocket session variables
 	// New keys added here should also be added to the "newFakeSesssion()" function
 	keys := defaultSessionKeys()
-	// This is independent of the user and used for disconnection purposes
-	keys["sessionID"] = sessionID
-	sessionID++
+	// The session ID is independent of the user and is used for disconnection purposes
+	keys["sessionID"] = atomic.AddUint64(&sessionIDCounter, 1)
 	keys["userID"] = userID
 	keys["username"] = username
 	keys["muted"] = muted
@@ -155,9 +138,7 @@ func httpWS(c *gin.Context) {
 	// Validation succeeded; establish the WebSocket connection
 	// "HandleRequestWithKeys()" will call the "websocketConnect()" function if successful;
 	// further initialization is performed there
-	commandMutex.Unlock() // We will acquire the lock again in the "websocketConnect()" function
 	if err := m.HandleRequestWithKeys(w, r, keys); err != nil {
-		// We don't use "httpWSError()" since we do not want to unlock the command mutex
 		// We use "logger.Info()" instead of "logger.Error()" because WebSocket establishment can
 		// fail for mundane reasons (e.g. internet dropping)
 		logger.Info("Failed to establish the WebSocket connection for user \""+username+"\":", err)
@@ -171,7 +152,11 @@ func httpWS(c *gin.Context) {
 	}
 }
 
-func httpWSError(msg string, err error, c *gin.Context) {
+/*
+	Subroutines
+*/
+
+func httpWSError(c *gin.Context, msg string, err error) {
 	// Local variables
 	w := c.Writer
 
@@ -182,7 +167,19 @@ func httpWSError(msg string, err error, c *gin.Context) {
 		http.StatusInternalServerError,
 	)
 	deleteCookie(c)
-	commandMutex.Unlock()
+}
+
+func httpWSDeny(c *gin.Context, msg string) {
+	// Local variables
+	w := c.Writer
+
+	logger.Info(msg)
+	http.Error(
+		w,
+		http.StatusText(http.StatusUnauthorized),
+		http.StatusUnauthorized,
+	)
+	deleteCookie(c)
 }
 
 func defaultSessionKeys() map[string]interface{} {
@@ -193,7 +190,7 @@ func defaultSessionKeys() map[string]interface{} {
 	keys["username"] = ""
 	keys["muted"] = false
 	keys["status"] = StatusLobby // By default, new users are in the lobby
-	keys["table"] = -1
+	keys["tableID"] = uint64(0)
 	keys["friends"] = make(map[int]struct{})
 	keys["reverseFriends"] = make(map[int]struct{})
 	keys["inactive"] = false

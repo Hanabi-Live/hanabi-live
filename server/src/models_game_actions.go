@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"strconv"
+	"strings"
 )
 
 type GameActions struct{}
@@ -13,31 +15,38 @@ type GameAction struct {
 	Value  int `json:"value"`
 }
 
-func (*GameActions) Insert(gameID int, turn int, gameAction *GameAction) error {
-	_, err := db.Exec(
-		context.Background(),
-		`
-			INSERT INTO game_actions (
-				game_id,
-				turn,
-				type,
-				target,
-				value
-			)
-			VALUES (
-				$1,
-				$2,
-				$3,
-				$4,
-				$5
-			)
-		`,
-		gameID,
-		turn,
-		gameAction.Type,
-		gameAction.Target,
-		gameAction.Value,
-	)
+// GameActionRow mirrors the "game_actions" table row
+type GameActionRow struct {
+	GameID int
+	Turn   int
+	Type   int
+	Target int
+	Value  int
+}
+
+func (*GameActions) BulkInsert(gameActionRows []*GameActionRow) error {
+	SQLString := `
+		INSERT INTO game_actions (
+			game_id,
+			turn,
+			type,
+			target,
+			value
+		)
+		VALUES
+	`
+	for _, gameActionRow := range gameActionRows {
+		SQLString += "(" +
+			strconv.Itoa(gameActionRow.GameID) + ", " +
+			strconv.Itoa(gameActionRow.Turn) + ", " +
+			strconv.Itoa(gameActionRow.Type) + ", " +
+			strconv.Itoa(gameActionRow.Target) + ", " +
+			strconv.Itoa(gameActionRow.Value) +
+			"), "
+	}
+	SQLString = strings.TrimSuffix(SQLString, ", ")
+
+	_, err := db.Exec(context.Background(), SQLString)
 	return err
 }
 

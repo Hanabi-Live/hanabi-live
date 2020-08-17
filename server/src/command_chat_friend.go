@@ -63,13 +63,17 @@ func friend(s *Session, d *CommandData, add bool) {
 		friend = v
 	}
 
+	sessionsMutex.RLock()
+	s2, ok := sessions[friend.ID]
+	sessionsMutex.RUnlock()
+
 	friendMap := s.Friends()
 	var reverseFriendMap map[int]struct{}
-	if s2, ok := sessions[friend.ID]; ok {
+	if ok {
 		reverseFriendMap = s2.ReverseFriends()
 	}
-	var msg string
 
+	var msg string
 	if add {
 		// Validate that this user is not already their friend
 		if _, ok := friendMap[friend.ID]; ok {

@@ -1,6 +1,7 @@
 // Functions for progressing forward and backward through time
 
 import Konva from 'konva';
+import { parseIntSafe } from '../../misc';
 import * as arrows from './arrows';
 import Shuttle from './controls/Shuttle';
 import globals from './globals';
@@ -289,7 +290,7 @@ export const promptTurn = () => {
   if (turnString === null) {
     return;
   }
-  let targetTurn = parseInt(turnString, 10);
+  let targetTurn = parseIntSafe(turnString);
   if (Number.isNaN(targetTurn)) {
     return;
   }

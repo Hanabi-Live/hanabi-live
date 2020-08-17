@@ -2,7 +2,7 @@
 
 import Konva from 'konva';
 import Screen from '../../lobby/types/Screen';
-import { copyStringToClipboard } from '../../misc';
+import { copyStringToClipboard, parseIntSafe } from '../../misc';
 import ActionType from '../types/ActionType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
@@ -325,7 +325,7 @@ const promptOwnHandOrder = (actionString: string) : string | number | null => {
     return null;
   }
 
-  const numResponse = parseInt(response, 10);
+  const numResponse = parseIntSafe(response);
   if (numResponse < 1 || numResponse > maxSlotIndex) {
     return null;
   }

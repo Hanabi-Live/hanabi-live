@@ -7,17 +7,17 @@ import (
 	"time"
 )
 
-func (s *Session) SessionID() int {
+func (s *Session) SessionID() uint64 {
 	if s == nil {
 		logger.Error("The \"SessionID\" method was called for a nil session.")
-		return -1
+		return 0
 	}
 
 	if v, exists := s.Get("sessionID"); !exists {
 		logger.Error("Failed to get \"SessionID\" from a session.")
-		return -1
+		return 0
 	} else {
-		return v.(int)
+		return v.(uint64)
 	}
 }
 
@@ -77,17 +77,17 @@ func (s *Session) Status() int {
 	}
 }
 
-func (s *Session) Table() int {
+func (s *Session) TableID() uint64 {
 	if s == nil {
-		logger.Error("The \"Table\" method was called for a nil session.")
-		return -1
+		logger.Error("The \"TableID\" method was called for a nil session.")
+		return 0
 	}
 
-	if v, exists := s.Get("table"); !exists {
-		logger.Error("Failed to get \"table\" from a session.")
-		return -1
+	if v, exists := s.Get("tableID"); !exists {
+		logger.Error("Failed to get \"tableID\" from a session.")
+		return 0
 	} else {
-		return v.(int)
+		return v.(uint64)
 	}
 }
 

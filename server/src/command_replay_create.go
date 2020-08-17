@@ -80,8 +80,15 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	}
 
 	t := NewTable(name, -1)
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
 	t.Visible = d.Visibility == "shared"
+
+	// Add it to the map
+	tablesMutex.Lock()
 	tables[t.ID] = t
+	tablesMutex.Unlock()
+
 	if d.Source == "id" {
 		logger.Info("User \"" + s.Username() + "\" created a new " + d.Visibility +
 			" replay for game #" + strconv.Itoa(d.GameID))
@@ -93,7 +100,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	// Load the players and options from the database or JSON file
 	if d.Source == "id" {
 		if !loadDatabaseToTable(s, d, t) {
-			delete(tables, t.ID)
+			deleteTable(t)
 			return
 		}
 	} else if d.Source == "json" {
@@ -101,30 +108,31 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	}
 
 	// Start the (fake) game
-	commandTableStart(t.Players[0].Session, &CommandData{
+	commandTableStart(t.Players[0].Session, &CommandData{ // Manual invocation
 		TableID: t.ID,
+		NoLock:  true,
 	})
 	g := t.Game
 	if g == nil {
 		logger.Error("Failed to start the game when after loading database game #" + strconv.Itoa(d.GameID) + ".")
 		s.Error(InitGameFail)
-		delete(tables, t.ID)
+		deleteTable(t)
 		return
 	}
 
 	if !applyNotesToPlayers(s, d, g) {
-		delete(tables, t.ID)
+		deleteTable(t)
 		return
 	}
 
 	if !emulateActions(s, d, t) {
-		delete(tables, t.ID)
+		deleteTable(t)
 		return
 	}
 
 	// Handle scripts that are creating replays with no sessions
 	if s == nil {
-		delete(tables, t.ID)
+		deleteTable(t)
 		return
 	}
 
@@ -140,7 +148,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 			logger.Error("Failed to get the datetimes for game "+
 				"\""+strconv.Itoa(t.ExtraOptions.DatabaseID)+"\":", err)
 			s.Error(InitGameFail)
-			delete(tables, t.ID)
+			deleteTable(t)
 			return
 		} else {
 			g.DatetimeStarted = v1
@@ -149,8 +157,11 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	}
 
 	// Join the user to the new replay
-	d.TableID = t.ID
-	commandTableSpectate(s, d)
+	commandTableSpectate(s, &CommandData{ // Manual invocation
+		TableID:              t.ID,
+		ShadowingPlayerIndex: -1,
+		NoLock:               true,
+	})
 	t.Owner = s.UserID()
 
 	// Start the idle timeout
@@ -540,11 +551,12 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 
 		p := t.Players[g.ActivePlayerIndex]
 
-		commandAction(p.Session, &CommandData{
+		commandAction(p.Session, &CommandData{ // Manual invocation
 			TableID: t.ID,
 			Type:    action.Type,
 			Target:  action.Target,
 			Value:   action.Value,
+			NoLock:  true,
 		})
 
 		if g.InvalidActionOccurred {
@@ -562,7 +574,3 @@ func emulateActions(s *Session, d *CommandData, t *Table) bool {
 
 	return true
 }
-
-var (
-	fuckedIDs = make([]int, 0)
-)

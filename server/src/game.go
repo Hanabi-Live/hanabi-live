@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+// Game is a sub-object of a table
+// It represents all of the particular state associated with a game
+// A tag of `json:"-"` denotes that the JSON serializer should skip the field when serializing
+// (which is used in this case to prevent circular references)
 type Game struct {
 	// This corresponds to the database field of "datetime_started"
 	// It will be equal to "Table.DatetimeStarted" in an ongoing game that has not been written to
@@ -17,10 +21,10 @@ type Game struct {
 	DatetimeFinished time.Time
 
 	// This is a reference to the parent object; every game must have a parent Table object
-	Table *Table `json:"-"` // Skip circular references when encoding
+	Table *Table `json:"-"`
 	// This is a reference to the Options field of the Table object (for convenience purposes)
-	Options      *Options      `json:"-"` // Skip circular references when encoding
-	ExtraOptions *ExtraOptions `json:"-"` // Skip circular references when encoding
+	Options      *Options      `json:"-"`
+	ExtraOptions *ExtraOptions `json:"-"`
 	// (circular references must also be restored in the "restoreTables()" function)
 
 	// Game state related fields
@@ -144,8 +148,13 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 
 	// Sleep until the active player runs out of time
 	time.Sleep(gp.Time)
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
+
+	// Check to see if the table still exists
+	_, exists := getTableAndLock(nil, t.ID, true)
+	if !exists {
+		return
+	}
+	defer t.Mutex.Unlock()
 
 	// Check to see if the game ended already
 	if g.EndCondition > EndConditionInProgress {
@@ -182,11 +191,12 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 	}
 
 	// End the game
-	commandAction(s, &CommandData{
+	commandAction(s, &CommandData{ // Manual invocation
 		TableID: t.ID,
 		Type:    ActionTypeEndGame,
 		Target:  gp.Index,
 		Value:   EndConditionTimeout,
+		NoLock:  true,
 	})
 }
 

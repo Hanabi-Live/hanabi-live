@@ -85,6 +85,16 @@ const pad2 = (num: number) => {
   return `${num}`;
 };
 
+// By default, "parseInt('1a')" will return "1", which is unexpected
+// Thus, we use a helper function as a stand-in for parseInt so that we can handle this properly
+export const parseIntSafe = (input: string) => {
+  const trimmedInput = input.trim(); // Remove all leading and trailing whitespace
+  if (!trimmedInput.match(/^[0-9]+$/)) {
+    return NaN;
+  }
+  return parseInt(trimmedInput, 10);
+};
+
 export const timerFormatter = (totalSeconds: number) => {
   const milliseconds = totalSeconds * 1000;
   const time = new Date();

@@ -2,15 +2,41 @@ package main
 
 import (
 	"context"
+	"strconv"
+	"strings"
 )
 
 type GameTags struct{}
+
+type GameTagsRow struct {
+	GameID int
+	UserID int
+	Tag    string
+}
 
 func (*GameTags) Insert(gameID int, userID int, tag string) error {
 	_, err := db.Exec(context.Background(), `
 		INSERT INTO game_tags (game_id, user_id, tag)
 		VALUES ($1, $2, $3)
 	`, gameID, userID, tag)
+	return err
+}
+
+func (*GameTags) BulkInsert(gameTagsRows []*GameTagsRow) error {
+	SQLString := `
+		INSERT INTO game_tags (game_id, user_id, tag)
+		VALUES
+	`
+	for _, gameTagsRow := range gameTagsRows {
+		SQLString += "(" +
+			strconv.Itoa(gameTagsRow.GameID) + ", " +
+			strconv.Itoa(gameTagsRow.UserID) + ", " +
+			"'" + gameTagsRow.Tag + "'" +
+			"), "
+	}
+	SQLString = strings.TrimSuffix(SQLString, ", ")
+
+	_, err := db.Exec(context.Background(), SQLString)
 	return err
 }
 

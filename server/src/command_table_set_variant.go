@@ -14,14 +14,12 @@ import (
 //   },
 // }
 func commandTableSetVariant(s *Session, d *CommandData) {
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
 	}
 
 	if t.Running {
@@ -77,6 +75,6 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 	// Update the variant in the table list for everyone in the lobby
 	notifyAllTable(t)
 
-	room := "table" + strconv.Itoa(tableID)
-	chatServerSend(s.Username()+" has changed the variant to: "+d.Options.VariantName, room)
+	msg := s.Username() + " has changed the variant to: " + d.Options.VariantName
+	chatServerSend(msg, t.GetRoomName())
 }

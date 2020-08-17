@@ -45,7 +45,6 @@ func httpLocalhostInit() {
 	httpRouter.GET("/saveTables", httpLocalhostSaveTables)
 	httpRouter.POST("/sendWarning", httpLocalhostUserAction)
 	httpRouter.POST("/sendError", httpLocalhostUserAction)
-	httpRouter.POST("/serialize", httpLocalhostSerialize)
 	httpRouter.GET("/shutdown", httpLocalhostShutdown)
 	httpRouter.GET("/terminate", httpLocalhostTerminate)
 	httpRouter.GET("/timeLeft", httpLocalhostTimeLeft)
@@ -120,16 +119,21 @@ func httpLocalhostUserAction(c *gin.Context) {
 }
 
 func logoutUser(userID int) {
-	if s, ok := sessions[userID]; !ok {
+	sessionsMutex.RLock()
+	s, ok := sessions[userID]
+	sessionsMutex.RUnlock()
+
+	if !ok {
 		logger.Info("Attempted to manually log out user " + strconv.Itoa(userID) + ", " +
 			"but they were not online.")
+		return
+	}
+
+	if err := s.Close(); err != nil {
+		logger.Error("Failed to manually close the WebSocket session for user "+
+			strconv.Itoa(userID)+":", err)
 	} else {
-		if err := s.Close(); err != nil {
-			logger.Info("Failed to manually close the WebSocket session for user "+
-				strconv.Itoa(userID)+":", err)
-		} else {
-			logger.Info("Successfully terminated the WebSocket session for user " +
-				strconv.Itoa(userID) + ".")
-		}
+		logger.Info("Successfully terminated the WebSocket session for user " +
+			strconv.Itoa(userID) + ".")
 	}
 }

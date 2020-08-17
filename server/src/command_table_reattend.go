@@ -15,20 +15,18 @@ func commandTableReattend(s *Session, d *CommandData) {
 		Validation
 	*/
 
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
 	}
 
 	// Validate that they are at the table
 	i := t.GetPlayerIndexFromID(s.UserID())
 	if i == -1 {
-		s.Warning("You are not playing at table " + strconv.Itoa(tableID) + ", " +
+		s.Warning("You are not playing at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot reattend it.")
 		return
 	}
@@ -73,7 +71,7 @@ func commandTableReattend(s *Session, d *CommandData) {
 			status = StatusPregame
 		}
 		s.Set("status", status)
-		s.Set("table", t.ID)
+		s.Set("tableID", t.ID)
 		notifyAllUser(s)
 	}
 }

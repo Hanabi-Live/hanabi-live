@@ -1,7 +1,7 @@
 // The "Watch Specific Replay" nav button
 
 import globals from '../globals';
-import { closeAllTooltips } from '../misc';
+import { closeAllTooltips, parseIntSafe } from '../misc';
 
 export const init = () => {
   // Make the text box appear and disappear depending on which source is selected
@@ -44,7 +44,7 @@ const replaySourceChange = () => {
 const submit = () => {
   // Source
   const sourceID = $('input[type=radio][name=replay-source]:checked')[0].id;
-  let source;
+  let source: string;
   if (sourceID === 'replay-source-id') {
     source = 'id';
   } else if (sourceID === 'replay-source-json') {
@@ -71,9 +71,9 @@ const submit = () => {
   if (typeof gameIDString !== 'string') {
     throw new Error('The value of the "replay-id" element is not a string.');
   }
-  let gameID;
+  let gameID: number | undefined;
   if (source === 'id') {
-    gameID = parseInt(gameIDString, 10);
+    gameID = parseIntSafe(gameIDString);
     if (Number.isNaN(gameID)) {
       error('Error: The database ID must be a number.');
       return;
@@ -107,7 +107,7 @@ const submit = () => {
 
   // Visibility
   const visibilityID = $('input[type=radio][name=replay-visibility]:checked')[0].id;
-  let visibility;
+  let visibility: string;
   if (visibilityID === 'replay-visibility-solo') {
     visibility = 'solo';
   } else if (visibilityID === 'replay-visibility-shared') {

@@ -1,11 +1,15 @@
 package main
 
+import (
+	"github.com/tevino/abool"
+)
+
 var (
-	maintenanceMode bool
+	maintenanceMode = abool.New()
 )
 
 func maintenance(enabled bool) {
-	maintenanceMode = enabled
+	maintenanceMode.SetTo(enabled)
 	notifyAllMaintenance()
 	msg := ""
 	if enabled {

@@ -10,6 +10,7 @@ import {
   getRandomNumber,
   isEmpty,
   isKeyOf,
+  parseIntSafe,
 } from '../misc';
 import * as modals from '../modals';
 import Settings from './types/Settings';
@@ -129,10 +130,10 @@ export const init = () => {
     getVariant('createTableVariant');
   });
   $('#createTableTimeBaseMinutes').change(() => {
-    getTextbox('createTableTimeBaseMinutes');
+    getTextboxForTimeBase('createTableTimeBaseMinutes');
   });
   $('#createTableTimePerTurnSeconds').change(() => {
-    getTextbox('createTableTimePerTurnSeconds');
+    getTextboxForTimePerTurn('createTableTimePerTurnSeconds');
   });
   $('#createTableCardCycle').change(() => {
     getCheckbox('createTableCardCycle');
@@ -240,10 +241,8 @@ const secondVariantDropdownInit = () => {
 
 const submit = () => {
   // We need to mutate some values before sending them to the server
-  const timeBaseMinutes = parseFloat(getTextbox('createTableTimeBaseMinutes'));
-  const timeBase = Math.round(timeBaseMinutes * 60); // The server expects this in seconds
-  const timePerTurnSeconds = getTextbox('createTableTimePerTurnSeconds');
-  const timePerTurn = parseInt(timePerTurnSeconds, 10); // The server expects this in seconds
+  const timeBaseMinutes = getTextboxForTimeBase('createTableTimeBaseMinutes');
+  const timeBaseSeconds = Math.round(timeBaseMinutes * 60); // The server expects this in seconds
 
   // All "Create Game" settings are stored on the server with the exception of passwords;
   // passwords are stored locally as cookies
@@ -258,8 +257,8 @@ const submit = () => {
     options: {
       variantName: getVariant('createTableVariant'), // This is a hidden span field
       timed: getCheckbox('createTableTimed'),
-      timeBase,
-      timePerTurn,
+      timeBase: timeBaseSeconds,
+      timePerTurn: getTextboxForTimePerTurn('createTableTimePerTurnSeconds'),
       speedrun: getCheckbox('createTableSpeedrun'),
       cardCycle: getCheckbox('createTableCardCycle'),
       deckPlays: getCheckbox('createTableDeckPlays'),
@@ -291,14 +290,52 @@ const getTextbox = (setting: keyof Settings) => {
   if (element === undefined) {
     throw new Error(`Failed to get the element of "${setting}".`);
   }
-  let value = element.val();
+  const value = element.val();
   if (isEmpty(value)) {
     throw new Error(`Failed to get the value of element "${setting}".`);
   }
   if (typeof value !== 'string') {
     throw new Error(`The value of element "${setting}" is not a string.`);
   }
-  value = value.trim(); // Trim leading and trailing whitespace
+  return value.trim(); // Remove all leading and trailing whitespace
+};
+
+const getTextboxForTimePerTurn = (setting: keyof Settings) => {
+  const element = $(`#${setting}`);
+  if (element === undefined) {
+    throw new Error(`Failed to get the element of "${setting}".`);
+  }
+
+  const valueString = getTextbox(setting);
+  let value = parseIntSafe(valueString);
+  if (Number.isNaN(value)) {
+    // They have entered an invalid amount of seconds, so revert to using the default value
+    value = 20;
+
+    // Also change the value of the actual element on the page
+    element.val(value.toString());
+  }
+
+  checkChanged(setting, value);
+  return value;
+};
+
+const getTextboxForTimeBase = (setting: keyof Settings) => {
+  const element = $(`#${setting}`);
+  if (element === undefined) {
+    throw new Error(`Failed to get the element of "${setting}".`);
+  }
+
+  const valueString = getTextbox(setting);
+  let value = Number(valueString); // This can be a float
+  if (Number.isNaN(value)) {
+    // They have entered an invalid amount of minutes, so revert to using the default value
+    value = 2;
+
+    // Also change the value of the actual element on the page
+    element.val(value.toString());
+  }
+
   checkChanged(setting, value);
   return value;
 };
@@ -309,7 +346,7 @@ const getVariant = (setting: keyof Settings) => {
     throw new Error(`Failed to get the element of "${setting}".`);
   }
   let value = element.text();
-  value = value.trim(); // Trim leading and trailing whitespace
+  value = value.trim(); // Remove all leading and trailing whitespace
   if (value === '') {
     value = 'No Variant';
   }
@@ -317,7 +354,7 @@ const getVariant = (setting: keyof Settings) => {
   return value;
 };
 
-export const checkChanged = (settingName: keyof Settings, value: boolean | string) => {
+export const checkChanged = (settingName: keyof Settings, value: boolean | string | number) => {
   if (!isKeyOf(settingName, globals.settings)) {
     throw new Error(`The setting of ${settingName} does not exist in the Settings class.`);
   }
@@ -379,7 +416,7 @@ export const ready = () => {
   if (debug.amTestUser(globals.username)) {
     $('#createTableName').val('test game');
   } else {
-    $('#createTableName').val(globals.randomName);
+    $('#createTableName').val(globals.randomTableName);
 
     // Get a new random name from the server for the next time we click the button
     globals.conn!.send('getName');

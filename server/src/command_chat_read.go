@@ -1,9 +1,5 @@
 package main
 
-import (
-	"strconv"
-)
-
 // commandChatRead is sent when the user opens the in-game chat or
 // when they receive a chat message when the in-game chat is already open
 //
@@ -12,14 +8,12 @@ import (
 //   tableID: 5,
 // }
 func commandChatRead(s *Session, d *CommandData) {
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
 	}
 
 	// Validate that they are in the game or are a spectator

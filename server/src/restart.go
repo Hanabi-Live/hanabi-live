@@ -7,6 +7,8 @@ import (
 // We want to record all of the ongoing games to a flat file on the disk
 // This allows the server to restart without waiting for ongoing games to finish
 func restart() {
+	logger.Info("Initiating a server graceful restart.")
+
 	// We build the client and the server first before kicking everyone off in order to reduce the
 	// total amount of downtime (but executing Bash scripts will not work on Windows)
 	if runtime.GOOS != "windows" {
@@ -23,28 +25,25 @@ func restart() {
 		}
 	}
 
-	// Lock the command mutex to prevent any more moves from being submitted
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
+	waitForAllWebSocketCommandsToFinish()
 
 	logger.Info("Serializing the tables and writing all tables to disk...")
 	if !serializeTables() {
 		return
 	}
+	logger.Info("Finished writing all tables to disk.")
 
+	sessionsMutex.RLock()
 	for _, s := range sessions {
 		s.Error("The server is going down momentarily to load a new version of the code. " +
 			"If you are currently playing a game, all of the progress should be saved. " +
 			"Please wait a few seconds and then refresh the page.")
 	}
+	sessionsMutex.RUnlock()
 
-	commandChat(nil, &CommandData{
-		Msg:    "The server went down for a restart at: " + getCurrentTimestamp(),
-		Room:   "lobby",
-		Server: true,
-	})
+	msg := "The server went down for a restart at: " + getCurrentTimestamp()
+	chatServerSend(msg, "lobby")
 
-	logger.Info("Finished writing all tables to disk.")
 	if runtime.GOOS != "windows" {
 		logger.Info("Restarting...")
 		if err := executeScript("restart_service_only.sh"); err != nil {
@@ -54,7 +53,4 @@ func restart() {
 	} else {
 		logger.Info("Manually kill the server now.")
 	}
-
-	// Block until the process is killed so that no more moves can be submitted
-	select {}
 }

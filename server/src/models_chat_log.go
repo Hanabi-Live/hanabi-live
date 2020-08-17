@@ -4,16 +4,42 @@ import (
 	"context"
 	"database/sql"
 	"strconv"
+	"strings"
 	"time"
 )
 
 type ChatLog struct{}
+
+// ChatLogRow mirrors the "chat_log" table row
+type ChatLogRow struct {
+	UserID  int
+	Message string
+	Room    string
+}
 
 func (*ChatLog) Insert(userID int, message string, room string) error {
 	_, err := db.Exec(context.Background(), `
 		INSERT INTO chat_log (user_id, message, room)
 		VALUES ($1, $2, $3)
 	`, userID, message, room)
+	return err
+}
+
+func (*ChatLog) BulkInsert(chatLogRows []*ChatLogRow) error {
+	SQLString := `
+		INSERT INTO chat_log (user_id, message, room)
+		VALUES
+	`
+	for _, chatLogRow := range chatLogRows {
+		SQLString += "(" +
+			strconv.Itoa(chatLogRow.UserID) + ", " +
+			"'" + chatLogRow.Message + "', " +
+			"'" + chatLogRow.Room + "'" +
+			"), "
+	}
+	SQLString = strings.TrimSuffix(SQLString, ", ")
+
+	_, err := db.Exec(context.Background(), SQLString)
 	return err
 }
 

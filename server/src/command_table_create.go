@@ -35,7 +35,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 	}
 
 	// Validate that the server is not undergoing maintenance
-	if maintenanceMode {
+	if maintenanceMode.IsSet() {
 		s.Warning("The server is undergoing maintenance. " +
 			"You cannot start any new games for the time being.")
 		return
@@ -186,7 +186,7 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 			}
 			if setReplayTurn >= numTurns {
 				s.Warning("Game #" + strconv.Itoa(databaseID) + " only has " +
-					strconv.Itoa(numTurns) + ".")
+					strconv.Itoa(numTurns) + " turns.")
 				return
 			}
 
@@ -278,6 +278,8 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	}
 
 	t := NewTable(d.Name, s.UserID())
+	t.Mutex.Lock()
+	defer t.Mutex.Unlock()
 	t.Visible = preGameVisible
 	t.PasswordHash = passwordHash
 	if setReplayOptions == nil {
@@ -291,21 +293,28 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 		SetReplay:     setReplay,
 		SetReplayTurn: setReplayTurn,
 	}
-	tables[t.ID] = t // Add it to the map
+
+	// Add it to the map
+	tablesMutex.Lock()
+	tables[t.ID] = t
+	tablesMutex.Unlock()
+
 	logger.Info(t.GetName() + "User \"" + s.Username() + "\" created a table.")
 	// (a "table" message will be sent in the "commandTableJoin" function below)
 
 	// Join the user to the new table
-	d.TableID = t.ID
-	commandTableJoin(s, d)
+	commandTableJoin(s, &CommandData{ // Manual invocation
+		TableID: t.ID,
+		NoLock:  true,
+	})
 
 	// If the server is shutting down / restarting soon, warn the players
-	if shuttingDown {
+	if shuttingDown.IsSet() {
 		timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit)
 		minutesLeft := int(timeLeft.Minutes())
 
 		msg := "The server is shutting down in " + strconv.Itoa(minutesLeft) + " minutes. " +
 			"Keep in mind that if your game is not finished in time, it will be terminated."
-		chatServerSend(msg, "table"+strconv.Itoa(t.ID))
+		chatServerSend(msg, t.GetRoomName())
 	}
 }

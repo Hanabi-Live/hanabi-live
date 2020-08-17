@@ -17,20 +17,18 @@ func commandTableTerminate(s *Session, d *CommandData) {
 		Validate
 	*/
 
-	// Validate that the table exists
-	tableID := d.TableID
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
+	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
 	}
 
 	// Validate that they are in the game
 	i := t.GetPlayerIndexFromID(s.UserID())
 	if i == -1 {
-		s.Warning("You are not playing at table " + strconv.Itoa(tableID) + ", " +
+		s.Warning("You are not playing at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot terminate it.")
 		return
 	}
@@ -51,10 +49,11 @@ func commandTableTerminate(s *Session, d *CommandData) {
 		Terminate
 	*/
 
-	commandAction(s, &CommandData{
+	commandAction(s, &CommandData{ // Manual invocation
 		TableID: t.ID,
 		Type:    ActionTypeEndGame,
 		Target:  i,
 		Value:   EndConditionTerminated,
+		NoLock:  true,
 	})
 }

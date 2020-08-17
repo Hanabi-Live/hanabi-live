@@ -15,14 +15,15 @@ func httpLocalhostSendError(c *gin.Context, userID int) {
 		return
 	}
 
-	var s *Session
-	if v, ok := sessions[userID]; !ok {
+	sessionsMutex.RLock()
+	s, ok := sessions[userID]
+	sessionsMutex.RUnlock()
+
+	if !ok {
 		msg2 := "Failed to get the session for the user ID of \"" + strconv.Itoa(userID) + "\"."
 		logger.Error(msg2)
 		c.String(http.StatusInternalServerError, msg2)
 		return
-	} else {
-		s = v
 	}
 
 	s.Error(msg)

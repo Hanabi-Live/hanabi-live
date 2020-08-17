@@ -122,6 +122,7 @@ func commandChat(s *Session, d *CommandData) {
 
 	// Lobby messages go to everyone
 	if !d.OnlyDiscord {
+		sessionsMutex.RLock()
 		for _, s2 := range sessions {
 			s2.Emit("chat", &ChatMessage{
 				Msg:      d.Msg,
@@ -132,6 +133,7 @@ func commandChat(s *Session, d *CommandData) {
 				Room:     d.Room,
 			})
 		}
+		sessionsMutex.RUnlock()
 	}
 
 	// Don't send Discord messages that we are already replicating
@@ -167,8 +169,8 @@ func commandChatTable(s *Session, d *CommandData) {
 		}
 		return
 	}
-	var tableID int
-	if v, err := strconv.Atoi(match[1]); err != nil {
+	var tableID uint64
+	if v, err := strconv.ParseUint(match[1], 10, 64); err != nil {
 		logger.Error("Failed to convert the table ID to a number:", err)
 		if s != nil {
 			s.Error("That is an invalid room.")
@@ -178,17 +180,12 @@ func commandChatTable(s *Session, d *CommandData) {
 		tableID = v
 	}
 
-	// Get the corresponding table
-	var t *Table
-	if v, ok := tables[tableID]; !ok {
-		if s == nil {
-			logger.Error("Table " + strconv.Itoa(tableID) + " does not exist.")
-		} else {
-			s.Warning("Table " + strconv.Itoa(tableID) + " does not exist.")
-		}
+	t, exists := getTableAndLock(s, tableID, !d.NoLock)
+	if !exists {
 		return
-	} else {
-		t = v
+	}
+	if !d.NoLock {
+		defer t.Mutex.Unlock()
 	}
 
 	// Validate that this player is in the game or spectating
@@ -198,8 +195,8 @@ func commandChatTable(s *Session, d *CommandData) {
 		i = t.GetPlayerIndexFromID(s.UserID())
 		j = t.GetSpectatorIndexFromID(s.UserID())
 		if i == -1 && j == -1 {
-			s.Warning("You are not playing or spectating at table " + strconv.Itoa(tableID) + ", " +
-				"so you cannot send chat to it.")
+			s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
+				", so you cannot send chat to it.")
 			return
 		}
 	}

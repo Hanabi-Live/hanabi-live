@@ -11,9 +11,12 @@ import (
 // it is possible for tables to be created with no people in them
 // So we allow an administrator to clear them manually
 func httpLocalhostClearEmptyTables(c *gin.Context) {
+	tablesMutex.Lock()
+	defer tablesMutex.Unlock()
+
 	// First, make a slice of all of the map keys
 	// (so that we are not iterating over the map while simultaneously removing things from it)
-	tableIDs := make([]int, 0, len(tables))
+	tableIDs := make([]uint64, 0, len(tables))
 	for tableID := range tables {
 		tableIDs = append(tableIDs, tableID)
 	}
@@ -21,24 +24,20 @@ func httpLocalhostClearEmptyTables(c *gin.Context) {
 	for _, tableID := range tableIDs {
 		var t *Table
 		if v, ok := tables[tableID]; !ok {
-			logger.Error("Failed to get the table with ID " + strconv.Itoa(tableID) + ".")
+			logger.Error("Failed to get the table with ID " + strconv.FormatUint(tableID, 10) + ".")
 			continue
 		} else {
 			t = v
 		}
 
-		if !t.Running {
+		if !t.Running && len(t.Players) == 0 {
 			// A table that has not started yet (e.g. pregame)
-			if len(t.Players) == 0 {
-				delete(tables, tableID)
-				notifyAllTableGone(t)
-			}
-		} else if t.Replay {
+			deleteTable(t)
+			logger.Info("Successfully cleared pregame table #" + strconv.FormatUint(t.ID, 10) + ".")
+		} else if t.Replay && len(t.Spectators) == 0 {
 			// A replay or shared replay
-			if len(t.Spectators) == 0 {
-				delete(tables, tableID)
-				notifyAllTableGone(t)
-			}
+			deleteTable(t)
+			logger.Info("Successfully cleared replay table #" + strconv.FormatUint(t.ID, 10) + ".")
 		}
 		// (don't do anything for ongoing games)
 	}

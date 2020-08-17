@@ -3,7 +3,6 @@ package main // In Go, executable commands must always use package main
 // This file contains the entry point for the server software
 
 import (
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -13,10 +12,6 @@ import (
 
 	"github.com/getsentry/sentry-go"
 	"github.com/joho/godotenv"
-)
-
-const (
-	websiteName = "Hanab Live"
 )
 
 var (
@@ -32,9 +27,6 @@ var (
 	usingSentry      bool
 	models           *Models
 	datetimeStarted  time.Time
-	tables           = make(map[int]*Table) // Defined in "table.go"
-	// For storing all of the random words (used for random table names)
-	wordList = make([]string, 0)
 )
 
 func main() {
@@ -42,7 +34,7 @@ func main() {
 	logger = NewLogger()
 
 	// Welcome message
-	startText := "| Starting " + websiteName + " |"
+	startText := "| Starting " + WebsiteName + " |"
 	borderText := "+" + strings.Repeat("-", len(startText)-2) + "+"
 	logger.Info(borderText)
 	logger.Info(startText)
@@ -184,16 +176,8 @@ func main() {
 	// Initialize "Detrimental Character Assignments" (in "characters.go")
 	charactersInit()
 
-	// Initialize the word list
-	wordListPath := path.Join(dataPath, "word_list.txt")
-	if v, err := ioutil.ReadFile(wordListPath); err != nil {
-		logger.Fatal("Failed to read the \""+wordListPath+"\" file:", err)
-		return
-	} else {
-		wordListString := string(v)
-		wordListString = strings.TrimSpace(wordListString)
-		wordList = strings.Split(wordListString, "\n")
-	}
+	// Initialize the list that contains every word in the dictionary
+	wordListInit()
 
 	// Start the Discord bot (in "discord.go")
 	discordInit()

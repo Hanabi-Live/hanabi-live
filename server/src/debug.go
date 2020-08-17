@@ -7,32 +7,37 @@ import (
 	"strings"
 )
 
+var (
+	fuckedIDs = make([]int, 0)
+)
+
 func debugPrint() {
+	tablesMutex.RLock()
+	defer tablesMutex.RUnlock()
+
 	logger.Debug("---------------------------------------------------------------")
 	logger.Debug("Current total tables:", len(tables))
 
 	numUnstarted := 0
+	numRunning := 0
+	numReplays := 0
+
 	for _, t := range tables { // This is a map[int]*Table
 		if !t.Running {
 			numUnstarted++
 		}
-	}
-	logger.Debug("Current unstarted tables:", numUnstarted)
 
-	numRunning := 0
-	for _, t := range tables { // This is a map[int]*Table
 		if t.Running && !t.Replay {
 			numRunning++
 		}
-	}
-	logger.Debug("Current ongoing tables:", numRunning)
 
-	numReplays := 0
-	for _, t := range tables { // This is a map[int]*Table
 		if t.Replay {
 			numReplays++
 		}
 	}
+
+	logger.Debug("Current unstarted tables:", numUnstarted)
+	logger.Debug("Current ongoing tables:", numRunning)
 	logger.Debug("Current replays:", numReplays)
 
 	logger.Debug("---------------------------------------------------------------")
@@ -43,8 +48,9 @@ func debugPrint() {
 	if len(tables) == 0 {
 		logger.Debug("[no current tables]")
 	}
-	for id, t := range tables { // This is a map[int]*Table
-		logger.Debug(strconv.Itoa(id) + " - " + t.Name)
+
+	for tableID, t := range tables { // This is a map[int]*Table
+		logger.Debug(strconv.FormatUint(tableID, 10) + " - " + t.Name)
 		logger.Debug("\n")
 
 		// Print out all of the fields
@@ -185,19 +191,17 @@ func debugPrint() {
 	if len(sessions) == 0 {
 		logger.Debug("    [no users]")
 	}
+	sessionsMutex.RLock()
 	for i, s2 := range sessions { // This is a map[int]*Session
 		logger.Debug("    User ID: " + strconv.Itoa(i) + ", " +
 			"Username: " + s2.Username() + ", " +
 			"Status: " + strconv.Itoa(s2.Status()))
 	}
+	sessionsMutex.RUnlock()
 	logger.Debug("---------------------------------------------------------------")
 }
 
 func debugFunction() {
-	// Lock the command mutex for the duration of the function to ensure synchronous execution
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
-
 	logger.Debug("Executing debug function(s).")
 
 	/*
@@ -220,13 +224,13 @@ func debugFunction() {
 		}
 		logger.Debug("ON GAME:", id)
 		s := newFakeSession(1, "Server")
-		commandReplayCreate(s, &CommandData{
+		commandReplayCreate(s, &CommandData{ // Manual invocation
 			Source:     "id",
 			GameID:     id,
 			Visibility: "solo",
 		})
-		commandTableUnattend(s, &CommandData{
-			TableID: newTableID,
+		commandTableUnattend(s, &CommandData{ // Manual invocation
+			TableID: tableIDCounter,
 		})
 	}
 

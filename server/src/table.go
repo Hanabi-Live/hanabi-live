@@ -2,26 +2,27 @@ package main
 
 import (
 	"strconv"
+	"sync"
+	"sync/atomic"
 	"time"
 )
 
-var (
-	newTableID = 0 // We increment the ID for every table created
-)
-
+// Table describes the container that a player can join, whether it is an unstarted game,
+// an ongoing game, a solo replay, a shared replay, etc.
+// A tag of `json:"-"` denotes that the JSON serializer should skip the field when serializing
 type Table struct {
-	ID          int
+	ID          uint64
 	Name        string
 	InitialName string // The name of the table before it was converted to a replay
 
 	Players    []*Player
-	Spectators []*Spectator
+	Spectators []*Spectator `json:"-"`
 	// We keep track of players who have been kicked from the game
 	// so that we can prevent them from rejoining
-	KickedPlayers map[int]struct{}
+	KickedPlayers map[int]struct{} `json:"-"`
 	// We also keep track of spectators who have disconnected
 	// so that we can automatically put them back into the shared replay
-	DisconSpectators map[int]struct{}
+	DisconSpectators map[int]struct{} `json:"-"`
 
 	// This is the user ID of the person who started the table
 	// or the current leader of the shared replay
@@ -51,6 +52,10 @@ type Table struct {
 
 	Chat     []*TableChatMessage // All of the in-game chat history
 	ChatRead map[int]int         // A map of which users have read which messages
+
+	// Each table has its own mutex to ensure that only one action can occur at the same time
+	Mutex   sync.Mutex `json:"-"`
+	Deleted bool       `json:"-"` // Used to prevent race conditions
 }
 
 type TableChatMessage struct {
@@ -63,13 +68,15 @@ type TableChatMessage struct {
 
 func NewTable(name string, owner int) *Table {
 	// Get a new table ID
+	tablesMutex.RLock()
+	var newTableID uint64
 	for {
-		newTableID++
+		newTableID = atomic.AddUint64(&tableIDCounter, 1)
 
 		// Ensure that the table ID does not conflict with any existing tables
 		valid := true
-		for _, t := range tables {
-			if t.ID == newTableID {
+		for tableID := range tables {
+			if tableID == newTableID {
 				valid = false
 				break
 			}
@@ -78,11 +85,11 @@ func NewTable(name string, owner int) *Table {
 			break
 		}
 	}
-	tableID := newTableID
+	tablesMutex.RUnlock()
 
 	// Create the table object
 	return &Table{
-		ID:   tableID,
+		ID:   newTableID,
 		Name: name,
 
 		Players:          make([]*Player, 0),
@@ -113,22 +120,22 @@ func (t *Table) CheckIdle() {
 	}
 
 	// Set the last action
-	commandMutex.Lock()
+	t.Mutex.Lock()
 	t.DatetimeLastAction = time.Now()
-	commandMutex.Unlock()
+	t.Mutex.Unlock()
 
 	// We want to clean up idle games, so sleep for a reasonable amount of time
-	time.Sleep(idleGameTimeout)
-	commandMutex.Lock()
-	defer commandMutex.Unlock()
+	time.Sleep(IdleGameTimeout)
 
 	// Check to see if the table still exists
-	if _, ok := tables[t.ID]; !ok {
+	_, exists := getTableAndLock(nil, t.ID, true)
+	if !exists {
 		return
 	}
+	defer t.Mutex.Unlock()
 
 	// Don't do anything if there has been an action in the meantime
-	if time.Since(t.DatetimeLastAction) < idleGameTimeout {
+	if time.Since(t.DatetimeLastAction) < IdleGameTimeout {
 		return
 	}
 
@@ -151,8 +158,9 @@ func (t *Table) CheckIdle() {
 			s = newFakeSession(sp.ID, sp.Name)
 			logger.Info("Created a new fake session in the \"CheckIdle()\" function.")
 		}
-		commandTableUnattend(s, &CommandData{
+		commandTableUnattend(s, &CommandData{ // Manual invocation
 			TableID: t.ID,
+			NoLock:  true,
 		})
 	}
 
@@ -166,25 +174,27 @@ func (t *Table) CheckIdle() {
 	if t.Running {
 		// We need to end a game that has started
 		// (this will put everyone in a non-shared replay of the idle game)
-		commandAction(s, &CommandData{
+		commandAction(s, &CommandData{ // Manual invocation
 			TableID: t.ID,
 			Type:    ActionTypeEndGame,
 			Target:  -1,
 			Value:   EndConditionIdleTimeout,
+			NoLock:  true,
 		})
 	} else {
 		// We need to end a game that hasn't started yet
 		// Force the owner to leave, which should subsequently eject everyone else
 		// (this will send everyone back to the main lobby screen)
-		commandTableLeave(s, &CommandData{
+		commandTableLeave(s, &CommandData{ // Manual invocation
 			TableID: t.ID,
+			NoLock:  true,
 		})
 	}
 }
 
 func (t *Table) GetName() string {
 	g := t.Game
-	name := "Table #" + strconv.Itoa(t.ID) + " (" + t.Name + ") - "
+	name := "Table #" + strconv.FormatUint(t.ID, 10) + " (" + t.Name + ") - "
 	if g == nil {
 		name += "Not started"
 	} else {
@@ -192,6 +202,11 @@ func (t *Table) GetName() string {
 	}
 	name += " - "
 	return name
+}
+
+func (t *Table) GetRoomName() string {
+	// Various places in the code base check for room names with a prefix of "table"
+	return "table" + strconv.FormatUint(t.ID, 10)
 }
 
 func (t *Table) GetPlayerIndexFromID(id int) int {
@@ -234,7 +249,7 @@ func (t *Table) GetOwnerSession() *Session {
 	}
 
 	if s == nil {
-		logger.Error("Failed to find the owner for table " + strconv.Itoa(t.ID) + ".")
+		logger.Error("Failed to find the owner for table " + strconv.FormatUint(t.ID, 10) + ".")
 		s = newFakeSession(-1, "Unknown")
 		logger.Info("Created a new fake session in the \"GetOwnerSession()\" function.")
 	}
@@ -284,11 +299,13 @@ func (t *Table) GetNotifySessions(excludePlayers bool) []*Session {
 
 	// Go through the map and build a list of users that happen to be currently online
 	notifySessions := make([]*Session, 0)
+	sessionsMutex.RLock()
 	for userID := range notifyMap {
 		if s, ok := sessions[userID]; ok {
 			notifySessions = append(notifySessions, s)
 		}
 	}
+	sessionsMutex.RUnlock()
 
 	return notifySessions
 }
