@@ -28,15 +28,15 @@ const (
 //   tableJoin {"gameID":1}
 //   action {"target":1,"type":2}
 func websocketMessage(ms *melody.Session, msg []byte) {
-	// Keep track of the number of ongoing executing commands
-	// https://gobyexample.com/waitgroups
-	commandWaitGroup.Add(1)
-	defer commandWaitGroup.Done()
-
 	// If the server is shutting down, ignore all incoming message from users
 	if blockAllIncomingMessages.IsSet() {
 		return
 	}
+
+	// Keep track of the number of ongoing executing commands
+	// https://gobyexample.com/waitgroups
+	commandWaitGroup.Add(1)
+	defer commandWaitGroup.Done()
 
 	// Turn the Melody session into a custom session
 	s := &Session{ms}
