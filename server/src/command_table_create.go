@@ -304,8 +304,9 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 
 	// Join the user to the new table
 	commandTableJoin(s, &CommandData{ // Manual invocation
-		TableID: t.ID,
-		NoLock:  true,
+		TableID:  t.ID,
+		Password: d.Password,
+		NoLock:   true,
 	})
 
 	// If the server is shutting down / restarting soon, warn the players
