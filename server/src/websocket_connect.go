@@ -29,6 +29,8 @@ func websocketConnect(ms *melody.Session) {
 	// Turn the Melody session into a custom session
 	s := &Session{ms}
 
+	logger.Debug("Entered the \"websocketConnect()\" function for user: " + s.Username())
+
 	// First, perform all the expensive database retrieval to gather the data we need
 	// We want to do this before we start locking any mutexes (to minimize the lock time)
 	data := websocketConnectGetData(s)

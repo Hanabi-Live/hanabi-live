@@ -10,6 +10,8 @@ func websocketDisconnect(ms *melody.Session) {
 	// Turn the Melody session into a custom session
 	s := &Session{ms}
 
+	logger.Debug("Entered the \"websocketDisconnect()\" function for user: " + s.Username())
+
 	// We only want one computer to connect to one user at a time
 	// Use a dedicated mutex to prevent race conditions
 	logger.Debug("Acquiring session connection write lock for user: " + s.Username())
