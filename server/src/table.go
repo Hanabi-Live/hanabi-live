@@ -128,10 +128,11 @@ func (t *Table) CheckIdle() {
 	time.Sleep(IdleGameTimeout)
 
 	// Check to see if the table still exists
-	_, exists := getTableAndLock(nil, t.ID, true)
-	if !exists {
+	t2, exists := getTableAndLock(nil, t.ID, false)
+	if !exists || t != t2 {
 		return
 	}
+	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
 
 	// Don't do anything if there has been an action in the meantime

@@ -312,10 +312,11 @@ func startIn(t *Table, timeToWait time.Duration, datetimePlannedStart time.Time)
 	time.Sleep(timeToWait)
 
 	// Check to see if the table still exists
-	_, exists := getTableAndLock(nil, t.ID, true)
-	if !exists {
+	t2, exists := getTableAndLock(nil, t.ID, false)
+	if !exists || t != t2 {
 		return
 	}
+	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
 
 	// Check to see if the game has already started

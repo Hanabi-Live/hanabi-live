@@ -150,10 +150,11 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 	time.Sleep(gp.Time)
 
 	// Check to see if the table still exists
-	_, exists := getTableAndLock(nil, t.ID, true)
-	if !exists {
+	t2, exists := getTableAndLock(nil, t.ID, false)
+	if !exists || t != t2 {
 		return
 	}
+	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
 
 	// Check to see if the game ended already
