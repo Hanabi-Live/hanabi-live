@@ -107,7 +107,8 @@ export default class Deck extends Konva.Group {
       globals.lobby.conn!.send('action', {
         tableID: globals.lobby.tableID,
         type: ActionType.Play,
-        target: globals.deck.length,
+        // Card orders start at 0, so the final card order is the length of the deck - 1
+        target: deckRules.totalCards(globals.variant) - 1,
       });
 
       turn.hideClueUIAndDisableDragging();

@@ -2,7 +2,7 @@
 
 import globals from '../../globals';
 
-export const onDeckSizeChanged = (deckSize: number) => {
+export const onCardsRemainingChanged = (cardsRemainingInTheDeck: number) => {
   // Update the deck label
-  globals.elements.deck!.setCount(deckSize);
+  globals.elements.deck!.setCount(cardsRemainingInTheDeck);
 };

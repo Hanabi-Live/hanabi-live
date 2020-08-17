@@ -88,7 +88,7 @@ const statsReducer = produce((
     : currentState.score;
   stats.pace = statsRules.pace(
     score,
-    currentState.deckSize,
+    currentState.cardsRemainingInTheDeck,
     stats.maxScore,
     metadata.options.numPlayers,
     // currentPlayerIndex will be null if the game is over

@@ -8,7 +8,7 @@ export default interface GameState {
   readonly turn: TurnState;
   readonly log: readonly LogEntry[];
   readonly deck: readonly CardState[];
-  readonly deckSize: number;
+  readonly cardsRemainingInTheDeck: number;
   readonly cardStatus: ReadonlyArray<readonly CardStatus[]>;
   readonly score: number;
   readonly numAttemptedCardsPlayed: number; // For "Throw It in a Hole" variants

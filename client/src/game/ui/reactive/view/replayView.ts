@@ -183,7 +183,7 @@ export const onDatabaseIDChanged = (databaseID: number | null) => {
   globals.elements.gameIDLabel!.show();
 
   // Also move the card count label on the deck downwards
-  if (globals.state.visibleState!.deckSize === 0) {
+  if (globals.state.visibleState!.cardsRemainingInTheDeck === 0) {
     globals.elements.deck!.nudgeCountDownwards();
   }
 

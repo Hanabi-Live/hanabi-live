@@ -105,13 +105,13 @@ const gameStateReducer = produce((
     // A player just drew a card from the deck
     // { type: 'draw', playerIndex: 0, order: 0, rank: 1, suitIndex: 4 }
     case 'draw': {
-      state.deckSize -= 1;
+      state.cardsRemainingInTheDeck -= 1;
       const hand = state.hands[action.playerIndex];
       if (hand !== undefined) {
         hand.push(action.order);
       }
 
-      if (deckRules.isInitialDealFinished(state.deckSize, metadata)) {
+      if (deckRules.isInitialDealFinished(state.cardsRemainingInTheDeck, metadata)) {
         const text = `${metadata.playerNames[state.turn.currentPlayerIndex!]} goes first`;
         state.log.push({
           turn: state.turn.turnNum + 1,

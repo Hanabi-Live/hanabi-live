@@ -24,9 +24,9 @@ const turnReducer = produce((
     case 'play': {
       turn.cardsPlayedOrDiscardedThisTurn += 1;
 
-      if (currentState.deckSize === 0) {
+      if (currentState.cardsRemainingInTheDeck === 0) {
         turn.segment! += 1;
-        nextTurn(turn, numPlayers, currentState.deckSize, characterID);
+        nextTurn(turn, numPlayers, currentState.cardsRemainingInTheDeck, characterID);
       }
 
       break;
@@ -36,9 +36,9 @@ const turnReducer = produce((
       turn.cardsPlayedOrDiscardedThisTurn += 1;
       turn.cardsDiscardedThisTurn += 1;
 
-      if (currentState.deckSize === 0) {
+      if (currentState.cardsRemainingInTheDeck === 0) {
         turn.segment! += 1;
-        nextTurn(turn, numPlayers, currentState.deckSize, characterID);
+        nextTurn(turn, numPlayers, currentState.cardsRemainingInTheDeck, characterID);
       }
 
       break;
@@ -53,14 +53,14 @@ const turnReducer = produce((
       turn.segment += 1;
 
       if (turnRules.shouldEndTurnAfterClue(turn.cluesGivenThisTurn, characterID)) {
-        nextTurn(turn, numPlayers, currentState.deckSize, characterID);
+        nextTurn(turn, numPlayers, currentState.cardsRemainingInTheDeck, characterID);
       }
       break;
     }
 
     case 'draw': {
       if (turn.segment === null) { // If the initial deal is still going on
-        if (deckRules.isInitialDealFinished(currentState.deckSize, metadata)) {
+        if (deckRules.isInitialDealFinished(currentState.cardsRemainingInTheDeck, metadata)) {
           turn.segment = 0;
         }
       } else {
@@ -76,7 +76,7 @@ const turnReducer = produce((
           characterID,
           currentState.clueTokens,
         )) {
-          nextTurn(turn, numPlayers, currentState.deckSize, characterID);
+          nextTurn(turn, numPlayers, currentState.cardsRemainingInTheDeck, characterID);
         }
       }
 

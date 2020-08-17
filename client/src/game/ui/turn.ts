@@ -148,12 +148,12 @@ export const showClueUI = () => {
   }
 
   if (globals.options.deckPlays) {
-    const deckSize = globals.state.ongoingGame.deckSize;
-    globals.elements.deck!.cardBack.draggable(deckSize === 1);
-    globals.elements.deckPlayAvailableLabel!.visible(deckSize === 1);
+    const cardsRemainingInTheDeck = globals.state.ongoingGame.cardsRemainingInTheDeck;
+    globals.elements.deck!.cardBack.draggable(cardsRemainingInTheDeck === 1);
+    globals.elements.deckPlayAvailableLabel!.visible(cardsRemainingInTheDeck === 1);
 
     // Ensure the deck is above other cards and UI elements
-    if (deckSize === 1) {
+    if (cardsRemainingInTheDeck === 1) {
       globals.elements.deck!.moveToTop();
     }
   }

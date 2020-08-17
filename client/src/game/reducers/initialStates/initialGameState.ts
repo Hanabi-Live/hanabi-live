@@ -49,7 +49,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     turn: turnState,
     log: [],
     deck: [],
-    deckSize: deckRules.totalCards(variant),
+    cardsRemainingInTheDeck: deckRules.totalCards(variant),
     cardStatus,
     score: 0,
     numAttemptedCardsPlayed: 0,
