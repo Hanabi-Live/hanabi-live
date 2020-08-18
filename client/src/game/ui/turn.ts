@@ -118,22 +118,18 @@ export const showClueUI = () => {
     const ongoingGameState = globals.state.replay.hypothetical === null
       ? globals.state.ongoingGame
       : globals.state.replay.hypothetical.ongoing;
-    if (ongoingGameState.clues.length > 0) {
+
+    if (ongoingGameState.clues.length === 0) {
+      setColorClueButtonsVisible(true);
+      setRankClueButtonsVisible(true);
+    } else {
       const lastClue = ongoingGameState.clues[ongoingGameState.clues.length - 1];
       if (lastClue.type === ClueType.Color) {
-        for (const button of globals.elements.colorClueButtons) {
-          button.hide();
-        }
-        for (const button of globals.elements.rankClueButtons) {
-          button.show();
-        }
+        setColorClueButtonsVisible(false);
+        setRankClueButtonsVisible(true);
       } else if (lastClue.type === ClueType.Rank) {
-        for (const button of globals.elements.colorClueButtons) {
-          button.show();
-        }
-        for (const button of globals.elements.rankClueButtons) {
-          button.hide();
-        }
+        setColorClueButtonsVisible(true);
+        setRankClueButtonsVisible(false);
       }
     }
   }
@@ -159,6 +155,18 @@ export const showClueUI = () => {
   }
 
   globals.layers.UI.batchDraw();
+};
+
+const setColorClueButtonsVisible = (visible: boolean) => {
+  for (const button of globals.elements.colorClueButtons) {
+    button.visible(visible);
+  }
+};
+
+const setRankClueButtonsVisible = (visible: boolean) => {
+  for (const button of globals.elements.rankClueButtons) {
+    button.visible(visible);
+  }
 };
 
 export const end = (clientAction: ClientAction) => {
