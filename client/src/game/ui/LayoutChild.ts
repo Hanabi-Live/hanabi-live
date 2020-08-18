@@ -76,7 +76,7 @@ export default class LayoutChild extends Konva.Group {
         this.card.setVisualEffect('default');
       });
       this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
-        if (event.evt.buttons % 2 === 1) {
+        if (event.evt.buttons % 2 === 1) { // Left-click is being held down
           cursorSet('dragging');
           this.card.setVisualEffect('dragging');
         }
@@ -97,10 +97,9 @@ export default class LayoutChild extends Konva.Group {
   }
 
   shouldBeDraggable(currentPlayerIndex: number | null) {
-    // Cards should only be draggable in specific circumstances
+    // Rarely, if the game is restarted when a tween is happening,
+    // we can get here without the card being defined
     if (this.card === null || this.card === undefined) {
-      // Rarely, if the game is restarted when a tween is happening,
-      // we can get here without the card being defined
       return false;
     }
 

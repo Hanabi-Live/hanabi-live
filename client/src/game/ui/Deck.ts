@@ -5,6 +5,7 @@ import ActionType from '../types/ActionType';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import * as arrows from './arrows';
 import { TOOLTIP_DELAY } from './constants';
+import cursorSet from './cursorSet';
 import globals from './globals';
 import * as tooltips from './tooltips';
 import * as turn from './turn';
@@ -50,6 +51,34 @@ export default class Deck extends Konva.Group {
 
     this.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
       arrows.click(event, ReplayArrowOrder.Deck, this);
+    });
+
+    // Cursor handlers are roughly copied from "LayoutChild.ts"
+    this.on('mousemove', (event: Konva.KonvaEventObject<MouseEvent>) => {
+      if (globals.options.deckPlays && this.numLeftText.text() === '1') {
+        if (event.evt.buttons % 2 === 1) { // Left-click is being held down
+          cursorSet('dragging');
+        } else {
+          cursorSet('hand');
+        }
+      }
+    });
+    this.on('mouseleave', () => {
+      if (globals.options.deckPlays && this.numLeftText.text() === '1') {
+        cursorSet('default');
+      }
+    });
+    this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
+      if (globals.options.deckPlays && this.numLeftText.text() === '1') {
+        if (event.evt.buttons % 2 === 1) { // Left-click is being held down
+          cursorSet('dragging');
+        }
+      }
+    });
+    this.on('mouseup', () => {
+      if (globals.options.deckPlays && this.numLeftText.text() === '1') {
+        cursorSet('hand');
+      }
     });
 
     this.initTooltip();
