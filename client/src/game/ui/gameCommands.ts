@@ -5,6 +5,7 @@
 import { createStore } from 'redux';
 import { initArray, trimReplaySuffixFromURL, parseIntSafe } from '../../misc';
 import * as sentry from '../../sentry';
+import Options from '../../types/Options';
 import { getVariant } from '../data/gameData';
 import initialState from '../reducers/initialStates/initialState';
 import stateReducer from '../reducers/stateReducer';
@@ -12,7 +13,6 @@ import { deckRules } from '../rules';
 import { GameAction, ActionIncludingHypothetical } from '../types/actions';
 import CardIdentity from '../types/CardIdentity';
 import GameMetadata from '../types/GameMetadata';
-import LegacyGameMetadata from '../types/LegacyGameMetadata';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import Spectator from '../types/Spectator';
 import SpectatorNote from '../types/SpectatorNote';
@@ -145,7 +145,37 @@ commands.set('hypoStart', () => {
   hypothetical.start();
 });
 
-commands.set('init', (metadata: LegacyGameMetadata) => {
+interface InitData {
+  // Game settings
+  tableID: number; // Equal to the table ID on the server
+  playerNames: string[];
+  ourPlayerIndex: number; // 0 if a spectator or a replay of a game that we were not in
+  spectating: boolean;
+  replay: boolean;
+  databaseID: number; // 0 if this is an ongoing game
+  hasCustomSeed: boolean; // If playing a table started with the "!seed" prefix
+  seed: string;
+  datetimeStarted: string;
+  datetimeFinished: string;
+  options: Options;
+
+  // Character settings
+  // "characterAssignments" comes from the server as only numbers,
+  // but we want to convert -1 to null in place
+  characterAssignments: Array<number | null>;
+  characterMetadata: number[];
+
+  // Shared replay settings
+  sharedReplay: boolean;
+  sharedReplayLeader: string;
+  sharedReplaySegment: number;
+
+  // Pause settings
+  paused: boolean;
+  pausePlayerIndex: number;
+  pauseQueued: boolean;
+}
+commands.set('init', (metadata: InitData) => {
   // Data contains the game settings for the game we are entering;
   // attach this to the Sentry context to make debugging easier
   sentry.setGameContext(metadata);
@@ -418,7 +448,7 @@ commands.set('sound', (data: SoundData) => {
 // Subroutines
 // -----------
 
-const initStateStore = (data: LegacyGameMetadata) => {
+const initStateStore = (data: InitData) => {
   // Set the variant (as a helper reference)
   globals.variant = getVariant(data.options.variantName);
 
