@@ -13,7 +13,7 @@ export const onCardsPossiblyAdded = (length: number) => {
       // Construct the card object
       globals.ourNotes.set(i, '');
       globals.allNotes.set(i, []);
-      globals.deck.push(new HanabiCard({ order: i }));
+      globals.deck.push(new HanabiCard({ order: i }, globals.variant));
     }
     const subscription = subscribeToCardChanges(i);
     globals.cardSubscriptions.push(subscription);

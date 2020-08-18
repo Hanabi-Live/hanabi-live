@@ -338,7 +338,7 @@ const drawPlayStacks = () => {
       suitIndex: i,
       rank: STACK_BASE_RANK,
       listening: true,
-    });
+    }, globals.variant);
     globals.stackBases.push(stackBase);
 
     playStack.addChild(stackBase.layout);

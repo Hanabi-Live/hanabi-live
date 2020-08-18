@@ -2,7 +2,7 @@
 // It has a LayoutChild parent
 
 import Konva from 'konva';
-import { getSuit, VARIANTS } from '../data/gameData';
+import { getSuit } from '../data/gameData';
 import initialCardState from '../reducers/initialStates/initialCardState';
 import * as cardRules from '../rules/card';
 import * as variantRules from '../rules/variant';
@@ -35,6 +35,8 @@ import * as tooltips from './tooltips';
 const DECK_BACK_IMAGE = 'deck-back';
 
 export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
+  private variant: Variant;
+
   // HACK: this is temporary to figure out what needs to be converted to reactive
   // In the end, the state should not be exposed by the UI in any form
   // and nobody should depend on the HanabiCard UI state
@@ -46,15 +48,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   set state(state: CardState) {
     this._state = state;
-  }
-
-  private _variant: Variant | null = null;
-
-  private get variant() {
-    if (!this._variant) {
-      this._variant = VARIANTS.get(globals.options.variantName)!;
-    }
-    return this._variant;
   }
 
   private _tweening: boolean = false;
@@ -145,9 +138,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return this._layout;
   }
 
-  constructor(config: Konva.ContainerConfig) {
+  constructor(config: Konva.ContainerConfig, variant: Variant) {
     super(config);
     this.listening(true);
+    this.variant = variant;
 
     // Cards should start off with a constant width and height
     this.width(CARD_W);
@@ -375,7 +369,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     // Show the suit if it is known
     if (cardIdentity.suitIndex !== null) {
-      return suitIndexToSuit(cardIdentity.suitIndex, globals.variant) ?? unknownSuit;
+      return suitIndexToSuit(cardIdentity.suitIndex, this.variant) ?? unknownSuit;
     }
 
     // If we have a note identity on the card, show the suit corresponding to the note
