@@ -13,6 +13,6 @@ export default function isOurTurn() {
   // Handle the case of an ongoing game
   return (
     globals.state.playing
-    && globals.state.ongoingGame.turn.currentPlayerIndex === globals.state.metadata.ourPlayerIndex
+    && globals.state.ongoingGame.turn.currentPlayerIndex === globals.metadata.ourPlayerIndex
   );
 }

@@ -17,7 +17,7 @@ export const onChanged = (pause: PauseState) => {
   globals.elements.timer1Circle?.visible(pause.queued);
 
   if (pause.active) {
-    globals.elements.pauseText!.text(`by: ${globals.state.metadata.playerNames[pause.playerIndex]}`);
+    globals.elements.pauseText!.text(`by: ${globals.metadata.playerNames[pause.playerIndex]}`);
 
     if (globals.state.playing) {
       globals.elements.pauseButton!.setEnabled(true);

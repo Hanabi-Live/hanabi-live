@@ -188,7 +188,7 @@ const playerinfo = (_room: string, args: string[]) => {
     // If there are no arguments and we are at a table
     // return stats for all the players
     if (globals.tableID !== -1 && globals.ui) {
-      usernames = globals.ui.globals.state.metadata.playerNames;
+      usernames = globals.ui.globals.metadata.playerNames;
     } else {
       // Otherwise, return stats for the caller
       usernames = [globals.username];

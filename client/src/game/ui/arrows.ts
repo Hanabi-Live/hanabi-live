@@ -65,11 +65,11 @@ export const set = (
     if (
       (
         !globals.lobby.settings.keldonMode
-        && element.state.location === globals.state.metadata.ourPlayerIndex
+        && element.state.location === globals.metadata.ourPlayerIndex
       ) || (
         globals.lobby.settings.keldonMode
         && (
-          element.state.location !== globals.state.metadata.ourPlayerIndex
+          element.state.location !== globals.metadata.ourPlayerIndex
           && cardRules.isInPlayerHand(element.state)
         )
       )
@@ -111,7 +111,7 @@ export const set = (
     // Clue arrows have a circle that shows the type of clue given
     let giverCharacterName = '';
     if (giver !== null) {
-      const giverCharacterID = globals.state.metadata.characterAssignments[giver!];
+      const giverCharacterID = globals.metadata.characterAssignments[giver!];
       if (giverCharacterID !== null) {
         const giverCharacter = getCharacter(giverCharacterID);
         giverCharacterName = giverCharacter.name;

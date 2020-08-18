@@ -18,7 +18,7 @@ export const onSpectatorsChanged = (data: {
     let nameEntries = '';
     for (const spectator of data.spectators) {
       let nameEntry = '<li>';
-      if (spectator.name === globals.state.metadata.ourUsername) {
+      if (spectator.name === globals.metadata.ourUsername) {
         nameEntry += `<span class="name-me">${spectator.name}</span>`;
       } else if (globals.lobby.friends.includes(spectator.name)) {
         nameEntry += `<span class="friend">${spectator.name}</span>`;
@@ -30,7 +30,7 @@ export const onSpectatorsChanged = (data: {
       // However, only show this in ongoing games
       // (perspective shifts in replays are inconsequential)
       if (spectator.shadowingPlayerIndex !== null && !data.finished) {
-        const playerName = globals.state.metadata.playerNames[spectator.shadowingPlayerIndex];
+        const playerName = globals.metadata.playerNames[spectator.shadowingPlayerIndex];
         if (playerName === undefined) {
           throw new Error(`Unable to find the player name at index ${spectator.shadowingPlayerIndex}.`);
         }

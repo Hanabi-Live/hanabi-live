@@ -200,7 +200,7 @@ commands.set('noteList', (data: NoteListData) => {
     if (
       !globals.state.playing
       && !globals.state.finished
-      && noteList.name === globals.state.metadata.ourUsername
+      && noteList.name === globals.metadata.ourUsername
     ) {
       globals.ourNotes.clear();
       noteList.notes.forEach((note, i) => globals.ourNotes.set(i, note));

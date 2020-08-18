@@ -486,7 +486,7 @@ const drawBottomLeftButtons = () => {
   restartButton.on('click tap', () => {
     if (
       globals.options.speedrun
-      || debug.amTestUser(globals.state.metadata.ourUsername)
+      || debug.amTestUser(globals.metadata.ourUsername)
       || globals.lobby.totalGames >= 1000
       || window.confirm('Are you sure you want to restart the game?')
     ) {
@@ -584,7 +584,7 @@ const drawBottomLeftButtons = () => {
   killButton.on('click tap', () => {
     if (
       globals.options.speedrun
-      || debug.amTestUser(globals.state.metadata.ourUsername)
+      || debug.amTestUser(globals.metadata.ourUsername)
       || globals.lobby.totalGames >= 1000
       || window.confirm('Are you sure you want to terminate the game?')
     ) {
@@ -1136,7 +1136,7 @@ const drawSharedReplay = () => {
     let msg = 'What is the number of the person that you want to pass the replay leader to?\n\n';
     let i = 1;
     for (const spectator of globals.state.spectators) {
-      if (spectator.name === globals.state.metadata.ourUsername) {
+      if (spectator.name === globals.metadata.ourUsername) {
         continue;
       }
 
@@ -1328,7 +1328,7 @@ const drawStatistics = () => {
   });
 
   const minEfficiency = stats.minEfficiency(
-    globals.state.metadata.options.numPlayers,
+    globals.options.numPlayers,
     globals.variant,
     globals.options.oneExtraCard,
     globals.options.oneLessCard,
@@ -1494,7 +1494,7 @@ const drawTimers = () => {
     }
 
     const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
-    const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
+    const ourPlayerIndex = globals.metadata.ourPlayerIndex;
 
     let setting;
     if (currentPlayerIndex === ourPlayerIndex) {
@@ -1572,7 +1572,7 @@ const drawClueArea = () => {
   });
 
   // Player buttons
-  const numPlayers = globals.state.metadata.options.numPlayers;
+  const numPlayers = globals.options.numPlayers;
   let playerButtonW = 0.08;
   const playerButtonH = 0.025;
   const playerButtonSpacing = 0.0075;
@@ -1594,13 +1594,13 @@ const drawClueArea = () => {
     totalPlayerWidth += playerButtonSpacing * (totalPlayerButtons - 1);
     let playerX = (clueAreaValues.w! * 0.5) - (totalPlayerWidth * 0.5);
     for (let i = 0; i < totalPlayerButtons; i++) {
-      const j = (globals.state.metadata.ourPlayerIndex + i + 1) % numPlayers;
+      const j = (globals.metadata.ourPlayerIndex + i + 1) % numPlayers;
       const button = new PlayerButton({
         x: playerX * winW,
         y: 0,
         width: playerButtonW * winW,
         height: playerButtonH * winH,
-        text: globals.state.metadata.playerNames[j],
+        text: globals.metadata.playerNames[j],
       }, j);
       globals.elements.clueTargetButtonGroup!.add(button as any);
       globals.elements.clueTargetButtonGroup!.addList(button);
@@ -1629,13 +1629,13 @@ const drawClueArea = () => {
     for (let i = 0; i < totalPlayerButtons; i++) {
       // We change the calculation of j from the above code block because we want the buttons to
       // follow the order of players from top to bottom (in BGA mode)
-      const j = (globals.state.metadata.ourPlayerIndex + i) % numPlayers;
+      const j = (globals.metadata.ourPlayerIndex + i) % numPlayers;
       const button = new PlayerButton({
         x: playerX * winW,
         y: 0,
         width: playerButtonW * winW,
         height: playerButtonH * winH,
-        text: globals.state.metadata.playerNames[j],
+        text: globals.metadata.playerNames[j],
       }, j);
       globals.elements.clueTargetButtonGroup2!.add(button as any);
       globals.elements.clueTargetButtonGroup2!.addList(button);

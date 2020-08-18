@@ -177,7 +177,7 @@ export const end = (clientAction: ClientAction) => {
   }
 
   const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
-  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
+  const ourPlayerIndex = globals.metadata.ourPlayerIndex;
   if (currentPlayerIndex === ourPlayerIndex) {
     replay.exit(); // Close the in-game replay if we preplayed a card in the replay
     globals.lobby.conn!.send('action', {

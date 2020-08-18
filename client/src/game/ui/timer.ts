@@ -44,7 +44,7 @@ export const update = (data: ClockData) => {
   // Update onscreen time displays
   if (globals.state.playing) {
     // The visibility of the first timer does not change during a game
-    let time = globals.playerTimes[globals.state.metadata.ourPlayerIndex];
+    let time = globals.playerTimes[globals.metadata.ourPlayerIndex];
     if (!globals.options.timed) {
       // Invert it to show how much time each player is taking
       time *= -1;
@@ -54,7 +54,7 @@ export const update = (data: ClockData) => {
 
   const ourTurn = (
     globals.state.playing
-    && data.activePlayerIndex === globals.state.metadata.ourPlayerIndex
+    && data.activePlayerIndex === globals.metadata.ourPlayerIndex
   );
   if (!ourTurn) {
     // Update the UI with the value of the timer for the active player
@@ -64,7 +64,7 @@ export const update = (data: ClockData) => {
       time *= -1;
     }
     globals.elements.timer2.setTimerText(millisecondsToClockString(time));
-    const activePlayerName = globals.state.metadata.playerNames[data.activePlayerIndex];
+    const activePlayerName = globals.metadata.playerNames[data.activePlayerIndex];
     globals.elements.timer2.setLabelText(activePlayerName);
   }
 

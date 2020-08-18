@@ -184,7 +184,7 @@ export default class NameFrame extends Konva.Group {
   // execute the "backToLobby()" function)
   rightClick() {
     // Find the index corresponding to this player
-    const shadowingPlayerIndex = globals.state.metadata.playerNames.indexOf(this.playerName.text());
+    const shadowingPlayerIndex = globals.metadata.playerNames.indexOf(this.playerName.text());
     if (shadowingPlayerIndex === -1) {
       throw new Error(`Failed to find the index corresponding to player "${this.playerName.text()}".`);
     }
@@ -197,7 +197,7 @@ export default class NameFrame extends Konva.Group {
       // Validate that we are not shifting to the perspective that we are already at
       let oldShadowingPlayerIndex;
       for (const spectator of globals.state.spectators) {
-        if (spectator.name === globals.state.metadata.ourUsername) {
+        if (spectator.name === globals.metadata.ourUsername) {
           if (spectator.shadowingPlayerIndex !== -1) {
             oldShadowingPlayerIndex = spectator.shadowingPlayerIndex;
           }
@@ -221,7 +221,7 @@ export default class NameFrame extends Konva.Group {
       // (so that you can view the game from a specific player's perspective)
 
       // Validate that we are not shifting to the perspective that we are already at
-      if (shadowingPlayerIndex === globals.state.metadata.ourPlayerIndex) {
+      if (shadowingPlayerIndex === globals.metadata.ourPlayerIndex) {
         modals.warningShow('You are already viewing the game from this player\'s perspective.');
         return;
       }

@@ -60,7 +60,7 @@ export default function HanabiCardClickSpeedrun(
 const clickLeft = (card: HanabiCard, event: MouseEvent) => {
   // Left-clicking on cards in our own hand is a play action
   if (
-    card.state.location === globals.state.metadata.ourPlayerIndex
+    card.state.location === globals.metadata.ourPlayerIndex
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
@@ -76,7 +76,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
   // Left-clicking on cards in other people's hands is a color clue action
   // (but if we are holding Ctrl, then we are using Empathy)
   if (
-    card.state.location !== globals.state.metadata.ourPlayerIndex
+    card.state.location !== globals.metadata.ourPlayerIndex
     && cardRules.isInPlayerHand(card.state)
     && card.state.suitIndex !== null
     && globals.clues !== 0
@@ -125,7 +125,7 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
 const clickRight = (card: HanabiCard, event: MouseEvent) => {
   // Right-clicking on cards in our own hand is a discard action
   if (
-    card.state.location === globals.state.metadata.ourPlayerIndex
+    card.state.location === globals.metadata.ourPlayerIndex
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
@@ -144,7 +144,7 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
 
   // Right-clicking on cards in other people's hands is a rank clue action
   if (
-    card.state.location !== globals.state.metadata.ourPlayerIndex
+    card.state.location !== globals.metadata.ourPlayerIndex
     && cardRules.isInPlayerHand(card.state)
     && card.state.rank !== null
     // It is not possible to clue a Start Card with a rank clue

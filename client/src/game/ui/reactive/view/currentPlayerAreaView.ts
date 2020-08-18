@@ -47,7 +47,7 @@ export const onChanged = (data: {
   }
   const currentPlayerHand = globals.state.ongoingGame.hands[currentPlayerIndex];
   const isLocked = handRules.isLocked(currentPlayerHand, globals.state.ongoingGame.deck);
-  const numPlayers = globals.state.metadata.options.numPlayers;
+  const numPlayers = globals.options.numPlayers;
 
   // Update the text
   const { text1, text2, text3 } = currentPlayerArea;
@@ -74,7 +74,7 @@ export const onChanged = (data: {
   const setPlayerText = (threeLines: boolean) => {
     const { rect1, textValues, values } = currentPlayerArea;
 
-    text2.fitText(globals.state.metadata.playerNames[data.currentPlayerIndex!]);
+    text2.fitText(globals.metadata.playerNames[data.currentPlayerIndex!]);
 
     let maxSize = (values.h / 3) * winH;
     if (threeLines) {

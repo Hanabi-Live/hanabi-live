@@ -224,7 +224,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
 
   // Check for other keyboard hotkeys
   const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
-  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
+  const ourPlayerIndex = globals.metadata.ourPlayerIndex;
   const shouldHaveKeyboardHotkeysForActions = (
     // If it is our turn in an ongoing-game
     (!globals.state.replay.active && currentPlayerIndex === ourPlayerIndex)
@@ -310,7 +310,7 @@ const performAction = (playAction = true) => {
 
 // Keyboard actions for playing and discarding cards
 const promptOwnHandOrder = (actionString: string) : string | number | null => {
-  const playerCards = globals.elements.playerHands[globals.state.metadata.ourPlayerIndex].children;
+  const playerCards = globals.elements.playerHands[globals.metadata.ourPlayerIndex].children;
   const maxSlotIndex = playerCards.length;
   const msg = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${actionString}.`;
   const response = window.prompt(msg);

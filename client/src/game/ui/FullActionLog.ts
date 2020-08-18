@@ -109,7 +109,7 @@ export default class FullActionLog extends Konva.Group {
   }
 
   showPlayerActions(playerName: string) {
-    const playerIndex = globals.state.metadata.playerNames.findIndex((name) => name === playerName);
+    const playerIndex = globals.metadata.playerNames.findIndex((name) => name === playerName);
     if (playerIndex === -1) {
       throw new Error(`Failed to find player "${playerName}" in the player names.`);
     }
@@ -190,7 +190,7 @@ export default class FullActionLog extends Konva.Group {
     this.buffer.forEach((logEntry) => {
       appendLine(this.logText!, this.logNumbers!, logEntry.turnNum, logEntry.text);
       for (let i = 0; i < globals.options.numPlayers; i++) {
-        if (logEntry.text.startsWith(globals.state.metadata.playerNames[i])) {
+        if (logEntry.text.startsWith(globals.metadata.playerNames[i])) {
           if (this.playerLogs[i] === null) {
             this.makePlayerLog(i);
           }

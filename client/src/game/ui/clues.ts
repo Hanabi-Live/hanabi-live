@@ -46,7 +46,7 @@ export const checkLegal = () => {
 
   const touchedAtLeastOneCard = showClueMatch(who, clueButton.clue);
 
-  const ourCharacterID = globals.state.metadata.characterAssignments[globals.state.metadata.ourPlayerIndex]; // eslint-disable-line
+  const ourCharacterID = globals.metadata.characterAssignments[globals.metadata.ourPlayerIndex];
   let ourCharacterName = '';
   if (ourCharacterID !== null) {
     const ourCharacter = getCharacter(ourCharacterID);
@@ -65,14 +65,14 @@ export const checkLegal = () => {
     // Make an exception for certain characters
     || (
       ourCharacterName === 'Blind Spot'
-      && who === (globals.state.metadata.ourPlayerIndex + 1)
-        % globals.state.metadata.options.numPlayers
+      && who === (globals.metadata.ourPlayerIndex + 1)
+        % globals.options.numPlayers
     )
     || (
       ourCharacterName === 'Oblivious'
-      && who === (globals.state.metadata.ourPlayerIndex - 1
-        + globals.state.metadata.options.numPlayers)
-        % globals.state.metadata.options.numPlayers
+      && who === (globals.metadata.ourPlayerIndex - 1
+        + globals.options.numPlayers)
+        % globals.options.numPlayers
     );
 
   globals.elements.giveClueButton!.setEnabled(enabled);
@@ -150,7 +150,7 @@ export const give = () => {
 
 const shouldGiveClue = (target: PlayerButton, clueButton: ColorButton | RankButton) => {
   const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
-  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
+  const ourPlayerIndex = globals.metadata.ourPlayerIndex;
 
   return (
     // We can only give clues on our turn

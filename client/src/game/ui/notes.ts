@@ -46,7 +46,7 @@ export const set = (order: number, note: string) => {
 
   if (!globals.state.playing) {
     for (const noteObject of globals.allNotes.get(order)!) {
-      if (noteObject.name === globals.state.metadata.ourUsername) {
+      if (noteObject.name === globals.metadata.ourUsername) {
         noteObject.note = note;
       }
     }
@@ -211,7 +211,7 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
 
   // Only validate cards in our own hand
   if (
-    !(cardState.location === globals.state.metadata.ourPlayerIndex)
+    !(cardState.location === globals.metadata.ourPlayerIndex)
     || canPossiblyBe(cardState, note.suitIndex, note.rank)
   ) {
     return;

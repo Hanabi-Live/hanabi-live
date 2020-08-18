@@ -274,7 +274,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   private isRaisedBecauseOfClues() {
     // On Keldon mode, only the player should see the cards raised on their own hand
     const shouldShowOnKeldonMode = (
-      this.state.location === globals.state.metadata.ourPlayerIndex
+      this.state.location === globals.metadata.ourPlayerIndex
       && !globals.state.finished
     );
 
@@ -1005,7 +1005,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // For ongoing games, always show the cursor for other people's hands
     if (
       typeof this.state.location === 'number'
-      && this.state.location !== globals.state.metadata.ourPlayerIndex
+      && this.state.location !== globals.metadata.ourPlayerIndex
     ) {
       return true;
     }

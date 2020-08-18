@@ -7,7 +7,7 @@ export const get = () => {
     throw new Error('Failed to get our hand because we are not currently playing.');
   }
 
-  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
+  const ourPlayerIndex = globals.metadata.ourPlayerIndex;
   const ourHand = globals.elements.playerHands[ourPlayerIndex];
   if (ourHand === undefined) {
     throw new Error(`Failed to get our hand with an index of ${ourPlayerIndex}.`);
@@ -20,7 +20,7 @@ export const checkSetDraggableAll = () => {
     return;
   }
 
-  const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
+  const ourPlayerIndex = globals.metadata.ourPlayerIndex;
   const ourHand = globals.elements.playerHands[ourPlayerIndex];
   if (ourHand === undefined) {
     throw new Error(`Failed to get our hand with an index of ${ourPlayerIndex}.`);

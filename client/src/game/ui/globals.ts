@@ -9,7 +9,6 @@ import { VARIANTS } from '../data/gameData';
 import { GameExports } from '../main';
 import { GameAction, Action } from '../types/actions';
 import { DEFAULT_VARIANT_NAME } from '../types/constants';
-import LegacyGameMetadata from '../types/LegacyGameMetadata';
 import SpectatorNote from '../types/SpectatorNote';
 import State from '../types/State';
 import Variant from '../types/Variant';
@@ -26,10 +25,6 @@ export class Globals {
   // The UI is instantiated before all the images are necessarily downloaded
   // and before we know enough information to draw all the UI elements
   loading: boolean = true;
-
-  // Game metadata is send to us in the "init" message
-  metadata: LegacyGameMetadata = new LegacyGameMetadata();
-  variant: Variant = VARIANTS.get(DEFAULT_VARIANT_NAME)!;
 
   // Game constants (set upon first initialization)
   deck: HanabiCard[] = [];
@@ -91,8 +86,16 @@ export class Globals {
     return this.store!.getState();
   }
 
+  get metadata() {
+    return this.state.metadata;
+  }
+
+  // The variant of the current game is stored in the state metadata as a string
+  // Provide a helper for the variant object that corresponds to this
+  // (initialized in the "initStateStore()" function)
+  variant: Variant = VARIANTS.get(DEFAULT_VARIANT_NAME)!;
+
   get options() {
-    // TODO: change to "this.metadata.options" when "get metadata()" exists
     return this.state.metadata.options;
   }
 
@@ -109,7 +112,6 @@ export class Globals {
     this.lobby = new LobbyGlobals();
     this.game = null;
     this.loading = true;
-    this.metadata = new LegacyGameMetadata();
     this.variant = VARIANTS.get(DEFAULT_VARIANT_NAME)!;
     this.deck = [];
     this.stackBases = [];

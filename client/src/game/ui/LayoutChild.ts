@@ -122,7 +122,7 @@ export default class LayoutChild extends Konva.Group {
       && !globals.options.speedrun // Cards should never be draggable while speedrunning
       && !globals.lobby.settings.speedrunMode // Cards should never be draggable while speedrunning
       // Only our cards should be draggable
-      && this.card.state.location === globals.state.metadata.ourPlayerIndex
+      && this.card.state.location === globals.metadata.ourPlayerIndex
       // Cards should not be draggable if we are spectating an ongoing game, in a dedicated solo
       // replay, or in a shared replay
       && globals.state.playing
@@ -206,7 +206,7 @@ export default class LayoutChild extends Konva.Group {
   // (but disable this in speedruns and certain variants)
   checkMisplay(draggedTo: string | null) {
     const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
-    const ourPlayerIndex = globals.state.metadata.ourPlayerIndex;
+    const ourPlayerIndex = globals.metadata.ourPlayerIndex;
     const card = this.children[0] as unknown as HanabiCard;
     let ongoingGame = globals.state.ongoingGame;
     if (globals.state.replay.hypothetical !== null) {
