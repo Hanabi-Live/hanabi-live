@@ -112,6 +112,8 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     }
 
     case 'init': {
+      state.datetimeStarted = action.datetimeStarted;
+      state.datetimeFinished = action.datetimeFinished;
       break;
     }
 

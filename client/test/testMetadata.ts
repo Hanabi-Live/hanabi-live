@@ -25,5 +25,7 @@ export default function testMetadata(
     ourPlayerIndex: 0,
     characterAssignments: initArray(numPlayers, null),
     characterMetadata: [],
+    seeded: false,
+    seed: '',
   };
 }
