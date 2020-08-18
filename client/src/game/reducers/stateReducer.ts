@@ -126,7 +126,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
         state.replay.segment = 0; // In dedicated solo replays, start on the first segment
         state.replay.databaseID = action.databaseID;
 
-        if (action.shared) {
+        if (action.sharedReplay) {
           // In dedicated shared replays, start on the shared replay turn
           state.replay.segment = action.sharedReplaySegment;
           state.replay.shared = {
@@ -136,6 +136,11 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
             amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
           };
         }
+      }
+
+      if (action.paused) {
+        state.pause.active = true;
+        state.pause.playerIndex = action.pausePlayerIndex;
       }
 
       break;

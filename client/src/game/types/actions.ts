@@ -54,11 +54,13 @@ export interface ActionInit {
   datetimeStarted: string;
   datetimeFinished: string;
   spectating: boolean;
-  replay: boolean;
-  shared: boolean; // Whether or not this is a shared replay
+  replay: boolean; // True if either a dedicated solo replay or a shared replay
+  sharedReplay: boolean;
   databaseID: number;
   sharedReplaySegment: number;
   sharedReplayLeader: string;
+  paused: boolean;
+  pausePlayerIndex: number;
 }
 
 export interface ActionListReceived {

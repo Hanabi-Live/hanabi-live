@@ -133,10 +133,12 @@ export const init = (): ActionInit => ({
   datetimeFinished: new Date().toString(),
   spectating: false,
   replay: true,
-  shared: true,
+  sharedReplay: true,
   databaseID: 1,
   sharedReplaySegment: 0,
   sharedReplayLeader: '',
+  paused: false,
+  pausePlayerIndex: 0,
 });
 
 export const endReplay = (): ActionReplayExit => ({
