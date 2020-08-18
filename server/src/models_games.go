@@ -136,7 +136,11 @@ type GameHistory struct {
 	Tags               string    `json:"tags"`
 }
 
-func (*Games) GetHistory(gameIDs []int) ([]*GameHistory, error) {
+func (g *Games) GetHistory(gameIDs []int) ([]*GameHistory, error) {
+	return g.GetHistoryCustomSort(gameIDs, "id DESC")
+}
+
+func (*Games) GetHistoryCustomSort(gameIDs []int, sort string) ([]*GameHistory, error) {
 	// We rename "games" to "games1" so that the subquery can access their values
 	// (otherwise, the table names would conflict)
 	SQLString := `
@@ -178,8 +182,8 @@ func (*Games) GetHistory(gameIDs []int) ([]*GameHistory, error) {
 		 * https://github.com/jackc/pgx/issues/334
 		 */
 		WHERE games1.id = ANY($1)
-		ORDER BY games1.id DESC /* We always return the games in decending order */
 	`
+	SQLString += "ORDER BY games1." + sort
 
 	rows, err := db.Query(context.Background(), SQLString, gameIDs)
 
