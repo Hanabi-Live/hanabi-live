@@ -3,6 +3,7 @@
 import Konva from 'konva';
 import Screen from '../../lobby/types/Screen';
 import { copyStringToClipboard, parseIntSafe } from '../../misc';
+import { deckRules } from '../rules';
 import ActionType from '../types/ActionType';
 import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
@@ -286,55 +287,56 @@ const discard = () => {
 // If playAction is true, it plays a card
 // If playAction is false, it discards a card
 const performAction = (playAction = true) => {
-  const cardOrder = promptOwnHandOrder(playAction ? 'play' : 'discard');
-
-  if (cardOrder === null) {
+  const verb = playAction ? 'play' : 'discard';
+  const target = promptCardOrder(verb);
+  if (target === null) {
     return;
   }
 
-  let type = playAction ? ActionType.Play : ActionType.Discard;
-  let target = cardOrder;
+  const type = playAction ? ActionType.Play : ActionType.Discard;
 
-  if (cardOrder === 'deck') {
-    if (!playAction) {
-      return;
-    }
-
-    type = ActionType.Play;
-    target = globals.deck.length - 1;
+  if (globals.state.replay.hypothetical === null) {
+    globals.lobby.conn!.send('action', {
+      tableID: globals.lobby.tableID,
+      type,
+      target,
+    });
+  } else {
+    hypothetical.send({
+      type,
+      target,
+    });
   }
-
-  globals.lobby.conn!.send('action', {
-    tableID: globals.lobby.tableID,
-    type,
-    target,
-  });
   turn.hideClueUIAndDisableDragging();
 };
 
-// Keyboard actions for playing and discarding cards
-const promptOwnHandOrder = (actionString: string) : string | number | null => {
-  const playerCards = globals.elements.playerHands[globals.metadata.ourPlayerIndex].children;
-  const maxSlotIndex = playerCards.length;
-  const msg = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${actionString}.`;
+const promptCardOrder = (verb: string) : number | null => {
+  const playerIndex = globals.state.replay.hypothetical === null
+    ? globals.metadata.ourPlayerIndex
+    : globals.state.replay.hypothetical.ongoing.turn.currentPlayerIndex!;
+  const hand = globals.state.replay.hypothetical === null
+    ? globals.state.ongoingGame.hands[playerIndex]
+    : globals.state.replay.hypothetical.ongoing.hands[playerIndex];
+  const maxSlotIndex = hand.length;
+  const msg = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb}.`;
   const response = window.prompt(msg);
 
   if (response === null || response === '') {
     return null;
   }
   if (/^deck$/i.test(response)) {
-    return 'deck';
+    // Card orders start at 0, so the final card order is the length of the deck - 1
+    return deckRules.totalCards(globals.variant) - 1;
   }
-  if (!/^\d+$/.test(response)) {
+  const slot = parseIntSafe(response);
+  if (Number.isNaN(slot)) {
+    return null;
+  }
+  if (slot < 1 || slot > maxSlotIndex) {
     return null;
   }
 
-  const numResponse = parseIntSafe(response);
-  if (numResponse < 1 || numResponse > maxSlotIndex) {
-    return null;
-  }
-
-  return (playerCards[maxSlotIndex - numResponse].children[0] as HanabiCard).state.order;
+  return hand[maxSlotIndex - slot];
 };
 
 const click = (element: Konva.Node) => () => {
