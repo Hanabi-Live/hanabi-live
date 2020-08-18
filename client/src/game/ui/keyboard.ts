@@ -28,7 +28,11 @@ export const init = () => {
 
   // Add "Tab" for player selection
   hotkeyClueMap.set('Tab', () => {
-    globals.elements.clueTargetButtonGroup!.selectNextTarget();
+    if (globals.state.replay.hypothetical === null) {
+      globals.elements.clueTargetButtonGroup!.selectNextTarget();
+    } else {
+      globals.elements.clueTargetButtonGroup2!.selectNextTarget();
+    }
   });
 
   // Add "1", "2", "3", "4", and "5" (for rank clues)

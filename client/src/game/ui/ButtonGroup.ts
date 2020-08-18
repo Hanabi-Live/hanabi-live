@@ -51,14 +51,39 @@ export default class ButtonGroup extends Konva.Group {
     }
   }
 
+  // selectNextTarget is only used for groups of "PlayerButton"
   selectNextTarget() {
-    let newSelectionIndex = 0;
+    let buttonIndex;
     for (let i = 0; i < this.list.length; i++) {
       if (this.list[i].pressed) {
-        newSelectionIndex = (i + 1) % this.list.length;
+        buttonIndex = i;
         break;
       }
     }
-    this.list[newSelectionIndex].dispatchEvent(new MouseEvent('click'));
+
+    // It is possible that no buttons are currently pressed
+    if (buttonIndex === undefined) {
+      buttonIndex = -1;
+    }
+
+    // Find the next button in the group
+    // As a guard against an infinite loop,
+    // only loop as many times as needed to go through every button
+    let button: PlayerButton | undefined;
+    for (let i = 0; i < this.list.length; i++) {
+      buttonIndex += 1;
+      if (buttonIndex > this.list.length - 1) {
+        buttonIndex = 0;
+      }
+
+      button = this.list[buttonIndex] as PlayerButton;
+      if (button.enabled) {
+        break;
+      }
+    }
+
+    if (button !== undefined) {
+      button.dispatchEvent(new MouseEvent('click'));
+    }
   }
 }
