@@ -53,8 +53,8 @@ export type HypotheticalAction =
 
 export interface ActionInit {
   type: 'init';
-  datetimeStarted: Date;
-  datetimeFinished: Date;
+  datetimeStarted: string;
+  datetimeFinished: string;
 }
 
 export interface ActionListReceived {

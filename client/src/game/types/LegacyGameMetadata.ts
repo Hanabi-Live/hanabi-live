@@ -1,30 +1,32 @@
 import Options from '../../types/Options';
 
-export default class LegacyGameMetadata {
+export default interface LegacyGameMetadata {
   // Game settings
-  tableID: number = 0; // Equal to the table ID on the server
-  playerNames: string[] = [];
-  ourPlayerIndex: number = 0; // 0 if a spectator or a replay of a game that we were not in
-  spectating: boolean = false;
-  replay: boolean = false;
-  databaseID: number = 0; // 0 if this is an ongoing game
-  hasCustomSeed: boolean = false; // If playing a table started with the "!seed" prefix
-  seed: string = '';
-  datetimeStarted: Date = new Date();
-  datetimeFinished: Date = new Date();
-  options: Options = new Options();
+  tableID: number; // Equal to the table ID on the server
+  playerNames: string[];
+  ourPlayerIndex: number; // 0 if a spectator or a replay of a game that we were not in
+  spectating: boolean;
+  replay: boolean;
+  databaseID: number; // 0 if this is an ongoing game
+  hasCustomSeed: boolean; // If playing a table started with the "!seed" prefix
+  seed: string;
+  datetimeStarted: string;
+  datetimeFinished: string;
+  options: Options;
 
   // Character settings
-  characterAssignments: Array<number | null> = [];
-  characterMetadata: number[] = [];
+  // "characterAssignments" comes from the server as only numbers,
+  // but we want to convert -1 to null in place
+  characterAssignments: Array<number | null>;
+  characterMetadata: number[];
 
   // Shared replay settings
-  sharedReplay: boolean = false;
-  sharedReplayLeader: string = '';
-  sharedReplaySegment: number = 0;
+  sharedReplay: boolean;
+  sharedReplayLeader: string;
+  sharedReplaySegment: number;
 
   // Pause settings
-  paused: boolean = false;
-  pausePlayerIndex: number = 0;
-  pauseQueued: boolean = false;
+  paused: boolean;
+  pausePlayerIndex: number;
+  pauseQueued: boolean;
 }
