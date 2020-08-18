@@ -108,9 +108,6 @@ export const showClueUI = () => {
   }
   globals.elements.clueTypeButtonGroup!.clearPressed();
   globals.elements.clueArea!.show();
-  if (globals.elements.yourTurn !== null && globals.state.replay.hypothetical === null) {
-    globals.elements.yourTurn.show();
-  }
   globals.elements.currentPlayerArea!.hide();
 
   // Hide some specific clue buttons in certain variants with clue restrictions
@@ -198,9 +195,6 @@ export const end = (clientAction: ClientAction) => {
 export const hideClueUIAndDisableDragging = () => {
   globals.elements.clueArea!.hide();
   globals.elements.clueAreaDisabled!.hide();
-  if (globals.elements.yourTurn !== null) {
-    globals.elements.yourTurn.hide();
-  }
   globals.elements.currentPlayerArea!.hide();
   globals.elements.premoveCancelButton!.hide();
   globals.elements.noDiscardBorder!.hide();
