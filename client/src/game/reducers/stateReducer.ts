@@ -76,7 +76,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       // Mark that this game is now finished
       // The finished view will take care of enabling the UI elements for a shared replay
       state.finished = true;
-      state.datetimeFinished = new Date().toString();
+      state.datetimeFinished = action.datetimeFinished;
 
       // Record the database ID of the game
       state.replay.databaseID = action.databaseID;
@@ -114,25 +114,28 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     case 'init': {
       state.datetimeStarted = action.datetimeStarted;
       state.datetimeFinished = action.datetimeFinished;
-      break;
-    }
 
-    case 'replayEnterDedicated': {
-      state.playing = false;
-      state.finished = true;
-      state.replay.active = true;
-      state.replay.segment = 0; // In dedicated solo replays, start on the first segment
-      state.replay.databaseID = action.databaseID;
+      if (action.spectating) {
+        state.playing = false;
+      }
 
-      if (action.shared) {
-        // In dedicated shared replays, start on the shared replay turn
-        state.replay.segment = action.sharedReplaySegment;
-        state.replay.shared = {
-          segment: action.sharedReplaySegment,
-          useSharedSegments: true,
-          leader: action.sharedReplayLeader,
-          amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
-        };
+      if (action.replay) {
+        state.playing = false;
+        state.finished = true;
+        state.replay.active = true;
+        state.replay.segment = 0; // In dedicated solo replays, start on the first segment
+        state.replay.databaseID = action.databaseID;
+
+        if (action.shared) {
+          // In dedicated shared replays, start on the shared replay turn
+          state.replay.segment = action.sharedReplaySegment;
+          state.replay.shared = {
+            segment: action.sharedReplaySegment,
+            useSharedSegments: true,
+            leader: action.sharedReplayLeader,
+            amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
+          };
+        }
       }
 
       break;
@@ -177,11 +180,6 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
     case 'pauseQueue': {
       state.pause.queued = action.queued;
-      break;
-    }
-
-    case 'spectating': {
-      state.playing = false;
       break;
     }
 

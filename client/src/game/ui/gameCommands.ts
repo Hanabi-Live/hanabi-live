@@ -86,6 +86,7 @@ commands.set('finishOngoingGame', (data: FinishOngoingGameData) => {
     type: 'finishOngoingGame',
     databaseID: data.databaseID,
     sharedReplayLeader: data.sharedReplayLeader,
+    datetimeFinished: new Date().toString(),
   });
 });
 
@@ -486,29 +487,19 @@ const initStateStore = (data: InitData) => {
 
   globals.store.dispatch({
     type: 'init',
+    spectating: data.spectating,
     datetimeStarted: data.datetimeStarted,
     datetimeFinished: data.datetimeFinished,
+    replay: data.replay,
+    shared: data.sharedReplay,
+    databaseID: data.databaseID,
+    sharedReplaySegment: data.sharedReplaySegment,
+    sharedReplayLeader: data.sharedReplayLeader,
   });
 
-  if (data.spectating) {
-    globals.store.dispatch({
-      type: 'spectating',
-    });
-  }
-
-  if (data.replay) {
-    globals.store.dispatch({
-      type: 'replayEnterDedicated',
-      shared: data.sharedReplay,
-      databaseID: data.databaseID,
-      sharedReplaySegment: data.sharedReplaySegment,
-      sharedReplayLeader: data.sharedReplayLeader,
-    });
-
-    // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here
-    // We must wait until the game is initialized first,
-    // because the "hypoEnter" handler requires there to be a valid state
-  }
+  // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here
+  // We must wait until the game is initialized first,
+  // because the "hypoEnter" handler requires there to be a valid state
 
   if (data.paused) {
     globals.store.dispatch({

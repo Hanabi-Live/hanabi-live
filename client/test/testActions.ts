@@ -10,12 +10,12 @@ import {
   ActionHypotheticalEnd,
   ActionHypotheticalStart,
   ActionIncludingHypothetical,
+  ActionInit,
   ActionPlay,
   ActionReplayEnter,
   ActionReplayExit,
   ActionStrike,
   ActionTurn,
-  ActionReplayEnterDedicated,
 } from '../src/game/types/actions';
 import ClueType from '../src/game/types/ClueType';
 
@@ -127,8 +127,12 @@ export const replayEnter = (): ActionReplayEnter => ({
   segment: 0,
 });
 
-export const replayEnterDedicated = (): ActionReplayEnterDedicated => ({
-  type: 'replayEnterDedicated',
+export const init = (): ActionInit => ({
+  type: 'init',
+  datetimeStarted: new Date().toString(),
+  datetimeFinished: new Date().toString(),
+  spectating: false,
+  replay: true,
   shared: true,
   databaseID: 1,
   sharedReplaySegment: 0,

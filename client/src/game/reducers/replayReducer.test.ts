@@ -4,8 +4,8 @@ import { // Direct import instead of namespace import for compactness
   hypoAction,
   hypoBack,
   hypoEnd,
+  init,
   rankClue,
-  replayEnterDedicated,
 } from '../../../test/testActions';
 import testGame from '../../../test_data/up_or_down.json';
 import GameMetadata from '../types/GameMetadata';
@@ -21,7 +21,7 @@ describe('replayReducer', () => {
   beforeAll(() => {
     // Load the game and start a replay
     testState = loadGameJSON(testGame);
-    testState = stateReducer(testState, replayEnterDedicated());
+    testState = stateReducer(testState, init());
     metadata = testState.metadata;
   });
 

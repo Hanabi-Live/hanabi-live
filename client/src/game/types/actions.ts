@@ -13,10 +13,8 @@ export type Action =
   | ActionPremove
   | ActionPause
   | ActionPauseQueue
-  | ActionSpectating
   | ActionSpectators
-  | ActionFinishOngoingGame
-  | ActionReplayEnterDedicated;
+  | ActionFinishOngoingGame;
 
 export type GameAction =
   | ActionCardIdentity
@@ -55,6 +53,12 @@ export interface ActionInit {
   type: 'init';
   datetimeStarted: string;
   datetimeFinished: string;
+  spectating: boolean;
+  replay: boolean;
+  shared: boolean; // Whether or not this is a shared replay
+  databaseID: number;
+  sharedReplaySegment: number;
+  sharedReplayLeader: string;
 }
 
 export interface ActionListReceived {
@@ -87,10 +91,6 @@ export interface ActionPauseQueue {
   queued: boolean;
 }
 
-export interface ActionSpectating {
-  type: 'spectating';
-}
-
 export interface ActionSpectators {
   type: 'spectators';
   spectators: Spectator[];
@@ -100,14 +100,7 @@ export interface ActionFinishOngoingGame {
   type: 'finishOngoingGame';
   databaseID: number;
   sharedReplayLeader: string;
-}
-
-export interface ActionReplayEnterDedicated {
-  type: 'replayEnterDedicated';
-  shared: boolean;
-  databaseID: number;
-  sharedReplaySegment: number;
-  sharedReplayLeader: string;
+  datetimeFinished: string;
 }
 
 // ------------
