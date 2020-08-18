@@ -214,7 +214,6 @@ export const onFinishedChanged = (finished: boolean, previousFinished: boolean |
 
   // Re-draw the deck tooltip
   // (it will show more information when you are in a replay)
-  globals.metadata.datetimeFinished = new Date();
   globals.elements.deck!.initTooltip();
 
   // Turn off the "Throw It in a Hole" UI

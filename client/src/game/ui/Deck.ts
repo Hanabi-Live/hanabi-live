@@ -190,24 +190,24 @@ export default class Deck extends Konva.Group {
     // Disable this row in JSON replays
     if (globals.state.finished && globals.state.replay.databaseID !== 0) {
       const formattedDatetimeFinished = dateTimeFormatter.format(
-        new Date(globals.metadata.datetimeFinished),
+        new Date(globals.state.datetimeFinished),
       );
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-calendar"></i></span>';
       content += `&nbsp; Date Played: &nbsp;<strong>${formattedDatetimeFinished}</strong></li>`;
 
-      const startedDate = new Date(globals.metadata.datetimeStarted);
-      const finishedDate = new Date(globals.metadata.datetimeFinished);
+      const startedDate = new Date(globals.state.datetimeStarted);
+      const finishedDate = new Date(globals.state.datetimeFinished);
       const elapsedMilliseconds = finishedDate.getTime() - startedDate.getTime();
       const clockString = millisecondsToClockString(elapsedMilliseconds);
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-stopwatch"></i></span>';
       content += `&nbsp; Game Length: &nbsp;<strong>${clockString}</strong></li>`;
     }
 
-    if (globals.state.finished || globals.metadata.seeded) {
+    if (globals.state.finished || globals.state.metadata.seeded) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-seedling"></i></span>';
-      const seed = globals.metadata.seed === 'JSON' ? 'n/a' : globals.metadata.seed;
+      const seed = globals.state.metadata.seed === 'JSON' ? 'n/a' : globals.state.metadata.seed;
       content += `&nbsp; Seed: &nbsp;<strong>${seed}</strong>`;
-      if (globals.metadata.seed === 'JSON') {
+      if (globals.state.metadata.seed === 'JSON') {
         content += ' (JSON game)';
       }
       content += '</li>';

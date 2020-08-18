@@ -5,9 +5,10 @@ import MsgClue from './MsgClue';
 import Spectator from './Spectator';
 
 export type Action =
+  | ActionInit
+  | ActionListReceived
   | GameAction
   | ReplayAction
-  | ActionListReceived
   | ActionCardIdentities
   | ActionPremove
   | ActionPause
@@ -49,6 +50,12 @@ export type HypotheticalAction =
 // ----------------------
 // Initialization actions
 // ----------------------
+
+export interface ActionInit {
+  type: 'init';
+  datetimeStarted: Date;
+  datetimeFinished: Date;
+}
 
 export interface ActionListReceived {
   type: 'gameActionList';

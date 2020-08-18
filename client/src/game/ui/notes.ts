@@ -211,7 +211,7 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
 
   // Only validate cards in our own hand
   if (
-    !(cardState.location === globals.metadata.ourPlayerIndex)
+    !(cardState.location === globals.state.metadata.ourPlayerIndex)
     || canPossiblyBe(cardState, note.suitIndex, note.rank)
   ) {
     return;

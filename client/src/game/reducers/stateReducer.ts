@@ -76,6 +76,7 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
       // Mark that this game is now finished
       // The finished view will take care of enabling the UI elements for a shared replay
       state.finished = true;
+      state.datetimeFinished = new Date();
 
       // Record the database ID of the game
       state.replay.databaseID = action.databaseID;
@@ -107,6 +108,10 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
         amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
       };
 
+      break;
+    }
+
+    case 'init': {
       break;
     }
 

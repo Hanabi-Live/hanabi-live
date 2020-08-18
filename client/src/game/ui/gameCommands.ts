@@ -150,10 +150,6 @@ commands.set('init', (metadata: LegacyGameMetadata) => {
   // attach this to the Sentry context to make debugging easier
   sentry.setGameContext(metadata);
 
-  // Copy it the legacy metadata to the globals
-  // TODO: remove this
-  globals.metadata = metadata;
-
   initStateStore(metadata);
 
   // Now that we know the number of players and the variant, we can start to load & draw the UI
@@ -445,6 +441,8 @@ const initStateStore = (data: LegacyGameMetadata) => {
     ourPlayerIndex: data.ourPlayerIndex,
     characterAssignments: data.characterAssignments,
     characterMetadata: data.characterMetadata,
+    seeded: data.seeded,
+    seed: data.seed,
   };
   globals.store = createStore(stateReducer, initialState(metadata));
 
@@ -454,6 +452,12 @@ const initStateStore = (data: LegacyGameMetadata) => {
   // Make the current state available from the JavaScript console (for debugging purposes)
   globals.store.subscribe(() => {
     window.state = globals.state;
+  });
+
+  globals.store.dispatch({
+    type: 'init',
+    datetimeStarted: data.datetimeStarted,
+    datetimeFinished: data.datetimeFinished,
   });
 
   if (data.spectating) {

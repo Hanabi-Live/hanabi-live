@@ -87,9 +87,10 @@ func sentryHTTPAttachMetadata(c *gin.Context) {
 	// If we encounter an error later on, we want metadata to be attached to the error message,
 	// which can be helpful for debugging (since we can ask the user how they caused the error)
 	sentry.ConfigureScope(func(scope *sentry.Scope) {
-		scope.SetTag("userID", "unknown")
-		scope.SetTag("username", "unknown")
+		scope.SetTag("userID", "n/a")
+		scope.SetTag("username", "n/a")
 		scope.SetTag("ip", ip)
+		scope.SetTag("path", c.FullPath())
 	})
 }
 
@@ -115,5 +116,6 @@ func sentryWebsocketMessageAttachMetadata(s *Session) {
 		scope.SetTag("userID", strconv.Itoa(s.UserID()))
 		scope.SetTag("username", s.Username())
 		scope.SetTag("ip", ip)
+		scope.SetTag("path", "n/a")
 	})
 }

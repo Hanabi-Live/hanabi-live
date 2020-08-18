@@ -20,6 +20,10 @@ export default interface State {
   readonly finished: boolean;
 
   readonly metadata: GameMetadata;
+
+  readonly datetimeStarted: Date;
+  readonly datetimeFinished: Date;
+
   readonly cardIdentities: readonly CardIdentity[];
   readonly premove: ClientAction | null;
   readonly pause: PauseState;

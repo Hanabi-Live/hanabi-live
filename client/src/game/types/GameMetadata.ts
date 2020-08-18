@@ -10,6 +10,9 @@ export default interface GameMetadata {
   readonly ourPlayerIndex: number;
   readonly characterAssignments: Readonly<Array<number | null>>;
   readonly characterMetadata: number[];
+
+  readonly seeded: boolean;
+  readonly seed: string;
 }
 
 export const getPlayerName = (
