@@ -11,7 +11,7 @@ export default interface GameMetadata {
   readonly characterAssignments: Readonly<Array<number | null>>;
   readonly characterMetadata: number[];
 
-  readonly seeded: boolean;
+  readonly hasCustomSeed: boolean;
   readonly seed: string;
 }
 

@@ -114,8 +114,8 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		Spectating       bool      `json:"spectating"`
 		Replay           bool      `json:"replay"`
 		DatabaseID       int       `json:"databaseID"`
+		HasCustomSeed    bool      `json:"hasCustomSeed"`
 		Seed             string    `json:"seed"`
-		Seeded           bool      `json:"seeded"`
 		DatetimeStarted  time.Time `json:"datetimeStarted"`
 		DatetimeFinished time.Time `json:"datetimeFinished"`
 		Options          *Options  `json:"options"`
@@ -143,8 +143,8 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		Spectating:       !t.Replay && j != -1,
 		Replay:           t.Replay,
 		DatabaseID:       t.ExtraOptions.DatabaseID,
+		HasCustomSeed:    strings.HasPrefix(t.Name, "!seed "),
 		Seed:             g.Seed,
-		Seeded:           strings.HasPrefix(t.Name, "!seed "),
 		DatetimeStarted:  g.DatetimeStarted,
 		DatetimeFinished: g.DatetimeFinished,
 

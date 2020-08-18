@@ -21,8 +21,8 @@ export default interface State {
 
   readonly metadata: GameMetadata;
 
-  readonly datetimeStarted: Date;
-  readonly datetimeFinished: Date;
+  readonly datetimeStarted: Date | null;
+  readonly datetimeFinished: Date | null;
 
   readonly cardIdentities: readonly CardIdentity[];
   readonly premove: ClientAction | null;

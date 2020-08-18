@@ -441,7 +441,7 @@ const initStateStore = (data: LegacyGameMetadata) => {
     ourPlayerIndex: data.ourPlayerIndex,
     characterAssignments: data.characterAssignments,
     characterMetadata: data.characterMetadata,
-    seeded: data.seeded,
+    hasCustomSeed: data.hasCustomSeed,
     seed: data.seed,
   };
   globals.store = createStore(stateReducer, initialState(metadata));

@@ -21,8 +21,8 @@ export default function initialState(metadata: GameMetadata): State {
     playing: true,
     finished: false,
 
-    datetimeStarted: new Date(),
-    datetimeFinished: new Date(),
+    datetimeStarted: null,
+    datetimeFinished: null,
 
     metadata,
     cardIdentities: [],

@@ -8,8 +8,8 @@ export default class LegacyGameMetadata {
   spectating: boolean = false;
   replay: boolean = false;
   databaseID: number = 0; // 0 if this is an ongoing game
+  hasCustomSeed: boolean = false; // If playing a table started with the "!seed" prefix
   seed: string = '';
-  seeded: boolean = false; // If playing a table started with the "!seed" prefix
   datetimeStarted: Date = new Date();
   datetimeFinished: Date = new Date();
   options: Options = new Options();

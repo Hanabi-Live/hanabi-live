@@ -172,8 +172,8 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     playing: false,
     finished: true,
 
-    datetimeStarted: new Date(),
-    datetimeFinished: new Date(),
+    datetimeStarted: null,
+    datetimeFinished: null,
 
     metadata,
     premove: null,
