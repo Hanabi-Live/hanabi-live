@@ -32,13 +32,13 @@ var (
 // start authentication from the beginning
 func httpWS(c *gin.Context) {
 	// Local variables
-	w := c.Writer
 	r := c.Request
+	w := c.Writer
 
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		msg := "Failed to parse the IP address in the WebSocket function:"
+		msg := "Failed to parse the IP address:"
 		httpWSError(c, msg, err)
 		return
 	} else {

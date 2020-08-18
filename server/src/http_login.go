@@ -31,7 +31,7 @@ func httpLogin(c *gin.Context) {
 	// Parse the IP address
 	var ip string
 	if v, _, err := net.SplitHostPort(r.RemoteAddr); err != nil {
-		logger.Error("Failed to parse the IP address in the login function:", err)
+		logger.Error("Failed to parse the IP address:", err)
 		http.Error(
 			w,
 			http.StatusText(http.StatusInternalServerError),

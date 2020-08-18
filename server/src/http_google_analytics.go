@@ -16,8 +16,8 @@ import (
 // etc.)
 func httpGoogleAnalytics(c *gin.Context) {
 	// Local variables
-	w := c.Writer
 	r := c.Request
+	w := c.Writer
 
 	// We only want to track page views for "/", "/scores/Alice", etc.
 	// (this goroutine will be entered for requests to "/public/css/main.min.css", for example)

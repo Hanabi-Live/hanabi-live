@@ -187,6 +187,7 @@ func httpInit() {
 			Repanic: true, // Recommended as per the documentation
 			Timeout: HTTPWriteTimeout,
 		}))
+		httpRouter.Use(sentryHTTPAttachMetadata)
 	}
 
 	// Path handlers (for cookies and logging in)
