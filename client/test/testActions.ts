@@ -129,8 +129,8 @@ export const replayEnter = (): ActionReplayEnter => ({
 
 export const init = (): ActionInit => ({
   type: 'init',
-  datetimeStarted: new Date().toString(),
-  datetimeFinished: new Date().toString(),
+  datetimeStarted: new Date(0).toString(),
+  datetimeFinished: new Date(0).toString(),
   spectating: false,
   replay: true,
   sharedReplay: true,
