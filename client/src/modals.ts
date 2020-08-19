@@ -81,6 +81,10 @@ const passwordSubmit = () => {
     tableID,
     password,
   });
+
+  // Record the password in local storage (cookie)
+  // This is shared with the create table password field
+  localStorage.setItem('createTablePassword', password);
 };
 
 export const warningShow = (msg: string) => {

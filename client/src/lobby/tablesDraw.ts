@@ -199,6 +199,13 @@ export const tableJoin = (table: Table) => {
 
   if (table.passwordProtected) {
     modals.passwordShow(table.id);
+
+    // We want to store the value of the player's last typed-in password
+    // This is shared with the create table password field
+    const password = localStorage.getItem('createTablePassword');
+    if (password !== null && password !== '') {
+      $('#password-modal-password').val(password);
+    }
   } else {
     globals.conn!.send('tableJoin', {
       tableID: table.id,
