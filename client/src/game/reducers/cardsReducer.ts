@@ -3,6 +3,7 @@
 import { ensureAllCases, nullIfNegative } from '../../misc';
 import { getVariant } from '../data/gameData';
 import { cluesRules } from '../rules';
+import * as characterRules from '../rules/variants/characters';
 import { GameAction } from '../types/actions';
 import CardState from '../types/CardState';
 import { colorClue, rankClue } from '../types/Clue';
@@ -27,6 +28,10 @@ const cardsReducer = (
     // the server will announce the identities of the cards that slide from slot 1 to slot 2
     // { type: 'cardIdentity', playerIndex: 0, order: 0, rank: 1, suitIndex: 4 }
     case 'cardIdentity': {
+      if (characterRules.shouldSeeSlot2CardIdentity(metadata) === false) {
+        break;
+      }
+
       if (
         action.playerIndex === metadata.ourPlayerIndex
         || action.suitIndex === -1
