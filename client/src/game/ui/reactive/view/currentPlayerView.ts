@@ -6,7 +6,7 @@ import * as ourHand from '../../ourHand';
 export const onOngoingCurrentPlayerIndexChanged = (currentPlayerIndex: number | null) => {
   ourHand.checkSetDraggableAll();
 
-  if (globals.elements.yourTurn !== null) {
+  if (globals.elements.yourTurn !== null && globals.state.playing) {
     globals.elements.yourTurn.visible((
       currentPlayerIndex === globals.metadata.ourPlayerIndex
       && globals.state.replay.hypothetical === null
