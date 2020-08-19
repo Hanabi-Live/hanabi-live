@@ -86,7 +86,16 @@ const showClueMatch = (target: number, clue: Clue) => {
   for (let i = 0; i < hand.length; i++) {
     const child = globals.elements.playerHands[target].children[i];
     const card: HanabiCard = child.children[0] as HanabiCard;
-    if (cluesRules.touchesCard(globals.variant, clue, card.visibleSuitIndex, card.visibleRank)) {
+    let suitIndex: number | null;
+    let rank: number | null;
+    if (globals.state.replay.hypothetical === null) {
+      suitIndex = card.state.suitIndex;
+      rank = card.state.rank;
+    } else {
+      suitIndex = card.visibleSuitIndex;
+      rank = card.visibleRank;
+    }
+    if (cluesRules.touchesCard(globals.variant, clue, suitIndex, rank)) {
       touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue);
     }
