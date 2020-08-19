@@ -127,7 +127,7 @@
   },
   "Genius": {
     "id": 24,
-    "description": "Must clue both a color and a number (uses 2 clues)",
+    "description": "When cluing, must clue a color and then a number (uses 2 clues)",
     "emoji": "🧠"
   },
   "Panicky": {
