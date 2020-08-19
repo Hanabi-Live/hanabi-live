@@ -689,7 +689,8 @@ func characterAdjustEndTurn(g *Game) {
 	// the final go-around of the table
 	for _, p := range g.Players {
 		if p.Character == "Contrarian" { // 27
-			g.EndTurn = g.Turn + 2
+			// 3 instead of 2 because it should be 2 turns after the final card is drawn
+			g.EndTurn = g.Turn + 3
 		}
 	}
 }
