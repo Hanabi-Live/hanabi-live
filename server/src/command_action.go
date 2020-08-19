@@ -374,7 +374,13 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 	// Validate that the clue touches at least one card
 	p2 := g.Players[d.Target] // The target of the clue
 	touchedAtLeastOneCard := false
-	for _, c := range p2.Hand {
+	for i, c := range p2.Hand {
+		if p.Character == "Slow-Witted" && i == len(p2.Hand)-1 {
+			// Cannot see cards in slot 1
+			// Explicitly disallow cluing cards in slot 1
+			continue
+		}
+
 		if variantIsCardTouched(g.Options.VariantName, clue, c) {
 			touchedAtLeastOneCard = true
 			break

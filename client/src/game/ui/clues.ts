@@ -92,6 +92,7 @@ const showClueMatch = (target: number, clue: Clue) => {
       suitIndex = card.state.suitIndex;
       rank = card.state.rank;
     } else {
+      // We should be able to clue morphed cards in a hypothetical
       suitIndex = card.visibleSuitIndex;
       rank = card.visibleRank;
     }
