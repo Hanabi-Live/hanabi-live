@@ -12,6 +12,7 @@ import (
 var (
 	discord               *discordgo.Session
 	discordToken          string
+	discordGuildID        string
 	discordListenChannels []string
 	discordLobbyChannel   string
 	discordLastAtHere     time.Time
@@ -28,6 +29,12 @@ func discordInit() {
 	discordToken = os.Getenv("DISCORD_TOKEN")
 	if len(discordToken) == 0 {
 		logger.Info("The \"DISCORD_TOKEN\" environment variable is blank; " +
+			"aborting Discord initialization.")
+		return
+	}
+	discordGuildID = os.Getenv("DISCORD_GUILD_ID")
+	if len(discordGuildID) == 0 {
+		logger.Info("The \"DISCORD_GUILD_ID\" environment variable is blank; " +
 			"aborting Discord initialization.")
 		return
 	}
@@ -169,10 +176,7 @@ func discordSend(to string, username string, msg string) {
 }
 
 func discordGetNickname(discordID string) string {
-	// Assume that the first channel ID is the same as the guild/server ID
-	guildID := discordListenChannels[0]
-
-	if member, err := discord.GuildMember(guildID, discordID); err != nil {
+	if member, err := discord.GuildMember(discordGuildID, discordID); err != nil {
 		// This can occasionally fail, so we don't want to report the error to Sentry
 		logger.Info("Failed to get the Discord guild member:", err)
 		return "[error]"
