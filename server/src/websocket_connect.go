@@ -18,7 +18,6 @@ type WebsocketConnectData struct {
 	FirstTimeUser               bool
 	PlayingInOngoingGame        bool
 	PlayingInOngoingGameTableID uint64
-	PlayingInOngoingGameIndex   int
 	SpectatingTable             bool
 	SpectatingTableID           uint64
 }
@@ -91,8 +90,11 @@ func websocketConnect(ms *melody.Session) {
 	websocketConnectHistoryFriends(s, data.Friends)
 
 	// They might need to resjoin an ongoing game or shared replay
-	websocketConnectRejoinOngoingGame(s, data)
-	websocketConnectRespectate(s, data)
+	if data.PlayingInOngoingGame {
+		websocketConnectRejoinOngoingGame(s, data)
+	} else if data.SpectatingTable {
+		websocketConnectRespectate(s, data)
+	}
 }
 
 func websocketConnectGetData(s *Session) *WebsocketConnectData {
@@ -147,14 +149,13 @@ func websocketConnectGetData(s *Session) *WebsocketConnectData {
 			continue
 		}
 
-		for i, p := range t.Players {
+		for _, p := range t.Players {
 			if p.Name != s.Username() {
 				continue
 			}
 
 			data.PlayingInOngoingGame = true
 			data.PlayingInOngoingGameTableID = t.ID
-			data.PlayingInOngoingGameIndex = i
 			break
 		}
 	}
@@ -368,10 +369,6 @@ func websocketConnectHistoryFriends(s *Session, friends []string) {
 }
 
 func websocketConnectRejoinOngoingGame(s *Session, data *WebsocketConnectData) {
-	if !data.PlayingInOngoingGame {
-		return
-	}
-
 	logger.Debug("Acquiring tables read lock for user: " + s.Username())
 	t, exists := getTableAndLock(s, data.PlayingInOngoingGameTableID, true)
 	if !exists {
@@ -380,11 +377,28 @@ func websocketConnectRejoinOngoingGame(s *Session, data *WebsocketConnectData) {
 	logger.Debug("Acquired tables read lock for user: " + s.Username())
 	defer t.Mutex.Unlock()
 
+	// Don't do anything if the game has ended in the meantime
+	if !t.Running {
+		return
+	}
+
+	// Find their index
+	playerIndex := -1
+	for i, p := range t.Players {
+		if p.ID == s.UserID() {
+			playerIndex = i
+			break
+		}
+	}
+	if playerIndex == -1 {
+		return
+	}
+
 	logger.Info("Automatically reattending player \"" + s.Username() + "\" " +
 		"to table " + strconv.FormatUint(data.PlayingInOngoingGameTableID, 10) + ".")
 
 	// Update the player object with the new socket
-	t.Players[data.PlayingInOngoingGameIndex].Session = s
+	t.Players[playerIndex].Session = s
 
 	commandTableReattend(s, &CommandData{ // Manual invocation
 		TableID: data.PlayingInOngoingGameTableID,
@@ -393,10 +407,6 @@ func websocketConnectRejoinOngoingGame(s *Session, data *WebsocketConnectData) {
 }
 
 func websocketConnectRespectate(s *Session, data *WebsocketConnectData) {
-	if data.PlayingInOngoingGame || !data.SpectatingTable {
-		return
-	}
-
 	logger.Debug("Acquiring tables read lock for user: " + s.Username())
 	t, exists := getTableAndLock(s, data.SpectatingTableID, true)
 	if !exists {
