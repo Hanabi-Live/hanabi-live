@@ -97,6 +97,7 @@ export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
   const chopMoved = checkNoteKeywords([
     'cm',
     'chop move',
+    'chop moved',
     '5cm',
     'e5cm',
     'tcm',
