@@ -84,29 +84,11 @@ func discordConnect() {
 		return
 	}
 
-	// We want to periodically update the members of the guild, so we do this in a new goroutine
-	go discordRefreshMembers()
-
 	// Announce that the server has started
 	// (we wait for Discord to connect before displaying this message)
 	msg := "The server has successfully started at: " + getCurrentTimestamp() + "\n"
 	msg += "(" + gitCommitOnStart + ")"
 	chatServerSend(msg, "lobby")
-}
-
-func discordRefreshMembers() {
-	// An infinite loop
-	for {
-		// Request all of the guild members,
-		// as large servers will only have the first 100 or so cached in "guild.Members" by default
-		// This updates the state in the background
-		if err := discord.RequestGuildMembers(discordGuildID, "", 0, true); err != nil {
-			// This can occasionally fail, so we don't want to report the error to Sentry
-			logger.Info("Failed to request the Discord guild members:", err)
-		}
-
-		time.Sleep(5 * time.Minute)
-	}
 }
 
 /*
@@ -194,61 +176,23 @@ func discordGetNickname(discordID string) string {
 	// Assume that the first channel ID is the same as the guild/server ID
 	guildID := discordListenChannels[0]
 
-	// Get the Discord guild object
-	var guild *discordgo.Guild
-	if v, err := discord.Guild(guildID); err != nil {
+	if member, err := discord.GuildMember(guildID, discordID); err != nil {
 		// This can occasionally fail, so we don't want to report the error to Sentry
 		logger.Info("Failed to get the Discord guild:", err)
 		return "[error]"
 	} else {
-		guild = v
-	}
-
-	// Get their custom nickname for the Discord server, if any
-	for _, member := range guild.Members {
-		if member.User.ID != discordID {
-			continue
-		}
-
-		if member.Nick == "" {
-			return member.User.Username
-		}
-
 		return member.Nick
-	}
-
-	// If the "RequestGuildMembers()" function has not finished populating the "guild.Members",
-	// then the above code block may not find the user
-	// Default to getting the user's username directly from the API
-	// This can occasionally fail, so we don't want to report the error to Sentry
-	if user, err := discord.User(discordID); err != nil {
-		logger.Info("Failed to get the Discord user of \""+discordID+"\":", err)
-		return "[error]"
-	} else {
-		return user.Username
 	}
 }
 
 func discordGetChannel(discordID string) string {
-	// Get the Discord guild object
-	var guild *discordgo.Guild
-	if v, err := discord.Guild(discordListenChannels[0]); err != nil {
+	if channel, err := discord.Channel(discordID); err != nil {
 		// This can occasionally fail, so we don't want to report the error to Sentry
 		logger.Info("Failed to get the Discord guild:", err)
-		return ""
+		return "[error]"
 	} else {
-		guild = v
+		return channel.Name
 	}
-	// (assume that the first channel ID is the same as the server ID)
-
-	// Get the name of the channel
-	for _, channel := range guild.Channels {
-		if channel.ID == discordID {
-			return channel.Name
-		}
-	}
-
-	return "[unknown]"
 }
 
 // We need to check for special commands that occur in Discord channels other than #general
