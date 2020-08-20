@@ -59,7 +59,7 @@ func (*VariantStats) Get(variant int) (VariantStatsRow, error) {
 	return stats, nil
 }
 
-func (*VariantStats) GetAll(variantsID map[int]string) (map[int]VariantStatsRow, error) {
+func (*VariantStats) GetAll() (map[int]VariantStatsRow, error) {
 	rows, err := db.Query(context.Background(), `
 		SELECT
 			variant,

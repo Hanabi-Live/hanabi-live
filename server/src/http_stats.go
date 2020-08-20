@@ -75,7 +75,7 @@ func httpStats(c *gin.Context) {
 
 	// Get the stats for all variants
 	var statsMap map[int]VariantStatsRow
-	if v, err := models.VariantStats.GetAll(variantIDMap); err != nil {
+	if v, err := models.VariantStats.GetAll(); err != nil {
 		logger.Error("Failed to get the stats for all the variants:", err)
 		http.Error(
 			w,
