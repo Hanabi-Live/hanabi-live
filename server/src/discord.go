@@ -16,7 +16,6 @@ var (
 	discordLobbyChannel   string
 	discordLastAtHere     time.Time
 	discordBotID          string
-	discordGuildID        string
 )
 
 /*
@@ -98,9 +97,6 @@ func discordConnect() {
 func discordReady(s *discordgo.Session, event *discordgo.Ready) {
 	logger.Info("Discord bot connected with username: " + event.User.Username)
 	discordBotID = event.User.ID
-
-	// Assume that the first channel ID is the same as the guild/server ID
-	discordGuildID = discordListenChannels[0]
 }
 
 // Copy messages from Discord to the lobby
