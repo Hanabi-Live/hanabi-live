@@ -149,11 +149,8 @@ func websocketConnectGetData(s *Session) *WebsocketConnectData {
 			continue
 		}
 
-		for _, p := range t.Players {
-			if p.Name != s.Username() {
-				continue
-			}
-
+		i := t.GetPlayerIndexFromID(s.UserID())
+		if i != -1 {
 			data.PlayingInOngoingGame = true
 			data.PlayingInOngoingGameTableID = t.ID
 			break
@@ -383,14 +380,8 @@ func websocketConnectRejoinOngoingGame(s *Session, data *WebsocketConnectData) {
 	}
 
 	// Find their index
-	playerIndex := -1
-	for i, p := range t.Players {
-		if p.ID == s.UserID() {
-			playerIndex = i
-			break
-		}
-	}
-	if playerIndex == -1 {
+	i := t.GetPlayerIndexFromID(s.UserID())
+	if i == -1 {
 		return
 	}
 
@@ -398,7 +389,7 @@ func websocketConnectRejoinOngoingGame(s *Session, data *WebsocketConnectData) {
 		"to table " + strconv.FormatUint(data.PlayingInOngoingGameTableID, 10) + ".")
 
 	// Update the player object with the new socket
-	t.Players[playerIndex].Session = s
+	t.Players[i].Session = s
 
 	commandTableReattend(s, &CommandData{ // Manual invocation
 		TableID: data.PlayingInOngoingGameTableID,
