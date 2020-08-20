@@ -639,9 +639,9 @@ func characterHideCard(a *ActionDraw, g *Game, p *GamePlayer) bool {
 		return false
 	}
 
-	if p.Character == "Blind Spot" && a.PlayerIndex == p.GetLeftPlayer() { // 29
+	if p.Character == "Blind Spot" && a.PlayerIndex == p.GetNextPlayer() { // 29
 		return true
-	} else if p.Character == "Oblivious" && a.PlayerIndex == p.GetRightPlayer() { // 30
+	} else if p.Character == "Oblivious" && a.PlayerIndex == p.GetPreviousPlayer() { // 30
 		return true
 	} else if p.Character == "Slow-Witted" { // 33
 		return true
@@ -715,16 +715,25 @@ func characterCheckSoftlock(g *Game, p *GamePlayer) {
 	}
 }
 
-func characterEmptyClueAllowed(d *CommandData, g *Game, p *GamePlayer) bool {
+func characterSeesCard(g *Game, p *GamePlayer, p2 *GamePlayer, cardOrder int) bool {
 	if !g.Options.DetrimentalCharacters {
+		return true
+	}
+
+	if p.Character == "Blind Spot" && p2.Index == p.GetNextPlayer() { // 29
+		// Cannot see the cards of the next player
 		return false
 	}
 
-	if p.Character == "Blind Spot" && d.Target == p.GetLeftPlayer() { // 29
-		return true
-	} else if p.Character == "Oblivious" && d.Target == p.GetRightPlayer() { // 30
-		return true
+	if p.Character == "Oblivious" && p2.Index == p.GetPreviousPlayer() { // 30
+		// Cannot see the cards of the previous player
+		return false
 	}
 
-	return false
+	if p.Character == "Slow-Witted" && p2.GetCardSlot(cardOrder) == 1 { // 33
+		// Cannot see cards in slot 1
+		return false
+	}
+
+	return true
 }

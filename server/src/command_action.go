@@ -374,10 +374,9 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 	// Validate that the clue touches at least one card
 	p2 := g.Players[d.Target] // The target of the clue
 	touchedAtLeastOneCard := false
-	for i, c := range p2.Hand {
-		if g.Options.DetrimentalCharacters && p.Character == "Slow-Witted" && i == len(p2.Hand)-1 {
-			// Cannot see cards in slot 1
-			// Explicitly disallow cluing cards in slot 1
+	for _, c := range p2.Hand {
+		// Prevent characters from cluing cards that they are not supposed to see
+		if !characterSeesCard(g, p, p2, c.Order) {
 			continue
 		}
 
@@ -392,9 +391,7 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 		// Make an exception for variants where color clues are always allowed
 		(!variants[g.Options.VariantName].ColorCluesTouchNothing || clue.Type != ClueTypeColor) &&
 		// Make an exception for variants where rank clues are always allowed
-		(!variants[g.Options.VariantName].RankCluesTouchNothing || clue.Type != ClueTypeRank) &&
-		// Make an exception for certain characters
-		!characterEmptyClueAllowed(d, g, p) {
+		(!variants[g.Options.VariantName].RankCluesTouchNothing || clue.Type != ClueTypeRank) {
 
 		s.Warning("You cannot give a clue that touches 0 cards in the hand.")
 		g.InvalidActionOccurred = true

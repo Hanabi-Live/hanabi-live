@@ -91,19 +91,20 @@ func (p *GamePlayer) GetCardSlot(order int) int {
 	return -1
 }
 
-// GetLeftPlayer returns the index of the player that is sitting to this player's left
-func (p *GamePlayer) GetLeftPlayer() int {
-	g := p.Game
-	return (p.Index + 1) % len(g.Players)
+func (p *GamePlayer) GetNextPlayer() int {
+	i := p.Index + 1
+	if i == len(p.Game.Players) {
+		return 0
+	}
+	return i
 }
 
-// GetRightPlayer returns the index of the player that is sitting to this player's right
-func (p *GamePlayer) GetRightPlayer() int {
-	g := p.Game
-
-	// In Golang, "%" will give the remainder and not the modulus, so we need to ensure that the
-	// result is not negative or we will get a "index out of range" error
-	return (p.Index - 1 + len(g.Players)) % len(g.Players)
+func (p *GamePlayer) GetPreviousPlayer() int {
+	i := p.Index - 1
+	if i == -1 {
+		return len(p.Game.Players) - 1
+	}
+	return i
 }
 
 // CheckSurprise checks to see if a player has a "wrong" note on a card that
