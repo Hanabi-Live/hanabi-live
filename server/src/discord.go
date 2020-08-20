@@ -178,7 +178,7 @@ func discordGetNickname(discordID string) string {
 
 	if member, err := discord.GuildMember(guildID, discordID); err != nil {
 		// This can occasionally fail, so we don't want to report the error to Sentry
-		logger.Info("Failed to get the Discord guild:", err)
+		logger.Info("Failed to get the Discord guild member:", err)
 		return "[error]"
 	} else {
 		return member.Nick
@@ -188,7 +188,7 @@ func discordGetNickname(discordID string) string {
 func discordGetChannel(discordID string) string {
 	if channel, err := discord.Channel(discordID); err != nil {
 		// This can occasionally fail, so we don't want to report the error to Sentry
-		logger.Info("Failed to get the Discord guild:", err)
+		logger.Info("Failed to get the Discord channel:", err)
 		return "[error]"
 	} else {
 		return channel.Name
