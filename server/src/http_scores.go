@@ -122,7 +122,7 @@ func httpScores(c *gin.Context) {
 		NumGamesSpeedrun:           profileStats.NumGamesSpeedrun,
 		TimePlayedSpeedrun:         timePlayedSpeedrun,
 		NumMaxScores:               numMaxScores,
-		TotalMaxScores:             len(variantsList) * 5, // For 2 to 6 players
+		TotalMaxScores:             len(variantNames) * 5, // For 2 to 6 players
 		PercentageMaxScores:        percentageMaxScoresString,
 		NumMaxScoresPerType:        numMaxScoresPerType,
 		PercentageMaxScoresPerType: percentageMaxScoresPerType,

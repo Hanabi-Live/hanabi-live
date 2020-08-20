@@ -31,7 +31,7 @@ func httpVariant(c *gin.Context) {
 
 	// Validate that it is a valid variant ID
 	var variantName string
-	if v, ok := variantsID[variantID]; !ok {
+	if v, ok := variantIDMap[variantID]; !ok {
 		http.Error(w, "Error: That is not a valid variant ID.", http.StatusBadRequest)
 		return
 	} else {
@@ -151,7 +151,7 @@ func httpVariant(c *gin.Context) {
 	data := TemplateData{
 		Title: "Variant Stats",
 
-		Name:               variantsID[variantID],
+		Name:               variantIDMap[variantID],
 		NumGames:           stats.NumGames,
 		TimePlayed:         timePlayed,
 		NumGamesSpeedrun:   stats.NumGamesSpeedrun,

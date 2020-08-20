@@ -4,6 +4,7 @@ export default interface Suit {
   readonly name: string;
   readonly abbreviation: string;
   readonly clueColors: Color[];
+  readonly displayName: string;
   readonly fill: string;
   readonly fillColorblind: string;
   readonly fillColors: string[];

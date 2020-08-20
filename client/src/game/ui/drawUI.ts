@@ -346,7 +346,7 @@ const drawPlayStacks = () => {
     // Draw the suit name next to each suit
     // (a text description of the suit)
     if (globals.variant.showSuitNames) {
-      let text = suit.name;
+      let text = suit.displayName;
       if (globals.lobby.settings.colorblindMode && suit.clueColors.length === 2) {
         const colorList = suit.clueColors.map((color) => color.abbreviation).join('/');
         text += ` [${colorList}]`;

@@ -5,24 +5,14 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"path"
-	"sort"
 	"strconv"
 	"strings"
 )
 
-type Character struct {
-	// Similar to variants, each character must have a unique numerical ID (for the database)
-	ID                      int    `json:"id"`
-	Description             string `json:"description"`
-	Emoji                   string `json:"emoji"`
-	WriteMetadataToDatabase bool   `json:"writeMetadataToDatabase"`
-	Not2P                   bool   `json:"not2P"`
-}
-
 var (
 	characters      map[string]*Character
+	characterIDMap  map[int]string
 	characterNames  []string
-	charactersID    map[int]string
 	debugCharacters = []string{
 		"n/a",
 		"n/a",
@@ -54,52 +44,67 @@ var (
 func charactersInit() {
 	// Import the JSON file
 	filePath := path.Join(dataPath, "characters.json")
-	var contents []byte
+	var fileContents []byte
 	if v, err := ioutil.ReadFile(filePath); err != nil {
 		logger.Fatal("Failed to read the \""+filePath+"\" file:", err)
 		return
 	} else {
-		contents = v
+		fileContents = v
 	}
-	characters = make(map[string]*Character)
-	if err := json.Unmarshal(contents, &characters); err != nil {
+	var charactersArray []*Character
+	if err := json.Unmarshal(fileContents, &charactersArray); err != nil {
 		logger.Fatal("Failed to convert the characters file to JSON:", err)
 		return
 	}
 
-	uniqueNameMap := make(map[string]struct{})
-	uniqueIDMap := make(map[int]struct{})
+	// Convert the array to a map
+	characters = make(map[string]*Character)
+	characterIDMap = make(map[int]string)
 	characterNames = make([]string, 0)
-	charactersID = make(map[int]string)
-	for name, character := range characters {
+	for _, character := range charactersArray {
+		// Validate the name
+		if character.Name == "" {
+			logger.Fatal("There is a character with an empty name in the \"characters.json\" file.")
+		}
+
+		// Validate the ID
+		if character.ID < 0 { // The first character has an ID of 0
+			logger.Fatal("The \"" + character.Name + "\" character has an invalid ID.")
+		}
+
+		// Validate the description
+		if character.Description == "" {
+			logger.Fatal("The \"" + character.Name + "\" character does not have a description.")
+		}
+
+		// Validate the emoji
+		if character.Emoji == "" {
+			logger.Fatal("The \"" + character.Name + "\" character does not have an emoji.")
+		}
+
 		// Validate that all of the names are unique
-		if _, ok := uniqueNameMap[name]; ok {
-			logger.Fatal("There are two characters with the name of \"" + name + "\".")
+		if _, ok := characters[character.Name]; ok {
+			logger.Fatal("There are two characters with the name of \"" + character.Name + "\".")
 			return
 		}
-		uniqueNameMap[name] = struct{}{}
+
+		// Add it to the map
+		characters[character.Name] = character
 
 		// Validate that all of the ID's are unique
-		if _, ok := uniqueIDMap[character.ID]; ok {
+		// And create a reverse mapping of ID to name
+		// (so that we can easily find the associated character from a database entry)
+		if _, ok := characterIDMap[character.ID]; ok {
 			logger.Fatal("There are two characters with the ID of " +
 				"\"" + strconv.Itoa(character.ID) + "\".")
 			return
 		}
-		uniqueIDMap[character.ID] = struct{}{}
+		characterIDMap[character.ID] = character.Name
 
 		// Create an array with every character name
-		// (so that later we have the ability to get a random character)
-		characterNames = append(characterNames, name)
-
-		// Create a reverse mapping of ID to name
-		// (so that we can easily find the associated character from a database entry)
-		charactersID[character.ID] = name
+		// (so that later we have the ability to easily get a random character)
+		characterNames = append(characterNames, character.Name)
 	}
-
-	// The characters map was iterated over in a random order,
-	// so the "characterNames" array will be in a random order every time the server starts
-	// Alphabetize it to prevent this
-	sort.Strings(characterNames)
 }
 
 func charactersGenerate(g *Game) {
@@ -137,7 +142,7 @@ func charactersGenerate(g *Game) {
 		}
 
 		for i, dbP := range dbPlayers {
-			g.Players[i].Character = charactersID[dbP.CharacterAssignment]
+			g.Players[i].Character = characterIDMap[dbP.CharacterAssignment]
 
 			// Metadata is stored in the database as value + 1
 			g.Players[i].CharacterMetadata = dbP.CharacterMetadata - 1

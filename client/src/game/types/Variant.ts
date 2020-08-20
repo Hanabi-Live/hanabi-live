@@ -3,7 +3,6 @@ import Suit from './Suit';
 
 export default interface Variant {
   readonly name: string;
-
   readonly id: number;
   readonly suits: Suit[];
   readonly ranks: number[];

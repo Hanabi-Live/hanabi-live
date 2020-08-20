@@ -222,7 +222,7 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sort string) ([]*GameHistory, 
 		}
 
 		// Get the name of the variant that corresponds to the variant ID
-		if variantName, ok := variantsID[variantID]; !ok {
+		if variantName, ok := variantIDMap[variantID]; !ok {
 			return nil, errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
 		} else {
 			gameHistory.Options.VariantName = variantName
@@ -481,7 +481,7 @@ func (*Games) GetOptions(databaseID int) (*Options, error) {
 	}
 
 	// Validate that the variant exists
-	if v, ok := variantsID[variantID]; !ok {
+	if v, ok := variantIDMap[variantID]; !ok {
 		err := errors.New("failed to find a definition for variant " + strconv.Itoa(variantID))
 		return &options, err
 	} else {

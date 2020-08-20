@@ -158,7 +158,7 @@ func httpExport(c *gin.Context) {
 		playerCharacters = make([]*CharacterJSON, 0)
 		for _, dbP := range dbPlayers {
 			playerCharacters = append(playerCharacters, &CharacterJSON{
-				Name: charactersID[dbP.CharacterAssignment],
+				Name: characterIDMap[dbP.CharacterAssignment],
 				// Metadata is stored in the database as value + 1
 				Metadata: dbP.CharacterMetadata - 1,
 			})

@@ -18,7 +18,8 @@ SUIT_REVERSED_SUFFIX = " Reversed"
 
 
 def main():
-    global old_variants
+    global old_variants_array
+    global old_variants_name_to_id_map
     global current_variant_id
 
     # Read the old "variants.json" file and the "suits.json" file
@@ -29,27 +30,46 @@ def main():
 
     with open(variants_path, "r") as variants_file:
         variants_string = variants_file.read()
-        old_variants = json.loads(variants_string)
+        old_variants_array = json.loads(variants_string)
 
     with open(suits_path, "r") as suits_file:
         suits_string = suits_file.read()
-        suits = json.loads(suits_string)
+        suits_array = json.loads(suits_string)
 
-    # Validate that the old variants file has unique ID numbers for every variant
-    old_variant_id_map = {}
-    for [variant_name, variant] in old_variants.items():
+    # Create some maps for the old variants
+    old_variants_name_to_id_map = {}
+    old_variants_id_to_name_map = {}
+    for variant in old_variants_array:
+        if "name" not in variant:
+            print(
+                'One of the variants in the "variants.json" file does not have a name.'
+            )
+            sys.exit(1)
+
         if "id" not in variant:
-            print('The variant of "' + variant_name + '" does not have an "id" field.')
-            sys.exit(1)
-        if variant["id"] in old_variant_id_map:
-            print("There is a duplicate ID of:", variant["id"])
+            print(
+                'The variant of "' + variant["name"] + '" does not have an "id" field.'
+            )
             sys.exit(1)
 
-        # Track that we have "seen" this ID
-        old_variant_id_map[variant["id"]] = True
+        if variant["name"] in old_variants_name_to_id_map:
+            print(
+                'The old "variants.json" file has a duplicate variant name of:',
+                variant["name"],
+            )
+            sys.exit(1)
+        old_variants_name_to_id_map[variant["name"]] = variant["id"]
 
-    # Add default values for each suit
-    for suit in suits.values():
+        if variant["id"] in old_variants_id_to_name_map:
+            print('The old "variants.json" file has a duplicate ID of:', variant["id"])
+            sys.exit(1)
+        old_variants_id_to_name_map[variant["id"]] = variant["name"]
+
+    # Convert the suits array to a map and add default values
+    suits = {}
+    for suit in suits_array:
+        suits[suit["name"]] = suit
+
         if "createVariants" not in suit:
             suit["createVariants"] = False
         if "oneOfEach" not in suit:
@@ -657,10 +677,10 @@ def main():
 
     # Check for missing variants
     missing = False
-    for key in old_variants.keys():
-        if key not in variants:
+    for variant in old_variants_array:
+        if variant["name"] not in variants:
             missing = True
-            print("Missing variant: " + key)
+            print("Missing variant: " + variant["name"])
     if missing:
         sys.exit(1)
 
@@ -681,17 +701,19 @@ def main():
 
 
 def get_variant_id(variant_name):
-    global old_variants
+    global old_variants_array
+    global old_variants_name_to_id_map
     global current_variant_id
 
-    if variant_name in old_variants:
-        return old_variants[variant_name]["id"]
+    # First, prefer the old (existing) variant ID, if present
+    if variant_name in old_variants_name_to_id_map:
+        return old_variants_name_to_id_map[variant_name]
 
-    # Find the lowest unused variant ID
+    # Otherwise, find the lowest unused variant ID
     while True:
         current_variant_id += 1
         found = False
-        for variant in old_variants.values():
+        for variant in old_variants_array:
             if variant["id"] == current_variant_id:
                 found = True
                 break

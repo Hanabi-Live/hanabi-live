@@ -75,7 +75,7 @@ func httpStats(c *gin.Context) {
 
 	// Get the stats for all variants
 	var statsMap map[int]VariantStatsRow
-	if v, err := models.VariantStats.GetAll(variantsID); err != nil {
+	if v, err := models.VariantStats.GetAll(variantIDMap); err != nil {
 		logger.Error("Failed to get the stats for all the variants:", err)
 		http.Error(
 			w,
@@ -92,7 +92,7 @@ func httpStats(c *gin.Context) {
 	numMaxScores := 0
 	numMaxScoresPerType := make([]int, 5) // For 2-player, 3-player, etc.
 	variantStatsList := make([]VariantStatsData, 0)
-	for _, name := range variantsList {
+	for _, name := range variantNames {
 		variant := variants[name]
 		maxScore := len(variant.Suits) * PointsPerSuit
 		variantStats := VariantStatsData{
@@ -145,13 +145,13 @@ func httpStats(c *gin.Context) {
 
 	percentageMaxScoresPerType := make([]string, 0)
 	for _, maxScores := range numMaxScoresPerType {
-		percentage := float64(maxScores) / float64(len(variantsList)) * 100
+		percentage := float64(maxScores) / float64(len(variantNames)) * 100
 		percentageString := fmt.Sprintf("%.1f", percentage)
 		percentageString = strings.TrimSuffix(percentageString, ".0")
 		percentageMaxScoresPerType = append(percentageMaxScoresPerType, percentageString)
 	}
 
-	percentageMaxScores := float64(numMaxScores) / float64(len(variantsList)*5) * 100
+	percentageMaxScores := float64(numMaxScores) / float64(len(variantNames)*5) * 100
 	// (we multiply by 5 because there are max scores for 2 to 6 players)
 	percentageMaxScoresString := fmt.Sprintf("%.1f", percentageMaxScores)
 	percentageMaxScoresString = strings.TrimSuffix(percentageMaxScoresString, ".0")
@@ -163,7 +163,7 @@ func httpStats(c *gin.Context) {
 		TimePlayed:                 timePlayed,
 		NumGamesSpeedrun:           globalStats.NumGamesSpeedrun,
 		TimePlayedSpeedrun:         timePlayedSpeedrun,
-		NumVariants:                len(variantsList),
+		NumVariants:                len(variantNames),
 		NumMaxScoresPerType:        numMaxScoresPerType,
 		PercentageMaxScoresPerType: percentageMaxScoresPerType,
 		NumMaxScores:               numMaxScores,
