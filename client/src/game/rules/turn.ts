@@ -93,5 +93,6 @@ export const getEndTurn = (turn: number, metadata: GameMetadata) => {
     }
   }
 
+  // By default, each player gets one more turn after the final card is drawn
   return turn + metadata.options.numPlayers;
 };

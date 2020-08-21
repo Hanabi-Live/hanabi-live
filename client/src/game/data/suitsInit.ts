@@ -114,7 +114,7 @@ export default function suitsInit(COLORS: Map<string, Color>) {
     let fill: string = suitJSON.fill ?? '';
     let fillColorblind = '';
     if (fill === '') {
-      const color = COLORS.get(name);
+      const color = COLORS.get(displayName);
       if (color !== undefined) {
         fill = color.fill;
         fillColorblind = color.fillColorblind;
