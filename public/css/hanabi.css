@@ -678,6 +678,7 @@ input::-webkit-calendar-picker-indicator {
   background-color: black;
   border-radius: 10px; /* This has to match the border-radius below */
   border: 3px solid black;
+  touch-action: none;
 }
 
 #game-chat-modal-header {
