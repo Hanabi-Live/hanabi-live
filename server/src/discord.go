@@ -181,7 +181,11 @@ func discordGetNickname(discordID string) string {
 		logger.Info("Failed to get the Discord guild member:", err)
 		return "[error]"
 	} else {
-		return member.Nick
+		if member.Nick != "" {
+			return member.Nick
+		}
+
+		return member.User.Username
 	}
 }
 
