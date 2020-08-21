@@ -170,7 +170,7 @@ func variantsInit() {
 		variantIDMap[variant.ID] = variant.Name
 
 		// Create an array with every variant name
-		variantNames = append(characterNames, variant.Name)
+		variantNames = append(variantNames, variant.Name)
 	}
 
 	// Validate that there are no skipped ID numbers
