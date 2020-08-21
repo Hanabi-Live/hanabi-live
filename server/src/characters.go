@@ -14,7 +14,7 @@ var (
 	characterIDMap  map[int]string
 	characterNames  []string
 	debugCharacters = []string{
-		"n/a",
+		"Contrarian",
 		"n/a",
 		"n/a",
 		"n/a",

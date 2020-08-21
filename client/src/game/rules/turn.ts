@@ -1,4 +1,5 @@
 import { getCharacter } from '../data/gameData';
+import GameMetadata from '../types/GameMetadata';
 
 export const shouldEndTurnAfterDraw = (
   cardsPlayedOrDiscardedThisTurn: number,
@@ -77,4 +78,20 @@ export const getNextPlayerIndex = (
   }
 
   return nextPlayerIndex;
+};
+
+export const getEndTurn = (turn: number, metadata: GameMetadata) => {
+  // The Contrarian detrimental character has a 2-turn end game
+  if (metadata.options.detrimentalCharacters) {
+    for (const characterID of metadata.characterAssignments) {
+      if (characterID !== null) {
+        const character = getCharacter(characterID);
+        if (character.name === 'Contrarian') {
+          return turn + 2;
+        }
+      }
+    }
+  }
+
+  return turn + metadata.options.numPlayers;
 };

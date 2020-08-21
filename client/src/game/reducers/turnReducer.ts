@@ -14,7 +14,6 @@ const turnReducer = produce((
   currentState: GameState,
   metadata: GameMetadata,
 ) => {
-  const numPlayers = metadata.options.numPlayers;
   const characterID = getCharacterIDForPlayer(
     turn.currentPlayerIndex,
     metadata.characterAssignments,
@@ -26,7 +25,7 @@ const turnReducer = produce((
 
       if (currentState.cardsRemainingInTheDeck === 0) {
         turn.segment! += 1;
-        nextTurn(turn, numPlayers, currentState.cardsRemainingInTheDeck, characterID);
+        nextTurn(turn, currentState.cardsRemainingInTheDeck, characterID, metadata);
       }
 
       break;
@@ -38,7 +37,7 @@ const turnReducer = produce((
 
       if (currentState.cardsRemainingInTheDeck === 0) {
         turn.segment! += 1;
-        nextTurn(turn, numPlayers, currentState.cardsRemainingInTheDeck, characterID);
+        nextTurn(turn, currentState.cardsRemainingInTheDeck, characterID, metadata);
       }
 
       break;
@@ -53,7 +52,7 @@ const turnReducer = produce((
       turn.segment += 1;
 
       if (turnRules.shouldEndTurnAfterClue(turn.cluesGivenThisTurn, characterID)) {
-        nextTurn(turn, numPlayers, currentState.cardsRemainingInTheDeck, characterID);
+        nextTurn(turn, currentState.cardsRemainingInTheDeck, characterID, metadata);
       }
       break;
     }
@@ -76,7 +75,7 @@ const turnReducer = produce((
           characterID,
           currentState.clueTokens,
         )) {
-          nextTurn(turn, numPlayers, currentState.cardsRemainingInTheDeck, characterID);
+          nextTurn(turn, currentState.cardsRemainingInTheDeck, characterID, metadata);
         }
       }
 
@@ -132,9 +131,9 @@ export default turnReducer;
 
 const nextTurn = (
   state: Draft<TurnState>,
-  numPlayers: number,
   deckSize: number,
   characterID: number | null,
+  metadata: GameMetadata,
 ) => {
   state.turnNum += 1;
 
@@ -144,12 +143,12 @@ const nextTurn = (
 
   state.currentPlayerIndex = turnRules.getNextPlayerIndex(
     state.currentPlayerIndex,
-    numPlayers,
+    metadata.options.numPlayers,
     state.playOrderInverted,
   );
 
   if (deckSize === 0 && state.endTurnNum === null) {
-    state.endTurnNum = state.turnNum + numPlayers;
+    state.endTurnNum = turnRules.getEndTurn(state.turnNum, metadata);
   }
 
   state.cardsPlayedOrDiscardedThisTurn = 0;
