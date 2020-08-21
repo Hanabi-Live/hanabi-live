@@ -1,4 +1,5 @@
 import variantsJSON from '../../../../data/variants.json';
+import * as abbreviationsRules from '../rules/abbreviation';
 import Color from '../types/Color';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
@@ -226,6 +227,9 @@ export default function variantsInit(
     // shows the color composition of the suit
     const offsetCornerElements = suits.some((suit: Suit) => suit.clueColors.length > 1);
 
+    // Prepare the abbreviations for each suit
+    const abbreviations = abbreviationsRules.makeAll(name, suits);
+
     // Add it to the map
     const variant: Variant = {
       name,
@@ -245,6 +249,7 @@ export default function variantsInit(
       spacing,
       maxScore,
       offsetCornerElements,
+      abbreviations,
     };
     VARIANTS.set(variantJSON.name, variant);
   }

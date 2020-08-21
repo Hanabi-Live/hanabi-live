@@ -162,13 +162,23 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 #### Card Identity Notes
 
-* If the note matches the name of a card (e.g. "red 1", "r1", etc.), the card face will change to match. (The card face will automatically be deactivated if a clue is received that falsifies the note.) If this is undesired, append a question mark to the end of your note (e.g. "r1?").
-  * Black is abbreviated as "k".
-  * Rainbow, muddy rainbow, and cocoa rainbow are abbreviated as "m".
-  * Pink, light pink, and gray pink are abbreviated as "i".
-  * Brown is abbreviated as "n".
-  * The "dark" suits are abbreviated the same as their normal counterparts.
-  * Gray is abbreviated as "a".
+* If the note matches the name of a card (e.g. "red 1", "r1", etc.), the card face will change to match.
+  * The new card face will automatically be deactivated if a clue is received that falsifies the note.
+* If this behavior is undesired, append a question mark to the end of your note. (e.g. "r1?")
+
+| Suit Name       | Abbreviation
+| --------------- | ------------
+| Black           | K
+| Rainbow         | M
+| Muddy Rainbow   | M
+| Pink            | I
+| Light Pink      | I
+| Brown           | N
+| [any dark suit] | [the same as the "normal" version of the suit]
+| Gray            | A
+
+* If there are two suits with the same abbreviation, the second suit abbreviation will be changed to be the left-most unused letter.
+  * For example, in "Rainbow & Muddy Rainbow (6 Suits)", muddy rainbow will have an abbreviation of "M".
 
 #### Special Note Borders
 

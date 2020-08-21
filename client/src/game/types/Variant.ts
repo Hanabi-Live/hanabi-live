@@ -21,4 +21,5 @@ export default interface Variant {
   readonly spacing: boolean;
   readonly maxScore: number;
   readonly offsetCornerElements: boolean;
+  readonly abbreviations: string[];
 }

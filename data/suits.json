@@ -171,7 +171,7 @@
   },
   {
     "name": "Dark Omni",
-    "abbreviation": "O",
+    "abbreviation": "V",
     "allClueColors": true,
     "allClueRanks": true,
     "createVariants": true,
@@ -336,6 +336,7 @@
   },
   {
     "name": "Sapphire EA",
+    "abbreviation": "A",
     "clueColors": [
       "Blue"
     ],

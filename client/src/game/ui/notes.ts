@@ -1,7 +1,7 @@
 // Users can right-click cards to record information on them
 
 import { parseIntSafe } from '../../misc';
-import { deckRules } from '../rules';
+import { deckRules, abbreviationRules } from '../rules';
 import { canPossiblyBe } from '../rules/card';
 import * as variantRules from '../rules/variant';
 import CardIdentity from '../types/CardIdentity';
@@ -170,9 +170,11 @@ export const cardIdentityFromNote = (
     }
 
     for (const suit of variant.suits) {
+      const suitAbbreviation = abbreviationRules.get(suit.name, variant);
+
       // Check for a specific suit identity with no associated rank (e.g. "b")
       if (checkNoteKeywords([
-        suit.abbreviation.toLowerCase(), // e.g. "b" or "B"
+        suitAbbreviation.toLowerCase(), // e.g. "b" or "B"
         suit.displayName.toLowerCase(), // e.g. "blue" or "Blue" or "BLUE"
       ], note, fullNote)) {
         return {
@@ -183,10 +185,10 @@ export const cardIdentityFromNote = (
 
       // Check for a specific suit + rank identity
       if (checkNoteKeywords([
-        `${suit.abbreviation.toLowerCase()}${rankText}`, // e.g. "b1" or "B1"
+        `${suitAbbreviation.toLowerCase()}${rankText}`, // e.g. "b1" or "B1"
         `${suit.displayName.toLowerCase()}${rankText}`, // e.g. "blue1" or "Blue1" or "BLUE1"
         `${suit.displayName.toLowerCase()} ${rankText}`, // e.g. "blue 1" or "Blue 1" or "BLUE 1"
-        `${rankText}${suit.abbreviation.toLowerCase()}`, // e.g. "1b" or "1B"
+        `${rankText}${suitAbbreviation.toLowerCase()}`, // e.g. "1b" or "1B"
         `${rankText}${suit.displayName.toLowerCase()}`, // e.g. "1blue" or "1Blue" or "1BLUE"
         `${rankText} ${suit.displayName.toLowerCase()}`, // e.g. "1 blue" or "1 Blue" or "1 BLUE"
       ], note, fullNote)) {

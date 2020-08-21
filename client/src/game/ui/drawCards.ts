@@ -1,6 +1,7 @@
 // The card graphics are various HTML5 canvas drawings
 
 import { getSuit } from '../data/gameData';
+import { abbreviationRules } from '../rules';
 import * as variantRules from '../rules/variant';
 import Color from '../types/Color';
 import { STACK_BASE_RANK, START_CARD_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
@@ -67,7 +68,7 @@ export default function drawCards(
         }
         let fontSize;
         if (colorblindMode) {
-          rankLabel += suit.abbreviation;
+          rankLabel += abbreviationRules.get(suit.name, variant);
           fontSize = 68;
           textYPos = 83;
         } else {
