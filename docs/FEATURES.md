@@ -169,7 +169,6 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
   * Brown is abbreviated as "n".
   * The "dark" suits are abbreviated the same as their normal counterparts.
   * Gray is abbreviated as "a".
-* You can also use the order of a suit on the stacks instead of the suit name. For example, "11" represents a red 1 when the red stack is the left-most stack. This is helpful in games with suit names that start with the same letter.
 
 #### Special Note Borders
 

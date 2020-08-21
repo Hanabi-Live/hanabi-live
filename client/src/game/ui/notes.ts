@@ -172,8 +172,8 @@ export const cardIdentityFromNote = (
     for (const suit of variant.suits) {
       // Check for a specific suit identity with no associated rank (e.g. "b")
       if (checkNoteKeywords([
-        suit.abbreviation.toLowerCase(),
-        suit.displayName.toLowerCase(),
+        suit.abbreviation.toLowerCase(), // e.g. "b" or "B"
+        suit.displayName.toLowerCase(), // e.g. "blue" or "Blue" or "BLUE"
       ], note, fullNote)) {
         return {
           suitIndex: suitToSuitIndex(suit, variant),
@@ -186,7 +186,6 @@ export const cardIdentityFromNote = (
         `${suit.abbreviation.toLowerCase()}${rankText}`, // e.g. "b1" or "B1"
         `${suit.displayName.toLowerCase()}${rankText}`, // e.g. "blue1" or "Blue1" or "BLUE1"
         `${suit.displayName.toLowerCase()} ${rankText}`, // e.g. "blue 1" or "Blue 1" or "BLUE 1"
-        `${globals.variant.suits.indexOf(suit) + 1}${rankText}`, // e.g. "41", since blue is the 4th suit on the stacks
         `${rankText}${suit.abbreviation.toLowerCase()}`, // e.g. "1b" or "1B"
         `${rankText}${suit.displayName.toLowerCase()}`, // e.g. "1blue" or "1Blue" or "1BLUE"
         `${rankText} ${suit.displayName.toLowerCase()}`, // e.g. "1 blue" or "1 Blue" or "1 BLUE"
