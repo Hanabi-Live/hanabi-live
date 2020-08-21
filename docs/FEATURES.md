@@ -178,7 +178,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 | Gray            | A
 
 * If there are two suits with the same abbreviation, the second suit abbreviation will be changed to be the left-most unused letter.
-  * For example, in "Rainbow & Muddy Rainbow (6 Suits)", muddy rainbow will have an abbreviation of "M".
+  * For example, in "Rainbow & Muddy Rainbow (6 Suits)", muddy rainbow will have an abbreviation of "U".
 
 #### Special Note Borders
 
