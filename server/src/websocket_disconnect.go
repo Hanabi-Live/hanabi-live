@@ -19,11 +19,19 @@ func websocketDisconnect(ms *melody.Session) {
 	logger.Debug("Acquired session connection write lock for user: " + s.Username())
 	defer sessionConnectMutex.Unlock()
 
-	websocketDisconnectRemoveFromMap(s)
+	if !websocketDisconnectRemoveFromMap(s) {
+		return
+	}
 	websocketDisconnectRemoveFromGames(s)
+
+	// Alert everyone that a user has logged out
+	notifyAllUserLeft(s)
 }
 
-func websocketDisconnectRemoveFromMap(s *Session) {
+// websocketDisconnectRemoveFromMap returns true if the user was removed from the map
+// (in some situations, the session will already be removed from the map by the time the code
+// reaches this function)
+func websocketDisconnectRemoveFromMap(s *Session) bool {
 	logger.Debug("Acquiring sessions write lock for user: " + s.Username())
 	sessionsMutex.Lock()
 	logger.Debug("Acquired sessions write lock for user: " + s.Username())
@@ -34,14 +42,16 @@ func websocketDisconnectRemoveFromMap(s *Session) {
 	if s2, ok := sessions[s.UserID()]; !ok {
 		logger.Info("User \"" + s.Username() + "\" disconnected, " +
 			"but their session was already deleted.")
-		return
+		return false
 	} else if s2.SessionID() != s.SessionID() {
 		logger.Info("The orphaned session for user \"" + s.Username() + "\" " +
 			"successfully disconnected.")
-		return
+		return false
 	}
 
 	delete(sessions, s.UserID())
+	logger.Info("User \""+s.Username()+"\" disconnected;", len(sessions), "user(s) now connected.")
+	return true
 }
 
 func websocketDisconnectRemoveFromGames(s *Session) {
@@ -105,10 +115,4 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 		})
 		t.Mutex.Unlock()
 	}
-
-	// Alert everyone that a user has logged out
-	notifyAllUserLeft(s)
-
-	// Log the disconnection
-	logger.Info("User \""+s.Username()+"\" disconnected;", len(sessions), "user(s) now connected.")
 }

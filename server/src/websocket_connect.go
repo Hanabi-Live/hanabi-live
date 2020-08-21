@@ -71,25 +71,20 @@ func websocketConnect(ms *melody.Session) {
 	logger.Debug("Acquired sessions write lock for user: " + s.Username())
 	sessions[s.UserID()] = s
 	sessionsMutex.Unlock()
-
-	// They have successfully logged in
 	logger.Info("User \""+s.Username()+"\" connected;", len(sessions), "user(s) now connected.")
 
 	// Now, send some additional information to them
 	websocketConnectWelcomeMessage(s, data)
-
-	// Alert everyone that a new user has logged in
-	// (note that we intentionally send users a message about themselves;
-	// this must be performed before we send them the user list)
-	notifyAllUser(s)
-
 	websocketConnectUserList(s)
 	websocketConnectTableList(s)
 	websocketConnectChat(s)
 	websocketConnectHistory(s)
 	websocketConnectHistoryFriends(s, data.Friends)
 
-	// They might need to resjoin an ongoing game or shared replay
+	// Alert everyone that a new user has logged in
+	notifyAllUser(s)
+
+	// They might need to rejoin an ongoing game or shared replay
 	if data.PlayingInOngoingGame {
 		websocketConnectRejoinOngoingGame(s, data)
 	} else if data.SpectatingTable {
@@ -245,10 +240,7 @@ func websocketConnectUserList(s *Session) {
 	sessionsMutex.RLock()
 	logger.Debug("Acquired sessions read lock for user: " + s.Username())
 	for _, s2 := range sessions {
-		// Skip sending a message about ourselves since we already sent that above
-		if s2.UserID() != s.UserID() {
-			userMessageList = append(userMessageList, makeUserMessage(s2))
-		}
+		userMessageList = append(userMessageList, makeUserMessage(s2))
 	}
 	sessionsMutex.RUnlock()
 	s.Emit("userList", userMessageList)
