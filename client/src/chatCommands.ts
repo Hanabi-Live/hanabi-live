@@ -95,6 +95,8 @@ chatCommands.set('pm', pm);
 chatCommands.set('w', pm);
 chatCommands.set('whisper', pm);
 chatCommands.set('msg', pm);
+chatCommands.set('tell', pm);
+chatCommands.set('t', pm);
 
 // /setleader [username]
 const setLeader = (_room: string, args: string[]) => {
