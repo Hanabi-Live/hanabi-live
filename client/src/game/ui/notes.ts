@@ -77,7 +77,10 @@ const checkNoteKeywords = (
   keywords: string[],
   note: string,
   fullNote: string,
-) => keywords.find((k) => note === k || fullNote.includes(`[${k}]`)) !== undefined;
+) => keywords.find((k) => (
+  note === k
+  || fullNote.includes(`[${k}]`)
+)) !== undefined;
 
 export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
   let text = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
@@ -155,6 +158,8 @@ export const cardIdentityFromNote = (
     if (rank === 0 || Number.isNaN(rank)) {
       rank = START_CARD_RANK;
     }
+
+    // Check for a specific rank identity with no associated suit (e.g. "5")
     if (checkNoteKeywords([
       rankText,
     ], note, fullNote)) {
@@ -163,7 +168,9 @@ export const cardIdentityFromNote = (
         rank,
       };
     }
+
     for (const suit of variant.suits) {
+      // Check for a specific suit identity with no associated rank (e.g. "b")
       if (checkNoteKeywords([
         suit.abbreviation.toLowerCase(),
         suit.displayName.toLowerCase(),
@@ -174,6 +181,7 @@ export const cardIdentityFromNote = (
         };
       }
 
+      // Check for a specific suit + rank identity
       if (checkNoteKeywords([
         `${suit.abbreviation.toLowerCase()}${rankText}`, // e.g. "b1" or "B1"
         `${suit.displayName.toLowerCase()}${rankText}`, // e.g. "blue1" or "Blue1" or "BLUE1"
