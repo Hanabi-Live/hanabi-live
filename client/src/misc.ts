@@ -88,9 +88,18 @@ const pad2 = (num: number) => {
 // By default, "parseInt('1a')" will return "1", which is unexpected
 // Thus, we use a helper function as a stand-in for parseInt so that we can handle this properly
 export const parseIntSafe = (input: string) => {
-  const trimmedInput = input.trim(); // Remove all leading and trailing whitespace
-  if (!trimmedInput.match(/^[0-9]+$/)) {
+  let trimmedInput = input.trim(); // Remove all leading and trailing whitespace
+  const isNegativeNumber = trimmedInput.startsWith('-');
+  if (isNegativeNumber) {
+    // Remove the leading minus sign before we match the regular expression
+    trimmedInput = trimmedInput.substring(1);
+  }
+  if (!trimmedInput.match(/^\d+$/)) { // "\d" matches any digit (same as "[0-9]")
     return NaN;
+  }
+  if (isNegativeNumber) {
+    // Add the leading minus sign back
+    trimmedInput = `-${trimmedInput}`;
   }
   return parseInt(trimmedInput, 10);
 };

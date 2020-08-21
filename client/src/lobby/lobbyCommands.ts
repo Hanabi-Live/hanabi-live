@@ -207,7 +207,7 @@ commands.set('tableStart', (data: TableStartData) => {
   gameMain.show();
 });
 
-// Received by the client when a user connect or has a new status
+// Received by the client when a user connects or has a new status
 commands.set('user', (data: User) => {
   globals.userMap.set(data.userID, data);
   if (globals.currentScreen === Screen.Lobby || globals.currentScreen === Screen.PreGame) {
