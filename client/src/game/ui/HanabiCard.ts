@@ -952,10 +952,10 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   private registerMouseHandlers() {
     // Define the clue log mouse handlers
-    // (e.g. when we mouse over a card, the positive and negative clues that have touched this card
-    // will be highlighted)
+    // (e.g. when we mouse over a card, the positive and negative clues that have touched the card
+    // will be highlighted in the clue log)
     this.on('mouseover touchstart', () => {
-      globals.elements.clueLog!.showMatches(this);
+      globals.elements.clueLog!.showMatches(this.state.order);
       globals.layers.UI.batchDraw();
     });
     this.on('mouseout touchend', () => {

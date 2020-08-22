@@ -3,7 +3,6 @@
 import Konva from 'konva';
 import ClueEntry from './ClueEntry';
 import globals from './globals';
-import HanabiCard from './HanabiCard';
 
 export default class ClueLog extends Konva.Group {
   readonly maxLength = 27; // Just enough to fill the parent rectangle
@@ -44,9 +43,11 @@ export default class ClueLog extends Konva.Group {
     }
   }
 
-  showMatches(target: HanabiCard | null) {
+  // We have moused over a card (or stopped mousing over a card),
+  // so update the highlighting for all of the clue log entries
+  showMatches(targetCardOrder: number | null) {
     for (const child of this.children.toArray() as ClueEntry[]) {
-      child.showMatch(target);
+      child.showMatch(targetCardOrder);
     }
   }
 }

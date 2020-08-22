@@ -5,7 +5,6 @@ import { cluesRules } from '../rules';
 import { StateClue } from '../types/GameState';
 import FitText from './controls/FitText';
 import globals from './globals';
-import HanabiCard from './HanabiCard';
 import { drawLayer } from './konvaHelpers';
 import * as replay from './replay';
 
@@ -116,19 +115,25 @@ export default class ClueEntry extends Konva.Group {
     });
   }
 
-  showMatch(target: HanabiCard | null) {
+  // If this clue entry is related to the card that we are currently mousing over, then highlight it
+  showMatch(targetCardOrder: number | null) {
     this.background.opacity(0.1);
     this.background.fill('white');
     this.negativeMarker.hide();
 
-    for (let i = 0; i < this.clue.list.length; i++) {
-      if (globals.deck[this.clue.list[i]] === target) {
+    if (targetCardOrder === null) {
+      return;
+    }
+
+    for (const cardOrder of this.clue.list) {
+      if (cardOrder === targetCardOrder) {
         this.background.opacity(0.4);
+        // (the background is already set to white)
       }
     }
 
-    for (let i = 0; i < this.clue.negativeList.length; i++) {
-      if (globals.deck[this.clue.negativeList[i]] === target) {
+    for (const cardOrder of this.clue.negativeList) {
+      if (cardOrder === targetCardOrder) {
         this.background.opacity(0.4);
         this.background.fill('#ff7777');
         if (globals.lobby.settings.colorblindMode) {
