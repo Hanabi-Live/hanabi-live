@@ -4,6 +4,7 @@ import Konva from 'konva';
 import { parseIntSafe } from '../../misc';
 import * as arrows from './arrows';
 import Shuttle from './controls/Shuttle';
+import getCardOrStackBase from './getCardOrStackBase';
 import globals from './globals';
 import { animate } from './konvaHelpers';
 
@@ -104,7 +105,8 @@ export const goToSegmentAndIndicateCard = (segment: number, order: number) => {
 
   // We indicate the card to make it easier to see
   arrows.hideAll(); // We hide all the arrows first to ensure that the arrow is always shown
-  arrows.toggle(globals.deck[order]);
+  const card = getCardOrStackBase(order);
+  arrows.toggle(card);
 };
 
 // ---------------------------

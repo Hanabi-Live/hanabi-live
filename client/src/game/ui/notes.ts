@@ -1,7 +1,7 @@
 // Users can right-click cards to record information on them
 
 import { parseIntSafe } from '../../misc';
-import { deckRules, abbreviationRules } from '../rules';
+import { abbreviationRules } from '../rules';
 import { canPossiblyBe } from '../rules/card';
 import * as variantRules from '../rules/variant';
 import CardIdentity from '../types/CardIdentity';
@@ -10,6 +10,7 @@ import CardState from '../types/CardState';
 import { STACK_BASE_RANK, START_CARD_RANK } from '../types/constants';
 import Variant from '../types/Variant';
 import { suitToSuitIndex } from './convert';
+import getCardOrStackBase from './getCardOrStackBase';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 
@@ -66,10 +67,7 @@ export const set = (order: number, note: string) => {
     return;
   }
 
-  let card = globals.deck[order];
-  if (card === undefined) {
-    card = globals.stackBases[order - deckRules.totalCards(globals.variant)];
-  }
+  const card = getCardOrStackBase(order);
   card.checkSpecialNote();
 };
 
@@ -388,9 +386,8 @@ export const openEditTooltip = (card: HanabiCard) => {
 
 // We just got a list of a bunch of notes, so show the note indicator for currently-visible cards
 export const setAllCardIndicators = () => {
-  // We iterate through the whole deck instead of using the index of the last drawn card
-  // to avoid race conditions where we can get the "noteList"
-  // before the "actionList" is finished processing
+  // We iterate through the whole deck instead of using the index of the last drawn card to avoid
+  // race conditions where we can get the "noteList" before the "actionList" is finished processing
   for (const card of globals.deck) {
     setCardIndicator(card.state.order);
   }
@@ -401,10 +398,7 @@ export const setAllCardIndicators = () => {
 
 export const setCardIndicator = (order: number) => {
   const visible = shouldShowIndicator(order);
-  let card = globals.deck[order];
-  if (card === undefined) {
-    card = globals.stackBases[order - deckRules.totalCards(globals.variant)];
-  }
+  const card = getCardOrStackBase(order);
   if (card.noteIndicator === null) {
     throw new Error(`The note indicator for card ${order} was not initialized.`);
   }

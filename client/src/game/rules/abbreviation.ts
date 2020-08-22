@@ -24,7 +24,7 @@ export const makeAll = (variantName: string, suits: Suit[]) => {
       }
     }
     if (abbreviationToUse === undefined) {
-      throw new Error(`Unable to find a suit abbreviation for "${suit.name}" in the variant of "${variantName}".`);
+      throw new Error(`Failed to find a suit abbreviation for "${suit.name}" in the variant of "${variantName}".`);
     }
     abbreviations.push(abbreviationToUse);
   }

@@ -9,7 +9,6 @@ import Options from '../../types/Options';
 import { getVariant } from '../data/gameData';
 import initialState from '../reducers/initialStates/initialState';
 import stateReducer from '../reducers/stateReducer';
-import { deckRules } from '../rules';
 import { GameAction, ActionIncludingHypothetical } from '../types/actions';
 import CardIdentity from '../types/CardIdentity';
 import GameMetadata from '../types/GameMetadata';
@@ -18,6 +17,7 @@ import Spectator from '../types/Spectator';
 import SpectatorNote from '../types/SpectatorNote';
 import State from '../types/State';
 import * as arrows from './arrows';
+import getCardOrStackBase from './getCardOrStackBase';
 import globals from './globals';
 import * as hypothetical from './hypothetical';
 import * as notes from './notes';
@@ -266,7 +266,7 @@ commands.set('noteListPlayer', (data: NoteListPlayerData) => {
   // Check for special notes
   const indexOfLastDrawnCard = globals.state.visibleState!.deck.length - 1;
   for (let i = 0; i <= indexOfLastDrawnCard; i++) {
-    const card = globals.deck[i];
+    const card = getCardOrStackBase(i);
     card.checkSpecialNote();
   }
 
@@ -334,16 +334,7 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
 
   if (data.order >= 0) {
     // This is an arrow for a card
-    // Ensure that the card exists as a sanity-check
-    // (the server does not validate the order that the leader sends)
-    let card = globals.deck[data.order];
-    if (card === undefined) {
-      card = globals.stackBases[data.order - deckRules.totalCards(globals.variant)];
-    }
-    if (card === undefined) {
-      return;
-    }
-
+    const card = getCardOrStackBase(data.order);
     arrows.toggle(card);
   } else {
     // This is an arrow for some other UI element

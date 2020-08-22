@@ -212,7 +212,7 @@ export const doubleDiscard = (
       // In "Throw It In A Hole", it is expected to get scrubbed discards
       return false;
     }
-    throw new Error(`Unable to find the information for card ${order} in the state deck.`);
+    throw new Error(`Failed to find the information for card ${order} in the state deck.`);
   }
   const suit = variant.suits[card.suitIndex];
   const total = deckRules.numCopiesOfCard(suit, card.rank, variant);

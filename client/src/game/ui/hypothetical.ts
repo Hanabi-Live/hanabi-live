@@ -9,6 +9,7 @@ import ClueType from '../types/ClueType';
 import MsgClue from '../types/MsgClue';
 import ReplayActionType from '../types/ReplayActionType';
 import { getTouchedCardsFromClue } from './clues';
+import getCardOrStackBase from './getCardOrStackBase';
 import globals from './globals';
 
 export const start = () => {
@@ -76,8 +77,7 @@ export const send = (hypoAction: ClientAction) => {
   switch (type) {
     case 'play':
     case 'discard': {
-      const card = globals.deck[hypoAction.target];
-
+      const card = getCardOrStackBase(hypoAction.target);
       if (card.visibleSuitIndex === null) {
         throw new Error(`Card ${hypoAction.target} has an unknown suit index.`);
       }
@@ -124,7 +124,7 @@ export const send = (hypoAction: ClientAction) => {
       const nextCard = globals.state.cardIdentities[nextCardOrder];
       if (nextCard !== undefined) { // All the cards might have already been drawn
         if (nextCard.suitIndex === null || nextCard.rank === null) {
-          throw new Error('Unable to find the suit or rank of the next card.');
+          throw new Error('Failed to find the suit or rank of the next card.');
         }
         sendHypoAction({
           type: 'draw',

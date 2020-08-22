@@ -107,7 +107,7 @@ func writeEnvFile() (err error) {
 	envfile := `
 ` + writeOptionalVariable("DOMAIN") + `
 PORT=8080
-	
+
 ` + writeOptionalVariable("SESSION_SECRET") + `
 
 # variables with some default values
@@ -134,7 +134,7 @@ TLS_KEY_FILE=
 	// and return it
 	err = ioutil.WriteFile(envFileLocation, []byte(envfile), 0)
 	if err != nil {
-		logger.Errorf("Unable to write env file: %s", err.Error())
+		logger.Errorf("Failed to write env file: %s", err.Error())
 	}
 	return
 }
@@ -144,7 +144,7 @@ TLS_KEY_FILE=
 func waitForDatabase() (err error) {
 	err = connectAndPing()
 	for err != nil {
-		logger.Infof("Unable to connect to database: %s, %d retries left. ", err.Error(), dbConnectRetries)
+		logger.Infof("Failed to connect to database: %s, %d retries left. ", err.Error(), dbConnectRetries)
 		dbConnectRetries--
 		if dbConnectRetries == 0 {
 			return

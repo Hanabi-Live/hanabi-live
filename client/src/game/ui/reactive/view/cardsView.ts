@@ -1,7 +1,7 @@
-import { deckRules } from '../../../rules';
 import CardIdentity from '../../../types/CardIdentity';
 import CardState from '../../../types/CardState';
 import State from '../../../types/State';
+import getCardOrStackBase from '../../getCardOrStackBase';
 import globals from '../../globals';
 import HanabiCard from '../../HanabiCard';
 import observeStore, { Subscription, Selector, Listener } from '../observeStore';
@@ -141,28 +141,26 @@ const subscribeToCardChanges = (order: number) => {
 // and not let the UI query the whole state object
 
 const updateBorder = (order: number) => {
-  globals.deck[order].setBorder();
+  const card = getCardOrStackBase(order);
+  card.setBorder();
   globals.layers.card.batchDraw();
 };
 
 const updatePips = (order: number) => {
-  globals.deck[order].updatePips();
+  const card = getCardOrStackBase(order);
+  card.updatePips();
   globals.layers.card.batchDraw();
 };
 
 const updateCardVisuals = (order: number) => {
-  // Card visuals are updated for both the deck and stack bases when morphed
-  if (order < globals.deck.length) {
-    globals.deck[order].setBareImage();
-  } else {
-    globals.stackBases[order - deckRules.totalCards(globals.variant)].setBareImage();
-  }
-
+  const card = getCardOrStackBase(order);
+  card.setBareImage();
   globals.layers.card.batchDraw();
 };
 
 const updateNotePossibilities = (order: number) => {
-  globals.deck[order].updateNotePossibilities();
+  const card = getCardOrStackBase(order);
+  card.updateNotePossibilities();
   globals.layers.card.batchDraw();
 };
 

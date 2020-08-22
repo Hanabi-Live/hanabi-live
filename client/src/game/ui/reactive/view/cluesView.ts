@@ -6,6 +6,7 @@ import ClueType from '../../../types/ClueType';
 import { StateClue } from '../../../types/GameState';
 import * as arrows from '../../arrows';
 import ClueEntry from '../../ClueEntry';
+import getCardOrStackBase from '../../getCardOrStackBase';
 import globals from '../../globals';
 
 export const onCluesChanged = (data: {
@@ -37,7 +38,8 @@ const updateArrows = (clues: readonly StateClue[], segment: number | null) => {
   }
 
   lastClue.list.forEach((order, i) => {
-    arrows.set(i, globals.deck[order], lastClue.giver, clue);
+    const card = getCardOrStackBase(order);
+    arrows.set(i, card, lastClue.giver, clue);
   });
 
   globals.layers.arrow.batchDraw();

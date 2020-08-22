@@ -35,6 +35,7 @@ import Deck from './Deck';
 import drawHands from './drawHands';
 import drawReplayArea from './drawReplayArea';
 import FullActionLog from './FullActionLog';
+import getCardOrStackBase from './getCardOrStackBase';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import * as hypothetical from './hypothetical';
@@ -902,13 +903,8 @@ const drawScoreArea = () => {
 
         replay.goToSegment(strike.segment, true);
 
-        // Ensure that the card exists as a sanity-check
-        const card = globals.deck[strike.order];
-        if (card === undefined) {
-          return;
-        }
-
         // Highlight the card
+        const card = getCardOrStackBase(strike.order);
         arrows.toggle(card);
 
         break;
