@@ -534,70 +534,25 @@ const drawBottomLeftButtons = () => {
   tooltips.init(chatButton, true, false);
   globals.elements.chatButton = chatButton;
 
-  const shortButtonSpacing = 0.003;
-
   // The lobby button (which takes the user back to the lobby)
-  // There are two different versions, depending on whether the kill button is showing or not
   const lobbyButtonValues = {
     x: bottomLeftButtonValues.x,
     y: (bottomLeftButtonValues.y + (2 * bottomLeftButtonValues.h!) + 0.02),
     h: bottomLeftButtonValues.h,
   };
-
-  const lobbyButtonSmall = new Button({
-    x: lobbyButtonValues.x * winW,
-    y: lobbyButtonValues.y * winH,
-    width: ((bottomLeftButtonValues.w! / 2) - shortButtonSpacing) * winW,
-    height: lobbyButtonValues.h! * winH,
-    visible: globals.state.playing,
-  }, [globals.imageLoader!.get('home')!]);
-  globals.layers.UI.add(lobbyButtonSmall as any);
-  lobbyButtonSmall.on('click tap', lobbyButtonClick);
-  lobbyButtonSmall.tooltipName = 'lobby-small';
-  lobbyButtonSmall.tooltipContent = 'Return to the lobby. (The game will not end and your teammates will have to wait for you to come back.)';
-  tooltips.init(lobbyButtonSmall, true, false);
-  globals.elements.lobbyButtonSmall = lobbyButtonSmall;
-
-  const lobbyButtonBig = new Button({
+  const lobbyButton = new Button({
     x: lobbyButtonValues.x * winW,
     y: lobbyButtonValues.y * winH,
     width: bottomLeftButtonValues.w! * winW,
     height: lobbyButtonValues.h! * winH,
     text: 'Lobby',
-    visible: !globals.state.playing,
   });
-  globals.layers.UI.add(lobbyButtonBig as any);
-  lobbyButtonBig.on('click tap', lobbyButtonClick);
-  lobbyButtonBig.tooltipName = 'lobby-big';
-  lobbyButtonBig.tooltipContent = 'Return to the lobby.';
-  tooltips.init(lobbyButtonBig, true, false);
-  globals.elements.lobbyButtonBig = lobbyButtonBig;
-
-  // The kill button (which terminates the current game)
-  const killButton = new Button({
-    x: (bottomLeftButtonValues.x + (bottomLeftButtonValues.w! / 2) + shortButtonSpacing) * winW,
-    y: (bottomLeftButtonValues.y + (2 * bottomLeftButtonValues.h!) + 0.02) * winH,
-    width: ((bottomLeftButtonValues.w! / 2) - shortButtonSpacing) * winW,
-    height: bottomLeftButtonValues.h! * winH,
-    visible: globals.state.playing,
-  }, [globals.imageLoader!.get('skull')!]);
-  globals.layers.UI.add(killButton as any);
-  killButton.on('click tap', () => {
-    if (
-      globals.options.speedrun
-      || debug.amTestUser(globals.metadata.ourUsername)
-      || globals.lobby.totalGames >= 1000
-      || window.confirm('Are you sure you want to terminate the game?')
-    ) {
-      globals.lobby.conn!.send('tableTerminate', {
-        tableID: globals.lobby.tableID,
-      });
-    }
-  });
-  killButton.tooltipName = 'kill';
-  killButton.tooltipContent = 'Terminate the game, ending it immediately.';
-  tooltips.init(killButton, true, false);
-  globals.elements.killButton = killButton;
+  globals.layers.UI.add(lobbyButton as any);
+  lobbyButton.on('click tap', lobbyButtonClick);
+  lobbyButton.tooltipName = 'lobby';
+  lobbyButton.tooltipContent = 'Return to the lobby.';
+  tooltips.init(lobbyButton, true, false);
+  globals.elements.lobbyButton = lobbyButton;
 };
 
 const drawDeck = () => {
@@ -986,6 +941,39 @@ const drawScoreArea = () => {
     // (and highlight the card that misplayed)
     strikeSquare.on('click tap', strikeClick);
     strikeX.on('click tap', strikeClick);
+  }
+
+  // The terminate button (which immediately ends the current game)
+  // This is placed on top of the 3rd strike
+  if (globals.state.playing) {
+    globals.elements.strikeSquares[2].hide();
+    globals.elements.strikeXs[2].hide();
+    globals.elements.questionMarkLabels[2].hide();
+
+    const terminateButton = new Button({
+      x: (0.01 + (0.04 * 2)) * winW,
+      y: 0.115 * winH,
+      width: 0.03 * winW,
+      height: 0.053 * winH,
+      visible: globals.state.playing,
+    }, [globals.imageLoader!.get('skull')!]);
+    globals.elements.scoreArea.add(terminateButton as any);
+    terminateButton.on('click tap', () => {
+      if (
+        globals.options.speedrun
+        || debug.amTestUser(globals.metadata.ourUsername)
+        || globals.lobby.totalGames >= 1000
+        || window.confirm('Are you sure you want to terminate the game?')
+      ) {
+        globals.lobby.conn!.send('tableTerminate', {
+          tableID: globals.lobby.tableID,
+        });
+      }
+    });
+    terminateButton.tooltipName = 'kill';
+    terminateButton.tooltipContent = 'Terminate the game, ending it immediately.';
+    tooltips.init(terminateButton, true, false);
+    globals.elements.terminateButton = terminateButton;
   }
 };
 
@@ -2038,14 +2026,14 @@ const drawPauseArea = () => {
     globals.game!.chat.toggle();
   });
 
-  const lobbyButton = new Button({
+  const pauseLobbyButton = new Button({
     x: (pauseAreaValues.w - button2W - (spacing * 1.5)) * winW,
     y: buttonH * winH,
     width: button2W * winW,
     height: 0.1 * winH,
   }, [globals.imageLoader!.get('home')!]);
-  globals.elements.pauseArea.add(lobbyButton as any);
-  lobbyButton.on('click tap', lobbyButtonClick);
+  globals.elements.pauseArea.add(pauseLobbyButton as any);
+  pauseLobbyButton.on('click tap', lobbyButtonClick);
 };
 
 const drawExtraAnimations = () => {

@@ -24,7 +24,7 @@ export default function tooltipsInit() {
     'efficiency',
     'kill',
     'leader',
-    'lobby-big',
+    'lobby',
     'lobby-small',
     'time-taken',
     'pace',

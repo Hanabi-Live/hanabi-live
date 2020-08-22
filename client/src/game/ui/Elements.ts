@@ -37,9 +37,7 @@ export default class Elements {
   actionLog: MultiFitText | null = null;
   replayButton: Button | null = null;
   chatButton: Button | null = null;
-  lobbyButtonSmall: Button | null = null;
-  lobbyButtonBig: Button | null = null;
-  killButton: Button | null = null;
+  lobbyButton: Button | null = null;
   restartButton: Button | null = null;
   endHypotheticalButton: Button | null = null;
   deck: Deck | null = null;
@@ -56,6 +54,8 @@ export default class Elements {
   noDiscardBorder: Konva.Rect | null = null;
   noDoubleDiscardBorder: Konva.Rect | null = null;
   noClueBorder: Konva.Rect | null = null;
+
+  // The score area
   scoreArea: Konva.Group | null = null;
   turnNumberLabel: Konva.Text | null = null;
   scoreTextLabel: Konva.Text | null = null;
@@ -65,9 +65,12 @@ export default class Elements {
   playsNumberLabel: Konva.Text | null = null;
   cluesNumberLabel: Konva.Text | null = null;
   cluesNumberLabelPulse: Konva.Tween | null = null;
-  questionMarkLabels: Konva.Text[] = [];
-  strikeXs: StrikeX[] = [];
   strikeSquares: StrikeSquare[] = [];
+  strikeXs: StrikeX[] = [];
+  questionMarkLabels: Konva.Text[] = [];
+  terminateButton: Button | null = null;
+
+  // Next to the score area
   spectatorsLabel: Konva.Image | null = null;
   spectatorsNumLabel: Konva.Text | null = null;
   sharedReplayLeaderLabel: Konva.Image | null = null;
