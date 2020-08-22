@@ -35,7 +35,7 @@ import * as tooltips from './tooltips';
 const DECK_BACK_IMAGE = 'deck-back';
 
 export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
-  private variant: Variant;
+  private readonly variant: Variant;
 
   // HACK: this is temporary to figure out what needs to be converted to reactive
   // In the end, the state should not be exposed by the UI in any form

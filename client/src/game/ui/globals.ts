@@ -50,7 +50,7 @@ export class Globals {
 
   // Notes feature
   ourNotes: Map<number, string> = new Map<number, string>(); // Indexed by card order
-  // An array containing objects, indexed by card order;
+  // "allNotes" is indexed by card order
   // It represents the notes of every player & spectator
   allNotes: Map<number, SpectatorNote[]> = new Map<number, SpectatorNote[]>();
   // Used to keep track of which card the user is editing;
