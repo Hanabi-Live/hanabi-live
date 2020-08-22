@@ -129,6 +129,7 @@ export default class ClueEntry extends Konva.Group {
       if (cardOrder === targetCardOrder) {
         this.background.opacity(0.4);
         // (the background is already set to white)
+        return;
       }
     }
 
@@ -139,6 +140,7 @@ export default class ClueEntry extends Konva.Group {
         if (globals.lobby.settings.colorblindMode) {
           this.negativeMarker.show();
         }
+        return;
       }
     }
   }
