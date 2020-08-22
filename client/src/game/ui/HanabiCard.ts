@@ -1157,7 +1157,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !cardRules.isPlayed(this.state)
       // Clicking on a discarded card goes to the turn that it was discarded
       && !cardRules.isDiscarded(this.state)
-      && this.state.rank === STACK_BASE_RANK // Disable empathy for the stack bases
+      && this.state.rank !== STACK_BASE_RANK // Disable empathy for the stack bases
     );
   }
 
