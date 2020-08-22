@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -59,22 +60,22 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 
 	// If the user did not specify the amount of minutes, assume 1
 	if len(d.Args) != 1 {
-		d.Args = []string{"1"}
-	}
-
-	var minutesToWait int
-	if v, err := strconv.Atoi(d.Args[0]); err != nil {
 		chatServerSend(
 			"You must specify the amount of minutes to wait. (e.g. \"/startin 1\")",
 			d.Room,
 		)
+	}
+
+	var minutesToWait float64
+	if v, err := strconv.ParseFloat(d.Args[0], 64); err != nil {
+		chatServerSend("\""+d.Args[0]+"\" is not a valid number.", d.Room)
 		return
 	} else {
 		minutesToWait = v
 	}
 
-	if minutesToWait < 1 {
-		chatServerSend("The minutes to wait must be equal to or greater than 1.", d.Room)
+	if minutesToWait <= 0 {
+		chatServerSend("The minutes to wait must be greater than 0.", d.Room)
 		return
 	}
 
@@ -83,12 +84,17 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 		return
 	}
 
-	timeToWait := time.Duration(minutesToWait) * time.Minute
+	secondsToWait := int(math.Ceil(minutesToWait * 60))
+	timeToWait := time.Duration(secondsToWait) * time.Second
 	timeToStart := time.Now().Add(timeToWait)
 	t.DatetimePlannedStart = timeToStart
-	announcement := "The game will automatically start in " + strconv.Itoa(minutesToWait) + " minute"
-	if minutesToWait != 1 {
-		announcement += "s"
+	announcement := "The game will automatically start in "
+	if secondsToWait < 60 {
+		announcement += strconv.Itoa(secondsToWait) + " seconds"
+	} else if secondsToWait == 60 {
+		announcement += "1 minute"
+	} else {
+		announcement += d.Args[0] + " minutes"
 	}
 	announcement += "."
 	chatServerSend(announcement, d.Room)
