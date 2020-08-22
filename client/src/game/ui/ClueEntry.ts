@@ -102,8 +102,6 @@ export default class ClueEntry extends Konva.Group {
 
     // Add a mouseover highlighting effect
     this.background.on('mouseover', () => {
-      globals.elements.clueLog!.showMatches(null);
-
       this.background.opacity(0.4);
       drawLayer(this);
     });
@@ -112,7 +110,7 @@ export default class ClueEntry extends Konva.Group {
       drawLayer(this);
     });
 
-    // Click an entry in the clue log to go to that turn in the replay
+    // Click an entry in the clue log to go to that segment (turn) in the replay
     this.background.on('click tap', () => {
       replay.goToSegment(this.clue.segment + 1, true);
     });
