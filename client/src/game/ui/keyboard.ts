@@ -106,6 +106,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     if (
       event.key === 'c'
       && globals.state.finished
+      // Account for users copying text from the chat window
       && !($('#game-chat-modal').is(':visible'))
     ) {
       if (globals.state.replay.databaseID !== null) {

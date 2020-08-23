@@ -115,6 +115,18 @@ const drawOptions = () => {
   // then they will fail to initialize properly on the second viewing
   let html = '';
 
+  if (globals.game.passwordProtected) {
+    html += '<li><i id="lobby-pregame-options-password" class="fas fa-key" ';
+    html += 'data-tooltip-content="#pregame-tooltip-password"></i></li>';
+    html += `
+      <div class="hidden">
+        <div id="pregame-tooltip-password" class="lobby-pregame-tooltip-icon">
+          This is a password-protected game.
+        </div>
+      </div>
+    `;
+  }
+
   if (globals.game.options.timed) {
     html += '<li><i id="lobby-pregame-options-timer" class="fas fa-clock" ';
     html += 'data-tooltip-content="#pregame-tooltip-timer"></i>&nbsp; (';
@@ -238,16 +250,36 @@ const drawOptions = () => {
 
   // Initialize the tooltips, if any
   // (this has to be done after adding the HTML to the page)
-  $('#lobby-pregame-options-timer').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-speedrun').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-card-cycle').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-deck-plays').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-empty-clues').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-one-extra-card').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-one-less-card').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-all-or-nothing').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-characters').tooltipster(tooltipOptions);
-  $('#lobby-pregame-options-password').tooltipster(tooltipOptions);
+  if (globals.game.passwordProtected) {
+    $('#lobby-pregame-options-password').tooltipster(tooltipOptions);
+  }
+  if (globals.game.options.timed) {
+    $('#lobby-pregame-options-timer').tooltipster(tooltipOptions);
+  }
+  if (globals.game.options.speedrun) {
+    $('#lobby-pregame-options-speedrun').tooltipster(tooltipOptions);
+  }
+  if (globals.game.options.cardCycle) {
+    $('#lobby-pregame-options-card-cycle').tooltipster(tooltipOptions);
+  }
+  if (globals.game.options.deckPlays) {
+    $('#lobby-pregame-options-deck-plays').tooltipster(tooltipOptions);
+  }
+  if (globals.game.options.emptyClues) {
+    $('#lobby-pregame-options-empty-clues').tooltipster(tooltipOptions);
+  }
+  if (globals.game.options.oneExtraCard) {
+    $('#lobby-pregame-options-one-extra-card').tooltipster(tooltipOptions);
+  }
+  if (globals.game.options.oneLessCard) {
+    $('#lobby-pregame-options-one-less-card').tooltipster(tooltipOptions);
+  }
+  if (globals.game.options.allOrNothing) {
+    $('#lobby-pregame-options-all-or-nothing').tooltipster(tooltipOptions);
+  }
+  if (globals.game.options.detrimentalCharacters) {
+    $('#lobby-pregame-options-characters').tooltipster(tooltipOptions);
+  }
 };
 
 const drawPlayerBox = (i: number) => {
