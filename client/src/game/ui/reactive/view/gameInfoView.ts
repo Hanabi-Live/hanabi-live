@@ -154,7 +154,7 @@ export const onOngoingOrVisibleStrikesChanged = (data: {
       continue;
     }
 
-    const duration = 1; // The duration for the strike animation
+    const duration = 0.5; // The duration for the strike animation
     if (data.visibleStrikes[i] !== undefined) {
       // There is a strike on the visible state
       // Animate the strike X fading in
