@@ -145,11 +145,11 @@ const keypress = (room: string) => function keypressFunction(
   tabCompleteWordListIndex = null;
 
   if (event.key === 'Enter') {
-    submit(room, element);
+    send(room, element);
   }
 };
 
-const submit = (room: string, element: JQuery<HTMLElement>) => {
+const send = (room: string, element: JQuery<HTMLElement>) => {
   let msg = element.val();
   if (isEmpty(msg)) {
     return;
@@ -407,27 +407,37 @@ const fixCustomEmotePriority = (usersAndEmotesList: string[]) => {
 
 export const add = (data: ChatMessage, fast: boolean) => {
   // Find out which chat box we should add the new chat message to
-  let chat;
-  if (data.recipient === globals.username) {
-    // This is a private message (PM) that we are receiving
-    // PMs do not have a room associated with them,
-    // so we default to displaying it on the chat window that the user currently has open
-    if (globals.currentScreen === Screen.Game) {
-      chat = $('#game-chat-text');
-    } else if (globals.currentScreen === Screen.PreGame) {
+  let chat: JQuery<HTMLElement> | undefined;
+  if (data.room === 'lobby') {
+    chat = $('#lobby-chat-text');
+  } else if (data.room.startsWith('table')) {
+    if (globals.currentScreen === Screen.PreGame) {
       chat = $('#lobby-chat-pregame-text');
+    } else if (globals.currentScreen === Screen.Game) {
+      chat = $('#game-chat-text');
+    } else {
+      // Ignore table chat if we are not in a pre-game and not in a game
+      return;
+    }
+  } else if (data.room === '') {
+    // A blank room indicates a private message (PM)
+    // PMs do not have a room associated with them,
+    // so we default to displaying them on the chat window that the user currently has open
+    if (data.recipient === globals.username) {
+      // This is a private message (PM) that we are receiving
+      // Record who our last PM is from
+      lastPM = data.who;
+    }
+
+    if (globals.currentScreen === Screen.PreGame) {
+      chat = $('#lobby-chat-pregame-text');
+    } else if (globals.currentScreen === Screen.Game) {
+      chat = $('#game-chat-text');
     } else {
       chat = $('#lobby-chat-text');
     }
-
-    // Also, record who our last PM is from
-    lastPM = data.who;
-  } else if (data.room === 'lobby') {
-    chat = $('#lobby-chat-text');
-  } else if (globals.currentScreen === Screen.PreGame) {
-    chat = $('#lobby-chat-pregame-text');
   } else {
-    chat = $('#game-chat-text');
+    throw new Error('Failed to parse the room name.');
   }
   if (chat === undefined) {
     throw new Error('Failed to get the chat element in the "chat.add()" function.');
