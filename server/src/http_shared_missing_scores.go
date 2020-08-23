@@ -59,7 +59,11 @@ func httpSharedMissingScores(c *gin.Context) {
 			for k, candidateResult := range variantStats.BestScores {
 				workingBestResult := combinedVariantStatsList[j].BestScores[k]
 
-				if (candidateResult.Score > workingBestResult.Score) ||
+				// Update our working best game result for this variant whenever
+				// a different player's result has either:
+				// - a higher score;
+				// - or an equal score but with less modifiers (by comparing the bitflags numerically)
+				if candidateResult.Score > workingBestResult.Score ||
 					(candidateResult.Score == workingBestResult.Score &&
 						candidateResult.Modifier < workingBestResult.Modifier) {
 
