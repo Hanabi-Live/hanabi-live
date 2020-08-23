@@ -1186,12 +1186,12 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   }
 
   private setEmpathyOnHand(enabled: boolean) {
-    // Disable Empathy for the stack bases
-    if (this.state.rank === STACK_BASE_RANK) {
+    // Disable Empathy for cards that are not in a player's hand
+    if (typeof this.state.location !== 'number') {
       return;
     }
 
-    // If the card is not attached to a hand, then we don't need to do anything
+    // As a sanity check, ensure that the hand object exists
     const hand = this.layout.parent as unknown as CardLayout;
     if (hand === undefined || hand === null || hand.children.length === 0) {
       return;
