@@ -56,9 +56,18 @@ func httpSharedMissingScores(c *gin.Context) {
 			continue
 		}
 		for j, variantStats := range variantStatsList {
-			for k, bestScore := range variantStats.BestScores {
-				if bestScore.Score > combinedVariantStatsList[j].BestScores[k].Score {
-					combinedVariantStatsList[j].BestScores[k] = bestScore
+			for k, candidateResult := range variantStats.BestScores {
+				workingBestResult := combinedVariantStatsList[j].BestScores[k]
+
+				// Update our working best result out of the group when either:
+				// - We find a result with a better score than it
+				// - We find a result with modifiers that form a strict subset of its modifiers
+				if (candidateResult.Score > workingBestResult.Score) ||
+					(candidateResult.Score == workingBestResult.Score &&
+						candidateResult.Modifier != workingBestResult.Modifier &&
+						candidateResult.Modifier|workingBestResult.Modifier == workingBestResult.Modifier) {
+
+					combinedVariantStatsList[j].BestScores[k] = candidateResult
 				}
 			}
 		}
