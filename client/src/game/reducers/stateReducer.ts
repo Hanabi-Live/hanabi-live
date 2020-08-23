@@ -167,7 +167,12 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     }
 
     case 'premove': {
-      state.premove = action.premove;
+      if (
+        !state.finished
+        && state.ongoingGame.turn.currentPlayerIndex === state.metadata.ourPlayerIndex
+      ) {
+        state.premove = action.premove;
+      }
       break;
     }
 
