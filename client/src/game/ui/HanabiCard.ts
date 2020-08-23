@@ -101,7 +101,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return this._visibleRank;
   }
 
-  empathy: boolean = false;
+  private empathy: boolean = false;
 
   private note: CardNote = {
     suitIndex: null,
@@ -640,7 +640,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   // The LayoutChild is removed from the parent prior to the card changing location
   removeLayoutChildFromParent() {
     // Ensure that empathy is disabled prior to removing a card from a player's hand
-    this.disableEmpathy();
+    this.setEmpathy(false);
 
     // Remove the card from the player's hand in preparation of adding it to either
     // the play stacks or the discard pile
@@ -1122,13 +1122,15 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     });
 
     this.on('mouseup', (event: Konva.KonvaEventObject<MouseEvent>) => {
-      if (event.evt.button === 0) { // Left-click
+      if (!globals.globalEmpathyEnabled && event.evt.button === 0) { // Left-click
         this.setEmpathyOnHand(false);
       }
     });
 
     this.on('mouseout touchend', () => {
-      this.setEmpathyOnHand(false);
+      if (!globals.globalEmpathyEnabled) {
+        this.setEmpathyOnHand(false);
+      }
     });
   }
 
@@ -1157,11 +1159,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     );
   }
 
-  disableEmpathy() {
-    if (this.empathy) {
-      this.empathy = false;
-      this.setBareImage();
+  setEmpathy(enabled: boolean) {
+    if (this.empathy === enabled) {
+      // No change
+      return;
     }
+
+    this.empathy = enabled;
+    this.setBareImage();
   }
 
   private noteMouseOver(this: HanabiCard) {

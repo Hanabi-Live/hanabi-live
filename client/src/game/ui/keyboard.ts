@@ -97,6 +97,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   }
 
   if (event.key === ' ') { // Space bar
+    globals.globalEmpathyEnabled = true;
     for (const hand of globals.elements.playerHands) {
       hand.setEmpathy(true);
     }
@@ -270,6 +271,7 @@ const keydown = (event: JQuery.KeyDownEvent) => {
 
 const keyup = (event: JQuery.KeyUpEvent) => {
   if (event.key === ' ') { // Space bar
+    globals.globalEmpathyEnabled = false;
     for (const hand of globals.elements.playerHands) {
       hand.setEmpathy(false);
     }

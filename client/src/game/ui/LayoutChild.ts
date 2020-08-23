@@ -193,7 +193,7 @@ export default class LayoutChild extends Konva.Group {
     // Ensure that empathy is disabled prior to ending the turn
     // (this is needed for hypotheticals,
     // since it uses the visual suit of the card to determine if it will play)
-    card.disableEmpathy();
+    card.setEmpathy(false);
 
     turn.end({
       type,

@@ -75,6 +75,7 @@ export class Globals {
   // Miscellaneous
   animateFast: boolean = true;
   UIClickTime: number = 0; // Used to prevent accidental double clicks
+  globalEmpathyEnabled: boolean = false;
 
   // State information
   store: Redux.Store<State, Action> | null = null;
@@ -141,6 +142,7 @@ export class Globals {
     this.lastTimerUpdateTimeMS = 0;
     this.animateFast = true;
     this.UIClickTime = 0;
+    this.globalEmpathyEnabled = false;
 
     this.stateObserver?.unregisterObservers();
     this.stateObserver = null;
