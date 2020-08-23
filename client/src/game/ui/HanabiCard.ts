@@ -101,7 +101,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return this._visibleRank;
   }
 
-  private empathy: boolean = false;
+  empathy: boolean = false;
 
   private note: CardNote = {
     suitIndex: null,
@@ -1121,17 +1121,13 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
     });
 
-    this.on('mouseup mouseout', (event: Konva.KonvaEventObject<MouseEvent>) => {
-      // Konva.MouseEvent does not have a "type" property for some reason
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if ((event as any).type === 'mouseup' && event.evt.button !== 0) { // Left-click
-        return;
+    this.on('mouseup', (event: Konva.KonvaEventObject<MouseEvent>) => {
+      if (event.evt.button === 0) { // Left-click
+        this.setEmpathyOnHand(false);
       }
-
-      this.setEmpathyOnHand(false);
     });
 
-    this.on('touchend', () => {
+    this.on('mouseout touchend', () => {
       this.setEmpathyOnHand(false);
     });
   }
@@ -1201,22 +1197,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       return;
     }
 
-    if (enabled === hand.empathy) {
-      // No change
-      return;
-    }
-
-    hand.empathy = enabled;
-    hand.children.each((layoutChild) => {
-      const card = layoutChild.children[0] as HanabiCard;
-      if (card === undefined) {
-        // When rewinding, sometimes the card can be undefined
-        return;
-      }
-      card.empathy = enabled;
-      card.setBareImage();
-    });
-    globals.layers.card.batchDraw();
+    hand.setEmpathy(enabled);
   }
 
   checkSpecialNote() {

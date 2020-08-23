@@ -204,4 +204,23 @@ export default class CardLayout extends Konva.Group {
 
     return pos;
   }
+
+  setEmpathy(enabled: boolean) {
+    if (enabled === this.empathy) {
+      // No change
+      return;
+    }
+
+    this.empathy = enabled;
+    this.children.each((layoutChild) => {
+      const card = layoutChild.children[0] as HanabiCard;
+      if (card === undefined) {
+        // When rewinding, sometimes the card can be undefined
+        return;
+      }
+      card.empathy = enabled;
+      card.setBareImage();
+    });
+    globals.layers.card.batchDraw();
+  }
 }

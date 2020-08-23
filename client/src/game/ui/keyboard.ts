@@ -57,10 +57,12 @@ export const init = () => {
 
   // Enable all of the keyboard hotkeys
   $(document).keydown(keydown);
+  $(document).keyup(keyup);
 };
 
 export const destroy = () => {
   $(document).unbind('keydown', keydown);
+  $(document).unbind('keyup', keyup);
 };
 
 const keydown = (event: JQuery.KeyDownEvent) => {
@@ -91,6 +93,13 @@ const keydown = (event: JQuery.KeyDownEvent) => {
 
     // Escape = If in an in-game replay, exit back to the game
     replay.exit();
+    return;
+  }
+
+  if (event.key === ' ') { // Space bar
+    for (const hand of globals.elements.playerHands) {
+      hand.setEmpathy(true);
+    }
     return;
   }
 
@@ -256,6 +265,14 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   if (hotkeyFunction !== undefined) {
     event.preventDefault();
     hotkeyFunction();
+  }
+};
+
+const keyup = (event: JQuery.KeyUpEvent) => {
+  if (event.key === ' ') { // Space bar
+    for (const hand of globals.elements.playerHands) {
+      hand.setEmpathy(false);
+    }
   }
 };
 
