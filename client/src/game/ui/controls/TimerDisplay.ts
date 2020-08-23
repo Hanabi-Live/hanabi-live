@@ -12,7 +12,7 @@ export default class TimerDisplay extends Konva.Group {
   constructor(config: Konva.ContainerConfig) {
     super(config);
 
-    const rectangle = new Konva.Rect({
+    const oval = new Konva.Rect({
       x: 0,
       y: 0,
       width: config.width,
@@ -20,9 +20,9 @@ export default class TimerDisplay extends Konva.Group {
       fill: 'black',
       cornerRadius: config.cornerRadius as (number | number[] | undefined),
       opacity: 0.2,
-      listening: false,
+      listening: true,
     });
-    this.add(rectangle);
+    this.add(oval);
 
     this.timerText = new FitText({
       x: 0,
