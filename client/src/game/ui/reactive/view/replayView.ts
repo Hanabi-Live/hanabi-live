@@ -210,9 +210,11 @@ export const onFinishedChanged = (finished: boolean, previousFinished: boolean |
   globals.elements.replayButton!.hide();
 
   // Hide the terminate button and show the 3rd strike UI
-  globals.elements.terminateButton!.hide();
-  globals.elements.strikeSquares[2].show();
-  globals.elements.strikeXs[2].show();
+  if (globals.elements.terminateButton !== null) {
+    globals.elements.terminateButton!.hide();
+    globals.elements.strikeSquares[2].show();
+    globals.elements.strikeXs[2].show();
+  }
 
   // Re-draw the deck tooltip
   // (it will show more information when you are in a replay)
