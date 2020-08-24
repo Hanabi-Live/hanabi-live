@@ -97,6 +97,11 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   }
 
   if (event.key === ' ') { // Space bar
+    // Don't activate global empathy if we are typing in the in-game chat
+    if ($('#game-chat-input').is(':focus')) {
+      return;
+    }
+
     globals.globalEmpathyEnabled = true;
     for (const hand of globals.elements.playerHands) {
       hand.setEmpathy(true);
