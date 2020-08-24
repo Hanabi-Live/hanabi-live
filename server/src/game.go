@@ -47,7 +47,6 @@ type Game struct {
 	MaxScore            int
 	Strikes             int
 	LastClueTypeGiven   int
-	DoubleDiscard       bool
 	// Actions is a list of all of the in-game moves that players have taken thus far
 	// Different actions will have different fields, so we need this to be an generic interface
 	// Furthermore, we do not want this to be a pointer of interfaces because

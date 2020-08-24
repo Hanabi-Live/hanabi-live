@@ -100,8 +100,7 @@ func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
 	// Local variables
 	g := t.Game
 
-	g.DoubleDiscard = false // Remove the double discard state
-	g.Sound = ""            // Remove the "fail#" and "blind#" states
+	g.Sound = "" // Remove the "fail#" and "blind#" states
 
 	// Start the idle timeout
 	// (but don't update the idle variable if we are ending the game)
@@ -256,7 +255,7 @@ func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 	}
 
 	c := p.RemoveCard(d.Target)
-	g.DoubleDiscard = p.PlayCard(c)
+	p.PlayCard(c)
 	p.DrawCard()
 
 	return true
@@ -290,7 +289,7 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 
 	g.ClueTokens++
 	c := p.RemoveCard(d.Target)
-	g.DoubleDiscard = p.DiscardCard(c)
+	p.DiscardCard(c)
 	p.DrawCard()
 
 	// Mark that the blind-play streak has ended

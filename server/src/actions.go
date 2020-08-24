@@ -68,11 +68,10 @@ type ActionStrike struct {
 }
 
 type ActionStatus struct {
-	Type          string `json:"type"`
-	Clues         int    `json:"clues"`
-	Score         int    `json:"score"`
-	MaxScore      int    `json:"maxScore"`
-	DoubleDiscard bool   `json:"doubleDiscard"`
+	Type     string `json:"type"`
+	Clues    int    `json:"clues"`
+	Score    int    `json:"score"`
+	MaxScore int    `json:"maxScore"`
 }
 
 type ActionTurn struct {

@@ -126,9 +126,7 @@ func (p *GamePlayer) RemoveCard(target int) *Card {
 	return c
 }
 
-// PlayCard returns true if it is a "double discard" situation
-// (which can only occur if the card fails to play)
-func (p *GamePlayer) PlayCard(c *Card) bool {
+func (p *GamePlayer) PlayCard(c *Card) {
 	// Local variables
 	g := p.Game
 	t := g.Table
@@ -198,7 +196,8 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 		})
 		t.NotifyGameAction()
 
-		return p.DiscardCard(c)
+		p.DiscardCard(c)
+		return
 	}
 
 	// Handle successful card plays
@@ -280,13 +279,9 @@ func (p *GamePlayer) PlayCard(c *Card) bool {
 			g.Sound = "sad"
 		}
 	}
-
-	// This is not a "double discard" situation, since the card successfully played
-	return false
 }
 
-// DiscardCard returns true if it is a "double discard" situation
-func (p *GamePlayer) DiscardCard(c *Card) bool {
+func (p *GamePlayer) DiscardCard(c *Card) {
 	// Local variables
 	g := p.Game
 	t := g.Table
@@ -335,14 +330,6 @@ func (p *GamePlayer) DiscardCard(c *Card) bool {
 			g.Sound = "sad"
 		}
 	}
-
-	// This could be a double discard situation if there is only one other copy of this card
-	// and it needs to be played
-	total, discarded := g.GetSpecificCardNum(c.SuitIndex, c.Rank)
-	doubleDiscard := total == discarded+1 && c.NeedsToBePlayed(g)
-
-	// Return whether or not this is a "double discard" situation
-	return doubleDiscard
 }
 
 func (p *GamePlayer) DrawCard() {
