@@ -173,8 +173,7 @@ export const onDatabaseIDChanged = (databaseID: number | null) => {
   }
 
   let text;
-  if (databaseID === 0) {
-    // JSON replays are hard-coded to have a database ID of 0
+  if (databaseID === 0) { // JSON replays are hard-coded to have a database ID of 0
     text = 'JSON replay';
   } else {
     text = `ID: ${databaseID}`;

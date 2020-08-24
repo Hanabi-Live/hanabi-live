@@ -244,16 +244,37 @@ const submit = () => {
   const timeBaseMinutes = getTextboxForTimeBase('createTableTimeBaseMinutes');
   const timeBaseSeconds = Math.round(timeBaseMinutes * 60); // The server expects this in seconds
 
-  // All "Create Game" settings are stored on the server with the exception of passwords;
-  // passwords are stored locally as cookies
+  // Table names are not saved
+  const name = $('#createTableName').val();
+
+  // Passwords are not stored on the server; instead, they are stored locally as cookies
   const password = $('#createTablePassword').val();
   if (typeof password !== 'string') {
     throw new Error('The value of the "createTablePassword" element was not a string.');
   }
   localStorage.setItem('createTablePassword', password);
 
+  // Game JSON is not saved
+  const gameJSONString = $('#createTableJSON').val();
+  if (typeof gameJSONString !== 'string') {
+    throw new Error('The value of the "createTableJSON" element is not a string.');
+  }
+  let gameJSON: unknown | undefined;
+  if (gameJSONString !== '') {
+    try {
+      gameJSON = JSON.parse(gameJSONString) as unknown;
+    } catch (err) {
+      modals.errorShow('That is not a valid JSON object.');
+      return;
+    }
+    if (typeof gameJSON !== 'object') {
+      modals.errorShow('That is not a valid JSON object.');
+      return;
+    }
+  }
+
   globals.conn!.send('tableCreate', {
-    name: $('#createTableName').val(), // We don't bother to store the table name
+    name,
     options: {
       variantName: getVariant('createTableVariant'), // This is a hidden span field
       timed: getCheckbox('createTableTimed'),
@@ -269,6 +290,7 @@ const submit = () => {
       detrimentalCharacters: getCheckbox('createTableDetrimentalCharacters'),
     },
     password,
+    gameJSON,
   });
 
   closeAllTooltips();
@@ -469,6 +491,11 @@ export const ready = () => {
   } else {
     $('#create-game-extra-options').show();
     $('#create-game-show-extra-options-row').hide();
+  }
+
+  // Hide the JSON field if we are not in a development environment
+  if (window.location.hostname !== 'localhost') {
+    $('#create-game-json-row').hide();
   }
 
   // Redraw the tooltip so that the new elements will fit better

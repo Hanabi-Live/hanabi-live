@@ -17,7 +17,7 @@ func (g *Game) End() {
 	logger.Info(t.GetName() + "Ended with a score of " + strconv.Itoa(g.Score) + ".")
 
 	// There will be no times associated with a replay, so don't bother with the rest of the code
-	if g.ExtraOptions.Replay {
+	if g.ExtraOptions.NoWriteToDatabase {
 		return
 	}
 
@@ -247,7 +247,8 @@ func (g *Game) WriteDatabase() error {
 	// We also need to update stats in the database, but that can be done in the background
 	go g.WriteDatabaseStats()
 
-	logger.Info("Finished core database actions for table " + strconv.FormatUint(t.ID, 10) + ".")
+	logger.Info("Finished core database actions for table " + strconv.FormatUint(t.ID, 10) +
+		" (to database ID " + strconv.Itoa(t.ExtraOptions.DatabaseID) + ").")
 	return nil
 }
 

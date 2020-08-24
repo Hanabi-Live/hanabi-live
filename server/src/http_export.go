@@ -153,16 +153,9 @@ func httpExport(c *gin.Context) {
 
 	// If this was a game with the "Detrimental Characters" option turned on,
 	// make a list of the characters for each player
-	var playerCharacters []*CharacterJSON
+	var characterAssignments []*CharacterAssignment
 	if options.DetrimentalCharacters {
-		playerCharacters = make([]*CharacterJSON, 0)
-		for _, dbP := range dbPlayers {
-			playerCharacters = append(playerCharacters, &CharacterJSON{
-				Name: characterIDMap[dbP.CharacterAssignment],
-				// Metadata is stored in the database as value + 1
-				Metadata: dbP.CharacterMetadata - 1,
-			})
-		}
+		characterAssignments = getCharacterAssignmentsFromDBPlayers(dbPlayers)
 	}
 
 	// Create JSON options
@@ -228,7 +221,8 @@ func httpExport(c *gin.Context) {
 		Actions:    actions,
 		Options:    optionsJSON,
 		Notes:      notes,
-		Characters: playerCharacters,
+		Characters: characterAssignments,
+		Seed:       seed,
 	}
 
 	c.JSON(http.StatusOK, gameJSON)

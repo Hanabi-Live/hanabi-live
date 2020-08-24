@@ -20,11 +20,13 @@ var (
 
 // Data relating to games created with a special custom prefix (e.g. "!seed")
 type SpecialGameData struct {
-	SetSeedSuffix    string
-	SetReplay        bool
 	DatabaseID       int
-	SetReplayTurn    int
-	SetReplayOptions *Options
+	CustomNumPlayers int
+	CustomActions    []*GameAction
+
+	SetSeedSuffix string
+	SetReplay     bool
+	SetReplayTurn int
 }
 
 // commandTableCreate is sent when the user submits the "Create a New Game" form
@@ -103,13 +105,18 @@ func commandTableCreate(s *Session, d *CommandData) {
 		return
 	}
 
-	// Set default values for data relating to games created with a special prefix
+	// Set default values for data relating to tables created with a special prefix or custom data
 	data := &SpecialGameData{
 		DatabaseID: -1, // Normally, the database ID of an ongoing game should be -1
 	}
 
 	// Handle special game option creation
 	if strings.HasPrefix(d.Name, "!") {
+		if d.GameJSON != nil {
+			s.Warning("You cannot create a table with a special prefix if JSON data is also provided.")
+			return
+		}
+
 		args := strings.Split(d.Name, " ")
 		command := args[0]
 		args = args[1:] // This will be an empty slice if there is nothing after the command
@@ -144,6 +151,17 @@ func commandTableCreate(s *Session, d *CommandData) {
 				data.DatabaseID = v
 			}
 
+			// Check to see if the game ID exists on the server
+			if exists, err := models.Games.Exists(data.DatabaseID); err != nil {
+				logger.Error("Failed to check to see if game "+strconv.Itoa(data.DatabaseID)+
+					" exists:", err)
+				s.Error(CreateGameFail)
+				return
+			} else if !exists {
+				s.Warning("That game ID does not exist in the database.")
+				return
+			}
+
 			if len(args) == 1 {
 				data.SetReplayTurn = 1
 			} else {
@@ -164,17 +182,6 @@ func commandTableCreate(s *Session, d *CommandData) {
 			// and turns are shown to the user starting at 1
 			data.SetReplayTurn--
 
-			// Check to see if the game ID exists on the server
-			if exists, err := models.Games.Exists(data.DatabaseID); err != nil {
-				logger.Error("Failed to check to see if game "+strconv.Itoa(data.DatabaseID)+
-					" exists:", err)
-				s.Error(CreateGameFail)
-				return
-			} else if !exists {
-				s.Warning("That game ID does not exist in the database.")
-				return
-			}
-
 			// Check to see if this turn is valid
 			// (it has to be a turn before the game ends)
 			var numTurns int
@@ -190,16 +197,6 @@ func commandTableCreate(s *Session, d *CommandData) {
 				s.Warning("Game #" + strconv.Itoa(data.DatabaseID) + " only has " +
 					strconv.Itoa(numTurns) + " turns.")
 				return
-			}
-
-			// Set the options of the game to be the same as the one in the database
-			if v, err := models.Games.GetOptions(data.DatabaseID); err != nil {
-				logger.Error("Failed to get the variant from the database for game "+
-					strconv.Itoa(data.DatabaseID)+":", err)
-				s.Error(InitGameFail)
-				return
-			} else {
-				data.SetReplayOptions = v
 			}
 
 			data.SetReplay = true
@@ -263,6 +260,13 @@ func commandTableCreate(s *Session, d *CommandData) {
 		d.Options.OneLessCard = false
 	}
 
+	// Validate games with custom JSON
+	if d.GameJSON != nil {
+		if !validateJSON(s, d) {
+			return
+		}
+	}
+
 	tableCreate(s, d, data)
 }
 
@@ -284,16 +288,46 @@ func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 	defer t.Mutex.Unlock()
 	t.Visible = !d.HidePregame
 	t.PasswordHash = passwordHash
-	if data.SetReplayOptions == nil {
-		t.Options = d.Options
-	} else {
-		t.Options = data.SetReplayOptions
-	}
+	t.Options = d.Options
 	t.ExtraOptions = &ExtraOptions{
-		DatabaseID:    data.DatabaseID,
-		SetSeedSuffix: data.SetSeedSuffix,
-		SetReplay:     data.SetReplay,
-		SetReplayTurn: data.SetReplayTurn,
+		DatabaseID:       data.DatabaseID,
+		CustomNumPlayers: data.CustomNumPlayers,
+		SetSeedSuffix:    data.SetSeedSuffix,
+		SetReplay:        data.SetReplay,
+		SetReplayTurn:    data.SetReplayTurn,
+	}
+
+	// If this is a "!replay" game, override the options with the ones found in the database
+	if data.SetReplay {
+		if _, success := loadDatabaseOptionsToTable(s, data.DatabaseID, t); !success {
+			return
+		}
+
+		// "loadJSONOptionsToTable()" sets the database ID to a positive number
+		// The database ID for an ongoing game should be set to -1
+		t.ExtraOptions.DatabaseID = -1
+
+		// "loadDatabaseOptionsToTable()" marks that the game should not be written to the database,
+		// which is not true in this special case
+		t.ExtraOptions.NoWriteToDatabase = false
+	}
+
+	// If the user specified JSON data,
+	// override the options with the ones specified in the JSON data
+	if d.GameJSON != nil {
+		loadJSONOptionsToTable(d, t)
+
+		// "loadJSONOptionsToTable()" sets the database ID to 0, which corresponds to a JSON replay
+		// The database ID for an ongoing game should be set to -1
+		t.ExtraOptions.DatabaseID = -1
+
+		// "loadJSONOptionsToTable()" marks that the game should not be written to the database,
+		// which is not true in this special case
+		t.ExtraOptions.NoWriteToDatabase = false
+
+		// "loadJSONOptionsToTable()" marks that the game is a JSON replay,
+		// which is not true in this special case
+		t.ExtraOptions.JSONReplay = false
 	}
 
 	// Add it to the map

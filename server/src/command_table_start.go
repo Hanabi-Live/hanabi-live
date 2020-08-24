@@ -42,24 +42,20 @@ func commandTableStart(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate extra things for "!replay" games
-	if t.ExtraOptions.SetReplay {
-		// Validate that the right amount of players is in the game
-		if numPlayers, err := models.Games.GetNumPlayers(t.ExtraOptions.DatabaseID); err != nil {
-			logger.Error("Failed to get the number of players in game "+
-				strconv.Itoa(t.ExtraOptions.DatabaseID)+":", err)
-			s.Error(StartGameFail)
-			return
-		} else if len(t.Players) != numPlayers {
-			s.Warning("You currently have " + strconv.Itoa(len(t.Players)) + " players but game " +
-				strconv.Itoa(t.ExtraOptions.DatabaseID) + " needs " + strconv.Itoa(numPlayers) +
+	// Validate that the right amount of players is in the game
+	// for games with a set amount of players
+	// (e.g. "!replay" games and games with custom JSON)
+	if t.ExtraOptions.CustomNumPlayers != 0 {
+		if len(t.Players) != t.ExtraOptions.CustomNumPlayers {
+			s.Warning("You currently have " + strconv.Itoa(len(t.Players)) +
+				" players, but this game needs " + strconv.Itoa(t.ExtraOptions.CustomNumPlayers) +
 				" players.")
 			return
 		}
 
 		// Validate that everyone is present
-		// (this only applies to "!replay" because
-		// we need to emulate player actions using their session)
+		// (this only applies to games with a set amount of players because we need to emulate
+		// player actions using their session)
 		for _, p := range t.Players {
 			if !p.Present {
 				s.Warning("Everyone must be present before you can start this game.")
@@ -96,25 +92,17 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 	// Handle setting the seed
 	shuffleDeck := true
 	shufflePlayers := true
-	seedPrefix := "p" + strconv.Itoa(len(t.Players)) + // e.g. p2v0s
-		"v" + strconv.Itoa(variants[t.Options.VariantName].ID) + "s"
-	if t.ExtraOptions.DatabaseID == 0 {
-		// This is a JSON replay table
-		// (they are hardcoded to have a database ID of 0)
+	seedPrefix := "p" + strconv.Itoa(len(t.Players)) +
+		"v" + strconv.Itoa(variants[t.Options.VariantName].ID) +
+		"s" // e.g. "p2v0s" for a 2-player no variant game
+	if t.ExtraOptions.JSONReplay {
+		// This is a replay from arbitrary JSON data (or a custom game from arbitrary JSON data)
 		g.Seed = "JSON"
 		shuffleDeck = false
 		shufflePlayers = false
-	} else if t.ExtraOptions.DatabaseID != -1 {
-		// Normal tables have a database ID of -1
-		// Thus, this is a database replay table or a custom table created with the "!replay" prefix
-		if v, err := models.Games.GetSeed(t.ExtraOptions.DatabaseID); err != nil {
-			logger.Error("Failed to get the seed for game "+
-				"\""+strconv.Itoa(t.ExtraOptions.DatabaseID)+"\":", err)
-			s.Error(StartGameFail)
-			return
-		} else {
-			g.Seed = v
-		}
+	} else if t.ExtraOptions.CustomSeed != "" {
+		// This is a replay from the database (or a custom "!replay" game)
+		g.Seed = t.ExtraOptions.CustomSeed
 		shufflePlayers = false
 	} else if t.ExtraOptions.SetSeedSuffix != "" {
 		// This is a custom table created with the "!seed" prefix
@@ -226,17 +214,11 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 	t.Running = true
 	g.DatetimeStarted = time.Now()
 
-	// If we are replaying an existing game up to a certain point,
-	// emulate all of the actions until turn N
-	if t.ExtraOptions.SetReplay {
-		d.Source = "id"
-		d.GameID = t.ExtraOptions.DatabaseID
-		if !emulateActions(s, d, t) {
-			return
-		}
+	// If custom actions were provided, emulate those actions
+	if t.ExtraOptions.CustomActions != nil {
+		emulateActions(s, d, t)
 
-		// We have to reset all of the player's clocks to avoid some bugs relating to
-		// taking super-fast turns
+		// Reset all of the player's clocks to avoid some bugs relating to taking super-fast turns
 		for _, p := range g.Players {
 			p.InitTime(t.Options)
 		}
@@ -250,8 +232,8 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 		}
 	}
 
-	// If we are emulating actions, we do not have to tell anyone about the table yet
-	if !t.ExtraOptions.Replay {
+	// If we are emulating actions on a replay, we do not have to tell anyone about the table yet
+	if !t.ExtraOptions.NoWriteToDatabase {
 		if t.ExtraOptions.Restarted {
 			// If this is a restarted game, we can make it visible in the lobby now
 			t.Visible = true
@@ -271,7 +253,45 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 	}
 
 	// Start a timer to detect if the current player runs out of time
-	if t.Options.Timed && !t.ExtraOptions.Replay {
+	if t.Options.Timed && !t.ExtraOptions.NoWriteToDatabase {
 		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayerIndex])
+	}
+}
+
+func emulateActions(s *Session, d *CommandData, t *Table) {
+	// Local variables
+	g := t.Game
+
+	if t.ExtraOptions.CustomActions == nil {
+		return
+	}
+
+	for i, action := range t.ExtraOptions.CustomActions {
+		if t.ExtraOptions.SetReplay && t.ExtraOptions.SetReplayTurn == i {
+			// This is a "!replay" game and we have reached the intended turn
+			return
+		}
+
+		p := t.Players[g.ActivePlayerIndex]
+
+		commandAction(p.Session, &CommandData{ // Manual invocation
+			TableID: t.ID,
+			Type:    action.Type,
+			Target:  action.Target,
+			Value:   action.Value,
+			NoLock:  true,
+		})
+
+		if g.InvalidActionOccurred {
+			logger.Info("An invalid action occurred for game " + strconv.Itoa(d.GameID) + "; " +
+				"not emulating the rest of the actions.")
+			if s != nil {
+				s.Warning("The action at index " + strconv.Itoa(i) +
+					" was not valid. Skipping all subsequent actions. " +
+					"Please report this error to an administrator.")
+			}
+			badGameIDs = append(badGameIDs, d.GameID)
+			return
+		}
 	}
 }

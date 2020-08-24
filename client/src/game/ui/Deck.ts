@@ -190,6 +190,7 @@ export default class Deck extends Konva.Group {
     // Disable this row in JSON replays
     if (
       globals.state.finished
+      // JSON replays are hard-coded to have a database ID of 0
       && globals.state.replay.databaseID !== 0
       && globals.state.datetimeStarted !== null
       && globals.state.datetimeFinished !== null

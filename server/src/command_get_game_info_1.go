@@ -2,7 +2,6 @@ package main
 
 import (
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -141,7 +140,7 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		Spectating:       spectatorIndex != -1 && !t.Replay,
 		Replay:           t.Replay,
 		DatabaseID:       t.ExtraOptions.DatabaseID,
-		HasCustomSeed:    strings.HasPrefix(t.Name, "!seed "),
+		HasCustomSeed:    g.ExtraOptions.CustomSeed != "",
 		Seed:             g.Seed,
 		DatetimeStarted:  g.DatetimeStarted,
 		DatetimeFinished: g.DatetimeFinished,

@@ -112,46 +112,28 @@ func charactersGenerate(g *Game) {
 		return
 	}
 
-	// If this is a JSON replay, use the character selections from the JSON input
-	if g.ExtraOptions.DatabaseID == 0 {
-		if len(g.ExtraOptions.CustomCharacters) != len(g.Players) {
-			logger.Error("There are " + strconv.Itoa(len(g.ExtraOptions.CustomCharacters)) +
-				" custom characters, but there are " + strconv.Itoa(len(g.Players)) +
+	// If predefined character selections were specified, use those
+	if g.ExtraOptions.CustomCharacterAssignments != nil &&
+		len(g.ExtraOptions.CustomCharacterAssignments) != 0 {
+
+		if len(g.ExtraOptions.CustomCharacterAssignments) != len(g.Players) {
+			logger.Error("There are " +
+				strconv.Itoa(len(g.ExtraOptions.CustomCharacterAssignments)) +
+				" predefined characters, but there are " + strconv.Itoa(len(g.Players)) +
 				" players in the game.")
 			return
 		}
 
 		for i, p := range g.Players {
-			p.Character = g.ExtraOptions.CustomCharacters[i].Name
-			p.CharacterMetadata = g.ExtraOptions.CustomCharacters[i].Metadata
+			p.Character = g.ExtraOptions.CustomCharacterAssignments[i].Name
+			p.CharacterMetadata = g.ExtraOptions.CustomCharacterAssignments[i].Metadata
 		}
 		return
 	}
 
-	// If this is a database replay (or a "!replay" game),
-	// use the character selections from the database instead of generating new random ones
-	if g.ExtraOptions.DatabaseID != -1 {
-		// Get the players from the database
-		var dbPlayers []*DBPlayer
-		if v, err := models.Games.GetPlayers(g.ExtraOptions.DatabaseID); err != nil {
-			logger.Error("Failed to get the players from the database for game "+
-				strconv.Itoa(g.ExtraOptions.DatabaseID)+":", err)
-			return
-		} else {
-			dbPlayers = v
-		}
-
-		for i, dbP := range dbPlayers {
-			g.Players[i].Character = characterIDMap[dbP.CharacterAssignment]
-
-			// Metadata is stored in the database as value + 1
-			g.Players[i].CharacterMetadata = dbP.CharacterMetadata - 1
-		}
-		return
-	}
-
-	// Seed the random number generator
-	setSeed(g.Seed)
+	// This is not a replay,
+	// so we must generate new random character selections based on the game's seed
+	setSeed(g.Seed) // Seed the random number generator
 
 	for i, p := range g.Players {
 		// Set the character

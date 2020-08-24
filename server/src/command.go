@@ -31,9 +31,9 @@ type CommandData struct {
 	ShadowingPlayerIndex int `json:"shadowingPlayerIndex"`
 
 	// replayCreate
-	Source     string   `json:"source"`
-	GameJSON   GameJSON `json:"gameJSON"`
-	Visibility string   `json:"visibility"`
+	Source     string    `json:"source"`
+	GameJSON   *GameJSON `json:"gameJSON"`
+	Visibility string    `json:"visibility"`
 
 	// sharedReplay
 	Segment int    `json:"segment"`

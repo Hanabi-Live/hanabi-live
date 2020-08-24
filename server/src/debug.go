@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	fuckedIDs = make([]int, 0)
+	badGameIDs = make([]int, 0)
 )
 
 func debugPrint() {
@@ -234,8 +234,8 @@ func debugFunction() {
 		})
 	}
 
-	logger.Debug("FUCKED IDS:")
-	logger.Debug(fuckedIDs)
+	logger.Debug("BAD GAME IDS:")
+	logger.Debug(badGameIDs)
 
 	logger.Debug("Debug function(s) complete.")
 }

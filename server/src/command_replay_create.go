@@ -17,11 +17,15 @@ type GameJSON struct {
 	Options *OptionsJSON `json:"options,omitempty"`
 	// Notes is an optional element that contains the notes for each player
 	Notes [][]string `json:"notes,omitempty"`
-	// Characters ia an optional element that specifies the "Detrimental Character Assignments" for
+	// Characters is an optional element that specifies the "Detrimental Character" assignment for
 	// each player, if any
-	Characters []*CharacterJSON `json:"characters,omitempty"`
+	Characters []*CharacterAssignment `json:"characters,omitempty"`
+	// Seed is an optional value that specifies the server-side seed for the game (e.g. "p2v0s1")
+	// This allows the server to reconstruct the game without the deck being present and to properly
+	// write the game back to the database
+	Seed string `json:"seed,omitempty"`
 }
-type CharacterJSON struct {
+type CharacterAssignment struct {
 	Name     string `json:"name"`
 	Metadata int    `json:"metadata"`
 }
@@ -84,6 +88,26 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	defer t.Mutex.Unlock()
 	t.Visible = d.Visibility == "shared"
 
+	// Load the options and players database or JSON file
+	if d.Source == "id" {
+		var dbPlayers []*DBPlayer
+		if v, success := loadDatabaseOptionsToTable(s, d.GameID, t); !success {
+			return
+		} else {
+			dbPlayers = v
+		}
+
+		playerNames := make([]string, 0)
+		for _, dbPlayer := range dbPlayers {
+			playerNames = append(playerNames, dbPlayer.Name)
+		}
+
+		loadFakePlayers(t, playerNames)
+	} else if d.Source == "json" {
+		loadJSONOptionsToTable(d, t)
+		loadFakePlayers(t, d.GameJSON.Players)
+	}
+
 	// Add it to the map
 	logger.Debug("Acquiring tables write lock for user: " + s.Username())
 	tablesMutex.Lock()
@@ -98,16 +122,6 @@ func commandReplayCreate(s *Session, d *CommandData) {
 		logger.Info("User \"" + s.Username() + "\" created a new " + d.Visibility + " JSON replay")
 	}
 	// (a "table" message will be sent in the "commandTableSpectate" function below)
-
-	// Load the players and options from the database or JSON file
-	if d.Source == "id" {
-		if !loadDatabaseToTable(s, d, t) {
-			deleteTable(t)
-			return
-		}
-	} else if d.Source == "json" {
-		loadJSONToTable(s, d, t)
-	}
 
 	// Start the (fake) game
 	commandTableStart(t.Players[0].Session, &CommandData{ // Manual invocation
@@ -127,12 +141,8 @@ func commandReplayCreate(s *Session, d *CommandData) {
 		return
 	}
 
-	if !emulateActions(s, d, t) {
-		deleteTable(t)
-		return
-	}
-
-	// Handle scripts that are creating replays with no sessions
+	// Handle custom code that is creating replays with no associated session
+	// (e.g. only testing for errors when emulating the actions)
 	if s == nil {
 		deleteTable(t)
 		return
@@ -189,6 +199,11 @@ func validateDatabase(s *Session, d *CommandData) bool {
 }
 
 func validateJSON(s *Session, d *CommandData) bool {
+	if d.GameJSON == nil {
+		s.Warning("You must send the game specification in the \"gameJSON\" field.")
+		return false
+	}
+
 	// All options are optional; specify defaults if they were not specified
 	if d.GameJSON.Options == nil {
 		d.GameJSON.Options = &OptionsJSON{}
@@ -327,53 +342,96 @@ func validateJSON(s *Session, d *CommandData) bool {
 	return true
 }
 
-func loadDatabaseToTable(s *Session, d *CommandData, t *Table) bool {
+func loadDatabaseOptionsToTable(s *Session, gameID int, t *Table) ([]*DBPlayer, bool) {
 	// Get the options from the database
-	if v, err := models.Games.GetOptions(d.GameID); err != nil {
+	if v, err := models.Games.GetOptions(gameID); err != nil {
 		logger.Error("Failed to get the options from the database for game "+
-			strconv.Itoa(d.GameID)+":", err)
+			strconv.Itoa(gameID)+":", err)
 		s.Error(InitGameFail)
-		return false
+		return nil, false
 	} else {
 		t.Options = v
 	}
 
-	// We need to mark that the game should not be written to the database
-	t.ExtraOptions.Replay = true
-
-	// We need to reference the database ID for the game later on when the game starts in order
-	// to look up the seed for the game and the character assignments, if any
-	t.ExtraOptions.DatabaseID = d.GameID
-
 	// Get the players from the database
-	var playerNames []string
-	if v, err := models.Games.GetPlayerNames(d.GameID); err != nil {
-		logger.Error("Failed to get the player names from the database for game "+
-			strconv.Itoa(d.GameID)+":", err)
-		s.Error(InitGameFail)
-		return false
+	var dbPlayers []*DBPlayer
+	if v, err := models.Games.GetPlayers(gameID); err != nil {
+		logger.Error("Failed to get the players from the database for game "+
+			strconv.Itoa(gameID)+":", err)
+		return nil, false
 	} else {
-		playerNames = v
+		dbPlayers = v
 	}
 
-	// Ensure that the number of game participants matches the number of players that are supposed
-	// to be in the game
-	if len(playerNames) != t.Options.NumPlayers {
-		logger.Error("There are not enough game participants for game #" +
-			strconv.Itoa(d.GameID) + ". (There were " + strconv.Itoa(len(playerNames)) +
-			" players in the database and there should be " +
-			strconv.Itoa(t.Options.NumPlayers) + " players.)")
+	// As a sanity check, ensure that the number of game participants in the database matches the
+	// number of players that are supposed to be in the game (according to the options)
+	if len(dbPlayers) != t.Options.NumPlayers {
+		logger.Error("There are not enough game participants for game #" + strconv.Itoa(gameID) +
+			" in the database. (There were " + strconv.Itoa(len(dbPlayers)) +
+			" player rows and there should be " + strconv.Itoa(t.Options.NumPlayers) + ".)")
 		s.Error(InitGameFail)
-		return false
+		return nil, false
 	}
 
-	// Convert the database player objects to Player objects
-	loadFakePlayers(t, playerNames)
+	var characterAssignments []*CharacterAssignment
+	if t.Options.DetrimentalCharacters {
+		characterAssignments = getCharacterAssignmentsFromDBPlayers(dbPlayers)
+	}
 
-	return true
+	// Get the seed from the database
+	var seed string
+	if v, err := models.Games.GetSeed(gameID); err != nil {
+		logger.Error("Failed to get the seed from the database for game "+
+			strconv.Itoa(gameID)+":", err)
+		s.Error(InitGameFail)
+		return nil, false
+	} else {
+		seed = v
+	}
+
+	// Get the actions from the database
+	var actions []*GameAction
+	if v, err := models.GameActions.GetAll(gameID); err != nil {
+		logger.Error("Failed to get the actions from the database for game "+
+			strconv.Itoa(gameID)+":", err)
+		s.Error(InitGameFail)
+		return nil, false
+	} else {
+		actions = v
+	}
+
+	t.ExtraOptions = &ExtraOptions{
+		DatabaseID: gameID,
+
+		NoWriteToDatabase: true,
+
+		CustomNumPlayers:           len(dbPlayers),
+		CustomCharacterAssignments: characterAssignments,
+		CustomSeed:                 seed,
+		// Setting "CustomDeck" is not necessary because the deck is not stored in the database;
+		// the ordering of the cards is determined by using the game's seed
+		CustomActions: actions,
+	}
+
+	return dbPlayers, true
 }
 
-func loadJSONToTable(s *Session, d *CommandData, t *Table) {
+func getCharacterAssignmentsFromDBPlayers(dbPlayers []*DBPlayer) []*CharacterAssignment {
+	characterAssignments := make([]*CharacterAssignment, 0)
+	for _, dbPlayer := range dbPlayers {
+		characterAssignments = append(characterAssignments, &CharacterAssignment{
+			// Characters are stored in the database as integers,
+			// so we convert it to the character name by using the character ID map
+			Name: characterIDMap[dbPlayer.CharacterAssignment],
+			// Character metadata is stored in the database as value + 1
+			Metadata: dbPlayer.CharacterMetadata - 1,
+		})
+	}
+
+	return characterAssignments
+}
+
+func loadJSONOptionsToTable(d *CommandData, t *Table) {
 	// In order to avoid "runtime error: invalid memory address or nil pointer dereference",
 	// we must explicitly check to see if all pointers exist
 	startingPlayer := 0
@@ -443,17 +501,23 @@ func loadJSONToTable(s *Session, d *CommandData, t *Table) {
 		DetrimentalCharacters: detrimentalCharacters,
 	}
 	t.ExtraOptions = &ExtraOptions{
-		Replay: true, // We need to mark that the game should not be written to the database
 		// Normally, "DatabaseID" is set to either -1 (in an ongoing game)
 		// or a positive number (for a replay of a game in the database or a "!replay" game)
 		// JSON games are hard-coded to have a database ID of 0
 		DatabaseID: 0,
-		CustomDeck: d.GameJSON.Deck,
-		// "d.GameJSON.Characters" will be an empty array if it was not specified in the JSON
-		CustomCharacters: d.GameJSON.Characters,
-	}
 
-	loadFakePlayers(t, d.GameJSON.Players)
+		NoWriteToDatabase: true,
+		JSONReplay:        true,
+
+		CustomNumPlayers: len(d.GameJSON.Players),
+		// "d.GameJSON.Characters" is an optional element;
+		// it will be an empty array if not specified
+		CustomCharacterAssignments: d.GameJSON.Characters,
+		// "d.GameJSON.Seed" is an optional element; it will be "" if not specified
+		CustomSeed:    d.GameJSON.Seed,
+		CustomDeck:    d.GameJSON.Deck,
+		CustomActions: d.GameJSON.Actions,
+	}
 }
 
 func loadFakePlayers(t *Table, playerNames []string) {
@@ -520,58 +584,6 @@ func applyNotesToPlayers(s *Session, d *CommandData, g *Game) bool {
 	// Apply the notes
 	for i, gp := range g.Players {
 		gp.Notes = notes[i]
-	}
-
-	return true
-}
-
-func emulateActions(s *Session, d *CommandData, t *Table) bool {
-	// Local variables
-	g := t.Game
-
-	var actions []*GameAction
-	if d.Source == "id" {
-		// Get the actions from the database
-		if v, err := models.GameActions.GetAll(d.GameID); err != nil {
-			logger.Error("Failed to get the actions from the database for game "+
-				strconv.Itoa(d.GameID)+":", err)
-			s.Error(InitGameFail)
-			return false
-		} else {
-			actions = v
-		}
-	} else if d.Source == "json" {
-		actions = d.GameJSON.Actions
-	}
-
-	// Make the appropriate moves in the game to match what is listed in the database
-	for i, action := range actions {
-		if t.ExtraOptions.SetReplay && t.ExtraOptions.SetReplayTurn == i {
-			// This is a "!replay" game and we have reached the intended turn
-			break
-		}
-
-		p := t.Players[g.ActivePlayerIndex]
-
-		commandAction(p.Session, &CommandData{ // Manual invocation
-			TableID: t.ID,
-			Type:    action.Type,
-			Target:  action.Target,
-			Value:   action.Value,
-			NoLock:  true,
-		})
-
-		if g.InvalidActionOccurred {
-			logger.Info("An invalid action occurred for game " + strconv.Itoa(d.GameID) + "; " +
-				"not emulating the rest of the actions.")
-			if s != nil {
-				s.Warning("The action at index " + strconv.Itoa(i) +
-					" was not valid. Skipping all subsequent actions. " +
-					"Please report this error to an administrator.")
-			}
-			fuckedIDs = append(fuckedIDs, d.GameID)
-			break
-		}
 	}
 
 	return true

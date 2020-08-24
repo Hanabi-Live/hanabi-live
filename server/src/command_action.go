@@ -189,7 +189,7 @@ func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
 	t.NotifyTurn()
 
 	if g.EndCondition == EndConditionInProgress {
-		logger.Info(t.GetName() + " It is now " + np.Name + "'s turn.")
+		logger.Info(t.GetName() + "It is now " + np.Name + "'s turn.")
 	} else if g.EndCondition == EndConditionNormal {
 		if g.Score == variants[g.Options.VariantName].MaxScore {
 			g.Sound = "finished_perfect"
@@ -215,7 +215,7 @@ func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
 	// Send everyone new clock values
 	t.NotifyTime()
 
-	if t.Options.Timed && !t.ExtraOptions.Replay {
+	if t.Options.Timed && !t.ExtraOptions.NoWriteToDatabase {
 		// Start the function that will check to see if the current player has run out of time
 		// (since it just got to be their turn)
 		go g.CheckTimer(g.Turn, g.PauseCount, np)

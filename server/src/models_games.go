@@ -576,36 +576,6 @@ func (*Games) GetPlayers(databaseID int) ([]*DBPlayer, error) {
 	return players, nil
 }
 
-func (*Games) GetPlayerNames(databaseID int) ([]string, error) {
-	rows, err := db.Query(context.Background(), `
-		SELECT
-			users.username AS username
-		FROM games
-			JOIN game_participants ON games.id = game_participants.game_id
-			JOIN users ON game_participants.user_id = users.id
-		WHERE games.id = $1
-		ORDER BY game_participants.seat
-	`, databaseID)
-
-	playerNames := make([]string, 0)
-	for rows.Next() {
-		var playerName string
-		if err2 := rows.Scan(
-			&playerName,
-		); err2 != nil {
-			return nil, err2
-		}
-		playerNames = append(playerNames, playerName)
-	}
-
-	if rows.Err() != nil {
-		return nil, err
-	}
-	rows.Close()
-
-	return playerNames, nil
-}
-
 func (*Games) GetPlayerSeeds(userID int, variantID int) ([]string, error) {
 	// We want to use "DISCTINCT" since it is possible for a player to play on the same seed twice
 	// with the "!seed" feature or the "!replay" feature
