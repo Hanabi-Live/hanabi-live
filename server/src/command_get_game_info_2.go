@@ -32,9 +32,9 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are either a player or a spectator
-	i := t.GetPlayerIndexFromID(s.UserID())
-	j := t.GetSpectatorIndexFromID(s.UserID())
-	if i == -1 && j == -1 {
+	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID())
+	if playerIndex == -1 && spectatorIndex == -1 {
 		s.Warning("You are not a player or a spectator at table " +
 			strconv.FormatUint(t.ID, 10) + ", so you cannot be ready for it.")
 		return
@@ -73,7 +73,7 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	}
 
 	// If it is their turn, send a "yourTurn" message
-	if !t.Replay && g.ActivePlayerIndex == i {
+	if !t.Replay && g.ActivePlayerIndex == playerIndex {
 		s.NotifyYourTurn(t)
 	}
 
@@ -90,12 +90,12 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 
 		// If this is the first turn, send them a sound so that they know the game started
 		if g.Turn == 0 {
-			s.NotifySound(t, i)
+			s.NotifySound(t, playerIndex)
 		}
 
-		if i > -1 {
+		if playerIndex > -1 {
 			// They are a player in an ongoing game
-			p := g.Players[i]
+			p := g.Players[playerIndex]
 
 			// Send them a list of only their notes
 			type NoteListPlayerMessage struct {
@@ -109,11 +109,11 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 
 			// Set their "present" variable back to true,
 			// which will turn their name from red to black
-			t.Players[i].Present = true
+			t.Players[playerIndex].Present = true
 			t.NotifyConnected()
-		} else if j > -1 {
+		} else if spectatorIndex > -1 {
 			// They are a spectator in an ongoing game
-			sp := t.Spectators[j]
+			sp := t.Spectators[spectatorIndex]
 			s.NotifyNoteList(t, sp.ShadowingPlayerIndex)
 		}
 	}

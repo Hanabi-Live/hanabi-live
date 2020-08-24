@@ -110,15 +110,15 @@ func (a *ActionCardIdentity) Scrub(t *Table, userID int) {
 func getEquivalentPlayer(t *Table, userID int) *GamePlayer {
 	// Local variables
 	g := t.Game
-	i := t.GetPlayerIndexFromID(userID)
-	j := t.GetSpectatorIndexFromID(userID)
+	playerIndex := t.GetPlayerIndexFromID(userID)
+	spectatorIndex := t.GetSpectatorIndexFromID(userID)
 
-	if i > -1 {
+	if playerIndex > -1 {
 		// The action is going to be sent to one of the active players
-		return g.Players[i]
-	} else if j > -1 && t.Spectators[j].ShadowingPlayerIndex != -1 {
+		return g.Players[playerIndex]
+	} else if spectatorIndex > -1 && t.Spectators[spectatorIndex].ShadowingPlayerIndex != -1 {
 		// The action is going to be sent to a spectator that is shadowing one of the active players
-		return g.Players[t.Spectators[j].ShadowingPlayerIndex]
+		return g.Players[t.Spectators[spectatorIndex].ShadowingPlayerIndex]
 	}
 
 	// The action is going to be sent to a spectator that can see every hand

@@ -17,14 +17,14 @@ func commandChatRead(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are in the game or are a spectator
-	i := t.GetPlayerIndexFromID(s.UserID())
-	j := t.GetSpectatorIndexFromID(s.UserID())
-	if i == -1 && j == -1 {
+	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID())
+	if playerIndex == -1 && spectatorIndex == -1 {
 		// Return without an error message if they are not playing or spectating at the table
 		// (to account for lag)
 		return
 	}
-	if t.Replay && j == -1 {
+	if spectatorIndex == -1 && t.Replay {
 		// Return without an error message if they are not spectating at the replay
 		// (to account for lag)
 		return

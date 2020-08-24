@@ -42,9 +42,9 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are either playing or spectating the game
-	i := t.GetPlayerIndexFromID(s.UserID())
-	j := t.GetSpectatorIndexFromID(s.UserID())
-	if i == -1 && j == -1 {
+	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID())
+	if playerIndex == -1 && spectatorIndex == -1 {
 		s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
 			".")
 		return
@@ -80,29 +80,29 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		}
 	}
 
-	ourPlayerIndex := i
+	ourPlayerIndex := playerIndex
 	if ourPlayerIndex == -1 {
 		// By default, spectators view the game from the first player's perspective
 		ourPlayerIndex = 0
 
 		// If a spectator is viewing a replay of a game that they played in,
 		// we want to put them in the same seat
-		for k, name := range playerNames {
+		for i, name := range playerNames {
 			if name == s.Username() {
-				ourPlayerIndex = k
+				ourPlayerIndex = i
 				break
 			}
 		}
 	}
 
 	// Account for if a spectator is shadowing a specific player
-	if j != -1 && t.Spectators[j].ShadowingPlayerIndex != -1 {
-		ourPlayerIndex = t.Spectators[j].ShadowingPlayerIndex
+	if spectatorIndex != -1 && t.Spectators[spectatorIndex].ShadowingPlayerIndex != -1 {
+		ourPlayerIndex = t.Spectators[spectatorIndex].ShadowingPlayerIndex
 	}
 
 	pauseQueued := false
-	if i != -1 {
-		pauseQueued = g.Players[i].RequestedPause
+	if playerIndex != -1 {
+		pauseQueued = g.Players[playerIndex].RequestedPause
 	}
 
 	type InitMessage struct {
@@ -140,7 +140,7 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		TableID:          t.ID, // The client needs to know the table ID for chat to work properly
 		PlayerNames:      playerNames,
 		OurPlayerIndex:   ourPlayerIndex,
-		Spectating:       !t.Replay && j != -1,
+		Spectating:       spectatorIndex != -1 && !t.Replay,
 		Replay:           t.Replay,
 		DatabaseID:       t.ExtraOptions.DatabaseID,
 		HasCustomSeed:    strings.HasPrefix(t.Name, "!seed "),

@@ -76,8 +76,8 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 		if !t.Running {
 			// On the pregame screen, the leader should always be the leftmost player,
 			// so we need to swap elements in the players slice
-			i := t.GetPlayerIndexFromID(s.UserID())
-			t.Players[i], t.Players[newLeaderIndex] = t.Players[newLeaderIndex], t.Players[i]
+			playerIndex := t.GetPlayerIndexFromID(s.UserID())
+			t.Players[playerIndex], t.Players[newLeaderIndex] = t.Players[newLeaderIndex], t.Players[playerIndex]
 
 			// Re-send the "game" message that draws the pregame screen
 			// and enables/disables the "Start Game" button

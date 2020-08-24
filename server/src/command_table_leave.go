@@ -37,8 +37,8 @@ func commandTableLeave(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are at the table
-	i := t.GetPlayerIndexFromID(s.UserID())
-	if i == -1 {
+	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	if playerIndex == -1 {
 		s.Warning("You are not at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot leave it.")
 		return
@@ -52,7 +52,7 @@ func commandTableLeave(s *Session, d *CommandData) {
 		"(There are now " + strconv.Itoa(len(t.Players)-1) + " players.)")
 
 	// Remove the player
-	t.Players = append(t.Players[:i], t.Players[i+1:]...)
+	t.Players = append(t.Players[:playerIndex], t.Players[playerIndex+1:]...)
 	notifyAllTable(t)
 	t.NotifyPlayerChange()
 

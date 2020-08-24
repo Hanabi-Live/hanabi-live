@@ -24,8 +24,8 @@ func commandTableReattend(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are at the table
-	i := t.GetPlayerIndexFromID(s.UserID())
-	if i == -1 {
+	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	if playerIndex == -1 {
 		s.Warning("You are not playing at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot reattend it.")
 		return
@@ -50,7 +50,7 @@ func commandTableReattend(s *Session, d *CommandData) {
 		// Set their "present" variable back to true,
 		// which will remove the "AWAY" if the game has not started yet
 		// (if the game is running, this is handled in the "getGameInfo2()" function)
-		p := t.Players[i]
+		p := t.Players[playerIndex]
 		p.Present = true
 		t.NotifyPlayerChange()
 

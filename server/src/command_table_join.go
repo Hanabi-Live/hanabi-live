@@ -28,8 +28,8 @@ func commandTableJoin(s *Session, d *CommandData) {
 	}
 
 	// Validate that the player is not already joined to this table
-	i := t.GetPlayerIndexFromID(s.UserID())
-	if i != -1 {
+	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	if playerIndex != -1 {
 		s.Warning("You have already joined this table.")
 		return
 	}

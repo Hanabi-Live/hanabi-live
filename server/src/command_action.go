@@ -38,10 +38,6 @@ func actionsFunctionsInit() {
 //   value: 0,
 // }
 func commandAction(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
 	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
@@ -65,15 +61,15 @@ func commandAction(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are in the game
-	i := t.GetPlayerIndexFromID(s.UserID())
-	if i == -1 {
+	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	if playerIndex == -1 {
 		s.Warning("You are not playing at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot send an action.")
 		return
 	}
 
 	// Validate that it is this player's turn
-	if g.ActivePlayerIndex != i && d.Type != ActionTypeEndGame {
+	if g.ActivePlayerIndex != playerIndex && d.Type != ActionTypeEndGame {
 		s.Warning("It is not your turn, so you cannot perform an action.")
 		g.InvalidActionOccurred = true
 		return
@@ -86,10 +82,8 @@ func commandAction(s *Session, d *CommandData) {
 		return
 	}
 
-	// Local variables
-	p := g.Players[i]
-
 	// Validate that a player is not doing an illegal action for their character
+	p := g.Players[playerIndex]
 	if characterValidateAction(s, d, g, p) {
 		g.InvalidActionOccurred = true
 		return
@@ -99,15 +93,15 @@ func commandAction(s *Session, d *CommandData) {
 		return
 	}
 
-	/*
-		Action
-	*/
+	action(s, d, t, p)
+}
 
-	// Remove the double discard state
-	g.DoubleDiscard = false
+func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
+	// Local variables
+	g := t.Game
 
-	// Remove the "fail#" and "blind#" states
-	g.Sound = ""
+	g.DoubleDiscard = false // Remove the double discard state
+	g.Sound = ""            // Remove the "fail#" and "blind#" states
 
 	// Start the idle timeout
 	// (but don't update the idle variable if we are ending the game)
@@ -226,7 +220,7 @@ func commandAction(s *Session, d *CommandData) {
 		// (since it just got to be their turn)
 		go g.CheckTimer(g.Turn, g.PauseCount, np)
 
-		// If the player queued a pause command, then pause the game
+		// If the next player queued a pause command, then pause the game
 		if np.RequestedPause {
 			np.RequestedPause = false
 			commandPause(nps, &CommandData{ // Manual invocation

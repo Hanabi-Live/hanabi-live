@@ -157,11 +157,6 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
 
-	// Check to see if the game ended already
-	if g.EndCondition > EndConditionInProgress {
-		return
-	}
-
 	// Check to see if we have made a move in the meanwhile
 	if turn != g.Turn {
 		return
@@ -177,8 +172,24 @@ func (g *Game) CheckTimer(turn int, pauseCount int, gp *GamePlayer) {
 		return
 	}
 
-	gp.Time = 0
+	// Check to see if the game ended already
+	if g.EndCondition > EndConditionInProgress {
+		return
+	}
+
+	g.EndTimer(gp)
+}
+
+// EndTimer is called when a player has run out of time in a timed game, which will automatically
+// end the game with a score of 0
+func (g *Game) EndTimer(gp *GamePlayer) {
+	// Local variables
+	t := g.Table
+
 	logger.Info(t.GetName() + "Time ran out for \"" + gp.Name + "\".")
+
+	// Adjust the final player's time (for the purposes of displaying the correct ending times)
+	gp.Time = 0
 
 	// Get the session of this player
 	p := t.Players[gp.Index]

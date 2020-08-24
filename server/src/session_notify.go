@@ -76,13 +76,7 @@ type TableMessage struct {
 }
 
 func makeTableMessage(s *Session, t *Table) *TableMessage {
-	i := t.GetPlayerIndexFromID(s.UserID())
-	joined := false
-	if i != -1 {
-		joined = true
-	}
-
-	numPlayers := len(t.Players)
+	playerIndex := t.GetPlayerIndexFromID(s.UserID())
 
 	players := make([]string, 0)
 	for _, p := range t.Players {
@@ -98,8 +92,8 @@ func makeTableMessage(s *Session, t *Table) *TableMessage {
 		ID:                t.ID,
 		Name:              t.Name,
 		PasswordProtected: len(t.PasswordHash) > 0,
-		Joined:            joined,
-		NumPlayers:        numPlayers,
+		Joined:            playerIndex != -1,
+		NumPlayers:        len(t.Players),
 		Owned:             s.UserID() == t.Owner,
 		Running:           t.Running,
 		Variant:           t.Options.VariantName,

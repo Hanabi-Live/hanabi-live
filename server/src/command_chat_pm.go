@@ -12,10 +12,6 @@ import (
 //   recipient: 'Alice',
 // }
 func commandChatPM(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
 	// Check to see if their IP has been muted
 	if s != nil && s.Muted() {
 		s.Warning("You have been muted by an administrator.")
@@ -62,10 +58,10 @@ func commandChatPM(s *Session, d *CommandData) {
 	// various attacks against other players
 	d.Msg = bluemondayStrictPolicy.Sanitize(d.Msg)
 
-	/*
-		Private message
-	*/
+	chatPM(s, d, recipientSession)
+}
 
+func chatPM(s *Session, d *CommandData, recipientSession *Session) {
 	// Log the message
 	logger.Info("PM <" + s.Username() + "> --> <" + recipientSession.Username() + "> " + d.Msg)
 

@@ -65,7 +65,8 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 	logger.Debug("Acquired tables read lock for user: " + s.Username())
 	for _, t := range tables {
 		// They could be one of the players (1/2)
-		if !t.Replay && t.GetPlayerIndexFromID(s.UserID()) != -1 {
+		playerIndex := t.GetPlayerIndexFromID(s.UserID())
+		if playerIndex != -1 && !t.Replay {
 			if t.Running {
 				ongoingGameTableIDs = append(ongoingGameTableIDs, t.ID)
 			} else {
@@ -74,7 +75,8 @@ func websocketDisconnectRemoveFromGames(s *Session) {
 		}
 
 		// They could be one of the spectators (2/2)
-		if t.GetSpectatorIndexFromID(s.UserID()) != -1 {
+		spectatorIndex := t.GetSpectatorIndexFromID(s.UserID())
+		if spectatorIndex != -1 {
 			spectatingTableIDs = append(spectatingTableIDs, t.ID)
 		}
 	}

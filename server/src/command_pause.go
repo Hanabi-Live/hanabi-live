@@ -40,13 +40,13 @@ func commandPause(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are in the game
-	i := t.GetPlayerIndexFromID(s.UserID())
-	if i == -1 {
+	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	if playerIndex == -1 {
 		s.Warning("You are not at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot pause / unpause.")
 		return
 	}
-	p := g.Players[i]
+	p := g.Players[playerIndex]
 
 	// Validate that it is a timed game
 	if !t.Options.Timed {
@@ -55,7 +55,7 @@ func commandPause(s *Session, d *CommandData) {
 	}
 
 	// If a player requests a queued pause on their turn, turn it into a normal pause
-	if d.Setting == "pause-queue" && g.ActivePlayerIndex == i {
+	if d.Setting == "pause-queue" && g.ActivePlayerIndex == playerIndex {
 		d.Setting = "pause"
 	}
 
@@ -102,7 +102,7 @@ func commandPause(s *Session, d *CommandData) {
 		g.Paused = true
 		g.PauseTime = time.Now()
 		g.PauseCount++
-		g.PausePlayerIndex = i
+		g.PausePlayerIndex = playerIndex
 	} else if d.Setting == "unpause" {
 		g.Paused = false
 

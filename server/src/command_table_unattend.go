@@ -27,14 +27,14 @@ func commandTableUnattend(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are either playing or spectating the game
-	i := t.GetPlayerIndexFromID(s.UserID())
-	j := t.GetSpectatorIndexFromID(s.UserID())
-	if i == -1 && j == -1 {
+	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	spectatorIndex := t.GetSpectatorIndexFromID(s.UserID())
+	if playerIndex == -1 && spectatorIndex == -1 {
 		s.Warning("You are not playing or spectating at table " + strconv.FormatUint(t.ID, 10) +
 			", so you cannot unattend it.")
 		return
 	}
-	if t.Replay && j == -1 {
+	if spectatorIndex == -1 && t.Replay {
 		s.Warning("You are not spectating replay " + strconv.FormatUint(t.ID, 10) +
 			", so you cannot unattend it.")
 		return
@@ -50,10 +50,10 @@ func commandTableUnattend(s *Session, d *CommandData) {
 	// If they were typing, remove the message
 	t.NotifyChatTyping(s.Username(), false)
 
-	if !t.Replay && i != -1 {
-		commandTableUnattendPlayer(s, t, i)
+	if playerIndex != -1 && !t.Replay {
+		commandTableUnattendPlayer(s, t, playerIndex)
 	} else {
-		commandTableUnattendSpectator(t, j)
+		commandTableUnattendSpectator(t, spectatorIndex)
 	}
 }
 

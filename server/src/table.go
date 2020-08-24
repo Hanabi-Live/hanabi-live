@@ -140,6 +140,11 @@ func (t *Table) CheckIdle() {
 		return
 	}
 
+	t.EndIdle()
+}
+
+// EndIdle is called when a table has been idle for a while and should be automatically ended
+func (t *Table) EndIdle() {
 	logger.Info(t.GetName() + " Idle timeout has elapsed; ending the game.")
 
 	if t.Replay {
@@ -183,7 +188,7 @@ func (t *Table) CheckIdle() {
 			NoLock:  true,
 		})
 	} else {
-		// We need to end a game that hasn't started yet
+		// We need to end a game that has not started yet
 		// Force the owner to leave, which should subsequently eject everyone else
 		// (this will send everyone back to the main lobby screen)
 		commandTableLeave(s, &CommandData{ // Manual invocation

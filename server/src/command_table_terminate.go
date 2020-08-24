@@ -13,10 +13,6 @@ import (
 //   server: true, // True if a server-initiated termination, otherwise omitted
 // }
 func commandTableTerminate(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
 	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
@@ -26,8 +22,8 @@ func commandTableTerminate(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are in the game
-	i := t.GetPlayerIndexFromID(s.UserID())
-	if i == -1 {
+	playerIndex := t.GetPlayerIndexFromID(s.UserID())
+	if playerIndex == -1 {
 		s.Warning("You are not playing at table " + strconv.FormatUint(t.ID, 10) + ", " +
 			"so you cannot terminate it.")
 		return
@@ -45,14 +41,14 @@ func commandTableTerminate(s *Session, d *CommandData) {
 		return
 	}
 
-	/*
-		Terminate
-	*/
+	terminate(s, t, playerIndex)
+}
 
+func terminate(s *Session, t *Table, playerIndex int) {
 	commandAction(s, &CommandData{ // Manual invocation
 		TableID: t.ID,
 		Type:    ActionTypeEndGame,
-		Target:  i,
+		Target:  playerIndex,
 		Value:   EndConditionTerminated,
 		NoLock:  true,
 	})
