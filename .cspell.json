@@ -280,6 +280,7 @@
         "unnext",
         "unparam",
         "unpause",
+        "unpaused",
         "unpauses",
         "unqueue",
         "unsanitized",

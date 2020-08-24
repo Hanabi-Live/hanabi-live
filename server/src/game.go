@@ -75,9 +75,8 @@ type Game struct {
 	// Pause-related fields
 	// (these are only applicable to timed games)
 	Paused           bool
-	PauseTime        time.Time
-	PauseCount       int
 	PausePlayerIndex int
+	PauseCount       int
 
 	// Hypothetical-related fields
 	Hypothetical        bool // Whether or not we are in a post-game hypothetical

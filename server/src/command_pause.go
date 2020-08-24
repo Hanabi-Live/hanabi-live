@@ -100,22 +100,25 @@ func pause(s *Session, d *CommandData, t *Table, playerIndex int) {
 
 	if d.Setting == "pause" {
 		g.Paused = true
-		g.PauseTime = time.Now()
-		g.PauseCount++
 		g.PausePlayerIndex = playerIndex
+		g.PauseCount++
+
+		// Decrement the time that the player has taken so far prior to this pause
+		p.Time -= time.Since(g.DatetimeTurnBegin)
 	} else if d.Setting == "unpause" {
 		g.Paused = false
+		g.PausePlayerIndex = -1
 
-		// Add the time elapsed during the pause to the time recorded when the turn began
-		// (because we use this as a differential to calculate how much time the player took when
-		// they end their turn)
-		g.DatetimeTurnBegin = g.DatetimeTurnBegin.Add(time.Since(g.PauseTime))
+		// Technically, a players turn should not begin when the game is unpaused,
+		// but this variable is only used for decrementing time taken at the end of a player's turn
+		g.DatetimeTurnBegin = time.Now()
 
 		// Send everyone new clock values
 		t.NotifyTime()
 
 		// Restart the function that will check to see if the current player has run out of time
-		// (since the existing function will return and do nothing if the game is paused)
+		// (the old "CheckTimer()" invocation will return and do nothing because the pause count of
+		// the game will not match)
 		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayerIndex])
 	}
 
