@@ -41,7 +41,8 @@ func restart() {
 	}
 	sessionsMutex.RUnlock()
 
-	msg := "The server went down for a restart at: " + getCurrentTimestamp()
+	msg := "The server went down for a restart at: " + getCurrentTimestamp() + "\n"
+	msg += "(" + gitCommitOnStart + ")"
 	chatServerSend(msg, "lobby")
 
 	if runtime.GOOS != "windows" {
