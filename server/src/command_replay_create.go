@@ -88,7 +88,7 @@ func commandReplayCreate(s *Session, d *CommandData) {
 	defer t.Mutex.Unlock()
 	t.Visible = d.Visibility == "shared"
 
-	// Load the options and players database or JSON file
+	// Load the options and players
 	if d.Source == "id" {
 		var dbPlayers []*DBPlayer
 		if v, success := loadDatabaseOptionsToTable(s, d.GameID, t); !success {

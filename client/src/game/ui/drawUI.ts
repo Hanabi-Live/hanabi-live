@@ -897,8 +897,6 @@ const drawScoreArea = () => {
       width: 0.03 * winW,
       height: 0.053 * winH,
       stroke: 'black',
-      fill: 'white',
-      opacity: 0.6,
       cornerRadius: 0.005 * winW,
       listening: true,
     }, i);
