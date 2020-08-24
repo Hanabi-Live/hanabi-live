@@ -37,11 +37,11 @@ type BestScore struct {
 	AllOrNothing bool    `json:"allOrNothing"`
 }
 
-// Returns true if A is a worse game result than B
+// Returns true if A is a better game result than B
 //
-// Result A is worse than result B whenever result A has either:
-// - a lower score;
-// - or an equal score but with more modifiers (by comparing the bitflags numerically)
+// Result A is better than result B whenever result A has either:
+// - a higher score;
+// - or an equal score but with less modifiers (by comparing the bitflags numerically)
 //
 // For example:
 // Alice's high score for 2-player No Variant is 30 points with
@@ -51,11 +51,11 @@ type BestScore struct {
 // Alice's modifier bitflag is equal to 1.
 // Bob's modifier bitflag is equal to 4.
 //
-// The worse score between the two players is Bob's because 4 > 1
-func IsWorseScore(scoreA int, modifierA Bitmask, scoreB int, modifierB Bitmask) bool {
-	return scoreA < scoreB ||
-		(scoreB == scoreA &&
-			modifierA > modifierB)
+// The better score between the two players is Alices's because 1 < 4
+func IsScoreBetterThan(scoreA int, modifierA Bitmask, scoreB int, modifierB Bitmask) bool {
+	return scoreA > scoreB ||
+		(scoreA == scoreB &&
+			modifierA < modifierB)
 }
 
 func NewBestScores() []*BestScore {
