@@ -31,4 +31,6 @@ export const onChanged = (pause: PauseState) => {
   globals.layers.UI.batchDraw();
   globals.layers.UI2.batchDraw();
   globals.layers.timer.batchDraw();
+
+  console.log('ZZZZZZZZZZZZZ', globals.elements.timer2!.visible());
 };

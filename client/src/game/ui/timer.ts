@@ -12,8 +12,8 @@ export interface ClockData {
 }
 
 // This function handles the "clock" WebSocket command
-// It is sent at the beginning of every turn
-// to update the client about how much time each player has left
+// It is sent at the beginning of every turn to update the client about how much time each player
+// has left
 // It has the following data:
 // {
 //   times: [100, 200], // A list of the times for each player
@@ -25,6 +25,12 @@ export const update = (data: ClockData) => {
 
   // We don't need to update the timers if they are not showing
   if (globals.elements.timer1 === null || globals.elements.timer2 === null) {
+    return;
+  }
+
+  // We don't need to update the timers if the game is paused
+  // (the server will send another "clock" message when the game becomes unpaused)
+  if (globals.state.pause.active) {
     return;
   }
 
