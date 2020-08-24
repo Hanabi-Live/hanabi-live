@@ -11,10 +11,6 @@ import (
 //   tableID: 31,
 // }
 func commandTableReattend(s *Session, d *CommandData) {
-	/*
-		Validation
-	*/
-
 	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
@@ -37,10 +33,10 @@ func commandTableReattend(s *Session, d *CommandData) {
 		return
 	}
 
-	/*
-		Reattend
-	*/
+	tableReattend(s, t, playerIndex)
+}
 
+func tableReattend(s *Session, t *Table, playerIndex int) {
 	logger.Info(t.GetName() + "User \"" + s.Username() + "\" reattended.")
 
 	if t.Running {

@@ -13,10 +13,6 @@ package main
 //   shadowingPlayerIndex: -1,
 // }
 func commandTableSpectate(s *Session, d *CommandData) {
-	/*
-		Validation
-	*/
-
 	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
@@ -24,7 +20,6 @@ func commandTableSpectate(s *Session, d *CommandData) {
 	if !d.NoLock {
 		defer t.Mutex.Unlock()
 	}
-	g := t.Game
 
 	// Validate that the game has started
 	if !t.Running {
@@ -69,9 +64,12 @@ func commandTableSpectate(s *Session, d *CommandData) {
 		}
 	}
 
-	/*
-		Spectate / Join Solo Replay / Join Shared Replay
-	*/
+	tableSpectate(s, d, t)
+}
+
+func tableSpectate(s *Session, d *CommandData, t *Table) {
+	// Local variables
+	g := t.Game
 
 	if t.Replay {
 		logger.Info(t.GetName() + "User \"" + s.Username() + "\" joined the replay.")

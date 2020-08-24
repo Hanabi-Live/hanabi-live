@@ -15,10 +15,6 @@ import (
 //   tableID: 15103,
 // }
 func commandTableJoin(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
 	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
@@ -79,10 +75,10 @@ func commandTableJoin(s *Session, d *CommandData) {
 		return
 	}
 
-	/*
-		Join
-	*/
+	tableJoin(s, t)
+}
 
+func tableJoin(s *Session, t *Table) {
 	logger.Info(t.GetName() + "User \"" + s.Username() + "\" joined. " +
 		"(There are now " + strconv.Itoa(len(t.Players)+1) + " players.)")
 

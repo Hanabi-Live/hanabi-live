@@ -16,10 +16,6 @@ import (
 //   tableID: 5,
 // }
 func commandTableStart(s *Session, d *CommandData) {
-	/*
-		Validation
-	*/
-
 	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
@@ -72,10 +68,10 @@ func commandTableStart(s *Session, d *CommandData) {
 		}
 	}
 
-	/*
-		Start
-	*/
+	tableStart(s, d, t)
+}
 
+func tableStart(s *Session, d *CommandData, t *Table) {
 	logger.Info(t.GetName() + "Starting the game.")
 
 	// Record the number of players
@@ -168,17 +164,6 @@ func commandTableStart(s *Session, d *CommandData) {
 	for i, c := range g.Deck {
 		c.Order = i
 	}
-
-	/*
-		// Log the deal (so that it can be distributed to others if necessary)
-		logger.Info("--------------------------------------------------")
-		logger.Info("Deal for seed: " + g.Seed + " (from top to bottom)")
-		logger.Info("(cards are dealt to a player until their hand fills up before moving on to the next one)")
-		for i, c := range g.Deck {
-			logger.Info(strconv.Itoa(i+1) + ") " + c.Name(g))
-		}
-		logger.Info("--------------------------------------------------")
-	*/
 
 	// The 0th player will always go first
 	// Since we want a random player to start first, we need to shuffle the order of the players

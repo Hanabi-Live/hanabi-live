@@ -19,10 +19,6 @@ var (
 //   tableID: 15103,
 // }
 func commandTableRestart(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
 	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
@@ -137,10 +133,10 @@ func commandTableRestart(s *Session, d *CommandData) {
 		}
 	}
 
-	/*
-		Restart
-	*/
+	tableRestart(s, t, playerSessions, spectatorSessions)
+}
 
+func tableRestart(s *Session, t *Table, playerSessions []*Session, spectatorSessions []*Session) {
 	// Before the table is deleted, make a copy of the chat, if any
 	oldChat := make([]*TableChatMessage, len(t.Chat))
 	copy(oldChat, t.Chat)
@@ -182,7 +178,12 @@ func commandTableRestart(s *Session, d *CommandData) {
 			gameNumber, _ = strconv.Atoi(match[0][2])
 			gameNumber++
 		}
-		newTableName = oldTableName + " (#" + strconv.Itoa(gameNumber) + ")"
+		tableNameSuffix := " (#" + strconv.Itoa(gameNumber) + ")"
+		maxGameNameLengthWithoutSuffix := MaxGameNameLength - len(tableNameSuffix)
+		if len(oldTableName) > maxGameNameLengthWithoutSuffix {
+			oldTableName = oldTableName[0 : maxGameNameLengthWithoutSuffix-1]
+		}
+		newTableName = oldTableName + tableNameSuffix
 	} else {
 		// If players spawn a shared replay and then restart,
 		// there will not be an initial name for the table
@@ -191,10 +192,12 @@ func commandTableRestart(s *Session, d *CommandData) {
 
 	// The shared replay should now be deleted, since all of the players have left
 	// Now, create the new game but hide it from the lobby
-	createTable(s, &CommandData{
+	commandTableCreate(s, &CommandData{ // Manual invocation
 		Name:    newTableName,
 		Options: t.Options,
-	}, false)
+		// We want to prevent the pre-game from showing up in the lobby for a brief second
+		HidePregame: true,
+	})
 
 	// Find the table ID for the new game
 	var t2 *Table

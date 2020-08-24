@@ -16,11 +16,6 @@ import (
 //   note: 'b1, m1',
 // }
 func commandNote(s *Session, d *CommandData) {
-	/*
-		Validate
-		(some code is copied from the "sanitizeChatInput()" function)
-	*/
-
 	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
@@ -28,7 +23,6 @@ func commandNote(s *Session, d *CommandData) {
 	if !d.NoLock {
 		defer t.Mutex.Unlock()
 	}
-	g := t.Game
 
 	// Validate that the game has started
 	if !t.Running {
@@ -86,9 +80,12 @@ func commandNote(s *Session, d *CommandData) {
 	// various attacks against other players
 	d.Note = bluemondayStrictPolicy.Sanitize(d.Note)
 
-	/*
-		Note
-	*/
+	note(d, t, playerIndex, spectatorIndex)
+}
+
+func note(d *CommandData, t *Table, playerIndex int, spectatorIndex int) {
+	// Local variables
+	g := t.Game
 
 	if playerIndex > -1 {
 		p := g.Players[playerIndex]

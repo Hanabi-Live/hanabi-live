@@ -14,10 +14,6 @@ import (
 //   // ('pause-queue' will automatically pause the game when it gets to their turn)
 // }
 func commandPause(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
 	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
@@ -85,9 +81,13 @@ func commandPause(s *Session, d *CommandData) {
 		return
 	}
 
-	/*
-		Pause
-	*/
+	pause(s, d, t, playerIndex)
+}
+
+func pause(s *Session, d *CommandData, t *Table, playerIndex int) {
+	// Local variables
+	g := t.Game
+	p := g.Players[playerIndex]
 
 	if d.Setting == "pause-queue" {
 		p.RequestedPause = true

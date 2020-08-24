@@ -22,10 +22,6 @@ import (
 //   tableID: 5,
 // }
 func commandGetGameInfo1(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
 	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
@@ -33,7 +29,6 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 	if !d.NoLock {
 		defer t.Mutex.Unlock()
 	}
-	g := t.Game
 
 	// Validate that the game has started
 	if !t.Running {
@@ -50,9 +45,12 @@ func commandGetGameInfo1(s *Session, d *CommandData) {
 		return
 	}
 
-	/*
-		Provide the info
-	*/
+	getGameInfo1(s, t, playerIndex, spectatorIndex)
+}
+
+func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
+	// Local variables
+	g := t.Game
 
 	// Create a list of names of the players in this game
 	playerNames := make([]string, 0)

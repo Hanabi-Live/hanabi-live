@@ -12,10 +12,6 @@ import (
 //   tableID: 5,
 // }
 func commandGetGameInfo2(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
 	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
@@ -23,7 +19,6 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 	if !d.NoLock {
 		defer t.Mutex.Unlock()
 	}
-	g := t.Game
 
 	// Validate that the game has started
 	if !t.Running {
@@ -40,9 +35,12 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 		return
 	}
 
-	/*
-		Ready
-	*/
+	getGameInfo2(s, t, playerIndex, spectatorIndex)
+}
+
+func getGameInfo2(s *Session, t *Table, playerIndex int, spectatorIndex int) {
+	// Local variables
+	g := t.Game
 
 	// Check to see if we need to remove some card information
 	var scrubbedActions []interface{}

@@ -152,10 +152,6 @@ func httpWS(c *gin.Context) {
 	}
 }
 
-/*
-	Subroutines
-*/
-
 func httpWSError(c *gin.Context, msg string, err error) {
 	// Local variables
 	w := c.Writer

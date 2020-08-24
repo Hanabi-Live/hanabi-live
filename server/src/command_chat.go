@@ -47,10 +47,6 @@ func commandChat(s *Session, d *CommandData) {
 		d.Username = s.Username()
 	}
 
-	/*
-		Validate
-	*/
-
 	// Check to see if their IP has been muted
 	if s != nil && s.Muted() {
 		s.Warning("You have been muted by an administrator.")
@@ -80,10 +76,10 @@ func commandChat(s *Session, d *CommandData) {
 		return
 	}
 
-	/*
-		Chat
-	*/
+	chat(s, d, userID, rawMsg)
+}
 
+func chat(s *Session, d *CommandData, userID int, rawMsg string) {
 	// Log the message
 	text := "#" + d.Room + " "
 	if d.Username != "" {

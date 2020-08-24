@@ -1,6 +1,7 @@
 package main
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -12,6 +13,19 @@ const (
 	// The maximum number of characters that a game name can be
 	MaxGameNameLength = 45
 )
+
+var (
+	isValidTableName = regexp.MustCompile(`^[a-zA-Z0-9 !@#$\(\)\-_=\+;:,\.\?]+$`).MatchString
+)
+
+// Data relating to games created with a special custom prefix (e.g. "!seed")
+type SpecialGameData struct {
+	SetSeedSuffix    string
+	SetReplay        bool
+	DatabaseID       int
+	SetReplayTurn    int
+	SetReplayOptions *Options
+}
 
 // commandTableCreate is sent when the user submits the "Create a New Game" form
 //
@@ -25,10 +39,6 @@ const (
 //   password: 'super_secret',
 // }
 func commandTableCreate(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
 	// Validate that the server is not about to go offline
 	if checkImminentShutdown(s) {
 		return
@@ -72,12 +82,14 @@ func commandTableCreate(s *Session, d *CommandData) {
 
 	// Validate that the game name does not contain any special characters
 	// (this mitigates XSS attacks)
-	if !isAlphanumericSpacesSafeSpecialCharacters(d.Name) {
+	if !isValidTableName(d.Name) {
 		msg := "Game names can only contain English letters, numbers, spaces, " +
 			"<code>!</code>, " +
 			"<code>@</code>, " +
 			"<code>#</code>, " +
 			"<code>$</code>, " +
+			"<code>(</code>, " +
+			"<code>)</code>, " +
 			"<code>-</code>, " +
 			"<code>_</code>, " +
 			"<code>=</code>, " +
@@ -91,20 +103,10 @@ func commandTableCreate(s *Session, d *CommandData) {
 		return
 	}
 
-	createTable(s, d, true)
-}
-
-// This function is run after some validation in the "commandTableCreate()" function
-// Validation is bypassed if the server creates the game from a "restart" command
-// "preGameVisible" is false if this game should be hidden before it starts,
-// such as a restarted game
-func createTable(s *Session, d *CommandData, preGameVisible bool) {
-	// Set default values for the custom game options
-	setSeedSuffix := ""
-	setReplay := false
-	databaseID := -1
-	setReplayTurn := 0
-	var setReplayOptions *Options
+	// Set default values for data relating to games created with a special prefix
+	data := &SpecialGameData{
+		DatabaseID: -1, // Normally, the database ID of an ongoing game should be -1
+	}
 
 	// Handle special game option creation
 	if strings.HasPrefix(d.Name, "!") {
@@ -126,7 +128,7 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 			// and so on
 			// However, the seed does not actually have to be a number,
 			// so allow the user to use any arbitrary string as a seed suffix
-			setSeedSuffix = args[0]
+			data.SetSeedSuffix = args[0]
 		} else if command == "replay" {
 			// !replay - Replay a specific game up to a specific turn
 			if len(args) != 1 && len(args) != 2 {
@@ -139,20 +141,20 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 				s.Warning("The game ID of \"" + args[0] + "\" is not a number.")
 				return
 			} else {
-				databaseID = v
+				data.DatabaseID = v
 			}
 
 			if len(args) == 1 {
-				setReplayTurn = 1
+				data.SetReplayTurn = 1
 			} else {
 				if v, err := strconv.Atoi(args[1]); err != nil {
 					s.Warning("The turn of \"" + args[1] + "\" is not a number.")
 					return
 				} else {
-					setReplayTurn = v
+					data.SetReplayTurn = v
 				}
 
-				if setReplayTurn < 1 {
+				if data.SetReplayTurn < 1 {
 					s.Warning("The replay turn must be greater than 0.")
 					return
 				}
@@ -160,11 +162,11 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 
 			// We have to minus the turn by one since turns are stored on the server starting at 0
 			// and turns are shown to the user starting at 1
-			setReplayTurn--
+			data.SetReplayTurn--
 
 			// Check to see if the game ID exists on the server
-			if exists, err := models.Games.Exists(databaseID); err != nil {
-				logger.Error("Failed to check to see if game "+strconv.Itoa(databaseID)+
+			if exists, err := models.Games.Exists(data.DatabaseID); err != nil {
+				logger.Error("Failed to check to see if game "+strconv.Itoa(data.DatabaseID)+
 					" exists:", err)
 				s.Error(CreateGameFail)
 				return
@@ -176,31 +178,31 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 			// Check to see if this turn is valid
 			// (it has to be a turn before the game ends)
 			var numTurns int
-			if v, err := models.Games.GetNumTurns(databaseID); err != nil {
+			if v, err := models.Games.GetNumTurns(data.DatabaseID); err != nil {
 				logger.Error("Failed to get the number of turns from the database for game "+
-					strconv.Itoa(databaseID)+":", err)
+					strconv.Itoa(data.DatabaseID)+":", err)
 				s.Error(InitGameFail)
 				return
 			} else {
 				numTurns = v
 			}
-			if setReplayTurn >= numTurns {
-				s.Warning("Game #" + strconv.Itoa(databaseID) + " only has " +
+			if data.SetReplayTurn >= numTurns {
+				s.Warning("Game #" + strconv.Itoa(data.DatabaseID) + " only has " +
 					strconv.Itoa(numTurns) + " turns.")
 				return
 			}
 
 			// Set the options of the game to be the same as the one in the database
-			if v, err := models.Games.GetOptions(databaseID); err != nil {
+			if v, err := models.Games.GetOptions(data.DatabaseID); err != nil {
 				logger.Error("Failed to get the variant from the database for game "+
-					strconv.Itoa(databaseID)+":", err)
+					strconv.Itoa(data.DatabaseID)+":", err)
 				s.Error(InitGameFail)
 				return
 			} else {
-				setReplayOptions = v
+				data.SetReplayOptions = v
 			}
 
-			setReplay = true
+			data.SetReplay = true
 		} else {
 			msg := "You cannot start a game with an exclamation mark unless you are trying to use a specific game creation command."
 			s.Warning(msg)
@@ -261,10 +263,10 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 		d.Options.OneLessCard = false
 	}
 
-	/*
-		Create
-	*/
+	tableCreate(s, d, data)
+}
 
+func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 	passwordHash := ""
 	if d.Password != "" {
 		// Create an Argon2id hash of the plain-text password
@@ -280,18 +282,18 @@ func createTable(s *Session, d *CommandData, preGameVisible bool) {
 	t := NewTable(d.Name, s.UserID())
 	t.Mutex.Lock()
 	defer t.Mutex.Unlock()
-	t.Visible = preGameVisible
+	t.Visible = !d.HidePregame
 	t.PasswordHash = passwordHash
-	if setReplayOptions == nil {
+	if data.SetReplayOptions == nil {
 		t.Options = d.Options
 	} else {
-		t.Options = setReplayOptions
+		t.Options = data.SetReplayOptions
 	}
 	t.ExtraOptions = &ExtraOptions{
-		DatabaseID:    databaseID,
-		SetSeedSuffix: setSeedSuffix,
-		SetReplay:     setReplay,
-		SetReplayTurn: setReplayTurn,
+		DatabaseID:    data.DatabaseID,
+		SetSeedSuffix: data.SetSeedSuffix,
+		SetReplay:     data.SetReplay,
+		SetReplayTurn: data.SetReplayTurn,
 	}
 
 	// Add it to the map

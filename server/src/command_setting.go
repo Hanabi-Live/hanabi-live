@@ -13,10 +13,6 @@ import (
 //   setting: 'false', // All setting values must be strings
 // }
 func commandSetting(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
 	// Validate the setting name
 	if d.Name == "" {
 		s.Warning("The settings name cannot be blank.")
@@ -73,10 +69,10 @@ func commandSetting(s *Session, d *CommandData) {
 		}
 	}
 
-	/*
-		Set
-	*/
+	setting(s, d)
+}
 
+func setting(s *Session, d *CommandData) {
 	if err := models.UserSettings.Set(s.UserID(), toSnakeCase(d.Name), d.Setting); err != nil {
 		logger.Error("Failed to set a setting for user \""+s.Username()+"\":", err)
 		s.Error("")

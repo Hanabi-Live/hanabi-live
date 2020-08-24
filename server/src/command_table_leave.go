@@ -12,10 +12,6 @@ import (
 //   tableID: 5,
 // }
 func commandTableLeave(s *Session, d *CommandData) {
-	/*
-		Validation
-	*/
-
 	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
@@ -44,10 +40,10 @@ func commandTableLeave(s *Session, d *CommandData) {
 		return
 	}
 
-	/*
-		Leave
-	*/
+	tableLeave(s, t, playerIndex)
+}
 
+func tableLeave(s *Session, t *Table, playerIndex int) {
 	logger.Info(t.GetName() + "User \"" + s.Username() + "\" left. " +
 		"(There are now " + strconv.Itoa(len(t.Players)-1) + " players.)")
 

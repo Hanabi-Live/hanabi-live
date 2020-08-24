@@ -14,14 +14,14 @@ var (
 
 func replayActionsFunctionsInit() {
 	replayActionFunctions = map[int]func(*Session, *CommandData, *Table){
-		ReplayActionTypeSegment:        commandReplayActionSegment,
-		ReplayActionTypeArrow:          commandReplayActionArrow,
-		ReplayActionTypeSound:          commandReplayActionSound,
-		ReplayActionTypeHypoStart:      commandReplayActionHypoStart,
-		ReplayActionTypeHypoEnd:        commandReplayActionHypoEnd,
-		ReplayActionTypeHypoAction:     commandReplayActionHypoAction,
-		ReplayActionTypeHypoBack:       commandReplayActionHypoBack,
-		ReplayActionTypeToggleRevealed: commandReplayActionToggleRevealed,
+		ReplayActionTypeSegment:        replayActionSegment,
+		ReplayActionTypeArrow:          replayActionArrow,
+		ReplayActionTypeSound:          replayActionSound,
+		ReplayActionTypeHypoStart:      replayActionHypoStart,
+		ReplayActionTypeHypoEnd:        replayActionHypoEnd,
+		ReplayActionTypeHypoAction:     replayActionHypoAction,
+		ReplayActionTypeHypoBack:       replayActionHypoBack,
+		ReplayActionTypeToggleRevealed: replayActionToggleRevealed,
 	}
 }
 
@@ -35,10 +35,6 @@ func replayActionsFunctionsInit() {
 //   name: 'Alice', // Optional
 // }
 func commandReplayAction(s *Session, d *CommandData) {
-	/*
-		Validate
-	*/
-
 	t, exists := getTableAndLock(s, d.TableID, !d.NoLock)
 	if !exists {
 		return
@@ -66,10 +62,10 @@ func commandReplayAction(s *Session, d *CommandData) {
 		return
 	}
 
-	/*
-		Replay action
-	*/
+	replayAction(s, d, t)
+}
 
+func replayAction(s *Session, d *CommandData, t *Table) {
 	// Start the idle timeout
 	go t.CheckIdle()
 
@@ -82,7 +78,7 @@ func commandReplayAction(s *Session, d *CommandData) {
 	}
 }
 
-func commandReplayActionSegment(s *Session, d *CommandData, t *Table) {
+func replayActionSegment(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
@@ -124,7 +120,7 @@ func commandReplayActionSegment(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionArrow(s *Session, d *CommandData, t *Table) {
+func replayActionArrow(s *Session, d *CommandData, t *Table) {
 	// Display an arrow to indicate a specific card that the shared replay leader wants to draw
 	// attention to
 	type ReplayIndicatorMessage struct {
@@ -140,7 +136,7 @@ func commandReplayActionArrow(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionSound(s *Session, d *CommandData, t *Table) {
+func replayActionSound(s *Session, d *CommandData, t *Table) {
 	// Play a sound effect
 	type ReplaySoundMessage struct {
 		TableID uint64 `json:"tableID"`
@@ -155,7 +151,7 @@ func commandReplayActionSound(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionHypoStart(s *Session, d *CommandData, t *Table) {
+func replayActionHypoStart(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
@@ -178,7 +174,7 @@ func commandReplayActionHypoStart(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionHypoEnd(s *Session, d *CommandData, t *Table) {
+func replayActionHypoEnd(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
@@ -202,7 +198,7 @@ func commandReplayActionHypoEnd(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionHypoAction(s *Session, d *CommandData, t *Table) {
+func replayActionHypoAction(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
@@ -227,7 +223,7 @@ func commandReplayActionHypoAction(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionHypoBack(s *Session, d *CommandData, t *Table) {
+func replayActionHypoBack(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
@@ -263,7 +259,7 @@ func commandReplayActionHypoBack(s *Session, d *CommandData, t *Table) {
 	}
 }
 
-func commandReplayActionToggleRevealed(s *Session, d *CommandData, t *Table) {
+func replayActionToggleRevealed(s *Session, d *CommandData, t *Table) {
 	// Local variables
 	g := t.Game
 
