@@ -52,7 +52,7 @@ type BestScore struct {
 // Bob's modifier bitflag is equal to 4.
 //
 // The worse score between the two players is Bob's because 4 > 1
-func ScoresLessThan(scoreA int, modifierA Bitmask, scoreB int, modifierB Bitmask) bool {
+func IsWorseScore(scoreA int, modifierA Bitmask, scoreB int, modifierB Bitmask) bool {
 	return scoreA < scoreB ||
 		(scoreB == scoreA &&
 			modifierA > modifierB)
