@@ -288,8 +288,12 @@ func (g *Game) WriteDatabaseStats() {
 		}
 
 		// 2-player is at index 0, 3-player is at index 1, etc.
+		thisScore := &BestScore{
+			Score:    g.Score,
+			Modifier: modifier,
+		}
 		bestScore := userStats.BestScores[len(g.Players)-2]
-		if IsScoreBetterThan(g.Score, modifier, bestScore.Score, bestScore.Modifier) {
+		if thisScore.IsBetterThan(bestScore) {
 			bestScore.Score = g.Score
 			bestScore.Modifier = modifier
 		}

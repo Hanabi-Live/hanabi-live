@@ -26,71 +26,6 @@ func NewUserStatsRow() UserStatsRow {
 	}
 }
 
-type BestScore struct {
-	NumPlayers   int     `json:"numPlayers"`
-	Score        int     `json:"score"`
-	Modifier     Bitmask `json:"modifier"` // (see the stats section in "gameEnd.go")
-	DeckPlays    bool    `json:"deckPlays"`
-	EmptyClues   bool    `json:"emptyClues"`
-	OneExtraCard bool    `json:"oneExtraCard"`
-	OneLessCard  bool    `json:"oneLessCard"`
-	AllOrNothing bool    `json:"allOrNothing"`
-}
-
-// Returns true if A is a better game result than B
-//
-// Result A is better than result B whenever result A has either:
-// - a higher score;
-// - or an equal score but with less modifiers (by comparing the bitflags numerically)
-//
-// For example:
-// Alice's high score for 2-player No Variant is 30 points with
-// Bottom-Deck Blind-Plays enabled.
-// Bob's high score for 2-player No Variant is 30 points with One Extra Card enabled.
-//
-// Alice's modifier bitflag is equal to 1.
-// Bob's modifier bitflag is equal to 4.
-//
-// The better score between the two players is Alices's because 1 < 4
-func IsScoreBetterThan(scoreA int, modifierA Bitmask, scoreB int, modifierB Bitmask) bool {
-	return scoreA > scoreB ||
-		(scoreA == scoreB &&
-			modifierA < modifierB)
-}
-
-func NewBestScores() []*BestScore {
-	bestScores := make([]*BestScore, 5) // From 2 to 6 players
-	for i := range bestScores {
-		// This will not work if written as "for i, bestScore :="
-		bestScores[i] = &BestScore{}
-		bestScores[i].NumPlayers = i + 2
-	}
-	return bestScores
-}
-
-func FillBestScores(bestScores []*BestScore) {
-	// The modifiers are stored as a bitmask in the database,
-	// so use the bitmask to set the boolean values
-	for i := range bestScores {
-		modifier := bestScores[i].Modifier
-		if modifier.HasFlag(ScoreModifierDeckPlays) {
-			bestScores[i].DeckPlays = true
-		}
-		if modifier.HasFlag(ScoreModifierEmptyClues) {
-			bestScores[i].EmptyClues = true
-		}
-		if modifier.HasFlag(ScoreModifierOneExtraCard) {
-			bestScores[i].OneExtraCard = true
-		}
-		if modifier.HasFlag(ScoreModifierOneLessCard) {
-			bestScores[i].OneLessCard = true
-		}
-		if modifier.HasFlag(ScoreModifierAllOrNothing) {
-			bestScores[i].AllOrNothing = true
-		}
-	}
-}
-
 func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
 	stats := NewUserStatsRow()
 
@@ -134,7 +69,7 @@ func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
 		return stats, err
 	}
 
-	FillBestScores(stats.BestScores)
+	fillBestScores(stats.BestScores)
 
 	return stats, nil
 }
@@ -186,7 +121,7 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 			return nil, err2
 		}
 
-		FillBestScores(stats.BestScores)
+		fillBestScores(stats.BestScores)
 
 		statsMap[variant] = stats
 	}
@@ -432,4 +367,27 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 	}
 
 	return nil
+}
+
+func fillBestScores(bestScores []*BestScore) {
+	// The modifiers are stored as a bitmask in the database,
+	// so use the bitmask to set the boolean values
+	for i := range bestScores {
+		modifier := bestScores[i].Modifier
+		if modifier.HasFlag(ScoreModifierDeckPlays) {
+			bestScores[i].DeckPlays = true
+		}
+		if modifier.HasFlag(ScoreModifierEmptyClues) {
+			bestScores[i].EmptyClues = true
+		}
+		if modifier.HasFlag(ScoreModifierOneExtraCard) {
+			bestScores[i].OneExtraCard = true
+		}
+		if modifier.HasFlag(ScoreModifierOneLessCard) {
+			bestScores[i].OneLessCard = true
+		}
+		if modifier.HasFlag(ScoreModifierAllOrNothing) {
+			bestScores[i].AllOrNothing = true
+		}
+	}
 }
