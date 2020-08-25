@@ -113,9 +113,6 @@ func pause(s *Session, d *CommandData, t *Table, playerIndex int) {
 		// but this variable is only used for decrementing time taken at the end of a player's turn
 		g.DatetimeTurnBegin = time.Now()
 
-		// Send everyone new clock values
-		t.NotifyTime()
-
 		// Restart the function that will check to see if the current player has run out of time
 		// (the old "CheckTimer()" invocation will return and do nothing because the pause count of
 		// the game will not match)
@@ -138,5 +135,10 @@ func pause(s *Session, d *CommandData, t *Table, playerIndex int) {
 		if v == len(t.Chat)-1 {
 			t.ChatRead[k] = len(t.Chat)
 		}
+	}
+
+	// Send everyone new clock values
+	if d.Setting == "unpause" {
+		t.NotifyTime()
 	}
 }
