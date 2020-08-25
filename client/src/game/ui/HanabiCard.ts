@@ -103,7 +103,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   private empathy: boolean = false;
 
-  note: CardNote = {
+  private note: CardNote = {
     suitIndex: null,
     rank: null,
     chopMoved: false,
