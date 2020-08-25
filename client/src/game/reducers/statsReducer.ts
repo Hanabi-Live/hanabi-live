@@ -24,15 +24,6 @@ const statsReducer = produce((
   metadata: GameMetadata,
 ) => {
   const variant = getVariant(metadata.options.variantName);
-  const ourCharacterID = getCharacterIDForPlayer(
-    metadata.ourPlayerIndex,
-    metadata.characterAssignments,
-  );
-  let ourCharacterName = '';
-  if (ourCharacterID !== null) {
-    const ourCharacter = getCharacter(ourCharacterID);
-    ourCharacterName = ourCharacter.name;
-  }
 
   switch (action.type) {
     case 'clue': {
@@ -128,25 +119,58 @@ const statsReducer = produce((
   }
 
   // Find out which sound effect to play (if this is an ongoing game)
+  stats.soundTypeForLastAction = getSound(
+    stats,
+    action,
+    originalState,
+    currentState,
+    metadata,
+  );
+}, {} as StatsState);
+
+export default statsReducer;
+
+const getSound = (
+  stats: Draft<StatsState>,
+  action: GameAction,
+  originalState: GameState,
+  currentState: GameState,
+  metadata: GameMetadata,
+) => {
+  const variant = getVariant(metadata.options.variantName);
+  const ourCharacterID = getCharacterIDForPlayer(
+    metadata.ourPlayerIndex,
+    metadata.characterAssignments,
+  );
+  let ourCharacterName = '';
+  if (ourCharacterID !== null) {
+    const ourCharacter = getCharacter(ourCharacterID);
+    ourCharacterName = ourCharacter.name;
+  }
+
   switch (action.type) {
     case 'clue': {
       if (ourCharacterName === 'Quacker') {
-        stats.soundTypeForLastAction = SoundType.Quack;
-      } else if (variantRules.isCowAndPig(variant)) {
-        if (action.clue.type === ClueType.Color) {
-          stats.soundTypeForLastAction = SoundType.Moo;
-        } else if (action.clue.type === ClueType.Rank) {
-          stats.soundTypeForLastAction = SoundType.Oink;
-        } else {
-          throw new Error('Unknown clue type.');
-        }
-      } else if (variantRules.isDuck(variant)) {
-        stats.soundTypeForLastAction = SoundType.Quack;
-      } else {
-        stats.soundTypeForLastAction = SoundType.Standard;
+        return SoundType.Quack;
       }
 
-      break;
+      if (variantRules.isCowAndPig(variant)) {
+        if (action.clue.type === ClueType.Color) {
+          return SoundType.Moo;
+        }
+
+        if (action.clue.type === ClueType.Rank) {
+          return SoundType.Oink;
+        }
+
+        throw new Error('Unknown clue type.');
+      }
+
+      if (variantRules.isDuck(variant)) {
+        return SoundType.Quack;
+      }
+
+      return SoundType.Standard;
     }
 
     case 'discard': {
@@ -169,74 +193,87 @@ const statsReducer = produce((
 
       if (action.failed) {
         if (stats.soundTypeForLastAction === SoundType.Fail1) {
-          stats.soundTypeForLastAction = SoundType.Fail2;
-        } else {
-          stats.soundTypeForLastAction = SoundType.Fail1;
+          return SoundType.Fail2;
         }
-      } else if (stats.maxScore < originalState.stats.maxScore) {
-        stats.soundTypeForLastAction = SoundType.Sad;
-      } else if (false) {
-        // TODO
-        stats.soundTypeForLastAction = SoundType.Surprise;
-      } else if (touched) {
-        stats.soundTypeForLastAction = SoundType.DiscardClued;
-      } else if (originalState.stats.doubleDiscard && couldBeLastDiscardedCard) {
-        // A player has discarded *in* a double discard situation
-        stats.soundTypeForLastAction = SoundType.DoubleDiscard;
-      } else if (stats.doubleDiscard) {
-        // A player has discarded to *cause* a double discard situation
-        stats.soundTypeForLastAction = SoundType.DoubleDiscardCause;
-      } else {
-        stats.soundTypeForLastAction = SoundType.Standard;
+
+        return SoundType.Fail1;
       }
 
-      break;
+      if (stats.maxScore < originalState.stats.maxScore) {
+        return SoundType.Sad;
+      }
+
+      if (false) {
+        // TODO
+        return SoundType.Surprise;
+      }
+
+      if (touched) {
+        return SoundType.DiscardClued;
+      }
+
+      if (originalState.stats.doubleDiscard && couldBeLastDiscardedCard) {
+        // A player has discarded *in* a double discard situation
+        return SoundType.DoubleDiscard;
+      }
+
+      if (stats.doubleDiscard) {
+        // A player has discarded to *cause* a double discard situation
+        return SoundType.DoubleDiscardCause;
+      }
+
+      return SoundType.Standard;
     }
 
     case 'gameOver': {
       if (action.endCondition > EndCondition.Normal) {
-        stats.soundTypeForLastAction = SoundType.FinishedFail;
-      } else if (currentState.score === variant.maxScore) {
-        stats.soundTypeForLastAction = SoundType.FinishedPerfect;
-      } else {
-        stats.soundTypeForLastAction = SoundType.FinishedSuccess;
+        return SoundType.FinishedFail;
       }
 
-      break;
+      if (currentState.score === variant.maxScore) {
+        return SoundType.FinishedPerfect;
+      }
+
+      return SoundType.FinishedSuccess;
     }
 
     case 'play': {
       const touched = cardRules.isClued(currentState.deck[action.order]);
       if (stats.maxScore < originalState.stats.maxScore) {
-        stats.soundTypeForLastAction = SoundType.Sad;
-      } else if (false) {
-        // TODO
-        stats.soundTypeForLastAction = SoundType.Surprise;
-      } else if (!touched) {
-        if (stats.soundTypeForLastAction === SoundType.Blind1) {
-          stats.soundTypeForLastAction = SoundType.Blind2;
-        } else if (stats.soundTypeForLastAction === SoundType.Blind2) {
-          stats.soundTypeForLastAction = SoundType.Blind3;
-        } else if (stats.soundTypeForLastAction === SoundType.Blind3) {
-          stats.soundTypeForLastAction = SoundType.Blind4;
-        } else if (stats.soundTypeForLastAction === SoundType.Blind4) {
-          stats.soundTypeForLastAction = SoundType.Blind5;
-        } else if (stats.soundTypeForLastAction === SoundType.Blind5) {
-          stats.soundTypeForLastAction = SoundType.Blind6;
-        } else {
-          stats.soundTypeForLastAction = SoundType.Blind1;
-        }
-      } else {
-        stats.soundTypeForLastAction = SoundType.Standard;
+        return SoundType.Sad;
       }
 
-      break;
+      if (false) {
+        // TODO
+        return SoundType.Surprise;
+      }
+
+      if (!touched) {
+        if (stats.soundTypeForLastAction === SoundType.Blind1) {
+          return SoundType.Blind2;
+        }
+        if (stats.soundTypeForLastAction === SoundType.Blind2) {
+          return SoundType.Blind3;
+        }
+        if (stats.soundTypeForLastAction === SoundType.Blind3) {
+          return SoundType.Blind4;
+        }
+        if (stats.soundTypeForLastAction === SoundType.Blind4) {
+          return SoundType.Blind5;
+        }
+        if (stats.soundTypeForLastAction === SoundType.Blind5) {
+          return SoundType.Blind6;
+        }
+
+        return SoundType.Blind1;
+      }
+
+      return SoundType.Standard;
     }
 
     default: {
-      break;
+      // No change
+      return stats.soundTypeForLastAction;
     }
   }
-}, {} as StatsState);
-
-export default statsReducer;
+};
