@@ -256,7 +256,6 @@ const getSoundType = (
       if (isOrderChopMove(action, originalState, currentState, metadata)) {
         return SoundType.OneOutOfOrder;
       }
-      console.log('RETURNED FALSE');
 
       return SoundType.Standard;
     }
@@ -356,9 +355,9 @@ const isCandidateOneForOCM = (card: CardState) => (
   // Order Chop Moves are only performed when a player plays a card that they think is a 1
   // (e.g. a card having a positive rank 1 clue on it)
   card.positiveRankClues.includes(1)
-    // We can't Order Chop Move with cards that are "filled-in" to be pink cards, for example
-    && card.positiveRankClues.length === 1
-    // It is technically possible to perform an Order Chop Move with two 1s that have an equal
-    // number of positive color clues on them, but ignore this for simplicity
-    && card.positiveColorClues.length === 0
+  // We can't Order Chop Move with cards that are "filled-in" to be pink cards, for example
+  && card.positiveRankClues.length === 1
+  // It is technically possible to perform an Order Chop Move with two 1s that have an equal
+  // number of positive color clues on them, but ignore this for simplicity
+  && card.positiveColorClues.length === 0
 );

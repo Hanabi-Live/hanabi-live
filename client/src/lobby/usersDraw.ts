@@ -2,6 +2,7 @@
 
 import globals from '../globals';
 import { ensureAllCases } from '../misc';
+import * as tooltips from '../tooltips';
 import * as tablesDraw from './tablesDraw';
 import Screen from './types/Screen';
 import Status, { StatusText } from './types/Status';
@@ -80,7 +81,8 @@ const drawUser = (
 
   let nameColumn = '';
   if (user.hyphenated) {
-    nameColumn += '[🇭] ';
+    nameColumn += `<span id="hyphenated-tooltip-${userID}" class="tooltip" `;
+    nameColumn += 'data-tooltip-content="#hyphenated-tooltip">[🇭]</span> ';
   }
   nameColumn += `<span id="online-users-${userID}">`;
   if (username === globals.username) {
@@ -121,6 +123,13 @@ const drawUser = (
 
   setLink(userID);
   setInactive(userID, user.inactive);
+
+  const content = '<span style="font-size: 0.75em;">This person is a self-identified member of the Hyphen-ated group.</span>';
+  const tooltipOptions = {
+    ...tooltips.options,
+    content,
+  };
+  $(`#hyphenated-tooltip-${userID}`).tooltipster(tooltipOptions);
 };
 
 const setLink = (userID: number) => {

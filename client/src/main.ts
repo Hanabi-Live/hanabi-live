@@ -16,7 +16,6 @@ import '../lib/tooltipster-scrollableTip.min';
 
 import * as chat from './chat';
 import * as gameChat from './game/chat';
-import gameTooltipsInit from './game/tooltipsInit';
 import globals from './globals';
 import Loader from './Loader';
 import * as lobbyCreateGame from './lobby/createGame';
@@ -32,6 +31,7 @@ import * as misc from './misc';
 import * as modals from './modals';
 import * as sentry from './sentry';
 import * as sounds from './sounds';
+import * as tooltips from './tooltips';
 
 // Initialize logging to Sentry.io
 sentry.init();
@@ -50,7 +50,7 @@ $(document).ready(() => {
   // Now that the page has loaded, initialize and define the functionality of various UI elements
   chat.init();
   gameChat.init();
-  gameTooltipsInit();
+  tooltips.initGame();
   lobbyCreateGame.init();
   lobbyHistory.init();
   lobbyIdleInit();
