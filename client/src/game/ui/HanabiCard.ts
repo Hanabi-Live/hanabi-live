@@ -894,11 +894,14 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     }
 
     for (const [rank, pipState] of rankPipStates.entries()) {
-      if (rank > 5) continue; // Don't show pip for START card (in "Up or Down" games)
+      if (rank > 5) {
+        // Don't show the pip for START cards (in "Up or Down" games)
+        continue;
+      }
       const pip = this.rankPipsMap.get(rank)!;
       const x = this.rankPipsXMap.get(rank)!;
-      const hasPositiveClues = this.state.positiveRankClues.includes(rank);
-      updatePip(pipState, hasPositiveClues, pip, x);
+      const hasPositiveRankClue = this.state.positiveRankClues.includes(rank);
+      updatePip(pipState, hasPositiveRankClue, pip, x);
     }
   }
 

@@ -36,6 +36,7 @@ export default function initialCardState(order: number, variant: Variant) : Card
     rank: null,
     possibleCardsFromObservation,
     possibleCardsFromClues,
+    positiveColorClues: [],
     positiveRankClues: [],
     suitDetermined: false,
     rankDetermined: false,

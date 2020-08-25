@@ -5,7 +5,8 @@ import produce, { Draft } from 'immer';
 import { getVariant, getCharacter } from '../data/gameData';
 import { variantRules, cardRules, clueTokensRules } from '../rules';
 import * as statsRules from '../rules/stats';
-import { GameAction } from '../types/actions';
+import { GameAction, ActionPlay } from '../types/actions';
+import CardState from '../types/CardState';
 import ClueType from '../types/ClueType';
 import EndCondition from '../types/EndCondition';
 import GameMetadata from '../types/GameMetadata';
@@ -252,6 +253,11 @@ const getSoundType = (
         return SoundType.Blind1;
       }
 
+      if (isOrderChopMove(action, originalState, currentState, metadata)) {
+        return SoundType.OneOutOfOrder;
+      }
+      console.log('RETURNED FALSE');
+
       return SoundType.Standard;
     }
 
@@ -261,3 +267,98 @@ const getSoundType = (
     }
   }
 };
+
+const isOrderChopMove = (
+  action: ActionPlay,
+  originalState: GameState,
+  currentState: GameState,
+  metadata: GameMetadata,
+) => {
+  const variant = getVariant(metadata.options.variantName);
+
+  // Don't bother trying to see if this is an Order Chop Move in an "Up or Down" variant,
+  // as the logic for that is more complicated
+  if (variantRules.isUpOrDown(variant)) {
+    return false;
+  }
+
+  const playedCard = originalState.deck[action.order];
+  if (!isCandidateOneForOCM(playedCard)) {
+    return false;
+  }
+
+  // Get the number of 1's left to play on the stacks
+  let numOnesLeftToPlay = 0;
+  for (let i = 0; i < variant.suits.length; i++) {
+    const suit = variant.suits[i];
+    if (suit.reversed) {
+      continue;
+    }
+    const playStack = currentState.playStacks[i];
+    if (playStack.length === 0) {
+      numOnesLeftToPlay += 1;
+    }
+  }
+
+  // We can't Order Chop Move if all of the 1s are played
+  if (numOnesLeftToPlay === 0) {
+    return false;
+  }
+
+  // Find out if there are any other candidate 1s in the hand
+  const playerHand = originalState.hands[action.playerIndex];
+  const candidateCards: CardState[] = [];
+  for (const order of playerHand) {
+    if (order === action.order) {
+      // Skip the card that we already played
+      continue;
+    }
+
+    const card = originalState.deck[order];
+    if (isCandidateOneForOCM(card)) {
+      candidateCards.push(card);
+    }
+  }
+
+  // We can't Order Chop Move if there are no other 1s in the hand
+  if (candidateCards.length === 0) {
+    return false;
+  }
+
+  // Find the card that should have precedence to be played
+  candidateCards.push(playedCard);
+
+  // If there are any "fresh" 1s (e.g. 1s that were not dealt to the starting hand),
+  // then the newest 1 has precedence
+  const freshCards = candidateCards.filter((card) => !card.dealtToStartingHand);
+  if (freshCards.length > 0) {
+    let highestOrder = -1;
+    for (const card of freshCards) {
+      if (card.order > highestOrder) {
+        highestOrder = card.order;
+      }
+    }
+
+    return highestOrder !== action.order;
+  }
+
+  // All of the 1s were dealt to the starting hand, so the oldest 1 has precedence
+  let lowestOrder = 999;
+  for (const card of candidateCards) {
+    if (card.order < lowestOrder) {
+      lowestOrder = card.order;
+    }
+  }
+  return lowestOrder !== action.order;
+};
+
+const isCandidateOneForOCM = (card: CardState) => (
+  // Order Chop Moves are only performed when a player plays a card that they think is a 1
+  // (e.g. a card having a positive rank 1 clue on it)
+  card.positiveRankClues.includes(1)
+    // We can't Order Chop Move with cards that are "filled-in" to be pink cards, for example
+    && card.positiveRankClues.length === 1
+    // It is technically possible to perform an Order Chop Move with two 1s that have an equal
+    // number of positive color clues on them, but ignore this for simplicity
+    && card.positiveColorClues.length === 0
+);

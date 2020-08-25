@@ -1,3 +1,5 @@
+import Color from './Color';
+
 export default interface CardState {
   readonly order: number;
   // If location is a number, it is the index of the player that holds this card
@@ -21,7 +23,8 @@ export default interface CardState {
   readonly possibleCardsFromClues: ReadonlyArray<readonly [number, number]>;
 
   // We need this to highlight pips (e.g. on Pink variants)
-  readonly positiveRankClues : number[];
+  readonly positiveColorClues: Color[]; // The elements of this array will always be unique
+  readonly positiveRankClues: number[]; // The elements of this array will always be unique
 
   // TODO: save positive rank clues and highlight them (e.g. on Rainbow-Ones variants)
 

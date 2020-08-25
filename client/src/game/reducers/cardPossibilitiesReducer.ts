@@ -28,6 +28,11 @@ const cardPossibilitiesReducer = (
     ([suitIndex, rank]) => cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
   );
 
+  let positiveColorClues = state.positiveColorClues;
+  if (positive && clue.type === ClueType.Color && !positiveColorClues.includes(clue.value)) {
+    positiveColorClues = [...positiveColorClues, clue.value];
+  }
+
   let positiveRankClues = state.positiveRankClues;
   if (positive && clue.type === ClueType.Rank && !positiveRankClues.includes(clue.value)) {
     positiveRankClues = [...positiveRankClues, clue.value];
@@ -47,6 +52,7 @@ const cardPossibilitiesReducer = (
     suitDetermined,
     rankDetermined,
     possibleCardsFromClues,
+    positiveColorClues,
     positiveRankClues,
   };
 
