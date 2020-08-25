@@ -52,10 +52,10 @@ export default function drawCards(
       }
 
       // Draw the background and the borders around the card
-      drawCardBase(ctx, suit, rank, colorblindMode);
+      drawCardBase(ctx, suit, rank, variant, colorblindMode);
 
       ctx.shadowBlur = 10;
-      ctx.fillStyle = getSuitStyle(suit, ctx, 'number', colorblindMode);
+      ctx.fillStyle = getSuitStyle(suit, rank, ctx, 'number', variant, colorblindMode);
       ctx.strokeStyle = 'black';
       ctx.lineWidth = 2;
       ctx.lineJoin = 'round';
@@ -321,11 +321,12 @@ const drawCardBase = (
   ctx: CanvasRenderingContext2D,
   suit: Suit,
   rank: number,
+  variant: Variant,
   colorblindMode: boolean,
 ) => {
   // Draw the background
-  ctx.fillStyle = getSuitStyle(suit, ctx, 'background', colorblindMode);
-  ctx.strokeStyle = getSuitStyle(suit, ctx, 'background', colorblindMode);
+  ctx.fillStyle = getSuitStyle(suit, rank, ctx, 'background', variant, colorblindMode);
+  ctx.strokeStyle = getSuitStyle(suit, rank, ctx, 'background', variant, colorblindMode);
   cardBorderPath(ctx, 4);
 
   // Draw the borders (on visible cards) and the color fill
@@ -434,11 +435,28 @@ const drawCardBackground = (ctx: CanvasRenderingContext2D) => {
 
 const getSuitStyle = (
   suit: Suit,
+  rank: number,
   ctx: CanvasRenderingContext2D,
   cardArea: string,
+  variant: Variant,
   colorblindMode: boolean,
 ) => {
-  // Nearly all suits have a solid fill
+  if (suit.prism) {
+    // Prism cards have a custom color depending on their rank
+    if (rank === 0) {
+      return suit.fill;
+    }
+    const prismColorIndex = (rank - 1) % variant.clueColors.length;
+    const colorFillToMix = variant.clueColors[prismColorIndex].fill;
+    const rgb = hexToRgb(colorFillToMix);
+    if (rgb === null) {
+      return suit.fill;
+    }
+    const rgbArray = [rgb.r, rgb.g, rgb.b];
+    return colorMixer(rgbArray, [255, 255, 255], 0.5); // Mix it with white by 50%
+  }
+
+  // Nearly all other suits have a solid fill
   if (suit.fill !== 'multi') {
     return colorblindMode ? suit.fillColorblind : suit.fill;
   }
@@ -469,3 +487,32 @@ const evenLinearGradient = (
   }
   return grad;
 };
+
+// From: https://stackoverflow.com/questions/14819058/mixing-two-colors-naturally-in-javascript
+// colorChannelA and colorChannelB are integers ranging from 0 to 255
+// amountToMix ranges from 0.0 to 1.0
+function colorChannelMixer(colorChannelA: number, colorChannelB: number, amountToMix: number) {
+  const channelA = colorChannelA * amountToMix;
+  const channelB = colorChannelB * (1 - amountToMix);
+  return channelA + channelB;
+}
+
+// From: https://stackoverflow.com/questions/14819058/mixing-two-colors-naturally-in-javascript
+// rgbA and rgbB are arrays, amountToMix ranges from 0.0 to 1.0
+// example (red): rgbA = [255,0,0]
+function colorMixer(rgbA: number[], rgbB: number[], amountToMix: number) {
+  const r = colorChannelMixer(rgbA[0], rgbB[0], amountToMix);
+  const g = colorChannelMixer(rgbA[1], rgbB[1], amountToMix);
+  const b = colorChannelMixer(rgbA[2], rgbB[2], amountToMix);
+  return `rgb(${r},${g},${b})`;
+}
+
+// From: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
+function hexToRgb(hex: string) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16),
+  } : null;
+}
