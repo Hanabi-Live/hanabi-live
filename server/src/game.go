@@ -2,7 +2,6 @@ package main
 
 import (
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -46,7 +45,7 @@ type Game struct {
 	Score               int
 	MaxScore            int
 	Strikes             int
-	LastClueTypeGiven   int
+	LastClueTypeGiven   int // Used in "Alternating Clues" variants
 	// Actions is a list of all of the in-game moves that players have taken thus far
 	// Different actions will have different fields, so we need this to be an generic interface
 	// Furthermore, we do not want this to be a pointer of interfaces because
@@ -87,6 +86,8 @@ type Game struct {
 }
 
 func NewGame(t *Table) *Game {
+	v := variants[t.Options.VariantName]
+
 	g := &Game{
 		Table:        t,
 		Options:      t.Options,
@@ -98,7 +99,7 @@ func NewGame(t *Table) *Game {
 		Stacks:              make([]int, len(variants[t.Options.VariantName].Suits)),
 		PlayStackDirections: make([]int, len(variants[t.Options.VariantName].Suits)),
 		DatetimeTurnBegin:   time.Now(),
-		ClueTokens:          MaxClueNum,
+		ClueTokens:          v.GetAdjustedClueTokens(MaxClueNum),
 		MaxScore:            len(variants[t.Options.VariantName].Suits) * PointsPerSuit,
 		LastClueTypeGiven:   -1,
 		Actions:             make([]interface{}, 0),
@@ -109,16 +110,8 @@ func NewGame(t *Table) *Game {
 		Tags:        make(map[string]int),
 	}
 
-	if strings.HasPrefix(t.Options.VariantName, "Clue Starved") {
-		// In this variant, having 1 clue token is represented with a value of 2
-		// We want the players to start with the normal amount of clues,
-		// so we have to double the starting amount
-		g.ClueTokens *= 2
-	}
-
 	// Reverse the stack direction of reversed suits, except on the "Up or Down" variant
 	// that uses the "Undecided" direction.
-	v := variants[t.Options.VariantName]
 	if v.HasReversedSuits() && !v.IsUpOrDown() {
 		for i, s := range v.Suits {
 			if s.Reversed {
@@ -214,6 +207,7 @@ func (g *Game) EndTimer(gp *GamePlayer) {
 func (g *Game) CheckEnd() bool {
 	// Local variables
 	t := g.Table
+	v := variants[t.Options.VariantName]
 
 	// Some ending conditions will already be set by the time we get here
 	if g.EndCondition == EndConditionTimeout ||
@@ -249,7 +243,7 @@ func (g *Game) CheckEnd() bool {
 	// handle the case where a player would have to discard without any cards in their hand
 	if g.Options.AllOrNothing &&
 		len(g.Players[g.ActivePlayerIndex].Hand) == 0 &&
-		g.ClueTokens == 0 {
+		g.ClueTokens < v.GetAdjustedClueTokens(1) {
 
 		logger.Info(t.GetName() + "The current player has no cards and no clue tokens in an \"All or Nothing\" game; ending the game.")
 		g.EndCondition = EndConditionAllOrNothingSoftlock

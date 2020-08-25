@@ -40,6 +40,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	// Local variables
 	g := p.Game
 	t := g.Table
+	v := variants[t.Options.VariantName]
 	clue := NewClue(d) // Convert the incoming data to a clue object
 
 	// Add the action to the action log
@@ -57,13 +58,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	})
 
 	// Keep track that someone clued (i.e. doing 1 clue costs 1 "Clue Token")
-	g.ClueTokens--
-	if strings.HasPrefix(g.Options.VariantName, "Clue Starved") {
-		// In the "Clue Starved" variants, you only get 0.5 clues per discard
-		// This is represented on the server by having each clue take two clues
-		// On the client, clues are shown to the user to be divided by two
-		g.ClueTokens--
-	}
+	g.ClueTokens -= v.GetAdjustedClueTokens(1)
 	g.LastClueTypeGiven = clue.Type
 
 	// Apply the positive and negative clues to the cards in the hand
@@ -130,6 +125,7 @@ func (p *GamePlayer) PlayCard(c *Card) {
 	// Local variables
 	g := p.Game
 	t := g.Table
+	v := variants[t.Options.VariantName]
 
 	// Add the action to the action log
 	// (in the future, we will delete GameActions and only keep track of GameActions2)
@@ -245,15 +241,12 @@ func (p *GamePlayer) PlayCard(c *Card) {
 
 	if extraClue {
 		// Some variants do not grant an extra clue when successfully playing a 5
-		if !strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") {
+		if v.ShouldGiveClueTokenForPlaying5() {
 			g.ClueTokens++
 		}
 
 		// The extra clue is wasted if the team is at the maximum amount of clues already
-		clueLimit := MaxClueNum
-		if strings.HasPrefix(g.Options.VariantName, "Clue Starved") {
-			clueLimit *= 2
-		}
+		clueLimit := v.GetAdjustedClueTokens(MaxClueNum)
 		if g.ClueTokens > clueLimit {
 			g.ClueTokens = clueLimit
 		}

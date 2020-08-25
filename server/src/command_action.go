@@ -262,6 +262,9 @@ func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 }
 
 func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
+	// Local variables
+	v := variants[g.Options.VariantName]
+
 	// Validate that the card is in their hand
 	if !p.InHand(d.Target) {
 		s.Warning("You cannot play a card that is not in your hand.")
@@ -270,12 +273,8 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 	}
 
 	// Validate that the team is not at the maximum amount of clues
-	// (the client should enforce this, but do a check just in case)
-	clueLimit := MaxClueNum
-	if strings.HasPrefix(g.Options.VariantName, "Clue Starved") {
-		clueLimit *= 2
-	}
-	if g.ClueTokens == clueLimit {
+	clueLimit := v.GetAdjustedClueTokens(MaxClueNum)
+	if g.ClueTokens >= clueLimit {
 		s.Warning("You cannot discard while the team has " + strconv.Itoa(MaxClueNum) + " clues.")
 		g.InvalidActionOccurred = true
 		return false
@@ -302,6 +301,9 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 }
 
 func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
+	// Local variables
+	v := variants[g.Options.VariantName]
+
 	// Validate that the target of the clue is sane
 	if d.Target < 0 || d.Target > len(g.Players)-1 {
 		s.Warning("That is an invalid clue target.")
@@ -317,13 +319,8 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 	}
 
 	// Validate that there are clues available to use
-	if g.ClueTokens == 0 {
-		s.Warning("You cannot give a clue when the team has 0 clues left.")
-		g.InvalidActionOccurred = true
-		return false
-	}
-	if strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens == 1 {
-		s.Warning("You cannot give a clue when the team only has 0.5 clues.")
+	if g.ClueTokens < v.GetAdjustedClueTokens(1) {
+		s.Warning("You need at least 1 clue token available in order to give a clue.")
 		g.InvalidActionOccurred = true
 		return false
 	}

@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"path"
 	"strconv"
-	"strings"
 )
 
 var (
@@ -284,6 +283,8 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 		return false
 	}
 
+	// Local variables
+	v := variants[g.Options.VariantName]
 	clue := NewClue(d)        // Convert the incoming data to a clue object
 	p2 := g.Players[d.Target] // Get the target of the clue
 
@@ -359,8 +360,7 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 			return true
 		}
 	} else if p.Character == "Miser" && // 10
-		(g.ClueTokens < 4 ||
-			(strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens < 8)) {
+		g.ClueTokens < v.GetAdjustedClueTokens(4) {
 
 		s.Warning("You are " + p.Character + ", " +
 			"so you cannot give a clue unless there are 4 or more clues available.")
@@ -397,9 +397,7 @@ func characterValidateClue(s *Session, d *CommandData, g *Game, p *GamePlayer) b
 	} else if p.Character == "Genius" && // 24
 		p.CharacterMetadata == -1 {
 
-		if g.ClueTokens < 2 ||
-			(strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens < 4) {
-
+		if g.ClueTokens < v.GetAdjustedClueTokens(2) {
 			s.Warning("You are " + p.Character + ", " +
 				"so there needs to be at least two clues available for you to give a clue.")
 			return true
@@ -471,6 +469,9 @@ func characterCheckDiscard(s *Session, g *Game, p *GamePlayer) bool {
 		return false
 	}
 
+	// Local variables
+	v := variants[g.Options.VariantName]
+
 	if p.Character == "Anxious" && // 21
 		g.ClueTokens%2 == 0 { // Even amount of clues
 
@@ -484,8 +485,7 @@ func characterCheckDiscard(s *Session, g *Game, p *GamePlayer) bool {
 			"so you cannot discard when there is an odd number of clues available.")
 		return true
 	} else if p.Character == "Wasteful" && // 23
-		((!strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens >= 2) ||
-			(strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens >= 4)) {
+		g.ClueTokens >= v.GetAdjustedClueTokens(2) {
 
 		s.Warning("You are " + p.Character + ", " +
 			"so you cannot discard if there are 2 or more clues available.")
@@ -586,6 +586,9 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 		return false
 	}
 
+	// Local variables
+	v := variants[g.Options.VariantName]
+
 	if p.Character == "Genius" { // 24
 		// Must clue both a color and a number (uses 2 clues)
 		// The clue target is stored in "p.CharacterMetadata"
@@ -601,10 +604,7 @@ func characterNeedsToTakeSecondTurn(d *CommandData, g *Game, p *GamePlayer) bool
 
 		// After discarding, discards again if there are 4 clues or less
 		// "p.CharacterMetadata" represents the state, which alternates between -1 and 0
-		if p.CharacterMetadata == -1 &&
-			(g.ClueTokens <= 4 ||
-				(strings.HasPrefix(g.Options.VariantName, "Clue Starved") && g.ClueTokens <= 8)) {
-
+		if p.CharacterMetadata == -1 && g.ClueTokens <= v.GetAdjustedClueTokens(4) {
 			p.CharacterMetadata = 0
 			return true
 		} else if p.CharacterMetadata == 0 {
@@ -687,7 +687,10 @@ func characterCheckSoftlock(g *Game, p *GamePlayer) {
 		return
 	}
 
-	if g.ClueTokens == 0 &&
+	// Local variables
+	v := variants[g.Options.VariantName]
+
+	if g.ClueTokens < v.GetAdjustedClueTokens(1) &&
 		p.CharacterMetadata == 0 && // The character's "special ability" is currently enabled
 		(p.Character == "Vindictive" || // 9
 			p.Character == "Insistent") { // 13
