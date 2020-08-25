@@ -1,6 +1,7 @@
 // Users can right-click cards to record information on them
 
 import { parseIntSafe } from '../../misc';
+import * as modals from '../../modals';
 import { abbreviationRules } from '../rules';
 import { canPossiblyBe } from '../rules/card';
 import * as variantRules from '../rules/variant';
@@ -214,7 +215,7 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
     && note.suitIndex !== null
     && note.suitIndex !== cardState.suitIndex
   ) {
-    window.alert('You cannot morph a stack base to have a different suit.');
+    modals.warningShow('You cannot morph a stack base to have a different suit.');
     note.suitIndex = null;
     note.rank = null;
     return;
@@ -245,21 +246,21 @@ export const checkNoteImpossibility = (variant: Variant, cardState: CardState, n
 
   if (note.suitIndex !== null && note.rank === null) {
     // Only the suit was specified
-    window.alert(`That card cannot possibly be ${impossibleSuit}.`);
+    modals.warningShow(`That card cannot possibly be ${impossibleSuit}.`);
     note.suitIndex = null;
     return;
   }
 
   if (note.suitIndex === null && note.rank !== null) {
     // Only the rank was specified
-    window.alert(`That card cannot possibly be a ${impossibleRank}.`);
+    modals.warningShow(`That card cannot possibly be a ${impossibleRank}.`);
     note.rank = null;
     return;
   }
 
   if (note.suitIndex !== null && note.rank !== null) {
     // Both the suit and the rank were specified
-    window.alert(`That card cannot possibly be a ${impossibleSuit} ${impossibleRank}.`);
+    modals.warningShow(`That card cannot possibly be a ${impossibleSuit} ${impossibleRank}.`);
     note.suitIndex = null;
     note.rank = null;
   }

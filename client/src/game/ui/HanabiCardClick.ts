@@ -1,6 +1,7 @@
 // Click functions for the HanabiCard object
 
 import Konva from 'konva';
+import * as modals from '../../modals';
 import * as cardRules from '../rules/card';
 import { STACK_BASE_RANK } from '../types/constants';
 import * as arrows from './arrows';
@@ -215,7 +216,7 @@ const clickMorph = (order: number) => {
   // We want an exact match, so fullNote is sent as an empty string
   const cardIdentity = notes.cardIdentityFromNote(globals.variant, cardText, '');
   if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
-    window.alert('You entered an invalid card.');
+    modals.warningShow('You entered an invalid card.');
     return;
   }
 
