@@ -78,4 +78,13 @@ func setting(s *Session, d *CommandData) {
 		s.Error("")
 		return
 	}
+
+	// We also store whether or not they are a Hyphen-ated member on the session itself
+	if d.Name == "hyphenatedConventions" {
+		if d.Setting == "1" {
+			s.Set("hyphenated", true)
+		} else if d.Setting == "0" {
+			s.Set("hyphenated", false)
+		}
+	}
 }

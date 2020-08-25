@@ -78,7 +78,11 @@ const drawUser = (
     throw new Error(`Failed to get the user for the ID of "${userID}".`);
   }
 
-  let nameColumn = `<span id="online-users-${userID}">`;
+  let nameColumn = '';
+  if (user.hyphenated) {
+    nameColumn += '[🇭] ';
+  }
+  nameColumn += `<span id="online-users-${userID}">`;
   if (username === globals.username) {
     nameColumn += '<strong>';
   }

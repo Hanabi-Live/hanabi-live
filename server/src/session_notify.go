@@ -14,18 +14,22 @@ func (s *Session) NotifyUser(u *Session) {
 }
 
 type UserMessage struct {
-	UserID  int    `json:"userID"`
-	Name    string `json:"name"`
-	Status  int    `json:"status"`
-	TableID uint64 `json:"tableID"`
+	UserID     int    `json:"userID"`
+	Name       string `json:"name"`
+	Status     int    `json:"status"`
+	TableID    uint64 `json:"tableID"`
+	Hyphenated bool   `json:"hyphenated"`
+	Inactive   bool   `json:"inactive"`
 }
 
 func makeUserMessage(s *Session) *UserMessage {
 	return &UserMessage{
-		UserID:  s.UserID(),
-		Name:    s.Username(),
-		Status:  s.Status(),
-		TableID: s.TableID(),
+		UserID:     s.UserID(),
+		Name:       s.Username(),
+		Status:     s.Status(),
+		TableID:    s.TableID(),
+		Hyphenated: s.Hyphenated(),
+		Inactive:   s.Inactive(),
 	}
 }
 

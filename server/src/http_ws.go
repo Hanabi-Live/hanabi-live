@@ -123,6 +123,16 @@ func httpWS(c *gin.Context) {
 		reverseFriendsMap = v
 	}
 
+	// Get whether or not they are a member of the Hyphen-ated group
+	var hyphenated bool
+	if v, err := models.UserSettings.IsHyphenated(userID); err != nil {
+		msg := "Failed to get the Hyphen-ated setting for user \"" + username + "\":"
+		httpWSError(c, msg, err)
+		return
+	} else {
+		hyphenated = v
+	}
+
 	// If they got this far, they are a valid user
 	// Transfer the values from the login cookie into WebSocket session variables
 	// New keys added here should also be added to the "newFakeSesssion()" function
@@ -134,6 +144,7 @@ func httpWS(c *gin.Context) {
 	keys["muted"] = muted
 	keys["friends"] = friendsMap
 	keys["reverseFriends"] = reverseFriendsMap
+	keys["hyphenated"] = hyphenated
 
 	// Validation succeeded; establish the WebSocket connection
 	// "HandleRequestWithKeys()" will call the "websocketConnect()" function if successful;
@@ -189,6 +200,7 @@ func defaultSessionKeys() map[string]interface{} {
 	keys["tableID"] = uint64(0)
 	keys["friends"] = make(map[int]struct{})
 	keys["reverseFriends"] = make(map[int]struct{})
+	keys["hyphenated"] = false
 	keys["inactive"] = false
 	keys["fakeUser"] = false
 	keys["rateLimitAllowance"] = RateLimitRate

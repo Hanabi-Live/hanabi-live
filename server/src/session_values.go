@@ -119,6 +119,20 @@ func (s *Session) ReverseFriends() map[int]struct{} {
 	}
 }
 
+func (s *Session) Hyphenated() bool {
+	if s == nil {
+		logger.Error("The \"Hyphenated\" method was called for a nil session.")
+		return false
+	}
+
+	if v, exists := s.Get("hyphenated"); !exists {
+		logger.Error("Failed to get \"hyphenated\" from a session.")
+		return false
+	} else {
+		return v.(bool)
+	}
+}
+
 func (s *Session) Inactive() bool {
 	if s == nil {
 		logger.Error("The \"Inactive\" method was called for a nil session.")

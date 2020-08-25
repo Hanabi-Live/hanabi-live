@@ -148,3 +148,18 @@ func (*UserSettings) Set(userID int, name string, value string) error {
 	`, value, userID)
 	return err
 }
+
+func (*UserSettings) IsHyphenated(userID int) (bool, error) {
+	var hyphenated bool
+	if err := db.QueryRow(context.Background(), `
+		SELECT hyphenated_conventions
+		FROM user_settings
+		WHERE user_id = $1
+	`, userID).Scan(&hyphenated); err == pgx.ErrNoRows {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+
+	return hyphenated, nil
+}

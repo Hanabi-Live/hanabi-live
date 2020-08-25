@@ -5,5 +5,6 @@ export default interface User {
   name: string;
   status: Status;
   tableID: number;
+  hyphenated: boolean;
   inactive: boolean;
 }
