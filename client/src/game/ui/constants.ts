@@ -21,4 +21,4 @@ export const OFF_BLACK = '#0d0d0d';
 
 // Time constants
 export const TOOLTIP_DELAY = 500; // In milliseconds
-export const PREPLAY_DELAY = 50; // In milliseconds
+export const PREPLAY_DELAY = 75; // In milliseconds

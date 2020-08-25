@@ -66,24 +66,27 @@ const handlePremove = () => {
     }
   }
 
-  // We don't want to send the queued action right away, or else it introduces bugs
+  // Make a copy of the premove values and then clear the premove action
+  const { type, target, value } = premove;
+  globals.store!.dispatch({
+    type: 'premove',
+    premove: null,
+  });
+
+  // We don't want to send the action right away, or else it introduces bugs
   setTimeout(() => {
-    // As a sanity check, ensure that there is still a queued action
-    if (globals.state.premove === null) {
+    // As a sanity check, ensure that it is still our turn
+    if (!isOurTurn()) {
       return;
     }
 
     globals.lobby.conn!.send('action', {
       tableID: globals.lobby.tableID,
-      type: premove.type,
-      target: premove.target,
-      value: premove.value,
+      type,
+      target,
+      value,
     });
 
-    globals.store!.dispatch({
-      type: 'premove',
-      premove: null,
-    });
     hideClueUIAndDisableDragging();
   }, PREPLAY_DELAY);
 };

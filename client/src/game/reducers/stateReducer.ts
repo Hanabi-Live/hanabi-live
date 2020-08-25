@@ -167,12 +167,20 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
     }
 
     case 'premove': {
-      if (
+      if (action.premove === null) {
+        // Allow the clearing of a premove anytime
+        // (it might be our turn and we are clearing the premove prior to sending our action to the
+        // server)
+        state.premove = null;
+      } else if (
+        // Only allow premoves in ongoing games
         !state.finished
+        // Only allow premoves when it is not our turn
         && state.ongoingGame.turn.currentPlayerIndex !== state.metadata.ourPlayerIndex
       ) {
         state.premove = action.premove;
       }
+
       break;
     }
 
