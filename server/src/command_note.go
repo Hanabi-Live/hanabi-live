@@ -26,7 +26,7 @@ func commandNote(s *Session, d *CommandData) {
 
 	// Validate that the game has started
 	if !t.Running {
-		s.Warning(ChatCommandNotStartedFail)
+		s.Warning(NotStartedFail)
 		return
 	}
 

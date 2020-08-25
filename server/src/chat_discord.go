@@ -10,13 +10,13 @@ import (
 // /here
 func chatHere(s *Session, d *CommandData, t *Table) {
 	if t != nil {
-		chatServerSend(ChatCommandNotInLobbyFail, d.Room)
+		chatServerSend(NotInLobbyFail, d.Room)
 		return
 	}
 
 	// Validate that this is coming from a Discord user
 	if d.DiscordID == "" {
-		chatServerSend(ChatCommandNotDiscordFail, "lobby")
+		chatServerSend(NotDiscordFail, "lobby")
 		return
 	}
 
@@ -64,13 +64,13 @@ func chatHere(s *Session, d *CommandData, t *Table) {
 // /last
 func chatLast(s *Session, d *CommandData, t *Table) {
 	if t != nil {
-		chatServerSend(ChatCommandNotInLobbyFail, d.Room)
+		chatServerSend(NotInLobbyFail, d.Room)
 		return
 	}
 
 	// Validate that this is coming from a Discord user
 	if d.DiscordID == "" {
-		chatServerSend(ChatCommandNotDiscordFail, "lobby")
+		chatServerSend(NotDiscordFail, "lobby")
 		return
 	}
 

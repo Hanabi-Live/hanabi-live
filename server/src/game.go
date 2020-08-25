@@ -64,8 +64,8 @@ type Game struct {
 	// (to determine when the game should end)
 	EndTurn int
 
-	// Pause-related fields
-	// (these are only applicable to timed games)
+	// Time & Pause related fields
+	StartedTimer     bool // The timer is only started when the initial player has finished loading
 	Paused           bool
 	PausePlayerIndex int
 	PauseCount       int

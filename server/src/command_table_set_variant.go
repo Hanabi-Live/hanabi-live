@@ -23,12 +23,12 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 	}
 
 	if t.Running {
-		s.Warning(ChatCommandStartedFail)
+		s.Warning(StartedFail)
 		return
 	}
 
 	if s.UserID() != t.Owner {
-		s.Warning(ChatCommandNotOwnerFail)
+		s.Warning(NotOwnerFail)
 		return
 	}
 

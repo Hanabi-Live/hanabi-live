@@ -113,6 +113,7 @@ func commandInit() {
 	// Game and replay commands
 	commandMap["getGameInfo1"] = commandGetGameInfo1
 	commandMap["getGameInfo2"] = commandGetGameInfo2
+	commandMap["loaded"] = commandLoaded
 	commandMap["tag"] = commandTag
 	commandMap["tagDelete"] = commandTagDelete
 

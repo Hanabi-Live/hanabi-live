@@ -3,12 +3,12 @@ package main
 // /pause
 func chatPause(s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, "lobby")
+		chatServerSend(NotInGameFail, "lobby")
 		return
 	}
 
 	if !t.Running {
-		chatServerSend(ChatCommandNotStartedFail, d.Room)
+		chatServerSend(NotStartedFail, d.Room)
 		return
 	}
 
@@ -22,12 +22,12 @@ func chatPause(s *Session, d *CommandData, t *Table) {
 // /unpause
 func chatUnpause(s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, "lobby")
+		chatServerSend(NotInGameFail, "lobby")
 		return
 	}
 
 	if !t.Running {
-		chatServerSend(ChatCommandNotStartedFail, d.Room)
+		chatServerSend(NotStartedFail, d.Room)
 		return
 	}
 

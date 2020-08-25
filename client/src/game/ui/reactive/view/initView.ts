@@ -7,6 +7,11 @@ export const onInitializationChanged = (initialized: boolean) => {
     return;
   }
 
+  if (globals.loading) {
+    globals.lobby.conn!.send('loaded', {
+      tableID: globals.lobby.tableID,
+    });
+  }
   globals.loading = false;
   globals.animateFast = false;
 };

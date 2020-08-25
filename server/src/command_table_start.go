@@ -252,10 +252,7 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 		}
 	}
 
-	// Start a timer to detect if the current player runs out of time
-	if t.Options.Timed && !t.ExtraOptions.NoWriteToDatabase {
-		go g.CheckTimer(g.Turn, g.PauseCount, g.Players[g.ActivePlayerIndex])
-	}
+	// The "CheckTimer()" function will be called when the starting player has finished loading
 }
 
 func emulateActions(s *Session, d *CommandData, t *Table) {

@@ -21,7 +21,7 @@ func commandTagDelete(s *Session, d *CommandData) {
 	}
 
 	if !t.Running {
-		s.Warning(ChatCommandNotStartedFail)
+		s.Warning(NotStartedFail)
 		return
 	}
 

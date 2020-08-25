@@ -8,12 +8,12 @@ import (
 // /suggest
 func chatSuggest(s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, "lobby")
+		chatServerSend(NotInGameFail, "lobby")
 		return
 	}
 
 	if !t.Replay {
-		chatServerSend(ChatCommandNotReplayFail, d.Room)
+		chatServerSend(NotReplayFail, d.Room)
 		return
 	}
 
@@ -42,12 +42,12 @@ func chatSuggest(s *Session, d *CommandData, t *Table) {
 // /tags
 func chatTags(s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, "lobby")
+		chatServerSend(NotInGameFail, "lobby")
 		return
 	}
 
 	if !t.Replay {
-		chatServerSend(ChatCommandNotReplayFail, d.Room)
+		chatServerSend(NotReplayFail, d.Room)
 		return
 	}
 

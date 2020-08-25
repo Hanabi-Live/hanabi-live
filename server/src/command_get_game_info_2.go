@@ -22,7 +22,7 @@ func commandGetGameInfo2(s *Session, d *CommandData) {
 
 	// Validate that the game has started
 	if !t.Running {
-		s.Warning(ChatCommandNotStartedFail)
+		s.Warning(NotStartedFail)
 		return
 	}
 
@@ -94,11 +94,6 @@ func getGameInfo2(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 				TableID: t.ID,
 				Notes:   p.Notes,
 			})
-
-			// Set their "present" variable back to true,
-			// which will turn their name from red to black
-			t.Players[playerIndex].Present = true
-			t.NotifyConnected()
 		} else if spectatorIndex > -1 {
 			// They are a spectator in an ongoing game
 			sp := t.Spectators[spectatorIndex]

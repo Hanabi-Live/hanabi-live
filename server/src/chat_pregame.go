@@ -44,17 +44,17 @@ func chatS6(s *Session, d *CommandData, t *Table) {
 // /startin [minutes]
 func chatStartIn(s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
+		chatServerSend(NotInGameFail, d.Room)
 		return
 	}
 
 	if t.Running {
-		chatServerSend(ChatCommandNotStartedFail, d.Room)
+		chatServerSend(NotStartedFail, d.Room)
 		return
 	}
 
 	if s.UserID() != t.Owner {
-		chatServerSend(ChatCommandNotOwnerFail, d.Room)
+		chatServerSend(NotOwnerFail, d.Room)
 		return
 	}
 
@@ -103,17 +103,17 @@ func chatStartIn(s *Session, d *CommandData, t *Table) {
 
 func chatKick(s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
+		chatServerSend(NotInGameFail, d.Room)
 		return
 	}
 
 	if t.Running {
-		chatServerSend(ChatCommandNotStartedFail, d.Room)
+		chatServerSend(NotStartedFail, d.Room)
 		return
 	}
 
 	if s.UserID() != t.Owner {
-		chatServerSend(ChatCommandNotOwnerFail, d.Room)
+		chatServerSend(NotOwnerFail, d.Room)
 		return
 	}
 
@@ -164,7 +164,7 @@ func chatKick(s *Session, d *CommandData, t *Table) {
 // /missingscores
 func chatMissingScores(s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
+		chatServerSend(NotInGameFail, d.Room)
 		return
 	}
 
@@ -199,7 +199,7 @@ func chatMissingScores(s *Session, d *CommandData, t *Table) {
 // This function does not consider modifiers (e.g. "Empty Clues")
 func chatFindVariant(s *Session, d *CommandData, t *Table) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
+		chatServerSend(NotInGameFail, d.Room)
 		return
 	}
 
@@ -271,17 +271,17 @@ func chatFindVariant(s *Session, d *CommandData, t *Table) {
 
 func automaticStart(s *Session, d *CommandData, t *Table, numPlayers int) {
 	if t == nil || d.Room == "lobby" {
-		chatServerSend(ChatCommandNotInGameFail, d.Room)
+		chatServerSend(NotInGameFail, d.Room)
 		return
 	}
 
 	if t.Running {
-		chatServerSend(ChatCommandStartedFail, d.Room)
+		chatServerSend(StartedFail, d.Room)
 		return
 	}
 
 	if s.UserID() != t.Owner {
-		chatServerSend(ChatCommandNotOwnerFail, d.Room)
+		chatServerSend(NotOwnerFail, d.Room)
 		return
 	}
 
