@@ -174,6 +174,8 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 | Pink            | I
 | Light Pink      | I
 | Brown           | N
+| Omni            | O
+| Null            | U
 | [any dark suit] | [the same as the "normal" version of the suit]
 | Gray            | A
 
