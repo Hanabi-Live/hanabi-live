@@ -80,7 +80,7 @@ CREATE TABLE user_settings (
 DROP TABLE IF EXISTS user_stats CASCADE;
 CREATE TABLE user_stats (
     user_id          INTEGER   NOT NULL,
-    variant          SMALLINT  NOT NULL,
+    variant_id       SMALLINT  NOT NULL,
     num_games        INTEGER   NOT NULL  DEFAULT 0,
     /* Their best score for 2-player games on this variant */
     best_score2      SMALLINT  NOT NULL  DEFAULT 0,
@@ -97,7 +97,7 @@ CREATE TABLE user_stats (
     average_score    FLOAT     NOT NULL  DEFAULT 0,
     num_strikeouts   INTEGER   NOT NULL  DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-    PRIMARY KEY (user_id, variant)
+    PRIMARY KEY (user_id, variant_id)
 );
 
 DROP TABLE IF EXISTS user_friends CASCADE;
@@ -128,8 +128,8 @@ CREATE TABLE games (
      * This field is only needed for legacy games before April 2020
      */
     starting_player         SMALLINT     NOT NULL  DEFAULT 0,
-    /* Equal to the variant ID (found in "variants.json") */
-    variant                 SMALLINT     NOT NULL,
+    /* The ID for a particular variant can be found in the "variants.json" file */
+    variant_id              SMALLINT     NOT NULL,
     timed                   BOOLEAN      NOT NULL,
     time_base               INTEGER      NOT NULL, /* in seconds */
     time_per_turn           INTEGER      NOT NULL, /* in seconds */
@@ -150,7 +150,7 @@ CREATE TABLE games (
     datetime_finished       TIMESTAMPTZ  NOT NULL
 );
 CREATE INDEX games_index_num_players ON games (num_players);
-CREATE INDEX games_index_variant     ON games (variant);
+CREATE INDEX games_index_variant_id  ON games (variant_id);
 CREATE INDEX games_index_seed        ON games (seed);
 
 DROP TABLE IF EXISTS game_participants CASCADE;
@@ -213,10 +213,10 @@ CREATE TABLE game_tags (
 
 DROP TABLE IF EXISTS variant_stats CASCADE;
 CREATE TABLE variant_stats (
-    /* Equal to the variant ID (found in "variants.go") */
-    variant         SMALLINT  NOT NULL  PRIMARY KEY,
+    /* The ID for a particular variant can be found in the "variants.json" file */
+    variant_id      SMALLINT  NOT NULL  PRIMARY KEY,
     num_games       INTEGER   NOT NULL  DEFAULT 0,
-    /* The overall best score for a 2-player games on this variant */
+    /* The best score from any team for a 2-player game on this variant */
     best_score2     SMALLINT  NOT NULL  DEFAULT 0,
     best_score3     SMALLINT  NOT NULL  DEFAULT 0,
     best_score4     SMALLINT  NOT NULL  DEFAULT 0,

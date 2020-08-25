@@ -26,7 +26,7 @@ func NewUserStatsRow() UserStatsRow {
 	}
 }
 
-func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
+func (*UserStats) Get(userID int, variantID int) (UserStatsRow, error) {
 	stats := NewUserStatsRow()
 
 	if err := db.QueryRow(context.Background(), `
@@ -46,8 +46,8 @@ func (*UserStats) Get(userID int, variant int) (UserStatsRow, error) {
 			num_strikeouts
 		FROM user_stats
 		WHERE user_id = $1
-			AND variant = $2
-	`, userID, variant).Scan(
+			AND variant_id = $2
+	`, userID, variantID).Scan(
 		&stats.NumGames,
 		&stats.BestScores[0].Score, // 2-player
 		&stats.BestScores[0].Modifier,
@@ -78,7 +78,7 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 	// Get all of the statistics for this user (for every individual variant)
 	rows, err := db.Query(context.Background(), `
 		SELECT
-			variant,
+			variant_id,
 			num_games,
 			best_score2,
 			best_score2_mod,
@@ -94,16 +94,16 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 			num_strikeouts
 		FROM user_stats
 		WHERE user_id = $1
-		ORDER BY variant ASC
+		ORDER BY variant_id ASC
 	`, userID)
 
 	// Go through the stats for each variant
 	statsMap := make(map[int]UserStatsRow)
 	for rows.Next() {
-		var variant int
+		var variantID int
 		stats := NewUserStatsRow()
 		if err2 := rows.Scan(
-			&variant,
+			&variantID,
 			&stats.NumGames,
 			&stats.BestScores[0].Score, // 2-player
 			&stats.BestScores[0].Modifier,
@@ -123,7 +123,7 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 
 		fillBestScores(stats.BestScores)
 
-		statsMap[variant] = stats
+		statsMap[variantID] = stats
 	}
 
 	if rows.Err() != nil {
@@ -134,7 +134,7 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 	return statsMap, nil
 }
 
-func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
+func (*UserStats) Update(userID int, variantID int, stats UserStatsRow) error {
 	// Validate that the BestScores slice contains 5 entries
 	if len(stats.BestScores) != 5 {
 		return errors.New("BestScores does not contain 5 entries (for 2 to 6 players)")
@@ -147,15 +147,19 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 		SELECT COUNT(user_id)
 		FROM user_stats
 		WHERE user_id = $1
-			AND variant = $2
-	`, userID, variant).Scan(&numRows); err != nil {
+			AND variant_id = $2
+	`, userID, variantID).Scan(&numRows); err != nil {
 		return err
+	}
+	if numRows > 1 {
+		return errors.New("found more than 1 row in the \"user_stats\" table for user " +
+			strconv.Itoa(userID))
 	}
 	if numRows == 0 {
 		if _, err := db.Exec(context.Background(), `
-			INSERT INTO user_stats (user_id, variant)
+			INSERT INTO user_stats (user_id, variant_id)
 			VALUES ($1, $2)
-		`, userID, variant); err != nil {
+		`, userID, variantID); err != nil {
 			return err
 		}
 	}
@@ -171,7 +175,7 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 						JOIN game_participants
 							ON game_participants.game_id = games.id
 					WHERE game_participants.user_id = $1
-						AND games.variant = $2
+						AND games.variant_id = $2
 						AND games.speedrun = FALSE
 				),
 				best_score2 = $3,
@@ -195,7 +199,7 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 							ON game_participants.game_id = games.id
 					WHERE game_participants.user_id = $1
 						AND games.score != 0
-						AND games.variant = $2
+						AND games.variant_id = $2
 						AND games.speedrun = FALSE
 				),
 				num_strikeouts = (
@@ -205,14 +209,14 @@ func (*UserStats) Update(userID int, variant int, stats UserStatsRow) error {
 							ON game_participants.game_id = games.id
 					WHERE game_participants.user_id = $1
 						AND games.score = 0
-						AND games.variant = $2
+						AND games.variant_id = $2
 						AND games.speedrun = FALSE
 				)
 			WHERE user_id = $1
-				AND variant = $2
+				AND variant_id = $2
 		`,
 		userID, // num_games
-		variant,
+		variantID,
 		stats.BestScores[0].Score, // 2-player
 		stats.BestScores[0].Modifier,
 		stats.BestScores[1].Score, // 3-player
@@ -261,7 +265,7 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 	// Go through each user
 	for _, userID := range userIDs {
 		fmt.Println("Updating user:", userID)
-		for variant := 0; variant <= highestVariantID; variant++ {
+		for variantID := 0; variantID <= highestVariantID; variantID++ {
 			// Check to see if this user has played any games of this variant
 			var numRows int
 			if err := db.QueryRow(context.Background(), `
@@ -269,9 +273,13 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
 				WHERE game_participants.user_id = $1
-					AND games.variant = $2
-			`, userID, variant).Scan(&numRows); err != nil {
+					AND games.variant_id = $2
+			`, userID, variantID).Scan(&numRows); err != nil {
 				return err
+			}
+			if numRows > 1 {
+				return errors.New("found more than 1 row in the \"user_stats\" table for user " +
+					strconv.Itoa(userID))
 			}
 			if numRows == 0 {
 				// We don't need to insert a new row for this variant
@@ -298,7 +306,7 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 							JOIN game_participants
 								ON game_participants.game_id = games.id
 						WHERE game_participants.user_id = $1
-							AND games.variant = $2
+							AND games.variant_id = $2
 							AND games.num_players = $3
 					`
 
@@ -342,7 +350,7 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 						context.Background(),
 						SQLString,
 						userID,
-						variant,
+						variantID,
 						numPlayers,
 					).Scan(&bestScore); err != nil {
 						return err
@@ -360,7 +368,7 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 			}
 
 			// Insert a new row for this user + variant
-			if err := us.Update(userID, variant, stats); err != nil {
+			if err := us.Update(userID, variantID, stats); err != nil {
 				return err
 			}
 		}

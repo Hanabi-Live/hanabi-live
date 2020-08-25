@@ -38,7 +38,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 			INSERT INTO games (
 				name,
 				num_players,
-				variant,
+				variant_id,
 				timed,
 				time_base,
 				time_per_turn,
@@ -150,7 +150,7 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sort string) ([]*GameHistory, 
 		SELECT
 			games1.id,
 			games1.num_players,
-			games1.variant,
+			games1.variant_id,
 			games1.timed,
 			games1.time_base,
 			games1.time_per_turn,
@@ -384,17 +384,17 @@ func (*Games) GetGameIDsMultiUser(userIDs []int) ([]int, error) {
 	return gameIDs, nil
 }
 
-func (*Games) GetGameIDsVariant(variant int, amount int) ([]int, error) {
+func (*Games) GetGameIDsVariant(variantID int, amount int) ([]int, error) {
 	SQLString := `
 		SELECT id
 		FROM games
-		WHERE variant = $1
+		WHERE variant_id = $1
 		/* We must get the results in decending order for the limit to work properly */
 		ORDER BY id DESC
 		LIMIT $2
 	`
 
-	rows, err := db.Query(context.Background(), SQLString, variant, amount)
+	rows, err := db.Query(context.Background(), SQLString, variantID, amount)
 
 	gameIDs := make([]int, 0)
 	for rows.Next() {
@@ -450,7 +450,7 @@ func (*Games) GetOptions(databaseID int) (*Options, error) {
 		SELECT
 			num_players,
 			starting_player,
-			variant,
+			variant_id,
 			timed,
 			time_base,
 			time_per_turn,
@@ -587,7 +587,7 @@ func (*Games) GetPlayerSeeds(userID int, variantID int) ([]string, error) {
 		FROM games
 			JOIN game_participants ON games.id = game_participants.game_id
 		WHERE game_participants.user_id = $1
-			AND games.variant = $2
+			AND games.variant_id = $2
 		ORDER BY seed
 	`, userID, variantID)
 
@@ -783,7 +783,7 @@ func (*Games) GetGlobalStats() (Stats, error) {
 	return stats, nil
 }
 
-func (*Games) GetVariantStats(variant int) (Stats, error) {
+func (*Games) GetVariantStats(variantID int) (Stats, error) {
 	var stats Stats
 
 	if err := db.QueryRow(context.Background(), `
@@ -791,7 +791,7 @@ func (*Games) GetVariantStats(variant int) (Stats, error) {
 			(
 				SELECT COUNT(id)
 				FROM games
-				WHERE variant = $1
+				WHERE variant_id = $1
 					AND speedrun = FALSE
 			) AS num_games,
 			(
@@ -805,13 +805,13 @@ func (*Games) GetVariantStats(variant int) (Stats, error) {
 				) AS INTEGER), 0)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
-				WHERE games.variant = $1
+				WHERE games.variant_id = $1
 					AND games.speedrun = FALSE
 			) AS time_played,
 			(
 				SELECT COUNT(id)
 				FROM games
-				WHERE games.variant = $1
+				WHERE games.variant_id = $1
 					AND games.speedrun = TRUE
 			) AS num_games_speedrun,
 			(
@@ -825,10 +825,10 @@ func (*Games) GetVariantStats(variant int) (Stats, error) {
 				) AS INTEGER), 0)
 				FROM games
 					JOIN game_participants ON games.id = game_participants.game_id
-				WHERE games.variant = $1
+				WHERE games.variant_id = $1
 					AND games.speedrun = TRUE
 			) AS time_played_speedrun
-	`, variant).Scan(
+	`, variantID).Scan(
 		&stats.NumGames,
 		&stats.TimePlayed,
 		&stats.NumGamesSpeedrun,
