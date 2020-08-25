@@ -49,8 +49,8 @@ const shouldGenerateClue = (
 };
 
 export const getAdjusted = (clueTokens: number, variant: Variant) => {
-  // In "Clue Starved" variants, each discard only 0.5 clue tokens
-  // This is represented on the client by discards giving 1 clue token and clues costing 2 tokens
+  // In "Clue Starved" variants, each discard only grants 0.5 clue tokens
+  // This is represented on the client by discards granting 1 clue token and clues costing 2 tokens
   // (to avoid having to use floating point numbers)
   if (variantRules.isClueStarved(variant)) {
     return clueTokens * 2;

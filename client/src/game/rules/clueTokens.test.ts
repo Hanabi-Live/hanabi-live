@@ -19,11 +19,6 @@ describe('gain', () => {
     expect(clueTokens).toBe(MAX_CLUE_NUM);
   });
 
-  test.each([...Array(8).keys()])('adds half clue for Clue Starved variants', (n) => {
-    const clueTokens = gain(discardAction, n, clueStarvedVariant);
-    expect(clueTokens).toBeCloseTo(n + 0.5);
-  });
-
   test('does not add a clue when maxed out for Clue Starved variants', () => {
     const clueTokens = gain(discardAction, MAX_CLUE_NUM, clueStarvedVariant);
     expect(clueTokens).toBe(MAX_CLUE_NUM);
