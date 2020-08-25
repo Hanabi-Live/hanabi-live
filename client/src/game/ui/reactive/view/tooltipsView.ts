@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 
+import cursorSet from '../../cursorSet';
 import * as tooltips from '../../tooltips';
 
 // Automatically close any tooltips and disable all Empathy when the visible segment changes
@@ -8,4 +9,5 @@ import * as tooltips from '../../tooltips';
 // Note that if a user is actively editing a note, the tooltip will not close
 export const onSegmentChanged = () => {
   tooltips.resetActiveHover();
+  cursorSet('default');
 };
