@@ -64,12 +64,6 @@ type Game struct {
 	// (to determine when the game should end)
 	EndTurn int
 
-	// Sound-related fields
-	// The name of the sound file to play to represent the action taken for the current turn
-	Sound      string
-	BlindPlays int // The number of consecutive blind plays
-	Misplays   int // The number of consecutive misplays
-
 	// Pause-related fields
 	// (these are only applicable to timed games)
 	Paused           bool

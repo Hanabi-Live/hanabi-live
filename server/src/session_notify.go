@@ -229,38 +229,6 @@ func (s *Session) NotifyGameAction(t *Table, action interface{}) {
 	})
 }
 
-func (s *Session) NotifySound(t *Table, i int) {
-	g := t.Game
-
-	// Prepare the sound message, depending on if it is their turn
-	var sound string
-	if g.Sound != "" {
-		sound = g.Sound
-	} else if i == g.ActivePlayerIndex {
-		sound = "turn_us"
-	} else {
-		sound = "turn_other"
-	}
-
-	// Also check to see if this player is "surprised" from playing/discarding a card
-	if i > -1 {
-		p := g.Players[i]
-		if p.Surprised {
-			p.Surprised = false
-			sound = "turn_surprise"
-		}
-	}
-
-	type SoundMessage struct {
-		TableID uint64 `json:"tableID"`
-		File    string `json:"file"`
-	}
-	s.Emit("sound", &SoundMessage{
-		TableID: t.ID,
-		File:    sound,
-	})
-}
-
 func (s *Session) NotifyTime(t *Table) {
 	g := t.Game
 

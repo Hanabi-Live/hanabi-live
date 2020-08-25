@@ -1,4 +1,6 @@
+import CardIdentity from './CardIdentity';
 import { PaceRisk } from './GameState';
+import SoundType from './SoundType';
 
 export default interface StatsState {
   readonly maxScore: number;
@@ -7,4 +9,6 @@ export default interface StatsState {
   readonly efficiency: number;
   readonly pace: number | null;
   readonly paceRisk: PaceRisk;
+  readonly lastCardDiscarded: CardIdentity | null;
+  readonly soundTypeForLastAction: SoundType;
 }

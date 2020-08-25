@@ -427,15 +427,6 @@ commands.set('spectators', (data: SpectatorsData) => {
   });
 });
 
-interface SoundData {
-  file: string;
-}
-commands.set('sound', (data: SoundData) => {
-  if (globals.lobby.settings.soundMove) {
-    globals.game!.sounds.play(data.file);
-  }
-});
-
 // -----------
 // Subroutines
 // -----------

@@ -2,6 +2,9 @@
 
 import globals from './globals';
 
+// Variables
+let soundEffect: HTMLAudioElement | null = null;
+
 export const init = () => {
   // Preload some sounds
   // Ideally, we would check to see if the user has the "soundMove" setting enabled
@@ -9,19 +12,13 @@ export const init = () => {
   // However, at this point in the code, the server has not sent us the settings corresponding to
   // this user account, so just assume that they have sounds enabled
   const soundFiles = [
-    'blind1',
-    'blind2',
-    'blind3',
-    // Do not preload the rest of the blind-play sounds, since they will only occur very rarely
-    'fail1',
-    'fail2',
-    'finished_fail',
-    'finished_success',
-    'sad',
     'tone',
+    'turn_blind1',
+    // (do not preload the rest of the blind-play sounds, since they will only occur very rarely)
+    'turn_fail1',
     'turn_other',
     'turn_us',
-    // Do not preload shared replay sound effects, as they are used more rarely
+    // (do not preload shared replay sound effects, as they are used more rarely)
   ];
   for (const file of soundFiles) {
     const audio = new Audio(`/public/sounds/${file}.mp3`);
@@ -29,17 +26,24 @@ export const init = () => {
   }
 };
 
-export const play = (file: string) => {
+export const play = (file: string, mute: boolean = false) => {
+  if (mute && soundEffect !== null) {
+    soundEffect.muted = true;
+  }
+
   const path = `/public/sounds/${file}.mp3`;
-  const audio = new Audio(path);
+  soundEffect = new Audio(path);
+
   // HTML5 audio volume is a range between 0.0 to 1.0,
   // but volume is stored in the settings as an integer from 0 to 100
   let volume = globals.settings.volume;
   if (typeof volume !== 'number') {
     volume = 50;
   }
-  audio.volume = volume / 100;
-  audio.play();
+  soundEffect.volume = volume / 100;
+
+  soundEffect.play();
+
   // If audio playback fails,
   // it is most likely due to the user not having interacted with the page yet
   // https://stackoverflow.com/questions/52807874/how-to-make-audio-play-on-body-onload

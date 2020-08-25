@@ -340,6 +340,7 @@ const throwItInAHolePlayedOrMisplayed = (
 
     return true;
   }
+
   return false;
 };
 

@@ -5,7 +5,6 @@ package main
 
 import (
 	"math"
-	"regexp"
 	"strconv"
 	"time"
 )
@@ -27,12 +26,7 @@ type GamePlayer struct {
 	RequestedPause    bool
 	Character         string
 	CharacterMetadata int
-	Surprised         bool
 }
-
-var (
-	noteRegExp = regexp.MustCompile(`.*\|(.+)`)
-)
 
 // GiveClue returns false if the clue is illegal
 func (p *GamePlayer) GiveClue(d *CommandData) {
@@ -80,19 +74,6 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	})
 	t.NotifyGameAction()
 
-	// Handle custom clue sound effects
-	if p.Character == "Quacker" {
-		g.Sound = "quack"
-	} else if variant.IsCowAndPig() {
-		if clue.Type == ClueTypeColor {
-			g.Sound = "moo"
-		} else if clue.Type == ClueTypeRank {
-			g.Sound = "oink"
-		}
-	} else if variant.IsDuck() {
-		g.Sound = "quack"
-	}
-
 	// Do post-clue tasks
 	characterPostClue(d, g, p)
 
@@ -133,11 +114,6 @@ func (p *GamePlayer) PlayCard(c *Card) {
 		Target: c.Order,
 	})
 
-	// Check to see if revealing this card would surprise the player
-	// (we want to have it at the beginning of the function so that the fail sound will overwrite
-	// the surprise sound)
-	p.CheckSurprise(c)
-
 	// Find out if this successfully plays
 	var failed bool
 	if variant.HasReversedSuits() {
@@ -156,32 +132,6 @@ func (p *GamePlayer) PlayCard(c *Card) {
 	if failed {
 		c.Failed = true
 		g.Strikes++
-
-		if variant.IsThrowItInAHole() {
-			// Pretend like this card successfully played
-			if c.Touched {
-				// Mark that the blind-play streak has ended
-				g.BlindPlays = 0
-			} else {
-				g.BlindPlays++
-				if g.BlindPlays > 6 {
-					// There is no sound effect for more than 6 blind plays in a row
-					g.BlindPlays = 6
-				}
-				g.Sound = "blind" + strconv.Itoa(g.BlindPlays)
-			}
-		} else {
-			// Mark that the blind-play streak has ended
-			g.BlindPlays = 0
-
-			// Increase the misplay streak
-			g.Misplays++
-			if g.Misplays > 2 {
-				// There is no sound effect for more than 2 misplays in a row
-				g.Misplays = 2
-			}
-			g.Sound = "fail" + strconv.Itoa(g.Misplays)
-		}
 
 		g.Actions = append(g.Actions, ActionStrike{
 			Type:  "strike",
@@ -203,9 +153,6 @@ func (p *GamePlayer) PlayCard(c *Card) {
 		g.Stacks[c.SuitIndex] = -1 // A rank 0 card is the "START" card
 	}
 
-	// Mark that the misplay streak has ended
-	g.Misplays = 0
-
 	g.Actions = append(g.Actions, ActionPlay{
 		Type:        "play",
 		PlayerIndex: p.Index,
@@ -214,19 +161,6 @@ func (p *GamePlayer) PlayCard(c *Card) {
 		Rank:        c.Rank,
 	})
 	t.NotifyGameAction()
-
-	// Find out if this was a blind play
-	if c.Touched {
-		// Mark that the blind-play streak has ended
-		g.BlindPlays = 0
-	} else {
-		g.BlindPlays++
-		if g.BlindPlays > 4 {
-			// There is no sound effect for more than 4 blind plays in a row
-			g.BlindPlays = 4
-		}
-		g.Sound = "blind" + strconv.Itoa(g.BlindPlays)
-	}
 
 	// Give the team a clue if the final card of the suit was played
 	// (this will always be a 5 unless it is a custom variant)
@@ -265,11 +199,6 @@ func (p *GamePlayer) PlayCard(c *Card) {
 	if newMaxScore < g.MaxScore {
 		// Decrease the maximum score possible for this game
 		g.MaxScore = newMaxScore
-
-		// Only play the sad sound if we are not in the final round
-		if g.EndTurn == -1 {
-			g.Sound = "sad"
-		}
 	}
 }
 
@@ -301,26 +230,11 @@ func (p *GamePlayer) DiscardCard(c *Card) {
 	})
 	t.NotifyGameAction()
 
-	// Check for discarding clued cards
-	if !c.Failed && c.Touched {
-		g.Sound = "turn_discard_clued"
-	}
-
-	// Check to see if revealing this card would surprise the player
-	// (we want to have it in the middle of the function so that it will
-	// overwrite the clued card sound but not overwrite the sad sound)
-	p.CheckSurprise(c)
-
 	// This could have been a discard (or misplay) or a card needed to get the maximum score
 	newMaxScore := g.GetMaxScore()
 	if newMaxScore < g.MaxScore {
 		// Decrease the maximum score possible for this game
 		g.MaxScore = newMaxScore
-
-		// Only play the sad sound if we are not in the final round and this was not a misplay
-		if g.EndTurn == -1 && !c.Failed {
-			g.Sound = "sad"
-		}
 	}
 }
 

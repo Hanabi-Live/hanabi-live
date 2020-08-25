@@ -98,9 +98,6 @@ func commandAction(s *Session, d *CommandData) {
 func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
 	// Local variables
 	g := t.Game
-	variant := variants[g.Options.VariantName]
-
-	g.Sound = "" // Remove the "fail#" and "blind#" states
 
 	// Start the idle timeout
 	// (but don't update the idle variable if we are ending the game)
@@ -189,21 +186,7 @@ func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
 
 	if g.EndCondition == EndConditionInProgress {
 		logger.Info(t.GetName() + "It is now " + np.Name + "'s turn.")
-	} else if g.EndCondition == EndConditionNormal {
-		if g.Score == variant.MaxScore {
-			g.Sound = "finished_perfect"
-		} else {
-			// The players did got get a perfect score, but they did not strike out either
-			g.Sound = "finished_success"
-		}
-	} else if g.EndCondition > EndConditionNormal {
-		g.Sound = "finished_fail"
-	}
-
-	// Tell every client to play a sound as a notification for the action taken
-	t.NotifySound()
-
-	if g.EndCondition > EndConditionInProgress {
+	} else {
 		g.End()
 		return
 	}
@@ -290,12 +273,6 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 	c := p.RemoveCard(d.Target)
 	p.DiscardCard(c)
 	p.DrawCard()
-
-	// Mark that the blind-play streak has ended
-	g.BlindPlays = 0
-
-	// Mark that the misplay streak has ended
-	g.Misplays = 0
 
 	return true
 }
@@ -390,12 +367,6 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 	}
 
 	p.GiveClue(d)
-
-	// Mark that the blind-play streak has ended
-	g.BlindPlays = 0
-
-	// Mark that the misplay streak has ended
-	g.Misplays = 0
 
 	return true
 }

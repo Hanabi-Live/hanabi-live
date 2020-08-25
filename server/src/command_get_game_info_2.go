@@ -86,11 +86,6 @@ func getGameInfo2(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		// Send them the current time for all player's clocks
 		s.NotifyTime(t)
 
-		// If this is the first turn, send them a sound so that they know the game started
-		if g.Turn == 0 {
-			s.NotifySound(t, playerIndex)
-		}
-
 		if playerIndex > -1 {
 			// They are a player in an ongoing game
 			p := g.Players[playerIndex]

@@ -2,14 +2,18 @@
 // as a result of each action
 
 import produce, { Draft } from 'immer';
-import { getVariant } from '../data/gameData';
-import { variantRules } from '../rules';
+import { getVariant, getCharacter } from '../data/gameData';
+import { variantRules, cardRules } from '../rules';
 import * as clueTokensRules from '../rules/clueTokens';
 import * as statsRules from '../rules/stats';
 import { GameAction } from '../types/actions';
+import ClueType from '../types/ClueType';
+import EndCondition from '../types/EndCondition';
 import GameMetadata from '../types/GameMetadata';
 import GameState from '../types/GameState';
+import SoundType from '../types/SoundType';
 import StatsState from '../types/StatsState';
+import { getCharacterIDForPlayer } from './reducerHelpers';
 
 const statsReducer = produce((
   stats: Draft<StatsState>,
@@ -20,6 +24,15 @@ const statsReducer = produce((
   metadata: GameMetadata,
 ) => {
   const variant = getVariant(metadata.options.variantName);
+  const ourCharacterID = getCharacterIDForPlayer(
+    metadata.ourPlayerIndex,
+    metadata.characterAssignments,
+  );
+  let ourCharacterName = '';
+  if (ourCharacterID !== null) {
+    const ourCharacter = getCharacter(ourCharacterID);
+    ourCharacterName = ourCharacter.name;
+  }
 
   switch (action.type) {
     case 'clue': {
@@ -105,6 +118,125 @@ const statsReducer = produce((
     variant,
   );
   stats.efficiency = statsRules.efficiency(cardsGotten, stats.potentialCluesLost);
+
+  // Record the last card discarded
+  if (action.type === 'discard') {
+    stats.lastCardDiscarded = {
+      suitIndex: action.suitIndex,
+      rank: action.rank,
+    };
+  }
+
+  // Find out which sound effect to play (if this is an ongoing game)
+  switch (action.type) {
+    case 'clue': {
+      if (ourCharacterName === 'Quacker') {
+        stats.soundTypeForLastAction = SoundType.Quack;
+      } else if (variantRules.isCowAndPig(variant)) {
+        if (action.clue.type === ClueType.Color) {
+          stats.soundTypeForLastAction = SoundType.Moo;
+        } else if (action.clue.type === ClueType.Rank) {
+          stats.soundTypeForLastAction = SoundType.Oink;
+        } else {
+          throw new Error('Unknown clue type.');
+        }
+      } else if (variantRules.isDuck(variant)) {
+        stats.soundTypeForLastAction = SoundType.Quack;
+      } else {
+        stats.soundTypeForLastAction = SoundType.Standard;
+      }
+
+      break;
+    }
+
+    case 'discard': {
+      const touched = cardRules.isClued(currentState.deck[action.order]);
+      const cardDiscarded = originalState.deck[action.order];
+      const lastCardDiscarded = originalState.stats.lastCardDiscarded;
+      let couldBeLastDiscardedCard = true;
+      if (
+        lastCardDiscarded !== null
+        && lastCardDiscarded.suitIndex !== null
+        && lastCardDiscarded.rank !== null
+      ) {
+        couldBeLastDiscardedCard = cardDiscarded.possibleCardsFromClues.some(
+          ([suitIndex, rank]) => (
+            suitIndex === lastCardDiscarded.suitIndex
+            && rank === lastCardDiscarded.rank
+          ),
+        );
+      }
+
+      if (action.failed) {
+        if (stats.soundTypeForLastAction === SoundType.Fail1) {
+          stats.soundTypeForLastAction = SoundType.Fail2;
+        } else {
+          stats.soundTypeForLastAction = SoundType.Fail1;
+        }
+      } else if (stats.maxScore < originalState.stats.maxScore) {
+        stats.soundTypeForLastAction = SoundType.Sad;
+      } else if (false) {
+        // TODO
+        stats.soundTypeForLastAction = SoundType.Surprise;
+      } else if (touched) {
+        stats.soundTypeForLastAction = SoundType.DiscardClued;
+      } else if (originalState.stats.doubleDiscard && couldBeLastDiscardedCard) {
+        // A player has discarded *in* a double discard situation
+        stats.soundTypeForLastAction = SoundType.DoubleDiscard;
+      } else if (stats.doubleDiscard) {
+        // A player has discarded to *cause* a double discard situation
+        stats.soundTypeForLastAction = SoundType.DoubleDiscardCause;
+      } else {
+        stats.soundTypeForLastAction = SoundType.Standard;
+      }
+
+      break;
+    }
+
+    case 'gameOver': {
+      if (action.endCondition > EndCondition.Normal) {
+        stats.soundTypeForLastAction = SoundType.FinishedFail;
+      } else if (currentState.score === variant.maxScore) {
+        stats.soundTypeForLastAction = SoundType.FinishedPerfect;
+      } else {
+        stats.soundTypeForLastAction = SoundType.FinishedSuccess;
+      }
+
+      break;
+    }
+
+    case 'play': {
+      const touched = cardRules.isClued(currentState.deck[action.order]);
+      if (stats.maxScore < originalState.stats.maxScore) {
+        stats.soundTypeForLastAction = SoundType.Sad;
+      } else if (false) {
+        // TODO
+        stats.soundTypeForLastAction = SoundType.Surprise;
+      } else if (!touched) {
+        if (stats.soundTypeForLastAction === SoundType.Blind1) {
+          stats.soundTypeForLastAction = SoundType.Blind2;
+        } else if (stats.soundTypeForLastAction === SoundType.Blind2) {
+          stats.soundTypeForLastAction = SoundType.Blind3;
+        } else if (stats.soundTypeForLastAction === SoundType.Blind3) {
+          stats.soundTypeForLastAction = SoundType.Blind4;
+        } else if (stats.soundTypeForLastAction === SoundType.Blind4) {
+          stats.soundTypeForLastAction = SoundType.Blind5;
+        } else if (stats.soundTypeForLastAction === SoundType.Blind5) {
+          stats.soundTypeForLastAction = SoundType.Blind6;
+        } else {
+          stats.soundTypeForLastAction = SoundType.Blind1;
+        }
+      } else {
+        stats.soundTypeForLastAction = SoundType.Standard;
+      }
+
+      break;
+    }
+
+    default: {
+      break;
+    }
+  }
 }, {} as StatsState);
 
 export default statsReducer;

@@ -5,16 +5,19 @@ export default interface CardState {
   readonly suitIndex: number | null;
   readonly rank: number | null;
 
-  // The following are the variables that are refreshed
-
-  // possibleCardsFromObservation[suitIndex][rank]
-  //  = how many cards of this suitIndex and rank could this be? (excluding clue information)
-  // NOTE: we're using an array as a map, so there will be empty spaces for ranks
-  // that are not valid card ranks (e.g. 0, or 6 in Up or Down)
+  // possibleCardsFromObservation is a two-dimensional array indexed by suitIndex and rank
+  // The value is how many cards of this suitIndex and rank it could be (excluding clue information)
+  // Note that we are using an array as a map,
+  // so there will be empty spaces for ranks that are not valid card ranks
+  // (e.g. 0, or 6 in Up or Down)
   readonly possibleCardsFromObservation: ReadonlyArray<readonly number[]>;
 
-  // possibleCardsFromClues = Array<[suitIndex, rank]>
-  //  = which specific cards are still possible based on clues received
+  // possibleCardsFromClues is a one-dimensional array of tuples
+  // It contains a tuple for each specific card that is still possible based on the clues touching
+  // the card so far
+  // Do not access this by the index; filter the array to find the remaining cards that you need
+  // This is not a two-dimensional array like "possibleCardsFromObservation" is because clues remove
+  // card possibilities in a binary way (as opposed to removing them one by one)
   readonly possibleCardsFromClues: ReadonlyArray<readonly [number, number]>;
 
   // We need this to highlight pips (e.g. on Pink variants)

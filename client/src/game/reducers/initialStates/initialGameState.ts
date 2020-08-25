@@ -11,6 +11,7 @@ import CardStatus from '../../types/CardStatus';
 import { MAX_CLUE_NUM } from '../../types/constants';
 import GameMetadata from '../../types/GameMetadata';
 import GameState from '../../types/GameState';
+import SoundType from '../../types/SoundType';
 import initialTurnState from './initialTurnState';
 
 export default function initialGameState(metadata: GameMetadata): GameState {
@@ -68,6 +69,8 @@ export default function initialGameState(metadata: GameMetadata): GameState {
       efficiency: Infinity,
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),
+      lastCardDiscarded: null,
+      soundTypeForLastAction: SoundType.Standard,
     },
   };
 }

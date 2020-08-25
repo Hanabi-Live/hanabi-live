@@ -190,20 +190,6 @@ func (t *Table) NotifyTurn() {
 	t.NotifyGameAction()
 }
 
-// NotifySound sends a sound notification to everyone in the game
-// (signifying that an action just occurred)
-func (t *Table) NotifySound() {
-	for i, p := range t.Players {
-		if p.Present {
-			p.Session.NotifySound(t, i)
-		}
-	}
-
-	for _, sp := range t.Spectators {
-		sp.Session.NotifySound(t, -1)
-	}
-}
-
 func (t *Table) NotifyFinishOngoingGame() {
 	type FinishOngoingGameMessage struct {
 		TableID            uint64 `json:"tableID"`

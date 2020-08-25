@@ -17,6 +17,7 @@ import * as logView from './view/logView';
 import * as pauseView from './view/pauseView';
 import * as premoveView from './view/premoveView';
 import * as replayView from './view/replayView';
+import * as soundView from './view/soundView';
 import * as spectatorsView from './view/spectatorsView';
 import * as statsView from './view/statsView';
 import * as tooltipsView from './view/tooltipsView';
@@ -181,6 +182,13 @@ const ongoingGameObservers: Subscriptions = [
     ongoingStrikes: s.ongoingGame.strikes,
     visibleStrikes: s.visibleState!.strikes,
   }), gameInfoView.onOngoingOrVisibleStrikesChanged),
+
+  // Sound effects
+  subAfterInit((s) => ({
+    soundType: s.ongoingGame.stats.soundTypeForLastAction,
+    currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
+    turn: s.ongoingGame.turn.turnNum,
+  }), soundView.onNewSoundEffect),
 ];
 
 const replayObservers: Subscriptions = [
