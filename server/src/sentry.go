@@ -90,7 +90,7 @@ func sentryHTTPAttachMetadata(c *gin.Context) {
 		scope.SetTag("userID", "n/a")
 		scope.SetTag("username", "n/a")
 		scope.SetTag("ip", ip)
-		scope.SetTag("path", c.FullPath())
+		scope.SetTag("path", c.Request.URL.Path)
 	})
 }
 

@@ -128,7 +128,7 @@ func main() {
 
 	// Redirect mostly everything to the main maintenance page, e.g. "/"
 	httpRouter.Use(func(c *gin.Context) {
-		path := c.Request.URL.Path // "c.FullPath()" does not work for some reason
+		path := c.Request.URL.Path
 		if path != "/" &&
 			!strings.HasPrefix(path, "/public/") {
 

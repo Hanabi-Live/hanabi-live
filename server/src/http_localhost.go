@@ -104,7 +104,7 @@ func httpLocalhostUserAction(c *gin.Context) {
 		lastIP = v
 	}
 
-	path := c.FullPath()
+	path := c.Request.URL.Path
 	if strings.HasPrefix(path, "/ban") {
 		httpLocalhostBan(c, username, lastIP, userID)
 	} else if strings.HasPrefix(path, "/mute") {

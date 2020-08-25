@@ -29,7 +29,8 @@ func httpMain(c *gin.Context) {
 	}
 
 	title := "Main"
-	if strings.HasPrefix(c.FullPath(), "/dev") {
+	path := c.Request.URL.Path
+	if strings.HasPrefix(path, "/dev") {
 		title = "Dev"
 	}
 
