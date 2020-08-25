@@ -52,9 +52,7 @@ const statsReducer = produce((
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted",
         // similar to what happens when the team gets a strike
-        console.log('before:', stats.potentialCluesLost);
         stats.potentialCluesLost += clueTokensRules.value(variant);
-        console.log('after:', stats.potentialCluesLost);
       }
 
       break;

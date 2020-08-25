@@ -184,7 +184,7 @@ describe('gameStateReducer', () => {
 
     describe('Clue Starved', () => {
       test('is decreased after a clue from playing a 5 is wasted', () => {
-        let state = initialGameStateTest(defaultMetadata);
+        let state = initialGameStateTest(clueStarvedMetadata);
 
         // Draw a red 2, a red 4, and a red 5 to player 0
         const drawRed2Action = draw(0, 0, 0, 2);
@@ -230,7 +230,7 @@ describe('gameStateReducer', () => {
         const discardAction2 = discard(1, 6, 0, 1, false);
         state = gameStateReducer(state, discardAction2, true, clueStarvedMetadata);
 
-        expect(state.clueTokens).toBe(MAX_CLUE_NUM);
+        expect(state.clueTokens).toBe(MAX_CLUE_NUM * 2);
         expect(state.stats.efficiency).toBe(4); // e.g. 4 / 1
 
         // Player 0 plays the red 5
