@@ -70,11 +70,6 @@ func getGameInfo2(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		s.NotifyCardIdentities(t)
 	}
 
-	// If it is their turn, send a "yourTurn" message
-	if !t.Replay && g.ActivePlayerIndex == playerIndex {
-		s.NotifyYourTurn(t)
-	}
-
 	// Check if the game is still in progress
 	if t.Replay {
 		// Since the game is over, send them the notes from all the players & spectators

@@ -209,17 +209,6 @@ func (s *Session) NotifyConnected(t *Table) {
 	})
 }
 
-// NotifyYourTurn will send someone an "yourTurn" message
-// This is sent at the beginning of their turn to bring up the clue UI
-func (s *Session) NotifyYourTurn(t *Table) {
-	type YourTurnMessage struct {
-		TableID uint64 `json:"tableID"`
-	}
-	s.Emit("yourTurn", &YourTurnMessage{
-		TableID: t.ID,
-	})
-}
-
 func (s *Session) NotifyGameAction(t *Table, action interface{}) {
 	scrubbedAction := CheckScrub(t, action, s.UserID())
 

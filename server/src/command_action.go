@@ -191,9 +191,6 @@ func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
 		return
 	}
 
-	// Send the "yourTurn" message to the next player
-	nps.NotifyYourTurn(t)
-
 	// Send everyone new clock values
 	t.NotifyTime()
 

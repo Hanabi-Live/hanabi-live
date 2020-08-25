@@ -24,7 +24,6 @@ import * as notes from './notes';
 import StateObserver from './reactive/StateObserver';
 import * as replay from './replay';
 import * as timer from './timer';
-import * as turn from './turn';
 import uiInit from './uiInit';
 
 // Define a command handler map
@@ -35,11 +34,6 @@ export default commands;
 // ----------------
 // Command handlers
 // ----------------
-
-// Received when it is our turn
-commands.set('yourTurn', () => {
-  turn.begin();
-});
 
 // Received when the server wants to force the client to go back to the lobby
 commands.set('boot', () => {
