@@ -5,7 +5,6 @@ import { gain } from './clueTokens';
 
 const discardAction = discard(0, 0, 0, 1, false);
 const defaultVariant = getVariant(DEFAULT_VARIANT_NAME);
-const clueStarvedVariant = getVariant('Clue Starved (5 Suits)');
 const throwItInAHoleVariant = getVariant('Throw It in a Hole (6 Suits)');
 
 describe('gain', () => {
@@ -16,11 +15,6 @@ describe('gain', () => {
 
   test('does not add clues when maxed out', () => {
     const clueTokens = gain(discardAction, MAX_CLUE_NUM, defaultVariant);
-    expect(clueTokens).toBe(MAX_CLUE_NUM);
-  });
-
-  test('does not add a clue when maxed out for Clue Starved variants', () => {
-    const clueTokens = gain(discardAction, MAX_CLUE_NUM, clueStarvedVariant);
     expect(clueTokens).toBe(MAX_CLUE_NUM);
   });
 

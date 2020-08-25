@@ -3,7 +3,7 @@
 
 import produce, { Draft } from 'immer';
 import { getVariant, getCharacter } from '../data/gameData';
-import { variantRules, cardRules } from '../rules';
+import { variantRules, cardRules, clueTokensRules } from '../rules';
 import * as statsRules from '../rules/stats';
 import { GameAction } from '../types/actions';
 import ClueType from '../types/ClueType';
@@ -38,7 +38,7 @@ const statsReducer = produce((
       // But don't reveal that a strike has happened to players in an ongoing "Throw It in a Hole"
       // game
       if (!variantRules.isThrowItInAHole(variant) || !playing) {
-        stats.potentialCluesLost += 1; // Efficiency calculation does not use adjusted clues
+        stats.potentialCluesLost += clueTokensRules.value(variant);
       }
 
       break;
@@ -52,7 +52,9 @@ const statsReducer = produce((
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted",
         // similar to what happens when the team gets a strike
-        stats.potentialCluesLost += 1; // Efficiency calculation does not use adjusted clues
+        console.log('before:', stats.potentialCluesLost);
+        stats.potentialCluesLost += clueTokensRules.value(variant);
+        console.log('after:', stats.potentialCluesLost);
       }
 
       break;
