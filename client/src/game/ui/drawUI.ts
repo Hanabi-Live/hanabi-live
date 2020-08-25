@@ -375,7 +375,7 @@ const drawPlayStacks = () => {
 
   // Make the invisible "hole" play stack for "Throw It in a Hole" variants
   // (centered in the middle of the rest of the stacks)
-  if (variantRules.isThrowItInAHole(globals.variant)) {
+  if (variantRules.isThrowItInAHole(globals.variant) && globals.state.playing) {
     const playStackX = playStackValues.x + (playStackValues.w / 2) - (cardWidth / 2);
     const playStack = new PlayStack({
       x: playStackX * winW,
@@ -742,7 +742,7 @@ const drawScoreArea = () => {
     x: labelX * winW,
     y: 0.045 * winH,
     listening: true,
-    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.state.finished,
+    visible: !variantRules.isThrowItInAHole(globals.variant) || !globals.state.playing,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreTextLabel!);
   globals.elements.scoreTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -754,7 +754,7 @@ const drawScoreArea = () => {
     x: (labelX + labelSpacing) * winW,
     y: 0.045 * winH,
     listening: true,
-    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.state.finished,
+    visible: !variantRules.isThrowItInAHole(globals.variant) || !globals.state.playing,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.scoreNumberLabel!);
   globals.elements.scoreNumberLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -767,7 +767,7 @@ const drawScoreArea = () => {
     y: 0.05 * winH,
     fontSize: 0.017 * winH,
     listening: true,
-    visible: !variantRules.isThrowItInAHole(globals.variant) || globals.state.finished,
+    visible: !variantRules.isThrowItInAHole(globals.variant) || !globals.state.playing,
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.maxScoreNumberLabel!);
   globals.elements.maxScoreNumberLabel.on(
@@ -777,29 +777,29 @@ const drawScoreArea = () => {
     },
   );
 
-  globals.elements.playsTextLabel = basicTextLabel.clone({
-    text: 'Plays',
-    x: labelX * winW,
-    y: 0.045 * winH,
-    listening: true,
-    visible: variantRules.isThrowItInAHole(globals.variant) && !globals.state.finished,
-  }) as Konva.Text;
-  globals.elements.scoreArea.add(globals.elements.playsTextLabel!);
-  globals.elements.playsTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
-    arrows.click(event, ReplayArrowOrder.Clues, globals.elements.playsNumberLabel);
-  });
+  if (variantRules.isThrowItInAHole(globals.variant) && globals.state.playing) {
+    globals.elements.playsTextLabel = basicTextLabel.clone({
+      text: 'Plays',
+      x: labelX * winW,
+      y: 0.045 * winH,
+      listening: true,
+    }) as Konva.Text;
+    globals.elements.scoreArea.add(globals.elements.playsTextLabel!);
+    globals.elements.playsTextLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
+      arrows.click(event, ReplayArrowOrder.Clues, globals.elements.playsNumberLabel);
+    });
 
-  globals.elements.playsNumberLabel = basicNumberLabel.clone({
-    text: '0',
-    x: (labelX + labelSpacing) * winW,
-    y: 0.045 * winH,
-    listening: true,
-    visible: variantRules.isThrowItInAHole(globals.variant) && !globals.state.finished,
-  }) as Konva.Text;
-  globals.elements.scoreArea.add(globals.elements.playsNumberLabel!);
-  globals.elements.playsNumberLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
-    arrows.click(event, ReplayArrowOrder.Clues, globals.elements.playsNumberLabel);
-  });
+    globals.elements.playsNumberLabel = basicNumberLabel.clone({
+      text: '0',
+      x: (labelX + labelSpacing) * winW,
+      y: 0.045 * winH,
+      listening: true,
+    }) as Konva.Text;
+    globals.elements.scoreArea.add(globals.elements.playsNumberLabel!);
+    globals.elements.playsNumberLabel.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
+      arrows.click(event, ReplayArrowOrder.Clues, globals.elements.playsNumberLabel);
+    });
+  }
 
   const cluesTextLabel = basicTextLabel.clone({
     text: 'Clues',
@@ -917,16 +917,17 @@ const drawScoreArea = () => {
     globals.elements.strikeXs.push(strikeX);
 
     // For variants where the strikes are hidden, draw a "?"
-    const questionMarkLabel = basicTextLabel.clone({
-      text: '?',
-      fontSize: 0.032 * winH,
-      x: (0.0205 + (0.04 * i)) * winW,
-      y: 0.128 * winH,
-      visible: variantRules.isThrowItInAHole(globals.variant) && !globals.state.finished,
-      listening: false,
-    }) as Konva.Text;
-    globals.elements.scoreArea.add(questionMarkLabel);
-    globals.elements.questionMarkLabels.push(questionMarkLabel);
+    if (variantRules.isThrowItInAHole(globals.variant) && globals.state.playing) {
+      const questionMarkLabel = basicTextLabel.clone({
+        text: '?',
+        fontSize: 0.032 * winH,
+        x: (0.0205 + (0.04 * i)) * winW,
+        y: 0.128 * winH,
+        listening: false,
+      }) as Konva.Text;
+      globals.elements.scoreArea.add(questionMarkLabel);
+      globals.elements.questionMarkLabels.push(questionMarkLabel);
+    }
 
     // Handle the tooltips
     strikeSquare.tooltipName = 'strikes';
@@ -947,7 +948,10 @@ const drawScoreArea = () => {
   if (globals.state.playing) {
     globals.elements.strikeSquares[2].hide();
     globals.elements.strikeXs[2].hide();
-    globals.elements.questionMarkLabels[2].hide();
+    const questionMarkLabel = globals.elements.questionMarkLabels[2];
+    if (questionMarkLabel !== undefined) {
+      questionMarkLabel.hide();
+    }
 
     const terminateButton = new Button({
       x: (0.01 + (0.04 * 2)) * winW,

@@ -154,8 +154,8 @@ export const onOngoingOrVisibleStrikesChanged = (data: {
   ongoingStrikes: readonly StateStrike[];
   visibleStrikes: readonly StateStrike[];
 }) => {
-  // Strikes are hidden from the end-user in "Throw It in a Hole" variants
-  if (variantRules.isThrowItInAHole(globals.variant) && !globals.state.finished) {
+  // Strikes are hidden from the players in "Throw It in a Hole" variants
+  if (variantRules.isThrowItInAHole(globals.variant) && globals.state.playing) {
     return;
   }
 
