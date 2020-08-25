@@ -643,6 +643,11 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: string[])
   ctx.scale(1 / scaleFactor, 1 / scaleFactor);
 });
 
+shapeFunctions.set('triangle', (ctx: CanvasRenderingContext2D) => {
+  // TODO
+  console.log(ctx);
+});
+
 export default function drawPip(
   ctx: CanvasRenderingContext2D,
   suit: Suit,
