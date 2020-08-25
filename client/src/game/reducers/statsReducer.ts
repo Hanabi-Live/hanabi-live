@@ -127,7 +127,7 @@ export default statsReducer;
 
 const getSoundType = (
   stats: Draft<StatsState>,
-  action: GameAction,
+  originalAction: GameAction,
   originalState: GameState,
   currentState: GameState,
   metadata: GameMetadata,
@@ -141,6 +141,18 @@ const getSoundType = (
   if (ourCharacterID !== null) {
     const ourCharacter = getCharacter(ourCharacterID);
     ourCharacterName = ourCharacter.name;
+  }
+
+  // In some variants, failed plays are treated as plays
+  let action = originalAction;
+  if (action.type === 'discard' && action.failed && variantRules.isThrowItInAHole(variant)) {
+    action = {
+      type: 'play',
+      playerIndex: action.playerIndex,
+      order: action.order,
+      suitIndex: action.suitIndex,
+      rank: action.rank,
+    };
   }
 
   switch (action.type) {

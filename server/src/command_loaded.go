@@ -1,6 +1,8 @@
 package main
 
-import "time"
+import (
+	"time"
+)
 
 // commandLoaded is sent when the user has finished loading the game UI
 //
