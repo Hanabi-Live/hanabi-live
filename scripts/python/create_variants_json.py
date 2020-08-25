@@ -215,7 +215,7 @@ def main():
             if suit["oneOfEach"]:
                 continue
 
-            # There are no Prism-Ones (as this would be nonsensical)
+            # There are no prism special ranks (e.g. Prism-Ones)
             if suit["prism"]:
                 continue
 

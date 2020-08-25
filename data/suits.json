@@ -234,6 +234,15 @@
     "pip": "hashtag"
   },
   {
+    "name": "Dark Prism",
+    "abbreviation": "I",
+    "createVariants": true,
+    "fill": "#d9d9d9",
+    "oneOfEach": true,
+    "pip": "moon",
+    "prism": true
+  },
+  {
     "name": "Tomato",
     "clueColors": [
       "Red"
