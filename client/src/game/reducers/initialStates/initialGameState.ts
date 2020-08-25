@@ -69,7 +69,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
       efficiency: Infinity,
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),
-      lastCardDiscarded: null,
+      lastAction: null,
       soundTypeForLastAction: SoundType.Standard,
     },
   };

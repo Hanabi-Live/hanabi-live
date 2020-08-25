@@ -23,7 +23,6 @@ enum SoundType {
   Sad, // When the maximum score decreases
   // (this normally happens when discarding a critical card,
   // but it can also happen from playing a card in some variants)
-  Surprise, // When a player plays or discards a card that had the wrong note identity on it
 
   // Clue sounds
   Moo, // For "Cow & Pig" variants

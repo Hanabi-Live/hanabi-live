@@ -1,4 +1,4 @@
-import CardIdentity from './CardIdentity';
+import { GameAction } from './actions';
 import { PaceRisk } from './GameState';
 import SoundType from './SoundType';
 
@@ -9,6 +9,6 @@ export default interface StatsState {
   readonly efficiency: number;
   readonly pace: number | null;
   readonly paceRisk: PaceRisk;
-  readonly lastCardDiscarded: CardIdentity | null;
+  readonly lastAction: GameAction | null;
   readonly soundTypeForLastAction: SoundType;
 }

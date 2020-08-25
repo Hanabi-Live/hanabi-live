@@ -80,19 +80,22 @@ const checkNoteKeywords = (
   || fullNote.includes(`[${k}]`)
 )) !== undefined;
 
-export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
-  let text = note.toLowerCase(); // Make all letters lowercase to simply the matching logic below
-  text = text.trim(); // Remove all leading and trailing whitespace
-  const fullNote = text;
-
+export const getRightmostNoteText = (text: string) => {
   // Only examine the text to the right of the rightmost pipe
-  // (pipes are a conventional way to append new information to a note
-  if (text.includes('|')) {
-    const match = text.match(/.*\|(.*)/);
-    text = match![1];
-    text = text.trim(); // Remove all leading and trailing whitespace
+  // (pipes are a conventional way to append new information to a note)
+  const match = text.match(/.*\|(.*)/);
+  if (match) {
+    return match[1].trim(); // Remove all leading and trailing whitespace
   }
 
+  return text;
+};
+
+export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
+  // Make all letters lowercase to simply the matching logic below
+  // and remove all leading and trailing whitespace
+  const fullNote = note.toLowerCase().trim();
+  const text = getRightmostNoteText(fullNote);
   const cardIdentity = cardIdentityFromNote(variant, text, fullNote);
 
   const chopMoved = checkNoteKeywords([

@@ -110,16 +110,11 @@ const statsReducer = produce((
   );
   stats.efficiency = statsRules.efficiency(cardsGotten, stats.potentialCluesLost);
 
-  // Record the last card discarded
-  if (action.type === 'discard') {
-    stats.lastCardDiscarded = {
-      suitIndex: action.suitIndex,
-      rank: action.rank,
-    };
-  }
+  // Record the last action
+  stats.lastAction = action;
 
   // Find out which sound effect to play (if this is an ongoing game)
-  stats.soundTypeForLastAction = getSound(
+  stats.soundTypeForLastAction = getSoundType(
     stats,
     action,
     originalState,
@@ -130,7 +125,7 @@ const statsReducer = produce((
 
 export default statsReducer;
 
-const getSound = (
+const getSoundType = (
   stats: Draft<StatsState>,
   action: GameAction,
   originalState: GameState,
@@ -174,23 +169,6 @@ const getSound = (
     }
 
     case 'discard': {
-      const touched = cardRules.isClued(currentState.deck[action.order]);
-      const cardDiscarded = originalState.deck[action.order];
-      const lastCardDiscarded = originalState.stats.lastCardDiscarded;
-      let couldBeLastDiscardedCard = true;
-      if (
-        lastCardDiscarded !== null
-        && lastCardDiscarded.suitIndex !== null
-        && lastCardDiscarded.rank !== null
-      ) {
-        couldBeLastDiscardedCard = cardDiscarded.possibleCardsFromClues.some(
-          ([suitIndex, rank]) => (
-            suitIndex === lastCardDiscarded.suitIndex
-            && rank === lastCardDiscarded.rank
-          ),
-        );
-      }
-
       if (action.failed) {
         if (stats.soundTypeForLastAction === SoundType.Fail1) {
           return SoundType.Fail2;
@@ -203,15 +181,27 @@ const getSound = (
         return SoundType.Sad;
       }
 
-      if (false) {
-        // TODO
-        return SoundType.Surprise;
-      }
-
+      const discardedCard = originalState.deck[action.order];
+      const touched = cardRules.isClued(discardedCard);
       if (touched) {
         return SoundType.DiscardClued;
       }
 
+      const lastAction = originalState.stats.lastAction;
+      let couldBeLastDiscardedCard = true;
+      if (
+        lastAction !== null
+        && lastAction.type === 'discard'
+        && lastAction.suitIndex !== null
+        && lastAction.rank !== null
+      ) {
+        couldBeLastDiscardedCard = discardedCard.possibleCardsFromClues.some(
+          ([suitIndex, rank]) => (
+            suitIndex === lastAction.suitIndex
+            && rank === lastAction.rank
+          ),
+        );
+      }
       if (originalState.stats.doubleDiscard && couldBeLastDiscardedCard) {
         // A player has discarded *in* a double discard situation
         return SoundType.DoubleDiscard;
@@ -238,16 +228,11 @@ const getSound = (
     }
 
     case 'play': {
-      const touched = cardRules.isClued(currentState.deck[action.order]);
       if (stats.maxScore < originalState.stats.maxScore) {
         return SoundType.Sad;
       }
 
-      if (false) {
-        // TODO
-        return SoundType.Surprise;
-      }
-
+      const touched = cardRules.isClued(currentState.deck[action.order]);
       if (!touched) {
         if (stats.soundTypeForLastAction === SoundType.Blind1) {
           return SoundType.Blind2;

@@ -1,6 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 
 import { ensureAllCases } from '../../../../misc';
+import { GameAction } from '../../../types/actions';
 import SoundType from '../../../types/SoundType';
 import globals from '../../globals';
 
@@ -8,10 +9,12 @@ export const onNewSoundEffect = (data: {
   soundType: SoundType;
   currentPlayerIndex: number | null;
   turn: number;
+  lastAction: GameAction | null;
 }, previousData: {
   soundType: SoundType;
   currentPlayerIndex: number | null;
   turn: number;
+  lastAction: GameAction | null;
 } | undefined) => {
   if (
     // Don't play sounds on the initial load (unless it is the first turn)
@@ -99,10 +102,6 @@ const getFileName = (soundType: SoundType, ourTurn: boolean) => {
 
     case SoundType.Sad: {
       return 'sad';
-    }
-
-    case SoundType.Surprise: {
-      return 'surprise';
     }
 
     case SoundType.Moo: {
