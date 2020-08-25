@@ -11,6 +11,7 @@ export default interface Suit {
   readonly oneOfEach: boolean;
   readonly pip: string;
   readonly reversed: boolean;
+  readonly prism: boolean;
 
   readonly allClueColors: boolean;
   readonly noClueColors: boolean;

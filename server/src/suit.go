@@ -7,6 +7,7 @@ type Suit struct {
 	DisplayName  string   `json:"displayName"`
 	OneOfEach    bool     `json:"oneOfEach"`
 	Pip          string   `json:"pip"`
+	Prism        bool     `json:"prism"`
 	Reversed     bool     `json:"reversed"`
 
 	AllClueColors bool `json:"allClueColors"`

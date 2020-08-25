@@ -70,7 +70,7 @@ func suitsInit() {
 					return
 				}
 			}
-		} else if !suit.AllClueColors && !suit.NoClueColors {
+		} else if !suit.AllClueColors && !suit.NoClueColors && !suit.Prism {
 			// The clue colors were not specified; by default, use the color of the same name
 			if _, ok := colors[suit.Name]; ok {
 				suit.ClueColors = []string{suit.Name}

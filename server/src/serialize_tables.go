@@ -62,6 +62,11 @@ func restoreTables() {
 		files = v
 	}
 
+	if len(files) == 0 {
+		logger.Info("No previously running tables to restore.")
+		return
+	}
+
 	for _, f := range files {
 		if f.Name() == ".gitignore" {
 			continue
@@ -218,7 +223,7 @@ func restoreTables() {
 	// (we do not need to adjust the "tableIDCounter" variable because
 	// we have logic to not allow duplicate game IDs)
 
-	msg := "Restored " + strconv.Itoa(len(tables)) + " table"
+	msg := "Restored " + strconv.Itoa(len(tables)) + " previously running table"
 	if len(tables) >= 2 {
 		msg += "s"
 	}

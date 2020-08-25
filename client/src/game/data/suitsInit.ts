@@ -16,6 +16,7 @@ interface SuitJSON {
   fillColors?: string[];
   oneOfEach?: boolean;
   pip: string;
+  prism?: boolean;
   reversed?: boolean;
 
   allClueColors?: boolean;
@@ -153,6 +154,9 @@ export default function suitsInit(COLORS: Map<string, Color>) {
       throw new Error(`Failed to find the pip for the "${suitJSON.name}" suit.`);
     }
 
+    // Validate the "prism" property
+    const prism: boolean = suitJSON.prism ?? false;
+
     // Add it to the map
     const suit: Suit = {
       name,
@@ -164,6 +168,7 @@ export default function suitsInit(COLORS: Map<string, Color>) {
       fillColors,
       oneOfEach,
       pip,
+      prism,
       reversed: false,
 
       allClueColors,
