@@ -86,7 +86,7 @@ type Game struct {
 }
 
 func NewGame(t *Table) *Game {
-	v := variants[t.Options.VariantName]
+	variant := variants[t.Options.VariantName]
 
 	g := &Game{
 		Table:        t,
@@ -96,11 +96,11 @@ func NewGame(t *Table) *Game {
 		Players:             make([]*GamePlayer, 0),
 		Deck:                make([]*Card, 0),
 		CardIdentities:      make([]*CardIdentity, 0),
-		Stacks:              make([]int, len(variants[t.Options.VariantName].Suits)),
-		PlayStackDirections: make([]int, len(variants[t.Options.VariantName].Suits)),
+		Stacks:              make([]int, len(variant.Suits)),
+		PlayStackDirections: make([]int, len(variant.Suits)),
 		DatetimeTurnBegin:   time.Now(),
-		ClueTokens:          v.GetAdjustedClueTokens(MaxClueNum),
-		MaxScore:            len(variants[t.Options.VariantName].Suits) * PointsPerSuit,
+		ClueTokens:          variant.GetAdjustedClueTokens(MaxClueNum),
+		MaxScore:            len(variant.Suits) * PointsPerSuit,
 		LastClueTypeGiven:   -1,
 		Actions:             make([]interface{}, 0),
 		Actions2:            make([]*GameAction, 0),
@@ -112,8 +112,8 @@ func NewGame(t *Table) *Game {
 
 	// Reverse the stack direction of reversed suits, except on the "Up or Down" variant
 	// that uses the "Undecided" direction.
-	if v.HasReversedSuits() && !v.IsUpOrDown() {
-		for i, s := range v.Suits {
+	if variant.HasReversedSuits() && !variant.IsUpOrDown() {
+		for i, s := range variant.Suits {
 			if s.Reversed {
 				g.PlayStackDirections[i] = StackDirectionDown
 			} else {
@@ -207,7 +207,7 @@ func (g *Game) EndTimer(gp *GamePlayer) {
 func (g *Game) CheckEnd() bool {
 	// Local variables
 	t := g.Table
-	v := variants[t.Options.VariantName]
+	variant := variants[g.Options.VariantName]
 
 	// Some ending conditions will already be set by the time we get here
 	if g.EndCondition == EndConditionTimeout ||
@@ -226,14 +226,14 @@ func (g *Game) CheckEnd() bool {
 	}
 
 	// In a speedrun, check to see if a perfect score can still be achieved
-	if g.Options.Speedrun && g.MaxScore < variants[g.Options.VariantName].MaxScore {
+	if g.Options.Speedrun && g.MaxScore < variant.MaxScore {
 		logger.Info(t.GetName() + "A perfect score is impossible in a speedrun; ending the game.")
 		g.EndCondition = EndConditionSpeedrunFail
 		return true
 	}
 
 	// In an "All or Nothing" game, check to see if a maximum score can still be reached
-	if g.Options.AllOrNothing && g.MaxScore < variants[g.Options.VariantName].MaxScore {
+	if g.Options.AllOrNothing && g.MaxScore < variant.MaxScore {
 		logger.Info(t.GetName() + "A perfect score is impossible in an \"All or Nothing\" game; ending the game.")
 		g.EndCondition = EndConditionAllOrNothingFail
 		return true
@@ -243,7 +243,7 @@ func (g *Game) CheckEnd() bool {
 	// handle the case where a player would have to discard without any cards in their hand
 	if g.Options.AllOrNothing &&
 		len(g.Players[g.ActivePlayerIndex].Hand) == 0 &&
-		g.ClueTokens < v.GetAdjustedClueTokens(1) {
+		g.ClueTokens < variant.GetAdjustedClueTokens(1) {
 
 		logger.Info(t.GetName() + "The current player has no cards and no clue tokens in an \"All or Nothing\" game; ending the game.")
 		g.EndCondition = EndConditionAllOrNothingSoftlock
@@ -267,7 +267,7 @@ func (g *Game) CheckEnd() bool {
 	}
 
 	// Check to see if there are any cards remaining that can be played on the stacks
-	if variants[g.Options.VariantName].HasReversedSuits() {
+	if variant.HasReversedSuits() {
 		// Searching for the next card is much more complicated if we are playing an "Up or Down"
 		// or "Reversed" variant, so the logic for this is stored in a separate file
 		if !variantReversibleCheckAllDead(g) {
@@ -335,9 +335,12 @@ func (g *Game) GetHandSizeForNormalGame() int {
 // GetMaxScore calculates what the maximum score is,
 // accounting for stacks that cannot be completed due to discarded cards
 func (g *Game) GetMaxScore() int {
+	// Local variables
+	variant := variants[g.Options.VariantName]
+
 	// Getting the maximum score is much more complicated if we are playing a
 	// "Reversed" or "Up or Down" variant
-	if variants[g.Options.VariantName].HasReversedSuits() {
+	if variant.HasReversedSuits() {
 		return variantReversibleGetMaxScore(g)
 	}
 
@@ -375,8 +378,11 @@ func (g *Game) GetSpecificCardNum(suitIndex int, rank int) (int, int) {
 }
 
 func (g *Game) GetNotesSize() int {
+	// Local variables
+	variant := variants[g.Options.VariantName]
+
 	// There are notes for every card in the deck + the stack bases for each suit
 	numCards := len(g.Deck)
-	numSuits := len(variants[g.Options.VariantName].Suits)
+	numSuits := len(variant.Suits)
 	return numCards + numSuits
 }

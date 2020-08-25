@@ -51,13 +51,13 @@ func commandTableUnattend(s *Session, d *CommandData) {
 	t.NotifyChatTyping(s.Username(), false)
 
 	if playerIndex != -1 && !t.Replay {
-		commandTableUnattendPlayer(s, t, playerIndex)
+		tableUnattendPlayer(s, t, playerIndex)
 	} else {
-		commandTableUnattendSpectator(t, spectatorIndex)
+		tableUnattendSpectator(t, spectatorIndex)
 	}
 }
 
-func commandTableUnattendPlayer(s *Session, t *Table, i int) {
+func tableUnattendPlayer(s *Session, t *Table, i int) {
 	// Set their "present" variable to false, which will turn their name red
 	// (or set them to "AWAY" if the game has not started yet)
 	p := t.Players[i]
@@ -70,7 +70,7 @@ func commandTableUnattendPlayer(s *Session, t *Table, i int) {
 	}
 }
 
-func commandTableUnattendSpectator(t *Table, j int) {
+func tableUnattendSpectator(t *Table, j int) {
 	// If this is an ongoing game, create a list of any notes that they wrote
 	cardOrderList := make([]int, 0)
 	if !t.Replay {

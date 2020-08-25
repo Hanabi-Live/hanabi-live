@@ -5,6 +5,9 @@ import (
 )
 
 func (g *Game) InitDeck() {
+	// Local variables
+	variant := variants[g.Options.VariantName]
+
 	// If a custom deck was provided along with the game options,
 	// then we can simply add every card to the deck as specified
 	if g.ExtraOptions.CustomDeck != nil &&
@@ -23,10 +26,10 @@ func (g *Game) InitDeck() {
 
 	// Suits are represented as a slice of integers from 0 to the number of suits - 1
 	// (e.g. [0, 1, 2, 3, 4] for a "No Variant" game)
-	for suitIndex, suitObject := range variants[g.Options.VariantName].Suits {
+	for suitIndex, suit := range variant.Suits {
 		// Ranks are represented as a slice of integers
 		// (e.g. [1, 2, 3, 4, 5] for a "No Variant" game)
-		for _, rank := range variants[g.Options.VariantName].Ranks {
+		for _, rank := range variant.Ranks {
 			// In a normal suit, there are:
 			// - three 1's
 			// - two 2's
@@ -36,12 +39,12 @@ func (g *Game) InitDeck() {
 			var amountToAdd int
 			if rank == 1 {
 				amountToAdd = 3
-				if variants[g.Options.VariantName].IsUpOrDown() || suitObject.Reversed {
+				if variant.IsUpOrDown() || suit.Reversed {
 					amountToAdd = 1
 				}
 			} else if rank == 5 {
 				amountToAdd = 1
-				if suitObject.Reversed {
+				if suit.Reversed {
 					amountToAdd = 3
 				}
 			} else if rank == StartCardRank {
@@ -49,7 +52,7 @@ func (g *Game) InitDeck() {
 			} else {
 				amountToAdd = 2
 			}
-			if suitObject.OneOfEach {
+			if suit.OneOfEach {
 				amountToAdd = 1
 			}
 

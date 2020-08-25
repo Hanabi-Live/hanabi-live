@@ -19,7 +19,6 @@ func commandTagDelete(s *Session, d *CommandData) {
 	if !d.NoLock {
 		defer t.Mutex.Unlock()
 	}
-	g := t.Game
 
 	if !t.Running {
 		s.Warning(ChatCommandNotStartedFail)
@@ -33,6 +32,13 @@ func commandTagDelete(s *Session, d *CommandData) {
 	} else {
 		d.Msg = v
 	}
+
+	tagDelete(s, d, t)
+}
+
+func tagDelete(s *Session, d *CommandData, t *Table) {
+	// Local variables
+	g := t.Game
 
 	if !t.Replay {
 		// See if the tag exists

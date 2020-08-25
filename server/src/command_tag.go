@@ -27,7 +27,6 @@ func commandTag(s *Session, d *CommandData) {
 	if !d.NoLock {
 		defer t.Mutex.Unlock()
 	}
-	g := t.Game
 
 	if !t.Running {
 		s.Warning(ChatCommandNotStartedFail)
@@ -41,6 +40,13 @@ func commandTag(s *Session, d *CommandData) {
 	} else {
 		d.Msg = v
 	}
+
+	tag(s, d, t)
+}
+
+func tag(s *Session, d *CommandData, t *Table) {
+	// Local variables
+	g := t.Game
 
 	if !t.Replay {
 		// Store the tag temporarily until the game ends,

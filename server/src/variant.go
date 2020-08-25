@@ -23,8 +23,20 @@ type Variant struct {
 	MaxScore               int
 }
 
+func (v *Variant) IsAlternatingClues() bool {
+	return strings.HasPrefix(v.Name, "Alternating Clues")
+}
+
 func (v *Variant) IsClueStarved() bool {
 	return strings.HasPrefix(v.Name, "Clue Starved")
+}
+
+func (v *Variant) IsCowAndPig() bool {
+	return strings.HasPrefix(v.Name, "Cow & Pig")
+}
+
+func (v *Variant) IsDuck() bool {
+	return strings.HasPrefix(v.Name, "Duck")
 }
 
 func (v *Variant) IsThrowItInAHole() bool {

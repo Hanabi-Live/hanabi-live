@@ -68,6 +68,9 @@ func commandTableStart(s *Session, d *CommandData) {
 }
 
 func tableStart(s *Session, d *CommandData, t *Table) {
+	// Local variables
+	variant := variants[t.Options.VariantName]
+
 	logger.Info(t.GetName() + "Starting the game.")
 
 	// Record the number of players
@@ -93,7 +96,7 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 	shuffleDeck := true
 	shufflePlayers := true
 	seedPrefix := "p" + strconv.Itoa(len(t.Players)) +
-		"v" + strconv.Itoa(variants[t.Options.VariantName].ID) +
+		"v" + strconv.Itoa(variant.ID) +
 		"s" // e.g. "p2v0s" for a 2-player no variant game
 	if t.ExtraOptions.JSONReplay {
 		// This is a replay from arbitrary JSON data (or a custom game from arbitrary JSON data)
@@ -114,10 +117,7 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 		seedMap := make(map[string]struct{})
 		for _, p := range t.Players {
 			var seeds []string
-			if v, err := models.Games.GetPlayerSeeds(
-				p.ID,
-				variants[g.Options.VariantName].ID,
-			); err != nil {
+			if v, err := models.Games.GetPlayerSeeds(p.ID, variant.ID); err != nil {
 				logger.Error("Failed to get the past seeds for \""+s.Username()+"\":", err)
 				s.Error(StartGameFail)
 				return

@@ -256,7 +256,9 @@ func (g *Game) WriteDatabase() error {
 // Updating the stats is not as important as writing the core data for a game,
 // so it can be handled in the background
 func (g *Game) WriteDatabaseStats() {
+	// Local variables
 	t := g.Table
+	variant := variants[g.Options.VariantName]
 
 	// Compute the integer modifier for this game,
 	// corresponding to the "ScoreModifier" constants in "constants.go"
@@ -281,7 +283,7 @@ func (g *Game) WriteDatabaseStats() {
 	for _, p := range t.Players {
 		// Get their current best scores
 		var userStats UserStatsRow
-		if v, err := models.UserStats.Get(p.ID, variants[g.Options.VariantName].ID); err != nil {
+		if v, err := models.UserStats.Get(p.ID, variant.ID); err != nil {
 			logger.Error("Failed to get the stats for user "+p.Name+":", err)
 			continue
 		} else {
@@ -302,11 +304,7 @@ func (g *Game) WriteDatabaseStats() {
 		// Update their stats
 		// (even if they did not get a new best score,
 		// we still want to update their average score and strikeout rate)
-		if err := models.UserStats.Update(
-			p.ID,
-			variants[g.Options.VariantName].ID,
-			userStats,
-		); err != nil {
+		if err := models.UserStats.Update(p.ID, variant.ID, userStats); err != nil {
 			logger.Error("Failed to update the stats for user "+p.Name+":", err)
 			continue
 		}
@@ -314,9 +312,8 @@ func (g *Game) WriteDatabaseStats() {
 
 	// Get the current stats for this variant
 	var variantStats VariantStatsRow
-	if v, err := models.VariantStats.Get(variants[g.Options.VariantName].ID); err != nil {
-		logger.Error("Failed to get the stats for variant "+
-			strconv.Itoa(variants[g.Options.VariantName].ID)+":", err)
+	if v, err := models.VariantStats.Get(variant.ID); err != nil {
+		logger.Error("Failed to get the stats for variant "+strconv.Itoa(variant.ID)+":", err)
 		return
 	} else {
 		variantStats = v
@@ -334,13 +331,8 @@ func (g *Game) WriteDatabaseStats() {
 	// Write the updated stats to the database
 	// (even if the game was played with modifiers,
 	// we still need to update the number of games played)
-	if err := models.VariantStats.Update(
-		variants[g.Options.VariantName].ID,
-		variants[g.Options.VariantName].MaxScore,
-		variantStats,
-	); err != nil {
-		logger.Error("Failed to update the stats for variant "+
-			strconv.Itoa(variants[g.Options.VariantName].ID)+":", err)
+	if err := models.VariantStats.Update(variant.ID, variant.MaxScore, variantStats); err != nil {
+		logger.Error("Failed to update the stats for variant "+strconv.Itoa(variant.ID)+":", err)
 		return
 	}
 }

@@ -79,6 +79,9 @@ func commandTableJoin(s *Session, d *CommandData) {
 }
 
 func tableJoin(s *Session, t *Table) {
+	// Local variables
+	variant := variants[t.Options.VariantName]
+
 	logger.Info(t.GetName() + "User \"" + s.Username() + "\" joined. " +
 		"(There are now " + strconv.Itoa(len(t.Players)+1) + " players.)")
 
@@ -95,9 +98,9 @@ func tableJoin(s *Session, t *Table) {
 
 	// Get the variant-specific stats for this player
 	var variantStats UserStatsRow
-	if v, err := models.UserStats.Get(s.UserID(), variants[t.Options.VariantName].ID); err != nil {
-		logger.Error("Failed to get the stats for player \""+s.Username()+"\" "+
-			"for variant "+strconv.Itoa(variants[t.Options.VariantName].ID)+":", err)
+	if v, err := models.UserStats.Get(s.UserID(), variant.ID); err != nil {
+		logger.Error("Failed to get the stats for player \""+s.Username()+"\" for variant "+
+			strconv.Itoa(variant.ID)+":", err)
 		s.Error("Something went wrong when getting your stats. Please contact an administrator.")
 		return
 	} else {

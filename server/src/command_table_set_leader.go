@@ -1,5 +1,11 @@
 package main
 
+type NewLeader struct {
+	ID       int
+	Username string
+	Index    int
+}
+
 // commandTableSetLeader is sent when a user right-clicks on the crown
 // or types the "/setleader [username]" command
 //
@@ -36,28 +42,28 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 	}
 
 	// Validate that they are at the table
-	newLeaderID := -1
-	var newLeaderUsername string
-	var newLeaderIndex int
+	newLeader := &NewLeader{
+		ID: -1,
+	}
 	if t.Replay {
 		for _, sp := range t.Spectators {
 			if normalizeString(sp.Name) == normalizedUsername {
-				newLeaderID = sp.ID
-				newLeaderUsername = sp.Name
+				newLeader.ID = sp.ID
+				newLeader.Username = sp.Name
 				break
 			}
 		}
 	} else {
 		for i, p := range t.Players {
 			if normalizeString(p.Name) == normalizedUsername {
-				newLeaderID = p.ID
-				newLeaderUsername = p.Name
-				newLeaderIndex = i
+				newLeader.ID = p.ID
+				newLeader.Username = p.Name
+				newLeader.Index = i
 				break
 			}
 		}
 	}
-	if newLeaderID == -1 {
+	if newLeader.ID == -1 {
 		var msg string
 		if t.Replay {
 			msg = "\"" + d.Name + "\" is not spectating the shared replay."
@@ -68,7 +74,11 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 		return
 	}
 
-	t.Owner = newLeaderID
+	tableSetLeader(s, t, newLeader)
+}
+
+func tableSetLeader(s *Session, t *Table, newLeader *NewLeader) {
+	t.Owner = newLeader.ID
 
 	if t.Replay {
 		t.NotifyReplayLeader()
@@ -77,14 +87,14 @@ func commandTableSetLeader(s *Session, d *CommandData) {
 			// On the pregame screen, the leader should always be the leftmost player,
 			// so we need to swap elements in the players slice
 			playerIndex := t.GetPlayerIndexFromID(s.UserID())
-			t.Players[playerIndex], t.Players[newLeaderIndex] = t.Players[newLeaderIndex], t.Players[playerIndex]
+			t.Players[playerIndex], t.Players[newLeader.Index] = t.Players[newLeader.Index], t.Players[playerIndex]
 
 			// Re-send the "game" message that draws the pregame screen
 			// and enables/disables the "Start Game" button
 			t.NotifyPlayerChange()
 		}
 
-		msg := s.Username() + " has passed table ownership to: " + newLeaderUsername
+		msg := s.Username() + " has passed table ownership to: " + newLeader.Username
 		chatServerSend(msg, t.GetRoomName())
 	}
 }

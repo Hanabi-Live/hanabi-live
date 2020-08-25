@@ -2,7 +2,6 @@ package main
 
 import (
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -99,6 +98,7 @@ func commandAction(s *Session, d *CommandData) {
 func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
 	// Local variables
 	g := t.Game
+	variant := variants[g.Options.VariantName]
 
 	g.Sound = "" // Remove the "fail#" and "blind#" states
 
@@ -190,7 +190,7 @@ func action(s *Session, d *CommandData, t *Table, p *GamePlayer) {
 	if g.EndCondition == EndConditionInProgress {
 		logger.Info(t.GetName() + "It is now " + np.Name + "'s turn.")
 	} else if g.EndCondition == EndConditionNormal {
-		if g.Score == variants[g.Options.VariantName].MaxScore {
+		if g.Score == variant.MaxScore {
 			g.Sound = "finished_perfect"
 		} else {
 			// The players did got get a perfect score, but they did not strike out either
@@ -263,7 +263,7 @@ func commandActionPlay(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 
 func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	// Local variables
-	v := variants[g.Options.VariantName]
+	variant := variants[g.Options.VariantName]
 
 	// Validate that the card is in their hand
 	if !p.InHand(d.Target) {
@@ -273,7 +273,7 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 	}
 
 	// Validate that the team is not at the maximum amount of clues
-	clueLimit := v.GetAdjustedClueTokens(MaxClueNum)
+	clueLimit := variant.GetAdjustedClueTokens(MaxClueNum)
 	if g.ClueTokens >= clueLimit {
 		s.Warning("You cannot discard while the team has " + strconv.Itoa(MaxClueNum) + " clues.")
 		g.InvalidActionOccurred = true
@@ -302,7 +302,7 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 
 func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool {
 	// Local variables
-	v := variants[g.Options.VariantName]
+	variant := variants[g.Options.VariantName]
 
 	// Validate that the target of the clue is sane
 	if d.Target < 0 || d.Target > len(g.Players)-1 {
@@ -319,7 +319,7 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 	}
 
 	// Validate that there are clues available to use
-	if g.ClueTokens < v.GetAdjustedClueTokens(1) {
+	if g.ClueTokens < variant.GetAdjustedClueTokens(1) {
 		s.Warning("You need at least 1 clue token available in order to give a clue.")
 		g.InvalidActionOccurred = true
 		return false
@@ -330,14 +330,14 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 
 	// Validate the clue value
 	if clue.Type == ClueTypeColor {
-		if clue.Value < 0 || clue.Value > len(variants[g.Options.VariantName].ClueColors)-1 {
+		if clue.Value < 0 || clue.Value > len(variant.ClueColors)-1 {
 			s.Warning("You cannot give a color clue with a value of " +
 				"\"" + strconv.Itoa(clue.Value) + "\".")
 			g.InvalidActionOccurred = true
 			return false
 		}
 	} else if clue.Type == ClueTypeRank {
-		if !intInSlice(clue.Value, variants[g.Options.VariantName].ClueRanks) {
+		if !intInSlice(clue.Value, variant.ClueRanks) {
 			s.Warning("You cannot give a rank clue with a value of " +
 				"\"" + strconv.Itoa(clue.Value) + "\".")
 			g.InvalidActionOccurred = true
@@ -350,9 +350,7 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 	}
 
 	// Validate special variant restrictions
-	if strings.HasPrefix(g.Options.VariantName, "Alternating Clues") &&
-		clue.Type == g.LastClueTypeGiven {
-
+	if variant.IsAlternatingClues() && clue.Type == g.LastClueTypeGiven {
 		s.Warning("You cannot give two clues of the same time in a row in this variant.")
 		g.InvalidActionOccurred = true
 		return false
@@ -382,9 +380,9 @@ func commandActionClue(s *Session, d *CommandData, g *Game, p *GamePlayer) bool 
 		// Make an exception if they have the optional setting for "Empty Clues" turned on
 		!g.Options.EmptyClues &&
 		// Make an exception for variants where color clues are always allowed
-		(!variants[g.Options.VariantName].ColorCluesTouchNothing || clue.Type != ClueTypeColor) &&
+		(!variant.ColorCluesTouchNothing || clue.Type != ClueTypeColor) &&
 		// Make an exception for variants where rank clues are always allowed
-		(!variants[g.Options.VariantName].RankCluesTouchNothing || clue.Type != ClueTypeRank) {
+		(!variant.RankCluesTouchNothing || clue.Type != ClueTypeRank) {
 
 		s.Warning("You cannot give a clue that touches 0 cards in the hand.")
 		g.InvalidActionOccurred = true

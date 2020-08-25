@@ -26,6 +26,9 @@ type GameRow struct {
 }
 
 func (*Games) Insert(gameRow GameRow) (int, error) {
+	// Local variables
+	variant := variants[gameRow.Options.VariantName]
+
 	// https://www.postgresql.org/docs/9.5/dml-returning.html
 	// https://github.com/jackc/pgx/issues/411
 	var id int
@@ -81,7 +84,7 @@ func (*Games) Insert(gameRow GameRow) (int, error) {
 		gameRow.Options.NumPlayers,
 		// In the Options struct, the variant is stored as a string,
 		// but it needs to be stored in the database as an integer
-		variants[gameRow.Options.VariantName].ID,
+		variant.ID,
 		gameRow.Options.Timed,
 		gameRow.Options.TimeBase,
 		gameRow.Options.TimePerTurn,

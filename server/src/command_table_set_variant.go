@@ -32,7 +32,7 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 		return
 	}
 
-	// Validate that they send the options object
+	// Validate that they sent the options object
 	if d.Options == nil {
 		d.Options = &Options{}
 	}
@@ -47,15 +47,22 @@ func commandTableSetVariant(s *Session, d *CommandData) {
 		return
 	}
 
+	tableSetVariant(s, d, t)
+}
+
+func tableSetVariant(s *Session, d *CommandData, t *Table) {
+	// Local variables
+	variant := variants[d.Options.VariantName]
+
 	// First, change the variant
 	t.Options.VariantName = d.Options.VariantName
 
 	// Update the variant-specific stats for each player at the table
 	for _, p := range t.Players {
 		var variantStats UserStatsRow
-		if v, err := models.UserStats.Get(p.ID, variants[t.Options.VariantName].ID); err != nil {
-			logger.Error("Failed to get the stats for player \""+s.Username()+"\" "+
-				"for variant "+strconv.Itoa(variants[t.Options.VariantName].ID)+":", err)
+		if v, err := models.UserStats.Get(p.ID, variant.ID); err != nil {
+			logger.Error("Failed to get the stats for player \""+s.Username()+"\" for variant "+
+				strconv.Itoa(variant.ID)+":", err)
 			s.Error(DefaultErrorMsg)
 			return
 		} else {

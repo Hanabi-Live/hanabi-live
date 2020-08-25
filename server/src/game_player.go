@@ -7,7 +7,6 @@ import (
 	"math"
 	"regexp"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -40,7 +39,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	// Local variables
 	g := p.Game
 	t := g.Table
-	v := variants[t.Options.VariantName]
+	variant := variants[t.Options.VariantName]
 	clue := NewClue(d) // Convert the incoming data to a clue object
 
 	// Add the action to the action log
@@ -58,7 +57,7 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	})
 
 	// Keep track that someone clued (i.e. doing 1 clue costs 1 "Clue Token")
-	g.ClueTokens -= v.GetAdjustedClueTokens(1)
+	g.ClueTokens -= variant.GetAdjustedClueTokens(1)
 	g.LastClueTypeGiven = clue.Type
 
 	// Apply the positive and negative clues to the cards in the hand
@@ -82,15 +81,15 @@ func (p *GamePlayer) GiveClue(d *CommandData) {
 	t.NotifyGameAction()
 
 	// Handle custom clue sound effects
-	if p.Character == "Quacker" { // 34
+	if p.Character == "Quacker" {
 		g.Sound = "quack"
-	} else if strings.HasPrefix(g.Options.VariantName, "Cow & Pig") {
+	} else if variant.IsCowAndPig() {
 		if clue.Type == ClueTypeColor {
 			g.Sound = "moo"
 		} else if clue.Type == ClueTypeRank {
 			g.Sound = "oink"
 		}
-	} else if strings.HasPrefix(g.Options.VariantName, "Duck") {
+	} else if variant.IsDuck() {
 		g.Sound = "quack"
 	}
 
@@ -125,7 +124,7 @@ func (p *GamePlayer) PlayCard(c *Card) {
 	// Local variables
 	g := p.Game
 	t := g.Table
-	v := variants[t.Options.VariantName]
+	variant := variants[t.Options.VariantName]
 
 	// Add the action to the action log
 	// (in the future, we will delete GameActions and only keep track of GameActions2)
@@ -141,7 +140,7 @@ func (p *GamePlayer) PlayCard(c *Card) {
 
 	// Find out if this successfully plays
 	var failed bool
-	if variants[g.Options.VariantName].HasReversedSuits() {
+	if variant.HasReversedSuits() {
 		// In the "Up or Down" and "Reversed" variants, cards might not play in order
 		failed = variantReversiblePlay(g, c)
 	} else {
@@ -158,7 +157,7 @@ func (p *GamePlayer) PlayCard(c *Card) {
 		c.Failed = true
 		g.Strikes++
 
-		if strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") {
+		if variant.IsThrowItInAHole() {
 			// Pretend like this card successfully played
 			if c.Touched {
 				// Mark that the blind-play streak has ended
@@ -234,19 +233,19 @@ func (p *GamePlayer) PlayCard(c *Card) {
 	extraClue := c.Rank == 5
 
 	// Handle custom variants that do not play in order from 1 to 5
-	if variants[g.Options.VariantName].HasReversedSuits() {
+	if variant.HasReversedSuits() {
 		extraClue = (c.Rank == 5 || c.Rank == 1) &&
 			g.PlayStackDirections[c.SuitIndex] == StackDirectionFinished
 	}
 
 	if extraClue {
 		// Some variants do not grant an extra clue when successfully playing a 5
-		if v.ShouldGiveClueTokenForPlaying5() {
+		if variant.ShouldGiveClueTokenForPlaying5() {
 			g.ClueTokens++
 		}
 
 		// The extra clue is wasted if the team is at the maximum amount of clues already
-		clueLimit := v.GetAdjustedClueTokens(MaxClueNum)
+		clueLimit := variant.GetAdjustedClueTokens(MaxClueNum)
 		if g.ClueTokens > clueLimit {
 			g.ClueTokens = clueLimit
 		}

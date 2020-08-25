@@ -111,12 +111,14 @@ func (p *GamePlayer) GetPreviousPlayer() int {
 // CheckSurprise checks to see if a player has a "wrong" note on a card that
 // they just played or discarded
 // This code mirrors the "morph()" client-side function
+// TODO move this code to client side and delete this
 func (p *GamePlayer) CheckSurprise(c *Card) {
 	// Local variables
 	g := p.Game
+	variant := variants[g.Options.VariantName]
 
 	// Disable the surprise sound in certain variants
-	if strings.HasPrefix(g.Options.VariantName, "Throw It in a Hole") {
+	if variant.IsThrowItInAHole() {
 		return
 	}
 
@@ -145,7 +147,7 @@ func (p *GamePlayer) CheckSurprise(c *Card) {
 			break
 		}
 
-		for _, suit := range variants[g.Options.VariantName].Suits {
+		for _, suit := range variant.Suits {
 			suitAbbrev := strings.ToLower(suit.Abbreviation)
 			suitName := strings.ToLower(suit.Name)
 			if note == suitAbbrev+rankStr || // e.g. "b1" or "B1"
