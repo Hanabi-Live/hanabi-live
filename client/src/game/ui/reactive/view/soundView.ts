@@ -28,7 +28,11 @@ export const onNewSoundEffect = (data: {
 
   // Only play certain sound effects for people in the Hyphen-ated Group
   if (
-    (data.soundType === SoundType.DoubleDiscard || data.soundType === SoundType.DoubleDiscardCause)
+    (
+      data.soundType === SoundType.DiscardClued
+      || data.soundType === SoundType.DoubleDiscard
+      || data.soundType === SoundType.DoubleDiscardCause
+    )
     && !globals.lobby.settings.hyphenatedConventions
   ) {
     data.soundType = SoundType.Standard;

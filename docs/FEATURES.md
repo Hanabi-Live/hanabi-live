@@ -323,9 +323,10 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventions">Hyphen-ated group</a>, some additional UI elements are enabled:
 
-* Double discard situation notification
-* Special sound effect when discarding in a double discard situation (not implemented yet)
-* Special sound effect when discarding a clued card (not implemented yet)
+* Double discard situation notification (as a border around the discard pile and in the "Current Player" area)
+* Special sound effect when discarding a clued card
+* Special sound effect when discarding to enter a double discard situation
+* Special sound effect when discarding in a double discard situation
 * Special sound effect when playing a 1 out of order (not implemented yet)
 
 <br />
