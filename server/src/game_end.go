@@ -405,7 +405,7 @@ func (t *Table) ConvertToSharedReplay() {
 			}
 		}
 
-		if t.Owner != -1 {
+		if t.Owner == -1 {
 			// All of the players are away, so make the first spectator the leader
 			t.Owner = t.Spectators[0].ID
 			logger.Info("All players are offline; set the new leader to be:", t.Spectators[0].Name)
