@@ -401,6 +401,48 @@
     ]
   },
   {
+    "name": "Prism (6 Suits)",
+    "id": 1464,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Prism (5 Suits)",
+    "id": 1465,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Prism (4 Suits)",
+    "id": 1466,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Prism (3 Suits)",
+    "id": 1467,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
+    ]
+  },
+  {
     "name": "Dark Rainbow (6 Suits)",
     "id": 11,
     "suits": [
@@ -766,6 +808,29 @@
       "Blue",
       "Black",
       "Light Pink"
+    ]
+  },
+  {
+    "name": "Black & Prism (6 Suits)",
+    "id": 1468,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Black",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Black & Prism (5 Suits)",
+    "id": 1469,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Black",
+      "Prism"
     ]
   },
   {
@@ -1156,6 +1221,48 @@
       "Red",
       "Rainbow",
       "Light Pink"
+    ]
+  },
+  {
+    "name": "Rainbow & Prism (6 Suits)",
+    "id": 1470,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Rainbow",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Rainbow & Prism (5 Suits)",
+    "id": 1471,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Rainbow",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Rainbow & Prism (4 Suits)",
+    "id": 1472,
+    "suits": [
+      "Red",
+      "Blue",
+      "Rainbow",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Rainbow & Prism (3 Suits)",
+    "id": 1473,
+    "suits": [
+      "Red",
+      "Rainbow",
+      "Prism"
     ]
   },
   {
@@ -1572,6 +1679,48 @@
     ]
   },
   {
+    "name": "Pink & Prism (6 Suits)",
+    "id": 1474,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Pink",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Pink & Prism (5 Suits)",
+    "id": 1475,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Pink",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Pink & Prism (4 Suits)",
+    "id": 1476,
+    "suits": [
+      "Red",
+      "Blue",
+      "Pink",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Pink & Prism (3 Suits)",
+    "id": 1477,
+    "suits": [
+      "Red",
+      "Pink",
+      "Prism"
+    ]
+  },
+  {
     "name": "Pink & Dark Rainbow (6 Suits)",
     "id": 131,
     "suits": [
@@ -1943,6 +2092,48 @@
     ]
   },
   {
+    "name": "White & Prism (6 Suits)",
+    "id": 1478,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "White",
+      "Prism"
+    ]
+  },
+  {
+    "name": "White & Prism (5 Suits)",
+    "id": 1479,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "White",
+      "Prism"
+    ]
+  },
+  {
+    "name": "White & Prism (4 Suits)",
+    "id": 1480,
+    "suits": [
+      "Red",
+      "Blue",
+      "White",
+      "Prism"
+    ]
+  },
+  {
+    "name": "White & Prism (3 Suits)",
+    "id": 1481,
+    "suits": [
+      "Red",
+      "White",
+      "Prism"
+    ]
+  },
+  {
     "name": "White & Dark Rainbow (6 Suits)",
     "id": 83,
     "suits": [
@@ -2272,6 +2463,48 @@
     ]
   },
   {
+    "name": "Brown & Prism (6 Suits)",
+    "id": 1482,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Brown",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Brown & Prism (5 Suits)",
+    "id": 1483,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Brown",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Brown & Prism (4 Suits)",
+    "id": 1484,
+    "suits": [
+      "Red",
+      "Blue",
+      "Brown",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Brown & Prism (3 Suits)",
+    "id": 1485,
+    "suits": [
+      "Red",
+      "Brown",
+      "Prism"
+    ]
+  },
+  {
     "name": "Brown & Dark Rainbow (6 Suits)",
     "id": 85,
     "suits": [
@@ -2559,6 +2792,48 @@
     ]
   },
   {
+    "name": "Omni & Prism (6 Suits)",
+    "id": 1486,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Omni",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Omni & Prism (5 Suits)",
+    "id": 1487,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Omni",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Omni & Prism (4 Suits)",
+    "id": 1488,
+    "suits": [
+      "Red",
+      "Blue",
+      "Omni",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Omni & Prism (3 Suits)",
+    "id": 1489,
+    "suits": [
+      "Red",
+      "Omni",
+      "Prism"
+    ]
+  },
+  {
     "name": "Omni & Dark Rainbow (6 Suits)",
     "id": 226,
     "suits": [
@@ -2804,6 +3079,48 @@
     ]
   },
   {
+    "name": "Null & Prism (6 Suits)",
+    "id": 1490,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Null",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Null & Prism (5 Suits)",
+    "id": 1491,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Null",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Null & Prism (4 Suits)",
+    "id": 1492,
+    "suits": [
+      "Red",
+      "Blue",
+      "Null",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Null & Prism (3 Suits)",
+    "id": 1493,
+    "suits": [
+      "Red",
+      "Null",
+      "Prism"
+    ]
+  },
+  {
     "name": "Null & Dark Rainbow (6 Suits)",
     "id": 228,
     "suits": [
@@ -3007,6 +3324,48 @@
     ]
   },
   {
+    "name": "Muddy Rainbow & Prism (6 Suits)",
+    "id": 1494,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Muddy Rainbow",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Muddy Rainbow & Prism (5 Suits)",
+    "id": 1495,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Muddy Rainbow",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Muddy Rainbow & Prism (4 Suits)",
+    "id": 1496,
+    "suits": [
+      "Red",
+      "Blue",
+      "Muddy Rainbow",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Muddy Rainbow & Prism (3 Suits)",
+    "id": 1497,
+    "suits": [
+      "Red",
+      "Muddy Rainbow",
+      "Prism"
+    ]
+  },
+  {
     "name": "Muddy Rainbow & Dark Rainbow (6 Suits)",
     "id": 1304,
     "suits": [
@@ -3168,6 +3527,48 @@
     ]
   },
   {
+    "name": "Light Pink & Prism (6 Suits)",
+    "id": 1498,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Light Pink",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Light Pink & Prism (5 Suits)",
+    "id": 1499,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Light Pink",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Light Pink & Prism (4 Suits)",
+    "id": 1500,
+    "suits": [
+      "Red",
+      "Blue",
+      "Light Pink",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Light Pink & Prism (3 Suits)",
+    "id": 1501,
+    "suits": [
+      "Red",
+      "Light Pink",
+      "Prism"
+    ]
+  },
+  {
     "name": "Light Pink & Dark Rainbow (6 Suits)",
     "id": 806,
     "suits": [
@@ -3326,6 +3727,190 @@
       "Blue",
       "Light Pink",
       "Cocoa Rainbow"
+    ]
+  },
+  {
+    "name": "Prism & Dark Rainbow (6 Suits)",
+    "id": 1502,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism",
+      "Dark Rainbow"
+    ]
+  },
+  {
+    "name": "Prism & Dark Rainbow (5 Suits)",
+    "id": 1503,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism",
+      "Dark Rainbow"
+    ]
+  },
+  {
+    "name": "Prism & Dark Pink (6 Suits)",
+    "id": 1504,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism",
+      "Dark Pink"
+    ]
+  },
+  {
+    "name": "Prism & Dark Pink (5 Suits)",
+    "id": 1505,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism",
+      "Dark Pink"
+    ]
+  },
+  {
+    "name": "Prism & Gray (6 Suits)",
+    "id": 1506,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism",
+      "Gray"
+    ]
+  },
+  {
+    "name": "Prism & Gray (5 Suits)",
+    "id": 1507,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism",
+      "Gray"
+    ]
+  },
+  {
+    "name": "Prism & Dark Brown (6 Suits)",
+    "id": 1508,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism",
+      "Dark Brown"
+    ]
+  },
+  {
+    "name": "Prism & Dark Brown (5 Suits)",
+    "id": 1509,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism",
+      "Dark Brown"
+    ]
+  },
+  {
+    "name": "Prism & Dark Omni (6 Suits)",
+    "id": 1510,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism",
+      "Dark Omni"
+    ]
+  },
+  {
+    "name": "Prism & Dark Omni (5 Suits)",
+    "id": 1511,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism",
+      "Dark Omni"
+    ]
+  },
+  {
+    "name": "Prism & Dark Null (6 Suits)",
+    "id": 1512,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism",
+      "Dark Null"
+    ]
+  },
+  {
+    "name": "Prism & Dark Null (5 Suits)",
+    "id": 1513,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism",
+      "Dark Null"
+    ]
+  },
+  {
+    "name": "Prism & Cocoa Rainbow (6 Suits)",
+    "id": 1514,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism",
+      "Cocoa Rainbow"
+    ]
+  },
+  {
+    "name": "Prism & Cocoa Rainbow (5 Suits)",
+    "id": 1515,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism",
+      "Cocoa Rainbow"
+    ]
+  },
+  {
+    "name": "Prism & Gray Pink (6 Suits)",
+    "id": 1516,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism",
+      "Gray Pink"
+    ]
+  },
+  {
+    "name": "Prism & Gray Pink (5 Suits)",
+    "id": 1517,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism",
+      "Gray Pink"
     ]
   },
   {
@@ -4137,6 +4722,56 @@
       "Red",
       "Blue",
       "Light Pink"
+    ],
+    "specialRank": 1,
+    "specialAllClueColors": true
+  },
+  {
+    "name": "Rainbow-Ones & Prism (6 Suits)",
+    "id": 1518,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueColors": true
+  },
+  {
+    "name": "Rainbow-Ones & Prism (5 Suits)",
+    "id": 1519,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueColors": true
+  },
+  {
+    "name": "Rainbow-Ones & Prism (4 Suits)",
+    "id": 1520,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueColors": true
+  },
+  {
+    "name": "Rainbow-Ones & Prism (3 Suits)",
+    "id": 1521,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
     ],
     "specialRank": 1,
     "specialAllClueColors": true
@@ -5063,6 +5698,80 @@
     ]
   },
   {
+    "name": "Pink-Ones & Prism (6 Suits)",
+    "id": 1522,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Pink-Ones & Prism (5 Suits)",
+    "id": 1523,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Pink-Ones & Prism (4 Suits)",
+    "id": 1524,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Pink-Ones & Prism (3 Suits)",
+    "id": 1525,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
     "name": "Pink-Ones & Dark Rainbow (6 Suits)",
     "id": 354,
     "suits": [
@@ -5847,6 +6556,56 @@
       "Red",
       "Blue",
       "Light Pink"
+    ],
+    "specialRank": 1,
+    "specialNoClueColors": true
+  },
+  {
+    "name": "White-Ones & Prism (6 Suits)",
+    "id": 1526,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialNoClueColors": true
+  },
+  {
+    "name": "White-Ones & Prism (5 Suits)",
+    "id": 1527,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialNoClueColors": true
+  },
+  {
+    "name": "White-Ones & Prism (4 Suits)",
+    "id": 1528,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialNoClueColors": true
+  },
+  {
+    "name": "White-Ones & Prism (3 Suits)",
+    "id": 1529,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
     ],
     "specialRank": 1,
     "specialNoClueColors": true
@@ -6762,6 +7521,80 @@
       "Red",
       "Blue",
       "Light Pink"
+    ],
+    "specialRank": 1,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Brown-Ones & Prism (6 Suits)",
+    "id": 1530,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Brown-Ones & Prism (5 Suits)",
+    "id": 1531,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Brown-Ones & Prism (4 Suits)",
+    "id": 1532,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Brown-Ones & Prism (3 Suits)",
+    "id": 1533,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
     ],
     "specialRank": 1,
     "specialNoClueRanks": true,
@@ -7816,6 +8649,84 @@
       "Red",
       "Blue",
       "Light Pink"
+    ],
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Omni-Ones & Prism (6 Suits)",
+    "id": 1534,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Omni-Ones & Prism (5 Suits)",
+    "id": 1535,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Omni-Ones & Prism (4 Suits)",
+    "id": 1536,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Omni-Ones & Prism (3 Suits)",
+    "id": 1537,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
     ],
     "specialRank": 1,
     "specialAllClueColors": true,
@@ -8899,6 +9810,84 @@
     ]
   },
   {
+    "name": "Null-Ones & Prism (6 Suits)",
+    "id": 1538,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Null-Ones & Prism (5 Suits)",
+    "id": 1539,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Null-Ones & Prism (4 Suits)",
+    "id": 1540,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Null-Ones & Prism (3 Suits)",
+    "id": 1541,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
     "name": "Null-Ones & Dark Rainbow (6 Suits)",
     "id": 514,
     "suits": [
@@ -9958,6 +10947,84 @@
       "Red",
       "Blue",
       "Light Pink"
+    ],
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Muddy-Rainbow-Ones & Prism (6 Suits)",
+    "id": 1542,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Muddy-Rainbow-Ones & Prism (5 Suits)",
+    "id": 1543,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Muddy-Rainbow-Ones & Prism (4 Suits)",
+    "id": 1544,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Muddy-Rainbow-Ones & Prism (3 Suits)",
+    "id": 1545,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
     ],
     "specialRank": 1,
     "specialAllClueColors": true,
@@ -11041,6 +12108,84 @@
     ]
   },
   {
+    "name": "Light-Pink-Ones & Prism (6 Suits)",
+    "id": 1546,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Light-Pink-Ones & Prism (5 Suits)",
+    "id": 1547,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Light-Pink-Ones & Prism (4 Suits)",
+    "id": 1548,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "name": "Light-Pink-Ones & Prism (3 Suits)",
+    "id": 1549,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true,
+    "clueRanks": [
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
     "name": "Light-Pink-Ones & Dark Rainbow (6 Suits)",
     "id": 1099,
     "suits": [
@@ -11367,6 +12512,691 @@
       4,
       5
     ]
+  },
+  {
+    "name": "Prism-Ones (6 Suits)",
+    "id": 1550,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Teal"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones (5 Suits)",
+    "id": 1551,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones (4 Suits)",
+    "id": 1552,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones (3 Suits)",
+    "id": 1553,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Black (6 Suits)",
+    "id": 1554,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Black"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Black (5 Suits)",
+    "id": 1555,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Black"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Rainbow (6 Suits)",
+    "id": 1556,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Rainbow"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Rainbow (5 Suits)",
+    "id": 1557,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Rainbow"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Rainbow (4 Suits)",
+    "id": 1558,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Rainbow"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Rainbow (3 Suits)",
+    "id": 1559,
+    "suits": [
+      "Red",
+      "Blue",
+      "Rainbow"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Pink (6 Suits)",
+    "id": 1560,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Pink"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Pink (5 Suits)",
+    "id": 1561,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Pink"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Pink (4 Suits)",
+    "id": 1562,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Pink"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Pink (3 Suits)",
+    "id": 1563,
+    "suits": [
+      "Red",
+      "Blue",
+      "Pink"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & White (6 Suits)",
+    "id": 1564,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "White"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & White (5 Suits)",
+    "id": 1565,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "White"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & White (4 Suits)",
+    "id": 1566,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "White"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & White (3 Suits)",
+    "id": 1567,
+    "suits": [
+      "Red",
+      "Blue",
+      "White"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Brown (6 Suits)",
+    "id": 1568,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Brown"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Brown (5 Suits)",
+    "id": 1569,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Brown"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Brown (4 Suits)",
+    "id": 1570,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Brown"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Brown (3 Suits)",
+    "id": 1571,
+    "suits": [
+      "Red",
+      "Blue",
+      "Brown"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Omni (6 Suits)",
+    "id": 1572,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Omni"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Omni (5 Suits)",
+    "id": 1573,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Omni"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Omni (4 Suits)",
+    "id": 1574,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Omni"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Omni (3 Suits)",
+    "id": 1575,
+    "suits": [
+      "Red",
+      "Blue",
+      "Omni"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Null (6 Suits)",
+    "id": 1576,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Null"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Null (5 Suits)",
+    "id": 1577,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Null"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Null (4 Suits)",
+    "id": 1578,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Null"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Null (3 Suits)",
+    "id": 1579,
+    "suits": [
+      "Red",
+      "Blue",
+      "Null"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Muddy Rainbow (6 Suits)",
+    "id": 1580,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Muddy Rainbow (5 Suits)",
+    "id": 1581,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Muddy Rainbow (4 Suits)",
+    "id": 1582,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Muddy Rainbow (3 Suits)",
+    "id": 1583,
+    "suits": [
+      "Red",
+      "Blue",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Light Pink (6 Suits)",
+    "id": 1584,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Light Pink"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Light Pink (5 Suits)",
+    "id": 1585,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Light Pink"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Light Pink (4 Suits)",
+    "id": 1586,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Light Pink"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Light Pink (3 Suits)",
+    "id": 1587,
+    "suits": [
+      "Red",
+      "Blue",
+      "Light Pink"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Prism (6 Suits)",
+    "id": 1588,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Prism (5 Suits)",
+    "id": 1589,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Prism (4 Suits)",
+    "id": 1590,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Prism (3 Suits)",
+    "id": 1591,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Dark Rainbow (6 Suits)",
+    "id": 1592,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Rainbow"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Dark Rainbow (5 Suits)",
+    "id": 1593,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Rainbow"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Dark Pink (6 Suits)",
+    "id": 1594,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Pink"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Dark Pink (5 Suits)",
+    "id": 1595,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Pink"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Gray (6 Suits)",
+    "id": 1596,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Gray"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Gray (5 Suits)",
+    "id": 1597,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Gray"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Dark Brown (6 Suits)",
+    "id": 1598,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Brown"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Dark Brown (5 Suits)",
+    "id": 1599,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Brown"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Dark Omni (6 Suits)",
+    "id": 1600,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Omni"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Dark Omni (5 Suits)",
+    "id": 1601,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Omni"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Dark Null (6 Suits)",
+    "id": 1602,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Null"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Dark Null (5 Suits)",
+    "id": 1603,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Null"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Cocoa Rainbow (6 Suits)",
+    "id": 1604,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Cocoa Rainbow"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Cocoa Rainbow (5 Suits)",
+    "id": 1605,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Cocoa Rainbow"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Gray Pink (6 Suits)",
+    "id": 1606,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Gray Pink"
+    ],
+    "specialRank": 1
+  },
+  {
+    "name": "Prism-Ones & Gray Pink (5 Suits)",
+    "id": 1607,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Gray Pink"
+    ],
+    "specialRank": 1
   },
   {
     "name": "Rainbow-Fives (6 Suits)",
@@ -11841,6 +13671,56 @@
       "Red",
       "Blue",
       "Light Pink"
+    ],
+    "specialRank": 5,
+    "specialAllClueColors": true
+  },
+  {
+    "name": "Rainbow-Fives & Prism (6 Suits)",
+    "id": 1608,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueColors": true
+  },
+  {
+    "name": "Rainbow-Fives & Prism (5 Suits)",
+    "id": 1609,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueColors": true
+  },
+  {
+    "name": "Rainbow-Fives & Prism (4 Suits)",
+    "id": 1610,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueColors": true
+  },
+  {
+    "name": "Rainbow-Fives & Prism (3 Suits)",
+    "id": 1611,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
     ],
     "specialRank": 5,
     "specialAllClueColors": true
@@ -12767,6 +14647,80 @@
     ]
   },
   {
+    "name": "Pink-Fives & Prism (6 Suits)",
+    "id": 1612,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Pink-Fives & Prism (5 Suits)",
+    "id": 1613,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Pink-Fives & Prism (4 Suits)",
+    "id": 1614,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Pink-Fives & Prism (3 Suits)",
+    "id": 1615,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
     "name": "Pink-Fives & Dark Rainbow (6 Suits)",
     "id": 586,
     "suits": [
@@ -13551,6 +15505,56 @@
       "Red",
       "Blue",
       "Light Pink"
+    ],
+    "specialRank": 5,
+    "specialNoClueColors": true
+  },
+  {
+    "name": "White-Fives & Prism (6 Suits)",
+    "id": 1616,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialNoClueColors": true
+  },
+  {
+    "name": "White-Fives & Prism (5 Suits)",
+    "id": 1617,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialNoClueColors": true
+  },
+  {
+    "name": "White-Fives & Prism (4 Suits)",
+    "id": 1618,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialNoClueColors": true
+  },
+  {
+    "name": "White-Fives & Prism (3 Suits)",
+    "id": 1619,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
     ],
     "specialRank": 5,
     "specialNoClueColors": true
@@ -14466,6 +16470,80 @@
       "Red",
       "Blue",
       "Light Pink"
+    ],
+    "specialRank": 5,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Brown-Fives & Prism (6 Suits)",
+    "id": 1620,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Brown-Fives & Prism (5 Suits)",
+    "id": 1621,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Brown-Fives & Prism (4 Suits)",
+    "id": 1622,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Brown-Fives & Prism (3 Suits)",
+    "id": 1623,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
     ],
     "specialRank": 5,
     "specialNoClueRanks": true,
@@ -15520,6 +17598,84 @@
       "Red",
       "Blue",
       "Light Pink"
+    ],
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Omni-Fives & Prism (6 Suits)",
+    "id": 1624,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Omni-Fives & Prism (5 Suits)",
+    "id": 1625,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Omni-Fives & Prism (4 Suits)",
+    "id": 1626,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialAllClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Omni-Fives & Prism (3 Suits)",
+    "id": 1627,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
     ],
     "specialRank": 5,
     "specialAllClueColors": true,
@@ -16603,6 +18759,84 @@
     ]
   },
   {
+    "name": "Null-Fives & Prism (6 Suits)",
+    "id": 1628,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Null-Fives & Prism (5 Suits)",
+    "id": 1629,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Null-Fives & Prism (4 Suits)",
+    "id": 1630,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Null-Fives & Prism (3 Suits)",
+    "id": 1631,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialNoClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
     "name": "Null-Fives & Dark Rainbow (6 Suits)",
     "id": 746,
     "suits": [
@@ -17662,6 +19896,84 @@
       "Red",
       "Blue",
       "Light Pink"
+    ],
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Muddy-Rainbow-Fives & Prism (6 Suits)",
+    "id": 1632,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Muddy-Rainbow-Fives & Prism (5 Suits)",
+    "id": 1633,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Muddy-Rainbow-Fives & Prism (4 Suits)",
+    "id": 1634,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueColors": true,
+    "specialNoClueRanks": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Muddy-Rainbow-Fives & Prism (3 Suits)",
+    "id": 1635,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
     ],
     "specialRank": 5,
     "specialAllClueColors": true,
@@ -18745,6 +21057,84 @@
     ]
   },
   {
+    "name": "Light-Pink-Fives & Prism (6 Suits)",
+    "id": 1636,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Light-Pink-Fives & Prism (5 Suits)",
+    "id": 1637,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Light-Pink-Fives & Prism (4 Suits)",
+    "id": 1638,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "Light-Pink-Fives & Prism (3 Suits)",
+    "id": 1639,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5,
+    "specialAllClueRanks": true,
+    "specialNoClueColors": true,
+    "clueRanks": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
     "name": "Light-Pink-Fives & Dark Rainbow (6 Suits)",
     "id": 1203,
     "suits": [
@@ -19073,6 +21463,691 @@
     ]
   },
   {
+    "name": "Prism-Fives (6 Suits)",
+    "id": 1640,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Teal"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives (5 Suits)",
+    "id": 1641,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives (4 Suits)",
+    "id": 1642,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives (3 Suits)",
+    "id": 1643,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Black (6 Suits)",
+    "id": 1644,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Black"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Black (5 Suits)",
+    "id": 1645,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Black"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Rainbow (6 Suits)",
+    "id": 1646,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Rainbow"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Rainbow (5 Suits)",
+    "id": 1647,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Rainbow"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Rainbow (4 Suits)",
+    "id": 1648,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Rainbow"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Rainbow (3 Suits)",
+    "id": 1649,
+    "suits": [
+      "Red",
+      "Blue",
+      "Rainbow"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Pink (6 Suits)",
+    "id": 1650,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Pink"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Pink (5 Suits)",
+    "id": 1651,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Pink"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Pink (4 Suits)",
+    "id": 1652,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Pink"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Pink (3 Suits)",
+    "id": 1653,
+    "suits": [
+      "Red",
+      "Blue",
+      "Pink"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & White (6 Suits)",
+    "id": 1654,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "White"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & White (5 Suits)",
+    "id": 1655,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "White"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & White (4 Suits)",
+    "id": 1656,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "White"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & White (3 Suits)",
+    "id": 1657,
+    "suits": [
+      "Red",
+      "Blue",
+      "White"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Brown (6 Suits)",
+    "id": 1658,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Brown"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Brown (5 Suits)",
+    "id": 1659,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Brown"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Brown (4 Suits)",
+    "id": 1660,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Brown"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Brown (3 Suits)",
+    "id": 1661,
+    "suits": [
+      "Red",
+      "Blue",
+      "Brown"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Omni (6 Suits)",
+    "id": 1662,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Omni"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Omni (5 Suits)",
+    "id": 1663,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Omni"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Omni (4 Suits)",
+    "id": 1664,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Omni"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Omni (3 Suits)",
+    "id": 1665,
+    "suits": [
+      "Red",
+      "Blue",
+      "Omni"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Null (6 Suits)",
+    "id": 1666,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Null"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Null (5 Suits)",
+    "id": 1667,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Null"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Null (4 Suits)",
+    "id": 1668,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Null"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Null (3 Suits)",
+    "id": 1669,
+    "suits": [
+      "Red",
+      "Blue",
+      "Null"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Muddy Rainbow (6 Suits)",
+    "id": 1670,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Muddy Rainbow (5 Suits)",
+    "id": 1671,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Muddy Rainbow (4 Suits)",
+    "id": 1672,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Muddy Rainbow (3 Suits)",
+    "id": 1673,
+    "suits": [
+      "Red",
+      "Blue",
+      "Muddy Rainbow"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Light Pink (6 Suits)",
+    "id": 1674,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Light Pink"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Light Pink (5 Suits)",
+    "id": 1675,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Light Pink"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Light Pink (4 Suits)",
+    "id": 1676,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Light Pink"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Light Pink (3 Suits)",
+    "id": 1677,
+    "suits": [
+      "Red",
+      "Blue",
+      "Light Pink"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Prism (6 Suits)",
+    "id": 1678,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Prism (5 Suits)",
+    "id": 1679,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Prism (4 Suits)",
+    "id": 1680,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Prism (3 Suits)",
+    "id": 1681,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Dark Rainbow (6 Suits)",
+    "id": 1682,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Rainbow"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Dark Rainbow (5 Suits)",
+    "id": 1683,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Rainbow"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Dark Pink (6 Suits)",
+    "id": 1684,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Pink"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Dark Pink (5 Suits)",
+    "id": 1685,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Pink"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Gray (6 Suits)",
+    "id": 1686,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Gray"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Gray (5 Suits)",
+    "id": 1687,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Gray"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Dark Brown (6 Suits)",
+    "id": 1688,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Brown"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Dark Brown (5 Suits)",
+    "id": 1689,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Brown"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Dark Omni (6 Suits)",
+    "id": 1690,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Omni"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Dark Omni (5 Suits)",
+    "id": 1691,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Omni"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Dark Null (6 Suits)",
+    "id": 1692,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Dark Null"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Dark Null (5 Suits)",
+    "id": 1693,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Dark Null"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Cocoa Rainbow (6 Suits)",
+    "id": 1694,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Cocoa Rainbow"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Cocoa Rainbow (5 Suits)",
+    "id": 1695,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Cocoa Rainbow"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Gray Pink (6 Suits)",
+    "id": 1696,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Gray Pink"
+    ],
+    "specialRank": 5
+  },
+  {
+    "name": "Prism-Fives & Gray Pink (5 Suits)",
+    "id": 1697,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Gray Pink"
+    ],
+    "specialRank": 5
+  },
+  {
     "name": "Ambiguous (6 Suits)",
     "id": 8,
     "suits": [
@@ -19281,6 +22356,28 @@
       "Tomato",
       "Mahogany",
       "Light Pink"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Ambiguous & Prism (5 Suits)",
+    "id": 1698,
+    "suits": [
+      "Tomato",
+      "Mahogany",
+      "Sky",
+      "Navy",
+      "Prism"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Ambiguous & Prism (3 Suits)",
+    "id": 1699,
+    "suits": [
+      "Tomato",
+      "Mahogany",
+      "Prism"
     ],
     "showSuitNames": true
   },
@@ -19753,6 +22850,42 @@
     "showSuitNames": true
   },
   {
+    "name": "Extremely Ambiguous & Prism (6 Suits)",
+    "id": 1700,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Navy EA",
+      "Prism"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Extremely Ambiguous & Prism (5 Suits)",
+    "id": 1701,
+    "suits": [
+      "Ice EA",
+      "Sapphire EA",
+      "Sky EA",
+      "Berry EA",
+      "Prism"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Extremely Ambiguous & Prism (4 Suits)",
+    "id": 1702,
+    "suits": [
+      "Sky VA",
+      "Berry VA",
+      "Navy VA",
+      "Prism"
+    ],
+    "showSuitNames": true
+  },
+  {
     "name": "Extremely Ambiguous & Dark Rainbow (6 Suits)",
     "id": 1409,
     "suits": [
@@ -20189,6 +23322,30 @@
       "Purple D",
       "Green D",
       "Light Pink"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Dual-Color & Prism (6 Suits)",
+    "id": 1703,
+    "suits": [
+      "Orange D2",
+      "Lime D",
+      "Teal D",
+      "Indigo D",
+      "Cardinal D",
+      "Prism"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Dual-Color & Prism (4 Suits)",
+    "id": 1704,
+    "suits": [
+      "Orange D2",
+      "Purple D",
+      "Green D",
+      "Prism"
     ],
     "showSuitNames": true
   },
@@ -20993,6 +24150,48 @@
     ]
   },
   {
+    "name": "Alternating Clues & Prism (6 Suits)",
+    "id": 1705,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Alternating Clues & Prism (5 Suits)",
+    "id": 1706,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Alternating Clues & Prism (4 Suits)",
+    "id": 1707,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Alternating Clues & Prism (3 Suits)",
+    "id": 1708,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism"
+    ]
+  },
+  {
     "name": "Alternating Clues & Dark Rainbow (6 Suits)",
     "id": 1448,
     "suits": [
@@ -21384,6 +24583,29 @@
     ]
   },
   {
+    "name": "Clue Starved & Prism (6 Suits)",
+    "id": 1709,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Clue Starved & Prism (5 Suits)",
+    "id": 1710,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ]
+  },
+  {
     "name": "Cow & Pig (6 Suits)",
     "id": 98,
     "suits": [
@@ -21765,6 +24987,39 @@
     ]
   },
   {
+    "name": "Throw It in a Hole & Prism (6 Suits)",
+    "id": 1711,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Throw It in a Hole & Prism (5 Suits)",
+    "id": 1712,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
+    ]
+  },
+  {
+    "name": "Throw It in a Hole & Prism (4 Suits)",
+    "id": 1713,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism"
+    ]
+  },
+  {
     "name": "Reversed (6 Suits)",
     "id": 1342,
     "suits": [
@@ -21911,6 +25166,48 @@
       "Red",
       "Blue",
       "White Reversed"
+    ]
+  },
+  {
+    "name": "Prism Reversed (6 Suits)",
+    "id": 1714,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism Reversed"
+    ]
+  },
+  {
+    "name": "Prism Reversed (5 Suits)",
+    "id": 1715,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism Reversed"
+    ]
+  },
+  {
+    "name": "Prism Reversed (4 Suits)",
+    "id": 1716,
+    "suits": [
+      "Red",
+      "Green",
+      "Blue",
+      "Prism Reversed"
+    ]
+  },
+  {
+    "name": "Prism Reversed (3 Suits)",
+    "id": 1717,
+    "suits": [
+      "Red",
+      "Blue",
+      "Prism Reversed"
     ]
   },
   {
@@ -22181,6 +25478,31 @@
       "Green",
       "Blue",
       "Light Pink"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Prism (6 Suits)",
+    "id": 1718,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Purple",
+      "Prism"
+    ],
+    "showSuitNames": true
+  },
+  {
+    "name": "Up or Down & Prism (5 Suits)",
+    "id": 1719,
+    "suits": [
+      "Red",
+      "Yellow",
+      "Green",
+      "Blue",
+      "Prism"
     ],
     "showSuitNames": true
   }

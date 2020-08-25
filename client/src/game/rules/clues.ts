@@ -61,25 +61,20 @@ export const msgClueToClue = (msgClue: MsgClue, variant: Variant) => {
 export const touchesCard = (
   variant: Variant,
   clue: Clue,
-  suitIndex: number | null,
-  rank: number | null,
+  suitIndex: number,
+  rank: number,
 ) => {
-  // Some detrimental characters are not able to see other people's hands
-  if (suitIndex === null) {
-    return false;
-  }
-
-  const suitObject = variant.suits[suitIndex];
+  const suit = variant.suits[suitIndex];
 
   if (clue.type === ClueType.Color) {
     if (variant.colorCluesTouchNothing) {
       return false;
     }
 
-    if (suitObject.allClueColors) {
+    if (suit.allClueColors) {
       return true;
     }
-    if (suitObject.noClueColors) {
+    if (suit.noClueColors) {
       return false;
     }
 
@@ -92,7 +87,14 @@ export const touchesCard = (
       }
     }
 
-    return suitObject.clueColors.map((c) => c.name).includes(clue.value.name);
+    if (suit.prism) {
+      // The color that touches a prism card is contingent upon the card's rank
+      const prismColorIndex = (rank - 1) % variant.clueColors.length;
+      const prismColorName = variant.clueColors[prismColorIndex].name;
+      return clue.value.name === prismColorName;
+    }
+
+    return suit.clueColors.map((c) => c.name).includes(clue.value.name);
   }
 
   if (clue.type === ClueType.Rank) {
@@ -100,10 +102,10 @@ export const touchesCard = (
       return false;
     }
 
-    if (suitObject.allClueRanks) {
+    if (suit.allClueRanks) {
       return true;
     }
-    if (suitObject.noClueRanks) {
+    if (suit.noClueRanks) {
       return false;
     }
 

@@ -188,16 +188,18 @@ func variantsInit() {
 // but it will the "Dual-Color" variant
 func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 	variant := variants[variantName]
+	suit := variant.Suits[card.SuitIndex]
+	clueColorName := variant.ClueColors[clue.Value]
 
 	if clue.Type == ClueTypeColor {
 		if variant.ColorCluesTouchNothing {
 			return false
 		}
 
-		if variant.Suits[card.SuitIndex].AllClueColors {
+		if suit.AllClueColors {
 			return true
 		}
-		if variant.Suits[card.SuitIndex].NoClueColors {
+		if suit.NoClueColors {
 			return false
 		}
 
@@ -210,9 +212,14 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 			}
 		}
 
-		clueColor := variant.ClueColors[clue.Value]
-		cardColors := variant.Suits[card.SuitIndex].ClueColors
-		return stringInSlice(clueColor, cardColors)
+		if suit.Prism {
+			// The color that touches a prism card is contingent upon the card's rank
+			prismColorIndex := (card.Rank - 1) % len(variant.ClueColors)
+			prismColorName := variant.ClueColors[prismColorIndex]
+			return clueColorName == prismColorName
+		}
+
+		return stringInSlice(clueColorName, suit.ClueColors)
 	}
 
 	if clue.Type == ClueTypeRank {

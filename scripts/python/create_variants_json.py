@@ -215,6 +215,10 @@ def main():
             if suit["oneOfEach"]:
                 continue
 
+            # There are no Prism-Ones (as this would be nonsensical)
+            if suit["prism"]:
+                continue
+
             # First, create "Rainbow-Ones (6 Suits)", etc.
             for suit_num in [6, 5, 4, 3]:
                 hyphenated_suit_name = suit_name.replace(" ", "-")

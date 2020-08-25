@@ -96,7 +96,11 @@ const showClueMatch = (target: number, clue: Clue) => {
       suitIndex = card.visibleSuitIndex;
       rank = card.visibleRank;
     }
-    if (cluesRules.touchesCard(globals.variant, clue, suitIndex, rank)) {
+    if (
+      suitIndex !== null
+      && rank !== null
+      && cluesRules.touchesCard(globals.variant, clue, suitIndex, rank)
+    ) {
       touchedAtLeastOneCard = true;
       arrows.set(i, card, null, clue);
     }
@@ -110,12 +114,16 @@ export const getTouchedCardsFromClue = (target: number, clue: MsgClue) => {
   const cardsTouched: number[] = []; // An array of the card orders
   hand.children.each((child) => {
     const card = child.children[0] as HanabiCard;
-    if (cluesRules.touchesCard(
-      globals.variant,
-      cluesRules.msgClueToClue(clue, globals.variant),
-      card.visibleSuitIndex,
-      card.visibleRank,
-    )) {
+    if (
+      card.visibleSuitIndex !== null
+      && card.visibleRank !== null
+      && cluesRules.touchesCard(
+        globals.variant,
+        cluesRules.msgClueToClue(clue, globals.variant),
+        card.visibleSuitIndex,
+        card.visibleRank,
+      )
+    ) {
       cardsTouched.push(card.state.order);
     }
   });

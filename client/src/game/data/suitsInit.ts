@@ -70,6 +70,10 @@ export default function suitsInit(COLORS: Map<string, Color>) {
       throw new Error(`The "noClueRanks" property for the suit "${suitJSON.name}" must be set to true.`);
     }
     const noClueRanks: boolean = suitJSON.noClueRanks ?? false;
+    if (Object.hasOwnProperty.call(suitJSON, 'prism') && suitJSON.prism !== true) {
+      throw new Error(`The "prism" property for the suit "${suitJSON.name}" must be set to true.`);
+    }
+    const prism: boolean = suitJSON.prism ?? false;
 
     // Validate the clue colors (the colors that touch this suit)
     // If it is not specified, use the color of the same name
@@ -93,7 +97,7 @@ export default function suitsInit(COLORS: Map<string, Color>) {
           throw new Error(`The color "${colorString}" in the suit "${suitJSON.name}" does not exist.`);
         }
       }
-    } else if (!allClueColors && !noClueColors) {
+    } else if (!allClueColors && !noClueColors && !prism) {
       // The clue colors were not specified; by default, use the color of the same name
       const color = COLORS.get(name);
       if (color !== undefined) {
@@ -153,9 +157,6 @@ export default function suitsInit(COLORS: Map<string, Color>) {
     if (pip === '' && suitJSON.name !== 'Unknown') {
       throw new Error(`Failed to find the pip for the "${suitJSON.name}" suit.`);
     }
-
-    // Validate the "prism" property
-    const prism: boolean = suitJSON.prism ?? false;
 
     // Add it to the map
     const suit: Suit = {
