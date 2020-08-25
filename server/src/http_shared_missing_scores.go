@@ -58,7 +58,7 @@ func httpSharedMissingScores(c *gin.Context) {
 		for j, variantStats := range variantStatsList {
 			for k, candidateResult := range variantStats.BestScores {
 				workingBestResult := combinedVariantStatsList[j].BestScores[k]
-				if workingBestResult.IsBetterThan(candidateResult) {
+				if candidateResult.IsBetterThan(workingBestResult) {
 					combinedVariantStatsList[j].BestScores[k] = candidateResult
 				}
 			}
