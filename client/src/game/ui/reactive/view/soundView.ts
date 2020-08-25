@@ -32,7 +32,8 @@ export const onNewSoundEffect = (data: {
   // Only play certain sound effects for people in the Hyphen-ated Group
   if (
     (
-      data.soundType === SoundType.DiscardClued
+      data.soundType === SoundType.OneOutOfOrder
+      || data.soundType === SoundType.DiscardClued
       || data.soundType === SoundType.DoubleDiscard
       || data.soundType === SoundType.DoubleDiscardCause
     )
@@ -86,6 +87,10 @@ const getFileName = (soundType: SoundType, ourTurn: boolean) => {
 
     case SoundType.Blind6: {
       return 'blind6';
+    }
+
+    case SoundType.OneOutOfOrder: {
+      return '1s';
     }
 
     case SoundType.DiscardClued: {

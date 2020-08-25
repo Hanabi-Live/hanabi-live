@@ -45,5 +45,6 @@ export default function initialCardState(order: number, variant: Variant) : Card
     segmentPlayed: null,
     segmentDiscarded: null,
     isMisplayed: false,
+    dealtToStartingHand: false,
   };
 }

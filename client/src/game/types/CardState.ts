@@ -35,6 +35,9 @@ export default interface CardState {
 
   // Needed so that we can animate a misplayed card different from a discarded card
   readonly isMisplayed: boolean;
+
+  // Needed for special sound effects
+  readonly dealtToStartingHand: boolean;
 }
 
 export type CardLocation = 'deck' | 'discard' | 'playStack' | number;

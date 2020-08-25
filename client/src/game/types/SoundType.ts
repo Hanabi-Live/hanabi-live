@@ -13,6 +13,7 @@ enum SoundType {
   Blind4,
   Blind5,
   Blind6,
+  OneOutOfOrder, // When someone performs an "Order Chop Move"
 
   // Discard sounds
   DiscardClued, // When a player discards a card with one or more positive clues on it

@@ -171,7 +171,7 @@ const cardsReducer = (
     }
 
     case 'draw': {
-      // TEMP: At this point, check that the local state matches the server
+      // Validate that the client is on the correct turn
       if (
         game.turn.currentPlayerIndex !== action.playerIndex
         // Prevent validation during the initial draw; during this phase of the game,
@@ -187,6 +187,7 @@ const cardsReducer = (
         initial.possibleCardsFromObservation,
         (arr) => Array.from(arr),
       );
+
       // Remove all possibilities of all cards previously drawn and visible
       deck.slice(0, action.order)
         .filter((card) => card.suitIndex !== null && card.rank !== null)
@@ -203,6 +204,8 @@ const cardsReducer = (
         rank: nullIfNegative(action.rank),
         possibleCardsFromObservation,
         segmentDrawn: game.turn.segment,
+        // The segment will be null during the initial deal
+        dealtToStartingHand: game.turn.segment === null,
       };
 
       newDeck[action.order] = drawnCard;
