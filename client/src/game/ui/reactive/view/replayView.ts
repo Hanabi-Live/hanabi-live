@@ -10,7 +10,11 @@ import * as tooltips from '../../tooltips';
 import * as turn from '../../turn';
 
 export const onActiveChanged = (active: boolean) => {
-  globals.elements.replayArea!.visible(active);
+  const replayArea = globals.elements.replayArea;
+  if (replayArea === null) {
+    return;
+  }
+  replayArea.visible(active);
 
   if (active) {
     // Hide the UI elements that overlap with the replay area
@@ -21,7 +25,7 @@ export const onActiveChanged = (active: boolean) => {
   } else {
     // We are exiting a replay
     if (globals.state.premove !== null) {
-      globals.elements.premoveCancelButton!.show();
+      globals.elements.premoveCancelButton?.show();
     }
     turn.showClueUI();
   }
@@ -51,13 +55,13 @@ export const onSegmentChanged = (data: {
 
   // If we are on the first segment, disable the rewind replay buttons
   const onFirstSegment = data.replaySegment !== 0;
-  globals.elements.replayBackFullButton!.setEnabled(onFirstSegment);
-  globals.elements.replayBackButton!.setEnabled(onFirstSegment);
+  globals.elements.replayBackFullButton?.setEnabled(onFirstSegment);
+  globals.elements.replayBackButton?.setEnabled(onFirstSegment);
 
   // If we are on the last segment, disable the forward replay buttons
   const onFinalSegment = data.replaySegment !== data.ongoingGameSegment;
-  globals.elements.replayForwardButton!.setEnabled(onFinalSegment);
-  globals.elements.replayForwardFullButton!.setEnabled(onFinalSegment);
+  globals.elements.replayForwardButton?.setEnabled(onFinalSegment);
+  globals.elements.replayForwardFullButton?.setEnabled(onFinalSegment);
 
   // There are two replay shuttles,
   // so we have to adjust them whenever the "segment" or the "sharedSegment" changes
@@ -106,8 +110,8 @@ export const onSharedSegmentChanged = (data: {
     }
   }
 
-  globals.elements.pauseSharedTurnsButton!.visible(data.useSharedSegments);
-  globals.elements.useSharedTurnsButton!.visible(!data.useSharedSegments);
+  globals.elements.pauseSharedTurnsButton?.visible(data.useSharedSegments);
+  globals.elements.useSharedTurnsButton?.visible(!data.useSharedSegments);
 
   // There are two replay shuttles,
   // so we have to adjust them whenever the "segment" or the "sharedSegment" changes
@@ -127,8 +131,8 @@ const playSharedReplayTween = (sharedSegment: number, previousSharedSegment: num
   const duration = 1;
   const opacity = 0;
   if (sharedSegment < previousSharedSegment) {
-    globals.elements.sharedReplayBackward!.show();
-    globals.elements.sharedReplayBackward!.opacity(1);
+    globals.elements.sharedReplayBackward?.show();
+    globals.elements.sharedReplayBackward?.opacity(1);
     if (globals.elements.sharedReplayBackwardTween !== null) {
       globals.elements.sharedReplayBackwardTween.destroy();
       globals.elements.sharedReplayBackwardTween = null;
@@ -139,8 +143,8 @@ const playSharedReplayTween = (sharedSegment: number, previousSharedSegment: num
       opacity,
     }).play();
   } else if (sharedSegment > previousSharedSegment) {
-    globals.elements.sharedReplayForward!.show();
-    globals.elements.sharedReplayForward!.opacity(1);
+    globals.elements.sharedReplayForward?.show();
+    globals.elements.sharedReplayForward?.opacity(1);
     if (globals.elements.sharedReplayForwardTween !== null) {
       globals.elements.sharedReplayForwardTween.destroy();
       globals.elements.sharedReplayForwardTween = null;
@@ -163,7 +167,7 @@ export const onSecondRecordedSegment = (
 
   // The in-game replay button starts off disabled
   // Enable it once there is at least one segment to rewind to
-  globals.elements.replayButton!.setEnabled(hasTwoOrMoreSegments);
+  globals.elements.replayButton?.setEnabled(hasTwoOrMoreSegments);
   globals.layers.UI.batchDraw();
 };
 
@@ -178,15 +182,16 @@ export const onDatabaseIDChanged = (databaseID: number | null) => {
   } else {
     text = `ID: ${databaseID}`;
   }
-  globals.elements.gameIDLabel!.text(text);
-  globals.elements.gameIDLabel!.show();
+  globals.elements.gameIDLabel?.text(text);
+  globals.elements.gameIDLabel?.show();
 
   // Also move the card count label on the deck downwards
   if (globals.state.visibleState!.cardsRemainingInTheDeck === 0) {
-    globals.elements.deck!.nudgeCountDownwards();
+    globals.elements.deck?.nudgeCountDownwards();
   }
 
-  globals.layers.arrow.batchDraw();
+  globals.layers.arrow.batchDraw(); // gameIDLabel is on the arrow layer
+  globals.layers.card.batchDraw(); // deck is on the card layer
 };
 
 export const onFinishedChanged = (finished: boolean, previousFinished: boolean | undefined) => {
@@ -203,29 +208,29 @@ export const onFinishedChanged = (finished: boolean, previousFinished: boolean |
   timer.stop();
 
   // Hide the "Exit Replay" button in the center of the screen, since it is no longer necessary
-  globals.elements.replayExitButton!.hide();
+  globals.elements.replayExitButton?.hide();
 
   // Hide/show some buttons in the bottom-left-hand corner
-  globals.elements.replayButton!.hide();
+  globals.elements.replayButton?.hide();
 
   // Hide the terminate button and show the 3rd strike UI
   if (globals.elements.terminateButton !== null) {
-    globals.elements.terminateButton!.hide();
+    globals.elements.terminateButton?.hide();
     globals.elements.strikeSquares[2].show();
     globals.elements.strikeXs[2].show();
   }
 
   // Re-draw the deck tooltip
   // (it will show more information when you are in a replay)
-  globals.elements.deck!.initTooltip();
+  globals.elements.deck?.initTooltip();
 
   // Turn off the "Throw It in a Hole" UI
   if (variantRules.isThrowItInAHole(globals.variant)) {
-    globals.elements.scoreTextLabel!.show();
-    globals.elements.scoreNumberLabel!.show();
-    globals.elements.maxScoreNumberLabel!.show();
-    globals.elements.playsTextLabel!.hide();
-    globals.elements.playsNumberLabel!.hide();
+    globals.elements.scoreTextLabel?.show();
+    globals.elements.scoreNumberLabel?.show();
+    globals.elements.maxScoreNumberLabel?.show();
+    globals.elements.playsTextLabel?.hide();
+    globals.elements.playsNumberLabel?.hide();
     globals.elements.questionMarkLabels.forEach((label) => label.hide());
   }
 
@@ -234,7 +239,7 @@ export const onFinishedChanged = (finished: boolean, previousFinished: boolean |
 };
 
 export const onSharedReplayEnter = (sharedReplay: boolean) => {
-  globals.elements.sharedReplayLeaderLabel!.visible(sharedReplay);
+  globals.elements.sharedReplayLeaderLabel?.visible(sharedReplay);
 };
 
 export const onSharedLeaderChanged = (_leader: string, previousLeader: string | undefined) => {
@@ -246,18 +251,18 @@ export const onSharedLeaderChanged = (_leader: string, previousLeader: string | 
 };
 
 export const onSharedAmLeaderChanged = (amLeader: boolean) => {
-  globals.elements.sharedReplayLeaderCircle!.visible(amLeader);
-  globals.elements.restartButton!.visible(amLeader);
-  globals.elements.enterHypoButton!.visible(amLeader);
+  globals.elements.sharedReplayLeaderCircle?.visible(amLeader);
+  globals.elements.restartButton?.visible(amLeader);
+  globals.elements.enterHypoButton?.visible(amLeader);
 
   // Arrange the buttons in the center of the screen in a certain way depending on
   // whether we are the shared replay leader
   if (amLeader) {
-    globals.elements.pauseSharedTurnsButton!.setLeft();
-    globals.elements.useSharedTurnsButton!.setLeft();
+    globals.elements.pauseSharedTurnsButton?.setLeft();
+    globals.elements.useSharedTurnsButton?.setLeft();
   } else {
-    globals.elements.pauseSharedTurnsButton!.setCenter();
-    globals.elements.useSharedTurnsButton!.setCenter();
+    globals.elements.pauseSharedTurnsButton?.setCenter();
+    globals.elements.useSharedTurnsButton?.setCenter();
   }
 
   globals.layers.UI.batchDraw();

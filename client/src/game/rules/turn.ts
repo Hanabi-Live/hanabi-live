@@ -1,19 +1,24 @@
 import { getCharacter } from '../data/gameData';
+import { clueTokensRules } from '../rules';
 import GameMetadata from '../types/GameMetadata';
+import Variant from '../types/Variant';
 
 export const shouldEndTurnAfterDraw = (
   cardsPlayedOrDiscardedThisTurn: number,
   cardsDiscardedThisTurn: number,
   characterID: number | null,
   clueTokens: number,
+  variant: Variant,
 ) => {
   // Some "Detrimental Characters" are able to perform two actions
   if (characterID !== null) {
     const character = getCharacter(characterID);
 
     // Panicky - After discarding, discards again if there are 4 clues or less
-    // TODO: fix this to be 8 when clue tokens are doubled
-    if (character.name === 'Panicky' && clueTokens <= 4) {
+    if (
+      character.name === 'Panicky'
+      && clueTokens <= clueTokensRules.getAdjusted(4, variant)
+    ) {
       return cardsDiscardedThisTurn !== 1;
     }
   }

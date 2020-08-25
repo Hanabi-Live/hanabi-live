@@ -3,10 +3,9 @@
 
 import Konva from 'konva';
 import * as sounds from '../../sounds';
-import { cardRules } from '../rules';
+import { cardRules, clueTokensRules } from '../rules';
 import * as variantRules from '../rules/variant';
 import ActionType from '../types/ActionType';
-import { MAX_CLUE_NUM } from '../types/constants';
 import CardLayout from './CardLayout';
 import cursorSet from './cursorSet';
 import globals from './globals';
@@ -163,7 +162,7 @@ export default class LayoutChild extends Konva.Group {
     if (globals.elements.playArea!.isOver(pos)) {
       draggedTo = 'playArea';
     } else if (globals.elements.discardArea!.isOver(pos)) {
-      if (globals.clues === MAX_CLUE_NUM) {
+      if (clueTokensRules.atMax(globals.state.ongoingGame.clueTokens, globals.variant)) {
         sounds.play('error');
         globals.elements.cluesNumberLabelPulse!.play();
       } else {

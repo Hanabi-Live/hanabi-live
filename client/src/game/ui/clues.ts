@@ -1,5 +1,5 @@
 import { getCharacter } from '../data/gameData';
-import { cluesRules } from '../rules';
+import { cluesRules, clueTokensRules } from '../rules';
 import ActionType from '../types/ActionType';
 import Clue from '../types/Clue';
 import ClueType from '../types/ClueType';
@@ -161,11 +161,15 @@ export const give = () => {
 const shouldGiveClue = (target: PlayerButton, clueButton: ColorButton | RankButton) => {
   const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
   const ourPlayerIndex = globals.metadata.ourPlayerIndex;
+  const ongoingGameState = globals.state.replay.hypothetical === null
+    ? globals.state.ongoingGame
+    : globals.state.replay.hypothetical.ongoing;
 
   return (
     // We can only give clues on our turn
     (currentPlayerIndex === ourPlayerIndex || globals.state.replay.hypothetical !== null)
-    && globals.clues > 0 // We can only give a clue if there is one available
+    // We can only give a clue if there is a clue token available
+    && ongoingGameState.clueTokens >= clueTokensRules.getAdjusted(1, globals.variant)
     && target !== undefined // We might have not selected a clue recipient
     && target !== null // We might have not selected a clue recipient
     && clueButton !== undefined // We might have not selected a type of clue

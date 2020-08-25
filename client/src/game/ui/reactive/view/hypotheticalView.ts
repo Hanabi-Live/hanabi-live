@@ -15,7 +15,7 @@ export const shouldEnableEnterHypoButton = (state: State): boolean => (
 );
 
 export const shouldEnableEnterHypoButtonChanged = (enabled: boolean) => {
-  globals.elements.enterHypoButton!.setEnabled(enabled);
+  globals.elements.enterHypoButton?.setEnabled(enabled);
   globals.layers.UI.batchDraw();
 };
 
@@ -24,7 +24,7 @@ export const onActiveChanged = (active: boolean) => {
     return;
   }
 
-  globals.elements.replayArea!.visible(!active);
+  globals.elements.replayArea?.visible(!active);
 
   checkSetDraggableAllHands();
 
@@ -32,10 +32,10 @@ export const onActiveChanged = (active: boolean) => {
     // We toggle all of the UI elements relating to hypotheticals in case the shared replay leader
     // changes in the middle of a hypothetical
     if (globals.options.numPlayers !== 2) {
-      globals.elements.clueTargetButtonGroup!.hide();
-      globals.elements.clueTargetButtonGroup2!.show();
+      globals.elements.clueTargetButtonGroup?.hide();
+      globals.elements.clueTargetButtonGroup2?.show();
     }
-    globals.elements.restartButton!.visible(!active);
+    globals.elements.restartButton?.visible(!active);
   }
 
   globals.layers.UI.batchDraw();
@@ -50,15 +50,15 @@ export const onActiveOrAmLeaderChanged = (data: {
   }
 
   const visibleForLeaderInHypo = data.active && data.amLeader;
-  globals.elements.endHypotheticalButton!.visible(visibleForLeaderInHypo);
-  globals.elements.toggleRevealedButton!.visible(visibleForLeaderInHypo);
-  globals.elements.clueArea!.visible(visibleForLeaderInHypo);
+  globals.elements.endHypotheticalButton?.visible(visibleForLeaderInHypo);
+  globals.elements.toggleRevealedButton?.visible(visibleForLeaderInHypo);
+  globals.elements.clueArea?.visible(visibleForLeaderInHypo);
 
   const visibleForFollowersInHypo = data.active && !data.amLeader;
-  globals.elements.hypoCircle!.visible(visibleForFollowersInHypo);
+  globals.elements.hypoCircle?.visible(visibleForFollowersInHypo);
 
   const visibleForLeaderOutOfHypo = !data.active && data.amLeader;
-  globals.elements.restartButton!.visible(visibleForLeaderOutOfHypo);
+  globals.elements.restartButton?.visible(visibleForLeaderOutOfHypo);
   if (visibleForLeaderOutOfHypo) {
     turn.hideClueUIAndDisableDragging();
   }
@@ -71,6 +71,8 @@ export const onActiveOrAmLeaderChanged = (data: {
 // or gone back one action in a hypothetical
 // Prepare the UI elements for the new turn
 export const onStatesLengthChanged = () => {
+  turn.showClueUI();
+
   // Enable or disable the individual clue target buttons, depending on whose turn it is
   const buttonGroup = globals.elements.clueTargetButtonGroup2!;
   const buttons = buttonGroup.children.toArray() as PlayerButton[];
@@ -87,8 +89,6 @@ export const onStatesLengthChanged = () => {
     }
   }
 
-  turn.showClueUI();
-
   // Set the current player's hand to be draggable
   checkSetDraggableAllHands();
 };
@@ -101,12 +101,12 @@ export const shouldShowHypoBackButton = (state: State): boolean => (
 );
 
 export const shouldShowHypoBackButtonChanged = (enabled: boolean) => {
-  globals.elements.hypoBackButton!.visible(enabled);
+  globals.elements.hypoBackButton?.visible(enabled);
   globals.layers.UI.batchDraw();
 };
 
 export const onDrawnCardsInHypotheticalChanged = (drawnCardsInHypothetical: boolean) => {
-  globals.elements.toggleRevealedButton!.setText({
+  globals.elements.toggleRevealedButton?.setText({
     line1: drawnCardsInHypothetical ? 'Hide' : 'Show',
   });
 

@@ -9,7 +9,11 @@ export const onLogChanged = (log: readonly LogEntry[]) => {
 };
 
 const updateActionLog = (log: readonly LogEntry[]) => {
-  const actionLog = globals.elements.actionLog!;
+  const actionLog = globals.elements.actionLog;
+  if (actionLog === null) {
+    return;
+  }
+
   const startingIndex = Math.max(0, log.length - actionLog.maxLines);
   for (let i = 0; i < actionLog.maxLines; i++) {
     const line = startingIndex + i > log.length - 1 ? '' : log[startingIndex + i].text;
@@ -23,7 +27,11 @@ const updateActionLog = (log: readonly LogEntry[]) => {
 };
 
 const updateFullActionLog = (log: readonly LogEntry[]) => {
-  const fullActionLog = globals.elements.fullActionLog!;
+  const fullActionLog = globals.elements.fullActionLog;
+  if (fullActionLog === null) {
+    return;
+  }
+
   fullActionLog.reset();
   log.forEach((line) => fullActionLog.addMessage(line.turn, line.text));
 

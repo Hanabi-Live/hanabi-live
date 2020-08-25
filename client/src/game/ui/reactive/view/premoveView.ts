@@ -16,8 +16,8 @@ export const onChanged = (
 
   if (action === null && previousAction !== null) {
     // We just canceled a premove action
-    globals.elements.premoveCancelButton!.hide();
-    globals.elements.currentPlayerArea!.show();
+    globals.elements.premoveCancelButton?.hide();
+    globals.elements.currentPlayerArea?.show();
     globals.layers.UI.batchDraw();
 
     // If we dragged a card, we have to make the card tween back to the hand
@@ -37,9 +37,10 @@ export const onChanged = (
     } else if (action.type === ActionType.ColorClue || action.type === ActionType.RankClue) {
       text += 'Clue';
     }
-    globals.elements.premoveCancelButton!.text(text);
-    globals.elements.premoveCancelButton!.show();
-    globals.elements.currentPlayerArea!.hide();
+    globals.elements.premoveCancelButton?.text(text);
+    globals.elements.premoveCancelButton?.show();
+    globals.elements.currentPlayerArea?.hide();
+
     globals.layers.UI.batchDraw();
   }
 };

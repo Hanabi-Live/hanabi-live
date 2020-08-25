@@ -1,9 +1,8 @@
 import * as notifications from '../../notifications';
-import { variantRules } from '../rules';
+import { variantRules, clueTokensRules } from '../rules';
 import ActionType from '../types/ActionType';
 import ClientAction from '../types/ClientAction';
 import ClueType from '../types/ClueType';
-import { MAX_CLUE_NUM } from '../types/constants';
 import * as arrows from './arrows';
 import { PREPLAY_DELAY } from './constants';
 import globals from './globals';
@@ -44,8 +43,8 @@ const handlePremove = () => {
   switch (premove.type) {
     case ActionType.ColorClue:
     case ActionType.RankClue: {
-      // Prevent pre-cluing if the team is now at 0 clues
-      if (clueTokens === 0) {
+      // Prevent pre-cluing if there is not a clue available
+      if (clueTokens < clueTokensRules.getAdjusted(1, globals.variant)) {
         return;
       }
 
@@ -54,7 +53,7 @@ const handlePremove = () => {
 
     case ActionType.Discard: {
       // Prevent discarding if the team is at the maximum amount of clues
-      if (clueTokens === MAX_CLUE_NUM) {
+      if (!clueTokensRules.atMax(clueTokens, globals.variant)) {
         return;
       }
 
@@ -135,7 +134,7 @@ export const showClueUI = () => {
   }
 
   // Fade the clue UI if there is not a clue available
-  if (globals.clues >= 1) {
+  if (globals.state.ongoingGame.clueTokens >= clueTokensRules.getAdjusted(1, globals.variant)) {
     globals.elements.clueArea!.opacity(1);
     globals.elements.clueAreaDisabled!.hide();
   } else {

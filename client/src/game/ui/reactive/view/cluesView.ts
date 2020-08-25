@@ -46,7 +46,11 @@ const updateArrows = (clues: readonly StateClue[], segment: number | null) => {
 };
 
 const updateLog = (clues: readonly StateClue[]) => {
-  const clueLog = globals.elements.clueLog!;
+  const clueLog = globals.elements.clueLog;
+  if (clueLog === null) {
+    return;
+  }
+
   const startingIndex = Math.max(0, clues.length - clueLog.maxLength);
   clues.slice(startingIndex).forEach((clue, i) => {
     if (i < clueLog.children.length) {

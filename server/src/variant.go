@@ -86,6 +86,10 @@ func (v *Variant) GetAdjustedClueTokens(clueTokens int) int {
 	return clueTokens
 }
 
+func (v *Variant) AtMaxClueTokens(clueTokens int) bool {
+	return clueTokens >= v.GetAdjustedClueTokens(MaxClueNum)
+}
+
 func (v *Variant) ShouldGiveClueTokenForPlaying5() bool {
 	return !v.IsThrowItInAHole()
 }

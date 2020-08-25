@@ -1,5 +1,6 @@
 // Functions related to clues: gaining clues, giving clues, applying clues
 
+import { clueTokensRules } from '../rules';
 import { ActionPlay, ActionDiscard } from '../types/actions';
 import { MAX_CLUE_NUM } from '../types/constants';
 import Variant from '../types/Variant';
@@ -13,7 +14,7 @@ export const gain = (
   playStackComplete: boolean = false,
 ) => {
   if (shouldGenerateClue(action, clueTokens, variant, playStackComplete)) {
-    return clueTokens + value(variant);
+    return clueTokens + 1;
   }
   return clueTokens;
 };
@@ -24,7 +25,7 @@ const shouldGenerateClue = (
   variant: Variant,
   playStackComplete: boolean,
 ) => {
-  if (clueTokens === MAX_CLUE_NUM) {
+  if (clueTokensRules.atMax(clueTokens, variant)) {
     return false;
   }
 
@@ -47,11 +48,18 @@ const shouldGenerateClue = (
   }
 };
 
-// The value of clues gained when discarding or finishing a suit
-export const value = (variant: Variant) => {
-  // In "Clue Starved" variants, each discard gives only half a clue
+export const getAdjusted = (clueTokens: number, variant: Variant) => {
+  // In "Clue Starved" variants, each discard only 0.5 clue tokens
+  // This is represented on the client by discards giving 1 clue token and clues costing 2 tokens
+  // (to avoid having to use floating point numbers)
   if (variantRules.isClueStarved(variant)) {
-    return 0.5;
+    return clueTokens * 2;
   }
-  return 1;
+
+  return clueTokens;
 };
+
+export const atMax = (
+  clueTokens: number,
+  variant: Variant,
+) => clueTokens >= getAdjusted(MAX_CLUE_NUM, variant);

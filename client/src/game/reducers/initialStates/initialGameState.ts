@@ -6,6 +6,7 @@ import {
   handRules,
   statsRules,
   playStacksRules,
+  clueTokensRules,
 } from '../../rules';
 import CardStatus from '../../types/CardStatus';
 import { MAX_CLUE_NUM } from '../../types/constants';
@@ -54,7 +55,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     cardStatus,
     score: 0,
     numAttemptedCardsPlayed: 0,
-    clueTokens: MAX_CLUE_NUM,
+    clueTokens: clueTokensRules.getAdjusted(MAX_CLUE_NUM, variant),
     strikes: [],
     hands,
     playStacks,

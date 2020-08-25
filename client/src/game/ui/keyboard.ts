@@ -3,9 +3,8 @@
 import Konva from 'konva';
 import Screen from '../../lobby/types/Screen';
 import { copyStringToClipboard, parseIntSafe } from '../../misc';
-import { deckRules } from '../rules';
+import { deckRules, clueTokensRules } from '../rules';
 import ActionType from '../types/ActionType';
-import { MAX_CLUE_NUM } from '../types/constants';
 import ReplayActionType from '../types/ReplayActionType';
 import backToLobby from './backToLobby';
 import * as clues from './clues';
@@ -261,10 +260,10 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   }
 
   let hotkeyFunction;
-  if (globals.clues >= 1) {
+  if (globals.state.ongoingGame.clueTokens >= clueTokensRules.getAdjusted(1, globals.variant)) {
     hotkeyFunction = hotkeyClueMap.get(event.key);
   }
-  if (globals.clues < MAX_CLUE_NUM) {
+  if (!clueTokensRules.atMax(globals.state.ongoingGame.clueTokens, globals.variant)) {
     hotkeyFunction = hotkeyFunction || hotkeyDiscardMap.get(event.key);
   }
   hotkeyFunction = hotkeyFunction || hotkeyPlayMap.get(event.key);

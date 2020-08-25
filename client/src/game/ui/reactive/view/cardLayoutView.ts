@@ -40,10 +40,11 @@ export const onPlayStackDirectionsChanged = (
     const isUpOrDown = variantRules.isUpOrDown(globals.variant);
     if (isUpOrDown || suit.reversed) {
       const stackStrings = isUpOrDown ? stackStringsUpOrDown : stackStringsReversed;
-      if (stackStrings.get(direction) === undefined) {
-        throw new Error(`The stack direction of ${direction} is not valid.`);
+      const stackText = stackStrings.get(direction);
+      if (stackText === undefined) {
+        throw new Error(`Failed to find the stack string for the stack direction of ${direction}.`);
       }
-      text = stackStrings.get(direction)!;
+      text = stackText;
     }
 
     globals.elements.suitLabelTexts[i].fitText(text);

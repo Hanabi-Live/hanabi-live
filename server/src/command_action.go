@@ -253,8 +253,7 @@ func commandActionDiscard(s *Session, d *CommandData, g *Game, p *GamePlayer) bo
 	}
 
 	// Validate that the team is not at the maximum amount of clues
-	clueLimit := variant.GetAdjustedClueTokens(MaxClueNum)
-	if g.ClueTokens >= clueLimit {
+	if variant.AtMaxClueTokens(g.ClueTokens) {
 		s.Warning("You cannot discard while the team has " + strconv.Itoa(MaxClueNum) + " clues.")
 		g.InvalidActionOccurred = true
 		return false

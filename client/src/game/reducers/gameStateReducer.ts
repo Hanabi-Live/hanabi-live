@@ -38,7 +38,7 @@ const gameStateReducer = produce((
     // A player just gave a clue
     // { type: 'clue', clue: { type: 0, value: 1 }, giver: 1, list: [11], target: 2, turn: 0 }
     case 'clue': {
-      state.clueTokens -= 1;
+      state.clueTokens -= clueTokensRules.getAdjusted(1, variant);
 
       if (state.turn.segment === null) {
         throw new Error(`A "${action.type}" action happened before all of the initial cards were dealt.`);

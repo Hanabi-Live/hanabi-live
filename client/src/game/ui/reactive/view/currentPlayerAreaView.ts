@@ -1,6 +1,5 @@
 import Konva from 'konva';
-import { handRules } from '../../../rules';
-import { MAX_CLUE_NUM } from '../../../types/constants';
+import { handRules, clueTokensRules, variantRules } from '../../../rules';
 import State from '../../../types/State';
 import { LABEL_COLOR } from '../../constants';
 import globals from '../../globals';
@@ -27,7 +26,10 @@ export const onChanged = (data: {
   currentPlayerIndex: number | null;
 } | undefined) => {
   // Local variables
-  const currentPlayerArea = globals.elements.currentPlayerArea!;
+  const currentPlayerArea = globals.elements.currentPlayerArea;
+  if (currentPlayerArea === null) {
+    return;
+  }
 
   if (previousData === undefined || data.visible !== previousData.visible) {
     currentPlayerArea.visible(data.visible);
@@ -40,7 +42,7 @@ export const onChanged = (data: {
   // Local variables
   const winW = globals.stage.width();
   const winH = globals.stage.height();
-  const clueTokens = globals.state.ongoingGame!.clueTokens;
+  const clueTokens = globals.state.ongoingGame.clueTokens;
   const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
   if (currentPlayerIndex === null) {
     return;
@@ -53,18 +55,25 @@ export const onChanged = (data: {
   const { text1, text2, text3 } = currentPlayerArea;
   let specialText = '';
   if (!globals.lobby.settings.realLifeMode) {
-    if (clueTokens === 0) {
-      specialText = '(cannot clue; 0 clues left)';
+    let cluesTokensText = clueTokens.toString();
+    if (variantRules.isClueStarved(globals.variant)) {
+      // In "Clue Starved" variants,
+      // clues are tracked internally at twice the value shown to the user
+      cluesTokensText = (clueTokens / 2).toString();
+    }
+
+    if (clueTokens < clueTokensRules.getAdjusted(1, globals.variant)) {
+      specialText = `(cannot clue; ${cluesTokensText} clues left)`;
       text3.fill('red');
-    } else if (clueTokens === MAX_CLUE_NUM) {
-      specialText = `(cannot discard; at ${MAX_CLUE_NUM} clues)`;
+    } else if (clueTokensRules.atMax(clueTokens, globals.variant)) {
+      specialText = `(cannot discard; at ${cluesTokensText} clues)`;
       text3.fill(LABEL_COLOR);
     } else if (isLocked && globals.lobby.settings.hyphenatedConventions) {
       specialText = '(locked; may not be able to discard)';
       text3.fill(LABEL_COLOR);
     } else if (
-      globals.lobby.settings.hyphenatedConventions
-      && globals.elements.noDoubleDiscardBorder!.isVisible()
+      globals.state.ongoingGame.stats.doubleDiscard
+      && globals.lobby.settings.hyphenatedConventions
     ) {
       specialText = '(potentially in a "Double Discard" situation)';
       text3.fill('yellow');
@@ -126,7 +135,7 @@ export const onChanged = (data: {
     // 1) we performed an action on our turn and now the "Current Player" area is now visible again
     //    after being hidden
     // 2) we are exiting an in-game replay
-    currentPlayerArea.arrow!.rotation(rotation);
+    currentPlayerArea.arrow?.rotation(rotation);
   } else {
     if (currentPlayerArea.tween !== null) {
       currentPlayerArea.tween.destroy();
@@ -140,7 +149,7 @@ export const onChanged = (data: {
       previousPlayerIndex = numPlayers - 1;
     }
     const previousRotation = getArrowRotationCorrespondingToPlayer(previousPlayerIndex);
-    currentPlayerArea.arrow!.rotation(previousRotation);
+    currentPlayerArea.arrow?.rotation(previousRotation);
 
     // We want the arrow to always be moving clockwise
     const unmodifiedRotation = rotation;

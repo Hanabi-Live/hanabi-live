@@ -8,11 +8,11 @@ export const onSpectatorsChanged = (data: {
   finished: boolean;
 }) => {
   const visible = data.spectators.length > 0;
-  globals.elements.spectatorsLabel!.visible(visible);
-  globals.elements.spectatorsNumLabel!.visible(visible);
+  globals.elements.spectatorsLabel?.visible(visible);
+  globals.elements.spectatorsNumLabel?.visible(visible);
 
   if (visible) {
-    globals.elements.spectatorsNumLabel!.text(data.spectators.length.toString());
+    globals.elements.spectatorsNumLabel?.text(data.spectators.length.toString());
 
     // Build the string that shows all the names
     let nameEntries = '';

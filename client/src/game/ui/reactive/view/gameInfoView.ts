@@ -1,5 +1,5 @@
-import { variantRules } from '../../../rules';
-import { MAX_CLUE_NUM, MAX_STRIKES } from '../../../types/constants';
+import { variantRules, clueTokensRules } from '../../../rules';
+import { MAX_STRIKES } from '../../../types/constants';
 import { StateStrike } from '../../../types/GameState';
 import { LABEL_COLOR, OFF_BLACK, STRIKE_FADE } from '../../constants';
 import globals from '../../globals';
@@ -13,7 +13,7 @@ export const onTurnChanged = (data: {
   // Update the "Turn" label
   // On both the client and the server, the first turn of the game is represented as turn 0
   // However, turn 0 is represented to the end-user as turn 1, so we must add one
-  globals.elements.turnNumberLabel!.text(`${data.turn + 1}`);
+  globals.elements.turnNumberLabel?.text(`${data.turn + 1}`);
 
   // If there are no cards left in the deck, update the "Turns left: #" label on the deck
   if (data.endTurn !== null) {
@@ -25,7 +25,7 @@ export const onTurnChanged = (data: {
       numTurnsLeft = 0;
     }
 
-    globals.elements.deckTurnsRemainingLabel2!.text(`left: ${numTurnsLeft}`);
+    globals.elements.deckTurnsRemainingLabel2?.text(`left: ${numTurnsLeft}`);
   }
 
   globals.layers.UI.batchDraw();
@@ -70,11 +70,17 @@ export const onScoreOrMaxScoreChanged = (data: {
   score: number;
   maxScore: number;
 }) => {
-  const scoreLabel = globals.elements.scoreNumberLabel!;
+  const scoreLabel = globals.elements.scoreNumberLabel;
+  if (scoreLabel === null) {
+    return;
+  }
   scoreLabel.text(data.score.toString());
 
   // Reposition the maximum score
-  const maxScoreLabel = globals.elements.maxScoreNumberLabel!;
+  const maxScoreLabel = globals.elements.maxScoreNumberLabel;
+  if (maxScoreLabel === null) {
+    return;
+  }
   maxScoreLabel.text(` / ${data.maxScore}`);
   maxScoreLabel.width(maxScoreLabel.measureSize(maxScoreLabel.text()).width);
   const x = scoreLabel.x() + scoreLabel.measureSize(scoreLabel.text()).width as number;
@@ -88,22 +94,31 @@ export const onNumAttemptedCardsPlayedChanged = (numAttemptedCardsPlayed: number
     return;
   }
 
-  globals.elements.playsNumberLabel!.text(numAttemptedCardsPlayed.toString());
+  globals.elements.playsNumberLabel?.text(numAttemptedCardsPlayed.toString());
   globals.layers.UI.batchDraw();
 };
 
 export const onClueTokensChanged = (clueTokens: number) => {
-  globals.elements.cluesNumberLabel!.text(clueTokens.toString());
+  let cluesTokensText = clueTokens.toString();
+  if (variantRules.isClueStarved(globals.variant)) {
+    // In "Clue Starved" variants, clues are tracked internally at twice the value shown to the user
+    cluesTokensText = (clueTokens / 2).toString();
+  }
+  globals.elements.cluesNumberLabel?.text(cluesTokensText);
 
   if (!globals.lobby.settings.realLifeMode) {
-    if (clueTokens === 0) {
-      globals.elements.cluesNumberLabel!.fill('red');
-    } else if (clueTokens === 1) {
-      globals.elements.cluesNumberLabel!.fill('yellow');
+    const noCluesAvailable = clueTokens < clueTokensRules.getAdjusted(1, globals.variant);
+    const oneClueAvailable = clueTokens === clueTokensRules.getAdjusted(1, globals.variant);
+    let fill;
+    if (noCluesAvailable) {
+      fill = 'red';
+    } else if (oneClueAvailable) {
+      fill = 'yellow';
     } else {
-      globals.elements.cluesNumberLabel!.fill(LABEL_COLOR);
+      fill = LABEL_COLOR;
     }
-    globals.elements.noClueBorder!.visible(clueTokens === 0);
+    globals.elements.cluesNumberLabel?.fill(fill);
+    globals.elements.noClueBorder?.visible(noCluesAvailable);
   }
 
   globals.layers.UI.batchDraw();
@@ -117,19 +132,19 @@ export const onClueTokensOrDoubleDiscardChanged = (data: {
     return;
   }
 
-  if (data.clueTokens === MAX_CLUE_NUM) {
+  if (clueTokensRules.atMax(data.clueTokens, globals.variant)) {
     // Show the red border around the discard pile
     // (to reinforce that the current player cannot discard)
-    globals.elements.noDiscardBorder!.show();
-    globals.elements.noDoubleDiscardBorder!.hide();
+    globals.elements.noDiscardBorder?.show();
+    globals.elements.noDoubleDiscardBorder?.hide();
   } else if (data.doubleDiscard && globals.lobby.settings.hyphenatedConventions) {
     // Show a yellow border around the discard pile
     // (to reinforce that this is a "Double Discard" situation)
-    globals.elements.noDiscardBorder!.hide();
-    globals.elements.noDoubleDiscardBorder!.show();
+    globals.elements.noDiscardBorder?.hide();
+    globals.elements.noDoubleDiscardBorder?.show();
   } else {
-    globals.elements.noDiscardBorder!.hide();
-    globals.elements.noDoubleDiscardBorder!.hide();
+    globals.elements.noDiscardBorder?.hide();
+    globals.elements.noDoubleDiscardBorder?.hide();
   }
 
   globals.layers.UI.batchDraw();

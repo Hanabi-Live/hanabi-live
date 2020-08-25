@@ -4,5 +4,5 @@ import globals from '../../globals';
 
 export const onCardsRemainingChanged = (cardsRemainingInTheDeck: number) => {
   // Update the deck label
-  globals.elements.deck!.setCount(cardsRemainingInTheDeck);
+  globals.elements.deck?.setCount(cardsRemainingInTheDeck);
 };

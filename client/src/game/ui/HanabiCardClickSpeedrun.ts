@@ -1,14 +1,10 @@
 // Speedrun click functions for the HanabiCard object
 
 import Konva from 'konva';
-import { cardRules } from '../rules';
+import { cardRules, clueTokensRules } from '../rules';
 import ActionType from '../types/ActionType';
 import Color from '../types/Color';
-import {
-  MAX_CLUE_NUM,
-  STACK_BASE_RANK,
-  START_CARD_RANK,
-} from '../types/constants';
+import { STACK_BASE_RANK, START_CARD_RANK } from '../types/constants';
 import ColorButton from './ColorButton';
 import { colorToColorIndex } from './convert';
 import globals from './globals';
@@ -79,7 +75,8 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
     card.state.location !== globals.metadata.ourPlayerIndex
     && cardRules.isInPlayerHand(card.state)
     && card.state.suitIndex !== null
-    && globals.clues !== 0
+    // Ensure there is at least 1 clue token available
+    && globals.state.ongoingGame.clueTokens >= clueTokensRules.getAdjusted(1, globals.variant)
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey
@@ -132,9 +129,10 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && !event.metaKey
   ) {
     // Prevent discarding while at the maximum amount of clues
-    if (globals.clues === MAX_CLUE_NUM) {
+    if (clueTokensRules.atMax(globals.state.ongoingGame.clueTokens, globals.variant)) {
       return;
     }
+
     turn.end({
       type: ActionType.Discard,
       target: card.state.order,
@@ -149,7 +147,8 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
     && card.state.rank !== null
     // It is not possible to clue a Start Card with a rank clue
     && card.state.rank !== START_CARD_RANK
-    && globals.clues !== 0
+    // Ensure there is at least 1 clue token available
+    && globals.state.ongoingGame.clueTokens >= clueTokensRules.getAdjusted(1, globals.variant)
     && !event.ctrlKey
     && !event.shiftKey
     && !event.altKey

@@ -100,11 +100,6 @@ export class Globals {
     return this.state.metadata.options;
   }
 
-  // TEMP: accessors to minimize churn while we don't re-architect user input
-  get clues() {
-    return this.state.visibleState!.clueTokens!;
-  }
-
   // We provide a method to reset every class variable to its initial value
   // This is called when the user goes into a new game
   // We cannot just create a new instantiation of the class,

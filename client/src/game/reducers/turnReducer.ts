@@ -1,4 +1,5 @@
 import produce, { Draft } from 'immer';
+import { getVariant } from '../data/gameData';
 import { deckRules } from '../rules';
 import * as turnRules from '../rules/turn';
 import { GameAction } from '../types/actions';
@@ -14,6 +15,7 @@ const turnReducer = produce((
   currentState: GameState,
   metadata: GameMetadata,
 ) => {
+  const variant = getVariant(metadata.options.variantName);
   const characterID = getCharacterIDForPlayer(
     turn.currentPlayerIndex,
     metadata.characterAssignments,
@@ -74,6 +76,7 @@ const turnReducer = produce((
           turn.cardsDiscardedThisTurn,
           characterID,
           currentState.clueTokens,
+          variant,
         )) {
           nextTurn(turn, currentState.cardsRemainingInTheDeck, characterID, metadata);
         }
