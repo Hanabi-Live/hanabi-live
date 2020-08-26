@@ -123,7 +123,7 @@
   {
     "name": "Prism",
     "abbreviation": "I",
-    "createVariants": false,
+    "createVariants": true,
     "fill": "#d9d9d9",
     "pip": "moon",
     "prism": true
@@ -236,7 +236,7 @@
   {
     "name": "Dark Prism",
     "abbreviation": "I",
-    "createVariants": false,
+    "createVariants": true,
     "fill": "#d9d9d9",
     "oneOfEach": true,
     "pip": "moon",
