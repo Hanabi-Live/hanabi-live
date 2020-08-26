@@ -446,14 +446,20 @@ const getSuitStyle = (
     if (rank === 0) {
       return suit.fill;
     }
+
     const prismColorIndex = (rank - 1) % variant.clueColors.length;
-    const colorFillToMix = variant.clueColors[prismColorIndex].fill;
-    const rgb = hexToRgb(colorFillToMix);
-    if (rgb === null) {
+    const fillToMixHex = variant.clueColors[prismColorIndex].fill;
+    const fillToMixRGB = hexToRgb(fillToMixHex);
+    if (fillToMixRGB === null) {
       return suit.fill;
     }
-    const rgbArray = [rgb.r, rgb.g, rgb.b];
-    return colorMixer(rgbArray, [255, 255, 255], 0.5); // Mix it with white by 50%
+    const fillToMixArray = [fillToMixRGB.r, fillToMixRGB.g, fillToMixRGB.b];
+    let fillToMixArray2 = [255, 255, 255]; // White
+    if (suit.oneOfEach) {
+      fillToMixArray2 = [0, 0, 0]; // Black
+    }
+
+    return colorMixer(fillToMixArray, fillToMixArray2, 0.5); // Mix it with white by 50%
   }
 
   // Nearly all other suits have a solid fill
