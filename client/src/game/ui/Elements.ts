@@ -53,10 +53,10 @@ export default class Elements {
   efficiencyNumberLabelMinNeeded: Konva.Text | null = null;
   noDiscardBorder: Konva.Rect | null = null;
   noDoubleDiscardBorder: Konva.Rect | null = null;
-  noClueBorder: Konva.Rect | null = null;
 
   // The score area
   scoreArea: Konva.Group | null = null;
+  scoreAreaBorder: Konva.Rect | null = null;
   turnNumberLabel: Konva.Text | null = null;
   scoreTextLabel: Konva.Text | null = null;
   scoreNumberLabel: Konva.Text | null = null;

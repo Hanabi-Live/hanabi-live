@@ -109,16 +109,29 @@ export const onClueTokensChanged = (clueTokens: number) => {
   if (!globals.lobby.settings.realLifeMode) {
     const noCluesAvailable = clueTokens < clueTokensRules.getAdjusted(1, globals.variant);
     const oneClueAvailable = clueTokens === clueTokensRules.getAdjusted(1, globals.variant);
+    const maxCluesAvailable = clueTokensRules.atMax(clueTokens, globals.variant);
+
     let fill;
     if (noCluesAvailable) {
       fill = 'red';
     } else if (oneClueAvailable) {
       fill = 'yellow';
+    } else if (maxCluesAvailable) {
+      fill = 'lime';
     } else {
       fill = LABEL_COLOR;
     }
     globals.elements.cluesNumberLabel?.fill(fill);
-    globals.elements.noClueBorder?.visible(noCluesAvailable);
+
+    if (noCluesAvailable) {
+      globals.elements.scoreAreaBorder?.stroke('red');
+      globals.elements.scoreAreaBorder?.show();
+    } else if (maxCluesAvailable) {
+      globals.elements.scoreAreaBorder?.stroke('lime');
+      globals.elements.scoreAreaBorder?.show();
+    } else {
+      globals.elements.scoreAreaBorder?.hide();
+    }
   }
 
   globals.layers.UI.batchDraw();

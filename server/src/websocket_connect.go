@@ -286,13 +286,11 @@ func websocketConnectChat(s *Session) {
 		exists = false
 	} else if err != nil {
 		logger.Error("Failed to check if the \""+motdPath+"\" file exists:", err)
-		s.Error(DefaultErrorMsg)
 		exists = false
 	}
 	if exists {
 		if fileContents, err := ioutil.ReadFile(motdPath); err != nil {
 			logger.Error("Failed to read the \""+motdPath+"\" file:", err)
-			s.Error(DefaultErrorMsg)
 		} else {
 			motd := string(fileContents)
 			motd = strings.TrimSpace(motd)
@@ -315,7 +313,6 @@ func websocketConnectHistory(s *Session) {
 	var gameIDs []int
 	if v, err := models.Games.GetGameIDsUser(s.UserID(), 0, 10); err != nil {
 		logger.Error("Failed to get the game IDs for user \""+s.Username()+"\":", err)
-		s.Error(DefaultErrorMsg)
 		return
 	} else {
 		gameIDs = v
@@ -323,7 +320,6 @@ func websocketConnectHistory(s *Session) {
 	var gameHistoryList []*GameHistory
 	if v, err := models.Games.GetHistory(gameIDs); err != nil {
 		logger.Error("Failed to get the history:", err)
-		s.Error(DefaultErrorMsg)
 		return
 	} else {
 		gameHistoryList = v
@@ -341,7 +337,6 @@ func websocketConnectHistoryFriends(s *Session, friends []string) {
 	var gameIDs []int
 	if v, err := models.Games.GetGameIDsFriends(s.UserID(), s.Friends(), 0, 10); err != nil {
 		logger.Error("Failed to get the friend game IDs for user \""+s.Username()+"\":", err)
-		s.Error(DefaultErrorMsg)
 		return
 	} else {
 		gameIDs = v
@@ -349,7 +344,6 @@ func websocketConnectHistoryFriends(s *Session, friends []string) {
 	var gameHistoryFriendsList []*GameHistory
 	if v, err := models.Games.GetHistory(gameIDs); err != nil {
 		logger.Error("Failed to get the history:", err)
-		s.Error(DefaultErrorMsg)
 		return
 	} else {
 		gameHistoryFriendsList = v

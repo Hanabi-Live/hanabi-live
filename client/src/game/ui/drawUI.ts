@@ -673,8 +673,8 @@ const drawScoreArea = () => {
   });
   globals.layers.UI.add(globals.elements.scoreArea);
 
-  // The red border that surrounds the score area when the team is at 0 clues
-  globals.elements.noClueBorder = new Konva.Rect({
+  // The border that surrounds the score area when the team is at X clues
+  globals.elements.scoreAreaBorder = new Konva.Rect({
     x: scoreAreaValues.x * winW,
     y: scoreAreaValues.y * winH,
     width: scoreAreaValues.w! * winW,
@@ -685,7 +685,7 @@ const drawScoreArea = () => {
     visible: false,
     listening: false,
   });
-  globals.layers.UI.add(globals.elements.noClueBorder);
+  globals.layers.UI.add(globals.elements.scoreAreaBorder);
 
   // The faded rectangle around the score area
   const scoreAreaRect = new Konva.Rect({
