@@ -287,7 +287,7 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 	}
 
 	if command == "oop" {
-		msg := "It looks like you are asking a question about an *Out-of-Position Bluff* (or OOP for short). When asking such questions, **you must include** the condition that you think is satisfied (a, b, or c)."
+		msg := "It looks like you are asking a question about an *Out-of-Position Bluff* (or OOP for short). When asking such questions, **you must include** the condition that you think is satisfied (i, ii, or iii)."
 		discordSend(m.ChannelID, "", msg)
 		return
 	}
