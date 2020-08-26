@@ -133,15 +133,6 @@ const getSoundType = (
   metadata: GameMetadata,
 ) => {
   const variant = getVariant(metadata.options.variantName);
-  const ourCharacterID = getCharacterIDForPlayer(
-    metadata.ourPlayerIndex,
-    metadata.characterAssignments,
-  );
-  let ourCharacterName = '';
-  if (ourCharacterID !== null) {
-    const ourCharacter = getCharacter(ourCharacterID);
-    ourCharacterName = ourCharacter.name;
-  }
 
   // In some variants, failed plays are treated as plays
   let action = originalAction;
@@ -157,8 +148,20 @@ const getSoundType = (
 
   switch (action.type) {
     case 'clue': {
-      if (ourCharacterName === 'Quacker') {
-        return SoundType.Quack;
+      if (metadata.options.detrimentalCharacters) {
+        const giverCharacterID = getCharacterIDForPlayer(
+          action.giver,
+          metadata.characterAssignments,
+        );
+        let giverCharacterName = '';
+        if (giverCharacterID !== null) {
+          const giverCharacter = getCharacter(giverCharacterID);
+          giverCharacterName = giverCharacter.name;
+        }
+
+        if (giverCharacterName === 'Quacker') {
+          return SoundType.Quack;
+        }
       }
 
       if (variantRules.isCowAndPig(variant)) {
