@@ -644,7 +644,17 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: string[])
 });
 
 shapeFunctions.set('triangle', (ctx: CanvasRenderingContext2D) => {
-  // TODO
+  ctx.scale(148 / 42, 148 / 42);
+  ctx.beginPath();
+  ctx.moveTo(0.225598, -15.118622);
+  ctx.lineTo(-17.602911, 15.762362);
+  ctx.lineTo(18.055066, 15.761882);
+  ctx.closePath();
+  ctx.moveTo(0.205914, -3.541973);
+  ctx.lineTo(8.029140, 10.008365);
+  ctx.lineTo(-7.617314, 10.008365);
+  ctx.closePath();
+  ctx.scale(42 / 148, 42 / 148);
   console.log(ctx);
 });
 
