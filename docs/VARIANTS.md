@@ -96,7 +96,13 @@ One of each card per suit (e.g. 5 in total):
 * All rank clues will "touch" the light pink suit.
 * No color clues will "touch" the light pink suit.
 
-### Dark Rainbow / Dark Pink / Gray / Dark Brown / Dark Omni / Dark Null / Cocoa Rainbow / Gray Pink
+### Prism
+
+* One of the suits is replaced with a prism suit.
+* The prism 1 is touched by the left-most color, the prism 2 is touched by the second-to-left-most color, and so forth.
+* If there are less than 5 colors available in the variant, then the colors used for prism cards will wrap-around.
+
+### Dark [Suit] / Gray / Cocoa Rainbow / Gray Pink
 
 * One of the suits is replaced with a "dark" version of a special suit.
   * Gray is the "dark" version of white.
