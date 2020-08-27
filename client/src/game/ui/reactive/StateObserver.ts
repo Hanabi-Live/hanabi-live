@@ -158,7 +158,7 @@ const visibleStateObservers: Subscriptions = [
   subVS((s) => s.cardsRemainingInTheDeck, deckView.onCardsRemainingChanged),
 
   // Card fade and critical indicator
-  subVS((s) => s.cardStatus, cardsView.onCardStatusChanged),
+  subVS((s) => ({ cardStatus: s.cardStatus, clues: s.clues }), cardsView.onCardStatusChanged),
 
   // Tooltips
   subVS((s) => s.turn.segment, tooltipsView.onSegmentChanged),
