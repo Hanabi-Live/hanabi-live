@@ -110,6 +110,23 @@ const subscribeToCardChanges = (order: number) => {
     location: c.location,
   }), () => updateBorder(order));
 
+  // Card fade and critical indicator
+  subFullState((s) => {
+    const card = s.visibleState!.deck[order];
+    const status = card.suitIndex !== null && card.rank !== null
+      ? s.visibleState!.cardStatus[card.suitIndex!][card.rank!]
+      : null;
+    return {
+      status,
+      clued: card.numPositiveClues >= 1,
+      location: card.location,
+    };
+  }, () => updateCardStatus(order));
+  sub((c) => ({
+    numPositiveClues: c.numPositiveClues,
+    location: c.location,
+  }), () => updateBorder(order));
+
   // Pips
   sub((c) => ({
     numPossibleCardsFromClues: c.possibleCardsFromClues.length,
@@ -164,7 +181,8 @@ const updateNotePossibilities = (order: number) => {
   globals.layers.card.batchDraw();
 };
 
-export const onCardStatusChanged = () => {
-  globals.deck.forEach((card) => card.setStatus());
+export const updateCardStatus = (order: number) => {
+  const card = getCardOrStackBase(order);
+  card.setStatus();
   globals.layers.card.batchDraw();
 };
