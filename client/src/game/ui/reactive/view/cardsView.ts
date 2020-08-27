@@ -113,7 +113,7 @@ const subscribeToCardChanges = (order: number) => {
   // Card fade and critical indicator
   subFullState((s) => {
     const card = s.visibleState!.deck[order];
-    const status = card.suitIndex !== null && card.rank !== null
+    const status = (card.suitIndex !== null && card.rank !== null)
       ? s.visibleState!.cardStatus[card.suitIndex!][card.rank!]
       : null;
     return {
