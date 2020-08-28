@@ -82,7 +82,8 @@ const drawUser = (
   let nameColumn = '';
   if (user.hyphenated) {
     nameColumn += `<span id="hyphenated-tooltip-${userID}" class="tooltip" `;
-    nameColumn += 'data-tooltip-content="#hyphenated-tooltip">[🇭]</span> ';
+    nameColumn += 'data-tooltip-content="#hyphenated-tooltip">';
+    nameColumn += '<i class="fas fa-heading fa-xs"></i></span>&nbsp; ';
   }
   nameColumn += `<span id="online-users-${userID}">`;
   if (username === globals.username) {

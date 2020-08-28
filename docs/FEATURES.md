@@ -326,7 +326,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventions">Hyphen-ated group</a>, some additional UI elements are enabled:
 
-* a "[🇭]" indicator next to the username in the "Online Users" section.
+* an "H" indicator next to the username in the "Online Users" section.
 * double discard situation notification (as a border around the discard pile and in the "Current Player" area)
 * locked hand notification (in the "Current Player" area)
 * special sound effect when discarding a clued card
