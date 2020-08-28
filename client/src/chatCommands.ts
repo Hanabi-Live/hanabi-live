@@ -32,13 +32,13 @@ chatCommands.set('addfriend', friend);
 
 // /friends
 const friends = (room: string) => {
-  let friendsMsg;
+  let msg;
   if (globals.friends.length === 0) {
-    friendsMsg = 'Currently, you do not have any friends on your friends list.';
+    msg = 'Currently, you do not have any friends on your friends list.';
   } else {
-    friendsMsg = `Current friends: ${globals.friends.join(', ')}`;
+    msg = `Current friends: ${globals.friends.join(', ')}`;
   }
-  chat.addSelf(friendsMsg, room);
+  chat.addSelf(msg, room);
 };
 chatCommands.set('friends', friends);
 chatCommands.set('friendlist', friends);

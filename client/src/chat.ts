@@ -3,7 +3,6 @@
 
 import { isArray } from 'jquery';
 import linkifyHtml from 'linkifyjs/html';
-import linkifyStr from 'linkifyjs/string';
 import emojis from '../../data/emojis.json';
 import emoteCategories from '../../data/emotes.json';
 import chatCommands from './chatCommands';
@@ -445,17 +444,14 @@ export const add = (data: ChatMessage, fast: boolean) => {
   }
 
   // Automatically generate links from any URLs that are present in the message
-  const linkifyOptions = {
+  // (we must use "linkifyjs/html" instead of "linkifyjs/string" because the latter will convert
+  // "&gt;" to "&amp;gt;", and the server has already escaped HTML input)
+  data.msg = linkifyHtml(data.msg, {
     target: '_blank',
     attributes: {
       rel: 'noopener noreferrer',
     },
-  };
-  if (data.server) {
-    data.msg = linkifyHtml(data.msg, linkifyOptions);
-  } else {
-    data.msg = linkifyStr(data.msg, linkifyOptions);
-  }
+  });
 
   // Convert emotes to images
   data.msg = fillDiscordEmotes(data.msg);
