@@ -38,14 +38,7 @@ const friends = (room: string) => {
   } else {
     friendsMsg = `Current friends: ${globals.friends.join(', ')}`;
   }
-  chat.add({
-    msg: friendsMsg,
-    who: '',
-    server: true,
-    datetime: new Date().getTime(),
-    room,
-    recipient: '', // This is needed to prevent the message from being viewed as a PM
-  }, false);
+  chat.addSelf(friendsMsg, room);
 };
 chatCommands.set('friends', friends);
 chatCommands.set('friendlist', friends);
@@ -231,14 +224,8 @@ chatCommands.set('unfriend', (_room: string, args: string[]) => {
 
 // /version
 chatCommands.set('version', (room: string) => {
-  chat.add({
-    msg: `You are running version <strong>${globals.version}</strong> of the client.`,
-    who: '',
-    server: true,
-    datetime: new Date().getTime(),
-    room,
-    recipient: '', // This is needed to prevent the message from being viewed as a PM
-  }, false);
+  const msg = `You are running version <strong>${globals.version}</strong> of the client.`;
+  chat.addSelf(msg, room);
 });
 
 // /warning

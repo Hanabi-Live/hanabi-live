@@ -530,6 +530,19 @@ export const add = (data: ChatMessage, fast: boolean) => {
   }
 };
 
+// addSelf is used when the client needs to send chat messages to itself
+export const addSelf = (msg: string, room: string) => {
+  add({
+    msg,
+    who: '',
+    discord: false,
+    server: true,
+    datetime: new Date().getTime(),
+    room,
+    recipient: '',
+  }, false);
+};
+
 // Discord emotes are in the form of:
 // <:PogChamp:254683883033853954>
 const fillDiscordEmotes = (message: string) => {
