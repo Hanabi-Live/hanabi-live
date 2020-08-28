@@ -2,7 +2,7 @@
 // Logic for the game chat box is located separately in "game/chat.ts"
 
 import { isArray } from 'jquery';
-import linkifyHtml from 'linkifyjs/html';
+import linkifyStr from 'linkifyjs/string';
 import emojis from '../../data/emojis.json';
 import emoteCategories from '../../data/emotes.json';
 import chatCommands from './chatCommands';
@@ -444,7 +444,7 @@ export const add = (data: ChatMessage, fast: boolean) => {
   }
 
   // Automatically generate links from any URLs that are present in the message
-  data.msg = linkifyHtml(data.msg, {
+  data.msg = linkifyStr(data.msg, {
     target: '_blank',
     attributes: {
       rel: 'noopener noreferrer',

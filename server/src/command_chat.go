@@ -139,11 +139,11 @@ func chat(s *Session, d *CommandData, userID int, rawMsg string) {
 			rawMsg = strings.ReplaceAll(rawMsg, "@here", "AtHere")
 		}
 
-		// We use "rawMsg" instead of "d.Msg" because we want to send the unescaped message
-		// (since Discord can handle escaping HTML special characters itself)
-		// Furthermore, replace some HTML-escaped symbols with their real counterparts
+		// Replace some HTML-escaped symbols with their real counterparts
 		rawMsg = strings.ReplaceAll(rawMsg, "&amp;", "&")
 
+		// We use "rawMsg" instead of "d.Msg" because we want to send the unescaped message
+		// (since Discord can handle escaping HTML special characters itself)
 		discordSend(discordLobbyChannel, d.Username, rawMsg)
 	}
 
