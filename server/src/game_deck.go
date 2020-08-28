@@ -10,8 +10,6 @@ func (g *Game) InitDeck() {
 
 	// If a custom deck was provided along with the game options,
 	// then we can simply add every card to the deck as specified
-	logger.Debug("1111", len(g.ExtraOptions.CustomDeck))
-	logger.Debug("2222 " + g.ExtraOptions.CustomSeed + "2222")
 	if g.ExtraOptions.CustomDeck != nil &&
 		len(g.ExtraOptions.CustomDeck) != 0 &&
 		g.ExtraOptions.CustomSeed == "" { // Custom seeds override custom decks

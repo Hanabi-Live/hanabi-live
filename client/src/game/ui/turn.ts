@@ -112,12 +112,12 @@ export const showClueUI = () => {
   globals.elements.clueArea!.show();
   globals.elements.currentPlayerArea!.hide();
 
+  const ongoingGameState = globals.state.replay.hypothetical === null
+    ? globals.state.ongoingGame
+    : globals.state.replay.hypothetical.ongoing;
+
   // Hide some specific clue buttons in certain variants with clue restrictions
   if (variantRules.isAlternatingClues(globals.variant)) {
-    const ongoingGameState = globals.state.replay.hypothetical === null
-      ? globals.state.ongoingGame
-      : globals.state.replay.hypothetical.ongoing;
-
     if (ongoingGameState.clues.length === 0) {
       setColorClueButtonsVisible(true);
       setRankClueButtonsVisible(true);
@@ -134,7 +134,7 @@ export const showClueUI = () => {
   }
 
   // Fade the clue UI if there is not a clue available
-  if (globals.state.ongoingGame.clueTokens >= clueTokensRules.getAdjusted(1, globals.variant)) {
+  if (ongoingGameState.clueTokens >= clueTokensRules.getAdjusted(1, globals.variant)) {
     globals.elements.clueArea!.opacity(1);
     globals.elements.clueAreaDisabled!.hide();
   } else {
@@ -143,12 +143,12 @@ export const showClueUI = () => {
   }
 
   if (globals.options.deckPlays) {
-    const cardsRemainingInTheDeck = globals.state.ongoingGame.cardsRemainingInTheDeck;
-    globals.elements.deck!.cardBack.draggable(cardsRemainingInTheDeck === 1);
-    globals.elements.deckPlayAvailableLabel!.visible(cardsRemainingInTheDeck === 1);
+    const lastCardInDeck = ongoingGameState.cardsRemainingInTheDeck === 1;
+    globals.elements.deck!.cardBack.draggable(lastCardInDeck);
+    globals.elements.deckPlayAvailableLabel!.visible(lastCardInDeck);
 
-    // Ensure the deck is above other cards and UI elements
-    if (cardsRemainingInTheDeck === 1) {
+    if (lastCardInDeck) {
+      // Ensure the deck is above other cards and UI elements
       globals.elements.deck!.moveToTop();
     }
   }
