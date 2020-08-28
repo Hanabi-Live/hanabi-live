@@ -114,7 +114,7 @@ const subscribeToCardChanges = (order: number) => {
   subFullState((s) => {
     const card = s.visibleState!.deck[order];
     const status = (card.suitIndex !== null && card.rank !== null)
-      ? s.visibleState!.cardStatus[card.suitIndex!][card.rank!]
+      ? s.visibleState!.cardStatus[card.suitIndex][card.rank]
       : null;
     return {
       status,
