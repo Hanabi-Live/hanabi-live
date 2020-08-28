@@ -134,7 +134,7 @@ const getSoundType = (
 ) => {
   const variant = getVariant(metadata.options.variantName);
 
-  // In some variants, failed plays are treated as plays
+  // In some variants, failed plays are treated as normal plays
   let action = originalAction;
   if (action.type === 'discard' && action.failed && variantRules.isThrowItInAHole(variant)) {
     action = {

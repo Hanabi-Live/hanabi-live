@@ -8,7 +8,7 @@ import {
 } from '../rules';
 import CardState from '../types/CardState';
 import { MAX_CLUE_NUM } from '../types/constants';
-import { PaceRisk } from '../types/GameState';
+import GameState, { PaceRisk } from '../types/GameState';
 import StackDirection from '../types/StackDirection';
 import Variant from '../types/Variant';
 import * as reversibleRules from './variants/reversible';
@@ -197,34 +197,56 @@ export const minEfficiency = (
   return minEfficiencyNumerator / minEfficiencyDenominator;
 };
 
-// After a discard, it is a "double discard situation" if there is only one other copy of this card
+// After a discard, it is a "double discard" situation if there is only one other copy of this card
 // and it needs to be played
-export const doubleDiscard = (
-  order: number,
-  deck: readonly CardState[],
-  playStacks: ReadonlyArray<readonly number[]>,
-  playStackDirections: readonly StackDirection[],
-  variant: Variant,
-) => {
-  const card = deck[order];
-  if (card.suitIndex === null || card.rank === null) {
-    if (variantRules.isThrowItInAHole(variant)) {
-      // In "Throw It In A Hole", it is expected to get scrubbed discards
-      return false;
-    }
-    throw new Error(`Failed to find the information for card ${order} in the state deck.`);
+export const doubleDiscard = (orderOfDiscardedCard: number, state: GameState, variant: Variant) => {
+  // It is never a double discard situation if the game is over
+  if (state.turn.currentPlayerIndex === null) {
+    return false;
   }
-  const suit = variant.suits[card.suitIndex];
-  const total = deckRules.numCopiesOfCard(suit, card.rank, variant);
-  const discarded = deckRules.discardedCopies(deck, card.suitIndex, card.rank);
+
+  // It is never a double discard situation if the next player has one or more positive clues on
+  // every card in their hand
+  const hand = state.hands[state.turn.currentPlayerIndex];
+  let allClued = true;
+  for (const orderOfCardInHand of hand) {
+    const cardInHand = state.deck[orderOfCardInHand];
+    if (cardRules.isClued(cardInHand)) {
+      allClued = false;
+      break;
+    }
+  }
+  if (allClued) {
+    return false;
+  }
+
+  // It is never a double discard situation if we do not know the identity of the discarded card
+  // (which can happen in certain variants)
+  const cardDiscarded = state.deck[orderOfDiscardedCard];
+  if (cardDiscarded.suitIndex === null || cardDiscarded.rank === null) {
+    return false;
+  }
+
+  // It is never a double discard situation if the discarded card does not need to be played
   const needsToBePlayed = cardRules.needsToBePlayed(
-    card.suitIndex,
-    card.rank,
-    deck,
-    playStacks,
-    playStackDirections,
+    cardDiscarded.suitIndex,
+    cardDiscarded.rank,
+    state.deck,
+    state.playStacks,
+    state.playStackDirections,
     variant,
   );
+  if (!needsToBePlayed) {
+    return false;
+  }
 
-  return total === discarded + 1 && needsToBePlayed;
+  // Otherwise, it is a double discard situation if there is only one copy of the card left
+  const suit = variant.suits[cardDiscarded.suitIndex];
+  const total = deckRules.numCopiesOfCard(suit, cardDiscarded.rank, variant);
+  const discarded = deckRules.discardedCopies(
+    state.deck,
+    cardDiscarded.suitIndex,
+    cardDiscarded.rank,
+  );
+  return total === discarded + 1;
 };
