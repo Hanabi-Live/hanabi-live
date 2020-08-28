@@ -2,6 +2,7 @@
 // Logic for the game chat box is located separately in "game/chat.ts"
 
 import { isArray } from 'jquery';
+import linkifyHtml from 'linkifyjs/html';
 import linkifyStr from 'linkifyjs/string';
 import emojis from '../../data/emojis.json';
 import emoteCategories from '../../data/emotes.json';
@@ -444,12 +445,17 @@ export const add = (data: ChatMessage, fast: boolean) => {
   }
 
   // Automatically generate links from any URLs that are present in the message
-  data.msg = linkifyStr(data.msg, {
+  const linkifyOptions = {
     target: '_blank',
     attributes: {
       rel: 'noopener noreferrer',
     },
-  });
+  };
+  if (data.server) {
+    data.msg = linkifyHtml(data.msg, linkifyOptions);
+  } else {
+    data.msg = linkifyStr(data.msg, linkifyOptions);
+  }
 
   // Convert emotes to images
   data.msg = fillDiscordEmotes(data.msg);
