@@ -1,14 +1,13 @@
 package main
 
 import (
+	"html"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 	"unicode"
 	"unicode/utf8"
-
-	"github.com/microcosm-cc/bluemonday"
 )
 
 const (
@@ -17,8 +16,7 @@ const (
 )
 
 var (
-	bluemondayStrictPolicy = bluemonday.StrictPolicy()
-	lobbyRoomRegExp        = regexp.MustCompile(`table(\d+)`)
+	lobbyRoomRegExp = regexp.MustCompile(`table(\d+)`)
 )
 
 // commandChat is sent when the user presses enter after typing a text message
@@ -64,9 +62,8 @@ func commandChat(s *Session, d *CommandData) {
 	// because we do not want to send HTML-escaped text to Discord
 	rawMsg := d.Msg
 
-	// Sanitize the message using the bluemonday library
-	// to stop various attacks against other players
-	d.Msg = bluemondayStrictPolicy.Sanitize(d.Msg)
+	// Escape all HTML special characters (to stop various attacks against other players)
+	d.Msg = html.EscapeString(d.Msg)
 
 	// Validate the room
 	if d.Room != "lobby" && !strings.HasPrefix(d.Room, "table") {
@@ -142,11 +139,11 @@ func chat(s *Session, d *CommandData, userID int, rawMsg string) {
 			rawMsg = strings.ReplaceAll(rawMsg, "@here", "AtHere")
 		}
 
-		// We use "rawMsg" instead of "d.Msg" because we want to send the unsanitized message
-		// The bluemonday library is intended for HTML rendering,
-		// and Discord can handle any special characters
+		// We use "rawMsg" instead of "d.Msg" because we want to send the unescaped message
+		// (since Discord can handle escaping HTML special characters itself)
 		// Furthermore, replace some HTML-escaped symbols with their real counterparts
 		rawMsg = strings.ReplaceAll(rawMsg, "&amp;", "&")
+
 		discordSend(discordLobbyChannel, d.Username, rawMsg)
 	}
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html"
 	"time"
 )
 
@@ -54,9 +55,8 @@ func commandChatPM(s *Session, d *CommandData) {
 		return
 	}
 
-	// Sanitize the message using the bluemonday library to stop
-	// various attacks against other players
-	d.Msg = bluemondayStrictPolicy.Sanitize(d.Msg)
+	// Escape all HTML special characters (to stop various attacks against other players)
+	d.Msg = html.EscapeString(d.Msg)
 
 	chatPM(s, d, recipientSession)
 }

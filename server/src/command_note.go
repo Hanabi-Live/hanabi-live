@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html"
 	"strconv"
 	"strings"
 	"unicode"
@@ -76,9 +77,8 @@ func commandNote(s *Session, d *CommandData) {
 		return
 	}
 
-	// Sanitize the message using the bluemonday library to stop
-	// various attacks against other players
-	d.Note = bluemondayStrictPolicy.Sanitize(d.Note)
+	// Escape all HTML special characters (to stop various attacks against other players)
+	d.Msg = html.EscapeString(d.Msg)
 
 	note(d, t, playerIndex, spectatorIndex)
 }
