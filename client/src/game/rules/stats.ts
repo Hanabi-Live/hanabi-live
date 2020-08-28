@@ -247,7 +247,8 @@ export const doubleDiscard = (orderOfDiscardedCard: number, state: GameState, va
       cardInDeck.order !== cardDiscarded.order
       && cardInDeck.suitIndex === cardDiscarded.suitIndex
       && cardInDeck.rank === cardDiscarded.rank
-      && cardInDeck.possibleCardsFromClues.length === 1
+      && typeof cardInDeck.location === 'number' // The card is in a player's hand
+      && cardInDeck.possibleCardsFromClues.length === 1 // The card is fully "filled-in"
     ) {
       return false;
     }
