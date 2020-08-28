@@ -240,6 +240,19 @@ export const doubleDiscard = (orderOfDiscardedCard: number, state: GameState, va
     return false;
   }
 
+  // It is never a double discard situation if another player has a copy of the card in their hand
+  // that happens to be fully "fill-in" from clues
+  for (const cardInDeck of state.deck) {
+    if (
+      cardInDeck.order !== cardDiscarded.order
+      && cardInDeck.suitIndex === cardDiscarded.suitIndex
+      && cardInDeck.rank === cardDiscarded.rank
+      && cardInDeck.possibleCardsFromClues.length === 1
+    ) {
+      return false;
+    }
+  }
+
   // Otherwise, it is a double discard situation if there is only one copy of the card left
   const suit = variant.suits[cardDiscarded.suitIndex];
   const numCopiesTotal = deckRules.numCopiesOfCard(suit, cardDiscarded.rank, variant);
