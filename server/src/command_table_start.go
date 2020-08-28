@@ -100,9 +100,17 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 		"s" // e.g. "p2v0s" for a 2-player no variant game
 	if t.ExtraOptions.JSONReplay {
 		// This is a replay from arbitrary JSON data (or a custom game from arbitrary JSON data)
-		g.Seed = "JSON"
-		shuffleDeck = false
 		shufflePlayers = false
+		if t.ExtraOptions.CustomSeed == "" {
+			// No custom seed was specified along with the JSON, so use the specified deck
+			g.Seed = "JSON"
+			shuffleDeck = false
+		} else {
+			// A custom seed was specified along with the JSON,
+			// so ignore the deck provided in the JSON, generate a deck based on the specified seed,
+			// and shuffle it as per normal
+			g.Seed = g.ExtraOptions.CustomSeed
+		}
 	} else if t.ExtraOptions.CustomSeed != "" {
 		// This is a replay from the database (or a custom "!replay" game)
 		g.Seed = t.ExtraOptions.CustomSeed
@@ -142,6 +150,8 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 		}
 	}
 	logger.Info(t.GetName()+"Using seed:", g.Seed)
+	logger.Info("Shuffling deck:", shuffleDeck)
+	logger.Info("Shuffling players:", shufflePlayers)
 
 	setSeed(g.Seed) // Seed the random number generator
 	if shuffleDeck {

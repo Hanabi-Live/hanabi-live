@@ -45,6 +45,8 @@ func httpWS(c *gin.Context) {
 		ip = v
 	}
 
+	logger.Debug("Entered the \"httpWS()\" function for IP: " + ip)
+
 	// Check to see if their IP is banned
 	if banned, err := models.BannedIPs.Check(ip); err != nil {
 		msg := "Failed to check to see if the IP \"" + ip + "\" is banned:"
@@ -134,6 +136,8 @@ func httpWS(c *gin.Context) {
 	}
 
 	// If they got this far, they are a valid user
+	logger.Info("User \"" + username + "\" is establishing a WebSocket connection.")
+
 	// Transfer the values from the login cookie into WebSocket session variables
 	// New keys added here should also be added to the "newFakeSesssion()" function
 	keys := defaultSessionKeys()
