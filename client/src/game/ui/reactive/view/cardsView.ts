@@ -122,10 +122,6 @@ const subscribeToCardChanges = (order: number) => {
       location: card.location,
     };
   }, () => updateCardStatus(order));
-  sub((c) => ({
-    numPositiveClues: c.numPositiveClues,
-    location: c.location,
-  }), () => updateBorder(order));
 
   // Pips
   sub((c) => ({
