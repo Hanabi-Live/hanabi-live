@@ -242,11 +242,11 @@ export const doubleDiscard = (orderOfDiscardedCard: number, state: GameState, va
 
   // Otherwise, it is a double discard situation if there is only one copy of the card left
   const suit = variant.suits[cardDiscarded.suitIndex];
-  const total = deckRules.numCopiesOfCard(suit, cardDiscarded.rank, variant);
-  const discarded = deckRules.discardedCopies(
+  const numCopiesTotal = deckRules.numCopiesOfCard(suit, cardDiscarded.rank, variant);
+  const numDiscarded = deckRules.discardedCopies(
     state.deck,
     cardDiscarded.suitIndex,
     cardDiscarded.rank,
   );
-  return total === discarded + 1;
+  return numCopiesTotal === numDiscarded + 1;
 };

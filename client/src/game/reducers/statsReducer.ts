@@ -66,13 +66,7 @@ const statsReducer = produce((
 
   // Handle double discard calculation
   if (action.type === 'discard') {
-    stats.doubleDiscard = statsRules.doubleDiscard(
-      action.order,
-      currentState.deck,
-      currentState.playStacks,
-      currentState.playStackDirections,
-      variant,
-    );
+    stats.doubleDiscard = statsRules.doubleDiscard(action.order, currentState, variant);
   } else if (action.type === 'play' || action.type === 'clue') {
     stats.doubleDiscard = false;
   }
