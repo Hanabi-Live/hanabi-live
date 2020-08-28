@@ -5,7 +5,7 @@ import isOurTurn from '../../isOurTurn';
 import * as ourHand from '../../ourHand';
 import * as turn from '../../turn';
 
-export const onOngoingCurrentPlayerIndexChanged = () => {
+export const onOngoingTurnChanged = () => {
   ourHand.checkSetDraggableAll();
 
   if (isOurTurn()) {

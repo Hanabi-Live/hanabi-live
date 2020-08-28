@@ -8,7 +8,6 @@ import * as cardLayoutView from './view/cardLayoutView';
 import * as cardsView from './view/cardsView';
 import * as cluesView from './view/cluesView';
 import * as currentPlayerAreaView from './view/currentPlayerAreaView';
-import * as currentPlayerView from './view/currentPlayerView';
 import * as deckView from './view/deckView';
 import * as gameInfoView from './view/gameInfoView';
 import * as hypotheticalView from './view/hypotheticalView';
@@ -21,6 +20,7 @@ import * as soundView from './view/soundView';
 import * as spectatorsView from './view/spectatorsView';
 import * as statsView from './view/statsView';
 import * as tooltipsView from './view/tooltipsView';
+import * as turnView from './view/turn';
 
 type Subscriptions = Array<Subscription<State, any>>;
 
@@ -162,11 +162,11 @@ const visibleStateObservers: Subscriptions = [
 ];
 
 const ongoingGameObservers: Subscriptions = [
-  // Current player index
-  subAfterInit(
-    (s) => s.ongoingGame.turn.currentPlayerIndex,
-    currentPlayerView.onOngoingCurrentPlayerIndexChanged,
-  ),
+  // Segment + current player index
+  subAfterInit((s) => ({
+    segment: s.ongoingGame.turn.segment,
+    currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
+  }), turnView.onOngoingTurnChanged),
 
   // The "Current Player" area should only be shown under certain conditions
   subAfterInit((s) => ({

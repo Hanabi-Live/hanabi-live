@@ -66,30 +66,32 @@ func commandAction(s *Session, d *CommandData) {
 			"so you cannot send an action.")
 		return
 	}
-
-	// Validate that it is this player's turn
-	if g.ActivePlayerIndex != playerIndex && d.Type != ActionTypeEndGame {
-		s.Warning("It is not your turn, so you cannot perform an action.")
-		g.InvalidActionOccurred = true
-		return
-	}
-
-	// Validate that the game is not paused
-	if g.Paused && d.Type != ActionTypeEndGame {
-		s.Warning("You cannot perform a game action when the game is paused.")
-		g.InvalidActionOccurred = true
-		return
-	}
-
-	// Validate that a player is not doing an illegal action for their character
 	p := g.Players[playerIndex]
-	if characterValidateAction(s, d, g, p) {
-		g.InvalidActionOccurred = true
-		return
-	}
-	if characterValidateSecondAction(s, d, g, p) {
-		g.InvalidActionOccurred = true
-		return
+
+	if d.Type != ActionTypeEndGame {
+		// Validate that it is this player's turn
+		if g.ActivePlayerIndex != playerIndex {
+			s.Warning("It is not your turn, so you cannot perform an action.")
+			g.InvalidActionOccurred = true
+			return
+		}
+
+		// Validate that the game is not paused
+		if g.Paused {
+			s.Warning("You cannot perform a game action when the game is paused.")
+			g.InvalidActionOccurred = true
+			return
+		}
+
+		// Validate that a player is not doing an illegal action for their character
+		if characterValidateAction(s, d, g, p) {
+			g.InvalidActionOccurred = true
+			return
+		}
+		if characterValidateSecondAction(s, d, g, p) {
+			g.InvalidActionOccurred = true
+			return
+		}
 	}
 
 	action(s, d, t, p)

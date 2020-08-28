@@ -655,7 +655,6 @@ shapeFunctions.set('triangle', (ctx: CanvasRenderingContext2D) => {
   ctx.lineTo(-7.617314, 10.008365);
   ctx.closePath();
   ctx.scale(42 / 148, 42 / 148);
-  console.log(ctx);
 });
 
 export default function drawPip(
