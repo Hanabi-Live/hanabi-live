@@ -15,7 +15,7 @@ const clueStarvedVariant = getVariant('Clue Starved (6 Suits)');
 const cardsPerHand2Player = hand.cardsPerHand(2, false, false);
 const cardsPerHand4Player = hand.cardsPerHand(4, false, false);
 const cardsPerHand2PlayerOneExtra = hand.cardsPerHand(2, true, false);
-const cardsPerHand2PlayerOneLess = hand.cardsPerHand(2, false, true);
+const cardsPerHand2PlayerOneFewer = hand.cardsPerHand(2, false, true);
 
 describe('startingPace', () => {
   test('returns 17 for 2-player No Variant', () => {
@@ -38,8 +38,8 @@ describe('startingPace', () => {
     expect(startingPace(2, cardsPerHand2PlayerOneExtra, defaultVariant)).toBe(15);
   });
 
-  test('returns 19 for 2-player No Variant with one less card', () => {
-    expect(startingPace(2, cardsPerHand2PlayerOneLess, defaultVariant)).toBe(19);
+  test('returns 19 for 2-player No Variant with one fewer card', () => {
+    expect(startingPace(2, cardsPerHand2PlayerOneFewer, defaultVariant)).toBe(19);
   });
 });
 

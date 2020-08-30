@@ -74,7 +74,7 @@ const (
 	ScoreModifierDeckPlays Bitmask = 1 << iota // e.g. 1, 2, 4, and so forth
 	ScoreModifierEmptyClues
 	ScoreModifierOneExtraCard
-	ScoreModifierOneLessCard
+	ScoreModifierOneFewerCard
 	ScoreModifierAllOrNothing
 )
 

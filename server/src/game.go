@@ -302,7 +302,7 @@ func (g *Game) GetHandSize() int {
 	if g.Options.OneExtraCard {
 		handSize++
 	}
-	if g.Options.OneLessCard {
+	if g.Options.OneFewerCard {
 		handSize--
 	}
 	return handSize

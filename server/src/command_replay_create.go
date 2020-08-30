@@ -470,9 +470,9 @@ func loadJSONOptionsToTable(d *CommandData, t *Table) {
 	if d.GameJSON.Options.OneExtraCard != nil {
 		oneExtraCard = *d.GameJSON.Options.OneExtraCard
 	}
-	oneLessCard := false
-	if d.GameJSON.Options.OneLessCard != nil {
-		oneLessCard = *d.GameJSON.Options.OneLessCard
+	oneFewerCard := false
+	if d.GameJSON.Options.OneFewerCard != nil {
+		oneFewerCard = *d.GameJSON.Options.OneFewerCard
 	}
 	allOrNothing := false
 	if d.GameJSON.Options.AllOrNothing != nil {
@@ -496,7 +496,7 @@ func loadJSONOptionsToTable(d *CommandData, t *Table) {
 		DeckPlays:             deckPlays,
 		EmptyClues:            emptyClues,
 		OneExtraCard:          oneExtraCard,
-		OneLessCard:           oneLessCard,
+		OneFewerCard:          oneFewerCard,
 		AllOrNothing:          allOrNothing,
 		DetrimentalCharacters: detrimentalCharacters,
 	}

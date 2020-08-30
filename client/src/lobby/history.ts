@@ -394,9 +394,9 @@ const makeOptions = (i: number, options: Options, otherScores: boolean) => {
     tooltipHTML += 'One Extra Card</li>';
   }
 
-  if (options.oneLessCard) {
+  if (options.oneFewerCard) {
     tooltipHTML += '<li><i class="fas fa-minus-circle"></i>&nbsp; ';
-    tooltipHTML += 'One Less Card</li>';
+    tooltipHTML += 'One Fewer Card</li>';
   }
 
   if (options.allOrNothing) {

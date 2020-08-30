@@ -268,9 +268,9 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 * Each game has the option to play with one extra card dealt to each player at the start of the game.
 * This can make the game easier with a low amount of players, but make the game harder with a high amount of players.
 
-#### One Less Card
+#### One Fewer Card
 
-* Each game has the option to play with one less card dealt to each player at the start of the game.
+* Each game has the option to play with one fewer card dealt to each player at the start of the game.
 * This can make the game easier with a high amount of players, but make the game harder with a low amount of players.
 
 #### All or Nothing

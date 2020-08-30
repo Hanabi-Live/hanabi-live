@@ -12,7 +12,7 @@ export default class Options {
   readonly deckPlays: boolean = false;
   readonly emptyClues: boolean = false;
   readonly oneExtraCard: boolean = false;
-  readonly oneLessCard: boolean = false;
+  readonly oneFewerCard: boolean = false;
   readonly allOrNothing: boolean = false;
   readonly detrimentalCharacters: boolean = false;
 }

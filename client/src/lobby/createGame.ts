@@ -95,20 +95,20 @@ export const init = () => {
   // Disable some checkboxes if a checkbox is checked
   $('#createTableOneExtraCard').change(() => {
     if ($('#createTableOneExtraCard').is(':checked')) {
-      $('#createTableOneLessCardRow').fadeTo(0, 0.3);
-      $('#createTableOneLessCard').prop('disabled', true);
-      $('#createTableOneLessCardLabel').css('cursor', 'auto');
+      $('#createTableOneFewerCardRow').fadeTo(0, 0.3);
+      $('#createTableOneFewerCard').prop('disabled', true);
+      $('#createTableOneFewerCardLabel').css('cursor', 'auto');
     } else {
-      $('#createTableOneLessCardRow').fadeTo(0, 1);
-      $('#createTableOneLessCard').prop('disabled', false);
-      $('#createTableOneLessCardLabel').css('cursor', 'pointer');
+      $('#createTableOneFewerCardRow').fadeTo(0, 1);
+      $('#createTableOneFewerCard').prop('disabled', false);
+      $('#createTableOneFewerCardLabel').css('cursor', 'pointer');
     }
 
     // Remember the new setting
-    getCheckbox('createTableOneLessCard');
+    getCheckbox('createTableOneFewerCard');
   });
-  $('#createTableOneLessCard').change(() => {
-    if ($('#createTableOneLessCard').is(':checked')) {
+  $('#createTableOneFewerCard').change(() => {
+    if ($('#createTableOneFewerCard').is(':checked')) {
       $('#createTableOneExtraCardRow').fadeTo(0, 0.3);
       $('#createTableOneExtraCard').prop('disabled', true);
       $('#createTableOneExtraCardLabel').css('cursor', 'auto');
@@ -119,7 +119,7 @@ export const init = () => {
     }
 
     // Remember the new setting
-    getCheckbox('createTableOneLessCard');
+    getCheckbox('createTableOneFewerCard');
   });
 
   // Check for changes in the various input fields so that we can remember their respective settings
@@ -285,7 +285,7 @@ const submit = () => {
       deckPlays: getCheckbox('createTableDeckPlays'),
       emptyClues: getCheckbox('createTableEmptyClues'),
       oneExtraCard: getCheckbox('createTableOneExtraCard'),
-      oneLessCard: getCheckbox('createTableOneLessCard'),
+      oneFewerCard: getCheckbox('createTableOneFewerCard'),
       allOrNothing: getCheckbox('createTableAllOrNothing'),
       detrimentalCharacters: getCheckbox('createTableDetrimentalCharacters'),
     },
@@ -482,7 +482,7 @@ export const ready = () => {
     && !globals.settings.createTableDeckPlays
     && !globals.settings.createTableEmptyClues
     && !globals.settings.createTableOneExtraCard
-    && !globals.settings.createTableOneLessCard
+    && !globals.settings.createTableOneFewerCard
     && !globals.settings.createTableAllOrNothing
     && !globals.settings.createTableDetrimentalCharacters
   ) {

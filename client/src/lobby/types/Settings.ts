@@ -23,7 +23,7 @@ export default class Settings {
   createTableDeckPlays: boolean = false;
   createTableEmptyClues: boolean = false;
   createTableOneExtraCard: boolean = false;
-  createTableOneLessCard: boolean = false;
+  createTableOneFewerCard: boolean = false;
   createTableAllOrNothing: boolean = false;
   createTableDetrimentalCharacters: boolean = false;
 }

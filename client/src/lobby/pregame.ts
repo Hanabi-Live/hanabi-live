@@ -194,13 +194,13 @@ const drawOptions = () => {
     `;
   }
 
-  if (globals.game.options.oneLessCard) {
+  if (globals.game.options.oneFewerCard) {
     html += '<li><i id="lobby-pregame-options-one-less-card" class="fas fa-minus-circle" ';
     html += 'data-tooltip-content="#pregame-tooltip-one-less-card"></i></li>';
     html += `
       <div class="hidden">
         <div id="pregame-tooltip-one-less-card" class="lobby-pregame-tooltip-icon">
-          The <strong>One Less Card</strong> option is enabled.
+          The <strong>One Fewer Card</strong> option is enabled.
         </div>
       </div>
     `;
@@ -261,7 +261,7 @@ const drawOptions = () => {
   if (globals.game.options.oneExtraCard) {
     $('#lobby-pregame-options-one-extra-card').tooltipster(tooltips.options);
   }
-  if (globals.game.options.oneLessCard) {
+  if (globals.game.options.oneFewerCard) {
     $('#lobby-pregame-options-one-less-card').tooltipster(tooltips.options);
   }
   if (globals.game.options.allOrNothing) {

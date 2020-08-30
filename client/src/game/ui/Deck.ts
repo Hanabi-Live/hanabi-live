@@ -258,9 +258,9 @@ export default class Deck extends Konva.Group {
       content += '&nbsp; One Extra Card</li>';
     }
 
-    if (globals.options.oneLessCard) {
+    if (globals.options.oneFewerCard) {
       content += '<li><span class="game-tooltips-icon"><i class="fas fa-minus-circle"></i></span>';
-      content += '&nbsp; One Less Card</li>';
+      content += '&nbsp; One Fewer Card</li>';
     }
 
     if (globals.options.allOrNothing) {

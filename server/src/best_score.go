@@ -7,7 +7,7 @@ type BestScore struct {
 	DeckPlays    bool    `json:"deckPlays"`
 	EmptyClues   bool    `json:"emptyClues"`
 	OneExtraCard bool    `json:"oneExtraCard"`
-	OneLessCard  bool    `json:"oneLessCard"`
+	OneFewerCard bool    `json:"oneFewerCard"`
 	AllOrNothing bool    `json:"allOrNothing"`
 }
 

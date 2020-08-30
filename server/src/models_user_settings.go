@@ -31,7 +31,7 @@ type Settings struct {
 	CreateTableDeckPlays             bool    `json:"createTableDeckPlays"`
 	CreateTableEmptyClues            bool    `json:"createTableEmptyClues"`
 	CreateTableOneExtraCard          bool    `json:"createTableOneExtraCard"`
-	CreateTableOneLessCard           bool    `json:"createTableOneLessCard"`
+	CreateTableOneFewerCard          bool    `json:"createTableOneFewerCard"`
 	CreateTableAllOrNothing          bool    `json:"createTableAllOrNothing"`
 	CreateTableDetrimentalCharacters bool    `json:"createTableDetrimentalCharacters"`
 }
@@ -103,7 +103,7 @@ func (*UserSettings) Get(userID int) (Settings, error) {
 		&settings.CreateTableDeckPlays,
 		&settings.CreateTableEmptyClues,
 		&settings.CreateTableOneExtraCard,
-		&settings.CreateTableOneLessCard,
+		&settings.CreateTableOneFewerCard,
 		&settings.CreateTableAllOrNothing,
 		&settings.CreateTableDetrimentalCharacters,
 	); err == pgx.ErrNoRows {

@@ -272,8 +272,8 @@ func (g *Game) WriteDatabaseStats() {
 	if g.Options.OneExtraCard {
 		modifier.AddFlag(ScoreModifierOneExtraCard)
 	}
-	if g.Options.OneLessCard {
-		modifier.AddFlag(ScoreModifierOneLessCard)
+	if g.Options.OneFewerCard {
+		modifier.AddFlag(ScoreModifierOneFewerCard)
 	}
 	if g.Options.AllOrNothing {
 		modifier.AddFlag(ScoreModifierAllOrNothing)

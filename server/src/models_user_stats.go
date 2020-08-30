@@ -332,7 +332,7 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 					}
 
 					SQLString += "AND games.one_less_card = "
-					if modifier.HasFlag(ScoreModifierOneLessCard) {
+					if modifier.HasFlag(ScoreModifierOneFewerCard) {
 						SQLString += "TRUE "
 					} else {
 						SQLString += "FALSE "
@@ -391,8 +391,8 @@ func fillBestScores(bestScores []*BestScore) {
 		if modifier.HasFlag(ScoreModifierOneExtraCard) {
 			bestScores[i].OneExtraCard = true
 		}
-		if modifier.HasFlag(ScoreModifierOneLessCard) {
-			bestScores[i].OneLessCard = true
+		if modifier.HasFlag(ScoreModifierOneFewerCard) {
+			bestScores[i].OneFewerCard = true
 		}
 		if modifier.HasFlag(ScoreModifierAllOrNothing) {
 			bestScores[i].AllOrNothing = true

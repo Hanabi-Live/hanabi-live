@@ -22,7 +22,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   const cardsPerHand = handRules.cardsPerHand(
     options.numPlayers,
     options.oneExtraCard,
-    options.oneLessCard,
+    options.oneFewerCard,
   );
   const startingPace = statsRules.startingPace(options.numPlayers, cardsPerHand, variant);
   const hands: number[][] = initArray(options.numPlayers, []);

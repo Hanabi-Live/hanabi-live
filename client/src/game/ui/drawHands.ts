@@ -28,7 +28,7 @@ export default function drawHands(winW: number, winH: number) {
   const numCardsPerHand = hand.cardsPerHand(
     numPlayers,
     globals.options.oneExtraCard,
-    globals.options.oneLessCard,
+    globals.options.oneFewerCard,
   );
 
   /* eslint-disable object-curly-newline */

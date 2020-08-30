@@ -197,8 +197,8 @@ func httpExport(c *gin.Context) {
 		optionsJSON.OneExtraCard = &options.OneExtraCard
 		allDefaultOptions = false
 	}
-	if options.OneLessCard {
-		optionsJSON.OneLessCard = &options.OneLessCard
+	if options.OneFewerCard {
+		optionsJSON.OneFewerCard = &options.OneFewerCard
 		allDefaultOptions = false
 	}
 	if options.AllOrNothing {

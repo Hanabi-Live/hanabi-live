@@ -6,8 +6,8 @@ import CardState from '../types/CardState';
 export const cardsPerHand = (
   numPlayers: number,
   oneExtraCard: boolean,
-  oneLessCard: boolean,
-) => cardsPerHandNatural(numPlayers) + (oneExtraCard ? 1 : 0) - (oneLessCard ? 1 : 0);
+  oneFewerCard: boolean,
+) => cardsPerHandNatural(numPlayers) + (oneExtraCard ? 1 : 0) - (oneFewerCard ? 1 : 0);
 
 export const cardsPerHandNatural = (numPlayers: number) => {
   switch (numPlayers) {

@@ -71,7 +71,7 @@ export const isInitialDealFinished = (currentDeckSize: number, metadata: GameMet
   const numCardsPerHand = handRules.cardsPerHand(
     metadata.options.numPlayers,
     metadata.options.oneExtraCard,
-    metadata.options.oneLessCard,
+    metadata.options.oneFewerCard,
   );
   return currentDeckSize === totalCardsInTheDeck - (metadata.options.numPlayers * numCardsPerHand);
 };

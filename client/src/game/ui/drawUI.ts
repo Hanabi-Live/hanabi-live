@@ -1318,7 +1318,7 @@ const drawStatistics = () => {
     globals.options.numPlayers,
     globals.variant,
     globals.options.oneExtraCard,
-    globals.options.oneLessCard,
+    globals.options.oneFewerCard,
   );
   const efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
     text: minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places

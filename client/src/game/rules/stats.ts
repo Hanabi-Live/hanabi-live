@@ -160,10 +160,10 @@ export const minEfficiency = (
   numPlayers: number,
   variant: Variant,
   oneExtraCard: boolean,
-  oneLessCard: boolean,
+  oneFewerCard: boolean,
 ): number => {
   // First, calculate the starting pace:
-  const cardsPerHand = handRules.cardsPerHand(numPlayers, oneExtraCard, oneLessCard);
+  const cardsPerHand = handRules.cardsPerHand(numPlayers, oneExtraCard, oneFewerCard);
   const initialPace = startingPace(numPlayers, cardsPerHand, variant);
 
   // Second, use the pace to calculate the minimum efficiency required to win the game with the

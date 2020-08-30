@@ -253,11 +253,11 @@ func commandTableCreate(s *Session, d *CommandData) {
 		d.Options.TimePerTurn = 0
 	}
 
-	// Validate that they did not send both the "One Extra Card" and the "One Less Card" option at
+	// Validate that they did not send both the "One Extra Card" and the "One Fewer Card" option at
 	// the same time (they effectively cancel each other out)
-	if d.Options.OneExtraCard && d.Options.OneLessCard {
+	if d.Options.OneExtraCard && d.Options.OneFewerCard {
 		d.Options.OneExtraCard = false
-		d.Options.OneLessCard = false
+		d.Options.OneFewerCard = false
 	}
 
 	// Validate games with custom JSON
