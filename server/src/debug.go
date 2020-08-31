@@ -204,11 +204,9 @@ func debugPrint() {
 func debugFunction() {
 	logger.Debug("Executing debug function(s).")
 
-	updateAllSeedNumGames()
-	/*
-		updateAllUserStats()
-		updateAllVariantStats()
-	*/
+	// updateAllSeedNumGames()
+	updateAllUserStats()
+	updateAllVariantStats()
 
 	/*
 		// Get all game IDs
@@ -243,6 +241,7 @@ func debugFunction() {
 	logger.Debug("Debug function(s) complete.")
 }
 
+/*
 func updateAllSeedNumGames() {
 	if err := models.Seeds.UpdateAll(); err != nil {
 		logger.Error("Failed to update the number of games for every seed:", err)
@@ -250,8 +249,8 @@ func updateAllSeedNumGames() {
 		logger.Info("Updated the number of games for every seed.")
 	}
 }
+*/
 
-/*
 func updateAllUserStats() {
 	if err := models.UserStats.UpdateAll(variantGetHighestID()); err != nil {
 		logger.Error("Failed to update the stats for every user:", err)
@@ -283,4 +282,3 @@ func variantGetHighestID() int {
 	}
 	return highestID
 }
-*/
