@@ -61,7 +61,10 @@ func (*VariantStats) Get(variantID int) (VariantStatsRow, error) {
 }
 
 func (*VariantStats) GetAll() (map[int]VariantStatsRow, error) {
-	rows, err := db.Query(context.Background(), `
+	statsMap := make(map[int]VariantStatsRow)
+
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), `
 		SELECT
 			variant_id,
 			num_games,
@@ -74,15 +77,18 @@ func (*VariantStats) GetAll() (map[int]VariantStatsRow, error) {
 			average_score,
 			num_strikeouts
 		FROM variant_stats
-	`)
+	`); err != nil {
+		return statsMap, err
+	} else {
+		rows = v
+	}
 
 	// Go through the stats for each variant
-	statsMap := make(map[int]VariantStatsRow)
 	for rows.Next() {
 		stats := NewVariantStatsRow()
 
 		var variantID int
-		if err2 := rows.Scan(
+		if err := rows.Scan(
 			&variantID,
 			&stats.NumGames,
 			&stats.BestScores[0].Score, // 2-player
@@ -93,15 +99,15 @@ func (*VariantStats) GetAll() (map[int]VariantStatsRow, error) {
 			&stats.NumMaxScores,
 			&stats.AverageScore,
 			&stats.NumStrikeouts,
-		); err2 != nil {
-			return nil, err2
+		); err != nil {
+			return statsMap, err
 		}
 
 		statsMap[variantID] = stats
 	}
 
-	if rows.Err() != nil {
-		return nil, err
+	if err := rows.Err(); err != nil {
+		return statsMap, err
 	}
 	rows.Close()
 

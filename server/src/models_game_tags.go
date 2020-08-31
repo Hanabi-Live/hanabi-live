@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 	"strings"
+
+	"github.com/jackc/pgx/v4"
 )
 
 type GameTags struct{}
@@ -50,22 +52,28 @@ func (*GameTags) Delete(gameID int, tag string) error {
 }
 
 func (*GameTags) GetAll(gameID int) ([]string, error) {
-	rows, err := db.Query(context.Background(), `
+	tags := make([]string, 0)
+
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), `
 		SELECT tag
 		FROM game_tags
 		WHERE game_id = $1
-	`, gameID)
+	`, gameID); err != nil {
+		return tags, err
+	} else {
+		rows = v
+	}
 
-	tags := make([]string, 0)
 	for rows.Next() {
 		var tag string
-		if err2 := rows.Scan(&tag); err2 != nil {
-			return tags, err2
+		if err := rows.Scan(&tag); err != nil {
+			return tags, err
 		}
 		tags = append(tags, tag)
 	}
 
-	if rows.Err() != nil {
+	if err := rows.Err(); err != nil {
 		return tags, err
 	}
 	rows.Close()
@@ -74,22 +82,28 @@ func (*GameTags) GetAll(gameID int) ([]string, error) {
 }
 
 func (*GameTags) SearchByTag(tag string) ([]int, error) {
-	rows, err := db.Query(context.Background(), `
+	gameIDs := make([]int, 0)
+
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), `
 		SELECT game_id
 		FROM game_tags
 		WHERE tag = $1
-	`, tag)
+	`, tag); err != nil {
+		return gameIDs, err
+	} else {
+		rows = v
+	}
 
-	gameIDs := make([]int, 0)
 	for rows.Next() {
 		var gameID int
-		if err2 := rows.Scan(&gameID); err2 != nil {
-			return gameIDs, err2
+		if err := rows.Scan(&gameID); err != nil {
+			return gameIDs, err
 		}
 		gameIDs = append(gameIDs, gameID)
 	}
 
-	if rows.Err() != nil {
+	if err := rows.Err(); err != nil {
 		return gameIDs, err
 	}
 	rows.Close()
@@ -98,23 +112,29 @@ func (*GameTags) SearchByTag(tag string) ([]int, error) {
 }
 
 func (*GameTags) SearchByUserID(userID int) (map[int][]string, error) {
-	rows, err := db.Query(context.Background(), `
+	gamesMap := make(map[int][]string)
+
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), `
 		SELECT game_id, tag
 		FROM game_tags
 		WHERE user_id = $1
-	`, userID)
+	`, userID); err != nil {
+		return gamesMap, err
+	} else {
+		rows = v
+	}
 
-	gamesMap := make(map[int][]string)
 	for rows.Next() {
 		var gameID int
 		var tag string
-		if err2 := rows.Scan(&gameID, &tag); err2 != nil {
-			return gamesMap, err2
+		if err := rows.Scan(&gameID, &tag); err != nil {
+			return gamesMap, err
 		}
 		gamesMap[gameID] = append(gamesMap[gameID], tag)
 	}
 
-	if rows.Err() != nil {
+	if err := rows.Err(); err != nil {
 		return gamesMap, err
 	}
 	rows.Close()

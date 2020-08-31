@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v4"
 )
 
 type UserFriends struct{}
@@ -24,24 +26,30 @@ func (*UserFriends) Delete(userID int, friendID int) error {
 }
 
 func (*UserFriends) GetAllUsernames(userID int) ([]string, error) {
-	rows, err := db.Query(context.Background(), `
+	friends := make([]string, 0)
+
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), `
 		SELECT users.username
 		FROM user_friends
 			JOIN users ON user_friends.friend_id = users.id
 		WHERE user_friends.user_id = $1
-	`, userID)
+	`, userID); err != nil {
+		return friends, err
+	} else {
+		rows = v
+	}
 
-	friends := make([]string, 0)
 	for rows.Next() {
 		var friend string
-		if err2 := rows.Scan(&friend); err2 != nil {
-			return friends, err2
+		if err := rows.Scan(&friend); err != nil {
+			return friends, err
 		}
 		friends = append(friends, friend)
 	}
 	friends = sortStringsCaseInsensitive(friends)
 
-	if rows.Err() != nil {
+	if err := rows.Err(); err != nil {
 		return friends, err
 	}
 	rows.Close()
@@ -53,22 +61,28 @@ func (*UserFriends) GetAllUsernames(userID int) ([]string, error) {
 // We use a map to represent the friends instead of a slice because it is faster to check for the
 // existence of a friend in a map than to interate through a slice
 func (*UserFriends) GetMap(userID int) (map[int]struct{}, error) {
-	rows, err := db.Query(context.Background(), `
+	friendMap := make(map[int]struct{})
+
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), `
 		SELECT friend_id
 		FROM user_friends
 		WHERE user_id = $1
-	`, userID)
+	`, userID); err != nil {
+		return friendMap, err
+	} else {
+		rows = v
+	}
 
-	friendMap := make(map[int]struct{})
 	for rows.Next() {
 		var friendID int
-		if err2 := rows.Scan(&friendID); err2 != nil {
-			return friendMap, err2
+		if err := rows.Scan(&friendID); err != nil {
+			return friendMap, err
 		}
 		friendMap[friendID] = struct{}{}
 	}
 
-	if rows.Err() != nil {
+	if err := rows.Err(); err != nil {
 		return friendMap, err
 	}
 	rows.Close()

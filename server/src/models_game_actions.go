@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 	"strings"
+
+	"github.com/jackc/pgx/v4"
 )
 
 type GameActions struct{}
@@ -51,7 +53,10 @@ func (*GameActions) BulkInsert(gameActionRows []*GameActionRow) error {
 }
 
 func (*GameActions) GetAll(databaseID int) ([]*GameAction, error) {
-	rows, err := db.Query(context.Background(), `
+	actions := make([]*GameAction, 0)
+
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), `
 		SELECT
 			type,
 			target,
@@ -59,25 +64,28 @@ func (*GameActions) GetAll(databaseID int) ([]*GameAction, error) {
 		FROM game_actions
 		WHERE game_id = $1
 		ORDER BY turn
-	`, databaseID)
+	`, databaseID); err != nil {
+		return actions, err
+	} else {
+		rows = v
+	}
 
 	// Iterate over all of the actions and add them to a slice
-	actions := make([]*GameAction, 0)
 	for rows.Next() {
 		var action GameAction
-		if err2 := rows.Scan(
+		if err := rows.Scan(
 			&action.Type,
 			&action.Target,
 			&action.Value,
-		); err2 != nil {
-			return nil, err2
+		); err != nil {
+			return actions, err
 		}
 
 		actions = append(actions, &action)
 	}
 
-	if rows.Err() != nil {
-		return nil, err
+	if err := rows.Err(); err != nil {
+		return actions, err
 	}
 	rows.Close()
 

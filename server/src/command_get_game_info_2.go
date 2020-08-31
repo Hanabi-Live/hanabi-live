@@ -43,7 +43,7 @@ func getGameInfo2(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 	g := t.Game
 
 	// Check to see if we need to remove some card information
-	var scrubbedActions []interface{}
+	scrubbedActions := make([]interface{}, 0)
 	if !t.Replay {
 		for _, action := range g.Actions {
 			scrubbedAction := CheckScrub(t, action, s.UserID())

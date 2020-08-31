@@ -75,8 +75,11 @@ func (*UserStats) Get(userID int, variantID int) (UserStatsRow, error) {
 }
 
 func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
+	statsMap := make(map[int]UserStatsRow)
+
 	// Get all of the statistics for this user (for every individual variant)
-	rows, err := db.Query(context.Background(), `
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), `
 		SELECT
 			variant_id,
 			num_games,
@@ -95,14 +98,17 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 		FROM user_stats
 		WHERE user_id = $1
 		ORDER BY variant_id ASC
-	`, userID)
+	`, userID); err != nil {
+		return statsMap, err
+	} else {
+		rows = v
+	}
 
 	// Go through the stats for each variant
-	statsMap := make(map[int]UserStatsRow)
 	for rows.Next() {
 		var variantID int
 		stats := NewUserStatsRow()
-		if err2 := rows.Scan(
+		if err := rows.Scan(
 			&variantID,
 			&stats.NumGames,
 			&stats.BestScores[0].Score, // 2-player
@@ -117,8 +123,8 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 			&stats.BestScores[4].Modifier,
 			&stats.AverageScore,
 			&stats.NumStrikeouts,
-		); err2 != nil {
-			return nil, err2
+		); err != nil {
+			return statsMap, err
 		}
 
 		fillBestScores(stats.BestScores)
@@ -126,8 +132,8 @@ func (*UserStats) GetAll(userID int) (map[int]UserStatsRow, error) {
 		statsMap[variantID] = stats
 	}
 
-	if rows.Err() != nil {
-		return nil, err
+	if err := rows.Err(); err != nil {
+		return statsMap, err
 	}
 	rows.Close()
 
@@ -238,18 +244,23 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 	}
 
 	// Get all of the users
-	rows, err := db.Query(context.Background(), "SELECT id FROM users")
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), "SELECT id FROM users"); err != nil {
+		return err
+	} else {
+		rows = v
+	}
 
-	var userIDs []int
+	userIDs := make([]int, 0)
 	for rows.Next() {
 		var userID int
-		if err2 := rows.Scan(&userID); err2 != nil {
-			return err2
+		if err := rows.Scan(&userID); err != nil {
+			return err
 		}
 		userIDs = append(userIDs, userID)
 	}
 
-	if rows.Err() != nil {
+	if err := rows.Err(); err != nil {
 		return err
 	}
 	rows.Close()
