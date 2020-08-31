@@ -204,40 +204,51 @@ func debugPrint() {
 func debugFunction() {
 	logger.Debug("Executing debug function(s).")
 
+	updateAllSeedNumGames()
 	/*
 		updateAllUserStats()
 		updateAllVariantStats()
 	*/
 
-	// Get all game IDs
-	var ids []int
-	if v, err := models.Games.GetAllIDs(); err != nil {
-		logger.Fatal("Failed to get all of the game IDs:", err)
-		return
-	} else {
-		ids = v
-	}
-
-	for i, id := range ids {
-		if i > 1000 {
-			break
+	/*
+		// Get all game IDs
+		var ids []int
+		if v, err := models.Games.GetAllIDs(); err != nil {
+			logger.Fatal("Failed to get all of the game IDs:", err)
+			return
+		} else {
+			ids = v
 		}
-		logger.Debug("ON GAME:", id)
-		s := newFakeSession(1, "Server")
-		commandReplayCreate(s, &CommandData{ // Manual invocation
-			Source:     "id",
-			GameID:     id,
-			Visibility: "solo",
-		})
-		commandTableUnattend(s, &CommandData{ // Manual invocation
-			TableID: tableIDCounter,
-		})
-	}
 
-	logger.Debug("BAD GAME IDS:")
-	logger.Debug(badGameIDs)
+		for i, id := range ids {
+			if i > 1000 {
+				break
+			}
+			logger.Debug("ON GAME:", id)
+			s := newFakeSession(1, "Server")
+			commandReplayCreate(s, &CommandData{ // Manual invocation
+				Source:     "id",
+				GameID:     id,
+				Visibility: "solo",
+			})
+			commandTableUnattend(s, &CommandData{ // Manual invocation
+				TableID: tableIDCounter,
+			})
+		}
+
+		logger.Debug("BAD GAME IDS:")
+		logger.Debug(badGameIDs)
+	*/
 
 	logger.Debug("Debug function(s) complete.")
+}
+
+func updateAllSeedNumGames() {
+	if err := models.Seeds.UpdateAll(); err != nil {
+		logger.Error("Failed to update the number of games for every seed:", err)
+	} else {
+		logger.Info("Updated the number of games for every seed.")
+	}
 }
 
 /*

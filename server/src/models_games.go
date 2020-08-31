@@ -171,9 +171,16 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sort string) ([]*GameHistory, 
 			games1.datetime_started,
 			games1.datetime_finished,
 			(
-				SELECT COUNT(games2.id)
-				FROM games AS games2
-				WHERE games2.seed = games1.seed
+				/*
+				 * We use a "COALESCE" to return 0 if the corresponding row in the "seeds" table
+				 * does not exist
+				 * This row should always exist, but check it just to be safe
+				 */
+				SELECT COALESCE((
+					SELECT seeds.num_games
+					FROM seeds
+					WHERE seeds.seed = games1.seed
+				), 0)
 			) AS num_games_on_this_seed,
 			(
 				SELECT STRING_AGG(users.username, ', ')
@@ -471,19 +478,6 @@ func (*Games) GetUserNumGames(userID int, includeSpeedrun bool) (int, error) {
 	if err := db.QueryRow(context.Background(), SQLString, userID).Scan(&count); err != nil {
 		return 0, err
 	}
-	return count, nil
-}
-
-func (*Games) GetNumGamesOnThisSeed(seed string) (int, error) {
-	var count int
-	if err := db.QueryRow(context.Background(), `
-		SELECT COUNT(id)
-		FROM games
-		WHERE seed = $1
-	`, seed).Scan(&count); err != nil {
-		return 0, err
-	}
-
 	return count, nil
 }
 

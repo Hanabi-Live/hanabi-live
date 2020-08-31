@@ -11,7 +11,7 @@ import * as variantRules from '../variant';
 
 // needsToBePlayed returns true if this card still needs to be played in order to get the maximum
 // score (taking the stack direction into account)
-// (before getting here, we already checked to see if the card has already been played)
+// (before reaching this function, we have already checked to see if the card has been played)
 // This function mirrors the server function "variantReversibleNeedsToBePlayed()"
 export const needsToBePlayed = (
   suitIndex: number,

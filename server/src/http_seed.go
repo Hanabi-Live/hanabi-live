@@ -17,8 +17,6 @@ func httpSeed(c *gin.Context) {
 		return
 	}
 
-	logger.Debug("/seed HTTP endpoint - Getting here #1.")
-
 	// Get the list of game IDs played on this seed
 	var gameIDs []int
 	if v, err := models.Games.GetGameIDsSeed(seed); err != nil {
@@ -32,8 +30,6 @@ func httpSeed(c *gin.Context) {
 	} else {
 		gameIDs = v
 	}
-
-	logger.Debug("/seed HTTP endpoint - Getting here #2.")
 
 	// Get the history for these game IDs
 	// (with a custom sort by score)
@@ -49,8 +45,6 @@ func httpSeed(c *gin.Context) {
 	} else {
 		gameHistoryList = v
 	}
-
-	logger.Debug("/seed HTTP endpoint - Getting here #3.")
 
 	if _, ok := c.Request.URL.Query()["api"]; ok {
 		c.JSON(http.StatusOK, gameHistoryList)

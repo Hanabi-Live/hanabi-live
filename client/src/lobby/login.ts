@@ -192,7 +192,7 @@ export const hide = (firstTimeUser: boolean) => {
   $('#lobby-chat-input').focus();
 
   // Scroll to the bottom of the chat
-  // (this is necessary if we are getting here after the tutorial)
+  // (this is necessary if we are going to the lobby after the tutorial)
   const chat = $('#lobby-chat-text');
   chat.animate({
     scrollTop: chat[0].scrollHeight,

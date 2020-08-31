@@ -26,6 +26,7 @@ type Models struct {
 	GameTags
 	Metadata
 	MutedIPs
+	Seeds
 	Users
 	UserFriends
 	UserReverseFriends

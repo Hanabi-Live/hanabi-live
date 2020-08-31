@@ -60,7 +60,7 @@ func (g *Game) End() {
 
 	// Send a "gameHistory" message to all the players in the game
 	var numGamesOnThisSeed int
-	if v, err := models.Games.GetNumGamesOnThisSeed(g.Seed); err != nil {
+	if v, err := models.Seeds.GetNumGames(g.Seed); err != nil {
 		logger.Error("Failed to get the number of games on seed "+g.Seed+":", err)
 		return
 	} else {
@@ -242,6 +242,13 @@ func (g *Game) WriteDatabase() error {
 			// Do not return on failed tag insertion,
 			// since it should not affect subsequent operations
 		}
+	}
+
+	// Finally, we update the seeds table with the number of games played on this seed
+	if err := models.Seeds.UpdateNumGames(g.Seed); err != nil {
+		logger.Error("Failed to update the number of games in the seeds table:", err)
+		// Do not return on a failed seeds update,
+		// since it should not affect subsequent operations
 	}
 
 	// We also need to update stats in the database, but that can be done in the background
