@@ -428,5 +428,5 @@ func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ..
 }
 
 func httpFormatDate(date time.Time) string {
-	return date.Format("2006-01-02 - 15:04:05 - MST")
+	return date.Format("2006-01-02 &mdash; 15:04:05 MST")
 }
