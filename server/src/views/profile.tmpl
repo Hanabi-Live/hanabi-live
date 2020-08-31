@@ -159,6 +159,7 @@
     // If no filters are active, show everything
     if (!numPlayersFilterEnabled && !scoreFilterEnabled && !variantFilterEnabled) {
       $('.history-row').show();
+      setRowColors();
       return;
     }
 
@@ -175,7 +176,21 @@
     } else {
       $(historySelector).show();
     }
+
+    setRowColors();
   };
+
+  // In the Alpha HTML5 template, table rows are supposed to alternate colors
+  // After sorting, the color alternation will be messed up, so manually reset all of the row colors
+  const setRowColors = () => {
+    const numRows = $('#history-table tr').length;
+    const color1 = '#f8f8f8';
+    const color2 = 'white';
+    for (let i = 0; i < numRows; i++) {
+      const colorForThisRow = i % 2 == 0 ? color1 : color2;
+      $(`#history-row-${i}`).css('background-color', colorForThisRow);
+    }
+  }
 
   const initMissingScores = () => {
     if (!window.location.pathname.startsWith('/missing-scores/')) {
