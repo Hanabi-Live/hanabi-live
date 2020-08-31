@@ -107,7 +107,10 @@
   });
 
   const initHistory = () => {
-    if (!window.location.pathname.startsWith('/history/')) {
+    if (
+      !window.location.pathname.startsWith('/history/')
+      && !window.location.pathname.startsWith('/seed/')
+    ) {
       return;
     }
 
