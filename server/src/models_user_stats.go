@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sort"
 	"strconv"
 
@@ -270,13 +269,13 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 	sort.Slice(userIDs, func(i, j int) bool {
 		return userIDs[i] < userIDs[j]
 	})
-	fmt.Println("Total users:", len(userIDs))
-	fmt.Println("(From user " + strconv.Itoa(userIDs[0]) + " " +
+	logger.Debug("Total users:", len(userIDs))
+	logger.Debug("(From user " + strconv.Itoa(userIDs[0]) + " " +
 		"to user " + strconv.Itoa(userIDs[len(userIDs)-1]) + ".)")
 
 	// Go through each user
 	for _, userID := range userIDs {
-		fmt.Println("Updating user:", userID)
+		logger.Debug("Updating user:", userID)
 		for variantID := 0; variantID <= highestVariantID; variantID++ {
 			// Check to see if this user has played any games of this variant
 			var numGames int
