@@ -180,7 +180,7 @@ func tableJoin(s *Session, t *Table) {
 		for _, p2 := range t.Players {
 			// Skip sending a message to the player that just joined
 			if p2.ID != p.ID {
-				p2.Session.NotifyLobbySound("someone_joined")
+				p2.Session.NotifySoundLobby("someone_joined")
 			}
 		}
 	}

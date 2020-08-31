@@ -69,7 +69,7 @@
       <th># of Players</th>
       <th>Score</th>
       <th>Variant</th>
-      <th>Date</th>
+      <th>Date & Time</th>
       <th>Players</th>
       {{if not .SpecificSeed}}<th>Other Scores</th>{{end}}
       {{if eq .Title "Tagged Games" }}<th>Tags</th>{{end}}
@@ -82,7 +82,7 @@
         <td>{{.Options.NumPlayers}}</td>
         <td>{{.Score}}</td>
         <td>{{.Options.VariantName}}</td>
-        <td>{{.DatetimeFinished}}</td>
+        <td>{{.DatetimeFinished | formatDate}}</td>
         <td>
           <!-- From: https://stackoverflow.com/questions/21305865/golang-separating-items-with-comma-in-template -->
           <a href="/history/{{range $index2, $results2 := .PlayerNames}}{{if $index2}}/{{end}}{{$results2}}{{end}}">

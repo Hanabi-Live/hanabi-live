@@ -85,7 +85,7 @@
                   <th># of Players</th>
                   <th>Score</th>
                   <th>Players</th>
-                  <th>Date Played</th>
+                  <th>Date & Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -100,7 +100,7 @@
                         {{range $index2, $results2 := .PlayerNames}}{{if $index2}}, {{end}}{{$results2}}{{end}}
                       </a>
                     </td>
-                    <td>{{.DatetimeFinished}}</td>
+                    <td>{{.DatetimeFinished | formatDate}}</td>
                   </tr>
                 {{- end -}}
               </tbody>

@@ -185,7 +185,7 @@ func (s *Session) NotifyMaintenance() {
 	})
 }
 
-func (s *Session) NotifyLobbySound(file string) {
+func (s *Session) NotifySoundLobby(file string) {
 	type SoundLobbyMessage struct {
 		File string `json:"file"`
 	}

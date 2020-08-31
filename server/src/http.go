@@ -354,6 +354,10 @@ func httpInit() {
 // httpServeTemplate combines a standard HTML header with the body for a specific page
 // (we want the same HTML header for all pages)
 func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ...string) {
+	// Since we are using the GZip middleware, we have to specify the content type,
+	// or else the page will be downloaded by the browser as "download.gz"
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	viewsPath := path.Join(projectPath, "server", "src", "views")
 	layoutPath := path.Join(viewsPath, "layout.tmpl")
 	logoPath := path.Join(viewsPath, "logo.tmpl")
@@ -391,7 +395,9 @@ func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ..
 
 	// Create the template
 	var tmpl *template.Template
-	if v, err := template.ParseFiles(templateName...); err != nil {
+	if v, err := template.New("template").Funcs(template.FuncMap{
+		"formatDate": httpFormatDate,
+	}).ParseFiles(templateName...); err != nil {
 		logger.Error("Failed to create the template:", err.Error())
 		http.Error(
 			w,
@@ -402,10 +408,6 @@ func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ..
 	} else {
 		tmpl = v
 	}
-
-	// Since we are using the GZip middleware, we have to specify the content type,
-	// or else the page will be downloaded by the browser as "download.gz"
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	// Add extra data that should be the same for every page request
 	data.WebsiteName = WebsiteName
@@ -423,4 +425,8 @@ func httpServeTemplate(w http.ResponseWriter, data TemplateData, templateName ..
 			http.StatusInternalServerError,
 		)
 	}
+}
+
+func httpFormatDate(date time.Time) string {
+	return date.Format("2006-01-02 - 15:04:05 - MST")
 }
