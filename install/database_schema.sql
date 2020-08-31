@@ -27,8 +27,8 @@ CREATE TABLE users (
      * Furthermore, because of Unicode, it would be possible for "Αlice" with a Greek letter A
      * (0x391) and "Alice" with a normal A (0x41) to exist
      * To guard against users impersonating each other & phishing attacks, we also store a
-     * normalized version of the username that is converted to ASCII with the go-unidecode library
-     * and then lower-cased
+     * normalized version of the username that is transliterated to ASCII with the go-unidecode
+     * library and then lower-cased
      * Importantly, we must verify that all new usernames are unique in code before adding them to
      * the database
      */
@@ -214,7 +214,7 @@ CREATE TABLE game_tags (
 DROP TABLE IF EXISTS seeds CASCADE;
 CREATE TABLE seeds (
     seed       TEXT     NOT NULL  PRIMARY KEY,
-    num_games  INTEGER  NOT NULL  DEFAULT 0
+    num_games  INTEGER  NOT NULL
 );
 
 DROP TABLE IF EXISTS variant_stats CASCADE;
