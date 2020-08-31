@@ -211,6 +211,12 @@ CREATE TABLE game_tags (
     CONSTRAINT game_tags_unique UNIQUE (game_id, tag)
 );
 
+DROP TABLE IF EXISTS seeds CASCADE;
+CREATE TABLE seeds (
+    seed       TEXT     NOT NULL  PRIMARY KEY,
+    num_games  INTEGER  NOT NULL  DEFAULT 0
+);
+
 DROP TABLE IF EXISTS variant_stats CASCADE;
 CREATE TABLE variant_stats (
     /* The ID for a particular variant can be found in the "variants.json" file */
