@@ -17,9 +17,7 @@ export const onCardsPossiblyAdded = (length: number) => {
       if (globals.allNotes.get(i) === undefined) {
         globals.allNotes.set(i, []);
       }
-      const newCard = new HanabiCard({
-        order: i,
-      }, globals.variant);
+      const newCard = new HanabiCard(i, null, null, globals.variant);
       globals.deck.push(newCard);
     }
     const subscription = subscribeToCardChanges(i);

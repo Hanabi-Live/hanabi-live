@@ -88,8 +88,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   wasRecentlyTapped: boolean = false;
   touchstartTimeout: ReturnType<typeof setTimeout> | null = null;
   doMisplayAnimation: boolean = false;
-  tooltipName: string = '';
   noteIndicator: NoteIndicator;
+
+  get tooltipName() {
+    return `card-${this.state.order}`;
+  }
 
   private _visibleSuitIndex: number | null = null;
   get visibleSuitIndex() {
@@ -138,8 +141,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return this._layout;
   }
 
-  constructor(config: Konva.ContainerConfig, variant: Variant) {
-    super(config);
+  constructor(order: number, suitIndex: number | null, rank: number | null, variant: Variant) {
+    super();
     this.listening(true);
     this.variant = variant;
 
@@ -156,11 +159,11 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Order is defined upon first initialization
     // This state is only used by stack bases
     // TODO: move stack bases to be a separate class that shares code with HanabiCard
-    const initialState = initialCardState(config.order, this.variant);
+    const initialState = initialCardState(order, this.variant);
     this._state = {
       ...initialState,
-      suitIndex: typeof config.suitIndex === 'number' ? config.suitIndex : initialState.suitIndex,
-      rank: typeof config.rank === 'number' ? config.rank : initialState.rank,
+      suitIndex,
+      rank,
     };
 
     // Initialize various elements/features of the card
@@ -215,8 +218,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // Add a parent layout
     this._layout = new LayoutChild(this);
 
-    // Initialize the bare image for stack bases
-    if (typeof config.suitIndex === 'number' || typeof config.rank === 'number') {
+    // Initialize the bare image
+    if (suitIndex !== null || rank !== null) {
       this.setBareImage();
     }
   }
@@ -1063,7 +1066,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // (we don't use the "tooltip.init()" function because we need the extra conditions in the
     // "mouseover" event)
     // The "touchstart" event is handled later in the empathy function
-    this.tooltipName = `card-${this.state.order}`;
     this.on('mouseover', function cardMouseOver(this: HanabiCard) {
       this.noteMouseOver();
       globals.activeHover = this;

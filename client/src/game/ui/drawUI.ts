@@ -333,13 +333,8 @@ const drawPlayStacks = () => {
     const order = deck.totalCards(globals.variant) + i;
     globals.ourNotes.set(order, '');
     globals.allNotes.set(order, []);
-    const stackBase = new HanabiCard({
-      // Stack bases use card orders after the final card in the deck
-      order,
-      suitIndex: i,
-      rank: STACK_BASE_RANK,
-      listening: true,
-    }, globals.variant);
+    // Stack bases use card orders after the final card in the deck
+    const stackBase = new HanabiCard(order, i, STACK_BASE_RANK, globals.variant);
     globals.stackBases.push(stackBase);
 
     playStack.addChild(stackBase.layout);
