@@ -159,8 +159,8 @@ func shutdownImmediate() {
 
 	sessionsMutex.RLock()
 	for _, s := range sessions {
-		s.Error("The server is going down for scheduled maintenance. " +
-			"The server might be down for a while; please see the Discord server for more specific updates.")
+		s.Error("The server is going down for scheduled maintenance. The server might be down for a while; please see the Discord server for more specific updates.")
+		s.NotifyLobbySound("shutdown")
 	}
 	sessionsMutex.RUnlock()
 

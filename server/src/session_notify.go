@@ -185,6 +185,15 @@ func (s *Session) NotifyMaintenance() {
 	})
 }
 
+func (s *Session) NotifyLobbySound(file string) {
+	type SoundLobbyMessage struct {
+		File string `json:"file"`
+	}
+	s.Emit("soundLobby", &SoundLobbyMessage{
+		File: file,
+	})
+}
+
 /*
 	In-game notify functions
 */

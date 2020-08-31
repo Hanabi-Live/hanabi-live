@@ -14,10 +14,6 @@ turn_other:
 - Keys: v, m
 - Notes: D, G
 
-turn_surprise:
-- Keys v, n, <, m
-- Notes: D, F, A, G
-
 blind1:
 - Keys: m, >, a
 - Notes: G, B, D
@@ -61,5 +57,9 @@ sad:
 - Keys: C, B, A#, A
 - Notes: v, c, x, z
   (set tuning --> key --> none)
+
+shutdown:
+- Keys v, n, <, m
+- Notes: D, F, A, G
 
 The sounds are reduced in Audacity by -12.0 db before exporting to MP3.
