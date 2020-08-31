@@ -115,19 +115,31 @@
     }
 
     // Initialize the "Filter by # of Players" dropdown
-    $('#filter-by-players').change(() => {
+    // (which is not relevant on a seed listing page)
+    if (window.location.pathname.startsWith('/seed/')) {
+      $('#filter-by-players-label1').hide();
+      $('#filter-by-players-label2').hide();
+    } else {
+      $('#filter-by-players').change(() => {
       filterHistoryRows();
     });
+    }
 
     // Initialize the "Filter by Score" input field
     $('#filter-by-score').on('input', () => {
       filterHistoryRows();
     });
 
-    // Initialize the "Filter by Score" input field
-    $('#filter-by-variant').on('input', () => {
-      filterHistoryRows();
-    });
+    // Initialize the "Filter by Variant" input field
+    // (which is not relevant on a seed listing page)
+    if (window.location.pathname.startsWith('/seed/')) {
+      $('#filter-by-variant-label1').hide();
+      $('#filter-by-variant-label2').hide();
+    } else {
+      $('#filter-by-variant').on('input', () => {
+        filterHistoryRows();
+      });
+    }
   };
 
   const filterHistoryRows = () => {
