@@ -176,7 +176,7 @@ func tableJoin(s *Session, t *Table) {
 	t.DatetimeLastJoined = time.Now()
 
 	// Play a notification sound if it has been more than 15 seconds since the last person joined
-	if time.Since(datetimeLastJoined) <= time.Second*15 {
+	if time.Since(datetimeLastJoined) > time.Second*15 {
 		for _, p2 := range t.Players {
 			// Skip sending a message to the player that just joined
 			if p2.ID != p.ID {
