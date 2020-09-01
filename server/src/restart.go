@@ -35,10 +35,11 @@ func restart() {
 
 	sessionsMutex.RLock()
 	for _, s := range sessions {
+		// The sound has to be before the error, since the latter will cause a disconnect
+		s.NotifySoundLobby("shutdown")
 		s.Error("The server is going down momentarily to load a new version of the code. " +
 			"If you are currently playing a game, all of the progress should be saved. " +
 			"Please wait a few seconds and then refresh the page.")
-		s.NotifySoundLobby("shutdown")
 	}
 	sessionsMutex.RUnlock()
 
