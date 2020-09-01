@@ -293,8 +293,6 @@ func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 		DatabaseID:       data.DatabaseID,
 		CustomNumPlayers: data.CustomNumPlayers,
 		SetSeedSuffix:    data.SetSeedSuffix,
-		SetReplay:        data.SetReplay,
-		SetReplayTurn:    data.SetReplayTurn,
 	}
 
 	// If this is a "!replay" game, override the options with the ones found in the database
@@ -310,6 +308,10 @@ func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 		// "loadDatabaseOptionsToTable()" marks that the game should not be written to the database,
 		// which is not true in this special case
 		t.ExtraOptions.NoWriteToDatabase = false
+
+		// "loadDatabaseOptionsToTable()" does not specify the "!replay" options
+		t.ExtraOptions.SetReplay = data.SetReplay
+		t.ExtraOptions.SetReplayTurn = data.SetReplayTurn
 	}
 
 	// If the user specified JSON data,
