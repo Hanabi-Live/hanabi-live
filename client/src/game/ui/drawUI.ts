@@ -706,10 +706,10 @@ const drawScoreArea = () => {
   }) as Konva.Text;
   globals.elements.scoreArea.add(turnTextLabel);
   turnTextLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
-    if (event.evt.button === 0) { // Left-click
+    if (event.evt.buttons === 0) { // Left-click
       // We want to be able to left-click the turn number to go to a specific turn in the replay
       replay.promptTurn();
-    } else if (event.evt.button === 2) { // Right-click
+    } else if (event.evt.buttons === 2) { // Right-click
       arrows.click(event, ReplayArrowOrder.Clues, globals.elements.turnNumberLabel);
     }
   });
@@ -723,10 +723,10 @@ const drawScoreArea = () => {
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.turnNumberLabel!);
   globals.elements.turnNumberLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
-    if (event.evt.button === 0) { // Left-click
+    if (event.evt.buttons === 0) { // Left-click
       // We want to be able to left-click the turn number to go to a specific turn in the replay
       replay.promptTurn();
-    } else if (event.evt.button === 2) { // Right-click
+    } else if (event.evt.buttons === 2) { // Right-click
       arrows.click(event, ReplayArrowOrder.Clues, globals.elements.turnNumberLabel);
     }
   });
@@ -1503,7 +1503,7 @@ const drawTimers = () => {
     });
   };
   globals.elements.timer1.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
-    if (event.evt.button === 2) { // Right-click
+    if (event.evt.buttons === 2) { // Right-click
       timerClick();
     }
   });

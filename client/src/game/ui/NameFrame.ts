@@ -56,20 +56,10 @@ export default class NameFrame extends Konva.Group {
     }
     this.playerName.offsetX(w / 2);
     this.playerName.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
-      switch (event.evt.button) {
-        case 0: { // Left-click
-          this.leftClick();
-          break;
-        }
-
-        case 2: { // Right-click
-          this.rightClick();
-          break;
-        }
-
-        default: {
-          break;
-        }
+      if (event.evt.buttons === 0) { // Left-click
+        this.leftClick();
+      } else if (event.evt.buttons === 2) { // Right-click
+        this.rightClick();
       }
     });
     this.add(this.playerName);

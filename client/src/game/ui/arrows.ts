@@ -288,7 +288,7 @@ export const click = (
   order: ReplayArrowOrder,
   element: any,
 ) => {
-  if (event.evt.button !== 2) { // Right-click
+  if (event.evt.buttons !== 2) { // Right-click
     return;
   }
 
