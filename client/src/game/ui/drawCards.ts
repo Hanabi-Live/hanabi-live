@@ -447,7 +447,11 @@ const getSuitStyle = (
       return suit.fill;
     }
 
-    const prismColorIndex = (rank - 1) % variant.clueColors.length;
+    let prismColorIndex = (rank - 1) % variant.clueColors.length;
+    if (rank === START_CARD_RANK) {
+      // "START" cards count as rank 0, so they are touched by the final color
+      prismColorIndex = variant.clueColors.length - 1;
+    }
     const fillToMixHex = variant.clueColors[prismColorIndex].fill;
     const fillToMixRGB = hexToRgb(fillToMixHex);
     if (fillToMixRGB === null) {

@@ -14,6 +14,7 @@ const (
 	StackDirectionFinished
 )
 const (
+	// The "Up or Down" variants have "START" cards
 	// Rank 0 is the stack base
 	// Rank 1-5 are the normal cards
 	// Rank 6 is a card of unknown rank

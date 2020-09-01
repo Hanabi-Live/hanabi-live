@@ -186,6 +186,7 @@ func variantsInit() {
 // variantIsCardTouched returns true if a clue will touch a particular suit
 // For example, a yellow clue will not touch a green card in a normal game,
 // but it will the "Dual-Color" variant
+// This mirrors the function "touchesCard()" in "clues.ts"
 func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 	variant := variants[variantName]
 	suit := variant.Suits[card.SuitIndex]
@@ -216,6 +217,10 @@ func variantIsCardTouched(variantName string, clue Clue, card *Card) bool {
 		if suit.Prism {
 			// The color that touches a prism card is contingent upon the card's rank
 			prismColorIndex := (card.Rank - 1) % len(variant.ClueColors)
+			if card.Rank == StartCardRank {
+				// "START" cards count as rank 0, so they are touched by the final color
+				prismColorIndex = len(variant.ClueColors) - 1
+			}
 			prismColorName := variant.ClueColors[prismColorIndex]
 			return clueColorName == prismColorName
 		}

@@ -4,6 +4,7 @@ import { getCharacter } from '../data/gameData';
 import { getCharacterIDForPlayer } from '../reducers/reducerHelpers';
 import Clue, { colorClue, rankClue } from '../types/Clue';
 import ClueType from '../types/ClueType';
+import { START_CARD_RANK } from '../types/constants';
 import GameMetadata from '../types/GameMetadata';
 import MsgClue from '../types/MsgClue';
 import Variant from '../types/Variant';
@@ -57,7 +58,7 @@ export const msgClueToClue = (msgClue: MsgClue, variant: Variant) => {
   throw new Error('Unknown clue type given to the "msgClueToClue()" function.');
 };
 
-// This mirrors the function "variantIsCardTouched" in "variants.go"
+// This mirrors the function "variantIsCardTouched()" in "variants.go"
 export const touchesCard = (
   variant: Variant,
   clue: Clue,
@@ -89,7 +90,11 @@ export const touchesCard = (
 
     if (suit.prism) {
       // The color that touches a prism card is contingent upon the card's rank
-      const prismColorIndex = (rank - 1) % variant.clueColors.length;
+      let prismColorIndex = (rank - 1) % variant.clueColors.length;
+      if (rank === START_CARD_RANK) {
+        // "START" cards count as rank 0, so they are touched by the final color
+        prismColorIndex = variant.clueColors.length - 1;
+      }
       const prismColorName = variant.clueColors[prismColorIndex].name;
       return clue.value.name === prismColorName;
     }
