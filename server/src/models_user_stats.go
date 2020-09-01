@@ -303,27 +303,27 @@ func (us *UserStats) UpdateAll(highestVariantID int) error {
 			// Go through the history, looking for games of this specific variant
 			stats := NewUserStatsRow()
 			totalScore := 0
-			for _, game := range gameHistoryList {
-				variant := variants[game.Options.VariantName]
+			for _, gameHistory := range gameHistoryList {
+				variant := variants[gameHistory.Options.VariantName]
 				if variant.ID != variantID {
 					continue
 				}
 
 				stats.NumGames++
-				totalScore += game.Score
-				if game.Score == 0 {
+				totalScore += gameHistory.Score
+				if gameHistory.Score == 0 {
 					stats.NumStrikeouts++
 				}
 
-				bestScoresIndex := game.Options.NumPlayers - 2
+				bestScoresIndex := gameHistory.Options.NumPlayers - 2
 				bestScore := stats.BestScores[bestScoresIndex]
-				modifier := game.Options.GetModifier()
+				modifier := gameHistory.Options.GetModifier()
 				thisScore := &BestScore{
-					Score:    game.Score,
+					Score:    gameHistory.Score,
 					Modifier: modifier,
 				}
 				if thisScore.IsBetterThan(bestScore) {
-					bestScore.Score = game.Score
+					bestScore.Score = gameHistory.Score
 					bestScore.Modifier = modifier
 				}
 			}

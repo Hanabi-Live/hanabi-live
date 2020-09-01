@@ -474,6 +474,107 @@ func (*Games) GetGameIDsVariant(variantID int, amount int) ([]int, error) {
 	return gameIDs, nil
 }
 
+func (*Games) GetGameIDsPastX(amount int) ([]int, error) {
+	gameIDs := make([]int, 0)
+
+	SQLString := `
+		SELECT id
+		FROM games
+		/* We must get the results in decending order for the limit to work properly */
+		ORDER BY id DESC
+		LIMIT $1
+	`
+
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), SQLString, amount); err != nil {
+		return gameIDs, err
+	} else {
+		rows = v
+	}
+
+	for rows.Next() {
+		var gameID int
+		if err := rows.Scan(&gameID); err != nil {
+			return gameIDs, err
+		}
+		gameIDs = append(gameIDs, gameID)
+	}
+
+	if err := rows.Err(); err != nil {
+		return gameIDs, err
+	}
+	rows.Close()
+
+	return gameIDs, nil
+}
+
+func (*Games) GetGameIDsSinceDatetime(datetime string) ([]int, error) {
+	gameIDs := make([]int, 0)
+
+	SQLString := `
+		SELECT id
+		FROM games
+		/* We must get the results in decending order for the limit to work properly */
+		ORDER BY id DESC
+		WHERE datetime_started > $1
+	`
+
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), SQLString, datetime); err != nil {
+		return gameIDs, err
+	} else {
+		rows = v
+	}
+
+	for rows.Next() {
+		var gameID int
+		if err := rows.Scan(&gameID); err != nil {
+			return gameIDs, err
+		}
+		gameIDs = append(gameIDs, gameID)
+	}
+
+	if err := rows.Err(); err != nil {
+		return gameIDs, err
+	}
+	rows.Close()
+
+	return gameIDs, nil
+}
+
+func (*Games) GetGameIDsSinceInterval(interval string) ([]int, error) {
+	gameIDs := make([]int, 0)
+
+	SQLString := `
+		SELECT id
+		FROM games
+		WHERE datetime_started > NOW() - INTERVAL
+	`
+	SQLString += "'" + interval + "'" // We can't use $1 for intervals for some reason
+
+	var rows pgx.Rows
+	if v, err := db.Query(context.Background(), SQLString); err != nil {
+		return gameIDs, err
+	} else {
+		rows = v
+	}
+
+	for rows.Next() {
+		var gameID int
+		if err := rows.Scan(&gameID); err != nil {
+			return gameIDs, err
+		}
+		gameIDs = append(gameIDs, gameID)
+	}
+
+	if err := rows.Err(); err != nil {
+		return gameIDs, err
+	}
+	rows.Close()
+
+	return gameIDs, nil
+}
+
 func (*Games) GetUserNumGames(userID int, includeSpeedrun bool) (int, error) {
 	SQLString := `
 		SELECT COUNT(games.id)

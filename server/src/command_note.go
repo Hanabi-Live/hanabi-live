@@ -80,6 +80,7 @@ func commandNote(s *Session, d *CommandData) {
 	// Escape all HTML special characters (to stop various attacks against other players)
 	d.Msg = html.EscapeString(d.Msg)
 
+	logger.Debug("User \"" + s.Username() + "\" submitted a note of: " + d.Msg)
 	note(d, t, playerIndex, spectatorIndex)
 }
 

@@ -266,6 +266,8 @@ func (g *Game) WriteDatabaseStats() {
 	// Local variables
 	t := g.Table
 	variant := variants[g.Options.VariantName]
+	// 2-player is at index 0, 3-player is at index 1, etc.
+	bestScoreIndex := g.Options.NumPlayers - 2
 
 	// Update the variant-specific stats for each player
 	modifier := g.Options.GetModifier()
@@ -279,12 +281,11 @@ func (g *Game) WriteDatabaseStats() {
 			userStats = v
 		}
 
-		// 2-player is at index 0, 3-player is at index 1, etc.
 		thisScore := &BestScore{
 			Score:    g.Score,
 			Modifier: modifier,
 		}
-		bestScore := userStats.BestScores[len(g.Players)-2]
+		bestScore := userStats.BestScores[bestScoreIndex]
 		if thisScore.IsBetterThan(bestScore) {
 			bestScore.Score = g.Score
 			bestScore.Modifier = modifier
@@ -310,8 +311,7 @@ func (g *Game) WriteDatabaseStats() {
 
 	// If the game was played with no modifiers, update the stats for this variant
 	if modifier == 0 {
-		// 2-player is at index 0, 3-player is at index 1, etc.
-		bestScore := variantStats.BestScores[len(g.Players)-2]
+		bestScore := variantStats.BestScores[bestScoreIndex]
 		if g.Score > bestScore.Score {
 			bestScore.Score = g.Score
 		}
