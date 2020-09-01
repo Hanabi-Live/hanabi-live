@@ -5,12 +5,15 @@ import ActionType from '../types/ActionType';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import * as arrows from './arrows';
 import { TOOLTIP_DELAY, CARD_ANIMATION_LENGTH } from './constants';
+import cursorSet from './cursorSet';
 import globals from './globals';
+import isOurTurn from './isOurTurn';
 import * as tooltips from './tooltips';
 import * as turn from './turn';
 
 export default class Deck extends Konva.Group {
   cardBack: Konva.Image;
+  numLeft: number;
   numLeftText: Konva.Text;
   tooltipName: string = 'deck';
   tooltipContent: string = '';
@@ -31,7 +34,7 @@ export default class Deck extends Konva.Group {
     this.cardBack.on('dragend', this.dragEnd);
 
     // The text that shows the number of cards remaining in the deck
-    const startingDeckCount = deckRules.totalCards(globals.variant);
+    this.numLeft = deckRules.totalCards(globals.variant);
     this.numLeftText = new Konva.Text({
       fill: 'white',
       stroke: '#222222',
@@ -44,7 +47,7 @@ export default class Deck extends Konva.Group {
       fontSize: 0.4 * this.height(),
       fontFamily: 'Verdana',
       fontStyle: 'bold',
-      text: startingDeckCount.toString(),
+      text: this.numLeft.toString(),
       listening: false,
     });
     this.add(this.numLeftText);
@@ -53,37 +56,32 @@ export default class Deck extends Konva.Group {
       arrows.click(event, ReplayArrowOrder.Deck, this);
     });
 
-    // Cursor handlers are roughly copied from "LayoutChild.ts"
-    /*
-    this.on('mousemove', (event: Konva.KonvaEventObject<MouseEvent>) => {
-      if (globals.options.deckPlays && this.numLeft === 1) {
-        if (event.evt.buttons % 2 === 1) { // Left-click is being held down
-          cursorSet('dragging');
-        } else {
-          cursorSet('hand');
-        }
+    this.on('mouseenter', () => {
+      if (this.canDragDeck()) {
+        cursorSet('hand');
       }
     });
     this.on('mouseleave', () => {
-      if (globals.options.deckPlays && this.numLeft === 1) {
+      if (this.canDragDeck()) {
         cursorSet('default');
       }
     });
     this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
-      if (globals.options.deckPlays && this.numLeft === 1) {
-        if (event.evt.buttons % 2 === 1) { // Left-click is being held down
-          cursorSet('dragging');
-        }
+      if (this.canDragDeck() && event.evt.buttons === 1) { // Left-click is being held down
+        cursorSet('dragging');
       }
     });
     this.on('mouseup', () => {
-      if (globals.options.deckPlays && this.numLeft === 1) {
+      if (this.canDragDeck()) {
         cursorSet('hand');
       }
     });
-    */
 
     this.initTooltip();
+  }
+
+  canDragDeck() {
+    return globals.options.deckPlays && this.numLeft === 1 && isOurTurn();
   }
 
   doLayout() {
@@ -94,6 +92,7 @@ export default class Deck extends Konva.Group {
   }
 
   setCount(count: number) {
+    this.numLeft = count;
     this.numLeftText.text(count.toString());
 
     // When there are no cards left in the deck, remove the card-back
