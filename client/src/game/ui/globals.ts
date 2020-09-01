@@ -12,6 +12,7 @@ import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import SpectatorNote from '../types/SpectatorNote';
 import State from '../types/State';
 import Variant from '../types/Variant';
+import cursorSet from './cursorSet';
 import Elements from './Elements';
 import HanabiCard from './HanabiCard';
 import Layers from './Layers';
@@ -114,7 +115,10 @@ export class Globals {
     this.imageLoader = null;
     this.stage = new Konva.Stage({
       container: 'game',
-      listening: false,
+      listening: true,
+    });
+    this.stage.on('mouseenter mouseleave', () => {
+      cursorSet('default');
     });
     this.layers = new Layers();
     this.elements = new Elements();

@@ -45,6 +45,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
   private tweenCallbacks: Function[] = [];
   cursor: CursorType = 'default';
   private empathy: boolean = false;
+  dragging: boolean = false;
   wasRecentlyTapped: boolean = false;
   touchstartTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -733,21 +734,20 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       return;
     }
 
-    const defaultDuration = 0.05;
-    const actualDuration = globals.animateFast ? 0 : defaultDuration;
+    const duration = 0.05;
 
     // Shadow special effects
-    const shadowOffset = this.layout.dragging
+    const shadowOffset = this.dragging
       ? Math.floor(0.12 * CARD_W)
       : Math.floor(0.04 * CARD_W);
-    if (actualDuration === 0) {
+    if (globals.animateFast) {
       this.bare.shadowOffsetX(shadowOffset);
       this.bare.shadowOffsetY(shadowOffset);
     } else {
       this.bare.to({ // Tween
         shadowOffsetX: shadowOffset,
         shadowOffsetY: shadowOffset,
-        duration: actualDuration,
+        duration,
       });
     }
 
@@ -755,16 +755,22 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // - they have one or more positive clues on them
     // - they are being dragged
     const baseOffsetY = this.shouldBeRaisedFromClues() ? 0.6 * CARD_H : 0.5 * CARD_H;
-    const offsetX = this.layout.dragging ? 0.52 * CARD_W : 0.5 * CARD_W;
-    const offsetY = baseOffsetY + (this.layout.dragging ? 0.02 * CARD_H : 0);
-    animate(
-      this,
-      {
-        offsetX,
-        offsetY,
-        duration: actualDuration,
-      }, true,
-    );
+    const offsetX = this.dragging ? 0.52 * CARD_W : 0.5 * CARD_W;
+    const offsetY = baseOffsetY + (this.dragging ? 0.02 * CARD_H : 0);
+    if (globals.animateFast) {
+      this.offsetX(offsetX);
+      this.offsetY(offsetY);
+    } else {
+      animate(
+        this,
+        {
+          offsetX,
+          offsetY,
+          duration,
+        },
+        false,
+      );
+    }
   }
 
   private shouldBeRaisedFromClues() {

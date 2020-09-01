@@ -128,9 +128,10 @@ export default class NameFrame extends Konva.Group {
     // (we don't use the "tooltip.init()" function because we need the extra condition in the
     // "mouseover" and "mouseout" event)
     this.on('mouseover touchstart', function mouseOver(this: NameFrame) {
+      tooltips.resetActiveHover();
       globals.activeHover = this;
 
-      // Don't do anything if we are in a dedicated replay
+      // Don't do anything if we are in a solo/shared replay
       if (globals.state.finished) {
         return;
       }
@@ -138,9 +139,6 @@ export default class NameFrame extends Konva.Group {
       tooltips.show(this);
     });
     this.on('mouseout touchend', () => {
-      if (globals.activeHover !== this) {
-        return;
-      }
       globals.activeHover = null;
 
       // Don't do anything if we are in a solo/shared replay

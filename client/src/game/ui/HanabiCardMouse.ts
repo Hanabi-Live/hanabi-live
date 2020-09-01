@@ -1,6 +1,7 @@
 import Konva from 'konva';
 import { cardRules } from '../rules';
 import { STACK_BASE_RANK } from '../types/constants';
+import * as arrows from './arrows';
 import CardLayout from './CardLayout';
 import { DOUBLE_TAP_DELAY } from './constants';
 import cursorSet from './cursorSet';
@@ -9,7 +10,9 @@ import HanabiCard from './HanabiCard';
 import HanabiCardClick from './HanabiCardClick';
 import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
 import { HanabiCardTap, HanabiCardDblTap } from './HanabiCardTouchActions';
+import LayoutChild from './LayoutChild';
 import * as notes from './notes';
+import * as tooltips from './tooltips';
 
 export function registerMouseHandlers(this: HanabiCard) {
   // https://konvajs.org/docs/events/Binding_Events.html
@@ -30,6 +33,7 @@ export function registerMouseHandlers(this: HanabiCard) {
 
 function mouseEnter(this: HanabiCard) {
   // Keep track of which element we are hovering over
+  tooltips.resetActiveHover();
   globals.activeHover = this;
 
   // When we hover over a card, show a tooltip that contains the note
@@ -45,6 +49,8 @@ function mouseEnter(this: HanabiCard) {
 }
 
 function mouseLeave(this: HanabiCard) {
+  globals.activeHover = null;
+
   // When we stop hovering over a card, close any open tooltips
   checkHideNoteTooltip(this);
 
@@ -95,6 +101,11 @@ function mouseDown(this: HanabiCard, event: Konva.KonvaEventObject<MouseEvent>) 
   ) {
     setEmpathyOnHand(this, true);
   }
+
+  // Dragging
+  if (event.evt.button === 0) {
+    dragStart(this); // Only enable dragging for left-clicks
+  }
 }
 
 function mouseUp(this: HanabiCard, event: Konva.KonvaEventObject<MouseEvent>) {
@@ -110,6 +121,8 @@ function mouseUp(this: HanabiCard, event: Konva.KonvaEventObject<MouseEvent>) {
   ) {
     setEmpathyOnHand(this, false);
   }
+
+  dragEnd(this);
 }
 
 // -----------
@@ -141,7 +154,7 @@ export function setCursor(this: HanabiCard) {
 }
 
 const getCursorType = (card: HanabiCard) => {
-  if (card.layout.dragging) {
+  if (card.dragging) {
     return 'dragging';
   }
 
@@ -192,7 +205,7 @@ const shouldShowLookCursor = (card: HanabiCard) => {
 
 const checkHideNoteTooltip = (card: HanabiCard) => {
   // Don't close the tooltip if we are currently editing a note
-  if (globals.editingNote !== null) {
+  if (globals.editingNote === card.state.order) {
     return;
   }
 
@@ -248,4 +261,72 @@ const setEmpathyOnHand = (card: HanabiCard, enabled: boolean) => {
   }
 
   hand.setEmpathy(enabled);
+};
+
+// Handle things relating to dragging a card
+// We cannot use the "dragstart" mouse event since that will only fire after the element has moved
+// at least one pixel
+// Ideally, we would have a check to only make a card draggable with a left click
+// However, checking for "event.evt.buttons !== 1" will break iPads
+const dragStart = (card: HanabiCard) => {
+  if (!card.layout.draggable()) {
+    return;
+  }
+
+  card.dragging = true;
+
+  // Enable the dragging raise effect
+  card.setRaiseAndShadowOffset();
+
+  // We need to change the cursor from the hand to the grabbing icon
+  card.setCursor();
+
+  // In a hypothetical, dragging a rotated card from another person's hand is frustrating,
+  // so temporarily remove all rotation (for the duration of the drag)
+  // The rotation will be automatically reset if the card tweens back to the hand
+  if (globals.state.replay.hypothetical !== null && card.layout.parent !== null) {
+    card.layout.rotation(card.layout.parent.rotation() * -1);
+  }
+
+  // Hide any visible arrows on the rest of a hand when the card begins to be dragged
+  const hand = card.layout.parent;
+  if (hand === null || hand === undefined) {
+    return;
+  }
+  let hideArrows = false;
+  for (const layoutChild of hand.children.toArray() as LayoutChild[]) {
+    for (const arrow of globals.elements.arrows) {
+      if (arrow.pointingTo === layoutChild.card) {
+        hideArrows = true;
+        break;
+      }
+    }
+    if (hideArrows) {
+      break;
+    }
+  }
+  if (hideArrows) {
+    arrows.hideAll();
+  }
+
+  // Move this hand to the top
+  // (otherwise, the card can appear under the play stacks / discard stacks)
+  hand.moveToTop();
+};
+
+// Handle things relating to dragging a card
+// We cannot use the "dragend" mouse event since that will only fire after the element has moved
+// at least one pixel
+const dragEnd = (card: HanabiCard) => {
+  if (!card.layout.draggable()) {
+    return;
+  }
+
+  card.dragging = false;
+
+  // Disable the dragging raise effect
+  card.setRaiseAndShadowOffset();
+
+  // We need to change the cursor from the grabbing icon back to the default
+  card.setCursor();
 };

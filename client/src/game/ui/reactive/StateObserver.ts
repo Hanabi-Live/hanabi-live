@@ -19,7 +19,6 @@ import * as replayView from './view/replayView';
 import * as soundView from './view/soundView';
 import * as spectatorsView from './view/spectatorsView';
 import * as statsView from './view/statsView';
-import * as tooltipsView from './view/tooltipsView';
 import * as turnView from './view/turn';
 
 type Subscriptions = Array<Subscription<State, any>>;
@@ -156,9 +155,6 @@ const visibleStateObservers: Subscriptions = [
 
   // Deck
   subVS((s) => s.cardsRemainingInTheDeck, deckView.onCardsRemainingChanged),
-
-  // Tooltips
-  subVS((s) => s.turn.segment, tooltipsView.onSegmentChanged),
 ];
 
 const ongoingGameObservers: Subscriptions = [

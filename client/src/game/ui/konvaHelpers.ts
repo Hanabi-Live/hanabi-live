@@ -31,12 +31,8 @@ export const animate = (
   params: TweenConfig,
   interactive: boolean = false,
   fast: boolean = globals.animateFast,
+  // overrideDisableListening: boolean = false,
 ) => {
-  if (!interactive && node.isListening() && !globals.options.speedrun) {
-    // Note that in speedruns, cards remain listening during their animations
-    throw new Error('A node that is about to animate is listening, but it should not be (because "interactive" was to set to be false or not specified).');
-  }
-
   if (node.tween !== null) {
     node.tween.destroy();
     node.tween = null;

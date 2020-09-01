@@ -18,9 +18,6 @@ export const init = (element: NodeWithTooltip, delayed: boolean, customContent: 
     }
   });
   element.on('mouseout touchend', () => {
-    if (globals.activeHover !== element) {
-      return;
-    }
     globals.activeHover = null;
     $(`#tooltip-${element.tooltipName}`).tooltipster('close');
   });
@@ -65,8 +62,7 @@ export const show = (element: NodeWithTooltip) => {
 };
 
 export const resetActiveHover = () => {
-  if (globals.activeHover) {
+  if (globals.activeHover !== null) {
     globals.activeHover.dispatchEvent(new MouseEvent('mouseout'));
-    globals.activeHover = null;
   }
 };

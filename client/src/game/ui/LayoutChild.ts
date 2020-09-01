@@ -6,7 +6,6 @@ import * as sounds from '../../sounds';
 import { cardRules, clueTokensRules } from '../rules';
 import * as variantRules from '../rules/variant';
 import ActionType from '../types/ActionType';
-import * as arrows from './arrows';
 import CardLayout from './CardLayout';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
@@ -15,7 +14,6 @@ import PlayStack from './PlayStack';
 import * as turn from './turn';
 
 export default class LayoutChild extends Konva.Group {
-  dragging: boolean = false;
   tween: Konva.Tween | null = null;
   doMisplayAnimation: boolean = false;
   blank: boolean = false;
@@ -61,13 +59,39 @@ export default class LayoutChild extends Konva.Group {
 
     if (this.shouldBeDraggable(globals.state.visibleState.turn.currentPlayerIndex)) {
       this.draggable(true);
-      this.on('dragstart', this.dragStart);
       this.on('dragend', this.dragEnd);
     } else {
       this.draggable(false);
-      this.off('dragstart');
       this.off('dragend');
     }
+
+    if (this.cursorOverlaps()) {
+      this.card.setCursor();
+    }
+  }
+
+  cursorOverlaps() {
+    if (globals.loading) {
+      return false;
+    }
+
+    const cursorPos = globals.stage.getPointerPosition();
+    if (cursorPos === undefined) {
+      // This method will return undefined if the cursor is not inside of the stage
+      return false;
+    }
+
+    return this.isOver(cursorPos);
+  }
+
+  isOver(pos: Konva.Vector2d) {
+    const thisPos = this.getAbsolutePosition();
+    return (
+      pos.x >= thisPos.x
+      && pos.y >= thisPos.y
+      && pos.x <= thisPos.x + this.width()
+      && pos.y <= thisPos.y + this.height()
+    );
   }
 
   shouldBeDraggable(currentPlayerIndex: number | null) {
@@ -106,67 +130,15 @@ export default class LayoutChild extends Konva.Group {
     );
   }
 
-  dragStart(event: Konva.KonvaEventObject<DragEvent>) {
-    // Disable dragging with middle-click or right-click
-    // (checking for "event.evt.buttons !== 1" will break iPads)
-    if (event.evt.buttons === 4 || event.evt.buttons === 2) {
-      return;
-    }
-
-    this.dragging = true;
-
-    // Enable the dragging raise effect
-    this.card.setRaiseAndShadowOffset();
-
-    // We need to change the cursor from the hand to the grabbing icon
-    this.card.setCursor();
-
-    // In a hypothetical, dragging a rotated card from another person's hand is frustrating,
-    // so temporarily remove all rotation (for the duration of the drag)
-    // The rotation will be automatically reset if the card tweens back to the hand
-    if (globals.state.replay.hypothetical !== null && this.parent !== null) {
-      this.rotation(this.parent.rotation() * -1);
-    }
-
-    // Hide any visible arrows on the rest of a hand when the card begins to be dragged
-    const hand = this.parent;
-    if (hand === null || hand === undefined) {
-      return;
-    }
-    let hideArrows = false;
-    for (const layoutChild of hand.children.toArray() as LayoutChild[]) {
-      for (const arrow of globals.elements.arrows) {
-        if (arrow.pointingTo === layoutChild.card) {
-          hideArrows = true;
-          break;
-        }
-      }
-      if (hideArrows) {
-        break;
-      }
-    }
-    if (hideArrows) {
-      arrows.hideAll();
-    }
-
-    // Move this hand to the top
-    // (otherwise, the card can appear under the play stacks / discard stacks)
-    hand.moveToTop();
-  }
-
   dragEnd() {
-    this.dragging = false;
+    // Mouse events will not normally fire when the card is released from being dragged
+    this.card.dispatchEvent(new MouseEvent('mouseup'));
+    this.card.dispatchEvent(new MouseEvent('mouseleave'));
+
     this.draggable(false);
 
     // We have to unregister the handler or else it will send multiple actions for one drag
-    this.off('dragstart');
     this.off('dragend');
-
-    // Disable the dragging raise effect
-    this.card.setRaiseAndShadowOffset();
-
-    // We need to change the cursor from the grabbing icon back to the default
-    this.card.setCursor();
 
     let draggedTo = this.getDragLocation();
     if (draggedTo === 'playArea' && this.checkMisplay()) {
