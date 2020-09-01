@@ -14,7 +14,6 @@ type GameParticipantNotesRow struct {
 	Note      string
 }
 
-// https://stackoverflow.com/questions/12486436/how-do-i-batch-sql-statements-with-package-database-sql
 func (*GameParticipantNotes) BulkInsert(gameParticipantNotesRows []*GameParticipantNotesRow) error {
 	SQLString := `
 		INSERT INTO game_participant_notes (

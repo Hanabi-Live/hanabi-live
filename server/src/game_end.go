@@ -4,7 +4,6 @@ import (
 	"errors"
 	"strconv"
 	"time"
-	"unicode"
 )
 
 func (g *Game) End() {
@@ -183,11 +182,6 @@ func (g *Game) WriteDatabase() error {
 			logger.Error("Failed to insert the game action rows:", err)
 			return err
 		}
-	}
-
-	badNote := ""
-	for i := 1; i <= unicode.MaxASCII; i++ {
-		badNote += string(rune(i))
 	}
 
 	// Next, we insert rows for each note
