@@ -252,7 +252,7 @@ func (g *Game) WriteDatabase() error {
 	}
 
 	// We also need to update stats in the database, but that can be done in the background
-	// go g.WriteDatabaseStats() // Commented out while we do a mass update
+	go g.WriteDatabaseStats()
 
 	logger.Info("Finished core database actions for table " + strconv.FormatUint(t.ID, 10) +
 		" (to database ID " + strconv.Itoa(t.ExtraOptions.DatabaseID) + ").")
