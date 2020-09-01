@@ -33,10 +33,15 @@ export const animate = (
   fast: boolean = globals.animateFast,
   // overrideDisableListening: boolean = false,
 ) => {
+  // Before animating, ensure that the node is visible
+  // (since some elements might be previously hidden)
+  node.show();
+
   if (node.tween !== null) {
     node.tween.destroy();
     node.tween = null;
   }
+
   if (fast || params.duration === 0) {
     if (params.x !== undefined) {
       node.x(params.x);

@@ -864,7 +864,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       || layoutChild.parent === null
       || layoutChild.parent === undefined
     ) {
-      // First initialization
+      // Don't do anything on first initialization
       return;
     }
     this.removeLayoutChildFromParent();
@@ -875,9 +875,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       this.setRaiseAndShadowOffset();
       layoutChild.hide();
     } else {
-      // Sometimes the LayoutChild can get hidden if another card is on top of it in a play stack
-      // and the user rewinds to the beginning of the replay
-      layoutChild.show();
       layoutChild.opacity(1); // Cards can be hidden in certain variants
       const pos = layoutChild.getAbsolutePosition();
       globals.elements.deck!.add(layoutChild as any);
