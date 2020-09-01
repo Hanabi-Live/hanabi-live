@@ -48,11 +48,11 @@ type TemplateData struct {
 	NumMaxScoresPerType        []int    // Used on the "Missing Scores" page
 	PercentageMaxScoresPerType []string // Used on the "Missing Scores" page
 	SharedMissingScores        bool     // Used on the "Missing Scores" page
-	VariantStats               []UserVariantStats
+	VariantStats               []*UserVariantStats
 
 	// Stats
 	NumVariants int
-	Variants    []VariantStatsData
+	Variants    []*VariantStatsData
 
 	// Variants
 	BestScores    []int

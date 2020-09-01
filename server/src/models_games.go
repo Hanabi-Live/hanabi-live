@@ -273,14 +273,24 @@ func (*Games) GetGameIDsUser(userID int, offset int, amount int) ([]int, error) 
 		WHERE game_participants.user_id = $1
 		/* We must get the results in decending order for the limit to work properly */
 		ORDER BY games.id DESC
-		LIMIT $2 OFFSET $3
 	`
+	if amount > 0 {
+		SQLString += "LIMIT $2 OFFSET $3"
+	}
 
 	var rows pgx.Rows
-	if v, err := db.Query(context.Background(), SQLString, userID, amount, offset); err != nil {
-		return gameIDs, err
+	if amount > 0 {
+		if v, err := db.Query(context.Background(), SQLString, userID, amount, offset); err != nil {
+			return gameIDs, err
+		} else {
+			rows = v
+		}
 	} else {
-		rows = v
+		if v, err := db.Query(context.Background(), SQLString, userID); err != nil {
+			return gameIDs, err
+		} else {
+			rows = v
+		}
 	}
 
 	for rows.Next() {

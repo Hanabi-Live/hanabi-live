@@ -20,6 +20,6 @@ type Player struct {
 	LastTyped time.Time
 }
 type PregameStats struct {
-	NumGames int          `json:"numGames"`
-	Variant  UserStatsRow `json:"variant"`
+	NumGames int           `json:"numGames"`
+	Variant  *UserStatsRow `json:"variant"`
 }

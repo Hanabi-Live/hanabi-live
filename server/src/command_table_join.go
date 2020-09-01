@@ -97,7 +97,7 @@ func tableJoin(s *Session, t *Table) {
 	}
 
 	// Get the variant-specific stats for this player
-	var variantStats UserStatsRow
+	var variantStats *UserStatsRow
 	if v, err := models.UserStats.Get(s.UserID(), variant.ID); err != nil {
 		logger.Error("Failed to get the stats for player \""+s.Username()+"\" for variant "+
 			strconv.Itoa(variant.ID)+":", err)

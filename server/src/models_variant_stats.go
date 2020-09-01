@@ -224,7 +224,7 @@ func (vs *VariantStats) UpdateAll(highestVariantID int, maxScores []int) error {
 		for numPlayers := 2; numPlayers <= 6; numPlayers++ {
 			overallBestScore := 0
 
-			// Get the score for this player count (using no modifiers)
+			// Get the score for this player count (using a modifier of 0)
 			var bestScore int
 			if err := db.QueryRow(context.Background(), `
 				/*
@@ -237,6 +237,8 @@ func (vs *VariantStats) UpdateAll(highestVariantID int, maxScores []int) error {
 					AND num_players = $2
 					AND games.deck_plays = FALSE
 					AND games.empty_clues = FALSE
+					AND games.one_extra_card = FALSE
+					AND games.one_less_card = FALSE
 					AND games.all_or_nothing = FALSE
 			`, variantID, numPlayers).Scan(&bestScore); err != nil {
 				return err

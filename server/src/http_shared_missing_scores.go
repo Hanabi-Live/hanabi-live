@@ -27,9 +27,9 @@ func httpSharedMissingScores(c *gin.Context) {
 	}
 
 	// Get all of the variant-specific stats for each player
-	variantStatsListList := make([][]UserVariantStats, 0)
+	variantStatsListList := make([][]*UserVariantStats, 0)
 	for i, playerID := range playerIDs {
-		var statsMap map[int]UserStatsRow
+		var statsMap map[int]*UserStatsRow
 		if v, err := models.UserStats.GetAll(playerID); err != nil {
 			logger.Error("Failed to get all of the variant-specific stats for player "+
 				"\""+playerNames[i]+"\":", err)

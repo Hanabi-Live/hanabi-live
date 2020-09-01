@@ -223,15 +223,15 @@ func chatFindVariant(s *Session, d *CommandData, t *Table) {
 	}
 
 	// Get all of the variant-specific stats for these players
-	statsMaps := make([]map[int]UserStatsRow, 0)
+	statsMaps := make([]map[int]*UserStatsRow, 0)
 	for _, userID := range userIDs {
-		if v, err := models.UserStats.GetAll(userID); err != nil {
+		if statsMap, err := models.UserStats.GetAll(userID); err != nil {
 			logger.Error("Failed to get all of the variant-specific stats for player ID "+
 				strconv.Itoa(userID)+":", err)
 			chatServerSend(DefaultErrorMsg, d.Room)
 			return
 		} else {
-			statsMaps = append(statsMaps, v)
+			statsMaps = append(statsMaps, statsMap)
 		}
 	}
 

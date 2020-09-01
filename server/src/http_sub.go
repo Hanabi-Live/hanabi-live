@@ -104,16 +104,16 @@ func httpParsePlayerNames(c *gin.Context) ([]int, []string, bool) {
 	return playerIDs, playerNames, true
 }
 
-func httpGetVariantStatsList(statsMap map[int]UserStatsRow) (int, []int, []UserVariantStats) {
+func httpGetVariantStatsList(statsMap map[int]*UserStatsRow) (int, []int, []*UserVariantStats) {
 	// Convert the map (statsMap) to a slice (variantStatsList),
 	// filling in any non-played variants with 0 values
 	numMaxScores := 0
 	numMaxScoresPerType := make([]int, 5) // For 2-player, 3-player, etc.
-	variantStatsList := make([]UserVariantStats, 0)
+	variantStatsList := make([]*UserVariantStats, 0)
 	for _, name := range variantNames {
 		variant := variants[name]
 		maxScore := len(variant.Suits) * PointsPerSuit
-		variantStats := UserVariantStats{
+		variantStats := &UserVariantStats{
 			ID:       variant.ID,
 			Name:     name,
 			MaxScore: maxScore,

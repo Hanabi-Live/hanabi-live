@@ -91,11 +91,11 @@ func httpStats(c *gin.Context) {
 	// filling in any non-played variants with 0 values
 	numMaxScores := 0
 	numMaxScoresPerType := make([]int, 5) // For 2-player, 3-player, etc.
-	variantStatsList := make([]VariantStatsData, 0)
+	variantStatsList := make([]*VariantStatsData, 0)
 	for _, name := range variantNames {
 		variant := variants[name]
 		maxScore := len(variant.Suits) * PointsPerSuit
-		variantStats := VariantStatsData{
+		variantStats := &VariantStatsData{
 			ID:   variant.ID,
 			Name: name,
 		}

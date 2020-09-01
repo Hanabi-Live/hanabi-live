@@ -267,29 +267,11 @@ func (g *Game) WriteDatabaseStats() {
 	t := g.Table
 	variant := variants[g.Options.VariantName]
 
-	// Compute the integer modifier for this game,
-	// corresponding to the "ScoreModifier" constants in "constants.go"
-	var modifier Bitmask
-	if g.Options.DeckPlays {
-		modifier.AddFlag(ScoreModifierDeckPlays)
-	}
-	if g.Options.EmptyClues {
-		modifier.AddFlag(ScoreModifierEmptyClues)
-	}
-	if g.Options.OneExtraCard {
-		modifier.AddFlag(ScoreModifierOneExtraCard)
-	}
-	if g.Options.OneLessCard {
-		modifier.AddFlag(ScoreModifierOneLessCard)
-	}
-	if g.Options.AllOrNothing {
-		modifier.AddFlag(ScoreModifierAllOrNothing)
-	}
-
 	// Update the variant-specific stats for each player
+	modifier := g.Options.GetModifier()
 	for _, p := range t.Players {
 		// Get their current best scores
-		var userStats UserStatsRow
+		var userStats *UserStatsRow
 		if v, err := models.UserStats.Get(p.ID, variant.ID); err != nil {
 			logger.Error("Failed to get the stats for user "+p.Name+":", err)
 			continue

@@ -63,3 +63,27 @@ type OptionsJSON struct {
 	AllOrNothing          *bool   `json:"allOrNothing,omitempty"`
 	DetrimentalCharacters *bool   `json:"detrimentalCharacters,omitempty"`
 }
+
+// GetModifier computes the integer modifier for the game options,
+// corresponding to the "ScoreModifier" constants in "constants.go"
+func (o *Options) GetModifier() Bitmask {
+	var modifier Bitmask
+
+	if o.DeckPlays {
+		modifier.AddFlag(ScoreModifierDeckPlays)
+	}
+	if o.EmptyClues {
+		modifier.AddFlag(ScoreModifierEmptyClues)
+	}
+	if o.OneExtraCard {
+		modifier.AddFlag(ScoreModifierOneExtraCard)
+	}
+	if o.OneLessCard {
+		modifier.AddFlag(ScoreModifierOneLessCard)
+	}
+	if o.AllOrNothing {
+		modifier.AddFlag(ScoreModifierAllOrNothing)
+	}
+
+	return modifier
+}

@@ -263,7 +263,9 @@ func updateAllVariantStats() {
 	highestID := variantGetHighestID()
 	maxScores := make([]int, 0)
 	for i := 0; i <= highestID; i++ {
-		maxScores = append(maxScores, variants[variantIDMap[i]].MaxScore)
+		variantName := variantIDMap[i]
+		variant := variants[variantName]
+		maxScores = append(maxScores, variant.MaxScore)
 	}
 
 	if err := models.VariantStats.UpdateAll(highestID, maxScores); err != nil {
