@@ -20,5 +20,7 @@ export const FINESSE_COLOR = 'aqua';
 export const OFF_BLACK = '#0d0d0d';
 
 // Time constants
+export const CARD_ANIMATION_LENGTH = 0.5; // In seconds
 export const TOOLTIP_DELAY = 500; // In milliseconds
 export const PREPLAY_DELAY = 75; // In milliseconds
+export const DOUBLE_TAP_DELAY = 0.5; // In seconds

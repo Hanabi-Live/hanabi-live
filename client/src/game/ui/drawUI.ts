@@ -17,7 +17,7 @@ import CardLayout from './CardLayout';
 import ClueLog from './ClueLog';
 import * as clues from './clues';
 import ColorButton from './ColorButton';
-import { LABEL_COLOR } from './constants';
+import { LABEL_COLOR, CARD_ANIMATION_LENGTH } from './constants';
 import Arrow from './controls/Arrow';
 import Button from './controls/Button';
 import ClickArea from './controls/ClickArea';
@@ -826,7 +826,7 @@ const drawScoreArea = () => {
     fill: '#df1c2d',
     offsetX: 0.001 * winH,
     offsetY: 0.01 * winH,
-    duration: 0.5,
+    duration: CARD_ANIMATION_LENGTH,
     easing: Konva.Easings.EaseInOut,
     onFinish: () => {
       if (
@@ -1082,7 +1082,7 @@ const drawSharedReplay = () => {
     height: size * 2,
     offsetX: 0.025 * winH,
     offsetY: 0.025 * winH,
-    duration: 0.5,
+    duration: CARD_ANIMATION_LENGTH,
     easing: Konva.Easings.EaseInOut,
     onFinish: () => {
       if (

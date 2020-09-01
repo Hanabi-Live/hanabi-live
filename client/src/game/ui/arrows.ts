@@ -12,7 +12,7 @@ import ReplayActionType from '../types/ReplayActionType';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import Suit from '../types/Suit';
 import CardLayout from './CardLayout';
-import { ARROW_COLOR } from './constants';
+import { ARROW_COLOR, CARD_ANIMATION_LENGTH } from './constants';
 import Arrow from './controls/Arrow';
 import NodeWithTooltip from './controls/NodeWithTooltip';
 import StrikeSquare from './controls/StrikeSquare';
@@ -276,7 +276,7 @@ const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, seg
   const pos = getPos(card, rot);
 
   konvaHelpers.animate(arrow, {
-    duration: 0.5,
+    duration: CARD_ANIMATION_LENGTH,
     x: pos.x,
     y: pos.y,
     easing: Konva.Easings.EaseOut,

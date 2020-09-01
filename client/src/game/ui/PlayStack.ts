@@ -5,7 +5,6 @@ import Konva from 'konva';
 import * as variantRules from '../rules/variant';
 import { STACK_BASE_RANK } from '../types/constants';
 import globals from './globals';
-import HanabiCard from './HanabiCard';
 import { animate } from './konvaHelpers';
 import LayoutChild from './LayoutChild';
 
@@ -22,8 +21,7 @@ export default class PlayStack extends Konva.Group {
 
     for (const layoutChild of this.children.toArray() as LayoutChild[]) {
       const scale = lh / layoutChild.height();
-      const card = layoutChild.children[0] as unknown as HanabiCard;
-      const stackBase = card.state.rank === STACK_BASE_RANK;
+      const stackBase = layoutChild.card.state.rank === STACK_BASE_RANK;
 
       // Hide cards in "Throw It in a Hole" variants
       const opacity = (
@@ -33,14 +31,12 @@ export default class PlayStack extends Konva.Group {
         && !stackBase // We want the stack bases to always be visible
       ) ? 0 : 1;
 
-      // Animate the card leaving the hand to the play stacks
-      // (tweening from the hand to the discard pile is handled in
-      // the "CardLayout" object)
-      card.startedTweening();
-      const duration = 0.8;
-      card.setVisualEffect('default', duration);
+      // Animate the card leaving the hand to the play stacks (or vice versa)
+      // (tweening from the hand to the discard pile is handled in the "CardLayout" object)
+      layoutChild.card.startedTweening();
+      layoutChild.card.setRaiseAndShadowOffset();
       animate(layoutChild, {
-        duration,
+        duration: 0.8,
         x: 0,
         y: 0,
         scale,
@@ -52,7 +48,7 @@ export default class PlayStack extends Konva.Group {
             layoutChild.tween.destroy();
             layoutChild.tween = null;
           }
-          card.finishedTweening();
+          layoutChild.card.finishedTweening();
           layoutChild.checkSetDraggable();
           this.hideCardsUnderneathTheTopCard();
         },

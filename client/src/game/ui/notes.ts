@@ -17,16 +17,16 @@ import HanabiCard from './HanabiCard';
 
 // Get the contents of the note tooltip
 const get = (order: number, our: boolean) => {
-  // If we are a player in an ongoing game, return our note
-  // (we don't have to check to see if the element exists because
-  // all notes are initialized to an empty string)
+  // If the calling function specifically wants our note or we are a player in an ongoing game,
+  // return our note
   if (our || globals.state.playing) {
-    return globals.ourNotes.get(order)!;
+    return globals.ourNotes.get(order) ?? '';
   }
 
   // Build a string that shows the combined notes from the players & spectators
   let content = '';
-  for (const noteObject of globals.allNotes.get(order)!) {
+  const noteObjectArray = globals.allNotes.get(order) ?? [];
+  for (const noteObject of noteObjectArray) {
     if (noteObject.note.length > 0) {
       content += `<strong>${noteObject.name}:</strong> ${noteObject.note}<br />`;
     }
@@ -42,12 +42,13 @@ const get = (order: number, our: boolean) => {
 // 2) send the new note to the server
 // 3) check for new note identities
 export const set = (order: number, note: string) => {
-  const oldNote = globals.ourNotes.get(order)!;
+  const oldNote = globals.ourNotes.get(order) ?? '';
   globals.ourNotes.set(order, note);
   globals.lastNote = note;
 
   if (!globals.state.playing) {
-    for (const noteObject of globals.allNotes.get(order)!) {
+    const noteObjectArray = globals.allNotes.get(order) ?? [];
+    for (const noteObject of noteObjectArray) {
       if (noteObject.name === globals.metadata.ourUsername) {
         noteObject.note = note;
       }
@@ -97,7 +98,7 @@ export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
   // and remove all leading and trailing whitespace
   const fullNote = note.toLowerCase().trim();
   const text = getRightmostNoteText(fullNote);
-  const cardIdentity = cardIdentityFromNote(variant, text, fullNote);
+  const cardIdentity = getCardIdentityFromNote(variant, text, fullNote);
 
   const chopMoved = checkNoteKeywords([
     'cm',
@@ -146,7 +147,7 @@ export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
   };
 };
 
-export const cardIdentityFromNote = (
+export const getCardIdentityFromNote = (
   variant: Variant,
   note: string,
   fullNote: string,
@@ -278,10 +279,10 @@ export const update = (card: HanabiCard) => {
   }
 
   // Update the card indicator
-  const visibleOld = card.noteIndicator!.visible();
+  const visibleOld = card.noteIndicator.visible();
   const visibleNew = note.length > 0;
   if (visibleOld !== visibleNew) {
-    card.noteIndicator!.visible(visibleNew);
+    card.noteIndicator.visible(visibleNew);
     globals.layers.card.batchDraw();
   }
 };
@@ -294,21 +295,24 @@ export const show = (card: HanabiCard) => {
   // We want the tooltip to appear above the card by default
   const pos = card.getAbsolutePosition();
   const posX = pos.x;
-  let posY = pos.y - (card.height() * card.parent!.scale().y / 2);
+  let posY = pos.y - (card.height() * card.layout.scale().y / 2);
   tooltipInstance.option('side', 'top');
 
   // Flip the tooltip if it is too close to the top of the screen
   if (posY < 200) {
     // 200 is just an arbitrary threshold; 100 is not big enough for the BGA layout
-    posY = pos.y + (card.height() * card.parent!.scale().y / 2);
+    posY = pos.y + (card.height() * card.layout.scale().y / 2);
     tooltipInstance.option('side', 'bottom');
   }
 
-  // Update the tooltip and open it
+  // Update the tooltip position
   tooltip.css('left', posX);
   tooltip.css('top', posY);
+
+  // Update the tooltip content
   const note = get(card.state.order, false);
   tooltipInstance.content(note);
+
   tooltip.tooltipster('open');
 };
 
@@ -393,58 +397,11 @@ export const setAllCardIndicators = () => {
   // We iterate through the whole deck instead of using the index of the last drawn card to avoid
   // race conditions where we can get the "noteList" before the "actionList" is finished processing
   for (const card of globals.deck) {
-    setCardIndicator(card.state.order);
+    card.setNoteIndicator();
   }
   for (const stackBase of globals.stackBases) {
-    setCardIndicator(stackBase.state.order);
+    stackBase.setNoteIndicator();
   }
-};
-
-export const setCardIndicator = (order: number) => {
-  const visible = shouldShowIndicator(order);
-  const card = getCardOrStackBase(order);
-  if (card.noteIndicator === null) {
-    throw new Error(`The note indicator for card ${order} was not initialized.`);
-  }
-  card.noteIndicator.visible(visible);
-
-  // Spectators
-  if (
-    visible
-    && !globals.state.playing
-    && !globals.state.finished
-    && !card.noteIndicator.rotated
-  ) {
-    card.noteIndicator.rotate(15);
-    card.noteIndicator.rotated = true;
-  }
-
-  globals.layers.card.batchDraw();
-};
-
-export const shouldShowIndicator = (order: number) => {
-  // If we are a player in an ongoing game,
-  // show the note indicator if we have a non-blank note on it
-  if (globals.state.playing) {
-    return globals.ourNotes.get(order)! !== '';
-  }
-
-  // Morphed cards (in a hypothetical) should never show the note indicator
-  if (globals.state.replay.hypothetical !== null) {
-    const cardMorphedIdentity = globals.state.replay.hypothetical.morphedIdentities[order];
-    if (cardMorphedIdentity !== undefined) {
-      return false;
-    }
-  }
-
-  // We are not a player in an ongoing game
-  // Only show the note indicator if there is one or more non-blank notes
-  for (const noteObject of globals.allNotes.get(order)!) {
-    if (noteObject.note.length > 0) {
-      return true;
-    }
-  }
-  return false;
 };
 
 const stripHTMLTags = (input: string) => {

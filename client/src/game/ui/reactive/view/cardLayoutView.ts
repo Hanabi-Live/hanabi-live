@@ -76,7 +76,7 @@ export const onDiscardStacksChanged = (discardStacks: ReadonlyArray<readonly num
     },
     (card) => {
       if (card.state.isMisplayed) {
-        card.doMisplayAnimation = true;
+        card.layout.doMisplayAnimation = true;
       }
       card.animateToDiscardPile();
     },
@@ -134,7 +134,7 @@ const syncChildren = (
 
   collections.forEach((collection, i) => {
     const getCurrentSorting = () => (getCollectionUI(i).children.toArray() as LayoutChild[])
-      .map((layoutChild) => layoutChild.children[0] as unknown as HanabiCard)
+      .map((layoutChild) => layoutChild.card)
       .filter((card) => card.state.rank !== STACK_BASE_RANK)
       .map((card) => card.state.order);
 

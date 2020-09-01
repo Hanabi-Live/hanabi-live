@@ -22,7 +22,7 @@ import globals from './globals';
 
 export const image = (getBareName: () => string) => {
   // Create the "bare" card image, which is the main card graphic
-  // If the card is not revealed, it will just be a gray rectangle
+  // If the card is not revealed, it will just be a gray rounded rectangle
   // The pips and other elements of a card are drawn on top of the bare image
   const bare = new Konva.Image({
     width: CARD_W,

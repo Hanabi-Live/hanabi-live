@@ -66,12 +66,12 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
       replay.goToSegment(segmentDrawn, true);
       replay.goToSegmentAndIndicateCard(segmentDrawn + 1, card.state.order);
     }
-  } else if (cardRules.isPlayed(card.state)) {
+  } else if (cardRules.isPlayed(card.state) && card.state.segmentPlayed !== null) {
     // Clicking on played cards goes to the turn immediately before they were played
-    replay.goToSegmentAndIndicateCard(card.state.segmentPlayed!, card.state.order);
-  } else if (cardRules.isDiscarded(card.state)) {
+    replay.goToSegmentAndIndicateCard(card.state.segmentPlayed, card.state.order);
+  } else if (cardRules.isDiscarded(card.state) && card.state.segmentDiscarded !== null) {
     // Clicking on discarded cards goes to the turn immediately before they were discarded
-    replay.goToSegmentAndIndicateCard(card.state.segmentDiscarded!, card.state.order);
+    replay.goToSegmentAndIndicateCard(card.state.segmentDiscarded, card.state.order);
   }
 };
 
@@ -214,7 +214,7 @@ const clickMorph = (order: number) => {
   }
 
   // We want an exact match, so fullNote is sent as an empty string
-  const cardIdentity = notes.cardIdentityFromNote(globals.variant, cardText, '');
+  const cardIdentity = notes.getCardIdentityFromNote(globals.variant, cardText, '');
   if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
     modals.warningShow('You entered an invalid card.');
     return;

@@ -2,6 +2,7 @@
 // It is composed of LayoutChild objects
 
 import Konva from 'konva';
+import { CARD_ANIMATION_LENGTH } from './constants';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import { animate } from './konvaHelpers';
@@ -116,9 +117,9 @@ export default class CardLayout extends Konva.Group {
         layoutChild.tween = null;
       }
 
-      const card = layoutChild.children[0] as unknown as HanabiCard;
       const newX = x - (this.reverse ? scale * layoutChild.width() : 0);
       if (globals.animateFast) {
+        // Immediately set the card in place at the new location
         layoutChild.x(newX);
         layoutChild.y(0);
         layoutChild.scaleX(scale);
@@ -126,20 +127,18 @@ export default class CardLayout extends Konva.Group {
         layoutChild.rotation(0);
         layoutChild.opacity(1);
         layoutChild.checkSetDraggable();
-        layoutChild.card.setVisualEffect('default');
-
-        card.doMisplayAnimation = false;
+        layoutChild.card.setRaiseAndShadowOffset();
+        layoutChild.doMisplayAnimation = false;
       } else {
-        // Animate the card going from the deck to the hand
-        // (or from the hand to the discard pile)
+        // Animate the card going:
+        // - from the deck to a player's hand (or vice versa)
+        // - or leaving the hand to the discard pile (or vice versa)
         // and animate the rest of the cards sliding over
-        card.startedTweening();
-        const duration = 0.5;
-        card.setVisualEffect('default', duration);
-
+        layoutChild.card.startedTweening();
+        layoutChild.card.setRaiseAndShadowOffset();
         const animateToLayout = () => {
           animate(layoutChild, {
-            duration,
+            duration: CARD_ANIMATION_LENGTH,
             x: newX,
             y: 0,
             scale,
@@ -147,23 +146,23 @@ export default class CardLayout extends Konva.Group {
             opacity: 1,
             easing: Konva.Easings.EaseOut,
             onFinish: () => {
-              card.finishedTweening();
+              layoutChild.card.finishedTweening();
               layoutChild.checkSetDraggable();
             },
           }, !globals.options.speedrun);
         };
 
-        if (card.doMisplayAnimation) {
+        if (layoutChild.doMisplayAnimation) {
           // If this card just misplayed, do a special animation
-          card.doMisplayAnimation = false;
+          layoutChild.doMisplayAnimation = false;
 
-          const suit = globals.variant.suits[card.state.suitIndex!];
+          const suit = globals.variant.suits[layoutChild.card.state.suitIndex!];
           const playStack = globals.elements.playStacks.get(suit)!;
           const pos = this.getAbsolutePosition();
           const playStackPos = playStack.getAbsolutePosition();
 
           animate(layoutChild, {
-            duration,
+            duration: CARD_ANIMATION_LENGTH,
             x: playStackPos.x - pos.x,
             y: playStackPos.y - pos.y,
             scale: playStack.height() * scale / handHeight,

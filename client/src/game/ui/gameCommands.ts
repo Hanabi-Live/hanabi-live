@@ -196,7 +196,8 @@ commands.set('note', (data: NoteData) => {
   globals.allNotes.set(data.order, data.notes);
 
   // Set the note indicator
-  notes.setCardIndicator(data.order);
+  const card = getCardOrStackBase(data.order);
+  card.setNoteIndicator();
 });
 
 // Received when:
