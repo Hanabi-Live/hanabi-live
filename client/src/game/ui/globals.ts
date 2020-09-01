@@ -12,7 +12,7 @@ import { DEFAULT_VARIANT_NAME } from '../types/constants';
 import SpectatorNote from '../types/SpectatorNote';
 import State from '../types/State';
 import Variant from '../types/Variant';
-import cursorSet from './cursorSet';
+import * as cursor from './cursor';
 import Elements from './Elements';
 import HanabiCard from './HanabiCard';
 import Layers from './Layers';
@@ -118,7 +118,7 @@ export class Globals {
       listening: true,
     });
     this.stage.on('mouseenter mouseleave', () => {
-      cursorSet('default');
+      cursor.set('default');
     });
     this.layers = new Layers();
     this.elements = new Elements();

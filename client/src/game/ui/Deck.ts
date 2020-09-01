@@ -5,7 +5,7 @@ import ActionType from '../types/ActionType';
 import ReplayArrowOrder from '../types/ReplayArrowOrder';
 import * as arrows from './arrows';
 import { TOOLTIP_DELAY, CARD_ANIMATION_LENGTH } from './constants';
-import cursorSet from './cursorSet';
+import * as cursor from './cursor';
 import globals from './globals';
 import isOurTurn from './isOurTurn';
 import * as tooltips from './tooltips';
@@ -52,28 +52,31 @@ export default class Deck extends Konva.Group {
     });
     this.add(this.numLeftText);
 
+    // Right-click on the deck to highlight it with an arrow
     this.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
       arrows.click(event, ReplayArrowOrder.Deck, this);
     });
 
+    // When dragging the deck, change the cursor to emulate the behavior when dragging a card
+    // It does not emulate the full cursor behavior in order to minimum complexity
     this.on('mouseenter', () => {
       if (this.canDragDeck()) {
-        cursorSet('hand');
+        cursor.set('hand');
       }
     });
     this.on('mouseleave', () => {
       if (this.canDragDeck()) {
-        cursorSet('default');
+        cursor.set('default');
       }
     });
     this.on('mousedown', (event: Konva.KonvaEventObject<MouseEvent>) => {
       if (this.canDragDeck() && event.evt.buttons === 1) { // Left-click is being held down
-        cursorSet('dragging');
+        cursor.set('dragging');
       }
     });
     this.on('mouseup', () => {
       if (this.canDragDeck()) {
-        cursorSet('hand');
+        cursor.set('hand');
       }
     });
 
@@ -82,13 +85,6 @@ export default class Deck extends Konva.Group {
 
   canDragDeck() {
     return globals.options.deckPlays && this.numLeft === 1 && isOurTurn();
-  }
-
-  doLayout() {
-    this.cardBack.position({
-      x: 0,
-      y: 0,
-    });
   }
 
   setCount(count: number) {
@@ -124,26 +120,13 @@ export default class Deck extends Konva.Group {
     this.numLeftText.y(this.numLeftText.y() + nudgeAmount);
   }
 
+  // Most of this function is copy-pasted from "LayoutChild.dragEnd()"
+  // It contains a subset of the real card features in order to minimize complexity
   dragEnd() {
-    const pos = this.getAbsolutePosition();
+    const draggedTo = cursor.getElementDragLocation(this);
 
-    pos.x += this.width() * this.scaleX() / 2;
-    pos.y += this.height() * this.scaleY() / 2;
-
-    if (globals.elements.playArea!.isOver(pos)) {
-      this.draggable(false);
-      globals.elements.deckPlayAvailableLabel!.hide();
-
-      globals.lobby.conn!.send('action', {
-        tableID: globals.lobby.tableID,
-        type: ActionType.Play,
-        // Card orders start at 0, so the final card order is the length of the deck - 1
-        target: deckRules.totalCards(globals.variant) - 1,
-      });
-
-      turn.hideClueUIAndDisableDragging();
-    } else {
-      // The deck was dragged to an invalid location, so animate the card back to where it was
+    if (draggedTo === null) {
+      // The card was dragged to an invalid location; tween it back to the hand
       this.to({ // Tween
         duration: CARD_ANIMATION_LENGTH,
         x: 0,
@@ -155,6 +138,15 @@ export default class Deck extends Konva.Group {
             layer.batchDraw();
           }
         },
+      });
+    } else if (draggedTo === 'playArea') {
+      this.draggable(false);
+      globals.elements.deckPlayAvailableLabel!.hide();
+
+      turn.end({
+        type: ActionType.Play,
+        // Card orders start at 0, so the final card order is the length of the deck - 1
+        target: deckRules.totalCards(globals.variant) - 1,
       });
     }
   }

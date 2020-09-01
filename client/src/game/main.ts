@@ -8,12 +8,12 @@ import * as usersDraw from '../lobby/usersDraw';
 import { closeAllTooltips } from '../misc';
 import * as sounds from '../sounds';
 import * as chat from './chat';
-import cursorSet from './ui/cursorSet';
+import * as cursor from './ui/cursor';
 import HanabiUI from './ui/HanabiUI';
 
 export const init = () => {
   $('#game').on('mouseenter mouseleave', () => {
-    cursorSet('default');
+    cursor.set('default');
   });
 };
 

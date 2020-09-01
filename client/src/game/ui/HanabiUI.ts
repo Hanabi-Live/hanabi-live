@@ -4,7 +4,7 @@
 
 import { Globals as LobbyGlobals } from '../../globals';
 import { GameExports } from '../main';
-import cursorSet from './cursorSet';
+import * as cursor from './cursor';
 import globals, { Globals } from './globals';
 import * as keyboard from './keyboard';
 import * as replay from './replay';
@@ -31,7 +31,7 @@ export default class HanabiUI {
     // We should also combine this with the UI object in the future
 
     initStageSize();
-    cursorSet('default');
+    cursor.set('default');
 
     // The HanabiUI object is now instantiated, but none of the actual UI elements are drawn yet
     // We must wait for the "init" message from the server in order to know how many players are in

@@ -7,6 +7,7 @@ import { cardRules, clueTokensRules } from '../rules';
 import * as variantRules from '../rules/variant';
 import ActionType from '../types/ActionType';
 import CardLayout from './CardLayout';
+import * as cursor from './cursor';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import isOurTurn from './isOurTurn';
@@ -65,33 +66,9 @@ export default class LayoutChild extends Konva.Group {
       this.off('dragend');
     }
 
-    if (this.cursorOverlaps()) {
+    if (cursor.elementOverlaps(this)) {
       this.card.setCursor();
     }
-  }
-
-  cursorOverlaps() {
-    if (globals.loading) {
-      return false;
-    }
-
-    const cursorPos = globals.stage.getPointerPosition();
-    if (cursorPos === undefined) {
-      // This method will return undefined if the cursor is not inside of the stage
-      return false;
-    }
-
-    return this.isOver(cursorPos);
-  }
-
-  isOver(pos: Konva.Vector2d) {
-    const thisPos = this.getAbsolutePosition();
-    return (
-      pos.x >= thisPos.x
-      && pos.y >= thisPos.y
-      && pos.x <= thisPos.x + this.width()
-      && pos.y <= thisPos.y + this.height()
-    );
   }
 
   shouldBeDraggable(currentPlayerIndex: number | null) {
@@ -140,7 +117,15 @@ export default class LayoutChild extends Konva.Group {
     // We have to unregister the handler or else it will send multiple actions for one drag
     this.off('dragend');
 
-    let draggedTo = this.getDragLocation();
+    let draggedTo = cursor.getElementDragLocation(this);
+    if (
+      draggedTo === 'discardArea'
+      && clueTokensRules.atMax(globals.state.ongoingGame.clueTokens, globals.variant)
+    ) {
+      sounds.play('error');
+      globals.elements.cluesNumberLabelPulse!.play();
+      draggedTo = null;
+    }
     if (draggedTo === 'playArea' && this.checkMisplay()) {
       draggedTo = null;
     }
@@ -164,27 +149,6 @@ export default class LayoutChild extends Konva.Group {
       type,
       target: this.card.state.order,
     });
-  }
-
-  getDragLocation() {
-    const pos = this.getAbsolutePosition();
-    pos.x += this.width() * this.scaleX() / 2;
-    pos.y += this.height() * this.scaleY() / 2;
-
-    if (globals.elements.playArea!.isOver(pos)) {
-      return 'playArea';
-    }
-    if (globals.elements.discardArea!.isOver(pos)) {
-      if (clueTokensRules.atMax(globals.state.ongoingGame.clueTokens, globals.variant)) {
-        sounds.play('error');
-        globals.elements.cluesNumberLabelPulse!.play();
-        return null;
-      }
-
-      return 'discardArea';
-    }
-
-    return null;
   }
 
   // Before we play a card,

@@ -24,7 +24,7 @@ import NodeWithTooltip from './controls/NodeWithTooltip';
 import NoteIndicator from './controls/NoteIndicator';
 import RankPip from './controls/RankPip';
 import { suitIndexToSuit } from './convert';
-import { CursorType } from './cursorSet';
+import { CursorType } from './cursor';
 import globals from './globals';
 import * as HanabiCardInit from './HanabiCardInit';
 import * as HanabiCardMouse from './HanabiCardMouse';

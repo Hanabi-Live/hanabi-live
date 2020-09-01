@@ -6,7 +6,6 @@ import ClueLog from './ClueLog';
 import ColorButton from './ColorButton';
 import Arrow from './controls/Arrow';
 import Button from './controls/Button';
-import ClickArea from './controls/ClickArea';
 import CurrentPlayerArea from './controls/CurrentPlayerArea';
 import FitText from './controls/FitText';
 import SharedTurnsButton from './controls/SharedTurnsButton';
@@ -25,10 +24,10 @@ import RankButton from './RankButton';
 export default class Elements {
   // The main screen
   stageFade: Konva.Rect | null = null;
-  playArea: ClickArea | null = null;
+  playArea: Konva.Rect | null = null;
   playStacks: Map<Suit | 'hole', PlayStack> = new Map<Suit | 'hole', PlayStack>();
   suitLabelTexts: FitText[] = [];
-  discardArea: ClickArea | null = null;
+  discardArea: Konva.Rect | null = null;
   discardStacks: Map<Suit, CardLayout> = new Map<Suit, CardLayout>();
   playerHands: CardLayout[] = [];
   playerHandTurnRects: Konva.Rect[] = [];

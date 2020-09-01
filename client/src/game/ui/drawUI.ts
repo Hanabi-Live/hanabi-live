@@ -20,7 +20,6 @@ import ColorButton from './ColorButton';
 import { LABEL_COLOR, CARD_ANIMATION_LENGTH } from './constants';
 import Arrow from './controls/Arrow';
 import Button from './controls/Button';
-import ClickArea from './controls/ClickArea';
 import CurrentPlayerArea from './controls/CurrentPlayerArea';
 import FitText from './controls/FitText';
 import ImageWithTooltip from './controls/ImageWithTooltip';
@@ -394,7 +393,7 @@ const drawPlayStacks = () => {
     w,
     h: cardHeight,
   };
-  globals.elements.playArea = new ClickArea({
+  globals.elements.playArea = new Konva.Rect({
     x: (playAreaValues.x - overlap) * winW,
     y: (playAreaValues.y - overlap) * winH,
     width: (playAreaValues.w! + (overlap * 2)) * winW,
@@ -1391,7 +1390,7 @@ const drawDiscardArea = () => {
   globals.layers.UI.add(trashcan);
 
   // This is the invisible rectangle that players drag cards to in order to discard them
-  globals.elements.discardArea = new ClickArea({
+  globals.elements.discardArea = new Konva.Rect({
     x: 0.8 * winW,
     y: 0.6 * winH,
     width: 0.2 * winW,

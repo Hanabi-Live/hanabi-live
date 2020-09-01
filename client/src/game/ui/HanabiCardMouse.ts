@@ -4,7 +4,7 @@ import { STACK_BASE_RANK } from '../types/constants';
 import * as arrows from './arrows';
 import CardLayout from './CardLayout';
 import { DOUBLE_TAP_DELAY } from './constants';
-import cursorSet from './cursorSet';
+import * as cursor from './cursor';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
 import HanabiCardClick from './HanabiCardClick';
@@ -59,7 +59,7 @@ function mouseLeave(this: HanabiCard) {
   globals.layers.UI.batchDraw();
 
   // When we stop hovering over a card, the cursor should change back to normal
-  cursorSet('default');
+  cursor.set('default');
 
   // When we stop hovering over a card, disable Empathy (if it is enabled)
   if (!globals.globalEmpathyEnabled) {
@@ -150,7 +150,7 @@ const checkShowNoteTooltip = (card: HanabiCard) => {
 
 export function setCursor(this: HanabiCard) {
   const cursorType = getCursorType(this);
-  cursorSet(cursorType);
+  cursor.set(cursorType);
 }
 
 const getCursorType = (card: HanabiCard) => {
