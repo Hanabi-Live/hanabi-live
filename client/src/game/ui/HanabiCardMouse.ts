@@ -96,29 +96,26 @@ function mouseDown(this: HanabiCard, event: Konva.KonvaEventObject<MouseEvent>) 
 
   // Empathy
   if (
-    event.evt.buttons === 0 // Only enable Empathy for left-clicks
+    event.evt.buttons === 1 // Only enable Empathy for left-clicks
     && shouldShowEmpathy(this, event)
   ) {
     setEmpathyOnHand(this, true);
   }
 
   // Dragging
-  if (event.evt.buttons === 0) {
-    dragStart(this); // Only enable dragging for left-clicks
+  if (event.evt.buttons === 1) { // Only enable dragging for left-clicks
+    dragStart(this);
   }
 }
 
-function mouseUp(this: HanabiCard, event: Konva.KonvaEventObject<MouseEvent>) {
+function mouseUp(this: HanabiCard) {
   // Speedrunning overrides the normal card clicking behavior
   if (useSpeedrunClickHandlers()) {
     return;
   }
 
   // Empathy
-  if (
-    event.evt.buttons === 0 // Only disable Empathy for left-clicks
-    && !globals.globalEmpathyEnabled
-  ) {
+  if (!globals.globalEmpathyEnabled) {
     setEmpathyOnHand(this, false);
   }
 

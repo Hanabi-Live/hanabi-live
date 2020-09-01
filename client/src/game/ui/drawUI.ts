@@ -705,7 +705,7 @@ const drawScoreArea = () => {
   }) as Konva.Text;
   globals.elements.scoreArea.add(turnTextLabel);
   turnTextLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
-    if (event.evt.buttons === 0) { // Left-click
+    if (event.evt.buttons === 1) { // Left-click
       // We want to be able to left-click the turn number to go to a specific turn in the replay
       replay.promptTurn();
     } else if (event.evt.buttons === 2) { // Right-click
@@ -722,7 +722,7 @@ const drawScoreArea = () => {
   }) as Konva.Text;
   globals.elements.scoreArea.add(globals.elements.turnNumberLabel!);
   globals.elements.turnNumberLabel.on('click', (event: Konva.KonvaEventObject<MouseEvent>) => {
-    if (event.evt.buttons === 0) { // Left-click
+    if (event.evt.buttons === 1) { // Left-click
       // We want to be able to left-click the turn number to go to a specific turn in the replay
       replay.promptTurn();
     } else if (event.evt.buttons === 2) { // Right-click
