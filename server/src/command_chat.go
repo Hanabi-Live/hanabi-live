@@ -246,6 +246,9 @@ func sanitizeChatInput(s *Session, msg string, server bool) (string, bool) {
 		msg = msg[0 : maxLength-1]
 	}
 
+	// Remove any non-printable characters, if any
+	msg = removeNonPrintableCharacters(msg)
+
 	// Check for valid UTF8
 	if !utf8.Valid([]byte(msg)) {
 		if s != nil {

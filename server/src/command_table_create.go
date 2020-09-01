@@ -68,6 +68,9 @@ func commandTableCreate(s *Session, d *CommandData) {
 		d.Name = d.Name[0 : MaxGameNameLength-1]
 	}
 
+	// Remove any non-printable characters, if any
+	d.Name = removeNonPrintableCharacters(d.Name)
+
 	// Trim whitespace from both sides
 	d.Name = strings.TrimSpace(d.Name)
 
@@ -77,7 +80,7 @@ func commandTableCreate(s *Session, d *CommandData) {
 	}
 
 	// Check for non-ASCII characters
-	if !isPrintableASCII(d.Name) {
+	if !containsAllPrintableASCII(d.Name) {
 		s.Warning("Game names can only contain ASCII characters.")
 		return
 	}

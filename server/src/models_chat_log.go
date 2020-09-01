@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v4"
@@ -30,18 +29,16 @@ func (*ChatLog) Insert(userID int, message string, room string) error {
 func (*ChatLog) BulkInsert(chatLogRows []*ChatLogRow) error {
 	SQLString := `
 		INSERT INTO chat_log (user_id, message, room)
-		VALUES
+		VALUES %s
 	`
+	numArgsPerRow := 3
+	valueArgs := make([]interface{}, 0, numArgsPerRow*len(chatLogRows))
 	for _, chatLogRow := range chatLogRows {
-		SQLString += "(" +
-			strconv.Itoa(chatLogRow.UserID) + ", " +
-			"'" + chatLogRow.Message + "', " +
-			"'" + chatLogRow.Room + "'" +
-			"), "
+		valueArgs = append(valueArgs, chatLogRow.UserID, chatLogRow.Message, chatLogRow.Room)
 	}
-	SQLString = strings.TrimSuffix(SQLString, ", ")
+	SQLString = getBulkInsertSQLSimple(SQLString, numArgsPerRow, len(chatLogRows))
 
-	_, err := db.Exec(context.Background(), SQLString)
+	_, err := db.Exec(context.Background(), SQLString, valueArgs...)
 	return err
 }
 

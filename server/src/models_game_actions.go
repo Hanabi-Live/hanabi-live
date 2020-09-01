@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"strconv"
-	"strings"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -35,20 +33,23 @@ func (*GameActions) BulkInsert(gameActionRows []*GameActionRow) error {
 			target,
 			value
 		)
-		VALUES
+		VALUES %s
 	`
+	numArgsPerRow := 5
+	valueArgs := make([]interface{}, 0, numArgsPerRow*len(gameActionRows))
 	for _, gameActionRow := range gameActionRows {
-		SQLString += "(" +
-			strconv.Itoa(gameActionRow.GameID) + ", " +
-			strconv.Itoa(gameActionRow.Turn) + ", " +
-			strconv.Itoa(gameActionRow.Type) + ", " +
-			strconv.Itoa(gameActionRow.Target) + ", " +
-			strconv.Itoa(gameActionRow.Value) +
-			"), "
+		valueArgs = append(
+			valueArgs,
+			gameActionRow.GameID,
+			gameActionRow.Turn,
+			gameActionRow.Type,
+			gameActionRow.Target,
+			gameActionRow.Value,
+		)
 	}
-	SQLString = strings.TrimSuffix(SQLString, ", ")
+	SQLString = getBulkInsertSQLSimple(SQLString, numArgsPerRow, len(gameActionRows))
 
-	_, err := db.Exec(context.Background(), SQLString)
+	_, err := db.Exec(context.Background(), SQLString, valueArgs...)
 	return err
 }
 

@@ -95,7 +95,7 @@ func intInSlice(a int, slice []int) bool {
 }
 
 // From: https://stackoverflow.com/questions/53069040/checking-a-string-contains-only-ascii-characters
-func isPrintableASCII(s string) bool {
+func containsAllPrintableASCII(s string) bool {
 	for i := 0; i < len(s); i++ {
 		if s[i] < 32 || s[i] > 126 { // 32 is " " and 126 is "~"
 			return false
@@ -149,6 +149,19 @@ func numConsecutiveDiacritics(s string) int {
 	}
 
 	return maxConsecutive
+}
+
+func removeNonPrintableCharacters(s string) string {
+	return strings.Map(func(r rune) rune {
+		if !unicode.IsPrint(r) {
+			// This character is not printable by Go
+			// https://golang.org/pkg/unicode/#IsPrint
+			// Returning a negative value will drop the character from the string with no
+			// replacement
+			return -1
+		}
+		return r
+	}, s)
 }
 
 func secondsToDurationString(seconds int) (string, error) {

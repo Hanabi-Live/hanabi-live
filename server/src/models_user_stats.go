@@ -5,7 +5,6 @@ import (
 	"errors"
 	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -368,30 +367,33 @@ func (*UserStats) BulkInsert(userID int, statsMap map[int]*UserStatsRow) error {
 			average_score,
 			num_strikeouts
 		)
-		VALUES
+		VALUES %s
 	`
+	numArgsPerRow := 15
+	valueArgs := make([]interface{}, 0, numArgsPerRow*len(statsMap))
 	for variantID, stats := range statsMap {
-		SQLString += "(" +
-			strconv.Itoa(userID) + ", " +
-			strconv.Itoa(variantID) + ", " +
-			strconv.Itoa(stats.NumGames) + ", " +
-			strconv.Itoa(stats.BestScores[0].Score) + ", " +
-			strconv.FormatUint(uint64(stats.BestScores[0].Modifier), 10) + ", " +
-			strconv.Itoa(stats.BestScores[1].Score) + ", " +
-			strconv.FormatUint(uint64(stats.BestScores[1].Modifier), 10) + ", " +
-			strconv.Itoa(stats.BestScores[2].Score) + ", " +
-			strconv.FormatUint(uint64(stats.BestScores[2].Modifier), 10) + ", " +
-			strconv.Itoa(stats.BestScores[3].Score) + ", " +
-			strconv.FormatUint(uint64(stats.BestScores[3].Modifier), 10) + ", " +
-			strconv.Itoa(stats.BestScores[4].Score) + ", " +
-			strconv.FormatUint(uint64(stats.BestScores[4].Modifier), 10) + ", " +
-			strconv.FormatFloat(stats.AverageScore, 'f', -1, 64) + ", " +
-			strconv.Itoa(stats.NumStrikeouts) +
-			"), "
+		valueArgs = append(
+			valueArgs,
+			userID,
+			variantID,
+			stats.NumGames,
+			stats.BestScores[0].Score,
+			stats.BestScores[0].Modifier,
+			stats.BestScores[1].Score,
+			stats.BestScores[1].Modifier,
+			stats.BestScores[2].Score,
+			stats.BestScores[2].Modifier,
+			stats.BestScores[3].Score,
+			stats.BestScores[3].Modifier,
+			stats.BestScores[4].Score,
+			stats.BestScores[4].Modifier,
+			stats.AverageScore,
+			stats.NumStrikeouts,
+		)
 	}
-	SQLString = strings.TrimSuffix(SQLString, ", ")
+	SQLString = getBulkInsertSQLSimple(SQLString, numArgsPerRow, len(statsMap))
 
-	_, err := db.Exec(context.Background(), SQLString)
+	_, err := db.Exec(context.Background(), SQLString, valueArgs...)
 	return err
 }
 

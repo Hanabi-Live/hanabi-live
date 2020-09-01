@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"strconv"
-	"strings"
 )
 
 type GameParticipantNotes struct{}
@@ -16,6 +14,7 @@ type GameParticipantNotesRow struct {
 	Note      string
 }
 
+// https://stackoverflow.com/questions/12486436/how-do-i-batch-sql-statements-with-package-database-sql
 func (*GameParticipantNotes) BulkInsert(gameParticipantNotesRows []*GameParticipantNotesRow) error {
 	SQLString := `
 		INSERT INTO game_participant_notes (
@@ -23,19 +22,26 @@ func (*GameParticipantNotes) BulkInsert(gameParticipantNotesRows []*GameParticip
 			card_order,
 			note
 		)
-		VALUES
+		VALUES %s
 	`
+	numArgsPerRow := 5
+	valueArgs := make([]interface{}, 0, numArgsPerRow*len(gameParticipantNotesRows))
 	for _, gameParticipantNotesRow := range gameParticipantNotesRows {
-		SQLString += "(" +
-			"(SELECT id FROM game_participants " +
-			"WHERE game_id = " + strconv.Itoa(gameParticipantNotesRow.GameID) + " " +
-			"AND user_id = " + strconv.Itoa(gameParticipantNotesRow.UserID) + "), " +
-			strconv.Itoa(gameParticipantNotesRow.CardOrder) + ", " +
-			"'" + gameParticipantNotesRow.Note + "'" +
-			"), "
+		valueArgs = append(
+			valueArgs,
+			gameParticipantNotesRow.GameID,
+			gameParticipantNotesRow.UserID,
+			gameParticipantNotesRow.CardOrder,
+			gameParticipantNotesRow.Note,
+		)
 	}
-	SQLString = strings.TrimSuffix(SQLString, ", ")
+	valueSQL := `
+		(SELECT id FROM game_participants WHERE game_id = ? AND user_id = ?),
+		?,
+		?
+	`
+	SQLString = getBulkInsertSQL(SQLString, valueSQL, len(gameParticipantNotesRows))
 
-	_, err := db.Exec(context.Background(), SQLString)
+	_, err := db.Exec(context.Background(), SQLString, valueArgs...)
 	return err
 }

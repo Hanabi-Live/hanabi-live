@@ -52,6 +52,9 @@ func commandNote(s *Session, d *CommandData) {
 		d.Note = d.Note[0 : MaxChatLength-1]
 	}
 
+	// Remove any non-printable characters, if any
+	d.Msg = removeNonPrintableCharacters(d.Msg)
+
 	// Check for valid UTF8
 	if !utf8.Valid([]byte(d.Note)) {
 		s.Warning("Notes must contain valid UTF8 characters.")

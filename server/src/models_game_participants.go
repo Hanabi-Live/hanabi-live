@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"strconv"
-	"strings"
 )
 
 type GameParticipants struct{}
@@ -26,19 +24,22 @@ func (*GameParticipants) BulkInsert(gameParticipantsRows []*GameParticipantsRow)
 			character_assignment,
 			character_metadata
 		)
-		VALUES
+		VALUES %s
 	`
+	numArgsPerRow := 5
+	valueArgs := make([]interface{}, 0, numArgsPerRow*len(gameParticipantsRows))
 	for _, gameParticipantsRow := range gameParticipantsRows {
-		SQLString += "(" +
-			strconv.Itoa(gameParticipantsRow.GameID) + ", " +
-			strconv.Itoa(gameParticipantsRow.UserID) + ", " +
-			strconv.Itoa(gameParticipantsRow.Seat) + ", " +
-			strconv.Itoa(gameParticipantsRow.CharacterAssignment) + ", " +
-			strconv.Itoa(gameParticipantsRow.CharacterMetadata) +
-			"), "
+		valueArgs = append(
+			valueArgs,
+			gameParticipantsRow.GameID,
+			gameParticipantsRow.UserID,
+			gameParticipantsRow.Seat,
+			gameParticipantsRow.CharacterAssignment,
+			gameParticipantsRow.CharacterMetadata,
+		)
 	}
-	SQLString = strings.TrimSuffix(SQLString, ", ")
+	SQLString = getBulkInsertSQLSimple(SQLString, numArgsPerRow, len(gameParticipantsRows))
 
-	_, err := db.Exec(context.Background(), SQLString)
+	_, err := db.Exec(context.Background(), SQLString, valueArgs...)
 	return err
 }

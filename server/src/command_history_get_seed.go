@@ -17,7 +17,7 @@ func commandHistoryGetSeed(s *Session, d *CommandData) {
 	}
 
 	// Check for non-ASCII characters
-	if !isPrintableASCII(d.Seed) {
+	if !containsAllPrintableASCII(d.Seed) {
 		s.Warning("Seeds can only contain ASCII characters.")
 		return
 	}
