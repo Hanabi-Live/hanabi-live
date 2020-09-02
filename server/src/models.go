@@ -100,9 +100,8 @@ func (*Models) Close() {
 // For example:
 //
 // SQLString = "INSERT INTO notes (thing_a, thing_b) VALUES %s"
-// numValues = 3
-// numArgs   = 6
-// valueSQL  = "?, ?"
+// rowValueSQL  = "?, ?"
+// numRows = 3
 //
 // Would be transformed into:
 //
@@ -124,6 +123,7 @@ func getBulkInsertSQL(SQLString string, rowValueSQL string, numRows int) string 
 	SQLString = fmt.Sprintf(SQLString, allValuesString)
 
 	// Convert all of the "?" to "$1", "$2", "$3", etc.
+	// (which is the way that pgx expects query variables to be)
 	numArgs := strings.Count(SQLString, "?")
 	SQLString = strings.ReplaceAll(SQLString, "?", "$%v")
 	numbers := make([]interface{}, 0, numRows)
