@@ -273,11 +273,9 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 		return
 	}
 
-	if command == "badquestion" {
-		msg := "Your question is not specific enough. In order to properly answer it, we need to know the amount of players in the game, all of the cards in all of the hands, the amount of current clues, and so forth. Please type out a full Alice and Bob story in the style of the reference document. (e.g. <https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#the-reverse-finesse>)"
-		discordSend(m.ChannelID, "", msg)
-		return
-	}
+	// -------------
+	// Info commands
+	// -------------
 
 	if command == "2pquestion" || command == "2player" || command == "2p" {
 		// This includes a discord link to the #2-player channel
@@ -286,8 +284,21 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 		return
 	}
 
+	if command == "badquestion" {
+		msg := "Your question is not specific enough. In order to properly answer it, we need to know the amount of players in the game, all of the cards in all of the hands, the amount of current clues, and so forth. Please type out a full Alice and Bob story in the style of the reference document. (e.g. <https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#the-reverse-finesse>)"
+		discordSend(m.ChannelID, "", msg)
+		return
+	}
+
 	if command == "oop" {
 		msg := "It looks like you are asking a question about an *Out-of-Position Bluff* (or OOP for short). When asking such questions, **you must include** the condition that you think is satisfied (i, ii, or iii)."
+		discordSend(m.ChannelID, "", msg)
+		return
+	}
+
+	if command == "undefined" {
+		msg := "**Why isn't [situation X] defined in the conventions document?**\n\n"
+		msg += "Not everything has to have a meaning. We intentionally want to have situations be undefined so that we have some wiggle room to handle a wide variety of game states: <https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Convention_Goals.md>"
 		discordSend(m.ChannelID, "", msg)
 		return
 	}
