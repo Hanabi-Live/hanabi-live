@@ -1,6 +1,5 @@
 // The navigation bar at the top of the lobby
 
-import { FADE_TIME } from '../constants';
 import globals from '../globals';
 import { closeAllTooltips } from '../misc';
 import * as modals from '../modals';
@@ -114,7 +113,7 @@ const initTooltips = () => {
       'scrollableTip', // Make it scrollable
     ],
     functionBefore: () => {
-      $('#lobby').fadeTo(FADE_TIME, 0.4);
+      modals.setShadeOpacity(0.6);
     },
   };
 
@@ -132,7 +131,7 @@ const initTooltips = () => {
       }
     }
     if (tooltipsOpen <= 1) {
-      $('#lobby').fadeTo(FADE_TIME, 1);
+      modals.setShadeOpacity(0);
     }
   };
 

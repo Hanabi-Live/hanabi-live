@@ -1,7 +1,6 @@
 // Modals (boxes that hover on top of the UI)
 
 import { FADE_TIME } from './constants';
-import * as gameChat from './game/chat';
 import globals from './globals';
 import * as lobbyNav from './lobby/nav';
 import { closeAllTooltips, parseIntSafe } from './misc';
@@ -31,17 +30,7 @@ export const init = () => {
 
   // Warning
   $('#warning-modal-button').click(() => {
-    $('#warning-modal').fadeOut(FADE_TIME);
-    if ($('#lobby').is(':visible')) {
-      $('#lobby').fadeTo(FADE_TIME, 1, () => {
-        globals.modalShowing = false;
-      });
-    }
-    if ($('#game').is(':visible')) {
-      $('#game').fadeTo(FADE_TIME, 1, () => {
-        globals.modalShowing = false;
-      });
-    }
+    warningClose();
   });
 
   // Error
@@ -51,7 +40,7 @@ export const init = () => {
 };
 
 export const passwordShow = (tableID: number) => {
-  $('#lobby').fadeTo(FADE_TIME, 0.25);
+  setShadeOpacity(0.75);
   closeAllTooltips();
   globals.modalShowing = true;
 
@@ -62,9 +51,7 @@ export const passwordShow = (tableID: number) => {
 
 const passwordSubmit = () => {
   $('#password-modal').fadeOut(FADE_TIME);
-  $('#lobby').fadeTo(FADE_TIME, 1, () => {
-    globals.modalShowing = false;
-  });
+  setShadeOpacity(0, false);
   const tableIDString = $('#password-modal-id').val();
   if (typeof tableIDString !== 'string') {
     throw new Error('The "password-modal-id" element does not have a string value.');
@@ -87,14 +74,7 @@ const passwordSubmit = () => {
 };
 
 export const warningShow = (msg: string) => {
-  if ($('#lobby').is(':visible')) {
-    $('#lobby').fadeTo(FADE_TIME, 0.25);
-  }
-  if ($('#game').is(':visible')) {
-    $('#game').fadeTo(FADE_TIME, 0.25);
-  }
-  closeAllTooltips();
-  gameChat.hide();
+  setShadeOpacity(0.75);
   globals.modalShowing = true;
 
   $('#warning-modal-description').html(msg);
@@ -108,14 +88,7 @@ export const errorShow = (msg: string) => {
   }
   globals.errorOccurred = true;
 
-  if ($('#lobby').is(':visible')) {
-    $('#lobby').fadeTo(FADE_TIME, 0.1);
-  }
-  if ($('#game').is(':visible')) {
-    $('#game').fadeTo(FADE_TIME, 0.1);
-  }
-  closeAllTooltips();
-  gameChat.hide();
+  setShadeOpacity(0.9);
   globals.modalShowing = true;
 
   // Clear out the top navigation buttons
@@ -130,6 +103,30 @@ export const errorShow = (msg: string) => {
   }
 };
 
+// Make the page cover a certain opacity
+// If it is 0, then the page cover will be hidden
+// The second parameter is necessary to set the variable after fading finishes
+export const setShadeOpacity = (opacity: number, newModalShowing?: boolean) => {
+  const pageCover = $('#page-cover');
+  if (opacity > 0) {
+    pageCover.show();
+  }
+  // Make sure to stop any fading that was called earlier
+  pageCover.stop().fadeTo(FADE_TIME, opacity, () => {
+    if (opacity === 0) {
+      pageCover.hide();
+    }
+    if (newModalShowing !== undefined) {
+      globals.modalShowing = newModalShowing;
+    }
+  });
+};
+
+const warningClose = () => {
+  $('#warning-modal').fadeOut(FADE_TIME);
+  setShadeOpacity(0, false);
+};
+
 export const closeAll = () => {
   // Error modals cannot be closed, since we want to force the user to refresh the page
   if ($('#error-modal').is(':visible')) {
@@ -139,9 +136,6 @@ export const closeAll = () => {
   for (const modal of lobbyModals) {
     $(`#${modal}-modal`).fadeOut(FADE_TIME);
   }
-  $('#warning-modal').fadeOut(FADE_TIME);
 
-  $('#lobby').fadeTo(FADE_TIME, 1, () => {
-    globals.modalShowing = false;
-  });
+  warningClose();
 };

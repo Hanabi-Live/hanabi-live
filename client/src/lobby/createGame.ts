@@ -1,6 +1,6 @@
 // The "Create Game" nav button
 
-import { FADE_TIME, SHUTDOWN_TIMEOUT } from '../constants';
+import { SHUTDOWN_TIMEOUT } from '../constants';
 import * as debug from '../debug';
 import { VARIANTS } from '../game/data/gameData';
 import { DEFAULT_VARIANT_NAME } from '../game/types/constants';
@@ -426,7 +426,7 @@ export const before = () => {
     return false;
   }
 
-  $('#lobby').fadeTo(FADE_TIME, 0.4);
+  modals.setShadeOpacity(0.6);
 
   return true;
 };
