@@ -20,7 +20,12 @@ BACKUPS_DIR="$DIR/backups"
 FILENAME=$REPO-`date +%s`.sql # "date +%s" returns the epoch timestamp
 
 # Import the database information
-source "$DIR/.env"
+ENV_PATH="$DIR/.env"
+if [[ ! -f $ENV_PATH ]]; then
+  echo "Failed to find the \".env\" file at: $ENV_PATH"
+  exit 1
+fi
+source "$ENV_PATH"
 if [[ -z $DB_HOST ]]; then
   DB_HOST=localhost
 fi

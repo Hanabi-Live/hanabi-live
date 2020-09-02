@@ -12,7 +12,12 @@ SECONDS=0
 
 # Import the port
 if [[ -z $CI ]]; then
-  source "$DIR/../.env"
+  ENV_PATH="$DIR/../.env"
+  if [[ ! -f $ENV_PATH ]]; then
+    echo "Failed to find the \".env\" file at: $ENV_PATH"
+    exit 1
+  fi
+  source "$ENV_PATH"
   if [[ -z $PORT ]]; then
     PORT="80"
   fi
