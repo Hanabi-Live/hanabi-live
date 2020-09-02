@@ -614,12 +614,23 @@ input::-webkit-calendar-picker-indicator {
 
 .modal {
   position: absolute;
-  z-index: 1;
-  top: 5em;
+  z-index: 1000;
+  top: 15%;
   left: 5em;
   right: 5em;
   bottom: 5em;
   overflow: auto;
+}
+
+#page-cover {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #001805;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  opacity: 0;
 }
 
 /*
