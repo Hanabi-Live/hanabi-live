@@ -101,6 +101,3 @@ If you need general help with the website, then read the [features page](FEATURE
 | --------- |------------
 | `/here`   | Ping members of the Hyphen-ated group to get a game going
 | `/last`   | See how long it has been since the last ping
-| `/next`   | Put yourself on the waiting list
-| `/unnext` | Take yourself off the waiting list
-| `/list`   | Show the people on the waiting list
