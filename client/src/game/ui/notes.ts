@@ -74,20 +74,22 @@ export const set = (order: number, note: string) => {
 
 const getNoteKeywords = (
   note: string,
-): string[] => {
-  const matches = note.matchAll(/\[([^\]]*)\]|\|([^|[]*)$|^([^|]+)$/g);
-  const keywords = Array.from(
-    matches,
-    (match) => {
-      if (match[1] !== undefined) {
-        return match[1].trim();
-      }
-      if (match[2] !== undefined) {
-        return match[2].trim();
-      }
-      return match[3].trim();
-    },
-  );
+) => {
+  const regexp = /\[([^\]]*)\]|\|([^|[]*)$|^([^|]+)$/g;
+  const keywords = [];
+
+  let match = regexp.exec(note);
+  while (match !== null) {
+    if (match[1] !== undefined) {
+      keywords.push(match[1].trim());
+    } else if (match[2] !== undefined) {
+      keywords.push(match[2].trim());
+    } else {
+      keywords.push(match[3].trim());
+    }
+    match = regexp.exec(note);
+  }
+
   return keywords;
 };
 

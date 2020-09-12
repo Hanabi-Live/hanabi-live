@@ -9,12 +9,6 @@
     // By default, it is "ES3"
     // This is too conservative; the project targets browsers within a 2 year time-frame
     "target": "ES2018",
-    // "lib" specifies the JavaScript features used.
-    "lib": [
-      "DOM",
-      // We use "ES2020.String" for RegEx matchAll()
-      "ES2020.String"
-    ],
     // "newLine" specifies the end of line sequence
     // By default, it is "crlf" on Windows; we want to always use "lf" in order to match the
     // code base and reduce the file size of the output
