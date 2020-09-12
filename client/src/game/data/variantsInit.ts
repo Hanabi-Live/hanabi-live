@@ -1,8 +1,10 @@
 import variantsJSON from '../../../../data/variants.json';
 import * as abbreviationsRules from '../rules/abbreviation';
+import { isNameUpOrDown } from '../rules/variant';
 import Color from '../types/Color';
 import Suit from '../types/Suit';
 import Variant from '../types/Variant';
+import { createIdentityNotePattern } from '../ui/noteIdentityPattern';
 
 // "VariantJSON" is very similar to "Variant",
 // but the latter is comprised of some more complicated objects
@@ -230,6 +232,11 @@ export default function variantsInit(
     // Prepare the abbreviations for each suit
     const abbreviations = abbreviationsRules.makeAll(name, suits);
 
+    // Create the RegEx pattern for identity notes in this variant.
+    const identityNotePattern = createIdentityNotePattern(
+      suits, ranks, abbreviations, isNameUpOrDown(name),
+    );
+
     // Add it to the map
     const variant: Variant = {
       name,
@@ -250,6 +257,7 @@ export default function variantsInit(
       maxScore,
       offsetCornerElements,
       abbreviations,
+      identityNotePattern,
     };
     VARIANTS.set(variantJSON.name, variant);
   }

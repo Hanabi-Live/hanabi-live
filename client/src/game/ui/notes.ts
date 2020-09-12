@@ -2,7 +2,6 @@
 
 import { parseIntSafe } from '../../misc';
 import * as modals from '../../modals';
-import { abbreviationRules } from '../rules';
 import { canPossiblyBe } from '../rules/card';
 import * as variantRules from '../rules/variant';
 import CardIdentity from '../types/CardIdentity';
@@ -10,10 +9,10 @@ import CardNote from '../types/CardNote';
 import CardState from '../types/CardState';
 import { STACK_BASE_RANK, START_CARD_RANK } from '../types/constants';
 import Variant from '../types/Variant';
-import { suitToSuitIndex } from './convert';
 import getCardOrStackBase from './getCardOrStackBase';
 import globals from './globals';
 import HanabiCard from './HanabiCard';
+import { extractRankText, extractSuitText } from './noteIdentityPattern';
 
 // Get the contents of the note tooltip
 const get = (order: number, our: boolean) => {
@@ -73,34 +72,38 @@ export const set = (order: number, note: string) => {
   card.checkSpecialNote();
 };
 
-const checkNoteKeywords = (
-  keywords: string[],
+const getNoteKeywords = (
   note: string,
-  fullNote: string,
-) => keywords.find((k) => (
-  note === k
-  || fullNote.includes(`[${k}]`)
-)) !== undefined;
-
-export const getRightmostNoteText = (text: string) => {
-  // Only examine the text to the right of the rightmost pipe
-  // (pipes are a conventional way to append new information to a note)
-  const match = text.match(/.*\|(.*)/);
-  if (match) {
-    return match[1].trim(); // Remove all leading and trailing whitespace
-  }
-
-  return text;
+): string[] => {
+  const matches = note.matchAll(/\[([^\]]*)\]|\|([^|[]*)$|^([^|]+)$/g);
+  const keywords = Array.from(
+    matches,
+    (match) => {
+      if (match[1] !== undefined) {
+        return match[1].trim();
+      }
+      if (match[2] !== undefined) {
+        return match[2].trim();
+      }
+      return match[3].trim();
+    },
+  );
+  return keywords;
 };
+
+const checkNoteKeywordsForMatch = (
+  patterns: string[],
+  keywords: string[],
+) => keywords.some((k) => patterns.some((pattern) => k === pattern));
 
 export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
   // Make all letters lowercase to simply the matching logic below
   // and remove all leading and trailing whitespace
   const fullNote = note.toLowerCase().trim();
-  const text = getRightmostNoteText(fullNote);
-  const cardIdentity = getCardIdentityFromNote(variant, text, fullNote);
+  const keywords = getNoteKeywords(fullNote);
+  const cardIdentity = getIdentityFromKeywords(variant, keywords);
 
-  const chopMoved = checkNoteKeywords([
+  const chopMoved = checkNoteKeywordsForMatch([
     'cm',
     'chop move',
     'chop moved',
@@ -114,26 +117,26 @@ export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
     'tocm',
     'utfcm',
     'utbcm',
-  ], text, fullNote);
-  const finessed = checkNoteKeywords([
+  ], keywords);
+  const finessed = checkNoteKeywordsForMatch([
     'f',
     'hf',
     'pf',
     'gd',
-  ], text, fullNote);
-  const knownTrash = checkNoteKeywords([
+  ], keywords);
+  const knownTrash = checkNoteKeywordsForMatch([
     'kt',
     'trash',
     'stale',
     'bad',
-  ], text, fullNote);
-  const needsFix = checkNoteKeywords([
+  ], keywords);
+  const needsFix = checkNoteKeywordsForMatch([
     'fix',
     'fixme',
     'needs fix',
-  ], text, fullNote);
-  const blank = checkNoteKeywords(['blank'], text, fullNote);
-  const unclued = checkNoteKeywords(['unclued'], text, fullNote);
+  ], keywords);
+  const blank = checkNoteKeywordsForMatch(['blank'], keywords);
+  const unclued = checkNoteKeywordsForMatch(['unclued'], keywords);
 
   return {
     suitIndex: cardIdentity.suitIndex,
@@ -147,66 +150,78 @@ export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
   };
 };
 
-export const getCardIdentityFromNote = (
+const parseSuit = (variant: Variant, suitText: string): number | null => {
+  const suitAbbreviationIndex = variant.abbreviations.findIndex(
+    (abbreviation) => abbreviation.toLowerCase() === suitText,
+  );
+  if (suitAbbreviationIndex !== -1) {
+    return suitAbbreviationIndex;
+  }
+
+  const suitNameIndex = variant.suits.findIndex((suit) => suit.name.toLowerCase() === suitText);
+  if (suitNameIndex !== -1) {
+    return suitNameIndex;
+  }
+  return null;
+};
+
+const parseRank = (rankText: string): number => {
+  const rank = parseIntSafe(rankText);
+  if (rank === 0 || Number.isNaN(rank)) {
+    return START_CARD_RANK;
+  }
+  return rank;
+};
+
+export const getIdentityFromKeyword = (variant: Variant, keyword: string): CardIdentity => {
+  const identityMatch = keyword.match(variant.identityNotePattern);
+  let suitIndex = null;
+  let rank = null;
+  if (identityMatch !== null) {
+    const suitText = extractSuitText(identityMatch);
+    if (suitText !== null) {
+      suitIndex = parseSuit(variant, suitText);
+    }
+    const rankText = extractRankText(identityMatch);
+    if (rankText !== null) {
+      rank = parseRank(rankText);
+    }
+  }
+
+  return { suitIndex, rank };
+};
+
+export const getIdentityFromKeywords = (
   variant: Variant,
-  note: string,
-  fullNote: string,
+  keywords: string[],
 ): CardIdentity => {
-  let rankStrings = variant.ranks.map((r) => r.toString());
-  if (variantRules.isUpOrDown(variant)) {
-    rankStrings = rankStrings.concat('0', 's', 'start');
-  }
-  for (const rankText of rankStrings) {
-    let rank = parseIntSafe(rankText);
-    if (rank === 0 || Number.isNaN(rank)) {
-      rank = START_CARD_RANK;
+  let suitIndex = null;
+  let rank = null;
+
+  for (let i = keywords.length - 1; i >= 0; i--) {
+    const keyword = keywords[i];
+
+    const { suitIndex: newSuitIndex, rank: newRank } = getIdentityFromKeyword(variant, keyword);
+    if (suitIndex !== null && newSuitIndex !== null && newSuitIndex !== suitIndex) {
+      break;
+    }
+    if (rank !== null && newRank !== null && newRank !== rank) {
+      break;
     }
 
-    // Check for a specific rank identity with no associated suit (e.g. "5")
-    if (checkNoteKeywords([
-      rankText,
-    ], note, fullNote)) {
-      return {
-        suitIndex: null,
-        rank,
-      };
+    if (newSuitIndex !== null) {
+      suitIndex = newSuitIndex;
+    }
+    if (newRank !== null) {
+      rank = newRank;
     }
 
-    for (const suit of variant.suits) {
-      const suitAbbreviation = abbreviationRules.get(suit.name, variant);
-
-      // Check for a specific suit identity with no associated rank (e.g. "b")
-      if (checkNoteKeywords([
-        suitAbbreviation.toLowerCase(), // e.g. "b" or "B"
-        suit.displayName.toLowerCase(), // e.g. "blue" or "Blue" or "BLUE"
-      ], note, fullNote)) {
-        return {
-          suitIndex: suitToSuitIndex(suit, variant),
-          rank: null,
-        };
-      }
-
-      // Check for a specific suit + rank identity
-      if (checkNoteKeywords([
-        `${suitAbbreviation.toLowerCase()}${rankText}`, // e.g. "b1" or "B1"
-        `${suit.displayName.toLowerCase()}${rankText}`, // e.g. "blue1" or "Blue1" or "BLUE1"
-        `${suit.displayName.toLowerCase()} ${rankText}`, // e.g. "blue 1" or "Blue 1" or "BLUE 1"
-        `${rankText}${suitAbbreviation.toLowerCase()}`, // e.g. "1b" or "1B"
-        `${rankText}${suit.displayName.toLowerCase()}`, // e.g. "1blue" or "1Blue" or "1BLUE"
-        `${rankText} ${suit.displayName.toLowerCase()}`, // e.g. "1 blue" or "1 Blue" or "1 BLUE"
-      ], note, fullNote)) {
-        return {
-          suitIndex: suitToSuitIndex(suit, variant),
-          rank,
-        };
-      }
+    if (suitIndex !== null && rank !== null) {
+      break;
     }
   }
 
-  return {
-    suitIndex: null,
-    rank: null,
-  };
+  return { suitIndex, rank };
 };
 
 export const checkNoteImpossibility = (variant: Variant, cardState: CardState, note: CardNote) => {

@@ -22,4 +22,6 @@ export default interface Variant {
   readonly maxScore: number;
   readonly offsetCornerElements: boolean;
   readonly abbreviations: string[];
+
+  readonly identityNotePattern: string;
 }
