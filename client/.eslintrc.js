@@ -8,7 +8,6 @@ module.exports = {
   env: {
     browser: true,
     jquery: true,
-    es2020: true,
   },
 
   // We need to specify some additional settings in order to make the linter work with TypeScript:
