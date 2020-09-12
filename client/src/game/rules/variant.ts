@@ -14,7 +14,9 @@ export const isDuck = (variant: Variant) => variant.name.startsWith('Duck');
 
 export const isThrowItInAHole = (variant: Variant) => variant.name.startsWith('Throw It in a Hole');
 
-export const isUpOrDown = (variant: Variant) => variant.name.startsWith('Up or Down');
+export const isUpOrDown = (variant: Variant) => isNameUpOrDown(variant.name);
+
+export const isNameUpOrDown = (variantName: string) => variantName.startsWith('Up or Down');
 
 export const hasReversedSuits = (variant: Variant) => {
   const suits = variant.suits;

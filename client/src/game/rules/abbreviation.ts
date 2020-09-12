@@ -38,12 +38,10 @@ export const makeAll = (variantName: string, suits: Suit[]) => {
   return abbreviations;
 };
 
-export const get = (suitName: string, variant: Variant) => {
-  for (let i = 0; i < variant.suits.length; i++) {
-    const suit = variant.suits[i];
-    if (suit.name === suitName) {
-      return variant.abbreviations[i];
-    }
+export const get = (suitName: string, variant: Variant): string => {
+  const i = variant.suits.findIndex((suit) => suit.name === suitName);
+  if (i !== -1) {
+    return variant.abbreviations[i];
   }
 
   return '?';
