@@ -453,8 +453,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return (
       this.note.chopMoved
       && this.shouldShowAnyBorder()
-      // The clue border has precedence over the chop move border
+      // The clue border and the finesse border have precedence over the chop move border
       && !this.shouldShowClueBorder()
+      && !this.shouldShowFinesseBorder()
       && globals.state.playing
     );
   }
@@ -463,9 +464,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     return (
       this.note.finessed
       && this.shouldShowAnyBorder()
-      // The clue border and the chop move border have precedence over the finesse border
+      // The clue border has precedence over the finesse border
       && !this.shouldShowClueBorder()
-      && !this.shouldShowChopMoveBorder()
       && globals.state.playing
     );
   }
@@ -485,7 +485,7 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       pipState: PipState,
       hasPositiveClues: boolean,
       pip: Konva.Shape | RankPip,
-      x : Konva.Shape,
+      x: Konva.Shape,
     ) => {
       switch (pipState) {
         case PipState.Visible: {
@@ -517,8 +517,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       }
     };
 
-    const suitPipStates : PipState[] = this.variant.suits.map(() => PipState.Hidden);
-    const rankPipStates : PipState[] = [];
+    const suitPipStates: PipState[] = this.variant.suits.map(() => PipState.Hidden);
+    const rankPipStates: PipState[] = [];
     for (const rank of this.variant.ranks) rankPipStates[rank] = PipState.Hidden;
 
     // We look through each card that should have a visible pip (eliminated or not)
