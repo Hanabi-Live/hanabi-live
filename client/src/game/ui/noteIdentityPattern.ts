@@ -35,30 +35,8 @@ export const createIdentityNotePattern = (
   return `^(?:${suitPattern} ?${rankPattern}|${rankPattern} ?${suitPattern}|${suitPattern}|${rankPattern})$`;
 };
 
-export const extractSuitText = (match: RegExpMatchArray): string | null => {
-  if (match[1] !== undefined) {
-    return match[1];
-  }
-  if (match[4] !== undefined) {
-    return match[4];
-  }
-  if (match[5] !== undefined) {
-    return match[5];
-  }
+// eslint-disable-next-line max-len
+export const extractSuitText = (match: RegExpMatchArray): string | null => match[1] ?? match[4] ?? match[5] ?? null;
 
-  return null;
-};
-
-export const extractRankText = (match: RegExpMatchArray): string | null => {
-  if (match[2] !== undefined) {
-    return match[2];
-  }
-  if (match[3] !== undefined) {
-    return match[3];
-  }
-  if (match[6] !== undefined) {
-    return match[6];
-  }
-
-  return null;
-};
+// eslint-disable-next-line max-len
+export const extractRankText = (match: RegExpMatchArray): string | null => match[2] ?? match[3] ?? match[6] ?? null;
