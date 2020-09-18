@@ -53,6 +53,9 @@ export default class CardLayout extends Konva.Group {
     const pos = child.getAbsolutePosition();
     this.add(child as any);
     child.setAbsolutePosition(pos);
+    if (this.empathy) {
+      child.card.setEmpathy(true);
+    }
     this.doLayout();
   }
 
