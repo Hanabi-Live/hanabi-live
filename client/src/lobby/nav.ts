@@ -59,7 +59,15 @@ export const init = () => {
   });
 
   // The "Change Variant" button
-  // (initialized in the "initTooltips()" function)
+  // (also initialized in the "initTooltips()" function)
+  $('#nav-buttons-pregame-change-variant').unbind('click');
+
+  $('#nav-buttons-pregame-change-variant').on('click', () => {
+    if (!$('#nav-buttons-pregame-change-variant').hasClass('disabled')) {
+      $('#nav-buttons-pregame-change-variant').tooltipster('open');
+    }
+  });
+
   $('#nav-buttons-pregame-change-variant').tooltipster('option', 'functionReady', () => {
     // Clear/focus the selector
     $('#change-variant-dropdown').val('');
