@@ -167,7 +167,7 @@ export const init = () => {
 // They can select "Search custom variants..." if they want access to the "full" dropdown
 //
 // "createTableVariant" is a hidden element that contains the value of the chosen element
-// "create-game-variant-dropdown1" contains the the basic variants
+// "create-game-variant-dropdown1" contains the basic variants
 // "create-game-variant-dropdown2" is the full (datalist) dropdown
 const firstVariantDropdownInit = () => {
   // Initialize the 1st variant dropdown with the basic variants
