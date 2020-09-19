@@ -74,6 +74,14 @@ export const init = () => {
     // Focus the selector
     $('#change-variant-dropdown').focus();
 
+    // Pressing enter anywhere will submit the form
+    $('#change-variant-dropdown').on('keypress', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        $('#change-variant-update').click();
+      }
+    });
+
     // Update button trigger
     $('#change-variant-update').on('click', () => {
       const variantName = ($('#change-variant-dropdown').val() as string).trim();
