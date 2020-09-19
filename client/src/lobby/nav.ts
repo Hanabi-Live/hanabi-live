@@ -61,6 +61,10 @@ export const init = () => {
   // The "Change Variant" button
   // (initialized in the "initTooltips()" function)
   $('#nav-buttons-pregame-change-variant').tooltipster('option', 'functionReady', () => {
+    // Clear/focus the selector
+    $('#change-variant-dropdown').val('');
+    $('#change-variant-dropdown').focus();
+
     if ($('#change-variant-dropdown-list').children().length !== 0) {
       return; // already initialized, don't need to do again
     }
@@ -70,9 +74,6 @@ export const init = () => {
       const option = new Option(variantName, variantName);
       $('#change-variant-dropdown-list').append($(option));
     }
-
-    // Focus the selector
-    $('#change-variant-dropdown').focus();
 
     // Pressing enter anywhere will submit the form
     $('#change-variant-dropdown').on('keypress', (event) => {
