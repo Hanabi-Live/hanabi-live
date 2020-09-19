@@ -1,6 +1,7 @@
 // The navigation bar at the top of the lobby
 
 import globals from '../globals';
+import { VARIANTS } from '../game/data/gameData';
 import { closeAllTooltips } from '../misc';
 import * as modals from '../modals';
 import * as createGame from './createGame';
@@ -59,6 +60,30 @@ export const init = () => {
 
   // The "Change Variant" button
   // (initialized in the "initTooltips()" function)
+  $('#nav-buttons-pregame-change-variant').tooltipster('option', 'functionReady', () => {
+    // Populate table
+    for (const variantName of VARIANTS.keys()) {
+      const option = new Option(variantName, variantName);
+      $('#change-variant-dropdown-list').append($(option));
+    }
+
+    // Update button trigger
+    $('#change-variant-update').on('click', () => {
+      const variantName = ($("#change-variant-dropdown").val() as string).trim();
+      console.log(variantName);
+      if (VARIANTS.get(variantName) === undefined) {
+        return;
+      }
+      globals.conn!.send('tableSetVariant', {
+        tableID: globals.tableID,
+        options: {
+          variantName,
+        },
+      });
+      // Close the tooltips
+      closeAllTooltips();
+    });
+  });
 
   // The "Return to Lobby" button (from the "Pregame" screen)
   $('#nav-buttons-pregame-unattend').on('click', () => {
