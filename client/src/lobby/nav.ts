@@ -61,7 +61,11 @@ export const init = () => {
   // The "Change Variant" button
   // (initialized in the "initTooltips()" function)
   $('#nav-buttons-pregame-change-variant').tooltipster('option', 'functionReady', () => {
-    // Populate table
+    if ($('#change-variant-dropdown-list').children().length !== 0) {
+      return; // already initialized, don't need to do again
+    }
+
+    // Populate variant list
     for (const variantName of VARIANTS.keys()) {
       const option = new Option(variantName, variantName);
       $('#change-variant-dropdown-list').append($(option));
