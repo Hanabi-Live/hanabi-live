@@ -55,6 +55,11 @@ export default function keyboardInit() {
       if (globals.currentScreen === Screen.PreGame) {
         $('#nav-buttons-pregame-start').click();
       }
+    } else if (event.altKey && (event.key === 'v' || event.key === '√')) { // Alt + v
+      // Click on the "Change Variant" button
+      if (globals.currentScreen === Screen.PreGame) {
+        $('#nav-buttons-pregame-change-variant').click();
+      }
     } else if (event.altKey && (event.key === 'l' || event.key === '¬')) { // Alt + l
       // Click on the "Leave Game" button
       if (globals.currentScreen === Screen.PreGame) {
