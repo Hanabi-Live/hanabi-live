@@ -94,7 +94,6 @@ export const init = () => {
     // Update button trigger
     $('#change-variant-update').on('click', () => {
       const variantName = ($('#change-variant-dropdown').val() as string).trim();
-      console.log(variantName);
       if (VARIANTS.get(variantName) === undefined) {
         return;
       }
