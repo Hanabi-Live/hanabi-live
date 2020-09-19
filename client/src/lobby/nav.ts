@@ -1,7 +1,7 @@
 // The navigation bar at the top of the lobby
 
-import globals from '../globals';
 import { VARIANTS } from '../game/data/gameData';
+import globals from '../globals';
 import { closeAllTooltips } from '../misc';
 import * as modals from '../modals';
 import * as createGame from './createGame';
@@ -69,7 +69,7 @@ export const init = () => {
 
     // Update button trigger
     $('#change-variant-update').on('click', () => {
-      const variantName = ($("#change-variant-dropdown").val() as string).trim();
+      const variantName = ($('#change-variant-dropdown').val() as string).trim();
       console.log(variantName);
       if (VARIANTS.get(variantName) === undefined) {
         return;
