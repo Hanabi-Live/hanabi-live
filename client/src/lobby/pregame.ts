@@ -423,7 +423,7 @@ const drawPlayerBox = (i: number) => {
 };
 
 export const enableStartGameButton = () => {
-  // Enable or disable the "Start Game" button,
+  // Enable or disable the "Start Game" and "Change Variant" button,
   // depending on if we are the game owner and enough players have joined
   $('#nav-buttons-pregame-start').addClass('disabled');
 
@@ -437,5 +437,9 @@ export const enableStartGameButton = () => {
     && globals.game.players.length <= 6
   ) {
     $('#nav-buttons-pregame-start').removeClass('disabled');
+  }
+
+  if (globals.game.owner === globals.userID) {
+    $('#nav-buttons-pregame-change-variant').removeClass('disabled');
   }
 };
