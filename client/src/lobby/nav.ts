@@ -57,6 +57,9 @@ export const init = () => {
     }
   });
 
+  // The "Change Variant" button
+  // (initialized in the "initTooltips()" function)
+
   // The "Return to Lobby" button (from the "Pregame" screen)
   $('#nav-buttons-pregame-unattend').on('click', () => {
     pregame.hide();
@@ -94,10 +97,11 @@ export const init = () => {
 
 const initTooltips = () => {
   const tooltips = [
-    'create-game',
-    'replay',
-    'resources',
-    'settings',
+    'games-create-game',
+    'games-replay',
+    'games-resources',
+    'games-settings',
+    'pregame-change-variant',
   ];
 
   const tooltipsterOptions = {
@@ -126,7 +130,7 @@ const initTooltips = () => {
     // If two tooltips are open, then we are clicking from one to the next
     let tooltipsOpen = 0;
     for (const tooltip of tooltips) {
-      if ($(`#nav-buttons-games-${tooltip}`).tooltipster('status').open) {
+      if ($(`#nav-buttons-${tooltip}`).tooltipster('status').open) {
         tooltipsOpen += 1;
       }
     }
@@ -138,7 +142,7 @@ const initTooltips = () => {
   // The "close" event will not fire if we initialize this on the tooltip class for some reason,
   // so we initialize all 3 individually
   for (const tooltip of tooltips) {
-    $(`#nav-buttons-games-${tooltip}`)
+    $(`#nav-buttons-${tooltip}`)
       .tooltipster(tooltipsterOptions)
       .tooltipster('instance')
       .on('close', tooltipsterClose);
