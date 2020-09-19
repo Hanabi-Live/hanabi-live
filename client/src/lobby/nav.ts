@@ -71,6 +71,9 @@ export const init = () => {
       $('#change-variant-dropdown-list').append($(option));
     }
 
+    // Focus the selector
+    $('#change-variant-dropdown').focus();
+
     // Update button trigger
     $('#change-variant-update').on('click', () => {
       const variantName = ($('#change-variant-dropdown').val() as string).trim();
