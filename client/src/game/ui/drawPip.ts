@@ -644,17 +644,19 @@ shapeFunctions.set('rainbow', (ctx: CanvasRenderingContext2D, colors?: string[])
 });
 
 shapeFunctions.set('triangle', (ctx: CanvasRenderingContext2D) => {
-  ctx.scale(148 / 42, 148 / 42);
+  ctx.scale(150 / 42, 150 / 42);
   ctx.beginPath();
-  ctx.moveTo(0.225598, -15.118622);
-  ctx.lineTo(-17.602911, 15.762362);
-  ctx.lineTo(18.055066, 15.761882);
+  ctx.transform(1.000000, 0.000000, 0.000000, 1.000000, 16.977400, -22.319100);
+  ctx.moveTo(-16.977913, 37.727610);
+  ctx.lineTo(-34.930431, 6.631814);
+  ctx.lineTo(0.975572, 6.632296);
   ctx.closePath();
-  ctx.moveTo(0.205914, -3.541973);
-  ctx.lineTo(8.029140, 10.008365);
-  ctx.lineTo(-7.617314, 10.008365);
+  ctx.moveTo(-16.997733, 26.070432);
+  ctx.lineTo(-9.120090, 12.425835);
+  ctx.lineTo(-24.875376, 12.425835);
+  ctx.transform(1.000000, 0.000000, 0.000000, 1.000000, -16.977400, 22.319100);
   ctx.closePath();
-  ctx.scale(42 / 148, 42 / 148);
+  ctx.scale(42 / 150, 42 / 150);
 });
 
 export default function drawPip(
