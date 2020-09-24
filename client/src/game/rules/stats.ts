@@ -211,7 +211,7 @@ export const doubleDiscard = (orderOfDiscardedCard: number, state: GameState, va
   let allClued = true;
   for (const orderOfCardInHand of hand) {
     const cardInHand = state.deck[orderOfCardInHand];
-    if (cardRules.isClued(cardInHand)) {
+    if (!cardRules.isClued(cardInHand)) {
       allClued = false;
       break;
     }
