@@ -423,8 +423,9 @@ const drawPlayerBox = (i: number) => {
 };
 
 export const enableStartGameButton = () => {
-  // Enable or disable the "Start Game" and "Change Variant" button,
-  // depending on if we are the game owner and enough players have joined
+  // Enable or disable the "Start Game" and "Change Variant" button.
+  // "Start Game" enabled if game owner and enough players
+  // "Change Variant" enabled if game owner
   $('#nav-buttons-pregame-start').addClass('disabled');
 
   if (globals.game === null) {
