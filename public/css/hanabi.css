@@ -496,7 +496,7 @@ table td {
   top: 0.5em;
 }
 
-#create-game-submit {
+#create-game-submit, #change-variant-submit {
   font-size: 1em;
 }
 
