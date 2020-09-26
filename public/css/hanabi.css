@@ -779,20 +779,20 @@ input::-webkit-calendar-picker-indicator {
   Make the lobby nav bar show only the button icons for low priority buttons on smaller resolutions
 */
 @media screen and (max-width: 1220px) {
-  #nav-buttons-games .pri2 .mobile-hide {
+  #nav-buttons-lobby .pri2 .mobile-hide {
     display: none;
   }
-  #nav-buttons-games .pri2 .nav-icon {
+  #nav-buttons-lobby .pri2 .nav-icon {
     margin-right: 0em;
   }
 }
 
 /* Make the lobby nav bar show only the button icons for all buttons on smaller resolutions */
 @media screen and (max-width: 970px) {
-  #nav-buttons-games .pri1 .mobile-hide {
+  #nav-buttons-lobby .pri1 .mobile-hide {
     display: none;
   }
-  #nav-buttons-games .pri1 .nav-icon {
+  #nav-buttons-lobby .pri1 .nav-icon {
     margin-right: 0em;
   }
 }

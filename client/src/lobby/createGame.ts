@@ -62,7 +62,7 @@ export const init = () => {
     }
 
     // Redraw the tooltip so that the new elements will fit better
-    $('#nav-buttons-games-create-game').tooltipster('reposition');
+    $('#nav-buttons-lobby-create-game').tooltipster('reposition');
 
     // Remember the new setting
     getCheckbox('createTableTimed');
@@ -77,7 +77,7 @@ export const init = () => {
     }
 
     // Redraw the tooltip so that the new elements will fit better
-    $('#nav-buttons-games-create-game').tooltipster('reposition');
+    $('#nav-buttons-lobby-create-game').tooltipster('reposition');
 
     // Remember the new setting
     getCheckbox('createTableSpeedrun');
@@ -89,7 +89,7 @@ export const init = () => {
     $('#create-game-show-extra-options-row').hide();
 
     // Redraw the tooltip so that the new elements will fit better
-    $('#nav-buttons-games-create-game').tooltipster('reposition');
+    $('#nav-buttons-lobby-create-game').tooltipster('reposition');
   });
 
   // Disable some checkboxes if a checkbox is checked
@@ -294,7 +294,7 @@ const submit = () => {
   });
 
   closeAllTooltips();
-  $('#nav-buttons-games-create-game').addClass('disabled');
+  $('#nav-buttons-lobby-create-game').addClass('disabled');
 };
 
 const getCheckbox = (setting: keyof Settings) => {
@@ -395,7 +395,7 @@ export const checkChanged = (settingName: keyof Settings, value: boolean | strin
 // (before the tooltip is added to the DOM)
 export const before = () => {
   // Don't allow the tooltip to open if the button is currently disabled
-  if ($('#nav-buttons-games-create-game').hasClass('disabled')) {
+  if ($('#nav-buttons-lobby-create-game').hasClass('disabled')) {
     return false;
   }
 
@@ -499,7 +499,7 @@ export const ready = () => {
   }
 
   // Redraw the tooltip so that the new elements will fit better
-  $('#nav-buttons-games-create-game').tooltipster('reposition');
+  $('#nav-buttons-lobby-create-game').tooltipster('reposition');
 };
 
 const readyVariant = (value: any) => {

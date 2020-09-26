@@ -77,7 +77,7 @@ export const hide = () => {
   $('#lobby-top-half').show();
   $('#lobby-separator').show();
   $('#lobby-bottom-half').show();
-  nav.show('games');
+  nav.show('lobby');
 };
 
 export const draw = (friends: boolean) => {

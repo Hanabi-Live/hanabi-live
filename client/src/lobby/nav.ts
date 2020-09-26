@@ -17,17 +17,17 @@ export const init = () => {
   initTooltips();
 
   // The "Create Game" button
-  $('#nav-buttons-games-create-game').tooltipster('option', 'functionBefore', createGame.before);
-  $('#nav-buttons-games-create-game').tooltipster('option', 'functionReady', createGame.ready);
+  $('#nav-buttons-lobby-create-game').tooltipster('option', 'functionBefore', createGame.before);
+  $('#nav-buttons-lobby-create-game').tooltipster('option', 'functionReady', createGame.ready);
   // (the logic for this tooltip is handled in the "createGame.ts" file)
 
   // The "Show History" button
-  $('#nav-buttons-games-history').on('click', () => {
+  $('#nav-buttons-lobby-history').on('click', () => {
     history.show();
   });
 
   // The "Watch Specific Replay" button
-  $('#nav-buttons-games-replay').tooltipster('option', 'functionReady', watchReplay.ready);
+  $('#nav-buttons-lobby-replay').tooltipster('option', 'functionReady', watchReplay.ready);
   // (the logic for this tooltip is handled in the "watchReplay.ts" file)
 
   // The "Help" button
@@ -145,10 +145,10 @@ export const init = () => {
 
 const initTooltips = () => {
   const tooltips = [
-    'games-create-game',
-    'games-replay',
-    'games-resources',
-    'games-settings',
+    'lobby-create-game',
+    'lobby-replay',
+    'lobby-resources',
+    'lobby-settings',
     'pregame-change-variant',
   ];
 
@@ -208,7 +208,7 @@ const initTooltips = () => {
 
 export const show = (target: string) => {
   const navTypes = [
-    'games',
+    'lobby',
     'pregame',
     'history',
     'history-friends',

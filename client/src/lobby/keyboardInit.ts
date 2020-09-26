@@ -32,23 +32,23 @@ export default function keyboardInit() {
     } else if (event.altKey && (event.key === 'c' || event.key === 'ç')) { // Alt + c
       // Click the "Create Game" button
       if (globals.currentScreen === Screen.Lobby) {
-        $('#nav-buttons-games-create-game').click();
+        $('#nav-buttons-lobby-create-game').click();
       }
     } else if (event.altKey && (event.key === 'h' || event.key === '˙')) { // Alt + h
       // Click the "Show History" button
       if (globals.currentScreen === Screen.Lobby) {
-        $('#nav-buttons-games-history').click();
+        $('#nav-buttons-lobby-history').click();
       }
     } else if (event.altKey && (event.key === 'a' || event.key === 'å')) { // Alt + a
       // Click on the "Watch Specific Replay" button
       // (we can't use "Alt + w" because that conflicts with LastPass)
       if (globals.currentScreen === Screen.Lobby) {
-        $('#nav-buttons-games-replay').click();
+        $('#nav-buttons-lobby-replay').click();
       }
     } else if (event.altKey && (event.key === 'o' || event.key === 'ø')) { // Alt + o
       // Click the "Sign Out" button
       if (globals.currentScreen === Screen.Lobby) {
-        $('#nav-buttons-games-sign-out').click();
+        $('#nav-buttons-lobby-sign-out').click();
       }
     } else if (event.altKey && (event.key === 's' || event.key === 'ß')) { // Alt + s
       // Click on the "Start Game" button
