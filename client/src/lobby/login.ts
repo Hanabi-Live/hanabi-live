@@ -188,7 +188,7 @@ export const hide = (firstTimeUser: boolean) => {
   $('#lobby-history').hide();
   // We can't hide this element by default in "index.html" or else the "No game history" text
   // will not be centered
-  nav.show('games');
+  nav.show('lobby');
   $('#lobby-chat-input').focus();
 
   // Scroll to the bottom of the chat

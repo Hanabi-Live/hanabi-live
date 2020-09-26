@@ -1,5 +1,6 @@
 // The navigation bar at the top of the lobby
 
+import { VARIANTS } from '../game/data/gameData';
 import globals from '../globals';
 import { closeAllTooltips } from '../misc';
 import * as modals from '../modals';
@@ -16,17 +17,17 @@ export const init = () => {
   initTooltips();
 
   // The "Create Game" button
-  $('#nav-buttons-games-create-game').tooltipster('option', 'functionBefore', createGame.before);
-  $('#nav-buttons-games-create-game').tooltipster('option', 'functionReady', createGame.ready);
+  $('#nav-buttons-lobby-create-game').tooltipster('option', 'functionBefore', createGame.before);
+  $('#nav-buttons-lobby-create-game').tooltipster('option', 'functionReady', createGame.ready);
   // (the logic for this tooltip is handled in the "createGame.ts" file)
 
   // The "Show History" button
-  $('#nav-buttons-games-history').on('click', () => {
+  $('#nav-buttons-lobby-history').on('click', () => {
     history.show();
   });
 
   // The "Watch Specific Replay" button
-  $('#nav-buttons-games-replay').tooltipster('option', 'functionReady', watchReplay.ready);
+  $('#nav-buttons-lobby-replay').tooltipster('option', 'functionReady', watchReplay.ready);
   // (the logic for this tooltip is handled in the "watchReplay.ts" file)
 
   // The "Help" button
@@ -55,6 +56,56 @@ export const init = () => {
       });
       $('#nav-buttons-pregame-start').addClass('disabled');
     }
+  });
+
+  // The "Change Variant" button
+  // (also initialized in the "initTooltips()" function)
+  $('#nav-buttons-pregame-change-variant').unbind('click');
+
+  $('#nav-buttons-pregame-change-variant').on('click', () => {
+    if (!$('#nav-buttons-pregame-change-variant').hasClass('disabled')) {
+      $('#nav-buttons-pregame-change-variant').tooltipster('open');
+    }
+  });
+
+  $('#nav-buttons-pregame-change-variant').tooltipster('option', 'functionReady', () => {
+    // Clear/focus the selector
+    $('#change-variant-dropdown').val('');
+    $('#change-variant-dropdown').focus();
+
+    if ($('#change-variant-dropdown-list').children().length !== 0) {
+      return; // already initialized, don't need to do again
+    }
+
+    // Populate variant list
+    for (const variantName of VARIANTS.keys()) {
+      const option = new Option(variantName, variantName);
+      $('#change-variant-dropdown-list').append($(option));
+    }
+
+    // Pressing enter anywhere will submit the form
+    $('#change-variant-dropdown').on('keypress', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        $('#change-variant-update').click();
+      }
+    });
+
+    // Update button trigger
+    $('#change-variant-update').on('click', () => {
+      const variantName = ($('#change-variant-dropdown').val() as string).trim();
+      if (VARIANTS.get(variantName) === undefined) {
+        return;
+      }
+      globals.conn!.send('tableSetVariant', {
+        tableID: globals.tableID,
+        options: {
+          variantName,
+        },
+      });
+      // Close the tooltips
+      closeAllTooltips();
+    });
   });
 
   // The "Return to Lobby" button (from the "Pregame" screen)
@@ -94,10 +145,11 @@ export const init = () => {
 
 const initTooltips = () => {
   const tooltips = [
-    'create-game',
-    'replay',
-    'resources',
-    'settings',
+    'lobby-create-game',
+    'lobby-replay',
+    'lobby-resources',
+    'lobby-settings',
+    'pregame-change-variant',
   ];
 
   const tooltipsterOptions = {
@@ -126,7 +178,7 @@ const initTooltips = () => {
     // If two tooltips are open, then we are clicking from one to the next
     let tooltipsOpen = 0;
     for (const tooltip of tooltips) {
-      if ($(`#nav-buttons-games-${tooltip}`).tooltipster('status').open) {
+      if ($(`#nav-buttons-${tooltip}`).tooltipster('status').open) {
         tooltipsOpen += 1;
       }
     }
@@ -138,7 +190,7 @@ const initTooltips = () => {
   // The "close" event will not fire if we initialize this on the tooltip class for some reason,
   // so we initialize all 3 individually
   for (const tooltip of tooltips) {
-    $(`#nav-buttons-games-${tooltip}`)
+    $(`#nav-buttons-${tooltip}`)
       .tooltipster(tooltipsterOptions)
       .tooltipster('instance')
       .on('close', tooltipsterClose);
@@ -156,7 +208,7 @@ const initTooltips = () => {
 
 export const show = (target: string) => {
   const navTypes = [
-    'games',
+    'lobby',
     'pregame',
     'history',
     'history-friends',

@@ -38,7 +38,7 @@ const replaySourceChange = () => {
   }
 
   // Redraw the tooltip so that the new elements will fit better
-  $('#nav-buttons-games-replay').tooltipster('reposition');
+  $('#nav-buttons-lobby-replay').tooltipster('reposition');
 };
 
 const submit = () => {
@@ -63,7 +63,7 @@ const submit = () => {
     $('#replay-error-row-text').text(text);
 
     // Redraw the tooltip so that the new elements will fit better
-    $('#nav-buttons-games-replay').tooltipster('reposition');
+    $('#nav-buttons-lobby-replay').tooltipster('reposition');
   };
 
   // ID
@@ -186,7 +186,7 @@ export const ready = () => {
   $(visibilityBox).change();
 
   // Redraw the tooltip so that the new elements will fit better
-  $('#nav-buttons-games-replay').tooltipster('reposition');
+  $('#nav-buttons-lobby-replay').tooltipster('reposition');
 
   // Focus the "ID" or "JSON" box
   // (we have to wait 1 millisecond or it won't work due to the nature of the tooltip)

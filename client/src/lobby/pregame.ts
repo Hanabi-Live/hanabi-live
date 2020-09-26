@@ -47,7 +47,7 @@ export const show = () => {
 
   // The "Create Game" button in the nav was disabled after we clicked the "Create" button,
   // so re-enable it now that we have received a message back from the server
-  $('#nav-buttons-games-create-game').removeClass('disabled');
+  $('#nav-buttons-lobby-create-game').removeClass('disabled');
 
   // Adjust the top navigation bar
   nav.show('pregame');
@@ -73,7 +73,7 @@ export const hide = () => {
   chat.updatePeopleTyping();
 
   // Adjust the navigation bar
-  nav.show('games');
+  nav.show('lobby');
 };
 
 export const draw = () => {
@@ -423,8 +423,9 @@ const drawPlayerBox = (i: number) => {
 };
 
 export const enableStartGameButton = () => {
-  // Enable or disable the "Start Game" button,
-  // depending on if we are the game owner and enough players have joined
+  // Enable or disable the "Start Game" and "Change Variant" button.
+  // "Start Game" enabled if game owner and enough players
+  // "Change Variant" enabled if game owner
   $('#nav-buttons-pregame-start').addClass('disabled');
 
   if (globals.game === null) {
@@ -437,5 +438,11 @@ export const enableStartGameButton = () => {
     && globals.game.players.length <= 6
   ) {
     $('#nav-buttons-pregame-start').removeClass('disabled');
+  }
+
+  if (globals.game.owner !== globals.userID) {
+    $('#nav-buttons-pregame-change-variant').addClass('disabled');
+  } else {
+    $('#nav-buttons-pregame-change-variant').removeClass('disabled');
   }
 };
