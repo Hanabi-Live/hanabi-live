@@ -59,7 +59,7 @@ func getRandom(min int, max int) int {
 		return 0
 	}
 	rand.Seed(time.Now().UnixNano())
-	return rand.Intn(max-min) + min
+	return rand.Intn(max-min) + min // nolint: gosec
 }
 
 // getVersion will get the current version of the JavaScript client,

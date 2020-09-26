@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-GOLANGCI_LINT_VERSION="v1.27.0"
+GOLANGCI_LINT_VERSION="v1.31.0"
 
 # Install the Golang linter
 # (it is not recommended to install this with "go get")

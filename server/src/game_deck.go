@@ -71,7 +71,7 @@ func (g *Game) InitDeck() {
 func (g *Game) ShuffleDeck() {
 	// From: https://stackoverflow.com/questions/12264789/shuffle-array-in-go
 	for i := range g.Deck {
-		j := rand.Intn(i + 1)
+		j := rand.Intn(i + 1) // nolint: gosec
 		g.Deck[i], g.Deck[j] = g.Deck[j], g.Deck[i]
 		g.CardIdentities[i], g.CardIdentities[j] = g.CardIdentities[j], g.CardIdentities[i]
 	}

@@ -172,7 +172,7 @@ func tableStart(s *Session, d *CommandData, t *Table) {
 	// since any random shuffling will do
 	if shufflePlayers {
 		for i := range t.Players {
-			j := rand.Intn(i + 1)
+			j := rand.Intn(i + 1) // nolint: gosec
 			t.Players[i], t.Players[j] = t.Players[j], t.Players[i]
 		}
 	}

@@ -147,7 +147,7 @@ func charactersGenerate(g *Game) {
 				// Get a random character assignment
 				// We don't have to seed the PRNG,
 				// since that was done just a moment ago when the deck was shuffled
-				randomIndex := rand.Intn(len(characterNames))
+				randomIndex := rand.Intn(len(characterNames)) // nolint: gosec
 				p.Character = characterNames[randomIndex]
 
 				// Check to see if any other players have this assignment already
@@ -185,16 +185,16 @@ func charactersGenerate(g *Game) {
 		} else {
 			if p.Character == "Fuming" { // 0
 				// A random number from 0 to the number of colors in this variant
-				p.CharacterMetadata = rand.Intn(len(variant.ClueColors))
+				p.CharacterMetadata = rand.Intn(len(variant.ClueColors)) // nolint: gosec
 			} else if p.Character == "Dumbfounded" { // 1
 				// A random number from 1 to 5
-				p.CharacterMetadata = rand.Intn(4) + 1
+				p.CharacterMetadata = rand.Intn(4) + 1 // nolint: gosec
 			} else if p.Character == "Inept" { // 2
 				// A random number from 0 to the number of suits in this variant
-				p.CharacterMetadata = rand.Intn(len(g.Stacks))
+				p.CharacterMetadata = rand.Intn(len(g.Stacks)) // nolint: gosec
 			} else if p.Character == "Awkward" { // 3
 				// A random number from 1 to 5
-				p.CharacterMetadata = rand.Intn(4) + 1
+				p.CharacterMetadata = rand.Intn(4) + 1 // nolint: gosec
 			}
 		}
 	}
