@@ -74,6 +74,7 @@ const passwordSubmit = () => {
 };
 
 export const warningShow = (msg: string) => {
+  closeAllTooltips();
   setShadeOpacity(0.75);
   globals.modalShowing = true;
 
@@ -88,6 +89,7 @@ export const errorShow = (msg: string) => {
   }
   globals.errorOccurred = true;
 
+  closeAllTooltips();
   setShadeOpacity(0.9);
   globals.modalShowing = true;
 
