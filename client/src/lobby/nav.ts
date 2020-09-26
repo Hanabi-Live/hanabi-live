@@ -87,12 +87,12 @@ export const init = () => {
     $('#change-variant-dropdown').on('keypress', (event) => {
       if (event.key === 'Enter') {
         event.preventDefault();
-        $('#change-variant-update').click();
+        $('#change-variant-submit').click();
       }
     });
 
     // Update button trigger
-    $('#change-variant-update').on('click', () => {
+    $('#change-variant-submit').on('click', () => {
       const variantName = ($('#change-variant-dropdown').val() as string).trim();
       if (VARIANTS.get(variantName) === undefined) {
         return;
