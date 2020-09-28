@@ -260,15 +260,18 @@ const keydown = (event: JQuery.KeyDownEvent) => {
       && globals.state.replay.shared.amLeader
     )
   );
+  const ongoingGameState = globals.state.replay.hypothetical === null
+    ? globals.state.ongoingGame
+    : globals.state.replay.hypothetical.ongoing;
   if (!shouldHaveKeyboardHotkeysForActions) {
     return;
   }
 
   let hotkeyFunction;
-  if (globals.state.ongoingGame.clueTokens >= clueTokensRules.getAdjusted(1, globals.variant)) {
+  if (ongoingGameState.clueTokens >= clueTokensRules.getAdjusted(1, globals.variant)) {
     hotkeyFunction = hotkeyClueMap.get(event.key);
   }
-  if (!clueTokensRules.atMax(globals.state.ongoingGame.clueTokens, globals.variant)) {
+  if (!clueTokensRules.atMax(ongoingGameState.clueTokens, globals.variant)) {
     hotkeyFunction = hotkeyFunction || hotkeyDiscardMap.get(event.key);
   }
   hotkeyFunction = hotkeyFunction || hotkeyPlayMap.get(event.key);

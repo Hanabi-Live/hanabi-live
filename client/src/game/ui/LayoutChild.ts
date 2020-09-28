@@ -117,10 +117,14 @@ export default class LayoutChild extends Konva.Group {
     // We have to unregister the handler or else it will send multiple actions for one drag
     this.off('dragend');
 
+    const ongoingGameState = globals.state.replay.hypothetical === null
+      ? globals.state.ongoingGame
+      : globals.state.replay.hypothetical.ongoing;
+
     let draggedTo = cursor.getElementDragLocation(this);
     if (
       draggedTo === 'discardArea'
-      && clueTokensRules.atMax(globals.state.ongoingGame.clueTokens, globals.variant)
+      && clueTokensRules.atMax(ongoingGameState.clueTokens, globals.variant)
     ) {
       sounds.play('error');
       globals.elements.cluesNumberLabelPulse!.play();
