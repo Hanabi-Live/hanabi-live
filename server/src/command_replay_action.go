@@ -162,6 +162,7 @@ func replayActionHypoStart(s *Session, d *CommandData, t *Table) {
 
 	// Start a hypothetical line
 	g.Hypothetical = true
+	g.HypoDrawnCardsShown = false
 
 	type HypoStartMessage struct {
 		TableID uint64
