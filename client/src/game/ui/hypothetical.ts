@@ -24,6 +24,8 @@ export const start = () => {
     });
   }
 
+  globals.elements.toggleRevealedButton!.setEnabled(true);
+
   globals.store!.dispatch({
     type: 'hypoStart',
     drawnCardsShown: false,
