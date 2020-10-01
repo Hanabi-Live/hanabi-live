@@ -706,8 +706,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       && !cardRules.isClued(this.state)
       && !cardRules.isPlayed(this.state)
       && !cardRules.isDiscarded(this.state)
-      && !this.note.blank
-      && !this.note.chopMoved
+      && !(globals.state.playing && this.note.blank)
+      && !(globals.state.playing && this.note.chopMoved)
       && !variantRules.isThrowItInAHole(this.variant)
       && !globals.options.speedrun
       && !globals.lobby.settings.realLifeMode
