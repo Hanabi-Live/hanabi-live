@@ -53,7 +53,7 @@ const handlePremove = () => {
 
     case ActionType.Discard: {
       // Prevent discarding if the team is at the maximum amount of clues
-      if (!clueTokensRules.atMax(clueTokens, globals.variant)) {
+      if (clueTokensRules.atMax(clueTokens, globals.variant)) {
         return;
       }
 
