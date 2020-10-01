@@ -75,7 +75,7 @@ export const set = (order: number, note: string) => {
 const getNoteKeywords = (
   note: string,
 ) => {
-  const regexp = /\[([^\]]*)\]|\|([^|[]*)$|^([^|]+)$/g;
+  const regexp = /\[(.*?)\]|\|([^[|]*$)|(^[^[|]+$)/g;
   const keywords = [];
 
   let match = regexp.exec(note);
