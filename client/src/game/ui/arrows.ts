@@ -233,9 +233,10 @@ const getPos = (element: Konva.Node, rot: number) => {
 
 // Animate the arrow to fly from the player who gave the clue to the card
 const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, segment: number) => {
-  // Don't bother doing the animation if it is delayed by more than one segment
+  // We can't continue arrow animations if we are on the wrong segment
+  // because arrows are reused and this causes glitches
   const visibleSegment = globals.state.visibleState!.turn.segment!;
-  if (visibleSegment > segment + 1 || visibleSegment < segment - 1) {
+  if (visibleSegment !== segment) {
     return;
   }
 
