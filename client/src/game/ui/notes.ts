@@ -75,6 +75,13 @@ export const set = (order: number, note: string) => {
 const getNoteKeywords = (
   note: string,
 ) => {
+  // Match either:
+  // - zero or more characters between square brackets `[]`
+  //   - \[(.*?)\]
+  // - zero or more non-pipe non-bracket characters between a pipe `|` and the end of the note
+  //   - \|([^[|]*$)
+  // - one or more non-pipe non-bracket characters between the start and end of the note
+  //   - (^[^[|]+$)
   const regexp = /\[(.*?)\]|\|([^[|]*$)|(^[^[|]+$)/g;
   const keywords = [];
 
