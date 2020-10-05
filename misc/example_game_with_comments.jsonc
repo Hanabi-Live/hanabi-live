@@ -66,7 +66,12 @@
     { "suitIndex": 3, "rank": 2 },
     { "suitIndex": 0, "rank": 1 },
     { "suitIndex": 2, "rank": 2 },
-    { "suitIndex": 1, "rank": 3 }
+    { "suitIndex": 1, "rank": 3 },
+    { "suitIndex": 4, "rank": 1 },
+    { "suitIndex": 4, "rank": 1 },
+    { "suitIndex": 4, "rank": 2 },
+    { "suitIndex": 4, "rank": 4 },
+    { "suitIndex": 4, "rank": 3 }
   ],
 
   // "actions" is an array that contains all of the actions that the players performed in the game
@@ -84,7 +89,7 @@
 
       // The index of the card that is being played
       // e.g. 0 corresponds to the 1st card dealt, etc.
-      "target": 4
+      "target": 2
     },
     {
       // A "discard" action (type 1)
@@ -92,7 +97,7 @@
 
       // The index of the card that is being discarded
       // e.g. 0 corresponds to the 1st card dealt, etc.
-      "target": 11
+      "target": 5
     },
     {
       // A "color clue" action (type 2)
@@ -102,9 +107,10 @@
       // e.g. 0 corresponds to the 1st player, etc.
       "target": 1,
 
-      // The value for a rank clue is equal to to the rank chosen for the clue
-      // e.g. 1 corresponds to rank 1, 2 corresponds to rank 2, etc.
-      "value": 3
+      // The value for a color clue is the index of the possible colors from 1 to N,
+      // from left to right
+      // e.g. 0 corresponds to red, 1 corresponds to yellow, etc. (in a "No Variant" game)
+      "value": 0
     },
     {
       // A "rank clue" action (type 3)
@@ -114,9 +120,8 @@
       // e.g. 0 corresponds to the 1st player, etc.
       "target": 1,
 
-      // The value for a color clue is the index of the possible colors from 1 to N,
-      // from left to right
-      // e.g. 1 corresponds to red, 2 corresponds to yellow, etc. (in a "No Variant" game)
+      // The value for a rank clue is equal to to the rank chosen for the clue
+      // e.g. 1 corresponds to rank 1, 2 corresponds to rank 2, etc.
       "value": 3
     },
     {
