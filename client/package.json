@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "description": "",
   "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "Zamiell/hanabi-live"
+  },
   "scripts": {
     "lint": "eslint \"src/**/*.ts\"",
     "test": "jest"

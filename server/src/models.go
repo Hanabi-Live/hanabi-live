@@ -51,18 +51,21 @@ func modelsInit() (*Models, error) {
 	}
 	dbUser := os.Getenv("DB_USER")
 	if len(dbUser) == 0 {
-		logger.Info("DB_USER not specified; using default value of \"hanabiuser\".")
-		dbUser = "hanabiuser"
+		defaultUser := "hanabiuser"
+		logger.Info("DB_USER not specified; using default value of \"" + defaultUser + "\".")
+		dbUser = defaultUser
 	}
 	dbPass := os.Getenv("DB_PASS")
 	if len(dbPass) == 0 {
-		logger.Info("DB_PASS not specified; using default value of \"1234567890\".")
-		dbPass = "1234567890"
+		defaultPass := "1234567890"
+		logger.Info("DB_PASS not specified; using default value of \"" + defaultPass + "\".")
+		dbPass = defaultPass
 	}
 	dbName = os.Getenv("DB_NAME")
 	if len(dbPass) == 0 {
-		logger.Info("DB_NAME not specified; using default value of \"hanabi\".")
-		dbName = "hanabi"
+		defaultName := "hanabi"
+		logger.Info("DB_NAME not specified; using default value of \"" + defaultName + "\".")
+		dbName = defaultName
 	}
 
 	// Initialize the database

@@ -21,8 +21,7 @@ func sentryInit() bool {
 	// (they were loaded from the ".env" file in "main.go")
 	sentryDSN := os.Getenv("SENTRY_DSN")
 	if len(sentryDSN) == 0 {
-		logger.Info("The \"sentryDSN\" environment variable is blank; " +
-			"aborting Sentry initialization.")
+		logger.Info("The \"sentryDSN\" environment variable is blank; aborting Sentry initialization.")
 		return false
 	}
 

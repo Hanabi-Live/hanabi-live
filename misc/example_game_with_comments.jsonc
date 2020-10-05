@@ -177,5 +177,13 @@
     { "name": "Conservative", "metadata": -1 },
     { "name": "Greedy", "metadata": -1 },
     { "name": "Picky", "metadata": -1 }
-  ]
+  ],
+
+  // "id" is an integer that corresponds to the database ID of the game on Hanab Live
+  // This field is optional
+  "id": 12345,
+
+  // "seed" is a string corresponding to the seed of the game on Hanab Live
+  // This field is optional
+  "seed": "p2v0s0"
 }

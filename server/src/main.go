@@ -34,7 +34,7 @@ func main() {
 	logger = NewLogger()
 
 	// Welcome message
-	startText := "| Starting " + WebsiteName + " |"
+	startText := "| Starting " + ProjectName + " |"
 	borderText := "+" + strings.Repeat("-", len(startText)-2) + "+"
 	logger.Info(borderText)
 	logger.Info(startText)

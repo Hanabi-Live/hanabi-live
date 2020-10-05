@@ -23,7 +23,6 @@
   ],
 
   "files.associations": {
-    "example_game_with_comments.json": "jsonc", // This is "json" by default
     "*.tmpl": "html", // Golang HTML templates are saved as "tmpl" files
   },
 
