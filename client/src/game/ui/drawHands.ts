@@ -376,7 +376,7 @@ export default function drawHands(winW: number, winH: number) {
         height: handValues.h * winH,
         fill: OFF_BLACK,
         stroke: OFF_BLACK,
-        strokeWidth: 3,
+        strokeWidth: 0.00317 * winH,
         listening: false,
       });
       blackLineGroup.add(blackLine);

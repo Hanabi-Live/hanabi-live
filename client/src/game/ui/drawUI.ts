@@ -893,6 +893,7 @@ const drawScoreArea = () => {
       width: 0.03 * winW,
       height: 0.053 * winH,
       stroke: 'black',
+      strokeWidth: 0.00211 * winH,
       cornerRadius: 0.005 * winW,
       listening: true,
     }, i);
@@ -1170,7 +1171,7 @@ const drawYourTurn = () => {
     fill: 'black',
     opacity: 0.5,
     stroke: 'black',
-    strokeWidth: 4,
+    strokeWidth: 0.00422 * winH,
     offset: {
       x: -0.025 * winW,
       y: -0.036 * winH,
@@ -1448,7 +1449,7 @@ const drawTimers = () => {
     radiusX: 0.05 * winW,
     radiusY: 0.07 * winH,
     stroke: '#ffe03b', // Yellow
-    strokeWidth: 2,
+    strokeWidth: 0.00211 * winH,
     visible: false,
     listening: false,
   });
@@ -1869,7 +1870,7 @@ const drawHypotheticalArea = () => {
     fill: 'black',
     opacity: 0.5,
     stroke: 'black',
-    strokeWidth: 4,
+    strokeWidth: 0.00422 * winH,
     listening: false,
   });
   globals.elements.hypoCircle.add(circle);
