@@ -1282,13 +1282,15 @@ const drawStatistics = () => {
   globals.layers.UI.add(efficiencyTextLabel);
   efficiencyTextLabel.tooltipName = 'efficiency';
   const efficiencyContent = `
-        Efficiency is calculated by: <em>(number of cards played + <br />
-        &nbsp; &nbsp; &nbsp; &nbsp; number of unplayed cards with one or more clues "on" them) / number of clues given or lost</em><br />
-        &nbsp; &nbsp; &nbsp; &nbsp; The first number is the efficiency of the current game.<br />
-        &nbsp; &nbsp; &nbsp; &nbsp; The second number shows the minimum possible efficiency needed to win with<br />
-        &nbsp; &nbsp; &nbsp; &nbsp; the current number of players and the current variant.<br />
-        &nbsp; &nbsp; &nbsp; &nbsp; (For more information, click on the "Help" button in the lobby.)
-    `;
+    Efficiency is calculated by: <br />
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <em>(number of cards played +<br />
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; number of cards with 1+ clues "on" them) /<br />
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; number of clues given or lost</em><br />
+    &nbsp; &nbsp; &nbsp; &nbsp; The first number is the efficiency of the current game.<br />
+    &nbsp; &nbsp; &nbsp; &nbsp; The second number shows the minimum possible efficiency needed<br />
+    &nbsp; &nbsp; &nbsp; &nbsp; to win with the current number of players and the current variant.<br />
+    &nbsp; &nbsp; &nbsp; &nbsp; (For more information, click on the "Help" button in the lobby.)
+  `;
   efficiencyTextLabel.tooltipContent = efficiencyContent;
   tooltips.init(efficiencyTextLabel, true, false);
 
