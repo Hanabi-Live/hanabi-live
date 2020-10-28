@@ -19,7 +19,7 @@ This is the manual for [Hanab Live](https://hanab.live/). Read through it (or us
 1. [Tags](#tags)
 1. [Website Endpoints](#website-endpoints)
 1. [Research & Bots](#research--bots)
-1. [History](#history)
+1. [Project History](#project-history)
 
 <br />
 
@@ -466,7 +466,7 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 
 <br />
 
-## History
+## Project History
 
 The Hanab Live website was released on October 2017 by Zamiel as an attempt to emulate [Keldon Jones'](http://keldon.net/) excellent implementation of the game (which is now deleted). Since then, many new features have been added and the code is vastly different.
 
