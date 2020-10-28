@@ -1,6 +1,8 @@
-# List of Features
+# The Hanab Live Manual & List of Features
 
-[Hanab Live](https://hanab.live/) was released on October 2017 as an attempt to improve upon [Keldon Jones'](http://keldon.net/) implementation of the game (which is now deleted). The site offers many different features and ways to play.
+This is the manual for [Hanab Live](https://hanab.live/). Read through it (or use `[Ctrl + f](https://www.google.com/search?q=ctrl+%2B+f)` on your keyboard) before asking any questions in the chat.
+
+The website was released on October 2017 as an attempt to improve upon [Keldon Jones'](http://keldon.net/) implementation of the game (which is now deleted). The site offers many different features and ways to play.
 
 <br />
 
