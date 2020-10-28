@@ -2,25 +2,24 @@
 
 This is the manual for [Hanab Live](https://hanab.live/). Read through it (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl+%2B+f) on your keyboard) before asking any questions in the chat.
 
-The website was released on October 2017 as an attempt to improve upon [Keldon Jones'](http://keldon.net/) implementation of the game (which is now deleted). The site offers many different features and ways to play.
-
 <br />
 
 ## Table of Contents
 
 1. [Basic How-To](#basic-how-to)
-2. [Major Features](#major-features)
-3. [Notes](#notes)
-4. [Custom Game Options](#custom-game-options)
-5. [Other Options](#other-options)
-6. [Sounds](#sounds)
-7. [Keyboard Shortcuts](#keyboard-shortcuts)
-8. [Similar Deals and Competitive Play](#similar-deals-and-competitive-play)
-9. [Chat](#chat)
-10. [Friends](#friends)
-11. [Tags](#tags)
-12. [Website Endpoints](#website-endpoints)
-13. [Research & Bots](#research--bots)
+1. [Major Features](#major-features)
+1. [Notes](#notes)
+1. [Custom Game Options](#custom-game-options)
+1. [Other Options](#other-options)
+1. [Sounds](#sounds)
+1. [Keyboard Shortcuts](#keyboard-shortcuts)
+1. [Similar Deals and Competitive Play](#similar-deals-and-competitive-play)
+1. [Chat](#chat)
+1. [Friends](#friends)
+1. [Tags](#tags)
+1. [Website Endpoints](#website-endpoints)
+1. [Research & Bots](#research--bots)
+1. [History](#history)
 
 <br />
 
@@ -464,5 +463,13 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 | `/history/[username1]/[username2]?api` | Provides all of the games played in by both users. (You can specify up to 6 players.)
 | `/seed/[seed]?api`                     | Provides all of the games played on the specified seed.
 | `/export/[game ID]`                    | Provides the data for an arbitrary game from the database.
+
+<br />
+
+## History
+
+The Hanab Live website was released on October 2017 by Zamiel as an attempt to emulate [Keldon Jones'](http://keldon.net/) excellent implementation of the game (which is now deleted). Since then, many new features have been added and the code is vastly different.
+
+Development on the site continues to the present day. There have been many helpful contributions from various community members. If you can code, [you are welcome to help us](https://github.com/Zamiell/hanabi-live/blob/master/CONTRIBUTING.md).
 
 <br />
