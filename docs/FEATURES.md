@@ -468,7 +468,7 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 
 ## Project History
 
-The Hanab Live website was released on October 2017 by Zamiel as an attempt to emulate [Keldon Jones'](http://keldon.net/) excellent implementation of the game (which is now deleted). Since then, many new features have been added and the code is vastly different.
+The Hanab Live website was released in October 2017 by Zamiel as an attempt to emulate [Keldon Jones'](http://keldon.net/) excellent implementation of the game (which is now deleted). Since then, many new features have been added and the code is vastly different.
 
 Development on the site continues to the present day. There have been many helpful contributions from various community members. If you can code, [you are welcome to help us](https://github.com/Zamiell/hanabi-live/blob/master/CONTRIBUTING.md).
 
