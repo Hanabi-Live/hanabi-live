@@ -58,6 +58,10 @@ fi
 cd "$DIR"
 
 echo "POOP"
+npm run lint
+echo "POOP2"
+npx sort-package-json
+echo "POOP3"
 npx webpack --version
 
 # The client is written in TypeScript and spread out across many files
@@ -67,14 +71,12 @@ echo
 npx webpack
 echo
 
-echo "GETTING HERE 1"
+echo "GETTING PAST WEBPACK"
 
 # Create a file that informs the server that the compiled JavaScript will not be available for the
 # next few milliseconds or so
 COMPILING_FILE="$DIR/../compiling_client"
 touch "$COMPILING_FILE"
-
-echo "GETTING HERE 2"
 
 # We don't want to serve files directly out of the WebPack output directory because that would
 # cause website downtime during client compilation; the Golang server will look at the "bundles"
@@ -89,8 +91,6 @@ echo "$VERSION" > "$BUNDLES_DIR/version.txt"
 echo $(git rev-parse HEAD) > "$DIR/../public/js/bundles/git_revision.txt"
 rm -f "$COMPILING_FILE"
 
-echo "GETTING HERE 3"
-
 # Clean up old files in the "bundles" directory
 cd "$DIR/../public/js/bundles"
 if [[ $(ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revision.txt) ]]; then
@@ -99,8 +99,6 @@ if [[ $(ls | grep -v "main.$VERSION" | grep -v version.txt | grep -v git_revisio
   # stop execution in the case where there are no results)
 fi
 cd "$DIR"
-
-echo "GETTING HERE 4"
 
 # Similar to the JavaScript, we need to concatenate all of the CSS into one file before sending it
 # to end-users
@@ -117,7 +115,5 @@ else
   npx grunt
   echo
 fi
-
-echo "GETTING HERE 5"
 
 echo "Client v$VERSION successfully built in $SECONDS seconds."
