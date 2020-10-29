@@ -4,7 +4,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -15,7 +14,6 @@ var (
 	discordGuildID        string
 	discordListenChannels []string
 	discordLobbyChannel   string
-	discordLastAtHere     time.Time
 	discordBotID          string
 )
 
@@ -50,21 +48,6 @@ func discordInit() {
 		logger.Info("The \"DISCORD_LOBBY_CHANNEL_ID\" environment variable is blank; " +
 			"aborting Discord initialization.")
 		return
-	}
-
-	// Get the last time a "@here" ping was sent
-	var timeAsString string
-	if v, err := models.Metadata.Get("discord_last_at_here"); err != nil {
-		logger.Fatal("Failed to retrieve the \"discord_last_at_here\" value from the database:", err)
-		return
-	} else {
-		timeAsString = v
-	}
-	if v, err := time.Parse(time.RFC3339, timeAsString); err != nil {
-		logger.Fatal("Failed to parse the \"discord_last_at_here\" value from the database:", err)
-		return
-	} else {
-		discordLastAtHere = v
 	}
 
 	// Start the Discord bot in a new goroutine
