@@ -1,26 +1,13 @@
 // These are Visual Studio Code settings that should apply to this particular repository
 {
-  // This will run "eslint --fix" when saving JavaScript/TypeScript files so that code is
-  // automatically formatted
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
+  // ----------------
+  // Vanilla settings
+  // ----------------
 
   // This matches the Airbnb JavaScript style guide
   // Golang code also conforms to this rule
   "editor.rulers": [100],
-
-  // This is needed for VSCode to see ESLint errors on TypeScript files
-  // (and ignore JavaScript files such as webpack.config.js)
-  "eslint.probe": [
-    "html",
-    "typescript",
-  ],
-
-  // This is needed because the ".eslintrc.js" is not located in the root of the repository
-  "eslint.workingDirectories": [
-    "./client"
-  ],
+  "editor.tabSize": 2,
 
   "files.associations": {
     "*.tmpl": "html", // Golang HTML templates are saved as "tmpl" files
@@ -31,6 +18,21 @@
 
   // Automatically removing all trailing whitespace when saving a file
   "files.trimTrailingWhitespace": true,
+
+  // Configure glob patterns for excluding files and folders in full text searches and quick open
+  "search.exclude": {
+    "**/*.min.js*": true,
+    "**/misc/keldon/**": true,
+  },
+
+  // ------------------
+  // Extension settings
+  // ------------------
+
+  // This is needed because the ".eslintrc.js" is not located in the root of the repository
+  "eslint.workingDirectories": [
+    "./client",
+  ],
 
   // The default Golang linter is golint, which is only concerned with coding style
   // GolangCI-Lint does a suite of different checks
@@ -45,25 +47,34 @@
   // This is needed because the "jest.config.js" is not located in the root of the repository
   "jest.rootPath": "client",
 
-  // Configure glob patterns for excluding files and folders in full text searches and quick open
-  "search.exclude": {
-    "**/*.min.js*": true
-  },
+  // Use "black" to automatically format Python files
+  // https://github.com/psf/black
+  "python.formatting.provider": "black",
+  "python.linting.pylintEnabled": true,
+  "python.linting.enabled": true,
 
+  // -----------------
+  // Language settings
+  // -----------------
+
+  // Automatically run the formatter when a TypeScript or JavaScript file is saved
   "[typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true,
+      "source.organizeImports": true,
+    },
+    "editor.tabSize": 2,
+  },
+  "[javascript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true,
+      "source.organizeImports": true,
+    },
     "editor.tabSize": 2,
   },
 
   // Automatically run the formatter when a Python file is saved
   "[python]": {
     "editor.formatOnSave": true,
-  },
-  // Use "black" to automatically format Python files
-  // https://github.com/psf/black
-  "python.formatting.provider": "black",
-  "python.linting.pylintEnabled": true,
-  "python.linting.enabled": true,
-  "files.exclude": {
-    "**/misc/keldon/**": true
   },
 }

@@ -1,88 +1,90 @@
 // Modals (boxes that hover on top of the UI)
 
-import { FADE_TIME } from './constants';
-import globals from './globals';
-import * as lobbyNav from './lobby/nav';
-import { closeAllTooltips, parseIntSafe } from './misc';
-import * as sounds from './sounds';
+import { FADE_TIME } from "./constants";
+import globals from "./globals";
+import * as lobbyNav from "./lobby/nav";
+import { closeAllTooltips, parseIntSafe } from "./misc";
+import * as sounds from "./sounds";
 
 // The list of all of the modals
 const lobbyModals = [
-  'password',
+  "password",
   // "warning" and "error" are intentionally omitted, as they are handled separately
 ];
 
 // Initialize various element behavior within the modals
-export const init = () => {
+export const init = (): void => {
   // There are not currently any game modals
   for (const modal of lobbyModals) {
     $(`#${modal}-modal-cancel`).click(closeAll);
   }
 
   // Password
-  $('#password-modal-password').on('keypress', (event) => {
-    if (event.key === 'Enter') {
+  $("#password-modal-password").on("keypress", (event) => {
+    if (event.key === "Enter") {
       event.preventDefault();
-      $('#password-modal-submit').click();
+      $("#password-modal-submit").click();
     }
   });
-  $('#password-modal-submit').click(passwordSubmit);
+  $("#password-modal-submit").click(passwordSubmit);
 
   // Warning
-  $('#warning-modal-button').click(() => {
+  $("#warning-modal-button").click(() => {
     warningClose();
   });
 
   // Error
-  $('#error-modal-button').click(() => {
+  $("#error-modal-button").click(() => {
     window.location.reload();
   });
 };
 
-export const passwordShow = (tableID: number) => {
+export const passwordShow = (tableID: number): void => {
   setShadeOpacity(0.75);
   closeAllTooltips();
   globals.modalShowing = true;
 
-  $('#password-modal-id').val(tableID);
-  $('#password-modal').fadeIn(FADE_TIME);
-  $('#password-modal-password').focus();
+  $("#password-modal-id").val(tableID);
+  $("#password-modal").fadeIn(FADE_TIME);
+  $("#password-modal-password").focus();
 };
 
 const passwordSubmit = () => {
-  $('#password-modal').fadeOut(FADE_TIME);
+  $("#password-modal").fadeOut(FADE_TIME);
   setShadeOpacity(0, false);
-  const tableIDString = $('#password-modal-id').val();
-  if (typeof tableIDString !== 'string') {
-    throw new Error('The "password-modal-id" element does not have a string value.');
+  const tableIDString = $("#password-modal-id").val();
+  if (typeof tableIDString !== "string") {
+    throw new Error(
+      'The "password-modal-id" element does not have a string value.',
+    );
   }
   const tableID = parseIntSafe(tableIDString); // The server expects this as a number
-  let password = $('#password-modal-password').val();
-  if (typeof password === 'number') {
+  let password = $("#password-modal-password").val();
+  if (typeof password === "number") {
     password = password.toString();
   }
-  if (typeof password !== 'string') {
+  if (typeof password !== "string") {
     return;
   }
-  globals.conn!.send('tableJoin', {
+  globals.conn!.send("tableJoin", {
     tableID,
     password,
   });
 
   // Record the password in local storage (cookie)
-  localStorage.setItem('joinTablePassword', password);
+  localStorage.setItem("joinTablePassword", password);
 };
 
-export const warningShow = (msg: string) => {
+export const warningShow = (msg: string): void => {
   closeAllTooltips();
   setShadeOpacity(0.75);
   globals.modalShowing = true;
 
-  $('#warning-modal-description').html(msg);
-  $('#warning-modal').fadeIn(FADE_TIME);
+  $("#warning-modal-description").html(msg);
+  $("#warning-modal").fadeIn(FADE_TIME);
 };
 
-export const errorShow = (msg: string) => {
+export const errorShow = (msg: string): void => {
   // Do nothing if we are already showing the error modal
   if (globals.errorOccurred) {
     return;
@@ -94,22 +96,25 @@ export const errorShow = (msg: string) => {
   globals.modalShowing = true;
 
   // Clear out the top navigation buttons
-  lobbyNav.show('nothing');
+  lobbyNav.show("nothing");
 
-  $('#error-modal-description').html(msg);
-  $('#error-modal').fadeIn(FADE_TIME);
+  $("#error-modal-description").html(msg);
+  $("#error-modal").fadeIn(FADE_TIME);
 
   // Play a sound if the server has shut down
-  if (msg.match(/The server is going down for scheduled maintenance./)) {
-    sounds.play('turn_double_discard');
+  if (/The server is going down for scheduled maintenance./.exec(msg)) {
+    sounds.play("turn_double_discard");
   }
 };
 
 // Make the page cover a certain opacity
 // If it is 0, then the page cover will be hidden
 // The second parameter is necessary to set the variable after fading finishes
-export const setShadeOpacity = (opacity: number, newModalShowing?: boolean) => {
-  const pageCover = $('#page-cover');
+export const setShadeOpacity = (
+  opacity: number,
+  newModalShowing?: boolean,
+): void => {
+  const pageCover = $("#page-cover");
   if (opacity > 0) {
     pageCover.show();
   }
@@ -125,13 +130,13 @@ export const setShadeOpacity = (opacity: number, newModalShowing?: boolean) => {
 };
 
 const warningClose = () => {
-  $('#warning-modal').fadeOut(FADE_TIME);
+  $("#warning-modal").fadeOut(FADE_TIME);
   setShadeOpacity(0, false);
 };
 
-export const closeAll = () => {
+export const closeAll = (): void => {
   // Error modals cannot be closed, since we want to force the user to refresh the page
-  if ($('#error-modal').is(':visible')) {
+  if ($("#error-modal").is(":visible")) {
     return;
   }
 

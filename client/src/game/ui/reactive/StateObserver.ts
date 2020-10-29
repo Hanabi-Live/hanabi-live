@@ -1,26 +1,27 @@
-import { Unsubscribe, Store } from 'redux';
-import { Action } from '../../types/actions';
-import GameState from '../../types/GameState';
-import State from '../../types/State';
-import observeStore, { Selector, Listener, Subscription } from './observeStore';
-import * as animateFastView from './view/animateFastView';
-import * as cardLayoutView from './view/cardLayoutView';
-import * as cardsView from './view/cardsView';
-import * as cluesView from './view/cluesView';
-import * as currentPlayerAreaView from './view/currentPlayerAreaView';
-import * as deckView from './view/deckView';
-import * as gameInfoView from './view/gameInfoView';
-import * as hypotheticalView from './view/hypotheticalView';
-import * as initView from './view/initView';
-import * as logView from './view/logView';
-import * as pauseView from './view/pauseView';
-import * as premoveView from './view/premoveView';
-import * as replayView from './view/replayView';
-import * as soundView from './view/soundView';
-import * as spectatorsView from './view/spectatorsView';
-import * as statsView from './view/statsView';
-import * as turnView from './view/turn';
+import { Store, Unsubscribe } from "redux";
+import { Action } from "../../types/actions";
+import GameState from "../../types/GameState";
+import State from "../../types/State";
+import observeStore, { Listener, Selector, Subscription } from "./observeStore";
+import * as animateFastView from "./view/animateFastView";
+import * as cardLayoutView from "./view/cardLayoutView";
+import * as cardsView from "./view/cardsView";
+import * as cluesView from "./view/cluesView";
+import * as currentPlayerAreaView from "./view/currentPlayerAreaView";
+import * as deckView from "./view/deckView";
+import * as gameInfoView from "./view/gameInfoView";
+import * as hypotheticalView from "./view/hypotheticalView";
+import * as initView from "./view/initView";
+import * as logView from "./view/logView";
+import * as pauseView from "./view/pauseView";
+import * as premoveView from "./view/premoveView";
+import * as replayView from "./view/replayView";
+import * as soundView from "./view/soundView";
+import * as spectatorsView from "./view/spectatorsView";
+import * as statsView from "./view/statsView";
+import * as turnView from "./view/turn";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Subscriptions = Array<Subscription<State, any>>;
 
 export default class StateObserver {
@@ -31,23 +32,21 @@ export default class StateObserver {
   }
 
   // Observe the store, calling different functions when a particular path changes
-  registerObservers(store: Store<State, Action>) {
+  registerObservers(store: Store<State, Action>): void {
     // Clean up any existing subscribers
     this.unregisterObservers();
 
-    const subscriptions: Subscriptions = (
-      earlyObservers
-        .concat(visibleStateObservers)
-        .concat(ongoingGameObservers)
-        .concat(replayObservers)
-        .concat(otherObservers)
-        .concat(lateObservers)
-    );
+    const subscriptions: Subscriptions = earlyObservers
+      .concat(visibleStateObservers)
+      .concat(ongoingGameObservers)
+      .concat(replayObservers)
+      .concat(otherObservers)
+      .concat(lateObservers);
 
     this.unsubscribe = observeStore(store, subscriptions);
   }
 
-  unregisterObservers() {
+  unregisterObservers(): void {
     if (this.unsubscribe) {
       this.unsubscribe();
     }
@@ -70,18 +69,16 @@ function sub<T>(s: Selector<State, T>, l: Listener<T>) {
 function subVS<T>(s: Selector<GameState, T>, l: Listener<T>) {
   // We do not want anything to fire if the visible state is null
   // (e.g. when the UI is still initializing)
-  const selector = (state: State) => (
-    state.visibleState === null ? undefined : s(state.visibleState!)
-  );
+  const selector = (state: State) =>
+    state.visibleState === null ? undefined : s(state.visibleState);
   return sub(selector, l);
 }
 
 // A shorthand function used to subscribe an observer to the state,
 // but only when the visible state has already been initialized
 function subAfterInit<T>(s: Selector<State, T>, l: Listener<T>) {
-  const selector = (state: State) => (
-    state.visibleState === null ? undefined : s(state)
-  );
+  const selector = (state: State) =>
+    state.visibleState === null ? undefined : s(state);
   return {
     select: selector,
     onChange: l,
@@ -103,28 +100,46 @@ const earlyObservers: Subscriptions = [
 
 const visibleStateObservers: Subscriptions = [
   // Game info
-  subVS((s) => ({
-    turn: s.turn.turnNum,
-    endTurn: s.turn.endTurnNum,
-  }), gameInfoView.onTurnChanged),
-  subVS((s) => s.turn.currentPlayerIndex, gameInfoView.onCurrentPlayerIndexChanged),
-  subVS((s) => ({
-    score: s.score,
-    maxScore: s.stats.maxScore,
-  }), gameInfoView.onScoreOrMaxScoreChanged),
-  subVS((s) => s.numAttemptedCardsPlayed, gameInfoView.onNumAttemptedCardsPlayedChanged),
+  subVS(
+    (s) => ({
+      turn: s.turn.turnNum,
+      endTurn: s.turn.endTurnNum,
+    }),
+    gameInfoView.onTurnChanged,
+  ),
+  subVS(
+    (s) => s.turn.currentPlayerIndex,
+    gameInfoView.onCurrentPlayerIndexChanged,
+  ),
+  subVS(
+    (s) => ({
+      score: s.score,
+      maxScore: s.stats.maxScore,
+    }),
+    gameInfoView.onScoreOrMaxScoreChanged,
+  ),
+  subVS(
+    (s) => s.numAttemptedCardsPlayed,
+    gameInfoView.onNumAttemptedCardsPlayedChanged,
+  ),
   subVS((s) => s.clueTokens, gameInfoView.onClueTokensChanged),
-  subVS((s) => ({
-    clueTokens: s.clueTokens,
-    doubleDiscard: s.stats.doubleDiscard,
-  }), gameInfoView.onClueTokensOrDoubleDiscardChanged),
+  subVS(
+    (s) => ({
+      clueTokens: s.clueTokens,
+      doubleDiscard: s.stats.doubleDiscard,
+    }),
+    gameInfoView.onClueTokensOrDoubleDiscardChanged,
+  ),
 
   // Stats
   subVS((s) => s.stats.efficiency, statsView.onEfficiencyChanged),
-  subVS((s) => ({
-    pace: s.stats.pace,
-    paceRisk: s.stats.paceRisk,
-  }), statsView.onPaceOrPaceRiskChanged),
+  subVS(
+    (s) => ({
+      pace: s.stats.pace,
+      paceRisk: s.stats.paceRisk,
+    }),
+    statsView.onPaceOrPaceRiskChanged,
+  ),
 
   // Logs
   subVS((s) => s.log, logView.onLogChanged),
@@ -141,17 +156,23 @@ const visibleStateObservers: Subscriptions = [
   subVS((s) => s.hole, cardLayoutView.onHoleChanged),
   // Play stacks come last so we can show the bases if they get empty
   subVS((s) => s.playStacks, cardLayoutView.onPlayStacksChanged),
-  subVS((s) => s.playStackDirections, cardLayoutView.onPlayStackDirectionsChanged),
+  subVS(
+    (s) => s.playStackDirections,
+    cardLayoutView.onPlayStackDirectionsChanged,
+  ),
 
   // Unsubscribe and reset removed cards
   // Must come after card layout so animations to deck are correctly triggered
   subVS((s) => s.deck.length, cardsView.onCardsPossiblyRemoved),
 
   // Clues (arrows + log)
-  subVS((s) => ({
-    clues: s.clues,
-    segment: s.turn.segment,
-  }), cluesView.onCluesChanged),
+  subVS(
+    (s) => ({
+      clues: s.clues,
+      segment: s.turn.segment,
+    }),
+    cluesView.onCluesChanged,
+  ),
 
   // Deck
   subVS((s) => s.cardsRemainingInTheDeck, deckView.onCardsRemainingChanged),
@@ -159,30 +180,42 @@ const visibleStateObservers: Subscriptions = [
 
 const ongoingGameObservers: Subscriptions = [
   // Segment + current player index
-  subAfterInit((s) => ({
-    segment: s.ongoingGame.turn.segment,
-    currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
-  }), turnView.onOngoingTurnChanged),
+  subAfterInit(
+    (s) => ({
+      segment: s.ongoingGame.turn.segment,
+      currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
+    }),
+    turnView.onOngoingTurnChanged,
+  ),
 
   // The "Current Player" area should only be shown under certain conditions
-  subAfterInit((s) => ({
-    visible: currentPlayerAreaView.isVisible(s),
-    currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
-  }), currentPlayerAreaView.onChanged),
+  subAfterInit(
+    (s) => ({
+      visible: currentPlayerAreaView.isVisible(s),
+      currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
+    }),
+    currentPlayerAreaView.onChanged,
+  ),
 
   // Strikes
-  subAfterInit((s) => ({
-    ongoingStrikes: s.ongoingGame.strikes,
-    visibleStrikes: s.visibleState!.strikes,
-  }), gameInfoView.onOngoingOrVisibleStrikesChanged),
+  subAfterInit(
+    (s) => ({
+      ongoingStrikes: s.ongoingGame.strikes,
+      visibleStrikes: s.visibleState!.strikes,
+    }),
+    gameInfoView.onOngoingOrVisibleStrikesChanged,
+  ),
 
   // Sound effects
-  subAfterInit((s) => ({
-    soundType: s.ongoingGame.stats.soundTypeForLastAction,
-    currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
-    turn: s.ongoingGame.turn.turnNum,
-    lastAction: s.ongoingGame.stats.lastAction,
-  }), soundView.onNewSoundEffect),
+  subAfterInit(
+    (s) => ({
+      soundType: s.ongoingGame.stats.soundTypeForLastAction,
+      currentPlayerIndex: s.ongoingGame.turn.currentPlayerIndex,
+      turn: s.ongoingGame.turn.turnNum,
+      lastAction: s.ongoingGame.stats.lastAction,
+    }),
+    soundView.onNewSoundEffect,
+  ),
 ];
 
 const replayObservers: Subscriptions = [
@@ -190,16 +223,22 @@ const replayObservers: Subscriptions = [
   subAfterInit((s) => s.replay.active, replayView.onActiveChanged),
 
   // Replay sliders and buttons
-  subAfterInit((s) => ({
-    active: s.replay.active,
-    replaySegment: s.replay.segment,
-    ongoingGameSegment: s.ongoingGame.turn.segment,
-  }), replayView.onSegmentChanged),
-  subAfterInit((s) => ({
-    active: s.replay.active,
-    sharedSegment: s.replay.shared?.segment,
-    useSharedSegments: s.replay.shared?.useSharedSegments,
-  }), replayView.onSharedSegmentChanged),
+  subAfterInit(
+    (s) => ({
+      active: s.replay.active,
+      replaySegment: s.replay.segment,
+      ongoingGameSegment: s.ongoingGame.turn.segment,
+    }),
+    replayView.onSegmentChanged,
+  ),
+  subAfterInit(
+    (s) => ({
+      active: s.replay.active,
+      sharedSegment: s.replay.shared?.segment,
+      useSharedSegments: s.replay.shared?.useSharedSegments,
+    }),
+    replayView.onSharedSegmentChanged,
+  ),
   sub((s) => s.replay.states.length >= 2, replayView.onSecondRecordedSegment),
 
   // Database ID
@@ -207,12 +246,21 @@ const replayObservers: Subscriptions = [
 
   // Shared replay
   subAfterInit((s) => s.replay.shared !== null, replayView.onSharedReplayEnter),
-  subAfterInit((s) => s.replay.shared?.leader, replayView.onSharedLeaderChanged),
-  subAfterInit((s) => s.replay.shared?.amLeader, replayView.onSharedAmLeaderChanged),
-  subAfterInit((s) => ({
-    leader: s.replay.shared?.leader,
-    spectators: s.spectators,
-  }), replayView.onLeaderOrSpectatorsChanged),
+  subAfterInit(
+    (s) => s.replay.shared?.leader,
+    replayView.onSharedLeaderChanged,
+  ),
+  subAfterInit(
+    (s) => s.replay.shared?.amLeader,
+    replayView.onSharedAmLeaderChanged,
+  ),
+  subAfterInit(
+    (s) => ({
+      leader: s.replay.shared?.leader,
+      spectators: s.spectators,
+    }),
+    replayView.onLeaderOrSpectatorsChanged,
+  ),
 
   // Hypothetical
   subAfterInit(
@@ -223,11 +271,17 @@ const replayObservers: Subscriptions = [
     (s) => s.replay.shared !== null && s.replay.hypothetical !== null,
     hypotheticalView.onActiveChanged,
   ),
-  subAfterInit((s) => ({
-    active: s.replay.shared !== null && s.replay.hypothetical !== null,
-    amLeader: s.replay.shared?.amLeader,
-  }), hypotheticalView.onActiveOrAmLeaderChanged),
-  subAfterInit((s) => s.replay.hypothetical?.states.length, hypotheticalView.onStatesLengthChanged),
+  subAfterInit(
+    (s) => ({
+      active: s.replay.shared !== null && s.replay.hypothetical !== null,
+      amLeader: s.replay.shared?.amLeader,
+    }),
+    hypotheticalView.onActiveOrAmLeaderChanged,
+  ),
+  subAfterInit(
+    (s) => s.replay.hypothetical?.states.length,
+    hypotheticalView.onStatesLengthChanged,
+  ),
   subAfterInit(
     (s) => hypotheticalView.shouldShowHypoBackButton(s),
     hypotheticalView.shouldShowHypoBackButtonChanged,
@@ -238,10 +292,13 @@ const replayObservers: Subscriptions = [
   ),
 
   // Card and stack base morphing
-  subAfterInit((s) => ({
-    hypotheticalActive: s.replay.hypothetical !== null,
-    morphedIdentities: s.replay.hypothetical?.morphedIdentities,
-  }), cardsView.onMorphedIdentitiesChanged),
+  subAfterInit(
+    (s) => ({
+      hypotheticalActive: s.replay.hypothetical !== null,
+      morphedIdentities: s.replay.hypothetical?.morphedIdentities,
+    }),
+    cardsView.onMorphedIdentitiesChanged,
+  ),
 ];
 
 const otherObservers = [
@@ -252,10 +309,13 @@ const otherObservers = [
   subAfterInit((s) => s.pause, pauseView.onChanged),
 
   // Spectators
-  subAfterInit((s) => ({
-    spectators: s.spectators,
-    finished: s.finished,
-  }), spectatorsView.onSpectatorsChanged),
+  subAfterInit(
+    (s) => ({
+      spectators: s.spectators,
+      finished: s.finished,
+    }),
+    spectatorsView.onSpectatorsChanged,
+  ),
 ];
 
 // These observers need to run after all other observers

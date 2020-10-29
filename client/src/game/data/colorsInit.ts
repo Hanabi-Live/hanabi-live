@@ -1,5 +1,5 @@
-import colorsJSON from '../../../../data/colors.json';
-import Color from '../types/Color';
+import colorsJSON from "../../../../data/colors.json";
+import Color from "../types/Color";
 
 // "ColorJSON" is almost exactly the same as "Color"
 // However, in "ColorJSON", some fields are optional, but in "Color",
@@ -11,26 +11,30 @@ interface ColorJSON {
   abbreviation?: string;
 }
 
-export default function colorsInit() {
+export default function colorsInit(): Map<string, Color> {
   const COLORS = new Map<string, Color>();
 
   for (const colorJSON of colorsJSON as ColorJSON[]) {
     // Validate the name
-    const name: string = colorJSON.name;
-    if (name === '') {
-      throw new Error('There is a color with an empty name in the "colors.json" file.');
+    const { name } = colorJSON;
+    if (name === "") {
+      throw new Error(
+        'There is a color with an empty name in the "colors.json" file.',
+      );
     }
 
     // Validate the abbreviation
     // If it is not specified, assume that it is the first letter of the color
     const abbreviation: string = colorJSON.abbreviation ?? name.charAt(0);
     if (abbreviation.length !== 1) {
-      throw new Error(`The "${colorJSON.name}" color has an abbreviation that is not one letter long.`);
+      throw new Error(
+        `The "${colorJSON.name}" color has an abbreviation that is not one letter long.`,
+      );
     }
 
     // Validate the fill
-    const fill: string = colorJSON.fill;
-    if (colorJSON.fill === '') {
+    const { fill } = colorJSON;
+    if (colorJSON.fill === "") {
       throw new Error(`The "${colorJSON.name}" color has an empty fill.`);
     }
 

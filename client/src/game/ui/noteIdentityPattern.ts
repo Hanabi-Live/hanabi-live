@@ -1,14 +1,14 @@
-import Suit from '../types/Suit';
+import Suit from "../types/Suit";
 
 const createSuitPattern = (suits: Suit[], abbreviations: string[]): string => {
-  let alternation = '';
+  let alternation = "";
   suits.forEach((suit, i) => {
     if (i !== 0) {
-      alternation += '|';
+      alternation += "|";
     }
 
     alternation += abbreviations[i].toLowerCase();
-    alternation += '|';
+    alternation += "|";
     alternation += suit.displayName.toLowerCase();
   });
 
@@ -18,10 +18,10 @@ const createSuitPattern = (suits: Suit[], abbreviations: string[]): string => {
 const createRankPattern = (ranks: number[], isUpOrDown: boolean): string => {
   let rankStrings = ranks.map((r) => r.toString());
   if (isUpOrDown) {
-    rankStrings = rankStrings.concat('0', 's', 'start');
+    rankStrings = rankStrings.concat("0", "s", "start");
   }
 
-  return `(${rankStrings.join('|')})`;
+  return `(${rankStrings.join("|")})`;
 };
 
 export const createIdentityNotePattern = (
@@ -36,7 +36,9 @@ export const createIdentityNotePattern = (
 };
 
 // eslint-disable-next-line max-len
-export const extractSuitText = (match: RegExpMatchArray): string | null => match[1] ?? match[4] ?? match[5] ?? null;
+export const extractSuitText = (match: RegExpMatchArray): string | null =>
+  match[1] ?? match[4] ?? match[5] ?? null;
 
 // eslint-disable-next-line max-len
-export const extractRankText = (match: RegExpMatchArray): string | null => match[2] ?? match[3] ?? match[6] ?? null;
+export const extractRankText = (match: RegExpMatchArray): string | null =>
+  match[2] ?? match[3] ?? match[6] ?? null;

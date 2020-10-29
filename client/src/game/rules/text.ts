@@ -1,58 +1,52 @@
-import { ensureAllCases } from '../../misc';
-import { getVariant, getCharacter } from '../data/gameData';
-import { getCharacterIDForPlayer } from '../reducers/reducerHelpers';
-import {
-  cardRules,
-  cluesRules,
-  handRules,
-  variantRules,
-} from '../rules';
-import { ActionClue, ActionDiscard, ActionPlay } from '../types/actions';
-import ClueType from '../types/ClueType';
-import EndCondition from '../types/EndCondition';
-import GameMetadata, { getPlayerName } from '../types/GameMetadata';
+import { ensureAllCases } from "../../misc";
+import { getCharacter, getVariant } from "../data/gameData";
+import { getCharacterIDForPlayer } from "../reducers/reducerHelpers";
+import { cardRules, cluesRules, handRules, variantRules } from "../rules";
+import { ActionClue, ActionDiscard, ActionPlay } from "../types/actions";
+import ClueType from "../types/ClueType";
+import EndCondition from "../types/EndCondition";
+import GameMetadata, { getPlayerName } from "../types/GameMetadata";
 
-export const clue = (action: ActionClue, targetHand: number[], metadata: GameMetadata) => {
+export const clue = (
+  action: ActionClue,
+  targetHand: number[],
+  metadata: GameMetadata,
+): string => {
   const giver = metadata.playerNames[action.giver];
   let target = metadata.playerNames[action.target];
-  const words = [
-    'zero',
-    'one',
-    'two',
-    'three',
-    'four',
-    'five',
-    'six',
-  ];
+  const words = ["zero", "one", "two", "three", "four", "five", "six"];
   const word = words[action.list.length];
   const variant = getVariant(metadata.options.variantName);
 
   // First, handle the case of clue text in some special variants
-  const characterID = getCharacterIDForPlayer(action.giver, metadata.characterAssignments);
-  let characterName = '';
+  const characterID = getCharacterIDForPlayer(
+    action.giver,
+    metadata.characterAssignments,
+  );
+  let characterName = "";
   if (characterID !== null) {
     const character = getCharacter(characterID);
     characterName = character.name;
   }
   if (
-    variantRules.isCowAndPig(variant)
-    || variantRules.isDuck(variant)
-    || characterName === 'Quacker'
+    variantRules.isCowAndPig(variant) ||
+    variantRules.isDuck(variant) ||
+    characterName === "Quacker"
   ) {
-    let actionName = 'clues';
+    let actionName = "clues";
     if (variantRules.isCowAndPig(variant)) {
       if (action.clue.type === ClueType.Color) {
-        actionName = 'moos';
+        actionName = "moos";
       } else if (action.clue.type === ClueType.Rank) {
-        actionName = 'oinks';
+        actionName = "oinks";
       }
-    } else if (variantRules.isDuck(variant) || characterName === 'Quacker') {
-      actionName = 'quacks';
+    } else if (variantRules.isDuck(variant) || characterName === "Quacker") {
+      actionName = "quacks";
     }
 
-    target += '\'';
-    if (!target.endsWith('s')) {
-      target += 's';
+    target += "'";
+    if (!target.endsWith("s")) {
+      target += "s";
     }
 
     // Create a list of slot numbers that correspond to the cards touched
@@ -66,20 +60,25 @@ export const clue = (action: ActionClue, targetHand: number[], metadata: GameMet
     }
     slots.sort();
 
-    let slotWord = 'slot';
+    let slotWord = "slot";
     if (slots.length !== 1) {
-      slotWord += 's';
+      slotWord += "s";
     }
 
-    const slotsText = slots.join('/');
+    const slotsText = slots.join("/");
 
     return `${giver} ${actionName} at ${target} ${slotWord} ${slotsText}`;
   }
 
   // Handle the default case of a normal clue
-  let clueName = cluesRules.getClueName(action.clue.type, action.clue.value, variant, characterID);
+  let clueName = cluesRules.getClueName(
+    action.clue.type,
+    action.clue.value,
+    variant,
+    characterID,
+  );
   if (action.list.length !== 1) {
-    clueName += 's';
+    clueName += "s";
   }
 
   return `${giver} tells ${target} about ${word} ${clueName}`;
@@ -90,7 +89,7 @@ export const gameOver = (
   playerIndex: number,
   score: number,
   metadata: GameMetadata,
-) => {
+): string => {
   const playerName = getPlayerName(playerIndex, metadata);
 
   switch (endCondition) {
@@ -116,7 +115,7 @@ export const gameOver = (
     }
 
     case EndCondition.IdleTimeout: {
-      return 'Players were idle for too long.';
+      return "Players were idle for too long.";
     }
 
     case EndCondition.CharacterSoftlock: {
@@ -137,7 +136,7 @@ export const gameOver = (
     }
   }
 
-  return 'Players lose!';
+  return "Players lose!";
 };
 
 export const play = (
@@ -146,27 +145,27 @@ export const play = (
   touched: boolean,
   playing: boolean,
   metadata: GameMetadata,
-) => {
+): string => {
   const variant = getVariant(metadata.options.variantName);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
   let card;
   if (variantRules.isThrowItInAHole(variant) && playing) {
-    card = 'a card';
+    card = "a card";
   } else {
     card = cardRules.name(action.suitIndex, action.rank, variant);
   }
 
   let location;
   if (slot === null) {
-    location = 'the deck';
+    location = "the deck";
   } else {
     location = `slot #${slot}`;
   }
 
-  let suffix = '';
+  let suffix = "";
   if (!touched) {
-    suffix = ' (blind)';
+    suffix = " (blind)";
   }
 
   return `${playerName} plays ${card} from ${location}${suffix}`;
@@ -178,38 +177,38 @@ export const discard = (
   touched: boolean,
   playing: boolean,
   metadata: GameMetadata,
-) => {
+): string => {
   const variant = getVariant(metadata.options.variantName);
   const playerName = getPlayerName(action.playerIndex, metadata);
 
-  let verb = 'discards';
+  let verb = "discards";
   if (action.failed) {
-    verb = 'fails to play';
+    verb = "fails to play";
     if (variantRules.isThrowItInAHole(variant) && playing) {
-      verb = 'plays';
+      verb = "plays";
     }
   }
 
-  let card = '';
+  let card = "";
   if (action.suitIndex === -1 || action.rank === -1) {
-    card = 'a card';
+    card = "a card";
   } else {
     card = cardRules.name(action.suitIndex, action.rank, variant);
   }
 
   let location;
   if (slot === null) {
-    location = 'the deck';
+    location = "the deck";
   } else {
     location = `slot #${slot}`;
   }
 
-  let suffix = '';
+  let suffix = "";
   if (action.failed && touched) {
-    suffix = ' (clued)';
+    suffix = " (clued)";
   }
   if (action.failed && slot !== null && !touched) {
-    suffix = ' (blind)';
+    suffix = " (blind)";
   }
 
   return `${playerName} ${verb} ${card} from ${location}${suffix}`;

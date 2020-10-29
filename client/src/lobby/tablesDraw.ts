@@ -1,26 +1,26 @@
 // The lobby area that shows all of the current tables
 
-import globals from '../globals';
-import { timerFormatter } from '../misc';
-import * as modals from '../modals';
-import Screen from './types/Screen';
-import Table from './types/Table';
+import globals from "../globals";
+import { timerFormatter } from "../misc";
+import * as modals from "../modals";
+import Screen from "./types/Screen";
+import Table from "./types/Table";
 
-const tablesDraw = () => {
-  const tbody = $('#lobby-games-table-tbody');
+const tablesDraw = (): void => {
+  const tbody = $("#lobby-games-table-tbody");
 
   // Clear all of the existing rows
-  tbody.html('');
+  tbody.html("");
 
   if (globals.tableMap.size === 0) {
-    $('#lobby-games-no').show();
-    $('#lobby-games').addClass('align-center-v');
-    $('#lobby-games-table-container').hide();
+    $("#lobby-games-no").show();
+    $("#lobby-games").addClass("align-center-v");
+    $("#lobby-games-table-container").hide();
     return;
   }
-  $('#lobby-games-no').hide();
-  $('#lobby-games').removeClass('align-center-v');
-  $('#lobby-games-table-container').show();
+  $("#lobby-games-no").hide();
+  $("#lobby-games").removeClass("align-center-v");
+  $("#lobby-games-table-container").show();
 
   // We want the tables to be drawn in a certain order:
   // 1) Tables that we are currently in
@@ -43,11 +43,26 @@ const tablesDraw = () => {
           continue;
         }
 
-        if (i === 2 && !table.running && !table.passwordProtected && !table.joined) {
+        if (
+          i === 2 &&
+          !table.running &&
+          !table.passwordProtected &&
+          !table.joined
+        ) {
           tableIDsOfThisType.push(id);
-        } else if (i === 3 && !table.running && table.passwordProtected && !table.joined) {
+        } else if (
+          i === 3 &&
+          !table.running &&
+          table.passwordProtected &&
+          !table.joined
+        ) {
           tableIDsOfThisType.push(id);
-        } else if (i === 4 && table.running && !table.sharedReplay && !table.joined) {
+        } else if (
+          i === 4 &&
+          table.running &&
+          !table.sharedReplay &&
+          !table.joined
+        ) {
           tableIDsOfThisType.push(id);
         } else if (i === 5 && table.running && table.sharedReplay) {
           tableIDsOfThisType.push(id);
@@ -69,81 +84,85 @@ const tablesDraw = () => {
     // Set the background color of the row, depending on what kind of game it is
     let htmlClass;
     if (table.sharedReplay) {
-      htmlClass = 'replay';
+      htmlClass = "replay";
     } else if (table.joined) {
-      htmlClass = 'joined';
+      htmlClass = "joined";
     } else if (table.running) {
-      htmlClass = 'started';
+      htmlClass = "started";
     } else if (table.passwordProtected) {
-      htmlClass = 'unstarted-password';
+      htmlClass = "unstarted-password";
     } else {
-      htmlClass = 'unstarted';
+      htmlClass = "unstarted";
     }
     const row = $(`<tr class="lobby-games-table-${htmlClass}">`);
 
     // Column 1 - Name
-    let name = table.name;
+    let { name } = table;
     if (table.passwordProtected && !table.running && !table.sharedReplay) {
       name = `<i class="fas fa-key fa-sm"></i> &nbsp; ${name}`;
     }
-    $('<td>').html(name).appendTo(row);
+    $("<td>").html(name).appendTo(row);
 
     // Column 2 - # of Players
-    $('<td>').html(table.numPlayers.toString()).appendTo(row);
+    $("<td>").html(table.numPlayers.toString()).appendTo(row);
 
     // Column 3 - Variant
-    $('<td>').html(table.variant).appendTo(row);
+    $("<td>").html(table.variant).appendTo(row);
 
     // Column 4 - Timed
-    let timed = 'No';
+    let timed = "No";
     if (table.timed) {
-      timed = `${timerFormatter(table.timeBase)} + ${timerFormatter(table.timePerTurn)}`;
+      timed = `${timerFormatter(table.timeBase)} + ${timerFormatter(
+        table.timePerTurn,
+      )}`;
     }
-    $('<td>').html(timed).appendTo(row);
+    $("<td>").html(timed).appendTo(row);
 
     // Column 5 - Status
     let status;
     if (table.sharedReplay) {
-      status = 'Reviewing';
+      status = "Reviewing";
     } else if (table.running) {
-      status = 'Running';
+      status = "Running";
     } else {
-      status = 'Not Started';
+      status = "Not Started";
     }
-    if (status !== 'Not Started' && tableHasFriends(table)) {
+    if (status !== "Not Started" && tableHasFriends(table)) {
       status += ` (<span id="status-${table.id}">${table.progress}</span>%)`;
     }
-    $('<td>').html(status).appendTo(row);
+    $("<td>").html(status).appendTo(row);
 
     // Column 6 - Action
-    const button = $('<button>').attr('type', 'button').addClass('button small margin0');
+    const button = $("<button>")
+      .attr("type", "button")
+      .addClass("button small margin0");
     if (table.sharedReplay || (!table.joined && table.running)) {
       button.html('<i class="fas fa-eye lobby-button-icon"></i>');
-      button.attr('id', `spectate-${table.id}`);
-      button.on('click', () => {
+      button.attr("id", `spectate-${table.id}`);
+      button.on("click", () => {
         tableSpectate(table);
       });
     } else if (!table.joined) {
       button.html('<i class="fas fa-sign-in-alt lobby-button-icon"></i>');
-      button.attr('id', `join-${table.id}`);
+      button.attr("id", `join-${table.id}`);
       if (table.numPlayers >= 6) {
-        button.addClass('disabled');
+        button.addClass("disabled");
       }
-      button.on('click', () => {
+      button.on("click", () => {
         tableJoin(table);
       });
       if (!addedFirstJoinButton) {
         addedFirstJoinButton = true;
-        button.addClass('lobby-games-first-join-button');
+        button.addClass("lobby-games-first-join-button");
       }
     } else {
       button.html('<i class="fas fa-play lobby-button-icon"></i>');
-      button.attr('id', `resume-${table.id}`);
-      button.on('click', () => {
+      button.attr("id", `resume-${table.id}`);
+      button.on("click", () => {
         tableReattend(table);
       });
     }
-    $('<td>').html(button as any).appendTo(row);
+    $("<td>").html(button[0]).appendTo(row);
 
     // Column 7 - Players
     const playersArray: string[] = [];
@@ -156,13 +175,13 @@ const tablesDraw = () => {
         playersArray.push(player);
       }
     }
-    const playersString = playersArray.join(', ');
-    $('<td>').html(playersString).appendTo(row);
+    const playersString = playersArray.join(", ");
+    $("<td>").html(playersString).appendTo(row);
 
     // Column 8 - Spectators
     let spectatorsString: string;
     if (table.spectators.length === 0) {
-      spectatorsString = '-';
+      spectatorsString = "-";
     } else {
       const spectatorsArray: string[] = [];
       for (const spectator of table.spectators) {
@@ -172,27 +191,27 @@ const tablesDraw = () => {
           spectatorsArray.push(spectator);
         }
       }
-      spectatorsString = spectatorsArray.join(', ');
+      spectatorsString = spectatorsArray.join(", ");
     }
-    $('<td>').html(spectatorsString).appendTo(row);
+    $("<td>").html(spectatorsString).appendTo(row);
 
     row.appendTo(tbody);
   }
 };
 export default tablesDraw;
 
-export const tableSpectate = (table: Table) => {
+export const tableSpectate = (table: Table): void => {
   if (globals.currentScreen !== Screen.Lobby) {
     return;
   }
 
-  globals.conn!.send('tableSpectate', {
+  globals.conn!.send("tableSpectate", {
     tableID: table.id,
     shadowingPlayerIndex: -1,
   });
 };
 
-export const tableJoin = (table: Table) => {
+export const tableJoin = (table: Table): void => {
   if (globals.currentScreen !== Screen.Lobby) {
     return;
   }
@@ -201,12 +220,12 @@ export const tableJoin = (table: Table) => {
     modals.passwordShow(table.id);
 
     // We want to store the value of the player's last typed-in password
-    const password = localStorage.getItem('joinTablePassword');
-    if (password !== null && password !== '') {
-      $('#password-modal-password').val(password);
+    const password = localStorage.getItem("joinTablePassword");
+    if (password !== null && password !== "") {
+      $("#password-modal-password").val(password);
     }
   } else {
-    globals.conn!.send('tableJoin', {
+    globals.conn!.send("tableJoin", {
       tableID: table.id,
     });
   }
@@ -217,7 +236,7 @@ const tableReattend = (table: Table) => {
     return;
   }
 
-  globals.conn!.send('tableReattend', {
+  globals.conn!.send("tableReattend", {
     tableID: table.id,
   });
 };

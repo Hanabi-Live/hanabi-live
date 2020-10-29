@@ -1,12 +1,12 @@
 // This is one of the entries in the clue log (in the top-right-hand corner of the UI)
 
-import Konva from 'konva';
-import { cluesRules } from '../rules';
-import { StateClue } from '../types/GameState';
-import FitText from './controls/FitText';
-import globals from './globals';
-import { drawLayer } from './konvaHelpers';
-import * as replay from './replay';
+import Konva from "konva";
+import { cluesRules } from "../rules";
+import { StateClue } from "../types/GameState";
+import FitText from "./controls/FitText";
+import globals from "./globals";
+import { drawLayer } from "./konvaHelpers";
+import * as replay from "./replay";
 
 export default class ClueEntry extends Konva.Group {
   clue: StateClue;
@@ -34,7 +34,7 @@ export default class ClueEntry extends Konva.Group {
       y: 0,
       width: w,
       height: h,
-      fill: 'white',
+      fill: "white",
       opacity: 0.1,
       listening: true,
     });
@@ -46,10 +46,10 @@ export default class ClueEntry extends Konva.Group {
       width: 0.3 * w,
       height: h,
       fontSize: 0.9 * h,
-      fontFamily: 'Verdana',
-      fill: 'white',
+      fontFamily: "Verdana",
+      fill: "white",
       text: globals.metadata.playerNames[clue.giver],
-      verticalAlign: 'middle',
+      verticalAlign: "middle",
       listening: false,
     });
     this.add(giver);
@@ -60,10 +60,10 @@ export default class ClueEntry extends Konva.Group {
       width: 0.3 * w,
       height: h,
       fontSize: 0.9 * h,
-      fontFamily: 'Verdana',
-      fill: 'white',
+      fontFamily: "Verdana",
+      fill: "white",
       text: globals.metadata.playerNames[clue.target],
-      verticalAlign: 'middle',
+      verticalAlign: "middle",
       listening: false,
     });
     this.add(target);
@@ -74,12 +74,17 @@ export default class ClueEntry extends Konva.Group {
       y: 0,
       width: 0.2 * w,
       height: h,
-      align: 'center',
+      align: "center",
       fontSize: 0.9 * h,
-      fontFamily: 'Verdana',
-      fill: 'white',
-      text: cluesRules.getClueName(clue.type, clue.value, globals.variant, characterID),
-      verticalAlign: 'middle',
+      fontFamily: "Verdana",
+      fill: "white",
+      text: cluesRules.getClueName(
+        clue.type,
+        clue.value,
+        globals.variant,
+        characterID,
+      ),
+      verticalAlign: "middle",
       listening: false,
     });
     this.add(name);
@@ -89,36 +94,36 @@ export default class ClueEntry extends Konva.Group {
       y: 0,
       width: 0.2 * w,
       height: h,
-      align: 'center',
+      align: "center",
       fontSize: 0.9 * h,
-      fontFamily: 'Verdana',
-      fill: 'white',
-      text: '✘',
+      fontFamily: "Verdana",
+      fill: "white",
+      text: "✘",
       visible: false,
       listening: false,
     });
     this.add(this.negativeMarker);
 
     // Add a mouseover highlighting effect
-    this.background.on('mouseover', () => {
+    this.background.on("mouseover", () => {
       this.background.opacity(0.4);
       drawLayer(this);
     });
-    this.background.on('mouseout', () => {
+    this.background.on("mouseout", () => {
       this.background.opacity(0.1);
       drawLayer(this);
     });
 
     // Click an entry in the clue log to go to that segment (turn) in the replay
-    this.background.on('click tap', () => {
+    this.background.on("click tap", () => {
       replay.goToSegment(this.clue.segment + 1, true);
     });
   }
 
   // If this clue entry is related to the card that we are currently mousing over, then highlight it
-  showMatch(targetCardOrder: number | null) {
+  showMatch(targetCardOrder: number | null): void {
     this.background.opacity(0.1);
-    this.background.fill('white');
+    this.background.fill("white");
     this.negativeMarker.hide();
 
     if (targetCardOrder === null) {
@@ -136,7 +141,7 @@ export default class ClueEntry extends Konva.Group {
     for (const cardOrder of this.clue.negativeList) {
       if (cardOrder === targetCardOrder) {
         this.background.opacity(0.4);
-        this.background.fill('#ff7777');
+        this.background.fill("#ff7777");
         if (globals.lobby.settings.colorblindMode) {
           this.negativeMarker.show();
         }

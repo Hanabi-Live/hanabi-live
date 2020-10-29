@@ -1,8 +1,11 @@
-import * as deckRules from '../../rules/deck';
-import CardState from '../../types/CardState';
-import Variant from '../../types/Variant';
+import * as deckRules from "../../rules/deck";
+import CardState from "../../types/CardState";
+import Variant from "../../types/Variant";
 
-export default function initialCardState(order: number, variant: Variant) : CardState {
+export default function initialCardState(
+  order: number,
+  variant: Variant,
+): CardState {
   // Possible suits and ranks (based on clues given) are tracked separately
   // from knowledge of the true suit and rank
   const possibleSuits: number[] = variant.suits.slice().map((_, i) => i);
@@ -31,7 +34,7 @@ export default function initialCardState(order: number, variant: Variant) : Card
 
   return {
     order,
-    location: 'deck',
+    location: "deck",
     suitIndex: null,
     rank: null,
     possibleCardsFromObservation,

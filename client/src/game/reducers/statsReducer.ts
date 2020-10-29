@@ -1,121 +1,135 @@
 // Functions for calculating running statistics such as efficiency and pace
 // as a result of each action
 
-import produce, { Draft } from 'immer';
-import { getVariant, getCharacter } from '../data/gameData';
-import { variantRules, cardRules, clueTokensRules } from '../rules';
-import * as statsRules from '../rules/stats';
-import { GameAction, ActionPlay } from '../types/actions';
-import CardState from '../types/CardState';
-import ClueType from '../types/ClueType';
-import EndCondition from '../types/EndCondition';
-import GameMetadata from '../types/GameMetadata';
-import GameState from '../types/GameState';
-import SoundType from '../types/SoundType';
-import StatsState from '../types/StatsState';
-import { getCharacterIDForPlayer } from './reducerHelpers';
+import produce, { Draft } from "immer";
+import { getCharacter, getVariant } from "../data/gameData";
+import { cardRules, clueTokensRules, variantRules } from "../rules";
+import * as statsRules from "../rules/stats";
+import { ActionPlay, GameAction } from "../types/actions";
+import CardState from "../types/CardState";
+import ClueType from "../types/ClueType";
+import EndCondition from "../types/EndCondition";
+import GameMetadata from "../types/GameMetadata";
+import GameState from "../types/GameState";
+import SoundType from "../types/SoundType";
+import StatsState from "../types/StatsState";
+import { getCharacterIDForPlayer } from "./reducerHelpers";
 
-const statsReducer = produce((
-  stats: Draft<StatsState>,
-  action: GameAction,
-  originalState: GameState,
-  currentState: GameState,
-  playing: boolean,
-  metadata: GameMetadata,
-) => {
-  const variant = getVariant(metadata.options.variantName);
+const statsReducer = produce(
+  (
+    stats: Draft<StatsState>,
+    action: GameAction,
+    originalState: GameState,
+    currentState: GameState,
+    playing: boolean,
+    metadata: GameMetadata,
+  ) => {
+    const variant = getVariant(metadata.options.variantName);
 
-  switch (action.type) {
-    case 'clue': {
-      // A clue was spent
-      stats.potentialCluesLost += 1;
+    switch (action.type) {
+      case "clue": {
+        // A clue was spent
+        stats.potentialCluesLost += 1;
 
-      break;
-    }
-
-    case 'strike': {
-      // TODO: move this check to the play action when we have logic for knowing which cards play
-      // A strike is equivalent to losing a clue
-      // But don't reveal that a strike has happened to players in an ongoing "Throw It in a Hole"
-      // game
-      if (!variantRules.isThrowItInAHole(variant) || !playing) {
-        stats.potentialCluesLost += clueTokensRules.value(variant);
+        break;
       }
 
-      break;
-    }
+      case "strike": {
+        // TODO: move this check to the play action when we have logic for knowing which cards play
+        // A strike is equivalent to losing a clue
+        // But don't reveal that a strike has happened to players in an ongoing "Throw It in a Hole"
+        // game
+        if (!variantRules.isThrowItInAHole(variant) || !playing) {
+          stats.potentialCluesLost += clueTokensRules.value(variant);
+        }
 
-    case 'play': {
-      if (
-        !variantRules.isThrowItInAHole(variant) // We don't get an extra clue in these variants
-        && currentState.playStacks[action.suitIndex].length === 5 // Hard code stack length to 5
-        && originalState.clueTokens === currentState.clueTokens
-      ) {
-        // If we finished a stack while at max clues, then the extra clue is "wasted",
-        // similar to what happens when the team gets a strike
-        stats.potentialCluesLost += clueTokensRules.value(variant);
+        break;
       }
 
-      break;
+      case "play": {
+        if (
+          !variantRules.isThrowItInAHole(variant) && // We don't get an extra clue in these variants
+          currentState.playStacks[action.suitIndex].length === 5 && // Hard code stack length to 5
+          originalState.clueTokens === currentState.clueTokens
+        ) {
+          // If we finished a stack while at max clues, then the extra clue is "wasted",
+          // similar to what happens when the team gets a strike
+          stats.potentialCluesLost += clueTokensRules.value(variant);
+        }
+
+        break;
+      }
+
+      default: {
+        break;
+      }
     }
 
-    default: {
-      break;
+    // Handle double discard calculation
+    if (action.type === "discard") {
+      stats.doubleDiscard = statsRules.doubleDiscard(
+        action.order,
+        currentState,
+        variant,
+      );
+    } else if (action.type === "play" || action.type === "clue") {
+      stats.doubleDiscard = false;
     }
-  }
 
-  // Handle double discard calculation
-  if (action.type === 'discard') {
-    stats.doubleDiscard = statsRules.doubleDiscard(action.order, currentState, variant);
-  } else if (action.type === 'play' || action.type === 'clue') {
-    stats.doubleDiscard = false;
-  }
+    // Handle max score calculation
+    if (action.type === "play" || action.type === "discard") {
+      stats.maxScore = statsRules.getMaxScore(
+        currentState.deck,
+        currentState.playStackDirections,
+        variant,
+      );
+    }
 
-  // Handle max score calculation
-  if (action.type === 'play' || action.type === 'discard') {
-    stats.maxScore = statsRules.getMaxScore(
+    // Handle pace calculation
+    const score =
+      variantRules.isThrowItInAHole(variant) && playing
+        ? currentState.numAttemptedCardsPlayed
+        : currentState.score;
+    stats.pace = statsRules.pace(
+      score,
+      currentState.cardsRemainingInTheDeck,
+      stats.maxScore,
+      metadata.options.numPlayers,
+      // currentPlayerIndex will be null if the game is over
+      currentState.turn.currentPlayerIndex === null,
+    );
+    stats.paceRisk = statsRules.paceRisk(
+      stats.pace,
+      metadata.options.numPlayers,
+    );
+
+    // Handle efficiency calculation
+    const cardsGotten = statsRules.cardsGotten(
       currentState.deck,
+      currentState.playStacks,
       currentState.playStackDirections,
+      playing,
       variant,
     );
-  }
+    stats.efficiency = statsRules.efficiency(
+      cardsGotten,
+      stats.potentialCluesLost,
+    );
 
-  // Handle pace calculation
-  const score = variantRules.isThrowItInAHole(variant) && playing
-    ? currentState.numAttemptedCardsPlayed
-    : currentState.score;
-  stats.pace = statsRules.pace(
-    score,
-    currentState.cardsRemainingInTheDeck,
-    stats.maxScore,
-    metadata.options.numPlayers,
-    // currentPlayerIndex will be null if the game is over
-    currentState.turn.currentPlayerIndex === null,
-  );
-  stats.paceRisk = statsRules.paceRisk(stats.pace, metadata.options.numPlayers);
+    // Record the last action
+    stats.lastAction = action;
 
-  // Handle efficiency calculation
-  const cardsGotten = statsRules.cardsGotten(
-    currentState.deck,
-    currentState.playStacks,
-    currentState.playStackDirections,
-    playing,
-    variant,
-  );
-  stats.efficiency = statsRules.efficiency(cardsGotten, stats.potentialCluesLost);
-
-  // Record the last action
-  stats.lastAction = action;
-
-  // Find out which sound effect to play (if this is an ongoing game)
-  stats.soundTypeForLastAction = getSoundType(
-    stats,
-    action,
-    originalState,
-    currentState,
-    metadata,
-  );
-}, {} as StatsState);
+    // Find out which sound effect to play (if this is an ongoing game)
+    stats.soundTypeForLastAction = getSoundType(
+      stats,
+      action,
+      originalState,
+      currentState,
+      metadata,
+    );
+  },
+  {} as StatsState,
+);
 
 export default statsReducer;
 
@@ -130,9 +144,13 @@ const getSoundType = (
 
   // In some variants, failed plays are treated as normal plays
   let action = originalAction;
-  if (action.type === 'discard' && action.failed && variantRules.isThrowItInAHole(variant)) {
+  if (
+    action.type === "discard" &&
+    action.failed &&
+    variantRules.isThrowItInAHole(variant)
+  ) {
     action = {
-      type: 'play',
+      type: "play",
       playerIndex: action.playerIndex,
       order: action.order,
       suitIndex: action.suitIndex,
@@ -141,19 +159,19 @@ const getSoundType = (
   }
 
   switch (action.type) {
-    case 'clue': {
+    case "clue": {
       if (metadata.options.detrimentalCharacters) {
         const giverCharacterID = getCharacterIDForPlayer(
           action.giver,
           metadata.characterAssignments,
         );
-        let giverCharacterName = '';
+        let giverCharacterName = "";
         if (giverCharacterID !== null) {
           const giverCharacter = getCharacter(giverCharacterID);
           giverCharacterName = giverCharacter.name;
         }
 
-        if (giverCharacterName === 'Quacker') {
+        if (giverCharacterName === "Quacker") {
           return SoundType.Quack;
         }
       }
@@ -167,7 +185,7 @@ const getSoundType = (
           return SoundType.Oink;
         }
 
-        throw new Error('Unknown clue type.');
+        throw new Error("Unknown clue type.");
       }
 
       if (variantRules.isDuck(variant)) {
@@ -177,7 +195,7 @@ const getSoundType = (
       return SoundType.Standard;
     }
 
-    case 'discard': {
+    case "discard": {
       if (action.failed) {
         if (stats.soundTypeForLastAction === SoundType.Fail1) {
           return SoundType.Fail2;
@@ -196,19 +214,17 @@ const getSoundType = (
         return SoundType.DiscardClued;
       }
 
-      const lastAction = originalState.stats.lastAction;
+      const { lastAction } = originalState.stats;
       let couldBeLastDiscardedCard = true;
       if (
-        lastAction !== null
-        && lastAction.type === 'discard'
-        && lastAction.suitIndex !== null
-        && lastAction.rank !== null
+        lastAction !== null &&
+        lastAction.type === "discard" &&
+        lastAction.suitIndex !== null &&
+        lastAction.rank !== null
       ) {
         couldBeLastDiscardedCard = discardedCard.possibleCardsFromClues.some(
-          ([suitIndex, rank]) => (
-            suitIndex === lastAction.suitIndex
-            && rank === lastAction.rank
-          ),
+          ([suitIndex, rank]) =>
+            suitIndex === lastAction.suitIndex && rank === lastAction.rank,
         );
       }
       if (originalState.stats.doubleDiscard && couldBeLastDiscardedCard) {
@@ -224,7 +240,7 @@ const getSoundType = (
       return SoundType.Standard;
     }
 
-    case 'gameOver': {
+    case "gameOver": {
       if (action.endCondition > EndCondition.Normal) {
         return SoundType.FinishedFail;
       }
@@ -236,7 +252,7 @@ const getSoundType = (
       return SoundType.FinishedSuccess;
     }
 
-    case 'play': {
+    case "play": {
       if (stats.maxScore < originalState.stats.maxScore) {
         return SoundType.Sad;
       }
@@ -360,13 +376,12 @@ const isOrderChopMove = (
   return lowestOrder !== action.order;
 };
 
-const isCandidateOneForOCM = (card: CardState) => (
+const isCandidateOneForOCM = (card: CardState) =>
   // Order Chop Moves are only performed when a player plays a card that they think is a 1
   // (e.g. a card having a positive rank 1 clue on it)
-  card.positiveRankClues.includes(1)
+  card.positiveRankClues.includes(1) &&
   // We can't Order Chop Move with cards that are "filled-in" to be pink cards, for example
-  && card.positiveRankClues.length === 1
+  card.positiveRankClues.length === 1 &&
   // It is technically possible to perform an Order Chop Move with two 1s that have an equal
   // number of positive color clues on them, but ignore this for simplicity
-  && card.positiveColorClues.length === 0
-);
+  card.positiveColorClues.length === 0;

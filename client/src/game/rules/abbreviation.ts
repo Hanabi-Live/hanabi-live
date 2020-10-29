@@ -1,12 +1,12 @@
-import Suit from '../types/Suit';
-import Variant from '../types/Variant';
+import Suit from "../types/Suit";
+import Variant from "../types/Variant";
 
 // Suit abbreviations are hard-coded in the "suits.json" file
 // In some variants, two or more suits can have overlapping letter abbreviations
 // If this is the case, dynamically find a new abbreviation by using the left-most unused letter
 // (note that we cannot simply hard-code an alternate abbreviation in the "suits.json" file because
 // there are too many overlapping possibilities)
-export const makeAll = (variantName: string, suits: Suit[]) => {
+export const makeAll = (variantName: string, suits: Suit[]): string[] => {
   const abbreviations: string[] = [];
   for (const suit of suits) {
     let abbreviationToUse: string | undefined;
@@ -24,7 +24,9 @@ export const makeAll = (variantName: string, suits: Suit[]) => {
       }
     }
     if (abbreviationToUse === undefined) {
-      throw new Error(`Failed to find a suit abbreviation for "${suit.name}" in the variant of "${variantName}".`);
+      throw new Error(
+        `Failed to find a suit abbreviation for "${suit.name}" in the variant of "${variantName}".`,
+      );
     }
     abbreviations.push(abbreviationToUse);
   }
@@ -32,7 +34,9 @@ export const makeAll = (variantName: string, suits: Suit[]) => {
   // Validate that each suit has a unique abbreviation
   const uniqueAbbreviations = [...new Set(abbreviations)];
   if (uniqueAbbreviations.length !== abbreviations.length) {
-    throw new Error(`The variant "${variantName}" has two suits with the same abbreviation: ${abbreviations}`);
+    throw new Error(
+      `The variant "${variantName}" has two suits with the same abbreviation: ${abbreviations.toString()}`,
+    );
   }
 
   return abbreviations;
@@ -44,5 +48,5 @@ export const get = (suitName: string, variant: Variant): string => {
     return variant.abbreviations[i];
   }
 
-  return '?';
+  return "?";
 };

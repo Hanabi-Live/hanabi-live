@@ -1,23 +1,23 @@
 // In-game sounds
 
-import globals from './globals';
+import globals from "./globals";
 
 // Variables
 let soundEffect: HTMLAudioElement | null = null;
 
-export const init = () => {
+export const init = (): void => {
   // Preload some sounds
   // Ideally, we would check to see if the user has the "soundMove" setting enabled
   // (or "volume" set above 0) before attempting to preload sounds
   // However, at this point in the code, the server has not sent us the settings corresponding to
   // this user account, so just assume that they have sounds enabled
   const soundFiles = [
-    'tone',
-    'turn_blind1',
+    "tone",
+    "turn_blind1",
     // (do not preload the rest of the blind-play sounds, since they will only occur very rarely)
-    'turn_fail1',
-    'turn_other',
-    'turn_us',
+    "turn_fail1",
+    "turn_other",
+    "turn_us",
     // (do not preload shared replay sound effects, as they are used more rarely)
   ];
   for (const file of soundFiles) {
@@ -26,7 +26,7 @@ export const init = () => {
   }
 };
 
-export const play = (file: string, mute: boolean = false) => {
+export const play = (file: string, mute = false): void => {
   if (mute && soundEffect !== null) {
     soundEffect.muted = true;
   }
@@ -36,15 +36,15 @@ export const play = (file: string, mute: boolean = false) => {
 
   // HTML5 audio volume is a range between 0.0 to 1.0,
   // but volume is stored in the settings as an integer from 0 to 100
-  let volume = globals.settings.volume;
-  if (typeof volume !== 'number') {
+  let { volume } = globals.settings;
+  if (typeof volume !== "number") {
     volume = 50;
   }
   soundEffect.volume = volume / 100;
 
-  soundEffect.play();
-
-  // If audio playback fails,
-  // it is most likely due to the user not having interacted with the page yet
-  // https://stackoverflow.com/questions/52807874/how-to-make-audio-play-on-body-onload
+  soundEffect.play().catch(() => {
+    // Do nothing if audio playback fails,
+    // since it is most likely due to the user not having interacted with the page yet
+    // https://stackoverflow.com/questions/52807874/how-to-make-audio-play-on-body-onload
+  });
 };

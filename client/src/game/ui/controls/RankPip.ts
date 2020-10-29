@@ -1,16 +1,16 @@
-import Konva from 'konva';
-import { CLUED_COLOR } from '../constants';
+import Konva from "konva";
+import { CLUED_COLOR } from "../constants";
 
 export default class RankPip extends Konva.Text {
   private fillValue: string | undefined;
-  private positive: boolean = false;
+  private positive = false;
 
   constructor(config?: Konva.TextConfig) {
     super(config);
     this.fillValue = config?.fill;
   }
 
-  setFillValue(fill: string) {
+  setFillValue(fill: string): void {
     if (this.fillValue === fill) {
       return;
     }
@@ -23,13 +23,13 @@ export default class RankPip extends Konva.Text {
     }
   }
 
-  showPositiveClue() {
+  showPositiveClue(): void {
     this.positive = true;
     this.fill(CLUED_COLOR);
   }
 
-  hidePositiveClue() {
+  hidePositiveClue(): void {
     this.positive = false;
-    this.fill(this.fillValue ?? 'black');
+    this.fill(this.fillValue ?? "black");
   }
 }

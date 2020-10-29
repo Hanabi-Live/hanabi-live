@@ -1,27 +1,28 @@
 // Arrows are used to show which cards are touched by a clue
 // (and to highlight things in shared replays)
 
-import Konva from 'konva';
-import { KonvaEventObject } from 'konva/types/Node';
-import { getCharacter } from '../data/gameData';
-import { cardRules, variantRules } from '../rules';
-import Clue from '../types/Clue';
-import ClueType from '../types/ClueType';
-import { STACK_BASE_RANK } from '../types/constants';
-import ReplayActionType from '../types/ReplayActionType';
-import ReplayArrowOrder from '../types/ReplayArrowOrder';
-import Suit from '../types/Suit';
-import CardLayout from './CardLayout';
-import { ARROW_COLOR, CARD_ANIMATION_LENGTH } from './constants';
-import Arrow from './controls/Arrow';
-import NodeWithTooltip from './controls/NodeWithTooltip';
-import StrikeSquare from './controls/StrikeSquare';
-import drawPip from './drawPip';
-import globals from './globals';
-import HanabiCard from './HanabiCard';
-import * as konvaHelpers from './konvaHelpers';
+import Konva from "konva";
+import * as KonvaContext from "konva/types/Context";
+import { KonvaEventObject } from "konva/types/Node";
+import { getCharacter } from "../data/gameData";
+import { cardRules, variantRules } from "../rules";
+import Clue from "../types/Clue";
+import ClueType from "../types/ClueType";
+import { STACK_BASE_RANK } from "../types/constants";
+import ReplayActionType from "../types/ReplayActionType";
+import ReplayArrowOrder from "../types/ReplayArrowOrder";
+import Suit from "../types/Suit";
+import CardLayout from "./CardLayout";
+import { ARROW_COLOR, CARD_ANIMATION_LENGTH } from "./constants";
+import Arrow from "./controls/Arrow";
+import NodeWithTooltip from "./controls/NodeWithTooltip";
+import StrikeSquare from "./controls/StrikeSquare";
+import drawPip from "./drawPip";
+import globals from "./globals";
+import HanabiCard from "./HanabiCard";
+import * as konvaHelpers from "./konvaHelpers";
 
-export const hideAll = () => {
+export const hideAll = (): void => {
   let changed = false;
   for (const arrow of globals.elements.arrows) {
     if (arrow.pointingTo !== null) {
@@ -44,7 +45,7 @@ export const set = (
   element: Konva.Node | null,
   giver: number | null,
   clue: Clue | null,
-) => {
+): void => {
   // Show the arrow
   const arrow = globals.elements.arrows[i];
   arrow.pointingTo = element;
@@ -54,25 +55,24 @@ export const set = (
   // Figure out whether the arrow should be inverted or not
   let rot = 0;
   if (
-    element instanceof HanabiCard
-    && !cardRules.isPlayed(element.state)
-    && !cardRules.isDiscarded(element.state)
-    && element.state.rank !== STACK_BASE_RANK
+    element instanceof HanabiCard &&
+    !cardRules.isPlayed(element.state) &&
+    !cardRules.isDiscarded(element.state) &&
+    element.state.rank !== STACK_BASE_RANK
   ) {
-    if (element.parent && element.parent.parent && element.parent.parent instanceof CardLayout) {
+    if (
+      element.parent &&
+      element.parent.parent &&
+      element.parent.parent instanceof CardLayout
+    ) {
       rot = element.parent.parent.origRotation;
     }
     if (
-      (
-        !globals.lobby.settings.keldonMode
-        && element.state.location === globals.metadata.ourPlayerIndex
-      ) || (
-        globals.lobby.settings.keldonMode
-        && (
-          element.state.location !== globals.metadata.ourPlayerIndex
-          && cardRules.isInPlayerHand(element.state)
-        )
-      )
+      (!globals.lobby.settings.keldonMode &&
+        element.state.location === globals.metadata.ourPlayerIndex) ||
+      (globals.lobby.settings.keldonMode &&
+        element.state.location !== globals.metadata.ourPlayerIndex &&
+        cardRules.isInPlayerHand(element.state))
     ) {
       // In BGA mode, invert the arrows on our hand
       // (so that it doesn't get cut off by the top of the screen)
@@ -109,17 +109,17 @@ export const set = (
     arrow.base.fill(color);
 
     // Clue arrows have a circle that shows the type of clue given
-    let giverCharacterName = '';
+    let giverCharacterName = "";
     if (giver !== null) {
-      const giverCharacterID = globals.metadata.characterAssignments[giver!];
+      const giverCharacterID = globals.metadata.characterAssignments[giver];
       if (giverCharacterID !== null) {
         const giverCharacter = getCharacter(giverCharacterID);
         giverCharacterName = giverCharacter.name;
       }
     }
     if (
-      variantRules.isDuck(globals.variant)
-      || (giverCharacterName === 'Quacker' && !globals.state.finished)
+      variantRules.isDuck(globals.variant) ||
+      (giverCharacterName === "Quacker" && !globals.state.finished)
     ) {
       // Don't show the circle in variants where the clue types are supposed to be hidden
       arrow.circle.hide();
@@ -130,28 +130,31 @@ export const set = (
         arrow.text.hide();
 
         // The circle for color clues should have a black border and a fill matching the color
-        arrow.circle.stroke('black');
+        arrow.circle.stroke("black");
         if (variantRules.isCowAndPig(globals.variant)) {
           // The specific clue color is hidden in "Cow & Pig" variants
-          arrow.circle.fill('white');
+          arrow.circle.fill("white");
         } else {
           const clueColor = clue.value;
-          if (typeof clueColor === 'number') {
-            throw new Error('The clue value was a number for a color clue.');
+          if (typeof clueColor === "number") {
+            throw new Error("The clue value was a number for a color clue.");
           }
           arrow.circle.fill(clueColor.fill);
 
           // Additionally, draw the suit pip in colorblind mode
           if (globals.lobby.settings.colorblindMode) {
-            if (typeof clue.value === 'number') {
-              throw new Error('The clue value was a number for a color clue.');
+            if (typeof clue.value === "number") {
+              throw new Error("The clue value was a number for a color clue.");
             }
-            const matchingSuits = globals.variant.suits.filter(
-              (suit: Suit) => (suit.clueColors.includes(clueColor)),
+            const matchingSuits = globals.variant.suits.filter((suit: Suit) =>
+              suit.clueColors.includes(clueColor),
             );
             if (matchingSuits.length === 1) {
-              arrow.suitPip!.sceneFunc((ctx: any) => {
-                drawPip(ctx, matchingSuits[0]);
+              arrow.suitPip!.sceneFunc((ctx: KonvaContext.Context) => {
+                drawPip(
+                  (ctx as unknown) as CanvasRenderingContext2D,
+                  matchingSuits[0],
+                );
               });
               arrow.suitPip!.show();
             } else {
@@ -162,14 +165,14 @@ export const set = (
       } else if (clue.type === ClueType.Rank) {
         let text = clue.value.toString();
         if (variantRules.isCowAndPig(globals.variant)) {
-          text = '#';
+          text = "#";
         }
         arrow.text.text(text);
         arrow.text.show();
 
         // The circle for number clues should have a white border and a black fill
-        arrow.circle.stroke('white');
-        arrow.circle.fill('black');
+        arrow.circle.stroke("white");
+        arrow.circle.fill("black");
 
         if (globals.lobby.settings.colorblindMode) {
           arrow.suitPip!.hide();
@@ -210,10 +213,10 @@ const getPos = (element: Konva.Node, rot: number) => {
     pos.x += element.width() * 0.5;
     pos.y += element.height() * 0.1;
   } else if (
-    element === globals.elements.turnNumberLabel
-    || element === globals.elements.scoreNumberLabel
-    || element === globals.elements.playsNumberLabel
-    || element === globals.elements.cluesNumberLabel
+    element === globals.elements.turnNumberLabel ||
+    element === globals.elements.scoreNumberLabel ||
+    element === globals.elements.playsNumberLabel ||
+    element === globals.elements.cluesNumberLabel
   ) {
     pos.x += element.width() * 0.15;
   } else if (element === globals.elements.maxScoreNumberLabel) {
@@ -225,14 +228,22 @@ const getPos = (element: Konva.Node, rot: number) => {
   }
 
   if (Number.isNaN(pos.x) || Number.isNaN(pos.y)) {
-    throw new Error('Failed to get the position for the element when drawing an arrow.');
+    throw new Error(
+      "Failed to get the position for the element when drawing an arrow.",
+    );
   }
 
   return pos;
 };
 
 // Animate the arrow to fly from the player who gave the clue to the card
-const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, segment: number) => {
+const animate = (
+  arrow: Arrow,
+  card: HanabiCard,
+  rot: number,
+  giver: number,
+  segment: number,
+) => {
   // We can't continue arrow animations if we are on the wrong segment
   // because arrows are reused and this causes glitches
   const visibleSegment = globals.state.visibleState!.turn.segment!;
@@ -243,11 +254,11 @@ const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, seg
   // Don't bother doing the animation if the card is no longer part of a hand
   // (which can happen when jumping quickly through a replay)
   if (
-    card === undefined
-    || card.parent === undefined
-    || card.parent === null
-    || card.parent.parent === undefined
-    || card.parent.parent === null
+    card === undefined ||
+    card.parent === undefined ||
+    card.parent === null ||
+    card.parent.parent === undefined ||
+    card.parent.parent === null
   ) {
     return;
   }
@@ -280,6 +291,7 @@ const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, seg
     duration: CARD_ANIMATION_LENGTH,
     x: pos.x,
     y: pos.y,
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     easing: Konva.Easings.EaseOut,
   });
 };
@@ -287,17 +299,18 @@ const animate = (arrow: Arrow, card: HanabiCard, rot: number, giver: number, seg
 export const click = (
   event: KonvaEventObject<MouseEvent>,
   order: ReplayArrowOrder,
-  element: any,
-) => {
+  element: NodeWithTooltip | null,
+): void => {
   // "event.evt.buttons" is always 0 here
-  if (event.evt.button !== 2) { // Right-click
+  if (event.evt.button !== 2) {
+    // Right-click
     return;
   }
 
   if (
-    globals.state.replay.shared !== null
-    && globals.state.replay.shared.amLeader
-    && globals.state.replay.shared.useSharedSegments
+    globals.state.replay.shared !== null &&
+    globals.state.replay.shared.amLeader &&
+    globals.state.replay.shared.useSharedSegments
   ) {
     // The shared replay leader is clicking on a UI element, so send this action to the server
     send(order, element);
@@ -309,8 +322,11 @@ export const click = (
   }
 };
 
-export const send = (order: ReplayArrowOrder, element: any) => {
-  globals.lobby.conn!.send('replayAction', {
+export const send = (
+  order: ReplayArrowOrder,
+  element: NodeWithTooltip | null,
+): void => {
+  globals.lobby.conn!.send("replayAction", {
     tableID: globals.lobby.tableID,
     type: ReplayActionType.Arrow,
     order,
@@ -321,7 +337,7 @@ export const send = (order: ReplayArrowOrder, element: any) => {
 };
 
 // This toggles the "highlight" arrow on a particular element
-export const toggle = (element: NodeWithTooltip | null) => {
+export const toggle = (element: NodeWithTooltip | null): void => {
   // If we are showing an arrow on a card that is currently tweening,
   // delay showing it until the tween is finished
   if (element instanceof HanabiCard && element.tweening) {
@@ -330,15 +346,20 @@ export const toggle = (element: NodeWithTooltip | null) => {
   }
 
   const arrow = globals.elements.arrows[0];
-  const show = arrow.pointingTo !== element || arrow.base.fill() !== ARROW_COLOR.HIGHLIGHT;
+  const show =
+    arrow.pointingTo !== element || arrow.base.fill() !== ARROW_COLOR.HIGHLIGHT;
   hideAll();
   if (show) {
     set(0, element, null, null);
 
     // If this element has a tooltip and it is open, close it
-    if (element !== null && element.tooltipName !== undefined && element.tooltipName !== '') {
+    if (
+      element !== null &&
+      element.tooltipName !== undefined &&
+      element.tooltipName !== ""
+    ) {
       const tooltip = $(`#tooltip-${element.tooltipName}`);
-      tooltip.tooltipster('close');
+      tooltip.tooltipster("close");
     }
   }
 };

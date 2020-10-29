@@ -1,22 +1,22 @@
-import { initArray } from '../../../misc';
-import { getVariant } from '../../data/gameData';
+import { initArray } from "../../../misc";
+import { getVariant } from "../../data/gameData";
 import {
   cardRules,
+  clueTokensRules,
   deckRules,
   handRules,
-  statsRules,
   playStacksRules,
-  clueTokensRules,
-} from '../../rules';
-import CardStatus from '../../types/CardStatus';
-import { MAX_CLUE_NUM } from '../../types/constants';
-import GameMetadata from '../../types/GameMetadata';
-import GameState from '../../types/GameState';
-import SoundType from '../../types/SoundType';
-import initialTurnState from './initialTurnState';
+  statsRules,
+} from "../../rules";
+import CardStatus from "../../types/CardStatus";
+import { MAX_CLUE_NUM } from "../../types/constants";
+import GameMetadata from "../../types/GameMetadata";
+import GameState from "../../types/GameState";
+import SoundType from "../../types/SoundType";
+import initialTurnState from "./initialTurnState";
 
 export default function initialGameState(metadata: GameMetadata): GameState {
-  const options = metadata.options;
+  const { options } = metadata;
   const variant = getVariant(options.variantName);
   const turnState = initialTurnState(options.startingPlayer);
   const cardsPerHand = handRules.cardsPerHand(
@@ -24,11 +24,15 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     options.oneExtraCard,
     options.oneLessCard,
   );
-  const startingPace = statsRules.startingPace(options.numPlayers, cardsPerHand, variant);
+  const startingPace = statsRules.startingPace(
+    options.numPlayers,
+    cardsPerHand,
+    variant,
+  );
   const hands: number[][] = initArray(options.numPlayers, []);
-  const playStackDirections = variant.suits.map((_, i) => (
-    playStacksRules.direction(i, [], [], variant)
-  ));
+  const playStackDirections = variant.suits.map((_, i) =>
+    playStacksRules.direction(i, [], [], variant),
+  );
   const playStacks: number[][] = initArray(variant.suits.length, []);
   const discardStacks: number[][] = initArray(variant.suits.length, []);
 

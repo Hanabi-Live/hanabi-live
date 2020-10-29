@@ -1,35 +1,37 @@
 // Initialization functions for the HanabiCard object
 
-import Konva from 'konva';
-import * as KonvaContext from 'konva/types/Context';
-import { RectConfig } from 'konva/types/shapes/Rect';
-import * as KonvaUtil from 'konva/types/Util';
-import * as variantRules from '../rules/variant';
-import { START_CARD_RANK } from '../types/constants';
-import Variant from '../types/Variant';
+import Konva from "konva";
+import * as KonvaContext from "konva/types/Context";
+import { Arrow } from "konva/types/shapes/Arrow";
+import { RectConfig } from "konva/types/shapes/Rect";
+import * as KonvaUtil from "konva/types/Util";
+import * as variantRules from "../rules/variant";
+import { START_CARD_RANK } from "../types/constants";
+import Pips from "../types/Pips";
+import Variant from "../types/Variant";
 import {
   CARD_H,
   CARD_W,
-  CLUED_COLOR,
   CHOP_MOVE_COLOR,
+  CLUED_COLOR,
   FINESSE_COLOR,
   OFF_BLACK,
-} from './constants';
-import NoteIndicator from './controls/NoteIndicator';
-import RankPip from './controls/RankPip';
-import drawPip from './drawPip';
-import globals from './globals';
+} from "./constants";
+import NoteIndicator from "./controls/NoteIndicator";
+import RankPip from "./controls/RankPip";
+import drawPip from "./drawPip";
+import globals from "./globals";
 
-export const image = (getBareName: () => string) => {
+export const image = (getBareName: () => string): Konva.Image => {
   // Create the "bare" card image, which is the main card graphic
   // If the card is not revealed, it will just be a gray rounded rectangle
   // The pips and other elements of a card are drawn on top of the bare image
   const bare = new Konva.Image({
     width: CARD_W,
     height: CARD_H,
-    image: null as unknown as ImageBitmapSource,
+    image: (null as unknown) as ImageBitmapSource,
     shadowEnabled: false,
-    shadowColor: 'black',
+    shadowColor: "black",
     shadowOffset: {
       x: Math.floor(0.04 * CARD_W),
       y: Math.floor(0.04 * CARD_W),
@@ -70,8 +72,12 @@ const makeBorder = (color: string) => {
     listening: false,
   });
 
-  const borderOutside = new Konva.Rect(borderConfig(borderStrokeWidth, borderOutsideColor));
-  const borderInside = new Konva.Rect(borderConfig(borderStrokeWidthInside, color));
+  const borderOutside = new Konva.Rect(
+    borderConfig(borderStrokeWidth, borderOutsideColor),
+  );
+  const borderInside = new Konva.Rect(
+    borderConfig(borderStrokeWidthInside, color),
+  );
 
   border.add(borderOutside);
   border.add(borderInside);
@@ -79,11 +85,13 @@ const makeBorder = (color: string) => {
   return border;
 };
 
-export const cluedBorder = () => makeBorder(CLUED_COLOR);
-export const chopMoveBorder = () => makeBorder(CHOP_MOVE_COLOR);
-export const finesseBorder = () => makeBorder(FINESSE_COLOR);
+export const cluedBorder = (): Konva.Group => makeBorder(CLUED_COLOR);
+export const chopMoveBorder = (): Konva.Group => makeBorder(CHOP_MOVE_COLOR);
+export const finesseBorder = (): Konva.Group => makeBorder(FINESSE_COLOR);
 
-export const directionArrow = (variant: Variant) => {
+export const directionArrow = (
+  variant: Variant,
+): { arrow: Konva.Group; arrowBase: Arrow } | null => {
   if (!variantRules.hasReversedSuits(variant)) {
     return null;
   }
@@ -102,46 +110,31 @@ export const directionArrow = (variant: Variant) => {
   const pointerLength = 0.05 * CARD_W;
 
   const border = new Konva.Arrow({
-    points: [
-      0,
-      0,
-      0,
-      arrowHeight * CARD_H,
-    ],
+    points: [0, 0, 0, arrowHeight * CARD_H],
     pointerLength,
     pointerWidth: pointerLength * 1.5,
-    fill: 'black',
-    stroke: 'black',
+    fill: "black",
+    stroke: "black",
     strokeWidth: pointerLength * 2,
     listening: false,
   });
   arrow.add(border);
 
   const edge = new Konva.Line({
-    points: [
-      0 - pointerLength,
-      0,
-      0 + pointerLength,
-      0,
-    ],
-    fill: 'black',
-    stroke: 'black',
+    points: [0 - pointerLength, 0, 0 + pointerLength, 0],
+    fill: "black",
+    stroke: "black",
     strokeWidth: pointerLength * 0.75,
     listening: false,
   });
   arrow.add(edge);
 
   const arrowBase = new Konva.Arrow({
-    points: [
-      0,
-      0,
-      0,
-      arrowHeight * CARD_H,
-    ],
+    points: [0, 0, 0, arrowHeight * CARD_H],
     pointerLength,
     pointerWidth: pointerLength * 1.5,
-    fill: 'white',
-    stroke: 'white', // This should match the color of the suit; it will be manually set later on
+    fill: "white",
+    stroke: "white", // This should match the color of the suit; it will be manually set later on
     strokeWidth: pointerLength * 1.25,
     listening: false,
   });
@@ -171,20 +164,21 @@ const makeCachedPips = (variant: Variant) => {
     // Set the pip at the middle of the card
     const x = Math.floor(CARD_W * 0.5);
     const y = Math.floor(CARD_H * 0.5);
-    const scale = { // Scale numbers are magic
+    const scale = {
+      // Scale numbers are magic
       x: 0.4,
       y: 0.4,
     };
     // Transform polar to Cartesian coordinates
     const offsetBase = CARD_W * 0.7;
-    const offsetTrig = ((-i / variant.suits.length) + 0.25) * Math.PI * 2;
+    const offsetTrig = (-i / variant.suits.length + 0.25) * Math.PI * 2;
     const offset = {
       x: Math.floor(offsetBase * Math.cos(offsetTrig)),
       y: Math.floor(offsetBase * Math.sin(offsetTrig)),
     };
     let { fill } = suit;
-    if (suit.fill === 'multi') {
-      fill = '';
+    if (suit.fill === "multi") {
+      fill = "";
     }
 
     const suitPip = new Konva.Shape({
@@ -193,22 +187,22 @@ const makeCachedPips = (variant: Variant) => {
       scale,
       offset,
       fill,
-      stroke: 'black',
+      stroke: "black",
       strokeWidth: 5,
       shadowEnabled: !globals.options.speedrun,
-      shadowColor: 'black',
+      shadowColor: "black",
       shadowOffsetX: 15,
       shadowOffsetY: 15,
       shadowOpacity: 0.4,
       shadowForStrokeEnabled: true,
-      sceneFunc: (ctx: any) => { // Konva.Context does not exist for some reason
-        drawPip(ctx, suit, false);
+      sceneFunc: (ctx: KonvaContext.Context) => {
+        drawPip((ctx as unknown) as CanvasRenderingContext2D, suit, false);
       },
       listening: false,
     });
 
     // Gradient numbers are magic
-    if (suit.fill === 'multi') {
+    if (suit.fill === "multi") {
       suitPip.fillRadialGradientColorStops([
         0.3,
         suit.fillColors[0],
@@ -240,14 +234,14 @@ const makeCachedPips = (variant: Variant) => {
       y,
       scale,
       offset,
-      fill: 'black',
-      stroke: 'black',
+      fill: "black",
+      stroke: "black",
       opacity: 0.8,
       visible: false,
       sceneFunc: (ctx, shape) => {
         const width = 50;
-        const xx = Math.floor((CARD_W * 0.25) - (width * 0.5));
-        const xy = Math.floor((CARD_H * 0.25) - (width * 0.05));
+        const xx = Math.floor(CARD_W * 0.25 - width * 0.5);
+        const xy = Math.floor(CARD_H * 0.25 - width * 0.05);
         ctx.translate(-1.4 * width, -2 * width);
         drawX(ctx, shape, xx, xy, 50, width);
       },
@@ -265,23 +259,23 @@ const makeCachedPips = (variant: Variant) => {
       continue;
     }
 
-    const x = Math.floor(CARD_W * ((rank * 0.19) - 0.14));
+    const x = Math.floor(CARD_W * (rank * 0.19 - 0.14));
     const y = 0;
     const rankPip = new RankPip({
       x,
       y,
-      fontFamily: 'Arial',
-      fontStyle: 'bold',
+      fontFamily: "Arial",
+      fontStyle: "bold",
       fontSize: 63,
-      align: 'center',
+      align: "center",
       text: rank.toString(),
       width: Math.floor(CARD_H * 0.1),
       height: Math.floor(CARD_H * 0.1),
-      fill: 'white',
-      stroke: 'black',
+      fill: "white",
+      stroke: "black",
       strokeWidth: 3,
       shadowEnabled: !globals.options.speedrun,
-      shadowColor: 'black',
+      shadowColor: "black",
       shadowOffsetX: 5,
       shadowOffsetY: 5,
       shadowOpacity: 0.4,
@@ -294,8 +288,8 @@ const makeCachedPips = (variant: Variant) => {
     const rankPipX = new Konva.Shape({
       x,
       y: Math.floor(CARD_H * 0.02),
-      fill: 'black',
-      stroke: 'black',
+      fill: "black",
+      stroke: "black",
       strokeWidth: 2,
       opacity: 0.8,
       visible: false,
@@ -321,7 +315,7 @@ const makeCachedPips = (variant: Variant) => {
   cachedVariant = variant;
 };
 
-export const pips = (variant: Variant) => {
+export const pips = (variant: Variant): Pips => {
   if (cachedVariant !== variant) {
     makeCachedPips(variant);
   }
@@ -384,7 +378,10 @@ export const pips = (variant: Variant) => {
   };
 };
 
-export const note = (offsetCornerElements: boolean, shouldShowIndicator: () => boolean) => {
+export const note = (
+  offsetCornerElements: boolean,
+  shouldShowIndicator: () => boolean,
+): NoteIndicator => {
   // Define the note indicator image
   const noteX = 0.78;
   const noteY = 0.03;
@@ -395,13 +392,13 @@ export const note = (offsetCornerElements: boolean, shouldShowIndicator: () => b
     // Thus, we move it downwards if this is the case
     x: (offsetCornerElements ? noteX - 0.05 : noteX) * CARD_W,
     y: (offsetCornerElements ? noteY + 0.05 : noteY) * CARD_H,
-    align: 'center',
-    image: globals.imageLoader!.get('note')!,
+    align: "center",
+    image: globals.imageLoader!.get("note")!,
     width: size,
     height: size,
     rotation: 180,
     shadowEnabled: !globals.options.speedrun,
-    shadowColor: 'black',
+    shadowColor: "black",
     shadowBlur: 10,
     shadowOffset: {
       x: 0,
@@ -419,7 +416,9 @@ export const note = (offsetCornerElements: boolean, shouldShowIndicator: () => b
   return noteIndicator;
 };
 
-export const criticalIndicator = (offsetCornerElements: boolean) => {
+export const criticalIndicator = (
+  offsetCornerElements: boolean,
+): Konva.Image => {
   // Define the critical indicator image
   const critX = 0.06;
   const critY = 0.82;
@@ -430,13 +429,13 @@ export const criticalIndicator = (offsetCornerElements: boolean) => {
     // Thus, we move it upwards if this is the case
     x: (offsetCornerElements ? critX + 0.05 : critX) * CARD_W,
     y: (offsetCornerElements ? critY - 0.05 : critY) * CARD_H,
-    align: 'center',
-    image: globals.imageLoader!.get('critical')!,
+    align: "center",
+    image: globals.imageLoader!.get("critical")!,
     width: size,
     height: size,
     rotation: 180,
     shadowEnabled: !globals.options.speedrun,
-    shadowColor: 'black',
+    shadowColor: "black",
     shadowBlur: 10,
     shadowOffset: {
       x: 0,
@@ -453,23 +452,25 @@ export const criticalIndicator = (offsetCornerElements: boolean) => {
   return indicator;
 };
 
-export const trashcan = () => new Konva.Image({
-  x: 0.15 * CARD_W,
-  y: 0.2 * CARD_H,
-  width: 0.7 * CARD_W,
-  height: 0.6 * CARD_H,
-  image: globals.imageLoader!.get('trashcan2')!,
-  visible: false,
-});
+export const trashcan = (): Konva.Image =>
+  new Konva.Image({
+    x: 0.15 * CARD_W,
+    y: 0.2 * CARD_H,
+    width: 0.7 * CARD_W,
+    height: 0.6 * CARD_H,
+    image: globals.imageLoader!.get("trashcan2")!,
+    visible: false,
+  });
 
-export const wrench = () => new Konva.Image({
-  x: 0.1 * CARD_W,
-  y: 0.33 * CARD_H,
-  width: 0.8 * CARD_W,
-  image: globals.imageLoader!.get('wrench')!,
-  visible: false,
-  listening: false,
-});
+export const wrench = (): Konva.Image =>
+  new Konva.Image({
+    x: 0.1 * CARD_W,
+    y: 0.33 * CARD_H,
+    width: 0.8 * CARD_W,
+    image: globals.imageLoader!.get("wrench")!,
+    visible: false,
+    listening: false,
+  });
 
 const scaleCardImage = (
   ctx: CanvasRenderingContext2D,
@@ -483,8 +484,8 @@ const scaleCardImage = (
     throw new Error(`The image "${name}" was not generated.`);
   }
 
-  const dw = Math.sqrt((tf.m[0] * tf.m[0]) + (tf.m[1] * tf.m[1])) * width;
-  const dh = Math.sqrt((tf.m[2] * tf.m[2]) + (tf.m[3] * tf.m[3])) * height;
+  const dw = Math.sqrt(tf.m[0] * tf.m[0] + tf.m[1] * tf.m[1]) * width;
+  const dh = Math.sqrt(tf.m[2] * tf.m[2] + tf.m[3] * tf.m[3]) * height;
 
   if (dw < 1 || dh < 1) {
     return;
@@ -509,13 +510,15 @@ const scaleCardImage = (
     sh = Math.floor(sh / 2);
 
     if (scaledCardImage === undefined) {
-      scaledCardImage = document.createElement('canvas');
+      scaledCardImage = document.createElement("canvas");
       scaledCardImage.width = sw;
       scaledCardImage.height = sh;
 
-      const scaleContext = scaledCardImage.getContext('2d');
+      const scaleContext = scaledCardImage.getContext("2d");
       if (scaleContext === null) {
-        throw new Error('Failed to get the context for a new scaled card image.');
+        throw new Error(
+          "Failed to get the context for a new scaled card image.",
+        );
       }
       scaleContext.drawImage(src, 0, 0, sw, sh);
 

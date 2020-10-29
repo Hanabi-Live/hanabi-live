@@ -1,12 +1,12 @@
 // CardLayout is an object that represents a player's hand (or a discard pile)
 // It is composed of LayoutChild objects
 
-import Konva from 'konva';
-import { CARD_ANIMATION_LENGTH } from './constants';
-import globals from './globals';
-import HanabiCard from './HanabiCard';
-import { animate } from './konvaHelpers';
-import LayoutChild from './LayoutChild';
+import Konva from "konva";
+import { CARD_ANIMATION_LENGTH } from "./constants";
+import globals from "./globals";
+import HanabiCard from "./HanabiCard";
+import { animate } from "./konvaHelpers";
+import LayoutChild from "./LayoutChild";
 
 export default class CardLayout extends Konva.Group {
   private align: string;
@@ -18,16 +18,16 @@ export default class CardLayout extends Konva.Group {
     super(config);
 
     // Class variables
-    this.align = (config.align || 'left') as string;
+    this.align = (config.align || "left") as string;
     this.reverse = (config.reverse || false) as boolean;
     this.origRotation = config.rotation ?? 0;
     this.empathy = false;
 
     if (config.width === undefined) {
-      throw new Error('A width was not defined for a CardLayout.');
+      throw new Error("A width was not defined for a CardLayout.");
     }
     if (config.height === undefined) {
-      throw new Error('A height was not defined for a CardLayout.');
+      throw new Error("A height was not defined for a CardLayout.");
     }
 
     // Debug rectangle (uncomment to show the size of the hand)
@@ -49,9 +49,9 @@ export default class CardLayout extends Konva.Group {
   // (e.g. a player's hand, the play stacks)
   // Use the absolute position so that we can tween it from one location to another without having
   // to worry about the relative position
-  addChild(child: LayoutChild) {
+  addChild(child: LayoutChild): void {
     const pos = child.getAbsolutePosition();
-    this.add(child as any);
+    this.add((child as unknown) as Konva.Group);
     child.setAbsolutePosition(pos);
     if (this.empathy) {
       child.card.setEmpathy(true);
@@ -59,12 +59,12 @@ export default class CardLayout extends Konva.Group {
     this.doLayout();
   }
 
-  _setChildrenIndices() {
+  _setChildrenIndices(): void {
     Konva.Group.prototype._setChildrenIndices.call(this);
     this.doLayout();
   }
 
-  doLayout() {
+  doLayout(): void {
     // Local variables
     const handWidth = this.width();
     const handHeight = this.height();
@@ -72,7 +72,7 @@ export default class CardLayout extends Konva.Group {
 
     let uw = 0;
     for (let i = 0; i < numCards; i++) {
-      const layoutChild = this.children[i] as unknown as LayoutChild;
+      const layoutChild = (this.children[i] as unknown) as LayoutChild;
 
       if (!layoutChild.height()) {
         continue;
@@ -96,7 +96,7 @@ export default class CardLayout extends Konva.Group {
     uw += spacingBetweenCards * (numCards - 1);
 
     let x = 0;
-    if (this.align === 'center' && uw < handWidth) {
+    if (this.align === "center" && uw < handWidth) {
       x = (handWidth - uw) / 2;
     }
     if (this.reverse) {
@@ -104,7 +104,7 @@ export default class CardLayout extends Konva.Group {
     }
 
     for (let i = 0; i < numCards; i++) {
-      const layoutChild = this.children[i] as unknown as LayoutChild;
+      const layoutChild = (this.children[i] as unknown) as LayoutChild;
 
       // Ensure this card is not hidden at the bottom of a play stack
       layoutChild.show();
@@ -140,19 +140,24 @@ export default class CardLayout extends Konva.Group {
         layoutChild.card.startedTweening();
         layoutChild.card.setRaiseAndShadowOffset();
         const animateToLayout = () => {
-          animate(layoutChild, {
-            duration: CARD_ANIMATION_LENGTH,
-            x: newX,
-            y: 0,
-            scale,
-            rotation: 0,
-            opacity: 1,
-            easing: Konva.Easings.EaseOut,
-            onFinish: () => {
-              layoutChild.card.finishedTweening();
-              layoutChild.checkSetDraggable();
+          animate(
+            layoutChild,
+            {
+              duration: CARD_ANIMATION_LENGTH,
+              x: newX,
+              y: 0,
+              scale,
+              rotation: 0,
+              opacity: 1,
+              // eslint-disable-next-line @typescript-eslint/unbound-method
+              easing: Konva.Easings.EaseOut,
+              onFinish: () => {
+                layoutChild.card.finishedTweening();
+                layoutChild.checkSetDraggable();
+              },
             },
-          }, !globals.options.speedrun);
+            !globals.options.speedrun,
+          );
         };
 
         if (layoutChild.doMisplayAnimation) {
@@ -164,50 +169,57 @@ export default class CardLayout extends Konva.Group {
           const pos = this.getAbsolutePosition();
           const playStackPos = playStack.getAbsolutePosition();
 
-          animate(layoutChild, {
-            duration: CARD_ANIMATION_LENGTH,
-            x: playStackPos.x - pos.x,
-            y: playStackPos.y - pos.y,
-            scale: playStack.height() * scale / handHeight,
-            rotation: 0,
-            opacity: 1,
-            easing: Konva.Easings.EaseOut,
-            onFinish: () => {
-              layoutChild.rotation(360);
-              animateToLayout();
+          animate(
+            layoutChild,
+            {
+              duration: CARD_ANIMATION_LENGTH,
+              x: playStackPos.x - pos.x,
+              y: playStackPos.y - pos.y,
+              scale: (playStack.height() * scale) / handHeight,
+              rotation: 0,
+              opacity: 1,
+              // eslint-disable-next-line @typescript-eslint/unbound-method
+              easing: Konva.Easings.EaseOut,
+              onFinish: () => {
+                layoutChild.rotation(360);
+                animateToLayout();
+              },
             },
-          }, !globals.options.speedrun);
+            !globals.options.speedrun,
+          );
         } else {
           animateToLayout();
         }
       }
 
-      x += ((scale * layoutChild.width()) + spacingBetweenCards) * (this.reverse ? -1 : 1);
+      x +=
+        (scale * layoutChild.width() + spacingBetweenCards) *
+        (this.reverse ? -1 : 1);
     }
   }
 
-  checkSetDraggableAll() {
+  checkSetDraggableAll(): void {
     this.children.each((layoutChild) => {
-      (layoutChild as unknown as LayoutChild).checkSetDraggable();
+      ((layoutChild as unknown) as LayoutChild).checkSetDraggable();
     });
   }
 
-  getAbsoluteCenterPos() {
+  getAbsoluteCenterPos(): { x: number; y: number } {
     const pos = this.getAbsolutePosition(); // The top-left-hand corner
 
     const w = this.width();
     const h = this.height();
 
     // The rotation comes from Konva in radians but we need to convert it to degrees
-    const rot = this.origRotation / 180 * Math.PI;
+    const rot = (this.origRotation / 180) * Math.PI;
 
-    pos.x += (w / 2 * Math.cos(rot)) - (h / 2 * Math.sin(rot));
-    pos.y += (w / 2 * Math.sin(rot)) + (h / 2 * Math.cos(rot));
+    pos.x += (w / 2) * Math.cos(rot) - (h / 2) * Math.sin(rot);
+    pos.y += (w / 2) * Math.sin(rot) + (h / 2) * Math.cos(rot);
 
     return pos;
   }
 
-  setEmpathy(enabled: boolean) {
+  setEmpathy(enabled: boolean): void {
     if (enabled === this.empathy) {
       // No change
       return;

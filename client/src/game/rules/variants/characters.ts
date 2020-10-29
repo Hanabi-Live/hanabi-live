@@ -1,10 +1,10 @@
 /* eslint-disable import/prefer-default-export */
 
-import { getCharacter } from '../../data/gameData';
-import { getCharacterIDForPlayer } from '../../reducers/reducerHelpers';
-import GameMetadata from '../../types/GameMetadata';
+import { getCharacter } from "../../data/gameData";
+import { getCharacterIDForPlayer } from "../../reducers/reducerHelpers";
+import GameMetadata from "../../types/GameMetadata";
 
-export const shouldSeeSlot2CardIdentity = (metadata: GameMetadata) => {
+export const shouldSeeSlot2CardIdentity = (metadata: GameMetadata): boolean => {
   if (!metadata.options.detrimentalCharacters) {
     return false;
   }
@@ -16,5 +16,5 @@ export const shouldSeeSlot2CardIdentity = (metadata: GameMetadata) => {
     return false;
   }
   const ourCharacter = getCharacter(ourCharacterID);
-  return ourCharacter.name === 'Slow-Witted';
+  return ourCharacter.name === "Slow-Witted";
 };

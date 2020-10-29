@@ -1,7 +1,7 @@
-import Konva from 'konva';
-import { LABEL_COLOR } from '../constants';
-import globals from '../globals';
-import FitText from './FitText';
+import Konva from "konva";
+import { LABEL_COLOR } from "../constants";
+import globals from "../globals";
+import FitText from "./FitText";
 
 interface ElementValues {
   x: number;
@@ -41,36 +41,36 @@ export default class CurrentPlayerArea extends Konva.Group {
     this.values = values;
 
     // The left-most box that contains the name of the current player
-    let box1Width = (values.w * 0.75);
+    let box1Width = values.w * 0.75;
     box1Width -= values.spacing;
     this.rect1 = new Konva.Rect({
       width: box1Width * winW,
       height: values.h * winH,
       cornerRadius: 0.01 * winW,
-      fill: 'black',
+      fill: "black",
       opacity: 0.2,
       listening: false,
     });
     this.add(this.rect1);
 
     const textValues = {
-      w: box1Width - (values.spacing * 4),
-      w2: box1Width - (values.spacing * 2),
+      w: box1Width - values.spacing * 4,
+      w2: box1Width - values.spacing * 2,
       x: 0,
       x2: 0,
     };
-    textValues.x = (box1Width / 2) - (textValues.w / 2);
-    textValues.x2 = (box1Width / 2) - (textValues.w2 / 2);
+    textValues.x = box1Width / 2 - textValues.w / 2;
+    textValues.x2 = box1Width / 2 - textValues.w2 / 2;
 
     this.text1 = new FitText({
       x: textValues.x * winW,
       width: textValues.w * winW,
-      fontFamily: 'Verdana',
+      fontFamily: "Verdana",
       fontSize: 0.08 * winH,
-      text: 'Current player:',
-      align: 'center',
+      text: "Current player:",
+      align: "center",
       fill: LABEL_COLOR,
-      shadowColor: 'black',
+      shadowColor: "black",
       shadowBlur: 10,
       shadowOffset: {
         x: 0,
@@ -84,12 +84,12 @@ export default class CurrentPlayerArea extends Konva.Group {
     this.text2 = new FitText({
       x: textValues.x * winW,
       width: textValues.w * winW,
-      fontFamily: 'Verdana',
+      fontFamily: "Verdana",
       fontSize: 0.08 * winH,
-      text: '',
-      align: 'center',
-      fill: '#ffffcc',
-      shadowColor: 'black',
+      text: "",
+      align: "center",
+      fill: "#ffffcc",
+      shadowColor: "black",
       shadowBlur: 10,
       shadowOffset: {
         x: 0,
@@ -103,12 +103,12 @@ export default class CurrentPlayerArea extends Konva.Group {
     this.text3 = new FitText({
       x: textValues.x2 * winW,
       width: textValues.w2 * winW,
-      fontFamily: 'Verdana',
+      fontFamily: "Verdana",
       fontSize: 0.08 * winH,
-      text: '',
-      align: 'center',
-      fill: 'red',
-      shadowColor: 'black',
+      text: "",
+      align: "center",
+      fill: "red",
+      shadowColor: "black",
       shadowBlur: 10,
       shadowOffset: {
         x: 0,
@@ -121,8 +121,8 @@ export default class CurrentPlayerArea extends Konva.Group {
 
     // The right-most box that contains the arrow
     const arrowValues = {
-      x: (values.w * 0.75) + values.spacing,
-      w: (values.w * 0.25) - values.spacing,
+      x: values.w * 0.75 + values.spacing,
+      w: values.w * 0.25 - values.spacing,
       h: values.h,
       spacing: 0.01,
     };
@@ -132,7 +132,7 @@ export default class CurrentPlayerArea extends Konva.Group {
       width: arrowValues.w * winW,
       height: values.h * winH,
       cornerRadius: 0.01 * winW,
-      fill: 'black',
+      fill: "black",
       opacity: 0.2,
       listening: false,
     });
@@ -141,7 +141,7 @@ export default class CurrentPlayerArea extends Konva.Group {
     const baseArrowLength = 0.00528 * winH;
 
     this.arrow = new Konva.Group({
-      x: (arrowValues.x + (arrowValues.w / 2)) * winW,
+      x: (arrowValues.x + arrowValues.w / 2) * winW,
       y: (values.h / 2) * winH,
       offset: {
         x: (arrowValues.w / 2) * winW,
@@ -160,8 +160,8 @@ export default class CurrentPlayerArea extends Konva.Group {
       ],
       pointerLength: baseArrowLength * 2,
       pointerWidth: baseArrowLength * 2,
-      fill: 'black',
-      stroke: 'black',
+      fill: "black",
+      stroke: "black",
       strokeWidth: baseArrowLength * 2,
       shadowBlur: 75,
       shadowOpacity: 1,
@@ -171,13 +171,13 @@ export default class CurrentPlayerArea extends Konva.Group {
 
     const arrowBorderEdge = new Konva.Line({
       points: [
-        (arrowValues.spacing) * winW,
-        ((arrowValues.h / 2) - 0.005) * winH,
-        (arrowValues.spacing) * winW,
-        ((arrowValues.h / 2) + 0.005) * winH,
+        arrowValues.spacing * winW,
+        (arrowValues.h / 2 - 0.005) * winH,
+        arrowValues.spacing * winW,
+        (arrowValues.h / 2 + 0.005) * winH,
       ],
-      fill: 'black',
-      stroke: 'black',
+      fill: "black",
+      stroke: "black",
       strokeWidth: baseArrowLength,
       listening: false,
     });

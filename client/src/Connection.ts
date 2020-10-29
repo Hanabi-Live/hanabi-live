@@ -1,5 +1,5 @@
 interface WebSocketCallbackCommands {
-  [command: string]: (data: any) => void;
+  [command: string]: (data: unknown) => void;
 }
 
 type WebSocketCallbacks = WebSocketCallbackCommands & {
@@ -28,61 +28,67 @@ export default class Connection {
     this.ws.onerror = this.onError.bind(this);
   }
 
-  onOpen(evt: Event) {
+  onOpen(evt: Event): void {
     if (this.callbacks.open) {
       this.callbacks.open(evt);
     }
   }
 
-  onClose(evt: CloseEvent) {
+  onClose(evt: CloseEvent): void {
     if (this.callbacks.close) {
       this.callbacks.close(evt);
     }
   }
 
-  onMessage(evt: MessageEvent) {
+  onMessage(evt: MessageEvent): void {
     const data = unpack(evt.data);
     const command = data[0];
     if (this.callbacks[command] !== undefined) {
       const obj = unmarshal(data[1]);
       if (this.debug) {
-        console.log(`%cReceived ${command}:`, 'color: blue;');
+        console.log(`%cReceived ${command}:`, "color: blue;");
         console.log(obj);
       }
       this.callbacks[command](obj);
     } else {
-      console.error('Received WebSocket message with no callback:', command, JSON.parse(data[1]));
+      console.error(
+        "Received WebSocket message with no callback:",
+        command,
+        JSON.parse(data[1]),
+      );
     }
   }
 
-  onError(evt: Event) {
+  onError(evt: Event): void {
     if (this.callbacks.socketError) {
       this.callbacks.socketError(evt);
     }
   }
 
-  on(name: string, callback: (evt: any) => void) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on(name: string, callback: (evt: any) => void): void {
     this.callbacks[name] = callback;
   }
 
-  send(command: string, data?: any) {
+  send(command: string, data?: unknown): void {
     if (this.ws.readyState !== WebSocket.OPEN) {
       return;
     }
-    console.log(`%cSent ${command}:`, 'color: green;');
+    console.log(`%cSent ${command}:`, "color: green;");
     console.log(data);
     this.ws.send(marshalAndPack(command, data || {}));
   }
 
-  close() {
+  close(): void {
     this.ws.close();
   }
 }
 
-const separator = ' ';
+const separator = " ";
 const unpack = (data: string) => {
   const name = data.split(separator)[0];
   return [name, data.substring(name.length + 1, data.length)];
 };
 const unmarshal = (data: string) => JSON.parse(data) as unknown;
-const marshalAndPack = (name: string, data: any) => name + separator + JSON.stringify(data);
+const marshalAndPack = (name: string, data: unknown) =>
+  name + separator + JSON.stringify(data);

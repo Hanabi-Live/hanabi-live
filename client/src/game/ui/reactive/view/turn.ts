@@ -1,11 +1,11 @@
 /* eslint-disable import/prefer-default-export */
 
-import globals from '../../globals';
-import isOurTurn from '../../isOurTurn';
-import * as ourHand from '../../ourHand';
-import * as turn from '../../turn';
+import globals from "../../globals";
+import isOurTurn from "../../isOurTurn";
+import * as ourHand from "../../ourHand";
+import * as turn from "../../turn";
 
-export const onOngoingTurnChanged = () => {
+export const onOngoingTurnChanged = (): void => {
   ourHand.checkSetDraggableAll();
 
   if (isOurTurn()) {

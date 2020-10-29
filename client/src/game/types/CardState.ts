@@ -1,4 +1,4 @@
-import Color from './Color';
+import Color from "./Color";
 
 export default interface CardState {
   readonly order: number;
@@ -43,4 +43,4 @@ export default interface CardState {
   readonly dealtToStartingHand: boolean;
 }
 
-export type CardLocation = 'deck' | 'discard' | 'playStack' | number;
+export type CardLocation = "deck" | "discard" | "playStack" | number;

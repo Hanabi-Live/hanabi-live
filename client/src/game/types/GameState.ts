@@ -1,8 +1,8 @@
-import CardState from './CardState';
-import CardStatus from './CardStatus';
-import StackDirection from './StackDirection';
-import StatsState from './StatsState';
-import TurnState from './TurnState';
+import CardState from "./CardState";
+import CardStatus from "./CardStatus";
+import StackDirection from "./StackDirection";
+import StatsState from "./StatsState";
+import TurnState from "./TurnState";
 
 export default interface GameState {
   readonly turn: TurnState;
@@ -48,4 +48,4 @@ export interface StateCardClue {
   readonly positive: boolean;
 }
 
-export type PaceRisk = 'LowRisk' | 'MediumRisk' | 'HighRisk' | 'Zero' | 'Null';
+export type PaceRisk = "LowRisk" | "MediumRisk" | "HighRisk" | "Zero" | "Null";

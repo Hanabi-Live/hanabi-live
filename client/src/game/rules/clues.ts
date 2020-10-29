@@ -1,44 +1,43 @@
 // Functions related to the clue objects themselves: converting, getting names, etc
 
-import { getCharacter } from '../data/gameData';
-import { getCharacterIDForPlayer } from '../reducers/reducerHelpers';
-import Clue, { colorClue, rankClue } from '../types/Clue';
-import ClueType from '../types/ClueType';
-import { START_CARD_RANK } from '../types/constants';
-import GameMetadata from '../types/GameMetadata';
-import MsgClue from '../types/MsgClue';
-import Variant from '../types/Variant';
-import * as variantRules from './variant';
+import { getCharacter } from "../data/gameData";
+import { getCharacterIDForPlayer } from "../reducers/reducerHelpers";
+import Clue, { colorClue, rankClue } from "../types/Clue";
+import ClueType from "../types/ClueType";
+import { START_CARD_RANK } from "../types/constants";
+import GameMetadata from "../types/GameMetadata";
+import MsgClue from "../types/MsgClue";
+import Variant from "../types/Variant";
+import * as variantRules from "./variant";
 
 export const getClueName = (
   clueType: ClueType,
   clueValue: number,
   variant: Variant,
   characterID: number | null,
-) => {
-  let characterName = '';
+): string => {
+  let characterName = "";
   if (characterID !== null) {
     const character = getCharacter(characterID);
     characterName = character.name;
   }
 
-  let clueName;
+  let clueName: string;
   if (clueType === ClueType.Color) {
     clueName = variant.clueColors[clueValue].name;
   } else if (clueType === ClueType.Rank) {
     clueName = clueValue.toString();
+  } else {
+    throw new Error("Invalid clue type.");
   }
   if (variantRules.isCowAndPig(variant)) {
     if (clueType === ClueType.Color) {
-      clueName = 'Moo';
+      clueName = "Moo";
     } else if (clueType === ClueType.Rank) {
-      clueName = 'Oink';
+      clueName = "Oink";
     }
-  } else if (
-    variantRules.isDuck(variant)
-     || characterName === 'Quacker'
-  ) {
-    clueName = 'Quack';
+  } else if (variantRules.isDuck(variant) || characterName === "Quacker") {
+    clueName = "Quack";
   }
   return clueName;
 };
@@ -46,12 +45,13 @@ export const getClueName = (
 // Convert a clue from the format used by the server to the format used by the client
 // On the client, the color is a rich object
 // On the server, the color is a simple integer mapping
-export const msgClueToClue = (msgClue: MsgClue, variant: Variant) => {
+export const msgClueToClue = (msgClue: MsgClue, variant: Variant): Clue => {
   let clueValue;
   if (msgClue.type === ClueType.Color) {
     clueValue = variant.clueColors[msgClue.value]; // This is a Color object
     return colorClue(clueValue);
-  } if (msgClue.type === ClueType.Rank) {
+  }
+  if (msgClue.type === ClueType.Rank) {
     clueValue = msgClue.value;
     return rankClue(clueValue);
   }
@@ -64,7 +64,7 @@ export const touchesCard = (
   clue: Clue,
   suitIndex: number,
   rank: number,
-) => {
+): boolean => {
   const suit = variant.suits[suitIndex];
 
   if (clue.type === ClueType.Color) {
@@ -133,20 +133,20 @@ export const shouldApplyClue = (
   giverIndex: number,
   metadata: GameMetadata,
   variant: Variant,
-) => {
+): boolean => {
   const giverCharacterID = getCharacterIDForPlayer(
     giverIndex,
     metadata.characterAssignments,
   );
-  let giverCharacterName = '';
+  let giverCharacterName = "";
   if (giverCharacterID !== null) {
     const giverCharacter = getCharacter(giverCharacterID);
     giverCharacterName = giverCharacter.name;
   }
 
   return (
-    !variantRules.isCowAndPig(variant)
-    && !variantRules.isDuck(variant)
-    && giverCharacterName !== 'Quacker'
+    !variantRules.isCowAndPig(variant) &&
+    !variantRules.isDuck(variant) &&
+    giverCharacterName !== "Quacker"
   );
 };

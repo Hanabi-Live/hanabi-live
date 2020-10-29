@@ -1,4 +1,4 @@
-import Konva from 'konva';
+import Konva from "konva";
 
 const defaultLayerSettings = {
   // Disable "listening" for every layer/element by default to increase performance

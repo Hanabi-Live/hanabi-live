@@ -1,9 +1,13 @@
-import { ensureAllCases } from '../../misc';
-import { variantRules } from '../rules';
-import CardState from '../types/CardState';
-import { STACK_BASE_RANK, UNKNOWN_CARD_RANK, START_CARD_RANK } from '../types/constants';
-import StackDirection from '../types/StackDirection';
-import Variant from '../types/Variant';
+import { ensureAllCases } from "../../misc";
+import { variantRules } from "../rules";
+import CardState from "../types/CardState";
+import {
+  STACK_BASE_RANK,
+  START_CARD_RANK,
+  UNKNOWN_CARD_RANK,
+} from "../types/constants";
+import StackDirection from "../types/StackDirection";
+import Variant from "../types/Variant";
 
 export const lastPlayedRank = (
   playStack: readonly number[],
@@ -76,12 +80,16 @@ export const direction = (
   }
 
   if (!variantRules.isUpOrDown(variant)) {
-    return variant.suits[suitIndex].reversed ? StackDirection.Down : StackDirection.Up;
+    return variant.suits[suitIndex].reversed
+      ? StackDirection.Down
+      : StackDirection.Up;
   }
 
   const top = lastPlayedRank(playStack, deck);
   if (top === UNKNOWN_CARD_RANK) {
-    throw new Error(`The last played rank for suit index ${suitIndex} was unknown.`);
+    throw new Error(
+      `The last played rank for suit index ${suitIndex} was unknown.`,
+    );
   }
   if (top === STACK_BASE_RANK || top === START_CARD_RANK) {
     return StackDirection.Undecided;

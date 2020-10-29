@@ -1,19 +1,19 @@
 // The lobby area that shows all of the current logged-in users
 
-import globals from '../globals';
-import { ensureAllCases } from '../misc';
-import * as tooltips from '../tooltips';
-import * as tablesDraw from './tablesDraw';
-import Screen from './types/Screen';
-import Status, { StatusText } from './types/Status';
+import globals from "../globals";
+import { ensureAllCases } from "../misc";
+import * as tooltips from "../tooltips";
+import * as tablesDraw from "./tablesDraw";
+import Screen from "./types/Screen";
+import Status, { StatusText } from "./types/Status";
 
-export const draw = () => {
-  $('#lobby-users-num').text(globals.userMap.size);
+export const draw = (): void => {
+  $("#lobby-users-num").text(globals.userMap.size);
 
-  const tbody = $('#lobby-users-table-tbody');
+  const tbody = $("#lobby-users-table-tbody");
 
   // Clear all of the existing rows
-  tbody.html('');
+  tbody.html("");
 
   // Don't do anything if there are no users
   // (this will be the case when first logging in and not doing the tutorial)
@@ -79,7 +79,7 @@ const drawUser = (
     throw new Error(`Failed to get the user for the ID of "${userID}".`);
   }
 
-  let nameColumn = '';
+  let nameColumn = "";
   if (user.hyphenated) {
     nameColumn += `<span id="hyphenated-tooltip-${userID}" class="tooltip" `;
     nameColumn += 'data-tooltip-content="#hyphenated-tooltip">';
@@ -87,7 +87,7 @@ const drawUser = (
   }
   nameColumn += `<span id="online-users-${userID}">`;
   if (username === globals.username) {
-    nameColumn += '<strong>';
+    nameColumn += "<strong>";
   }
   nameColumn += `<a href="/scores/${username}" `;
   if (username === globals.username) {
@@ -97,35 +97,36 @@ const drawUser = (
   }
   nameColumn += 'target="_blank" rel="noopener noreferrer">';
   nameColumn += username;
-  nameColumn += '</a>';
+  nameColumn += "</a>";
   if (username === globals.username) {
-    nameColumn += '</strong>';
+    nameColumn += "</strong>";
   }
   nameColumn += `<span id="online-users-${userID}-zzz" class="hidden"> &nbsp;💤</span>`;
-  nameColumn += '</span>';
+  nameColumn += "</span>";
 
   let statusColumn;
   const statusText = StatusText[user.status];
   if (
-    globals.currentScreen === Screen.PreGame
-    || user.status === Status.Lobby
-    || user.status === Status.Replay
+    globals.currentScreen === Screen.PreGame ||
+    user.status === Status.Lobby ||
+    user.status === Status.Replay
   ) {
     statusColumn = statusText;
   } else {
     statusColumn = `<a id="online-users-${userID}-link" href="#">${statusText}</a>`;
   }
 
-  const row = $('<tr>');
-  $('<td>').html(nameColumn).appendTo(row);
-  $('<td>').html(statusColumn).appendTo(row);
+  const row = $("<tr>");
+  $("<td>").html(nameColumn).appendTo(row);
+  $("<td>").html(statusColumn).appendTo(row);
 
   row.appendTo(tbody);
 
   setLink(userID);
   setInactive(userID, user.inactive);
 
-  const content = '<span style="font-size: 0.75em;">This person is a self-identified member of the Hyphen-ated group.</span>';
+  const content =
+    '<span style="font-size: 0.75em;">This person is a self-identified member of the Hyphen-ated group.</span>';
   const tooltipOptions = {
     ...tooltips.options,
     content,
@@ -134,8 +135,8 @@ const drawUser = (
 };
 
 const setLink = (userID: number) => {
-  $(`#online-users-${userID}-link`).off('click');
-  $(`#online-users-${userID}-link`).on('click', () => {
+  $(`#online-users-${userID}-link`).off("click");
+  $(`#online-users-${userID}-link`).on("click", () => {
     // Get the user corresponding to this element
     const user = globals.userMap.get(userID);
     if (user === undefined) {
@@ -187,7 +188,7 @@ const setLink = (userID: number) => {
   });
 };
 
-export const setInactive = (userID: number, inactive: boolean) => {
+export const setInactive = (userID: number, inactive: boolean): void => {
   if (inactive) {
     $(`#online-users-${userID}`).fadeTo(0, 0.3);
     $(`#online-users-${userID}-zzz`).show();

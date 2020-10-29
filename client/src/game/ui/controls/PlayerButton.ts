@@ -1,5 +1,5 @@
-import Konva from 'konva';
-import Button from './Button';
+import Konva from "konva";
+import Button from "./Button";
 
 export default class PlayerButton extends Button {
   targetIndex: number;

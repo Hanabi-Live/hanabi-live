@@ -1,4 +1,4 @@
-import Options from '../../types/Options';
+import Options from "../../types/Options";
 
 // GameMetadata is for data that does not change
 export default interface GameMetadata {
@@ -18,4 +18,4 @@ export default interface GameMetadata {
 export const getPlayerName = (
   playerIndex: number,
   metadata: GameMetadata,
-) => metadata.playerNames[playerIndex] ?? 'Hanabi Live';
+): string => metadata.playerNames[playerIndex] ?? "Hanabi Live";

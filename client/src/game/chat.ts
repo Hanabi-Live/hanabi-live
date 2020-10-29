@@ -1,21 +1,21 @@
 // In-game chat
 
-import interact from 'interactjs';
-import { FADE_TIME } from '../constants';
-import globals from '../globals';
-import { parseIntSafe } from '../misc';
+import interact from "interactjs";
+import { FADE_TIME } from "../constants";
+import globals from "../globals";
+import { parseIntSafe } from "../misc";
 
-export const init = () => {
+export const init = (): void => {
   // Make the chat modal draggable (using the InteractJS library)
-  interact('.draggable')
+  interact(".draggable")
     .draggable({
-      allowFrom: '#game-chat-modal-header',
+      allowFrom: "#game-chat-modal-header",
 
       // Keep the modal within the bounds of the page
       // (the parent is the <body> element)
       modifiers: [
-        interact.modifiers!.restrictRect({
-          restriction: 'parent',
+        interact.modifiers.restrictRect({
+          restriction: "parent",
         }),
       ],
 
@@ -23,8 +23,8 @@ export const init = () => {
       onmove: (event: Interact.InteractEvent) => {
         // Get the new position based on the delta between the event and the old position
         // (which is conveniently stored in the "data-x" and "data-y" attributes)
-        const x = (Number(event.target.getAttribute('data-x')) || 0) + event.dx;
-        const y = (Number(event.target.getAttribute('data-y')) || 0) + event.dy;
+        const x = (Number(event.target.getAttribute("data-x")) || 0) + event.dx;
+        const y = (Number(event.target.getAttribute("data-y")) || 0) + event.dy;
 
         // Move it
         const element = $(`#${event.target.id}`);
@@ -42,17 +42,17 @@ export const init = () => {
         bottom: true,
       },
 
-      ignoreFrom: '#game-chat-modal-header',
+      ignoreFrom: "#game-chat-modal-header",
 
       modifiers: [
         // Keep the modal within the bounds of the page
         // (the parent is the <body> element)
-        interact.modifiers!.restrictEdges({
-          outer: 'parent',
+        interact.modifiers.restrictEdges({
+          outer: "parent",
         }),
 
         // Define a minimum size for the modal
-        interact.modifiers!.restrictSize({
+        interact.modifiers.restrictSize({
           min: {
             width: 200,
             height: 200,
@@ -61,11 +61,11 @@ export const init = () => {
       ],
     })
 
-    .on('resizemove', (event: Interact.ResizeEvent) => {
+    .on("resizemove", (event: Interact.ResizeEvent) => {
       // Get the new position based on the delta between the event and the old position
       // (which is conveniently stored in the "data-x" and "data-y" attributes)
-      let x = Number(event.target.getAttribute('data-x')) || 0;
-      let y = Number(event.target.getAttribute('data-y')) || 0;
+      let x = Number(event.target.getAttribute("data-x")) || 0;
+      let y = Number(event.target.getAttribute("data-y")) || 0;
 
       // Translate when resizing from top or left edges
       x += event.deltaRect!.left;
@@ -80,36 +80,36 @@ export const init = () => {
       event.target.style.height = `${event.rect.height}px`;
     })
 
-    .on('dragend resizeend', (event: Interact.InteractEvent) => {
+    .on("dragend resizeend", (event: Interact.InteractEvent) => {
       // The modal was moved or resized;
       // store the window dimensions in a cookie so that it will persist between refreshes
-      localStorage.setItem('chatWindowWidth', event.target.style.width);
-      localStorage.setItem('chatWindowHeight', event.target.style.height);
+      localStorage.setItem("chatWindowWidth", event.target.style.width);
+      localStorage.setItem("chatWindowHeight", event.target.style.height);
       const chatElement = $(`#${event.target.id}`);
       if (chatElement !== undefined) {
-        localStorage.setItem('chatWindowX', chatElement.attr('data-x') ?? '0');
-        localStorage.setItem('chatWindowY', chatElement.attr('data-y') ?? '0');
+        localStorage.setItem("chatWindowX", chatElement.attr("data-x") ?? "0");
+        localStorage.setItem("chatWindowY", chatElement.attr("data-y") ?? "0");
       } else {
         throw new Error(`Failed to get the "${event.target.id}" element.`);
       }
     });
 
-  $('#game-chat-modal-header-close').click(() => {
+  $("#game-chat-modal-header-close").click(() => {
     hide();
   });
 };
 
-export const toggle = () => {
-  const modal = $('#game-chat-modal');
-  if (modal.is(':visible')) {
+export const toggle = (): void => {
+  const modal = $("#game-chat-modal");
+  if (modal.is(":visible")) {
     hide();
   } else {
     show();
   }
 };
 
-export const show = () => {
-  const modal = $('#game-chat-modal');
+export const show = (): void => {
+  const modal = $("#game-chat-modal");
   modal.fadeIn(FADE_TIME);
 
   // Check to see if there are any unread chat messages
@@ -119,7 +119,7 @@ export const show = () => {
 
     // We need to notify the server that we have read everything
     if (globals.conn) {
-      globals.conn.send('chatRead', {
+      globals.conn.send("chatRead", {
         tableID: globals.tableID,
       });
     } else {
@@ -135,68 +135,84 @@ export const show = () => {
   }
 
   // Set the modal to the default position
-  modal.css('width', '20%');
-  modal.css('height', '50%');
-  modal.css('top', '1%');
-  modal.css('left', '79%');
+  modal.css("width", "20%");
+  modal.css("height", "50%");
+  modal.css("top", "1%");
+  modal.css("left", "79%");
 
   // If there is a stored size + position for the chat box, set that
   let resetPosition = true;
-  const width = localStorage.getItem('chatWindowWidth');
-  const height = localStorage.getItem('chatWindowHeight');
-  const x = localStorage.getItem('chatWindowX');
-  const y = localStorage.getItem('chatWindowY');
+  const width = localStorage.getItem("chatWindowWidth");
+  const height = localStorage.getItem("chatWindowHeight");
+  const x = localStorage.getItem("chatWindowX");
+  const y = localStorage.getItem("chatWindowY");
   if (
-    width !== null && width !== ''
-    && height !== null && height !== ''
-    && x !== null && x !== ''
-    && y !== null && y !== ''
+    width !== null &&
+    width !== "" &&
+    height !== null &&
+    height !== "" &&
+    x !== null &&
+    x !== "" &&
+    y !== null &&
+    y !== ""
   ) {
     resetPosition = false;
-    modal.css('width', width);
-    modal.css('height', height);
+    modal.css("width", width);
+    modal.css("height", height);
     moveElement(modal, parseIntSafe(x), parseIntSafe(y));
 
     // Just in case,
     // reset the size and position if the stored location puts the chat box offscreen
     // (this is possible if the window size has changed since the last time)
-    if (modal.is(':offscreen')) {
+    if (isOffscreen(modal)) {
       resetPosition = true;
     }
   }
 
   if (resetPosition) {
-    modal.css('width', '20%');
-    modal.css('height', '50%');
-    modal.css('webkitTransform', 'translate(0px, 0px)');
-    modal.css('transform', 'translate(0px, 0px)');
-    modal.attr('data-x', 0);
-    modal.attr('data-y', 0);
+    modal.css("width", "20%");
+    modal.css("height", "50%");
+    modal.css("webkitTransform", "translate(0px, 0px)");
+    modal.css("transform", "translate(0px, 0px)");
+    modal.attr("data-x", 0);
+    modal.attr("data-y", 0);
   }
 
   // Scroll to the bottom of the chat
-  const chat = document.getElementById('game-chat-text');
+  const chat = document.getElementById("game-chat-text");
   if (chat) {
     chat.scrollTop = chat.scrollHeight;
   } else {
     throw new Error('Failed to get the "game-chat-text" element.');
   }
 
-  $('#game-chat-input').focus();
+  $("#game-chat-input").focus();
 };
 
-export const hide = () => {
-  $('#game-chat-modal').fadeOut(FADE_TIME);
+export const hide = (): void => {
+  $("#game-chat-modal").fadeOut(FADE_TIME);
 };
 
 // Subroutine to move an element (using the "transform" CSS property)
 const moveElement = (element: JQuery, x: number, y: number) => {
   // Update the element's style
   const transform = `translate(${x}px, ${y}px)`;
-  element.css('webkitTransform', transform);
-  element.css('transform', transform);
+  element.css("webkitTransform", transform);
+  element.css("transform", transform);
 
   // Keep the dragged position in the "data-x" & "data-y" attributes
-  element.attr('data-x', x);
-  element.attr('data-y', y);
+  element.attr("data-x", x);
+  element.attr("data-y", y);
+};
+
+// From: https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen
+const isOffscreen = (element: JQuery<HTMLElement>) => {
+  const domElement = element[0];
+  const rect = domElement.getBoundingClientRect();
+  return (
+    rect.top < 0 || // Above the top
+    rect.bottom > window.innerHeight || // Below the bottom
+    rect.left < 0 || // Left of the left edge
+    rect.right > window.innerWidth // Right of the right edge
+  );
 };

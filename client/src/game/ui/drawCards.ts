@@ -1,27 +1,34 @@
 // The card graphics are various HTML5 canvas drawings
 
-import { getSuit } from '../data/gameData';
-import { abbreviationRules } from '../rules';
-import * as variantRules from '../rules/variant';
-import Color from '../types/Color';
-import { STACK_BASE_RANK, START_CARD_RANK, UNKNOWN_CARD_RANK } from '../types/constants';
-import Suit from '../types/Suit';
-import Variant from '../types/Variant';
-import { CARD_H, CARD_W } from './constants';
-import drawPip from './drawPip';
-import drawStylizedRank from './drawStylizedRank';
+import { getSuit } from "../data/gameData";
+import { abbreviationRules } from "../rules";
+import * as variantRules from "../rules/variant";
+import Color from "../types/Color";
+import {
+  STACK_BASE_RANK,
+  START_CARD_RANK,
+  UNKNOWN_CARD_RANK,
+} from "../types/constants";
+import Suit from "../types/Suit";
+import Variant from "../types/Variant";
+import { CARD_H, CARD_W } from "./constants";
+import drawPip from "./drawPip";
+import drawStylizedRank from "./drawStylizedRank";
 
 // This function returns an object containing all of the drawn cards images (on individual canvases)
 export default function drawCards(
   variant: Variant,
   colorblindMode: boolean,
   styleNumbers: boolean,
-) {
-  const cardImages: Map<string, HTMLCanvasElement> = new Map<string, HTMLCanvasElement>();
+): Map<string, HTMLCanvasElement> {
+  const cardImages: Map<string, HTMLCanvasElement> = new Map<
+    string,
+    HTMLCanvasElement
+  >();
 
   // Add the "Unknown" suit to the list of suits for this variant
   // The unknown suit has blank white cards, representing cards of known rank but unknown suit
-  const unknownSuit = getSuit('Unknown');
+  const unknownSuit = getSuit("Unknown");
   const suits = variant.suits.concat(unknownSuit);
 
   for (const suit of suits) {
@@ -31,14 +38,17 @@ export default function drawCards(
     // Rank 7 is a "START" card (in the "Up or Down" variants)
     for (let rank = 0; rank <= 7; rank++) {
       // We need unknown cards for 1, 2, 3, 4, 5, and the "START" card
-      if (suit.name === 'Unknown' && (rank === STACK_BASE_RANK || rank === UNKNOWN_CARD_RANK)) {
+      if (
+        suit.name === "Unknown" &&
+        (rank === STACK_BASE_RANK || rank === UNKNOWN_CARD_RANK)
+      ) {
         continue;
       }
 
       const cvs = initCanvas();
-      const ctx = cvs.getContext('2d');
+      const ctx = cvs.getContext("2d");
       if (ctx === null) {
-        throw new Error('Failed to get the context for a new canvas element.');
+        throw new Error("Failed to get the context for a new canvas element.");
       }
 
       // We don't need the background on the stack base
@@ -55,16 +65,23 @@ export default function drawCards(
       drawCardBase(ctx, suit, rank, variant, colorblindMode);
 
       ctx.shadowBlur = 10;
-      ctx.fillStyle = getSuitStyle(suit, rank, ctx, 'number', variant, colorblindMode);
-      ctx.strokeStyle = 'black';
+      ctx.fillStyle = getSuitStyle(
+        suit,
+        rank,
+        ctx,
+        "number",
+        variant,
+        colorblindMode,
+      );
+      ctx.strokeStyle = "black";
       ctx.lineWidth = 2;
-      ctx.lineJoin = 'round';
+      ctx.lineJoin = "round";
 
       if (rank !== STACK_BASE_RANK && rank !== UNKNOWN_CARD_RANK) {
         let textYPos;
         let rankLabel = rank.toString();
         if (rank === START_CARD_RANK) {
-          rankLabel = 'S';
+          rankLabel = "S";
         }
         let fontSize;
         if (colorblindMode) {
@@ -118,7 +135,7 @@ export default function drawCards(
 
       // The "Unknown" suit does not have pips
       // (it is a white suit that is used for cards that are clued with rank)
-      if (suit.name !== 'Unknown') {
+      if (suit.name !== "Unknown") {
         drawSuitPips(ctx, rank, suit, colorblindMode);
       }
 
@@ -134,25 +151,25 @@ export default function drawCards(
 
   // Additionally, create an image for the deck back
   // This is similar to the Unknown 6 card, except it has pips for each suit
-  cardImages.set('deck-back', makeDeckBack(variant));
+  cardImages.set("deck-back", makeDeckBack(variant));
 
   return cardImages;
 }
 
 const initCanvas = () => {
-  const cvs = document.createElement('canvas');
+  const cvs = document.createElement("canvas");
   cvs.width = CARD_W;
   cvs.height = CARD_H;
   return cvs;
 };
 
 const cloneCanvas = (oldCvs: HTMLCanvasElement) => {
-  const newCvs = document.createElement('canvas');
+  const newCvs = document.createElement("canvas");
   newCvs.width = oldCvs.width;
   newCvs.height = oldCvs.height;
-  const ctx = newCvs.getContext('2d');
+  const ctx = newCvs.getContext("2d");
   if (ctx === null) {
-    throw new Error('Failed to get the context for a new canvas element.');
+    throw new Error("Failed to get the context for a new canvas element.");
   }
   ctx.drawImage(oldCvs, 0, 0);
   return newCvs;
@@ -264,13 +281,13 @@ const drawSuitPips = (
 
 const makeUnknownCard = () => {
   const cvs = initCanvas();
-  const ctx = cvs.getContext('2d');
+  const ctx = cvs.getContext("2d");
   if (ctx === null) {
-    throw new Error('Failed to get the context for a new canvas element.');
+    throw new Error("Failed to get the context for a new canvas element.");
   }
 
   drawCardBackground(ctx);
-  ctx.fillStyle = 'black';
+  ctx.fillStyle = "black";
   cardBorderPath(ctx, 4);
 
   ctx.save();
@@ -281,9 +298,9 @@ const makeUnknownCard = () => {
   ctx.stroke();
   ctx.restore();
 
-  ctx.fillStyle = '#444444';
+  ctx.fillStyle = "#444444";
   ctx.lineWidth = 8;
-  ctx.lineJoin = 'round';
+  ctx.lineJoin = "round";
 
   ctx.translate(CARD_W / 2, CARD_H / 2);
 
@@ -292,9 +309,9 @@ const makeUnknownCard = () => {
 
 const makeDeckBack = (variant: Variant) => {
   const cvs = makeUnknownCard();
-  const ctx = cvs.getContext('2d');
+  const ctx = cvs.getContext("2d");
   if (ctx === null) {
-    throw new Error('Failed to get the context for a new canvas element.');
+    throw new Error("Failed to get the context for a new canvas element.");
   }
 
   const sf = 0.4; // Scale factor
@@ -304,12 +321,16 @@ const makeDeckBack = (variant: Variant) => {
     const suit = variant.suits[i];
 
     // Transform polar to cartesian coordinates
-    const x = -1.05 * Math.floor(CARD_W * 0.7 * Math.cos(((-i / nSuits) + 0.25) * Math.PI * 2));
-    const y = -1.05 * Math.floor(CARD_W * 0.7 * Math.sin(((-i / nSuits) + 0.25) * Math.PI * 2));
+    const x =
+      -1.05 *
+      Math.floor(CARD_W * 0.7 * Math.cos((-i / nSuits + 0.25) * Math.PI * 2));
+    const y =
+      -1.05 *
+      Math.floor(CARD_W * 0.7 * Math.sin((-i / nSuits + 0.25) * Math.PI * 2));
 
     ctx.save();
     ctx.translate(x, y);
-    drawPip(ctx, suit, true, '#444444'); // Pips on the back of the deck should be gray
+    drawPip(ctx, suit, true, "#444444"); // Pips on the back of the deck should be gray
     ctx.restore();
   }
   ctx.scale(1 / sf, 1 / sf);
@@ -325,8 +346,22 @@ const drawCardBase = (
   colorblindMode: boolean,
 ) => {
   // Draw the background
-  ctx.fillStyle = getSuitStyle(suit, rank, ctx, 'background', variant, colorblindMode);
-  ctx.strokeStyle = getSuitStyle(suit, rank, ctx, 'background', variant, colorblindMode);
+  ctx.fillStyle = getSuitStyle(
+    suit,
+    rank,
+    ctx,
+    "background",
+    variant,
+    colorblindMode,
+  );
+  ctx.strokeStyle = getSuitStyle(
+    suit,
+    rank,
+    ctx,
+    "background",
+    variant,
+    colorblindMode,
+  );
   cardBorderPath(ctx, 4);
 
   // Draw the borders (on visible cards) and the color fill
@@ -352,7 +387,12 @@ const cardBorderPath = (ctx: CanvasRenderingContext2D, padding: number) => {
   ctx.lineTo(padding, CARD_H - yRadians - padding); // Bottom-left corner
   ctx.quadraticCurveTo(0, CARD_H, xRadians + padding, CARD_H - padding);
   ctx.lineTo(CARD_W - xRadians - padding, CARD_H - padding); // Bottom-right corner
-  ctx.quadraticCurveTo(CARD_W, CARD_H, CARD_W - padding, CARD_H - yRadians - padding);
+  ctx.quadraticCurveTo(
+    CARD_W,
+    CARD_H,
+    CARD_W - padding,
+    CARD_H - yRadians - padding,
+  );
   ctx.lineTo(CARD_W - padding, yRadians + padding); // Top-right corner
   ctx.quadraticCurveTo(CARD_W, 0, CARD_W - xRadians - padding, padding);
   ctx.lineTo(xRadians + padding, padding); // Top-left corner
@@ -360,20 +400,27 @@ const cardBorderPath = (ctx: CanvasRenderingContext2D, padding: number) => {
 };
 
 const drawShape = (ctx: CanvasRenderingContext2D) => {
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+  ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
   ctx.fill();
-  ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+  ctx.shadowColor = "rgba(0, 0, 0, 0)";
   ctx.stroke();
 };
 
-const drawText = (ctx: CanvasRenderingContext2D, textYPos: number, indexLabel: string) => {
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+const drawText = (
+  ctx: CanvasRenderingContext2D,
+  textYPos: number,
+  indexLabel: string,
+) => {
+  ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
   ctx.fillText(indexLabel, 19, textYPos);
-  ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+  ctx.shadowColor = "rgba(0, 0, 0, 0)";
   ctx.strokeText(indexLabel, 19, textYPos);
 };
 
-const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Color[]) => {
+const drawMixedCardHelper = (
+  ctx: CanvasRenderingContext2D,
+  clueColors: Color[],
+) => {
   const [clueColor1, clueColor2] = clueColors;
 
   ctx.save();
@@ -386,7 +433,10 @@ const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Color[])
   ctx.moveTo(CARD_W - borderSize, borderSize); // Start at the top-right-hand corner
   ctx.lineTo(CARD_W - borderSize - triangleSize, borderSize); // Move left
   // Move down and right diagonally
-  ctx.lineTo(CARD_W - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2));
+  ctx.lineTo(
+    CARD_W - borderSize - triangleSize / 2,
+    borderSize + triangleSize / 2,
+  );
   ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
   ctx.fillStyle = clueColor1.fill;
   drawShape(ctx);
@@ -396,7 +446,10 @@ const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Color[])
   ctx.moveTo(CARD_W - borderSize, borderSize); // Start at the top-right-hand corner
   ctx.lineTo(CARD_W - borderSize, borderSize + triangleSize); // Move down
   // Move up and left diagonally
-  ctx.lineTo(CARD_W - borderSize - (triangleSize / 2), borderSize + (triangleSize / 2));
+  ctx.lineTo(
+    CARD_W - borderSize - triangleSize / 2,
+    borderSize + triangleSize / 2,
+  );
   ctx.moveTo(CARD_W - borderSize, borderSize); // Move back to the beginning
   ctx.fillStyle = clueColor2.fill;
   drawShape(ctx);
@@ -406,7 +459,10 @@ const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Color[])
   ctx.moveTo(borderSize, CARD_H - borderSize); // Start at the bottom right-hand corner
   ctx.lineTo(borderSize, CARD_H - borderSize - triangleSize); // Move up
   // Move right and down diagonally
-  ctx.lineTo(borderSize + (triangleSize / 2), CARD_H - borderSize - (triangleSize / 2));
+  ctx.lineTo(
+    borderSize + triangleSize / 2,
+    CARD_H - borderSize - triangleSize / 2,
+  );
   ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
   ctx.fillStyle = clueColor1.fill;
   drawShape(ctx);
@@ -416,7 +472,10 @@ const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Color[])
   ctx.moveTo(borderSize, CARD_H - borderSize); // Start at the bottom right-hand corner
   ctx.lineTo(borderSize + triangleSize, CARD_H - borderSize); // Move right
   // Move left and up diagonally
-  ctx.lineTo(borderSize + (triangleSize / 2), CARD_H - borderSize - (triangleSize / 2));
+  ctx.lineTo(
+    borderSize + triangleSize / 2,
+    CARD_H - borderSize - triangleSize / 2,
+  );
   ctx.moveTo(borderSize, CARD_H - borderSize); // Move back to the beginning
   ctx.fillStyle = clueColor2.fill;
   drawShape(ctx);
@@ -427,7 +486,7 @@ const drawMixedCardHelper = (ctx: CanvasRenderingContext2D, clueColors: Color[])
 const drawCardBackground = (ctx: CanvasRenderingContext2D) => {
   cardBorderPath(ctx, 4);
 
-  ctx.fillStyle = 'white';
+  ctx.fillStyle = "white";
   ctx.fill();
 
   ctx.restore();
@@ -467,22 +526,24 @@ const getSuitStyle = (
   }
 
   // Nearly all other suits have a solid fill
-  if (suit.fill !== 'multi') {
+  if (suit.fill !== "multi") {
     return colorblindMode ? suit.fillColorblind : suit.fill;
   }
 
   // Rainbow suits use a gradient fill, but the specific type of gradient will depend on the
   // specific element of the card that we are filling in
-  if (cardArea === 'number') {
+  if (cardArea === "number") {
     return evenLinearGradient(ctx, suit.fillColors, [0, 14, 0, 110]);
   }
-  if (cardArea === 'background') {
-    if (suit.name === 'Omni' || suit.name === 'Dark Omni') {
+  if (cardArea === "background") {
+    if (suit.name === "Omni" || suit.name === "Dark Omni") {
       return evenLinearGradient(ctx, suit.fillColors, [0, -30, 0, CARD_H + 30]);
     }
     return evenLinearGradient(ctx, suit.fillColors, [0, 0, CARD_W, CARD_H]);
   }
-  throw new Error(`The card area of "${cardArea}" is unknown in the "getSuitStyle()" function.`);
+  throw new Error(
+    `The card area of "${cardArea}" is unknown in the "getSuitStyle()" function.`,
+  );
 };
 
 // Generates a vertical gradient that is evenly distributed between its component colors
@@ -501,7 +562,11 @@ const evenLinearGradient = (
 // From: https://stackoverflow.com/questions/14819058/mixing-two-colors-naturally-in-javascript
 // colorChannelA and colorChannelB are integers ranging from 0 to 255
 // amountToMix ranges from 0.0 to 1.0
-function colorChannelMixer(colorChannelA: number, colorChannelB: number, amountToMix: number) {
+function colorChannelMixer(
+  colorChannelA: number,
+  colorChannelB: number,
+  amountToMix: number,
+) {
   const channelA = colorChannelA * amountToMix;
   const channelB = colorChannelB * (1 - amountToMix);
   return channelA + channelB;
@@ -520,9 +585,11 @@ function colorMixer(rgbA: number[], rgbB: number[], amountToMix: number) {
 // From: https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
 function hexToRgb(hex: string) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16),
-  } : null;
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : null;
 }

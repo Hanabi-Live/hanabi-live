@@ -2,14 +2,14 @@
 // It is re-created every time when going into a new game
 // (and destroyed when going to the lobby)
 
-import { Globals as LobbyGlobals } from '../../globals';
-import { GameExports } from '../main';
-import * as cursor from './cursor';
-import globals, { Globals } from './globals';
-import * as keyboard from './keyboard';
-import * as replay from './replay';
-import * as timer from './timer';
-import * as turn from './turn';
+import { Globals as LobbyGlobals } from "../../globals";
+import { GameExports } from "../main";
+import * as cursor from "./cursor";
+import globals, { Globals } from "./globals";
+import * as keyboard from "./keyboard";
+import * as replay from "./replay";
+import * as timer from "./timer";
+import * as turn from "./turn";
 
 export default class HanabiUI {
   globals: Globals;
@@ -31,7 +31,7 @@ export default class HanabiUI {
     // We should also combine this with the UI object in the future
 
     initStageSize();
-    cursor.set('default');
+    cursor.set("default");
 
     // The HanabiUI object is now instantiated, but none of the actual UI elements are drawn yet
     // We must wait for the "init" message from the server in order to know how many players are in
@@ -41,12 +41,13 @@ export default class HanabiUI {
 
   // The following methods are called from various parent functions
 
-  updateChatLabel() { // eslint-disable-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this
+  updateChatLabel(): void {
     if (globals.elements.chatButton === null) {
       return;
     }
 
-    let text = '💬';
+    let text = "💬";
     if (globals.lobby.chatUnread > 0) {
       text += ` (${globals.lobby.chatUnread})`;
     }
@@ -54,27 +55,32 @@ export default class HanabiUI {
     globals.layers.UI.batchDraw();
   }
 
-  suggestTurn(who: string, segment: number) { // eslint-disable-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this
+  suggestTurn(who: string, segment: number): void {
     if (
-      globals.state.finished
-      && globals.state.replay.shared !== null
-      && globals.state.replay.shared.amLeader
-      && globals.state.replay.hypothetical === null
+      globals.state.finished &&
+      globals.state.replay.shared !== null &&
+      globals.state.replay.shared.amLeader &&
+      globals.state.replay.hypothetical === null
     ) {
-      if (window.confirm(`${who} suggests that we go to turn ${segment}. Agree?`)) {
+      if (
+        window.confirm(`${who} suggests that we go to turn ${segment}. Agree?`)
+      ) {
         // We minus one to account for the fact that turns are presented to the user starting from 1
         replay.goToSegment(segment - 1);
       }
     }
   }
 
-  destroy() { // eslint-disable-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this
+  destroy(): void {
     keyboard.destroy();
     timer.stop();
     globals.stage.destroy();
   }
 
-  reshowClueUIAfterWarning() { // eslint-disable-line class-methods-use-this
+  // eslint-disable-next-line class-methods-use-this
+  reshowClueUIAfterWarning(): void {
     turn.showClueUI();
   }
 }

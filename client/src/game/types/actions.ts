@@ -1,8 +1,8 @@
-import CardIdentity from './CardIdentity';
-import ClientAction from './ClientAction';
-import EndCondition from './EndCondition';
-import MsgClue from './MsgClue';
-import Spectator from './Spectator';
+import CardIdentity from "./CardIdentity";
+import ClientAction from "./ClientAction";
+import EndCondition from "./EndCondition";
+import MsgClue from "./MsgClue";
+import Spectator from "./Spectator";
 
 export type Action =
   | ActionInit
@@ -50,7 +50,7 @@ export type HypotheticalAction =
 // ----------------------
 
 export interface ActionInit {
-  type: 'init';
+  type: "init";
   datetimeStarted: string;
   datetimeFinished: string;
   spectating: boolean;
@@ -64,7 +64,7 @@ export interface ActionInit {
 }
 
 export interface ActionListReceived {
-  type: 'gameActionList';
+  type: "gameActionList";
   readonly actions: GameAction[];
 }
 
@@ -73,33 +73,33 @@ export interface ActionListReceived {
 // ---------------------
 
 export interface ActionCardIdentities {
-  type: 'cardIdentities';
+  type: "cardIdentities";
   readonly cardIdentities: CardIdentity[];
 }
 
 export interface ActionPremove {
-  type: 'premove';
+  type: "premove";
   readonly premove: ClientAction | null;
 }
 
 export interface ActionPause {
-  type: 'pause';
+  type: "pause";
   active: boolean;
   playerIndex: number;
 }
 
 export interface ActionPauseQueue {
-  type: 'pauseQueue';
+  type: "pauseQueue";
   queued: boolean;
 }
 
 export interface ActionSpectators {
-  type: 'spectators';
+  type: "spectators";
   spectators: Spectator[];
 }
 
 export interface ActionFinishOngoingGame {
-  type: 'finishOngoingGame';
+  type: "finishOngoingGame";
   databaseID: number;
   sharedReplayLeader: string;
   datetimeFinished: string;
@@ -111,7 +111,7 @@ export interface ActionFinishOngoingGame {
 
 // Used to implement the "Slow-Witted" detrimental character
 export interface ActionCardIdentity {
-  type: 'cardIdentity';
+  type: "cardIdentity";
   readonly playerIndex: number;
   readonly order: number;
   readonly suitIndex: number;
@@ -119,7 +119,7 @@ export interface ActionCardIdentity {
 }
 
 export interface ActionClue {
-  type: 'clue';
+  type: "clue";
   readonly clue: MsgClue;
   readonly giver: number;
   readonly list: number[];
@@ -128,7 +128,7 @@ export interface ActionClue {
 }
 
 export interface ActionDiscard {
-  type: 'discard';
+  type: "discard";
   readonly failed: boolean;
   readonly playerIndex: number;
   readonly order: number;
@@ -137,7 +137,7 @@ export interface ActionDiscard {
 }
 
 export interface ActionDraw {
-  type: 'draw';
+  type: "draw";
   readonly playerIndex: number;
   readonly order: number;
   readonly suitIndex: number;
@@ -145,13 +145,13 @@ export interface ActionDraw {
 }
 
 export interface ActionGameOver {
-  type: 'gameOver';
+  type: "gameOver";
   readonly endCondition: EndCondition;
   readonly playerIndex: number;
 }
 
 export interface ActionPlay {
-  type: 'play';
+  type: "play";
   readonly playerIndex: number;
   readonly order: number;
   readonly suitIndex: number;
@@ -159,13 +159,13 @@ export interface ActionPlay {
 }
 
 export interface ActionPlayerTimes {
-  type: 'playerTimes';
+  type: "playerTimes";
   readonly playerTimes: number[];
   readonly duration: number;
 }
 
 export interface ActionStatus {
-  type: 'status';
+  type: "status";
   readonly clues: number;
   readonly score: number;
   readonly maxScore: number;
@@ -173,14 +173,14 @@ export interface ActionStatus {
 }
 
 export interface ActionStrike {
-  type: 'strike';
+  type: "strike";
   readonly num: number; // 1 for the first strike, 2 for the second strike, etc.
   readonly order: number; // The order of the card that was misplayed
   readonly turn: number;
 }
 
 export interface ActionTurn {
-  type: 'turn';
+  type: "turn";
   readonly num: number;
   readonly currentPlayerIndex: number;
 }
@@ -190,31 +190,31 @@ export interface ActionTurn {
 // --------------
 
 export interface ActionReplayEnter {
-  type: 'replayEnter';
+  type: "replayEnter";
   segment: number;
 }
 
 export interface ActionReplayExit {
-  type: 'replayExit';
+  type: "replayExit";
 }
 
 export interface ActionReplaySegment {
-  type: 'replaySegment';
+  type: "replaySegment";
   readonly segment: number;
 }
 
 export interface ActionReplaySharedSegment {
-  type: 'replaySharedSegment';
+  type: "replaySharedSegment";
   readonly segment: number;
 }
 
 export interface ActionReplayUseSharedSegments {
-  type: 'replayUseSharedSegments';
+  type: "replayUseSharedSegments";
   readonly useSharedSegments: boolean;
 }
 
 export interface ActionReplayLeader {
-  type: 'replayLeader';
+  type: "replayLeader";
   readonly name: string;
 }
 
@@ -223,32 +223,32 @@ export interface ActionReplayLeader {
 // --------------------
 
 export interface ActionHypotheticalStart {
-  type: 'hypoStart';
+  type: "hypoStart";
   readonly drawnCardsShown: boolean;
   readonly actions: ActionIncludingHypothetical[];
 }
 
 export interface ActionHypotheticalEnd {
-  type: 'hypoEnd';
+  type: "hypoEnd";
 }
 
 export interface ActionHypotheticalAction {
-  type: 'hypoAction';
+  type: "hypoAction";
   readonly action: ActionIncludingHypothetical;
 }
 
 export interface ActionHypotheticalBack {
-  type: 'hypoBack';
+  type: "hypoBack";
 }
 
 export interface ActionHypotheticalMorph {
-  type: 'morph'; // This is not "hypoMorph" because it is a game action
+  type: "morph"; // This is not "hypoMorph" because it is a game action
   readonly suitIndex: number;
   readonly rank: number;
   readonly order: number;
 }
 
 export interface ActionHypotheticalDrawnCardsShown {
-  type: 'hypoDrawnCardsShown';
+  type: "hypoDrawnCardsShown";
   readonly drawnCardsShown: boolean;
 }

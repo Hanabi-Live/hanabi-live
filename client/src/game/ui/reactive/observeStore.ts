@@ -1,18 +1,21 @@
-import equal from 'fast-deep-equal';
-import { Store, Action } from 'redux';
+import equal from "fast-deep-equal";
+import { Action, Store, Unsubscribe } from "redux";
 
 export type Selector<T, U> = (s: T) => U | undefined;
-export type Listener<U> = (currentValue: U, previousValue: U | undefined) => void;
+export type Listener<U> = (
+  currentValue: U,
+  previousValue: U | undefined,
+) => void;
 export type Subscription<T, U> = {
   select: Selector<T, U>;
   onChange: Listener<U>;
 };
 
 // Observes a property of type T on a Store<S, A> and calls a listener function when it changes
-export default function observeStore<S, A extends Action<any>, T>(
+export default function observeStore<S, A extends Action<unknown>, T>(
   store: Store<S, A>,
   subscriptions: Array<Subscription<S, T>>,
-) {
+): Unsubscribe {
   let currentState: S;
 
   function handleChange() {
@@ -39,7 +42,8 @@ export default function observeStore<S, A extends Action<any>, T>(
       })
       .forEach((s) => {
         // currentState is undefined during initialization
-        const currentValue = currentState !== undefined ? s.select(currentState) : undefined;
+        const currentValue =
+          currentState !== undefined ? s.select(currentState) : undefined;
         s.onChange(s.select(nextState)!, currentValue);
       });
 

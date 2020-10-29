@@ -1,4 +1,4 @@
-import Status from './Status';
+import Status from "./Status";
 
 export default interface User {
   userID: number;

@@ -1,8 +1,10 @@
 /* eslint-disable import/prefer-default-export */
 
-import globals from '../../globals';
+import globals from "../../globals";
 
-export const onCardsRemainingChanged = (cardsRemainingInTheDeck: number) => {
+export const onCardsRemainingChanged = (
+  cardsRemainingInTheDeck: number,
+): void => {
   // Update the deck label
   globals.elements.deck?.setCount(cardsRemainingInTheDeck);
 

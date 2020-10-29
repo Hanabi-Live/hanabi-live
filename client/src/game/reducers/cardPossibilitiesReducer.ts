@@ -1,12 +1,12 @@
 // Calculates the state of a card after a clue
 
-import { getVariant } from '../data/gameData';
-import { cluesRules } from '../rules';
-import CardState from '../types/CardState';
-import Clue from '../types/Clue';
-import ClueType from '../types/ClueType';
-import GameMetadata from '../types/GameMetadata';
-import Variant from '../types/Variant';
+import { getVariant } from "../data/gameData";
+import { cluesRules } from "../rules";
+import CardState from "../types/CardState";
+import Clue from "../types/Clue";
+import ClueType from "../types/ClueType";
+import GameMetadata from "../types/GameMetadata";
+import Variant from "../types/Variant";
 
 const cardPossibilitiesReducer = (
   state: CardState,
@@ -14,36 +14,41 @@ const cardPossibilitiesReducer = (
   positive: boolean,
   metadata: GameMetadata,
 ): CardState => {
-  if (
-    state.possibleCardsFromClues.length === 1
-  ) {
+  if (state.possibleCardsFromClues.length === 1) {
     // We already know all details about this card, no need to calculate
     return state;
   }
 
-  const variant : Variant = getVariant(metadata.options.variantName);
+  const variant: Variant = getVariant(metadata.options.variantName);
 
   // Apply the clue and check what is eliminated
   const possibleCardsFromClues = state.possibleCardsFromClues.filter(
-    ([suitIndex, rank]) => cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
+    ([suitIndex, rank]) =>
+      cluesRules.touchesCard(variant, clue, suitIndex, rank) === positive,
   );
 
-  let positiveColorClues = state.positiveColorClues;
-  if (positive && clue.type === ClueType.Color && !positiveColorClues.includes(clue.value)) {
+  let { positiveColorClues } = state;
+  if (
+    positive &&
+    clue.type === ClueType.Color &&
+    !positiveColorClues.includes(clue.value)
+  ) {
     positiveColorClues = [...positiveColorClues, clue.value];
   }
 
-  let positiveRankClues = state.positiveRankClues;
-  if (positive && clue.type === ClueType.Rank && !positiveRankClues.includes(clue.value)) {
+  let { positiveRankClues } = state;
+  if (
+    positive &&
+    clue.type === ClueType.Rank &&
+    !positiveRankClues.includes(clue.value)
+  ) {
     positiveRankClues = [...positiveRankClues, clue.value];
   }
 
-  const {
-    suitIndex,
-    rank,
-    suitDetermined,
-    rankDetermined,
-  } = updateIdentity(state, possibleCardsFromClues);
+  const { suitIndex, rank, suitDetermined, rankDetermined } = updateIdentity(
+    state,
+    possibleCardsFromClues,
+  );
 
   const newState: CardState = {
     ...state,

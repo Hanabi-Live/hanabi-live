@@ -1,15 +1,15 @@
-import { variantRules, clueTokensRules } from '../../../rules';
-import { MAX_STRIKES } from '../../../types/constants';
-import { StateStrike } from '../../../types/GameState';
-import { LABEL_COLOR, OFF_BLACK, STRIKE_FADE } from '../../constants';
-import globals from '../../globals';
-import { animate } from '../../konvaHelpers';
-import * as turn from '../../turn';
+import { clueTokensRules, variantRules } from "../../../rules";
+import { MAX_STRIKES } from "../../../types/constants";
+import { StateStrike } from "../../../types/GameState";
+import { LABEL_COLOR, OFF_BLACK, STRIKE_FADE } from "../../constants";
+import globals from "../../globals";
+import { animate } from "../../konvaHelpers";
+import * as turn from "../../turn";
 
 export const onTurnChanged = (data: {
   turn: number;
   endTurn: number | null;
-}) => {
+}): void => {
   // Update the "Turn" label
   // On both the client and the server, the first turn of the game is represented as turn 0
   // However, turn 0 is represented to the end-user as turn 1, so we must add one
@@ -31,7 +31,9 @@ export const onTurnChanged = (data: {
   globals.layers.UI.batchDraw();
 };
 
-export const onCurrentPlayerIndexChanged = (currentPlayerIndex: number | null) => {
+export const onCurrentPlayerIndexChanged = (
+  currentPlayerIndex: number | null,
+): void => {
   // Bold the name frame of the current player to signify that it is their turn
   for (let i = 0; i < globals.elements.nameFrames.length; i++) {
     globals.elements.nameFrames[i].setActive(currentPlayerIndex === i);
@@ -47,9 +49,10 @@ export const onCurrentPlayerIndexChanged = (currentPlayerIndex: number | null) =
     for (const rect of globals.elements.playerHandBlackLines) {
       rect.fill(OFF_BLACK);
     }
-    const currentPlayerRect = globals.elements.playerHandBlackLines[currentPlayerIndex];
+    const currentPlayerRect =
+      globals.elements.playerHandBlackLines[currentPlayerIndex];
     if (currentPlayerRect !== undefined) {
-      currentPlayerRect.fill('yellow');
+      currentPlayerRect.fill("yellow");
     }
   } else {
     // In addition to bolding the player's name,
@@ -57,7 +60,8 @@ export const onCurrentPlayerIndexChanged = (currentPlayerIndex: number | null) =
     for (const rect of globals.elements.playerHandTurnRects) {
       rect.hide();
     }
-    const currentPlayerRect = globals.elements.playerHandTurnRects[currentPlayerIndex];
+    const currentPlayerRect =
+      globals.elements.playerHandTurnRects[currentPlayerIndex];
     if (currentPlayerRect !== undefined) {
       currentPlayerRect.show();
     }
@@ -69,7 +73,7 @@ export const onCurrentPlayerIndexChanged = (currentPlayerIndex: number | null) =
 export const onScoreOrMaxScoreChanged = (data: {
   score: number;
   maxScore: number;
-}) => {
+}): void => {
   const scoreLabel = globals.elements.scoreNumberLabel;
   if (scoreLabel === null) {
     return;
@@ -82,15 +86,31 @@ export const onScoreOrMaxScoreChanged = (data: {
     return;
   }
   maxScoreLabel.text(` / ${data.maxScore}`);
-  maxScoreLabel.width(maxScoreLabel.measureSize(maxScoreLabel.text()).width);
-  const x = scoreLabel.x() + scoreLabel.measureSize(scoreLabel.text()).width as number;
+  // The type of Konva.Text.width is "any" for some reason
+  const maxScoreLabelWidth = maxScoreLabel.measureSize(maxScoreLabel.text())
+    .width as number;
+  if (typeof maxScoreLabelWidth !== "number") {
+    throw new Error("The width of maxScoreLabel was not a number.");
+  }
+  maxScoreLabel.width(maxScoreLabelWidth);
+  const scoreLabelWidth = scoreLabel.measureSize(scoreLabel.text())
+    .width as number;
+  if (typeof scoreLabelWidth !== "number") {
+    throw new Error("The width of scoreLabel was not a number.");
+  }
+  const x = scoreLabel.x() + scoreLabelWidth;
   maxScoreLabel.x(x);
 
   globals.layers.UI.batchDraw();
 };
 
-export const onNumAttemptedCardsPlayedChanged = (numAttemptedCardsPlayed: number) => {
-  if (!variantRules.isThrowItInAHole(globals.variant) || globals.state.finished) {
+export const onNumAttemptedCardsPlayedChanged = (
+  numAttemptedCardsPlayed: number,
+): void => {
+  if (
+    !variantRules.isThrowItInAHole(globals.variant) ||
+    globals.state.finished
+  ) {
     return;
   }
 
@@ -98,7 +118,7 @@ export const onNumAttemptedCardsPlayedChanged = (numAttemptedCardsPlayed: number
   globals.layers.UI.batchDraw();
 };
 
-export const onClueTokensChanged = (clueTokens: number) => {
+export const onClueTokensChanged = (clueTokens: number): void => {
   let cluesTokensText = clueTokens.toString();
   if (variantRules.isClueStarved(globals.variant)) {
     // In "Clue Starved" variants, clues are tracked internally at twice the value shown to the user
@@ -107,27 +127,32 @@ export const onClueTokensChanged = (clueTokens: number) => {
   globals.elements.cluesNumberLabel?.text(cluesTokensText);
 
   if (!globals.lobby.settings.realLifeMode) {
-    const noCluesAvailable = clueTokens < clueTokensRules.getAdjusted(1, globals.variant);
-    const oneClueAvailable = clueTokens === clueTokensRules.getAdjusted(1, globals.variant);
-    const maxCluesAvailable = clueTokensRules.atMax(clueTokens, globals.variant);
+    const noCluesAvailable =
+      clueTokens < clueTokensRules.getAdjusted(1, globals.variant);
+    const oneClueAvailable =
+      clueTokens === clueTokensRules.getAdjusted(1, globals.variant);
+    const maxCluesAvailable = clueTokensRules.atMax(
+      clueTokens,
+      globals.variant,
+    );
 
     let fill;
     if (noCluesAvailable) {
-      fill = 'red';
+      fill = "red";
     } else if (oneClueAvailable) {
-      fill = 'yellow';
+      fill = "yellow";
     } else if (maxCluesAvailable) {
-      fill = 'lime';
+      fill = "lime";
     } else {
       fill = LABEL_COLOR;
     }
     globals.elements.cluesNumberLabel?.fill(fill);
 
     if (noCluesAvailable) {
-      globals.elements.scoreAreaBorder?.stroke('red');
+      globals.elements.scoreAreaBorder?.stroke("red");
       globals.elements.scoreAreaBorder?.show();
     } else if (maxCluesAvailable) {
-      globals.elements.scoreAreaBorder?.stroke('lime');
+      globals.elements.scoreAreaBorder?.stroke("lime");
       globals.elements.scoreAreaBorder?.show();
     } else {
       globals.elements.scoreAreaBorder?.hide();
@@ -140,7 +165,7 @@ export const onClueTokensChanged = (clueTokens: number) => {
 export const onClueTokensOrDoubleDiscardChanged = (data: {
   clueTokens: number;
   doubleDiscard: boolean;
-}) => {
+}): void => {
   if (globals.lobby.settings.realLifeMode) {
     return;
   }
@@ -150,7 +175,10 @@ export const onClueTokensOrDoubleDiscardChanged = (data: {
     // (to reinforce that the current player cannot discard)
     globals.elements.noDiscardBorder?.show();
     globals.elements.noDoubleDiscardBorder?.hide();
-  } else if (data.doubleDiscard && globals.lobby.settings.hyphenatedConventions) {
+  } else if (
+    data.doubleDiscard &&
+    globals.lobby.settings.hyphenatedConventions
+  ) {
     // Show a yellow border around the discard pile
     // (to reinforce that this is a "Double Discard" situation)
     globals.elements.noDiscardBorder?.hide();
@@ -166,7 +194,7 @@ export const onClueTokensOrDoubleDiscardChanged = (data: {
 export const onOngoingOrVisibleStrikesChanged = (data: {
   ongoingStrikes: readonly StateStrike[];
   visibleStrikes: readonly StateStrike[];
-}) => {
+}): void => {
   // Strikes are hidden from the players in "Throw It in a Hole" variants
   if (variantRules.isThrowItInAHole(globals.variant) && globals.state.playing) {
     return;
@@ -186,10 +214,14 @@ export const onOngoingOrVisibleStrikesChanged = (data: {
     if (data.visibleStrikes[i] !== undefined) {
       // There is a strike on the visible state
       // Animate the strike X fading in
-      animate(strikeX, {
-        duration,
-        opacity: 1,
-      }, true);
+      animate(
+        strikeX,
+        {
+          duration,
+          opacity: 1,
+        },
+        true,
+      );
     } else {
       // Either this strike has never happened, or we are moving backwards in a replay
       // If this strike never happened, it should be invisible
@@ -199,10 +231,14 @@ export const onOngoingOrVisibleStrikesChanged = (data: {
         strikeX.tween = null;
       }
       const opacity = data.ongoingStrikes[i] === undefined ? 0 : STRIKE_FADE;
-      animate(strikeX, {
-        duration,
-        opacity,
-      }, true);
+      animate(
+        strikeX,
+        {
+          duration,
+          opacity,
+        },
+        true,
+      );
     }
   }
 

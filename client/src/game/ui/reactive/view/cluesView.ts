@@ -1,18 +1,18 @@
 /* eslint-disable import/prefer-default-export */
 
-import equal from 'fast-deep-equal';
-import Clue, { rankClue, colorClue } from '../../../types/Clue';
-import ClueType from '../../../types/ClueType';
-import { StateClue } from '../../../types/GameState';
-import * as arrows from '../../arrows';
-import ClueEntry from '../../ClueEntry';
-import getCardOrStackBase from '../../getCardOrStackBase';
-import globals from '../../globals';
+import equal from "fast-deep-equal";
+import Clue, { colorClue, rankClue } from "../../../types/Clue";
+import ClueType from "../../../types/ClueType";
+import { StateClue } from "../../../types/GameState";
+import * as arrows from "../../arrows";
+import ClueEntry from "../../ClueEntry";
+import getCardOrStackBase from "../../getCardOrStackBase";
+import globals from "../../globals";
 
 export const onCluesChanged = (data: {
   clues: readonly StateClue[];
   segment: number | null;
-}) => {
+}): void => {
   updateArrows(data.clues, data.segment);
   updateLog(data.clues);
 };
@@ -46,7 +46,7 @@ const updateArrows = (clues: readonly StateClue[], segment: number | null) => {
 };
 
 const updateLog = (clues: readonly StateClue[]) => {
-  const clueLog = globals.elements.clueLog;
+  const { clueLog } = globals.elements;
   if (clueLog === null) {
     return;
   }
@@ -54,7 +54,7 @@ const updateLog = (clues: readonly StateClue[]) => {
   const startingIndex = Math.max(0, clues.length - clueLog.maxLength);
   clues.slice(startingIndex).forEach((clue, i) => {
     if (i < clueLog.children.length) {
-      const clueEntry = clueLog.children[i] as unknown as ClueEntry;
+      const clueEntry = (clueLog.children[i] as unknown) as ClueEntry;
       if (equal(clue, clueEntry.clue)) {
         // No change
         return;
@@ -75,7 +75,10 @@ const updateLog = (clues: readonly StateClue[]) => {
 
   // Delete any left over clues
   if (clueLog.children.length > clues.length) {
-    clueLog.children.splice(clues.length, clueLog.children.length - clues.length);
+    clueLog.children.splice(
+      clues.length,
+      clueLog.children.length - clues.length,
+    );
   }
   clueLog.refresh();
 

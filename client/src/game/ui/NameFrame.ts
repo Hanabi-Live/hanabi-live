@@ -1,9 +1,9 @@
-import Konva from 'konva';
-import * as modals from '../../modals';
-import backToLobby from './backToLobby';
-import { LABEL_COLOR } from './constants';
-import globals from './globals';
-import * as tooltips from './tooltips';
+import Konva from "konva";
+import * as modals from "../../modals";
+import backToLobby from "./backToLobby";
+import { LABEL_COLOR } from "./constants";
+import globals from "./globals";
+import * as tooltips from "./tooltips";
 
 export default class NameFrame extends Konva.Group {
   playerIndex: number;
@@ -20,10 +20,10 @@ export default class NameFrame extends Konva.Group {
     this.listening(true); // Needed for the hover events
 
     if (config.width === undefined) {
-      throw new Error('A NameFrame was initialized without a width.');
+      throw new Error("A NameFrame was initialized without a width.");
     }
     if (config.height === undefined) {
-      throw new Error('A NameFrame was initialized without a height.');
+      throw new Error("A NameFrame was initialized without a height.");
     }
 
     // Class variables
@@ -34,12 +34,12 @@ export default class NameFrame extends Konva.Group {
       x: config.width / 2,
       y: 0,
       height: config.height,
-      align: 'center',
-      fontFamily: 'Verdana',
+      align: "center",
+      fontFamily: "Verdana",
       fontSize: config.height,
       text: config.name,
       fill: LABEL_COLOR,
-      shadowColor: 'black',
+      shadowColor: "black",
       shadowBlur: 5,
       shadowOffset: {
         x: 0,
@@ -55,14 +55,19 @@ export default class NameFrame extends Konva.Group {
       w = this.playerName.width();
     }
     this.playerName.offsetX(w / 2);
-    this.playerName.on('click tap', (event: Konva.KonvaEventObject<MouseEvent>) => {
-      // "event.evt.buttons" is always 0 here
-      if (event.evt.button === 0) { // Left-click
-        this.leftClick();
-      } else if (event.evt.button === 2) { // Right-click
-        this.rightClick();
-      }
-    });
+    this.playerName.on(
+      "click tap",
+      (event: Konva.KonvaEventObject<MouseEvent>) => {
+        // "event.evt.buttons" is always 0 here
+        if (event.evt.button === 0) {
+          // Left-click
+          this.leftClick();
+        } else if (event.evt.button === 2) {
+          // Right-click
+          this.rightClick();
+        }
+      },
+    );
     this.add(this.playerName);
 
     w *= 1.4;
@@ -75,13 +80,13 @@ export default class NameFrame extends Konva.Group {
         0,
         0,
         config.height / 2,
-        (config.width / 2) - (w / 2),
+        config.width / 2 - w / 2,
         config.height / 2,
       ],
       stroke: LABEL_COLOR,
       strokeWidth: this.defaultStrokeWidth,
-      lineJoin: 'round',
-      shadowColor: 'black',
+      lineJoin: "round",
+      shadowColor: "black",
       shadowBlur: 5,
       shadowOffset: {
         x: 0,
@@ -94,7 +99,7 @@ export default class NameFrame extends Konva.Group {
 
     this.rightLine = new Konva.Line({
       points: [
-        (config.width / 2) + (w / 2),
+        config.width / 2 + w / 2,
         config.height / 2,
         config.width,
         config.height / 2,
@@ -103,8 +108,8 @@ export default class NameFrame extends Konva.Group {
       ],
       stroke: LABEL_COLOR,
       strokeWidth: this.defaultStrokeWidth,
-      lineJoin: 'round',
-      shadowColor: 'black',
+      lineJoin: "round",
+      shadowColor: "black",
       shadowBlur: 5,
       shadowOffset: {
         x: 0,
@@ -118,7 +123,7 @@ export default class NameFrame extends Konva.Group {
     // Draw the tooltips on the player names that show the time
     // (we don't use the "tooltip.init()" function because we need the extra condition in the
     // "mouseover" and "mouseout" event)
-    this.on('mouseover touchstart', function mouseOver(this: NameFrame) {
+    this.on("mouseover touchstart", function mouseOver(this: NameFrame) {
       tooltips.resetActiveHover();
       globals.activeHover = this;
 
@@ -129,7 +134,7 @@ export default class NameFrame extends Konva.Group {
 
       tooltips.show(this);
     });
-    this.on('mouseout touchend', () => {
+    this.on("mouseout touchend", () => {
       globals.activeHover = null;
 
       // Don't do anything if we are in a solo/shared replay
@@ -138,23 +143,27 @@ export default class NameFrame extends Konva.Group {
       }
 
       const tooltip = $(`#tooltip-${this.tooltipName}`);
-      tooltip.tooltipster('close');
+      tooltip.tooltipster("close");
     });
   }
 
-  setActive(active: boolean) {
-    this.leftLine.strokeWidth(active ? 3 * this.defaultStrokeWidth : 1 * this.defaultStrokeWidth);
-    this.rightLine.strokeWidth(active ? 3 * this.defaultStrokeWidth : 1 * this.defaultStrokeWidth);
+  setActive(active: boolean): void {
+    this.leftLine.strokeWidth(
+      active ? 3 * this.defaultStrokeWidth : 1 * this.defaultStrokeWidth,
+    );
+    this.rightLine.strokeWidth(
+      active ? 3 * this.defaultStrokeWidth : 1 * this.defaultStrokeWidth,
+    );
 
     this.playerName.shadowOpacity(active ? 0.6 : 0);
     this.leftLine.shadowOpacity(active ? 0.6 : 0);
     this.rightLine.shadowOpacity(active ? 0.6 : 0);
 
-    this.playerName.fontStyle(active ? 'bold' : 'normal');
+    this.playerName.fontStyle(active ? "bold" : "normal");
   }
 
-  setConnected(connected: boolean) {
-    const color = connected ? LABEL_COLOR : '#e8233d'; // Red for disconnected players
+  setConnected(connected: boolean): void {
+    const color = connected ? LABEL_COLOR : "#e8233d"; // Red for disconnected players
 
     this.leftLine.stroke(color);
     this.rightLine.stroke(color);
@@ -162,7 +171,7 @@ export default class NameFrame extends Konva.Group {
   }
 
   // Players can left-click on the name frame to see a log of only that player's actions
-  leftClick() {
+  leftClick(): void {
     const username = this.playerName.text();
     globals.elements.fullActionLog!.showPlayerActions(username);
   }
@@ -171,11 +180,15 @@ export default class NameFrame extends Konva.Group {
   // This function calls "backToLobby()" inside of a "setTimeout" callback to avoid having the
   // right-click context menu come up (the right-click context menu will be enabled as soon as we
   // execute the "backToLobby()" function)
-  rightClick() {
+  rightClick(): void {
     // Find the index corresponding to this player
-    const shadowingPlayerIndex = globals.metadata.playerNames.indexOf(this.playerName.text());
+    const shadowingPlayerIndex = globals.metadata.playerNames.indexOf(
+      this.playerName.text(),
+    );
     if (shadowingPlayerIndex === -1) {
-      throw new Error(`Failed to find the index corresponding to player "${this.playerName.text()}".`);
+      throw new Error(
+        `Failed to find the index corresponding to player "${this.playerName.text()}".`,
+      );
     }
 
     if (!globals.state.playing && !globals.state.finished) {
@@ -194,13 +207,15 @@ export default class NameFrame extends Konva.Group {
         }
       }
       if (shadowingPlayerIndex === oldShadowingPlayerIndex) {
-        modals.warningShow('You are already viewing the game from this player\'s perspective.');
+        modals.warningShow(
+          "You are already viewing the game from this player's perspective.",
+        );
         return;
       }
 
       setTimeout(() => {
         backToLobby();
-        globals.lobby.conn!.send('tableSpectate', {
+        globals.lobby.conn!.send("tableSpectate", {
           tableID: globals.lobby.tableID,
           shadowingPlayerIndex,
         });
@@ -211,14 +226,17 @@ export default class NameFrame extends Konva.Group {
 
       // Validate that we are not shifting to the perspective that we are already at
       if (shadowingPlayerIndex === globals.metadata.ourPlayerIndex) {
-        modals.warningShow('You are already viewing the game from this player\'s perspective.');
+        modals.warningShow(
+          "You are already viewing the game from this player's perspective.",
+        );
         return;
       }
 
       if (globals.state.spectators.length === 1) {
         if (globals.state.replay.databaseID === null) {
           setTimeout(() => {
-            const msg = 'Due to technical limitations, you cannot shift your perspective if you are the only person in a JSON replay.';
+            const msg =
+              "Due to technical limitations, you cannot shift your perspective if you are the only person in a JSON replay.";
             modals.warningShow(msg);
           }, 0);
           return;
@@ -230,10 +248,11 @@ export default class NameFrame extends Konva.Group {
         // (while specifying the player to view the perspective from)
         setTimeout(() => {
           backToLobby();
-          globals.lobby.conn!.send('replayCreate', {
-            source: 'id',
+          globals.lobby.conn!.send("replayCreate", {
+            source: "id",
             gameID: globals.state.replay.databaseID,
-            visibility: globals.state.replay.shared === null ? 'solo' : 'shared',
+            visibility:
+              globals.state.replay.shared === null ? "solo" : "shared",
             shadowingPlayerIndex,
           });
         }, 0);
@@ -247,7 +266,7 @@ export default class NameFrame extends Konva.Group {
       // (while specifying the player to view the perspective from)
       setTimeout(() => {
         backToLobby();
-        globals.lobby.conn!.send('tableSpectate', {
+        globals.lobby.conn!.send("tableSpectate", {
           tableID: globals.lobby.tableID,
           shadowingPlayerIndex,
         });

@@ -1,5 +1,5 @@
-import Color from './Color';
-import Suit from './Suit';
+import Color from "./Color";
+import Suit from "./Suit";
 
 export default interface Variant {
   readonly name: string;

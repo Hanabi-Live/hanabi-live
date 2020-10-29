@@ -1,13 +1,13 @@
 // Helper methods for variants where suits may have a different direction than up
 // Currently used for "Up Or Down" and "Reversed" variants
 
-import CardState from '../../types/CardState';
-import { START_CARD_RANK } from '../../types/constants';
-import StackDirection from '../../types/StackDirection';
-import Variant from '../../types/Variant';
-import * as deckRules from '../deck';
-import * as playStacksRules from '../playStacks';
-import * as variantRules from '../variant';
+import CardState from "../../types/CardState";
+import { START_CARD_RANK } from "../../types/constants";
+import StackDirection from "../../types/StackDirection";
+import Variant from "../../types/Variant";
+import * as deckRules from "../deck";
+import * as playStacksRules from "../playStacks";
+import * as variantRules from "../variant";
 
 // needsToBePlayed returns true if this card still needs to be played in order to get the maximum
 // score (taking the stack direction into account)
@@ -20,7 +20,7 @@ export const needsToBePlayed = (
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-) => {
+): boolean => {
   const direction = playStackDirections[suitIndex];
   // First, check to see if the stack is already finished
   if (direction === StackDirection.Finished) {
@@ -41,17 +41,17 @@ export const needsToBePlayed = (
     }
 
     if (rank === 1) {
-    // 1's do not need to be played if the stack is going up
+      // 1's do not need to be played if the stack is going up
       if (direction === StackDirection.Up) {
         return false;
       }
     } else if (rank === 5) {
-    // 5's do not need to be played if the stack is going down
+      // 5's do not need to be played if the stack is going down
       if (direction === StackDirection.Down) {
         return false;
       }
     } else if (rank === START_CARD_RANK) {
-    // START cards do not need to be played if there are any cards played on the stack
+      // START cards do not need to be played if there are any cards played on the stack
       const playStack = playStacks[suitIndex];
       if (playStack.length > 0) {
         return false;
@@ -102,14 +102,20 @@ const isDead = (
   }
 
   if (!variantRules.isUpOrDown(variant)) {
-    throw new Error('A stack in a "Reversed" variant must always have a defined direction (up or down).');
+    throw new Error(
+      'A stack in a "Reversed" variant must always have a defined direction (up or down).',
+    );
   }
 
   // If we got this far, the stack direction is undecided
   // (the previous function handles the case where the stack is finished)
   // Check to see if the entire suit is dead in the case where
   // all 3 of the start cards are discarded
-  if (allDiscarded.get(1) && allDiscarded.get(5) && allDiscarded.get(START_CARD_RANK)) {
+  if (
+    allDiscarded.get(1) &&
+    allDiscarded.get(5) &&
+    allDiscarded.get(START_CARD_RANK)
+  ) {
     return true;
   }
 
@@ -230,7 +236,7 @@ export const isCritical = (
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-) => {
+): boolean => {
   const { isLastCopy, isAllDiscarded } = discardedHelpers(variant, deck);
 
   const lastCopy = isLastCopy(suitIndex, rank);
@@ -248,8 +254,8 @@ export const isCritical = (
   // The START card is only critical if all 1's and 5's are discarded and the stack didn't start
   if (rank === START_CARD_RANK) {
     return (
-      direction === StackDirection.Undecided
-      && (isAllDiscarded(suitIndex, 1) || isAllDiscarded(suitIndex, 5))
+      direction === StackDirection.Undecided &&
+      (isAllDiscarded(suitIndex, 1) || isAllDiscarded(suitIndex, 5))
     );
   }
 
@@ -272,9 +278,13 @@ export const isCritical = (
 };
 
 const discardedHelpers = (variant: Variant, deck: readonly CardState[]) => {
-  const total = (s: number, r: number) => deckRules.numCopiesOfCard(variant.suits[s], r, variant);
-  const discarded = (s: number, r: number) => deckRules.discardedCopies(deck, s, r);
-  const isLastCopy = (s: number, r: number) => total(s, r) === discarded(s, r) + 1;
-  const isAllDiscarded = (s: number, r: number) => total(s, r) === discarded(s, r);
+  const total = (s: number, r: number) =>
+    deckRules.numCopiesOfCard(variant.suits[s], r, variant);
+  const discarded = (s: number, r: number) =>
+    deckRules.discardedCopies(deck, s, r);
+  const isLastCopy = (s: number, r: number) =>
+    total(s, r) === discarded(s, r) + 1;
+  const isAllDiscarded = (s: number, r: number) =>
+    total(s, r) === discarded(s, r);
   return { isLastCopy, isAllDiscarded };
 };

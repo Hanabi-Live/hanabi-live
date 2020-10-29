@@ -1,4 +1,4 @@
-import Konva from 'konva';
+import Konva from "konva";
 
 // These are arrows used to show which cards that are touched by a clue
 // (and for pointing to various things in a shared replay)
@@ -35,16 +35,11 @@ export default class Arrow extends Konva.Group {
     // We want there to be a black outline around the arrow,
     // so we draw a second arrow that is slightly bigger than the first
     const border = new Konva.Arrow({
-      points: [
-        x,
-        0,
-        x,
-        y * 0.8,
-      ],
+      points: [x, 0, x, y * 0.8],
       pointerLength,
       pointerWidth: pointerLength,
-      fill: 'black',
-      stroke: 'black',
+      fill: "black",
+      stroke: "black",
       strokeWidth: pointerLength * 2,
       shadowBlur: pointerLength * 4,
       shadowOpacity: 1,
@@ -55,14 +50,9 @@ export default class Arrow extends Konva.Group {
     // The border arrow will be missing a bottom edge,
     // so draw that manually at the bottom of the arrow
     const edge = new Konva.Line({
-      points: [
-        x - pointerLength,
-        0,
-        x + pointerLength,
-        0,
-      ],
-      fill: 'black',
-      stroke: 'black',
+      points: [x - pointerLength, 0, x + pointerLength, 0],
+      fill: "black",
+      stroke: "black",
       strokeWidth: pointerLength * 0.75,
       listening: false,
     });
@@ -70,16 +60,11 @@ export default class Arrow extends Konva.Group {
 
     // The main (inside) arrow is exported so that we can change the color later
     this.base = new Konva.Arrow({
-      points: [
-        x,
-        0,
-        x,
-        y * 0.8,
-      ],
+      points: [x, 0, x, y * 0.8],
       pointerLength,
       pointerWidth: pointerLength,
-      fill: 'white',
-      stroke: 'white',
+      fill: "white",
+      stroke: "white",
       strokeWidth: pointerLength * 1.25,
       listening: false,
     });
@@ -90,8 +75,8 @@ export default class Arrow extends Konva.Group {
       x,
       y: y * 0.3,
       radius: pointerLength * 2.25,
-      fill: 'black',
-      stroke: 'white',
+      fill: "black",
+      stroke: "white",
       strokeWidth: pointerLength * 0.25,
       visible: false,
       listening: false,
@@ -111,10 +96,10 @@ export default class Arrow extends Konva.Group {
       // circle, so nudge it downwards
       height: this.circle.height() * 1.09,
       fontSize: y * 0.38,
-      fontFamily: 'Verdana',
-      fill: 'white',
-      align: 'center',
-      verticalAlign: 'middle',
+      fontFamily: "Verdana",
+      fill: "white",
+      align: "center",
+      verticalAlign: "middle",
       visible: false,
       listening: false,
     });

@@ -1,9 +1,9 @@
-import Konva from 'konva';
-import Clue from '../types/Clue';
-import { drawLayer } from './konvaHelpers';
+import Konva from "konva";
+import Clue from "../types/Clue";
+import { drawLayer } from "./konvaHelpers";
 
 export default class RankButton extends Konva.Group {
-  pressed: boolean = false;
+  pressed = false;
   clue: Clue;
   background: Konva.Rect;
 
@@ -24,7 +24,7 @@ export default class RankButton extends Konva.Group {
       width: w,
       height: h,
       cornerRadius: 0.12 * h,
-      fill: 'black',
+      fill: "black",
       opacity: 0.6,
       listening: true,
     });
@@ -36,37 +36,37 @@ export default class RankButton extends Konva.Group {
       width: w,
       height: 0.5 * h,
       fontSize: 0.5 * h,
-      fontFamily: 'Verdana',
-      fill: 'white',
-      align: 'center',
+      fontFamily: "Verdana",
+      fill: "white",
+      align: "center",
       text: (config.number as number).toString(),
       listening: false,
     });
     this.add(text);
 
     const resetButton = () => {
-      this.background.fill('black');
+      this.background.fill("black");
       drawLayer(this);
 
-      this.background.off('mouseup');
-      this.background.off('mouseout');
+      this.background.off("mouseup");
+      this.background.off("mouseout");
     };
-    this.background.on('mousedown', () => {
-      this.background.fill('#888888');
+    this.background.on("mousedown", () => {
+      this.background.fill("#888888");
       drawLayer(this);
 
-      this.background.on('mouseout', () => {
+      this.background.on("mouseout", () => {
         resetButton();
       });
-      this.background.on('mouseup', () => {
+      this.background.on("mouseup", () => {
         resetButton();
       });
     });
   }
 
-  setPressed(pressed: boolean) {
+  setPressed(pressed: boolean): void {
     this.pressed = pressed;
-    this.background.fill(pressed ? '#cccccc' : 'black');
+    this.background.fill(pressed ? "#cccccc" : "black");
     drawLayer(this);
   }
 }

@@ -1,10 +1,12 @@
 // Miscellaneous helpers used by several reducers
 
-import Color from '../types/Color';
-import Suit from '../types/Suit';
-import Variant from '../types/Variant';
+import Color from "../types/Color";
+import Suit from "../types/Suit";
+import Variant from "../types/Variant";
 
-export const getIndexConverter = (variant: Variant) => {
+export const getIndexConverter = (
+  variant: Variant,
+): (<T extends Color | Suit>(value: T) => number) => {
   const suitIndexes: Map<string, number> = new Map<string, number>();
   const colorIndexes: Map<Color, number> = new Map<Color, number>();
   variant.suits.forEach((suit, index) => suitIndexes.set(suit.name, index));
@@ -24,14 +26,16 @@ export const getIndexConverter = (variant: Variant) => {
 export const getCharacterIDForPlayer = (
   playerIndex: number | null,
   characterAssignments: Readonly<Array<number | null>>,
-) => {
+): number | null => {
   if (playerIndex === null) {
     return null;
   }
 
   const characterID = characterAssignments[playerIndex];
   if (characterID === undefined) {
-    throw new Error(`The character ID for player ${playerIndex} was undefined.`);
+    throw new Error(
+      `The character ID for player ${playerIndex} was undefined.`,
+    );
   }
   return characterID;
 };

@@ -1,25 +1,24 @@
-import State from '../../../types/State';
-import * as clues from '../../clues';
-import PlayerButton from '../../controls/PlayerButton';
-import globals from '../../globals';
-import * as turn from '../../turn';
+import State from "../../../types/State";
+import * as clues from "../../clues";
+import PlayerButton from "../../controls/PlayerButton";
+import globals from "../../globals";
+import * as turn from "../../turn";
 
 // For replay leaders, we want to disable entering a hypothetical during certain situations
-export const shouldEnableEnterHypoButton = (state: State): boolean => (
-  state.replay.shared !== null
-  && state.replay.shared.useSharedSegments
-  && state.replay.shared.amLeader
+export const shouldEnableEnterHypoButton = (state: State): boolean =>
+  state.replay.shared !== null &&
+  state.replay.shared.useSharedSegments &&
+  state.replay.shared.amLeader &&
   // We can't start a hypothetical on a segment where the game has already ended
-  && state.visibleState !== null
-  && state.visibleState.turn.currentPlayerIndex !== null
-);
+  state.visibleState !== null &&
+  state.visibleState.turn.currentPlayerIndex !== null;
 
-export const shouldEnableEnterHypoButtonChanged = (enabled: boolean) => {
+export const shouldEnableEnterHypoButtonChanged = (enabled: boolean): void => {
   globals.elements.enterHypoButton?.setEnabled(enabled);
   globals.layers.UI.batchDraw();
 };
 
-export const onActiveChanged = (active: boolean) => {
+export const onActiveChanged = (active: boolean): void => {
   if (globals.state.replay.shared === null) {
     return;
   }
@@ -44,7 +43,7 @@ export const onActiveChanged = (active: boolean) => {
 export const onActiveOrAmLeaderChanged = (data: {
   active: boolean;
   amLeader: boolean | undefined;
-}) => {
+}): void => {
   if (data.amLeader === undefined) {
     return;
   }
@@ -70,7 +69,7 @@ export const onActiveOrAmLeaderChanged = (data: {
 // Either we have entered a hypothetical, gone forward one action in a hypothetical,
 // or gone back one action in a hypothetical
 // Prepare the UI elements for the new turn
-export const onStatesLengthChanged = () => {
+export const onStatesLengthChanged = (): void => {
   turn.showClueUI();
 
   // Enable or disable the individual clue target buttons, depending on whose turn it is
@@ -78,7 +77,7 @@ export const onStatesLengthChanged = () => {
   const buttons = buttonGroup.children.toArray() as PlayerButton[];
   for (const button of buttons) {
     button.setPressed(false);
-    const currentPlayerIndex = globals.state.visibleState!.turn.currentPlayerIndex;
+    const { currentPlayerIndex } = globals.state.visibleState!.turn;
     const enabled = button.targetIndex !== currentPlayerIndex;
     button.setEnabled(enabled);
 
@@ -93,21 +92,22 @@ export const onStatesLengthChanged = () => {
   checkSetDraggableAllHands();
 };
 
-export const shouldShowHypoBackButton = (state: State): boolean => (
-  state.replay.shared !== null
-  && state.replay.shared.amLeader
-  && state.replay.hypothetical !== null
-  && state.replay.hypothetical.states.length > 1
-);
+export const shouldShowHypoBackButton = (state: State): boolean =>
+  state.replay.shared !== null &&
+  state.replay.shared.amLeader &&
+  state.replay.hypothetical !== null &&
+  state.replay.hypothetical.states.length > 1;
 
-export const shouldShowHypoBackButtonChanged = (enabled: boolean) => {
+export const shouldShowHypoBackButtonChanged = (enabled: boolean): void => {
   globals.elements.hypoBackButton?.visible(enabled);
   globals.layers.UI.batchDraw();
 };
 
-export const onDrawnCardsInHypotheticalChanged = (drawnCardsInHypothetical: boolean) => {
+export const onDrawnCardsInHypotheticalChanged = (
+  drawnCardsInHypothetical: boolean,
+): void => {
   globals.elements.toggleRevealedButton?.setText({
-    line1: drawnCardsInHypothetical ? 'Hide' : 'Show',
+    line1: drawnCardsInHypothetical ? "Hide" : "Show",
   });
 
   // Check if the ability to give a clue changed

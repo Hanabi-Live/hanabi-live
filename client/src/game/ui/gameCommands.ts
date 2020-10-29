@@ -2,31 +2,32 @@
 // The client also sends these messages to itself in order to emulate actions coming from the server
 // for e.g. in-game replays
 
-import { createStore } from 'redux';
-import { initArray, trimReplaySuffixFromURL, parseIntSafe } from '../../misc';
-import * as sentry from '../../sentry';
-import Options from '../../types/Options';
-import { getVariant } from '../data/gameData';
-import initialState from '../reducers/initialStates/initialState';
-import stateReducer from '../reducers/stateReducer';
-import { GameAction, ActionIncludingHypothetical } from '../types/actions';
-import CardIdentity from '../types/CardIdentity';
-import GameMetadata from '../types/GameMetadata';
-import ReplayArrowOrder from '../types/ReplayArrowOrder';
-import Spectator from '../types/Spectator';
-import SpectatorNote from '../types/SpectatorNote';
-import State from '../types/State';
-import * as arrows from './arrows';
-import getCardOrStackBase from './getCardOrStackBase';
-import globals from './globals';
-import * as hypothetical from './hypothetical';
-import * as notes from './notes';
-import StateObserver from './reactive/StateObserver';
-import * as replay from './replay';
-import * as timer from './timer';
-import uiInit from './uiInit';
+import { createStore } from "redux";
+import { initArray, parseIntSafe, trimReplaySuffixFromURL } from "../../misc";
+import * as sentry from "../../sentry";
+import { getVariant } from "../data/gameData";
+import initialState from "../reducers/initialStates/initialState";
+import stateReducer from "../reducers/stateReducer";
+import { ActionIncludingHypothetical, GameAction } from "../types/actions";
+import CardIdentity from "../types/CardIdentity";
+import GameMetadata from "../types/GameMetadata";
+import InitData from "../types/InitData";
+import ReplayArrowOrder from "../types/ReplayArrowOrder";
+import Spectator from "../types/Spectator";
+import SpectatorNote from "../types/SpectatorNote";
+import State from "../types/State";
+import * as arrows from "./arrows";
+import getCardOrStackBase from "./getCardOrStackBase";
+import globals from "./globals";
+import * as hypothetical from "./hypothetical";
+import * as notes from "./notes";
+import StateObserver from "./reactive/StateObserver";
+import * as replay from "./replay";
+import * as timer from "./timer";
+import uiInit from "./uiInit";
 
 // Define a command handler map
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CommandCallback = (data: any) => void;
 const commands = new Map<string, CommandCallback>();
 export default commands;
@@ -36,21 +37,21 @@ export default commands;
 // ----------------
 
 // Received when the server wants to force the client to go back to the lobby
-commands.set('boot', () => {
+commands.set("boot", () => {
   timer.stop();
   globals.game!.hide();
 });
 
 // Updates the clocks to show how much time people are taking
 // or how much time people have left
-commands.set('clock', (data: timer.ClockData) => {
+commands.set("clock", (data: timer.ClockData) => {
   timer.update(data);
 });
 
 interface ConnectedData {
   list: boolean[];
 }
-commands.set('connected', (data: ConnectedData) => {
+commands.set("connected", (data: ConnectedData) => {
   for (let i = 0; i < data.list.length; i++) {
     const nameFrame = globals.elements.nameFrames[i];
     if (nameFrame !== undefined) {
@@ -64,9 +65,9 @@ interface CardIdentitiesData {
   tableID: number;
   cardIdentities: CardIdentity[];
 }
-commands.set('cardIdentities', (data: CardIdentitiesData) => {
+commands.set("cardIdentities", (data: CardIdentitiesData) => {
   globals.store!.dispatch({
-    type: 'cardIdentities',
+    type: "cardIdentities",
     cardIdentities: data.cardIdentities,
   });
 });
@@ -75,9 +76,9 @@ interface FinishOngoingGameData {
   databaseID: number;
   sharedReplayLeader: string;
 }
-commands.set('finishOngoingGame', (data: FinishOngoingGameData) => {
+commands.set("finishOngoingGame", (data: FinishOngoingGameData) => {
   globals.store!.dispatch({
-    type: 'finishOngoingGame',
+    type: "finishOngoingGame",
     databaseID: data.databaseID,
     sharedReplayLeader: data.sharedReplayLeader,
     datetimeFinished: new Date().toString(),
@@ -88,7 +89,7 @@ interface HypotheticalData {
   drawnCardsShown: boolean;
   actions: string[];
 }
-commands.set('hypothetical', (data: HypotheticalData) => {
+commands.set("hypothetical", (data: HypotheticalData) => {
   // We are joining an ongoing shared replay that is currently playing through a hypothetical line
   // We need to "catch up" to everyone else and play all of the existing hypothetical actions that
   // have taken place
@@ -101,76 +102,46 @@ commands.set('hypothetical', (data: HypotheticalData) => {
   }
 
   globals.store!.dispatch({
-    type: 'hypoStart',
+    type: "hypoStart",
     drawnCardsShown: data.drawnCardsShown,
     actions,
   });
 });
 
-commands.set('hypoAction', (data: string) => {
+commands.set("hypoAction", (data: string) => {
   const action = JSON.parse(data) as ActionIncludingHypothetical;
   globals.store!.dispatch({
-    type: 'hypoAction',
+    type: "hypoAction",
     action,
   });
   hypothetical.checkToggleRevealedButton(action);
 });
 
-commands.set('hypoBack', () => {
+commands.set("hypoBack", () => {
   globals.store!.dispatch({
-    type: 'hypoBack',
+    type: "hypoBack",
   });
 });
 
-commands.set('hypoEnd', () => {
+commands.set("hypoEnd", () => {
   hypothetical.end();
 });
 
 interface HypoDrawnCardsShownData {
   drawnCardsShown: boolean;
 }
-commands.set('hypoDrawnCardsShown', (data: HypoDrawnCardsShownData) => {
+commands.set("hypoDrawnCardsShown", (data: HypoDrawnCardsShownData) => {
   globals.store!.dispatch({
-    type: 'hypoDrawnCardsShown',
+    type: "hypoDrawnCardsShown",
     drawnCardsShown: data.drawnCardsShown,
   });
 });
 
-commands.set('hypoStart', () => {
+commands.set("hypoStart", () => {
   hypothetical.start();
 });
 
-interface InitData {
-  // Game settings
-  tableID: number; // Equal to the table ID on the server
-  playerNames: string[];
-  ourPlayerIndex: number; // 0 if a spectator or a replay of a game that we were not in
-  spectating: boolean;
-  replay: boolean;
-  databaseID: number; // 0 if this is an ongoing game
-  hasCustomSeed: boolean; // If playing a table started with the "!seed" prefix
-  seed: string;
-  datetimeStarted: string;
-  datetimeFinished: string;
-  options: Options;
-
-  // Character settings
-  // "characterAssignments" comes from the server as only numbers,
-  // but we want to convert -1 to null in place
-  characterAssignments: Array<number | null>;
-  characterMetadata: number[];
-
-  // Shared replay settings
-  sharedReplay: boolean;
-  sharedReplayLeader: string;
-  sharedReplaySegment: number;
-
-  // Pause settings
-  paused: boolean;
-  pausePlayerIndex: number;
-  pauseQueued: boolean;
-}
-commands.set('init', (metadata: InitData) => {
+commands.set("init", (metadata: InitData) => {
   // Data contains the game settings for the game we are entering;
   // attach this to the Sentry context to make debugging easier
   sentry.setGameContext(metadata);
@@ -186,7 +157,7 @@ interface NoteData {
   order: number;
   notes: SpectatorNote[];
 }
-commands.set('note', (data: NoteData) => {
+commands.set("note", (data: NoteData) => {
   // If we are an active player and we got this message, something has gone wrong
   if (globals.state.playing) {
     return;
@@ -212,7 +183,7 @@ interface NoteList {
   name: string;
   notes: string[];
 }
-commands.set('noteList', (data: NoteListData) => {
+commands.set("noteList", (data: NoteListData) => {
   // Reset any existing notes
   // (we could be getting a fresh copy of all notes after an ongoing game has ended)
   for (let i = 0; i < globals.allNotes.size; i++) {
@@ -224,9 +195,9 @@ commands.set('noteList', (data: NoteListData) => {
   for (const noteList of data.notes) {
     // If we are a spectator, copy our notes from the combined list
     if (
-      !globals.state.playing
-      && !globals.state.finished
-      && noteList.name === globals.metadata.ourUsername
+      !globals.state.playing &&
+      !globals.state.finished &&
+      noteList.name === globals.metadata.ourUsername
     ) {
       globals.ourNotes.clear();
       noteList.notes.forEach((note, i) => globals.ourNotes.set(i, note));
@@ -250,7 +221,7 @@ commands.set('noteList', (data: NoteListData) => {
 interface NoteListPlayerData {
   notes: string[];
 }
-commands.set('noteListPlayer', (data: NoteListPlayerData) => {
+commands.set("noteListPlayer", (data: NoteListPlayerData) => {
   // Store our notes
   globals.ourNotes.clear();
   data.notes.forEach((note, i) => globals.ourNotes.set(i, note));
@@ -276,7 +247,7 @@ interface GameActionData {
   tableID: number;
   action: GameAction;
 }
-commands.set('gameAction', (data: GameActionData) => {
+commands.set("gameAction", (data: GameActionData) => {
   // Update the game state
   globals.store!.dispatch(data.action);
 });
@@ -285,12 +256,12 @@ interface GameActionListData {
   tableID: number;
   list: GameAction[];
 }
-commands.set('gameActionList', (data: GameActionListData) => {
+commands.set("gameActionList", (data: GameActionListData) => {
   // The server has sent us the list of the game actions that have occurred in the game thus far
   // (in response to the "getGameInfo2" command)
   // Send this list to the reducers
   globals.store!.dispatch({
-    type: 'gameActionList',
+    type: "gameActionList",
     actions: data.list,
   });
 
@@ -303,9 +274,9 @@ interface PauseData {
   active: boolean;
   playerIndex: number;
 }
-commands.set('pause', (data: PauseData) => {
+commands.set("pause", (data: PauseData) => {
   globals.store!.dispatch({
-    type: 'pause',
+    type: "pause",
     active: data.active,
     playerIndex: data.playerIndex,
   });
@@ -315,14 +286,14 @@ commands.set('pause', (data: PauseData) => {
 interface ReplayIndicatorData {
   order: ReplayArrowOrder;
 }
-commands.set('replayIndicator', (data: ReplayIndicatorData) => {
+commands.set("replayIndicator", (data: ReplayIndicatorData) => {
   if (
-    globals.state.replay.shared === null
+    globals.state.replay.shared === null ||
     // Shared replay leaders already drew the arrow after sending the "replayAction" message
-    || globals.state.replay.shared.amLeader
+    globals.state.replay.shared.amLeader ||
     // If we are not currently using the shared segments,
     // the arrow that the shared replay leader is highlighting will not be applicable
-    || !globals.state.replay.shared.useSharedSegments
+    !globals.state.replay.shared.useSharedSegments
   ) {
     return;
   }
@@ -363,13 +334,13 @@ commands.set('replayIndicator', (data: ReplayIndicatorData) => {
 interface ReplayLeaderData {
   name: string;
 }
-commands.set('replayLeader', (data: ReplayLeaderData) => {
+commands.set("replayLeader", (data: ReplayLeaderData) => {
   if (globals.state.replay.shared === null) {
     return;
   }
 
   globals.store!.dispatch({
-    type: 'replayLeader',
+    type: "replayLeader",
     name: data.name,
   });
 });
@@ -378,18 +349,23 @@ commands.set('replayLeader', (data: ReplayLeaderData) => {
 interface ReplaySegmentData {
   segment: number;
 }
-commands.set('replaySegment', (data: ReplaySegmentData) => {
+commands.set("replaySegment", (data: ReplaySegmentData) => {
   // If we are the replay leader,
   // we will already have the shared segment set to be equal to what the server is broadcasting
-  if (globals.state.replay.shared === null || globals.state.replay.shared.amLeader) {
+  if (
+    globals.state.replay.shared === null ||
+    globals.state.replay.shared.amLeader
+  ) {
     return;
   }
 
-  if (typeof data.segment !== 'number' || data.segment < 0) {
-    throw new Error('Received an invalid segment from the "replaySegment" command.');
+  if (typeof data.segment !== "number" || data.segment < 0) {
+    throw new Error(
+      'Received an invalid segment from the "replaySegment" command.',
+    );
   }
   globals.store!.dispatch({
-    type: 'replaySharedSegment',
+    type: "replaySharedSegment",
     segment: data.segment,
   });
 });
@@ -398,7 +374,7 @@ commands.set('replaySegment', (data: ReplaySegmentData) => {
 interface ReplaySoundData {
   sound: string;
 }
-commands.set('replaySound', (data: ReplaySoundData) => {
+commands.set("replaySound", (data: ReplaySoundData) => {
   globals.game!.sounds.play(data.sound);
 });
 
@@ -407,7 +383,7 @@ export interface SpectatorsData {
   tableID: number;
   spectators: Spectator[];
 }
-commands.set('spectators', (data: SpectatorsData) => {
+commands.set("spectators", (data: SpectatorsData) => {
   // The shadowing index will be -1 if they are not shadowing a player
   // Convert this to null
   for (let i = 0; i < data.spectators.length; i++) {
@@ -417,7 +393,7 @@ commands.set('spectators', (data: SpectatorsData) => {
   }
 
   globals.store!.dispatch({
-    type: 'spectators',
+    type: "spectators",
     spectators: data.spectators,
   });
 });
@@ -463,7 +439,7 @@ const initStateStore = (data: InitData) => {
   });
 
   globals.store.dispatch({
-    type: 'init',
+    type: "init",
     spectating: data.spectating,
     datetimeStarted: data.datetimeStarted,
     datetimeFinished: data.datetimeFinished,
@@ -484,12 +460,20 @@ const initStateStore = (data: InitData) => {
 // Validate that the database ID in the URL matches the one in the game that just loaded
 // (e.g. "/replay/150" for database game 150)
 const validateReplayURL = () => {
-  const match1 = window.location.pathname.match(/\/replay\/(\d+).*/);
-  const match2 = window.location.pathname.match(/\/shared-replay\/(\d+).*/);
+  const match1 = /\/replay\/(\d+).*/.exec(window.location.pathname);
+  const match2 = /\/shared-replay\/(\d+).*/.exec(window.location.pathname);
   let databaseID;
-  if (match1 && globals.state.finished && globals.state.replay.shared === null) {
+  if (
+    match1 &&
+    globals.state.finished &&
+    globals.state.replay.shared === null
+  ) {
     databaseID = parseIntSafe(match1[1]);
-  } else if (match2 && globals.state.finished && globals.state.replay.shared !== null) {
+  } else if (
+    match2 &&
+    globals.state.finished &&
+    globals.state.replay.shared !== null
+  ) {
     databaseID = parseIntSafe(match2[1]);
   }
   if (databaseID === globals.state.replay.databaseID) {
@@ -505,8 +489,8 @@ const validateReplayURL = () => {
 const checkLoadSpecificReplayTurn = () => {
   // If we get here, we should be in a replay that matches the database ID
   let segment;
-  const match1 = window.location.pathname.match(/\/replay\/\d+\/(\d+)/);
-  const match2 = window.location.pathname.match(/\/shared-replay\/\d+\/(\d+)/);
+  const match1 = /\/replay\/\d+\/(\d+)/.exec(window.location.pathname);
+  const match2 = /\/shared-replay\/\d+\/(\d+)/.exec(window.location.pathname);
   // We minus one from the segment since turns are represented to the user as starting from 1
   // (instead of from 0)
   if (match1) {

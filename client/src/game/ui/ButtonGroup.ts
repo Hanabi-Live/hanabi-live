@@ -1,7 +1,7 @@
-import Konva from 'konva';
-import ColorButton from './ColorButton';
-import PlayerButton from './controls/PlayerButton';
-import RankButton from './RankButton';
+import Konva from "konva";
+import ColorButton from "./ColorButton";
+import PlayerButton from "./controls/PlayerButton";
+import RankButton from "./RankButton";
 
 type ClueButton = PlayerButton | ColorButton | RankButton;
 
@@ -15,12 +15,14 @@ export default class ButtonGroup extends Konva.Group {
     this.list = [];
   }
 
-  addList(button: ClueButton) {
-    const self = this;
+  addList(button: ClueButton): void {
+    const self = this; // eslint-disable-line @typescript-eslint/no-this-alias
 
     this.list.push(button);
 
-    (button as Konva.Node).on('click tap', function buttonClick(this: Konva.Node) {
+    (button as Konva.Node).on("click tap", function buttonClick(
+      this: Konva.Node,
+    ) {
       (this as ClueButton).setPressed(true);
 
       for (let i = 0; i < self.list.length; i++) {
@@ -29,11 +31,11 @@ export default class ButtonGroup extends Konva.Group {
         }
       }
 
-      self.fire('change', null);
+      self.fire("change", null);
     });
   }
 
-  getPressed() {
+  getPressed(): ClueButton | null {
     for (const button of this.list) {
       if (button.pressed) {
         return button;
@@ -43,7 +45,7 @@ export default class ButtonGroup extends Konva.Group {
     return null;
   }
 
-  clearPressed() {
+  clearPressed(): void {
     for (let i = 0; i < this.list.length; i++) {
       if (this.list[i].pressed) {
         this.list[i].setPressed(false);
@@ -52,7 +54,7 @@ export default class ButtonGroup extends Konva.Group {
   }
 
   // selectNextTarget is only used for groups of "PlayerButton"
-  selectNextTarget() {
+  selectNextTarget(): void {
     let buttonIndex;
     for (let i = 0; i < this.list.length; i++) {
       if (this.list[i].pressed) {
@@ -83,7 +85,7 @@ export default class ButtonGroup extends Konva.Group {
     }
 
     if (button !== undefined) {
-      button.dispatchEvent(new MouseEvent('click'));
+      button.dispatchEvent(new MouseEvent("click"));
     }
   }
 }

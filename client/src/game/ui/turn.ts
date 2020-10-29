@@ -1,17 +1,17 @@
-import * as notifications from '../../notifications';
-import { variantRules, clueTokensRules } from '../rules';
-import ActionType from '../types/ActionType';
-import ClientAction from '../types/ClientAction';
-import ClueType from '../types/ClueType';
-import * as arrows from './arrows';
-import { PREPLAY_DELAY } from './constants';
-import globals from './globals';
-import * as hypothetical from './hypothetical';
-import isOurTurn from './isOurTurn';
-import * as ourHand from './ourHand';
-import * as replay from './replay';
+import * as notifications from "../../notifications";
+import { clueTokensRules, variantRules } from "../rules";
+import ActionType from "../types/ActionType";
+import ClientAction from "../types/ClientAction";
+import ClueType from "../types/ClueType";
+import * as arrows from "./arrows";
+import { PREPLAY_DELAY } from "./constants";
+import globals from "./globals";
+import * as hypothetical from "./hypothetical";
+import isOurTurn from "./isOurTurn";
+import * as ourHand from "./ourHand";
+import * as replay from "./replay";
 
-export const begin = () => {
+export const begin = (): void => {
   showClueUI();
 
   if (globals.animateFast) {
@@ -19,7 +19,7 @@ export const begin = () => {
   }
 
   if (globals.lobby.settings.desktopNotification) {
-    notifications.send('It is your turn.', 'turn');
+    notifications.send("It is your turn.", "turn");
   }
 
   handlePremove();
@@ -28,8 +28,8 @@ export const begin = () => {
 // Handle pre-playing / pre-discarding / pre-cluing
 const handlePremove = () => {
   // Local variables
-  const premove = globals.state.premove;
-  const clueTokens = globals.state.ongoingGame.clueTokens;
+  const { premove } = globals.state;
+  const { clueTokens } = globals.state.ongoingGame;
 
   if (premove === null) {
     return;
@@ -68,7 +68,7 @@ const handlePremove = () => {
   // Make a copy of the premove values and then clear the premove action
   const { type, target, value } = premove;
   globals.store!.dispatch({
-    type: 'premove',
+    type: "premove",
     premove: null,
   });
 
@@ -79,7 +79,7 @@ const handlePremove = () => {
       return;
     }
 
-    globals.lobby.conn!.send('action', {
+    globals.lobby.conn!.send("action", {
       tableID: globals.lobby.tableID,
       type,
       target,
@@ -90,14 +90,17 @@ const handlePremove = () => {
   }, PREPLAY_DELAY);
 };
 
-export const showClueUI = () => {
+export const showClueUI = (): void => {
   if (!isOurTurn()) {
     return;
   }
 
   // Don't show the clue UI if it gets to be our turn and we happen to be viewing past actions in an
   // in-game replay
-  if (globals.state.replay.active && globals.state.replay.hypothetical === null) {
+  if (
+    globals.state.replay.active &&
+    globals.state.replay.hypothetical === null
+  ) {
     return;
   }
 
@@ -112,9 +115,10 @@ export const showClueUI = () => {
   globals.elements.clueArea!.show();
   globals.elements.currentPlayerArea!.hide();
 
-  const ongoingGameState = globals.state.replay.hypothetical === null
-    ? globals.state.ongoingGame
-    : globals.state.replay.hypothetical.ongoing;
+  const ongoingGameState =
+    globals.state.replay.hypothetical === null
+      ? globals.state.ongoingGame
+      : globals.state.replay.hypothetical.ongoing;
 
   // Hide some specific clue buttons in certain variants with clue restrictions
   if (variantRules.isAlternatingClues(globals.variant)) {
@@ -122,7 +126,8 @@ export const showClueUI = () => {
       setColorClueButtonsVisible(true);
       setRankClueButtonsVisible(true);
     } else {
-      const lastClue = ongoingGameState.clues[ongoingGameState.clues.length - 1];
+      const lastClue =
+        ongoingGameState.clues[ongoingGameState.clues.length - 1];
       if (lastClue.type === ClueType.Color) {
         setColorClueButtonsVisible(false);
         setRankClueButtonsVisible(true);
@@ -134,7 +139,10 @@ export const showClueUI = () => {
   }
 
   // Fade the clue UI if there is not a clue available
-  if (ongoingGameState.clueTokens >= clueTokensRules.getAdjusted(1, globals.variant)) {
+  if (
+    ongoingGameState.clueTokens >=
+    clueTokensRules.getAdjusted(1, globals.variant)
+  ) {
     globals.elements.clueArea!.opacity(1);
     globals.elements.clueAreaDisabled!.hide();
   } else {
@@ -168,18 +176,18 @@ const setRankClueButtonsVisible = (visible: boolean) => {
   }
 };
 
-export const end = (clientAction: ClientAction) => {
+export const end = (clientAction: ClientAction): void => {
   if (globals.state.replay.hypothetical !== null) {
     hypothetical.send(clientAction);
     hideClueUIAndDisableDragging();
     return;
   }
 
-  const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
-  const ourPlayerIndex = globals.metadata.ourPlayerIndex;
+  const { currentPlayerIndex } = globals.state.ongoingGame.turn;
+  const { ourPlayerIndex } = globals.metadata;
   if (currentPlayerIndex === ourPlayerIndex) {
     replay.exit(); // Close the in-game replay if we preplayed a card in the replay
-    globals.lobby.conn!.send('action', {
+    globals.lobby.conn!.send("action", {
       tableID: globals.lobby.tableID,
       type: clientAction.type,
       target: clientAction.target,
@@ -188,13 +196,13 @@ export const end = (clientAction: ClientAction) => {
     hideClueUIAndDisableDragging();
   } else {
     globals.store!.dispatch({
-      type: 'premove',
+      type: "premove",
       premove: clientAction,
     });
   }
 };
 
-export const hideClueUIAndDisableDragging = () => {
+export const hideClueUIAndDisableDragging = (): void => {
   globals.elements.clueArea!.hide();
   globals.elements.clueAreaDisabled!.hide();
   globals.elements.currentPlayerArea!.hide();

@@ -1,32 +1,35 @@
-import Konva from 'konva';
-import { handRules, clueTokensRules, variantRules } from '../../../rules';
-import State from '../../../types/State';
-import { LABEL_COLOR } from '../../constants';
-import globals from '../../globals';
+import Konva from "konva";
+import { clueTokensRules, handRules, variantRules } from "../../../rules";
+import State from "../../../types/State";
+import { LABEL_COLOR } from "../../constants";
+import globals from "../../globals";
 
-export const isVisible = (state: State) => (
+export const isVisible = (state: State): boolean =>
   // Don't show it we happen to have the in-game replay open
-  !state.replay.active
+  !state.replay.active &&
   // The clue UI should take precedence over the "Current Player" area
-  && (
-    state.ongoingGame.turn.currentPlayerIndex !== state.metadata.ourPlayerIndex
-    || !state.playing
-  )
+  (state.ongoingGame.turn.currentPlayerIndex !==
+    state.metadata.ourPlayerIndex ||
+    !state.playing) &&
   // The premove cancel button should take precedence over the "Current Player" area
-  && state.premove === null
+  state.premove === null &&
   // Don't show it if the game is over
-  && state.ongoingGame.turn.currentPlayerIndex !== null
-);
+  state.ongoingGame.turn.currentPlayerIndex !== null;
 
-export const onChanged = (data: {
-  visible: boolean;
-  currentPlayerIndex: number | null;
-}, previousData: {
-  visible: boolean;
-  currentPlayerIndex: number | null;
-} | undefined) => {
+export const onChanged = (
+  data: {
+    visible: boolean;
+    currentPlayerIndex: number | null;
+  },
+  previousData:
+    | {
+        visible: boolean;
+        currentPlayerIndex: number | null;
+      }
+    | undefined,
+): void => {
   // Local variables
-  const currentPlayerArea = globals.elements.currentPlayerArea;
+  const { currentPlayerArea } = globals.elements;
   if (currentPlayerArea === null) {
     return;
   }
@@ -42,18 +45,21 @@ export const onChanged = (data: {
   // Local variables
   const winW = globals.stage.width();
   const winH = globals.stage.height();
-  const clueTokens = globals.state.ongoingGame.clueTokens;
-  const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
+  const { clueTokens } = globals.state.ongoingGame;
+  const { currentPlayerIndex } = globals.state.ongoingGame.turn;
   if (currentPlayerIndex === null) {
     return;
   }
   const currentPlayerHand = globals.state.ongoingGame.hands[currentPlayerIndex];
-  const isLocked = handRules.isLocked(currentPlayerHand, globals.state.ongoingGame.deck);
-  const numPlayers = globals.options.numPlayers;
+  const isLocked = handRules.isLocked(
+    currentPlayerHand,
+    globals.state.ongoingGame.deck,
+  );
+  const { numPlayers } = globals.options;
 
   // Update the text
   const { text1, text2, text3 } = currentPlayerArea;
-  let specialText = '';
+  let specialText = "";
   if (!globals.lobby.settings.realLifeMode) {
     let cluesTokensText = clueTokens.toString();
     if (variantRules.isClueStarved(globals.variant)) {
@@ -64,19 +70,19 @@ export const onChanged = (data: {
 
     if (clueTokens < clueTokensRules.getAdjusted(1, globals.variant)) {
       specialText = `(cannot clue; ${cluesTokensText} clues left)`;
-      text3.fill('red');
+      text3.fill("red");
     } else if (clueTokensRules.atMax(clueTokens, globals.variant)) {
       specialText = `(cannot discard; at ${cluesTokensText} clues)`;
       text3.fill(LABEL_COLOR);
     } else if (isLocked && globals.lobby.settings.hyphenatedConventions) {
-      specialText = '(locked; may not be able to discard)';
+      specialText = "(locked; may not be able to discard)";
       text3.fill(LABEL_COLOR);
     } else if (
-      globals.state.ongoingGame.stats.doubleDiscard
-      && globals.lobby.settings.hyphenatedConventions
+      globals.state.ongoingGame.stats.doubleDiscard &&
+      globals.lobby.settings.hyphenatedConventions
     ) {
       specialText = '(potentially in a "Double Discard" situation)';
-      text3.fill('yellow');
+      text3.fill("yellow");
     }
   }
 
@@ -102,35 +108,41 @@ export const onChanged = (data: {
       text2.width(text2.width() * 0.9);
       text2.resize();
     }
-    text2.x((rect1.width() / 2) - (text2.width() / 2));
+    text2.x(rect1.width() / 2 - text2.width() / 2);
   };
 
   const totalH = currentPlayerArea.height();
   const text1H = text1.measureSize(text1.text()).height;
-  if (specialText === '') {
+  if (specialText === "") {
     // 2 lines
     setPlayerText(false);
     const text2H = text2.measureSize(text2.text()).height;
     const spacing = 0.03 * winH;
-    text1.y((totalH / 2) - (text1H / 2) - spacing);
-    text2.y((totalH / 2) - (text2H / 2) + spacing);
+    text1.y(totalH / 2 - text1H / 2 - spacing);
+    text2.y(totalH / 2 - text2H / 2 + spacing);
     text3.hide();
   } else {
     // 3 lines
     setPlayerText(true);
     const text2H = text2.measureSize(text2.text()).height;
     const spacing = 0.04 * winH;
-    text1.y((totalH / 2) - (text1H / 2) - spacing);
-    text2.y((totalH / 2) - (text2H / 2) + (spacing * 0.25));
-    text3.y((totalH / 2) - (text1H / 2) + (spacing * 1.5));
+    text1.y(totalH / 2 - text1H / 2 - spacing);
+    text2.y(totalH / 2 - text2H / 2 + spacing * 0.25);
+    text3.y(totalH / 2 - text1H / 2 + spacing * 1.5);
     text3.fitText(specialText);
     text3.show();
   }
 
   // Get the rotation that corresponds to the current player
-  let rotation = getArrowRotationCorrespondingToPlayer(data.currentPlayerIndex!);
+  let rotation = getArrowRotationCorrespondingToPlayer(
+    data.currentPlayerIndex!,
+  );
 
-  if (globals.animateFast || previousData === undefined || !previousData.visible) {
+  if (
+    globals.animateFast ||
+    previousData === undefined ||
+    !previousData.visible
+  ) {
     // Immediately snap the arrow in position and do not tween if:
     // 1) we performed an action on our turn and now the "Current Player" area is now visible again
     //    after being hidden
@@ -148,7 +160,9 @@ export const onChanged = (data: {
     if (previousPlayerIndex === -1) {
       previousPlayerIndex = numPlayers - 1;
     }
-    const previousRotation = getArrowRotationCorrespondingToPlayer(previousPlayerIndex);
+    const previousRotation = getArrowRotationCorrespondingToPlayer(
+      previousPlayerIndex,
+    );
     currentPlayerArea.arrow?.rotation(previousRotation);
 
     // We want the arrow to always be moving clockwise
@@ -161,9 +175,13 @@ export const onChanged = (data: {
       node: currentPlayerArea.arrow,
       duration: 0.75,
       rotation,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       easing: Konva.Easings.EaseInOut,
       onFinish: () => {
-        if (currentPlayerArea.arrow !== undefined && currentPlayerArea.arrow !== null) {
+        if (
+          currentPlayerArea.arrow !== undefined &&
+          currentPlayerArea.arrow !== null
+        ) {
           currentPlayerArea.arrow.rotation(unmodifiedRotation);
         }
       },
@@ -176,7 +194,9 @@ export const onChanged = (data: {
 const getArrowRotationCorrespondingToPlayer = (playerIndex: number) => {
   const hand = globals.elements.playerHands[playerIndex];
   if (hand === undefined) {
-    throw new Error(`Failed to get the hand corresponding to the player at index ${playerIndex}.`);
+    throw new Error(
+      `Failed to get the hand corresponding to the player at index ${playerIndex}.`,
+    );
   }
   const centerPos = hand.getAbsoluteCenterPos();
   const thisPos = globals.elements.currentPlayerArea!.arrow.getAbsolutePosition();

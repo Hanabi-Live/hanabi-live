@@ -1,22 +1,23 @@
 /* eslint-disable import/prefer-default-export */
 
-import { LogEntry } from '../../../types/GameState';
-import globals from '../../globals';
+import { LogEntry } from "../../../types/GameState";
+import globals from "../../globals";
 
-export const onLogChanged = (log: readonly LogEntry[]) => {
+export const onLogChanged = (log: readonly LogEntry[]): void => {
   updateActionLog(log);
   updateFullActionLog(log);
 };
 
 const updateActionLog = (log: readonly LogEntry[]) => {
-  const actionLog = globals.elements.actionLog;
+  const { actionLog } = globals.elements;
   if (actionLog === null) {
     return;
   }
 
   const startingIndex = Math.max(0, log.length - actionLog.maxLines);
   for (let i = 0; i < actionLog.maxLines; i++) {
-    const line = startingIndex + i > log.length - 1 ? '' : log[startingIndex + i].text;
+    const line =
+      startingIndex + i > log.length - 1 ? "" : log[startingIndex + i].text;
     if (line !== actionLog.smallHistory[i]) {
       actionLog.smallHistory[i] = line;
     }
@@ -27,7 +28,7 @@ const updateActionLog = (log: readonly LogEntry[]) => {
 };
 
 const updateFullActionLog = (log: readonly LogEntry[]) => {
-  const fullActionLog = globals.elements.fullActionLog;
+  const { fullActionLog } = globals.elements;
   if (fullActionLog === null) {
     return;
   }

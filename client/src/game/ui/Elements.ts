@@ -1,31 +1,36 @@
-import Konva from 'konva';
-import Suit from '../types/Suit';
-import ButtonGroup from './ButtonGroup';
-import CardLayout from './CardLayout';
-import ClueLog from './ClueLog';
-import ColorButton from './ColorButton';
-import Arrow from './controls/Arrow';
-import Button from './controls/Button';
-import CurrentPlayerArea from './controls/CurrentPlayerArea';
-import FitText from './controls/FitText';
-import SharedTurnsButton from './controls/SharedTurnsButton';
-import Shuttle from './controls/Shuttle';
-import StrikeSquare from './controls/StrikeSquare';
-import StrikeX from './controls/StrikeX';
-import ThreeLineButton from './controls/ThreeLineButton';
-import TimerDisplay from './controls/TimerDisplay';
-import Deck from './Deck';
-import FullActionLog from './FullActionLog';
-import MultiFitText from './MultiFitText';
-import NameFrame from './NameFrame';
-import PlayStack from './PlayStack';
-import RankButton from './RankButton';
+import Konva from "konva";
+import Suit from "../types/Suit";
+import ButtonGroup from "./ButtonGroup";
+import CardLayout from "./CardLayout";
+import ClueLog from "./ClueLog";
+import ColorButton from "./ColorButton";
+import Arrow from "./controls/Arrow";
+import Button from "./controls/Button";
+import CurrentPlayerArea from "./controls/CurrentPlayerArea";
+import FitText from "./controls/FitText";
+import SharedTurnsButton from "./controls/SharedTurnsButton";
+import Shuttle from "./controls/Shuttle";
+import StrikeSquare from "./controls/StrikeSquare";
+import StrikeX from "./controls/StrikeX";
+import ThreeLineButton from "./controls/ThreeLineButton";
+import TimerDisplay from "./controls/TimerDisplay";
+import Deck from "./Deck";
+import FullActionLog from "./FullActionLog";
+import MultiFitText from "./MultiFitText";
+import NameFrame from "./NameFrame";
+import PlayStack from "./PlayStack";
+import RankButton from "./RankButton";
 
 export default class Elements {
   // The main screen
   stageFade: Konva.Rect | null = null;
   playArea: Konva.Rect | null = null;
-  playStacks: Map<Suit | 'hole', PlayStack> = new Map<Suit | 'hole', PlayStack>();
+
+  playStacks: Map<Suit | "hole", PlayStack> = new Map<
+    Suit | "hole",
+    PlayStack
+  >();
+
   suitLabelTexts: FitText[] = [];
   discardArea: Konva.Rect | null = null;
   discardStacks: Map<Suit, CardLayout> = new Map<Suit, CardLayout>();

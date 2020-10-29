@@ -1,5 +1,5 @@
-import ClueType from './ClueType';
-import Color from './Color';
+import ClueType from "./ClueType";
+import Color from "./Color";
 
 export interface RankClue {
   readonly type: ClueType.Rank;

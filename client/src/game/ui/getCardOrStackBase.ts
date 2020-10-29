@@ -1,7 +1,8 @@
-import { deckRules } from '../rules';
-import globals from './globals';
+import { deckRules } from "../rules";
+import globals from "./globals";
+import HanabiCard from "./HanabiCard";
 
-const getCardOrStackBase = (order: number) => {
+const getCardOrStackBase = (order: number): HanabiCard => {
   const card = globals.deck[order];
   if (card !== undefined) {
     return card;

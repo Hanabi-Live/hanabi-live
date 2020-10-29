@@ -1,23 +1,23 @@
-import { getVariant } from '../src/game/data/gameData';
-import gameStateReducer from '../src/game/reducers/gameStateReducer';
-import initialState from '../src/game/reducers/initialStates/initialState';
-import { cluesRules, playStacksRules } from '../src/game/rules';
-import * as handRules from '../src/game/rules/hand';
-import * as segmentRules from '../src/game/rules/segment';
+import { getVariant } from "../src/game/data/gameData";
+import gameStateReducer from "../src/game/reducers/gameStateReducer";
+import initialState from "../src/game/reducers/initialStates/initialState";
+import { cluesRules, playStacksRules } from "../src/game/rules";
+import * as handRules from "../src/game/rules/hand";
+import * as segmentRules from "../src/game/rules/segment";
 import {
   ActionClue,
   ActionDiscard,
   ActionDraw,
   ActionPlay,
   GameAction,
-} from '../src/game/types/actions';
-import ActionType from '../src/game/types/ActionType';
-import CardIdentity from '../src/game/types/CardIdentity';
-import ClueType from '../src/game/types/ClueType';
-import GameState from '../src/game/types/GameState';
-import State from '../src/game/types/State';
-import testGame from '../test_data/up_or_down.json';
-import testMetadata from './testMetadata';
+} from "../src/game/types/actions";
+import ActionType from "../src/game/types/ActionType";
+import CardIdentity from "../src/game/types/CardIdentity";
+import ClueType from "../src/game/types/ClueType";
+import GameState from "../src/game/types/GameState";
+import State from "../src/game/types/State";
+import testGame from "../test_data/up_or_down.json";
+import testMetadata from "./testMetadata";
 
 type JSONGame = typeof testGame;
 
@@ -42,7 +42,12 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
 
   const cardsPerHand = handRules.cardsPerHand(numPlayers, false, false);
   const actions: GameAction[] = [];
-  let topOfDeck = dealInitialCards(numPlayers, cardsPerHand, actions, gameJSON.deck);
+  let topOfDeck = dealInitialCards(
+    numPlayers,
+    cardsPerHand,
+    actions,
+    gameJSON.deck,
+  );
 
   // Parse all plays/discards/clues
   let turn = 0; // Start on the 0th turn
@@ -53,8 +58,8 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     if (action) {
       actions.push(action);
       if (
-        topOfDeck < gameJSON.deck.length
-        && (action.type === 'discard' || action.type === 'play')
+        topOfDeck < gameJSON.deck.length &&
+        (action.type === "discard" || action.type === "play")
       ) {
         actions.push(drawCard(currentPlayerIndex, topOfDeck, gameJSON.deck));
         topOfDeck += 1;
@@ -72,7 +77,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   const finalGameJSONAction = gameJSON.actions[gameJSON.actions.length - 1];
   if (finalGameJSONAction.type !== ActionType.GameOver) {
     actions.push({
-      type: 'gameOver',
+      type: "gameOver",
       // Assume that the game ended normally;
       // this is not necessarily the case and will break if a test game is added with a strikeout,
       // a termination, etc.
@@ -95,28 +100,28 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     let nextState = s;
 
     switch (a.type) {
-      case 'clue': {
+      case "clue": {
         // Fix the list of touched cards
-        const list: number[] = s
-          .hands[a.target]
-          .filter((order) => {
-            const jsonCard = gameJSON.deck[order];
-            return cluesRules.touchesCard(
-              variant,
-              cluesRules.msgClueToClue(a.clue, variant),
-              jsonCard.suitIndex,
-              jsonCard.rank,
-            );
-          });
+        const list: number[] = s.hands[a.target].filter((order) => {
+          const jsonCard = gameJSON.deck[order];
+          return cluesRules.touchesCard(
+            variant,
+            cluesRules.msgClueToClue(a.clue, variant),
+            jsonCard.suitIndex,
+            jsonCard.rank,
+          );
+        });
         action = { ...a, list };
         break;
       }
 
-      case 'play': {
+      case "play": {
         // Check if this is actually a play or a misplay
         const jsonCard: CardIdentity = gameJSON.deck[a.order];
         if (jsonCard.suitIndex === null || jsonCard.rank === null) {
-          throw new Error(`Failed to get the rank or the suit for card ${a.order} in the JSON deck.`);
+          throw new Error(
+            `Failed to get the rank or the suit for card ${a.order} in the JSON deck.`,
+          );
         }
 
         const nextRanks = playStacksRules.nextRanks(
@@ -127,7 +132,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
         if (!nextRanks.includes(jsonCard.rank)) {
           // Send a discard and a strike
           action = {
-            type: 'discard',
+            type: "discard",
             playerIndex: a.playerIndex,
             order: a.order,
             suitIndex: a.suitIndex,
@@ -136,12 +141,21 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
           };
           nextState = gameStateReducer(s, action, false, state.metadata);
 
-          if (segmentRules.shouldStore(nextState.turn.segment, s.turn.segment, action)) {
+          if (
+            segmentRules.shouldStore(
+              nextState.turn.segment,
+              s.turn.segment,
+              action,
+            )
+          ) {
             states[nextState.turn.segment!] = nextState;
           }
 
           action = {
-            type: 'strike', num: nextState.strikes.length, order: a.order, turn,
+            type: "strike",
+            num: nextState.strikes.length,
+            order: a.order,
+            turn,
           };
         }
 
@@ -156,7 +170,9 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
     const previousSegment = nextState.turn.segment;
     nextState = gameStateReducer(nextState, action, false, state.metadata);
 
-    if (segmentRules.shouldStore(nextState.turn.segment, previousSegment, action)) {
+    if (
+      segmentRules.shouldStore(nextState.turn.segment, previousSegment, action)
+    ) {
       states[nextState.turn.segment!] = nextState;
     }
 
@@ -186,17 +202,25 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   };
 }
 
-const drawCard = (playerIndex: number, order: number, deck: CardIdentity[]): ActionDraw => {
+const drawCard = (
+  playerIndex: number,
+  order: number,
+  deck: CardIdentity[],
+): ActionDraw => {
   const cardIdentity = deck[order];
   if (cardIdentity === undefined) {
-    throw new Error(`Failed to find the ${order} card in the deck in the "drawCard()" function.`);
+    throw new Error(
+      `Failed to find the ${order} card in the deck in the "drawCard()" function.`,
+    );
   }
   if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
-    throw new Error('Failed to find the suit or rank of the card in the "drawCard()" function.');
+    throw new Error(
+      'Failed to find the suit or rank of the card in the "drawCard()" function.',
+    );
   }
 
   return {
-    type: 'draw',
+    type: "draw",
     playerIndex,
     order,
     suitIndex: cardIdentity.suitIndex,
@@ -231,20 +255,23 @@ const parseJSONAction = (
     case JSONActionType.ActionTypeDiscard: {
       const isPlay = a.type === JSONActionType.ActionTypePlay;
       const action = {
-        type: isPlay ? 'play' : 'discard',
+        type: isPlay ? "play" : "discard",
         playerIndex: currentPlayer,
         order: a.target,
         suitIndex: deck[a.target].suitIndex,
         rank: deck[a.target].rank,
       };
-      return (isPlay ? action as ActionPlay : action as ActionDiscard);
+      return isPlay ? (action as ActionPlay) : (action as ActionDiscard);
     }
     case JSONActionType.ActionTypeColorClue:
     case JSONActionType.ActionTypeRankClue: {
       return {
-        type: 'clue',
+        type: "clue",
         clue: {
-          type: a.type === JSONActionType.ActionTypeColorClue ? ClueType.Color : ClueType.Rank,
+          type:
+            a.type === JSONActionType.ActionTypeColorClue
+              ? ClueType.Color
+              : ClueType.Rank,
           value: a.value,
         },
         giver: currentPlayer,
@@ -255,7 +282,7 @@ const parseJSONAction = (
     }
     case JSONActionType.ActionTypeGameOver: {
       return {
-        type: 'gameOver',
+        type: "gameOver",
         endCondition: a.value,
         playerIndex: a.target,
       };

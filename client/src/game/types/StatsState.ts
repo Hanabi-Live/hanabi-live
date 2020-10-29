@@ -1,6 +1,6 @@
-import { GameAction } from './actions';
-import { PaceRisk } from './GameState';
-import SoundType from './SoundType';
+import { GameAction } from "./actions";
+import { PaceRisk } from "./GameState";
+import SoundType from "./SoundType";
 
 export default interface StatsState {
   readonly maxScore: number;

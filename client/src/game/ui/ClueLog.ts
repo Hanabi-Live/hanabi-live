@@ -1,26 +1,26 @@
 // This is the list of clues in the top-right-hand corner of the UI
 
-import Konva from 'konva';
-import ClueEntry from './ClueEntry';
-import globals from './globals';
+import Konva from "konva";
+import ClueEntry from "./ClueEntry";
+import globals from "./globals";
 
 export default class ClueLog extends Konva.Group {
   readonly maxLength = 27; // Just enough to fill the parent rectangle
 
-  addClue(clue: ClueEntry) {
-    this.add(clue as any);
+  addClue(clue: ClueEntry): void {
+    this.add((clue as unknown) as Konva.Group);
   }
 
-  updateClue(index: number, clue: ClueEntry) {
+  updateClue(index: number, clue: ClueEntry): void {
     this.children.toArray()[index] = clue;
   }
 
-  refresh() {
+  refresh(): void {
     this.truncateExcessClueEntries();
     this.doLayout();
   }
 
-  _setChildrenIndices() {
+  _setChildrenIndices(): void {
     Konva.Group.prototype._setChildrenIndices.call(this);
     this.doLayout();
   }
@@ -30,7 +30,7 @@ export default class ClueLog extends Konva.Group {
     for (let i = 0; i < this.children.length; i++) {
       const node = this.children[i];
       node.y(y);
-      y += node.height() + (0.001 * globals.stage.height());
+      y += node.height() + 0.001 * globals.stage.height();
     }
   }
 
@@ -45,7 +45,7 @@ export default class ClueLog extends Konva.Group {
 
   // We have moused over a card (or stopped mousing over a card),
   // so update the highlighting for all of the clue log entries
-  showMatches(targetCardOrder: number | null) {
+  showMatches(targetCardOrder: number | null): void {
     for (const child of this.children.toArray() as ClueEntry[]) {
       child.showMatch(targetCardOrder);
     }

@@ -1,14 +1,14 @@
 /* eslint-disable import/prefer-default-export */
 
-import ActionType from '../../../types/ActionType';
-import ClientAction from '../../../types/ClientAction';
-import globals from '../../globals';
-import * as ourHand from '../../ourHand';
+import ActionType from "../../../types/ActionType";
+import ClientAction from "../../../types/ClientAction";
+import globals from "../../globals";
+import * as ourHand from "../../ourHand";
 
 export const onChanged = (
   action: ClientAction | null,
   previousAction: ClientAction | null | undefined,
-) => {
+): void => {
   if (previousAction === undefined) {
     // The state is initializing to a null action
     return;
@@ -21,7 +21,10 @@ export const onChanged = (
     globals.layers.UI.batchDraw();
 
     // If we dragged a card, we have to make the card tween back to the hand
-    if (previousAction.type === ActionType.Play || previousAction.type === ActionType.Discard) {
+    if (
+      previousAction.type === ActionType.Play ||
+      previousAction.type === ActionType.Discard
+    ) {
       ourHand.get().doLayout();
       globals.layers.card.draw();
     }
@@ -29,13 +32,16 @@ export const onChanged = (
     // We just specified a premove action
     ourHand.checkSetDraggableAll();
 
-    let text = 'Cancel Pre-';
+    let text = "Cancel Pre-";
     if (action.type === ActionType.Play) {
-      text += 'Play';
+      text += "Play";
     } else if (action.type === ActionType.Discard) {
-      text += 'Discard';
-    } else if (action.type === ActionType.ColorClue || action.type === ActionType.RankClue) {
-      text += 'Clue';
+      text += "Discard";
+    } else if (
+      action.type === ActionType.ColorClue ||
+      action.type === ActionType.RankClue
+    ) {
+      text += "Clue";
     }
     globals.elements.premoveCancelButton?.text(text);
     globals.elements.premoveCancelButton?.show();

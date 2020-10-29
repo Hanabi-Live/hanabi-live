@@ -1,13 +1,13 @@
-import Konva from 'konva';
-import { getCharacter } from '../data/gameData';
-import * as hand from '../rules/hand';
-import Character from '../types/Character';
-import CardLayout from './CardLayout';
-import { CARD_W, CARD_H, OFF_BLACK } from './constants';
-import TextWithTooltip from './controls/TextWithTooltip';
-import globals from './globals';
-import NameFrame from './NameFrame';
-import * as tooltips from './tooltips';
+import Konva from "konva";
+import { getCharacter } from "../data/gameData";
+import * as hand from "../rules/hand";
+import Character from "../types/Character";
+import CardLayout from "./CardLayout";
+import { CARD_H, CARD_W, OFF_BLACK } from "./constants";
+import TextWithTooltip from "./controls/TextWithTooltip";
+import globals from "./globals";
+import NameFrame from "./NameFrame";
+import * as tooltips from "./tooltips";
 
 interface HandConfig {
   x: number;
@@ -22,9 +22,9 @@ const handPos: HandConfig[][] = [];
 const namePos: HandConfig[][] = [];
 const namePosBGA: HandConfig[][] = [];
 
-export default function drawHands(winW: number, winH: number) {
+export default function drawHands(winW: number, winH: number): void {
   // Constants
-  const numPlayers = globals.options.numPlayers;
+  const { numPlayers } = globals.options;
   const numCardsPerHand = hand.cardsPerHand(
     numPlayers,
     globals.options.oneExtraCard,
@@ -117,8 +117,8 @@ export default function drawHands(winW: number, winH: number) {
   // so they do not have to be hard coded
   const handPosBGA: HandConfig[][] = [];
   if (!globals.lobby.settings.keldonMode) {
-    let leftX = 0.430; // This is 0.020 away from the action log
-    const rightX = 0.780; // This is 0.020 away from the clue log
+    let leftX = 0.43; // This is 0.020 away from the action log
+    const rightX = 0.78; // This is 0.020 away from the clue log
     let topY = 0.03;
     const bottomY = 0.96;
     let cardSpacing = 0.1; // The amount of card widths between adjacent cards
@@ -127,7 +127,7 @@ export default function drawHands(winW: number, winH: number) {
     if (numPlayers >= 4) {
       // The hands would overlap with the timer for spectators
       // or the hypothetical controls during a shared replay
-      leftX = 0.440;
+      leftX = 0.44;
     }
     if (numPlayers >= 5) {
       // Create a bit more space for the cards
@@ -140,14 +140,14 @@ export default function drawHands(winW: number, winH: number) {
     }
 
     // The ratio of hand width to card width
-    const widthRatio = (numCardsPerHand * (1 + cardSpacing)) - cardSpacing;
+    const widthRatio = numCardsPerHand * (1 + cardSpacing) - cardSpacing;
     const maxCardWidth = (rightX - leftX) / widthRatio;
     // The ratio of hand height to the total height used by the hands (not including name frames)
-    const heightRatio = (numPlayers * (1 + handSpacing)) - handSpacing;
+    const heightRatio = numPlayers * (1 + handSpacing) - handSpacing;
     const maxCardHeight = (bottomY - topY) / heightRatio;
 
     // We need this because all of the other variables are defined relative to the canvas dimensions
-    const relativeCardRatio = (CARD_W / winW) / (CARD_H / winH);
+    const relativeCardRatio = CARD_W / winW / (CARD_H / winH);
 
     let handX;
     let handY;
@@ -171,7 +171,7 @@ export default function drawHands(winW: number, winH: number) {
     for (let j = 0; j < numPlayers; j++) {
       handPosBGA[numPlayers].push({
         x: handX,
-        y: handY + (handH * (1 + handSpacing) * j),
+        y: handY + handH * (1 + handSpacing) * j,
         w: handW,
         h: handH,
         rot: 0,
@@ -284,7 +284,7 @@ export default function drawHands(winW: number, winH: number) {
         x: handPosBGA[i][j].x - namePosBGAMod.x,
         y: handPosBGA[i][j].y + handPosBGA[i][j].h + namePosBGAMod.y,
         h: namePosValues.h,
-        w: handPosBGA[i][j].w + (namePosBGAMod.x * 2),
+        w: handPosBGA[i][j].w + namePosBGAMod.x * 2,
       });
     }
   }
@@ -317,12 +317,14 @@ export default function drawHands(winW: number, winH: number) {
       width: handValues.w * winW,
       height: handValues.h * winH,
       rotation: handValues.rot,
-      align: 'center',
+      align: "center",
       reverse: isHandReversed(j),
       // Hands must listen in order for the events to propagate through to the cards
       listening: true,
     });
-    globals.layers.card.add(globals.elements.playerHands[i] as any);
+    globals.layers.card.add(
+      (globals.elements.playerHands[i] as unknown) as Konva.Group,
+    );
 
     if (globals.lobby.settings.keldonMode) {
       // In Keldon mode,
@@ -333,7 +335,7 @@ export default function drawHands(winW: number, winH: number) {
         width: handValues.w * winW,
         height: handValues.h * winH,
         rotation: handValues.rot,
-        align: 'center',
+        align: "center",
         listening: false,
       });
       globals.layers.UI.add(blackLineGroup);
@@ -414,7 +416,7 @@ export default function drawHands(winW: number, winH: number) {
           x: turnRectValues.offsetX * winW,
           y: turnRectValues.offsetY * winH,
         },
-        fill: 'black',
+        fill: "black",
         cornerRadius: turnRectValues.h * 0.1 * winH,
         rotation: handValues.rot,
         opacity: 0.5,
@@ -433,7 +435,9 @@ export default function drawHands(winW: number, winH: number) {
       name: globals.metadata.playerNames[i],
       playerIndex: i,
     });
-    globals.layers.UI.add(globals.elements.nameFrames[i] as any);
+    globals.layers.UI.add(
+      (globals.elements.nameFrames[i] as unknown) as Konva.Group,
+    );
 
     drawDetrimentalCharacters(winW, winH, numPlayers, i, j);
   }
@@ -462,9 +466,9 @@ const drawDetrimentalCharacters = (
     // A character with an ID of null may be assigned when debugging
     character = {
       id: -1,
-      name: 'n/a',
-      description: '',
-      emoji: '',
+      name: "n/a",
+      description: "",
+      emoji: "",
     };
   } else {
     character = getCharacter(characterID);
@@ -475,14 +479,14 @@ const drawDetrimentalCharacters = (
   const charIcon = new TextWithTooltip({
     width: width2,
     height: height2,
-    x: (playerNamePos[numPlayers][j].x * winW) - (width2 / 2),
-    y: (playerNamePos[numPlayers][j].y * winH) - (height2 / 2),
+    x: playerNamePos[numPlayers][j].x * winW - width2 / 2,
+    y: playerNamePos[numPlayers][j].y * winH - height2 / 2,
     fontSize: 0.03 * winH,
-    fontFamily: 'Verdana',
-    align: 'center',
+    fontFamily: "Verdana",
+    align: "center",
     text: character.emoji,
-    fill: 'yellow',
-    shadowColor: 'black',
+    fill: "yellow",
+    shadowColor: "black",
     shadowBlur: 10,
     shadowOffset: {
       x: 0,
@@ -497,22 +501,22 @@ const drawDetrimentalCharacters = (
   charIcon.tooltipName = `character-assignment-${i}`;
   const metadata = globals.metadata.characterMetadata[i];
   let tooltipContent = `<strong>#${character.id} - ${character.name}</strong><br />${character.description}`;
-  if (tooltipContent.includes('[random color]')) {
+  if (tooltipContent.includes("[random color]")) {
     // Replace "[random color]" with the selected color
     tooltipContent = tooltipContent.replace(
-      '[random color]',
+      "[random color]",
       globals.variant.clueColors[metadata].name.toLowerCase(),
     );
-  } else if (tooltipContent.includes('[random number]')) {
+  } else if (tooltipContent.includes("[random number]")) {
     // Replace "[random number]" with the selected number
     tooltipContent = tooltipContent.replace(
-      '[random number]',
+      "[random number]",
       metadata.toString(),
     );
-  } else if (tooltipContent.includes('[random suit]')) {
+  } else if (tooltipContent.includes("[random suit]")) {
     // Replace "[random suit]" with the selected suit name
     tooltipContent = tooltipContent.replace(
-      '[random suit]',
+      "[random suit]",
       globals.variant.suits[metadata].name,
     );
   }

@@ -1,17 +1,12 @@
 // Functions to calculate game stats such as pace and efficiency
 
-import {
-  deckRules,
-  handRules,
-  variantRules,
-  cardRules,
-} from '../rules';
-import CardState from '../types/CardState';
-import { MAX_CLUE_NUM } from '../types/constants';
-import GameState, { PaceRisk } from '../types/GameState';
-import StackDirection from '../types/StackDirection';
-import Variant from '../types/Variant';
-import * as reversibleRules from './variants/reversible';
+import { cardRules, deckRules, handRules, variantRules } from "../rules";
+import CardState from "../types/CardState";
+import { MAX_CLUE_NUM } from "../types/constants";
+import GameState, { PaceRisk } from "../types/GameState";
+import StackDirection from "../types/StackDirection";
+import Variant from "../types/Variant";
+import * as reversibleRules from "./variants/reversible";
 
 export const getMaxScore = (
   deck: readonly CardState[],
@@ -65,28 +60,31 @@ export const pace = (
 };
 
 // A measure of how risky a discard would be right now, using different heuristics
-export const paceRisk = (currentPace: number | null, numPlayers: number): PaceRisk => {
+export const paceRisk = (
+  currentPace: number | null,
+  numPlayers: number,
+): PaceRisk => {
   if (currentPace === null) {
-    return 'Null';
+    return "Null";
   }
 
   if (currentPace <= 0) {
-    return 'Zero';
+    return "Zero";
   }
 
   // Formula derived by Florrat;
   // a strategical estimate of "End-Game" that tries to account for the number of players
   if (currentPace - numPlayers + Math.floor(numPlayers / 2) < 0) {
-    return 'HighRisk';
+    return "HighRisk";
   }
 
   // Formula derived by Hyphen-ated;
   // a more conservative estimate of "End-Game" that does not account for the number of players
   if (currentPace - numPlayers < 0) {
-    return 'MediumRisk';
+    return "MediumRisk";
   }
 
-  return 'LowRisk';
+  return "LowRisk";
 };
 
 // Calculate the starting pace with the following formula:
@@ -111,27 +109,31 @@ export const cardsGotten = (
   playStackDirections: readonly StackDirection[],
   playing: boolean,
   variant: Variant,
-) => {
+): number => {
   let currentCardsGotten = 0;
 
   // Go through the deck and count the cards that are gotten
   for (const card of deck) {
     if (
-      card.location === 'playStack'
-      || (
-        card.location === 'discard'
-        && card.isMisplayed
-        && variantRules.isThrowItInAHole(variant)
-        && playing
-      )
+      card.location === "playStack" ||
+      (card.location === "discard" &&
+        card.isMisplayed &&
+        variantRules.isThrowItInAHole(variant) &&
+        playing)
     ) {
       // A card is considered to be gotten if it is already played
       // (and failed discards count as played for the purposes of "Throw It in a Hole" variants)
       currentCardsGotten += 1;
     } else if (
-      typeof card.location === 'number' // This card is in a player's hand
-      && cardRules.isClued(card)
-      && !cardRules.allPossibilitiesTrash(card, deck, playStacks, playStackDirections, variant)
+      typeof card.location === "number" && // This card is in a player's hand
+      cardRules.isClued(card) &&
+      !cardRules.allPossibilitiesTrash(
+        card,
+        deck,
+        playStacks,
+        playStackDirections,
+        variant,
+      )
     ) {
       // Clued cards in player's hands are considered to be gotten,
       // since they will eventually be played from Good Touch Principle
@@ -143,7 +145,10 @@ export const cardsGotten = (
   return currentCardsGotten;
 };
 
-export const efficiency = (currentCardsGotten: number, potentialCluesLost: number): number => {
+export const efficiency = (
+  currentCardsGotten: number,
+  potentialCluesLost: number,
+): number => {
   // First, handle the case where no clues have been given yet
   // Infinity is normal and expected in this case (on e.g. the first turn of the game)
   // We must explicitly check for this because while e.g. "1 / 0" in JavaScript is infinity,
@@ -163,7 +168,11 @@ export const minEfficiency = (
   oneLessCard: boolean,
 ): number => {
   // First, calculate the starting pace:
-  const cardsPerHand = handRules.cardsPerHand(numPlayers, oneExtraCard, oneLessCard);
+  const cardsPerHand = handRules.cardsPerHand(
+    numPlayers,
+    oneExtraCard,
+    oneLessCard,
+  );
   const initialPace = startingPace(numPlayers, cardsPerHand, variant);
 
   // Second, use the pace to calculate the minimum efficiency required to win the game with the
@@ -190,16 +199,23 @@ export const minEfficiency = (
   if (variantRules.isClueStarved(variant)) {
     discardsPerClue = 2;
   }
-  const minEfficiencyDenominator = MAX_CLUE_NUM + Math.floor(
-    (initialPace + cluesGainedAfterCompletingSuits - unusableClues) / discardsPerClue,
-  );
+  const minEfficiencyDenominator =
+    MAX_CLUE_NUM +
+    Math.floor(
+      (initialPace + cluesGainedAfterCompletingSuits - unusableClues) /
+        discardsPerClue,
+    );
 
   return minEfficiencyNumerator / minEfficiencyDenominator;
 };
 
 // After a discard, it is a "double discard" situation if there is only one other copy of this card
 // and it needs to be played
-export const doubleDiscard = (orderOfDiscardedCard: number, state: GameState, variant: Variant) => {
+export const doubleDiscard = (
+  orderOfDiscardedCard: number,
+  state: GameState,
+  variant: Variant,
+): boolean => {
   // It is never a double discard situation if the game is over
   if (state.turn.currentPlayerIndex === null) {
     return false;
@@ -244,11 +260,11 @@ export const doubleDiscard = (orderOfDiscardedCard: number, state: GameState, va
   // that happens to be fully "fill-in" from clues
   for (const cardInDeck of state.deck) {
     if (
-      cardInDeck.order !== cardDiscarded.order
-      && cardInDeck.suitIndex === cardDiscarded.suitIndex
-      && cardInDeck.rank === cardDiscarded.rank
-      && typeof cardInDeck.location === 'number' // The card is in a player's hand
-      && cardInDeck.possibleCardsFromClues.length === 1 // The card is fully "filled-in"
+      cardInDeck.order !== cardDiscarded.order &&
+      cardInDeck.suitIndex === cardDiscarded.suitIndex &&
+      cardInDeck.rank === cardDiscarded.rank &&
+      typeof cardInDeck.location === "number" && // The card is in a player's hand
+      cardInDeck.possibleCardsFromClues.length === 1 // The card is fully "filled-in"
     ) {
       return false;
     }
@@ -256,7 +272,11 @@ export const doubleDiscard = (orderOfDiscardedCard: number, state: GameState, va
 
   // Otherwise, it is a double discard situation if there is only one copy of the card left
   const suit = variant.suits[cardDiscarded.suitIndex];
-  const numCopiesTotal = deckRules.numCopiesOfCard(suit, cardDiscarded.rank, variant);
+  const numCopiesTotal = deckRules.numCopiesOfCard(
+    suit,
+    cardDiscarded.rank,
+    variant,
+  );
   const numDiscarded = deckRules.discardedCopies(
     state.deck,
     cardDiscarded.suitIndex,

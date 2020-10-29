@@ -1,29 +1,36 @@
-import { playStacksRules } from '../rules';
-import CardState from '../types/CardState';
-import CardStatus from '../types/CardStatus';
-import { START_CARD_RANK } from '../types/constants';
-import StackDirection from '../types/StackDirection';
-import Variant from '../types/Variant';
-import * as deckRules from './deck';
-import * as variantRules from './variant';
-import * as reversibleRules from './variants/reversible';
+import { playStacksRules } from "../rules";
+import CardState from "../types/CardState";
+import CardStatus from "../types/CardStatus";
+import { START_CARD_RANK } from "../types/constants";
+import StackDirection from "../types/StackDirection";
+import Variant from "../types/Variant";
+import * as deckRules from "./deck";
+import * as variantRules from "./variant";
+import * as reversibleRules from "./variants/reversible";
 
-export const name = (suitIndex: number, rank: number, variant: Variant) => {
+export const name = (
+  suitIndex: number,
+  rank: number,
+  variant: Variant,
+): string => {
   const suitName = variant.suits[suitIndex].name;
   let rankName = rank.toString();
   if (rank === START_CARD_RANK) {
-    rankName = 'START';
+    rankName = "START";
   }
   return `${suitName} ${rankName}`;
 };
 
-export const isClued = (card: CardState) => card.numPositiveClues > 0;
+export const isClued = (card: CardState): boolean => card.numPositiveClues > 0;
 
-export const isPlayed = (card: CardState) => card.location === 'playStack';
+export const isPlayed = (card: CardState): boolean =>
+  card.location === "playStack";
 
-export const isDiscarded = (card: CardState) => card.location === 'discard';
+export const isDiscarded = (card: CardState): boolean =>
+  card.location === "discard";
 
-export const isInPlayerHand = (card: CardState) => typeof card.location === 'number';
+export const isInPlayerHand = (card: CardState): boolean =>
+  typeof card.location === "number";
 
 // needsToBePlayed returns true if the card is not yet played
 // and is still needed to be played in order to get the maximum score
@@ -35,7 +42,7 @@ export const needsToBePlayed = (
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-) => {
+): boolean => {
   // First, check to see if a copy of this card has already been played
   if (playStacks[suitIndex].some((order) => deck[order].rank === rank)) {
     return false;
@@ -53,13 +60,12 @@ export const needsToBePlayed = (
     );
   }
 
-  const total = (s: number, r: number) => deckRules.numCopiesOfCard(
-    variant.suits[s],
-    r,
-    variant,
-  );
-  const discarded = (s: number, r: number) => deckRules.discardedCopies(deck, s, r);
-  const isAllDiscarded = (s: number, r: number) => total(s, r) === discarded(s, r);
+  const total = (s: number, r: number) =>
+    deckRules.numCopiesOfCard(variant.suits[s], r, variant);
+  const discarded = (s: number, r: number) =>
+    deckRules.discardedCopies(deck, s, r);
+  const isAllDiscarded = (s: number, r: number) =>
+    total(s, r) === discarded(s, r);
 
   // Second, check to see if it is still possible to play this card
   // (the preceding cards in the suit might have already been discarded)
@@ -81,7 +87,7 @@ export const status = (
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-) => {
+): CardStatus => {
   const cardNeedsToBePlayed = needsToBePlayed(
     suitIndex,
     rank,
@@ -107,7 +113,7 @@ export const isCritical = (
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-) => {
+): boolean => {
   // "Up or Down" has some special cases for critical cards
   if (variantRules.hasReversedSuits(variant)) {
     return reversibleRules.isCritical(
@@ -135,7 +141,7 @@ export const isPotentiallyPlayable = (
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
-) => {
+): boolean => {
   for (const [suitIndex, rank] of card.possibleCardsFromClues) {
     if (card.possibleCardsFromObservation[suitIndex][rank] === 0) continue;
     const nextRanksArray = playStacksRules.nextRanks(
@@ -151,14 +157,20 @@ export const isPotentiallyPlayable = (
   return false;
 };
 
-export function canPossiblyBe(card: CardState, suitIndex: number | null, rank: number | null) {
+export function canPossiblyBe(
+  card: CardState,
+  suitIndex: number | null,
+  rank: number | null,
+): boolean {
   if (suitIndex === null && rank === null) {
     // We have nothing to check
     return true;
   }
   return card.possibleCardsFromClues.some(
-    ([s, r]) => (suitIndex === null || suitIndex === s) && (rank === null || rank === r)
-      && card.possibleCardsFromObservation[s][r] > 0,
+    ([s, r]) =>
+      (suitIndex === null || suitIndex === s) &&
+      (rank === null || rank === r) &&
+      card.possibleCardsFromObservation[s][r] > 0,
   );
 }
 
@@ -168,10 +180,19 @@ export const allPossibilitiesTrash = (
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-) => {
+): boolean => {
   for (const [suitIndex, rank] of card.possibleCardsFromClues) {
     if (card.possibleCardsFromObservation[suitIndex][rank] === 0) continue;
-    if (needsToBePlayed(suitIndex, rank, deck, playStacks, playStackDirections, variant)) {
+    if (
+      needsToBePlayed(
+        suitIndex,
+        rank,
+        deck,
+        playStacks,
+        playStackDirections,
+        variant,
+      )
+    ) {
       return false;
     }
   }

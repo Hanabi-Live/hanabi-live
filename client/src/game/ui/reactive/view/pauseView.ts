@@ -1,10 +1,10 @@
 /* eslint-disable import/prefer-default-export */
 
-import PauseState from '../../../types/PauseState';
-import globals from '../../globals';
-import isOurTurn from '../../isOurTurn';
+import PauseState from "../../../types/PauseState";
+import globals from "../../globals";
+import isOurTurn from "../../isOurTurn";
 
-export const onChanged = (pause: PauseState) => {
+export const onChanged = (pause: PauseState): void => {
   const stageFadeOpacity = pause.active ? 0.8 : 0.3;
   globals.elements.stageFade?.opacity(stageFadeOpacity);
   globals.elements.stageFade?.visible(pause.active);
@@ -17,7 +17,9 @@ export const onChanged = (pause: PauseState) => {
   globals.elements.timer1Circle?.visible(pause.queued);
 
   if (pause.active) {
-    globals.elements.pauseText?.text(`by: ${globals.metadata.playerNames[pause.playerIndex]}`);
+    globals.elements.pauseText?.text(
+      `by: ${globals.metadata.playerNames[pause.playerIndex]}`,
+    );
 
     if (globals.state.playing) {
       globals.elements.pauseButton?.setEnabled(true);

@@ -1,30 +1,30 @@
-import Konva from 'konva';
-import { cardRules } from '../rules';
-import { STACK_BASE_RANK } from '../types/constants';
-import * as arrows from './arrows';
-import CardLayout from './CardLayout';
-import { DOUBLE_TAP_DELAY } from './constants';
-import * as cursor from './cursor';
-import globals from './globals';
-import HanabiCard from './HanabiCard';
-import HanabiCardClick from './HanabiCardClick';
-import HanabiCardClickSpeedrun from './HanabiCardClickSpeedrun';
-import { HanabiCardTap, HanabiCardDblTap } from './HanabiCardTouchActions';
-import LayoutChild from './LayoutChild';
-import * as notes from './notes';
-import * as tooltips from './tooltips';
+import Konva from "konva";
+import { cardRules } from "../rules";
+import { STACK_BASE_RANK } from "../types/constants";
+import * as arrows from "./arrows";
+import CardLayout from "./CardLayout";
+import { DOUBLE_TAP_DELAY } from "./constants";
+import * as cursor from "./cursor";
+import globals from "./globals";
+import HanabiCard from "./HanabiCard";
+import HanabiCardClick from "./HanabiCardClick";
+import HanabiCardClickSpeedrun from "./HanabiCardClickSpeedrun";
+import { HanabiCardDblTap, HanabiCardTap } from "./HanabiCardTouchActions";
+import LayoutChild from "./LayoutChild";
+import * as notes from "./notes";
+import * as tooltips from "./tooltips";
 
-export function registerMouseHandlers(this: HanabiCard) {
+export function registerMouseHandlers(this: HanabiCard): void {
   // https://konvajs.org/docs/events/Binding_Events.html
-  this.on('mouseenter', mouseEnter);
-  this.on('mouseleave', mouseLeave);
-  this.on('touchstart', touchStart);
-  this.on('touchend', mouseLeave);
-  this.on('click', HanabiCardClick);
-  this.on('tap', HanabiCardTap);
-  this.on('dbltap', HanabiCardDblTap);
-  this.on('mousedown', mouseDown);
-  this.on('mouseup', mouseUp);
+  this.on("mouseenter", mouseEnter);
+  this.on("mouseleave", mouseLeave);
+  this.on("touchstart", touchStart);
+  this.on("touchend", mouseLeave);
+  this.on("click", HanabiCardClick);
+  this.on("tap", HanabiCardTap);
+  this.on("dbltap", HanabiCardDblTap);
+  this.on("mousedown", mouseDown);
+  this.on("mouseup", mouseUp);
 }
 
 // --------------------
@@ -59,7 +59,7 @@ function mouseLeave(this: HanabiCard) {
   globals.layers.UI.batchDraw();
 
   // When we stop hovering over a card, the cursor should change back to normal
-  cursor.set('default');
+  cursor.set("default");
 
   // When we stop hovering over a card, disable Empathy (if it is enabled)
   if (!globals.globalEmpathyEnabled) {
@@ -67,7 +67,10 @@ function mouseLeave(this: HanabiCard) {
   }
 }
 
-function touchStart(this: HanabiCard, event: Konva.KonvaEventObject<TouchEvent>) {
+function touchStart(
+  this: HanabiCard,
+  event: Konva.KonvaEventObject<TouchEvent>,
+) {
   // Make sure to not register this as a single tap if the user long presses the card
   this.touchstartTimeout = setTimeout(() => {
     // A tap will trigger when the "touchend" event occurs
@@ -87,7 +90,10 @@ function touchStart(this: HanabiCard, event: Konva.KonvaEventObject<TouchEvent>)
   }
 }
 
-function mouseDown(this: HanabiCard, event: Konva.KonvaEventObject<MouseEvent>) {
+function mouseDown(
+  this: HanabiCard,
+  event: Konva.KonvaEventObject<MouseEvent>,
+) {
   // Speedrunning overrides the normal card clicking behavior
   if (useSpeedrunClickHandlers()) {
     HanabiCardClickSpeedrun(this, event.evt);
@@ -96,14 +102,15 @@ function mouseDown(this: HanabiCard, event: Konva.KonvaEventObject<MouseEvent>) 
 
   // Empathy
   if (
-    event.evt.buttons === 1 // Only enable Empathy for left-clicks
-    && shouldShowEmpathy(this, event)
+    event.evt.buttons === 1 && // Only enable Empathy for left-clicks
+    shouldShowEmpathy(this, event)
   ) {
     setEmpathyOnHand(this, true);
   }
 
   // Dragging
-  if (event.evt.buttons === 1) { // Only enable dragging for left-clicks
+  if (event.evt.buttons === 1) {
+    // Only enable dragging for left-clicks
     dragStart(this);
   }
 }
@@ -128,9 +135,9 @@ function mouseUp(this: HanabiCard) {
 
 const checkShowNoteTooltip = (card: HanabiCard) => {
   if (
-    !card.noteIndicator.isVisible() // Don't do anything if there is not a note on this card
+    !card.noteIndicator.isVisible() || // Don't do anything if there is not a note on this card
     // Don't open any more note tooltips if the user is currently editing a note
-    || globals.editingNote !== null
+    globals.editingNote !== null
   ) {
     return;
   }
@@ -145,25 +152,25 @@ const checkShowNoteTooltip = (card: HanabiCard) => {
   notes.show(card);
 };
 
-export function setCursor(this: HanabiCard) {
+export function setCursor(this: HanabiCard): void {
   const cursorType = getCursorType(this);
   cursor.set(cursorType);
 }
 
 const getCursorType = (card: HanabiCard) => {
   if (card.dragging) {
-    return 'dragging';
+    return "dragging";
   }
 
   if (card.layout.draggable()) {
-    return 'hand';
+    return "hand";
   }
 
   if (shouldShowLookCursor(card)) {
-    return 'look';
+    return "look";
   }
 
-  return 'default';
+  return "default";
 };
 
 // The look cursor should show if Empathy can be used on the card
@@ -181,18 +188,19 @@ const shouldShowLookCursor = (card: HanabiCard) => {
 
   // For ongoing games, always show the cursor for other people's hands
   if (
-    typeof card.state.location === 'number'
-    && card.state.location !== globals.metadata.ourPlayerIndex
+    typeof card.state.location === "number" &&
+    card.state.location !== globals.metadata.ourPlayerIndex
   ) {
     return true;
   }
 
   // For ongoing games, only show the cursor for our hand if it has a custom card identity
   if (
-    (card.note.suitIndex !== null && card.note.suitIndex !== card.state.suitIndex)
-    || (card.note.rank !== null && card.note.rank !== card.state.rank)
-    || card.note.blank
-    || card.note.unclued
+    (card.note.suitIndex !== null &&
+      card.note.suitIndex !== card.state.suitIndex) ||
+    (card.note.rank !== null && card.note.rank !== card.state.rank) ||
+    card.note.blank ||
+    card.note.unclued
   ) {
     return true;
   }
@@ -207,39 +215,34 @@ const checkHideNoteTooltip = (card: HanabiCard) => {
   }
 
   const tooltipElement = $(`#tooltip-${card.tooltipName}`);
-  tooltipElement.tooltipster('close');
+  tooltipElement.tooltipster("close");
 };
 
-const useSpeedrunClickHandlers = () => (
-  (globals.options.speedrun || globals.lobby.settings.speedrunMode)
-    && globals.state.playing
-);
+const useSpeedrunClickHandlers = () =>
+  (globals.options.speedrun || globals.lobby.settings.speedrunMode) &&
+  globals.state.playing;
 
 const shouldShowEmpathy = (
   card: HanabiCard,
   event: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
-) => (
+) =>
   // Disable Empathy if a modifier key is pressed
   // (unless we are in a speedrun, because then Empathy is mapped to Ctrl + left click)
-  (
-    !event.evt.ctrlKey
-      || (globals.options.speedrun || globals.lobby.settings.speedrunMode)
-  )
-    && (
-      event.evt.ctrlKey
-      || (!globals.options.speedrun && !globals.lobby.settings.speedrunMode)
-      || !globals.state.playing
-    )
-    && !event.evt.shiftKey
-    && !event.evt.altKey
-    && !event.evt.metaKey
-    && !card.tweening // Disable Empathy if the card is tweening
-    // Clicking on a played card goes to the turn that it was played
-    && !cardRules.isPlayed(card.state)
-    // Clicking on a discarded card goes to the turn that it was discarded
-    && !cardRules.isDiscarded(card.state)
-    && card.state.rank !== STACK_BASE_RANK // Disable empathy for the stack bases
-);
+  (!event.evt.ctrlKey ||
+    globals.options.speedrun ||
+    globals.lobby.settings.speedrunMode) &&
+  (event.evt.ctrlKey ||
+    (!globals.options.speedrun && !globals.lobby.settings.speedrunMode) ||
+    !globals.state.playing) &&
+  !event.evt.shiftKey &&
+  !event.evt.altKey &&
+  !event.evt.metaKey &&
+  !card.tweening && // Disable Empathy if the card is tweening
+  // Clicking on a played card goes to the turn that it was played
+  !cardRules.isPlayed(card.state) &&
+  // Clicking on a discarded card goes to the turn that it was discarded
+  !cardRules.isDiscarded(card.state) &&
+  card.state.rank !== STACK_BASE_RANK; // Disable empathy for the stack bases
 
 // In a game, click and hold the left mouse button on a teammate's hand to show the cards as they
 // appear to that teammate
@@ -247,12 +250,12 @@ const shouldShowEmpathy = (
 // (or, in a replay, show the hand as it appeared at that moment in time)
 const setEmpathyOnHand = (card: HanabiCard, enabled: boolean) => {
   // Disable Empathy for cards that are not in a player's hand
-  if (typeof card.state.location !== 'number') {
+  if (typeof card.state.location !== "number") {
     return;
   }
 
   // As a sanity check, ensure that the hand object exists
-  const hand = card.layout.parent as unknown as CardLayout;
+  const hand = (card.layout.parent as unknown) as CardLayout;
   if (hand === undefined || hand === null || hand.children.length === 0) {
     return;
   }
@@ -281,7 +284,10 @@ const dragStart = (card: HanabiCard) => {
   // In a hypothetical, dragging a rotated card from another person's hand is frustrating,
   // so temporarily remove all rotation (for the duration of the drag)
   // The rotation will be automatically reset if the card tweens back to the hand
-  if (globals.state.replay.hypothetical !== null && card.layout.parent !== null) {
+  if (
+    globals.state.replay.hypothetical !== null &&
+    card.layout.parent !== null
+  ) {
     card.layout.rotation(card.layout.parent.rotation() * -1);
   }
 

@@ -8,41 +8,38 @@
 // So we have to make sure that "sideEffects" is is either removed or set to false
 // Tree shaking only makes a difference of 2 KB in the resulting bundled file, so we do not have
 // to worry about that for now
-import 'tooltipster';
-
+import "tooltipster";
 // ScrollableTip is a Tooltipster library that allows for a scrolling tooltip
 // We import it for the side-effects for the same reason
-import '../lib/tooltipster-scrollableTip.min';
-
-import * as chat from './chat';
-import * as gameChat from './game/chat';
-import * as game from './game/main';
-import globals from './globals';
-import Loader from './Loader';
-import * as lobbyCreateGame from './lobby/createGame';
-import * as lobbyHistory from './lobby/history';
-import lobbyIdleInit from './lobby/idleInit';
-import lobbyKeyboardInit from './lobby/keyboardInit';
-import * as lobbyLogin from './lobby/login';
-import * as lobbyNav from './lobby/nav';
-import * as lobbySettingsTooltip from './lobby/settingsTooltip';
-import lobbyTutorialInit from './lobby/tutorialInit';
-import * as lobbyWatchReplay from './lobby/watchReplay';
-import * as misc from './misc';
-import * as modals from './modals';
-import * as sentry from './sentry';
-import * as sounds from './sounds';
-import * as tooltips from './tooltips';
+import "../lib/tooltipster-scrollableTip.min";
+import * as chat from "./chat";
+import * as gameChat from "./game/chat";
+import * as game from "./game/main";
+import globals from "./globals";
+import Loader from "./Loader";
+import * as lobbyCreateGame from "./lobby/createGame";
+import * as lobbyHistory from "./lobby/history";
+import lobbyIdleInit from "./lobby/idleInit";
+import lobbyKeyboardInit from "./lobby/keyboardInit";
+import * as lobbyLogin from "./lobby/login";
+import * as lobbyNav from "./lobby/nav";
+import * as lobbySettingsTooltip from "./lobby/settingsTooltip";
+import lobbyTutorialInit from "./lobby/tutorialInit";
+import * as lobbyWatchReplay from "./lobby/watchReplay";
+import * as modals from "./modals";
+import * as sentry from "./sentry";
+import * as sounds from "./sounds";
+import * as tooltips from "./tooltips";
 
 // Initialize logging to Sentry.io
 sentry.init();
 
 if (
   // Manually redirect users that go to the old domain
-  window.location.hostname === 'hanabi.live'
-  || window.location.hostname === 'www.hanabi.live'
+  window.location.hostname === "hanabi.live" ||
+  window.location.hostname === "www.hanabi.live" ||
   // Manually redirect users that go to "www.hanab.live" instead of "hanab.live"
-  || window.location.hostname === 'www.hanab.live'
+  window.location.hostname === "www.hanab.live"
 ) {
   window.location.replace(`https://hanab.live${window.location.pathname}`);
 }
@@ -62,7 +59,6 @@ $(document).ready(() => {
   lobbySettingsTooltip.init();
   lobbyTutorialInit();
   lobbyWatchReplay.init();
-  misc.init();
   modals.init();
   sounds.init();
 

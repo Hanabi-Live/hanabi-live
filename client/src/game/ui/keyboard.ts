@@ -1,18 +1,18 @@
 // Functions for handling all of the keyboard shortcuts
 
-import Konva from 'konva';
-import Screen from '../../lobby/types/Screen';
-import { copyStringToClipboard, parseIntSafe } from '../../misc';
-import { deckRules, clueTokensRules } from '../rules';
-import ActionType from '../types/ActionType';
-import ReplayActionType from '../types/ReplayActionType';
-import backToLobby from './backToLobby';
-import * as clues from './clues';
-import globals from './globals';
-import HanabiCard from './HanabiCard';
-import * as hypothetical from './hypothetical';
-import * as replay from './replay';
-import * as turn from './turn';
+import Konva from "konva";
+import Screen from "../../lobby/types/Screen";
+import { copyStringToClipboard, parseIntSafe } from "../../misc";
+import { clueTokensRules, deckRules } from "../rules";
+import ActionType from "../types/ActionType";
+import ReplayActionType from "../types/ReplayActionType";
+import backToLobby from "./backToLobby";
+import * as clues from "./clues";
+import globals from "./globals";
+import HanabiCard from "./HanabiCard";
+import * as hypothetical from "./hypothetical";
+import * as replay from "./replay";
+import * as turn from "./turn";
 
 // Variables
 type Callback = () => void;
@@ -21,13 +21,13 @@ const hotkeyPlayMap = new Map<string, Callback>();
 const hotkeyDiscardMap = new Map<string, Callback>();
 
 // Build a mapping of hotkeys to functions
-export const init = () => {
+export const init = (): void => {
   hotkeyClueMap.clear();
   hotkeyPlayMap.clear();
   hotkeyDiscardMap.clear();
 
   // Add "Tab" for player selection
-  hotkeyClueMap.set('Tab', () => {
+  hotkeyClueMap.set("Tab", () => {
     if (globals.state.replay.hypothetical === null) {
       globals.elements.clueTargetButtonGroup!.selectNextTarget();
     } else {
@@ -44,24 +44,31 @@ export const init = () => {
   // Add "q", "w", "e", "r", "t", and "y" (for color clues)
   // (we use qwert since they are conveniently next to 12345,
   // and also because the clue colors can change between different variants)
-  const clueKeyRow = ['q', 'w', 'e', 'r', 't', 'y'];
-  for (let i = 0; i < globals.elements.colorClueButtons.length && i < clueKeyRow.length; i++) {
-    hotkeyClueMap.set(clueKeyRow[i], click(globals.elements.colorClueButtons[i]));
+  const clueKeyRow = ["q", "w", "e", "r", "t", "y"];
+  for (
+    let i = 0;
+    i < globals.elements.colorClueButtons.length && i < clueKeyRow.length;
+    i++
+  ) {
+    hotkeyClueMap.set(
+      clueKeyRow[i],
+      click(globals.elements.colorClueButtons[i]),
+    );
   }
 
-  hotkeyPlayMap.set('a', play); // The main play hotkey
-  hotkeyPlayMap.set('+', play); // For numpad users
-  hotkeyDiscardMap.set('d', discard); // The main discard hotkey
-  hotkeyDiscardMap.set('-', discard); // For numpad users
+  hotkeyPlayMap.set("a", play); // The main play hotkey
+  hotkeyPlayMap.set("+", play); // For numpad users
+  hotkeyDiscardMap.set("d", discard); // The main discard hotkey
+  hotkeyDiscardMap.set("-", discard); // For numpad users
 
   // Enable all of the keyboard hotkeys
   $(document).keydown(keydown);
   $(document).keyup(keyup);
 };
 
-export const destroy = () => {
-  $(document).unbind('keydown', keydown);
-  $(document).unbind('keyup', keyup);
+export const destroy = (): void => {
+  $(document).unbind("keydown", keydown);
+  $(document).unbind("keyup", keyup);
 };
 
 const keydown = (event: JQuery.KeyDownEvent) => {
@@ -77,14 +84,14 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     return;
   }
 
-  if (event.key === 'Escape') {
+  if (event.key === "Escape") {
     // Don't do anything if there is a warning or error visible
     if (globals.lobby.modalShowing) {
       return;
     }
 
     // Escape = If the chat is open, close it
-    if ($('#game-chat-modal').is(':visible')) {
+    if ($("#game-chat-modal").is(":visible")) {
       globals.game!.chat.hide();
       return;
     }
@@ -100,9 +107,10 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     return;
   }
 
-  if (event.key === ' ') { // Space bar
+  if (event.key === " ") {
+    // Space bar
     // Don't activate global empathy if we are typing in the in-game chat
-    if ($('#game-chat-input').is(':focus')) {
+    if ($("#game-chat-input").is(":focus")) {
       return;
     }
 
@@ -116,17 +124,17 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   // Ctrl hotkeys
   if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey) {
     // Ctrl + Enter = Give a clue / click on the "Give Clue" button
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       clues.give(); // This function has validation inside of it
       return;
     }
 
     // Ctrl + c = Copy the current game ID
     if (
-      event.key === 'c'
-      && globals.state.finished
+      event.key === "c" &&
+      globals.state.finished &&
       // Account for users copying text from the chat window
-      && !($('#game-chat-modal').is(':visible'))
+      !$("#game-chat-modal").is(":visible")
     ) {
       if (globals.state.replay.databaseID !== null) {
         copyStringToClipboard(globals.state.replay.databaseID.toString());
@@ -138,33 +146,39 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   // Alt hotkeys
   if (event.altKey && !event.ctrlKey && !event.shiftKey && !event.metaKey) {
     // Sound hotkeys
-    if (event.key === 'b' || event.key === '∫') { // Alt + b
+    if (event.key === "b" || event.key === "∫") {
+      // Alt + b
       // This is used for fun in shared replays
-      sharedReplaySendSound('buzz');
+      sharedReplaySendSound("buzz");
       return;
     }
-    if (event.key === 'h' || event.key === '˙') { // Alt + h
+    if (event.key === "h" || event.key === "˙") {
+      // Alt + h
       // This is used for fun in shared replays
-      sharedReplaySendSound('holy');
+      sharedReplaySendSound("holy");
       return;
     }
-    if (event.key === 'n' || event.key === '˜') { // Alt + n
+    if (event.key === "n" || event.key === "˜") {
+      // Alt + n
       // This is used for fun in shared replays
-      sharedReplaySendSound('nooo');
+      sharedReplaySendSound("nooo");
       return;
     }
-    if (event.key === 'z' || event.key === 'Ω') { // Alt + z
+    if (event.key === "z" || event.key === "Ω") {
+      // Alt + z
       // This is used as a sound test
-      globals.game!.sounds.play('turn_us');
+      globals.game!.sounds.play("turn_us");
       return;
     }
 
     // Other
-    if (event.key === 'l' || event.key === '¬') { // Alt + l
+    if (event.key === "l" || event.key === "¬") {
+      // Alt + l
       backToLobby();
       return;
     }
-    if (event.key === 't' || event.key === '†') { // Alt + t
+    if (event.key === "t" || event.key === "†") {
+      // Alt + t
       replay.promptTurn();
       return;
     }
@@ -173,46 +187,46 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   // The rest of the hotkeys should be disabled if we are typing in the in-game chat
   // or if a modifier key is pressed
   if (
-    $('#game-chat-input').is(':focus')
-    || event.ctrlKey
-    || event.shiftKey
-    || event.altKey
-    || event.metaKey
+    $("#game-chat-input").is(":focus") ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey ||
+    event.metaKey
   ) {
     return;
   }
 
   // Delete = Delete the note from the card that we are currently hovering-over, if any
   if (
-    event.key === 'Delete'
-    && globals.activeHover !== null
-    && globals.activeHover instanceof HanabiCard
+    event.key === "Delete" &&
+    globals.activeHover !== null &&
+    globals.activeHover instanceof HanabiCard
   ) {
     const card: HanabiCard = globals.activeHover;
-    card.setNote('');
+    card.setNote("");
     return;
   }
 
   // Replay hotkeys
   if (globals.state.replay.hypothetical !== null) {
-    if (event.key === 'ArrowLeft') {
+    if (event.key === "ArrowLeft") {
       hypothetical.sendBack();
       return;
     }
   } else {
     switch (event.key) {
-      case 'ArrowLeft': {
+      case "ArrowLeft": {
         replay.back();
         return;
       }
 
-      case 'ArrowRight': {
+      case "ArrowRight": {
         replay.forward();
         return;
       }
 
-      case 'ArrowUp':
-      case 'ArrowDown': {
+      case "ArrowUp":
+      case "ArrowDown": {
         if (globals.state.replay.shared !== null) {
           replay.toggleSharedSegments();
         } else if (!globals.state.finished) {
@@ -221,22 +235,22 @@ const keydown = (event: JQuery.KeyDownEvent) => {
         return;
       }
 
-      case '[': {
+      case "[": {
         replay.backRound();
         return;
       }
 
-      case ']': {
+      case "]": {
         replay.forwardRound();
         return;
       }
 
-      case 'Home': {
+      case "Home": {
         replay.backFull();
         return;
       }
 
-      case 'End': {
+      case "End": {
         replay.forwardFull();
         return;
       }
@@ -248,27 +262,28 @@ const keydown = (event: JQuery.KeyDownEvent) => {
   }
 
   // Check for other keyboard hotkeys
-  const currentPlayerIndex = globals.state.ongoingGame.turn.currentPlayerIndex;
-  const ourPlayerIndex = globals.metadata.ourPlayerIndex;
-  const shouldHaveKeyboardHotkeysForActions = (
+  const { currentPlayerIndex } = globals.state.ongoingGame.turn;
+  const { ourPlayerIndex } = globals.metadata;
+  const shouldHaveKeyboardHotkeysForActions =
     // If it is our turn in an ongoing-game
-    (!globals.state.replay.active && currentPlayerIndex === ourPlayerIndex)
+    (!globals.state.replay.active && currentPlayerIndex === ourPlayerIndex) ||
     // If we are in a hypothetical and we are the shared replay leader
-    || (
-      globals.state.replay.hypothetical !== null
-      && globals.state.replay.shared !== null
-      && globals.state.replay.shared.amLeader
-    )
-  );
-  const ongoingGameState = globals.state.replay.hypothetical === null
-    ? globals.state.ongoingGame
-    : globals.state.replay.hypothetical.ongoing;
+    (globals.state.replay.hypothetical !== null &&
+      globals.state.replay.shared !== null &&
+      globals.state.replay.shared.amLeader);
+  const ongoingGameState =
+    globals.state.replay.hypothetical === null
+      ? globals.state.ongoingGame
+      : globals.state.replay.hypothetical.ongoing;
   if (!shouldHaveKeyboardHotkeysForActions) {
     return;
   }
 
   let hotkeyFunction;
-  if (ongoingGameState.clueTokens >= clueTokensRules.getAdjusted(1, globals.variant)) {
+  if (
+    ongoingGameState.clueTokens >=
+    clueTokensRules.getAdjusted(1, globals.variant)
+  ) {
     hotkeyFunction = hotkeyClueMap.get(event.key);
   }
   if (!clueTokensRules.atMax(ongoingGameState.clueTokens, globals.variant)) {
@@ -282,7 +297,8 @@ const keydown = (event: JQuery.KeyDownEvent) => {
 };
 
 const keyup = (event: JQuery.KeyUpEvent) => {
-  if (event.key === ' ') { // Space bar
+  if (event.key === " ") {
+    // Space bar
     globals.globalEmpathyEnabled = false;
     for (const hand of globals.elements.playerHands) {
       hand.setEmpathy(false);
@@ -293,15 +309,15 @@ const keyup = (event: JQuery.KeyUpEvent) => {
 const sharedReplaySendSound = (sound: string) => {
   if (
     // Only send sound effects in shared replays
-    globals.state.replay.shared === null
+    globals.state.replay.shared === null ||
     // Only send sound effects for shared replay leaders
-    || !globals.state.replay.shared.amLeader
+    !globals.state.replay.shared.amLeader
   ) {
     return;
   }
 
   // Send it
-  globals.lobby.conn!.send('replayAction', {
+  globals.lobby.conn!.send("replayAction", {
     tableID: globals.lobby.tableID,
     type: ReplayActionType.Sound,
     sound,
@@ -319,7 +335,7 @@ const discard = () => {
 // If playAction is true, it plays a card
 // If playAction is false, it discards a card
 const performAction = (playAction = true) => {
-  const verb = playAction ? 'play' : 'discard';
+  const verb = playAction ? "play" : "discard";
   const target = promptCardOrder(verb);
   if (target === null) {
     return;
@@ -328,7 +344,7 @@ const performAction = (playAction = true) => {
   const type = playAction ? ActionType.Play : ActionType.Discard;
 
   if (globals.state.replay.hypothetical === null) {
-    globals.lobby.conn!.send('action', {
+    globals.lobby.conn!.send("action", {
       tableID: globals.lobby.tableID,
       type,
       target,
@@ -342,18 +358,20 @@ const performAction = (playAction = true) => {
   turn.hideClueUIAndDisableDragging();
 };
 
-const promptCardOrder = (verb: string) : number | null => {
-  const playerIndex = globals.state.replay.hypothetical === null
-    ? globals.metadata.ourPlayerIndex
-    : globals.state.replay.hypothetical.ongoing.turn.currentPlayerIndex!;
-  const hand = globals.state.replay.hypothetical === null
-    ? globals.state.ongoingGame.hands[playerIndex]
-    : globals.state.replay.hypothetical.ongoing.hands[playerIndex];
+const promptCardOrder = (verb: string): number | null => {
+  const playerIndex =
+    globals.state.replay.hypothetical === null
+      ? globals.metadata.ourPlayerIndex
+      : globals.state.replay.hypothetical.ongoing.turn.currentPlayerIndex!;
+  const hand =
+    globals.state.replay.hypothetical === null
+      ? globals.state.ongoingGame.hands[playerIndex]
+      : globals.state.replay.hypothetical.ongoing.hands[playerIndex];
   const maxSlotIndex = hand.length;
   const msg = `Enter the slot number (1 to ${maxSlotIndex}) of the card to ${verb}.`;
   const response = window.prompt(msg);
 
-  if (response === null || response === '') {
+  if (response === null || response === "") {
     return null;
   }
   if (/^deck$/i.test(response)) {
@@ -372,5 +390,5 @@ const promptCardOrder = (verb: string) : number | null => {
 };
 
 const click = (element: Konva.Node) => () => {
-  element.dispatchEvent(new MouseEvent('click'));
+  element.dispatchEvent(new MouseEvent("click"));
 };
