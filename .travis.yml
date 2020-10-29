@@ -12,15 +12,11 @@ matrix:
         - node
       before_script:
         - cd client
-        #- echo "Installing environment variables..."
-        #- cp .env_template .env
-        - echo "Installing ESLint (the TypeScript linter) and the Airbnb rules..."
-        - ./install_client_linter.sh
       script:
         - echo "Building the client..."
         - ./build_client.sh
         - echo "Linting the client code..."
-        - ./lint_client.sh
+        - npm run lint
         - echo "Running client tests..."
         - npm test
 
