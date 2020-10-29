@@ -13,6 +13,8 @@ matrix:
       before_script:
         - cd client
       script:
+        - echo "Installing node modules..."
+        - npm install
         - echo "Building the client..."
         - ./build_client.sh
         - echo "Linting the client code..."
