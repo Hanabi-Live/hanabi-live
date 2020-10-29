@@ -1,4 +1,4 @@
-/*
+/**
  * Notes:
  * - The website uses PostgreSQL
  * - Initializing the database is accomplished in the "install_database_schema.sh" script
@@ -21,7 +21,7 @@ DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE users (
     id                   SERIAL       PRIMARY KEY,
     username             TEXT         NOT NULL  UNIQUE,
-    /*
+    /**
      * PostgreSQL is not case-sensitive unique by default,
      * meaning that it will allow a username of "Alice" and "alice" to exist
      * Furthermore, because of Unicode, it would be possible for "Αlice" with a Greek letter A
@@ -123,7 +123,7 @@ CREATE TABLE games (
     id                      SERIAL       PRIMARY KEY,
     name                    TEXT         NOT NULL,
     num_players             SMALLINT     NOT NULL,
-    /*
+    /**
      * By default, the starting player is always at index (seat) 0
      * This field is only needed for legacy games before April 2020
      */
@@ -181,13 +181,13 @@ CREATE TABLE game_actions (
     turn     SMALLINT  NOT NULL,
     /* 0 - play, 1 - discard, 2 - color clue, 3 - rank clue, 4 - game over */
     type     SMALLINT  NOT NULL,
-    /*
+    /**
      * If a play or a discard, corresponds to the order of the the card that was played/discarded
      * If a clue, corresponds to the index of the player that received the clue
      * If a game over, corresponds to the index of the player that caused the game to end
      */
     target   SMALLINT  NOT NULL,
-    /*
+    /**
      * If a play or discard, then 0 (as NULL)
      * It uses less database space and reduces code complexity to use a value of 0 for NULL
      * than to use a SQL NULL
@@ -241,7 +241,7 @@ CREATE TABLE chat_log (
     message        TEXT         NOT NULL,
     room           TEXT         NOT NULL, /* Either "lobby" or "table####" */
     datetime_sent  TIMESTAMPTZ  NOT NULL  DEFAULT NOW()
-    /*
+    /**
      * There is no foreign key for "user_id" because it would not exist for Discord messages or
      * server messages
      */
@@ -302,5 +302,8 @@ CREATE TABLE metadata (
     name   TEXT    NOT NULL  UNIQUE,
     value  TEXT    NOT NULL
 );
-/* The "discord_last_at_here" value is stored as a RFC3339 string */
-INSERT INTO metadata (name, value) VALUES ('discord_last_at_here', '2006-01-02T15:04:05Z');
+/**
+ * We want at least one entry in the metadata table so that the "TestDatabase()" function works
+ * correctly
+ */
+INSERT INTO metadata (name, value) VALUES ('test_key', 'test_value');

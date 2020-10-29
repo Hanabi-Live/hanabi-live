@@ -102,9 +102,6 @@ const (
 	// The amount of time that a game is inactive before it is killed by the server
 	IdleGameTimeout = time.Minute * 30
 
-	// The amount of time in between allowed @here Discord alerts
-	DiscordAtHereTimeout = time.Hour * 2
-
 	// We want to validate string inputs for too many consecutive diacritics
 	// This prevents the attack where messages can have a lot of diacritics and cause overflow
 	// into sections above and below the text
@@ -121,5 +118,4 @@ const (
 	StartedFail     = "The game is already started, so you cannot use that command."
 	NotStartedFail  = "The game has not started yet, so you cannot use that command."
 	NotOwnerFail    = "Only the table owner can use that command."
-	NotDiscordFail  = "You can only perform this command from the Discord server."
 )

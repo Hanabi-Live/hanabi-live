@@ -92,12 +92,3 @@ If you need general help with the website, then read the [features page](FEATURE
 | ------------------ | -----------
 | `/tagdelete [tag]` | Delete an existing tag from the game
 | `/tags`            | Show all of the tags for this game
-
-<br />
-
-### Discord commands
-
-| Command   | Description
-| --------- |------------
-| `/here`   | Ping members of the Hyphen-ated group to get a game going
-| `/last`   | See how long it has been since the last ping

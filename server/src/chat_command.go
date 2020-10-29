@@ -29,7 +29,7 @@ func chatCommandInit() {
 	chatCommandMap["timeleft"] = chatTimeLeft
 
 	// Undocumented info commands (that work only in the lobby)
-	chatCommandMap["badhere"] = chatBadHere
+	chatCommandMap["here"] = chatHere
 	chatCommandMap["wrongchannel"] = chatWrongChannel
 
 	// Table-only commands (pregame only, table owner only)
@@ -61,11 +61,6 @@ func chatCommandInit() {
 	chatCommandMap["suggest"] = chatSuggest
 	chatCommandMap["tags"] = chatTags
 	chatCommandMap["taglist"] = chatTags
-
-	// Discord-only commands
-	chatCommandMap["here"] = chatHere
-	chatCommandMap["last"] = chatLast
-	// (there are additional Discord-only commands in "discord.go")
 
 	// Error handlers for website-only commands
 	chatCommandMap["pm"] = chatCommandWebsiteOnly
