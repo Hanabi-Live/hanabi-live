@@ -64,8 +64,6 @@ echo
 npm run webpack
 echo
 
-echo "GETTING PAST WEBPACK"
-
 # Create a file that informs the server that the compiled JavaScript will not be available for the
 # next few milliseconds or so
 COMPILING_FILE="$DIR/../compiling_client"
