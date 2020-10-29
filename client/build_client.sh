@@ -33,13 +33,13 @@ echo "$VERSION" > "$DIR/../data/version.json"
 # If we need to, add the NPM directory to the path
 # (the Golang process will execute this script during a graceful restart and it will not have it in
 # the path by default)
-if ! command -v npx > /dev/null; then
+if ! command -v npm > /dev/null; then
   # MacOS only has Bash version 3, which does not have associative arrays,
   # so the below check will not work
   # https://unix.stackexchange.com/questions/92208/bash-how-to-get-the-first-number-that-occurs-in-a-variables-content
   BASH_VERSION_FIRST_DIGIT=$(bash --version | grep -o -E '[0-9]+' | head -1 | sed -e 's/^0\+//')
   if [[ $BASH_VERSION_FIRST_DIGIT -lt 4 ]]; then
-    echo "Failed to find the \"npx\" binary (on bash version $BASH_VERSION_FIRST_DIGIT)."
+    echo "Failed to find the \"npm\" binary (on bash version $BASH_VERSION_FIRST_DIGIT)."
     exit 1
   fi
 
@@ -48,7 +48,7 @@ if ! command -v npx > /dev/null; then
   NODE_VERSION_DIRS=(/root/.nvm/versions/node/*)
   NODE_VERSION_DIR="${NODE_VERSION_DIRS[-1]}"
   if [[ ! -d $NODE_VERSION_DIR ]]; then
-    echo "Failed to find the \"npx\" binary (in the \"/root/.nvm/versions/node\" directory)."
+    echo "Failed to find the \"npm\" binary (in the \"/root/.nvm/versions/node\" directory)."
     exit 1
   fi
   NPM_BIN_DIR="$NODE_VERSION_DIR/bin"
@@ -57,18 +57,11 @@ fi
 
 cd "$DIR"
 
-echo "POOP"
-npm run lint
-echo "POOP2"
-npx sort-package-json
-echo "POOP3"
-npx webpack --version
-
 # The client is written in TypeScript and spread out across many files
 # We need to pack it into one JavaScript file before sending it to end-users
 echo "Packing the TypeScript using WebPack..."
 echo
-npx webpack
+npm run webpack
 echo
 
 echo "GETTING PAST WEBPACK"
@@ -105,14 +98,14 @@ cd "$DIR"
 if [[ $1 == "crit" ]]; then
   echo "Packing the CSS and generating critical CSS using Grunt..."
   echo
-  npx grunt critical --url=http://localhost:$PORT
+  npx grunt critical --url="http://localhost:$PORT"
   echo
   echo "Remember to commit critical.min.css if it had any changes."
   echo
 else
   echo "Packing the CSS using Grunt..."
   echo
-  npx grunt
+  npm run grunt
   echo
 fi
 
