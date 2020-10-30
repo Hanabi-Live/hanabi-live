@@ -57,24 +57,31 @@
   // Language settings
   // -----------------
 
+  "[go]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": false,
+  },
+
   // Automatically run the formatter when a TypeScript or JavaScript file is saved
+  // "Organize Imports" must be before ESLint because it will delete trailing commas
   "[typescript]": {
-    "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": true,
-      "source.organizeImports": true,
-    },
+    "editor.codeActionsOnSave": [
+      "source.organizeImports",
+      "source.fixAll.eslint",
+    ],
     "editor.tabSize": 2,
   },
   "[javascript]": {
-    "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": true,
-      "source.organizeImports": true,
-    },
+    "editor.codeActionsOnSave": [
+      "source.organizeImports",
+      "source.fixAll.eslint",
+    ],
     "editor.tabSize": 2,
   },
 
   // Automatically run the formatter when a Python file is saved
   "[python]": {
     "editor.formatOnSave": true,
+    "editor.tabSize": 4,
   },
 }

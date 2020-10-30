@@ -26,6 +26,7 @@ module.exports = {
     // https://silvenon.com/blog/integrating-and-enforcing-prettier-and-eslint
     // https://github.com/prettier/eslint-plugin-prettier
     "plugin:prettier/recommended",
+    "prettier",
     "prettier/@typescript-eslint",
   ],
 
@@ -33,8 +34,6 @@ module.exports = {
     browser: true,
     jquery: true,
   },
-
-  plugins: ["prettier"],
 
   parserOptions: {
     // ESLint needs to know about the project's TypeScript settings in order for TypeScript-specific

@@ -202,11 +202,11 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   };
 }
 
-const drawCard = (
+function drawCard(
   playerIndex: number,
   order: number,
   deck: CardIdentity[],
-): ActionDraw => {
+): ActionDraw {
   const cardIdentity = deck[order];
   if (cardIdentity === undefined) {
     throw new Error(
@@ -226,14 +226,14 @@ const drawCard = (
     suitIndex: cardIdentity.suitIndex,
     rank: cardIdentity.rank,
   };
-};
+}
 
-const dealInitialCards = (
+function dealInitialCards(
   numPlayers: number,
   cardsPerHand: number,
   actions: GameAction[],
   deck: CardIdentity[],
-) => {
+) {
   let topOfDeck = 0;
   for (let player = 0; player < numPlayers; player++) {
     for (let card = 0; card < cardsPerHand; card++) {
@@ -242,14 +242,14 @@ const dealInitialCards = (
     }
   }
   return topOfDeck;
-};
+}
 
-const parseJSONAction = (
+function parseJSONAction(
   currentPlayer: number,
   turn: number,
   deck: CardIdentity[],
   a: JSONAction,
-): GameAction | null => {
+): GameAction | null {
   switch (a.type) {
     case JSONActionType.ActionTypePlay:
     case JSONActionType.ActionTypeDiscard: {
@@ -291,4 +291,4 @@ const parseJSONAction = (
       return null;
     }
   }
-};
+}
