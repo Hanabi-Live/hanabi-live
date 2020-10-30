@@ -1,6 +1,8 @@
 # The Hanab Live Manual & List of Features
 
-This is the manual for [Hanab Live](https://hanab.live/). Read through it (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl+%2B+f) on your keyboard) before asking any questions in the chat.
+This is the manual for [Hanab Live](https://hanab.live/).
+
+Read through this page (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl+%2B+f) on your keyboard) before asking any questions in the chat.
 
 <br />
 
@@ -19,6 +21,7 @@ This is the manual for [Hanab Live](https://hanab.live/). Read through it (or us
 1. [Tags](#tags)
 1. [Website Endpoints](#website-endpoints)
 1. [Research & Bots](#research--bots)
+1. [Password Reset](#password-reset)
 1. [Project History](#project-history)
 
 <br />
@@ -463,6 +466,12 @@ If you are playing with the <a href="https://github.com/Zamiell/hanabi-conventio
 | `/history/[username1]/[username2]?api` | Provides all of the games played in by both users. (You can specify up to 6 players.)
 | `/seed/[seed]?api`                     | Provides all of the games played on the specified seed.
 | `/export/[game ID]`                    | Provides the data for an arbitrary game from the database.
+
+<br />
+
+## Password Reset
+
+If you need to reset your password, visit [this page](https://hanab.live/password-reset) to learn more.
 
 <br />
 
