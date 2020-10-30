@@ -74,11 +74,20 @@
               <td>
                 {{.Score}} / {{$results.MaxScore}} &nbsp;
                 {{if eq .Modifier 1}}
-                    <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays"></i>
+                    <i
+                      class="fas fa-times score-modifier red tooltip"
+                      data-tooltip-content="#modifier-deckplays"
+                    ></i>
                 {{else if eq .Modifier 2}}
-                    <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-emptyclues"></i>
+                    <i
+                      class="fas fa-times score-modifier red tooltip"
+                      data-tooltip-content="#modifier-emptyclues"
+                    ></i>
                 {{else if eq .Modifier 3}}
-                    <i class="fas fa-times score-modifier red tooltip" data-tooltip-content="#modifier-deckplays-emptyclues"></i>
+                    <i
+                      class="fas fa-times score-modifier red tooltip"
+                      data-tooltip-content="#modifier-deckplays-emptyclues"
+                    ></i>
                 {{end}}
               </td>
             </tr>

@@ -18,14 +18,26 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- We remove "user-scalable=no" since we are removing the mobile nav and want them to be able to zoom -->
-  <meta name="description" content="A place to play Hanab online, a cooperative card game of logic and reasoning.">
-  <meta name="keywords" content="hanab,hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning">
+  <meta
+    name="description"
+    content="A place to play Hanab online, a cooperative card game of logic and reasoning."
+  >
+  <meta
+    name="keywords"
+    content="hanab,hanabi,keldon,bga,board,game,arena,boardgame,boardgamearena,card,cards,strategy,coop,cooperative,logic,reasoning"
+  >
   <!-- Load the Critical CSS first -->
   {{if ne .Title "Dev"}}
     <link rel="stylesheet" type="text/css" href="/public/css/critical.min.css" />
   {{end}}
   <!-- Preload fonts -->
-  <link rel="preload" as="font" crossorigin="anonymous" type="font/woff2" href="/public/webfonts/fa-solid-900.woff2" />
+  <link
+    rel="preload"
+    as="font"
+    crossorigin="anonymous"
+    type="font/woff2"
+    href="/public/webfonts/fa-solid-900.woff2"
+  />
   {{if eq .Title "Dev"}}
     <!-- These should match the CSS array in "Gruntfile.js" -->
     <link rel="stylesheet" type="text/css" href="/public/css/lib/fontawesome.min.css" />

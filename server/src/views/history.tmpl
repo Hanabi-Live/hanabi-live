@@ -82,7 +82,11 @@
   </thead>
   <tbody>
     {{range $index, $results := .History}}
-      <tr id="history-row-{{$index}}" class="history-row history-row-players-{{.Options.NumPlayers}} history-row-score-{{.Score}}" data-variant="{{.Options.VariantName}}">
+      <tr
+        id="history-row-{{$index}}"
+        class="history-row history-row-players-{{.Options.NumPlayers}} history-row-score-{{.Score}}"
+        data-variant="{{.Options.VariantName}}"
+      >
         <td><a href="/replay/{{.ID}}">{{.ID}}</a></td>
         <td>{{.Options.NumPlayers}}</td>
         <td>{{.Score}}</td>
