@@ -113,6 +113,12 @@ module.exports = {
   // actually open the developer tools in their browser
   // https://stackoverflow.com/questions/44315460/when-do-browsers-download-sourcemaps
   devtool: "source-map",
+
+  // Ignore the "node_modules" folder as a performance optimization
+  // https://webpack.js.org/configuration/watch/
+  watchOptions: {
+    ignored: /node_modules/,
+  },
 };
 
 if (!inTravis && sentryTokenIsSet) {
