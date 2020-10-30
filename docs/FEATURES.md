@@ -333,10 +333,10 @@ If you are playing with the [Hyphen-ated group](https://github.com/Zamiell/hanab
 - an "H" indicator next to the username in the "Online Users" section.
 - double discard situation notification (as a border around the discard pile and in the "Current Player" area)
 - locked hand notification (in the "Current Player" area)
-- special sound effect when discarding a clued card
-- special sound effect when discarding to enter a double discard situation
-- special sound effect when discarding in a double discard situation
-- special sound effect when playing a 1 out of order (not implemented yet)
+- [special sound effect when discarding a clued card](../public/sounds/turn_discard_clued.mp3)
+- [special sound effect when discarding to enter a double discard situation](../public/sounds/turn_turn_double_discard_cause.mp3)
+- [special sound effect when discarding in a double discard situation](../public/sounds/turn_turn_double_discard.mp3)
+- [special sound effect when playing a 1 out of order](../public/sounds/turn_turn_1s.mp3)
 
 <br />
 
@@ -344,15 +344,15 @@ If you are playing with the [Hyphen-ated group](https://github.com/Zamiell/hanab
 
 - There are different sounds for:
   - [when a player takes an action](../public/sounds/turn_other.mp3)
-  - when it reaches your turn
-  - when a card fails to play
-  - when two cards fail to play in a row
-  - when a card blind-plays
-  - when multiple cards blind-play in a row (up to 6)
-  - discarding a "critical" card
-  - finishing the game with a score of 0
-  - finishing the game with a non-perfect score
-  - finishing the game with a perfect score
+  - [when it reaches your turn](../public/sounds/turn_us.mp3)
+  - [when a card fails to play](../public/sounds/turn_fail1.mp3)
+  - [when two cards fail to play in a row](../public/sounds/turn_fail2.mp3)
+  - [when a card blind-plays](../public/sounds/turn_blind1.mp3)
+  - [when multiple cards blind-play in a row (up to 6)](../public/sounds/turn_blind2.mp3)
+  - [discarding a "critical" card](../public/sounds/turn_sad.mp3)
+  - [finishing the game with a score of 0](../public/sounds/turn_finished_fail.mp3)
+  - [finishing the game with a non-perfect score](../public/sounds/turn_finished_success.mp3)
+  - [finishing the game with a perfect score](../public/sounds/turn_finished_perfect.mp3)
 
 <br />
 
