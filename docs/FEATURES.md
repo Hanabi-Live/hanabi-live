@@ -234,6 +234,7 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - Similar to chess, each player has a bank of time that decreases only during their turn.
 - By default, each player starts with 2 minutes and adds 20 seconds to their clock after performing each move.
 - If time runs out for any player, the game immediately ends and a score of 0 will be given.
+- The player who goes first will be refunded the amount of time that it took for them to load the page.
 
 #### Speedruns
 
