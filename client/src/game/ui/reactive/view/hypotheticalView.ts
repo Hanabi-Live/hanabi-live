@@ -13,12 +13,12 @@ export const shouldEnableEnterHypoButton = (state: State): boolean =>
   state.visibleState !== null &&
   state.visibleState.turn.currentPlayerIndex !== null;
 
-export const shouldEnableEnterHypoButtonChanged = (enabled: boolean): void => {
+export function shouldEnableEnterHypoButtonChanged(enabled: boolean): void {
   globals.elements.enterHypoButton?.setEnabled(enabled);
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onActiveChanged = (active: boolean): void => {
+export function onActiveChanged(active: boolean): void {
   if (globals.state.replay.shared === null) {
     return;
   }
@@ -38,12 +38,12 @@ export const onActiveChanged = (active: boolean): void => {
   }
 
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onActiveOrAmLeaderChanged = (data: {
+export function onActiveOrAmLeaderChanged(data: {
   active: boolean;
   amLeader: boolean | undefined;
-}): void => {
+}): void {
   if (data.amLeader === undefined) {
     return;
   }
@@ -64,12 +64,12 @@ export const onActiveOrAmLeaderChanged = (data: {
 
   // We might to change the draggable property of a hand
   checkSetDraggableAllHands();
-};
+}
 
 // Either we have entered a hypothetical, gone forward one action in a hypothetical,
 // or gone back one action in a hypothetical
 // Prepare the UI elements for the new turn
-export const onStatesLengthChanged = (): void => {
+export function onStatesLengthChanged(): void {
   turn.showClueUI();
 
   // Enable or disable the individual clue target buttons, depending on whose turn it is
@@ -90,7 +90,7 @@ export const onStatesLengthChanged = (): void => {
 
   // Set the current player's hand to be draggable
   checkSetDraggableAllHands();
-};
+}
 
 export const shouldShowHypoBackButton = (state: State): boolean =>
   state.replay.shared !== null &&
@@ -98,14 +98,14 @@ export const shouldShowHypoBackButton = (state: State): boolean =>
   state.replay.hypothetical !== null &&
   state.replay.hypothetical.states.length > 1;
 
-export const shouldShowHypoBackButtonChanged = (enabled: boolean): void => {
+export function shouldShowHypoBackButtonChanged(enabled: boolean): void {
   globals.elements.hypoBackButton?.visible(enabled);
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onDrawnCardsInHypotheticalChanged = (
+export function onDrawnCardsInHypotheticalChanged(
   drawnCardsInHypothetical: boolean,
-): void => {
+): void {
   globals.elements.toggleRevealedButton?.setText({
     line1: drawnCardsInHypothetical ? "Hide" : "Show",
   });
@@ -114,10 +114,10 @@ export const onDrawnCardsInHypotheticalChanged = (
   clues.checkLegal();
 
   globals.layers.UI.batchDraw();
-};
+}
 
-const checkSetDraggableAllHands = () => {
+function checkSetDraggableAllHands() {
   for (const hand of globals.elements.playerHands) {
     hand.checkSetDraggableAll();
   }
-};
+}

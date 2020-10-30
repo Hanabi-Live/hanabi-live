@@ -3,12 +3,12 @@
 import { LogEntry } from "../../../types/GameState";
 import globals from "../../globals";
 
-export const onLogChanged = (log: readonly LogEntry[]): void => {
+export function onLogChanged(log: readonly LogEntry[]): void {
   updateActionLog(log);
   updateFullActionLog(log);
-};
+}
 
-const updateActionLog = (log: readonly LogEntry[]) => {
+function updateActionLog(log: readonly LogEntry[]) {
   const { actionLog } = globals.elements;
   if (actionLog === null) {
     return;
@@ -25,9 +25,9 @@ const updateActionLog = (log: readonly LogEntry[]) => {
   actionLog.refreshText();
 
   globals.layers.UI.batchDraw();
-};
+}
 
-const updateFullActionLog = (log: readonly LogEntry[]) => {
+function updateFullActionLog(log: readonly LogEntry[]) {
   const { fullActionLog } = globals.elements;
   if (fullActionLog === null) {
     return;
@@ -37,4 +37,4 @@ const updateFullActionLog = (log: readonly LogEntry[]) => {
   log.forEach((line) => fullActionLog.addMessage(line.turn, line.text));
 
   globals.layers.UI2.batchDraw();
-};
+}

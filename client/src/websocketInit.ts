@@ -62,7 +62,7 @@ export default function websocketInit(): void {
 }
 
 // We specify a callback for each command/message that we expect to receive from the server
-const initCommands = (conn: Connection) => {
+function initCommands(conn: Connection) {
   // Activate the command handlers for commands relating to both the lobby and the game
   for (const [commandName, commandFunction] of commands) {
     conn.on(commandName, (data: unknown) => {
@@ -100,4 +100,4 @@ const initCommands = (conn: Connection) => {
       commandFunction(data);
     });
   }
-};
+}

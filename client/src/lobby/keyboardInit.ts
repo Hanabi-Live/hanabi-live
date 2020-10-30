@@ -88,7 +88,7 @@ export default function keyboardInit(): void {
   });
 }
 
-const clickReturnToLobby = () => {
+function clickReturnToLobby() {
   // Click on the "Return to Lobby" button
   // (either at the "game" screen or the "history" screen or the "scores" screen)
   if (globals.currentScreen === Screen.PreGame) {
@@ -98,4 +98,4 @@ const clickReturnToLobby = () => {
   } else if (globals.currentScreen === Screen.HistoryOtherScores) {
     $("#nav-buttons-history-other-scores-return").click();
   }
-};
+}

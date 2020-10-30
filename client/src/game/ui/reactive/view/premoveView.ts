@@ -5,10 +5,10 @@ import ClientAction from "../../../types/ClientAction";
 import globals from "../../globals";
 import * as ourHand from "../../ourHand";
 
-export const onChanged = (
+export function onChanged(
   action: ClientAction | null,
   previousAction: ClientAction | null | undefined,
-): void => {
+): void {
   if (previousAction === undefined) {
     // The state is initializing to a null action
     return;
@@ -49,4 +49,4 @@ export const onChanged = (
 
     globals.layers.UI.batchDraw();
   }
-};
+}

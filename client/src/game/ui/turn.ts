@@ -11,7 +11,7 @@ import isOurTurn from "./isOurTurn";
 import * as ourHand from "./ourHand";
 import * as replay from "./replay";
 
-export const begin = (): void => {
+export function begin(): void {
   showClueUI();
 
   if (globals.animateFast) {
@@ -23,10 +23,10 @@ export const begin = (): void => {
   }
 
   handlePremove();
-};
+}
 
 // Handle pre-playing / pre-discarding / pre-cluing
-const handlePremove = () => {
+function handlePremove() {
   // Local variables
   const { premove } = globals.state;
   const { clueTokens } = globals.state.ongoingGame;
@@ -88,9 +88,9 @@ const handlePremove = () => {
 
     hideClueUIAndDisableDragging();
   }, PREPLAY_DELAY);
-};
+}
 
-export const showClueUI = (): void => {
+export function showClueUI(): void {
   if (!isOurTurn()) {
     return;
   }
@@ -162,21 +162,21 @@ export const showClueUI = (): void => {
   }
 
   globals.layers.UI.batchDraw();
-};
+}
 
-const setColorClueButtonsVisible = (visible: boolean) => {
+function setColorClueButtonsVisible(visible: boolean) {
   for (const button of globals.elements.colorClueButtons) {
     button.visible(visible);
   }
-};
+}
 
-const setRankClueButtonsVisible = (visible: boolean) => {
+function setRankClueButtonsVisible(visible: boolean) {
   for (const button of globals.elements.rankClueButtons) {
     button.visible(visible);
   }
-};
+}
 
-export const end = (clientAction: ClientAction): void => {
+export function end(clientAction: ClientAction): void {
   if (globals.state.replay.hypothetical !== null) {
     hypothetical.send(clientAction);
     hideClueUIAndDisableDragging();
@@ -200,9 +200,9 @@ export const end = (clientAction: ClientAction): void => {
       premove: clientAction,
     });
   }
-};
+}
 
-export const hideClueUIAndDisableDragging = (): void => {
+export function hideClueUIAndDisableDragging(): void {
   globals.elements.clueArea!.hide();
   globals.elements.clueAreaDisabled!.hide();
   globals.elements.currentPlayerArea!.hide();
@@ -219,4 +219,4 @@ export const hideClueUIAndDisableDragging = (): void => {
 
   globals.elements.deck!.cardBack.draggable(false);
   globals.elements.deckPlayAvailableLabel!.hide();
-};
+}

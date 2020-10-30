@@ -5,7 +5,7 @@ import { GameAction } from "../../../types/actions";
 import SoundType from "../../../types/SoundType";
 import globals from "../../globals";
 
-export const onNewSoundEffect = (
+export function onNewSoundEffect(
   data: {
     soundType: SoundType;
     currentPlayerIndex: number | null;
@@ -20,7 +20,7 @@ export const onNewSoundEffect = (
         lastAction: GameAction | null;
       }
     | undefined,
-): void => {
+): void {
   if (
     // Don't play sounds on the initial load (unless it is the first turn)
     (previousData === undefined && data.turn !== 0) ||
@@ -53,9 +53,9 @@ export const onNewSoundEffect = (
   // so we want to mute the former
   const muteExistingSoundEffects = fileNameSuffix.startsWith("finished_");
   globals.game!.sounds.play(fileName, muteExistingSoundEffects);
-};
+}
 
-const getFileName = (soundType: SoundType, ourTurn: boolean) => {
+function getFileName(soundType: SoundType, ourTurn: boolean) {
   switch (soundType) {
     case SoundType.Standard: {
       return ourTurn ? "us" : "other";
@@ -142,4 +142,4 @@ const getFileName = (soundType: SoundType, ourTurn: boolean) => {
       throw new Error("Failed to find the file name for a sound type.");
     }
   }
-};
+}

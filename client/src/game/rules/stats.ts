@@ -8,11 +8,11 @@ import StackDirection from "../types/StackDirection";
 import Variant from "../types/Variant";
 import * as reversibleRules from "./variants/reversible";
 
-export const getMaxScore = (
+export function getMaxScore(
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-): number => {
+): number {
   let maxScore = 0;
 
   // Getting the maximum score is much more complicated if we are playing a
@@ -36,16 +36,16 @@ export const getMaxScore = (
   }
 
   return maxScore;
-};
+}
 
 // Pace is the number of discards that can happen while still getting the maximum score
-export const pace = (
+export function pace(
   score: number,
   deckSize: number,
   maxScore: number,
   numPlayers: number,
   gameOver: boolean,
-): number | null => {
+): number | null {
   if (gameOver) {
     return null;
   }
@@ -57,13 +57,13 @@ export const pace = (
   // The formula for pace was derived by Libster
   const adjustedScorePlusDeck = score + deckSize - maxScore;
   return adjustedScorePlusDeck + numPlayers;
-};
+}
 
 // A measure of how risky a discard would be right now, using different heuristics
-export const paceRisk = (
+export function paceRisk(
   currentPace: number | null,
   numPlayers: number,
-): PaceRisk => {
+): PaceRisk {
   if (currentPace === null) {
     return "Null";
   }
@@ -85,31 +85,31 @@ export const paceRisk = (
   }
 
   return "LowRisk";
-};
+}
 
 // Calculate the starting pace with the following formula:
 //   total cards in the deck -
 //   ((number of cards in a player's hand - 1) * number of players) -
 //   (5 * number of suits)
 // https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
-export const startingPace = (
+export function startingPace(
   numPlayers: number,
   cardsPerHand: number,
   variant: Variant,
-): number => {
+): number {
   const totalCards = deckRules.totalCards(variant);
   const middleTerm = (cardsPerHand - 1) * numPlayers;
   const totalCardsToBePlayed = 5 * variant.suits.length;
   return totalCards - middleTerm - totalCardsToBePlayed;
-};
+}
 
-export const cardsGotten = (
+export function cardsGotten(
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   playing: boolean,
   variant: Variant,
-): number => {
+): number {
   let currentCardsGotten = 0;
 
   // Go through the deck and count the cards that are gotten
@@ -143,12 +143,12 @@ export const cardsGotten = (
   }
 
   return currentCardsGotten;
-};
+}
 
-export const efficiency = (
+export function efficiency(
   currentCardsGotten: number,
   potentialCluesLost: number,
-): number => {
+): number {
   // First, handle the case where no clues have been given yet
   // Infinity is normal and expected in this case (on e.g. the first turn of the game)
   // We must explicitly check for this because while e.g. "1 / 0" in JavaScript is infinity,
@@ -158,15 +158,15 @@ export const efficiency = (
   }
 
   return currentCardsGotten / potentialCluesLost;
-};
+}
 
 // Calculate the minimum amount of efficiency needed in order to win this variant
-export const minEfficiency = (
+export function minEfficiency(
   numPlayers: number,
   variant: Variant,
   oneExtraCard: boolean,
   oneLessCard: boolean,
-): number => {
+): number {
   // First, calculate the starting pace:
   const cardsPerHand = handRules.cardsPerHand(
     numPlayers,
@@ -207,15 +207,15 @@ export const minEfficiency = (
     );
 
   return minEfficiencyNumerator / minEfficiencyDenominator;
-};
+}
 
 // After a discard, it is a "double discard" situation if there is only one other copy of this card
 // and it needs to be played
-export const doubleDiscard = (
+export function doubleDiscard(
   orderOfDiscardedCard: number,
   state: GameState,
   variant: Variant,
-): boolean => {
+): boolean {
   // It is never a double discard situation if the game is over
   if (state.turn.currentPlayerIndex === null) {
     return false;
@@ -283,4 +283,4 @@ export const doubleDiscard = (
     cardDiscarded.rank,
   );
   return numCopiesTotal === numDiscarded + 1;
-};
+}

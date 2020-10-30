@@ -4,7 +4,7 @@ import * as Sentry from "@sentry/browser";
 import version from "../../data/version.json";
 import InitData from "./game/types/InitData";
 
-export const init = (): void => {
+export function init(): void {
   if (!useSentry()) {
     return;
   }
@@ -15,7 +15,7 @@ export const init = (): void => {
     whitelistUrls: ["hanab.live"], // Otherwise, we get errors for LastPass, etc.
     ignoreErrors,
   });
-};
+}
 
 const ignoreErrors = [
   // All of these are related to playing a sound file before the user has interacted with the page
@@ -34,7 +34,7 @@ const ignoreErrors = [
   "ResizeObserver loop limit exceeded",
 ];
 
-export const setUserContext = (userID: number, username: string): void => {
+export function setUserContext(userID: number, username: string): void {
   if (!useSentry()) {
     return;
   }
@@ -48,9 +48,9 @@ export const setUserContext = (userID: number, username: string): void => {
     scope.setTag("userID", userID.toString());
     scope.setTag("username", username);
   });
-};
+}
 
-export const setGameContext = (gameInitData: InitData): void => {
+export function setGameContext(gameInitData: InitData): void {
   if (!useSentry()) {
     return;
   }
@@ -61,7 +61,7 @@ export const setGameContext = (gameInitData: InitData): void => {
   Sentry.configureScope((scope) => {
     scope.setTag("gameInitData", JSON.stringify(gameInitData));
   });
-};
+}
 
 const useSentry = () =>
   window.location.hostname !== "localhost" &&

@@ -20,7 +20,7 @@ export interface ClockData {
 //   activePlayerIndex: 0,
 //   timeTaken: 500, // The amount of time that has elapsed since the turn began
 // }
-export const update = (data: ClockData): void => {
+export function update(data: ClockData): void {
   stop();
 
   // We don't need to update the timers if they are not showing
@@ -97,16 +97,16 @@ export const update = (data: ClockData): void => {
     setTickingDownTimeTooltip(data.activePlayerIndex);
     setTickingDownTimeCPTooltip();
   }, 1000);
-};
+}
 
-export const stop = (): void => {
+export function stop(): void {
   if (globals.timerID !== null) {
     window.clearInterval(globals.timerID);
     globals.timerID = null;
   }
-};
+}
 
-const setTickingDownTime = (timer: TimerDisplay) => {
+function setTickingDownTime(timer: TimerDisplay) {
   // Calculate the elapsed time since the last timer update
   const now = new Date().getTime();
   const elapsedTime = now - globals.lastTimerUpdateTimeMS;
@@ -151,9 +151,9 @@ const setTickingDownTime = (timer: TimerDisplay) => {
   ) {
     globals.game!.sounds.play("tone");
   }
-};
+}
 
-const setTickingDownTimeTooltip = (i: number) => {
+function setTickingDownTimeTooltip(i: number) {
   // This tooltip is disabled in speedrun mode
   if (globals.lobby.settings.speedrunMode || globals.options.speedrun) {
     return;
@@ -176,9 +176,9 @@ const setTickingDownTimeTooltip = (i: number) => {
   content += millisecondsToClockString(time);
   content += "</strong>";
   $(`#tooltip-player-${i}`).tooltipster("instance").content(content);
-};
+}
 
-const setTickingDownTimeCPTooltip = () => {
+function setTickingDownTimeCPTooltip() {
   // This tooltip is disabled in non-timed games
   if (!globals.options.timed && !globals.lobby.settings.showTimerInUntimed) {
     return;
@@ -199,4 +199,4 @@ const setTickingDownTimeCPTooltip = () => {
   content += millisecondsToClockString(time);
   content += "</strong>";
   $("#tooltip-time-taken").tooltipster("instance").content(content);
-};
+}

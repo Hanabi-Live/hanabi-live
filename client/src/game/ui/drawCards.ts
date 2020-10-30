@@ -156,14 +156,14 @@ export default function drawCards(
   return cardImages;
 }
 
-const initCanvas = () => {
+function initCanvas() {
   const cvs = document.createElement("canvas");
   cvs.width = CARD_W;
   cvs.height = CARD_H;
   return cvs;
-};
+}
 
-const cloneCanvas = (oldCvs: HTMLCanvasElement) => {
+function cloneCanvas(oldCvs: HTMLCanvasElement) {
   const newCvs = document.createElement("canvas");
   newCvs.width = oldCvs.width;
   newCvs.height = oldCvs.height;
@@ -173,14 +173,14 @@ const cloneCanvas = (oldCvs: HTMLCanvasElement) => {
   }
   ctx.drawImage(oldCvs, 0, 0);
   return newCvs;
-};
+}
 
-const drawSuitPips = (
+function drawSuitPips(
   ctx: CanvasRenderingContext2D,
   rank: number,
   suit: Suit,
   colorblindMode: boolean,
-) => {
+) {
   const scale = 0.4;
 
   // The middle for card 1
@@ -277,9 +277,9 @@ const drawSuitPips = (
     drawPip(ctx, suit, true);
     ctx.restore();
   }
-};
+}
 
-const makeUnknownCard = () => {
+function makeUnknownCard() {
   const cvs = initCanvas();
   const ctx = cvs.getContext("2d");
   if (ctx === null) {
@@ -305,9 +305,9 @@ const makeUnknownCard = () => {
   ctx.translate(CARD_W / 2, CARD_H / 2);
 
   return cvs;
-};
+}
 
-const makeDeckBack = (variant: Variant) => {
+function makeDeckBack(variant: Variant) {
   const cvs = makeUnknownCard();
   const ctx = cvs.getContext("2d");
   if (ctx === null) {
@@ -336,15 +336,15 @@ const makeDeckBack = (variant: Variant) => {
   ctx.scale(1 / sf, 1 / sf);
 
   return cvs;
-};
+}
 
-const drawCardBase = (
+function drawCardBase(
   ctx: CanvasRenderingContext2D,
   suit: Suit,
   rank: number,
   variant: Variant,
   colorblindMode: boolean,
-) => {
+) {
   // Draw the background
   ctx.fillStyle = getSuitStyle(
     suit,
@@ -376,9 +376,9 @@ const drawCardBase = (
   }
   ctx.stroke();
   ctx.restore();
-};
+}
 
-const cardBorderPath = (ctx: CanvasRenderingContext2D, padding: number) => {
+function cardBorderPath(ctx: CanvasRenderingContext2D, padding: number) {
   const xRadians = CARD_W * 0.08;
   const yRadians = CARD_W * 0.08;
   // (we want them to both have the same value so that the curve has a 45 degree angle)
@@ -397,30 +397,30 @@ const cardBorderPath = (ctx: CanvasRenderingContext2D, padding: number) => {
   ctx.quadraticCurveTo(CARD_W, 0, CARD_W - xRadians - padding, padding);
   ctx.lineTo(xRadians + padding, padding); // Top-left corner
   ctx.quadraticCurveTo(0, 0, padding, yRadians + padding);
-};
+}
 
-const drawShape = (ctx: CanvasRenderingContext2D) => {
+function drawShape(ctx: CanvasRenderingContext2D) {
   ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
   ctx.fill();
   ctx.shadowColor = "rgba(0, 0, 0, 0)";
   ctx.stroke();
-};
+}
 
-const drawText = (
+function drawText(
   ctx: CanvasRenderingContext2D,
   textYPos: number,
   indexLabel: string,
-) => {
+) {
   ctx.shadowColor = "rgba(0, 0, 0, 0.9)";
   ctx.fillText(indexLabel, 19, textYPos);
   ctx.shadowColor = "rgba(0, 0, 0, 0)";
   ctx.strokeText(indexLabel, 19, textYPos);
-};
+}
 
-const drawMixedCardHelper = (
+function drawMixedCardHelper(
   ctx: CanvasRenderingContext2D,
   clueColors: Color[],
-) => {
+) {
   const [clueColor1, clueColor2] = clueColors;
 
   ctx.save();
@@ -481,25 +481,25 @@ const drawMixedCardHelper = (
   drawShape(ctx);
 
   ctx.restore();
-};
+}
 
-const drawCardBackground = (ctx: CanvasRenderingContext2D) => {
+function drawCardBackground(ctx: CanvasRenderingContext2D) {
   cardBorderPath(ctx, 4);
 
   ctx.fillStyle = "white";
   ctx.fill();
 
   ctx.restore();
-};
+}
 
-const getSuitStyle = (
+function getSuitStyle(
   suit: Suit,
   rank: number,
   ctx: CanvasRenderingContext2D,
   cardArea: string,
   variant: Variant,
   colorblindMode: boolean,
-) => {
+) {
   if (suit.prism) {
     // Prism cards have a custom color depending on their rank
     if (rank === 0) {
@@ -544,20 +544,20 @@ const getSuitStyle = (
   throw new Error(
     `The card area of "${cardArea}" is unknown in the "getSuitStyle()" function.`,
   );
-};
+}
 
 // Generates a vertical gradient that is evenly distributed between its component colors
-const evenLinearGradient = (
+function evenLinearGradient(
   ctx: CanvasRenderingContext2D,
   colors: string[],
   args: number[],
-) => {
+) {
   const grad = ctx.createLinearGradient(args[0], args[1], args[2], args[3]);
   for (let i = 0; i < colors.length; ++i) {
     grad.addColorStop(i / (colors.length - 1), colors[i]);
   }
   return grad;
-};
+}
 
 // From: https://stackoverflow.com/questions/14819058/mixing-two-colors-naturally-in-javascript
 // colorChannelA and colorChannelB are integers ranging from 0 to 255

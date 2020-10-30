@@ -13,14 +13,14 @@ import * as variantRules from "../variant";
 // score (taking the stack direction into account)
 // (before reaching this function, we have already checked to see if the card has been played)
 // This function mirrors the server function "variantReversibleNeedsToBePlayed()"
-export const needsToBePlayed = (
+export function needsToBePlayed(
   suitIndex: number,
   rank: number,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-): boolean => {
+): boolean {
   const direction = playStackDirections[suitIndex];
   // First, check to see if the stack is already finished
   if (direction === StackDirection.Finished) {
@@ -60,19 +60,19 @@ export const needsToBePlayed = (
   }
 
   return true;
-};
+}
 
 // isDead returns true if it is no longer possible to play this card by looking to see if all of the
 // previous cards in the stack have been discarded (taking into account the stack direction)
 // This function mirrors the server function "variantReversibleIsDeadIsDead()"
-const isDead = (
+function isDead(
   suitIndex: number,
   rank: number,
   deck: readonly CardState[],
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-) => {
+) {
   const { isAllDiscarded } = discardedHelpers(variant, deck);
 
   // Make a map that shows if all of some particular rank in this suit has been discarded
@@ -131,16 +131,16 @@ const isDead = (
   }
 
   return false;
-};
+}
 
 // variantReversibleGetMaxScore calculates what the maximum score is,
 // accounting for stacks that cannot be completed due to discarded cards
 // This function mirrors the server function "variantReversibleGetMaxScore()"
-export const getMaxScore = (
+export function getMaxScore(
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-): number => {
+): number {
   let maxScore = 0;
 
   for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
@@ -173,10 +173,10 @@ export const getMaxScore = (
   }
 
   return maxScore;
-};
+}
 
 // A helper function for "getMaxScore()"
-const walkUp = (allDiscarded: Map<number, boolean>, variant: Variant) => {
+function walkUp(allDiscarded: Map<number, boolean>, variant: Variant) {
   let cardsThatCanStillBePlayed = 0;
 
   // First, check to see if the stack can still be started
@@ -200,10 +200,10 @@ const walkUp = (allDiscarded: Map<number, boolean>, variant: Variant) => {
   }
 
   return cardsThatCanStillBePlayed;
-};
+}
 
 // A helper function for "getMaxScore()"
-const walkDown = (allDiscarded: Map<number, boolean>, variant: Variant) => {
+function walkDown(allDiscarded: Map<number, boolean>, variant: Variant) {
   let cardsThatCanStillBePlayed = 0;
 
   // First, check to see if the stack can still be started
@@ -227,16 +227,16 @@ const walkDown = (allDiscarded: Map<number, boolean>, variant: Variant) => {
   }
 
   return cardsThatCanStillBePlayed;
-};
+}
 
 // This does not mirror any function on the server
-export const isCritical = (
+export function isCritical(
   suitIndex: number,
   rank: number,
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-): boolean => {
+): boolean {
   const { isLastCopy, isAllDiscarded } = discardedHelpers(variant, deck);
 
   const lastCopy = isLastCopy(suitIndex, rank);
@@ -275,9 +275,9 @@ export const isCritical = (
 
   // Default case: all other ranks
   return true;
-};
+}
 
-const discardedHelpers = (variant: Variant, deck: readonly CardState[]) => {
+function discardedHelpers(variant: Variant, deck: readonly CardState[]) {
   const total = (s: number, r: number) =>
     deckRules.numCopiesOfCard(variant.suits[s], r, variant);
   const discarded = (s: number, r: number) =>
@@ -287,4 +287,4 @@ const discardedHelpers = (variant: Variant, deck: readonly CardState[]) => {
   const isAllDiscarded = (s: number, r: number) =>
     total(s, r) === discarded(s, r);
   return { isLastCopy, isAllDiscarded };
-};
+}

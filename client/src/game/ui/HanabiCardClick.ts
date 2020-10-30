@@ -42,7 +42,7 @@ export default function HanabiCardClick(
   }
 }
 
-const clickLeft = (card: HanabiCard, event: MouseEvent) => {
+function clickLeft(card: HanabiCard, event: MouseEvent) {
   // The "Empathy" feature is handled in the "HanabiCardInit.ts" file,
   // so we don't have to worry about it here
   if (
@@ -91,9 +91,9 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
       card.state.order,
     );
   }
-};
+}
 
-const clickMiddle = (card: HanabiCard, event: MouseEvent) => {
+function clickMiddle(card: HanabiCard, event: MouseEvent) {
   // No actions in this function use modifiers
   if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) {
     return;
@@ -108,9 +108,9 @@ const clickMiddle = (card: HanabiCard, event: MouseEvent) => {
     // (if we go to the turn that the card was clued, then the actual clue has not happened yet)
     replay.goToSegment(card.state.segmentFirstClued + 1, true);
   }
-};
+}
 
-const clickRight = (card: HanabiCard, event: MouseEvent) => {
+function clickRight(card: HanabiCard, event: MouseEvent) {
   // Alt + right-click is a card morph (in a hypothetical)
   if (
     globals.state.finished &&
@@ -211,10 +211,10 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
   ) {
     notes.openEditTooltip(card);
   }
-};
+}
 
 // Morphing cards allows for creation of hypothetical situations
-const clickMorph = (order: number) => {
+function clickMorph(order: number) {
   const cardText = prompt(
     'What card do you want to morph it into?\n(e.g. "blue 1", "k2", "3pink", "45")',
   );
@@ -247,4 +247,4 @@ const clickMorph = (order: number) => {
     suitIndex: cardIdentity.suitIndex,
     rank: cardIdentity.rank,
   });
-};
+}

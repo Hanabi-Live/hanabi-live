@@ -11,13 +11,13 @@ import * as chat from "./chat";
 import * as cursor from "./ui/cursor";
 import HanabiUI from "./ui/HanabiUI";
 
-export const init = (): void => {
+export function init(): void {
   $("#game").on("mouseenter mouseleave", () => {
     cursor.set("default");
   });
-};
+}
 
-export const show = (): void => {
+export function show(): void {
   globals.currentScreen = Screen.Game;
   $("#page-wrapper").hide(); // We can't fade this out as it will overlap
   $("#game-chat-text").html(""); // Clear the in-game chat box of any previous content
@@ -34,9 +34,9 @@ export const show = (): void => {
   globals.conn!.send("getGameInfo1", {
     tableID: globals.tableID,
   });
-};
+}
 
-export const hide = (): void => {
+export function hide(): void {
   globals.currentScreen = Screen.Lobby;
   tablesDraw();
   usersDraw.draw();
@@ -70,7 +70,7 @@ export const hide = (): void => {
     throw new Error('Failed to get the "lobby-chat-text" element.');
   }
   chatElement.scrollTop = chatElement.scrollHeight;
-};
+}
 
 // These are references to some functions and submodules that need to be interacted with in the UI
 // code (e.g. hiding the UI, playing a sound)

@@ -10,7 +10,7 @@ import tablesDraw from "./tablesDraw";
 import Screen from "./types/Screen";
 import * as usersDraw from "./usersDraw";
 
-export const init = (): void => {
+export function init(): void {
   $("#login-button").click(() => {
     $("#login-form").submit();
   });
@@ -26,9 +26,9 @@ export const init = (): void => {
     localStorage.setItem("acceptedFirefoxWarning", "true");
     show();
   });
-};
+}
 
-const submit = (event: JQuery.Event) => {
+function submit(event: JQuery.Event) {
   // By default, the form will reload the page, so stop this from happening
   event.preventDefault();
 
@@ -54,9 +54,9 @@ const submit = (event: JQuery.Event) => {
   }
 
   send(username, password);
-};
+}
 
-const send = (username: string, password: string) => {
+function send(username: string, password: string) {
   $("#login-button").addClass("disabled");
   $("#login-explanation").hide();
   $("#login-ajax").show();
@@ -90,10 +90,10 @@ const send = (username: string, password: string) => {
     .catch((jqXHR) => {
       formError(`Login failed: ${getAjaxError(jqXHR)}`);
     });
-};
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getAjaxError = (jqXHR: JQuery.jqXHR<any>) => {
+function getAjaxError(jqXHR: JQuery.jqXHR<any>) {
   if (jqXHR.readyState === 0) {
     return "A network error occurred. The server might be down!";
   }
@@ -101,9 +101,9 @@ const getAjaxError = (jqXHR: JQuery.jqXHR<any>) => {
     return "An unknown error occurred.";
   }
   return jqXHR.responseText;
-};
+}
 
-export const automaticLogin = (): void => {
+export function automaticLogin(): void {
   // Automatically sign in to the WebSocket server if we are using a "/test" URL
   if (window.location.pathname.includes("/test")) {
     // Parse the test number from the URL, if any
@@ -165,20 +165,20 @@ export const automaticLogin = (): void => {
     .catch((err) => {
       console.error(`Failed to fetch "${testCookiePath}":`, err);
     });
-};
+}
 
 // -------------------------
 // Miscellaneous subroutines
 // -------------------------
 
-export const show = (): void => {
+export function show(): void {
   $("#loading").hide();
   $("#firefox-warning").hide();
   $("#sign-in").show();
   $("#login-username").focus();
-};
+}
 
-export const hide = (firstTimeUser: boolean): void => {
+export function hide(firstTimeUser: boolean): void {
   // Hide the login screen
   $("#login").hide();
 
@@ -220,9 +220,9 @@ export const hide = (firstTimeUser: boolean): void => {
     },
     0,
   );
-};
+}
 
-export const formError = (msg: string): void => {
+export function formError(msg: string): void {
   // For some reason this has to be invoked asynchronously in order to work properly
   setTimeout(() => {
     $("#login-ajax").hide();
@@ -243,4 +243,4 @@ export const formError = (msg: string): void => {
       500,
     );
   }, 0);
-};
+}

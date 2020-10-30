@@ -5,10 +5,10 @@ import Color from "../types/Color";
 import Suit from "../types/Suit";
 import Variant from "../types/Variant";
 
-export const suitIndexToSuit = (
+export function suitIndexToSuit(
   suitIndex: number | null,
   variant: Variant,
-): Suit | null => {
+): Suit | null {
   if (
     suitIndex === null ||
     suitIndex < 0 ||
@@ -18,7 +18,7 @@ export const suitIndexToSuit = (
   }
 
   return variant.suits[suitIndex];
-};
+}
 
 export const suitToSuitIndex = (suit: Suit | null, variant: Variant): number =>
   suit ? variant.suits.indexOf(suit) : -1;

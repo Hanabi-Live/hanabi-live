@@ -6,7 +6,7 @@ import Variant from "../types/Variant";
 // If this is the case, dynamically find a new abbreviation by using the left-most unused letter
 // (note that we cannot simply hard-code an alternate abbreviation in the "suits.json" file because
 // there are too many overlapping possibilities)
-export const makeAll = (variantName: string, suits: Suit[]): string[] => {
+export function makeAll(variantName: string, suits: Suit[]): string[] {
   const abbreviations: string[] = [];
   for (const suit of suits) {
     let abbreviationToUse: string | undefined;
@@ -40,13 +40,13 @@ export const makeAll = (variantName: string, suits: Suit[]): string[] => {
   }
 
   return abbreviations;
-};
+}
 
-export const get = (suitName: string, variant: Variant): string => {
+export function get(suitName: string, variant: Variant): string {
   const i = variant.suits.findIndex((suit) => suit.name === suitName);
   if (i !== -1) {
     return variant.abbreviations[i];
   }
 
   return "?";
-};
+}

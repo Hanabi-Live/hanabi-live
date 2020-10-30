@@ -4,7 +4,7 @@ import { getCharacter } from "../../data/gameData";
 import { getCharacterIDForPlayer } from "../../reducers/reducerHelpers";
 import GameMetadata from "../../types/GameMetadata";
 
-export const shouldSeeSlot2CardIdentity = (metadata: GameMetadata): boolean => {
+export function shouldSeeSlot2CardIdentity(metadata: GameMetadata): boolean {
   if (!metadata.options.detrimentalCharacters) {
     return false;
   }
@@ -17,4 +17,4 @@ export const shouldSeeSlot2CardIdentity = (metadata: GameMetadata): boolean => {
   }
   const ourCharacter = getCharacter(ourCharacterID);
   return ourCharacter.name === "Slow-Witted";
-};
+}

@@ -5,11 +5,11 @@ import EndCondition from "../types/EndCondition";
 
 // When the game state reducer sets "segment" to a new number,
 // it is a signal to record the current state of the game (for the purposes of replays)
-export const shouldStore = (
+export function shouldStore(
   segment: number | null,
   previousSegment: number | null,
   action: GameAction,
-): boolean => {
+): boolean {
   if (segment === null) {
     // The game is still doing the initial deal
     return false;
@@ -29,4 +29,4 @@ export const shouldStore = (
 
   // By default, store a new segment whenever the turn reducer changes the segment number
   return segment !== previousSegment;
-};
+}

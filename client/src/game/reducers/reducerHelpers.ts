@@ -4,9 +4,9 @@ import Color from "../types/Color";
 import Suit from "../types/Suit";
 import Variant from "../types/Variant";
 
-export const getIndexConverter = (
+export function getIndexConverter(
   variant: Variant,
-): (<T extends Color | Suit>(value: T) => number) => {
+): <T extends Color | Suit>(value: T) => number {
   const suitIndexes: Map<string, number> = new Map<string, number>();
   const colorIndexes: Map<Color, number> = new Map<Color, number>();
   variant.suits.forEach((suit, index) => suitIndexes.set(suit.name, index));
@@ -21,12 +21,12 @@ export const getIndexConverter = (
   }
 
   return getIndex;
-};
+}
 
-export const getCharacterIDForPlayer = (
+export function getCharacterIDForPlayer(
   playerIndex: number | null,
   characterAssignments: Readonly<Array<number | null>>,
-): number | null => {
+): number | null {
   if (playerIndex === null) {
     return null;
   }
@@ -38,4 +38,4 @@ export const getCharacterIDForPlayer = (
     );
   }
   return characterID;
-};
+}

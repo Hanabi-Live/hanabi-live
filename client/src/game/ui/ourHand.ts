@@ -3,7 +3,7 @@
 import CardLayout from "./CardLayout";
 import globals from "./globals";
 
-export const get = (): CardLayout => {
+export function get(): CardLayout {
   if (!globals.state.playing) {
     throw new Error(
       "Failed to get our hand because we are not currently playing.",
@@ -18,9 +18,9 @@ export const get = (): CardLayout => {
     );
   }
   return ourHand;
-};
+}
 
-export const checkSetDraggableAll = (): void => {
+export function checkSetDraggableAll(): void {
   if (!globals.state.playing) {
     return;
   }
@@ -33,4 +33,4 @@ export const checkSetDraggableAll = (): void => {
     );
   }
   ourHand.checkSetDraggableAll();
-};
+}

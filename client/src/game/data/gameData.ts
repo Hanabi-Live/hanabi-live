@@ -13,7 +13,7 @@ export const SUITS = suitsInit(COLORS);
 export const VARIANTS = variantsInit(COLORS, SUITS, START_CARD_RANK);
 export const CHARACTERS = charactersInit();
 
-export const getSuit = (suitName: string): Suit => {
+export function getSuit(suitName: string): Suit {
   const suit = SUITS.get(suitName);
   if (suit === undefined) {
     throw new Error(
@@ -21,9 +21,9 @@ export const getSuit = (suitName: string): Suit => {
     );
   }
   return suit;
-};
+}
 
-export const getVariant = (variantName: string): Variant => {
+export function getVariant(variantName: string): Variant {
   const variant = VARIANTS.get(variantName);
   if (variant === undefined) {
     throw new Error(
@@ -31,9 +31,9 @@ export const getVariant = (variantName: string): Variant => {
     );
   }
   return variant;
-};
+}
 
-export const getCharacter = (characterID: number): Character => {
+export function getCharacter(characterID: number): Character {
   const character = CHARACTERS.get(characterID);
   if (character === undefined) {
     throw new Error(
@@ -41,4 +41,4 @@ export const getCharacter = (characterID: number): Character => {
     );
   }
   return character;
-};
+}

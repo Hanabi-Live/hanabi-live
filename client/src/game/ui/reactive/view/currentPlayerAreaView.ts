@@ -16,7 +16,7 @@ export const isVisible = (state: State): boolean =>
   // Don't show it if the game is over
   state.ongoingGame.turn.currentPlayerIndex !== null;
 
-export const onChanged = (
+export function onChanged(
   data: {
     visible: boolean;
     currentPlayerIndex: number | null;
@@ -27,7 +27,7 @@ export const onChanged = (
         currentPlayerIndex: number | null;
       }
     | undefined,
-): void => {
+): void {
   // Local variables
   const { currentPlayerArea } = globals.elements;
   if (currentPlayerArea === null) {
@@ -189,9 +189,9 @@ export const onChanged = (
   }
 
   globals.layers.UI.batchDraw();
-};
+}
 
-const getArrowRotationCorrespondingToPlayer = (playerIndex: number) => {
+function getArrowRotationCorrespondingToPlayer(playerIndex: number) {
   const hand = globals.elements.playerHands[playerIndex];
   if (hand === undefined) {
     throw new Error(
@@ -209,4 +209,4 @@ const getArrowRotationCorrespondingToPlayer = (playerIndex: number) => {
   }
 
   return rotation;
-};
+}

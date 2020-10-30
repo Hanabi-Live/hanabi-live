@@ -13,7 +13,7 @@ export default function idleInit(): void {
   $(document).keypress(mousemoveOrKeypress);
 }
 
-const mousemoveOrKeypress = () => {
+function mousemoveOrKeypress() {
   if (globals.conn === null) {
     return;
   }
@@ -24,9 +24,9 @@ const mousemoveOrKeypress = () => {
     });
   }
   globals.idleMinutes = 0;
-};
+}
 
-const timerIncrement = () => {
+function timerIncrement() {
   if (globals.conn === null) {
     return;
   }
@@ -39,4 +39,4 @@ const timerIncrement = () => {
       inactive: true,
     });
   }
-};
+}

@@ -3,13 +3,13 @@ import { clueTokensRules } from "../rules";
 import GameMetadata from "../types/GameMetadata";
 import Variant from "../types/Variant";
 
-export const shouldEndTurnAfterDraw = (
+export function shouldEndTurnAfterDraw(
   cardsPlayedOrDiscardedThisTurn: number,
   cardsDiscardedThisTurn: number,
   characterID: number | null,
   clueTokens: number,
   variant: Variant,
-): boolean => {
+): boolean {
   // Some "Detrimental Characters" are able to perform two actions
   if (characterID !== null) {
     const character = getCharacter(characterID);
@@ -27,12 +27,12 @@ export const shouldEndTurnAfterDraw = (
   // 1) a play or discard happens and
   // 2) a card is drawn
   return cardsPlayedOrDiscardedThisTurn >= 1;
-};
+}
 
-export const shouldEndTurnAfterClue = (
+export function shouldEndTurnAfterClue(
   cluesGivenThisTurn: number,
   characterID: number | null,
-): boolean => {
+): boolean {
   // Some "Detrimental Characters" are able to perform two clues
   if (characterID !== null) {
     const character = getCharacter(characterID);
@@ -44,9 +44,9 @@ export const shouldEndTurnAfterClue = (
 
   // Otherwise, the turn always increments when a clue is given
   return true;
-};
+}
 
-export const shouldPlayOrderInvert = (characterID: number | null): boolean => {
+export function shouldPlayOrderInvert(characterID: number | null): boolean {
   // Some "Detrimental Characters" are able to invert the play order
   if (characterID !== null) {
     const character = getCharacter(characterID);
@@ -57,13 +57,13 @@ export const shouldPlayOrderInvert = (characterID: number | null): boolean => {
   }
 
   return false;
-};
+}
 
-export const getNextPlayerIndex = (
+export function getNextPlayerIndex(
   currentPlayerIndex: number | null,
   numPlayers: number,
   turnsInverted: boolean,
-): number | null => {
+): number | null {
   if (currentPlayerIndex === null) {
     // If the game is already over, then there is no next player
     return null;
@@ -83,9 +83,9 @@ export const getNextPlayerIndex = (
   }
 
   return nextPlayerIndex;
-};
+}
 
-export const getEndTurn = (turn: number, metadata: GameMetadata): number => {
+export function getEndTurn(turn: number, metadata: GameMetadata): number {
   // The Contrarian detrimental character has a 2-turn end game
   if (metadata.options.detrimentalCharacters) {
     for (const characterID of metadata.characterAssignments) {
@@ -100,4 +100,4 @@ export const getEndTurn = (turn: number, metadata: GameMetadata): number => {
 
   // By default, each player gets one more turn after the final card is drawn
   return turn + metadata.options.numPlayers;
-};
+}

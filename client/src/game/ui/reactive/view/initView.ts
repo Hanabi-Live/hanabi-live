@@ -2,7 +2,7 @@
 
 import globals from "../../globals";
 
-export const onInitializationChanged = (initialized: boolean): void => {
+export function onInitializationChanged(initialized: boolean): void {
   if (!initialized) {
     return;
   }
@@ -14,4 +14,4 @@ export const onInitializationChanged = (initialized: boolean): void => {
   }
   globals.loading = false;
   globals.animateFast = false;
-};
+}

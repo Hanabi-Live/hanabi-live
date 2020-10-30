@@ -9,7 +9,7 @@ import * as timer from "../../timer";
 import * as tooltips from "../../tooltips";
 import * as turn from "../../turn";
 
-export const onActiveChanged = (active: boolean): void => {
+export function onActiveChanged(active: boolean): void {
   const { replayArea } = globals.elements;
   if (replayArea === null) {
     return;
@@ -33,9 +33,9 @@ export const onActiveChanged = (active: boolean): void => {
   ourHand.checkSetDraggableAll();
 
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onSegmentChanged = (
+export function onSegmentChanged(
   data: {
     active: boolean;
     replaySegment: number | null;
@@ -48,7 +48,7 @@ export const onSegmentChanged = (
         ongoingGameSegment: number | null;
       }
     | undefined,
-): void => {
+): void {
   if (
     previousData === undefined ||
     !data.active ||
@@ -73,9 +73,9 @@ export const onSegmentChanged = (
   replay.adjustShuttles(false);
 
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onSharedSegmentChanged = (
+export function onSharedSegmentChanged(
   data: {
     active: boolean;
     sharedSegment: number | undefined;
@@ -87,7 +87,7 @@ export const onSharedSegmentChanged = (
         useSharedSegments: boolean | undefined;
       }
     | undefined,
-): void => {
+): void {
   if (
     !data.active ||
     data.sharedSegment === undefined ||
@@ -132,17 +132,17 @@ export const onSharedSegmentChanged = (
   );
 
   globals.layers.UI.batchDraw();
-};
+}
 
 // In shared replays, it can be confusing as to what the shared replay leader is doing,
 // so play an appropriate animations to indicate what is going on
 // (and cancel the other tween if it is going)
 // Don't play it though if we are resuming shared segments
 // (e.g. going back to where the shared replay leader is)
-const playSharedReplayTween = (
+function playSharedReplayTween(
   sharedSegment: number,
   previousSharedSegment: number,
-) => {
+) {
   const duration = 1;
   const opacity = 0;
   if (sharedSegment < previousSharedSegment) {
@@ -170,12 +170,12 @@ const playSharedReplayTween = (
       opacity,
     }).play();
   }
-};
+}
 
-export const onSecondRecordedSegment = (
+export function onSecondRecordedSegment(
   hasTwoOrMoreSegments: boolean,
   previousHasTwoOrMoreSegments: boolean | undefined,
-): void => {
+): void {
   if (previousHasTwoOrMoreSegments === undefined) {
     return;
   }
@@ -184,9 +184,9 @@ export const onSecondRecordedSegment = (
   // Enable it once there is at least one segment to rewind to
   globals.elements.replayButton?.setEnabled(hasTwoOrMoreSegments);
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onDatabaseIDChanged = (databaseID: number | null): void => {
+export function onDatabaseIDChanged(databaseID: number | null): void {
   if (databaseID === null) {
     return;
   }
@@ -208,12 +208,12 @@ export const onDatabaseIDChanged = (databaseID: number | null): void => {
 
   globals.layers.arrow.batchDraw(); // gameIDLabel is on the arrow layer
   globals.layers.card.batchDraw(); // deck is on the card layer
-};
+}
 
-export const onFinishedChanged = (
+export function onFinishedChanged(
   finished: boolean,
   previousFinished: boolean | undefined,
-): void => {
+): void {
   if (previousFinished === undefined || !finished) {
     return;
   }
@@ -255,24 +255,24 @@ export const onFinishedChanged = (
 
   globals.layers.timer.batchDraw();
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onSharedReplayEnter = (sharedReplay: boolean): void => {
+export function onSharedReplayEnter(sharedReplay: boolean): void {
   globals.elements.sharedReplayLeaderLabel?.visible(sharedReplay);
-};
+}
 
-export const onSharedLeaderChanged = (
+export function onSharedLeaderChanged(
   _leader: string,
   previousLeader: string | undefined,
-): void => {
+): void {
   // Make the crown play an animation to indicate there is a new replay leader
   // (but don't play the animation if the game just ended or we are first loading the page)
   if (previousLeader !== undefined) {
     globals.elements.sharedReplayLeaderLabelPulse!.play();
   }
-};
+}
 
-export const onSharedAmLeaderChanged = (amLeader: boolean): void => {
+export function onSharedAmLeaderChanged(amLeader: boolean): void {
   globals.elements.sharedReplayLeaderCircle?.visible(amLeader);
   globals.elements.restartButton?.visible(amLeader);
   globals.elements.enterHypoButton?.visible(amLeader);
@@ -288,12 +288,12 @@ export const onSharedAmLeaderChanged = (amLeader: boolean): void => {
   }
 
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onLeaderOrSpectatorsChanged = (data: {
+export function onLeaderOrSpectatorsChanged(data: {
   leader: string | undefined;
   spectators: Spectator[];
-}): void => {
+}): void {
   if (data.leader === undefined) {
     return;
   }
@@ -313,4 +313,4 @@ export const onLeaderOrSpectatorsChanged = (data: {
     content += " (away)";
   }
   $("#tooltip-leader").tooltipster("instance").content(content);
-};
+}

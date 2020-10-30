@@ -3,7 +3,7 @@ import { LABEL_COLOR } from "../../constants";
 import globals from "../../globals";
 
 // onEfficiencyChanged updates the labels on the right-hand side of the screen
-export const onEfficiencyChanged = (efficiency: number): void => {
+export function onEfficiencyChanged(efficiency: number): void {
   const effLabel = globals.elements.efficiencyNumberLabel;
   if (!effLabel) {
     throw new Error(
@@ -40,12 +40,12 @@ export const onEfficiencyChanged = (efficiency: number): void => {
   effMinLabel.x(x);
 
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onPaceOrPaceRiskChanged = (data: {
+export function onPaceOrPaceRiskChanged(data: {
   pace: number | null;
   paceRisk: PaceRisk;
-}): void => {
+}): void {
   const label = globals.elements.paceNumberLabel;
   if (!label) {
     throw new Error("paceNumberLabel is not initialized.");
@@ -98,4 +98,4 @@ export const onPaceOrPaceRiskChanged = (data: {
   }
 
   globals.layers.UI.batchDraw();
-};
+}

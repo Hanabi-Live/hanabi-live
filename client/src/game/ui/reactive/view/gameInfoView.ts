@@ -6,10 +6,10 @@ import globals from "../../globals";
 import { animate } from "../../konvaHelpers";
 import * as turn from "../../turn";
 
-export const onTurnChanged = (data: {
+export function onTurnChanged(data: {
   turn: number;
   endTurn: number | null;
-}): void => {
+}): void {
   // Update the "Turn" label
   // On both the client and the server, the first turn of the game is represented as turn 0
   // However, turn 0 is represented to the end-user as turn 1, so we must add one
@@ -29,11 +29,11 @@ export const onTurnChanged = (data: {
   }
 
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onCurrentPlayerIndexChanged = (
+export function onCurrentPlayerIndexChanged(
   currentPlayerIndex: number | null,
-): void => {
+): void {
   // Bold the name frame of the current player to signify that it is their turn
   for (let i = 0; i < globals.elements.nameFrames.length; i++) {
     globals.elements.nameFrames[i].setActive(currentPlayerIndex === i);
@@ -68,12 +68,12 @@ export const onCurrentPlayerIndexChanged = (
   }
 
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onScoreOrMaxScoreChanged = (data: {
+export function onScoreOrMaxScoreChanged(data: {
   score: number;
   maxScore: number;
-}): void => {
+}): void {
   const scoreLabel = globals.elements.scoreNumberLabel;
   if (scoreLabel === null) {
     return;
@@ -102,11 +102,11 @@ export const onScoreOrMaxScoreChanged = (data: {
   maxScoreLabel.x(x);
 
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onNumAttemptedCardsPlayedChanged = (
+export function onNumAttemptedCardsPlayedChanged(
   numAttemptedCardsPlayed: number,
-): void => {
+): void {
   if (
     !variantRules.isThrowItInAHole(globals.variant) ||
     globals.state.finished
@@ -116,9 +116,9 @@ export const onNumAttemptedCardsPlayedChanged = (
 
   globals.elements.playsNumberLabel?.text(numAttemptedCardsPlayed.toString());
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onClueTokensChanged = (clueTokens: number): void => {
+export function onClueTokensChanged(clueTokens: number): void {
   let cluesTokensText = clueTokens.toString();
   if (variantRules.isClueStarved(globals.variant)) {
     // In "Clue Starved" variants, clues are tracked internally at twice the value shown to the user
@@ -160,12 +160,12 @@ export const onClueTokensChanged = (clueTokens: number): void => {
   }
 
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onClueTokensOrDoubleDiscardChanged = (data: {
+export function onClueTokensOrDoubleDiscardChanged(data: {
   clueTokens: number;
   doubleDiscard: boolean;
-}): void => {
+}): void {
   if (globals.lobby.settings.realLifeMode) {
     return;
   }
@@ -189,12 +189,12 @@ export const onClueTokensOrDoubleDiscardChanged = (data: {
   }
 
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onOngoingOrVisibleStrikesChanged = (data: {
+export function onOngoingOrVisibleStrikesChanged(data: {
   ongoingStrikes: readonly StateStrike[];
   visibleStrikes: readonly StateStrike[];
-}): void => {
+}): void {
   // Strikes are hidden from the players in "Throw It in a Hole" variants
   if (variantRules.isThrowItInAHole(globals.variant) && globals.state.playing) {
     return;
@@ -243,4 +243,4 @@ export const onOngoingOrVisibleStrikesChanged = (data: {
   }
 
   globals.layers.UI.batchDraw();
-};
+}

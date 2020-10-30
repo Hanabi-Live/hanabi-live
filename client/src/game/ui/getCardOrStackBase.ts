@@ -2,7 +2,7 @@ import { deckRules } from "../rules";
 import globals from "./globals";
 import HanabiCard from "./HanabiCard";
 
-const getCardOrStackBase = (order: number): HanabiCard => {
+export default function getCardOrStackBase(order: number): HanabiCard {
   const card = globals.deck[order];
   if (card !== undefined) {
     return card;
@@ -16,5 +16,4 @@ const getCardOrStackBase = (order: number): HanabiCard => {
   }
 
   throw new Error(`Failed to find the card at order ${order}.`);
-};
-export default getCardOrStackBase;
+}

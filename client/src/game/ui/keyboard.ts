@@ -21,7 +21,7 @@ const hotkeyPlayMap = new Map<string, Callback>();
 const hotkeyDiscardMap = new Map<string, Callback>();
 
 // Build a mapping of hotkeys to functions
-export const init = (): void => {
+export function init(): void {
   hotkeyClueMap.clear();
   hotkeyPlayMap.clear();
   hotkeyDiscardMap.clear();
@@ -64,14 +64,14 @@ export const init = (): void => {
   // Enable all of the keyboard hotkeys
   $(document).keydown(keydown);
   $(document).keyup(keyup);
-};
+}
 
-export const destroy = (): void => {
+export function destroy(): void {
   $(document).unbind("keydown", keydown);
   $(document).unbind("keyup", keyup);
-};
+}
 
-const keydown = (event: JQuery.KeyDownEvent) => {
+function keydown(event: JQuery.KeyDownEvent) {
   // Disable hotkeys if we not currently in a game
   // (this should not be possible, as the handler gets unregistered upon going back to the lobby,
   // but double check just in case)
@@ -294,9 +294,9 @@ const keydown = (event: JQuery.KeyDownEvent) => {
     event.preventDefault();
     hotkeyFunction();
   }
-};
+}
 
-const keyup = (event: JQuery.KeyUpEvent) => {
+function keyup(event: JQuery.KeyUpEvent) {
   if (event.key === " ") {
     // Space bar
     globals.globalEmpathyEnabled = false;
@@ -304,9 +304,9 @@ const keyup = (event: JQuery.KeyUpEvent) => {
       hand.setEmpathy(false);
     }
   }
-};
+}
 
-const sharedReplaySendSound = (sound: string) => {
+function sharedReplaySendSound(sound: string) {
   if (
     // Only send sound effects in shared replays
     globals.state.replay.shared === null ||
@@ -322,19 +322,19 @@ const sharedReplaySendSound = (sound: string) => {
     type: ReplayActionType.Sound,
     sound,
   });
-};
+}
 
-const play = () => {
+function play() {
   performAction(true);
-};
+}
 
-const discard = () => {
+function discard() {
   performAction(false);
-};
+}
 
 // If playAction is true, it plays a card
 // If playAction is false, it discards a card
-const performAction = (playAction = true) => {
+function performAction(playAction = true) {
   const verb = playAction ? "play" : "discard";
   const target = promptCardOrder(verb);
   if (target === null) {
@@ -356,9 +356,9 @@ const performAction = (playAction = true) => {
     });
   }
   turn.hideClueUIAndDisableDragging();
-};
+}
 
-const promptCardOrder = (verb: string): number | null => {
+function promptCardOrder(verb: string): number | null {
   const playerIndex =
     globals.state.replay.hypothetical === null
       ? globals.metadata.ourPlayerIndex
@@ -387,7 +387,7 @@ const promptCardOrder = (verb: string): number | null => {
   }
 
   return hand[maxSlotIndex - slot];
-};
+}
 
 const click = (element: Konva.Node) => () => {
   element.dispatchEvent(new MouseEvent("click"));

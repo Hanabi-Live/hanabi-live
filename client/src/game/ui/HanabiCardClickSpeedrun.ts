@@ -38,7 +38,7 @@ export default function HanabiCardClickSpeedrun(
   }
 }
 
-const clickLeft = (card: HanabiCard, event: MouseEvent) => {
+function clickLeft(card: HanabiCard, event: MouseEvent) {
   // Left-clicking on cards in our own hand is a play action
   if (
     card.state.location === globals.metadata.ourPlayerIndex &&
@@ -103,9 +103,9 @@ const clickLeft = (card: HanabiCard, event: MouseEvent) => {
       value: colorToColorIndex(clueColor, globals.variant),
     });
   }
-};
+}
 
-const clickRight = (card: HanabiCard, event: MouseEvent) => {
+function clickRight(card: HanabiCard, event: MouseEvent) {
   // Right-clicking on cards in our own hand is a discard action
   if (
     card.state.location === globals.metadata.ourPlayerIndex &&
@@ -172,4 +172,4 @@ const clickRight = (card: HanabiCard, event: MouseEvent) => {
   if (!event.ctrlKey && !event.shiftKey && event.altKey && !event.metaKey) {
     card.appendNote("cm");
   }
-};
+}

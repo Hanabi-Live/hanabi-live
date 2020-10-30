@@ -7,7 +7,7 @@ import * as tablesDraw from "./tablesDraw";
 import Screen from "./types/Screen";
 import Status, { StatusText } from "./types/Status";
 
-export const draw = (): void => {
+export function draw(): void {
   $("#lobby-users-num").text(globals.userMap.size);
 
   const tbody = $("#lobby-users-table-tbody");
@@ -61,14 +61,14 @@ export const draw = (): void => {
       drawUser(username, usernameMapping, tbody, false);
     }
   }
-};
+}
 
-const drawUser = (
+function drawUser(
   username: string,
   usernameMapping: Map<string, number>,
   tbody: JQuery<HTMLElement>,
   friend: boolean,
-) => {
+) {
   // Find the status of this user from the "userList" map
   const userID = usernameMapping.get(username);
   if (userID === undefined) {
@@ -132,9 +132,9 @@ const drawUser = (
     content,
   };
   $(`#hyphenated-tooltip-${userID}`).tooltipster(tooltipOptions);
-};
+}
 
-const setLink = (userID: number) => {
+function setLink(userID: number) {
   $(`#online-users-${userID}-link`).off("click");
   $(`#online-users-${userID}-link`).on("click", () => {
     // Get the user corresponding to this element
@@ -186,9 +186,9 @@ const setLink = (userID: number) => {
       }
     }
   });
-};
+}
 
-export const setInactive = (userID: number, inactive: boolean): void => {
+export function setInactive(userID: number, inactive: boolean): void {
   if (inactive) {
     $(`#online-users-${userID}`).fadeTo(0, 0.3);
     $(`#online-users-${userID}-zzz`).show();
@@ -196,4 +196,4 @@ export const setInactive = (userID: number, inactive: boolean): void => {
     $(`#online-users-${userID}`).fadeTo(0, 1);
     $(`#online-users-${userID}-zzz`).hide();
   }
-};
+}

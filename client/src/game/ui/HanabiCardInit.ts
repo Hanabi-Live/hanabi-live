@@ -22,7 +22,7 @@ import RankPip from "./controls/RankPip";
 import drawPip from "./drawPip";
 import globals from "./globals";
 
-export const image = (getBareName: () => string): Konva.Image => {
+export function image(getBareName: () => string): Konva.Image {
   // Create the "bare" card image, which is the main card graphic
   // If the card is not revealed, it will just be a gray rounded rectangle
   // The pips and other elements of a card are drawn on top of the bare image
@@ -49,7 +49,7 @@ export const image = (getBareName: () => string): Konva.Image => {
     );
   });
   return bare;
-};
+}
 
 const borderCornerRadius = 6;
 const borderStrokeWidth = 20;
@@ -57,7 +57,7 @@ const borderStrokeWidthInside = borderStrokeWidth * 0.6;
 const borderOffset = 2;
 const borderOutsideColor = OFF_BLACK;
 
-const makeBorder = (color: string) => {
+function makeBorder(color: string) {
   const border = new Konva.Group({
     visible: false,
     listening: false,
@@ -83,15 +83,15 @@ const makeBorder = (color: string) => {
   border.add(borderInside);
 
   return border;
-};
+}
 
 export const cluedBorder = (): Konva.Group => makeBorder(CLUED_COLOR);
 export const chopMoveBorder = (): Konva.Group => makeBorder(CHOP_MOVE_COLOR);
 export const finesseBorder = (): Konva.Group => makeBorder(FINESSE_COLOR);
 
-export const directionArrow = (
+export function directionArrow(
   variant: Variant,
-): { arrow: Konva.Group; arrowBase: Arrow } | null => {
+): { arrow: Konva.Group; arrowBase: Arrow } | null {
   if (!variantRules.hasReversedSuits(variant)) {
     return null;
   }
@@ -141,7 +141,7 @@ export const directionArrow = (
   arrow.add(arrowBase);
 
   return { arrow, arrowBase };
-};
+}
 
 // Cache the pip objects to save time on the multiple cards
 let cachedVariant: Variant | null = null;
@@ -152,7 +152,7 @@ let cachedPips: {
   rankPipsXMap: Map<number, Konva.Shape>;
 };
 
-const makeCachedPips = (variant: Variant) => {
+function makeCachedPips(variant: Variant) {
   // Initialize the suit pips (colored shapes) on the back of the card,
   // which will be removed one by one as the card gains negative information
 
@@ -313,9 +313,9 @@ const makeCachedPips = (variant: Variant) => {
   };
 
   cachedVariant = variant;
-};
+}
 
-export const pips = (variant: Variant): Pips => {
+export function pips(variant: Variant): Pips {
   if (cachedVariant !== variant) {
     makeCachedPips(variant);
   }
@@ -376,12 +376,12 @@ export const pips = (variant: Variant): Pips => {
     rankPipsMap,
     rankPipsXMap,
   };
-};
+}
 
-export const note = (
+export function note(
   offsetCornerElements: boolean,
   shouldShowIndicator: () => boolean,
-): NoteIndicator => {
+): NoteIndicator {
   // Define the note indicator image
   const noteX = 0.78;
   const noteY = 0.03;
@@ -414,11 +414,9 @@ export const note = (
   });
 
   return noteIndicator;
-};
+}
 
-export const criticalIndicator = (
-  offsetCornerElements: boolean,
-): Konva.Image => {
+export function criticalIndicator(offsetCornerElements: boolean): Konva.Image {
   // Define the critical indicator image
   const critX = 0.06;
   const critY = 0.82;
@@ -450,7 +448,7 @@ export const criticalIndicator = (
     y: -1,
   });
   return indicator;
-};
+}
 
 export const trashcan = (): Konva.Image =>
   new Konva.Image({
@@ -472,13 +470,13 @@ export const wrench = (): Konva.Image =>
     listening: false,
   });
 
-const scaleCardImage = (
+function scaleCardImage(
   ctx: CanvasRenderingContext2D,
   name: string,
   width: number,
   height: number,
   tf: KonvaUtil.Transform,
-) => {
+) {
   let src = globals.cardImages.get(name);
   if (src === undefined) {
     throw new Error(`The image "${name}" was not generated.`);
@@ -530,16 +528,16 @@ const scaleCardImage = (
   }
 
   ctx.drawImage(src, 0, 0, width, height);
-};
+}
 
-const drawX = (
+function drawX(
   ctx: KonvaContext.Context,
   shape: Konva.Shape,
   positionX: number,
   positionY: number,
   size: number,
   width: number,
-) => {
+) {
   let x = positionX;
   let y = positionY;
   // Start at the top left corner and draw an X
@@ -586,4 +584,4 @@ const drawX = (
   ctx.stroke();
   ctx.closePath();
   ctx.fillStrokeShape(shape);
-};
+}

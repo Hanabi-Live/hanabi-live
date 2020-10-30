@@ -402,7 +402,7 @@ commands.set("spectators", (data: SpectatorsData) => {
 // Subroutines
 // -----------
 
-const initStateStore = (data: InitData) => {
+function initStateStore(data: InitData) {
   // Set the variant (as a helper reference)
   globals.variant = getVariant(data.options.variantName);
 
@@ -455,11 +455,11 @@ const initStateStore = (data: InitData) => {
   // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here
   // We must wait until the game is initialized first,
   // because the "hypoEnter" handler requires there to be a valid state
-};
+}
 
 // Validate that the database ID in the URL matches the one in the game that just loaded
 // (e.g. "/replay/150" for database game 150)
-const validateReplayURL = () => {
+function validateReplayURL() {
   const match1 = /\/replay\/(\d+).*/.exec(window.location.pathname);
   const match2 = /\/shared-replay\/(\d+).*/.exec(window.location.pathname);
   let databaseID;
@@ -482,11 +482,11 @@ const validateReplayURL = () => {
 
   trimReplaySuffixFromURL();
   return false;
-};
+}
 
 // Check to see if we are loading a specific replay to a specific turn
 // (as specified in the URL; e.g. "/replay/150/10" for game 150 turn 10)
-const checkLoadSpecificReplayTurn = () => {
+function checkLoadSpecificReplayTurn() {
   // If we get here, we should be in a replay that matches the database ID
   let segment;
   const match1 = /\/replay\/\d+\/(\d+)/.exec(window.location.pathname);
@@ -501,7 +501,7 @@ const checkLoadSpecificReplayTurn = () => {
     return;
   }
   replay.goToSegment(segment, true);
-};
+}
 
 // Allow TypeScript to modify the browser's "window" object
 declare global {

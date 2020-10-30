@@ -27,7 +27,7 @@ const variantNames = Array.from(VARIANTS.keys());
 let dropdown1: JQuery<Element>;
 let dropdown2: JQuery<Element>;
 
-export const init = (): void => {
+export function init(): void {
   dropdown1 = $("#create-game-variant-dropdown1");
   dropdown2 = $("#create-game-variant-dropdown2");
 
@@ -159,7 +159,7 @@ export const init = (): void => {
   });
 
   $("#create-game-submit").on("click", submit);
-};
+}
 
 // The website offers over 1000+ variants
 // To prevent confusion, only show the basic variants to the user by default
@@ -168,7 +168,7 @@ export const init = (): void => {
 // "createTableVariant" is a hidden element that contains the value of the chosen element
 // "create-game-variant-dropdown1" contains the basic variants
 // "create-game-variant-dropdown2" is the full (datalist) dropdown
-const firstVariantDropdownInit = () => {
+function firstVariantDropdownInit() {
   // Initialize the 1st variant dropdown with the basic variants
   for (const variantName of basicVariants) {
     // As a sanity check, ensure that this variant actually exists in the variants JSON
@@ -207,9 +207,9 @@ const firstVariantDropdownInit = () => {
       $("#createTableVariant").text(selection);
     }
   });
-};
+}
 
-const secondVariantDropdownInit = () => {
+function secondVariantDropdownInit() {
   // Populate the full datalist/dropdown in the "Create Game" tooltip
   for (const variantName of VARIANTS.keys()) {
     const option = new Option(variantName, variantName);
@@ -238,9 +238,9 @@ const secondVariantDropdownInit = () => {
       $("#dice").hide();
     }
   });
-};
+}
 
-const submit = () => {
+function submit() {
   // We need to mutate some values before sending them to the server
   const timeBaseMinutes = getTextboxForTimeBase("createTableTimeBaseMinutes");
   const timeBaseSeconds = Math.round(timeBaseMinutes * 60); // The server expects this in seconds
@@ -300,9 +300,9 @@ const submit = () => {
 
   closeAllTooltips();
   $("#nav-buttons-lobby-create-game").addClass("disabled");
-};
+}
 
-const getCheckbox = (setting: keyof Settings) => {
+function getCheckbox(setting: keyof Settings) {
   const element = document.getElementById(setting) as HTMLInputElement | null;
   if (!element) {
     throw new Error(`Failed to get the element of "${setting}".`);
@@ -310,9 +310,9 @@ const getCheckbox = (setting: keyof Settings) => {
   const value = element.checked;
   checkChanged(setting, value);
   return value;
-};
+}
 
-const getTextbox = (setting: keyof Settings) => {
+function getTextbox(setting: keyof Settings) {
   const element = $(`#${setting}`);
   if (element === undefined) {
     throw new Error(`Failed to get the element of "${setting}".`);
@@ -325,9 +325,9 @@ const getTextbox = (setting: keyof Settings) => {
     throw new Error(`The value of element "${setting}" is not a string.`);
   }
   return value.trim(); // Remove all leading and trailing whitespace
-};
+}
 
-const getTextboxForTimePerTurn = (setting: keyof Settings) => {
+function getTextboxForTimePerTurn(setting: keyof Settings) {
   const element = $(`#${setting}`);
   if (element === undefined) {
     throw new Error(`Failed to get the element of "${setting}".`);
@@ -345,9 +345,9 @@ const getTextboxForTimePerTurn = (setting: keyof Settings) => {
 
   checkChanged(setting, value);
   return value;
-};
+}
 
-const getTextboxForTimeBase = (setting: keyof Settings) => {
+function getTextboxForTimeBase(setting: keyof Settings) {
   const element = $(`#${setting}`);
   if (element === undefined) {
     throw new Error(`Failed to get the element of "${setting}".`);
@@ -365,9 +365,9 @@ const getTextboxForTimeBase = (setting: keyof Settings) => {
 
   checkChanged(setting, value);
   return value;
-};
+}
 
-const getVariant = (setting: keyof Settings) => {
+function getVariant(setting: keyof Settings) {
   const element = $(`#${setting}`);
   if (element === undefined) {
     throw new Error(`Failed to get the element of "${setting}".`);
@@ -379,12 +379,12 @@ const getVariant = (setting: keyof Settings) => {
   }
   checkChanged(setting, value);
   return value;
-};
+}
 
-export const checkChanged = (
+export function checkChanged(
   settingName: keyof Settings,
   value: boolean | string | number,
-): void => {
+): void {
   if (value !== globals.settings[settingName]) {
     // We must cast the settings to any since this assignment violates type safety
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -394,11 +394,11 @@ export const checkChanged = (
       setting: value.toString(), // The server expects the value of all settings as strings
     });
   }
-};
+}
 
 // This function is executed every time the "Create Game" button is clicked
 // (before the tooltip is added to the DOM)
-export const before = (): boolean => {
+export function before(): boolean {
   // Don't allow the tooltip to open if the button is currently disabled
   if ($("#nav-buttons-lobby-create-game").hasClass("disabled")) {
     return false;
@@ -436,11 +436,11 @@ export const before = (): boolean => {
   modals.setShadeOpacity(0.6);
 
   return true;
-};
+}
 
 // This function is executed every time the "Create Game" button is clicked
 // (after the tooltip is added to the DOM)
-export const ready = (): void => {
+export function ready(): void {
   // Fill in the "Name" box
   if (debug.amTestUser(globals.username)) {
     $("#createTableName").val("test game");
@@ -507,9 +507,9 @@ export const ready = (): void => {
 
   // Redraw the tooltip so that the new elements will fit better
   $("#nav-buttons-lobby-create-game").tooltipster("reposition");
-};
+}
 
-const readyVariant = (value: string) => {
+function readyVariant(value: string) {
   // Validate the variant name that we got from the server
   let variant: string;
   if (VARIANTS.get(value) === undefined) {
@@ -537,4 +537,4 @@ const readyVariant = (value: string) => {
     $("#create-game-variant-dropdown2-icon").show();
     $("#dice").show();
   }
-};
+}

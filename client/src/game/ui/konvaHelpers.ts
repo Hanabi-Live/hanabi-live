@@ -27,12 +27,12 @@ interface TweenConfig {
   onFinish?: () => void;
 }
 
-export const animate = (
+export function animate(
   node: Konva.Node & CanTween,
   params: TweenConfig,
   interactive = false,
   fast: boolean = globals.animateFast,
-): void => {
+): void {
   // Before animating, ensure that the node is visible
   // (since some elements might be previously hidden)
   node.show();
@@ -150,4 +150,4 @@ export const animate = (
 
     node.tween = new Konva.Tween(config).play();
   }
-};
+}

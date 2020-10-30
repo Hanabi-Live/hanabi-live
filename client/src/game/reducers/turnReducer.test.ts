@@ -79,7 +79,7 @@ describe("turnReducer", () => {
   });
 });
 
-const playRed1AndDraw = (oldState: TurnState, i: number) => {
+function playRed1AndDraw(oldState: TurnState, i: number) {
   let state = oldState;
 
   const playAction = play(0, i, 0, 1); // Play that red 1
@@ -88,4 +88,4 @@ const playRed1AndDraw = (oldState: TurnState, i: number) => {
   state = turnReducer(state, drawAction2, defaultGameState, defaultMetadata);
 
   return state;
-};
+}

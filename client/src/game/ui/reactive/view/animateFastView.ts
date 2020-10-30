@@ -1,10 +1,10 @@
 import State from "../../../types/State";
 import globals from "../../globals";
 
-export const onObserversStarted = (
+export function onObserversStarted(
   state: State,
   previousState: State | undefined,
-): void => {
+): void {
   // We want "animateFast" to remain true on the first time the visible state becomes valid
   if (previousState === undefined || previousState.visibleState === null) {
     return;
@@ -36,12 +36,12 @@ export const onObserversStarted = (
     // Exiting a hypothetical should always be fast
     (state.replay.hypothetical === null &&
       previousState.replay.hypothetical !== null);
-};
+}
 
-export const onObserversFinished = (
+export function onObserversFinished(
   _: State,
   previousState: State | undefined,
-): void => {
+): void {
   // We want "animateFast" to remain true on the first time the visible state becomes valid
   if (previousState === undefined || previousState.visibleState === null) {
     return;
@@ -49,4 +49,4 @@ export const onObserversFinished = (
 
   // All of the observers are finished firing, so reset "animateFast" back to false
   globals.animateFast = false;
-};
+}

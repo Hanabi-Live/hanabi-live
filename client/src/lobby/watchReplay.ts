@@ -3,7 +3,7 @@
 import globals from "../globals";
 import { closeAllTooltips, parseIntSafe } from "../misc";
 
-export const init = (): void => {
+export function init(): void {
   // Make the text box appear and disappear depending on which source is selected
   $("#replay-source-id").change(replaySourceChange);
   $("#replay-source-json").change(replaySourceChange);
@@ -16,9 +16,9 @@ export const init = (): void => {
   });
 
   $("#replay-submit").on("click", submit);
-};
+}
 
-const replaySourceChange = () => {
+function replaySourceChange() {
   if ($("#replay-source-id").prop("checked")) {
     $("#replay-json-row").hide();
     $("#replay-id-row").show();
@@ -39,9 +39,9 @@ const replaySourceChange = () => {
 
   // Redraw the tooltip so that the new elements will fit better
   $("#nav-buttons-lobby-replay").tooltipster("reposition");
-};
+}
 
-const submit = () => {
+function submit() {
   // Source
   const sourceID = $("input[type=radio][name=replay-source]:checked")[0].id;
   let source: string;
@@ -135,11 +135,11 @@ const submit = () => {
   }
 
   closeAllTooltips();
-};
+}
 
 // This function is executed every time the "Watch Specific Replay" button is clicked
 // (after the tooltip is added to the DOM)
-export const ready = (): void => {
+export function ready(): void {
   // Set the "Source" radio button
   const source = localStorage.getItem("watchReplaySource");
   let sourceBox;
@@ -198,4 +198,4 @@ export const ready = (): void => {
       $("#replay-json").focus();
     }
   }, 1);
-};
+}

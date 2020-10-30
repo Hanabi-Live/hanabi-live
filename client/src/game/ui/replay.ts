@@ -12,7 +12,7 @@ import { animate } from "./konvaHelpers";
 // Main replay functions
 // ---------------------
 
-export const enter = (customSegment?: number): void => {
+export function enter(customSegment?: number): void {
   if (globals.state.replay.active) {
     return;
   }
@@ -24,9 +24,9 @@ export const enter = (customSegment?: number): void => {
     type: "replayEnter",
     segment,
   });
-};
+}
 
-export const exit = (): void => {
+export function exit(): void {
   if (!globals.state.replay.active) {
     return;
   }
@@ -35,20 +35,20 @@ export const exit = (): void => {
   globals.store!.dispatch({
     type: "replayExit",
   });
-};
+}
 
-export const getCurrentReplaySegment = (): number => {
+export function getCurrentReplaySegment(): number {
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   return globals.state.replay.active
     ? globals.state.replay.segment
     : finalSegment;
-};
+}
 
-export const goToSegment = (
+export function goToSegment(
   segment: number,
   breakFree = false,
   force = false,
-): void => {
+): void {
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   const currentSegment = getCurrentReplaySegment();
 
@@ -101,71 +101,71 @@ export const goToSegment = (
       segment: newSegment,
     });
   }
-};
+}
 
-export const goToSegmentAndIndicateCard = (
+export function goToSegmentAndIndicateCard(
   segment: number,
   order: number,
-): void => {
+): void {
   goToSegment(segment, true);
 
   // We indicate the card to make it easier to see
   arrows.hideAll(); // We hide all the arrows first to ensure that the arrow is always shown
   const card = getCardOrStackBase(order);
   arrows.toggle(card);
-};
+}
 
 // ---------------------------
 // Replay navigation functions
 // ---------------------------
 
-export const back = (breakFree = true): void => {
+export function back(breakFree = true): void {
   goToSegment(getCurrentReplaySegment() - 1, breakFree);
-};
+}
 
-export const forward = (): void => {
+export function forward(): void {
   goToSegment(getCurrentReplaySegment() + 1, true);
-};
+}
 
-export const backRound = (): void => {
+export function backRound(): void {
   goToSegment(getCurrentReplaySegment() - globals.options.numPlayers, true);
-};
+}
 
-export const forwardRound = (): void => {
+export function forwardRound(): void {
   goToSegment(getCurrentReplaySegment() + globals.options.numPlayers, true);
-};
+}
 
-export const backFull = (): void => {
+export function backFull(): void {
   goToSegment(0, true);
-};
+}
 
-export const forwardFull = (): void => {
+export function forwardFull(): void {
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   goToSegment(finalSegment, true);
-};
+}
 
 // ------------------------
 // The "Exit Replay" button
 // ------------------------
 
-export const exitButton = (): void => {
+export function exitButton(): void {
   // Mark the time that the user clicked the "Exit Replay" button
   // (so that we can avoid an accidental "Give Clue" double-click)
   globals.UIClickTime = Date.now();
 
   exit();
-};
+}
 
 // ------------------
 // The replay shuttle
 // ------------------
 
 // Gets the current segment from an X position relative to a maximum width
-const segmentFromBarPosition = (x: number, w: number) => {
+function segmentFromBarPosition(x: number, w: number) {
   const finalSegment = globals.state.ongoingGame.turn.segment!;
   const step = w / finalSegment;
   return Math.floor((x + step / 2) / step);
-};
+}
 
 // Called when a position in the bar is clicked
 export function barClick(this: Konva.Rect): void {
@@ -229,12 +229,12 @@ export function shuttleDragMove(this: Konva.Rect): void {
   goToSegment(newSegment, true);
 }
 
-const positionReplayShuttle = (
+function positionReplayShuttle(
   shuttle: Shuttle,
   targetSegment: number,
   smaller: boolean,
   fast: boolean,
-) => {
+) {
   let finalSegment = globals.state.ongoingGame.turn.segment;
   if (
     finalSegment === null || // The final segment is null during initialization
@@ -268,9 +268,9 @@ const positionReplayShuttle = (
     true,
     fast,
   );
-};
+}
 
-export const adjustShuttles = (fast: boolean): void => {
+export function adjustShuttles(fast: boolean): void {
   // If the two shuttles are overlapping, then make the normal shuttle a little bit smaller
   let smaller = false;
   if (
@@ -306,13 +306,13 @@ export const adjustShuttles = (fast: boolean): void => {
           globals.state.replay.shared.segment === globals.state.replay.segment),
     );
   }
-};
+}
 
 // -----------------------------
 // Right-clicking the turn count
 // -----------------------------
 
-export const promptTurn = (): void => {
+export function promptTurn(): void {
   const turnString = window.prompt("Which turn do you want to go to?");
   if (turnString === null) {
     return;
@@ -327,13 +327,13 @@ export const promptTurn = (): void => {
   targetTurn -= 1;
 
   goToSegment(targetTurn, true);
-};
+}
 
 // --------------------------------
 // The "Toggle Shared Turns" button
 // --------------------------------
 
-export const toggleSharedSegments = (): void => {
+export function toggleSharedSegments(): void {
   if (globals.state.replay.shared === null) {
     return;
   }
@@ -342,4 +342,4 @@ export const toggleSharedSegments = (): void => {
     type: "replayUseSharedSegments",
     useSharedSegments: !globals.state.replay.shared.useSharedSegments,
   });
-};
+}

@@ -13,7 +13,7 @@ const lobbyModals = [
 ];
 
 // Initialize various element behavior within the modals
-export const init = (): void => {
+export function init(): void {
   // There are not currently any game modals
   for (const modal of lobbyModals) {
     $(`#${modal}-modal-cancel`).click(closeAll);
@@ -37,9 +37,9 @@ export const init = (): void => {
   $("#error-modal-button").click(() => {
     window.location.reload();
   });
-};
+}
 
-export const passwordShow = (tableID: number): void => {
+export function passwordShow(tableID: number): void {
   setShadeOpacity(0.75);
   closeAllTooltips();
   globals.modalShowing = true;
@@ -47,9 +47,9 @@ export const passwordShow = (tableID: number): void => {
   $("#password-modal-id").val(tableID);
   $("#password-modal").fadeIn(FADE_TIME);
   $("#password-modal-password").focus();
-};
+}
 
-const passwordSubmit = () => {
+function passwordSubmit() {
   $("#password-modal").fadeOut(FADE_TIME);
   setShadeOpacity(0, false);
   const tableIDString = $("#password-modal-id").val();
@@ -73,18 +73,18 @@ const passwordSubmit = () => {
 
   // Record the password in local storage (cookie)
   localStorage.setItem("joinTablePassword", password);
-};
+}
 
-export const warningShow = (msg: string): void => {
+export function warningShow(msg: string): void {
   closeAllTooltips();
   setShadeOpacity(0.75);
   globals.modalShowing = true;
 
   $("#warning-modal-description").html(msg);
   $("#warning-modal").fadeIn(FADE_TIME);
-};
+}
 
-export const errorShow = (msg: string): void => {
+export function errorShow(msg: string): void {
   // Do nothing if we are already showing the error modal
   if (globals.errorOccurred) {
     return;
@@ -105,15 +105,15 @@ export const errorShow = (msg: string): void => {
   if (/The server is going down for scheduled maintenance./.exec(msg)) {
     sounds.play("turn_double_discard");
   }
-};
+}
 
 // Make the page cover a certain opacity
 // If it is 0, then the page cover will be hidden
 // The second parameter is necessary to set the variable after fading finishes
-export const setShadeOpacity = (
+export function setShadeOpacity(
   opacity: number,
   newModalShowing?: boolean,
-): void => {
+): void {
   const pageCover = $("#page-cover");
   if (opacity > 0) {
     pageCover.show();
@@ -127,14 +127,14 @@ export const setShadeOpacity = (
       globals.modalShowing = newModalShowing;
     }
   });
-};
+}
 
-const warningClose = () => {
+function warningClose() {
   $("#warning-modal").fadeOut(FADE_TIME);
   setShadeOpacity(0, false);
-};
+}
 
-export const closeAll = (): void => {
+export function closeAll(): void {
   // Error modals cannot be closed, since we want to force the user to refresh the page
   if ($("#error-modal").is(":visible")) {
     return;
@@ -145,4 +145,4 @@ export const closeAll = (): void => {
   }
 
   warningClose();
-};
+}

@@ -6,7 +6,7 @@ import * as modals from "../modals";
 import Screen from "./types/Screen";
 import Table from "./types/Table";
 
-const tablesDraw = (): void => {
+export default function tablesDraw(): void {
   const tbody = $("#lobby-games-table-tbody");
 
   // Clear all of the existing rows
@@ -197,10 +197,9 @@ const tablesDraw = (): void => {
 
     row.appendTo(tbody);
   }
-};
-export default tablesDraw;
+}
 
-export const tableSpectate = (table: Table): void => {
+export function tableSpectate(table: Table): void {
   if (globals.currentScreen !== Screen.Lobby) {
     return;
   }
@@ -209,9 +208,9 @@ export const tableSpectate = (table: Table): void => {
     tableID: table.id,
     shadowingPlayerIndex: -1,
   });
-};
+}
 
-export const tableJoin = (table: Table): void => {
+export function tableJoin(table: Table): void {
   if (globals.currentScreen !== Screen.Lobby) {
     return;
   }
@@ -229,9 +228,9 @@ export const tableJoin = (table: Table): void => {
       tableID: table.id,
     });
   }
-};
+}
 
-const tableReattend = (table: Table) => {
+function tableReattend(table: Table) {
   if (globals.currentScreen !== Screen.Lobby) {
     return;
   }
@@ -239,9 +238,9 @@ const tableReattend = (table: Table) => {
   globals.conn!.send("tableReattend", {
     tableID: table.id,
   });
-};
+}
 
-const tableHasFriends = (table: Table) => {
+function tableHasFriends(table: Table) {
   for (const player of table.players) {
     if (globals.friends.includes(player)) {
       return true;
@@ -255,4 +254,4 @@ const tableHasFriends = (table: Table) => {
   }
 
   return false;
-};
+}

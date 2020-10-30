@@ -86,7 +86,7 @@ export default function uiInit(): void {
   globals.stage.add(loadingLayer);
 }
 
-const finishedDownloadingImages = () => {
+function finishedDownloadingImages() {
   // Build images for every card
   // (with respect to the variant that we are playing
   // and whether or not we have the colorblind UI feature enabled)
@@ -107,4 +107,4 @@ const finishedDownloadingImages = () => {
   globals.lobby.conn!.send("getGameInfo2", {
     tableID: globals.lobby.tableID,
   });
-};
+}

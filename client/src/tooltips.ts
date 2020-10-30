@@ -13,7 +13,7 @@ export const options: JQueryTooltipster.ITooltipsterOptions = {
 };
 
 // Initialize in-game tooltips (for notes, etc.)
-export const initGame = (): void => {
+export function initGame(): void {
   const gameOptions: JQueryTooltipster.ITooltipsterOptions = {
     ...options,
     interactive: true, // So that users can update their notes
@@ -72,4 +72,4 @@ export const initGame = (): void => {
     $("#game-tooltips").append(`<div id="tooltip-card-${i}"></div>`);
     $(`#tooltip-card-${i}`).tooltipster(gameOptions);
   }
-};
+}

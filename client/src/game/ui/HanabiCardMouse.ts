@@ -133,7 +133,7 @@ function mouseUp(this: HanabiCard) {
 // Subroutines
 // -----------
 
-const checkShowNoteTooltip = (card: HanabiCard) => {
+function checkShowNoteTooltip(card: HanabiCard) {
   if (
     !card.noteIndicator.isVisible() || // Don't do anything if there is not a note on this card
     // Don't open any more note tooltips if the user is currently editing a note
@@ -150,14 +150,14 @@ const checkShowNoteTooltip = (card: HanabiCard) => {
   }
 
   notes.show(card);
-};
+}
 
 export function setCursor(this: HanabiCard): void {
   const cursorType = getCursorType(this);
   cursor.set(cursorType);
 }
 
-const getCursorType = (card: HanabiCard) => {
+function getCursorType(card: HanabiCard) {
   if (card.dragging) {
     return "dragging";
   }
@@ -171,10 +171,10 @@ const getCursorType = (card: HanabiCard) => {
   }
 
   return "default";
-};
+}
 
 // The look cursor should show if Empathy can be used on the card
-const shouldShowLookCursor = (card: HanabiCard) => {
+function shouldShowLookCursor(card: HanabiCard) {
   // It is not possible to use Empathy on a stack base
   if (card.state.rank === STACK_BASE_RANK) {
     return false;
@@ -206,9 +206,9 @@ const shouldShowLookCursor = (card: HanabiCard) => {
   }
 
   return false;
-};
+}
 
-const checkHideNoteTooltip = (card: HanabiCard) => {
+function checkHideNoteTooltip(card: HanabiCard) {
   // Don't close the tooltip if we are currently editing a note
   if (globals.editingNote === card.state.order) {
     return;
@@ -216,7 +216,7 @@ const checkHideNoteTooltip = (card: HanabiCard) => {
 
   const tooltipElement = $(`#tooltip-${card.tooltipName}`);
   tooltipElement.tooltipster("close");
-};
+}
 
 const useSpeedrunClickHandlers = () =>
   (globals.options.speedrun || globals.lobby.settings.speedrunMode) &&
@@ -248,7 +248,7 @@ const shouldShowEmpathy = (
 // appear to that teammate
 // (or show your own hand as it should appear without any identity notes on it)
 // (or, in a replay, show the hand as it appeared at that moment in time)
-const setEmpathyOnHand = (card: HanabiCard, enabled: boolean) => {
+function setEmpathyOnHand(card: HanabiCard, enabled: boolean) {
   // Disable Empathy for cards that are not in a player's hand
   if (typeof card.state.location !== "number") {
     return;
@@ -261,14 +261,14 @@ const setEmpathyOnHand = (card: HanabiCard, enabled: boolean) => {
   }
 
   hand.setEmpathy(enabled);
-};
+}
 
 // Handle things relating to dragging a card
 // We cannot use the "dragstart" mouse event since that will only fire after the element has moved
 // at least one pixel
 // Ideally, we would have a check to only make a card draggable with a left click
 // However, checking for "event.evt.buttons !== 1" will break iPads
-const dragStart = (card: HanabiCard) => {
+function dragStart(card: HanabiCard) {
   if (!card.layout.draggable()) {
     return;
   }
@@ -315,12 +315,12 @@ const dragStart = (card: HanabiCard) => {
   // Move this hand to the top
   // (otherwise, the card can appear under the play stacks / discard stacks)
   hand.moveToTop();
-};
+}
 
 // Handle things relating to dragging a card
 // We cannot use the "dragend" mouse event since that will only fire after the element has moved
 // at least one pixel
-const dragEnd = (card: HanabiCard) => {
+function dragEnd(card: HanabiCard) {
   if (!card.layout.draggable()) {
     return;
   }
@@ -332,4 +332,4 @@ const dragEnd = (card: HanabiCard) => {
 
   // We need to change the cursor from the grabbing icon back to the default
   card.setCursor();
-};
+}

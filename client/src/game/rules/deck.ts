@@ -10,7 +10,7 @@ import * as cardRules from "./card";
 import * as handRules from "./hand";
 import * as variantRules from "./variant";
 
-export const totalCards = (variant: Variant): number => {
+export function totalCards(variant: Variant): number {
   let totalCardsInTheDeck = 0;
   for (const suit of variant.suits) {
     totalCardsInTheDeck += 10;
@@ -21,15 +21,15 @@ export const totalCards = (variant: Variant): number => {
     }
   }
   return totalCardsInTheDeck;
-};
+}
 
 // Given a variant, and a card's rank and suit, returns how many copies of
 // this card exist in the deck
-export const numCopiesOfCard = (
+export function numCopiesOfCard(
   suit: Suit,
   rank: number,
   variant: Variant,
-): number => {
+): number {
   // In a normal suit of Hanabi,
   // there are three 1's, two 2's, two 3's, two 4's, and one 5
   let amountToAdd = 2;
@@ -57,7 +57,7 @@ export const numCopiesOfCard = (
     amountToAdd = 1;
   }
   return amountToAdd;
-};
+}
 
 // Returns how many cards of a specific suit/rank that have been already discarded
 export const discardedCopies = (
@@ -76,10 +76,10 @@ export const discardedCopies = (
     return discarded;
   }, 0);
 
-export const isInitialDealFinished = (
+export function isInitialDealFinished(
   currentDeckSize: number,
   metadata: GameMetadata,
-): boolean => {
+): boolean {
   const variant = getVariant(metadata.options.variantName);
   const totalCardsInTheDeck = totalCards(variant);
   const numCardsPerHand = handRules.cardsPerHand(
@@ -91,4 +91,4 @@ export const isInitialDealFinished = (
     currentDeckSize ===
     totalCardsInTheDeck - metadata.options.numPlayers * numCardsPerHand
   );
-};
+}

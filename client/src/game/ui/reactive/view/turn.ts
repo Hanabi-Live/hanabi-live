@@ -5,7 +5,7 @@ import isOurTurn from "../../isOurTurn";
 import * as ourHand from "../../ourHand";
 import * as turn from "../../turn";
 
-export const onOngoingTurnChanged = (): void => {
+export function onOngoingTurnChanged(): void {
   ourHand.checkSetDraggableAll();
 
   if (isOurTurn()) {
@@ -16,4 +16,4 @@ export const onOngoingTurnChanged = (): void => {
     const visible = isOurTurn() && globals.state.replay.hypothetical === null;
     globals.elements.yourTurn.visible(visible);
   }
-};
+}

@@ -16,7 +16,10 @@ import replayReducer from "./replayReducer";
 // This only has to be called once
 setAutoFreeze(true);
 
-const stateReducer = produce((state: Draft<State>, action: Action) => {
+const stateReducer = produce(stateReducerFunction, {} as State);
+export default stateReducer;
+
+function stateReducerFunction(state: Draft<State>, action: Action) {
   switch (action.type) {
     case "gameActionList": {
       // Calculate all the intermediate states
@@ -245,18 +248,16 @@ const stateReducer = produce((state: Draft<State>, action: Action) => {
 
   // Show the appropriate state depending on the situation
   state.visibleState = visualStateToShow(state, action);
-}, {} as State);
-
-export default stateReducer;
+}
 
 // Runs through a list of actions from an initial state,
 // and returns the final state and all intermediate states
-const reduceGameActions = (
+function reduceGameActions(
   actions: GameAction[],
   initialState: GameState,
   playing: boolean,
   metadata: GameMetadata,
-) => {
+) {
   const states: GameState[] = [initialState];
   const game = actions.reduce((s: GameState, a: GameAction) => {
     const nextState = gameStateReducer(s, a, playing, metadata);
@@ -268,14 +269,14 @@ const reduceGameActions = (
     return nextState;
   }, initialState);
   return { game, states };
-};
+}
 
 // We keep a copy of each card identity in the global state for convenience
 // After each game action, check to see if we can add any new card identities
 // (or any suit/rank information to existing card identities)
 // We cannot just replace the array every time because we need to keep the "full" deck that the
 // server sends us
-const updateCardIdentities = (state: Draft<State>) => {
+function updateCardIdentities(state: Draft<State>) {
   state.ongoingGame.deck.forEach((newCardIdentity, i) => {
     if (i >= state.cardIdentities.length) {
       // Add the new card identity
@@ -294,9 +295,9 @@ const updateCardIdentities = (state: Draft<State>) => {
       }
     }
   });
-};
+}
 
-const visualStateToShow = (state: Draft<State>, action: Action) => {
+function visualStateToShow(state: Draft<State>, action: Action) {
   if (state.visibleState === null) {
     // The state is still initializing, so do not show anything
     return null;
@@ -332,7 +333,7 @@ const visualStateToShow = (state: Draft<State>, action: Action) => {
     throw new Error("The ongoing state is undefined.");
   }
   return state.ongoingGame;
-};
+}
 
 const rehydrateScrubbedActions = (
   state: State,

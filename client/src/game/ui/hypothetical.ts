@@ -12,7 +12,7 @@ import { getTouchedCardsFromClue } from "./clues";
 import getCardOrStackBase from "./getCardOrStackBase";
 import globals from "./globals";
 
-export const start = (): void => {
+export function start(): void {
   if (
     globals.state.replay.shared === null ||
     globals.state.replay.hypothetical !== null
@@ -34,9 +34,9 @@ export const start = (): void => {
     drawnCardsShown: false,
     actions: [],
   });
-};
+}
 
-export const end = (): void => {
+export function end(): void {
   if (
     globals.state.replay.shared === null ||
     globals.state.replay.hypothetical === null
@@ -54,9 +54,9 @@ export const end = (): void => {
   globals.store!.dispatch({
     type: "hypoEnd",
   });
-};
+}
 
-export const send = (hypoAction: ClientAction): void => {
+export function send(hypoAction: ClientAction): void {
   const gameState = globals.state.replay.hypothetical!.ongoing;
 
   let type;
@@ -194,19 +194,17 @@ export const send = (hypoAction: ClientAction): void => {
     num: gameState.turn.turnNum + 1,
     currentPlayerIndex: nextPlayerIndex,
   });
-};
+}
 
-export const sendHypoAction = (
-  hypoAction: ActionIncludingHypothetical,
-): void => {
+export function sendHypoAction(hypoAction: ActionIncludingHypothetical): void {
   globals.lobby.conn!.send("replayAction", {
     tableID: globals.lobby.tableID,
     type: ReplayActionType.HypoAction,
     actionJSON: JSON.stringify(hypoAction),
   });
-};
+}
 
-export const sendBack = (): void => {
+export function sendBack(): void {
   if (
     globals.state.replay.hypothetical === null ||
     globals.state.replay.hypothetical.states.length <= 1 ||
@@ -220,20 +218,20 @@ export const sendBack = (): void => {
     tableID: globals.lobby.tableID,
     type: ReplayActionType.HypoBack,
   });
-};
+}
 
-export const toggleRevealed = (): void => {
+export function toggleRevealed(): void {
   globals.lobby.conn!.send("replayAction", {
     tableID: globals.lobby.tableID,
     type: ReplayActionType.HypoToggleRevealed,
   });
-};
+}
 
 // Check if we need to disable the toggleRevealedButton
 // This happens when a newly drawn card is played, discarded, or clued
-export const checkToggleRevealedButton = (
+export function checkToggleRevealedButton(
   actionMessage: ActionIncludingHypothetical,
-): void => {
+): void {
   if (globals.state.replay.hypothetical === null) {
     return;
   }
@@ -272,4 +270,4 @@ export const checkToggleRevealedButton = (
       break;
     }
   }
-};
+}

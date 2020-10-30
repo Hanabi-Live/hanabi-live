@@ -10,7 +10,7 @@ import observeStore, {
   Subscription,
 } from "../observeStore";
 
-export const onCardsPossiblyAdded = (length: number): void => {
+export function onCardsPossiblyAdded(length: number): void {
   // Subscribe the new cards
   for (let i = globals.cardSubscriptions.length; i < length; i++) {
     if (globals.deck.length <= i) {
@@ -27,9 +27,9 @@ export const onCardsPossiblyAdded = (length: number): void => {
     const subscription = subscribeToCardChanges(i);
     globals.cardSubscriptions.push(subscription);
   }
-};
+}
 
-export const onCardsPossiblyRemoved = (length: number): void => {
+export function onCardsPossiblyRemoved(length: number): void {
   // Unsubscribe the removed cards
   while (globals.cardSubscriptions.length > length) {
     // The card was removed from the visible state
@@ -39,9 +39,9 @@ export const onCardsPossiblyRemoved = (length: number): void => {
     const unsubscribe = globals.cardSubscriptions.pop()!;
     unsubscribe();
   }
-};
+}
 
-export const onMorphedIdentitiesChanged = (
+export function onMorphedIdentitiesChanged(
   data: {
     hypotheticalActive: boolean;
     morphedIdentities: readonly CardIdentity[] | undefined;
@@ -52,7 +52,7 @@ export const onMorphedIdentitiesChanged = (
         morphedIdentities: readonly CardIdentity[] | undefined;
       }
     | undefined,
-): void => {
+): void {
   if (previousData === undefined || !previousData.hypotheticalActive) {
     // Initializing or entering a hypothetical
     return;
@@ -84,9 +84,9 @@ export const onMorphedIdentitiesChanged = (
       updateCardVisuals(i);
     }
   }
-};
+}
 
-const subscribeToCardChanges = (order: number) => {
+function subscribeToCardChanges(order: number) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const subscriptions: Array<Subscription<State, any>> = [];
 
@@ -179,12 +179,12 @@ const subscribeToCardChanges = (order: number) => {
   );
 
   return observeStore(globals.store!, subscriptions);
-};
+}
 
 // TODO: these functions should pass the value of the changed properties,
 // and not let the UI query the whole state object
 
-const updateBorder = (order: number) => {
+function updateBorder(order: number) {
   const card = getCardOrStackBase(order);
 
   // When cards have one or more positive clues, they get a special border
@@ -194,28 +194,28 @@ const updateBorder = (order: number) => {
   card.setRaiseAndShadowOffset();
 
   globals.layers.card.batchDraw();
-};
+}
 
-const updatePips = (order: number) => {
+function updatePips(order: number) {
   const card = getCardOrStackBase(order);
   card.updatePips();
   globals.layers.card.batchDraw();
-};
+}
 
-const updateCardVisuals = (order: number) => {
+function updateCardVisuals(order: number) {
   const card = getCardOrStackBase(order);
   card.setBareImage();
   globals.layers.card.batchDraw();
-};
+}
 
-const checkNoteDisproved = (order: number) => {
+function checkNoteDisproved(order: number) {
   const card = getCardOrStackBase(order);
   card.checkNoteDisproved();
   globals.layers.card.batchDraw();
-};
+}
 
-export const updateCardStatus = (order: number): void => {
+export function updateCardStatus(order: number): void {
   const card = getCardOrStackBase(order);
   card.setStatus();
   globals.layers.card.batchDraw();
-};
+}

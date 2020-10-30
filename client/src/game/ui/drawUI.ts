@@ -125,7 +125,7 @@ export default function drawUI(): void {
   }
 }
 
-const drawBackground = () => {
+function drawBackground() {
   // Draw a green background behind everything
   const background = new Konva.Image({
     x: 0,
@@ -151,9 +151,9 @@ const drawBackground = () => {
     listening: true,
   });
   globals.layers.UI2.add(globals.elements.stageFade);
-};
+}
 
-const initReusableObjects = () => {
+function initReusableObjects() {
   // Create some default objects
   basicTextLabel = new Konva.Text({
     x: 0.01 * winW,
@@ -177,9 +177,9 @@ const initReusableObjects = () => {
   basicNumberLabel = basicTextLabel.clone() as Konva.Text;
   basicNumberLabel.text("0");
   basicNumberLabel.width(0.03 * winW);
-};
+}
 
-const drawActionLog = () => {
+function drawActionLog() {
   if (!globals.lobby.settings.keldonMode) {
     actionLogValues = {
       x: 0.01,
@@ -261,9 +261,9 @@ const drawActionLog = () => {
   globals.layers.UI2.add(
     (globals.elements.fullActionLog as unknown) as Konva.Group,
   );
-};
+}
 
-const drawPlayStacks = () => {
+function drawPlayStacks() {
   // Local variables
   let yOffset;
 
@@ -430,9 +430,9 @@ const drawPlayStacks = () => {
     height: (playAreaValues.h! + overlap * 2) * winH,
     listening: false,
   });
-};
+}
 
-const drawDiscardStacks = () => {
+function drawDiscardStacks() {
   // Local variables
   let discardStackSpacing;
   if (globals.variant.suits.length === 6) {
@@ -456,9 +456,9 @@ const drawDiscardStacks = () => {
     globals.elements.discardStacks.set(suit, discardStack);
     globals.layers.card.add((discardStack as unknown) as Konva.Group);
   }
-};
+}
 
-const drawBottomLeftButtons = () => {
+function drawBottomLeftButtons() {
   bottomLeftButtonValues = {
     x: 0.01,
     y: 0.8,
@@ -580,9 +580,9 @@ const drawBottomLeftButtons = () => {
   lobbyButton.tooltipContent = "Return to the lobby.";
   tooltips.init(lobbyButton, true, false);
   globals.elements.lobbyButton = lobbyButton;
-};
+}
 
-const drawDeck = () => {
+function drawDeck() {
   deckValues = {
     x: bottomLeftButtonValues.x + bottomLeftButtonValues.w! + 0.01,
     y: bottomLeftButtonValues.y,
@@ -679,9 +679,9 @@ const drawDeck = () => {
     visible: false,
   });
   globals.layers.UI.add(globals.elements.deckPlayAvailableLabel);
-};
+}
 
-const drawScoreArea = () => {
+function drawScoreArea() {
   // The rectangle that holds the turn, score, and clue count
   scoreAreaValues = {
     x: 0.66,
@@ -1084,10 +1084,10 @@ const drawScoreArea = () => {
     tooltips.init(terminateButton, true, false);
     globals.elements.terminateButton = terminateButton;
   }
-};
+}
 
 // The "eyes" symbol to show that one or more people are spectating the game
-const drawSpectators = () => {
+function drawSpectators() {
   // Position it to the bottom-left of the score area
   spectatorsLabelValues = {
     x: scoreAreaValues.x - 0.037,
@@ -1143,10 +1143,10 @@ const drawSpectators = () => {
     listening: false,
   });
   globals.layers.UI.add(globals.elements.spectatorsNumLabel);
-};
+}
 
 // The "crown" symbol to show that we are in a shared replay
-const drawSharedReplay = () => {
+function drawSharedReplay() {
   const sharedReplayLeaderLabelValues = {
     x: spectatorsLabelValues.x,
     y: spectatorsLabelValues.y - 0.06,
@@ -1267,10 +1267,10 @@ const drawSharedReplay = () => {
       name: selectedSpectator,
     });
   });
-};
+}
 
 // A notification that shows it is your turn
-const drawYourTurn = () => {
+function drawYourTurn() {
   if (globals.lobby.settings.keldonMode) {
     return;
   }
@@ -1309,9 +1309,9 @@ const drawYourTurn = () => {
     listening: false,
   });
   globals.elements.yourTurn.add(text);
-};
+}
 
-const drawClueLog = () => {
+function drawClueLog() {
   clueLogValues = {
     x: 0.8,
     y: 0.01,
@@ -1339,10 +1339,10 @@ const drawClueLog = () => {
     listening: false,
   });
   globals.layers.UI.add((globals.elements.clueLog as unknown) as Konva.Group);
-};
+}
 
 // Statistics are shown on the right-hand side of the screen (at the bottom of the clue log)
-const drawStatistics = () => {
+function drawStatistics() {
   const statsRect = new Konva.Rect({
     x: clueLogValues.x * winW,
     y: 0.53 * winH,
@@ -1470,9 +1470,9 @@ const drawStatistics = () => {
     },
   );
   globals.elements.efficiencyNumberLabelMinNeeded = efficiencyNumberLabelMinNeeded;
-};
+}
 
-const drawDiscardArea = () => {
+function drawDiscardArea() {
   // The red border that surrounds the discard pile when the team is at 8 clues
   globals.elements.noDiscardBorder = new Konva.Rect({
     x: 0.8 * winW,
@@ -1534,17 +1534,17 @@ const drawDiscardArea = () => {
     height: 0.4 * winH,
     listening: false,
   });
-};
+}
 
-const drawArrows = () => {
+function drawArrows() {
   for (let i = 0; i < 6; i++) {
     const arrow = new Arrow(winW, winH, globals.lobby.settings.colorblindMode);
     globals.layers.arrow.add((arrow as unknown) as Konva.Group);
     globals.elements.arrows.push(arrow);
   }
-};
+}
 
-const drawTimers = () => {
+function drawTimers() {
   // Just in case, stop the previous timer, if any
   timer.stop();
 
@@ -1669,9 +1669,9 @@ const drawTimers = () => {
     // (the content will be updated in the "setTickingDownTimeCPTooltip()" function)
     tooltips.init(globals.elements.timer2, true, false);
   }
-};
+}
 
-const drawClueArea = () => {
+function drawClueArea() {
   // Put the clue area directly below the play stacks, with a little bit of spacing
   clueAreaValues = {
     x: playAreaValues.x,
@@ -1902,9 +1902,9 @@ const drawClueArea = () => {
   globals.elements.giveClueButton.on("click tap", clues.give);
 
   globals.layers.UI.add(globals.elements.clueArea);
-};
+}
 
-const drawClueAreaDisabled = () => {
+function drawClueAreaDisabled() {
   // We fade the clue area and draw a rectangle on top of it when there are no clues available
   globals.elements.clueAreaDisabled = new Konva.Group({
     x: clueAreaValues.x * winW,
@@ -1972,9 +1972,9 @@ const drawClueAreaDisabled = () => {
 
   globals.elements.clueAreaDisabled.hide();
   globals.layers.UI.add(globals.elements.clueAreaDisabled);
-};
+}
 
-const drawCurrentPlayerArea = () => {
+function drawCurrentPlayerArea() {
   // The "Current player: [player name]" box
   const currentPlayerAreaWidth = 0.3; // This is big enough to fit in between the two timers
   const currentPlayerAreaValues = {
@@ -1992,9 +1992,9 @@ const drawCurrentPlayerArea = () => {
   globals.layers.UI.add(
     (globals.elements.currentPlayerArea as unknown) as Konva.Group,
   );
-};
+}
 
-const drawPreplayArea = () => {
+function drawPreplayArea() {
   const w = 0.29;
   const h = 0.1;
   const x = clueAreaValues.x + clueAreaValues.w! / 2 - w / 2;
@@ -2016,9 +2016,9 @@ const drawPreplayArea = () => {
       premove: null,
     });
   });
-};
+}
 
-const drawHypotheticalArea = () => {
+function drawHypotheticalArea() {
   const hypoValues = {
     x: actionLogValues.x,
     y: clueAreaValues.y + 0.06,
@@ -2113,9 +2113,9 @@ const drawHypotheticalArea = () => {
   globals.layers.UI.add(
     (globals.elements.toggleRevealedButton as unknown) as Konva.Group,
   );
-};
+}
 
-const drawPauseArea = () => {
+function drawPauseArea() {
   const pauseAreaValues = {
     w: 0.5,
     h: 0.5,
@@ -2221,9 +2221,9 @@ const drawPauseArea = () => {
   );
   globals.elements.pauseArea.add((pauseLobbyButton as unknown) as Konva.Group);
   pauseLobbyButton.on("click tap", lobbyButtonClick);
-};
+}
 
-const drawExtraAnimations = () => {
+function drawExtraAnimations() {
   // These images are shown to the player to
   // indicate which direction we are moving in a shared replay
   const x = playAreaValues.x + playAreaValues.w! / 2 - 0.05;
@@ -2252,7 +2252,7 @@ const drawExtraAnimations = () => {
     listening: false,
   });
   globals.layers.UI2.add(globals.elements.sharedReplayBackward);
-};
+}
 
 // Subroutines
 function lobbyButtonClick(this: Button) {

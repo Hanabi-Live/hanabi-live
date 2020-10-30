@@ -11,7 +11,7 @@ const chatCommands = new Map<string, Callback>();
 export default chatCommands;
 
 // /friend [username]
-const friend = (_room: string, args: string[]) => {
+function friend(_room: string, args: string[]) {
   // Validate that the format of the command is correct
   if (args.length < 1) {
     modals.warningShow(
@@ -29,12 +29,12 @@ const friend = (_room: string, args: string[]) => {
   globals.conn!.send("chatFriend", {
     name,
   });
-};
+}
 chatCommands.set("friend", friend);
 chatCommands.set("addfriend", friend);
 
 // /friends
-const friends = (room: string) => {
+function friends(room: string) {
   let msg;
   if (globals.friends.length === 0) {
     msg = "Currently, you do not have any friends on your friends list.";
@@ -42,13 +42,13 @@ const friends = (room: string) => {
     msg = `Current friends: ${globals.friends.join(", ")}`;
   }
   chat.addSelf(msg, room);
-};
+}
 chatCommands.set("friends", friends);
 chatCommands.set("friendlist", friends);
 chatCommands.set("friendslist", friends);
 
 // /pm [username] [msg]
-const pm = (room: string, args: string[]) => {
+function pm(room: string, args: string[]) {
   // Validate that the format of the command is correct
   if (args.length < 2) {
     modals.warningShow(
@@ -88,7 +88,7 @@ const pm = (room: string, args: string[]) => {
     recipient,
     room,
   });
-};
+}
 chatCommands.set("pm", pm);
 chatCommands.set("w", pm);
 chatCommands.set("whisper", pm);
@@ -97,7 +97,7 @@ chatCommands.set("tell", pm);
 chatCommands.set("t", pm);
 
 // /setleader [username]
-const setLeader = (_room: string, args: string[]) => {
+function setLeader(_room: string, args: string[]) {
   if (globals.tableID === -1) {
     modals.warningShow(
       "You are not currently at a table, so you cannot use that command.",
@@ -110,7 +110,7 @@ const setLeader = (_room: string, args: string[]) => {
     tableID: globals.tableID,
     name: username,
   });
-};
+}
 chatCommands.set("setleader", setLeader);
 chatCommands.set("setlead", setLeader);
 chatCommands.set("setowner", setLeader);
@@ -119,7 +119,7 @@ chatCommands.set("changelead", setLeader);
 chatCommands.set("changeowner", setLeader);
 
 // /setvariant [variant]
-const setVariant = (_room: string, args: string[]) => {
+function setVariant(_room: string, args: string[]) {
   if (globals.tableID === -1) {
     modals.warningShow(
       "You are not currently at a table, so you cannot use that command.",
@@ -143,7 +143,7 @@ const setVariant = (_room: string, args: string[]) => {
 
   // Update our stored create table setting to be equal to this variant
   createGame.checkChanged("createTableVariant", variantName);
-};
+}
 chatCommands.set("setvariant", setVariant);
 chatCommands.set("changevariant", setVariant);
 
@@ -190,7 +190,7 @@ chatCommands.set("tagsearch", (room: string, args: string[]) => {
 });
 
 // /playerinfo (username)
-const playerinfo = (_room: string, args: string[]) => {
+function playerinfo(_room: string, args: string[]) {
   let usernames: string[] = [];
   if (args.length === 0) {
     // If there are no arguments and we are at a table
@@ -211,7 +211,7 @@ const playerinfo = (_room: string, args: string[]) => {
       name,
     });
   }
-};
+}
 chatCommands.set("playerinfo", playerinfo);
 chatCommands.set("games", playerinfo);
 chatCommands.set("stats", playerinfo);

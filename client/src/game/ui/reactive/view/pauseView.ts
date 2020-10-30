@@ -4,7 +4,7 @@ import PauseState from "../../../types/PauseState";
 import globals from "../../globals";
 import isOurTurn from "../../isOurTurn";
 
-export const onChanged = (pause: PauseState): void => {
+export function onChanged(pause: PauseState): void {
   const stageFadeOpacity = pause.active ? 0.8 : 0.3;
   globals.elements.stageFade?.opacity(stageFadeOpacity);
   globals.elements.stageFade?.visible(pause.active);
@@ -33,4 +33,4 @@ export const onChanged = (pause: PauseState): void => {
   globals.layers.UI.batchDraw();
   globals.layers.UI2.batchDraw();
   globals.layers.timer.batchDraw();
-};
+}

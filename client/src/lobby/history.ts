@@ -19,7 +19,7 @@ const tooltipOptions: JQueryTooltipster.ITooltipsterOptions = {
   theme: ["tooltipster-shadow", "tooltipster-shadow-big"],
 };
 
-export const init = (): void => {
+export function init(): void {
   $("#lobby-history-show-more").on("click", () => {
     globals.showMoreHistoryClicked = true;
     let command: string;
@@ -38,9 +38,9 @@ export const init = (): void => {
       amount: 10,
     });
   });
-};
+}
 
-export const show = (): void => {
+export function show(): void {
   globals.currentScreen = Screen.History;
 
   $("#lobby-history").show();
@@ -62,9 +62,9 @@ export const show = (): void => {
 
   // Draw the history table
   draw(false);
-};
+}
 
-export const hide = (): void => {
+export function hide(): void {
   globals.currentScreen = Screen.Lobby;
   tablesDraw();
   usersDraw.draw();
@@ -75,9 +75,9 @@ export const hide = (): void => {
   $("#lobby-separator").show();
   $("#lobby-bottom-half").show();
   nav.show("lobby");
-};
+}
 
-export const draw = (friends: boolean): void => {
+export function draw(friends: boolean): void {
   const tbody = $("#lobby-history-table-tbody");
 
   // Clear all of the existing rows
@@ -191,9 +191,9 @@ export const draw = (friends: boolean): void => {
   } else {
     $("#lobby-history-show-more").show();
   }
-};
+}
 
-const makeOtherScoresButton = (id: number, seed: string, gameCount: number) => {
+function makeOtherScoresButton(id: number, seed: string, gameCount: number) {
   const button = $("<button>")
     .attr("type", "button")
     .addClass("button fit margin0");
@@ -214,49 +214,46 @@ const makeOtherScoresButton = (id: number, seed: string, gameCount: number) => {
   }
 
   return button;
-};
+}
 
-export const showFriends = (): void => {
+export function showFriends(): void {
   globals.currentScreen = Screen.HistoryFriends;
   nav.show("history-friends");
   $("#lobby-history-table-players").html("Players");
   $("#lobby-history-show-all").hide();
   draw(true);
-};
+}
 
-export const hideFriends = (): void => {
+export function hideFriends(): void {
   globals.currentScreen = Screen.History;
   nav.show("history");
   $("#lobby-history-table-players").html("Other Players");
   $("#lobby-history-show-all").show();
   draw(false);
-};
+}
 
-export const showOtherScores = (): void => {
+export function showOtherScores(): void {
   globals.currentScreen = Screen.HistoryOtherScores;
   $("#lobby-history").hide();
   $("#lobby-history-other-scores").show();
   nav.show("history-other-scores");
-};
+}
 
-export const hideOtherScores = (): void => {
+export function hideOtherScores(): void {
   globals.currentScreen = Screen.History;
   $("#lobby-history").show();
   $("#lobby-history-other-scores").hide();
   nav.show("history");
-};
+}
 
-export const hideOtherScoresToFriends = (): void => {
+export function hideOtherScoresToFriends(): void {
   globals.currentScreen = Screen.HistoryFriends;
   $("#lobby-history").show();
   $("#lobby-history-other-scores").hide();
   nav.show("history-friends");
-};
+}
 
-export const drawOtherScores = (
-  games: GameHistory[],
-  friends: boolean,
-): void => {
+export function drawOtherScores(games: GameHistory[], friends: boolean): void {
   // Define the functionality of the "Return to History" button
   if (!friends) {
     $("#nav-buttons-history-other-scores-return").on("click", () => {
@@ -365,13 +362,13 @@ export const drawOtherScores = (
       tooltipOptions,
     );
   }
-};
+}
 
 // -----------
 // Subroutines
 // -----------
 
-const makeOptions = (i: number, options: Options, otherScores: boolean) => {
+function makeOptions(i: number, options: Options, otherScores: boolean) {
   // Start to build the tooltip content HTML, if any
   let tooltipHTML = "";
 
@@ -446,9 +443,9 @@ const makeOptions = (i: number, options: Options, otherScores: boolean) => {
   `;
 
   return html;
-};
+}
 
-const makeReplayButton = (id: number, visibility: string) => {
+function makeReplayButton(id: number, visibility: string) {
   const button = $("<button>")
     .attr("type", "button")
     .addClass("button fit margin0");
@@ -480,4 +477,4 @@ const makeReplayButton = (id: number, visibility: string) => {
   });
 
   return button;
-};
+}

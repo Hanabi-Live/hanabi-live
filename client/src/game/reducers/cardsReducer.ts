@@ -13,13 +13,13 @@ import GameState from "../types/GameState";
 import cardPossibilitiesReducer from "./cardPossibilitiesReducer";
 import initialCardState from "./initialStates/initialCardState";
 
-const cardsReducer = (
+export default function cardsReducer(
   deck: readonly CardState[],
   action: GameAction,
   game: GameState,
   playing: boolean,
   metadata: GameMetadata,
-): CardState[] => {
+): CardState[] {
   const variant = getVariant(metadata.options.variantName);
   const newDeck = Array.from(deck);
 
@@ -263,21 +263,19 @@ const cardsReducer = (
   }
 
   return newDeck;
-};
-
-export default cardsReducer;
+}
 
 // -------
 // Helpers
 // -------
 
-const removePossibilityOnHand = (
+function removePossibilityOnHand(
   deck: CardState[],
   hand: readonly number[],
   order: number,
   suitIndex: number,
   rank: number,
-) => {
+) {
   const cardsExceptCardBeingRemoved = hand
     .filter((o) => o !== order)
     .map((o) => deck[o]);
@@ -286,13 +284,9 @@ const removePossibilityOnHand = (
     const newCard = removePossibility(handCard, suitIndex, rank);
     deck[handCard.order] = newCard;
   }
-};
+}
 
-const removePossibility = (
-  state: CardState,
-  suitIndex: number,
-  rank: number,
-) => {
+function removePossibility(state: CardState, suitIndex: number, rank: number) {
   // Every card has a possibility map that maps card identities to count
   const possibleCardsFromObservation = Array.from(
     state.possibleCardsFromObservation,
@@ -311,17 +305,17 @@ const removePossibility = (
     ...state,
     possibleCardsFromObservation,
   };
-};
+}
 
-const getCard = (deck: readonly CardState[], order: number) => {
+function getCard(deck: readonly CardState[], order: number) {
   const card = deck[order];
   if (card === undefined) {
     throw new Error(`Failed to get the card for index ${order}.`);
   }
   return card;
-};
+}
 
-const revealCard = (
+function revealCard(
   suitIndex: number | null,
   rank: number | null,
   card: CardState,
@@ -329,7 +323,7 @@ const revealCard = (
   game: GameState,
   playing: boolean,
   metadata: GameMetadata,
-) => {
+) {
   // The action from the server did not specify the identity of the card, so we cannot reveal it
   // (e.g. we are playing a special variant where cards are not revealed when they are played)
   if (suitIndex === null || rank === null) {
@@ -350,14 +344,14 @@ const revealCard = (
   }
 
   return true;
-};
+}
 
-const handsSeeingCardForFirstTime = (
+function handsSeeingCardForFirstTime(
   game: GameState,
   card: CardState,
   playing: boolean,
   metadata: GameMetadata,
-) => {
+) {
   if (playing && metadata.ourPlayerIndex === card.location) {
     // All hands see this card now, from our perspective
     return game.hands;
@@ -366,4 +360,4 @@ const handsSeeingCardForFirstTime = (
   // We already knew about this card,
   // so the only person seeing it for the first time is the person that is holding the card
   return [game.hands[card.location as number]];
-};
+}

@@ -198,7 +198,7 @@ export default class Deck extends Konva.Group {
   }
 }
 
-const getTooltipContent = () => {
+function getTooltipContent() {
   // The tooltip will show what the deck is, followed by the current game options
   let content =
     '<span style="font-size: 0.75em;"><i class="fas fa-info-circle fa-sm"></i> ';
@@ -311,4 +311,4 @@ const getTooltipContent = () => {
   content += "</ul>";
 
   return content;
-};
+}

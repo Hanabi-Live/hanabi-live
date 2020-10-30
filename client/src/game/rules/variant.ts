@@ -26,7 +26,5 @@ export const isUpOrDown = (variant: Variant): boolean =>
 export const isNameUpOrDown = (variantName: string): boolean =>
   variantName.startsWith("Up or Down");
 
-export const hasReversedSuits = (variant: Variant): boolean => {
-  const { suits } = variant;
-  return isUpOrDown(variant) || suits.filter((s) => s.reversed).length > 0;
-};
+export const hasReversedSuits = (variant: Variant): boolean =>
+  isUpOrDown(variant) || variant.suits.filter((s) => s.reversed).length > 0;

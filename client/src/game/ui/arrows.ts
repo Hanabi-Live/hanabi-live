@@ -22,7 +22,7 @@ import globals from "./globals";
 import HanabiCard from "./HanabiCard";
 import * as konvaHelpers from "./konvaHelpers";
 
-export const hideAll = (): void => {
+export function hideAll(): void {
   let changed = false;
   for (const arrow of globals.elements.arrows) {
     if (arrow.pointingTo !== null) {
@@ -38,14 +38,14 @@ export const hideAll = (): void => {
   if (changed) {
     globals.layers.arrow.batchDraw();
   }
-};
+}
 
-export const set = (
+export function set(
   i: number,
   element: Konva.Node | null,
   giver: number | null,
   clue: Clue | null,
-): void => {
+): void {
   // Show the arrow
   const arrow = globals.elements.arrows[i];
   arrow.pointingTo = element;
@@ -195,9 +195,9 @@ export const set = (
   if (!globals.animateFast) {
     globals.layers.arrow.batchDraw();
   }
-};
+}
 
-const getPos = (element: Konva.Node, rot: number) => {
+function getPos(element: Konva.Node, rot: number) {
   // Start by using the absolute position of the element
   const pos = element.getAbsolutePosition();
 
@@ -234,16 +234,16 @@ const getPos = (element: Konva.Node, rot: number) => {
   }
 
   return pos;
-};
+}
 
 // Animate the arrow to fly from the player who gave the clue to the card
-const animate = (
+function animate(
   arrow: Arrow,
   card: HanabiCard,
   rot: number,
   giver: number,
   segment: number,
-) => {
+) {
   // We can't continue arrow animations if we are on the wrong segment
   // because arrows are reused and this causes glitches
   const visibleSegment = globals.state.visibleState!.turn.segment!;
@@ -294,13 +294,13 @@ const animate = (
     // eslint-disable-next-line @typescript-eslint/unbound-method
     easing: Konva.Easings.EaseOut,
   });
-};
+}
 
-export const click = (
+export function click(
   event: KonvaEventObject<MouseEvent>,
   order: ReplayArrowOrder,
   element: NodeWithTooltip | null,
-): void => {
+): void {
   // "event.evt.buttons" is always 0 here
   if (event.evt.button !== 2) {
     // Right-click
@@ -320,12 +320,12 @@ export const click = (
     // misleading as to who the real replay leader is
     toggle(element);
   }
-};
+}
 
-export const send = (
+export function send(
   order: ReplayArrowOrder,
   element: NodeWithTooltip | null,
-): void => {
+): void {
   globals.lobby.conn!.send("replayAction", {
     tableID: globals.lobby.tableID,
     type: ReplayActionType.Arrow,
@@ -334,10 +334,10 @@ export const send = (
 
   // Draw the arrow manually so that we don't have to wait for the client to server round-trip
   toggle(element);
-};
+}
 
 // This toggles the "highlight" arrow on a particular element
-export const toggle = (element: NodeWithTooltip | null): void => {
+export function toggle(element: NodeWithTooltip | null): void {
   // If we are showing an arrow on a card that is currently tweening,
   // delay showing it until the tween is finished
   if (element instanceof HanabiCard && element.tweening) {
@@ -362,4 +362,4 @@ export const toggle = (element: NodeWithTooltip | null): void => {
       tooltip.tooltipster("close");
     }
   }
-};
+}

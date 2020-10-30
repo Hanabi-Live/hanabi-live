@@ -8,12 +8,12 @@ import ClueType from "../types/ClueType";
 import GameMetadata from "../types/GameMetadata";
 import Variant from "../types/Variant";
 
-const cardPossibilitiesReducer = (
+export default function cardPossibilitiesReducer(
   state: CardState,
   clue: Clue,
   positive: boolean,
   metadata: GameMetadata,
-): CardState => {
+): CardState {
   if (state.possibleCardsFromClues.length === 1) {
     // We already know all details about this card, no need to calculate
     return state;
@@ -62,15 +62,13 @@ const cardPossibilitiesReducer = (
   };
 
   return newState;
-};
-
-export default cardPossibilitiesReducer;
+}
 
 // Based on the current possibilities, updates the known identity of this card
-const updateIdentity = (
+function updateIdentity(
   state: CardState,
   possibleCardsFromClues: ReadonlyArray<readonly [number, number]>,
-) => {
+) {
   let { suitIndex, rank } = state;
 
   const possibleSuits = new Set(possibleCardsFromClues.map((x) => x[0]));
@@ -92,4 +90,4 @@ const updateIdentity = (
     suitDetermined: possibleSuits.size === 1,
     rankDetermined: possibleRanks.size === 1,
   };
-};
+}

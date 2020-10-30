@@ -9,7 +9,7 @@ import * as history from "./history";
 import * as pregame from "./pregame";
 import * as watchReplay from "./watchReplay";
 
-export const init = (): void => {
+export function init(): void {
   // Remove the recursive link to prevent confusion
   $("#logo-link").removeAttr("href");
 
@@ -159,9 +159,9 @@ export const init = (): void => {
 
   // The "Return to History" button (from the "History Details" screen)
   // (initialized in the "history.drawOtherScores()" function)
-};
+}
 
-const initTooltips = () => {
+function initTooltips() {
   const tooltips = [
     "lobby-create-game",
     "lobby-replay",
@@ -222,9 +222,9 @@ const initTooltips = () => {
       modals.closeAll();
     }
   });
-};
+}
 
-export const show = (target: string): void => {
+export function show(target: string): void {
   const navTypes = [
     "lobby",
     "pregame",
@@ -238,4 +238,4 @@ export const show = (target: string): void => {
   if (target !== "nothing") {
     $(`#nav-buttons-${target}`).show();
   }
-};
+}

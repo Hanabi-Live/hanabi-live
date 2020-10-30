@@ -4,7 +4,7 @@ import globals from "../globals";
 import { isKeyOf, parseIntSafe } from "../misc";
 import * as notifications from "../notifications";
 
-export const init = (): void => {
+export function init(): void {
   $("#settings-volume-slider").change(function settingsVolumeSliderChange(
     this: HTMLElement,
   ) {
@@ -45,9 +45,9 @@ export const init = (): void => {
       console.error("Failed to play the test sound:", err);
     });
   });
-};
+}
 
-export const setSettingsTooltip = (): void => {
+export function setSettingsTooltip(): void {
   // The server has delivered to us a list of all of our settings
   // Check the checkboxes for the settings that we have enabled (and adjust the volume slider)
   for (const [setting, value] of Object.entries(globals.settings)) {
@@ -72,7 +72,7 @@ export const setSettingsTooltip = (): void => {
       element.change(changeSetting);
     }
   }
-};
+}
 
 function changeSetting(this: HTMLElement) {
   const element = $(this);

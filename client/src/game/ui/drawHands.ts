@@ -444,13 +444,13 @@ export default function drawHands(winW: number, winH: number): void {
 }
 
 // Draw the "Detrimental Character Assignments" icon and tooltip
-const drawDetrimentalCharacters = (
+function drawDetrimentalCharacters(
   winW: number,
   winH: number,
   numPlayers: number,
   i: number,
   j: number,
-) => {
+) {
   let playerNamePos = namePos;
   if (!globals.lobby.settings.keldonMode) {
     playerNamePos = namePosBGA;
@@ -522,9 +522,9 @@ const drawDetrimentalCharacters = (
   }
   charIcon.tooltipContent = tooltipContent;
   tooltips.init(charIcon, false, true);
-};
+}
 
-const isHandReversed = (j: number) => {
+function isHandReversed(j: number) {
   // By default, the hand is not reversed
   let reverse = false;
 
@@ -544,4 +544,4 @@ const isHandReversed = (j: number) => {
   }
 
   return reverse;
-};
+}

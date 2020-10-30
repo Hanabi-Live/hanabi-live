@@ -21,10 +21,10 @@ const stackStringsUpOrDown = new Map<StackDirection, string>([
   [StackDirection.Finished, "Finished"],
 ]);
 
-export const onPlayStackDirectionsChanged = (
+export function onPlayStackDirectionsChanged(
   directions: readonly StackDirection[],
   previousDirections: readonly StackDirection[] | undefined,
-): void => {
+): void {
   if (!variantRules.hasReversedSuits(globals.variant)) {
     return;
   }
@@ -62,11 +62,9 @@ export const onPlayStackDirectionsChanged = (
   });
 
   globals.layers.UI.batchDraw();
-};
+}
 
-export const onHandsChanged = (
-  hands: ReadonlyArray<readonly number[]>,
-): void => {
+export function onHandsChanged(hands: ReadonlyArray<readonly number[]>): void {
   syncChildren(
     hands,
     (i) => (globals.elements.playerHands[i] as unknown) as Konva.Container,
@@ -74,11 +72,11 @@ export const onHandsChanged = (
   );
 
   globals.layers.card.batchDraw();
-};
+}
 
-export const onDiscardStacksChanged = (
+export function onDiscardStacksChanged(
   discardStacks: ReadonlyArray<readonly number[]>,
-): void => {
+): void {
   syncChildren(
     discardStacks,
     (i) => {
@@ -96,12 +94,12 @@ export const onDiscardStacksChanged = (
   );
 
   globals.layers.card.batchDraw();
-};
+}
 
-export const onPlayStacksChanged = (
+export function onPlayStacksChanged(
   playStacks: ReadonlyArray<readonly number[]>,
   previousPlayStacks: ReadonlyArray<readonly number[]> | undefined,
-): void => {
+): void {
   syncChildren(
     playStacks,
     (i) => {
@@ -125,12 +123,12 @@ export const onPlayStacksChanged = (
   });
 
   globals.layers.card.batchDraw();
-};
+}
 
-export const onHoleChanged = (
+export function onHoleChanged(
   hole: readonly number[],
   previousHole: readonly number[] | undefined,
-): void => {
+): void {
   if (previousHole === undefined) {
     return;
   }
@@ -142,13 +140,13 @@ export const onHoleChanged = (
   );
 
   globals.layers.card.batchDraw();
-};
+}
 
-const syncChildren = (
+function syncChildren(
   collections: ReadonlyArray<readonly number[]>,
   getCollectionUI: (i: number) => Konva.Container,
   addToCollectionUI: (card: HanabiCard, i: number) => void,
-) => {
+) {
   const getCard = (order: number) => globals.deck[order];
 
   collections.forEach((collection, i) => {
@@ -206,4 +204,4 @@ const syncChildren = (
       throw new Error("The UI collection is out of sync with the state.");
     }
   });
-};
+}

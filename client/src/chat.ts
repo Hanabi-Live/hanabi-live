@@ -25,7 +25,7 @@ let tabCompleteWordListIndex: number | null = null;
 let tabCompleteWordList: string[] = [];
 let tabCompleteOriginalText = "";
 
-export const init = (): void => {
+export function init(): void {
   $("#lobby-chat-input").on("input", input);
   $("#lobby-chat-input").on("keypress", keypress("lobby"));
   $("#lobby-chat-input").on("keydown", keydown);
@@ -76,9 +76,9 @@ export const init = (): void => {
       typedChatHistory = potentialArray as string[];
     }
   }
-};
+}
 
-const input = function input(this: HTMLElement, event: JQuery.Event) {
+function input(this: HTMLElement, event: JQuery.Event) {
   const element = $(this);
   if (element === undefined) {
     throw new Error("Failed to get the element for the input function.");
@@ -130,7 +130,7 @@ const input = function input(this: HTMLElement, event: JQuery.Event) {
       }
     }
   }
-};
+}
 
 const keypress = (room: string) =>
   function keypressFunction(this: HTMLElement, event: JQuery.Event) {
@@ -148,7 +148,7 @@ const keypress = (room: string) =>
     }
   };
 
-const send = (room: string, element: JQuery<HTMLElement>) => {
+function send(room: string, element: JQuery<HTMLElement>) {
   let msg = element.val();
   if (isEmpty(msg)) {
     return;
@@ -227,9 +227,9 @@ const send = (room: string, element: JQuery<HTMLElement>) => {
     msg,
     room: roomID,
   });
-};
+}
 
-const keydown = function keydown(this: HTMLElement, event: JQuery.Event) {
+function keydown(this: HTMLElement, event: JQuery.Event) {
   const element = $(this);
   if (element === undefined) {
     throw new Error("Failed to get the element for the keydown function.");
@@ -246,9 +246,9 @@ const keydown = function keydown(this: HTMLElement, event: JQuery.Event) {
     event.preventDefault();
     tab(element, event);
   }
-};
+}
 
-export const arrowUp = (element: JQuery<HTMLElement>): void => {
+export function arrowUp(element: JQuery<HTMLElement>): void {
   if (typedChatHistoryIndex === null) {
     typedChatHistoryIndex = 0;
   } else {
@@ -265,9 +265,9 @@ export const arrowUp = (element: JQuery<HTMLElement>): void => {
   // Set the chat input box to what we last typed
   const retrievedHistory = typedChatHistory[typedChatHistoryIndex];
   element.val(retrievedHistory);
-};
+}
 
-export const arrowDown = (element: JQuery<HTMLElement>): void => {
+export function arrowDown(element: JQuery<HTMLElement>): void {
   if (typedChatHistoryIndex !== null) {
     typedChatHistoryIndex -= 1;
     if (typedChatHistoryIndex < 0) {
@@ -282,12 +282,9 @@ export const arrowDown = (element: JQuery<HTMLElement>): void => {
   // Set the chat input box to what we last typed
   const retrievedHistory = typedChatHistory[typedChatHistoryIndex];
   element.val(retrievedHistory);
-};
+}
 
-export const tab = (
-  element: JQuery<HTMLElement>,
-  event: JQuery.Event,
-): void => {
+export function tab(element: JQuery<HTMLElement>, event: JQuery.Event): void {
   // Parse the final word from what we have typed so far
   let message = element.val();
   if (typeof message !== "string") {
@@ -327,10 +324,10 @@ export const tab = (
   const autoCompleteWord = tabCompleteWordList[tabCompleteWordListIndex];
   messageWords[messageWords.length - 1] = autoCompleteWord;
   element.val(messageWords.join(" "));
-};
+}
 
 // This is the first time we are pressing tab on this particular sequence of text
-const tabInitAutoCompleteList = (event: JQuery.Event, finalWord: string) => {
+function tabInitAutoCompleteList(event: JQuery.Event, finalWord: string) {
   // Save our current partially-completed word in case we need to cycle back to it later
   tabCompleteOriginalText = finalWord;
 
@@ -372,9 +369,9 @@ const tabInitAutoCompleteList = (event: JQuery.Event, finalWord: string) => {
     // Tab goes forwards
     tabCompleteWordListIndex = 0;
   }
-};
+}
 
-const fixCustomEmotePriority = (usersAndEmotesList: string[]) => {
+function fixCustomEmotePriority(usersAndEmotesList: string[]) {
   // Prioritize the more commonly used NotLikeThis over NootLikeThis
   const notLikeThisIndex = usersAndEmotesList.indexOf("NotLikeThis");
   const nootLikeThisIndex = usersAndEmotesList.indexOf("NootLikeThis");
@@ -411,9 +408,9 @@ const fixCustomEmotePriority = (usersAndEmotesList: string[]) => {
     usersAndEmotesList[i + 1] = tempEmote1;
     tempEmote1 = tempEmote2;
   }
-};
+}
 
-export const add = (data: ChatMessage, fast: boolean): void => {
+export function add(data: ChatMessage, fast: boolean): void {
   // Find out which chat box we should add the new chat message to
   let chat: JQuery<HTMLElement> | undefined;
   if (data.room === "lobby") {
@@ -549,10 +546,10 @@ export const add = (data: ChatMessage, fast: boolean): void => {
       globals.ui.suggestTurn(data.who, segment);
     }
   }
-};
+}
 
-// addSelf is used when the client needs to send chat messages to itself
-export const addSelf = (msg: string, room: string): void => {
+// addSelf is used when the client needs to send a chat message to itself
+export function addSelf(msg: string, room: string): void {
   add(
     {
       msg,
@@ -565,11 +562,11 @@ export const addSelf = (msg: string, room: string): void => {
     },
     false,
   );
-};
+}
 
 // Discord emotes are in the form of:
 // <:PogChamp:254683883033853954>
-const fillDiscordEmotes = (message: string) => {
+function fillDiscordEmotes(message: string) {
   let filledMessed = message;
   while (true) {
     const match = /&lt;:(.+?):(\d+?)&gt;/.exec(filledMessed);
@@ -580,9 +577,9 @@ const fillDiscordEmotes = (message: string) => {
     filledMessed = filledMessed.replace(match[0], emoteTag);
   }
   return filledMessed;
-};
+}
 
-const fillEmojis = (message: string) => {
+function fillEmojis(message: string) {
   let filledMessage = message;
 
   // Search through the text for each emoji
@@ -595,9 +592,9 @@ const fillEmojis = (message: string) => {
   }
 
   return filledMessage;
-};
+}
 
-const fillTwitchEmotes = (message: string) => {
+function fillTwitchEmotes(message: string) {
   let filledMessage = message;
 
   // Search through the text for each emote
@@ -632,9 +629,9 @@ const fillTwitchEmotes = (message: string) => {
   }
 
   return filledMessage;
-};
+}
 
-export const updatePeopleTyping = (): void => {
+export function updatePeopleTyping(): void {
   const chat1 = $("#lobby-chat-pregame-istyping");
   const chat2 = $("#game-chat-istyping");
 
@@ -659,4 +656,4 @@ export const updatePeopleTyping = (): void => {
   }
   chat1.html(msg);
   chat2.html(msg);
-};
+}

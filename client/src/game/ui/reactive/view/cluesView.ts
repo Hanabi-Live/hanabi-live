@@ -9,15 +9,15 @@ import ClueEntry from "../../ClueEntry";
 import getCardOrStackBase from "../../getCardOrStackBase";
 import globals from "../../globals";
 
-export const onCluesChanged = (data: {
+export function onCluesChanged(data: {
   clues: readonly StateClue[];
   segment: number | null;
-}): void => {
+}): void {
   updateArrows(data.clues, data.segment);
   updateLog(data.clues);
-};
+}
 
-const updateArrows = (clues: readonly StateClue[], segment: number | null) => {
+function updateArrows(clues: readonly StateClue[], segment: number | null) {
   arrows.hideAll();
 
   if (segment === null) {
@@ -43,9 +43,9 @@ const updateArrows = (clues: readonly StateClue[], segment: number | null) => {
   });
 
   globals.layers.arrow.batchDraw();
-};
+}
 
-const updateLog = (clues: readonly StateClue[]) => {
+function updateLog(clues: readonly StateClue[]) {
   const { clueLog } = globals.elements;
   if (clueLog === null) {
     return;
@@ -83,4 +83,4 @@ const updateLog = (clues: readonly StateClue[]) => {
   clueLog.refresh();
 
   globals.layers.UI.batchDraw();
-};
+}

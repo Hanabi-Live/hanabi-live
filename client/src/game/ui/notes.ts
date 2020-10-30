@@ -15,7 +15,7 @@ import HanabiCard from "./HanabiCard";
 import { extractRankText, extractSuitText } from "./noteIdentityPattern";
 
 // Get the contents of the note tooltip
-const get = (order: number, our: boolean) => {
+function get(order: number, our: boolean) {
   // If the calling function specifically wants our note or we are a player in an ongoing game,
   // return our note
   if (our || globals.state.playing) {
@@ -34,13 +34,13 @@ const get = (order: number, our: boolean) => {
     content = content.substr(0, content.length - 6); // Trim the trailing "<br />"
   }
   return content;
-};
+}
 
 // A note has been updated, so:
 // 1) update the stored note in memory
 // 2) send the new note to the server
 // 3) check for new note identities
-export const set = (order: number, note: string): void => {
+export function set(order: number, note: string): void {
   const oldNote = globals.ourNotes.get(order) ?? "";
   globals.ourNotes.set(order, note);
   globals.lastNote = note;
@@ -70,9 +70,9 @@ export const set = (order: number, note: string): void => {
 
   const card = getCardOrStackBase(order);
   card.checkSpecialNote();
-};
+}
 
-const getNoteKeywords = (note: string) => {
+function getNoteKeywords(note: string) {
   // Match either:
   // - zero or more characters between square brackets `[]`
   //   - \[(.*?)\]
@@ -96,12 +96,12 @@ const getNoteKeywords = (note: string) => {
   }
 
   return keywords;
-};
+}
 
 const checkNoteKeywordsForMatch = (patterns: string[], keywords: string[]) =>
   keywords.some((k) => patterns.some((pattern) => k === pattern));
 
-export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
+export function checkNoteIdentity(variant: Variant, note: string): CardNote {
   // Make all letters lowercase to simply the matching logic below
   // and remove all leading and trailing whitespace
   const fullNote = note.toLowerCase().trim();
@@ -148,9 +148,9 @@ export const checkNoteIdentity = (variant: Variant, note: string): CardNote => {
     blank,
     unclued,
   };
-};
+}
 
-const parseSuit = (variant: Variant, suitText: string): number | null => {
+function parseSuit(variant: Variant, suitText: string): number | null {
   const suitAbbreviationIndex = variant.abbreviations.findIndex(
     (abbreviation) => abbreviation.toLowerCase() === suitText,
   );
@@ -165,20 +165,20 @@ const parseSuit = (variant: Variant, suitText: string): number | null => {
     return suitNameIndex;
   }
   return null;
-};
+}
 
-const parseRank = (rankText: string): number => {
+function parseRank(rankText: string): number {
   const rank = parseIntSafe(rankText);
   if (rank === 0 || Number.isNaN(rank)) {
     return START_CARD_RANK;
   }
   return rank;
-};
+}
 
-export const getIdentityFromKeyword = (
+export function getIdentityFromKeyword(
   variant: Variant,
   keyword: string,
-): CardIdentity => {
+): CardIdentity {
   const identityMatch = new RegExp(variant.identityNotePattern).exec(keyword);
   let suitIndex = null;
   let rank = null;
@@ -194,12 +194,12 @@ export const getIdentityFromKeyword = (
   }
 
   return { suitIndex, rank };
-};
+}
 
-export const getIdentityFromKeywords = (
+export function getIdentityFromKeywords(
   variant: Variant,
   keywords: string[],
-): CardIdentity => {
+): CardIdentity {
   let suitIndex = null;
   let rank = null;
 
@@ -234,13 +234,13 @@ export const getIdentityFromKeywords = (
   }
 
   return { suitIndex, rank };
-};
+}
 
-export const checkNoteImpossibility = (
+export function checkNoteImpossibility(
   variant: Variant,
   cardState: CardState,
   note: CardNote,
-): void => {
+): void {
   // Prevent players from accidentally mixing up which stack base is which
   if (
     cardState.rank === STACK_BASE_RANK &&
@@ -300,9 +300,9 @@ export const checkNoteImpossibility = (
     note.suitIndex = null;
     note.rank = null;
   }
-};
+}
 
-export const update = (card: HanabiCard): void => {
+export function update(card: HanabiCard): void {
   // Update the tooltip
   const tooltip = $(`#tooltip-${card.tooltipName}`);
   const tooltipInstance = tooltip.tooltipster("instance");
@@ -320,10 +320,10 @@ export const update = (card: HanabiCard): void => {
     card.noteIndicator.visible(visibleNew);
     globals.layers.card.batchDraw();
   }
-};
+}
 
 // Open the tooltip for this card
-export const show = (card: HanabiCard): void => {
+export function show(card: HanabiCard): void {
   const tooltip = $(`#tooltip-${card.tooltipName}`);
   const tooltipInstance = tooltip.tooltipster("instance");
 
@@ -349,9 +349,9 @@ export const show = (card: HanabiCard): void => {
   tooltipInstance.content(note);
 
   tooltip.tooltipster("open");
-};
+}
 
-export const openEditTooltip = (card: HanabiCard): void => {
+export function openEditTooltip(card: HanabiCard): void {
   // Don't edit any notes in dedicated replays
   if (globals.state.finished) {
     return;
@@ -434,10 +434,10 @@ export const openEditTooltip = (card: HanabiCard): void => {
   setTimeout(() => {
     $(`#tooltip-${card.tooltipName}-input`).focus();
   }, 1);
-};
+}
 
 // We just got a list of a bunch of notes, so show the note indicator for currently-visible cards
-export const setAllCardIndicators = (): void => {
+export function setAllCardIndicators(): void {
   // We iterate through the whole deck instead of using the index of the last drawn card to avoid
   // race conditions where we can get the "noteList" before the "actionList" is finished processing
   for (const card of globals.deck) {
@@ -446,9 +446,9 @@ export const setAllCardIndicators = (): void => {
   for (const stackBase of globals.stackBases) {
     stackBase.setNoteIndicator();
   }
-};
+}
 
-const stripHTMLTags = (input: string) => {
+function stripHTMLTags(input: string) {
   const doc = new DOMParser().parseFromString(input, "text/html");
   return doc.body.textContent ?? "";
-};
+}

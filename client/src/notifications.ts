@@ -2,7 +2,7 @@
 
 import * as modals from "./modals";
 
-export const test = (): void => {
+export function test(): void {
   // From: https://stackoverflow.com/questions/38422340/check-if-browser-notification-is-available
   if (!("Notification" in window)) {
     return;
@@ -29,9 +29,9 @@ export const test = (): void => {
         `Something went wrong when checking for desktop notification permission. ${notificationAdvice}`,
       );
     });
-};
+}
 
-export const send = (msg: string, tag: string | undefined): void => {
+export function send(msg: string, tag: string | undefined): void {
   // From: https://stackoverflow.com/questions/38422340/check-if-browser-notification-is-available
   if (!("Notification" in window)) {
     return;
@@ -45,4 +45,4 @@ export const send = (msg: string, tag: string | undefined): void => {
   new Notification(`Hanab Live: ${msg}`, {
     tag,
   });
-};
+}

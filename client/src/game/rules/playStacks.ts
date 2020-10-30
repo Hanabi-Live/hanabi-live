@@ -9,23 +9,23 @@ import {
 import StackDirection from "../types/StackDirection";
 import Variant from "../types/Variant";
 
-export const lastPlayedRank = (
+export function lastPlayedRank(
   playStack: readonly number[],
   deck: readonly CardState[],
-): number => {
+): number {
   if (playStack.length === 0) {
     return STACK_BASE_RANK;
   }
 
   const orderOfTopCard = playStack[playStack.length - 1];
   return deck[orderOfTopCard].rank ?? UNKNOWN_CARD_RANK;
-};
+}
 
-export const nextRanks = (
+export function nextRanks(
   playStack: readonly number[],
   playStackDirection: StackDirection,
   deck: readonly CardState[],
-): number[] => {
+): number[] {
   const currentlyPlayedRank = lastPlayedRank(playStack, deck);
   if (currentlyPlayedRank === UNKNOWN_CARD_RANK) {
     return [];
@@ -63,14 +63,14 @@ export const nextRanks = (
   }
 
   return [];
-};
+}
 
-export const direction = (
+export function direction(
   suitIndex: number,
   playStack: readonly number[],
   deck: readonly CardState[],
   variant: Variant,
-): StackDirection => {
+): StackDirection {
   if (playStack.length === 5) {
     return StackDirection.Finished;
   }
@@ -107,4 +107,4 @@ export const direction = (
   // The only remaining case is if the top is 3, in which case there will always be 3 cards
   const secondCard = deck[playStack[playStack.length - 2]].rank;
   return secondCard === 4 ? StackDirection.Down : StackDirection.Up;
-};
+}

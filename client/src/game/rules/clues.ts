@@ -10,12 +10,12 @@ import MsgClue from "../types/MsgClue";
 import Variant from "../types/Variant";
 import * as variantRules from "./variant";
 
-export const getClueName = (
+export function getClueName(
   clueType: ClueType,
   clueValue: number,
   variant: Variant,
   characterID: number | null,
-): string => {
+): string {
   let characterName = "";
   if (characterID !== null) {
     const character = getCharacter(characterID);
@@ -40,12 +40,12 @@ export const getClueName = (
     clueName = "Quack";
   }
   return clueName;
-};
+}
 
 // Convert a clue from the format used by the server to the format used by the client
 // On the client, the color is a rich object
 // On the server, the color is a simple integer mapping
-export const msgClueToClue = (msgClue: MsgClue, variant: Variant): Clue => {
+export function msgClueToClue(msgClue: MsgClue, variant: Variant): Clue {
   let clueValue;
   if (msgClue.type === ClueType.Color) {
     clueValue = variant.clueColors[msgClue.value]; // This is a Color object
@@ -56,15 +56,15 @@ export const msgClueToClue = (msgClue: MsgClue, variant: Variant): Clue => {
     return rankClue(clueValue);
   }
   throw new Error('Unknown clue type given to the "msgClueToClue()" function.');
-};
+}
 
 // This mirrors the function "variantIsCardTouched()" in "variants.go"
-export const touchesCard = (
+export function touchesCard(
   variant: Variant,
   clue: Clue,
   suitIndex: number,
   rank: number,
-): boolean => {
+): boolean {
   const suit = variant.suits[suitIndex];
 
   if (clue.type === ClueType.Color) {
@@ -127,13 +127,13 @@ export const touchesCard = (
   }
 
   return false;
-};
+}
 
-export const shouldApplyClue = (
+export function shouldApplyClue(
   giverIndex: number,
   metadata: GameMetadata,
   variant: Variant,
-): boolean => {
+): boolean {
   const giverCharacterID = getCharacterIDForPlayer(
     giverIndex,
     metadata.characterAssignments,
@@ -149,4 +149,4 @@ export const shouldApplyClue = (
     !variantRules.isDuck(variant) &&
     giverCharacterName !== "Quacker"
   );
-};
+}

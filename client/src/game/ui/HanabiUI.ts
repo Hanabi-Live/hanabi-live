@@ -86,7 +86,7 @@ export default class HanabiUI {
 }
 
 // Initialize and size the stage depending on the window size
-const initStageSize = () => {
+function initStageSize() {
   const ratio = 16 / 9;
 
   let ww = window.innerWidth;
@@ -121,4 +121,4 @@ const initStageSize = () => {
   }
   globals.stage.width(cw);
   globals.stage.height(ch);
-};
+}

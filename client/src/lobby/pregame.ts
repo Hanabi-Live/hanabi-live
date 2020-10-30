@@ -10,7 +10,7 @@ import tablesDraw from "./tablesDraw";
 import Screen from "./types/Screen";
 import * as usersDraw from "./usersDraw";
 
-export const show = (): void => {
+export function show(): void {
   globals.currentScreen = Screen.PreGame;
   usersDraw.draw();
 
@@ -52,9 +52,9 @@ export const show = (): void => {
   // Adjust the top navigation bar
   nav.show("pregame");
   enableStartGameButton();
-};
+}
 
-export const hide = (): void => {
+export function hide(): void {
   globals.currentScreen = Screen.Lobby;
   tablesDraw();
   usersDraw.draw();
@@ -74,9 +74,9 @@ export const hide = (): void => {
 
   // Adjust the navigation bar
   nav.show("lobby");
-};
+}
 
-export const draw = (): void => {
+export function draw(): void {
   if (globals.game === null) {
     throw new Error(
       'Attempted to draw the pre-game screen without having first received a "game" message from the server.',
@@ -95,9 +95,9 @@ export const draw = (): void => {
   }
 
   enableStartGameButton();
-};
+}
 
-const drawOptions = () => {
+function drawOptions() {
   if (globals.game === null) {
     return;
   }
@@ -279,9 +279,9 @@ const drawOptions = () => {
   if (globals.game.options.detrimentalCharacters) {
     $("#lobby-pregame-options-characters").tooltipster(tooltips.options);
   }
-};
+}
 
-const drawPlayerBox = (i: number) => {
+function drawPlayerBox(i: number) {
   if (globals.game === null) {
     return;
   }
@@ -436,9 +436,9 @@ const drawPlayerBox = (i: number) => {
 
   // Initialize the tooltip
   $(`#lobby-pregame-player-${i + 1}-scores-icon`).tooltipster(tooltips.options);
-};
+}
 
-export const enableStartGameButton = (): void => {
+export function enableStartGameButton(): void {
   // Enable or disable the "Start Game" and "Change Variant" button.
   // "Start Game" enabled if game owner and enough players
   // "Change Variant" enabled if game owner
@@ -461,4 +461,4 @@ export const enableStartGameButton = (): void => {
   } else {
     $("#nav-buttons-pregame-change-variant").removeClass("disabled");
   }
-};
+}

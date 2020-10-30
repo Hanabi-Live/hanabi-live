@@ -5,11 +5,11 @@ import NodeWithTooltip from "./controls/NodeWithTooltip";
 import TextWithTooltip from "./controls/TextWithTooltip";
 import globals from "./globals";
 
-export const init = (
+export function init(
   element: NodeWithTooltip,
   delayed: boolean,
   customContent: boolean,
-): void => {
+): void {
   if (element.tooltipName === undefined) {
     throw new Error(
       'An element that is supposed to have a tooltip does not have a "tooltipName" property.',
@@ -48,9 +48,9 @@ export const init = (
     content += ` &nbsp;${element.tooltipContent}</span>`;
   }
   $(`#tooltip-${element.tooltipName}`).tooltipster("instance").content(content);
-};
+}
 
-export const show = (element: NodeWithTooltip): void => {
+export function show(element: NodeWithTooltip): void {
   // Don't do anything if we are no longer in the game
   if (globals.lobby.currentScreen !== Screen.Game) {
     return;
@@ -84,10 +84,10 @@ export const show = (element: NodeWithTooltip): void => {
   tooltip.css("left", tooltipX);
   tooltip.css("top", pos.y);
   tooltip.tooltipster("open");
-};
+}
 
-export const resetActiveHover = (): void => {
+export function resetActiveHover(): void {
   if (globals.activeHover !== null) {
     globals.activeHover.dispatchEvent(new MouseEvent("mouseout"));
   }
-};
+}

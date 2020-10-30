@@ -5,7 +5,7 @@ import globals from "./globals";
 // Variables
 let soundEffect: HTMLAudioElement | null = null;
 
-export const init = (): void => {
+export function init(): void {
   // Preload some sounds
   // Ideally, we would check to see if the user has the "soundMove" setting enabled
   // (or "volume" set above 0) before attempting to preload sounds
@@ -24,9 +24,9 @@ export const init = (): void => {
     const audio = new Audio(`/public/sounds/${file}.mp3`);
     audio.load();
   }
-};
+}
 
-export const play = (file: string, mute = false): void => {
+export function play(file: string, mute = false): void {
   if (mute && soundEffect !== null) {
     soundEffect.muted = true;
   }
@@ -47,4 +47,4 @@ export const play = (file: string, mute = false): void => {
     // since it is most likely due to the user not having interacted with the page yet
     // https://stackoverflow.com/questions/52807874/how-to-make-audio-play-on-body-onload
   });
-};
+}

@@ -1,7 +1,7 @@
 // A collection of miscellaneous functions
 
 // From: https://stackoverflow.com/questions/27709489/jquery-tooltipster-plugin-hide-all-tips
-export const closeAllTooltips = (): void => {
+export function closeAllTooltips(): void {
   const instances = $.tooltipster.instances();
   $.each(
     instances,
@@ -11,10 +11,10 @@ export const closeAllTooltips = (): void => {
       }
     },
   );
-};
+}
 
 // From: https://techoverflow.net/2018/03/30/copying-strings-to-the-clipboard-using-pure-javascript/
-export const copyStringToClipboard = (str: string): void => {
+export function copyStringToClipboard(str: string): void {
   const el = document.createElement("textarea"); // Create new element
   el.value = str; // Set the value (the string to be copied)
   el.setAttribute("readonly", ""); // Set non-editable to avoid focus
@@ -22,7 +22,7 @@ export const copyStringToClipboard = (str: string): void => {
   el.select(); // Select text inside element
   document.execCommand("copy"); // Copy text to clipboard
   document.body.removeChild(el); // Remove temporary element
-};
+}
 
 export const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   year: "numeric",
@@ -50,25 +50,25 @@ export const isEmpty = (
 export const isKeyOf = <T>(p: PropertyKey, target: T): p is keyof T =>
   p in target;
 
-export const millisecondsToClockString = (milliseconds: number): string => {
+export function millisecondsToClockString(milliseconds: number): string {
   const seconds = Math.ceil(milliseconds / 1000);
   return `${Math.floor(seconds / 60)}:${pad2(seconds % 60)}`;
-};
+}
 
 export function nullIfNegative(x: number): number | null {
   return x >= 0 ? x : null;
 }
 
-const pad2 = (num: number) => {
+function pad2(num: number) {
   if (num < 10) {
     return `0${num}`;
   }
   return `${num}`;
-};
+}
 
 // By default, "parseInt('1a')" will return "1", which is unexpected
 // Thus, we use a helper function as a stand-in for parseInt so that we can handle this properly
-export const parseIntSafe = (input: string): number => {
+export function parseIntSafe(input: string): number {
   let trimmedInput = input.trim(); // Remove all leading and trailing whitespace
   const isNegativeNumber = trimmedInput.startsWith("-");
   if (isNegativeNumber) {
@@ -84,9 +84,9 @@ export const parseIntSafe = (input: string): number => {
     trimmedInput = `-${trimmedInput}`;
   }
   return parseInt(trimmedInput, 10);
-};
+}
 
-export const timerFormatter = (totalSeconds: number): string => {
+export function timerFormatter(totalSeconds: number): string {
   const time = new Date();
   time.setHours(0, 0, totalSeconds);
   const hours = time.getHours();
@@ -98,10 +98,10 @@ export const timerFormatter = (totalSeconds: number): string => {
     return `${hours}:${minutesFormatted}:${secondsFormatted}`;
   }
   return `${minutes}:${secondsFormatted}`;
-};
+}
 
 // Remove any replay suffixes from the URL without reloading the page, if any
-export const trimReplaySuffixFromURL = (): void => {
+export function trimReplaySuffixFromURL(): void {
   let finalCharacterIndex;
   if (window.location.pathname.includes("/replay")) {
     finalCharacterIndex = window.location.pathname.indexOf("/replay");
@@ -116,4 +116,4 @@ export const trimReplaySuffixFromURL = (): void => {
     newURL = "/";
   }
   window.history.pushState({}, "", newURL);
-};
+}

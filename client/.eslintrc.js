@@ -47,6 +47,8 @@ module.exports = {
 
   // We modify the linting rules from the base for some specific things
   // (listed in alphabetical order)
+  // Note that currently, the "arrow-body-style" rule is bugged:
+  // https://github.com/prettier/eslint-config-prettier/blob/2c842675e55b91aecaef6f997d234ebf2d220ffb/README.md#arrow-body-style-and-prefer-arrow-callback
   rules: {
     // Documentation:
     // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/array-type.md

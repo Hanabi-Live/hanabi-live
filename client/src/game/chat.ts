@@ -5,7 +5,7 @@ import { FADE_TIME } from "../constants";
 import globals from "../globals";
 import { parseIntSafe } from "../misc";
 
-export const init = (): void => {
+export function init(): void {
   // Make the chat modal draggable (using the InteractJS library)
   interact(".draggable")
     .draggable({
@@ -97,18 +97,18 @@ export const init = (): void => {
   $("#game-chat-modal-header-close").click(() => {
     hide();
   });
-};
+}
 
-export const toggle = (): void => {
+export function toggle(): void {
   const modal = $("#game-chat-modal");
   if (modal.is(":visible")) {
     hide();
   } else {
     show();
   }
-};
+}
 
-export const show = (): void => {
+export function show(): void {
   const modal = $("#game-chat-modal");
   modal.fadeIn(FADE_TIME);
 
@@ -187,14 +187,14 @@ export const show = (): void => {
   }
 
   $("#game-chat-input").focus();
-};
+}
 
-export const hide = (): void => {
+export function hide(): void {
   $("#game-chat-modal").fadeOut(FADE_TIME);
-};
+}
 
 // Subroutine to move an element (using the "transform" CSS property)
-const moveElement = (element: JQuery, x: number, y: number) => {
+function moveElement(element: JQuery, x: number, y: number) {
   // Update the element's style
   const transform = `translate(${x}px, ${y}px)`;
   element.css("webkitTransform", transform);
@@ -203,10 +203,10 @@ const moveElement = (element: JQuery, x: number, y: number) => {
   // Keep the dragged position in the "data-x" & "data-y" attributes
   element.attr("data-x", x);
   element.attr("data-y", y);
-};
+}
 
 // From: https://stackoverflow.com/questions/8897289/how-to-check-if-an-element-is-off-screen
-const isOffscreen = (element: JQuery<HTMLElement>) => {
+function isOffscreen(element: JQuery<HTMLElement>) {
   const domElement = element[0];
   const rect = domElement.getBoundingClientRect();
   return (
@@ -215,4 +215,4 @@ const isOffscreen = (element: JQuery<HTMLElement>) => {
     rect.left < 0 || // Left of the left edge
     rect.right > window.innerWidth // Right of the right edge
   );
-};
+}

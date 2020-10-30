@@ -3,10 +3,10 @@
 import Spectator from "../../../types/Spectator";
 import globals from "../../globals";
 
-export const onSpectatorsChanged = (data: {
+export function onSpectatorsChanged(data: {
   spectators: Spectator[];
   finished: boolean;
-}): void => {
+}): void {
   const visible = data.spectators.length > 0;
   globals.elements.spectatorsLabel?.visible(visible);
   globals.elements.spectatorsNumLabel?.visible(visible);
@@ -59,4 +59,4 @@ export const onSpectatorsChanged = (data: {
   }
 
   globals.layers.UI.batchDraw();
-};
+}

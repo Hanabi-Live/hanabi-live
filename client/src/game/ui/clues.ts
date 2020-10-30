@@ -13,7 +13,7 @@ import HanabiCard from "./HanabiCard";
 import RankButton from "./RankButton";
 import * as turn from "./turn";
 
-export const checkLegal = (): void => {
+export function checkLegal(): void {
   let clueTargetButtonGroup;
   if (globals.state.replay.hypothetical === null) {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
@@ -79,9 +79,9 @@ export const checkLegal = (): void => {
           globals.options.numPlayers);
 
   globals.elements.giveClueButton!.setEnabled(enabled);
-};
+}
 
-const showClueMatch = (target: number, clue: Clue) => {
+function showClueMatch(target: number, clue: Clue) {
   arrows.hideAll();
 
   let touchedAtLeastOneCard = false;
@@ -110,12 +110,12 @@ const showClueMatch = (target: number, clue: Clue) => {
   }
 
   return touchedAtLeastOneCard;
-};
+}
 
-export const getTouchedCardsFromClue = (
+export function getTouchedCardsFromClue(
   target: number,
   clue: MsgClue,
-): number[] => {
+): number[] {
   const hand = globals.elements.playerHands[target];
   const cardsTouched: number[] = []; // An array of the card orders
   hand.children.each((child) => {
@@ -135,9 +135,9 @@ export const getTouchedCardsFromClue = (
   });
 
   return cardsTouched;
-};
+}
 
-export const give = (): void => {
+export function give(): void {
   let clueTargetButtonGroup;
   if (globals.state.replay.hypothetical === null) {
     clueTargetButtonGroup = globals.elements.clueTargetButtonGroup;
@@ -172,12 +172,12 @@ export const give = (): void => {
     target: target.targetIndex,
     value,
   });
-};
+}
 
-const shouldGiveClue = (
+function shouldGiveClue(
   target: PlayerButton,
   clueButton: ColorButton | RankButton,
-) => {
+) {
   const { currentPlayerIndex } = globals.state.ongoingGame.turn;
   const { ourPlayerIndex } = globals.metadata;
   const ongoingGameState =
@@ -200,4 +200,4 @@ const shouldGiveClue = (
     globals.elements.giveClueButton!.enabled &&
     Date.now() - globals.UIClickTime > 1000 // Prevent the user from accidentally giving a clue
   );
-};
+}
