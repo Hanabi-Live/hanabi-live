@@ -150,7 +150,16 @@ func discordSend(to string, username string, msg string) {
 	}
 	fullMsg += msg
 
-	if _, err := discord.ChannelMessageSend(to, fullMsg); err != nil {
+	// We use "ChannelMessageSendComplex" instead of "ChannelMessageSend" because we need to specify
+	// the "AllowedMentions" property
+	messageSendData := &discordgo.MessageSend{
+		Content: fullMsg,
+		// Specifying an empty "MessageAllowedMentions" struct means that the bot is not allowed to
+		// mention anybody
+		// This prevents people from abusing the bot to spam @everyone, for example
+		AllowedMentions: &discordgo.MessageAllowedMentions{},
+	}
+	if _, err := discord.ChannelMessageSendComplex(to, messageSendData); err != nil {
 		// Occasionally, sending messages to Discord can time out; if this occurs,
 		// do not bother retrying, since losing a single message is fairly meaningless
 		logger.Info("Failed to send \""+fullMsg+"\" to Discord:", err)

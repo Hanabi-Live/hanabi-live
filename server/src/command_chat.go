@@ -131,14 +131,6 @@ func chat(s *Session, d *CommandData, userID int, rawMsg string) {
 
 	// Don't send Discord messages that we are already replicating
 	if !d.Discord {
-		// Scrub "@here" and "@everyone" from user messages
-		// (the bot has permissions to perform these actions in the Discord server,
-		// so we need to escape them to prevent abuse from lobby users)
-		if !d.Server {
-			rawMsg = strings.ReplaceAll(rawMsg, "@everyone", "AtEveryone")
-			rawMsg = strings.ReplaceAll(rawMsg, "@here", "AtHere")
-		}
-
 		// We use "rawMsg" instead of "d.Msg" because we want to send the unescaped message
 		// (since Discord can handle escaping HTML special characters itself)
 		discordSend(discordLobbyChannel, d.Username, rawMsg)
