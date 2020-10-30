@@ -47,6 +47,13 @@ export function passwordShow(tableID: number): void {
   $("#password-modal-id").val(tableID);
   $("#password-modal").fadeIn(FADE_TIME);
   $("#password-modal-password").focus();
+
+  // We want to fill in the text field with the player's last typed-in password
+  const password = localStorage.getItem("joinTablePassword");
+  if (password !== null && password !== "") {
+    $("#password-modal-password").val(password);
+    $("#password-modal-password").select();
+  }
 }
 
 function passwordSubmit() {
