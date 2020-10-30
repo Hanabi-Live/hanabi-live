@@ -198,6 +198,10 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 	command = strings.TrimPrefix(command, "/")
 	command = strings.ToLower(command) // Commands are case-insensitive
 
+	// ----------------
+	// Special commands
+	// ----------------
+
 	// This code is duplicated from the "chatReplay()" function
 	if command == "replay" || command == "link" || command == "game" {
 		if len(args) == 0 {
@@ -273,8 +277,20 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 		return
 	}
 
+	if command == "level" {
+		msg := "When asking questions in the #convention-questions channel, please remember to include the convention level that the current players of the game are playing with."
+		discordSend(m.ChannelID, "", msg)
+		return
+	}
+
 	if command == "oop" {
 		msg := "It looks like you are asking a question about an *Out-of-Position Bluff* (or OOP for short). When asking such questions, **you must include** the condition that you think is satisfied (i, ii, or iii)."
+		discordSend(m.ChannelID, "", msg)
+		return
+	}
+
+	if command == "screenshot" || command == "noreplay" {
+		msg := "It looks like you have posted a screenshot of a game state. When asking questions in the #convention-questions channel, please **do not post a screenshot** and instead use the /replay command to generate a link to the specific turn you of the game in question."
 		discordSend(m.ChannelID, "", msg)
 		return
 	}
