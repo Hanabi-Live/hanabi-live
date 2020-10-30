@@ -28,7 +28,7 @@ Read through this page (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl
 
 ## Basic How-To
 
-- If you don't know how to play the game already, read [the rules](Rules.md). For visual learners, you can also try watching [Zamiel's video explanation](https://www.youtube.com/watch?v=jR9i1qCbHXQ).
+- If you don't know how to play the game already, read [the rules](RULES.md). For visual learners, you can also try watching [this video explanation](https://www.youtube.com/watch?v=VrFCekQb4nY).
 - Getting a game going should be self-explanatory, but just in case:
   - Once logged in, use the "Create Game" button on the top navigation bar and then click "Create".
   - For everyone else, the game will now appear in the list of games. To join it, they need to click on ▶️.
