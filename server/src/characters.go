@@ -190,8 +190,8 @@ func charactersGenerate(g *Game) {
 				// A random number from 1 to 5
 				p.CharacterMetadata = rand.Intn(4) + 1 // nolint: gosec
 			} else if p.Character == "Inept" { // 2
-				// A random number from 0 to the number of suits in this variant
-				p.CharacterMetadata = rand.Intn(len(g.Stacks)) // nolint: gosec
+				// A random number from 0 to the number of colors in this variant
+				p.CharacterMetadata = rand.Intn(len(variant.ClueColors)) // nolint: gosec
 			} else if p.Character == "Awkward" { // 3
 				// A random number from 1 to 5
 				p.CharacterMetadata = rand.Intn(4) + 1 // nolint: gosec
