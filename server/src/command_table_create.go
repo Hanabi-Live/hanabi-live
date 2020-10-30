@@ -352,7 +352,8 @@ func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 		NoLock:   true,
 	})
 
-	msg := s.Username() + " created a table."
+	// Log a chat message so that future players can see a timestamp of when the table was created
+	msg := s.Username() + " created the table."
 	chatServerSend(msg, t.GetRoomName())
 
 	// If the server is shutting down / restarting soon, warn the players
