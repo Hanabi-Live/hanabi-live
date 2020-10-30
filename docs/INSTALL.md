@@ -276,7 +276,7 @@ This assumes you installed the server to "/root/hanabi-live". Adjust if needed.
 * `vim ~/.gdrive/hanabi-live-c3373cecaf32.json`
   * Paste it in.
 * Find the ID of the subdirectory inside of the Google Drive account that you want the file to be uploaded to:
-  * `gdrive list --service-account "hanabi-live-c3373cecaf32.json" --max 999 | grep dir`
+  * `gdrive list --service-account "hanabi-live-c3373cecaf32.json" --max 9999 | grep dir`
 * `vim /root/hanabi-live/.env`
   * Fill in the "GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON_PATH" and "GOOGLE_DRIVE_PARENT_DIRECTORY_ID" fields.
 
