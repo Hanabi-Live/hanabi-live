@@ -352,6 +352,7 @@ func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 		NoLock:   true,
 	})
 
+	chatServerSend(s.Username() + " created a table.", t.GetRoomName())
 	// If the server is shutting down / restarting soon, warn the players
 	if shuttingDown.IsSet() {
 		timeLeft := ShutdownTimeout - time.Since(datetimeShutdownInit)
