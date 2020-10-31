@@ -223,7 +223,7 @@ export function doubleDiscard(
 
   // It is never a double discard situation if the next player has one or more positive clues on
   // every card in their hand
-  const hand = state.hands[state.turn.currentPlayerIndex];
+  const hand = state.hands[(state.turn.currentPlayerIndex + 1) % state.hands.length];
   let allClued = true;
   for (const orderOfCardInHand of hand) {
     const cardInHand = state.deck[orderOfCardInHand];
