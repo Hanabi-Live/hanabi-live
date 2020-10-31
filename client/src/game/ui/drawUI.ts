@@ -1414,7 +1414,7 @@ function drawStatistics() {
     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; number of cards with 1+ clues "on" them) /<br />
     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; number of clues given or lost</em><br />
     &nbsp; &nbsp; &nbsp; &nbsp; The first number is the minimum amount of efficiency needed from <br />
-    &nbsp; &nbsp; &nbsp; &nbsp; this turn onward in order to win. (i.e. future required efficiency).<br />
+    &nbsp; &nbsp; &nbsp; &nbsp; this turn onward in order to win (i.e. future required efficiency).<br />
     &nbsp; &nbsp; &nbsp; &nbsp; The second number shows the minimum possible efficiency needed<br />
     &nbsp; &nbsp; &nbsp; &nbsp; to win with the current number of players and the current variant.<br />
     &nbsp; &nbsp; &nbsp; &nbsp; (For more information, click on the "Help" button in the lobby.)
