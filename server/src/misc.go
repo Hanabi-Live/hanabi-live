@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"math"
 	"math/rand"
+	"net/url"
 	"os/exec"
 	"path"
 	"regexp"
@@ -92,6 +93,22 @@ func intInSlice(a int, slice []int) bool {
 		}
 	}
 	return false
+}
+
+// isValidUrl tests a string to determine if it is a well-structured url or not
+// From: https://golangcode.com/how-to-check-if-a-string-is-a-url/
+func isValidURL(toTest string) bool {
+	_, err := url.ParseRequestURI(toTest)
+	if err != nil {
+		return false
+	}
+
+	u, err := url.Parse(toTest)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return false
+	}
+
+	return true
 }
 
 // From: https://stackoverflow.com/questions/53069040/checking-a-string-contains-only-ascii-characters

@@ -142,6 +142,15 @@ func discordSend(to string, username string, msg string) {
 		return
 	}
 
+	// Put "<" and ">" around any links to prevent the link preview from showing
+	msgSections := strings.Split(msg, " ")
+	for i, msgSection := range msgSections {
+		if isValidURL(msgSection) {
+			msgSections[i] = "<" + msgSection + ">"
+		}
+	}
+	msg = strings.Join(msgSections, " ")
+
 	// Make a message prefix to identify the user
 	var fullMsg string
 	if username != "" {
