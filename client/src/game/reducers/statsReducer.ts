@@ -110,10 +110,7 @@ function statsReducerFunction(
     playing,
     variant,
   );
-  stats.efficiency = statsRules.efficiency(
-    cardsGotten,
-    stats.potentialCluesLost,
-  );
+  stats.efficiency = cardsGotten / stats.potentialCluesLost;
 
   // Handle future efficiency calculation
   let cardsNotGotten = stats.maxScore - cardsGotten;
@@ -137,10 +134,7 @@ function statsReducerFunction(
   );
   const potentialCluesLeft =
     totalCluesThatCouldBeGiven - stats.potentialCluesLost;
-  stats.futureEfficiency = statsRules.efficiency(
-    cardsNotGotten,
-    potentialCluesLeft,
-  );
+  stats.futureEfficiency = cardsNotGotten / potentialCluesLeft;
 
   // Record the last action
   stats.lastAction = action;

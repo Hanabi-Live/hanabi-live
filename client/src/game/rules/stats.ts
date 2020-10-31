@@ -151,10 +151,6 @@ export function cardsGotten(
   return currentCardsGotten;
 }
 
-export function efficiency(cards: number, clues: number): number {
-  return cards / clues;
-}
-
 // Calculate the minimum amount of efficiency needed in order to win this variant
 export function minEfficiency(
   numPlayers: number,
@@ -181,7 +177,7 @@ export function minEfficiency(
     variant,
   );
 
-  return efficiency(maxScore, totalClues);
+  return maxScore / totalClues;
 }
 
 // This is used as the denominator of an efficiency calculation:
