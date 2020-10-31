@@ -98,7 +98,16 @@ describe("paceRisk", () => {
 });
 
 describe("efficiency", () => {
-  test("returns Infinity when potentialCluesLost is 0", () => {
+  test("returns 0 when cards = 0", () => {
+    expect(efficiency(0, 8)).toBe(0);
+  });
+  test("returns Infinity clues = 0", () => {
     expect(efficiency(20, 0)).toBe(Infinity);
+  });
+  test("returns NaN card = 0 and clues = 0", () => {
+    expect(efficiency(0, 0)).toBeNaN();
+  });
+  test("returns 1 cards = 4 and clues = 4", () => {
+    expect(efficiency(4, 4)).toBeCloseTo(1);
   });
 });

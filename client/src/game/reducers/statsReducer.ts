@@ -132,7 +132,6 @@ function statsReducerFunction(
   );
   const totalCluesThatCouldBeGiven = statsRules.maxNumberOfCluesThatCouldBeGiven(
     metadata.options.numPlayers,
-    variant.suits.length,
     initialPace,
     variant,
   );

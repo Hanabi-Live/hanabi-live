@@ -172,30 +172,27 @@ export function minEfficiency(
 
   // Second, use the pace to calculate the minimum efficiency required to win the game with the
   // following formula:
-  //   (5 * number of suits) /
+  //   max score /
   //   maximum number of clues that can be given before the game ends
-  // https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
-  const numSuits = variant.suits.length;
-  const minEfficiencyNumerator = 5 * numSuits;
-  const minEfficiencyDenominator = maxNumberOfCluesThatCouldBeGiven(
+  const { maxScore } = variant;
+  const totalClues = maxNumberOfCluesThatCouldBeGiven(
     numPlayers,
-    numSuits,
     initialPace,
     variant,
   );
 
-  return minEfficiencyNumerator / minEfficiencyDenominator;
+  return efficiency(maxScore, totalClues);
 }
 
 // This is used as the denominator of an efficiency calculation:
-// (8 + floor((starting pace + number of suits - unusable clues) / discards per clue))
+// (8 + floor((starting pace + number of suits - unusable clues) * clues per discard))
+// https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
 export function maxNumberOfCluesThatCouldBeGiven(
   numPlayers: number,
-  numSuits: number,
   initialPace: number,
   variant: Variant,
 ): number {
-  let cluesGainedAfterCompletingSuits = numSuits;
+  let cluesGainedAfterCompletingSuits = variant.suits.length;
   if (variantRules.isThrowItInAHole(variant)) {
     // Players do not gain a clue after playing a 5 in this variant
     cluesGainedAfterCompletingSuits = 0;
