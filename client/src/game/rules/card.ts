@@ -13,7 +13,7 @@ export function name(
   rank: number,
   variant: Variant,
 ): string {
-  const suitName = variant.suits[suitIndex].name;
+  const suitName = variant.suits[suitIndex].displayName;
   let rankName = rank.toString();
   if (rank === START_CARD_RANK) {
     rankName = "START";

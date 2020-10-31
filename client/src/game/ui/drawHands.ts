@@ -517,7 +517,7 @@ function drawDetrimentalCharacters(
     // Replace "[random suit]" with the selected suit name
     tooltipContent = tooltipContent.replace(
       "[random suit]",
-      globals.variant.suits[metadata].name,
+      globals.variant.suits[metadata].displayName,
     );
   }
   charIcon.tooltipContent = tooltipContent;

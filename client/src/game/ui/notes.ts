@@ -159,7 +159,7 @@ function parseSuit(variant: Variant, suitText: string): number | null {
   }
 
   const suitNameIndex = variant.suits.findIndex(
-    (suit) => suit.name.toLowerCase() === suitText,
+    (suit) => suit.displayName.toLowerCase() === suitText,
   );
   if (suitNameIndex !== -1) {
     return suitNameIndex;
@@ -266,7 +266,7 @@ export function checkNoteImpossibility(
   // We have specified a note identity that is impossible
   let impossibleSuit = "unknown";
   if (note.suitIndex !== null) {
-    const suitName = variant.suits[note.suitIndex].name;
+    const suitName = variant.suits[note.suitIndex].displayName;
     impossibleSuit = suitName.toLowerCase();
   }
   let impossibleRank = "unknown";

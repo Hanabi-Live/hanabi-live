@@ -15,8 +15,8 @@ export function makeAll(variantName: string, suits: Suit[]): string[] {
       abbreviationToUse = suit.abbreviation;
     } else {
       // There is an overlap with the normal abbreviation
-      for (let i = 0; i < suit.name.length; i++) {
-        const suitLetter = suit.name[i];
+      for (let i = 0; i < suit.displayName.length; i++) {
+        const suitLetter = suit.displayName[i];
         if (!abbreviations.includes(suitLetter)) {
           abbreviationToUse = suitLetter;
           break;
