@@ -8,12 +8,13 @@ import * as usersDraw from "../lobby/usersDraw";
 import { closeAllTooltips } from "../misc";
 import * as sounds from "../sounds";
 import * as chat from "./chat";
-import * as cursor from "./ui/cursor";
 import HanabiUI from "./ui/HanabiUI";
 
 export function init(): void {
   $("#game").on("mouseenter mouseleave", () => {
-    cursor.set("default");
+    if (globals.currentScreen === Screen.Game && globals.ui !== null) {
+      globals.ui.focusLost();
+    }
   });
 }
 

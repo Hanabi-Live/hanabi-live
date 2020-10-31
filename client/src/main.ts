@@ -25,6 +25,7 @@ import * as lobbyLogin from "./lobby/login";
 import * as lobbyNav from "./lobby/nav";
 import * as lobbySettingsTooltip from "./lobby/settingsTooltip";
 import lobbyTutorialInit from "./lobby/tutorialInit";
+import Screen from "./lobby/types/Screen";
 import * as lobbyWatchReplay from "./lobby/watchReplay";
 import * as modals from "./modals";
 import * as sentry from "./sentry";
@@ -45,6 +46,13 @@ if (
 }
 
 $(document).ready(() => {
+  // Set an event handler for when the entire window loses focus
+  $(window).blur(() => {
+    if (globals.currentScreen === Screen.Game && globals.ui !== null) {
+      globals.ui.focusLost();
+    }
+  });
+
   // Now that the page has loaded, initialize and define the functionality of various UI elements
   chat.init();
   game.init();

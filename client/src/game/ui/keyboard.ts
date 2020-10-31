@@ -12,6 +12,7 @@ import globals from "./globals";
 import HanabiCard from "./HanabiCard";
 import * as hypothetical from "./hypothetical";
 import * as replay from "./replay";
+import setGlobalEmpathy from "./setGlobalEmpathy";
 import * as turn from "./turn";
 
 // Variables
@@ -114,10 +115,7 @@ function keydown(event: JQuery.KeyDownEvent) {
       return;
     }
 
-    globals.globalEmpathyEnabled = true;
-    for (const hand of globals.elements.playerHands) {
-      hand.setEmpathy(true);
-    }
+    setGlobalEmpathy(true);
     return;
   }
 
@@ -299,10 +297,7 @@ function keydown(event: JQuery.KeyDownEvent) {
 function keyup(event: JQuery.KeyUpEvent) {
   if (event.key === " ") {
     // Space bar
-    globals.globalEmpathyEnabled = false;
-    for (const hand of globals.elements.playerHands) {
-      hand.setEmpathy(false);
-    }
+    setGlobalEmpathy(false);
   }
 }
 
