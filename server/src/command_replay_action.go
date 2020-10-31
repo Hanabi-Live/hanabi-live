@@ -289,7 +289,11 @@ func replayActionEfficiencyMod(s *Session, d *CommandData, t *Table) {
 		TableID uint64 `json:"tableID"`
 		Mod     int    `json:"mod"`
 	}
+	replayEfficiencyModMessage := &ReplayEfficiencyModMessage{
+		TableID: t.ID,
+		Mod:     g.EfficiencyMod,
+	}
 	for _, sp := range t.Spectators {
-		sp.Session.Emit("replayEfficiencyMod", g.EfficiencyMod)
+		sp.Session.Emit("replayEfficiencyMod", replayEfficiencyModMessage)
 	}
 }
