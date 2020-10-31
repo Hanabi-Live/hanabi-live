@@ -19,11 +19,11 @@ export function onFutureEfficiencyChanged(efficiency: number): void {
 
   if (Number.isFinite(efficiency)) {
     // Show the efficiency and round it to 2 decimal places
-    effLabel.text(`${efficiency.toFixed(2)} / `);
+    effLabel.text(`${efficiency.toFixed(2)} | `);
     effLabel.width(effLabel.measureSize(effLabel.text()).width);
   } else {
     // Handle the case in which there are 0 possible clues remaining.
-    effLabel.text("- / ");
+    effLabel.text("- | ");
   }
 
   // Even though the maximum efficiency needed has not changed,

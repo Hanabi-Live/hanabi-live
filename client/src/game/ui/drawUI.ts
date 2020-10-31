@@ -1423,10 +1423,10 @@ function drawStatistics() {
   efficiencyTextLabel.tooltipContent = efficiencyContent;
   tooltips.init(efficiencyTextLabel, true, false);
 
-  // We want the "/" to be part of the first label since we don't want
+  // We want the "|" to be part of the first label since we don't want
   // to change the color of it later on
   const efficiencyNumberLabel = basicNumberLabel.clone({
-    text: "- / ",
+    text: "- | ",
     x: 0.9 * winW,
     y: 0.56 * winH,
     fontSize: 0.02 * winH,
