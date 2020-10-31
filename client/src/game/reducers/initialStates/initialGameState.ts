@@ -71,7 +71,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
       maxScore: variant.maxScore,
       doubleDiscard: false,
       potentialCluesLost: 0,
-      efficiency: Infinity,
+      efficiency: NaN,
       futureEfficiency: statsRules.minEfficiency(
         options.numPlayers,
         variant,

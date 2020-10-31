@@ -151,19 +151,8 @@ export function cardsGotten(
   return currentCardsGotten;
 }
 
-export function efficiency(
-  currentCardsGotten: number,
-  potentialCluesLost: number,
-): number {
-  // First, handle the case where no clues have been given yet
-  // Infinity is normal and expected in this case (on e.g. the first turn of the game)
-  // We must explicitly check for this because while e.g. "1 / 0" in JavaScript is infinity,
-  // "0 / 0" in JavaScript is NaN
-  if (potentialCluesLost === 0) {
-    return Infinity;
-  }
-
-  return currentCardsGotten / potentialCluesLost;
+export function efficiency(cards: number, clues: number): number {
+  return cards / clues;
 }
 
 // Calculate the minimum amount of efficiency needed in order to win this variant
