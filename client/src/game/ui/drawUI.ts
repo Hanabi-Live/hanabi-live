@@ -1451,11 +1451,7 @@ function drawStatistics() {
   const minEfficiency = stats.minEfficiency(
     globals.options.numPlayers,
     globals.variant,
-    handRules.cardsPerHand(
-      globals.options.numPlayers,
-      globals.options.oneExtraCard,
-      globals.options.oneLessCard,
-    ),
+    handRules.cardsPerHand(globals.options),
   );
   const efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
     text: minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places

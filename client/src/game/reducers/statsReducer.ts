@@ -117,11 +117,7 @@ function statsReducerFunction(
   if (cardsNotGotten < 0) {
     cardsNotGotten = 0;
   }
-  const cardsPerHand = handRules.cardsPerHand(
-    metadata.options.numPlayers,
-    metadata.options.oneExtraCard,
-    metadata.options.oneLessCard,
-  );
+  const cardsPerHand = handRules.cardsPerHand(metadata.options);
   const initialPace = statsRules.startingPace(
     metadata.options.numPlayers,
     cardsPerHand,

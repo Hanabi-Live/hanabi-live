@@ -19,11 +19,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   const { options } = metadata;
   const variant = getVariant(options.variantName);
   const turnState = initialTurnState(options.startingPlayer);
-  const cardsPerHand = handRules.cardsPerHand(
-    options.numPlayers,
-    options.oneExtraCard,
-    options.oneLessCard,
-  );
+  const cardsPerHand = handRules.cardsPerHand(options);
   const startingPace = statsRules.startingPace(
     options.numPlayers,
     cardsPerHand,
@@ -75,11 +71,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
       futureEfficiency: statsRules.minEfficiency(
         options.numPlayers,
         variant,
-        handRules.cardsPerHand(
-          options.numPlayers,
-          options.oneExtraCard,
-          options.oneLessCard,
-        ),
+        handRules.cardsPerHand(options),
       ),
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),

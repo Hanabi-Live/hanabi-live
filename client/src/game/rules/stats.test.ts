@@ -1,15 +1,14 @@
 import { getVariant } from "../data/gameData";
 import { DEFAULT_VARIANT_NAME } from "../types/constants";
-import * as hand from "./hand";
 import { minEfficiency, pace, paceRisk, startingPace } from "./stats";
 
 const defaultVariant = getVariant(DEFAULT_VARIANT_NAME);
 const blackVariant = getVariant("Black (6 Suits)");
 const clueStarvedVariant = getVariant("Clue Starved (6 Suits)");
-const cardsPerHand2Player = hand.cardsPerHand(2, false, false);
-const cardsPerHand4Player = hand.cardsPerHand(4, false, false);
-const cardsPerHand2PlayerOneExtra = hand.cardsPerHand(2, true, false);
-const cardsPerHand2PlayerOneLess = hand.cardsPerHand(2, false, true);
+const cardsPerHand2Player = 5;
+const cardsPerHand4Player = 4;
+const cardsPerHand2PlayerOneExtra = 6;
+const cardsPerHand2PlayerOneLess = 4;
 
 describe("startingPace", () => {
   test("returns 17 for 2-player No Variant", () => {

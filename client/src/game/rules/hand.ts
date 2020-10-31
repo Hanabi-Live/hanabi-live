@@ -1,16 +1,13 @@
 // Functions related to hand management
 
+import Options from "../../types/Options";
 import { cardRules } from "../rules";
 import CardState from "../types/CardState";
 
-export const cardsPerHand = (
-  numPlayers: number,
-  oneExtraCard: boolean,
-  oneLessCard: boolean,
-): number =>
-  cardsPerHandNatural(numPlayers) +
-  (oneExtraCard ? 1 : 0) -
-  (oneLessCard ? 1 : 0);
+export const cardsPerHand = (options: Options): number =>
+  cardsPerHandNatural(options.numPlayers) +
+  (options.oneExtraCard ? 1 : 0) -
+  (options.oneLessCard ? 1 : 0);
 
 export function cardsPerHandNatural(numPlayers: number): number {
   switch (numPlayers) {

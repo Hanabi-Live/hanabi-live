@@ -40,7 +40,7 @@ export default function loadGameJSON(gameJSON: JSONGame): State {
   const metadata = testMetadata(numPlayers, gameJSON.options.variant);
   const variant = getVariant(metadata.options.variantName);
 
-  const cardsPerHand = handRules.cardsPerHand(numPlayers, false, false);
+  const cardsPerHand = handRules.cardsPerHand(metadata.options);
   const actions: GameAction[] = [];
   let topOfDeck = dealInitialCards(
     numPlayers,
