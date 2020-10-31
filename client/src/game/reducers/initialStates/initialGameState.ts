@@ -75,8 +75,11 @@ export default function initialGameState(metadata: GameMetadata): GameState {
       futureEfficiency: statsRules.minEfficiency(
         options.numPlayers,
         variant,
-        options.oneExtraCard,
-        options.oneLessCard,
+        handRules.cardsPerHand(
+          options.numPlayers,
+          options.oneExtraCard,
+          options.oneLessCard,
+        ),
       ),
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),

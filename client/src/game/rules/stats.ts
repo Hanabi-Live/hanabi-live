@@ -1,12 +1,6 @@
 // Functions to calculate game stats such as pace and efficiency
 
-import {
-  cardRules,
-  clueTokensRules,
-  deckRules,
-  handRules,
-  variantRules,
-} from "../rules";
+import { cardRules, clueTokensRules, deckRules, variantRules } from "../rules";
 import CardState from "../types/CardState";
 import { MAX_CLUE_NUM } from "../types/constants";
 import GameState, { PaceRisk } from "../types/GameState";
@@ -155,15 +149,9 @@ export function cardsGotten(
 export function minEfficiency(
   numPlayers: number,
   variant: Variant,
-  oneExtraCard: boolean,
-  oneLessCard: boolean,
+  cardsPerHand: number,
 ): number {
   // First, calculate the starting pace:
-  const cardsPerHand = handRules.cardsPerHand(
-    numPlayers,
-    oneExtraCard,
-    oneLessCard,
-  );
   const initialPace = startingPace(numPlayers, cardsPerHand, variant);
 
   // Second, use the pace to calculate the minimum efficiency required to win the game with the

@@ -43,31 +43,37 @@ describe("startingPace", () => {
 
 describe("minEfficiency", () => {
   test("returns about 0.86 for 2-player No Variant", () => {
-    expect(minEfficiency(2, defaultVariant, false, false)).toBeCloseTo(0.86);
+    expect(minEfficiency(2, defaultVariant, cardsPerHand2Player)).toBeCloseTo(
+      0.86,
+    );
   });
 
   test("returns about 1 for 4-player No Variant", () => {
-    expect(minEfficiency(4, defaultVariant, false, false)).toBeCloseTo(1);
+    expect(minEfficiency(4, defaultVariant, cardsPerHand4Player)).toBeCloseTo(
+      1,
+    );
   });
 
   test("returns about 1 for 2-player Black (6 Suits)", () => {
-    expect(minEfficiency(2, blackVariant, false, false)).toBeCloseTo(1);
+    expect(minEfficiency(2, blackVariant, cardsPerHand2Player)).toBeCloseTo(1);
   });
 
   test("returns about 1.15 for 4-player Black (6 Suits)", () => {
-    expect(minEfficiency(4, blackVariant, false, false)).toBeCloseTo(1.15);
+    expect(minEfficiency(4, blackVariant, cardsPerHand4Player)).toBeCloseTo(
+      1.15,
+    );
   });
 
   test("returns about 1.43 for 2-player Clue Starved (6 Suits)", () => {
-    expect(minEfficiency(2, clueStarvedVariant, false, false)).toBeCloseTo(
-      1.43,
-    );
+    expect(
+      minEfficiency(2, clueStarvedVariant, cardsPerHand2Player),
+    ).toBeCloseTo(1.43);
   });
 
   test("returns about 1.58 for 4-player Clue Starved (6 Suits)", () => {
-    expect(minEfficiency(4, clueStarvedVariant, false, false)).toBeCloseTo(
-      1.58,
-    );
+    expect(
+      minEfficiency(4, clueStarvedVariant, cardsPerHand4Player),
+    ).toBeCloseTo(1.58);
   });
 });
 

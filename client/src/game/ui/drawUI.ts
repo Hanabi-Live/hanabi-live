@@ -4,6 +4,7 @@ import Konva from "konva";
 import * as debug from "../../debug";
 import { parseIntSafe } from "../../misc";
 import * as modals from "../../modals";
+import { handRules } from "../rules";
 import * as deck from "../rules/deck";
 import * as stats from "../rules/stats";
 import * as variantRules from "../rules/variant";
@@ -1450,8 +1451,11 @@ function drawStatistics() {
   const minEfficiency = stats.minEfficiency(
     globals.options.numPlayers,
     globals.variant,
-    globals.options.oneExtraCard,
-    globals.options.oneLessCard,
+    handRules.cardsPerHand(
+      globals.options.numPlayers,
+      globals.options.oneExtraCard,
+      globals.options.oneLessCard,
+    ),
   );
   const efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
     text: minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places
