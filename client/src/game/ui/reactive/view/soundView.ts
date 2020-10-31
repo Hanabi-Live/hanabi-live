@@ -1,6 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 
 import { ensureAllCases } from "../../../../misc";
+import { variantRules } from "../../../rules";
 import { GameAction } from "../../../types/actions";
 import SoundType from "../../../types/SoundType";
 import globals from "../../globals";
@@ -40,7 +41,9 @@ export function onNewSoundEffect(
       data.soundType === SoundType.DiscardClued ||
       data.soundType === SoundType.DoubleDiscard ||
       data.soundType === SoundType.DoubleDiscardCause) &&
-    !globals.lobby.settings.hyphenatedConventions
+    !globals.lobby.settings.hyphenatedConventions &&
+    // Disable special sounds in "Throw It in a Hole" variants because they leak information
+    !variantRules.isThrowItInAHole(globals.variant)
   ) {
     data.soundType = SoundType.Standard;
   }
