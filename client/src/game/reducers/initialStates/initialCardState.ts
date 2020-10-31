@@ -50,5 +50,6 @@ export default function initialCardState(
     segmentDiscarded: null,
     isMisplayed: false,
     dealtToStartingHand: false,
+    firstCluedWhileOnChop: null,
   };
 }
