@@ -110,13 +110,25 @@ def main():
         }
     )
     variants.append(
-        {"name": "6 Suits", "id": get_variant_id("6 Suits"), "suits": variant_suits[6],}
+        {
+            "name": "6 Suits",
+            "id": get_variant_id("6 Suits"),
+            "suits": variant_suits[6],
+        }
     )
     variants.append(
-        {"name": "4 Suits", "id": get_variant_id("4 Suits"), "suits": variant_suits[4],}
+        {
+            "name": "4 Suits",
+            "id": get_variant_id("4 Suits"),
+            "suits": variant_suits[4],
+        }
     )
     variants.append(
-        {"name": "3 Suits", "id": get_variant_id("3 Suits"), "suits": variant_suits[3],}
+        {
+            "name": "3 Suits",
+            "id": get_variant_id("3 Suits"),
+            "suits": variant_suits[3],
+        }
     )
 
     # Add variants for each suit
@@ -511,7 +523,13 @@ def main():
         {
             "name": "Special Mix (5 Suits)",
             "id": get_variant_id("Special Mix (5 Suits)"),
-            "suits": ["Black", "Rainbow", "Pink", "White", "Brown",],
+            "suits": [
+                "Black",
+                "Rainbow",
+                "Pink",
+                "White",
+                "Brown",
+            ],
         }
     )
 
@@ -520,7 +538,14 @@ def main():
         {
             "name": "Special Mix (6 Suits)",
             "id": get_variant_id("Special Mix (6 Suits)"),
-            "suits": ["Black", "Rainbow", "Pink", "White", "Brown", "Null",],
+            "suits": [
+                "Black",
+                "Rainbow",
+                "Pink",
+                "White",
+                "Brown",
+                "Null",
+            ],
         }
     )
 
@@ -529,7 +554,14 @@ def main():
         {
             "name": "Ambiguous Mix",
             "id": get_variant_id("Ambiguous Mix"),
-            "suits": ["Tomato", "Mahogany", "Sky", "Navy", "Black", "White",],
+            "suits": [
+                "Tomato",
+                "Mahogany",
+                "Sky",
+                "Navy",
+                "Black",
+                "White",
+            ],
             "showSuitNames": True,
         }
     )
@@ -539,7 +571,14 @@ def main():
         {
             "name": "Dual-Color Mix",
             "id": get_variant_id("Dual-Color Mix"),
-            "suits": ["Orange D2", "Purple D", "Green D", "Black", "Rainbow", "White",],
+            "suits": [
+                "Orange D2",
+                "Purple D",
+                "Green D",
+                "Black",
+                "Rainbow",
+                "White",
+            ],
         }
     )
 
@@ -825,7 +864,7 @@ def main():
     variants_txt_path = os.path.join(data_path, "variants.txt")
     contents = ""
     for variant in variants:
-        contents += variant["name"] + "\n"
+        contents += variant["name"] + " (#" + str(variant["id"]) + ")\n"
     with open(variants_txt_path, "w", newline="\n") as variants_txt_file:
         variants_txt_file.write(contents + "\n")
 
