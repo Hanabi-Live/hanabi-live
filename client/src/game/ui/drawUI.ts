@@ -30,6 +30,7 @@ import StrikeX from "./controls/StrikeX";
 import TextWithTooltip from "./controls/TextWithTooltip";
 import ThreeLineButton from "./controls/ThreeLineButton";
 import TimerDisplay from "./controls/TimerDisplay";
+import * as cursor from "./cursor";
 import Deck from "./Deck";
 import drawHands from "./drawHands";
 import drawReplayArea from "./drawReplayArea";
@@ -133,7 +134,10 @@ function drawBackground() {
     width: winW,
     height: winH,
     image: globals.imageLoader!.get("background")!,
-    listening: false,
+    listening: true,
+  });
+  background.on("mousemove", () => {
+    cursor.set("default");
   });
 
   globals.layers.UI.add(background);
