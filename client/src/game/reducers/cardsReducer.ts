@@ -2,7 +2,7 @@
 
 import { ensureAllCases, nullIfNegative } from "../../misc";
 import { getVariant } from "../data/gameData";
-import { cluesRules } from "../rules";
+import { cluesRules, handRules } from "../rules";
 import * as characterRules from "../rules/variants/characters";
 import { GameAction } from "../types/actions";
 import CardState from "../types/CardState";
@@ -111,6 +111,7 @@ export default function cardsReducer(
       // Positive clues
       action.list.forEach((order) => {
         const card = getCard(newDeck, order);
+        const hand = game.hands[action.target];
         newDeck[order] = {
           ...getCard(newDeck, order),
           numPositiveClues: card.numPositiveClues + 1,
@@ -118,6 +119,10 @@ export default function cardsReducer(
             card.segmentFirstClued === null
               ? game.turn.segment!
               : card.segmentFirstClued,
+          firstCluedWhileOnChop:
+            card.firstCluedWhileOnChop === null
+              ? handRules.cardIsOnChop(hand, deck, card)
+              : card.firstCluedWhileOnChop,
         };
         applyClue(order, true);
       });

@@ -69,3 +69,13 @@ export function chopIndex(
   // so the chop is considered to be their newest (left-most) card
   return hand.length - 1;
 }
+
+export function cardIsOnChop(
+  hand: readonly number[],
+  deck: readonly CardState[],
+  card: CardState,
+): boolean {
+  const cardIndexInHand = hand.indexOf(card.order);
+  const handChopIndex = chopIndex(hand, deck);
+  return cardIndexInHand === handChopIndex;
+}

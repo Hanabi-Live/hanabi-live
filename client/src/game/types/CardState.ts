@@ -41,6 +41,7 @@ export default interface CardState {
 
   // Needed for special sound effects
   readonly dealtToStartingHand: boolean;
+  readonly firstCluedWhileOnChop: boolean | null;
 }
 
 export type CardLocation = "deck" | "discard" | "playStack" | number;

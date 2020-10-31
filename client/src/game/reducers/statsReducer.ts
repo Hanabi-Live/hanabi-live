@@ -287,12 +287,16 @@ function getSoundType(
   }
 }
 
+// https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#playing-multiple-1s---play-order-inversion-in-the-starting-hand-part-1
+// https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#playing-multiple-1s---the-fresh-1s-rule-part-2
+// https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#playing-multiple-1s---the-chop-focus-exception-part-3
+// https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#the-order-chop-move-ocm
 function isOrderChopMove(
   action: ActionPlay,
   originalState: GameState,
   currentState: GameState,
   metadata: GameMetadata,
-) {
+): boolean {
   const variant = getVariant(metadata.options.variantName);
 
   // Don't bother trying to see if this is an Order Chop Move in an "Up or Down" variant,
@@ -319,8 +323,8 @@ function isOrderChopMove(
     }
   }
 
-  // We can't Order Chop Move if all of the 1s are played
-  if (numOnesLeftToPlay === 0) {
+  // We can't Order Chop Move if all of the 1s are played or there is only one 1 left to be played
+  if (numOnesLeftToPlay === 0 || numOnesLeftToPlay === 1) {
     return false;
   }
 
@@ -339,7 +343,7 @@ function isOrderChopMove(
     }
   }
 
-  // We can't Order Chop Move if there are no other 1s in the hand
+  // We can't Order Chop Move if there are no other candidate 1s in the hand
   if (candidateCards.length === 0) {
     return false;
   }
@@ -347,18 +351,38 @@ function isOrderChopMove(
   // Find the card that should have precedence to be played
   candidateCards.push(playedCard);
 
-  // If there are any "fresh" 1s (e.g. 1s that were not dealt to the starting hand),
-  // then the newest 1 has precedence
+  // Playing Multiple 1's - The Fresh 1's Rule (Part 2)
+  // Find out if there are any "fresh" 1s (e.g. 1s that were not dealt to the starting hand)
   const freshCards = candidateCards.filter((card) => !card.dealtToStartingHand);
   if (freshCards.length > 0) {
-    let highestOrder = -1;
+    // Find the newest 1
+    let newestOneOrder = -1;
     for (const card of freshCards) {
-      if (card.order > highestOrder) {
-        highestOrder = card.order;
+      if (card.order > newestOneOrder) {
+        newestOneOrder = card.order;
       }
     }
 
-    return highestOrder !== action.order;
+    // Find out if the clue that touched the newest 1 also touched a 1 that was on chop at the same
+    // time
+    const newestOne = originalState.deck[newestOneOrder];
+    const startingHandCards = candidateCards.filter(
+      (card) => card.dealtToStartingHand,
+    );
+    for (const startingHandCard of startingHandCards) {
+      if (
+        startingHandCard.segmentFirstClued === newestOne.segmentFirstClued &&
+        startingHandCard.firstCluedWhileOnChop === true
+      ) {
+        // Playing Multiple 1's - The Chop Focus Exception (Part 3)
+        // They were clued at the same time and the card in the starting was on chop,
+        // so the Chop Focus Exception applies
+        return startingHandCard.order !== action.order;
+      }
+    }
+
+    // The Fresh 1's Rule applies
+    return newestOneOrder !== action.order;
   }
 
   // All of the 1s were dealt to the starting hand, so the oldest 1 has precedence
