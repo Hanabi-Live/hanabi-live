@@ -7,6 +7,7 @@ type Options struct {
 	NumPlayers int `json:"numPlayers"`
 	// StartingPlayer is a legacy field for games prior to April 2020
 	StartingPlayer        int    `json:"startingPlayer"`
+	VariantID             int    `json:"variantID"`
 	VariantName           string `json:"variantName"`
 	Timed                 bool   `json:"timed"`
 	TimeBase              int    `json:"timeBase"`

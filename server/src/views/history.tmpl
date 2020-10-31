@@ -90,7 +90,7 @@
         <td><a href="/replay/{{.ID}}">{{.ID}}</a></td>
         <td>{{.Options.NumPlayers}}</td>
         <td>{{.Score}}</td>
-        <td>{{.Options.VariantName}}</td>
+        <td><a href="/variant/{{.Options.VariantID}}">{{.Options.VariantName}}</a></td>
         <td>{{.DatetimeFinished | formatDate}}</td>
         <td>
           <!-- From: https://stackoverflow.com/questions/21305865/golang-separating-items-with-comma-in-template -->

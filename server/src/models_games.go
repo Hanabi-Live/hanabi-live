@@ -213,7 +213,7 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sort string) ([]*GameHistory, 
 		if err := rows.Scan(
 			&gameHistory.ID,
 			&gameHistory.Options.NumPlayers,
-			&variantID,
+			&gameHistory.Options.VariantID,
 			&gameHistory.Options.Timed,
 			&gameHistory.Options.TimeBase,
 			&gameHistory.Options.TimePerTurn,
@@ -238,7 +238,7 @@ func (*Games) GetHistoryCustomSort(gameIDs []int, sort string) ([]*GameHistory, 
 		}
 
 		// Get the name of the variant that corresponds to the variant ID
-		if variantName, ok := variantIDMap[variantID]; !ok {
+		if variantName, ok := variantIDMap[gameHistory.Options.VariantID]; !ok {
 			err := errors.New("the variant ID of " + strconv.Itoa(variantID) + " is not valid")
 			return games, err
 		} else {
