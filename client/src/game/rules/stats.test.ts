@@ -7,8 +7,8 @@ const blackVariant = getVariant("Black (6 Suits)");
 const clueStarvedVariant = getVariant("Clue Starved (6 Suits)");
 const cardsPerHand2Player = 5;
 const cardsPerHand4Player = 4;
-const cardsPerHand2PlayerOneExtra = 6;
-const cardsPerHand2PlayerOneLess = 4;
+const cardsPerHand2PlayerOneExtra = cardsPerHand2Player + 1;
+const cardsPerHand2PlayerOneLess = cardsPerHand2Player - 1;
 
 describe("startingPace", () => {
   test("returns 17 for 2-player No Variant", () => {
