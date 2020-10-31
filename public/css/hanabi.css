@@ -273,6 +273,13 @@ table td {
   border-bottom: dotted 1px;
 }
 
+.help-button {
+  background-color: rgb(68, 150, 68) !important;
+}
+.help-button:hover {
+  background-color: #84c884 !important;
+}
+
 /*
   Lobby
 */
