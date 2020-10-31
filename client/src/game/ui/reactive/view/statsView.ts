@@ -17,15 +17,13 @@ export function onFutureEfficiencyChanged(efficiency: number): void {
     );
   }
 
-  if (efficiency === Infinity) {
-    // First, handle the case in which 0 clues have been given
-    // (or the case when one or more players successfully blind-play a card before any clues have
-    // been given)
-    effLabel.text("- / ");
-  } else {
-    // Otherwise, show the efficiency and round it to 2 decimal places
+  if (Number.isFinite(efficiency)) {
+    // Show the efficiency and round it to 2 decimal places
     effLabel.text(`${efficiency.toFixed(2)} / `);
     effLabel.width(effLabel.measureSize(effLabel.text()).width);
+  } else {
+    // Handle the case in which there are 0 possible clues remaining.
+    effLabel.text("- / ");
   }
 
   // Even though the maximum efficiency needed has not changed,
