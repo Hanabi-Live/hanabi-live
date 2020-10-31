@@ -22,6 +22,7 @@ func replayActionsFunctionsInit() {
 		ReplayActionTypeHypoAction:     replayActionHypoAction,
 		ReplayActionTypeHypoBack:       replayActionHypoBack,
 		ReplayActionTypeToggleRevealed: replayActionToggleRevealed,
+		ReplayActionTypeEfficiencyMod:  replayActionEfficiencyMod,
 	}
 }
 
@@ -276,5 +277,19 @@ func replayActionToggleRevealed(s *Session, d *CommandData, t *Table) {
 	}
 	for _, sp := range t.Spectators {
 		sp.Session.Emit("hypoDrawnCardsShown", hypoDrawnCardsShownMessage)
+	}
+}
+
+func replayActionEfficiencyMod(s *Session, d *CommandData, t *Table) {
+	// Local variables
+	g := t.Game
+
+	g.EfficiencyMod = d.Value
+	type ReplayEfficiencyModMessage struct {
+		TableID uint64 `json:"tableID"`
+		Mod     int    `json:"mod"`
+	}
+	for _, sp := range t.Spectators {
+		sp.Session.Emit("replayEfficiencyMod", g.EfficiencyMod)
 	}
 }

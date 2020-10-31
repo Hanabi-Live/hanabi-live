@@ -65,6 +65,8 @@ const (
 	ReplayActionTypeHypoBack
 	// Toggle whether or not drawn cards should be hidden (true by default)
 	ReplayActionTypeToggleRevealed
+	// Players can manually adjust the efficiency to account for cards that are Finessed
+	ReplayActionTypeEfficiencyMod
 )
 
 // Certain types of optional game settings can make the game easier

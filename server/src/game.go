@@ -70,6 +70,9 @@ type Game struct {
 	PausePlayerIndex int
 	PauseCount       int
 
+	// Shared replay fields
+	EfficiencyMod int
+
 	// Hypothetical-related fields
 	Hypothetical        bool // Whether or not we are in a post-game hypothetical
 	HypoActions         []string
