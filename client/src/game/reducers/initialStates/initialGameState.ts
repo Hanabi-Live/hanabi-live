@@ -72,6 +72,12 @@ export default function initialGameState(metadata: GameMetadata): GameState {
       doubleDiscard: false,
       potentialCluesLost: 0,
       efficiency: Infinity,
+      futureEfficiency: statsRules.minEfficiency(
+        options.numPlayers,
+        variant,
+        options.oneExtraCard,
+        options.oneLessCard,
+      ),
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),
       lastAction: null,

@@ -1,6 +1,12 @@
 // Functions to calculate game stats such as pace and efficiency
 
-import { cardRules, deckRules, handRules, variantRules } from "../rules";
+import {
+  cardRules,
+  clueTokensRules,
+  deckRules,
+  handRules,
+  variantRules,
+} from "../rules";
 import CardState from "../types/CardState";
 import { MAX_CLUE_NUM } from "../types/constants";
 import GameState, { PaceRisk } from "../types/GameState";
@@ -178,15 +184,34 @@ export function minEfficiency(
   // Second, use the pace to calculate the minimum efficiency required to win the game with the
   // following formula:
   //   (5 * number of suits) /
-  //   (8 + floor((starting pace + number of suits - unusable clues) / discards per clue))
+  //   maximum number of clues that can be given before the game ends
   // https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
   const numSuits = variant.suits.length;
   const minEfficiencyNumerator = 5 * numSuits;
+  const minEfficiencyDenominator = maxNumberOfCluesThatCouldBeGiven(
+    numPlayers,
+    numSuits,
+    initialPace,
+    variant,
+  );
+
+  return minEfficiencyNumerator / minEfficiencyDenominator;
+}
+
+// This is used as the denominator of an efficiency calculation:
+// (8 + floor((starting pace + number of suits - unusable clues) / discards per clue))
+export function maxNumberOfCluesThatCouldBeGiven(
+  numPlayers: number,
+  numSuits: number,
+  initialPace: number,
+  variant: Variant,
+): number {
   let cluesGainedAfterCompletingSuits = numSuits;
   if (variantRules.isThrowItInAHole(variant)) {
     // Players do not gain a clue after playing a 5 in this variant
     cluesGainedAfterCompletingSuits = 0;
   }
+
   let unusableClues = 1;
   if (numPlayers >= 5) {
     unusableClues = 2;
@@ -195,18 +220,14 @@ export function minEfficiency(
     // Players do not gain a clue after playing a 5 in this variant
     unusableClues = 0;
   }
-  let discardsPerClue = 1;
-  if (variantRules.isClueStarved(variant)) {
-    discardsPerClue = 2;
-  }
-  const minEfficiencyDenominator =
+
+  return (
     MAX_CLUE_NUM +
     Math.floor(
-      (initialPace + cluesGainedAfterCompletingSuits - unusableClues) /
-        discardsPerClue,
-    );
-
-  return minEfficiencyNumerator / minEfficiencyDenominator;
+      (initialPace + cluesGainedAfterCompletingSuits - unusableClues) *
+        clueTokensRules.discardValue(variant),
+    )
+  );
 }
 
 // After a discard, it is a "double discard" situation if there is only one other copy of this card

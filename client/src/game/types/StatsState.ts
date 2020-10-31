@@ -7,6 +7,7 @@ export default interface StatsState {
   readonly doubleDiscard: boolean;
   readonly potentialCluesLost: number;
   readonly efficiency: number;
+  readonly futureEfficiency: number;
   readonly pace: number | null;
   readonly paceRisk: PaceRisk;
   readonly lastAction: GameAction | null;

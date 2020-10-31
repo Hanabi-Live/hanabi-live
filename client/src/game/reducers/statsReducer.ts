@@ -3,7 +3,7 @@
 
 import produce, { Draft } from "immer";
 import { getCharacter, getVariant } from "../data/gameData";
-import { cardRules, clueTokensRules, variantRules } from "../rules";
+import { cardRules, clueTokensRules, handRules, variantRules } from "../rules";
 import * as statsRules from "../rules/stats";
 import { ActionPlay, GameAction } from "../types/actions";
 import CardState from "../types/CardState";
@@ -42,7 +42,7 @@ function statsReducerFunction(
       // But don't reveal that a strike has happened to players in an ongoing "Throw It in a Hole"
       // game
       if (!variantRules.isThrowItInAHole(variant) || !playing) {
-        stats.potentialCluesLost += clueTokensRules.value(variant);
+        stats.potentialCluesLost += clueTokensRules.discardValue(variant);
       }
 
       break;
@@ -56,7 +56,7 @@ function statsReducerFunction(
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted",
         // similar to what happens when the team gets a strike
-        stats.potentialCluesLost += clueTokensRules.value(variant);
+        stats.potentialCluesLost += clueTokensRules.discardValue(variant);
       }
 
       break;
@@ -113,6 +113,34 @@ function statsReducerFunction(
   stats.efficiency = statsRules.efficiency(
     cardsGotten,
     stats.potentialCluesLost,
+  );
+
+  // Handle future efficiency calculation
+  let cardsNotGotten = stats.maxScore - cardsGotten;
+  if (cardsNotGotten < 0) {
+    cardsNotGotten = 0;
+  }
+  const cardsPerHand = handRules.cardsPerHand(
+    metadata.options.numPlayers,
+    metadata.options.oneExtraCard,
+    metadata.options.oneLessCard,
+  );
+  const initialPace = statsRules.startingPace(
+    metadata.options.numPlayers,
+    cardsPerHand,
+    variant,
+  );
+  const totalCluesThatCouldBeGiven = statsRules.maxNumberOfCluesThatCouldBeGiven(
+    metadata.options.numPlayers,
+    variant.suits.length,
+    initialPace,
+    variant,
+  );
+  const potentialCluesLeft =
+    totalCluesThatCouldBeGiven - stats.potentialCluesLost;
+  stats.futureEfficiency = statsRules.efficiency(
+    cardsNotGotten,
+    potentialCluesLeft,
   );
 
   // Record the last action

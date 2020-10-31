@@ -59,6 +59,6 @@ export const atMax = (clueTokens: number, variant: Variant): boolean =>
 
 // The value of clues gained when discarding or finishing a suit
 // This function is *only* used in efficiency calculations
-export const value = (variant: Variant): number =>
+export const discardValue = (variant: Variant): number =>
   // In "Clue Starved" variants, each discard gives only half a clue
   variantRules.isClueStarved(variant) ? 0.5 : 1;

@@ -2,8 +2,8 @@ import { PaceRisk } from "../../../types/GameState";
 import { LABEL_COLOR } from "../../constants";
 import globals from "../../globals";
 
-// onEfficiencyChanged updates the labels on the right-hand side of the screen
-export function onEfficiencyChanged(efficiency: number): void {
+// onFutureEfficiencyChanged updates the labels on the right-hand side of the screen
+export function onFutureEfficiencyChanged(efficiency: number): void {
   const effLabel = globals.elements.efficiencyNumberLabel;
   if (!effLabel) {
     throw new Error(
