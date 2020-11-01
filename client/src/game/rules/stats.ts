@@ -183,7 +183,7 @@ export function maxClues(
     const maxPlaysBeforeFinalRound = cardsToBePlayed - minConsecutiveFinalPlays;
     const missingCardsPerCompletableSuit = [];
     for (let suitIndex = 0; suitIndex < scorePerStack.length; suitIndex++) {
-      if (maxScorePerStack[suitIndex] === 5) {
+      if (maxScorePerStack[suitIndex] === 5 && scorePerStack[suitIndex] < 5) {
         missingCardsPerCompletableSuit.push(
           maxScorePerStack[suitIndex] - scorePerStack[suitIndex],
         );
