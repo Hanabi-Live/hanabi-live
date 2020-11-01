@@ -269,18 +269,20 @@ func httpInit() {
 		// Create the LetsEncrypt directory structure
 		// (CertBot will look for data in "/.well-known/acme-challenge/####")
 		letsEncryptPath := path.Join(projectPath, "letsencrypt")
-		wellKnownPath := path.Join(letsEncryptPath, ".well-known")
-		acmeChallengePath := path.Join(wellKnownPath, "acme-challenge")
 		if _, err := os.Stat(letsEncryptPath); os.IsNotExist(err) {
-			if err := os.MkdirAll(acmeChallengePath, 0755); err != nil {
-				logger.Fatal("Failed to create the \""+acmeChallengePath+"\" directory:", err)
+			if err := os.MkdirAll(letsEncryptPath, 0755); err != nil {
+				logger.Fatal("Failed to create the \""+letsEncryptPath+"\" directory:", err)
 			}
 		}
+
+		wellKnownPath := path.Join(letsEncryptPath, ".well-known")
 		if _, err := os.Stat(wellKnownPath); os.IsNotExist(err) {
-			if err := os.MkdirAll(acmeChallengePath, 0755); err != nil {
-				logger.Fatal("Failed to create the \""+acmeChallengePath+"\" directory:", err)
+			if err := os.MkdirAll(wellKnownPath, 0755); err != nil {
+				logger.Fatal("Failed to create the \""+wellKnownPath+"\" directory:", err)
 			}
 		}
+
+		acmeChallengePath := path.Join(wellKnownPath, "acme-challenge")
 		if _, err := os.Stat(acmeChallengePath); os.IsNotExist(err) {
 			if err := os.MkdirAll(acmeChallengePath, 0755); err != nil {
 				logger.Fatal("Failed to create the \""+acmeChallengePath+"\" directory:", err)
