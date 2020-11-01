@@ -57,8 +57,17 @@ export const getAdjusted = (clueTokens: number, variant: Variant): number =>
 export const atMax = (clueTokens: number, variant: Variant): boolean =>
   clueTokens >= getAdjusted(MAX_CLUE_NUM, variant);
 
-// The value of clues gained when discarding or finishing a suit
+// The value of clues gained when discarding
 // This function is *only* used in efficiency calculations
 export const discardValue = (variant: Variant): number =>
   // In "Clue Starved" variants, each discard gives only half a clue
   variantRules.isClueStarved(variant) ? 0.5 : 1;
+
+// The value of clues gained when completing a suit
+// This function is *only* used in efficiency calculations
+export const suitValue = (variant: Variant): number => {
+  if (variantRules.isThrowItInAHole(variant)) {
+    return 0;
+  }
+  return variantRules.isClueStarved(variant) ? 0.5 : 1;
+};

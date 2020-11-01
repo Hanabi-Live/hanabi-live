@@ -3,7 +3,7 @@ import { LABEL_COLOR } from "../../constants";
 import globals from "../../globals";
 
 // onFutureEfficiencyChanged updates the labels on the right-hand side of the screen
-export function onFutureEfficiencyChanged(efficiency: number): void {
+export function onFutureEfficiencyChanged(efficiency: number | null): void {
   const effLabel = globals.elements.efficiencyNumberLabel;
   if (!effLabel) {
     throw new Error(
@@ -17,15 +17,13 @@ export function onFutureEfficiencyChanged(efficiency: number): void {
     );
   }
 
-  if (efficiency === Infinity) {
-    // First, handle the case in which 0 clues have been given
-    // (or the case when one or more players successfully blind-play a card before any clues have
-    // been given)
-    effLabel.text("- / ");
-  } else {
-    // Otherwise, show the efficiency and round it to 2 decimal places
-    effLabel.text(`${efficiency.toFixed(2)} / `);
+  if (efficiency !== null && Number.isFinite(efficiency)) {
+    // Show the efficiency and round it to 2 decimal places
+    effLabel.text(`${efficiency.toFixed(2)} | `);
     effLabel.width(effLabel.measureSize(effLabel.text()).width);
+  } else {
+    // Handle the case in which there are 0 possible clues remaining or the game has ended.
+    effLabel.text("- | ");
   }
 
   // Even though the maximum efficiency needed has not changed,
