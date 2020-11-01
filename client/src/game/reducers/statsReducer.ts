@@ -124,17 +124,16 @@ function statsReducerFunction(
       currentState.playStacks,
       (playStack) => playStack.length,
     );
-    stats.futureEfficiency =
-      cardsNotGotten /
-      statsRules.maxClues(
-        scorePerStack,
-        stats.maxScorePerStack,
-        stats.pace,
-        metadata.options.numPlayers,
-        clueTokensRules.discardValue(variant),
-        clueTokensRules.suitValue(variant),
-        currentState.clueTokens,
-      );
+    const cluesUsable = statsRules.maxClues(
+      scorePerStack,
+      stats.maxScorePerStack,
+      stats.pace,
+      metadata.options.numPlayers,
+      clueTokensRules.discardValue(variant),
+      clueTokensRules.suitValue(variant),
+      currentState.clueTokens,
+    );
+    stats.futureEfficiency = cardsNotGotten / totalCluesUsable;
   }
 
   // Record the last action

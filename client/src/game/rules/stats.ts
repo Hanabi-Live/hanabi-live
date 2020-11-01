@@ -149,7 +149,7 @@ export function minEfficiency(
 }
 
 // Returns the max number of clues that can be spent while getting the max possible score from a
-// given game state onward. (Not accounting for the locations of playable cards)
+// given game state onward (Not accounting for the locations of playable cards)
 export function maxClues(
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
@@ -163,7 +163,7 @@ export function maxClues(
     throw Error("scorePerStack must have the same length as maxScorePerStack");
   }
   // We want to discard as many times as possible while still getting a max score as long as
-  // discardValue >= suitValue. (Which is currently true for all variants.)
+  // discardValue >= suitValue (Which is currently true for all variants)
   if (discardValue < suitValue) {
     throw Error(
       "cannot calculate efficiency in variants where discarding gives fewer clues than completing suits",
