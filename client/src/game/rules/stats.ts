@@ -27,7 +27,7 @@ export function pace(
   score: number,
   deckSize: number,
   maxScore: number,
-  numPlayers: number,
+  endGameLength: number,
   gameOver: boolean,
 ): number | null {
   if (gameOver) {
@@ -40,7 +40,7 @@ export function pace(
 
   // The formula for pace was derived by Libster
   const adjustedScorePlusDeck = score + deckSize - maxScore;
-  return adjustedScorePlusDeck + numPlayers;
+  return adjustedScorePlusDeck + endGameLength;
 }
 
 // A measure of how risky a discard would be right now, using different heuristics
@@ -72,19 +72,21 @@ export function paceRisk(
 }
 
 // Calculate the starting pace with the following formula:
-//   total cards in the deck -
-//   ((number of cards in a player's hand - 1) * number of players) -
-//   (5 * number of suits)
+//   total cards in the deck
+//   + number of turns in the final round
+//   - (number of cards in a player's hand * number of players)
+//   - (5 * number of suits)
 // https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
 export function startingPace(
   numPlayers: number,
+  endGameLength: number,
   cardsPerHand: number,
   variant: Variant,
 ): number {
   const totalCards = deckRules.totalCards(variant);
-  const middleTerm = (cardsPerHand - 1) * numPlayers;
+  const initialCardsDrawn = cardsPerHand * numPlayers;
   const totalCardsToBePlayed = 5 * variant.suits.length;
-  return totalCards - middleTerm - totalCardsToBePlayed;
+  return totalCards + endGameLength - initialCardsDrawn - totalCardsToBePlayed;
 }
 
 export function cardsGotten(
@@ -132,18 +134,24 @@ export function cardsGotten(
 // Calculate the minimum amount of efficiency needed in order to win this variant
 export function minEfficiency(
   numPlayers: number,
+  endGameLength: number,
   variant: Variant,
   cardsPerHand: number,
 ): number {
   // First, calculate the starting pace:
-  const initialPace = startingPace(numPlayers, cardsPerHand, variant);
+  const initialPace = startingPace(
+    numPlayers,
+    endGameLength,
+    cardsPerHand,
+    variant,
+  );
 
   // Second, use the pace to calculate the minimum efficiency required to win the game with the
   // following formula:
   //   max score /
   //   maximum number of clues that can be given before the game ends
   const { maxScore } = variant;
-  const totalClues = startingMaxClues(numPlayers, initialPace, variant);
+  const totalClues = startingMaxClues(endGameLength, initialPace, variant);
 
   return maxScore / totalClues;
 }
@@ -154,7 +162,7 @@ export function maxClues(
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
   currentPace: number,
-  numPlayers: number,
+  endGameLength: number,
   discardValue: number,
   suitValue: number,
   currentClues: number,
@@ -179,7 +187,7 @@ export function maxClues(
   let cluesFromSuits = 0;
   if (suitValue > 0) {
     // Compute how many suits we can complete before the final round.
-    const minConsecutiveFinalPlays = numPlayers + 1;
+    const minConsecutiveFinalPlays = endGameLength + 1;
     const maxPlaysBeforeFinalRound = cardsToBePlayed - minConsecutiveFinalPlays;
     const missingCardsPerCompletableSuit = [];
     for (let suitIndex = 0; suitIndex < scorePerStack.length; suitIndex++) {
@@ -209,7 +217,7 @@ export function maxClues(
 // (8 + floor((starting pace + number of suits - unusable clues) * clues per discard))
 // https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
 export function startingMaxClues(
-  numPlayers: number,
+  endGameLength: number,
   initialPace: number,
   variant: Variant,
 ): number {
@@ -221,7 +229,7 @@ export function startingMaxClues(
     scorePerStack,
     maxScorePerStack,
     initialPace,
-    numPlayers,
+    endGameLength,
     discardValue,
     suitValue,
     MAX_CLUE_NUM,

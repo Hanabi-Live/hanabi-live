@@ -7,6 +7,7 @@ import {
   handRules,
   playStacksRules,
   statsRules,
+  turnRules,
 } from "../../rules";
 import CardStatus from "../../types/CardStatus";
 import { MAX_CLUE_NUM } from "../../types/constants";
@@ -22,6 +23,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   const cardsPerHand = handRules.cardsPerHand(options);
   const startingPace = statsRules.startingPace(
     options.numPlayers,
+    turnRules.endGameLength(metadata),
     cardsPerHand,
     variant,
   );
@@ -71,6 +73,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
       efficiency: NaN,
       futureEfficiency: statsRules.minEfficiency(
         options.numPlayers,
+        turnRules.endGameLength(metadata),
         variant,
         handRules.cardsPerHand(options),
       ),
