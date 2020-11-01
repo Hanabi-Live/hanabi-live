@@ -1,6 +1,13 @@
 import { getVariant } from "../data/gameData";
 import { DEFAULT_VARIANT_NAME } from "../types/constants";
-import { minEfficiency, pace, paceRisk, startingPace } from "./stats";
+import {
+  maxClues,
+  minEfficiency,
+  pace,
+  paceRisk,
+  startingMaxClues,
+  startingPace,
+} from "./stats";
 
 const defaultVariant = getVariant(DEFAULT_VARIANT_NAME);
 const blackVariant = getVariant("Black (6 Suits)");
@@ -93,5 +100,46 @@ describe("paceRisk", () => {
 
   test("is Null when pace is null", () => {
     expect(paceRisk(null, 4)).toBe("Null");
+  });
+});
+
+describe("maxClues", () => {
+  test("discarding the first 5 gains a clue", () => {
+    expect(
+      maxClues(
+        [0, 0, 0, 0, 0],
+        [5, 5, 5, 5, 4],
+        startingPace(2, cardsPerHand2Player, defaultVariant),
+        2,
+        1,
+        1,
+        8,
+      ),
+    ).toBe(
+      startingMaxClues(
+        2,
+        startingPace(2, cardsPerHand2Player, defaultVariant),
+        defaultVariant,
+      ),
+    );
+  });
+  test("discarding the second 5 does not gain a clue", () => {
+    expect(
+      maxClues(
+        [0, 0, 0, 0, 0],
+        [5, 5, 5, 4, 4],
+        startingPace(2, cardsPerHand2Player, defaultVariant),
+        2,
+        1,
+        1,
+        8,
+      ),
+    ).toBe(
+      startingMaxClues(
+        2,
+        startingPace(2, cardsPerHand2Player, defaultVariant),
+        defaultVariant,
+      ) - 1,
+    );
   });
 });

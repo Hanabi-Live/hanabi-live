@@ -213,27 +213,18 @@ export function startingMaxClues(
   initialPace: number,
   variant: Variant,
 ): number {
-  let cluesGainedAfterCompletingSuits = variant.suits.length;
-  if (variantRules.isThrowItInAHole(variant)) {
-    // Players do not gain a clue after playing a 5 in this variant
-    cluesGainedAfterCompletingSuits = 0;
-  }
-
-  let unusableClues = 1;
-  if (numPlayers >= 5) {
-    unusableClues = 2;
-  }
-  if (variantRules.isThrowItInAHole(variant)) {
-    // Players do not gain a clue after playing a 5 in this variant
-    unusableClues = 0;
-  }
-
-  return (
-    MAX_CLUE_NUM +
-    Math.floor(
-      (initialPace + cluesGainedAfterCompletingSuits - unusableClues) *
-        clueTokensRules.discardValue(variant),
-    )
+  const scorePerStack = new Array(variant.suits.length).fill(0);
+  const maxScorePerStack = new Array(variant.suits.length).fill(5);
+  const discardValue = clueTokensRules.discardValue(variant);
+  const suitValue = clueTokensRules.suitValue(variant);
+  return maxClues(
+    scorePerStack,
+    maxScorePerStack,
+    initialPace,
+    numPlayers,
+    discardValue,
+    suitValue,
+    MAX_CLUE_NUM,
   );
 }
 
