@@ -8,34 +8,18 @@ import StackDirection from "../types/StackDirection";
 import Variant from "../types/Variant";
 import * as reversibleRules from "./variants/reversible";
 
-export function getMaxScore(
+export function getMaxScorePerStack(
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-): number {
-  let maxScore = 0;
-
+): number[] {
   // Getting the maximum score is much more complicated if we are playing a
   // "Reversed" or "Up or Down" variant
-  if (variantRules.hasReversedSuits(variant)) {
-    return reversibleRules.getMaxScore(deck, playStackDirections, variant);
-  }
-
-  for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
-    const suit = variant.suits[suitIndex];
-    for (let rank = 1; rank <= 5; rank++) {
-      // Search through the deck to see if all the copies of this card are discarded already
-      const total = deckRules.numCopiesOfCard(suit, rank, variant);
-      const discarded = deckRules.discardedCopies(deck, suitIndex, rank);
-      if (total > discarded) {
-        maxScore += 1;
-      } else {
-        break;
-      }
-    }
-  }
-
-  return maxScore;
+  return reversibleRules.getMaxScorePerStack(
+    deck,
+    playStackDirections,
+    variant,
+  );
 }
 
 // Pace is the number of discards that can happen while still getting the maximum score
@@ -159,19 +143,70 @@ export function minEfficiency(
   //   max score /
   //   maximum number of clues that can be given before the game ends
   const { maxScore } = variant;
-  const totalClues = maxNumberOfCluesThatCouldBeGiven(
-    numPlayers,
-    initialPace,
-    variant,
-  );
+  const totalClues = startingMaxClues(numPlayers, initialPace, variant);
 
   return maxScore / totalClues;
+}
+
+// Returns the max number of clues that can be spent while getting the max possible score from a
+// given game state onward. (Not accounting for the locations of playable cards)
+export function maxClues(
+  scorePerStack: readonly number[],
+  maxScorePerStack: readonly number[],
+  currentPace: number,
+  numPlayers: number,
+  discardValue: number,
+  suitValue: number,
+  currentClues: number,
+): number {
+  if (scorePerStack.length !== maxScorePerStack.length) {
+    throw Error("scorePerStack must have the same length as maxScorePerStack");
+  }
+  // We want to discard as many times as possible while still getting a max score as long as
+  // discardValue >= suitValue. (Which is currently true for all variants.)
+  if (discardValue < suitValue) {
+    throw Error(
+      "cannot calculate efficiency in variants where discarding gives fewer clues than completing suits",
+    );
+  }
+  const score = scorePerStack.reduce((a, b) => a + b, 0);
+  const maxScore = maxScorePerStack.reduce((a, b) => a + b, 0);
+  const cardsToBePlayed = maxScore - score;
+  const cluesFromDiscards = currentPace * discardValue;
+
+  let cluesFromSuits = 0;
+  if (suitValue > 0) {
+    // Compute how many suits we can complete before the final round.
+    const minConsecutiveFinalPlays = numPlayers + 1;
+    const maxPlaysBeforeFinalRound = cardsToBePlayed - minConsecutiveFinalPlays;
+    const missingCardsPerCompletableSuit = [];
+    for (let suitIndex = 0; suitIndex < scorePerStack.length; suitIndex++) {
+      if (maxScorePerStack[suitIndex] === 5) {
+        missingCardsPerCompletableSuit.push(
+          maxScorePerStack[suitIndex] - scorePerStack[suitIndex],
+        );
+      }
+    }
+    missingCardsPerCompletableSuit.sort();
+    let cardsPlayed = 0;
+    let suitsCompletedBeforeFinalRound = 0;
+    for (const missingCardsInSuit of missingCardsPerCompletableSuit) {
+      if (cardsPlayed + missingCardsInSuit > maxPlaysBeforeFinalRound) {
+        break;
+      }
+      cardsPlayed += missingCardsInSuit;
+      suitsCompletedBeforeFinalRound += 1;
+      cluesFromSuits = suitsCompletedBeforeFinalRound * suitValue;
+    }
+  }
+
+  return cluesFromDiscards + cluesFromSuits + currentClues;
 }
 
 // This is used as the denominator of an efficiency calculation:
 // (8 + floor((starting pace + number of suits - unusable clues) * clues per discard))
 // https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
-export function maxNumberOfCluesThatCouldBeGiven(
+export function startingMaxClues(
   numPlayers: number,
   initialPace: number,
   variant: Variant,

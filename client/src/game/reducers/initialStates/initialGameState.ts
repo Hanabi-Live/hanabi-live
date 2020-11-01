@@ -65,6 +65,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     clues: [],
     stats: {
       maxScore: variant.maxScore,
+      maxScorePerStack: new Array(variant.suits.length).fill(5) as number[],
       doubleDiscard: false,
       potentialCluesLost: 0,
       efficiency: NaN,

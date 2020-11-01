@@ -135,13 +135,17 @@ function isDead(
 
 // variantReversibleGetMaxScore calculates what the maximum score is,
 // accounting for stacks that cannot be completed due to discarded cards
-// This function mirrors the server function "variantReversibleGetMaxScore()"
-export function getMaxScore(
+//
+// This function mirrors the server function "variantReversibleGetMaxScore()", except that
+// it creates a per stack array, instead,
+export function getMaxScorePerStack(
   deck: readonly CardState[],
   playStackDirections: readonly StackDirection[],
   variant: Variant,
-): number {
-  let maxScore = 0;
+): number[] {
+  const maxScorePerStack: number[] = new Array(variant.suits.length).fill(
+    0,
+  ) as number[];
 
   for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
     const suit = variant.suits[suitIndex];
@@ -162,17 +166,17 @@ export function getMaxScore(
     if (playStackDirections[suitIndex] === StackDirection.Undecided) {
       const upWalk = walkUp(allDiscarded, variant);
       const downWalk = walkDown(allDiscarded, variant);
-      maxScore += Math.max(upWalk, downWalk);
+      maxScorePerStack[suitIndex] += Math.max(upWalk, downWalk);
     } else if (playStackDirections[suitIndex] === StackDirection.Up) {
-      maxScore += walkUp(allDiscarded, variant);
+      maxScorePerStack[suitIndex] += walkUp(allDiscarded, variant);
     } else if (playStackDirections[suitIndex] === StackDirection.Down) {
-      maxScore += walkDown(allDiscarded, variant);
+      maxScorePerStack[suitIndex] += walkDown(allDiscarded, variant);
     } else if (playStackDirections[suitIndex] === StackDirection.Finished) {
-      maxScore += 5;
+      maxScorePerStack[suitIndex] += 5;
     }
   }
 
-  return maxScore;
+  return maxScorePerStack;
 }
 
 // A helper function for "getMaxScore()"

@@ -3,7 +3,7 @@
 
 import produce, { Draft } from "immer";
 import { getCharacter, getVariant } from "../data/gameData";
-import { cardRules, clueTokensRules, handRules, variantRules } from "../rules";
+import { cardRules, clueTokensRules, variantRules } from "../rules";
 import * as statsRules from "../rules/stats";
 import { ActionPlay, GameAction } from "../types/actions";
 import CardState from "../types/CardState";
@@ -80,11 +80,12 @@ function statsReducerFunction(
 
   // Handle max score calculation
   if (action.type === "play" || action.type === "discard") {
-    stats.maxScore = statsRules.getMaxScore(
+    stats.maxScorePerStack = statsRules.getMaxScorePerStack(
       currentState.deck,
       currentState.playStackDirections,
       variant,
     );
+    stats.maxScore = stats.maxScorePerStack.reduce((a, b) => a + b, 0);
   }
 
   // Handle pace calculation
@@ -112,25 +113,26 @@ function statsReducerFunction(
   );
   stats.efficiency = cardsGotten / stats.potentialCluesLost;
 
-  // Handle future efficiency calculation
-  let cardsNotGotten = stats.maxScore - cardsGotten;
-  if (cardsNotGotten < 0) {
-    cardsNotGotten = 0;
+  if (stats.pace === null) {
+    stats.futureEfficiency = null;
+  } else {
+    const cardsNotGotten = stats.maxScore - cardsGotten;
+    const scorePerStack: number[] = Array.from(
+      currentState.playStacks,
+      (playStack) => playStack.length,
+    );
+    stats.futureEfficiency =
+      cardsNotGotten /
+      statsRules.maxClues(
+        scorePerStack,
+        stats.maxScorePerStack,
+        stats.pace,
+        metadata.options.numPlayers,
+        clueTokensRules.discardValue(variant),
+        clueTokensRules.suitValue(variant),
+        currentState.clueTokens,
+      );
   }
-  const cardsPerHand = handRules.cardsPerHand(metadata.options);
-  const initialPace = statsRules.startingPace(
-    metadata.options.numPlayers,
-    cardsPerHand,
-    variant,
-  );
-  const totalCluesThatCouldBeGiven = statsRules.maxNumberOfCluesThatCouldBeGiven(
-    metadata.options.numPlayers,
-    initialPace,
-    variant,
-  );
-  const potentialCluesLeft =
-    totalCluesThatCouldBeGiven - stats.potentialCluesLost;
-  stats.futureEfficiency = cardsNotGotten / potentialCluesLeft;
 
   // Record the last action
   stats.lastAction = action;
