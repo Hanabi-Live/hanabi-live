@@ -202,7 +202,7 @@ export function maxClues(
     }
   }
 
-  return cluesFromDiscards + cluesFromSuits + currentClues;
+  return Math.floor(cluesFromDiscards + cluesFromSuits + currentClues);
 }
 
 // This is used as the denominator of an efficiency calculation:
