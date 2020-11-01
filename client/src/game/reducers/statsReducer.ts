@@ -124,7 +124,7 @@ function statsReducerFunction(
       currentState.playStacks,
       (playStack) => playStack.length,
     );
-    const cluesUsable = statsRules.maxClues(
+    const totalCluesUsable = statsRules.maxClues(
       scorePerStack,
       stats.maxScorePerStack,
       stats.pace,
