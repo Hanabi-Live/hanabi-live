@@ -142,4 +142,8 @@ describe("maxClues", () => {
       ) - 1,
     );
   });
+  test("playing a 5 does not gain a possible clue", () => {
+    expect(maxClues([0, 0, 0, 0, 4], [5, 5, 5, 5, 5], 10, 5, 1, 1, 4)).toBe(17);
+    expect(maxClues([0, 0, 0, 0, 5], [5, 5, 5, 5, 5], 10, 5, 1, 1, 5)).toBe(17);
+  });
 });
