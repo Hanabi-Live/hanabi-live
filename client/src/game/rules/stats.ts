@@ -198,8 +198,8 @@ export function maxClues(
       }
       cardsPlayed += missingCardsInSuit;
       suitsCompletedBeforeFinalRound += 1;
-      cluesFromSuits = suitsCompletedBeforeFinalRound * suitValue;
     }
+    cluesFromSuits = suitsCompletedBeforeFinalRound * suitValue;
   }
 
   return Math.floor(cluesFromDiscards + cluesFromSuits + currentClues);
