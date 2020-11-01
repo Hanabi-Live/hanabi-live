@@ -345,16 +345,16 @@ func tableCreate(s *Session, d *CommandData, data *SpecialGameData) {
 	logger.Info(t.GetName() + "User \"" + s.Username() + "\" created a table.")
 	// (a "table" message will be sent in the "commandTableJoin" function below)
 
+	// Log a chat message so that future players can see a timestamp of when the table was created
+	msg := s.Username() + " created the table."
+	chatServerSend(msg, t.GetRoomName())
+
 	// Join the user to the new table
 	commandTableJoin(s, &CommandData{ // Manual invocation
 		TableID:  t.ID,
 		Password: d.Password,
 		NoLock:   true,
 	})
-
-	// Log a chat message so that future players can see a timestamp of when the table was created
-	msg := s.Username() + " created the table."
-	chatServerSend(msg, t.GetRoomName())
 
 	// If the server is shutting down / restarting soon, warn the players
 	if shuttingDown.IsSet() {

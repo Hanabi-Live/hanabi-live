@@ -133,7 +133,7 @@ func tableJoin(s *Session, t *Table) {
 
 	// Send them the chat history for this game
 	chatSendPastFromTable(s, t)
-	t.ChatRead[p.ID] = 0
+	t.ChatRead[p.ID] = len(t.Chat)
 
 	// Send them messages for people typing, if any
 	for _, p := range t.Players {
