@@ -104,13 +104,16 @@ function statsReducerFunction(
   stats.paceRisk = statsRules.paceRisk(stats.pace, metadata.options.numPlayers);
 
   // Handle efficiency calculation
-  const cardsGotten = statsRules.cardsGotten(
+  let cardsGotten = statsRules.cardsGotten(
     currentState.deck,
     currentState.playStacks,
     currentState.playStackDirections,
     playing,
     variant,
   );
+  if (cardsGotten > stats.maxScore) {
+    cardsGotten = stats.maxScore;
+  }
   stats.efficiency = cardsGotten / stats.potentialCluesLost;
 
   if (stats.pace === null) {
