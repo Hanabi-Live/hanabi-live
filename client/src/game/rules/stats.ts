@@ -160,13 +160,15 @@ export function maxClues(
   currentClues: number,
 ): number {
   if (scorePerStack.length !== maxScorePerStack.length) {
-    throw Error("scorePerStack must have the same length as maxScorePerStack");
+    throw Error(
+      "Failed to calculate efficiency: scorePerStack must have the same length as maxScorePerStack.",
+    );
   }
   // We want to discard as many times as possible while still getting a max score as long as
   // discardValue >= suitValue (Which is currently true for all variants)
   if (discardValue < suitValue) {
     throw Error(
-      "cannot calculate efficiency in variants where discarding gives fewer clues than completing suits",
+      "Cannot calculate efficiency in variants where discarding gives fewer clues than completing suits.",
     );
   }
   const score = scorePerStack.reduce((a, b) => a + b, 0);
