@@ -4,7 +4,7 @@ import Konva from "konva";
 import * as debug from "../../debug";
 import { parseIntSafe } from "../../misc";
 import * as modals from "../../modals";
-import { handRules } from "../rules";
+import { handRules, turnRules } from "../rules";
 import * as deck from "../rules/deck";
 import * as stats from "../rules/stats";
 import * as variantRules from "../rules/variant";
@@ -1450,6 +1450,7 @@ function drawStatistics() {
 
   const minEfficiency = stats.minEfficiency(
     globals.options.numPlayers,
+    turnRules.endGameLength(globals.metadata),
     globals.variant,
     handRules.cardsPerHand(globals.options),
   );

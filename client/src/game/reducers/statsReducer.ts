@@ -5,6 +5,7 @@ import produce, { Draft } from "immer";
 import { getCharacter, getVariant } from "../data/gameData";
 import { cardRules, clueTokensRules, variantRules } from "../rules";
 import * as statsRules from "../rules/stats";
+import * as turnRules from "../rules/turn";
 import { ActionPlay, GameAction } from "../types/actions";
 import CardState from "../types/CardState";
 import ClueType from "../types/ClueType";
@@ -128,7 +129,7 @@ function statsReducerFunction(
       scorePerStack,
       stats.maxScorePerStack,
       stats.pace,
-      metadata.options.numPlayers,
+      turnRules.endGameLength(metadata),
       clueTokensRules.discardValue(variant),
       clueTokensRules.suitValue(variant),
       currentState.clueTokens,
