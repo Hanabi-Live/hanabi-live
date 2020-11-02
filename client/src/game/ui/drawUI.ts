@@ -43,6 +43,7 @@ import * as hypothetical from "./hypothetical";
 import MultiFitText from "./MultiFitText";
 import PlayStack from "./PlayStack";
 import RankButton from "./RankButton";
+import * as statsView from "./reactive/view/statsView";
 import * as replay from "./replay";
 import * as timer from "./timer";
 import * as tooltips from "./tooltips";
@@ -1453,7 +1454,10 @@ function drawStatistics() {
           );
           return;
         }
-        const effModString = window.prompt("");
+
+        const effModString = window.prompt(
+          'Enter a modifier for the "cards currently gotten": (e.g. "1" or "-2")',
+        );
         if (effModString === null) {
           // Don't do anything if they pressed the cancel button
           return;
@@ -1464,8 +1468,14 @@ function drawStatistics() {
           return;
         }
         globals.efficiencyModifier = effMod;
-        // TODO
-        // statsView.onFutureEfficiencyChanged(futureEff);
+
+        const ongoingGameStatsState = globals.state.ongoingGame.stats;
+        statsView.onEfficiencyChanged({
+          cardsGotten: ongoingGameStatsState.cardsGotten,
+          potentialCluesLost: ongoingGameStatsState.potentialCluesLost,
+          maxScore: ongoingGameStatsState.maxScore,
+          cluesStillUsable: ongoingGameStatsState.cluesStillUsable,
+        });
       } else {
         arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
       }

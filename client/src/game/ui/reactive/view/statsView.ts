@@ -30,7 +30,19 @@ export function onEfficiencyChanged(data: {
     );
   }
 
-  const cardsNotGotten = data.maxScore - data.cardsGotten;
+  let { cardsGotten } = data;
+  let cardsGottenModified = false;
+  if (
+    globals.state.visibleState === globals.state.ongoingGame &&
+    globals.efficiencyModifier !== 0
+  ) {
+    // The user has specified a manual efficiency modification
+    // (e.g. to account for a card that is Finessed)
+    cardsGotten += globals.efficiencyModifier;
+    cardsGottenModified = true;
+  }
+  const cardsNotGotten = data.maxScore - cardsGotten;
+
   const futureEfficiency =
     data.cluesStillUsable === null
       ? NaN
@@ -63,6 +75,10 @@ export function onEfficiencyChanged(data: {
   }
   const minEffX = pipeX + effPipeLabelSize;
   effMinLabel.x(minEffX);
+
+  // Change the color of the efficiency label if there is a custom modification
+  const effLabelColor = cardsGottenModified ? "#00ffff" : LABEL_COLOR;
+  effLabel.fill(effLabelColor);
 
   globals.layers.UI.batchDraw();
 }
