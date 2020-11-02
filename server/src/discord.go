@@ -308,7 +308,7 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 	}
 
 	if command == "screenshot" || command == "noreplay" {
-		msg := "It looks like you have posted a screenshot of a game state. When asking questions in the #convention-questions channel, please **do not post a screenshot** and instead use the `/replay` command to generate a link to the specific turn you of the game in question."
+		msg := "It looks like you have posted a screenshot of a game state. When asking questions in the #convention-questions channel, please **do not post a screenshot** and instead use the `/replay` command to generate a link to the specific turn of the game in question."
 		discordSend(m.ChannelID, "", msg)
 		return
 	}
