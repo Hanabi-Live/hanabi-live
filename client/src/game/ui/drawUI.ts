@@ -1412,7 +1412,7 @@ function drawStatistics() {
   const efficiencyTextLabelContent = `
     Efficiency is calculated by: <br />
     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <em>(number of cards played +<br />
-    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; number of cards with 1+ clues "on" them) /<br />
+    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; number of touched cards) /<br />
     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; number of clues given or lost</em><br />
     &nbsp; &nbsp; &nbsp; &nbsp; The first number is the minimum amount of efficiency needed from <br />
     &nbsp; &nbsp; &nbsp; &nbsp; this turn onward in order to win (i.e. future required efficiency).<br />
