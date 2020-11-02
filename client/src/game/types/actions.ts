@@ -59,7 +59,6 @@ export interface ActionInit {
   databaseID: number;
   sharedReplaySegment: number;
   sharedReplayLeader: string;
-  sharedReplayEffMod: number;
   paused: boolean;
   pausePlayerIndex: number;
 }

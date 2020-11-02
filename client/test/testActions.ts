@@ -127,7 +127,6 @@ export const init = (): ActionInit => ({
   databaseID: 1,
   sharedReplaySegment: 0,
   sharedReplayLeader: "",
-  sharedReplayEffMod: 0,
   paused: false,
   pausePlayerIndex: 0,
 });

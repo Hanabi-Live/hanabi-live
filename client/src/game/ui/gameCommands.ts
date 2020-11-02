@@ -465,10 +465,12 @@ function initStateStore(data: InitData) {
     databaseID: data.databaseID,
     sharedReplaySegment: data.sharedReplaySegment,
     sharedReplayLeader: data.sharedReplayLeader,
-    sharedReplayEffMod: data.sharedReplayEffMod,
     paused: data.paused,
     pausePlayerIndex: data.pausePlayerIndex,
   });
+
+  // For now, the efficiency modifier is stored as a global variable instead of being in the state
+  globals.efficiencyModifier = data.sharedReplayEffMod;
 
   // If we happen to be joining an ongoing hypothetical, we cannot dispatch a "hypoEnter" here
   // We must wait until the game is initialized first,
