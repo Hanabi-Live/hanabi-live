@@ -72,6 +72,9 @@ export class Globals {
   actionOccurred = false;
   lastNote = ""; // Equal to the last note entered
 
+  // Efficiency modification feature
+  efficiencyModifier = 0;
+
   // Timer feature
   timerID: number | null = null;
   playerTimes: number[] = [];
@@ -143,6 +146,7 @@ export class Globals {
     this.editingNote = null;
     this.actionOccurred = false;
     this.lastNote = "";
+    this.efficiencyModifier = 0;
     this.timerID = null;
     this.playerTimes = [];
     this.activePlayerIndex = -1; // Legacy variable

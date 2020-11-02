@@ -322,7 +322,7 @@ export function click(
 ): void {
   // "event.evt.buttons" is always 0 here
   if (event.evt.button !== 2) {
-    // Right-click
+    // We only care about right-clicks
     return;
   }
 

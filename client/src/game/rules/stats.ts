@@ -1,8 +1,15 @@
 // Functions to calculate game stats such as pace and efficiency
 
-import { cardRules, clueTokensRules, deckRules, variantRules } from "../rules";
+import {
+  cardRules,
+  clueTokensRules,
+  deckRules,
+  turnRules,
+  variantRules,
+} from "../rules";
 import CardState from "../types/CardState";
 import { MAX_CLUE_NUM } from "../types/constants";
+import GameMetadata from "../types/GameMetadata";
 import GameState, { PaceRisk } from "../types/GameState";
 import StackDirection from "../types/StackDirection";
 import Variant from "../types/Variant";
@@ -129,6 +136,38 @@ export function cardsGotten(
   }
 
   return currentCardsGotten;
+}
+
+export function futureEfficiency(
+  currentPace: number | null,
+  maxScore: number,
+  cardsCurrentlyGotten: number,
+  playStacks: ReadonlyArray<readonly number[]>,
+  maxScorePerStack: number[],
+  clueTokens: number,
+  metadata: GameMetadata,
+  variant: Variant,
+): number | null {
+  if (currentPace === null) {
+    return null;
+  }
+
+  const cardsNotGotten = maxScore - cardsCurrentlyGotten;
+  const scorePerStack: number[] = Array.from(
+    playStacks,
+    (playStack) => playStack.length,
+  );
+  const totalCluesUsable = maxClues(
+    scorePerStack,
+    maxScorePerStack,
+    currentPace,
+    turnRules.endGameLength(metadata),
+    clueTokensRules.discardValue(variant),
+    clueTokensRules.suitValue(variant),
+    clueTokens,
+  );
+
+  return cardsNotGotten / totalCluesUsable;
 }
 
 // Calculate the minimum amount of efficiency needed in order to win this variant

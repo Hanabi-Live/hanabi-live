@@ -43,6 +43,7 @@ import * as hypothetical from "./hypothetical";
 import MultiFitText from "./MultiFitText";
 import PlayStack from "./PlayStack";
 import RankButton from "./RankButton";
+import * as statsView from "./reactive/view/statsView";
 import * as replay from "./replay";
 import * as timer from "./timer";
 import * as tooltips from "./tooltips";
@@ -1441,7 +1442,28 @@ function drawStatistics() {
   efficiencyNumberLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
+      // "event.evt.buttons" is always 0 here
+      if (event.evt.button !== 2) {
+        // We only care about right-clicks
+        return;
+      }
+      if (event.evt.altKey) {
+        const effModString = window.prompt("");
+        if (effModString === null) {
+          // Don't do anything if they pressed the cancel button
+          return;
+        }
+        const effMod = parseIntSafe(effModString);
+        if (Number.isNaN(effMod)) {
+          // Don't do anything if they entered something that is not a number
+          return;
+        }
+        globals.efficiencyModifier = effMod;
+        const futureEff = globals.state.visibleState!.stats.futureEfficiency;
+        statsView.onFutureEfficiencyChanged(futureEff);
+      } else {
+        arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
+      }
     },
   );
   efficiencyNumberLabel.tooltipName = "efficiency-number";

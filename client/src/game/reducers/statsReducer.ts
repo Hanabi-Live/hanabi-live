@@ -5,7 +5,6 @@ import produce, { Draft } from "immer";
 import { getCharacter, getVariant } from "../data/gameData";
 import { cardRules, clueTokensRules, variantRules } from "../rules";
 import * as statsRules from "../rules/stats";
-import * as turnRules from "../rules/turn";
 import { ActionPlay, GameAction } from "../types/actions";
 import CardState from "../types/CardState";
 import ClueType from "../types/ClueType";
@@ -117,25 +116,17 @@ function statsReducerFunction(
   }
   stats.efficiency = cardsGotten / stats.potentialCluesLost;
 
-  if (stats.pace === null) {
-    stats.futureEfficiency = null;
-  } else {
-    const cardsNotGotten = stats.maxScore - cardsGotten;
-    const scorePerStack: number[] = Array.from(
-      currentState.playStacks,
-      (playStack) => playStack.length,
-    );
-    const totalCluesUsable = statsRules.maxClues(
-      scorePerStack,
-      stats.maxScorePerStack,
-      stats.pace,
-      turnRules.endGameLength(metadata),
-      clueTokensRules.discardValue(variant),
-      clueTokensRules.suitValue(variant),
-      currentState.clueTokens,
-    );
-    stats.futureEfficiency = cardsNotGotten / totalCluesUsable;
-  }
+  // Handle future efficiency calculation
+  stats.futureEfficiency = statsRules.futureEfficiency(
+    stats.pace,
+    stats.maxScore,
+    cardsGotten,
+    currentState.playStacks,
+    stats.maxScorePerStack,
+    currentState.clueTokens,
+    metadata,
+    variant,
+  );
 
   // Record the last action
   stats.lastAction = action;
