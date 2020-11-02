@@ -1,11 +1,11 @@
 import { getVariant } from "../data/gameData";
 import { DEFAULT_VARIANT_NAME } from "../types/constants";
 import {
-  maxClues,
+  cluesStillUsable,
   minEfficiency,
   pace,
   paceRisk,
-  startingMaxClues,
+  startingCluesUsable,
   startingPace,
 } from "./stats";
 
@@ -115,10 +115,10 @@ describe("paceRisk", () => {
   });
 });
 
-describe("maxClues", () => {
+describe("cluesStillUsable", () => {
   test("discarding the first 5 gains a clue", () => {
     expect(
-      maxClues(
+      cluesStillUsable(
         [0, 0, 0, 0, 0],
         [5, 5, 5, 5, 4],
         startingPace(2, 2, cardsPerHand2Player, defaultVariant),
@@ -128,7 +128,7 @@ describe("maxClues", () => {
         8,
       ),
     ).toBe(
-      startingMaxClues(
+      startingCluesUsable(
         2,
         startingPace(2, 2, cardsPerHand2Player, defaultVariant),
         defaultVariant,
@@ -137,7 +137,7 @@ describe("maxClues", () => {
   });
   test("discarding the second 5 does not gain a clue", () => {
     expect(
-      maxClues(
+      cluesStillUsable(
         [0, 0, 0, 0, 0],
         [5, 5, 5, 4, 4],
         startingPace(2, 2, cardsPerHand2Player, defaultVariant),
@@ -147,7 +147,7 @@ describe("maxClues", () => {
         8,
       ),
     ).toBe(
-      startingMaxClues(
+      startingCluesUsable(
         2,
         startingPace(2, 2, cardsPerHand2Player, defaultVariant),
         defaultVariant,
@@ -155,23 +155,43 @@ describe("maxClues", () => {
     );
   });
   test("playing a 5 does not gain a possible clue", () => {
-    expect(maxClues([0, 0, 0, 0, 4], [5, 5, 5, 5, 5], 10, 5, 1, 1, 4)).toBe(17);
-    expect(maxClues([0, 0, 0, 0, 5], [5, 5, 5, 5, 5], 10, 5, 1, 1, 5)).toBe(17);
+    expect(
+      cluesStillUsable([0, 0, 0, 0, 4], [5, 5, 5, 5, 5], 10, 5, 1, 1, 4),
+    ).toBe(17);
+    expect(
+      cluesStillUsable([0, 0, 0, 0, 5], [5, 5, 5, 5, 5], 10, 5, 1, 1, 5),
+    ).toBe(17);
   });
   test("discarding a non-critical card does not gain a possible clue", () => {
-    expect(maxClues([0, 0, 0, 0, 0], [5, 5, 5, 5, 5], 10, 2, 1, 1, 4)).toBe(18);
-    expect(maxClues([0, 0, 0, 0, 0], [5, 5, 5, 5, 5], 9, 2, 1, 1, 5)).toBe(18);
+    expect(
+      cluesStillUsable([0, 0, 0, 0, 0], [5, 5, 5, 5, 5], 10, 2, 1, 1, 4),
+    ).toBe(18);
+    expect(
+      cluesStillUsable([0, 0, 0, 0, 0], [5, 5, 5, 5, 5], 9, 2, 1, 1, 5),
+    ).toBe(18);
   });
   test("playing the last 1 in a 4 player game loses a clue", () => {
-    expect(maxClues([1, 1, 1, 1, 0], [5, 5, 5, 5, 5], 10, 4, 1, 1, 4)).toBe(18);
-    expect(maxClues([1, 1, 1, 1, 1], [5, 5, 5, 5, 5], 10, 4, 1, 1, 4)).toBe(17);
+    expect(
+      cluesStillUsable([1, 1, 1, 1, 0], [5, 5, 5, 5, 5], 10, 4, 1, 1, 4),
+    ).toBe(18);
+    expect(
+      cluesStillUsable([1, 1, 1, 1, 1], [5, 5, 5, 5, 5], 10, 4, 1, 1, 4),
+    ).toBe(17);
   });
   test("finishing an imperfect suit can lose a clue", () => {
-    expect(maxClues([3, 3, 3, 3, 3], [5, 5, 5, 5, 4], 10, 2, 1, 1, 4)).toBe(17);
-    expect(maxClues([3, 3, 3, 3, 4], [5, 5, 5, 5, 4], 10, 2, 1, 1, 4)).toBe(16);
+    expect(
+      cluesStillUsable([3, 3, 3, 3, 3], [5, 5, 5, 5, 4], 10, 2, 1, 1, 4),
+    ).toBe(17);
+    expect(
+      cluesStillUsable([3, 3, 3, 3, 4], [5, 5, 5, 5, 4], 10, 2, 1, 1, 4),
+    ).toBe(16);
   });
   test("finishing an imperfect suit may not lose a clue", () => {
-    expect(maxClues([3, 3, 3, 3, 3], [5, 5, 5, 5, 4], 10, 3, 1, 1, 4)).toBe(16);
-    expect(maxClues([3, 3, 3, 3, 4], [5, 5, 5, 5, 4], 10, 3, 1, 1, 4)).toBe(16);
+    expect(
+      cluesStillUsable([3, 3, 3, 3, 3], [5, 5, 5, 5, 4], 10, 3, 1, 1, 4),
+    ).toBe(16);
+    expect(
+      cluesStillUsable([3, 3, 3, 3, 4], [5, 5, 5, 5, 4], 10, 3, 1, 1, 4),
+    ).toBe(16);
   });
 });

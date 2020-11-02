@@ -1,15 +1,8 @@
 // Functions to calculate game stats such as pace and efficiency
 
-import {
-  cardRules,
-  clueTokensRules,
-  deckRules,
-  turnRules,
-  variantRules,
-} from "../rules";
+import { cardRules, clueTokensRules, deckRules, variantRules } from "../rules";
 import CardState from "../types/CardState";
 import { MAX_CLUE_NUM } from "../types/constants";
-import GameMetadata from "../types/GameMetadata";
 import GameState, { PaceRisk } from "../types/GameState";
 import StackDirection from "../types/StackDirection";
 import Variant from "../types/Variant";
@@ -101,6 +94,7 @@ export function cardsGotten(
   playStacks: ReadonlyArray<readonly number[]>,
   playStackDirections: readonly StackDirection[],
   playing: boolean,
+  maxScore: number,
   variant: Variant,
 ): number {
   let currentCardsGotten = 0;
@@ -135,39 +129,11 @@ export function cardsGotten(
     }
   }
 
-  return currentCardsGotten;
-}
-
-export function futureEfficiency(
-  currentPace: number | null,
-  maxScore: number,
-  cardsCurrentlyGotten: number,
-  playStacks: ReadonlyArray<readonly number[]>,
-  maxScorePerStack: number[],
-  clueTokens: number,
-  metadata: GameMetadata,
-  variant: Variant,
-): number | null {
-  if (currentPace === null) {
-    return null;
+  if (currentCardsGotten > maxScore) {
+    currentCardsGotten = maxScore;
   }
 
-  const cardsNotGotten = maxScore - cardsCurrentlyGotten;
-  const scorePerStack: number[] = Array.from(
-    playStacks,
-    (playStack) => playStack.length,
-  );
-  const totalCluesUsable = maxClues(
-    scorePerStack,
-    maxScorePerStack,
-    currentPace,
-    turnRules.endGameLength(metadata),
-    clueTokensRules.discardValue(variant),
-    clueTokensRules.suitValue(variant),
-    clueTokens,
-  );
-
-  return cardsNotGotten / totalCluesUsable;
+  return currentCardsGotten;
 }
 
 // Calculate the minimum amount of efficiency needed in order to win this variant
@@ -190,22 +156,26 @@ export function minEfficiency(
   //   max score /
   //   maximum number of clues that can be given before the game ends
   const { maxScore } = variant;
-  const totalClues = startingMaxClues(endGameLength, initialPace, variant);
+  const totalClues = startingCluesUsable(endGameLength, initialPace, variant);
 
   return maxScore / totalClues;
 }
 
 // Returns the max number of clues that can be spent while getting the max possible score from a
 // given game state onward (not accounting for the locations of playable cards)
-export function maxClues(
+export function cluesStillUsable(
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
-  currentPace: number,
+  currentPace: number | null,
   endGameLength: number,
   discardValue: number,
   suitValue: number,
   currentClues: number,
-): number {
+): number | null {
+  if (currentPace === null) {
+    return null;
+  }
+
   if (scorePerStack.length !== maxScorePerStack.length) {
     throw Error(
       "Failed to calculate efficiency: scorePerStack must have the same length as maxScorePerStack.",
@@ -255,7 +225,7 @@ export function maxClues(
 // This is used as the denominator of an efficiency calculation:
 // (8 + floor((starting pace + number of suits - unusable clues) * clues per discard))
 // https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
-export function startingMaxClues(
+export function startingCluesUsable(
   endGameLength: number,
   initialPace: number,
   variant: Variant,
@@ -264,7 +234,7 @@ export function startingMaxClues(
   const maxScorePerStack = new Array(variant.suits.length).fill(5);
   const discardValue = clueTokensRules.discardValue(variant);
   const suitValue = clueTokensRules.suitValue(variant);
-  return maxClues(
+  const startingClues = cluesStillUsable(
     scorePerStack,
     maxScorePerStack,
     initialPace,
@@ -273,6 +243,25 @@ export function startingMaxClues(
     suitValue,
     MAX_CLUE_NUM,
   );
+  if (startingClues === null) {
+    throw new Error("The starting clues usable was null.");
+  }
+  return startingClues;
+}
+
+export function efficiency(
+  numCardsGotten: number,
+  potentialCluesLost: number,
+): number {
+  return numCardsGotten / potentialCluesLost;
+}
+
+export function futureEfficiency(state: GameState): number | null {
+  if (state.stats.cluesStillUsable === null) {
+    return null;
+  }
+  const cardsNotGotten = state.stats.maxScore - state.stats.cardsGotten;
+  return cardsNotGotten / state.stats.cluesStillUsable;
 }
 
 // After a discard, it is a "double discard" situation if there is only one other copy of this card

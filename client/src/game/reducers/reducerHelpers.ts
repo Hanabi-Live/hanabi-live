@@ -1,8 +1,25 @@
 // Miscellaneous helpers used by several reducers
 
+import { statsRules } from "../rules";
 import Color from "../types/Color";
+import GameState from "../types/GameState";
 import Suit from "../types/Suit";
 import Variant from "../types/Variant";
+
+export function getEfficiency(state: GameState): number {
+  return statsRules.efficiency(
+    state.stats.cardsGotten,
+    state.stats.potentialCluesLost,
+  );
+}
+
+export function getFutureEfficiency(state: GameState): number | null {
+  if (state.stats.cluesStillUsable === null) {
+    return null;
+  }
+  const cardsNotGotten = state.stats.maxScore - state.stats.cardsGotten;
+  return statsRules.efficiency(cardsNotGotten, state.stats.cluesStillUsable);
+}
 
 export function getIndexConverter(
   variant: Variant,

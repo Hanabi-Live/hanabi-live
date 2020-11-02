@@ -8,6 +8,7 @@ import upOrDownTurn5Cards from "../../../test_data/up_or_down_turn5.json";
 import CardState from "../types/CardState";
 import StackDirection from "../types/StackDirection";
 import State from "../types/State";
+import { getEfficiency, getFutureEfficiency } from "./reducerHelpers";
 
 let testState: State;
 
@@ -41,10 +42,10 @@ describe("integration", () => {
         expect(turn5State.score).toBe(2);
         expect(turn5State.clueTokens).toBe(6);
         expect(turn5State.stats.pace).toBe(8);
-        expect(turn5State.stats.efficiency).toBeCloseTo(1.5);
-        expect(turn5State.stats.futureEfficiency).toBeCloseTo(
-          22 / (8 + 5 - 1 + 6),
-        );
+        const efficiency = getEfficiency(turn5State);
+        expect(efficiency).toBeCloseTo(1.5);
+        const futureEfficiency = getFutureEfficiency(turn5State);
+        expect(futureEfficiency).toBeCloseTo(22 / (8 + 5 - 1 + 6));
         expect(turn5State.stats.potentialCluesLost).toBe(2);
 
         expect(turn5State.playStackDirections).toEqual([
@@ -89,8 +90,10 @@ describe("integration", () => {
         expect(finalState.score).toBe(24);
         expect(finalState.clueTokens).toBe(2);
         expect(finalState.stats.pace).toBeNull();
-        expect(finalState.stats.efficiency).toBeCloseTo(1.39);
-        expect(finalState.stats.futureEfficiency).toBeNull();
+        const efficiency = getEfficiency(finalState);
+        expect(efficiency).toBeCloseTo(1.39);
+        const futureEfficiency = getFutureEfficiency(finalState);
+        expect(futureEfficiency).toBeNull();
         expect(finalState.stats.potentialCluesLost).toBe(18);
 
         expect(finalState.playStackDirections).toEqual([
@@ -140,8 +143,10 @@ describe("integration", () => {
         expect(finalState.score).toBe(25);
         expect(finalState.clueTokens).toBe(8);
         expect(finalState.stats.pace).toBeNull();
-        expect(finalState.stats.efficiency).toBeCloseTo(1.39);
-        expect(finalState.stats.futureEfficiency).toBeNull();
+        const efficiency = getEfficiency(finalState);
+        expect(efficiency).toBeCloseTo(1.39);
+        const futureEfficiency = getFutureEfficiency(finalState);
+        expect(futureEfficiency).toBeNull();
         expect(finalState.stats.potentialCluesLost).toBe(18);
       });
     });

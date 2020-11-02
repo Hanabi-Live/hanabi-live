@@ -3,7 +3,7 @@
 
 import produce, { Draft } from "immer";
 import { getCharacter, getVariant } from "../data/gameData";
-import { cardRules, clueTokensRules, variantRules } from "../rules";
+import { cardRules, clueTokensRules, turnRules, variantRules } from "../rules";
 import * as statsRules from "../rules/stats";
 import { ActionPlay, GameAction } from "../types/actions";
 import CardState from "../types/CardState";
@@ -67,17 +67,6 @@ function statsReducerFunction(
     }
   }
 
-  // Handle double discard calculation
-  if (action.type === "discard") {
-    stats.doubleDiscard = statsRules.doubleDiscard(
-      action.order,
-      currentState,
-      variant,
-    );
-  } else if (action.type === "play" || action.type === "clue") {
-    stats.doubleDiscard = false;
-  }
-
   // Handle max score calculation
   if (action.type === "play" || action.type === "discard") {
     stats.maxScorePerStack = statsRules.getMaxScorePerStack(
@@ -104,29 +93,40 @@ function statsReducerFunction(
   stats.paceRisk = statsRules.paceRisk(stats.pace, metadata.options.numPlayers);
 
   // Handle efficiency calculation
-  let cardsGotten = statsRules.cardsGotten(
+  stats.cardsGotten = statsRules.cardsGotten(
     currentState.deck,
     currentState.playStacks,
     currentState.playStackDirections,
     playing,
+    stats.maxScore,
     variant,
   );
-  if (cardsGotten > stats.maxScore) {
-    cardsGotten = stats.maxScore;
-  }
-  stats.efficiency = cardsGotten / stats.potentialCluesLost;
 
   // Handle future efficiency calculation
-  stats.futureEfficiency = statsRules.futureEfficiency(
-    stats.pace,
-    stats.maxScore,
-    cardsGotten,
+  const scorePerStack: number[] = Array.from(
     currentState.playStacks,
-    stats.maxScorePerStack,
-    currentState.clueTokens,
-    metadata,
-    variant,
+    (playStack) => playStack.length,
   );
+  stats.cluesStillUsable = statsRules.cluesStillUsable(
+    scorePerStack,
+    stats.maxScorePerStack,
+    stats.pace,
+    turnRules.endGameLength(metadata),
+    clueTokensRules.discardValue(variant),
+    clueTokensRules.suitValue(variant),
+    currentState.clueTokens,
+  );
+
+  // Handle double discard calculation
+  if (action.type === "discard") {
+    stats.doubleDiscard = statsRules.doubleDiscard(
+      action.order,
+      currentState,
+      variant,
+    );
+  } else if (action.type === "play" || action.type === "clue") {
+    stats.doubleDiscard = false;
+  }
 
   // Record the last action
   stats.lastAction = action;

@@ -43,7 +43,6 @@ import * as hypothetical from "./hypothetical";
 import MultiFitText from "./MultiFitText";
 import PlayStack from "./PlayStack";
 import RankButton from "./RankButton";
-import * as statsView from "./reactive/view/statsView";
 import * as replay from "./replay";
 import * as timer from "./timer";
 import * as tooltips from "./tooltips";
@@ -1448,6 +1447,12 @@ function drawStatistics() {
         return;
       }
       if (event.evt.altKey) {
+        if (globals.state.replay.active) {
+          modals.warningShow(
+            "You can not modify the future efficiency in replays.",
+          );
+          return;
+        }
         const effModString = window.prompt("");
         if (effModString === null) {
           // Don't do anything if they pressed the cancel button
@@ -1459,8 +1464,8 @@ function drawStatistics() {
           return;
         }
         globals.efficiencyModifier = effMod;
-        const futureEff = globals.state.visibleState!.stats.futureEfficiency;
-        statsView.onFutureEfficiencyChanged(futureEff);
+        // TODO
+        // statsView.onFutureEfficiencyChanged(futureEff);
       } else {
         arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
       }

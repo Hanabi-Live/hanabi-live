@@ -132,13 +132,21 @@ const visibleStateObservers: Subscriptions = [
   ),
 
   // Stats
-  subVS((s) => s.stats.futureEfficiency, statsView.onFutureEfficiencyChanged),
   subVS(
     (s) => ({
       pace: s.stats.pace,
       paceRisk: s.stats.paceRisk,
     }),
     statsView.onPaceOrPaceRiskChanged,
+  ),
+  subVS(
+    (s) => ({
+      cardsGotten: s.stats.cardsGotten,
+      potentialCluesLost: s.stats.potentialCluesLost,
+      maxScore: s.stats.maxScore,
+      cluesStillUsable: s.stats.cluesStillUsable,
+    }),
+    statsView.onEfficiencyChanged,
   ),
 
   // Logs

@@ -1,9 +1,16 @@
+import { statsRules } from "../../../rules";
 import { PaceRisk } from "../../../types/GameState";
 import { LABEL_COLOR } from "../../constants";
 import globals from "../../globals";
 
-// onFutureEfficiencyChanged updates the labels on the right-hand side of the screen
-export function onFutureEfficiencyChanged(efficiency: number | null): void {
+// onEfficiencyChanged updates the labels on the right-hand side of the screen
+export function onEfficiencyChanged(data: {
+  cardsGotten: number;
+  potentialCluesLost: number;
+  maxScore: number;
+  cluesStillUsable: number | null;
+}): void {
+  // Ensure that the labels exist
   const effLabel = globals.elements.efficiencyNumberLabel;
   if (!effLabel) {
     throw new Error(
@@ -23,14 +30,20 @@ export function onFutureEfficiencyChanged(efficiency: number | null): void {
     );
   }
 
-  if (efficiency !== null && Number.isFinite(efficiency)) {
+  const cardsNotGotten = data.maxScore - data.cardsGotten;
+  const futureEfficiency =
+    data.cluesStillUsable === null
+      ? NaN
+      : statsRules.efficiency(cardsNotGotten, data.cluesStillUsable);
+
+  if (!Number.isNaN(futureEfficiency) && Number.isFinite(futureEfficiency)) {
     // Show the efficiency and round it to 2 decimal places
-    effLabel.text(efficiency.toFixed(2));
-    effLabel.width(effLabel.measureSize(effLabel.text()).width);
+    effLabel.text(futureEfficiency.toFixed(2));
   } else {
     // Handle the case in which there are 0 possible clues remaining or the game has ended.
     effLabel.text("-");
   }
+  effLabel.width(effLabel.measureSize(effLabel.text()).width);
 
   // Reposition the two labels to the right of the efficiency label so that they are aligned
   // properly

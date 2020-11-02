@@ -20,6 +20,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   const { options } = metadata;
   const variant = getVariant(options.variantName);
   const turnState = initialTurnState(options.startingPlayer);
+  const clueTokens = clueTokensRules.getAdjusted(MAX_CLUE_NUM, variant);
   const cardsPerHand = handRules.cardsPerHand(options);
   const startingPace = statsRules.startingPace(
     options.numPlayers,
@@ -49,6 +50,24 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     });
   });
 
+  const scorePerStack: number[] = Array.from(
+    playStacks,
+    (playStack) => playStack.length,
+  );
+  const maxScorePerStack: number[] = initArray(playStacks.length, 5);
+  const endGameLength = turnRules.endGameLength(metadata);
+  const discardClueValue = clueTokensRules.discardValue(variant);
+  const suitClueValue = clueTokensRules.suitValue(variant);
+  const cluesStillUsable = statsRules.cluesStillUsable(
+    scorePerStack,
+    maxScorePerStack,
+    startingPace,
+    endGameLength,
+    discardClueValue,
+    suitClueValue,
+    clueTokens,
+  );
+
   return {
     turn: turnState,
     log: [],
@@ -57,7 +76,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     cardStatus,
     score: 0,
     numAttemptedCardsPlayed: 0,
-    clueTokens: clueTokensRules.getAdjusted(MAX_CLUE_NUM, variant),
+    clueTokens,
     strikes: [],
     hands,
     playStacks,
@@ -68,17 +87,16 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     stats: {
       maxScore: variant.maxScore,
       maxScorePerStack: new Array(variant.suits.length).fill(5) as number[],
-      doubleDiscard: false,
-      potentialCluesLost: 0,
-      efficiency: NaN,
-      futureEfficiency: statsRules.minEfficiency(
-        options.numPlayers,
-        turnRules.endGameLength(metadata),
-        variant,
-        handRules.cardsPerHand(options),
-      ),
+
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),
+
+      cardsGotten: 0,
+      potentialCluesLost: 0,
+
+      cluesStillUsable,
+
+      doubleDiscard: false,
       lastAction: null,
       soundTypeForLastAction: SoundType.Standard,
     },
