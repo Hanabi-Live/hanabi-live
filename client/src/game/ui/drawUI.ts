@@ -1408,8 +1408,8 @@ function drawStatistics() {
     listening: true,
   }) as TextWithTooltip;
   globals.layers.UI.add(efficiencyTextLabel);
-  efficiencyTextLabel.tooltipName = "efficiency";
-  const efficiencyContent = `
+  efficiencyTextLabel.tooltipName = "efficiency-text";
+  const efficiencyTextLabelContent = `
     Efficiency is calculated by: <br />
     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <em>(number of cards played +<br />
     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; number of cards with 1+ clues "on" them) /<br />
@@ -1420,7 +1420,7 @@ function drawStatistics() {
     &nbsp; &nbsp; &nbsp; &nbsp; to win with the current number of players and the current variant.<br />
     &nbsp; &nbsp; &nbsp; &nbsp; (For more information, click on the "Help" button in the lobby.)
   `;
-  efficiencyTextLabel.tooltipContent = efficiencyContent;
+  efficiencyTextLabel.tooltipContent = efficiencyTextLabelContent;
   tooltips.init(efficiencyTextLabel, true, false);
   efficiencyTextLabel.on(
     "click tap",
@@ -1429,15 +1429,13 @@ function drawStatistics() {
     },
   );
 
-  // We want the "|" to be part of the first label since we don't want
-  // to change the color of it later on
   const efficiencyNumberLabel = basicNumberLabel.clone({
     text: "-",
     x: 0.9 * winW,
     y: 0.56 * winH,
     fontSize: 0.02 * winH,
     listening: true,
-  }) as Konva.Text;
+  }) as TextWithTooltip;
   globals.layers.UI.add(efficiencyNumberLabel);
   globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
   efficiencyNumberLabel.on(
@@ -1446,6 +1444,11 @@ function drawStatistics() {
       arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
     },
   );
+  efficiencyNumberLabel.tooltipName = "efficiency-number";
+  const efficiencyNumberLabelContent =
+    'The "cards gotten" modifier is 0. Right click this number to add a modifier.';
+  efficiencyNumberLabel.tooltipContent = efficiencyNumberLabelContent;
+  tooltips.init(efficiencyNumberLabel, true, false);
 
   const efficiencyPipeLabel = basicNumberLabel.clone({
     text: " | ",
