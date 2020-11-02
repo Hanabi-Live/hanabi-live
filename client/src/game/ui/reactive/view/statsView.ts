@@ -31,12 +31,21 @@ export function onEfficiencyChanged(data: {
     );
   }
 
+  let shouldModifyEff;
+  if (globals.state.finished) {
+    // If we are not currently using the shared segments,
+    // the shared efficiency modifier will not be applicable
+    shouldModifyEff =
+      globals.state.replay.shared !== null &&
+      globals.state.replay.shared.useSharedSegments;
+  } else {
+    // Don't use the efficiency modifier during in-game replays
+    shouldModifyEff = globals.state.visibleState === globals.state.ongoingGame;
+  }
+
   let { cardsGotten } = data;
   let cardsGottenModified = false;
-  if (
-    globals.state.visibleState === globals.state.ongoingGame &&
-    globals.efficiencyModifier !== 0
-  ) {
+  if (shouldModifyEff && globals.efficiencyModifier !== 0) {
     // The user has specified a manual efficiency modification
     // (e.g. to account for a card that is Finessed)
     cardsGotten += globals.efficiencyModifier;
@@ -48,14 +57,12 @@ export function onEfficiencyChanged(data: {
     cardsGotten,
     data.potentialCluesLost,
   );
-  const shouldShowEfficiency =
-    !Number.isNaN(efficiency) && Number.isFinite(efficiency);
+  const shouldShowEfficiency = Number.isFinite(efficiency);
   const futureEfficiency =
     data.cluesStillUsable === null
       ? NaN
       : statsRules.efficiency(cardsNotGotten, data.cluesStillUsable);
-  const shouldShowFutureEfficiency =
-    !Number.isNaN(futureEfficiency) && Number.isFinite(futureEfficiency);
+  const shouldShowFutureEfficiency = Number.isFinite(futureEfficiency);
 
   if (shouldShowFutureEfficiency) {
     // Show the efficiency and round it to 2 decimal places

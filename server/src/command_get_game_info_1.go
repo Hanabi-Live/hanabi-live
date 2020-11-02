@@ -125,6 +125,7 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		SharedReplay        bool   `json:"sharedReplay"`
 		SharedReplayLeader  string `json:"sharedReplayLeader"`
 		SharedReplaySegment int    `json:"sharedReplaySegment"`
+		SharedReplayEffMod  int    `json:"sharedReplayEffMod"`
 
 		// Other features
 		Paused           bool `json:"paused"`
@@ -156,6 +157,7 @@ func getGameInfo1(s *Session, t *Table, playerIndex int, spectatorIndex int) {
 		SharedReplay:        t.Replay && t.Visible,
 		SharedReplayLeader:  t.GetSharedReplayLeaderName(),
 		SharedReplaySegment: g.Turn,
+		SharedReplayEffMod:  g.EfficiencyMod,
 
 		// Other features
 		Paused:           g.Paused,

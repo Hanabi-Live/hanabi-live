@@ -114,6 +114,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
         useSharedSegments: !inInGameReplay,
         leader: action.sharedReplayLeader,
         amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
+        efficiencyMod: 0,
       };
 
       break;
@@ -142,6 +143,7 @@ function stateReducerFunction(state: Draft<State>, action: Action) {
             useSharedSegments: true,
             leader: action.sharedReplayLeader,
             amLeader: action.sharedReplayLeader === state.metadata.ourUsername,
+            efficiencyMod: action.sharedReplayEffMod,
           };
         }
       }

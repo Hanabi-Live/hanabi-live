@@ -24,6 +24,7 @@ export default interface InitData {
   sharedReplay: boolean;
   sharedReplayLeader: string;
   sharedReplaySegment: number;
+  sharedReplayEffMod: number;
 
   // Pause settings
   paused: boolean;

@@ -3,4 +3,5 @@ export default interface SharedReplayState {
   readonly useSharedSegments: boolean;
   readonly leader: string;
   readonly amLeader: boolean;
+  readonly efficiencyMod: number;
 }

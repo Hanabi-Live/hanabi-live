@@ -23,6 +23,7 @@ import * as hypothetical from "./hypothetical";
 import * as notes from "./notes";
 import StateObserver from "./reactive/StateObserver";
 import * as replay from "./replay";
+import * as stats from "./stats";
 import * as timer from "./timer";
 import uiInit from "./uiInit";
 
@@ -282,6 +283,22 @@ commands.set("pause", (data: PauseData) => {
   });
 });
 
+interface ReplayEfficiencyModData {
+  tableID: number;
+  mod: number;
+}
+commands.set("replayEfficiencyMod", (data: ReplayEfficiencyModData) => {
+  if (
+    globals.state.replay.shared === null ||
+    // Shared replay leaders already set the efficiency after sending the "replayAction" message
+    globals.state.replay.shared.amLeader
+  ) {
+    return;
+  }
+
+  stats.setEfficiencyMod(data.mod);
+});
+
 // This is used in shared replays to highlight a specific card (or UI element)
 interface ReplayIndicatorData {
   order: ReplayArrowOrder;
@@ -448,6 +465,7 @@ function initStateStore(data: InitData) {
     databaseID: data.databaseID,
     sharedReplaySegment: data.sharedReplaySegment,
     sharedReplayLeader: data.sharedReplayLeader,
+    sharedReplayEffMod: data.sharedReplayEffMod,
     paused: data.paused,
     pausePlayerIndex: data.pausePlayerIndex,
   });
