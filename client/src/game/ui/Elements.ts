@@ -54,7 +54,8 @@ export default class Elements {
   clueLog: ClueLog | null = null;
   paceNumberLabel: Konva.Text | null = null;
   efficiencyNumberLabel: Konva.Text | null = null;
-  efficiencyNumberLabelMinNeeded: Konva.Text | null = null;
+  efficiencyPipeLabel: Konva.Text | null = null;
+  efficiencyMinNeededLabel: Konva.Text | null = null;
   noDiscardBorder: Konva.Rect | null = null;
   noDoubleDiscardBorder: Konva.Rect | null = null;
 

@@ -320,7 +320,7 @@ commands.set("replayIndicator", (data: ReplayIndicatorData) => {
     } else if (data.order === ReplayArrowOrder.Efficiency) {
       element = globals.elements.efficiencyNumberLabel;
     } else if (data.order === ReplayArrowOrder.MinEfficiency) {
-      element = globals.elements.efficiencyNumberLabelMinNeeded;
+      element = globals.elements.efficiencyMinNeededLabel;
     } else {
       console.warn('Received a "replayIndicator" for an unknown element.');
       return;

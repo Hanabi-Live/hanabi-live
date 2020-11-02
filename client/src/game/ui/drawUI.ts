@@ -1422,11 +1422,17 @@ function drawStatistics() {
   `;
   efficiencyTextLabel.tooltipContent = efficiencyContent;
   tooltips.init(efficiencyTextLabel, true, false);
+  efficiencyTextLabel.on(
+    "click tap",
+    (event: Konva.KonvaEventObject<MouseEvent>) => {
+      arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
+    },
+  );
 
   // We want the "|" to be part of the first label since we don't want
   // to change the color of it later on
   const efficiencyNumberLabel = basicNumberLabel.clone({
-    text: "- | ",
+    text: "-",
     x: 0.9 * winW,
     y: 0.56 * winH,
     fontSize: 0.02 * winH,
@@ -1434,13 +1440,6 @@ function drawStatistics() {
   }) as Konva.Text;
   globals.layers.UI.add(efficiencyNumberLabel);
   globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
-
-  efficiencyTextLabel.on(
-    "click tap",
-    (event: Konva.KonvaEventObject<MouseEvent>) => {
-      arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
-    },
-  );
   efficiencyNumberLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -1448,13 +1447,23 @@ function drawStatistics() {
     },
   );
 
+  const efficiencyPipeLabel = basicNumberLabel.clone({
+    text: " | ",
+    x: 0.905 * winW,
+    y: 0.56 * winH,
+    fontSize: 0.02 * winH,
+    listening: true,
+  }) as Konva.Text;
+  globals.layers.UI.add(efficiencyPipeLabel);
+  globals.elements.efficiencyPipeLabel = efficiencyPipeLabel;
+
   const minEfficiency = stats.minEfficiency(
     globals.options.numPlayers,
     turnRules.endGameLength(globals.metadata),
     globals.variant,
     handRules.cardsPerHand(globals.options),
   );
-  const efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
+  const efficiencyMinNeededLabel = basicNumberLabel.clone({
     text: minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places
     x: 0.918 * winW,
     y: 0.56 * winH,
@@ -1464,18 +1473,18 @@ function drawStatistics() {
     fill: minEfficiency < 1.25 ? LABEL_COLOR : "#ffb2b2",
     listening: true,
   }) as Konva.Text;
-  globals.layers.UI.add(efficiencyNumberLabelMinNeeded);
-  efficiencyNumberLabelMinNeeded.on(
+  globals.layers.UI.add(efficiencyMinNeededLabel);
+  efficiencyMinNeededLabel.on(
     "click tap",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
       arrows.click(
         event,
         ReplayArrowOrder.MinEfficiency,
-        efficiencyNumberLabelMinNeeded,
+        efficiencyMinNeededLabel,
       );
     },
   );
-  globals.elements.efficiencyNumberLabelMinNeeded = efficiencyNumberLabelMinNeeded;
+  globals.elements.efficiencyMinNeededLabel = efficiencyMinNeededLabel;
 }
 
 function drawDiscardArea() {

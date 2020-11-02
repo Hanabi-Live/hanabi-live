@@ -10,7 +10,13 @@ export function onFutureEfficiencyChanged(efficiency: number | null): void {
       'efficiencyNumberLabel is not initialized in the "onEfficiencyChanged()" function.',
     );
   }
-  const effMinLabel = globals.elements.efficiencyNumberLabelMinNeeded;
+  const effPipeLabel = globals.elements.efficiencyPipeLabel;
+  if (!effPipeLabel) {
+    throw new Error(
+      'efficiencyPipeLabel is not initialized in the "onEfficiencyChanged()" function.',
+    );
+  }
+  const effMinLabel = globals.elements.efficiencyMinNeededLabel;
   if (!effMinLabel) {
     throw new Error(
       'efficiencyNumberLabelMinNeeded is not initialized in the "onEfficiencyChanged()" function.',
@@ -19,23 +25,31 @@ export function onFutureEfficiencyChanged(efficiency: number | null): void {
 
   if (efficiency !== null && Number.isFinite(efficiency)) {
     // Show the efficiency and round it to 2 decimal places
-    effLabel.text(`${efficiency.toFixed(2)} | `);
+    effLabel.text(efficiency.toFixed(2));
     effLabel.width(effLabel.measureSize(effLabel.text()).width);
   } else {
     // Handle the case in which there are 0 possible clues remaining or the game has ended.
-    effLabel.text("- | ");
+    effLabel.text("-");
   }
 
-  // Even though the maximum efficiency needed has not changed,
-  // we might need to reposition the label
-  // (since it should be directly to the right of the efficiency label)
+  // Reposition the two labels to the right of the efficiency label so that they are aligned
+  // properly
   // The type of Konva.Text.width is "any" for some reason
   const effLabelSize = effLabel.measureSize(effLabel.text()).width as number;
   if (typeof effLabelSize !== "number") {
     throw new Error("The width of effLabel was not a number.");
   }
-  const x = effLabel.x() + effLabelSize;
-  effMinLabel.x(x);
+  const pipeX = effLabel.x() + effLabelSize;
+  effPipeLabel.x(pipeX);
+
+  // The type of Konva.Text.width is "any" for some reason
+  const effPipeLabelSize = effPipeLabel.measureSize(effPipeLabel.text())
+    .width as number;
+  if (typeof effPipeLabelSize !== "number") {
+    throw new Error("The width of effPipeLabel was not a number.");
+  }
+  const minEffX = pipeX + effPipeLabelSize;
+  effMinLabel.x(minEffX);
 
   globals.layers.UI.batchDraw();
 }
