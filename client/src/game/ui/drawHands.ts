@@ -25,11 +25,7 @@ const namePosBGA: HandConfig[][] = [];
 export default function drawHands(winW: number, winH: number): void {
   // Constants
   const { numPlayers } = globals.options;
-  const numCardsPerHand = hand.cardsPerHand(
-    numPlayers,
-    globals.options.oneExtraCard,
-    globals.options.oneLessCard,
-  );
+  const numCardsPerHand = hand.cardsPerHand(globals.options);
 
   /* eslint-disable object-curly-newline */
 

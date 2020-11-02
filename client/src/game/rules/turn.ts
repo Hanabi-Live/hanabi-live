@@ -85,19 +85,23 @@ export function getNextPlayerIndex(
   return nextPlayerIndex;
 }
 
-export function getEndTurn(turn: number, metadata: GameMetadata): number {
+export function endGameLength(metadata: GameMetadata): number {
   // The Contrarian detrimental character has a 2-turn end game
   if (metadata.options.detrimentalCharacters) {
     for (const characterID of metadata.characterAssignments) {
       if (characterID !== null) {
         const character = getCharacter(characterID);
         if (character.name === "Contrarian") {
-          return turn + 2;
+          return 2;
         }
       }
     }
   }
 
   // By default, each player gets one more turn after the final card is drawn
-  return turn + metadata.options.numPlayers;
+  return metadata.options.numPlayers;
+}
+
+export function getEndTurn(turn: number, metadata: GameMetadata): number {
+  return turn + endGameLength(metadata);
 }

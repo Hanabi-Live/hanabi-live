@@ -132,7 +132,7 @@ const visibleStateObservers: Subscriptions = [
   ),
 
   // Stats
-  subVS((s) => s.stats.efficiency, statsView.onEfficiencyChanged),
+  subVS((s) => s.stats.futureEfficiency, statsView.onFutureEfficiencyChanged),
   subVS(
     (s) => ({
       pace: s.stats.pace,

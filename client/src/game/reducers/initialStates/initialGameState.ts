@@ -7,6 +7,7 @@ import {
   handRules,
   playStacksRules,
   statsRules,
+  turnRules,
 } from "../../rules";
 import CardStatus from "../../types/CardStatus";
 import { MAX_CLUE_NUM } from "../../types/constants";
@@ -19,13 +20,10 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   const { options } = metadata;
   const variant = getVariant(options.variantName);
   const turnState = initialTurnState(options.startingPlayer);
-  const cardsPerHand = handRules.cardsPerHand(
-    options.numPlayers,
-    options.oneExtraCard,
-    options.oneLessCard,
-  );
+  const cardsPerHand = handRules.cardsPerHand(options);
   const startingPace = statsRules.startingPace(
     options.numPlayers,
+    turnRules.endGameLength(metadata),
     cardsPerHand,
     variant,
   );
@@ -69,9 +67,16 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     clues: [],
     stats: {
       maxScore: variant.maxScore,
+      maxScorePerStack: new Array(variant.suits.length).fill(5) as number[],
       doubleDiscard: false,
       potentialCluesLost: 0,
-      efficiency: Infinity,
+      efficiency: NaN,
+      futureEfficiency: statsRules.minEfficiency(
+        options.numPlayers,
+        turnRules.endGameLength(metadata),
+        variant,
+        handRules.cardsPerHand(options),
+      ),
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),
       lastAction: null,

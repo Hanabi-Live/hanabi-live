@@ -42,6 +42,9 @@ describe("integration", () => {
         expect(turn5State.clueTokens).toBe(6);
         expect(turn5State.stats.pace).toBe(8);
         expect(turn5State.stats.efficiency).toBeCloseTo(1.5);
+        expect(turn5State.stats.futureEfficiency).toBeCloseTo(
+          22 / (8 + 5 - 1 + 6),
+        );
         expect(turn5State.stats.potentialCluesLost).toBe(2);
 
         expect(turn5State.playStackDirections).toEqual([
@@ -87,6 +90,7 @@ describe("integration", () => {
         expect(finalState.clueTokens).toBe(2);
         expect(finalState.stats.pace).toBeNull();
         expect(finalState.stats.efficiency).toBeCloseTo(1.39);
+        expect(finalState.stats.futureEfficiency).toBeNull();
         expect(finalState.stats.potentialCluesLost).toBe(18);
 
         expect(finalState.playStackDirections).toEqual([
@@ -137,6 +141,7 @@ describe("integration", () => {
         expect(finalState.clueTokens).toBe(8);
         expect(finalState.stats.pace).toBeNull();
         expect(finalState.stats.efficiency).toBeCloseTo(1.39);
+        expect(finalState.stats.futureEfficiency).toBeNull();
         expect(finalState.stats.potentialCluesLost).toBe(18);
       });
     });

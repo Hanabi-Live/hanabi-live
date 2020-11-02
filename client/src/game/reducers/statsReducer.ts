@@ -5,6 +5,7 @@ import produce, { Draft } from "immer";
 import { getCharacter, getVariant } from "../data/gameData";
 import { cardRules, clueTokensRules, variantRules } from "../rules";
 import * as statsRules from "../rules/stats";
+import * as turnRules from "../rules/turn";
 import { ActionPlay, GameAction } from "../types/actions";
 import CardState from "../types/CardState";
 import ClueType from "../types/ClueType";
@@ -42,7 +43,7 @@ function statsReducerFunction(
       // But don't reveal that a strike has happened to players in an ongoing "Throw It in a Hole"
       // game
       if (!variantRules.isThrowItInAHole(variant) || !playing) {
-        stats.potentialCluesLost += clueTokensRules.value(variant);
+        stats.potentialCluesLost += clueTokensRules.discardValue(variant);
       }
 
       break;
@@ -56,7 +57,7 @@ function statsReducerFunction(
       ) {
         // If we finished a stack while at max clues, then the extra clue is "wasted",
         // similar to what happens when the team gets a strike
-        stats.potentialCluesLost += clueTokensRules.value(variant);
+        stats.potentialCluesLost += clueTokensRules.discardValue(variant);
       }
 
       break;
@@ -80,11 +81,12 @@ function statsReducerFunction(
 
   // Handle max score calculation
   if (action.type === "play" || action.type === "discard") {
-    stats.maxScore = statsRules.getMaxScore(
+    stats.maxScorePerStack = statsRules.getMaxScorePerStack(
       currentState.deck,
       currentState.playStackDirections,
       variant,
     );
+    stats.maxScore = stats.maxScorePerStack.reduce((a, b) => a + b, 0);
   }
 
   // Handle pace calculation
@@ -103,17 +105,37 @@ function statsReducerFunction(
   stats.paceRisk = statsRules.paceRisk(stats.pace, metadata.options.numPlayers);
 
   // Handle efficiency calculation
-  const cardsGotten = statsRules.cardsGotten(
+  let cardsGotten = statsRules.cardsGotten(
     currentState.deck,
     currentState.playStacks,
     currentState.playStackDirections,
     playing,
     variant,
   );
-  stats.efficiency = statsRules.efficiency(
-    cardsGotten,
-    stats.potentialCluesLost,
-  );
+  if (cardsGotten > stats.maxScore) {
+    cardsGotten = stats.maxScore;
+  }
+  stats.efficiency = cardsGotten / stats.potentialCluesLost;
+
+  if (stats.pace === null) {
+    stats.futureEfficiency = null;
+  } else {
+    const cardsNotGotten = stats.maxScore - cardsGotten;
+    const scorePerStack: number[] = Array.from(
+      currentState.playStacks,
+      (playStack) => playStack.length,
+    );
+    const totalCluesUsable = statsRules.maxClues(
+      scorePerStack,
+      stats.maxScorePerStack,
+      stats.pace,
+      turnRules.endGameLength(metadata),
+      clueTokensRules.discardValue(variant),
+      clueTokensRules.suitValue(variant),
+      currentState.clueTokens,
+    );
+    stats.futureEfficiency = cardsNotGotten / totalCluesUsable;
+  }
 
   // Record the last action
   stats.lastAction = action;

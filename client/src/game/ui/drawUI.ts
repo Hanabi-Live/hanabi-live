@@ -4,6 +4,7 @@ import Konva from "konva";
 import * as debug from "../../debug";
 import { parseIntSafe } from "../../misc";
 import * as modals from "../../modals";
+import { handRules, turnRules } from "../rules";
 import * as deck from "../rules/deck";
 import * as stats from "../rules/stats";
 import * as variantRules from "../rules/variant";
@@ -1413,7 +1414,8 @@ function drawStatistics() {
     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <em>(number of cards played +<br />
     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; number of cards with 1+ clues "on" them) /<br />
     &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; number of clues given or lost</em><br />
-    &nbsp; &nbsp; &nbsp; &nbsp; The first number is the efficiency of the current game.<br />
+    &nbsp; &nbsp; &nbsp; &nbsp; The first number is the minimum amount of efficiency needed from <br />
+    &nbsp; &nbsp; &nbsp; &nbsp; this turn onward in order to win (i.e. future required efficiency).<br />
     &nbsp; &nbsp; &nbsp; &nbsp; The second number shows the minimum possible efficiency needed<br />
     &nbsp; &nbsp; &nbsp; &nbsp; to win with the current number of players and the current variant.<br />
     &nbsp; &nbsp; &nbsp; &nbsp; (For more information, click on the "Help" button in the lobby.)
@@ -1421,10 +1423,10 @@ function drawStatistics() {
   efficiencyTextLabel.tooltipContent = efficiencyContent;
   tooltips.init(efficiencyTextLabel, true, false);
 
-  // We want the "/" to be part of the first label since we don't want
+  // We want the "|" to be part of the first label since we don't want
   // to change the color of it later on
   const efficiencyNumberLabel = basicNumberLabel.clone({
-    text: "- / ",
+    text: "- | ",
     x: 0.9 * winW,
     y: 0.56 * winH,
     fontSize: 0.02 * winH,
@@ -1448,9 +1450,9 @@ function drawStatistics() {
 
   const minEfficiency = stats.minEfficiency(
     globals.options.numPlayers,
+    turnRules.endGameLength(globals.metadata),
     globals.variant,
-    globals.options.oneExtraCard,
-    globals.options.oneLessCard,
+    handRules.cardsPerHand(globals.options),
   );
   const efficiencyNumberLabelMinNeeded = basicNumberLabel.clone({
     text: minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places
