@@ -4,9 +4,8 @@ import Konva from "konva";
 import * as debug from "../../debug";
 import { parseIntSafe } from "../../misc";
 import * as modals from "../../modals";
-import { handRules, turnRules } from "../rules";
+import { handRules, statsRules, turnRules } from "../rules";
 import * as deck from "../rules/deck";
-import * as stats from "../rules/stats";
 import * as variantRules from "../rules/variant";
 import { colorClue, rankClue } from "../types/Clue";
 import { STACK_BASE_RANK } from "../types/constants";
@@ -43,8 +42,8 @@ import * as hypothetical from "./hypothetical";
 import MultiFitText from "./MultiFitText";
 import PlayStack from "./PlayStack";
 import RankButton from "./RankButton";
-import * as statsView from "./reactive/view/statsView";
 import * as replay from "./replay";
+import * as stats from "./stats";
 import * as timer from "./timer";
 import * as tooltips from "./tooltips";
 
@@ -1439,48 +1438,7 @@ function drawStatistics() {
   }) as TextWithTooltip;
   globals.layers.UI.add(efficiencyNumberLabel);
   globals.elements.efficiencyNumberLabel = efficiencyNumberLabel;
-  efficiencyNumberLabel.on(
-    "click tap",
-    (event: Konva.KonvaEventObject<MouseEvent>) => {
-      // "event.evt.buttons" is always 0 here
-      if (event.evt.button !== 2) {
-        // We only care about right-clicks
-        return;
-      }
-      if (event.evt.altKey) {
-        if (globals.state.replay.active) {
-          modals.warningShow(
-            "You can not modify the future efficiency in replays.",
-          );
-          return;
-        }
-
-        const effModString = window.prompt(
-          'Enter a modifier for the "cards currently gotten": (e.g. "1", "-2", etc.)',
-        );
-        if (effModString === null) {
-          // Don't do anything if they pressed the cancel button
-          return;
-        }
-        const effMod = parseIntSafe(effModString);
-        if (Number.isNaN(effMod)) {
-          // Don't do anything if they entered something that is not a number
-          return;
-        }
-        globals.efficiencyModifier = effMod;
-
-        const ongoingGameStatsState = globals.state.ongoingGame.stats;
-        statsView.onEfficiencyChanged({
-          cardsGotten: ongoingGameStatsState.cardsGotten,
-          potentialCluesLost: ongoingGameStatsState.potentialCluesLost,
-          maxScore: ongoingGameStatsState.maxScore,
-          cluesStillUsable: ongoingGameStatsState.cluesStillUsable,
-        });
-      } else {
-        arrows.click(event, ReplayArrowOrder.Efficiency, efficiencyNumberLabel);
-      }
-    },
-  );
+  efficiencyNumberLabel.on("click tap", stats.efficiencyLabelClick);
   efficiencyNumberLabel.tooltipName = "efficiency-number";
   // The tooltip will be filled in later in the "statsView.onEfficiencyChanged()" function
   efficiencyNumberLabel.tooltipContent = "";
@@ -1496,7 +1454,7 @@ function drawStatistics() {
   globals.layers.UI.add(efficiencyPipeLabel);
   globals.elements.efficiencyPipeLabel = efficiencyPipeLabel;
 
-  const minEfficiency = stats.minEfficiency(
+  const minEfficiency = statsRules.minEfficiency(
     globals.options.numPlayers,
     turnRules.endGameLength(globals.metadata),
     globals.variant,

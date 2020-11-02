@@ -114,7 +114,7 @@ export function onEfficiencyChanged(data: {
       shouldShowFutureEfficiency ? futureEfficiency.toFixed(2) : "-",
     )}
     <br />
-    &nbsp; &nbsp; &nbsp; &nbsp; Alt + right click this number to add a modifier.
+    Alt + right click this number to add a modifier.
   `;
   effLabel.tooltipContent = tooltipContent;
   tooltips.init(effLabel, true, false);
