@@ -1456,7 +1456,7 @@ function drawStatistics() {
         }
 
         const effModString = window.prompt(
-          'Enter a modifier for the "cards currently gotten": (e.g. "1" or "-2")',
+          'Enter a modifier for the "cards currently gotten": (e.g. "1", "-2", etc.)',
         );
         if (effModString === null) {
           // Don't do anything if they pressed the cancel button
@@ -1482,9 +1482,8 @@ function drawStatistics() {
     },
   );
   efficiencyNumberLabel.tooltipName = "efficiency-number";
-  const efficiencyNumberLabelContent =
-    'The "cards gotten" modifier is 0. Right click this number to add a modifier.';
-  efficiencyNumberLabel.tooltipContent = efficiencyNumberLabelContent;
+  // The tooltip will be filled in later in the "statsView.onEfficiencyChanged()" function
+  efficiencyNumberLabel.tooltipContent = "";
   tooltips.init(efficiencyNumberLabel, true, false);
 
   const efficiencyPipeLabel = basicNumberLabel.clone({

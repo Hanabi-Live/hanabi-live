@@ -741,6 +741,11 @@ input::-webkit-calendar-picker-indicator {
   box-sizing: border-box;
 }
 
+.efficiency-description {
+  display: inline-block;
+  width: 12em;
+}
+
 /*
   Profile
 */

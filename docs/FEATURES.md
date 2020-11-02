@@ -136,17 +136,19 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - Pace:
   - You can think of the game as a race to play all of the cards before the deck runs out. It is useful to track how close to the end of the race you are.
   - Pace is a measure of the amount of discards that can happen while still having a chance to get the maximum score.
-  - Pace is calculated with the following formula: `current score + cards in deck + number of players - maximum score`.
+  - Pace is calculated with the following formula:
+    - `current score + cards in deck + number of players - maximum score`.
   - If you discard all copies of a card, so that the the maximum achievable score lowers, pace will adjust accordingly.
   - At pace 0, the only way to win is if every player plays a card in the last round of the game.
 - Efficiency:
-  - Since you only have a limited amount of clues, you want to be as efficient as possible with then. It is useful to track how well the team is doing with regards to this.
-  - Efficiency is calculated with the following formula: `(number of cards played + number of unplayed cards with one or more clues "on" them) / number of clues given or lost`
-  - The numerator (first number) shows the efficiency needed to win the current game based on how well things are going so far (e.g. future required efficiency).
-  - The denominator (second number) shows the minimum possible efficiency needed to win with the current number of players and the current variant. (This number is statically calculated at the beginning of the game - it will not adjust if the maximum achievable score lowers.)
+  - Since you only have a limited amount of clues, you want to be as efficient as possible with them. It is useful to track how well the team is doing with regards to this.
+  - Efficiency is calculated with the following formula:
+    - `(number of cards played + number of unplayed cards with one or more clues "on" them) / number of clues given or lost`
+  - The first number shows the efficiency needed to win the current game based on how well things are going so far (e.g. future required efficiency).
+  - The second number shows the minimum possible efficiency needed to win with the current number of players and the current variant. (This number is calculated at the beginning of the game and will not change if the maximum achievable score lowers.)
   - Note that this measure of efficiency assumes *Good Touch Principle* - that all clued cards will eventually be played. If your team does not play with *Good Touch Principle*, then these numbers won't be useful.
   - Efficiency will automatically account for clued cards that are globally known to be trash. Such cards will not be included in the "number of unplayed cards with one or more clues on them" term.
-  - Players can manually modify the "cards gotten" by right-clicking on the efficiency. This is useful to account for cards that are *Finessed*, cards that are known to be trash, and so forth.
+  - Players can manually modify the "cards gotten" term with `alt + right-click` on the first efficiency number. This is useful to account for cards that are *Finessed*, cards that are known to be trash, and so forth.
 
 #### 6-Player Games
 

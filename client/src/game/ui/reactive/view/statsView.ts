@@ -2,6 +2,7 @@ import { statsRules } from "../../../rules";
 import { PaceRisk } from "../../../types/GameState";
 import { LABEL_COLOR } from "../../constants";
 import globals from "../../globals";
+import * as tooltips from "../../tooltips";
 
 // onEfficiencyChanged updates the labels on the right-hand side of the screen
 export function onEfficiencyChanged(data: {
@@ -43,12 +44,20 @@ export function onEfficiencyChanged(data: {
   }
   const cardsNotGotten = data.maxScore - cardsGotten;
 
+  const efficiency = statsRules.efficiency(
+    cardsGotten,
+    data.potentialCluesLost,
+  );
+  const shouldShowEfficiency =
+    !Number.isNaN(efficiency) && Number.isFinite(efficiency);
   const futureEfficiency =
     data.cluesStillUsable === null
       ? NaN
       : statsRules.efficiency(cardsNotGotten, data.cluesStillUsable);
+  const shouldShowFutureEfficiency =
+    !Number.isNaN(futureEfficiency) && Number.isFinite(futureEfficiency);
 
-  if (!Number.isNaN(futureEfficiency) && Number.isFinite(futureEfficiency)) {
+  if (shouldShowFutureEfficiency) {
     // Show the efficiency and round it to 2 decimal places
     effLabel.text(futureEfficiency.toFixed(2));
   } else {
@@ -79,6 +88,36 @@ export function onEfficiencyChanged(data: {
   // Change the color of the efficiency label if there is a custom modification
   const effLabelColor = cardsGottenModified ? "#00ffff" : LABEL_COLOR;
   effLabel.fill(effLabelColor);
+
+  // Update the tooltip
+  function formatLine(left: string, right: number | string, usePadding = true) {
+    return `${
+      usePadding ? "&nbsp; &nbsp; &nbsp; &nbsp; " : ""
+    }<span class="efficiency-description">${left}:</span> <strong>${right}</strong><br />`;
+  }
+  const tooltipContent = `
+    ${formatLine("Current cards gotten", data.cardsGotten, false)}
+    ${formatLine("Current cards gotten modifier", globals.efficiencyModifier)}
+    ${formatLine("Potential clues lost", data.potentialCluesLost)}
+    ${formatLine(
+      "Current efficiency",
+      shouldShowEfficiency ? efficiency.toFixed(2) : "-",
+    )}
+    <br />
+    ${formatLine("Cards remaining to get", cardsNotGotten)}
+    ${formatLine(
+      "Remaining possible clues",
+      data.cluesStillUsable === null ? "-" : data.cluesStillUsable,
+    )}
+    ${formatLine(
+      "Future required efficiency",
+      shouldShowFutureEfficiency ? futureEfficiency.toFixed(2) : "-",
+    )}
+    <br />
+    &nbsp; &nbsp; &nbsp; &nbsp; Alt + right click this number to add a modifier.
+  `;
+  effLabel.tooltipContent = tooltipContent;
+  tooltips.init(effLabel, true, false);
 
   globals.layers.UI.batchDraw();
 }

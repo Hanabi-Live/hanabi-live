@@ -12,6 +12,7 @@ import SharedTurnsButton from "./controls/SharedTurnsButton";
 import Shuttle from "./controls/Shuttle";
 import StrikeSquare from "./controls/StrikeSquare";
 import StrikeX from "./controls/StrikeX";
+import TextWithTooltip from "./controls/TextWithTooltip";
 import ThreeLineButton from "./controls/ThreeLineButton";
 import TimerDisplay from "./controls/TimerDisplay";
 import Deck from "./Deck";
@@ -53,7 +54,7 @@ export default class Elements {
   // Extra elements on the right-hand side + the bottom
   clueLog: ClueLog | null = null;
   paceNumberLabel: Konva.Text | null = null;
-  efficiencyNumberLabel: Konva.Text | null = null;
+  efficiencyNumberLabel: TextWithTooltip | null = null;
   efficiencyPipeLabel: Konva.Text | null = null;
   efficiencyMinNeededLabel: Konva.Text | null = null;
   noDiscardBorder: Konva.Rect | null = null;
