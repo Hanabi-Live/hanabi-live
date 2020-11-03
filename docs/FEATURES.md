@@ -359,7 +359,7 @@ If you are playing with the [Hyphen-ated group](https://github.com/Zamiell/hanab
 - Pace is calculated with the following formula:
   - `current score + cards in deck + number of players - maximum score`.
 - If you discard all copies of a card (so that the the maximum achievable score lowers), pace will adjust accordingly.
-- At pace 0, the only way to win is if every player plays a card in the last round of the game.
+- At pace 0, the only way to get the maximum score is if every player plays a card in the last round of the game.
 
 ### Efficiency
 
@@ -376,15 +376,15 @@ If you are playing with the [Hyphen-ated group](https://github.com/Zamiell/hanab
 
 #### 1) Future Required Efficiency
 
-- The left number shows the efficiency needed to win the current game based on how well things are going so far (e.g. future required efficiency). This is calculated with the following formula:
-  - `cards not gotten / clues still usable"`
-  - `cards not gotten` is simply `maximum possible score - cards gotten`.
+- The left number shows the efficiency needed to get the maximum score based on how well things are going so far (e.g. future required efficiency). This is calculated with the following formula:
+  - `cards not gotten yet / clues still usable"`
+  - `cards not gotten yet` is simply `maximum possible score - cards gotten`.
   - `clues still usable` is simply the maximum amount of clues that it is possible for the team to give before the game ends.
-- Players can mouse over the left number in order to see how it is specifically being calculated.
+- Players can mouse over the *Future Required Efficiency* number in order to see how it is being calculated.
 
 #### 2) Minimum Required Efficiency
 
-- The right number shows the minimum possible efficiency needed to win from the very beginning of the game. This is calculated with the following formula:
+- The right number shows the minimum possible efficiency needed to get a maximum score from the very beginning of the game. This is calculated with the following formula:
   - `max score based on the variant / maximum possible clues that it is possible to give before the game ends`
   - (This is the exact same formula as *Future Required Efficiency*, just written in different words so that it refers to the case before anything has happened.)
 - Note that *Minimum Required Efficiency* is calculated at the beginning of the game and will not change in the middle of the game if the maximum achievable score lowers.
