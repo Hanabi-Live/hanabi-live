@@ -399,7 +399,7 @@ If you are playing with the [Hyphen-ated group](https://github.com/Zamiell/hanab
 - If the *Future Required Efficiency* is below the *Minimum Required Efficiency*, then:
   - The team is on track to get a perfect score.
   - Future clues to not necessarily have to be as efficient as the ones previously given.
-  - The team probably afford to give mediocre clues and play conservatively.
+  - The team can probably afford to give mediocre clues and play conservatively.
 - If the *Future Required Efficiency* is above the *Minimum Required Efficiency*, then:
   - The team is not on track to get a perfect score.
   - If a perfect score is desired, the team must start giving more efficient clues than the ones that have already been given.
