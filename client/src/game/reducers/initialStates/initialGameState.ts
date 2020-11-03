@@ -65,7 +65,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     endGameLength,
     discardClueValue,
     suitClueValue,
-    clueTokens,
+    clueTokensRules.getUnadjusted(clueTokens, variant),
   );
 
   return {
