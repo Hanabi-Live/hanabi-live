@@ -80,6 +80,16 @@ export function onScoreOrMaxScoreChanged(data: {
   }
   scoreLabel.text(data.score.toString());
 
+  // Make the score label a separate color if it is the "Low Score Phase"
+  // (but only for members of the Hyphen-ated group)
+  const lowScorePhaseThreshold = globals.variant.suits.length * 2;
+  const lowScorePhase = data.score < lowScorePhaseThreshold;
+  const scoreLabelColor =
+    lowScorePhase && globals.lobby.settings.hyphenatedConventions
+      ? "cyan"
+      : LABEL_COLOR;
+  scoreLabel.fill(scoreLabelColor);
+
   // Reposition the maximum score
   const maxScoreLabel = globals.elements.maxScoreNumberLabel;
   if (maxScoreLabel === null) {
