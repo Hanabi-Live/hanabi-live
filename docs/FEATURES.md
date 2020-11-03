@@ -10,10 +10,11 @@ Read through this page (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl
 
 1. [Basic How-To](#basic-how-to)
 1. [Major Features](#major-features)
-1. [Notes](#notes)
 1. [Custom Game Options](#custom-game-options)
 1. [Other Options](#other-options)
+1. [Notes](#notes)
 1. [Sounds](#sounds)
+1. [Pace & Efficiency](#pace--efficiency)
 1. [Keyboard Shortcuts](#keyboard-shortcuts)
 1. [Similar Deals and Competitive Play](#similar-deals-and-competitive-play)
 1. [Chat](#chat)
@@ -67,9 +68,9 @@ Read through this page (or use [`Ctrl + f`](https://www.google.com/search?q=ctrl
 
 #### Pips
 
-- Suit pips (that represent the possible suits) and black boxes (that represent the possible ranks) will appear on cards in a player's hand.
-- The pips and boxes will automatically disappear as positive clues and negative clues "touch" the card.
-- The pips and boxes will automatically be crossed out if all the particular cards for that suit/rank are visible.
+- Suit pips (that represent the possible suits) and white numbers (that represent the possible ranks) will appear on cards in a player's hand.
+- The pips and numbers will automatically disappear as positive clues and negative clues "touch" the card.
+- The pips and numbers will automatically be crossed out if all the particular cards for that suit/rank are visible.
 
 #### Critical Indicator
 
@@ -130,94 +131,14 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 - When a hypothetical is active, other players cannot "break free" or return to previous turns.
 - The leader can Alt + right-click on a card to morph it into an arbitrary card. This can be useful for showing how players have to account for different kinds of situations or to create specific game states.
 
-#### Game Statistics
+#### In-Game Statistics
 
 - Some statistics are shown on the right hand side of the screen to show how well the game is going.
-- Pace:
-  - You can think of the game as a race to play all of the cards before the deck runs out. It is useful to track how close to the end of the race you are.
-  - Pace is a measure of the amount of discards that can happen while still having a chance to get the maximum score.
-  - Pace is calculated with the following formula:
-    - `current score + cards in deck + number of players - maximum score`.
-  - If you discard all copies of a card, so that the the maximum achievable score lowers, pace will adjust accordingly.
-  - At pace 0, the only way to win is if every player plays a card in the last round of the game.
-- Efficiency:
-  - Since you only have a limited amount of clues, you want to be as efficient as possible with them. It is useful to track how well the team is doing with regards to this.
-  - Efficiency is calculated with the following formula:
-    - `(number of cards played + number of unplayed cards with one or more clues "on" them) / number of clues given or lost`
-  - The first number shows the efficiency needed to win the current game based on how well things are going so far (e.g. future required efficiency).
-  - The second number shows the minimum possible efficiency needed to win with the current number of players and the current variant. (This number is calculated at the beginning of the game and will not change if the maximum achievable score lowers.)
-  - Note that this measure of efficiency assumes *Good Touch Principle* - that all clued cards will eventually be played. If your team does not play with *Good Touch Principle*, then these numbers won't be useful.
-  - Efficiency will automatically account for clued cards that are globally known to be trash. Such cards will not be included in the "number of unplayed cards with one or more clues on them" term.
-  - Players can mouse over the first efficiency number in order to see how it is calculated.
-  - Players can manually modify the "cards gotten" term with `alt + right-click` on the first efficiency number. This is useful to account for cards that are *Finessed*, cards that are known to be trash, and so forth.
+- More information about the stats can be found in [the Pace & Efficiency section](#pace--efficiency) below.
 
 #### 6-Player Games
 
 - In 6-player games, only three cards are dealt to each player.
-
-<br />
-
-## Notes
-
-#### Basic Description
-
-- When in the middle of an ongoing game, players can right-click or double-tap on any card to add a note to it. Afterward, by hovering over a card, a tooltip will appear with the written note.
-- This is useful for storing contextual information about a card for later.
-- Notes can also be written during an in-game replay as a way to track the card as it moves throughout your hand.
-- Since notes are tracked by the server, players can switch computers mid-game and keep any notes written.
-- Notes are saved in the database and will persist into the replay.
-- Everyone's notes are combined and shown to spectators, which is fun to see.
-
-#### Card Identity Notes
-
-- If the note matches the name of a card (e.g. "red 1", "r1", etc.), the card face will change to match.
-  - The new card face will automatically be deactivated if a clue is received that falsifies the note.
-- If this behavior is undesired, append a question mark to the end of your note. (e.g. "r1?")
-
-| Suit Name       | Abbreviation
-| --------------- | ------------
-| Black           | K
-| Rainbow         | M
-| Muddy Rainbow   | M
-| Pink            | I
-| Light Pink      | I
-| Brown           | N
-| Omni            | O
-| Null            | U
-| Prism           | I
-| [any dark suit] | [the same as the "normal" version of the suit]
-| Gray            | A
-
-- If there are two suits with the same abbreviation, the second suit abbreviation will be changed to be the left-most unused letter.
-  - For example, in "Rainbow & Muddy Rainbow (6 Suits)", muddy rainbow will have an abbreviation of "U".
-
-#### Special Note Borders
-
-- A note of "f" can be written to indicate that the card is "Finessed". This will draw a special border around the card.
-- A note of "cm" can be written to indicate that the card is "Chop Moved". This will draw a special border around the card.
-
-#### Other Special Notes
-
-- A note of "kt", "trash", "stale", or "bad" can be written to indicate that the card is "Trash". This will draw a special image on the card.
-- A note of "fixme" can be be written to indicate that the card needs to be given a "fix clue" at some point in the future. This will draw a special image on the card.
-- A note of "blank" can be written on a card to make it look like the deck back.
-- A note of "unclued" can be written to manually remove the border that normally appears around a card when it is touched by one or more clues.
-
-#### Adding Context to Special Notes
-
-- If you want to keep the behavior of a special note but write additional text on the note, place the special note in square brackets. This can also be used to stack multiple effects on top of each other. For example, the note "[f] [r1]" will mark a card as finessed and as a red 1.
-
-#### Note Shortcuts
-
-- There are also some keyboard shortcuts for making notes:
-  - Shift + Right-click --> f
-    - "f" is a common abbreviation for "this card is *Finessed*".
-    - This will also draw a special border around the card.
-  - Alt + Right-click --> cm
-    - "cm" is a common abbreviation for "this card is *Chop Moved*".
-    - This will also draw a special border around the card.
-  - Ctrl + Shift + Right-click --> [previously entered note]
-    - If you need to put the same note on multiple cards, enter the note on the first card, and then use this hotkey on the rest of the cards.
 
 <br />
 
@@ -346,6 +267,71 @@ If you are playing with the [Hyphen-ated group](https://github.com/Zamiell/hanab
 
 <br />
 
+## Notes
+
+#### Basic Description
+
+- When in the middle of an ongoing game, players can right-click or double-tap on any card to add a note to it. Afterward, by hovering over a card, a tooltip will appear with the written note.
+- This is useful for storing contextual information about a card for later. (e.g. "they should know that this card is exactly red 2 from the clue on turn 3)
+- Notes can also be written during an in-game replay as a way to track a card as it moves throughout your hand.
+- Since notes are tracked by the server, players can switch computers mid-game and keep any notes written.
+- Notes are saved in the database and will persist into the replay.
+- Everyone's notes are combined and shown to spectators, which is fun to see.
+
+#### Card Identity Notes
+
+- If the note matches the name of a card (e.g. "red 1", "r1", etc.), the card face will change to match.
+  - The new card face will automatically be deactivated if a clue is received that falsifies the note.
+- If this behavior is undesired, append a question mark to the end of your note. (e.g. "r1?")
+
+| Suit Name       | Abbreviation
+| --------------- | ------------
+| Black           | K
+| Rainbow         | M
+| Muddy Rainbow   | M
+| Pink            | I
+| Light Pink      | I
+| Brown           | N
+| Omni            | O
+| Null            | U
+| Prism           | I
+| [any dark suit] | [the same as the "normal" version of the suit]
+| Gray            | A
+
+- If there are two suits with the same abbreviation, the second suit abbreviation will be changed to be the left-most unused letter.
+  - For example, in "Rainbow & Muddy Rainbow (6 Suits)", muddy rainbow will have an abbreviation of "U".
+
+#### Special Note Borders
+
+- A note of "f" can be written to indicate that the card is "Finessed". This will draw a special border around the card.
+- A note of "cm" can be written to indicate that the card is "Chop Moved". This will draw a special border around the card.
+
+#### Other Special Notes
+
+- A note of "kt", "trash", "stale", or "bad" can be written to indicate that the card is "Trash". This will draw a special image on the card.
+- A note of "fix", "fixme", or "needs fix" can be be written to indicate that the card needs to be given a "Fix Clue" at some point in the future. This will draw a special image on the card.
+- A note of "blank" can be written on a card to make it look like the deck back.
+- A note of "unclued" can be written to manually remove the border that normally appears around a card when it is touched by one or more clues.
+
+#### Adding Context to Special Notes
+
+- If you want to keep the behavior of a special note but write additional text on the note, place the special note in square brackets. (e.g. "[r2] known from turn 3)
+- This feature can also be used to stack multiple effects on top of each other. (e.g. "[f] [r1]" will mark a card as finessed and as a red 1)
+
+#### Note Shortcuts
+
+- There are also some keyboard shortcuts for making notes:
+  - Shift + Right-click --> f
+    - "f" is a common abbreviation for "this card is *Finessed*".
+    - This will also draw a special border around the card.
+  - Alt + Right-click --> cm
+    - "cm" is a common abbreviation for "this card is *Chop Moved*".
+    - This will also draw a special border around the card.
+  - Ctrl + Shift + Right-click --> [previously entered note]
+    - If you need to put the same note on multiple cards, enter the note on the first card, and then use this hotkey on the rest of the cards.
+
+<br />
+
 ## Sounds
 
 - There are different sounds for:
@@ -359,6 +345,75 @@ If you are playing with the [Hyphen-ated group](https://github.com/Zamiell/hanab
   - [finishing the game with a score of 0](../public/sounds/turn_finished_fail.mp3)
   - [finishing the game with a non-perfect score](../public/sounds/turn_finished_success.mp3)
   - [finishing the game with a perfect score](../public/sounds/turn_finished_perfect.mp3)
+
+<br />
+
+## Pace & Efficiency
+
+- In-game, the right side of the screen shows the *Pace* and the *Efficiency* for the current game. Good players will often use these numbers to make the best move for the current situation.
+
+### Pace
+
+- You can think of the game as a race to play all of the cards before the deck runs out. It is useful to track how close to the end of the race you are.
+- Pace is a measure of the amount of discards that can happen while still having a chance to get the maximum score.
+- Pace is calculated with the following formula:
+  - `current score + cards in deck + number of players - maximum score`.
+- If you discard all copies of a card, so that the the maximum achievable score lowers, pace will adjust accordingly.
+- At pace 0, the only way to win is if every player plays a card in the last round of the game.
+
+### Efficiency
+
+- Since the game only gives you a limited amount of clues, you should be as efficient as possible with them. It is useful to track how well the team is doing with regards to this.
+- In general, efficiency is calculated with the following formula:
+  - `cards gotten / number of clues given or lost`
+  - `cards gotten` is simply `cards that are already played + cards that are touched by a clue`.
+- A clue is considered to be lost when:
+  - a card misplays (because it could have been discarded instead)
+  - a stack is completed when the team already has 8 clues in the bank
+- Note that this efficiency calculation assumes that players are playing with *Good Touch Principle* - that all clued cards will eventually be played. If your team does not play with *Good Touch Principle*, then this efficiency calculation won't be very useful.
+- Note that the calculation will automatically account for clued cards that are globally known to be trash. Such cards will not be included in the `cards gotten` term.
+- In-game, Hanabi Live shows you two different efficiency numbers.
+
+#### 1) Future Required Efficiency
+
+- The left number shows the efficiency needed to win the current game based on how well things are going so far (e.g. future required efficiency). This is calculated with the following formula:
+  - `cards not gotten / clues still usable"`
+  - `cards not gotten` is simply `maximum possible score - cards gotten`.
+  - `clues still usable` is simply the maximum amount of clues that it is possible for the team to give before the game ends.
+- Players can mouse over the left number in order to see how it is specifically being calculated.
+
+#### 2) Minimum Required Efficiency
+
+- The right number shows the minimum possible efficiency needed to win from the very beginning of the game. This is calculated with the following formula:
+  - `max score based on the variant / maximum possible clues that it is possible to give before the game ends`
+  - (This is the exact same formula as *Future Required Efficiency*, just written in different words so that it refers to the case before anything has happened.)
+- Note that *Minimum Required Efficiency* is calculated at the beginning of the game and will not change in the middle of the game if the maximum achievable score lowers.
+
+#### Manually Modifying Efficiency
+
+- Players can manually modify the "cards gotten" term by doing an `alt + right-click` on the *Future Required Efficiency*.
+- This is useful to account for cards that are *Finessed*, cards that are known to be trash, and so forth.
+
+#### A Guide to Using Efficiency in General
+
+- If the *Future Required Efficiency* is below the *Minimum Required Efficiency*, then:
+  - The team is on track to get a perfect score.
+  - Future clues to not necessarily have to be as efficient as the ones previously given.
+  - The team probably afford to give mediocre clues and play conservatively.
+- If the *Future Required Efficiency* is above the *Minimum Required Efficiency*, then:
+  - The team is not on track to get a perfect score.
+  - If a perfect score is desired, the team must start giving more efficient clues than the ones that have already been given.
+  - If a perfect score is desired, the team should start to discard more aggressively, take more risks, etc.
+
+#### A Guide to Using Efficiency as a Threshold
+
+- Commonly, a player will have to choose between doing a 1-for-1 clue and discarding. (A "1-for-1" clue is defined as a clue that "gets" 1 card.)
+- If *Future Required Efficiency* is below 1.00:
+  - That means everyone on the team can simply give "1-for-1" clues for the rest of the game and the team will still get the max score.
+  - Thus, a player in this situation should probably give a 1-for-1 clue and let someone else discard (if the other person has a known-safe discard).
+- If *Future Required Efficiency* is above 1.00:
+  - That means that if everyone on the team gave 1-for-1 clues for the rest of the game, the clues would run out before all of the cards could be played and a max score would not be achieved.
+  - Thus, a player in this situation should probably discard and in that hopes that a teammate can perform a 2-for-1 clue.
 
 <br />
 
