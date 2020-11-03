@@ -338,6 +338,7 @@ If you are playing with the [Hyphen-ated group](https://github.com/Zamiell/hanab
 - an "H" indicator next to the username in the "Online Users" section.
 - double discard situation notification (as a border around the discard pile and in the "Current Player" area)
 - locked hand notification (in the "Current Player" area)
+- *Low Score Phase* notification (via the score being cyan)
 - [special sound effect when discarding a clued card](../public/sounds/turn_discard_clued.mp3)
 - [special sound effect when discarding to enter a double discard situation](../public/sounds/turn_turn_double_discard_cause.mp3)
 - [special sound effect when discarding in a double discard situation](../public/sounds/turn_turn_double_discard.mp3)
