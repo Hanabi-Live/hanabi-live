@@ -114,7 +114,7 @@ function statsReducerFunction(
     turnRules.endGameLength(metadata),
     clueTokensRules.discardValue(variant),
     clueTokensRules.suitValue(variant),
-    currentState.clueTokens,
+    clueTokensRules.getUnadjusted(currentState.clueTokens, variant),
   );
 
   // Handle double discard calculation

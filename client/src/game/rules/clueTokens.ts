@@ -54,6 +54,14 @@ export const getAdjusted = (clueTokens: number, variant: Variant): number =>
   // (to avoid having to use floating point numbers)
   variantRules.isClueStarved(variant) ? clueTokens * 2 : clueTokens;
 
+export const getUnadjusted = (
+  clueTokensAdjusted: number,
+  variant: Variant,
+): number =>
+  variantRules.isClueStarved(variant)
+    ? clueTokensAdjusted / 2
+    : clueTokensAdjusted;
+
 export const atMax = (clueTokens: number, variant: Variant): boolean =>
   clueTokens >= getAdjusted(MAX_CLUE_NUM, variant);
 
