@@ -358,7 +358,7 @@ If you are playing with the [Hyphen-ated group](https://github.com/Zamiell/hanab
 - Pace is a measure of the amount of discards that can happen while still having a chance to get the maximum score.
 - Pace is calculated with the following formula:
   - `current score + cards in deck + number of players - maximum score`.
-- If you discard all copies of a card, so that the the maximum achievable score lowers, pace will adjust accordingly.
+- If you discard all copies of a card (so that the the maximum achievable score lowers), pace will adjust accordingly.
 - At pace 0, the only way to win is if every player plays a card in the last round of the game.
 
 ### Efficiency
