@@ -1409,16 +1409,17 @@ function drawStatistics() {
   }) as TextWithTooltip;
   globals.layers.UI.add(efficiencyTextLabel);
   efficiencyTextLabel.tooltipName = "efficiency-text";
+  const padding = "&nbsp; &nbsp; &nbsp; &nbsp; ";
   const efficiencyTextLabelContent = `
     Efficiency is calculated by: <br />
-    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <em>(number of cards played +<br />
-    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; number of touched cards) /<br />
-    &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; number of clues given or lost</em><br />
-    &nbsp; &nbsp; &nbsp; &nbsp; The first number is the minimum amount of efficiency needed from <br />
-    &nbsp; &nbsp; &nbsp; &nbsp; this turn onward in order to win (i.e. future required efficiency).<br />
-    &nbsp; &nbsp; &nbsp; &nbsp; The second number shows the minimum possible efficiency needed<br />
-    &nbsp; &nbsp; &nbsp; &nbsp; to win with the current number of players and the current variant.<br />
-    &nbsp; &nbsp; &nbsp; &nbsp; (For more information, click on the "Help" button in the lobby.)
+    ${padding}&nbsp; &nbsp; <em>(number of cards played +<br />
+    ${padding}&nbsp; &nbsp; number of touched cards) /<br />
+    ${padding}&nbsp; &nbsp; number of clues given or lost</em><br />
+    ${padding}The first number is the minimum amount of efficiency needed from <br />
+    ${padding}this turn onward in order to win (i.e. future required efficiency).<br />
+    ${padding}The second number shows the minimum possible efficiency needed<br />
+    ${padding}to win with the current number of players and the current variant.<br />
+    ${padding}(For more information, click on the "Help" button in the lobby.)
   `;
   efficiencyTextLabel.tooltipContent = efficiencyTextLabelContent;
   tooltips.init(efficiencyTextLabel, true, false);
