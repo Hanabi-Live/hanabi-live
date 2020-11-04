@@ -1461,7 +1461,11 @@ function drawStatistics() {
     fontSize: 0.02 * winH,
     // "Easy" variants use the default color (off-white)
     // "Hard" variants use pink
-    fill: globals.metadata.hardVariant ? "#ffb2b2" : LABEL_COLOR,
+    fill:
+      globals.metadata.hardVariant &&
+      globals.lobby.settings.hyphenatedConventions
+        ? "#ffb2b2"
+        : LABEL_COLOR,
     listening: true,
   }) as Konva.Text;
   globals.layers.UI.add(efficiencyMinNeededLabel);
