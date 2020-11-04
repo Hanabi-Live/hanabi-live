@@ -1,6 +1,6 @@
 import { Draft } from "immer";
 import { getCharacter, getVariant } from "../data/gameData";
-import { cardRules, variantRules } from "../rules";
+import { cardRules, handRules, variantRules } from "../rules";
 import { ActionPlay, GameAction } from "../types/actions";
 import CardState from "../types/CardState";
 import ClueType from "../types/ClueType";
@@ -105,10 +105,12 @@ export default function getSoundType(
             suitIndex === lastAction.suitIndex && rank === lastAction.rank,
         );
       }
+      const nextPlayerHand = currentState.hands[action.playerIndex];
       if (
         originalState.stats.doubleDiscard &&
         couldBeLastDiscardedCard &&
-        !metadata.hardVariant
+        !metadata.hardVariant &&
+        !handRules.isLocked(nextPlayerHand, currentState.deck)
       ) {
         // A player has discarded *in* a double discard situation
         return SoundType.DoubleDiscard;
