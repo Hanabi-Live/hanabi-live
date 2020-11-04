@@ -105,12 +105,16 @@ export default function getSoundType(
             suitIndex === lastAction.suitIndex && rank === lastAction.rank,
         );
       }
-      if (originalState.stats.doubleDiscard && couldBeLastDiscardedCard) {
+      if (
+        originalState.stats.doubleDiscard &&
+        couldBeLastDiscardedCard &&
+        !metadata.hardVariant
+      ) {
         // A player has discarded *in* a double discard situation
         return SoundType.DoubleDiscard;
       }
 
-      if (stats.doubleDiscard) {
+      if (stats.doubleDiscard && !metadata.hardVariant) {
         // A player has discarded to *cause* a double discard situation
         return SoundType.DoubleDiscardCause;
       }
