@@ -440,7 +440,7 @@ function initStateStore(data: InitData) {
     data.options.numPlayers,
     turnRules.endGameLength(data.options, data.characterAssignments),
     globals.variant,
-    handRules.cardsPerHand(globals.options),
+    handRules.cardsPerHand(data.options),
   );
   const metadata: GameMetadata = {
     ourUsername: globals.lobby.username,
