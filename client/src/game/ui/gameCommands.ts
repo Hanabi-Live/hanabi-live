@@ -8,7 +8,7 @@ import * as sentry from "../../sentry";
 import { getVariant } from "../data/gameData";
 import initialState from "../reducers/initialStates/initialState";
 import stateReducer from "../reducers/stateReducer";
-import { handRules, statsRules, turnRules } from "../rules";
+import { handRules, hyphenatedRules, statsRules, turnRules } from "../rules";
 import { ActionIncludingHypothetical, GameAction } from "../types/actions";
 import CardIdentity from "../types/CardIdentity";
 import GameMetadata from "../types/GameMetadata";
@@ -451,9 +451,7 @@ function initStateStore(data: InitData) {
     characterMetadata: data.characterMetadata,
 
     minEfficiency,
-    // The Hyphen-ated group makes a distinction between a "Hard Variant" and an "Easy Variant"
-    // https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#hard-variants--easy-variants
-    hardVariant: minEfficiency >= 1.25,
+    hardVariant: hyphenatedRules.hardVariant(globals.variant, minEfficiency),
 
     hasCustomSeed: data.hasCustomSeed,
     seed: data.seed,

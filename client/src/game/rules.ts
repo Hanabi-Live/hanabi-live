@@ -5,6 +5,7 @@ export * as cluesRules from "./rules/clues";
 export * as clueTokensRules from "./rules/clueTokens";
 export * as deckRules from "./rules/deck";
 export * as handRules from "./rules/hand";
+export * as hyphenatedRules from "./rules/hyphenated";
 export * as playStacksRules from "./rules/playStacks";
 export * as segmentRules from "./rules/segment";
 export * as statsRules from "./rules/stats";

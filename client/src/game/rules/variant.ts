@@ -5,6 +5,15 @@ import Variant from "../types/Variant";
 export const isDualColor = (variant: Variant): boolean =>
   variant.name.startsWith("Dual-Color");
 
+export const isMix = (variant: Variant): boolean =>
+  variant.name.includes("Mix");
+
+export const isColorMute = (variant: Variant): boolean =>
+  variant.clueColors.length === 0;
+
+export const isNumberMute = (variant: Variant): boolean =>
+  variant.clueRanks.length === 0;
+
 export const isAlternatingClues = (variant: Variant): boolean =>
   variant.name.startsWith("Alternating Clues");
 
