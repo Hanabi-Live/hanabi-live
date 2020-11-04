@@ -1,3 +1,4 @@
+import Options from "../../types/Options";
 import { getCharacter } from "../data/gameData";
 import { clueTokensRules } from "../rules";
 import GameMetadata from "../types/GameMetadata";
@@ -85,10 +86,13 @@ export function getNextPlayerIndex(
   return nextPlayerIndex;
 }
 
-export function endGameLength(metadata: GameMetadata): number {
+export function endGameLength(
+  options: Options,
+  characterAssignments: Readonly<Array<number | null>>,
+): number {
   // The Contrarian detrimental character has a 2-turn end game
-  if (metadata.options.detrimentalCharacters) {
-    for (const characterID of metadata.characterAssignments) {
+  if (options.detrimentalCharacters) {
+    for (const characterID of characterAssignments) {
       if (characterID !== null) {
         const character = getCharacter(characterID);
         if (character.name === "Contrarian") {
@@ -99,9 +103,9 @@ export function endGameLength(metadata: GameMetadata): number {
   }
 
   // By default, each player gets one more turn after the final card is drawn
-  return metadata.options.numPlayers;
+  return options.numPlayers;
 }
 
 export function getEndTurn(turn: number, metadata: GameMetadata): number {
-  return turn + endGameLength(metadata);
+  return turn + endGameLength(metadata.options, metadata.characterAssignments);
 }

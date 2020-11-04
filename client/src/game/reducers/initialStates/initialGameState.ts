@@ -22,9 +22,13 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   const turnState = initialTurnState(options.startingPlayer);
   const clueTokens = clueTokensRules.getAdjusted(MAX_CLUE_NUM, variant);
   const cardsPerHand = handRules.cardsPerHand(options);
+  const endGameLength = turnRules.endGameLength(
+    metadata.options,
+    metadata.characterAssignments,
+  );
   const startingPace = statsRules.startingPace(
     options.numPlayers,
-    turnRules.endGameLength(metadata),
+    endGameLength,
     cardsPerHand,
     variant,
   );
@@ -55,7 +59,6 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     (playStack) => playStack.length,
   );
   const maxScorePerStack: number[] = initArray(playStacks.length, 5);
-  const endGameLength = turnRules.endGameLength(metadata);
   const discardClueValue = clueTokensRules.discardValue(variant);
   const suitClueValue = clueTokensRules.suitValue(variant);
   const cluesStillUsable = statsRules.cluesStillUsable(

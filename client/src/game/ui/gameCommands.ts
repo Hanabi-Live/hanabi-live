@@ -8,6 +8,7 @@ import * as sentry from "../../sentry";
 import { getVariant } from "../data/gameData";
 import initialState from "../reducers/initialStates/initialState";
 import stateReducer from "../reducers/stateReducer";
+import { handRules, statsRules, turnRules } from "../rules";
 import { ActionIncludingHypothetical, GameAction } from "../types/actions";
 import CardIdentity from "../types/CardIdentity";
 import GameMetadata from "../types/GameMetadata";
@@ -435,6 +436,12 @@ function initStateStore(data: InitData) {
   }
 
   // Create the state store (using the Redux library)
+  const minEfficiency = statsRules.minEfficiency(
+    data.options.numPlayers,
+    turnRules.endGameLength(data.options, data.characterAssignments),
+    globals.variant,
+    handRules.cardsPerHand(globals.options),
+  );
   const metadata: GameMetadata = {
     ourUsername: globals.lobby.username,
     options: data.options,
@@ -442,6 +449,12 @@ function initStateStore(data: InitData) {
     ourPlayerIndex: data.ourPlayerIndex,
     characterAssignments: data.characterAssignments,
     characterMetadata: data.characterMetadata,
+
+    minEfficiency,
+    // The Hyphen-ated group makes a distinction between a "Hard Variant" and an "Easy Variant"
+    // https://github.com/Zamiell/hanabi-conventions/blob/master/Reference.md#hard-variants--easy-variants
+    hardVariant: minEfficiency >= 1.25,
+
     hasCustomSeed: data.hasCustomSeed,
     seed: data.seed,
   };

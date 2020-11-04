@@ -4,7 +4,6 @@ import Konva from "konva";
 import * as debug from "../../debug";
 import { parseIntSafe } from "../../misc";
 import * as modals from "../../modals";
-import { handRules, statsRules, turnRules } from "../rules";
 import * as deck from "../rules/deck";
 import * as variantRules from "../rules/variant";
 import { colorClue, rankClue } from "../types/Clue";
@@ -1455,20 +1454,14 @@ function drawStatistics() {
   globals.layers.UI.add(efficiencyPipeLabel);
   globals.elements.efficiencyPipeLabel = efficiencyPipeLabel;
 
-  const minEfficiency = statsRules.minEfficiency(
-    globals.options.numPlayers,
-    turnRules.endGameLength(globals.metadata),
-    globals.variant,
-    handRules.cardsPerHand(globals.options),
-  );
   const efficiencyMinNeededLabel = basicNumberLabel.clone({
-    text: minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places
+    text: globals.metadata.minEfficiency.toFixed(2), // Convert it to a string and round to 2 decimal places
     x: 0.918 * winW,
     y: 0.56 * winH,
     fontSize: 0.02 * winH,
     // "Easy" variants use the default color (off-white)
     // "Hard" variants use pink
-    fill: minEfficiency < 1.25 ? LABEL_COLOR : "#ffb2b2",
+    fill: globals.metadata.hardVariant ? "#ffb2b2" : LABEL_COLOR,
     listening: true,
   }) as Konva.Text;
   globals.layers.UI.add(efficiencyMinNeededLabel);

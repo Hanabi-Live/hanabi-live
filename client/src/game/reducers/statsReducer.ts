@@ -107,7 +107,7 @@ function statsReducerFunction(
     scorePerStack,
     stats.maxScorePerStack,
     stats.pace,
-    turnRules.endGameLength(metadata),
+    turnRules.endGameLength(metadata.options, metadata.characterAssignments),
     clueTokensRules.discardValue(variant),
     clueTokensRules.suitValue(variant),
     clueTokensRules.getUnadjusted(currentState.clueTokens, variant),
