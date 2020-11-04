@@ -236,7 +236,7 @@ function makeCachedPips(variant: Variant) {
       offset,
       fill: "black",
       stroke: "white",
-      strokeWidth: CARD_H / 100,
+      strokeWidth: 4,
       opacity: 1,
       visible: false,
       sceneFunc: (ctx, shape) => {
@@ -291,7 +291,7 @@ function makeCachedPips(variant: Variant) {
       y: Math.floor(CARD_H * 0.02),
       fill: "black",
       stroke: "black",
-      strokeWidth: CARD_H / 203,
+      strokeWidth: 2,
       opacity: 1,
       visible: false,
       sceneFunc: (ctx, shape) => {
