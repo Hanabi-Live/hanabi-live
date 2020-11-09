@@ -106,7 +106,7 @@ export function checkNoteIdentity(variant: Variant, note: string): CardNote {
   // and remove all leading and trailing whitespace
   const fullNote = note.toLowerCase().trim();
   const keywords = getNoteKeywords(fullNote);
-  const cardIdentity = getIdentityFromKeywords(variant, keywords);
+  const possibilities = getPossibilitiesFromKeywords(variant, keywords);
 
   const chopMoved = checkNoteKeywordsForMatch(
     [
@@ -139,8 +139,7 @@ export function checkNoteIdentity(variant: Variant, note: string): CardNote {
   const unclued = checkNoteKeywordsForMatch(["unclued"], keywords);
 
   return {
-    suitIndex: cardIdentity.suitIndex,
-    rank: cardIdentity.rank,
+    possibilities,
     chopMoved,
     finessed,
     knownTrash,
@@ -175,10 +174,62 @@ function parseRank(rankText: string): number {
   return rank;
 }
 
-export function getIdentityFromKeyword(
+function getPossibilitiesFromKeyword(
   variant: Variant,
   keyword: string,
-): CardIdentity {
+): Array<[number, number]> | null {
+  const possibilities: Array<[number, number]> = [];
+  for (const substring of keyword.split(",")) {
+    const identity = parseIdentity(variant, substring);
+    if (identity.suitIndex !== null && identity.rank !== null) {
+      // encountered an identity item, add it
+
+      // check that this identity is not already present in the list
+      if (
+        possibilities.findIndex(
+          (possibility) =>
+            possibility[0] === identity.suitIndex &&
+            possibility[1] === identity.rank,
+        ) === -1
+      ) {
+        possibilities.push([identity.suitIndex, identity.rank]);
+      }
+    } else if (identity.suitIndex !== null && identity.rank === null) {
+      // encountered a suit item, expand to all cards of that suit.
+      for (const rank of variant.ranks) {
+        // check that this identity is not already present in the list
+        if (
+          possibilities.findIndex(
+            (possibility) =>
+              possibility[0] === identity.suitIndex && possibility[1] === rank,
+          ) === -1
+        ) {
+          possibilities.push([identity.suitIndex, rank]);
+        }
+      }
+    } else if (identity.suitIndex === null && identity.rank !== null) {
+      // encountered a rank item, expand to all cards of that rank.
+      for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
+        // check that this identity is not already present in the list
+        if (
+          possibilities.findIndex(
+            (possibility) =>
+              possibility[0] === suitIndex && possibility[1] === identity.rank,
+          ) === -1
+        ) {
+          possibilities.push([suitIndex, identity.rank]);
+        }
+      }
+    } else {
+      // encountered invalid identity. do not parse keyword as identity list.
+      return null;
+    }
+  }
+
+  return possibilities;
+}
+
+export function parseIdentity(variant: Variant, keyword: string): CardIdentity {
   const identityMatch = new RegExp(variant.identityNotePattern).exec(keyword);
   let suitIndex = null;
   let rank = null;
@@ -196,44 +247,33 @@ export function getIdentityFromKeyword(
   return { suitIndex, rank };
 }
 
-export function getIdentityFromKeywords(
+export function getPossibilitiesFromKeywords(
   variant: Variant,
   keywords: string[],
-): CardIdentity {
-  let suitIndex = null;
-  let rank = null;
+): Array<[number, number]> {
+  let possibilities: Array<[number, number]> = [];
 
-  for (let i = keywords.length - 1; i >= 0; i--) {
-    const keyword = keywords[i];
-
-    const { suitIndex: newSuitIndex, rank: newRank } = getIdentityFromKeyword(
-      variant,
-      keyword,
-    );
-    if (
-      suitIndex !== null &&
-      newSuitIndex !== null &&
-      newSuitIndex !== suitIndex
-    ) {
-      break;
+  for (const keyword of keywords) {
+    const newPossibilities = getPossibilitiesFromKeyword(variant, keyword);
+    if (newPossibilities === null) {
+      continue;
     }
-    if (rank !== null && newRank !== null && newRank !== rank) {
-      break;
+    const intersection = [];
+    for (const possibility of newPossibilities) {
+      if (
+        possibilities.findIndex(
+          (elem) => elem[0] === possibility[0] && elem[1] === possibility[1],
+        ) !== -1
+      ) {
+        intersection.push(possibility);
+      }
     }
-
-    if (newSuitIndex !== null) {
-      suitIndex = newSuitIndex;
-    }
-    if (newRank !== null) {
-      rank = newRank;
-    }
-
-    if (suitIndex !== null && rank !== null) {
-      break;
-    }
+    // if this new term completely conflicts with the previous terms, then reset our state to
+    // just the new term
+    possibilities = intersection.length === 0 ? newPossibilities : intersection;
   }
 
-  return { suitIndex, rank };
+  return possibilities;
 }
 
 export function checkNoteImpossibility(
@@ -241,65 +281,44 @@ export function checkNoteImpossibility(
   cardState: CardState,
   note: CardNote,
 ): void {
+  const { possibilities } = note;
   // Prevent players from accidentally mixing up which stack base is which
   if (
     cardState.rank === STACK_BASE_RANK &&
-    note.suitIndex !== null &&
-    note.suitIndex !== cardState.suitIndex
+    possibilities.every((possibility) => possibility[0] !== cardState.suitIndex)
   ) {
     modals.warningShow(
       "You cannot morph a stack base to have a different suit.",
     );
-    note.suitIndex = null;
-    note.rank = null;
+    note.possibilities = [];
     return;
   }
 
   // Only validate cards in our own hand
   if (
     !(cardState.location === globals.metadata.ourPlayerIndex) ||
-    canPossiblyBe(cardState, note.suitIndex, note.rank)
+    possibilities.some((possibility) =>
+      canPossiblyBe(cardState, possibility[0], possibility[1]),
+    )
   ) {
     return;
   }
 
-  // We have specified a note identity that is impossible
-  let impossibleSuit = "unknown";
-  if (note.suitIndex !== null) {
-    const suitName = variant.suits[note.suitIndex].displayName;
-    impossibleSuit = suitName.toLowerCase();
-  }
-  let impossibleRank = "unknown";
-  if (note.rank !== null) {
-    if (note.rank === START_CARD_RANK) {
-      impossibleRank = "START";
-    } else {
-      impossibleRank = note.rank.toString();
-    }
-  }
-
-  if (note.suitIndex !== null && note.rank === null) {
-    // Only the suit was specified
-    modals.warningShow(`That card cannot possibly be ${impossibleSuit}.`);
-    note.suitIndex = null;
-    return;
-  }
-
-  if (note.suitIndex === null && note.rank !== null) {
-    // Only the rank was specified
-    modals.warningShow(`That card cannot possibly be a ${impossibleRank}.`);
-    note.rank = null;
-    return;
-  }
-
-  if (note.suitIndex !== null && note.rank !== null) {
-    // Both the suit and the rank were specified
+  // We have specified a list of identities where none are possible.
+  const impossibilities = Array.from(possibilities, ([suitIndex, rank]) => {
+    const suitName = variant.suits[suitIndex].displayName;
+    const impossibleSuit = suitName.toLowerCase();
+    const impossibleRank = rank === START_CARD_RANK ? "START" : rank.toString();
+    return `${impossibleSuit} ${impossibleRank}`;
+  });
+  if (impossibilities.length === 1) {
+    modals.warningShow(`That card cannot possibly be ${impossibilities[0]}`);
+  } else {
     modals.warningShow(
-      `That card cannot possibly be a ${impossibleSuit} ${impossibleRank}.`,
+      `That card cannot possibly be any of ${impossibilities.join(", ")}`,
     );
-    note.suitIndex = null;
-    note.rank = null;
   }
+  note.possibilities = [];
 }
 
 export function update(card: HanabiCard): void {

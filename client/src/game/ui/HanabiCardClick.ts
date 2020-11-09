@@ -234,7 +234,7 @@ function clickMorph(order: number) {
   }
 
   // We want an exact match, so fullNote is sent as an empty string
-  const cardIdentity = notes.getIdentityFromKeyword(globals.variant, cardText);
+  const cardIdentity = notes.parseIdentity(globals.variant, cardText);
   if (cardIdentity.suitIndex === null || cardIdentity.rank === null) {
     modals.warningShow("You entered an invalid card.");
     return;

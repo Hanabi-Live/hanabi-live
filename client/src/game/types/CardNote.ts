@@ -1,8 +1,6 @@
 export default interface CardNote {
-  // The suit corresponding to the note written on the card, if any
-  suitIndex: number | null;
-  // The rank corresponding to the note written on the card, if any
-  rank: number | null;
+  // The possible card identities included in the note. Empty if none.
+  possibilities: Array<[number, number]>;
   readonly knownTrash: boolean;
   readonly needsFix: boolean;
   readonly chopMoved: boolean;
