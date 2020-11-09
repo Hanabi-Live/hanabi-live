@@ -381,8 +381,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
       return UNKNOWN_CARD_RANK;
     }
 
-    // If we have a note on the card, and it only provides possibilities of the same rank,
-    // show that rank. (specifically for stack bases in ongoing games; we want notes to have
+    // If we have a note on the card and it only provides possibilities of the same rank,
+    // show that rank (specifically for stack bases in ongoing games; we want notes to have
     // precedence in this case so that players can make notes in "Throw It in a Hole" variants)
 
     let noteRank = null;

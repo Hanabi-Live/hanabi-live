@@ -182,9 +182,9 @@ function getPossibilitiesFromKeyword(
   for (const substring of keyword.split(",")) {
     const identity = parseIdentity(variant, substring);
     if (identity.suitIndex !== null && identity.rank !== null) {
-      // encountered an identity item, add it
+      // Encountered an identity item, add it
 
-      // check that this identity is not already present in the list
+      // Check that this identity is not already present in the list
       if (
         possibilities.findIndex(
           (possibility) =>
@@ -195,9 +195,9 @@ function getPossibilitiesFromKeyword(
         possibilities.push([identity.suitIndex, identity.rank]);
       }
     } else if (identity.suitIndex !== null && identity.rank === null) {
-      // encountered a suit item, expand to all cards of that suit.
+      // Encountered a suit item, expand to all cards of that suit
       for (const rank of variant.ranks) {
-        // check that this identity is not already present in the list
+        // Check that this identity is not already present in the list
         if (
           possibilities.findIndex(
             (possibility) =>
@@ -208,9 +208,9 @@ function getPossibilitiesFromKeyword(
         }
       }
     } else if (identity.suitIndex === null && identity.rank !== null) {
-      // encountered a rank item, expand to all cards of that rank.
+      // Encountered a rank item, expand to all cards of that rank
       for (let suitIndex = 0; suitIndex < variant.suits.length; suitIndex++) {
-        // check that this identity is not already present in the list
+        // Check that this identity is not already present in the list
         if (
           possibilities.findIndex(
             (possibility) =>
@@ -221,7 +221,7 @@ function getPossibilitiesFromKeyword(
         }
       }
     } else {
-      // encountered invalid identity. do not parse keyword as identity list.
+      // Encountered invalid identity. do not parse keyword as an identity list
       return null;
     }
   }
