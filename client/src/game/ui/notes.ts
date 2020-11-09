@@ -282,6 +282,9 @@ export function checkNoteImpossibility(
   note: CardNote,
 ): void {
   const { possibilities } = note;
+  if (possibilities.length === 0) {
+    return;
+  }
   // Prevent players from accidentally mixing up which stack base is which
   if (
     cardState.rank === STACK_BASE_RANK &&
