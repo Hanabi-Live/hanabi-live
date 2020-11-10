@@ -461,14 +461,16 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
   private shouldShowAnyBorder() {
     return (
-      !cardRules.isPlayed(this.state) &&
-      !cardRules.isDiscarded(this.state) &&
-      (!this.note.unclued || !globals.state.playing)
+      !cardRules.isPlayed(this.state) && !cardRules.isDiscarded(this.state)
     );
   }
 
   private shouldShowClueBorder() {
-    return this.shouldShowAnyBorder() && cardRules.isClued(this.state);
+    return (
+      this.shouldShowAnyBorder() &&
+      !(this.note.unclued && globals.state.playing) &&
+      cardRules.isClued(this.state)
+    );
   }
 
   private shouldShowChopMoveBorder() {
