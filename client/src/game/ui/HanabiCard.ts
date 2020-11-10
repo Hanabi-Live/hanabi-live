@@ -1126,6 +1126,9 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // (or clear the bare image if the note was deleted/changed)
     this.setBareImage();
 
+    // Update the pips if the note changed them.
+    this.updatePips();
+
     // Since we updated the note, we might need to redraw a special border around the card
     this.setBorder();
 
@@ -1156,5 +1159,6 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     this.empathy = enabled;
     this.setBareImage();
+    this.updatePips();
   }
 }
