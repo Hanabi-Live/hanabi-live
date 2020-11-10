@@ -359,9 +359,16 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
     // If we have a note on the card and it only provides possibilities of the same suit,
     // show that suit
     if (this.note.possibilities.length !== 0) {
-      const [candidateSuitIndex] = this.note.possibilities[0];
+      const possibleCardsFromNoteAndClues = this.note.possibilities.filter(
+        ([suitIndexA, rankA]) =>
+          this.state.possibleCardsFromClues.findIndex(
+            ([suitIndexB, rankB]) =>
+              suitIndexA === suitIndexB && rankA === rankB,
+          ) !== -1,
+      );
+      const [candidateSuitIndex] = possibleCardsFromNoteAndClues[0];
       if (
-        this.note.possibilities.every(
+        possibleCardsFromNoteAndClues.every(
           ([suitIndex]) => suitIndex === candidateSuitIndex,
         )
       ) {
@@ -387,8 +394,19 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
 
     let noteRank = null;
     if (this.note.possibilities.length !== 0) {
-      const [, candidateRank] = this.note.possibilities[0];
-      if (this.note.possibilities.every(([, rank]) => rank === candidateRank)) {
+      const possibleCardsFromNoteAndClues = this.note.possibilities.filter(
+        ([suitIndexA, rankA]) =>
+          this.state.possibleCardsFromClues.findIndex(
+            ([suitIndexB, rankB]) =>
+              suitIndexA === suitIndexB && rankA === rankB,
+          ) !== -1,
+      );
+      const [, candidateRank] = possibleCardsFromNoteAndClues[0];
+      if (
+        possibleCardsFromNoteAndClues.every(
+          ([, rank]) => rank === candidateRank,
+        )
+      ) {
         noteRank = candidateRank;
       }
     }
