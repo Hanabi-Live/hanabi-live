@@ -258,17 +258,15 @@ export function getPossibilitiesFromKeywords(
     if (newPossibilities === null) {
       continue;
     }
-    const intersection = [];
-    for (const possibility of newPossibilities) {
-      if (
-        possibilities.findIndex(
-          (elem) => elem[0] === possibility[0] && elem[1] === possibility[1],
-        ) !== -1
-      ) {
-        intersection.push(possibility);
-      }
-    }
-    // if this new term completely conflicts with the previous terms, then reset our state to
+    const oldPossibilities = possibilities;
+    const intersection = newPossibilities.filter(
+      ([newSuitIndex, newRank]) =>
+        oldPossibilities.findIndex(
+          ([oldSuitIndex, oldRank]) =>
+            newSuitIndex === oldSuitIndex && newRank === oldRank,
+        ) !== -1,
+    );
+    // If this new term completely conflicts with the previous terms, then reset our state to
     // just the new term
     possibilities = intersection.length === 0 ? newPossibilities : intersection;
   }
