@@ -189,7 +189,7 @@ export function cluesStillUsable(
     );
   }
   const score = scorePerStack.reduce((a, b) => a + b, 0);
-  // If pace is negative then we can play that many fewer cards and we cannot discard at all.
+  // If pace is negative then we can play that many fewer cards and we cannot discard at all
   const maxScore =
     maxScorePerStack.reduce((a, b) => a + b, 0) +
     (currentPace < 0 ? currentPace : 0);
