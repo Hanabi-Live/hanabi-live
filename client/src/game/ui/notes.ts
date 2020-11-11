@@ -221,7 +221,7 @@ function getPossibilitiesFromKeyword(
         }
       }
     } else {
-      // Encountered invalid identity. do not parse keyword as an identity list
+      // Encountered invalid identity; do not parse keyword as an identity list
       return null;
     }
   }
@@ -305,7 +305,7 @@ export function checkNoteImpossibility(
     return;
   }
 
-  // We have specified a list of identities where none are possible.
+  // We have specified a list of identities where none are possible
   const impossibilities = Array.from(possibilities, ([suitIndex, rank]) => {
     const suitName = variant.suits[suitIndex].displayName;
     const impossibleSuit = suitName.toLowerCase();

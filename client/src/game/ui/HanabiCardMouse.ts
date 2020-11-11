@@ -196,7 +196,7 @@ function shouldShowLookCursor(card: HanabiCard) {
 
   // For ongoing games, only show the cursor for our hand if it has a custom card identity
 
-  // Check if there exists a possibility from clues that the note declares impossible.
+  // Check if there exists a possibility from clues that the note declares impossible
   const noteNarrowsPossibilities =
     card.note.possibilities.length !== 0 &&
     card.state.possibleCardsFromClues.some(
