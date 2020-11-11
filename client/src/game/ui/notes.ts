@@ -180,7 +180,7 @@ function getPossibilitiesFromKeyword(
 ): Array<[number, number]> | null {
   const possibilities: Array<[number, number]> = [];
   for (const substring of keyword.split(",")) {
-    const identity = parseIdentity(variant, substring);
+    const identity = parseIdentity(variant, substring.trim());
     if (identity.suitIndex !== null && identity.rank !== null) {
       // Encountered an identity item, add it
 
