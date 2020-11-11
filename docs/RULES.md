@@ -52,7 +52,7 @@
 - A player can spend a clue token to give one "clue" to another player.
 - To give a clue:
   - First, you choose a player.
-  - Second, you choose either a number or color.
+  - Second, you choose either a number or a color.
   - Then, you tell that player about all of the cards in their hand that match that number or color.
 - It is not allowed to give a clue that matches 0 cards in the hand.
 
