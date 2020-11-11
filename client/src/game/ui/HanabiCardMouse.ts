@@ -195,13 +195,17 @@ function shouldShowLookCursor(card: HanabiCard) {
   }
 
   // For ongoing games, only show the cursor for our hand if it has a custom card identity
-  if (
-    (card.note.suitIndex !== null &&
-      card.note.suitIndex !== card.state.suitIndex) ||
-    (card.note.rank !== null && card.note.rank !== card.state.rank) ||
-    card.note.blank ||
-    card.note.unclued
-  ) {
+
+  // Check if there exists a possibility from clues that the note declares impossible
+  const noteNarrowsPossibilities =
+    card.note.possibilities.length !== 0 &&
+    card.state.possibleCardsFromClues.some(
+      ([suitIndexA, rankA]) =>
+        card.note.possibilities.findIndex(
+          ([suitIndexB, rankB]) => suitIndexA === suitIndexB && rankA === rankB,
+        ) === -1,
+    );
+  if (noteNarrowsPossibilities || card.note.blank || card.note.unclued) {
     return true;
   }
 

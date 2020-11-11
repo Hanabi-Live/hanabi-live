@@ -143,6 +143,15 @@ function subscribeToCardChanges(order: number) {
     () => updateCardStatus(order),
   );
 
+  // Notes
+  sub(
+    (c) => ({
+      possibleCardsFromClues: c.possibleCardsFromClues,
+      possibleCardsFromObservation: c.possibleCardsFromObservation,
+    }),
+    () => checkNoteDisproved(order),
+  );
+
   // Pips
   sub(
     (c) => ({
@@ -151,15 +160,6 @@ function subscribeToCardChanges(order: number) {
       numPositiveRankClues: c.positiveRankClues.length,
     }),
     () => updatePips(order),
-  );
-
-  // Notes
-  sub(
-    (c) => ({
-      possibleCardsFromClues: c.possibleCardsFromClues,
-      possibleCardsFromObservation: c.possibleCardsFromObservation,
-    }),
-    () => checkNoteDisproved(order),
   );
 
   // Card visuals
@@ -172,6 +172,7 @@ function subscribeToCardChanges(order: number) {
         location: card.location,
         suitDetermined: card.suitDetermined,
         rankDetermined: card.rankDetermined,
+        numPossibleCardsFromClues: card.possibleCardsFromClues.length,
         identity: s.cardIdentities[order],
       };
     },
