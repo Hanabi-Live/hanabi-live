@@ -401,12 +401,8 @@ export default class HanabiCard extends Konva.Group implements NodeWithTooltip {
               suitIndexA === suitIndexB && rankA === rankB,
           ) !== -1,
       );
-      const [, candidateRank] = possibleCardsFromNoteAndClues[0];
-      if (
-        possibleCardsFromNoteAndClues.every(
-          ([, rank]) => rank === candidateRank,
-        )
-      ) {
+      const candidateRank = possibleCardsFromNoteAndClues[0][1];
+      if (possibleCardsFromNoteAndClues.every((card) => rank === card[1])) {
         noteRank = candidateRank;
       }
     }
