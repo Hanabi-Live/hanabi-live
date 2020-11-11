@@ -189,9 +189,12 @@ export function cluesStillUsable(
     );
   }
   const score = scorePerStack.reduce((a, b) => a + b, 0);
-  const maxScore = maxScorePerStack.reduce((a, b) => a + b, 0);
+  // If pace is negative then we can play that many fewer cards and we cannot discard at all.
+  const maxScore =
+    maxScorePerStack.reduce((a, b) => a + b, 0) +
+    (currentPace < 0 ? currentPace : 0);
   const cardsToBePlayed = maxScore - score;
-  const cluesFromDiscards = currentPace * discardValue;
+  const cluesFromDiscards = currentPace < 0 ? 0 : currentPace * discardValue;
 
   let cluesFromSuits = 0;
   if (suitValue > 0) {
