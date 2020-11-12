@@ -375,7 +375,7 @@ In-game, the right side of the screen shows the *Pace* and the *Efficiency* for 
 #### 1) Future Required Efficiency
 
 - The left number shows the efficiency needed to get the maximum score based on how well things are going so far. This is calculated with the following formula:
-  - `cards not gotten yet / maximum possible clues that it is possible to give before the game ends`
+  - `cards not gotten yet / maximum clues that it is possible to give before the game ends`
   - `cards not gotten yet` is simply `maximum possible score - cards gotten`.
 - Players can mouse over the *Future Required Efficiency* number in order to see how it is being calculated.
 
