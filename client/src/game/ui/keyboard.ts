@@ -170,6 +170,11 @@ function keydown(event: JQuery.KeyDownEvent) {
     }
 
     // Other
+    if (event.key === "c") {
+      // Alt + c
+      globals.game!.chat.toggle();
+      return;
+    }
     if (event.key === "l" || event.key === "¬") {
       // Alt + l
       backToLobby();
