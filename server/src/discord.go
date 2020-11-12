@@ -302,7 +302,7 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 	}
 
 	if command == "loweffort" {
-		msg := "It looks like you are asking a low-effort question. Low-effort questions elicit low-effort responses, so please put some effort into your question in order to avoid follow-up questions that waste everybody's time. Update your question to explain what **you** think the best answer is, based on your current understanding of the conventions. Provide a detailed explanation as to **why** you think it is the best answer. Discuss any relevant contextual clues present in the game that influence the answer, if any. Provide an alternate answer that might also be the case and discuss why that answer is not as good. This allows us to hone in on the specific gaps in your knowledge."
+		msg := "It looks like you are asking a low-effort question. Update your question to explain what **you** think the best answer is, based on your current understanding of the conventions. Provide a detailed explanation as to **why** you think it is the best answer. Discuss any relevant contextual clues present in the game that influence the answer, if any. Provide an alternate answer that might also be the case and discuss why that answer is not as good. This allows us to hone in on the specific gaps in your knowledge."
 		discordSend(m.ChannelID, "", msg)
 		return
 	}
