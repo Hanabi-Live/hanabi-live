@@ -297,6 +297,7 @@ If you are playing with the [Hyphen-ated group](https://github.com/Zamiell/hanab
 | Prism           | I
 | [any dark suit] | [the same as the "normal" version of the suit]
 | Gray            | A
+| Forest          | R
 
 - If there are two suits with the same abbreviation, the second suit abbreviation will be changed to be the left-most unused letter.
   - For example, in "Rainbow & Muddy Rainbow (6 Suits)", muddy rainbow will have an abbreviation of "U".
