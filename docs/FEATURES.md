@@ -229,8 +229,9 @@ A "❗" icon will appear on cards that are "critical". (Critical cards are cards
 
 #### Keldon Mode
 
-- By default, the interface will look similar to the [Board Game Arena](https://en.boardgamearena.com/) implementation of the game. In this mode, all of the hands are grouped together in rows.
+- By default, the interface will group all of the hands together in rows.
 - In Keldon mode, the hands are distributed around the table, similar to how it would look if you were playing a card game in real-life.
+- (This is named after [Keldon Jones](http://www.keldon.net/), since he is the person who originally created this mode and the UI more generally.)
 
 #### Color-Blind Mode
 
