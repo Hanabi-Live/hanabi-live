@@ -212,14 +212,19 @@ function send(room: string, element: JQuery<HTMLElement>) {
   const args = msg.split(" ");
   if (args[0].startsWith("/")) {
     let command = args.shift();
-    command = command!.substring(1); // Remove the forward slash
+    if (command === undefined) {
+      throw new Error("Failed to parse the command from the chat message.");
+    }
+    command = command.substring(1); // Remove the forward slash
     command = command.toLowerCase();
 
     const chatCommandFunction = chatCommands.get(command);
-    if (chatCommandFunction !== undefined) {
+    if (chatCommandFunction === undefined) {
+      modals.warningShow(`The chat command of "${command}" is not valid.`);
+    } else {
       chatCommandFunction(roomID, args);
-      return;
     }
+    return;
   }
 
   // This is not a command, so send a the chat message to the server

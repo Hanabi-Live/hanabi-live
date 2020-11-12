@@ -92,7 +92,7 @@ func chatCommand(s *Session, d *CommandData, t *Table) {
 	if ok {
 		chatCommandFunction(s, d, t)
 	} else {
-		chatServerSend("That is not a valid command.", d.Room)
+		chatServerSend("The chat command of \"/"+command+"\" is not valid.", d.Room)
 	}
 }
 
