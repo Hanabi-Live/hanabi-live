@@ -303,8 +303,8 @@ If you are playing with the [Hyphen-ated group](https://github.com/Zamiell/hanab
 
 #### Special Note Borders
 
-- A note of "f" can be written to indicate that the card is "Finessed". This will draw a special border around the card.
-- A note of "cm" can be written to indicate that the card is "Chop Moved". This will draw a special border around the card.
+- A note of "f" can be written to indicate that the card is *Finessed*. This will draw a special border around the card.
+- A note of "cm" can be written to indicate that the card is *Chop Moved*. This will draw a special border around the card.
 
 #### Other Special Notes
 
@@ -315,42 +315,40 @@ If you are playing with the [Hyphen-ated group](https://github.com/Zamiell/hanab
 
 #### Adding Context to Special Notes
 
-- If you want to keep the behavior of a special note but write additional text on the note, place the special note in square brackets. (e.g. "[r2] known from turn 3)
-- This feature can also be used to stack multiple effects on top of each other. (e.g. "[f] [r1]" will mark a card as finessed and as a red 1)
+- If you want to keep the behavior of a special note but write additional text on the note, place the special note in square brackets. (e.g. "[r2] known from turn 3")
+- This feature can also be used to stack multiple effects on top of each other. (e.g. "[r1] [f]" will mark a card as both a red 1 and having the *Finesse* border)
 
 #### Note Shortcuts
 
-- There are also some keyboard shortcuts for making notes:
-  - Shift + Right-click --> f
-    - "f" is a common abbreviation for "this card is *Finessed*".
-    - This will also draw a special border around the card.
-  - Alt + Right-click --> cm
-    - "cm" is a common abbreviation for "this card is *Chop Moved*".
-    - This will also draw a special border around the card.
-  - Ctrl + Shift + Right-click --> [previously entered note]
-    - If you need to put the same note on multiple cards, enter the note on the first card, and then use this hotkey on the rest of the cards.
+There are also some keyboard shortcuts for making notes:
+
+- Shift + Right-click --> f
+- Alt + Right-click --> cm
+- Ctrl + Shift + Right-click --> [previously entered note]
+  - If you need to put the same note on multiple cards, enter the note on the first card, and then use this hotkey on the rest of the cards.
 
 <br />
 
 ## Sounds
 
-- There are different sounds for:
-  - [when a player takes an action](../public/sounds/turn_other.mp3)
-  - [when it reaches your turn](../public/sounds/turn_us.mp3)
-  - [when a card fails to play](../public/sounds/turn_fail1.mp3)
-  - [when two cards fail to play in a row](../public/sounds/turn_fail2.mp3)
-  - [when a card blind-plays](../public/sounds/turn_blind1.mp3)
-  - [when multiple cards blind-play in a row (up to 6)](../public/sounds/turn_blind2.mp3)
-  - [discarding a "critical" card](../public/sounds/turn_sad.mp3)
-  - [finishing the game with a score of 0](../public/sounds/turn_finished_fail.mp3)
-  - [finishing the game with a non-perfect score](../public/sounds/turn_finished_success.mp3)
-  - [finishing the game with a perfect score](../public/sounds/turn_finished_perfect.mp3)
+There are different sounds for:
+
+- [when a player takes an action](../public/sounds/turn_other.mp3)
+- [when it reaches your turn](../public/sounds/turn_us.mp3)
+- [when a card fails to play](../public/sounds/turn_fail1.mp3)
+- [when two cards fail to play in a row](../public/sounds/turn_fail2.mp3)
+- [when a card blind-plays](../public/sounds/turn_blind1.mp3)
+- [when multiple cards blind-play in a row (up to 6)](../public/sounds/turn_blind2.mp3)
+- [discarding a "critical" card](../public/sounds/turn_sad.mp3)
+- [finishing the game with a score of 0](../public/sounds/turn_finished_fail.mp3)
+- [finishing the game with a non-perfect score](../public/sounds/turn_finished_success.mp3)
+- [finishing the game with a perfect score](../public/sounds/turn_finished_perfect.mp3)
 
 <br />
 
 ## Pace & Efficiency
 
-- In-game, the right side of the screen shows the *Pace* and the *Efficiency* for the current game. Good players will often use these numbers to make the best move for the current situation.
+In-game, the right side of the screen shows the *Pace* and the *Efficiency* for the current game. Good players will often use these numbers to make the best move for the current situation.
 
 ### Pace
 
