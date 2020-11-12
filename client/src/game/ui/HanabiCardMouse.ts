@@ -162,7 +162,7 @@ function getCursorType(card: HanabiCard) {
     return "dragging";
   }
 
-  if (card.layout.draggable()) {
+  if (card.layout.draggable() && !card.tweening) {
     return "hand";
   }
 
