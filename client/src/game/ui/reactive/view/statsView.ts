@@ -186,3 +186,46 @@ export function onPaceOrPaceRiskChanged(data: {
 
   globals.layers.UI.batchDraw();
 }
+
+export function onMaxTurnsChanged(data: {
+  pace: number | null;
+  cluesStillUsable: number | null;
+  score: number;
+  maxScore: number;
+  turnNum: number;
+  endTurnNum: number | null;
+  numPlayers: number;
+}): void {
+  const {
+    pace,
+    cluesStillUsable,
+    score,
+    maxScore,
+    turnNum,
+    endTurnNum,
+    numPlayers,
+  } = data;
+  let maxTurnsLeft: number;
+  if (pace === null) {
+    maxTurnsLeft = endTurnNum! - turnNum;
+  } else {
+    let cardsToBePlayed = maxScore - score;
+    let discards = pace;
+    if (pace < 0) {
+      cardsToBePlayed += pace;
+      discards = 0;
+    }
+    maxTurnsLeft = discards + cluesStillUsable! + cardsToBePlayed;
+  }
+  const maxTurnsLeftForCurrentPlayer = Math.ceil(maxTurnsLeft / numPlayers);
+  const maxTotalTurns = turnNum + maxTurnsLeft;
+
+  const label = globals.elements.turnNumberLabel;
+  if (!label) {
+    throw new Error("turnNumberLabel is not initialized.");
+  }
+  label.tooltipContent = `Rounds left (max): <strong>${maxTurnsLeftForCurrentPlayer}</strong><br />
+&nbsp; &nbsp; &nbsp; &nbsp;Turns left (max): <strong>${maxTurnsLeft}</strong><br />
+&nbsp; &nbsp; &nbsp; &nbsp;Total turns: <strong>${turnNum}</strong>/<strong>${maxTotalTurns}</strong>`;
+  tooltips.init(label, true, false);
+}

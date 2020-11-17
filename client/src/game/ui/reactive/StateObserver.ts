@@ -148,6 +148,24 @@ const visibleStateObservers: Subscriptions = [
     }),
     statsView.onEfficiencyChanged,
   ),
+  sub(
+    (s) => {
+      if (s.visibleState !== null) {
+        return {
+          pace: s.visibleState.stats.pace,
+          cluesStillUsable: s.visibleState.stats.cluesStillUsable,
+          score: s.visibleState.score,
+          maxScore: s.visibleState.stats.maxScore,
+          turnNum: s.visibleState.turn.turnNum,
+          endTurnNum: s.visibleState.turn.endTurnNum,
+          numPlayers: s.metadata.options.numPlayers,
+        };
+      }
+      return undefined;
+    },
+
+    statsView.onMaxTurnsChanged,
+  ),
 
   // Logs
   subVS((s) => s.log, logView.onLogChanged),
