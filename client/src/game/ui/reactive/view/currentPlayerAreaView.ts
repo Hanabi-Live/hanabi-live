@@ -23,9 +23,9 @@ export function onChanged(
   },
   previousData:
     | {
-        visible: boolean;
-        currentPlayerIndex: number | null;
-      }
+      visible: boolean;
+      currentPlayerIndex: number | null;
+    }
     | undefined,
 ): void {
   // Local variables
@@ -199,6 +199,16 @@ function getArrowRotationCorrespondingToPlayer(playerIndex: number) {
     );
   }
   const centerPos = hand.getAbsoluteCenterPos();
+
+  if (globals.lobby.settings.keldonMode) {
+    // Make sure that the arrow points to an imaginary person behind the hand of cards.
+    const winH = globals.stage.height();
+    const distanceToImaginaryPlayer = 600 / 1080 * winH;
+    const rot = (-hand.origRotation / 180) * Math.PI;
+    centerPos.x += distanceToImaginaryPlayer * Math.cos(rot + Math.PI / 2);
+    centerPos.y -= distanceToImaginaryPlayer * Math.sin(rot + Math.PI / 2);
+  }
+
   const thisPos = globals.elements.currentPlayerArea!.arrow.getAbsolutePosition();
   const x = centerPos.x - thisPos.x;
   const y = centerPos.y - thisPos.y;
