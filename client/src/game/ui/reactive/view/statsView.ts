@@ -224,8 +224,8 @@ export function onMaxTurnsChanged(data: {
   if (!label) {
     throw new Error("turnNumberLabel is not initialized.");
   }
-  label.tooltipContent = `Rounds left (max): <strong>${maxTurnsLeftForCurrentPlayer}</strong><br />
-&nbsp; &nbsp; &nbsp; &nbsp;Turns left (max): <strong>${maxTurnsLeft}</strong><br />
-&nbsp; &nbsp; &nbsp; &nbsp;Total turns: <strong>${turnNum}</strong>/<strong>${maxTotalTurns}</strong>`;
+  label.tooltipContent = `<span class="turns-description">Rounds left (max):</span> <strong>${maxTurnsLeftForCurrentPlayer}</strong><br />
+&nbsp; &nbsp; &nbsp; &nbsp;<span class="turns-description">Turns left (max):</span> <strong>${maxTurnsLeft}</strong><br />
+&nbsp; &nbsp; &nbsp; &nbsp;<span class="turns-description">Total turns:</span> <strong>${turnNum}</strong>/<strong>${maxTotalTurns}</strong>`;
   tooltips.init(label, true, false);
 }
