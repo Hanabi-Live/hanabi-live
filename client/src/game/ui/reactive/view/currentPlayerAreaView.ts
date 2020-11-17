@@ -205,8 +205,8 @@ function getArrowRotationCorrespondingToPlayer(playerIndex: number) {
     const winH = globals.stage.height();
     const distanceToImaginaryPlayer = 600 / 1080 * winH;
     const rot = (-hand.origRotation / 180) * Math.PI;
-    centerPos.x += distanceToImaginaryPlayer * Math.cos(rot + Math.PI / 2);
-    centerPos.y -= distanceToImaginaryPlayer * Math.sin(rot + Math.PI / 2);
+    centerPos.x += distanceToImaginaryPlayer * -Math.sin(rot); // -sin(x) = cos(x + PI / 2)
+    centerPos.y -= distanceToImaginaryPlayer * Math.cos(rot); // cos(x) = sin(x + PI / 2)
   }
 
   const thisPos = globals.elements.currentPlayerArea!.arrow.getAbsolutePosition();
