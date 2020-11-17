@@ -201,7 +201,7 @@ function getArrowRotationCorrespondingToPlayer(playerIndex: number) {
   const centerPos = hand.getAbsoluteCenterPos();
 
   if (globals.lobby.settings.keldonMode) {
-    // Make sure that the arrow points to an imaginary person behind the hand of cards.
+    // Make sure that the arrow points to an imaginary person behind the hand of cards
     const winH = globals.stage.height();
     const distanceToImaginaryPlayer = (600 / 1080) * winH;
     const rot = (-hand.origRotation / 180) * Math.PI;
