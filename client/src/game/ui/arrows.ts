@@ -207,9 +207,9 @@ function getPos(element: Konva.Node, rot: number) {
     // Instead, back it off a little bit (accounting for the rotation of the hand)
     const winH = globals.stage.height();
     const distance = -0.075 * winH;
-    const rotRadians = (rot / 180) * Math.PI;
-    pos.x -= Math.sin(rotRadians) * distance;
-    pos.y += Math.cos(rotRadians) * distance;
+    const rotRadians = (-rot / 180) * Math.PI;
+    pos.x += distance * Math.sin(rotRadians); // sin(x) = cos(x + (PI * 3 / 2))
+    pos.y -= distance * -Math.cos(rotRadians); // -cos(x) = sin(x + (PI * 3 / 2))
   } else if (element === globals.elements.deck) {
     // Order = ReplayArrowOrder.Deck (-1)
     pos.x += element.width() * 0.5;
