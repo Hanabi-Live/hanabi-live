@@ -5,42 +5,50 @@
 
 /* source-sans-pro-300 - latin */
 @font-face {
-  font-family: 'Source Sans Pro';
+  font-family: "Source Sans Pro";
   font-style: normal;
   font-weight: 300;
-  src: local('Source Sans Pro Light'), local('SourceSansPro-Light'),
-       url('/public/webfonts/source-sans-pro-v11-latin-300.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-       url('/public/webfonts/source-sans-pro-v11-latin-300.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  src: local("Source Sans Pro Light"), local("SourceSansPro-Light"),
+    url("/public/webfonts/source-sans-pro-v11-latin-300.woff2") format("woff2"),
+    /* Chrome 26+, Opera 23+, Firefox 39+ */
+      url("/public/webfonts/source-sans-pro-v11-latin-300.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /* source-sans-pro-300italic - latin */
 @font-face {
-  font-family: 'Source Sans Pro';
+  font-family: "Source Sans Pro";
   font-style: italic;
   font-weight: 300;
-  src: local('Source Sans Pro Light Italic'), local('SourceSansPro-LightItalic'),
-       url('/public/webfonts/source-sans-pro-v11-latin-300italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-       url('/public/webfonts/source-sans-pro-v11-latin-300italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  src: local("Source Sans Pro Light Italic"), local("SourceSansPro-LightItalic"),
+    url("/public/webfonts/source-sans-pro-v11-latin-300italic.woff2")
+      format("woff2"),
+    /* Chrome 26+, Opera 23+, Firefox 39+ */
+      url("/public/webfonts/source-sans-pro-v11-latin-300italic.woff")
+      format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /* source-sans-pro-regular - latin */
 @font-face {
-  font-family: 'Source Sans Pro';
+  font-family: "Source Sans Pro";
   font-style: normal;
   font-weight: 400;
-  src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'),
-       url('/public/webfonts/source-sans-pro-v11-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-       url('/public/webfonts/source-sans-pro-v11-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  src: local("Source Sans Pro Regular"), local("SourceSansPro-Regular"),
+    url("/public/webfonts/source-sans-pro-v11-latin-regular.woff2")
+      format("woff2"),
+    /* Chrome 26+, Opera 23+, Firefox 39+ */
+      url("/public/webfonts/source-sans-pro-v11-latin-regular.woff")
+      format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /* source-sans-pro-italic - latin */
 @font-face {
-  font-family: 'Source Sans Pro';
+  font-family: "Source Sans Pro";
   font-style: italic;
   font-weight: 400;
-  src: local('Source Sans Pro Italic'), local('SourceSansPro-Italic'),
-       url('/public/fonts/source-sans-pro-v11-latin-italic.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
-       url('/public/fonts/source-sans-pro-v11-latin-italic.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+  src: local("Source Sans Pro Italic"), local("SourceSansPro-Italic"),
+    url("/public/fonts/source-sans-pro-v11-latin-italic.woff2") format("woff2"),
+    /* Chrome 26+, Opera 23+, Firefox 39+ */
+      url("/public/fonts/source-sans-pro-v11-latin-italic.woff") format("woff"); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
 
 /*
@@ -109,7 +117,9 @@ a {
   Common
 */
 
-html, body, #page-wrapper {
+html,
+body,
+#page-wrapper {
   height: 100%;
 }
 
@@ -503,7 +513,8 @@ table td {
   top: 0.5em;
 }
 
-#create-game-submit, #change-variant-submit {
+#create-game-submit,
+#change-variant-submit {
   font-size: 1em;
 }
 
@@ -512,7 +523,7 @@ table td {
 }
 
 input::-webkit-calendar-picker-indicator {
-	display: none;
+  display: none;
 }
 
 #create-game-variant-dropdown2 {
@@ -656,7 +667,8 @@ input::-webkit-calendar-picker-indicator {
   position: absolute;
 }
 
-.tooltipster-sidetip.tooltipster-shadow.tooltipster-shadow-big .tooltipster-content {
+.tooltipster-sidetip.tooltipster-shadow.tooltipster-shadow-big
+  .tooltipster-content {
   font-size: 1.5em;
   padding: 0.5em;
   line-height: 1em;
@@ -733,7 +745,7 @@ input::-webkit-calendar-picker-indicator {
 }
 
 /* From: https://codepen.io/ZeroX-DG/pen/vjdoYe */
-.resizable .resizers{
+.resizable .resizers {
   width: 100%;
   height: 100%;
   border: 3px solid black;
@@ -744,6 +756,11 @@ input::-webkit-calendar-picker-indicator {
 .efficiency-description {
   display: inline-block;
   width: 12em;
+}
+
+.turns-description {
+  display: inline-block;
+  width: 8em;
 }
 
 /*
@@ -843,16 +860,17 @@ input::-webkit-calendar-picker-indicator {
 
 /* Stack the profile buttons on top of each other if they would go off screen otherwise */
 @media screen and (max-width: 830px) {
-  #profile-buttons { /* These lines are copied from alpha.css which has breakpoint 480 px */
+  #profile-buttons {
+    /* These lines are copied from alpha.css which has breakpoint 480 px */
     display: flex;
     flex-wrap: wrap;
     box-sizing: border-box;
     align-items: stretch;
   }
 
-    #profile-buttons li {
-      padding-top: 1em
-    }
+  #profile-buttons li {
+    padding-top: 1em;
+  }
 }
 
 /* Make the main screen appear the same way, even on smaller resolutions */

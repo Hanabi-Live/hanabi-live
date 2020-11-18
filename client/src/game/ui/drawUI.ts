@@ -763,8 +763,9 @@ function drawScoreArea() {
     x: (labelX + labelSpacing) * winW,
     y: 0.01 * winH,
     listening: true,
-  }) as Konva.Text;
+  }) as TextWithTooltip;
   globals.elements.scoreArea.add(globals.elements.turnNumberLabel);
+  globals.elements.turnNumberLabel.tooltipName = "turn-number";
   globals.elements.turnNumberLabel.on(
     "click",
     (event: Konva.KonvaEventObject<MouseEvent>) => {
@@ -1441,8 +1442,6 @@ function drawStatistics() {
   efficiencyNumberLabel.on("click tap", stats.efficiencyLabelClick);
   efficiencyNumberLabel.tooltipName = "efficiency-number";
   // The tooltip will be filled in later in the "statsView.onEfficiencyChanged()" function
-  efficiencyNumberLabel.tooltipContent = "";
-  tooltips.init(efficiencyNumberLabel, true, false);
 
   const efficiencyPipeLabel = basicNumberLabel.clone({
     text: " | ",
