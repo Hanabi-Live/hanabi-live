@@ -10,6 +10,7 @@ export default interface StatsState {
   // For pace
   readonly pace: number | null;
   readonly paceRisk: PaceRisk;
+  readonly finalRoundEffectivelyStarted: boolean;
 
   // For efficiency
   readonly cardsGotten: number;

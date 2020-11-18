@@ -21,12 +21,7 @@ export function setEfficiencyMod(mod: number): void {
     ? globals.state.visibleState
     : globals.state.ongoingGame;
   const ongoingGameStats = ongoingGameState.stats;
-  statsView.onEfficiencyChanged({
-    cardsGotten: ongoingGameStats.cardsGotten,
-    potentialCluesLost: ongoingGameStats.potentialCluesLost,
-    maxScore: ongoingGameStats.maxScore,
-    cluesStillUsable: ongoingGameStats.cluesStillUsable,
-  });
+  statsView.onEfficiencyChanged({ ...ongoingGameStats });
 
   if (
     globals.state.replay.shared !== null &&

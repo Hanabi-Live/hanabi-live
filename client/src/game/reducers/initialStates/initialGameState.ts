@@ -26,11 +26,15 @@ export default function initialGameState(metadata: GameMetadata): GameState {
     metadata.options,
     metadata.characterAssignments,
   );
-  const startingPace = statsRules.startingPace(
+  const startingDeckSize = statsRules.startingDeckSize(
     options.numPlayers,
-    endGameLength,
     cardsPerHand,
     variant,
+  );
+  const startingPace = statsRules.startingPace(
+    startingDeckSize,
+    variant.suits.length * 5,
+    endGameLength,
   );
   const hands: number[][] = initArray(options.numPlayers, []);
   const playStackDirections = variant.suits.map((_, i) =>
@@ -64,7 +68,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
   const cluesStillUsable = statsRules.cluesStillUsable(
     scorePerStack,
     maxScorePerStack,
-    startingPace,
+    startingDeckSize,
     endGameLength,
     discardClueValue,
     suitClueValue,
@@ -93,6 +97,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
 
       pace: startingPace,
       paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),
+      finalRoundEffectivelyStarted: false,
 
       cardsGotten: 0,
       potentialCluesLost: 0,

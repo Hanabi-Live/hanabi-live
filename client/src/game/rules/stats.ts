@@ -22,6 +22,41 @@ export function getMaxScorePerStack(
   );
 }
 
+export function discardsBeforeFinalRound(
+  cardsToPlay: number,
+  deckSize: number,
+  endGameLength: number,
+): number {
+  if (cardsToPlay <= endGameLength + 1) {
+    return deckSize - 1;
+  }
+  if (cardsToPlay <= endGameLength + deckSize) {
+    return endGameLength + deckSize - cardsToPlay;
+  }
+  return 0;
+}
+
+export function maxPlaysDuringFinalRound(
+  cardsToPlay: number,
+  endGameLength: number,
+): number {
+  if (cardsToPlay < endGameLength + 1) {
+    return cardsToPlay;
+  }
+  return endGameLength + 1;
+}
+
+export function maxPlays(
+  cardsToPlay: number,
+  deckSize: number,
+  endGameLength: number,
+): number {
+  if (cardsToPlay <= endGameLength + deckSize) {
+    return cardsToPlay;
+  }
+  return endGameLength + deckSize;
+}
+
 // Pace is the number of discards that can happen while still getting the maximum score
 export function pace(
   score: number,
@@ -71,6 +106,16 @@ export function paceRisk(
   return "LowRisk";
 }
 
+export function startingDeckSize(
+  numPlayers: number,
+  cardsPerHand: number,
+  variant: Variant,
+): number {
+  const totalCards = deckRules.totalCards(variant);
+  const initialCardsDrawn = cardsPerHand * numPlayers;
+  return totalCards - initialCardsDrawn;
+}
+
 // Calculate the starting pace with the following formula:
 //   total cards in the deck
 //   + number of turns in the final round
@@ -78,15 +123,11 @@ export function paceRisk(
 //   - (5 * number of suits)
 // https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
 export function startingPace(
-  numPlayers: number,
+  deckSize: number,
+  maxScore: number,
   endGameLength: number,
-  cardsPerHand: number,
-  variant: Variant,
 ): number {
-  const totalCards = deckRules.totalCards(variant);
-  const initialCardsDrawn = cardsPerHand * numPlayers;
-  const totalCardsToBePlayed = 5 * variant.suits.length;
-  return totalCards + endGameLength - initialCardsDrawn - totalCardsToBePlayed;
+  return endGameLength + deckSize - maxScore;
 }
 
 export function cardsGotten(
@@ -144,19 +185,14 @@ export function minEfficiency(
   cardsPerHand: number,
 ): number {
   // First, calculate the starting pace:
-  const initialPace = startingPace(
-    numPlayers,
-    endGameLength,
-    cardsPerHand,
-    variant,
-  );
+  const deckSize = startingDeckSize(numPlayers, cardsPerHand, variant);
 
   // Second, use the pace to calculate the minimum efficiency required to win the game with the
   // following formula:
   //   max score /
   //   maximum number of clues that can be given before the game ends
   const { maxScore } = variant;
-  const totalClues = startingCluesUsable(endGameLength, initialPace, variant);
+  const totalClues = startingCluesUsable(endGameLength, deckSize, variant);
 
   return maxScore / totalClues;
 }
@@ -166,16 +202,12 @@ export function minEfficiency(
 export function cluesStillUsable(
   scorePerStack: readonly number[],
   maxScorePerStack: readonly number[],
-  currentPace: number | null,
+  deckSize: number,
   endGameLength: number,
   discardValue: number,
   suitValue: number,
   currentClues: number,
 ): number | null {
-  if (currentPace === null) {
-    return null;
-  }
-
   if (scorePerStack.length !== maxScorePerStack.length) {
     throw Error(
       "Failed to calculate efficiency: scorePerStack must have the same length as maxScorePerStack.",
@@ -188,22 +220,32 @@ export function cluesStillUsable(
       "Cannot calculate efficiency in variants where discarding gives fewer clues than completing suits.",
     );
   }
-  const score = scorePerStack.reduce((a, b) => a + b, 0);
-  // If pace is negative then we can play that many fewer cards and we cannot discard at all
-  let maxScore = maxScorePerStack.reduce((a, b) => a + b, 0);
-  let discards = currentPace;
-  if (currentPace < 0) {
-    maxScore += currentPace;
-    discards = 0;
+  if (deckSize <= 0) {
+    return null;
   }
-  const cluesFromDiscards = discards * discardValue;
-  const cardsToBePlayed = maxScore - score;
+
+  const score = scorePerStack.reduce((a, b) => a + b, 0);
+  const maxScore = maxScorePerStack.reduce((a, b) => a + b, 0);
+
+  const missingScore = maxScore - score;
+
+  const maxDiscardsBeforeFinalRound = discardsBeforeFinalRound(
+    missingScore,
+    deckSize,
+    endGameLength,
+  );
+
+  const cluesFromDiscards = maxDiscardsBeforeFinalRound * discardValue;
 
   let cluesFromSuits = 0;
   if (suitValue > 0) {
     // Compute how many suits we can complete before the final round.
-    const minConsecutiveFinalPlays = endGameLength + 1;
-    const maxPlaysBeforeFinalRound = cardsToBePlayed - minConsecutiveFinalPlays;
+    const playsDuringFinalRound = maxPlaysDuringFinalRound(
+      missingScore,
+      endGameLength,
+    );
+    const minPlaysBeforeFinalRound =
+      maxPlays(missingScore, deckSize, endGameLength) - playsDuringFinalRound;
     const missingCardsPerCompletableSuit = [];
     for (let suitIndex = 0; suitIndex < scorePerStack.length; suitIndex++) {
       if (maxScorePerStack[suitIndex] === 5 && scorePerStack[suitIndex] < 5) {
@@ -216,7 +258,7 @@ export function cluesStillUsable(
     let cardsPlayed = 0;
     let suitsCompletedBeforeFinalRound = 0;
     for (const missingCardsInSuit of missingCardsPerCompletableSuit) {
-      if (cardsPlayed + missingCardsInSuit > maxPlaysBeforeFinalRound) {
+      if (cardsPlayed + missingCardsInSuit > minPlaysBeforeFinalRound) {
         break;
       }
       cardsPlayed += missingCardsInSuit;
@@ -233,7 +275,7 @@ export function cluesStillUsable(
 // https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Efficiency.md
 export function startingCluesUsable(
   endGameLength: number,
-  initialPace: number,
+  deckSize: number,
   variant: Variant,
 ): number {
   const scorePerStack = new Array(variant.suits.length).fill(0);
@@ -243,7 +285,7 @@ export function startingCluesUsable(
   const startingClues = cluesStillUsable(
     scorePerStack,
     maxScorePerStack,
-    initialPace,
+    deckSize,
     endGameLength,
     discardValue,
     suitValue,

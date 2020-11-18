@@ -136,6 +136,7 @@ const visibleStateObservers: Subscriptions = [
     (s) => ({
       pace: s.stats.pace,
       paceRisk: s.stats.paceRisk,
+      finalRoundEffectivelyStarted: s.stats.finalRoundEffectivelyStarted,
     }),
     statsView.onPaceOrPaceRiskChanged,
   ),
@@ -145,6 +146,7 @@ const visibleStateObservers: Subscriptions = [
       potentialCluesLost: s.stats.potentialCluesLost,
       maxScore: s.stats.maxScore,
       cluesStillUsable: s.stats.cluesStillUsable,
+      finalRoundEffectivelyStarted: s.stats.finalRoundEffectivelyStarted,
     }),
     statsView.onEfficiencyChanged,
   ),
