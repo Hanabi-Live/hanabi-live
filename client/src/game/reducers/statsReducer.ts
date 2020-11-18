@@ -106,12 +106,18 @@ function statsReducerFunction(
   stats.cluesStillUsable = statsRules.cluesStillUsable(
     scorePerStack,
     stats.maxScorePerStack,
-    stats.pace,
+    currentState.cardsRemainingInTheDeck,
     turnRules.endGameLength(metadata.options, metadata.characterAssignments),
     clueTokensRules.discardValue(variant),
     clueTokensRules.suitValue(variant),
     clueTokensRules.getUnadjusted(currentState.clueTokens, variant),
   );
+
+  // Check if final round has effectively started because it is guaranteed to start in a fixed number of turns
+  stats.finalRoundEffectivelyStarted =
+    currentState.cardsRemainingInTheDeck <= 0 ||
+    stats.cluesStillUsable === null ||
+    stats.cluesStillUsable < 1;
 
   // Handle double discard calculation
   if (action.type === "discard") {

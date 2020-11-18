@@ -10,6 +10,7 @@ export function onEfficiencyChanged(data: {
   potentialCluesLost: number;
   maxScore: number;
   cluesStillUsable: number | null;
+  finalRoundEffectivelyStarted: boolean;
 }): void {
   // Ensure that the labels exist
   const effLabel = globals.elements.efficiencyNumberLabel;
@@ -57,7 +58,8 @@ export function onEfficiencyChanged(data: {
     cardsGotten,
     data.potentialCluesLost,
   );
-  const shouldShowEfficiency = Number.isFinite(efficiency);
+  const shouldShowEfficiency =
+    Number.isFinite(efficiency) && !data.finalRoundEffectivelyStarted;
   const futureEfficiency =
     data.cluesStillUsable === null
       ? NaN
@@ -132,6 +134,7 @@ export function onEfficiencyChanged(data: {
 export function onPaceOrPaceRiskChanged(data: {
   pace: number | null;
   paceRisk: PaceRisk;
+  finalRoundEffectivelyStarted: boolean;
 }): void {
   const label = globals.elements.paceNumberLabel;
   if (!label) {
@@ -141,7 +144,7 @@ export function onPaceOrPaceRiskChanged(data: {
   // Update the pace
   // (part of the efficiency statistics on the right-hand side of the screen)
   // If there are no cards left in the deck, pace is meaningless
-  if (data.pace === null) {
+  if (data.pace === null || data.finalRoundEffectivelyStarted) {
     label.text("-");
     label.fill(LABEL_COLOR);
   } else {
