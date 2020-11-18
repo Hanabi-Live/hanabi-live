@@ -194,4 +194,9 @@ describe("cluesStillUsable", () => {
       cluesStillUsable([3, 3, 3, 3, 4], [5, 5, 5, 5, 4], 10, 3, 1, 1, 4),
     ).toBe(16);
   });
+  test("discards during the final round don't count", () => {
+    expect(
+      cluesStillUsable([5, 5, 5, 5, 4], [5, 5, 5, 5, 5], 2, 2, 1, 1, 4),
+    ).toBe(4);
+  });
 });
