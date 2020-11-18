@@ -210,11 +210,14 @@ export default class CardLayout extends Konva.Group {
     const w = this.width();
     const h = this.height();
 
-    // The rotation comes from Konva in radians but we need to convert it to degrees
-    const rot = (this.origRotation / 180) * Math.PI;
+    // The rotation comes from Konva in clockwise degrees but we need to convert it to
+    // counter-clockwise radians
+    const rot = (-this.origRotation / 180) * Math.PI;
 
-    pos.x += (w / 2) * Math.cos(rot) - (h / 2) * Math.sin(rot);
-    pos.y += (w / 2) * Math.sin(rot) + (h / 2) * Math.cos(rot);
+    pos.x += (w / 2) * Math.cos(rot);
+    pos.y -= (w / 2) * Math.sin(rot);
+    pos.x += (h / 2) * Math.sin(rot); // sin(x) = cos(x - (PI / 2))
+    pos.y -= (h / 2) * -Math.cos(rot); // -cos(x) = sin(x - (PI / 2))
 
     return pos;
   }

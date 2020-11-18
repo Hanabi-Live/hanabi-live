@@ -63,7 +63,7 @@ export default class Elements {
   // The score area
   scoreArea: Konva.Group | null = null;
   scoreAreaBorder: Konva.Rect | null = null;
-  turnNumberLabel: Konva.Text | null = null;
+  turnNumberLabel: TextWithTooltip | null = null;
   scoreTextLabel: Konva.Text | null = null;
   scoreNumberLabel: Konva.Text | null = null;
   maxScoreNumberLabel: Konva.Text | null = null;

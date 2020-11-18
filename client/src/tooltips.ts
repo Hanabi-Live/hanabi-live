@@ -38,6 +38,7 @@ export function initGame(): void {
     "restart",
     "spectators",
     "strikes",
+    "turn-number",
   ];
   for (const tooltip of tooltips) {
     $("#game-tooltips").append(`<div id="tooltip-${tooltip}"></div>`);
