@@ -96,7 +96,7 @@ export default function initialGameState(metadata: GameMetadata): GameState {
       maxScorePerStack: new Array(variant.suits.length).fill(5) as number[],
 
       pace: startingPace,
-      paceRisk: statsRules.paceRisk(options.numPlayers, startingPace),
+      paceRisk: statsRules.paceRisk(startingPace, options.numPlayers),
       finalRoundEffectivelyStarted: false,
 
       cardsGotten: 0,
