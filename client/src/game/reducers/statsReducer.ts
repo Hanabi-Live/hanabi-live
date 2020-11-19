@@ -83,7 +83,7 @@ function statsReducerFunction(
         currentState,
         metadata,
       );
-      break;
+      return;
     }
 
     case "draw":
