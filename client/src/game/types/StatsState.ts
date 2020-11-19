@@ -24,6 +24,6 @@ export default interface StatsState {
 
   // Other
   readonly doubleDiscard: boolean;
-  readonly lastAction: GameAction | null;
+  readonly lastAction: GameAction | null; // Used for determining sound effects
   readonly soundTypeForLastAction: SoundType;
 }
