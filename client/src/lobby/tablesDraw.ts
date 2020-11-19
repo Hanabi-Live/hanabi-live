@@ -74,8 +74,8 @@ export default function tablesDraw(): void {
   }
 
   // Get the overlay div
-  const overlay = $('.overlay');
-  overlay.on('mouseleave', function() {
+  const overlay = $(".overlay");
+  overlay.on("mouseleave", function() {
     $(this).hide();
   });
 
@@ -170,13 +170,13 @@ export default function tablesDraw(): void {
     $("<td>").html(spectatorsString).appendTo(row);
 
     // Set the overlay div
-    row.on('mouseenter', function() {
+    row.on("mouseenter", () => {
       overlay.css({
-        "display": "flex",
-        "left": $(this).offset()?.left + 'px',
-        "top": $(this).offset()?.top + 'px',
-        "width": $(this).width() + 'px',
-        "height": $(this).height() + 'px'
+        'display': "flex",
+        'left': row.offset()?.left.toString() + 'px',
+        'top': row.offset()?.top.toString() + 'px',
+        'width': row.width()?.toString() + 'px',
+        'height': row.height()?.toString() + 'px'
       });
 
       // Add the appropriate button, id and action
@@ -186,8 +186,7 @@ export default function tablesDraw(): void {
       if (table.sharedReplay || (!table.joined && table.running)) {
         button.html('<i class="fas fa-eye lobby-button-icon"></i>');
         overlay.attr("id", `spectate-${table.id}`);
-        overlay.off("click")
-          .on("click", () => {
+        overlay.off("click").on("click", () => {
           tableSpectate(table);
         });
       } else if (!table.joined) {
@@ -196,8 +195,7 @@ export default function tablesDraw(): void {
         if (table.numPlayers >= 6) {
           button.addClass("disabled");
         } else {
-          overlay.off("click")
-            .on("click", () => {
+          overlay.off("click").on("click", () => {
             tableJoin(table);
           });
         }
@@ -208,8 +206,7 @@ export default function tablesDraw(): void {
       } else {
         button.html('<i class="fas fa-play lobby-button-icon"></i>');
         overlay.attr("id", `resume-${table.id}`);
-        overlay.off("click")
-          .on("click", () => {
+        overlay.off("click").on("click", () => {
           tableReattend(table);
         });
       }
