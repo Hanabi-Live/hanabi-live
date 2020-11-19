@@ -175,7 +175,7 @@ export default function tablesDraw(): void {
       !table.joined &&
       table.numPlayers < 6 &&
       !addedFirstJoinButton
-      ) {
+    ) {
       addedFirstJoinButton = true;
       const button = $("<button>")
         .attr("type", "button")
@@ -190,12 +190,20 @@ export default function tablesDraw(): void {
 
     // Set the overlay div
     row.on("mouseenter", () => {
+      const offset = row.offset();
+      const width = row.width();
+      const height = row.height();
+      if (offset === undefined || width === undefined || height === undefined) {
+        throw new Error(
+          "Failed to get the dimensions and coordinates for the table row.",
+        );
+      }
       overlay.css({
         display: "flex",
-        left: `${row.offset()?.left.toString()}px`,
-        top: `${row.offset()?.top.toString()}px`,
-        width: `${row.width()?.toString()}px`,
-        height: `${row.height()?.toString()}px`,
+        left: `${offset.left}px`,
+        top: `${offset.top}px`,
+        width: `${width}px`,
+        height: `${height}px`,
       });
 
       // Add the appropriate button, id and action
