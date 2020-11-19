@@ -170,7 +170,12 @@ export default function tablesDraw(): void {
     $("<td>").html(spectatorsString).appendTo(row);
 
     // Add a hidden FirstJoin button to the row if appropriate
-    if (!table.running && !table.joined && table.numPlayers < 6 && !addedFirstJoinButton) {
+    if (
+      !table.running &&
+      !table.joined &&
+      table.numPlayers < 6 &&
+      !addedFirstJoinButton
+      ) {
       addedFirstJoinButton = true;
       const button = $("<button>")
         .attr("type", "button")
@@ -178,7 +183,7 @@ export default function tablesDraw(): void {
         .attr("id", `join-${table.id}`)
         .addClass("lobby-games-first-join-button")
         .on("click", () => {
-          tableJoin(table)
+          tableJoin(table);
         });
       button.appendTo(row);
     }
@@ -187,10 +192,10 @@ export default function tablesDraw(): void {
     row.on("mouseenter", () => {
       overlay.css({
         display: "flex",
-        left: row.offset()?.left.toString() + "px",
-        top: row.offset()?.top.toString() + "px",
-        width: row.width()?.toString() + "px",
-        height: row.height()?.toString() + "px"
+        left: `${row.offset()?.left.toString()}px`,
+        top: `${row.offset()?.top.toString()}px`,
+        width: `${row.width()?.toString()}px`,
+        height: `${row.height()?.toString()}px`,
       });
 
       // Add the appropriate button, id and action
