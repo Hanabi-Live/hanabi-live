@@ -12,6 +12,57 @@ import { isEmpty, parseIntSafe } from "./misc";
 import * as modals from "./modals";
 import ChatMessage from "./types/ChatMessage";
 
+// Constants
+const serverSideOnlyCommands = [
+  // General commands
+  "help",
+  "commands",
+  "?",
+  "discord",
+  "rules",
+  "guidelines",
+  "new",
+  "beginner",
+  "beginners",
+  "guide",
+  "replay",
+  "link",
+  "game",
+  "random",
+  "uptime",
+  "timeleft",
+
+  // Pre-game commands
+  "s",
+  "s2",
+  "s3",
+  "s4",
+  "s5",
+  "s6",
+  "startin",
+  "kick",
+
+  // Pre-game or game commands
+  "missing",
+  "missingscores",
+  "missing-scores",
+  "sharedmissingscores",
+  "shared-missing-scores",
+  "findvariant",
+  "find-variant",
+  "randomvariant",
+  "random-variant",
+
+  // Game commands
+  "pause",
+  "unpause",
+
+  // Replay commands
+  "suggest",
+  "tags",
+  "taglist",
+];
+
 // Variables
 const emojiMap = new Map<string, string>();
 const emojiList: string[] = [];
@@ -218,13 +269,15 @@ function send(room: string, element: JQuery<HTMLElement>) {
     command = command.substring(1); // Remove the forward slash
     command = command.toLowerCase();
 
-    const chatCommandFunction = chatCommands.get(command);
-    if (chatCommandFunction === undefined) {
-      modals.warningShow(`The chat command of "${command}" is not valid.`);
-    } else {
-      chatCommandFunction(roomID, args);
+    if (!serverSideOnlyCommands.includes(command)) {
+      const chatCommandFunction = chatCommands.get(command);
+      if (chatCommandFunction === undefined) {
+        modals.warningShow(`The chat command of "${command}" is not valid.`);
+      } else {
+        chatCommandFunction(roomID, args);
+      }
+      return;
     }
-    return;
   }
 
   // This is not a command, so send a the chat message to the server

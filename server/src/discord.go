@@ -321,7 +321,7 @@ func discordCheckCommand(m *discordgo.MessageCreate) {
 
 	if command == "undefined" {
 		msg := "**Why isn't [situation X] defined in the conventions document?**\n\n"
-		msg += "Not everything has to have a meaning. We intentionally want to have situations be undefined so that we have some wiggle room to handle a wide variety of game states: <https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Convention_Goals.md>"
+		msg += "Not everything has to have a meaning. We intentionally want to have some situations be undefined so that we have some wiggle room to handle a wide variety of game states: <https://github.com/Zamiell/hanabi-conventions/blob/master/misc/Convention_Goals.md>"
 		discordSend(m.ChannelID, "", msg)
 		return
 	}
