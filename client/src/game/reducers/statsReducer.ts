@@ -84,6 +84,8 @@ function statsReducerFunction(
     }
   }
 
+  // Various stat calculation is below; this code only runs on play, discard, clue, or strike actions
+
   const actionDrewCard = originalState.cardsRemainingInTheDeck >= 1;
   const deckSize =
     originalState.cardsRemainingInTheDeck - (actionDrewCard ? 1 : 0);
