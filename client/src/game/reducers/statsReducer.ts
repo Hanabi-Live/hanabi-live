@@ -72,9 +72,6 @@ function statsReducerFunction(
     }
 
     case "gameOver": {
-      // Record the last action
-      stats.lastAction = action;
-
       // Find out which sound effect to play (if this is an ongoing game)
       stats.soundTypeForLastAction = getSoundType(
         stats,
