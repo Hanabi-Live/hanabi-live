@@ -75,8 +75,8 @@ export default function tablesDraw(): void {
 
   // Get the overlay div
   const overlay = $(".overlay");
-  overlay.on("mouseleave", function() {
-    $(this).hide();
+  overlay.on("mouseleave", () => {
+    overlay.hide();
   });
 
   // Add all of the games
@@ -169,14 +169,28 @@ export default function tablesDraw(): void {
     }
     $("<td>").html(spectatorsString).appendTo(row);
 
+    // Add a hidden FirstJoin button to the row if appropriate
+    if (!table.running && !table.joined && table.numPlayers < 6 && !addedFirstJoinButton) {
+      addedFirstJoinButton = true;
+      const button = $("<button>")
+        .attr("type", "button")
+        .css("display", "none")
+        .attr("id", `join-${table.id}`)
+        .addClass("lobby-games-first-join-button")
+        .on("click", () => {
+          tableJoin(table)
+        });
+      button.appendTo(row);
+    }
+
     // Set the overlay div
     row.on("mouseenter", () => {
       overlay.css({
-        'display': "flex",
-        'left': row.offset()?.left.toString() + 'px',
-        'top': row.offset()?.top.toString() + 'px',
-        'width': row.width()?.toString() + 'px',
-        'height': row.height()?.toString() + 'px'
+        display: "flex",
+        left: row.offset()?.left.toString() + "px",
+        top: row.offset()?.top.toString() + "px",
+        width: row.width()?.toString() + "px",
+        height: row.height()?.toString() + "px"
       });
 
       // Add the appropriate button, id and action
@@ -193,15 +207,11 @@ export default function tablesDraw(): void {
         button.html('<i class="fas fa-sign-in-alt lobby-button-icon"></i>');
         overlay.attr("id", `join-${table.id}`);
         if (table.numPlayers >= 6) {
-          button.addClass("disabled");
+          overlay.off("click");
         } else {
           overlay.off("click").on("click", () => {
             tableJoin(table);
           });
-        }
-        if (!addedFirstJoinButton) {
-          addedFirstJoinButton = true;
-          overlay.addClass("lobby-games-first-join-button");
         }
       } else {
         button.html('<i class="fas fa-play lobby-button-icon"></i>');
@@ -210,8 +220,7 @@ export default function tablesDraw(): void {
           tableReattend(table);
         });
       }
-      overlay.empty()
-        .append(button);
+      overlay.empty().append(button);
     });
 
     row.appendTo(tbody);
