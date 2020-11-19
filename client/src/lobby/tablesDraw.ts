@@ -73,6 +73,12 @@ export default function tablesDraw(): void {
     }
   }
 
+  // Get the overlay div
+  const overlay = $('.overlay');
+  overlay.on('mouseleave', function() {
+    $(this).hide();
+  });
+
   // Add all of the games
   let addedFirstJoinButton = false;
   for (const id of sortedTableIDs) {
@@ -132,39 +138,7 @@ export default function tablesDraw(): void {
     }
     $("<td>").html(status).appendTo(row);
 
-    // Column 6 - Action
-    const button = $("<button>")
-      .attr("type", "button")
-      .addClass("button small margin0");
-    if (table.sharedReplay || (!table.joined && table.running)) {
-      button.html('<i class="fas fa-eye lobby-button-icon"></i>');
-      button.attr("id", `spectate-${table.id}`);
-      button.on("click", () => {
-        tableSpectate(table);
-      });
-    } else if (!table.joined) {
-      button.html('<i class="fas fa-sign-in-alt lobby-button-icon"></i>');
-      button.attr("id", `join-${table.id}`);
-      if (table.numPlayers >= 6) {
-        button.addClass("disabled");
-      }
-      button.on("click", () => {
-        tableJoin(table);
-      });
-      if (!addedFirstJoinButton) {
-        addedFirstJoinButton = true;
-        button.addClass("lobby-games-first-join-button");
-      }
-    } else {
-      button.html('<i class="fas fa-play lobby-button-icon"></i>');
-      button.attr("id", `resume-${table.id}`);
-      button.on("click", () => {
-        tableReattend(table);
-      });
-    }
-    $("<td>").html(button[0]).appendTo(row);
-
-    // Column 7 - Players
+    // Column 6 - Players
     const playersArray: string[] = [];
     for (const player of table.players) {
       if (player === globals.username) {
@@ -178,7 +152,7 @@ export default function tablesDraw(): void {
     const playersString = playersArray.join(", ");
     $("<td>").html(playersString).appendTo(row);
 
-    // Column 8 - Spectators
+    // Column 7 - Spectators
     let spectatorsString: string;
     if (table.spectators.length === 0) {
       spectatorsString = "-";
@@ -194,6 +168,54 @@ export default function tablesDraw(): void {
       spectatorsString = spectatorsArray.join(", ");
     }
     $("<td>").html(spectatorsString).appendTo(row);
+
+    // Set the overlay div
+    row.on('mouseenter', function() {
+      overlay.css({
+        "display": "flex",
+        "left": $(this).offset()?.left + 'px',
+        "top": $(this).offset()?.top + 'px',
+        "width": $(this).width() + 'px',
+        "height": $(this).height() + 'px'
+      });
+
+      // Add the appropriate button, id and action
+      const button = $("<button>")
+        .attr("type", "button")
+        .addClass("button small margin0");
+      if (table.sharedReplay || (!table.joined && table.running)) {
+        button.html('<i class="fas fa-eye lobby-button-icon"></i>');
+        overlay.attr("id", `spectate-${table.id}`);
+        overlay.off("click")
+          .on("click", () => {
+          tableSpectate(table);
+        });
+      } else if (!table.joined) {
+        button.html('<i class="fas fa-sign-in-alt lobby-button-icon"></i>');
+        overlay.attr("id", `join-${table.id}`);
+        if (table.numPlayers >= 6) {
+          button.addClass("disabled");
+        } else {
+          overlay.off("click")
+            .on("click", () => {
+            tableJoin(table);
+          });
+        }
+        if (!addedFirstJoinButton) {
+          addedFirstJoinButton = true;
+          overlay.addClass("lobby-games-first-join-button");
+        }
+      } else {
+        button.html('<i class="fas fa-play lobby-button-icon"></i>');
+        overlay.attr("id", `resume-${table.id}`);
+        overlay.off("click")
+          .on("click", () => {
+          tableReattend(table);
+        });
+      }
+      overlay.empty()
+        .append(button);
+    });
 
     row.appendTo(tbody);
   }

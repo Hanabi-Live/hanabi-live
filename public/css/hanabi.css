@@ -340,6 +340,20 @@ table td {
 }
 
 /*
+  Row overlay div
+*/
+.overlay {
+  display: none;
+  position: absolute;
+  z-index: 999;
+  opacity: 0.8;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  background-color: #cecece;
+}
+
+/*
   The list of ongoing tables / games
 */
 
