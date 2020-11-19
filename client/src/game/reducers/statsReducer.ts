@@ -2,6 +2,7 @@
 // as a result of each action
 
 import produce, { Draft } from "immer";
+import { ensureAllCases } from "../../misc";
 import { getVariant } from "../data/gameData";
 import { clueTokensRules, turnRules, variantRules } from "../rules";
 import * as statsRules from "../rules/stats";
@@ -28,6 +29,7 @@ function statsReducerFunction(
     case "clue": {
       // A clue was spent
       stats.potentialCluesLost += 1;
+      stats.doubleDiscard = false;
 
       break;
     }
@@ -54,14 +56,37 @@ function statsReducerFunction(
         // similar to what happens when the team gets a strike
         stats.potentialCluesLost += clueTokensRules.discardValue(variant);
       }
+      stats.doubleDiscard = false;
 
       break;
     }
+
+    case "discard": {
+      // Handle double discard calculation
+      stats.doubleDiscard = statsRules.doubleDiscard(
+        action.order,
+        currentState,
+        variant,
+      );
+      break;
+    }
+
+    case "draw":
+    case "cardIdentity":
+    case "gameOver":
+    case "turn":
+    case "playerTimes":
+      return;
 
     default: {
-      break;
+      ensureAllCases(action);
+      return;
     }
   }
+
+  const actionDrewCard = originalState.cardsRemainingInTheDeck >= 1;
+  const deckSize =
+    originalState.cardsRemainingInTheDeck - (actionDrewCard ? 1 : 0);
 
   // Handle max score calculation
   if (action.type === "play" || action.type === "discard") {
@@ -80,7 +105,7 @@ function statsReducerFunction(
       : currentState.score;
   stats.pace = statsRules.pace(
     score,
-    currentState.cardsRemainingInTheDeck,
+    deckSize,
     stats.maxScore,
     metadata.options.numPlayers,
     // currentPlayerIndex will be null if the game is over
@@ -106,7 +131,7 @@ function statsReducerFunction(
   stats.cluesStillUsable = statsRules.cluesStillUsable(
     scorePerStack,
     stats.maxScorePerStack,
-    currentState.cardsRemainingInTheDeck,
+    deckSize,
     turnRules.endGameLength(metadata.options, metadata.characterAssignments),
     clueTokensRules.discardValue(variant),
     clueTokensRules.suitValue(variant),
@@ -115,29 +140,12 @@ function statsReducerFunction(
 
   // Check if final round has effectively started because it is guaranteed to start in a fixed number of turns
   stats.finalRoundEffectivelyStarted =
-    currentState.cardsRemainingInTheDeck <= 0 ||
+    deckSize <= 0 ||
     stats.cluesStillUsable === null ||
     stats.cluesStillUsable < 1;
 
-  // Handle double discard calculation
-  if (action.type === "discard") {
-    stats.doubleDiscard = statsRules.doubleDiscard(
-      action.order,
-      currentState,
-      variant,
-    );
-  } else if (action.type === "play" || action.type === "clue") {
-    stats.doubleDiscard = false;
-  }
-
   // Record the last action
-  if (
-    action.type === "play" ||
-    action.type === "discard" ||
-    action.type === "clue"
-  ) {
-    stats.lastAction = action;
-  }
+  stats.lastAction = action;
 
   // Find out which sound effect to play (if this is an ongoing game)
   stats.soundTypeForLastAction = getSoundType(
