@@ -191,13 +191,15 @@ export default function tablesDraw(): void {
     // Set the overlay div
     row.on("mouseenter", () => {
       const offset = row.offset();
-      const width = row.width();
-      const height = row.height();
+      const width = row.outerWidth();
+      const height = row.outerHeight();
+
       if (offset === undefined || width === undefined || height === undefined) {
         throw new Error(
           "Failed to get the dimensions and coordinates for the table row.",
         );
       }
+
       overlay.css({
         display: "flex",
         left: `${offset.left}px`,
