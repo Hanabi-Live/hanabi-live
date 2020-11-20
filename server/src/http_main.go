@@ -31,8 +31,7 @@ func httpMain(c *gin.Context) {
 	// Instead, we use this value to store whether or not we will use the WebPack development
 	// JavaScript
 	title := "Main"
-	_, dev := c.Request.URL.Query()["dev"]
-	if dev {
+	if _, ok := c.Request.URL.Query()["dev"]; ok {
 		title = "Dev"
 	}
 
