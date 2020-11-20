@@ -22,6 +22,7 @@ interface VariantJSON {
   specialAllClueRanks?: boolean;
   specialNoClueColors?: boolean;
   specialNoClueRanks?: boolean;
+  specialDeceptive?: boolean;
 
   showSuitNames?: boolean;
   spacing?: boolean;
@@ -227,6 +228,18 @@ export default function variantsInit(
     }
     const specialNoClueRanks: boolean = variantJSON.specialNoClueRanks ?? false;
 
+    // Validate the "specialDeceptive" property
+    // If it is not specified, assume false (e.g. cluing ranks in this variant works normally)
+    if (
+      Object.hasOwnProperty.call(variantJSON, "specialDeceptive") &&
+      variantJSON.specialDeceptive !== true
+    ) {
+      throw new Error(
+        `The "specialDeceptive" property for the variant "${variantJSON.name}" must be set to true.`,
+      );
+    }
+    const specialDeceptive: boolean = variantJSON.specialDeceptive ?? false;
+
     // Validate the "showSuitNames" property
     // If it is not specified, assume that we are not showing the suit names
     if (
@@ -295,6 +308,7 @@ export default function variantsInit(
       specialAllClueRanks,
       specialNoClueColors,
       specialNoClueRanks,
+      specialDeceptive,
       showSuitNames,
       spacing,
       maxScore,
