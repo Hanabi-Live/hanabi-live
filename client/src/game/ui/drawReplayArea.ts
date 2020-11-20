@@ -220,18 +220,22 @@ export default function drawReplayArea(winW: number, winH: number): void {
     );
   }
 
-  // The "Exit Replay" button
   const bottomButtonValues = {
     y: 0.17,
   };
+  const extra = 0.05;
+  const bottomLeftReplayButtonValues = {
+    x: replayButtonValues.x - extra,
+    y: bottomButtonValues.y,
+    w: replayButtonValues.w * 2 + replayButtonValues.spacing + extra,
+    h: 0.06,
+  };
+
+  // The "Exit Replay" button
   globals.elements.replayExitButton = new Button({
-    x:
-      (replayButtonValues.x +
-        replayButtonValues.w +
-        replayButtonValues.spacing / 2) *
-      winW,
+    x: bottomLeftReplayButtonValues.x * winW,
     y: bottomButtonValues.y * winH,
-    width: (replayButtonValues.w * 2 + replayButtonValues.spacing * 2) * winW,
+    width: bottomLeftReplayButtonValues.w * winW,
     height: replayButtonValues.w * winH,
     text: "Exit Replay",
     visible: !globals.state.finished,
@@ -240,14 +244,6 @@ export default function drawReplayArea(winW: number, winH: number): void {
   globals.elements.replayArea.add(
     (globals.elements.replayExitButton as unknown) as Konva.Group,
   );
-
-  const extra = 0.05;
-  const bottomLeftReplayButtonValues = {
-    x: replayButtonValues.x - extra,
-    y: bottomButtonValues.y,
-    w: replayButtonValues.w * 2 + replayButtonValues.spacing + extra,
-    h: 0.06,
-  };
 
   // The next two buttons will be moved to the left for replay leaders
   // and centered for non-replay-leaders
