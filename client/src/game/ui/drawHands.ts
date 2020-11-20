@@ -40,21 +40,21 @@ export default function drawHands(winW: number, winH: number): void {
   ];
   handPos[3] = [
     { x: 0.19, y: 0.77, w: 0.42, h: 0.189, rot: 0 },
-    { x: 0.01, y: 0.71, w: 0.41, h: 0.189, rot: -78 },
-    { x: 0.705, y: 0, w: 0.41, h: 0.189, rot: 78 },
+    { x: 0.011, y: 0.73, w: 0.41, h: 0.189, rot: -82 },
+    { x: 0.735, y: 0.024, w: 0.41, h: 0.189, rot: 82 },
   ];
   handPos[4] = [
     { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
-    { x: 0.015, y: 0.7, w: 0.34, h: 0.189, rot: -78 },
+    { x: 0.015, y: 0.68, w: 0.34, h: 0.189, rot: -78 },
     { x: 0.23, y: 0.01, w: 0.34, h: 0.189, rot: 0 },
     { x: 0.715, y: 0.095, w: 0.34, h: 0.189, rot: 78 },
   ];
   handPos[5] = [
     { x: 0.23, y: 0.77, w: 0.34, h: 0.189, rot: 0 },
-    { x: 0.03, y: 0.77, w: 0.301, h: 0.18, rot: -90 },
+    { x: 0.03, y: 0.756, w: 0.301, h: 0.18, rot: -90 },
     { x: 0.0205, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
     { x: 0.44, y: 0.009, w: 0.34, h: 0.189, rot: 0 },
-    { x: 0.77, y: 0.225, w: 0.301, h: 0.18, rot: 90 },
+    { x: 0.77, y: 0.238, w: 0.301, h: 0.18, rot: 90 },
   ];
   handPos[6] = [
     { x: 0.273, y: 0.77, w: 0.34 * 0.75, h: 0.189, rot: 0 },
@@ -181,13 +181,13 @@ export default function drawHands(winW: number, winH: number): void {
     h: 0.02,
   };
   namePos[2] = [
-    { x: 0.18, y: 0.97, w: 0.44, h: namePosValues.h },
-    { x: 0.18, y: 0.21, w: 0.44, h: namePosValues.h },
+    { x: 0.175, y: 0.97, w: 0.45, h: namePosValues.h },
+    { x: 0.175, y: 0.21, w: 0.45, h: namePosValues.h },
   ];
   namePos[3] = [
     { x: 0.18, y: 0.97, w: 0.44, h: namePosValues.h },
-    { x: 0.01, y: 0.765, w: 0.12, h: namePosValues.h },
-    { x: 0.67, y: 0.765, w: 0.12, h: namePosValues.h },
+    { x: 0.0075, y: 0.775, w: 0.12, h: namePosValues.h },
+    { x: 0.675, y: 0.775, w: 0.12, h: namePosValues.h },
   ];
   namePos[4] = [
     { x: 0.22, y: 0.97, w: 0.36, h: namePosValues.h },
@@ -204,7 +204,7 @@ export default function drawHands(winW: number, winH: number): void {
     },
     {
       x: handPos[5][1].x - 0.0095,
-      y: handPos[5][1].y + 0.005,
+      y: handPos[5][1].y + 0.022,
       w: 0.12,
       h: namePosValues.h,
     },
@@ -222,7 +222,7 @@ export default function drawHands(winW: number, winH: number): void {
     },
     {
       x: handPos[5][4].x - 0.006 - 0.105,
-      y: handPos[5][1].y + 0.005,
+      y: handPos[5][1].y + 0.025,
       w: 0.12,
       h: namePosValues.h,
     },
@@ -365,7 +365,7 @@ export default function drawHands(winW: number, winH: number): void {
         } else {
           blackLineX = handValues.w;
         }
-        blackLineY = 0.002;
+
       }
       const blackLine = new Konva.Rect({
         x: blackLineX * winW,
@@ -374,7 +374,8 @@ export default function drawHands(winW: number, winH: number): void {
         height: handValues.h * winH,
         fill: OFF_BLACK,
         stroke: OFF_BLACK,
-        strokeWidth: 0.00317 * winH,
+        strokeWidth: 0.002 * winH,
+        cornerRadius: 0.003 * winW,
         listening: false,
       });
       blackLineGroup.add(blackLine);
